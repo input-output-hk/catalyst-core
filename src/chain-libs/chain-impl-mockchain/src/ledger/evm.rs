@@ -34,13 +34,11 @@ impl Ledger {
                 access_list,
             } => {
                 //
-                if let Some((new_state, new_logs)) =
-                    vm.transact_create(caller, value, init_code, gas_limit, access_list, true)
-                {
-                    // update ledger state
-                    self.accounts = new_state.clone();
-                    self.logs = new_logs.clone();
-                }
+                let (new_state, new_logs) =
+                    vm.transact_create(caller, value, init_code, gas_limit, access_list, true)?;
+                // update ledger state
+                self.accounts = new_state.clone();
+                self.logs = new_logs.clone();
                 Ok(())
             }
             EvmTransaction::Create2 {
@@ -51,7 +49,7 @@ impl Ledger {
                 gas_limit,
                 access_list,
             } => {
-                if let Some((new_state, new_logs)) = vm.transact_create2(
+                let (new_state, new_logs) = vm.transact_create2(
                     caller,
                     value,
                     init_code,
@@ -59,11 +57,10 @@ impl Ledger {
                     gas_limit,
                     access_list,
                     true,
-                ) {
-                    // update ledger state
-                    self.accounts = new_state.clone();
-                    self.logs = new_logs.clone();
-                }
+                )?;
+                // update ledger state
+                self.accounts = new_state.clone();
+                self.logs = new_logs.clone();
                 Ok(())
             }
             EvmTransaction::Call {
@@ -74,13 +71,11 @@ impl Ledger {
                 gas_limit,
                 access_list,
             } => {
-                if let Some((new_state, new_logs, _byte_code_msg)) =
-                    vm.transact_call(caller, address, value, data, gas_limit, access_list, true)
-                {
-                    // update ledger state
-                    self.accounts = new_state.clone();
-                    self.logs = new_logs.clone();
-                }
+                let (new_state, new_logs, _byte_code_msg) =
+                    vm.transact_call(caller, address, value, data, gas_limit, access_list, true)?;
+                // update ledger state
+                self.accounts = new_state.clone();
+                self.logs = new_logs.clone();
                 Ok(())
             }
         }

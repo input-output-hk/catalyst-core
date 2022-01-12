@@ -325,6 +325,9 @@ pub enum Error {
     MintingPolicyViolation(#[from] MintingPolicyViolation),
     #[error("evm transactions are disabled, the node was built without the 'evm' feature")]
     DisabledEvmTransactions,
+    #[cfg(feature = "evm")]
+    #[error("evm transaction error")]
+    EvmTransactionError(#[from] chain_evm::machine::Error),
 }
 
 impl LedgerParameters {

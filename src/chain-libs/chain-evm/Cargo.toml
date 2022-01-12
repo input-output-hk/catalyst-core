@@ -23,6 +23,7 @@ logos = { version = "0.12", default-features = false, features = ["export_derive
 ethabi = { version = "16.0", default-features = false }
 hex = { version = "0.4", default-features = false, features = ["alloc"] }
 byte-slice-cast = { version = "1.0", default-features = false }
+thiserror = "1.0"
 
 [dev-dependencies]
 serde = { version = "1", features = ["derive"] }

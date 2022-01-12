@@ -45,7 +45,7 @@ pub fn sanity_notification() {
 
 fn get_env<S: Into<String>>(env_name: S) -> String {
     let env_name = env_name.into();
-    std::env::var(&env_name).expect(&format!("{} not defined", env_name))
+    std::env::var(&env_name).unwrap_or_else(|_| panic!("{} not defined", env_name))
 }
 
 fn create_message_file<P: AsRef<Path>, S: Into<String>>(path: P, message: S) {

@@ -85,7 +85,7 @@ pub async fn fetch_all(
         funnels,
         fund: funds
             .into_iter()
-            .find(|f| f.name.as_ref().contains(&format!("Fund{}", fund)))
+            .find(|f| f.name.as_ref().contains(&format!("Fund {}", fund)))
             .unwrap_or_else(|| panic!("Selected fund {}, wasn't among the available funds", fund)),
         challenges: challenges.into_iter().map(|c| (c.id, c)).collect(),
         proposals: proposals.map(|p| (p.proposal_id, p)).collect(),

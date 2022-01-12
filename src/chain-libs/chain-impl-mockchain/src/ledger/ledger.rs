@@ -18,9 +18,7 @@ use crate::fee::{FeeAlgorithm, LinearFee};
 use crate::fragment::{BlockContentHash, BlockContentSize, Contents, Fragment, FragmentId};
 use crate::rewards;
 use crate::setting::ActiveSlotsCoeffError;
-use crate::stake::{
-    PercentStake, PoolError, PoolStakeInformation, PoolsState, StakeControl, StakeDistribution,
-};
+use crate::stake::{PercentStake, PoolError, PoolStakeInformation, PoolsState, StakeDistribution};
 use crate::tokens::identifier::TokenIdentifier;
 use crate::tokens::minting_policy::MintingPolicyViolation;
 use crate::transaction::*;
@@ -997,11 +995,20 @@ impl Ledger {
                     new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
 
                 // we've just verified that this is a valid transaction (i.e. contains 1 input and 1 witness)
-                let account_id = match tx.inputs().iter().next().unwrap().to_enum() {
-                    InputEnum::UtxoInput(_) => {
-                        return Err(Error::OwnerStakeDelegationInvalidTransaction);
+                let account_id = match tx
+                    .inputs()
+                    .iter()
+                    .map(|input| input.to_enum())
+                    .zip(tx.witnesses().iter())
+                    .next()
+                    .unwrap()
+                {
+                    (InputEnum::AccountInput(account_id, _), Witness::Account(_, _)) => account_id
+                        .to_single_account()
+                        .ok_or(Error::AccountIdentifierInvalid)?,
+                    (_, _) => {
+                        return Err(Error::VoteCastInvalidTransaction);
                     }
-                    InputEnum::AccountInput(account_id, _) => account_id,
                 };
 
                 new_ledger =
@@ -1157,7 +1164,7 @@ impl Ledger {
 
     pub fn apply_vote_cast(
         mut self,
-        account_id: UnspecifiedAccountIdentifier,
+        account_id: account::Identifier,
         vote: VoteCast,
     ) -> Result<Self, Error> {
         self.votes = self.votes.apply_vote(self.date(), account_id, vote)?;
@@ -1182,13 +1189,11 @@ impl Ledger {
             return Err(Error::VoteTallyProofFailed);
         }
 
-        let stake = StakeControl::new_with(&self.accounts, &self.utxos);
-
         let mut actions = Vec::new();
 
         self.votes = self.votes.apply_committee_result(
             self.date(),
-            &stake,
+            &self.accounts,
             &self.governance,
             tally,
             sig,
@@ -1226,11 +1231,9 @@ impl Ledger {
             return Err(Error::VoteTallyProofFailed);
         }
 
-        let stake = StakeControl::new_with(&self.accounts, &self.utxos);
-
-        self.votes = self
-            .votes
-            .apply_encrypted_vote_tally(self.date(), &stake, tally, sig.id)?;
+        self.votes =
+            self.votes
+                .apply_encrypted_vote_tally(self.date(), &self.accounts, tally, sig.id)?;
 
         Ok(self)
     }

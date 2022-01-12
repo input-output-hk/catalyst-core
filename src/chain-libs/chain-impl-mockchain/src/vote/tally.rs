@@ -32,7 +32,7 @@ pub enum Tally {
 pub enum PrivateTallyState {
     Encrypted {
         encrypted_tally: EncryptedTally,
-        total_stake: Stake,
+        total_stake: Value,
     },
     Decrypted {
         result: TallyResult,
@@ -71,7 +71,7 @@ impl Tally {
         Self::Public { result }
     }
 
-    pub fn new_private(encrypted_tally: EncryptedTally, total_stake: Stake) -> Self {
+    pub fn new_private(encrypted_tally: EncryptedTally, total_stake: Value) -> Self {
         Self::Private {
             state: PrivateTallyState::Encrypted {
                 encrypted_tally,
@@ -98,7 +98,7 @@ impl Tally {
         }
     }
 
-    pub fn private_encrypted(&self) -> Result<(&EncryptedTally, &Stake), TallyError> {
+    pub fn private_encrypted(&self) -> Result<(&EncryptedTally, &Value), TallyError> {
         match self {
             Self::Private {
                 state:

@@ -1,5 +1,5 @@
 use crate::{
-    account::{Identifier, Ledger as AccountLedger},
+    account::{self, Identifier, Ledger as AccountLedger},
     accounting::account::{account_state::AccountState, DelegationType},
     certificate::{PoolId, PoolRegistration},
     ledger::{ledger::Ledger, Pots},
@@ -7,7 +7,6 @@ use crate::{
     stake::{Stake, StakeDistribution},
     testing::data::{AddressData, StakePool, Wallet},
     testing::scenario::template::VotePlanDef,
-    transaction::UnspecifiedAccountIdentifier,
     utxo,
     value::Value,
     vote::VotePlanStatus,
@@ -195,7 +194,7 @@ impl LedgerStateVerifier {
 pub struct VotesVerifier {
     vote_plans: Vec<VotePlanStatus>,
     vote_plan_id: Option<String>,
-    identifier: Option<UnspecifiedAccountIdentifier>,
+    identifier: Option<account::Identifier>,
 }
 
 impl VotesVerifier {
@@ -208,9 +207,7 @@ impl VotesVerifier {
     }
 
     pub fn gvien_wallet(mut self, wallet: &Wallet) -> Self {
-        self.identifier = Some(UnspecifiedAccountIdentifier::from_single_account(
-            wallet.public_key().into(),
-        ));
+        self.identifier = Some(wallet.public_key().into());
         self
     }
 

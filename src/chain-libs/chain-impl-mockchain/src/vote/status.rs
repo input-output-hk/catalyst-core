@@ -1,8 +1,8 @@
 use crate::{
+    account,
     certificate::{ExternalProposalId, VotePlanId},
     date::BlockDate,
     tokens::identifier::TokenIdentifier,
-    transaction::UnspecifiedAccountIdentifier,
     vote::{Options, PayloadType, Tally, ValidatedPayload},
 };
 use chain_vote::MemberPublicKey;
@@ -25,5 +25,5 @@ pub struct VoteProposalStatus {
     pub proposal_id: ExternalProposalId,
     pub options: Options,
     pub tally: Option<Tally>,
-    pub votes: Hamt<DefaultHasher, UnspecifiedAccountIdentifier, ValidatedPayload>,
+    pub votes: Hamt<DefaultHasher, account::Identifier, ValidatedPayload>,
 }

@@ -326,12 +326,13 @@ mod tests {
                 .unwrap()
                 .iter()
                 .map(|x| {
-                    AddressDataValue::new(
+                    AddressDataValue::new_with_tokens(
                         AddressData::delegation_for_account(
                             x.address_data.clone(),
                             single_account.0.clone().into(),
                         ),
                         x.value,
+                        x.tokens.clone(),
                     )
                 })
                 .map(|x| {

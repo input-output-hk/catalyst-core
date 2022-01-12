@@ -1,7 +1,10 @@
+use std::collections::HashMap;
+
 use crate::{
     chaintypes::HeaderId,
     key::EitherEd25519SecretKey,
     testing::data::{AddressData, AddressDataValue},
+    tokens::name::TokenName,
     transaction::{Input, Output, TransactionAuthData, Witness},
     value::Value,
 };
@@ -40,6 +43,21 @@ impl Wallet {
         Wallet {
             alias: alias.to_owned(),
             account: AddressDataValue::account(Discrimination::Test, initial_value),
+        }
+    }
+
+    pub fn new_with_tokens(
+        alias: &str,
+        initial_value: Value,
+        tokens: HashMap<TokenName, Value>,
+    ) -> Self {
+        Wallet {
+            alias: alias.to_owned(),
+            account: AddressDataValue::account_with_tokens(
+                Discrimination::Test,
+                initial_value,
+                tokens,
+            ),
         }
     }
 

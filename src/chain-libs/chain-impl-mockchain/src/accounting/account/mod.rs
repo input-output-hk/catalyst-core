@@ -208,6 +208,16 @@ impl<ID: Clone + Eq + Hash, Extra: Clone> Ledger<ID, Extra> {
             .map_err(|e| e.into())
     }
 
+    pub fn token_get_total(&self, token: &TokenIdentifier) -> Result<Value, ValueError> {
+        let values = self
+            .0
+            .iter()
+            .filter_map(|(_, account_state)| account_state.tokens.lookup(token))
+            .cloned();
+
+        Value::sum(values)
+    }
+
     pub fn iter(&self) -> Iter<'_, ID, Extra> {
         Iter(self.0.iter())
     }
@@ -263,6 +273,11 @@ mod tests {
                 .take(stake_pool_size)
                 .collect::<Vec<_>>();
 
+            let voting_tokens_size = usize::arbitrary(gen);
+            let arbitrary_voting_tokens = iter::from_fn(|| Some(TokenIdentifier::arbitrary(gen)))
+                .take(voting_tokens_size)
+                .collect::<HashSet<_>>();
+
             let mut ledger = Ledger::new();
 
             // Add all arbitrary accounts
@@ -270,6 +285,15 @@ mod tests {
                 ledger = ledger
                     .add_account(&account_id, AverageValue::arbitrary(gen).into(), ())
                     .unwrap();
+
+                for token in &arbitrary_voting_tokens {
+                    // TODO: maybe less probability is better (for performance)
+                    if bool::arbitrary(gen) {
+                        ledger = ledger
+                            .token_add(&account_id, token.clone(), Value::arbitrary(gen))
+                            .unwrap();
+                    }
+                }
             }
 
             // Choose random subset of arbitraty accounts and delegate stake to random stake pools

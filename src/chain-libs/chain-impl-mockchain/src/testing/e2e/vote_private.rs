@@ -1,6 +1,8 @@
 use crate::testing::decrypt_tally;
 use crate::testing::TestGen;
 use crate::testing::VoteTestGen;
+use crate::tokens::name::TokenName;
+use crate::tokens::name::TOKEN_NAME_MAX_SIZE;
 use crate::vote::VoteError::AlreadyVoted;
 use crate::vote::VotePlanLedgerError::VoteError;
 use crate::{
@@ -30,6 +32,8 @@ pub fn private_vote_cast_action_transfer_to_rewards_all_shares() {
     let favorable = Choice::new(1);
     let members = VoteTestGen::committee_members_manager(MEMBERS_NO, THRESHOLD);
 
+    let voting_token = TokenName::try_from(vec![0u8; TOKEN_NAME_MAX_SIZE]).unwrap();
+
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
             ConfigBuilder::new()
@@ -38,6 +42,7 @@ pub fn private_vote_cast_action_transfer_to_rewards_all_shares() {
         )
         .with_initials(vec![wallet(ALICE)
             .with(1_000)
+            .with_token(voting_token, 1_000)
             .owns(STAKE_POOL)
             .committee_member()])
         .with_vote_plans(vec![vote_plan(VOTE_PLAN)

@@ -27,7 +27,6 @@ use crate::{
         name::{TokenName, TOKEN_NAME_MAX_SIZE},
         policy_hash::POLICY_HASH_SIZE,
     },
-    transaction::UnspecifiedAccountIdentifier,
     value::Value,
 };
 use chain_addr::Discrimination;
@@ -66,10 +65,6 @@ impl TestGen {
     pub fn identifier() -> Identifier {
         let kp: KeyPair<Ed25519> = AddressData::generate_key_pair::<Ed25519>();
         Identifier::from(kp.into_keys().1)
-    }
-
-    pub fn unspecified_account_identifier() -> UnspecifiedAccountIdentifier {
-        UnspecifiedAccountIdentifier::from_single_account(TestGen::identifier())
     }
 
     pub fn public_key() -> PublicKey<Ed25519> {

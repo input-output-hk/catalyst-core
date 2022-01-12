@@ -5,6 +5,7 @@ use crate::ledger::governance::{ParametersGovernanceAction, TreasuryGovernanceAc
 use crate::testing::data::AddressData;
 use crate::testing::data::AddressDataValue;
 use crate::tokens::identifier::TokenIdentifier;
+use crate::tokens::name::TokenName;
 use crate::{
     certificate::{ExternalProposalId, PoolPermissions, Proposal, Proposals, VoteAction, VotePlan},
     header::BlockDate,
@@ -17,6 +18,7 @@ pub use builders::*;
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::{Ed25519, PublicKey};
 use chain_vote::MemberPublicKey;
+use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
 #[derive(Clone)]
@@ -26,6 +28,7 @@ pub struct WalletTemplate {
     pub stake_pool_owner_alias: Option<String>,
     pub secret_key: Option<EitherEd25519SecretKey>,
     pub initial_value: Value,
+    pub initial_tokens: HashMap<TokenName, Value>,
     pub committee_member: bool,
 }
 
@@ -44,12 +47,17 @@ impl Hash for WalletTemplate {
 impl Eq for WalletTemplate {}
 
 impl WalletTemplate {
-    pub fn new(alias: &str, initial_value: Value) -> Self {
+    pub fn new(
+        alias: &str,
+        initial_value: Value,
+        initial_tokens: HashMap<TokenName, Value>,
+    ) -> Self {
         WalletTemplate {
             alias: alias.to_owned(),
             stake_pool_delegate_alias: None,
             stake_pool_owner_alias: None,
             initial_value,
+            initial_tokens,
             committee_member: false,
             secret_key: None,
         }
@@ -79,13 +87,18 @@ impl From<WalletTemplate> for Wallet {
     fn from(template: WalletTemplate) -> Self {
         if let Some(secret_key) = template.secret_key() {
             let user_address = Address(Discrimination::Test, Kind::Account(secret_key.to_public()));
-            let account = AddressDataValue::new(
+            let account = AddressDataValue::new_with_tokens(
                 AddressData::new(secret_key, Default::default(), user_address),
                 template.initial_value,
+                template.initial_tokens.clone(),
             );
             Self::from_address_data_value_and_alias(template.alias(), account)
         } else {
-            Self::new(&template.alias(), template.initial_value)
+            Self::new_with_tokens(
+                &template.alias(),
+                template.initial_value,
+                template.initial_tokens,
+            )
         }
     }
 }

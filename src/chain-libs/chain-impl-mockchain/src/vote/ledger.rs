@@ -1,10 +1,9 @@
 use crate::certificate::EncryptedVoteTally;
 use crate::{
+    account,
     certificate::{TallyProof, VoteAction, VoteCast, VotePlan, VotePlanId, VoteTally},
     date::BlockDate,
     ledger::governance::Governance,
-    stake::StakeControl,
-    transaction::UnspecifiedAccountIdentifier,
     vote::{CommitteeId, PayloadType, VoteError, VotePlanManager},
 };
 use imhamt::{Hamt, InsertError, UpdateError};
@@ -67,7 +66,7 @@ impl VotePlanLedger {
     pub fn apply_vote(
         &self,
         block_date: BlockDate,
-        identifier: UnspecifiedAccountIdentifier,
+        identifier: account::Identifier,
         vote: VoteCast,
     ) -> Result<Self, VotePlanLedgerError> {
         let id = vote.vote_plan().clone();
@@ -135,12 +134,11 @@ impl VotePlanLedger {
     /// This function may fail:
     ///
     /// * if the Committee time has elapsed
-    /// * if the tally is not a public tally
     ///
     pub fn apply_committee_result<F>(
         &self,
         block_date: BlockDate,
-        stake: &StakeControl,
+        stake: &account::Ledger,
         governance: &Governance,
         tally: &VoteTally,
         sig: TallyProof,
@@ -183,7 +181,7 @@ impl VotePlanLedger {
     pub fn apply_encrypted_vote_tally(
         &self,
         block_date: BlockDate,
-        stake: &StakeControl,
+        stake: &account::Ledger,
         encrypted_tally: &EncryptedVoteTally,
         committee_id: CommitteeId,
     ) -> Result<Self, VotePlanLedgerError> {

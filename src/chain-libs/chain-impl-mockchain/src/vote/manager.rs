@@ -1,15 +1,17 @@
 use crate::{
-    certificate::DecryptedPrivateTallyProposal,
-    vote::{Choice, Payload, PayloadType, TallyError},
-};
-use crate::{
+    account,
     certificate::{DecryptedPrivateTally, Proposal, VoteAction, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
     ledger::governance::{Governance, GovernanceAcceptanceCriteria},
     rewards::Ratio,
-    stake::{Stake, StakeControl},
-    transaction::UnspecifiedAccountIdentifier,
+    stake::Stake,
+    tokens::identifier::TokenIdentifier,
+    value::Value,
     vote::{self, CommitteeId, Options, Tally, TallyResult, VotePlanStatus, VoteProposalStatus},
+};
+use crate::{
+    certificate::DecryptedPrivateTallyProposal,
+    vote::{Choice, Payload, PayloadType, TallyError},
 };
 use chain_vote::{committee, Ballot, Crs, ElectionPublicKey, EncryptedTally};
 use imhamt::Hamt;
@@ -57,7 +59,7 @@ enum ProposalManagers {
 
 #[derive(Clone, PartialEq, Eq)]
 struct ProposalManager {
-    votes_by_voters: Hamt<DefaultHasher, UnspecifiedAccountIdentifier, ValidatedPayload>,
+    votes_by_voters: Hamt<DefaultHasher, account::Identifier, ValidatedPayload>,
     options: Options,
     tally: Option<Tally>,
     action: VoteAction,
@@ -140,7 +142,7 @@ impl ProposalManager {
     #[must_use = "Add the vote in a new ProposalManager, does not modify self"]
     pub fn vote(
         &self,
-        identifier: UnspecifiedAccountIdentifier,
+        identifier: account::Identifier,
         payload: ValidatedPayload,
     ) -> Result<Self, VoteError> {
         // Part of DDoS protection: do not record a new ballot if the account already voted for this
@@ -158,10 +160,7 @@ impl ProposalManager {
         })
     }
 
-    fn check_already_voted(
-        &self,
-        identifier: &UnspecifiedAccountIdentifier,
-    ) -> Result<(), VoteError> {
+    fn check_already_voted(&self, identifier: &account::Identifier) -> Result<(), VoteError> {
         if self.votes_by_voters.contains_key(identifier) {
             Err(VoteError::AlreadyVoted)
         } else {
@@ -171,7 +170,7 @@ impl ProposalManager {
 
     pub fn validate_public_vote(
         &self,
-        identifier: &UnspecifiedAccountIdentifier,
+        identifier: &account::Identifier,
         cast: VoteCast,
     ) -> Result<ValidatedPayload, VoteError> {
         self.check_already_voted(identifier)?;
@@ -189,7 +188,7 @@ impl ProposalManager {
 
     pub fn validate_private_vote(
         &self,
-        identifier: &UnspecifiedAccountIdentifier,
+        identifier: &account::Identifier,
         cast: VoteCast,
         crs: &Crs,
         election_pk: &ElectionPublicKey,
@@ -229,7 +228,8 @@ impl ProposalManager {
     #[must_use = "Compute the PublicTally in a new ProposalManager, does not modify self"]
     pub fn public_tally<F>(
         &self,
-        stake: &StakeControl,
+        voting_token: &TokenIdentifier,
+        stake: &account::Ledger,
         governance: &Governance,
         mut f: F,
     ) -> Result<Self, VoteError>
@@ -238,25 +238,43 @@ impl ProposalManager {
     {
         let mut results = TallyResult::new(self.options.clone());
 
-        for (id, payload) in self.votes_by_voters.iter() {
-            if let Some(account_id) = id.to_single_account() {
-                if let Some(stake) = stake.by(&account_id) {
-                    match payload {
-                        ValidatedPayload::Public(choice) => {
-                            results.add_vote(*choice, stake)?;
-                        }
-                        ValidatedPayload::Private(_) => {
-                            return Err(VoteError::InvalidPayloadType {
-                                expected: PayloadType::Public,
-                                received: PayloadType::Private,
-                            });
-                        }
+        for (account_id, payload) in self.votes_by_voters.iter() {
+            if let Some(stake) = stake
+                .get_state(account_id)
+                // It could be argued that this is silently hiding an error, and that's more or
+                // less true, since having a vote from an account not in the account ledger would
+                // be unexpected. But throwing an error here would abort the whole tally, and there
+                // is really no way of fixing things if that's the case.
+                //
+                // This is mostly theoretical though, since I don't think that can happen, so this
+                // `ok` should always return Some.
+                //
+                // The same applies to the private tally, since the code is the same.
+                .ok()
+                .and_then(|account_state| account_state.tokens.lookup(voting_token))
+            {
+                match payload {
+                    ValidatedPayload::Public(choice) => {
+                        results.add_vote(*choice, *stake)?;
+                    }
+                    ValidatedPayload::Private(_) => {
+                        return Err(VoteError::InvalidPayloadType {
+                            expected: PayloadType::Public,
+                            received: PayloadType::Private,
+                        });
                     }
                 }
             }
         }
 
-        if self.check(stake.assigned(), governance, &results) {
+        if self.check(
+            stake
+                .token_get_total(voting_token)
+                .unwrap_or(Value(u64::MAX))
+                .into(),
+            governance,
+            &results,
+        ) {
             f(&self.action)
         }
 
@@ -271,7 +289,8 @@ impl ProposalManager {
     #[must_use = "Compute the PrivateTally in a new ProposalManager, does not modify self"]
     pub fn private_tally(
         &self,
-        stake: &StakeControl,
+        voting_token: &TokenIdentifier,
+        stake: &account::Ledger,
         election_pk: &ElectionPublicKey,
         crs: &Crs,
     ) -> Result<Self, VoteError> {
@@ -283,20 +302,20 @@ impl ProposalManager {
             .votes_by_voters
             .iter()
             .par_bridge()
-            .filter_map(|(id, payload)| {
-                if let Some(account_id) = id.to_single_account() {
-                    if let Some(stake) = stake.by(&account_id) {
-                        match payload {
-                            ValidatedPayload::Public(_) => {
-                                return Some(Err(VoteError::InvalidPayloadType {
-                                    expected: PayloadType::Private,
-                                    received: PayloadType::Public,
-                                }))
-                            }
-                            ValidatedPayload::Private(ballot) => {
-                                return Some(Ok((ballot, stake.0)))
-                            }
+            .filter_map(|(account_id, payload)| {
+                if let Some(stake) = stake
+                    .get_state(account_id)
+                    .ok()
+                    .and_then(|account_state| account_state.tokens.lookup(voting_token))
+                {
+                    match payload {
+                        ValidatedPayload::Public(_) => {
+                            return Some(Err(VoteError::InvalidPayloadType {
+                                expected: PayloadType::Private,
+                                received: PayloadType::Public,
+                            }))
                         }
+                        ValidatedPayload::Private(ballot) => return Some(Ok((ballot, stake.0))),
                     }
                 }
                 None
@@ -318,7 +337,12 @@ impl ProposalManager {
         Ok(Self {
             votes_by_voters: self.votes_by_voters.clone(),
             options: self.options.clone(),
-            tally: Some(Tally::new_private(tally, stake.assigned())),
+            tally: Some(Tally::new_private(
+                tally,
+                stake
+                    .token_get_total(voting_token)
+                    .unwrap_or(Value(u64::MAX)),
+            )),
             action: self.action.clone(),
         })
     }
@@ -352,7 +376,7 @@ impl ProposalManager {
             result.add_vote(Choice::new(u8::try_from(choice).unwrap()), weight)?;
         }
 
-        if self.check(*total_stake, governance, &result) {
+        if self.check((*total_stake).into(), governance, &result) {
             f(&self.action);
         }
 
@@ -486,7 +510,7 @@ impl ProposalManagers {
     /// Attempt to apply the vote to one of the proposals.
     pub fn vote(
         &self,
-        identifier: UnspecifiedAccountIdentifier,
+        identifier: account::Identifier,
         vote_cast: ValidatedVoteCast,
     ) -> Result<Self, VoteError> {
         let proposal_index = vote_cast.proposal_index;
@@ -508,7 +532,8 @@ impl ProposalManagers {
 
     pub fn public_tally<F>(
         &self,
-        stake: &StakeControl,
+        voting_token: &TokenIdentifier,
+        stake: &account::Ledger,
         governance: &Governance,
         mut f: F,
     ) -> Result<Self, VoteError>
@@ -519,7 +544,12 @@ impl ProposalManagers {
             Self::Public { managers } => {
                 let mut proposals = Vec::with_capacity(managers.len());
                 for proposal in managers.iter() {
-                    proposals.push(proposal.public_tally(stake, governance, &mut f)?);
+                    proposals.push(proposal.public_tally(
+                        voting_token,
+                        stake,
+                        governance,
+                        &mut f,
+                    )?);
                 }
                 Ok(Self::Public {
                     managers: proposals,
@@ -536,7 +566,7 @@ impl ProposalManagers {
     /// and the the length of the ciphertext is correct (if applicable)
     pub fn validate_vote(
         &self,
-        identifier: &UnspecifiedAccountIdentifier,
+        identifier: &account::Identifier,
         cast: VoteCast,
     ) -> Result<ValidatedVoteCast, VoteError> {
         let proposal_index = cast.proposal_index() as usize;
@@ -567,7 +597,11 @@ impl ProposalManagers {
         })
     }
 
-    pub fn start_private_tally(&self, stake: &StakeControl) -> Result<Self, VoteError> {
+    pub fn start_private_tally(
+        &self,
+        voting_token: &TokenIdentifier,
+        stake: &account::Ledger,
+    ) -> Result<Self, VoteError> {
         use rayon::prelude::*;
 
         match self {
@@ -578,7 +612,7 @@ impl ProposalManagers {
             } => {
                 let proposals = managers
                     .par_iter()
-                    .map(|proposal| proposal.private_tally(stake, election_pk, crs))
+                    .map(|proposal| proposal.private_tally(voting_token, stake, election_pk, crs))
                     .collect::<Result<_, _>>()?;
                 Ok(Self::Private {
                     managers: proposals,
@@ -724,7 +758,7 @@ impl VotePlanManager {
     pub fn vote(
         &self,
         block_date: BlockDate,
-        identifier: UnspecifiedAccountIdentifier,
+        identifier: account::Identifier,
         cast: VoteCast,
     ) -> Result<Self, VoteError> {
         if cast.vote_plan() != self.id() {
@@ -763,7 +797,7 @@ impl VotePlanManager {
     pub fn public_tally<F>(
         &self,
         block_date: BlockDate,
-        stake: &StakeControl,
+        stake: &account::Ledger,
         governance: &Governance,
         sig: CommitteeId,
         f: F,
@@ -786,7 +820,11 @@ impl VotePlanManager {
             return Err(TallyError::InvalidPrivacy.into());
         }
 
-        let proposal_managers = self.proposal_managers.public_tally(stake, governance, f)?;
+        let voting_token = self.plan.voting_token();
+
+        let proposal_managers =
+            self.proposal_managers
+                .public_tally(voting_token, stake, governance, f)?;
 
         Ok(Self {
             proposal_managers,
@@ -799,7 +837,7 @@ impl VotePlanManager {
     pub fn start_private_tally(
         &self,
         block_date: BlockDate,
-        stake: &StakeControl,
+        stake: &account::Ledger,
         sig: CommitteeId,
     ) -> Result<Self, VoteError> {
         if !self.can_committee(block_date) {
@@ -817,7 +855,8 @@ impl VotePlanManager {
             return Err(TallyError::InvalidPrivacy.into());
         }
 
-        let proposal_managers = self.proposal_managers.start_private_tally(stake)?;
+        let token = self.plan.voting_token();
+        let proposal_managers = self.proposal_managers.start_private_tally(token, stake)?;
 
         Ok(Self {
             proposal_managers,
@@ -876,7 +915,7 @@ mod tests {
 
         let mut proposal_manager = ProposalManager::new(vote_plan.proposals().get(0).unwrap());
 
-        let identifier = TestGen::unspecified_account_identifier();
+        let identifier = TestGen::identifier();
 
         let vote = proposal_manager
             .validate_public_vote(&identifier, vote_cast)
@@ -909,7 +948,7 @@ mod tests {
         );
         let vote_cast = VoteCast::new(vote_plan.to_id(), 0, vote_cast_payload);
 
-        let identifier = TestGen::unspecified_account_identifier();
+        let identifier = TestGen::identifier();
 
         let proposal_manager = ProposalManager::new(vote_plan.proposals().get(0).unwrap());
 
@@ -933,7 +972,7 @@ mod tests {
         let vote_cast_payload = vote::Payload::public(vote_choice);
         let vote_cast = VoteCast::new(vote_plan.to_id(), 0, vote_cast_payload);
 
-        let identifier = TestGen::unspecified_account_identifier();
+        let identifier = TestGen::identifier();
 
         let proposal_manager = ProposalManager::new(vote_plan.proposals().get(0).unwrap());
 
@@ -1031,9 +1070,8 @@ mod tests {
         let mut vote_plan_manager = VotePlanManager::new(vote_plan.clone(), committee_ids);
 
         let governance = governance_50_percent(blank, favorable, rejection);
-        let mut stake_controlled = StakeControl::new();
-        stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
-        //    stake_controlled = stake_controlled.add_unassigned(Stake(49));
+
+        let (ledger, _) = ledger_with_tokens(committee.public_key());
 
         let vote_block_date = BlockDate {
             epoch: 1,
@@ -1047,11 +1085,7 @@ mod tests {
         );
 
         vote_plan_manager = vote_plan_manager
-            .vote(
-                vote_block_date,
-                UnspecifiedAccountIdentifier::from_single_account(committee.public_key().into()),
-                vote_cast,
-            )
+            .vote(vote_block_date, committee.public_key().into(), vote_cast)
             .unwrap();
 
         let tally_proof = get_tally_proof(vote_start, &committee, vote_plan.to_id());
@@ -1067,13 +1101,9 @@ mod tests {
             TallyProof::Private { id, .. } => id,
         };
         vote_plan_manager
-            .public_tally(
-                block_date,
-                &stake_controlled,
-                &governance,
-                committee_id,
-                |_| action_hit = true,
-            )
+            .public_tally(block_date, &ledger, &governance, committee_id, |_| {
+                action_hit = true
+            })
             .unwrap();
         assert!(action_hit)
     }
@@ -1106,9 +1136,7 @@ mod tests {
         let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), committee_ids);
 
         let governance = governance_50_percent(blank, favorable, rejection);
-        let mut stake_controlled = StakeControl::new();
-        stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
-        stake_controlled = stake_controlled.add_unassigned(Stake(49));
+        let (ledger, _) = ledger_with_tokens(committee.public_key());
 
         let tally_proof = get_tally_proof(vote_start, &committee, vote_plan.to_id());
 
@@ -1126,13 +1154,7 @@ mod tests {
         assert_eq!(
             VoteError::InvalidTallyCommittee,
             vote_plan_manager
-                .public_tally(
-                    block_date,
-                    &stake_controlled,
-                    &governance,
-                    committee_id,
-                    |_| ()
-                )
+                .public_tally(block_date, &ledger, &governance, committee_id, |_| ())
                 .err()
                 .unwrap()
         );
@@ -1166,9 +1188,7 @@ mod tests {
         let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), committee_ids);
 
         let governance = governance_50_percent(blank, favorable, rejection);
-        let mut stake_controlled = StakeControl::new();
-        stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
-        stake_controlled = stake_controlled.add_unassigned(Stake(49));
+        let (ledger, _) = ledger_with_tokens(committee.public_key());
 
         let tally_proof = get_tally_proof(vote_start, &committee, vote_plan.to_id());
 
@@ -1191,7 +1211,7 @@ mod tests {
             vote_plan_manager
                 .public_tally(
                     invalid_block_date,
-                    &stake_controlled,
+                    &ledger,
                     &governance,
                     committee_id,
                     |_| ()
@@ -1215,8 +1235,7 @@ mod tests {
         committee_ids.insert(committee.public_key().into());
         let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), committee_ids);
         let governance = governance_50_percent(blank, favorable, rejection);
-        let mut stake_controlled = StakeControl::new();
-        stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
+        let (ledger, _) = ledger_with_tokens(committee.public_key());
 
         let tally_proof = get_tally_proof(vote_plan.vote_start(), &committee, vote_plan.to_id());
 
@@ -1232,13 +1251,7 @@ mod tests {
 
         assert_eq!(
             vote_plan_manager
-                .public_tally(
-                    block_date,
-                    &stake_controlled,
-                    &governance,
-                    committee_id,
-                    |_| ()
-                )
+                .public_tally(block_date, &ledger, &governance, committee_id, |_| ())
                 .err()
                 .unwrap(),
             crate::vote::VoteError::CannotTallyVotes {
@@ -1274,8 +1287,7 @@ mod tests {
         committee_ids.insert(committee.public_key().into());
         let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), committee_ids);
 
-        let mut stake_controlled = StakeControl::new();
-        stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
+        let (ledger, _) = ledger_with_tokens(committee.public_key());
 
         let tally_proof = get_tally_proof(vote_plan.vote_start(), &committee, vote_plan.to_id());
 
@@ -1291,7 +1303,7 @@ mod tests {
 
         assert_eq!(
             vote_plan_manager
-                .start_private_tally(block_date, &stake_controlled, committee_id)
+                .start_private_tally(block_date, &ledger, committee_id)
                 .err()
                 .unwrap(),
             crate::vote::VoteError::CannotTallyVotes {
@@ -1346,7 +1358,7 @@ mod tests {
         let mut second_proposal_manager =
             ProposalManager::new(vote_plan.proposals().get(1).unwrap());
 
-        let identifier = TestGen::unspecified_account_identifier();
+        let identifier = TestGen::identifier();
         let proposals = ProposalManagers::new(&vote_plan);
 
         let first_vote_cast = proposals
@@ -1377,18 +1389,15 @@ mod tests {
             .vote(identifier.clone(), second_vote_cast.payload.clone())
             .unwrap();
 
-        let mut stake_controlled = StakeControl::new();
-        stake_controlled =
-            stake_controlled.add_to(identifier.to_single_account().unwrap(), Stake(51));
-        stake_controlled = stake_controlled.add_unassigned(Stake(49));
+        let (ledger, token) = ledger_with_tokens(identifier.clone());
 
         let _ = proposals.vote(identifier.clone(), first_vote_cast);
         let _ = proposals.vote(identifier, second_vote_cast);
 
         let governance = governance_50_percent(blank, favorable, rejection);
-        proposals_vote_tally_succesful(&proposals, &stake_controlled, &governance);
-        vote_tally_succesful(&first_proposal_manager, &stake_controlled, &governance);
-        vote_tally_succesful(&second_proposal_manager, &stake_controlled, &governance);
+        proposals_vote_tally_succesful(&proposals, &token, &ledger, &governance);
+        vote_tally_succesful(&first_proposal_manager, &token, &ledger, &governance);
+        vote_tally_succesful(&second_proposal_manager, &token, &ledger, &governance);
     }
 
     fn governance_50_percent(blank: Choice, favorable: Choice, rejection: Choice) -> Governance {
@@ -1420,12 +1429,13 @@ mod tests {
 
     fn proposals_vote_tally_succesful(
         proposal_managers: &ProposalManagers,
-        stake_controlled: &StakeControl,
+        voting_token: &TokenIdentifier,
+        stake_controlled: &account::Ledger,
         governance: &Governance,
     ) {
         let mut vote_action_hit = false;
         proposal_managers
-            .public_tally(stake_controlled, governance, |_vote_action| {
+            .public_tally(voting_token, stake_controlled, governance, |_vote_action| {
                 vote_action_hit = true;
             })
             .unwrap();
@@ -1433,17 +1443,37 @@ mod tests {
 
     fn vote_tally_succesful(
         proposal_manager: &ProposalManager,
-        stake_controlled: &StakeControl,
+        voting_token: &TokenIdentifier,
+        stake_controlled: &account::Ledger,
         governance: &Governance,
     ) {
         let mut vote_action_hit = false;
         proposal_manager
-            .public_tally(stake_controlled, governance, |_vote_action| {
+            .public_tally(voting_token, stake_controlled, governance, |_vote_action| {
                 vote_action_hit = true;
             })
             .unwrap();
 
         assert!(vote_action_hit);
+    }
+
+    fn ledger_with_tokens<ID: Into<account::Identifier> + Clone>(
+        wallet: ID,
+    ) -> (
+        crate::accounting::account::Ledger<account::Identifier, ()>,
+        TokenIdentifier,
+    ) {
+        let token = TokenIdentifier {
+            policy_hash: PolicyHash::from([0u8; POLICY_HASH_SIZE]),
+            token_name: TokenName::try_from(vec![0u8; TOKEN_NAME_MAX_SIZE]).unwrap(),
+        };
+        let ledger = account::Ledger::new()
+            .add_account(&wallet.clone().into(), Value(0), ())
+            .unwrap()
+            .token_add(&wallet.into(), token.clone(), Value(51))
+            .unwrap();
+
+        (ledger, token)
     }
 
     #[test]
@@ -1458,7 +1488,7 @@ mod tests {
 
         let mut proposal_managers = ProposalManagers::new(&vote_plan);
 
-        let identifier = TestGen::unspecified_account_identifier();
+        let identifier = TestGen::identifier();
 
         let first_vote_cast_validated = proposal_managers
             .validate_vote(&identifier, first_vote_cast)
@@ -1499,7 +1529,7 @@ mod tests {
     pub fn vote_for_nonexisting_proposal() {
         let vote_plan = VoteTestGen::vote_plan_with_proposals(1);
         let proposal_managers = ProposalManagers::new(&vote_plan);
-        let identifier = TestGen::unspecified_account_identifier();
+        let identifier = TestGen::identifier();
         assert!(proposal_managers
             .validate_vote(
                 &identifier,
@@ -1518,7 +1548,7 @@ mod tests {
 
         let mut proposal_managers = ProposalManagers::new(&vote_plan);
 
-        let identifier = TestGen::unspecified_account_identifier();
+        let identifier = TestGen::identifier();
 
         let first_vote_cast = proposal_managers
             .validate_vote(
@@ -1604,11 +1634,7 @@ mod tests {
 
         assert_eq!(
             vote_plan_manager
-                .vote(
-                    BlockDate::first(),
-                    TestGen::unspecified_account_identifier(),
-                    vote_cast.clone()
-                )
+                .vote(BlockDate::first(), TestGen::identifier(), vote_cast.clone())
                 .err()
                 .unwrap(),
             VoteError::InvalidVotePlan {
@@ -1628,7 +1654,7 @@ mod tests {
             vote_plan_manager
                 .vote(
                     vote_plan.vote_end().next_epoch(),
-                    TestGen::unspecified_account_identifier(),
+                    TestGen::identifier(),
                     vote_cast.clone()
                 )
                 .err()
@@ -1661,11 +1687,7 @@ mod tests {
 
         assert_eq!(
             vote_plan_manager
-                .vote(
-                    BlockDate::first(),
-                    TestGen::unspecified_account_identifier(),
-                    vote_cast.clone()
-                )
+                .vote(BlockDate::first(), TestGen::identifier(), vote_cast.clone())
                 .err()
                 .unwrap(),
             VoteError::NotVoteTime {
@@ -1697,7 +1719,7 @@ mod tests {
         assert!(vote_plan_manager
             .vote(
                 BlockDate::from_epoch_slot_id(1, 1),
-                TestGen::unspecified_account_identifier(),
+                TestGen::identifier(),
                 vote_cast
             )
             .is_ok());

@@ -5,12 +5,13 @@ use crate::{
         data::{AddressData, AddressDataValue},
         ledger::TestLedger,
     },
+    tokens::name::TokenName,
     transaction::{Input, Output},
     value::Value,
 };
 use chain_addr::{Address, Discrimination, Kind};
 use quickcheck::{Arbitrary, Gen};
-use std::iter;
+use std::{collections::HashMap, iter};
 
 #[derive(Clone, Debug)]
 pub struct ArbitraryAddressDataVec(pub Vec<AddressData>);
@@ -83,10 +84,21 @@ impl Arbitrary for AddressData {
 
 impl Arbitrary for AddressDataValue {
     fn arbitrary<G: Gen>(gen: &mut G) -> Self {
-        AddressDataValue::new(
-            AddressData::arbitrary(gen),
-            AverageValue::arbitrary(gen).into(),
-        )
+        let address_data = AddressData::arbitrary(gen);
+        let value = AverageValue::arbitrary(gen).into();
+
+        match address_data.address.kind() {
+            Kind::Account(_) => {
+                let voting_token_len = usize::arbitrary(gen);
+                let arbitrary_voting_tokens =
+                    iter::from_fn(|| Some((TokenName::arbitrary(gen), Value::arbitrary(gen))))
+                        .take(voting_token_len)
+                        .collect::<HashMap<_, _>>();
+
+                AddressDataValue::new_with_tokens(address_data, value, arbitrary_voting_tokens)
+            }
+            _ => AddressDataValue::new(address_data, value),
+        }
     }
 }
 

@@ -6,6 +6,7 @@ use crate::{
     key::EitherEd25519SecretKey,
     testing::builders::make_witness_with_lane,
     testing::data::LeaderPair,
+    tokens::name::TokenName,
     transaction::{Input, Output, TransactionAuthData, Witness},
     utxo::Entry,
     value::Value,
@@ -15,7 +16,10 @@ use chain_crypto::{
     testing::TestCryptoGen, AsymmetricKey, Ed25519, Ed25519Extended, KeyPair, PublicKey,
 };
 use rand_core::RngCore;
-use std::fmt::{self, Debug};
+use std::{
+    collections::HashMap,
+    fmt::{self, Debug},
+};
 use thiserror::Error;
 
 ///
@@ -277,6 +281,7 @@ impl From<AddressData> for Address {
 pub struct AddressDataValue {
     pub address_data: AddressData,
     pub value: Value,
+    pub tokens: HashMap<TokenName, Value>,
 }
 
 impl AddressDataValue {
@@ -284,6 +289,19 @@ impl AddressDataValue {
         AddressDataValue {
             address_data,
             value,
+            tokens: Default::default(),
+        }
+    }
+
+    pub fn new_with_tokens(
+        address_data: AddressData,
+        value: Value,
+        tokens: HashMap<TokenName, Value>,
+    ) -> Self {
+        AddressDataValue {
+            address_data,
+            value,
+            tokens,
         }
     }
 
@@ -307,6 +325,16 @@ impl AddressDataValue {
 
     pub fn delegation(discrimination: Discrimination, value: Value) -> Self {
         AddressDataValue::new(AddressData::delegation(discrimination), value)
+    }
+
+    pub fn account_with_tokens(
+        discrimination: Discrimination,
+        value: Value,
+        tokens: HashMap<TokenName, Value>,
+    ) -> Self {
+        let mut base = Self::account(discrimination, value);
+        base.tokens = tokens;
+        base
     }
 
     pub fn from_discrimination_and_kind_type(

@@ -5,7 +5,7 @@ use crate::config::{EvmConfig, EvmConfigParams};
 use crate::{
     account::Ledger as AccountLedger,
     block::Block,
-    certificate::PoolId,
+    certificate::{MintToken, PoolId},
     chaintypes::{ChainLength, ConsensusType, ConsensusVersion, HeaderId},
     config::{Block0Date, ConfigParam, RewardParams},
     date::BlockDate,
@@ -25,6 +25,7 @@ use crate::{
         builders::{BftBlockBuilder, GenesisPraosBlockBuilder},
         data::{AddressData, AddressDataValue, LeaderPair, StakePool, Wallet},
     },
+    tokens::minting_policy::MintingPolicy,
     transaction::{Output, TxBuilder},
     utxo::{Entry, Iter},
     value::Value,
@@ -411,6 +412,28 @@ impl LedgerBuilder {
         self
     }
 
+    pub fn mint_tokens(mut self) -> Self {
+        for faucet in &self.faucets {
+            for (token, value) in &faucet.tokens {
+                let tx = TxBuilder::new()
+                    .set_payload(&MintToken {
+                        name: token.clone(),
+                        policy: MintingPolicy::new(),
+                        to: faucet.to_id(),
+                        value: *value,
+                    })
+                    .set_expiry_date(BlockDate::first().next_epoch())
+                    .set_ios(&[], &[])
+                    .set_witnesses(&[])
+                    .set_payload_auth(&());
+
+                self.fragments.push(Fragment::MintToken(tx));
+            }
+        }
+
+        self
+    }
+
     pub fn faucet_value(mut self, value: Value) -> Self {
         self.faucets.push(AddressDataValue::account(
             self.cfg_builder.discrimination,
@@ -460,6 +483,7 @@ impl LedgerBuilder {
         let block0_hash = HeaderId::hash_bytes(&[1, 2, 3]);
         let outputs: Vec<Output<Address>> = self.faucets.iter().map(|x| x.make_output()).collect();
         self = self.prefill_outputs(&outputs);
+        self = self.mint_tokens();
 
         let utxodb = if !self.utxo_declaration.is_empty() {
             let mut db = HashMap::new();

@@ -120,6 +120,7 @@ impl ScenarioBuilder {
                 create_initial_vote_plan(&vote_plan, &[owner])
             })
             .collect();
+
         messages.extend(vote_plan_fragments);
 
         let mut config = self.config.clone();

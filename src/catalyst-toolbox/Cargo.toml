@@ -14,6 +14,7 @@ test = false
 bench = false
 
 [dependencies]
+bech32 = "0.7"
 assert_fs = "1"
 csv = "1.1"
 wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }

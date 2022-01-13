@@ -17,6 +17,7 @@ pub enum Error {
 }
 
 pub type Scores = HashMap<u32, f32>;
+pub type Sponsors = HashMap<String, String>;
 
 static BASE_IDEASCALE_URL: Lazy<url::Url> = Lazy::new(|| {
     "https://cardano.ideascale.com/a/rest/v1/"

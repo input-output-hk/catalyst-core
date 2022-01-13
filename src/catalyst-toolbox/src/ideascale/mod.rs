@@ -7,7 +7,7 @@ use std::collections::{HashMap, HashSet};
 
 use regex::Regex;
 
-pub use crate::ideascale::fetch::Scores;
+pub use crate::ideascale::fetch::{Scores, Sponsors};
 pub use crate::ideascale::models::custom_fields::CustomFieldTags;
 
 // Id of funnel that do have rewards and should not count when importing funnels. It is static and
@@ -94,7 +94,11 @@ pub async fn fetch_all(
             .into_iter()
             .find(|f| f.name.as_ref().contains(&format!("Fund {}", fund)))
             .unwrap_or_else(|| panic!("Selected fund {}, wasn't among the available funds", fund)),
-        challenges: challenges.into_iter().map(|c| (c.id, c)).collect(),
+        challenges: challenges
+            .into_iter()
+            .enumerate()
+            .map(|(idx, c)| ((idx + 1) as u32, c))
+            .collect(),
         proposals: proposals.map(|p| (p.proposal_id, p)).collect(),
     })
 }
@@ -110,10 +114,13 @@ pub fn build_fund(fund: i32, goal: String, threshold: i64) -> Vec<models::se::Fu
 pub fn build_challenges(
     fund: i32,
     ideascale_data: &IdeaScaleData,
+    sponsors: Sponsors,
 ) -> HashMap<u32, models::se::Challenge> {
     let funnels = &ideascale_data.funnels;
-    (1..)
-        .zip(ideascale_data.challenges.values())
+
+    ideascale_data
+        .challenges
+        .iter()
         .map(|(i, c)| {
             (
                 c.id,
@@ -130,7 +137,13 @@ pub fn build_challenges(
                     fund_id: fund.to_string(),
                     id: i.to_string(),
                     rewards_total: c.rewards.to_string(),
+                    proposers_rewards: c.rewards.to_string(),
                     title: c.title.clone(),
+                    highlight: sponsors.get(&c.challenge_url).map(|sponsor| {
+                        models::se::Highlight {
+                            sponsor: sponsor.clone(),
+                        }
+                    }),
                 },
             )
         })
@@ -164,7 +177,7 @@ pub fn build_proposals(
                 chain_vote_type: chain_vote_type.to_string(),
                 internal_id: i.to_string(),
                 // this may change to an integer type in the future, would have to get from json value as so
-                proposal_funds: get_from_extra_fields(
+                proposal_funds: get_from_extra_fields_options(
                     &p.custom_fields.fields,
                     &tags.proposal_funds,
                 )

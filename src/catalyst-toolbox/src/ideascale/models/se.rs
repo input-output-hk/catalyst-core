@@ -8,7 +8,15 @@ pub struct Challenge {
     pub fund_id: String,
     pub id: String,
     pub rewards_total: String,
+    pub proposers_rewards: String,
     pub title: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub highlight: Option<Highlight>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct Highlight {
+    pub sponsor: String,
 }
 
 #[derive(Debug, Serialize)]

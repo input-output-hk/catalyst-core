@@ -1,6 +1,6 @@
 use catalyst_toolbox::ideascale::{
     build_challenges, build_fund, build_proposals, fetch_all, CustomFieldTags,
-    Error as IdeascaleError, Scores,
+    Error as IdeascaleError, Scores, Sponsors,
 };
 use jcli_lib::utils::io as io_utils;
 use jormungandr_lib::interfaces::VotePrivacy;
@@ -71,6 +71,10 @@ pub struct Import {
     #[structopt(long)]
     scores: Option<PathBuf>,
 
+    /// Path to proposal scores csv file
+    #[structopt(long)]
+    sponsors: Option<PathBuf>,
+
     /// Path to json or json like file containing tag configuration for ideascale custom fields
     #[structopt(long)]
     tags: Option<PathBuf>,
@@ -103,6 +107,7 @@ impl Import {
             chain_vote_type,
             output_dir: save_folder,
             scores,
+            sponsors,
             tags,
             excluded_proposals,
             stages_filters,
@@ -126,6 +131,7 @@ impl Import {
             .build()?;
 
         let scores = read_scores_file(scores)?;
+        let sponsors = read_sponsors_file(sponsors)?;
         let idescale_data = runtime.block_on(fetch_all(
             *fund,
             &stage_label.to_lowercase(),
@@ -135,7 +141,7 @@ impl Import {
         ))?;
 
         let funds = build_fund(*fund as i32, fund_goal.clone(), *threshold);
-        let challenges = build_challenges(*fund as i32, &idescale_data);
+        let challenges = build_challenges(*fund as i32, &idescale_data, sponsors);
         let proposals = build_proposals(
             &idescale_data,
             &challenges,
@@ -210,4 +216,25 @@ fn read_scores_file(path: &Option<PathBuf>) -> Result<Scores, Error> {
         }
     }
     Ok(scores)
+}
+
+fn read_sponsors_file(path: &Option<PathBuf>) -> Result<Sponsors, Error> {
+    let mut sponsors = Sponsors::new();
+
+    if let Some(path) = path {
+        let mut reader = csv::Reader::from_path(path)?;
+        for record in reader.records() {
+            let record = record?;
+            let challenge_url: String = record
+                .get(0)
+                .expect("Challenge url should be present in scores file first column")
+                .to_string();
+            let sponsor_name: String = record
+                .get(1)
+                .expect("Sponsor name should be present in scores file second column")
+                .to_string();
+            sponsors.insert(challenge_url, sponsor_name);
+        }
+    }
+    Ok(sponsors)
 }

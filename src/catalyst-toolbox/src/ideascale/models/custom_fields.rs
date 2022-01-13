@@ -9,7 +9,7 @@ pub struct CustomFieldTags {
     pub proposal_goal: String,
     pub proposal_metrics: String,
     pub proposal_public_key: String,
-    pub proposal_funds: String,
+    pub proposal_funds: Vec<String>,
     pub proposal_relevant_experience: String,
     pub proposal_why: String,
 }
@@ -24,7 +24,10 @@ impl Default for CustomFieldTags {
             proposal_goal: "how_does_success_look_like_".to_string(),
             proposal_metrics: "key_metrics_to_measure".to_string(),
             proposal_public_key: "ada_payment_address".to_string(),
-            proposal_funds: "requested_funds".to_string(),
+            proposal_funds: vec![
+                "requested_funds".to_string(),
+                "requested_funds_coti".to_string(),
+            ],
             proposal_relevant_experience: "relevant_experience".to_string(),
             proposal_why: "importance".to_string(),
         }

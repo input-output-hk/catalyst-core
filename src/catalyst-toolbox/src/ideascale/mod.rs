@@ -227,3 +227,10 @@ fn get_from_extra_fields(fields: &serde_json::Value, tag: &str) -> Option<String
         .and_then(|value| value.as_str())
         .map(ToString::to_string)
 }
+
+fn get_from_extra_fields_options(fields: &serde_json::Value, tags: &[String]) -> Option<String> {
+    tags.iter()
+        .map(|tag| get_from_extra_fields(fields, tag))
+        .find(|x| x.is_some())
+        .unwrap_or_default()
+}

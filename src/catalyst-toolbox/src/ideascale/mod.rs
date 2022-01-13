@@ -27,6 +27,9 @@ pub enum Error {
 
     #[error(transparent)]
     Regex(#[from] regex::Error),
+
+    #[error("invalid token")]
+    InvalidToken,
 }
 
 #[derive(Debug)]
@@ -44,6 +47,10 @@ pub async fn fetch_all(
     excluded_proposals: &HashSet<u32>,
     api_token: String,
 ) -> Result<IdeaScaleData, Error> {
+    if !tokio::spawn(fetch::is_token_valid(api_token.clone())).await?? {
+        return Err(Error::InvalidToken);
+    }
+
     let funnels_task = tokio::spawn(fetch::get_funnels_data_for_fund(api_token.clone()));
     let funds_task = tokio::spawn(fetch::get_funds_data(api_token.clone()));
     let funnels = funnels_task

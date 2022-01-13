@@ -49,6 +49,19 @@ pub async fn get_stages(api_token: String) -> Result<Vec<Stage>, Error> {
     request_data(api_token, BASE_IDEASCALE_URL.join("stages").unwrap()).await
 }
 
+/// we test token by running lightweight query and observe response code
+pub async fn is_token_valid(api_token: String) -> Result<bool, Error> {
+    let url = BASE_IDEASCALE_URL.join("profile/avatars").unwrap();
+
+    let response = CLIENT
+        .get(url)
+        .header("api_token", api_token)
+        .send()
+        .await?;
+
+    Ok(response.status() == 200)
+}
+
 pub async fn get_proposals_data(
     challenge_id: u32,
     api_token: String,

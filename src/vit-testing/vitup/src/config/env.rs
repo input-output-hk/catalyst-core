@@ -13,6 +13,7 @@ pub struct VitStartParameters {
     #[serde(default = "Protocol::http")]
     pub protocol: Protocol,
     pub vote_time: VoteTime,
+    pub block0_time: Option<NaiveDateTime>,
     pub next_vote_start_time: NaiveDateTime,
     pub snapshot_time: NaiveDateTime,
     pub next_snapshot_time: NaiveDateTime,
@@ -65,6 +66,7 @@ impl Default for VitStartParameters {
             reviews: 3,
             slot_duration: 20,
             voting_power: 8000,
+            block0_time: None,
             snapshot_time: default_snapshot_date(),
             next_snapshot_time: default_next_snapshot_date(),
             next_vote_start_time: default_next_vote_date(),

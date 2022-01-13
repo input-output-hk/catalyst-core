@@ -69,7 +69,7 @@ pub struct Import {
 
     /// Path to proposal scores csv file
     #[structopt(long)]
-    scores: PathBuf,
+    scores: Option<PathBuf>,
 
     /// Path to json or json like file containing tag configuration for ideascale custom fields
     #[structopt(long)]
@@ -189,22 +189,25 @@ fn parse_from_csv(s: &str) -> Filters {
     s.split(';').map(|x| x.to_string()).collect()
 }
 
-fn read_scores_file(path: &Path) -> Result<Scores, Error> {
-    let mut reader = csv::Reader::from_path(path)?;
+fn read_scores_file(path: &Option<PathBuf>) -> Result<Scores, Error> {
     let mut scores = Scores::new();
-    for record in reader.records() {
-        let record = record?;
-        let proposal_id: u32 = record
-            .get(1)
-            .expect("Proposal ids should be present in scores file second column")
-            .parse()
-            .expect("Proposal ids should be integers");
-        let rating_given: f32 = record
-            .get(2)
-            .expect("Ratings should be present in scores file third column")
-            .parse()
-            .expect("Ratings should be floats [0, 5]");
-        scores.insert(proposal_id, rating_given);
+
+    if let Some(path) = path {
+        let mut reader = csv::Reader::from_path(path)?;
+        for record in reader.records() {
+            let record = record?;
+            let proposal_id: u32 = record
+                .get(1)
+                .expect("Proposal ids should be present in scores file second column")
+                .parse()
+                .expect("Proposal ids should be integers");
+            let rating_given: f32 = record
+                .get(2)
+                .expect("Ratings should be present in scores file third column")
+                .parse()
+                .expect("Ratings should be floats [0, 5]");
+            scores.insert(proposal_id, rating_given);
+        }
     }
     Ok(scores)
 }

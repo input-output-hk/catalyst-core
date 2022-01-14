@@ -37,6 +37,7 @@ error_chain! {
         GlobError(glob::GlobError);
         ValgrindError(valgrind::Error);
         ImportError(crate::cli::import::ImportError);
+        Validate(crate::cli::ValidateError);
     }
 
     errors {

@@ -15,6 +15,7 @@ use import::ImportCommand;
 use start::QuickStartCommandArgs;
 use structopt::StructOpt;
 use time::TimeCommand;
+pub use validate::Error as ValidateError;
 use validate::ValidateCommand;
 
 #[derive(StructOpt, Debug)]
@@ -39,7 +40,7 @@ impl VitCliCommand {
             Self::Start(start_command) => start_command.exec(),
             Self::Generate(generate_command) => generate_command.exec(),
             Self::Diff(diff_command) => diff_command.exec(),
-            Self::Validate(validate_command) => validate_command.exec(),
+            Self::Validate(validate_command) => validate_command.exec().map_err(Into::into),
             Self::Import(import_command) => import_command.exec().map_err(Into::into),
             Self::Time(time_command) => time_command.exec(),
         }

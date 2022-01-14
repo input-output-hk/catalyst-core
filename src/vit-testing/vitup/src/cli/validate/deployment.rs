@@ -1,4 +1,3 @@
-use crate::Result;
 use chrono::ParseError;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar, ProgressStyle};
 use std::fmt;
@@ -126,7 +125,7 @@ impl Check {
 }
 
 impl DeploymentValidateCommand {
-    pub fn exec(self) -> Result<()> {
+    pub fn exec(self) -> Result<(), CheckError> {
         let started = Instant::now();
         let spinner_style = ProgressStyle::default_spinner()
             .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ")

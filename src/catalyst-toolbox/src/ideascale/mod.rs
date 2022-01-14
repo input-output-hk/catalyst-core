@@ -108,6 +108,7 @@ pub fn build_fund(fund: i32, goal: String, threshold: i64) -> Vec<models::se::Fu
         id: fund,
         goal,
         threshold,
+        rewards_info: "".to_string(),
     }]
 }
 

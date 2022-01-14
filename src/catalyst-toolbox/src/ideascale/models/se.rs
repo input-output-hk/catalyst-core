@@ -24,6 +24,7 @@ pub struct Fund {
     pub id: i32,
     pub goal: String,
     pub threshold: i64,
+    pub rewards_info: String,
 }
 
 #[derive(Debug, Serialize)]

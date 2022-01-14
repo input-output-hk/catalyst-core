@@ -3,12 +3,6 @@ pub mod post_deployment;
 mod reviews;
 pub mod utils;
 
-pub use helpers::{
-    convert_to_blockchain_date, convert_to_human_date, default_next_snapshot_date,
-    default_next_vote_date, default_snapshot_date, generate_qr_and_hashes, VitVotePlanDefBuilder,
-    WalletExtension,
-};
-
 use crate::builders::helpers::build_servicing_station_parameters;
 use crate::config::DataGenerationConfig;
 use crate::config::VitStartParameters;
@@ -20,6 +14,11 @@ use crate::{config::Initials, Result};
 use assert_fs::fixture::{ChildPath, PathChild};
 use chain_impl_mockchain::value::Value;
 use chrono::naive::NaiveDateTime;
+pub use helpers::{
+    convert_to_blockchain_date, convert_to_human_date, default_next_snapshot_date,
+    default_next_vote_date, default_snapshot_date, generate_qr_and_hashes, VitVotePlanDefBuilder,
+    WalletExtension,
+};
 use jormungandr_lib::interfaces::CommitteeIdDef;
 use jormungandr_lib::interfaces::ConsensusLeaderId;
 pub use jormungandr_lib::interfaces::Initial;
@@ -225,6 +224,9 @@ impl VitBackendSettingsBuilder {
 
     pub fn upload_parameters(&mut self, parameters: VitStartParameters) {
         self.config.params = parameters;
+        if let Some(block0_time) = self.config.params.block0_time {
+            self.block0_date = SecondsSinceUnixEpoch::from_secs(block0_time.timestamp() as u64);
+        }
     }
 
     pub fn build_topology(&mut self) -> Topology {
@@ -407,7 +409,12 @@ impl VitBackendSettingsBuilder {
 
         println!("Fund id: {}", parameters.fund_id);
         println!(
-            "refresh timestamp\t(registration_snapshot_time):\t\t\t{:?}",
+            "block0 date:\t\t(block0_date):\t\t\t\t\t{}",
+            jormungandr_lib::time::SystemTime::from_secs_since_epoch(self.block0_date.to_secs())
+        );
+
+        println!(
+            "refresh timestamp:\t(registration_snapshot_time):\t\t\t{:?}",
             parameters.snapshot_time
         );
 
@@ -420,7 +427,7 @@ impl VitBackendSettingsBuilder {
             tally_start_timestamp
         );
         println!(
-            "tally end timestamp:\t(chain_committee_end_time)\t\t\t{:?}",
+            "tally end timestamp:\t(chain_committee_end_time):\t\t\t{:?}",
             tally_end_timestamp
         );
         println!(

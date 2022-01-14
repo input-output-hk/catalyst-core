@@ -30,11 +30,6 @@ pub fn convert_to_human_date(
 ) -> (NaiveDateTime, NaiveDateTime, NaiveDateTime) {
     let parameters = parameters.clone();
 
-    println!(
-        "Current date {:?}",
-        NaiveDateTime::from_timestamp(block0_date.to_secs() as i64, 0)
-    );
-
     match parameters.vote_time {
         VoteTime::Blockchain(blockchain) => {
             let epoch_duration = parameters.slot_duration as u32 * blockchain.slots_per_epoch;

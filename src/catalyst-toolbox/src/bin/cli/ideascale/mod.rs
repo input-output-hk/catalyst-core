@@ -142,7 +142,7 @@ impl Import {
 
         let funds = build_fund(*fund as i32, fund_goal.clone(), *threshold);
         let challenges = build_challenges(*fund as i32, &idescale_data, sponsors);
-        let proposals = build_proposals(
+        let mut proposals = build_proposals(
             &idescale_data,
             &challenges,
             &scores,
@@ -155,6 +155,7 @@ impl Import {
         // even if final id type is string, they are just sequentially added, so it should be safe
         // to parse and unwrap here
         challenges.sort_by_key(|c| c.id.parse::<i32>().unwrap());
+        proposals.sort_by_key(|p| p.proposal_id.clone());
 
         dump_content_to_file(
             funds,

@@ -37,7 +37,7 @@ pub struct IdeaScaleData {
     pub funnels: HashMap<u32, Funnel>,
     pub fund: Fund,
     pub challenges: HashMap<u32, Challenge>,
-    pub proposals: HashMap<u32, Proposal>,
+    pub proposals: Vec<Proposal>,
 }
 
 pub async fn fetch_all(
@@ -47,7 +47,7 @@ pub async fn fetch_all(
     excluded_proposals: &HashSet<u32>,
     api_token: String,
 ) -> Result<IdeaScaleData, Error> {
-    if !tokio::spawn(fetch::is_token_valid(api_token.clone())).await?? {
+    if !fetch::is_token_valid(api_token.clone()).await? {
         return Err(Error::InvalidToken);
     }
 
@@ -74,7 +74,7 @@ pub async fn fetch_all(
         .collect();
 
     let matches = regex::Regex::new(&stages_filters.join("|"))?;
-    let proposals = futures::future::try_join_all(proposals_tasks)
+    let mut proposals: Vec<Proposal> = futures::future::try_join_all(proposals_tasks)
         .await?
         .into_iter()
         // forcefully unwrap to pop errors directly
@@ -83,7 +83,10 @@ pub async fn fetch_all(
         .flatten()
         // filter out non approved or staged proposals
         .filter(|p| p.approved && filter_proposal_by_stage_type(&p.stage_type, &matches))
-        .filter(|p| !excluded_proposals.contains(&p.proposal_id));
+        .filter(|p| !excluded_proposals.contains(&p.proposal_id))
+        .collect();
+
+    proposals.sort_by_key(|p| p.proposal_id);
 
     let mut stages: Vec<_> = fetch::get_stages(api_token.clone()).await?;
     stages.retain(|stage| filter_stages(stage, stage_label, &funnels));
@@ -99,7 +102,7 @@ pub async fn fetch_all(
             .enumerate()
             .map(|(idx, c)| ((idx + 1) as u32, c))
             .collect(),
-        proposals: proposals.map(|p| (p.proposal_id, p)).collect(),
+        proposals,
     })
 }
 
@@ -161,7 +164,7 @@ pub fn build_proposals(
 ) -> Vec<models::se::Proposal> {
     ideascale_data
         .proposals
-        .values()
+        .iter()
         .enumerate()
         .map(|(i, p)| {
             let challenge = &built_challenges.get(&p.challenge_id).unwrap_or_else(|| {

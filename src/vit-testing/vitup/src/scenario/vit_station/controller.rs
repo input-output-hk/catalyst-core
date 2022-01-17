@@ -187,7 +187,7 @@ impl VitStation {
         let db_file = dir.join(STORAGE);
         dump_settings_to_file(config_file.to_str().unwrap(), &settings).unwrap();
 
-        DbGenerator::new(parameters).build(&db_file, template_generator);
+        DbGenerator::new(parameters,None).build(&db_file, template_generator);
 
         let mut command_builder =
             BootstrapCommandBuilder::new(PathBuf::from("vit-servicing-station-server"));

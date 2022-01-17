@@ -14,7 +14,7 @@ use vit_servicing_station_tests::common::data::{
 
 pub fn generate_random_database(tree: &DeploymentTree, vit_parameters: ValidVotePlanParameters) {
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    DbGenerator::new(vit_parameters).build(&tree.database_path(), &mut template_generator);
+    DbGenerator::new(vit_parameters,None).build(&tree.database_path(), &mut template_generator);
 }
 
 pub fn generate_database(
@@ -22,7 +22,7 @@ pub fn generate_database(
     vit_parameters: ValidVotePlanParameters,
     mut template_generator: ExternalValidVotingTemplateGenerator,
 ) {
-    DbGenerator::new(vit_parameters).build(&tree.database_path(), &mut template_generator);
+    DbGenerator::new(vit_parameters,None).build(&tree.database_path(), &mut template_generator);
 }
 
 pub fn add_leaders_ids(

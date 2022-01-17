@@ -1,5 +1,5 @@
 use crate::builders::convert_to_human_date;
-use crate::builders::post_deployment::{generate_database, DeploymentTree};
+use crate::builders::post_deployment::DeploymentTree;
 use crate::config::VitStartParameters;
 use jormungandr_lib::time::SecondsSinceUnixEpoch;
 use serde_json::Value;
@@ -11,12 +11,15 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
-use vit_servicing_station_tests::common::data::ArbitraryGenerator;
+use chain_impl_mockchain::testing::scenario::template::ProposalDefBuilder;
+use chain_impl_mockchain::testing::scenario::template::VotePlanDefBuilder;
+use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 use vit_servicing_station_tests::common::data::{
     parse_challenges, parse_funds, parse_proposals, parse_reviews,
 };
+use crate::vit_station::DbGenerator;
 use vit_servicing_station_tests::common::data::{ChallengeTemplate, FundTemplate, ReviewTemplate};
 
 #[derive(StructOpt, Debug)]
@@ -29,6 +32,14 @@ pub struct IdeascaleValidateCommand {
     /// input folder
     #[structopt(name = "INPUT")]
     pub input: PathBuf,
+
+    /// prefix
+    #[structopt(long = "prefix")]
+    pub prefix: Option<String>,
+
+    /// migration - path to migration scritps for vit-servicing station
+    #[structopt(long = "migration")]
+    pub migration_scripts_path: Option<PathBuf>,
 
     /// should i fix data is possible
     #[structopt(long = "fix")]
@@ -92,14 +103,23 @@ pub enum ChallengeError {
 }
 
 impl IdeascaleValidateCommand {
+
+    fn add_prefix(&self,file_name: &str) -> String {
+        if let Some(prefix) = self.prefix.as_ref(){
+            format!("{}{}",prefix,file_name)
+        } else {
+            file_name.to_string()
+        }
+    }
+
     pub fn exec(&self) -> Result<(), Error> {
         std::env::set_var("RUST_BACKTRACE", "full");
         std::fs::create_dir_all(&self.output)?;
 
-        let proposals_path = self.input.join("proposals.json");
-        let funds_path = self.input.join("funds.json");
-        let challenges_path = self.input.join("challenges.json");
-        let reviews_path = self.input.join("reviews.json");
+        let proposals_path = self.input.join(&self.add_prefix("proposals.json"));
+        let funds_path = self.input.join(&self.add_prefix("funds.json"));
+        let challenges_path = self.input.join(&self.add_prefix("challenges.json"));
+        let reviews_path = self.input.join(&self.add_prefix("reviews.json"));
 
         let mut funds = parse_funds(funds_path.clone())?;
         let challenges = self.validate_challenges(
@@ -113,10 +133,11 @@ impl IdeascaleValidateCommand {
         if self.fix {
             self.save_proposals(&proposals_path, &mut proposals)?;
             self.generate_vit_database(
-                self.output.join("proposals.json"),
+                self.output.join(self.add_prefix("proposals.json")),
                 challenges_path,
                 funds_path,
                 reviews_path,
+                proposals.len(),
                 challenges.len(),
                 reviews.len(),
             )
@@ -126,6 +147,7 @@ impl IdeascaleValidateCommand {
                 challenges_path,
                 funds_path,
                 reviews_path,
+                proposals.len(),
                 challenges.len(),
                 reviews.len(),
             )
@@ -138,6 +160,7 @@ impl IdeascaleValidateCommand {
         challenges_path: PathBuf,
         funds_path: PathBuf,
         reviews_path: PathBuf,
+        proposals_count: usize,
         challenges_count: usize,
         reviews_count: usize,
     ) -> Result<(), Error> {
@@ -145,7 +168,7 @@ impl IdeascaleValidateCommand {
 
         let deployment_tree = DeploymentTree::new(self.output.to_path_buf(), "database");
 
-        let template_generator = ExternalValidVotingTemplateGenerator::new(
+        let mut template_generator = ExternalValidVotingTemplateGenerator::new(
             proposals_path,
             challenges_path,
             funds_path,
@@ -157,7 +180,7 @@ impl IdeascaleValidateCommand {
             convert_to_human_date(&input_parameters, SecondsSinceUnixEpoch::now());
 
         let mut parameters = ValidVotePlanParameters::new(
-            ArbitraryGenerator::new().vote_plan_def_collection(),
+            (0..proposals_count).collect::<Vec<usize>>().chunks(255).map(|chunk| self.vote_plan_def(chunk.len())).collect(),
             "test".to_string(),
         );
         parameters.set_voting_power_threshold((input_parameters.voting_power * 1_000_000) as i64);
@@ -174,9 +197,26 @@ impl IdeascaleValidateCommand {
         parameters.set_fund_id(input_parameters.fund_id);
         parameters.calculate_challenges_total_funds = false;
 
-        generate_database(&deployment_tree, parameters, template_generator);
-
+        DbGenerator::new(parameters,self.migration_scripts_path.clone()).build(&deployment_tree.database_path(), &mut template_generator); 
+       
         Ok(())
+    }
+
+    fn vote_plan_def(&self,proposals_len: usize) -> VotePlanDef {
+        let mut vote_plan_builder = VotePlanDefBuilder::new("fund_x");
+        vote_plan_builder.owner("validate");
+        vote_plan_builder.vote_phases(1, 2, 3);
+
+        for _ in 0..proposals_len {
+            let mut proposal_builder = ProposalDefBuilder::new(
+                chain_impl_mockchain::testing::VoteTestGen::external_proposal_id(),
+            );
+            proposal_builder.options(3);
+            proposal_builder.action_off_chain();
+            vote_plan_builder.with_proposal(&mut proposal_builder);
+        }
+
+        vote_plan_builder.build()
     }
 
     fn validate_reviews<P: AsRef<Path>>(

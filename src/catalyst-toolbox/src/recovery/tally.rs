@@ -40,9 +40,6 @@ pub enum Error {
     #[error(transparent)]
     LedgerError(#[from] chain_impl_mockchain::ledger::Error),
 
-    #[error("Couldn't initiate a new wallet")]
-    WalletError(#[from] jormungandr_testing_utils::wallet::WalletError),
-
     #[error(transparent)]
     Block0ConfigurationError(#[from] jormungandr_lib::interfaces::Block0ConfigurationError),
 
@@ -140,11 +137,7 @@ fn verify_original_tx(
 
 fn increment_ledger_time_up_to(ledger: &Ledger, blockdate: BlockDate) -> Ledger {
     ledger
-        .begin_block(
-            ledger.get_ledger_parameters(),
-            ledger.chain_length().increase(),
-            blockdate,
-        )
+        .begin_block(ledger.chain_length().increase(), blockdate)
         .unwrap()
         .finish(&ConsensusEvalContext::Bft)
 }
@@ -161,12 +154,12 @@ pub fn deconstruct_account_transaction<P: chain_impl_mockchain::transaction::Pay
         return Err(ValidationError::InvalidUtxoInputs);
     };
 
-    let witness = if let Witness::Account(witness) = transaction.witnesses().iter().next().unwrap()
-    {
-        witness
-    } else {
-        return Err(ValidationError::InvalidUtxoWitnesses);
-    };
+    let witness =
+        if let Witness::Account(_, witness) = transaction.witnesses().iter().next().unwrap() {
+            witness
+        } else {
+            return Err(ValidationError::InvalidUtxoWitnesses);
+        };
 
     Ok((payload, identifier, witness))
 }

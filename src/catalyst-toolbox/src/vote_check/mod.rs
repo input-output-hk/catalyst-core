@@ -3,19 +3,16 @@ mod explorer;
 use assert_fs::{fixture::PathChild, TempDir};
 use explorer::{transaction_by_id, TransactionById};
 use graphql_client::{GraphQLQuery, Response};
+use jormungandr_automation::jormungandr::{
+    Block0ConfigurationBuilder, ExplorerError, JormungandrError, JormungandrParams,
+    JormungandrProcess, NodeConfigBuilder, RestError, Starter, StartupError,
+    StartupVerificationMode,
+};
 use jormungandr_lib::interfaces::{Log, LogEntry, LogOutput, VotePlanStatus};
-use jormungandr_testing_utils::testing::jormungandr::{
-    JormungandrError, JormungandrProcess, Starter, StartupError, StartupVerificationMode,
-};
-use jormungandr_testing_utils::testing::{
-    node::{ExplorerError, RestError},
-    Block0ConfigurationBuilder, JormungandrParams, NodeConfigBuilder,
-};
 use std::path::PathBuf;
 use std::time::Duration;
 
 const JORMUNGANDR_APP: &str = "jormungandr";
-const JORMUNGANDR_LOG_FILE: &str = "node.log";
 const JORMUNGANDR_CONFIG_FILE: &str = "node_config.yaml";
 const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 
@@ -77,7 +74,6 @@ impl CheckNode {
             PathBuf::new(), // passive node with no secrets
             Block0ConfigurationBuilder::new().build(),
             false,
-            temp_dir.child(JORMUNGANDR_LOG_FILE).path(),
         );
 
         config.write_node_config();

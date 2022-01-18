@@ -30,6 +30,7 @@ pub fn calculate_stake<'address>(
             }
             Initial::Cert(_) => {}
             Initial::LegacyFund(_) => {}
+            Initial::Token(_) => todo!("use the tokens for the initial stake?"),
         }
     }
     (total_stake, stake_per_voter)

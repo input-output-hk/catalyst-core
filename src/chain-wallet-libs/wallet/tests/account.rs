@@ -54,7 +54,7 @@ fn cast_vote() {
     }
 
     let vote_plan_id: [u8; 32] = hex::decode(
-        "4aa30d9df6d2dfdb45725c0de00d1a73394950c8bf3dabc8285f46f1e25e53fa",
+        "784d95bf9090969df0398f94c48baffbba8ea9f6e7a1e7d808a156330fdf33e1",
     )
     .unwrap()[..]
         .try_into()

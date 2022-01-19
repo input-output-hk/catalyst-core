@@ -67,7 +67,7 @@ jobs:
         uses: actions-rs/install@v0.1
         with:
           crate: uniffi_bindgen
-          version: 0.14.1
+          version: 0.16.0
           use-tool-cache: true
 
       - name: Install stable toolchain
@@ -105,7 +105,7 @@ jobs:
         uses: actions-rs/install@v0.1
         with:
           crate: uniffi_bindgen
-          version: 0.14.1
+          version: 0.16.0
           use-tool-cache: true
 
       - name: Install stable toolchain

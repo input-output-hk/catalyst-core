@@ -22,7 +22,7 @@ pub struct Result(result::Result<(), Error>);
 #[derive(Debug)]
 pub struct Error {
     kind: ErrorKind,
-    details: Option<Box<dyn error::Error + 'static>>,
+    details: Option<Box<dyn error::Error + Send + Sync + 'static>>,
 }
 
 /// a code representing the kind of error that occurred
@@ -147,7 +147,7 @@ impl Error {
     /// the error.
     ///
     /// this is useful to display more details as to why an error occurred.
-    pub fn details(&self) -> Option<&(dyn error::Error + 'static)> {
+    pub fn details(&self) -> Option<&(dyn error::Error + Send + Sync + 'static)> {
         self.details.as_ref().map(|boxed| boxed.as_ref())
     }
 
@@ -286,7 +286,7 @@ impl Error {
     ///
     pub fn with<E>(self, details: E) -> Self
     where
-        E: error::Error + 'static,
+        E: error::Error + Send + Sync + 'static,
     {
         Self {
             details: Some(Box::new(details)),
@@ -359,7 +359,7 @@ impl Result {
     ///
     pub fn with<E>(self, details: E) -> Self
     where
-        E: error::Error + 'static,
+        E: error::Error + Send + Sync + 'static,
     {
         match self.0 {
             Ok(()) => Self::success(),
@@ -415,6 +415,7 @@ impl Display for Error {
 impl error::Error for Error {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         self.details()
+            .map(|trait_object| trait_object as &dyn error::Error)
     }
 }
 

@@ -42,12 +42,6 @@ pub enum WalletError {
 
 pub struct Wallet(Mutex<InnerWallet>);
 
-// this is technically unsound, but from here onwards (after taking the Mutex) we don't spawn a
-// different thread, so we can't Send anything.
-// anyway I think the only thing non Send is the utxo-store, because it uses Rc
-unsafe impl Send for Wallet {}
-unsafe impl Sync for Wallet {}
-
 pub struct Settings(Mutex<InnerSettings>);
 
 pub struct Fragment(Mutex<FragmentRaw>);

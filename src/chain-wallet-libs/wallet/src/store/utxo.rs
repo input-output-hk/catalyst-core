@@ -5,9 +5,9 @@ use imhamt::Hamt;
 use itertools::Itertools as _;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
-use std::rc::Rc;
+use std::sync::Arc;
 
-type UTxO = Rc<UtxoPointer>;
+type UTxO = Arc<UtxoPointer>;
 
 type HashMap<K, V> = Hamt<DefaultHasher, K, V>;
 
@@ -17,10 +17,10 @@ struct HashSet<T: Hash + PartialEq + Eq + Clone>(HashMap<T, ()>);
 pub struct UtxoGroup<K> {
     by_value: HashMap<Value, HashSet<UTxO>>,
     total_value: Value,
-    key: Rc<K>,
+    key: Arc<K>,
 }
 
-type GroupRef<K> = Rc<UtxoGroup<K>>;
+type GroupRef<K> = Arc<UtxoGroup<K>>;
 
 /// A UTxO store that can be cheaply updated/cloned
 ///
@@ -80,11 +80,11 @@ impl<K> UtxoGroup<K> {
         Self {
             by_value: HashMap::new(),
             total_value: Value::zero(),
-            key: Rc::new(key),
+            key: Arc::new(key),
         }
     }
 
-    pub fn key(&self) -> &Rc<K> {
+    pub fn key(&self) -> &Arc<K> {
         &self.key
     }
 
@@ -197,7 +197,7 @@ impl<K: Groupable> UtxoStore<K> {
     #[must_use = "function does not modify the internal state, the returned value is the new state"]
     pub fn add(&self, utxo: UtxoPointer, key: K) -> Self {
         let mut new = self.clone();
-        let utxo = Rc::new(utxo);
+        let utxo = Arc::new(utxo);
         let path = key.group_key();
 
         new.total_value = new.total_value.saturating_add(utxo.value);
@@ -206,11 +206,11 @@ impl<K: Groupable> UtxoStore<K> {
             path.clone(),
             {
                 let group = UtxoGroup::new(key);
-                let group = group.add(Rc::clone(&utxo));
+                let group = group.add(Arc::clone(&utxo));
 
-                Rc::new(group)
+                Arc::new(group)
             },
-            |group| Some(Rc::new(group.add(Rc::clone(&utxo)))),
+            |group| Some(Arc::new(group.add(Arc::clone(&utxo)))),
         );
 
         // XXX: could be optimized with a mut Option
@@ -218,7 +218,7 @@ impl<K: Groupable> UtxoStore<K> {
 
         new.by_utxo = new
             .by_utxo
-            .insert(Rc::clone(&utxo), group)
+            .insert(Arc::clone(&utxo), group)
             .unwrap_or(new.by_utxo);
 
         new.by_value = new.by_value.insert_or_update_simple(
@@ -246,14 +246,14 @@ impl<K: Groupable> UtxoStore<K> {
         new.by_derivation_path = new
             .by_derivation_path
             .update::<_, std::convert::Infallible>(&path, |group| {
-                Ok(Some(Rc::new(group.remove(utxo))))
+                Ok(Some(Arc::new(group.remove(utxo))))
             })
             .unwrap();
 
         new.by_value = new
             .by_value
             .update::<_, std::convert::Infallible>(&utxo.value, |set| {
-                Ok(Some(set.remove(&Rc::new(*utxo))))
+                Ok(Some(set.remove(&Arc::new(*utxo))))
             })
             .unwrap();
 
@@ -266,8 +266,10 @@ impl<K: Groupable> UtxoStore<K> {
         Some(new)
     }
 
-    pub fn get_signing_key(&self, utxo: &UtxoPointer) -> Option<Rc<K>> {
-        self.by_utxo.lookup(utxo).map(|group| Rc::clone(&group.key))
+    pub fn get_signing_key(&self, utxo: &UtxoPointer) -> Option<Arc<K>> {
+        self.by_utxo
+            .lookup(utxo)
+            .map(|group| Arc::clone(&group.key))
     }
 }
 
@@ -276,7 +278,7 @@ impl<K> Clone for UtxoGroup<K> {
         Self {
             by_value: self.by_value.clone(),
             total_value: self.total_value,
-            key: Rc::clone(&self.key),
+            key: Arc::clone(&self.key),
         }
     }
 }

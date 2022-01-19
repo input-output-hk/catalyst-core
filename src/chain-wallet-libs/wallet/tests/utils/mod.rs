@@ -62,6 +62,11 @@ impl State {
             .accounts()
             .get_state(&chain_crypto::PublicKey::from(account_id).into())
             .ok()
-            .map(|account_state| (account_state.counter, account_state.value))
+            .map(|account_state| {
+                (
+                    account_state.spending.get_valid_counter(),
+                    account_state.value,
+                )
+            })
     }
 }

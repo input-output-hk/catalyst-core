@@ -203,7 +203,7 @@ impl Wallet {
         };
 
         let counter = if increment_counter {
-            state.counter.increment().expect("account counter overflow")
+            state.counter.increment()
         } else {
             state.counter
         };
@@ -244,7 +244,7 @@ impl<'a> WalletBuildTx<'a> {
             fragment_id,
             State {
                 value: self.next_value,
-                counter: self.current_counter.increment().unwrap(),
+                counter: self.current_counter.increment(),
             },
         );
     }

@@ -3,3 +3,8 @@
 /snapshot/
 /mock/
 /perf/
+/signoff/
+/dryrun/
+/output/
+/prod/
+/validate/

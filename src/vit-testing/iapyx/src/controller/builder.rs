@@ -5,7 +5,7 @@ use crate::Wallet;
 use bech32::FromBase32;
 use bip39::Type;
 use catalyst_toolbox::kedqr::KeyQrCode;
-use jormungandr_testing_utils::testing::node::RestError;
+use jormungandr_automation::jormungandr::RestError;
 use std::convert::TryInto;
 use std::path::Path;
 use thiserror::Error;

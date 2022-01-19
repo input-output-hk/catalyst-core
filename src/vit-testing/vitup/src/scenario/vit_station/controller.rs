@@ -1,35 +1,30 @@
 #![allow(dead_code)]
 
 use super::DbGenerator;
-use jormungandr_scenario_tests::{node::ProgressBarController, style, Context};
-pub use jormungandr_testing_utils::testing::{
-    jormungandr::Status,
-    network::{LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings},
-    node::{
-        grpc::{client::MockClientError, JormungandrClient},
-        uri_from_socket_addr, JormungandrLogger, JormungandrRest, RestError,
-    },
-    FragmentNode, MemPoolCheck, NamedProcess,
-};
+use hersir::controller::Context;
+use hersir::style;
+use indicatif::ProgressBar;
+use jormungandr_automation::jormungandr::uri_from_socket_addr;
+use jormungandr_automation::jormungandr::NodeAlias;
+use jormungandr_automation::jormungandr::Status;
+use jormungandr_automation::testing::NamedProcess;
 use std::net::SocketAddr;
 use vit_servicing_station_lib::db::models::proposals::Proposal;
+use vit_servicing_station_lib::server::settings::dump_settings_to_file;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 use vit_servicing_station_tests::common::data::ValidVotingTemplateGenerator;
 use vit_servicing_station_tests::common::{
     clients::RestClient, startup::server::BootstrapCommandBuilder,
 };
 
-pub type VitStationSettings = vit_servicing_station_lib::server::settings::ServiceSettings;
-use indicatif::ProgressBar;
-use rand_core::RngCore;
-use vit_servicing_station_lib::server::settings::dump_settings_to_file;
-
+use hersir::controller::ProgressBarController;
 use std::io::{self, BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::process::Child;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+pub type VitStationSettings = vit_servicing_station_lib::server::settings::ServiceSettings;
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(custom_debug::Debug, thiserror::Error)]
@@ -163,8 +158,8 @@ impl VitStation {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn spawn<R: RngCore>(
-        context: &Context<R>,
+    pub fn spawn(
+        context: &Context,
         parameters: ValidVotePlanParameters,
         template_generator: &mut dyn ValidVotingTemplateGenerator,
         progress_bar: ProgressBar,
@@ -180,7 +175,6 @@ impl VitStation {
         let progress_bar = ProgressBarController::new(
             progress_bar,
             format!("{}@{}", alias, settings.address.clone()),
-            context.progress_bar_mode(),
         );
 
         let config_file = dir.join(VIT_CONFIG);

@@ -7,11 +7,12 @@ use crate::config::VoteTime;
 use crate::scenario::network::service_mode;
 use crate::scenario::network::{endless_mode, interactive_mode, setup_network};
 use crate::Result;
-use jormungandr_scenario_tests::programs::prepare_command;
-use jormungandr_scenario_tests::{
-    parse_progress_bar_mode_from_str, Context, ProgressBarMode, Seed,
-};
-use jortestkit::prelude::read_file;
+use hersir::builder::Seed;
+use hersir::config::SessionMode;
+use hersir::controller::Context;
+use hersir::utils::print_intro;
+use jortestkit::prelude::parse_progress_bar_mode_from_str;
+use jortestkit::prelude::{read_file, ProgressBarMode};
 use std::path::Path;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -152,8 +153,13 @@ impl QuickStartCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 
-        let jormungandr = prepare_command(&self.jormungandr);
-        let jcli = prepare_command(&self.jcli);
+        // TODO: remove this? or re-implement/replace it
+        // let jormungandr = prepare_command(&self.jormungandr);
+        // let jcli = prepare_command(&self.jcli);
+        // same comment than in AdvancedStartCommandArgs actually (seems loke there is some code
+        // repetition, btw)
+        let jormungandr = &self.jormungandr;
+        let jcli = &self.jcli;
         let mut progress_bar_mode = self.progress_bar_mode;
         let seed = self
             .seed
@@ -169,15 +175,16 @@ impl QuickStartCommandArgs {
             progress_bar_mode = ProgressBarMode::None;
         }
 
-        let context = Context::new(
-            seed,
-            jormungandr,
-            jcli,
-            Some(testing_directory.clone()),
+        let context = Context {
+            jormungandr: jormungandr.to_path_buf(),
+            testing_directory: testing_directory.into(),
             generate_documentation,
-            progress_bar_mode,
-            log_level,
-        );
+            session_mode: match mode {
+                Mode::Service => todo!("fill these properly"),
+                Mode::Interactive => SessionMode::Interactive,
+                Mode::Endless => todo!("fill these properly"),
+            },
+        };
 
         let mut quick_setup = VitBackendSettingsBuilder::new();
 
@@ -245,7 +252,7 @@ impl QuickStartCommandArgs {
             .private(self.private)
             .version(self.version);
 
-        jormungandr_scenario_tests::introduction::print(&context, "VOTING BACKEND");
+        print_intro(&context, "VOTING BACKEND");
 
         let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
 

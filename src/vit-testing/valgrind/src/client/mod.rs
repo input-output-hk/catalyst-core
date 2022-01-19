@@ -3,6 +3,8 @@ mod proxy;
 pub mod utils;
 mod vit_station;
 
+use jormungandr_automation::jormungandr::Explorer;
+pub use jormungandr_automation::jormungandr::RestSettings as ValgrindSettings;
 use vit_servicing_station_lib::db::models::challenges::Challenge;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::funds::Fund;
@@ -17,13 +19,11 @@ use jormungandr_lib::interfaces::FragmentStatus;
 use jormungandr_lib::interfaces::SettingsDto;
 use jormungandr_lib::interfaces::VotePlanId;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, VotePlanStatus};
-use jormungandr_testing_utils::testing::node::Explorer;
 use std::collections::HashMap;
 use std::str::FromStr;
 use thiserror::Error;
 use wallet::AccountId;
 
-pub use jormungandr_testing_utils::testing::node::RestSettings as ValgrindSettings;
 pub use node::{RestError as NodeRestError, WalletNodeRestClient};
 pub use proxy::{Error as ProxyClientError, ProxyClient};
 use vit_servicing_station_tests::common::clients::RestClient as VitRestClient;
@@ -133,7 +133,8 @@ impl ValgrindClient {
     }
 
     pub fn challenges(&self) -> Result<Vec<Challenge>, Error> {
-        Ok(self.vit_client.challenges()?)
+        todo!("what happened to this?");
+        // Ok(self.vit_client.challenges()?)
     }
 
     pub fn vit(&self) -> VitRestClient {
@@ -156,7 +157,8 @@ impl ValgrindClient {
 
     pub fn enable_logs(&mut self) {
         self.node_client.enable_logs();
-        self.vit_client.enable_log();
+        todo!("and this, what happened to this?");
+        // self.vit_client.enable_log();
         self.proxy_client.enable_debug();
     }
 

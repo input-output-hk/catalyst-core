@@ -5,15 +5,17 @@ use crate::scenario::{
         Error as WalletProxyError, WalletProxy, WalletProxyController, WalletProxySpawnParams,
     },
 };
-use crate::{error::ErrorKind, Result};
+use crate::Result;
+use hersir::{
+    builder::{Blockchain, Topology},
+    controller::{Context, MonitorController, MonitorControllerBuilder},
+};
 use indicatif::ProgressBar;
-use jormungandr_scenario_tests::scenario::{ContextChaCha, Controller, ControllerBuilder};
-use jormungandr_testing_utils::testing::network::{Blockchain, Topology};
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 use vit_servicing_station_tests::common::data::ValidVotingTemplateGenerator;
 
 pub struct VitControllerBuilder {
-    controller_builder: ControllerBuilder,
+    controller_builder: MonitorControllerBuilder,
 }
 
 pub struct VitController {
@@ -23,7 +25,7 @@ pub struct VitController {
 impl VitControllerBuilder {
     pub fn new(title: &str) -> Self {
         Self {
-            controller_builder: ControllerBuilder::new(title),
+            controller_builder: MonitorControllerBuilder::new(title),
         }
     }
 
@@ -37,7 +39,7 @@ impl VitControllerBuilder {
         self
     }
 
-    pub fn build(self, mut context: ContextChaCha) -> Result<(VitController, Controller)> {
+    pub fn build(self, mut context: Context) -> Result<(VitController, MonitorController)> {
         let vit_controller = VitController::new(VitSettings::new(&mut context));
         let controller = self.controller_builder.build(context)?;
         Ok((vit_controller, controller))
@@ -55,7 +57,7 @@ impl VitController {
 
     pub fn spawn_vit_station(
         &self,
-        controller: &mut Controller,
+        controller: &mut MonitorController,
         vote_plan_parameters: ValidVotePlanParameters,
         template_generator: &mut dyn ValidVotingTemplateGenerator,
         version: String,
@@ -90,7 +92,7 @@ impl VitController {
 
     pub fn spawn_wallet_proxy_custom(
         &self,
-        controller: &mut Controller,
+        controller: &mut MonitorController,
         params: &mut WalletProxySpawnParams,
     ) -> Result<WalletProxyController> {
         let node_alias = params.alias.clone();
@@ -105,7 +107,9 @@ impl VitController {
         {
             node_setting.clone()
         } else {
-            bail!(ErrorKind::ProxyNotFound(node_alias.to_string()))
+            return Err(crate::error::Error::ProxyNotFound {
+                alias: node_alias.to_string(),
+            });
         };
 
         let mut settings_overriden = settings.clone();
@@ -133,7 +137,7 @@ impl VitController {
 
     pub fn spawn_wallet_proxy(
         &self,
-        controller: &mut Controller,
+        controller: &mut MonitorController,
         alias: &str,
     ) -> Result<WalletProxyController> {
         self.spawn_wallet_proxy_custom(controller, &mut WalletProxySpawnParams::new(alias))

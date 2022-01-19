@@ -6,8 +6,8 @@ use crate::mock::Configuration;
 use chain_core::property::Deserialize as _;
 use chain_core::property::Fragment as _;
 use chain_crypto::PublicKey;
-use chain_impl_mockchain::account::AccountAlg;
 use chain_impl_mockchain::account::Identifier;
+use chain_impl_mockchain::account::{self, AccountAlg};
 use chain_impl_mockchain::fragment::{Fragment, FragmentId};
 use itertools::Itertools;
 use jormungandr_lib::crypto::hash::Hash;
@@ -26,7 +26,7 @@ use valgrind::Protocol;
 use vit_servicing_station_lib::db::models::challenges::Challenge;
 use vit_servicing_station_lib::db::models::funds::Fund;
 use vit_servicing_station_lib::db::models::proposals::Proposal;
-use vit_servicing_station_lib::v0::endpoints::proposals::ProposalsByVoteplanIdAndIndex;
+use vit_servicing_station_lib::v0::endpoints::proposals::requests::ProposalsByVoteplanIdAndIndex;
 use vit_servicing_station_lib::v0::errors::HandleError;
 use vit_servicing_station_lib::v0::result::HandlerResult;
 use warp::http::header::{HeaderMap, HeaderValue};
@@ -510,18 +510,14 @@ pub async fn get_account_votes(
     Ok(HandlerResult(Ok(Some(result))))
 }
 
-use chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier;
-
-pub fn into_identifier(account_id_hex: String) -> Result<UnspecifiedAccountIdentifier, Rejection> {
-    Ok(UnspecifiedAccountIdentifier::from_single_account(
-        parse_account_id(&account_id_hex).map_err(|err| {
-            println!("{:?}", err);
-            warp::reject::custom(GeneralException {
-                summary: "Cannot parse account id".to_string(),
-                code: 400,
-            })
-        })?,
-    ))
+pub fn into_identifier(account_id_hex: String) -> Result<account::Identifier, Rejection> {
+    Ok(parse_account_id(&account_id_hex).map_err(|err| {
+        println!("{:?}", err);
+        warp::reject::custom(GeneralException {
+            summary: "Cannot parse account id".to_string(),
+            code: 400,
+        })
+    })?)
 }
 
 pub async fn logs_get(context: ContextLock) -> Result<impl Reply, Rejection> {

@@ -3,10 +3,11 @@ use crate::builders::utils::ContextExtension;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::Initials;
 use crate::Result;
-use jormungandr_scenario_tests::Context;
+use hersir::controller::Context;
 use jortestkit::prelude::read_file;
 use std::path::PathBuf;
 use structopt::StructOpt;
+
 #[derive(StructOpt, Debug)]
 #[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct QrCommandArgs {

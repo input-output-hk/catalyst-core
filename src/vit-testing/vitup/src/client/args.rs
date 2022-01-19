@@ -2,10 +2,10 @@ use crate::client::rest::VitupAdminRestClient;
 use crate::client::rest::VitupDisruptionRestClient;
 use crate::client::rest::VitupRest;
 use crate::config::VitStartParameters;
-use crate::error::Result;
-use jormungandr_testing_utils::testing::fragments::PersistentLogViewer;
+use crate::Result;
 use std::path::PathBuf;
 use structopt::StructOpt;
+use thor::PersistentLogViewer;
 
 #[derive(StructOpt, Debug)]
 pub struct VitupClientCommand {

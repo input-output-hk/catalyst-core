@@ -6,19 +6,12 @@ mod spawn_params;
 
 use chain_impl_mockchain::fragment::FragmentId;
 
-pub use jormungandr_testing_utils::testing::{
-    jormungandr::Status,
-    network::{LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings},
-    node::{
-        grpc::{client::MockClientError, JormungandrClient},
-        uri_from_socket_addr, JormungandrLogger, JormungandrRest, RestError,
-    },
-    FragmentNode, MemPoolCheck, NamedProcess,
-};
-
+use hersir::builder::{NodeAlias, NodeSetting};
+use hersir::controller::{Context, ProgressBarController};
+use hersir::style;
 use indicatif::ProgressBar;
-use jormungandr_scenario_tests::{node::ProgressBarController, style, Context};
-use rand_core::RngCore;
+use jormungandr_automation::jormungandr::grpc::client::MockClientError;
+use jormungandr_automation::jormungandr::{RestError, Status};
 
 use std::io::{self, BufRead, BufReader};
 use std::path::{Path, PathBuf};
@@ -27,9 +20,10 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 pub use controller::WalletProxyController;
-pub use jormungandr_testing_utils::testing::network::WalletProxySettings;
 pub use spawn_params::WalletProxySpawnParams;
 use valgrind::Protocol;
+
+pub use self::settings::WalletProxySettings;
 pub type WalletProxyError = Error;
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -136,8 +130,8 @@ impl WalletProxy {
     }
 
     #[allow(clippy::too_many_arguments)]
-    pub fn spawn<R: RngCore>(
-        context: &Context<R>,
+    pub fn spawn(
+        context: &Context,
         progress_bar: ProgressBar,
         alias: &str,
         mut settings: WalletProxySettings,
@@ -149,11 +143,8 @@ impl WalletProxy {
         let dir = working_dir.join(alias);
         std::fs::DirBuilder::new().recursive(true).create(&dir)?;
 
-        let progress_bar = ProgressBarController::new(
-            progress_bar,
-            format!("{}@{}", alias, settings.address()),
-            context.progress_bar_mode(),
-        );
+        let progress_bar =
+            ProgressBarController::new(progress_bar, format!("{}@{}", alias, settings.address()));
 
         settings.node_backend_address = Some(node_setting.config.rest.listen);
 

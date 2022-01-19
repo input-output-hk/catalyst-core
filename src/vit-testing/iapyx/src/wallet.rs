@@ -50,14 +50,14 @@ impl Wallet {
 
     pub fn recover_from_account(secret_key: &[u8]) -> Result<Self, Error> {
         Ok(Self {
-            inner: Inner::recover_free_keys(secret_key, &[])
+            inner: Inner::recover_free_keys(secret_key, [].iter())
                 .map_err(|e| Error::CannotRecover(e.to_string()))?,
         })
     }
 
     pub fn recover_from_utxo(secret_key: &[u8; 64]) -> Result<Self, Error> {
         Ok(Self {
-            inner: Inner::recover_free_keys(secret_key, &[*secret_key])
+            inner: Inner::recover_free_keys(secret_key, [*secret_key].iter())
                 .map_err(|e| Error::CannotRecover(e.to_string()))?,
         })
     }

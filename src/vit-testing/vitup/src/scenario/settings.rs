@@ -1,38 +1,27 @@
+use super::wallet::WalletProxySettings;
 use crate::vit_station::VitStationSettings;
-use jormungandr_scenario_tests::scenario::Context;
-
-use jormungandr_testing_utils::testing::network::WalletProxySettings;
-use jormungandr_testing_utils::testing::network::{
-    Blockchain as BlockchainTemplate, NodeAlias, Topology as TopologyTemplate,
+use hersir::{
+    builder::{Blockchain, NodeAlias, Topology},
+    controller::Context,
 };
-use jormungandr_testing_utils::testing::node::configuration::get_available_port;
-use rand_core::{CryptoRng, RngCore};
+use jormungandr_automation::jormungandr::get_available_port;
 use std::collections::HashMap;
 use vit_servicing_station_lib::server::settings::ServiceSettings;
 use vit_servicing_station_tests::common::startup::server::ServerSettingsBuilder;
+
 pub trait PrepareVitServerSettings: Clone + Send {
-    fn prepare<RNG>(context: &mut Context<RNG>) -> Self
-    where
-        RNG: RngCore + CryptoRng;
+    fn prepare(context: &mut Context) -> Self;
 }
 
 pub trait PrepareWalletProxySettings: Clone + Send {
-    fn prepare<RNG>(
-        context: &mut Context<RNG>,
+    fn prepare(
+        context: &mut Context,
         vit_stations: &HashMap<NodeAlias, VitStationSettings>,
-    ) -> Self
-    where
-        RNG: RngCore + CryptoRng;
+    ) -> Self;
 }
 
 pub trait PrepareSettings {
-    fn prepare<RNG>(
-        topology: TopologyTemplate,
-        blockchain: BlockchainTemplate,
-        context: &mut Context<RNG>,
-    ) -> Self
-    where
-        RNG: RngCore + CryptoRng;
+    fn prepare(topology: Topology, blockchain: Blockchain, context: &mut Context) -> Self;
 }
 
 #[derive(Debug)]
@@ -42,10 +31,7 @@ pub struct VitSettings {
 }
 
 impl VitSettings {
-    pub fn new<RNG>(context: &mut Context<RNG>) -> Self
-    where
-        RNG: RngCore + CryptoRng,
-    {
+    pub fn new(context: &mut Context) -> Self {
         let mut vit_stations = HashMap::new();
         let vit_station = VitStationSettings::prepare(context);
         vit_stations.insert("vit_station".to_string(), vit_station);
@@ -62,10 +48,7 @@ impl VitSettings {
 }
 
 impl PrepareVitServerSettings for VitStationSettings {
-    fn prepare<RNG>(_context: &mut Context<RNG>) -> Self
-    where
-        RNG: RngCore + CryptoRng,
-    {
+    fn prepare(_context: &mut Context) -> Self {
         let mut settings_builder: ServerSettingsBuilder = Default::default();
         settings_builder
             .with_localhost_address(get_available_port() as u32)

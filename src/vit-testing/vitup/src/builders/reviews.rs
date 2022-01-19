@@ -1,4 +1,3 @@
-use crate::error::ErrorKind;
 use crate::Result;
 use fake::faker::name::en::Name;
 use fake::Fake;
@@ -36,7 +35,9 @@ impl ReviewGenerator {
                     }
                     self.increment_id();
                 } else {
-                    bail!(ErrorKind::NoChallengeIdFound(proposal.proposal_id.clone()))
+                    return Err(crate::error::Error::NoChallengeIdFound {
+                        proposal_id: proposal.proposal_id.clone(),
+                    });
                 }
             }
         }

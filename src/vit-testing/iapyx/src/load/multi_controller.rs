@@ -5,7 +5,7 @@ use crate::Wallet;
 use bech32::FromBase32;
 use bip39::Type;
 use chain_impl_mockchain::{block::BlockDate, fragment::FragmentId};
-use jormungandr_testing_utils::testing::node::RestSettings;
+pub use jormungandr_automation::jormungandr::RestSettings;
 use std::iter;
 use std::path::Path;
 use thiserror::Error;
@@ -125,7 +125,7 @@ impl MultiController {
         for (idx, wallet) in self.wallets.iter_mut().enumerate() {
             let account_state = backend.account_state(wallet.id()).unwrap();
             println!("{}/{} Updating account state", idx + 1, count);
-            wallet.set_state((*account_state.value()).into(), account_state.counter());
+            wallet.set_state((*account_state.value()).into(), account_state.counters()[0]);
         }
     }
 
@@ -133,7 +133,7 @@ impl MultiController {
         let backend = self.backend().clone();
         let wallet = self.wallets.get_mut(wallet_index).unwrap();
         let account_state = backend.account_state(wallet.id()).unwrap();
-        wallet.set_state((*account_state.value()).into(), account_state.counter());
+        wallet.set_state((*account_state.value()).into(), account_state.counters()[0]);
     }
     pub fn update_wallet_state_if(
         &mut self,
@@ -175,7 +175,7 @@ impl MultiController {
         let wallet = self.wallets.get_mut(wallet_index).unwrap();
         let account_state = self.backend.account_state(wallet.id())?;
 
-        let mut counter = account_state.counter();
+        let mut counter = account_state.counters()[0];
         let settings = self.settings.clone();
         let txs = votes_data
             .into_iter()
@@ -217,7 +217,7 @@ impl MultiController {
         let wallet = self.wallets.get_mut(wallet_index).unwrap();
         let account_state = self.backend.account_state(wallet.id())?;
         let value: u64 = (*account_state.value()).into();
-        wallet.set_state(Value(value), account_state.counter());
+        wallet.set_state(Value(value), account_state.counters()[0]);
         Ok(())
     }
 

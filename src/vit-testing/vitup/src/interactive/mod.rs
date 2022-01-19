@@ -2,12 +2,10 @@ mod args;
 mod controller;
 
 pub use args::{describe, show};
-
 pub use controller::VitUserInteractionController;
-use jormungandr_scenario_tests::interactive::{
-    args::{explorer, send},
-    UserInteractionController,
-};
+use hersir::controller::interactive::args::explorer;
+use hersir::controller::interactive::args::send;
+use hersir::controller::UserInteractionController;
 use jortestkit::prelude::ConsoleWriter;
 use jortestkit::prelude::InteractiveCommandError;
 use jortestkit::prelude::InteractiveCommandExec;
@@ -32,7 +30,8 @@ impl VitInteractiveCommandExec {
 impl VitInteractiveCommandExec {
     pub fn tear_down(self) {
         self.vit_controller.finalize();
-        self.controller.finalize();
+        // TODO: what happend to this?
+        // self.controller.finalize();
     }
 }
 
@@ -46,16 +45,17 @@ impl<'a> InteractiveCommandExec for VitInteractiveCommandExec {
             Ok(interactive) => {
                 if let Err(err) = {
                     match interactive {
-                        VitInteractiveCommand::Show(show) => show.exec(self),
+                        VitInteractiveCommand::Show(show) => Ok(show.exec(self)),
                         VitInteractiveCommand::Exit => Ok(()),
-                        VitInteractiveCommand::Describe(describe) => describe.exec(self),
+                        VitInteractiveCommand::Describe(describe) => Ok(describe.exec(self)),
                         VitInteractiveCommand::Send(send) => send.exec(self.controller_mut()),
                         VitInteractiveCommand::Explorer(explorer) => {
                             explorer.exec(self.controller_mut())
                         }
                     }
                 } {
-                    console.format_error(InteractiveCommandError::UserError(err.to_string()));
+                    // TODO: don't know the error type until I re add the previous things
+                    // console.format_error(InteractiveCommandError::UserError(err.to_string()));
                 }
             }
             Err(err) => console.show_help(InteractiveCommandError::UserError(err.to_string())),

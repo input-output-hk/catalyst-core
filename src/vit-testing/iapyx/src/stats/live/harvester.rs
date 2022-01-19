@@ -1,6 +1,6 @@
 use chrono::{DateTime, SecondsFormat, Utc};
+use jormungandr_automation::jormungandr::{JormungandrRest, RestError};
 use jormungandr_lib::interfaces::FragmentLog;
-use jormungandr_testing_utils::testing::node::JormungandrRest;
 use serde_json;
 
 pub struct Harvester {
@@ -20,7 +20,7 @@ impl Harvester {
         }
     }
 
-    pub fn harvest(&self) -> Result<Snapshot, jormungandr_testing_utils::testing::node::RestError> {
+    pub fn harvest(&self) -> Result<Snapshot, RestError> {
         let mut votes_count: usize = 0;
 
         for vote_status in self.rest.vote_plan_statuses()? {

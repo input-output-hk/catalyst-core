@@ -1,14 +1,14 @@
-use crate::scenario::network::{endless_mode, interactive_mode, setup_network};
-
 use crate::builders::utils::io::{read_config, read_initials};
 use crate::builders::VitBackendSettingsBuilder;
 use crate::cli::start::mode::{parse_mode_from_str, Mode};
 use crate::scenario::network::service_mode;
+use crate::scenario::network::{endless_mode, interactive_mode, setup_network};
 use crate::Result;
-use jormungandr_scenario_tests::programs::prepare_command;
-use jormungandr_scenario_tests::{
-    parse_progress_bar_mode_from_str, Context, ProgressBarMode, Seed,
-};
+use hersir::builder::Seed;
+use hersir::config::SessionMode;
+use hersir::controller::Context;
+use jortestkit::prelude::parse_progress_bar_mode_from_str;
+use jortestkit::prelude::ProgressBarMode;
 use std::path::PathBuf;
 use structopt::StructOpt;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
@@ -107,12 +107,14 @@ impl AdvancedStartCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 
-        let jormungandr = prepare_command(&self.jormungandr);
-        let jcli = prepare_command(&self.jcli);
+        // TODO: what happened to this function? should be re-implemented? does it have a
+        // replacement?
+        // as far as I can see it was only used to verify that the binary exists.
+        // let jormungandr = prepare_command(&self.jormungandr);
+        // let jcli = prepare_command(&self.jcli);
+        let jormungandr = &self.jormungandr;
+        let jcli = &self.jcli;
         let mut progress_bar_mode = self.progress_bar_mode;
-        let seed = self
-            .seed
-            .unwrap_or_else(|| Seed::generate(rand::rngs::OsRng));
         let mut testing_directory = self.testing_directory;
         let generate_documentation = true;
         let log_level = self.log_level;
@@ -124,15 +126,16 @@ impl AdvancedStartCommandArgs {
             progress_bar_mode = ProgressBarMode::None;
         }
 
-        let context = Context::new(
-            seed,
-            jormungandr,
-            jcli,
-            Some(testing_directory.clone()),
+        let context = Context {
+            jormungandr: jormungandr.to_path_buf(),
+            testing_directory: testing_directory.into(),
             generate_documentation,
-            progress_bar_mode,
-            log_level,
-        );
+            session_mode: match mode {
+                Mode::Service => todo!("fill these properly"),
+                Mode::Interactive => SessionMode::Interactive,
+                Mode::Endless => todo!("fill these properly"),
+            },
+        };
 
         let mut config = read_config(&self.config)?;
 

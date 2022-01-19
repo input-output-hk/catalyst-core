@@ -5,7 +5,8 @@ use crate::builders::utils::ContextExtension;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::Result;
 use glob::glob;
-use jormungandr_scenario_tests::Context;
+use hersir::controller::Context;
+use hersir::controller::Controller;
 use std::path::Path;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -102,10 +103,12 @@ impl PerfDataCommandArgs {
         )?;
         self.split_secrets(&deployment_tree)?;
 
+        let controller: Controller = controller.into();
+
         println!(
             "voteplan ids: {:?}",
             controller
-                .vote_plans()
+                .defined_vote_plans()
                 .iter()
                 .map(|x| x.id())
                 .collect::<Vec<String>>()

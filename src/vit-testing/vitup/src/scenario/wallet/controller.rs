@@ -1,20 +1,13 @@
-use crate::scenario::wallet::WalletProxySettings;
-use jormungandr_scenario_tests::node::ProgressBarController;
+use hersir::controller::ProgressBarController;
+use jormungandr_automation::jormungandr::{JormungandrRest, NodeAlias, Status};
+use jormungandr_automation::testing::NamedProcess;
 use valgrind::{ProxyClient, ValgrindClient, ValgrindSettings};
-
-pub use jormungandr_testing_utils::testing::{
-    jormungandr::Status,
-    network::{LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings},
-    node::{
-        grpc::{client::MockClientError, JormungandrClient},
-        uri_from_socket_addr, JormungandrLogger, JormungandrRest, RestError,
-    },
-    FragmentNode, MemPoolCheck, NamedProcess,
-};
 
 pub type VitStationSettings = vit_servicing_station_lib::server::settings::ServiceSettings;
 use std::process::Child;
 use std::sync::{Arc, Mutex};
+
+use super::settings::WalletProxySettings;
 /// send query to a running node
 pub struct WalletProxyController {
     alias: NodeAlias,
@@ -67,7 +60,13 @@ impl WalletProxyController {
     }
 
     pub fn status(&self) -> Status {
-        (*self.status.lock().unwrap()).clone()
+        // FIXME: this is basically a Clone, but it has to be implemented in
+        // jormungandr_automatation, this is only just for the sake of making it compile
+        match *self.status.lock().unwrap() {
+            Status::Running => Status::Running,
+            Status::Starting => Status::Starting,
+            Status::Exited(e) => Status::Exited(e),
+        }
     }
 
     pub fn check_running(&self) -> bool {

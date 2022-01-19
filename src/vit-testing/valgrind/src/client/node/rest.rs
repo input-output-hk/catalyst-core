@@ -1,16 +1,16 @@
 use chain_core::property::Deserialize;
 use chain_crypto::{bech32::Bech32, Ed25519, PublicKey};
 use chain_impl_mockchain::fragment::{Fragment, FragmentId};
+pub use jormungandr_automation::jormungandr::{JormungandrRest, RestError, RestSettings};
 use jormungandr_lib::interfaces::{
     AccountState, AccountVotes, Address, FragmentLog, FragmentStatus, NodeStatsDto, SettingsDto,
     VotePlanId, VotePlanStatus,
 };
-pub use jormungandr_testing_utils::testing::node::RestError;
-use jormungandr_testing_utils::testing::node::{JormungandrRest, RestSettings};
 use regex::Regex;
 use std::collections::HashMap;
 use std::str::FromStr;
 use wallet::AccountId;
+
 #[derive(Clone)]
 pub struct WalletNodeRestClient {
     rest_client: JormungandrRest,

@@ -1,12 +1,12 @@
 use crate::load::{MultiController, MultiControllerError};
 use crate::utils::expiry;
 use crate::Wallet;
-use jormungandr_testing_utils::testing::BlockDateGenerator;
-use jormungandr_testing_utils::testing::VoteCastCounter;
+use jormungandr_automation::testing::VoteCastCounter;
 use jortestkit::load::{Id, Request, RequestFailure, RequestGenerator};
 use rand::RngCore;
 use rand_core::OsRng;
 use std::time::Instant;
+use thor::BlockDateGenerator;
 use valgrind::Proposal;
 use valgrind::SettingsExtensions;
 use wallet::Settings;

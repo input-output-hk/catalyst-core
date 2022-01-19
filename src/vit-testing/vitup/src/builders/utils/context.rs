@@ -1,6 +1,6 @@
-use jormungandr_scenario_tests::ProgressBarMode;
-use jormungandr_scenario_tests::{Context, Seed};
 use std::path::{Path, PathBuf};
+
+use hersir::controller::Context;
 
 pub trait ContextExtension {
     fn empty_from_dir<P: AsRef<Path>>(dir: P) -> Context;
@@ -8,14 +8,11 @@ pub trait ContextExtension {
 
 impl ContextExtension for Context {
     fn empty_from_dir<P: AsRef<Path>>(dir: P) -> Self {
-        Context::new(
-            Seed::generate(rand::rngs::OsRng),
-            PathBuf::new(),
-            PathBuf::new(),
-            Some(dir.as_ref().to_path_buf()),
-            true,
-            ProgressBarMode::None,
-            "info".to_string(),
-        )
+        Context {
+            jormungandr: PathBuf::new(),
+            testing_directory: PathBuf::new().into(),
+            generate_documentation: true,
+            session_mode: todo!("choose session mode"),
+        }
     }
 }

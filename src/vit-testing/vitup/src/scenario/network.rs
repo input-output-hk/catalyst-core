@@ -8,16 +8,10 @@ use crate::vit_station::VitStationController;
 use crate::wallet::WalletProxyController;
 use crate::wallet::WalletProxySpawnParams;
 use crate::Result;
-use jormungandr_scenario_tests::interactive::UserInteractionController;
-use jormungandr_scenario_tests::node::Node as NodeController;
-use jormungandr_scenario_tests::scenario::Controller;
-use jormungandr_scenario_tests::{
-    node::{LeadershipMode, PersistenceMode},
-    scenario::Context,
-};
-use jormungandr_testing_utils::testing::network::SpawnParams;
+use hersir::builder::SpawnParams;
+use hersir::controller::{Context, MonitorController, MonitorNode, UserInteractionController};
+use jormungandr_automation::jormungandr::{LeadershipMode, PersistenceMode};
 use jortestkit::prelude::UserInteraction;
-use rand_chacha::ChaChaRng;
 use std::path::Path;
 use std::sync::mpsc::channel;
 use std::sync::Arc;
@@ -28,7 +22,7 @@ use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 use vit_servicing_station_tests::common::data::ValidVotingTemplateGenerator;
 
 pub fn setup_network(
-    controller: &mut Controller,
+    controller: &mut MonitorController,
     vit_controller: &mut VitController,
     vit_parameters: ValidVotePlanParameters,
     vit_data_generator: &mut dyn ValidVotingTemplateGenerator,
@@ -36,7 +30,7 @@ pub fn setup_network(
     protocol: &Protocol,
     vit_version: String,
 ) -> Result<(
-    Vec<NodeController>,
+    Vec<MonitorNode>,
     VitStationController,
     WalletProxyController,
 )> {
@@ -108,16 +102,16 @@ pub fn setup_network(
 }
 
 pub fn interactive_mode(
-    controller: Controller,
-    nodes_list: Vec<NodeController>,
+    controller: MonitorController,
+    nodes_list: Vec<MonitorNode>,
     vit_station: VitStationController,
     wallet_proxy: WalletProxyController,
 ) -> Result<()> {
     let user_integration = vit_interaction();
-    let mut interaction_controller = UserInteractionController::new(controller);
+    let mut interaction_controller = UserInteractionController::new(controller.into());
     let mut vit_interaction_controller: VitUserInteractionController = Default::default();
     let nodes = interaction_controller.nodes_mut();
-    nodes.extend(nodes_list);
+    nodes.extend(nodes_list.iter().map(|node| node.controller()));
     vit_interaction_controller.proxies_mut().push(wallet_proxy);
     vit_interaction_controller
         .vit_stations_mut()
@@ -151,8 +145,8 @@ fn vit_interaction() -> UserInteraction {
 }
 
 pub fn endless_mode(
-    controller: Controller,
-    mut nodes_list: Vec<NodeController>,
+    controller: MonitorController,
+    mut nodes_list: Vec<MonitorNode>,
     vit_station: VitStationController,
     wallet_proxy: WalletProxyController,
 ) -> Result<()> {
@@ -175,7 +169,7 @@ pub fn endless_mode(
 
 #[allow(unreachable_code)]
 pub fn service_mode<P: AsRef<Path> + Clone>(
-    context: Context<ChaChaRng>,
+    context: Context,
     working_dir: P,
     mut quick_setup: VitBackendSettingsBuilder,
     endpoint: String,
@@ -221,7 +215,7 @@ pub fn service_mode<P: AsRef<Path> + Clone>(
 
 pub fn single_run(
     control_context: ControlContextLock,
-    context: Context<ChaChaRng>,
+    context: Context,
     mut quick_setup: VitBackendSettingsBuilder,
     endpoint: String,
     protocol: &Protocol,

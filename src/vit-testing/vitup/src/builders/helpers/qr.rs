@@ -5,12 +5,12 @@ use assert_fs::fixture::ChildPath;
 use assert_fs::fixture::PathChild;
 use catalyst_toolbox::kedqr::{generate, KeyQrCode};
 use chain_crypto::SecretKey;
-use jormungandr_testing_utils::testing::network::WalletAlias;
-use jormungandr_testing_utils::testing::network::WalletTemplate;
-use jormungandr_testing_utils::wallet::Wallet;
-
+use hersir::builder::WalletTemplate;
 use jortestkit::prelude::append;
 use std::collections::HashMap;
+use thor::Wallet;
+use thor::WalletAlias;
+
 pub fn generate_qr_and_hashes(
     wallets: Vec<(&WalletAlias, Wallet)>,
     initials: &HashMap<WalletTemplate, String>,

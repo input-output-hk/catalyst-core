@@ -2,8 +2,7 @@ use super::config::Configuration;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::VitStartParameters;
 use crate::mock::ledger_state::LedgerState;
-use jormungandr_scenario_tests::{Context, ProgressBarMode};
-use jormungandr_testing_utils::testing::network::Seed;
+use hersir::controller::Context;
 use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -23,20 +22,14 @@ pub struct MockState {
 
 pub fn context<P: AsRef<Path>>(testing_directory: P) -> Context {
     let jormungandr = PathBuf::from_str("jormungandr").unwrap();
-    let jcli = PathBuf::from_str("jcli").unwrap();
-    let seed = Seed::generate(rand::rngs::OsRng);
     let generate_documentation = true;
-    let log_level = "info".to_string();
 
-    Context::new(
-        seed,
+    Context {
         jormungandr,
-        jcli,
-        Some(testing_directory.as_ref().to_path_buf()),
+        testing_directory: testing_directory.as_ref().to_path_buf().into(),
         generate_documentation,
-        ProgressBarMode::None,
-        log_level,
-    )
+        session_mode: todo!("session mode?"),
+    }
 }
 
 impl MockState {

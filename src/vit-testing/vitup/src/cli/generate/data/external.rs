@@ -4,7 +4,8 @@ use crate::builders::utils::io::read_config;
 use crate::builders::utils::ContextExtension;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::Result;
-use jormungandr_scenario_tests::Context;
+use hersir::controller::Context;
+use hersir::controller::Controller;
 use std::path::PathBuf;
 use structopt::StructOpt;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
@@ -88,10 +89,12 @@ impl ExternalDataCommandArgs {
 
         generate_database(&deployment_tree, vit_parameters, template_generator);
 
+        let controller: Controller = controller.into();
+
         println!(
             "voteplan ids: {:?}",
             controller
-                .vote_plans()
+                .defined_vote_plans()
                 .iter()
                 .map(|x| x.id())
                 .collect::<Vec<String>>()

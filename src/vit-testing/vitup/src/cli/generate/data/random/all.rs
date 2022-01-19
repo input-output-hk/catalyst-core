@@ -3,7 +3,8 @@ use crate::builders::post_deployment::DeploymentTree;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::builders::{utils::io::read_config, utils::ContextExtension};
 use crate::Result;
-use jormungandr_scenario_tests::Context;
+use hersir::controller::Context;
+use hersir::controller::Controller;
 use std::path::PathBuf;
 use structopt::StructOpt;
 #[derive(StructOpt, Debug)]
@@ -49,10 +50,12 @@ impl AllRandomDataCommandArgs {
 
         generate_random_database(&deployment_tree, vit_parameters);
 
+        let controller: Controller = controller.into();
+
         println!(
             "voteplan ids: {:?}",
             controller
-                .vote_plans()
+                .defined_vote_plans()
                 .iter()
                 .map(|x| x.id())
                 .collect::<Vec<String>>()

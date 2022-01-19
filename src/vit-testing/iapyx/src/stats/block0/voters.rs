@@ -1,8 +1,7 @@
 use crate::cli::args::stats::IapyxStatsCommandError;
 use chain_crypto::bech32::Bech32;
+use jormungandr_automation::{jormungandr::JormungandrRest, testing::block0::get_block};
 use jormungandr_lib::interfaces::Initial;
-use jormungandr_testing_utils::testing::block0::get_block;
-use jormungandr_testing_utils::testing::node::JormungandrRest;
 
 pub fn count_active_voters<S: Into<String>>(endpoint: S) -> Result<(), IapyxStatsCommandError> {
     let endpoint = endpoint.into();
@@ -31,7 +30,7 @@ pub fn count_active_voters<S: Into<String>>(endpoint: S) -> Result<(), IapyxStat
                 println!("[{}/{}] Checking address state {}", stats.total, total, pk);
                 if let Ok(state) = rest_client.account_state_by_pk(&pk) {
                     stats.obtained_voting_power += 1;
-                    if state.counter() > 0 {
+                    if state.counters()[0] > 0 {
                         stats.voted_at_least_once += 1;
                     }
                 }

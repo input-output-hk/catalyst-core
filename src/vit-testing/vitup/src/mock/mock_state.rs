@@ -2,7 +2,16 @@ use super::config::Configuration;
 use crate::builders::utils::SessionSettingsExtension;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::VitStartParameters;
+use crate::mock::congestion::NetworkCongestionMode;
 use crate::mock::ledger_state::LedgerState;
+use crate::mock::NetworkCongestion;
+use chain_impl_mockchain::testing::TestGen;
+use jormungandr_lib::interfaces::{NodeState, NodeStats, NodeStatsDto};
+use jormungandr_scenario_tests::{Context, ProgressBarMode};
+use jormungandr_testing_utils::testing::network::Seed;
+use std::path::Path;
+use std::path::PathBuf;
+use std::str::FromStr;
 use hersir::config::SessionSettings;
 use thiserror::Error;
 use valgrind::VitVersion;
@@ -16,6 +25,7 @@ pub struct MockState {
     version: VitVersion,
     ledger_state: LedgerState,
     vit_state: Snapshot,
+    network_congestion: NetworkCongestion,
 }
 
 impl MockState {
@@ -47,6 +57,7 @@ impl MockState {
             available: true,
             error_code: 400,
             ledger_state: LedgerState::new(controller.settings().block0, controller.block0_file())?,
+            network_congestion: NetworkCongestion::new(&snapshot),
             vit_state: snapshot,
             version: VitVersion {
                 service_version: version,
@@ -58,6 +69,10 @@ impl MockState {
         VitVersion {
             service_version: self.version.service_version.clone(),
         }
+    }
+
+    pub fn set_congestion(&mut self, network_congestion_mode: NetworkCongestionMode) {
+        self.network_congestion.set_mode(network_congestion_mode);
     }
 
     pub fn set_version(&mut self, version: String) {
@@ -98,6 +113,45 @@ impl MockState {
 
         for proposal in self.vit_state.proposals_mut() {
             proposal.proposal.fund_id = id;
+        }
+    }
+
+    pub fn node_stats(&self) -> NodeStatsDto {
+        let settings = self.ledger().settings();
+
+        let uptime = std::time::SystemTime::now()
+            .duration_since(settings.block0_time.into())
+            .unwrap()
+            .as_secs();
+
+        let network_congestion_data = self.network_congestion.calculate(self);
+
+        NodeStatsDto {
+            version: "jormungandr 0.13.0".to_string(),
+            state: NodeState::Running,
+            stats: Some(NodeStats {
+                block_recv_cnt: uptime / 3,
+                last_block_content_size: 0,
+                last_block_date: Some(self.ledger_state.current_blockchain_age().to_string()),
+                last_block_fees: 0,
+                last_block_hash: Some(TestGen::hash().to_string()),
+                last_block_height: Some((uptime / settings.slot_duration).to_string()),
+                last_block_sum: 0,
+                last_block_time: Some(self.ledger_state.curr_slot_start_time()),
+                last_block_tx: 0,
+                last_received_block_time: None,
+                block_content_size_avg: network_congestion_data.block_content_size_avg as u32,
+                peer_available_cnt: 2,
+                peer_connected_cnt: 2,
+                peer_quarantined_cnt: 0,
+                peer_total_cnt: 2,
+                tx_recv_cnt: network_congestion_data.received_fragments_count as u64,
+                tx_pending: network_congestion_data.pending_fragments_count as u64,
+                tx_pending_total_size: network_congestion_data.pending_fragments_total_size,
+                tx_rejected_cnt: network_congestion_data.rejected_fragments_count as u64,
+                votes_cast: network_congestion_data.received_fragments_count as u64,
+                uptime: Some(uptime),
+            }),
         }
     }
 }

@@ -3,6 +3,7 @@ use crate::config::VitStartParameters;
 use crate::manager::file_lister::dump_json;
 use crate::mock::context::{Context, ContextLock};
 use crate::mock::Configuration;
+use crate::mock::NetworkCongestionMode;
 use chain_core::property::Deserialize as _;
 use chain_core::property::Fragment as _;
 use chain_crypto::PublicKey;
@@ -162,12 +163,39 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
                 root.and(reject.or(accept).or(pending).or(reset)).boxed()
             };
 
+            let network_strategy = {
+                let root = warp::path!("congestion" / ..);
+
+                let normal = warp::path!("normal")
+                    .and(warp::post())
+                    .and(with_context.clone())
+                    .and_then(command_congestion_normal);
+
+                let jammed = warp::path!("jammed")
+                    .and(warp::post())
+                    .and(with_context.clone())
+                    .and_then(command_congestion_jammed);
+
+                let moderate = warp::path!("moderate")
+                    .and(warp::post())
+                    .and(with_context.clone())
+                    .and_then(command_congestion_moderate);
+
+                let reset = warp::path!("reset")
+                    .and(warp::post())
+                    .and(with_context.clone())
+                    .and_then(command_congestion_reset);
+
+                root.and(normal.or(jammed).or(moderate).or(reset)).boxed()
+            };
+
             root.and(
                 reset
                     .or(availability)
                     .or(set_error_code)
                     .or(fund_id)
                     .or(fragment_strategy)
+                    .or(network_strategy)
                     .or(version),
             )
             .boxed()
@@ -268,6 +296,13 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
             .with(warp::reply::with::headers(default_headers.clone()))
             .boxed();
 
+        let stats = warp::path!("node" / "stats")
+            .and(warp::get())
+            .and(with_context.clone())
+            .and_then(get_node_stats)
+            .with(warp::reply::with::headers(default_headers.clone()))
+            .boxed();
+
         let account = warp::path!("account" / String)
             .and(warp::get())
             .and(with_context.clone())
@@ -325,6 +360,7 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
                 .or(reviews)
                 .or(block0)
                 .or(settings)
+                .or(stats)
                 .or(account)
                 .or(fragment)
                 .or(votes)
@@ -402,6 +438,7 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
             key_path,
             cert_path,
         } => {
+            println!("serving at: https://{}", address);
             warp::serve(api)
                 .tls()
                 .cert_path(cert_path)
@@ -410,6 +447,7 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
                 .await;
         }
         Protocol::Http => {
+            println!("serving at: http://{}", address);
             warp::serve(api).bind(address).await;
         }
     }
@@ -616,6 +654,42 @@ pub async fn command_version(
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
     context.lock().unwrap().state_mut().set_version(version);
+    Ok(warp::reply())
+}
+
+pub async fn command_congestion_normal(context: ContextLock) -> Result<impl Reply, Rejection> {
+    context
+        .lock()
+        .unwrap()
+        .state_mut()
+        .set_congestion(NetworkCongestionMode::Normal);
+    Ok(warp::reply())
+}
+
+pub async fn command_congestion_jammed(context: ContextLock) -> Result<impl Reply, Rejection> {
+    context
+        .lock()
+        .unwrap()
+        .state_mut()
+        .set_congestion(NetworkCongestionMode::Jammed);
+    Ok(warp::reply())
+}
+
+pub async fn command_congestion_moderate(context: ContextLock) -> Result<impl Reply, Rejection> {
+    context
+        .lock()
+        .unwrap()
+        .state_mut()
+        .set_congestion(NetworkCongestionMode::Moderate);
+    Ok(warp::reply())
+}
+
+pub async fn command_congestion_reset(context: ContextLock) -> Result<impl Reply, Rejection> {
+    context
+        .lock()
+        .unwrap()
+        .state_mut()
+        .set_congestion(NetworkCongestionMode::Disabled);
     Ok(warp::reply())
 }
 
@@ -1009,6 +1083,23 @@ pub async fn get_fund(context: ContextLock) -> Result<impl Reply, Rejection> {
     let funds: Vec<Fund> = context.lock().unwrap().state().vit().funds().to_vec();
 
     Ok(HandlerResult(Ok(funds.first().unwrap().clone())))
+}
+
+pub async fn get_node_stats(context: ContextLock) -> Result<impl Reply, Rejection> {
+    context.lock().unwrap().log("get_node_stats...");
+
+    if !context.lock().unwrap().available() {
+        let code = context.lock().unwrap().state().error_code;
+        context.lock().unwrap().log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
+    }
+
+    let context = context.lock().unwrap();
+
+    Ok(HandlerResult(Ok(context.state().node_stats())))
 }
 
 pub async fn get_settings(context: ContextLock) -> Result<impl Reply, Rejection> {

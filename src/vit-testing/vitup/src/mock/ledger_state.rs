@@ -7,16 +7,15 @@ use chain_impl_mockchain::ledger::{Error as LedgerError, Ledger};
 use chain_impl_mockchain::testing::TestGen;
 use chain_impl_mockchain::transaction::Transaction;
 use chain_impl_mockchain::vote::VotePlanStatus;
-use chain_time::TimeEra;
 use jormungandr_lib::interfaces::Block0Configuration;
 use jormungandr_lib::interfaces::RejectedFragmentInfo;
 use jormungandr_lib::interfaces::{BlockDate, SettingsDto};
 use jormungandr_lib::interfaces::{FragmentLog, FragmentOrigin, FragmentStatus};
 use jormungandr_lib::interfaces::{FragmentRejectionReason, FragmentsProcessingSummary};
 use jormungandr_lib::time::SystemTime;
+use jormungandr_testing_utils::testing::BlockDateGenerator;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::ops::Add;
 use std::path::PathBuf;
 use thiserror::Error;
 
@@ -33,7 +32,6 @@ pub struct LedgerState {
     fragment_logs: Vec<FragmentLog>,
     received_fragments: Vec<Fragment>,
     ledger: Ledger,
-    start_time: SystemTime,
     block0_configuration: Block0Configuration,
     block0_bin: Vec<u8>,
 }
@@ -50,7 +48,6 @@ impl LedgerState {
             fragment_logs: Vec::new(),
             received_fragments: Vec::new(),
             block0_configuration,
-            start_time: SystemTime::now(),
             block0_bin: jortestkit::file::get_file_as_byte_vec(&block0_path),
             ledger: Ledger::new(block.id(), block.fragments())?,
         })
@@ -60,7 +57,7 @@ impl LedgerState {
         self.received_fragments.push(fragment.clone());
         let fragment_id = fragment.id();
         let parameters = self.ledger.get_ledger_parameters();
-        let date = self.curr_block_date();
+        let date = self.current_blockchain_age();
         let result = self
             .ledger
             .apply_fragment(&parameters, &fragment, date.into());
@@ -161,7 +158,7 @@ impl LedgerState {
     }
 
     pub fn set_status_for_recent_fragment(&mut self, fragment_strategy: FragmentRecieveStrategy) {
-        let block_date = self.curr_block_date();
+        let block_date = self.current_blockchain_age();
         let fragment_log = self.fragment_logs.last_mut().unwrap();
         override_fragment_status(block_date, fragment_log, fragment_strategy);
     }
@@ -177,7 +174,7 @@ impl LedgerState {
                 Ok(ledger) => {
                     self.ledger = ledger;
                     fragment_log.modify(FragmentStatus::InABlock {
-                        date: self.curr_block_date(),
+                        date: self.current_blockchain_age(),
                         block: TestGen::hash().into(),
                     })
                 }
@@ -186,7 +183,11 @@ impl LedgerState {
                 }),
             };
         } else {
-            override_fragment_status(self.curr_block_date(), fragment_log, fragment_strategy);
+            override_fragment_status(
+                self.current_blockchain_age(),
+                fragment_log,
+                fragment_strategy,
+            );
         }
     }
 
@@ -198,57 +199,39 @@ impl LedgerState {
         self.received_fragments.clone()
     }
 
-    pub fn curr_block_date(&self) -> BlockDate {
-        let curr_time = self.start_time;
-        let slot_duration: u8 = self
-            .block0_configuration
-            .blockchain_configuration
-            .slot_duration
-            .into();
-        let slots_per_epoch: u32 = self
-            .block0_configuration
-            .blockchain_configuration
-            .slots_per_epoch
-            .into();
-        let slot_duration = std::time::Duration::from_secs(slot_duration as u64);
-        let now = SystemTime::from_secs_since_epoch(
-            self.block0_configuration
-                .blockchain_configuration
-                .block0_date
-                .to_secs(),
-        );
-        let mut no_of_slots = 0;
-        loop {
-            if now.as_ref() < &curr_time.as_ref().add(slot_duration) {
-                let time_era = TimeEra::new(0.into(), chain_time::Epoch(0), slots_per_epoch);
-                return BlockDate::new(0u32, 0u32).shift_slot(no_of_slots, &time_era);
-            }
-            no_of_slots += 1;
-        }
+    pub fn curr_slot_start_time(&self) -> SystemTime {
+        let blockchain_configuration = &self.block0_configuration.blockchain_configuration;
+
+        let slot_duration: u8 = blockchain_configuration.slot_duration.into();
+        let slots_per_epoch: u32 = blockchain_configuration.slots_per_epoch.into();
+        let last_block_date = self.current_blockchain_age();
+        let secs = last_block_date.epoch() * slot_duration as u32 * slots_per_epoch
+            + slot_duration as u32 * last_block_date.slot();
+        let block0_time: std::time::SystemTime =
+            jormungandr_lib::time::SystemTime::from(blockchain_configuration.block0_date).into();
+        block0_time
+            .checked_add(std::time::Duration::from_secs(secs.into()))
+            .unwrap()
+            .into()
     }
 
-    pub fn curr_slot_start_time(&self) -> SystemTime {
-        let mut curr_time = self.start_time;
-        let slot_duration: u8 = self
-            .block0_configuration
-            .blockchain_configuration
-            .slot_duration
-            .into();
-        let slot_duration = std::time::Duration::from_secs(slot_duration as u64);
-        let now = SystemTime::from_secs_since_epoch(
-            self.block0_configuration
-                .blockchain_configuration
-                .block0_date
-                .to_secs(),
-        );
+    pub fn current_blockchain_age(&self) -> BlockDate {
+        let blockchain_configuration = &self.block0_configuration.blockchain_configuration;
 
-        loop {
-            if now.as_ref() < &curr_time.as_ref().add(slot_duration) {
-                return curr_time;
-            }
+        let slot_duration: u8 = blockchain_configuration.slot_duration.into();
+        let slots_per_epoch: u32 = blockchain_configuration.slots_per_epoch.into();
+        BlockDateGenerator::current_blockchain_age(
+            SystemTime::from(blockchain_configuration.block0_date),
+            slots_per_epoch,
+            slot_duration.into(),
+        )
+        .into()
+    }
 
-            curr_time = curr_time.as_ref().add(slot_duration).into();
-        }
+    pub fn absolute_slot_count(&self) -> u32 {
+        let settings = self.settings();
+        let block_date = self.current_blockchain_age();
+        block_date.epoch() * settings.slots_per_epoch + block_date.slot()
     }
 
     pub fn settings(&self) -> SettingsDto {

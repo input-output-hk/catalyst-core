@@ -1,6 +1,10 @@
 use crate::builders::convert_to_human_date;
 use crate::builders::post_deployment::DeploymentTree;
 use crate::config::VitStartParameters;
+use crate::vit_station::DbGenerator;
+use chain_impl_mockchain::testing::scenario::template::ProposalDefBuilder;
+use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
+use chain_impl_mockchain::testing::scenario::template::VotePlanDefBuilder;
 use jormungandr_lib::time::SecondsSinceUnixEpoch;
 use serde_json::Value;
 use std::collections::LinkedList;
@@ -11,15 +15,11 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
-use chain_impl_mockchain::testing::scenario::template::ProposalDefBuilder;
-use chain_impl_mockchain::testing::scenario::template::VotePlanDefBuilder;
-use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 use vit_servicing_station_tests::common::data::{
     parse_challenges, parse_funds, parse_proposals, parse_reviews,
 };
-use crate::vit_station::DbGenerator;
 use vit_servicing_station_tests::common::data::{ChallengeTemplate, FundTemplate, ReviewTemplate};
 
 #[derive(StructOpt, Debug)]
@@ -44,6 +44,10 @@ pub struct IdeascaleValidateCommand {
     /// should i fix data is possible
     #[structopt(long = "fix")]
     pub fix: bool,
+
+    /// should i fix data is possible
+    #[structopt(long = "mail", default_value = "")]
+    pub mail_replacement: String,
 }
 
 #[derive(Debug, Error)]
@@ -103,10 +107,9 @@ pub enum ChallengeError {
 }
 
 impl IdeascaleValidateCommand {
-
-    fn add_prefix(&self,file_name: &str) -> String {
-        if let Some(prefix) = self.prefix.as_ref(){
-            format!("{}{}",prefix,file_name)
+    fn add_prefix(&self, file_name: &str) -> String {
+        if let Some(prefix) = self.prefix.as_ref() {
+            format!("{}{}", prefix, file_name)
         } else {
             file_name.to_string()
         }
@@ -154,6 +157,7 @@ impl IdeascaleValidateCommand {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn generate_vit_database(
         &self,
         proposals_path: PathBuf,
@@ -180,7 +184,11 @@ impl IdeascaleValidateCommand {
             convert_to_human_date(&input_parameters, SecondsSinceUnixEpoch::now());
 
         let mut parameters = ValidVotePlanParameters::new(
-            (0..proposals_count).collect::<Vec<usize>>().chunks(255).map(|chunk| self.vote_plan_def(chunk.len())).collect(),
+            (0..proposals_count)
+                .collect::<Vec<usize>>()
+                .chunks(255)
+                .map(|chunk| self.vote_plan_def(chunk.len()))
+                .collect(),
             "test".to_string(),
         );
         parameters.set_voting_power_threshold((input_parameters.voting_power * 1_000_000) as i64);
@@ -197,12 +205,13 @@ impl IdeascaleValidateCommand {
         parameters.set_fund_id(input_parameters.fund_id);
         parameters.calculate_challenges_total_funds = false;
 
-        DbGenerator::new(parameters,self.migration_scripts_path.clone()).build(&deployment_tree.database_path(), &mut template_generator); 
-       
+        DbGenerator::new(parameters, self.migration_scripts_path.clone())
+            .build(&deployment_tree.database_path(), &mut template_generator);
+
         Ok(())
     }
 
-    fn vote_plan_def(&self,proposals_len: usize) -> VotePlanDef {
+    fn vote_plan_def(&self, proposals_len: usize) -> VotePlanDef {
         let mut vote_plan_builder = VotePlanDefBuilder::new("fund_x");
         vote_plan_builder.owner("validate");
         vote_plan_builder.vote_phases(1, 2, 3);
@@ -266,6 +275,11 @@ impl IdeascaleValidateCommand {
             }
         };
 
+        self.check_and_eventually_fix_private_data(
+            &mut proposals,
+            fix,
+            self.mail_replacement.clone(),
+        );
         self.check_and_eventually_fix_proposal_funds(&mut proposals, fix)?;
         self.check_proposals_wrong_syntax(&mut proposals, challenges)?;
         Ok(proposals)
@@ -281,6 +295,29 @@ impl IdeascaleValidateCommand {
         println!("Corrected proposals: {:?}..", output);
         let mut file = File::create(output)?;
         file.write_all(content.as_bytes()).map_err(Into::into)
+    }
+
+    pub fn check_and_eventually_fix_private_data(
+        &self,
+        data: &mut Vec<Value>,
+        fix: bool,
+        mail_replacement: String,
+    ) {
+        for proposal in data.iter_mut() {
+            if let Some(proposer_mail) = proposal.get_mut("proposer_email") {
+                if fix {
+                    let before = proposer_mail.as_str().unwrap();
+                    let after = mail_replacement.clone();
+                    println!("Sanitizing mail address {}-{}", before, after);
+                    *proposer_mail = Value::String(after);
+                } else {
+                    panic!(
+                        "not sanitized chars detected: {}",
+                        proposer_mail.as_str().as_ref().unwrap()
+                    );
+                }
+            }
+        }
     }
 
     pub fn check_and_eventually_fix_proposal_funds(

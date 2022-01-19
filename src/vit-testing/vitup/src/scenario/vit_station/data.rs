@@ -1,5 +1,5 @@
 use assert_fs::TempDir;
-use std::path::{Path,PathBuf};
+use std::path::{Path, PathBuf};
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 use vit_servicing_station_tests::common::data::{
     ValidVotePlanGenerator, ValidVotingTemplateGenerator,
@@ -11,11 +11,15 @@ pub struct DbGenerator {
 }
 
 impl DbGenerator {
-    pub fn new(parameters: ValidVotePlanParameters, migration_scripts_path: Option<PathBuf>) -> Self {
-        Self { 
+    pub fn new(
+        parameters: ValidVotePlanParameters,
+        migration_scripts_path: Option<PathBuf>,
+    ) -> Self {
+        Self {
             parameters,
-            migration_scripts_path: migration_scripts_path
-                .unwrap_or( std::path::Path::new("../").join("resources/vit_station/migration").to_path_buf()) 
+            migration_scripts_path: migration_scripts_path.unwrap_or_else(|| {
+                std::path::Path::new("../").join("resources/vit_station/migration")
+            }),
         }
     }
 
@@ -24,7 +28,7 @@ impl DbGenerator {
 
         let mut generator = ValidVotePlanGenerator::new(self.parameters);
         let snapshot = generator.build(template_generator);
-      
+
         let temp_dir = TempDir::new().unwrap().into_persistent();
         let temp_db_path = DbBuilder::new()
             .with_snapshot(&snapshot)

@@ -361,26 +361,33 @@ impl<'runtime> ApplyBackend for VirtualMachine<'runtime> {
                     // Then, modify the account balance, nonce, and code.
                     // If reset_storage is set, the account's balance is
                     // set to be Default::default().
-                    let mut account =
-                        self.state
-                            .modify_account(&address, balance, nonce, code, reset_storage);
-
-                    // iterate over the apply_storage keys and values
-                    // and put them into the account.
-                    for (index, value) in apply_storage {
-                        account.storage = if value == crate::state::Value::default() {
-                            // value is full of zeroes, remove it
-                            account.storage.clone().remove(&index)
-                        } else {
-                            account.storage.clone().put(index, value)
+                    self.state = self.state.clone().modify_account(address, |mut account| {
+                        account.balance = balance;
+                        account.nonce = nonce;
+                        if let Some(code) = code {
+                            account.code = code
+                        };
+                        if reset_storage {
+                            account.storage = Default::default();
                         }
-                    }
 
-                    self.state = if delete_empty && account.is_empty() {
-                        self.state.clone().remove(&address)
-                    } else {
-                        self.state.clone().put(address, account)
-                    }
+                        // iterate over the apply_storage keys and values
+                        // and put them into the account.
+                        for (index, value) in apply_storage {
+                            account.storage = if value == crate::state::Value::default() {
+                                // value is full of zeroes, remove it
+                                account.storage.remove(&index)
+                            } else {
+                                account.storage.put(index, value)
+                            }
+                        }
+
+                        if delete_empty && account.is_empty() {
+                            None
+                        } else {
+                            Some(account)
+                        }
+                    });
                 }
                 Apply::Delete { address } => {
                     self.state = self.state.clone().remove(&address);

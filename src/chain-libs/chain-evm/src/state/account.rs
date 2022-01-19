@@ -32,35 +32,23 @@ impl Account {
 pub type AccountTrie = Trie<Address, Account>;
 
 impl AccountTrie {
-    pub fn modify_account(
-        &self,
-        address: &Address,
-        nonce: Nonce,
-        balance: Balance,
-        code: Option<Vec<u8>>,
-        reset_storage: bool,
-    ) -> Account {
-        let account = if let Some(acct) = self.get(address) {
-            acct.clone()
-        } else {
-            Default::default()
-        };
-        let acct_storage = if reset_storage {
-            Default::default()
-        } else {
-            account.storage
-        };
-        let code = if let Some(code) = code {
-            code
-        } else {
-            account.code
+    /// Modify account
+    ///
+    /// If the element is not present, the closure F is apllied to the Default::default() value,
+    /// otherwise the closure F is applied to the found element.
+    /// If the closure returns None, then the key is deleted
+    pub fn modify_account<F>(self, address: Address, f: F) -> Self
+    where
+        F: FnOnce(Account) -> Option<Account>,
+    {
+        let account = match self.get(&address) {
+            Some(account) => account.clone(),
+            None => Default::default(),
         };
 
-        Account {
-            nonce,
-            balance,
-            storage: acct_storage,
-            code,
+        match f(account) {
+            Some(account) => self.put(address, account),
+            None => self.remove(&address),
         }
     }
 }

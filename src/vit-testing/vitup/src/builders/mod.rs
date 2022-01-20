@@ -395,7 +395,7 @@ impl VitBackendSettingsBuilder {
         let parameters = build_servicing_station_parameters(
             self.fund_name(),
             &self.config.params,
-            controller.vote_plans(),
+            controller.defined_vote_plans(),
             controller.settings(),
         );
         Ok((

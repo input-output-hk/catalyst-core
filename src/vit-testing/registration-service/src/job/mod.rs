@@ -4,7 +4,7 @@ use crate::config::NetworkType;
 use crate::request::Request;
 use crate::utils::CommandExt as _;
 pub use info::JobOutputInfo;
-use jormungandr_testing_utils::testing::jcli::JCli;
+use jormungandr_automation::jcli::JCli;
 use jortestkit::prelude::read_file;
 use jortestkit::prelude::ProcessOutput;
 use serde::{Deserialize, Serialize};

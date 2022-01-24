@@ -1,6 +1,5 @@
 mod advanced;
 mod mock;
-pub mod mode;
 mod quick;
 
 pub use advanced::AdvancedStartCommandArgs;

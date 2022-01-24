@@ -511,13 +511,13 @@ pub async fn get_account_votes(
 }
 
 pub fn into_identifier(account_id_hex: String) -> Result<account::Identifier, Rejection> {
-    Ok(parse_account_id(&account_id_hex).map_err(|err| {
+    parse_account_id(&account_id_hex).map_err(|err| {
         println!("{:?}", err);
         warp::reject::custom(GeneralException {
             summary: "Cannot parse account id".to_string(),
             code: 400,
         })
-    })?)
+    })
 }
 
 pub async fn logs_get(context: ContextLock) -> Result<impl Reply, Rejection> {

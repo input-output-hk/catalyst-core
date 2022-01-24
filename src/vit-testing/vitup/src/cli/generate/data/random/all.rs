@@ -1,10 +1,9 @@
 use crate::builders::post_deployment::generate_random_database;
 use crate::builders::post_deployment::DeploymentTree;
 use crate::builders::VitBackendSettingsBuilder;
-use crate::builders::{utils::io::read_config, utils::ContextExtension};
+use crate::builders::{utils::io::read_config, utils::SessionSettingsExtension};
 use crate::Result;
-use hersir::controller::Context;
-use hersir::controller::Controller;
+use hersir::config::SessionSettings;
 use std::path::PathBuf;
 use structopt::StructOpt;
 #[derive(StructOpt, Debug)]
@@ -26,7 +25,7 @@ impl AllRandomDataCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 
-        let context = Context::empty_from_dir(&self.output_directory);
+        let session_settings = SessionSettings::empty_from_dir(&self.output_directory);
 
         let mut quick_setup = VitBackendSettingsBuilder::new();
         let mut config = read_config(&self.config)?;
@@ -46,11 +45,9 @@ impl AllRandomDataCommandArgs {
 
         let deployment_tree = DeploymentTree::new(&self.output_directory, quick_setup.title());
 
-        let (_, controller, vit_parameters, _) = quick_setup.build(context)?;
+        let (controller, vit_parameters, _) = quick_setup.build(session_settings.into())?;
 
         generate_random_database(&deployment_tree, vit_parameters);
-
-        let controller: Controller = controller.into();
 
         println!(
             "voteplan ids: {:?}",

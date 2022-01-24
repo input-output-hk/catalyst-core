@@ -1,5 +1,6 @@
 mod env;
 mod initials;
+pub mod mode;
 mod vote_time;
 
 pub use env::VitStartParameters;

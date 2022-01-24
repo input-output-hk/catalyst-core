@@ -157,8 +157,6 @@ impl ValgrindClient {
 
     pub fn enable_logs(&mut self) {
         self.node_client.enable_logs();
-        todo!("and this, what happened to this?");
-        // self.vit_client.enable_log();
         self.proxy_client.enable_debug();
     }
 

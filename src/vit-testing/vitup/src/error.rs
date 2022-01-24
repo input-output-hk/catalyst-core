@@ -1,4 +1,4 @@
-use crate::scenario::vit_station::VitStationControllerError;
+use crate::scenario::vit_station::Error as VitStationControllerError;
 use crate::scenario::wallet::WalletProxyError;
 use hersir::controller::NodeError;
 use jormungandr_automation::testing::ConsumptionBenchmarkError;
@@ -29,8 +29,6 @@ pub enum Error {
     VerificationFailed(#[from] VerificationError),
     #[error(transparent)]
     MonitorResourcesError(#[from] ConsumptionBenchmarkError),
-    //#[error(transparent)]
-    //ExplorerError(#[from] node::ExplorerError),
     #[error(transparent)]
     VitStationControllerError(#[from] VitStationControllerError),
     #[error(transparent)]
@@ -43,10 +41,6 @@ pub enum Error {
     SerdeYamlError(#[from] serde_yaml::Error),
     #[error(transparent)]
     Block0EncodeError(#[from] chain_impl_mockchain::ledger::Error),
-    //#[error(transparent)]
-    //ScenarioError(#[from] scenario::Error),
-    //#[error(transparent)]
-    //GeneralError(#[from] test::Error),
     #[error(transparent)]
     ImageReadError(#[from] image::error::ImageError),
     #[error(transparent)]
@@ -75,7 +69,6 @@ pub enum Error {
     Validate(#[from] crate::cli::ValidateError),
     #[error(transparent)]
     ControllerError(#[from] hersir::controller::Error),
-
     #[error("synchronization for nodes has failed. {}. Timeout was: {} s", info, timeout.as_secs())]
     SyncTimeoutOccurred { info: String, timeout: Duration },
     #[error("{info}")]
@@ -91,6 +84,8 @@ pub enum Error {
     },
     #[error("proxy with alias: {alias} not found")]
     ProxyNotFound { alias: String },
+    #[error("unknown log level: {0}")]
+    UnknownLogLevel(String),
     #[error("environment is down")]
     EnvironmentIsDown,
     #[error("wrong format for snapshot data")]

@@ -3,13 +3,12 @@ use crate::common::{vitup_setup, wait_until_folder_contains_all_qrs, Error, Vote
 use assert_fs::TempDir;
 use chain_impl_mockchain::block::BlockDate;
 use chain_impl_mockchain::key::Hash;
-use jormungandr_testing_utils::testing::asserts::VotePlanStatusAssert;
-use jormungandr_testing_utils::testing::network::VotePlanSettings;
-use jormungandr_testing_utils::testing::BlockDateGenerator;
-use jormungandr_testing_utils::testing::FragmentSender;
-use jormungandr_testing_utils::testing::{node::time, FragmentSenderSetup};
+use hersir::builder::VotePlanSettings;
+use jormungandr_automation::testing::asserts::VotePlanStatusAssert;
+use jormungandr_automation::testing::node::time;
 use std::path::Path;
 use std::str::FromStr;
+use thor::{BlockDateGenerator, FragmentSender, FragmentSenderSetup};
 use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
@@ -82,7 +81,10 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
     // start mainnet wallets
     let mut david = iapyx_from_qr(&david_qr_code, "1234", &wallet_proxy).unwrap();
 
-    let fund1_vote_plan = controller.vote_plan(&fund_name).unwrap();
+    let fund1_vote_plan = controller
+        .defined_vote_plans()
+        .iter()
+        .map(|x| x.name == fund_name);
 
     // start voting
     david

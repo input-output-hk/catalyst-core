@@ -26,7 +26,6 @@ use hersir::builder::Node;
 use hersir::builder::Topology;
 use hersir::builder::WalletTemplate;
 use hersir::controller::Context;
-use hersir::controller::MonitorController;
 use jormungandr_lib::interfaces::CommitteeIdDef;
 use jormungandr_lib::interfaces::ConsensusLeaderId;
 pub use jormungandr_lib::interfaces::Initial;
@@ -267,7 +266,7 @@ impl VitBackendSettingsBuilder {
 
     pub fn dump_qrs(
         &self,
-        controller: &MonitorController,
+        controller: &VitController,
         initials: &HashMap<WalletTemplate, String>,
         child: &ChildPath,
     ) -> Result<()> {
@@ -275,7 +274,7 @@ impl VitBackendSettingsBuilder {
         std::fs::create_dir_all(folder.path())?;
 
         let wallets: Vec<(_, _)> = controller
-            .wallets()
+            .defined_wallets()
             .filter(|(_, x)| !x.template().alias().starts_with("committee"))
             .map(|(alias, _template)| {
                 (
@@ -293,13 +292,8 @@ impl VitBackendSettingsBuilder {
     pub fn build(
         &mut self,
         context: Context,
-    ) -> Result<(
-        VitController,
-        MonitorController,
-        ValidVotePlanParameters,
-        String,
-    )> {
-        let mut builder = VitControllerBuilder::new(&self.title);
+    ) -> Result<(VitController, ValidVotePlanParameters, String)> {
+        let mut builder = VitControllerBuilder::new();
 
         let vote_blockchain_time =
             convert_to_blockchain_date(&self.config.params, self.block0_date);
@@ -380,7 +374,7 @@ impl VitBackendSettingsBuilder {
 
         println!("building controllers..");
 
-        let (vit_controller, controller) = builder.build(context)?;
+        let controller = builder.build(context)?;
 
         if !self.skip_qr_generation {
             self.dump_qrs(&controller, &templates, &child)?;
@@ -396,14 +390,9 @@ impl VitBackendSettingsBuilder {
             self.fund_name(),
             &self.config.params,
             controller.defined_vote_plans(),
-            controller.settings(),
+            &controller.settings(),
         );
-        Ok((
-            vit_controller,
-            controller,
-            parameters,
-            self.config.params.version.clone(),
-        ))
+        Ok((controller, parameters, self.config.params.version.clone()))
     }
 
     pub fn print_report(&self) {

@@ -1,11 +1,10 @@
 use crate::builders::post_deployment::generate_database;
 use crate::builders::post_deployment::DeploymentTree;
 use crate::builders::utils::io::read_config;
-use crate::builders::utils::ContextExtension;
+use crate::builders::utils::SessionSettingsExtension;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::Result;
-use hersir::controller::Context;
-use hersir::controller::Controller;
+use hersir::config::SessionSettings;
 use std::path::PathBuf;
 use structopt::StructOpt;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
@@ -54,7 +53,7 @@ impl ExternalDataCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 
-        let context = Context::empty_from_dir(&self.output_directory);
+        let session_settings = SessionSettings::empty_from_dir(&self.output_directory);
 
         let mut quick_setup = VitBackendSettingsBuilder::new();
         let mut config = read_config(&self.config)?;
@@ -77,7 +76,7 @@ impl ExternalDataCommandArgs {
 
         let deployment_tree = DeploymentTree::new(&self.output_directory, quick_setup.title());
 
-        let (_, controller, vit_parameters, _) = quick_setup.build(context)?;
+        let (controller, vit_parameters, _) = quick_setup.build(session_settings.into())?;
 
         let template_generator = ExternalValidVotingTemplateGenerator::new(
             self.proposals,
@@ -88,8 +87,6 @@ impl ExternalDataCommandArgs {
         .unwrap();
 
         generate_database(&deployment_tree, vit_parameters, template_generator);
-
-        let controller: Controller = controller.into();
 
         println!(
             "voteplan ids: {:?}",

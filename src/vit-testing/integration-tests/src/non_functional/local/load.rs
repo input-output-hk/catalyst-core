@@ -2,6 +2,7 @@ use crate::common::{load::build_load_config, load::private_vote_test_scenario, v
 use assert_fs::TempDir;
 use iapyx::NodeLoad;
 use jortestkit::measurement::Status;
+use thor::FragmentSender;
 use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
@@ -67,10 +68,15 @@ pub fn load_test_public_100_000_votes() {
     vote_timing.wait_for_tally_start(nodes.get(0).unwrap().rest());
 
     let mut committee = controller.wallet("committee").unwrap();
-    let vote_plan = controller.vote_plan(&fund_name).unwrap();
+    let vote_plan = controller
+        .defined_vote_plans()
+        .iter()
+        .find(|x| x.name == fund_name)
+        .unwrap();
 
-    controller
-        .fragment_sender()
+    let fragment_sender = FragmentSender::from(controller.settings().block0);
+
+    fragment_sender
         .send_public_vote_tally(&mut committee, &vote_plan.into(), nodes.get(0).unwrap())
         .unwrap();
 

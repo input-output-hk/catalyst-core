@@ -10,7 +10,7 @@ pub mod manager;
 mod mock;
 pub mod scenario;
 
-type Result<T> = std::result::Result<T, error::Error>;
+pub type Result<T> = std::result::Result<T, error::Error>;
 
 use scenario::vit_station;
 use scenario::wallet;

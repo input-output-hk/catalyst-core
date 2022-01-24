@@ -1,6 +1,6 @@
 use structopt::StructOpt;
 use vitup::client::args::VitupClientCommand;
-use vitup::error::Result;
+use vitup::Result;
 
 #[tokio::main]
 pub async fn main() -> Result<()> {

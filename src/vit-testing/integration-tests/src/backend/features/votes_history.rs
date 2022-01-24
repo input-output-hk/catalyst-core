@@ -1,10 +1,10 @@
 use crate::common::{iapyx_from_secret_key, vitup_setup};
 use assert_fs::TempDir;
 use chain_impl_mockchain::vote::Choice;
+use jormungandr_automation::testing::time;
 use jormungandr_lib::crypto::hash::Hash;
 use jormungandr_lib::interfaces::AccountVotes;
 use jormungandr_lib::interfaces::FragmentStatus;
-use jormungandr_testing_utils::testing::node::time;
 use std::collections::HashMap;
 use std::str::FromStr;
 use valgrind::{Proposal, Protocol};

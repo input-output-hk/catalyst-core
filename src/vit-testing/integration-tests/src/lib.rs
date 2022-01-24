@@ -9,22 +9,17 @@ cfg_if::cfg_if! {
     }
 }
 
-use jormungandr_testing_utils::testing::node::time;
-use jormungandr_testing_utils::testing::node::JormungandrRest;
+use jormungandr_automation::{jormungandr::JormungandrRest, testing::time};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("vitup error")]
     VitupError(#[from] vitup::error::Error),
-    #[error("node error")]
-    NodeError(#[from] jormungandr_scenario_tests::node::Error),
     #[error("verification error")]
-    VerificationError(#[from] jormungandr_testing_utils::testing::VerificationError),
+    VerificationError(#[from] jormungandr_automation::testing::VerificationError),
     #[error("sender error")]
-    FragmentSenderError(#[from] jormungandr_testing_utils::testing::FragmentSenderError),
-    #[error("scenario error")]
-    ScenarioError(#[from] jormungandr_scenario_tests::scenario::Error),
+    FragmentSenderError(#[from] thor::FragmentSenderError),
     #[error("iapyx error")]
     IapyxError(#[from] iapyx::ControllerError),
 }

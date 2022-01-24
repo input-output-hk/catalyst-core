@@ -5,10 +5,11 @@ use catalyst_toolbox::recovery::Replay;
 use iapyx::NodeLoad;
 use jcli_lib::utils::output_file::OutputFile;
 use jcli_lib::utils::output_format::{FormatVariant, OutputFormat};
+use jormungandr_automation::testing::block0::get_block;
 use jormungandr_lib::interfaces::VotePlanStatus;
-use jormungandr_testing_utils::testing::block0::get_block;
 use jortestkit::measurement::Status;
 use serde_json;
+use thor::FragmentSender;
 use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
@@ -81,8 +82,9 @@ pub fn persistent_log_contains_all_sent_votes() {
     let mut committee = controller.wallet("committee_1").unwrap();
     let vote_plan = controller.vote_plan(&fund_name).unwrap();
 
-    controller
-        .fragment_sender()
+    let fragment_sender = FragmentSender::from(&controller.settings().block0);
+
+    fragment_sender
         .send_public_vote_tally(&mut committee, &vote_plan.into(), nodes.get(0).unwrap())
         .unwrap();
 

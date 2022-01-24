@@ -8,6 +8,9 @@ edition = "2021"
 
 [dependencies]
 jormungandr-lib = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-automation = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+thor = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+hersir = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jcli = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }

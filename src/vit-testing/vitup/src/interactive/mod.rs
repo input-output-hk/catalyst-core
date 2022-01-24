@@ -45,17 +45,21 @@ impl<'a> InteractiveCommandExec for VitInteractiveCommandExec {
             Ok(interactive) => {
                 if let Err(err) = {
                     match interactive {
-                        VitInteractiveCommand::Show(show) => Ok(show.exec(self)),
+                        VitInteractiveCommand::Show(show) => {
+                            show.exec(self);
+                            Ok(())
+                        }
                         VitInteractiveCommand::Exit => Ok(()),
-                        VitInteractiveCommand::Describe(describe) => Ok(describe.exec(self)),
-                        VitInteractiveCommand::Send(send) => send.exec(self.controller_mut()),
+                        VitInteractiveCommand::Describe(describe) => describe.exec(self),
+                        VitInteractiveCommand::Send(send) => {
+                            send.exec(self.controller_mut()).map_err(Into::into)
+                        }
                         VitInteractiveCommand::Explorer(explorer) => {
-                            explorer.exec(self.controller_mut())
+                            explorer.exec(self.controller_mut()).map_err(Into::into)
                         }
                     }
                 } {
-                    // TODO: don't know the error type until I re add the previous things
-                    // console.format_error(InteractiveCommandError::UserError(err.to_string()));
+                    console.format_error(InteractiveCommandError::UserError(err.to_string()));
                 }
             }
             Err(err) => console.show_help(InteractiveCommandError::UserError(err.to_string())),

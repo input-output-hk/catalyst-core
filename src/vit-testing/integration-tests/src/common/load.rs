@@ -1,18 +1,19 @@
 use crate::common::{vitup_setup, wait_until_folder_contains_all_qrs};
 use assert_fs::TempDir;
 use chain_impl_mockchain::key::Hash;
+use hersir::builder::VotePlanSettings;
 use iapyx::{NodeLoad, NodeLoadConfig};
+use jormungandr_automation::jormungandr::FragmentNode;
+use jormungandr_automation::testing::asserts::VotePlanStatusAssert;
+use jormungandr_automation::testing::time;
 use jormungandr_lib::interfaces::BlockDate;
-use jormungandr_testing_utils::testing::asserts::VotePlanStatusAssert;
-use jormungandr_testing_utils::testing::network::VotePlanSettings;
-use jormungandr_testing_utils::testing::node::time;
-use jormungandr_testing_utils::testing::FragmentNode;
 use jortestkit::{
     load::{ConfigurationBuilder, Monitor},
     measurement::Status,
 };
 use std::str::FromStr;
 use std::{path::PathBuf, time::Duration};
+use thor::FragmentSender;
 use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
@@ -82,7 +83,9 @@ pub fn private_vote_test_scenario(
     let mut committee = controller.wallet("committee_1").unwrap();
     let vote_plan = controller.vote_plan(&fund_name).unwrap();
 
-    match controller.fragment_sender().send_encrypted_tally(
+    let fragment_sender = FragmentSender::from(&controller.settings().block0);
+
+    match fragment_sender.send_encrypted_tally(
         &mut committee,
         &vote_plan.clone().into(),
         wallet_node,
@@ -119,7 +122,9 @@ pub fn private_vote_test_scenario(
         }
     };
 
-    match controller.fragment_sender().send_private_vote_tally(
+    let fragment_sender = FragmentSender::from(&controller.settings().block0);
+
+    match fragment_sender.send_private_vote_tally(
         &mut committee,
         &vote_plan.clone().into(),
         shares,

@@ -1,9 +1,9 @@
 use crate::builders::post_deployment::DeploymentTree;
-use crate::builders::utils::ContextExtension;
+use crate::builders::utils::SessionSettingsExtension;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::Initials;
 use crate::Result;
-use hersir::controller::Context;
+use hersir::config::SessionSettings;
 use jortestkit::prelude::read_file;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -30,7 +30,7 @@ impl QrCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 
-        let context = Context::empty_from_dir(&self.output_directory);
+        let session_settings = SessionSettings::empty_from_dir(&self.output_directory);
 
         let mut quick_setup = VitBackendSettingsBuilder::new();
 
@@ -52,7 +52,7 @@ impl QrCommandArgs {
         let deployment_tree = DeploymentTree::new(&self.output_directory, quick_setup.title());
 
         println!("{:?}", quick_setup.parameters().initials);
-        quick_setup.build(context)?;
+        quick_setup.build(session_settings.into())?;
 
         //remove block0.bin
         std::fs::remove_file(deployment_tree.block0_path())?;

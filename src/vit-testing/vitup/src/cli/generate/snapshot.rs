@@ -1,9 +1,10 @@
 use crate::builders::post_deployment::DeploymentTree;
-use crate::builders::utils::{io::read_genesis_yaml, ContextExtension};
+use crate::builders::utils::io::read_genesis_yaml;
+use crate::builders::utils::SessionSettingsExtension;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::Initials;
 use crate::Result;
-use hersir::controller::Context;
+use hersir::config::SessionSettings;
 use jormungandr_lib::interfaces::Initial;
 use jortestkit::prelude::read_file;
 use serde::{Deserialize, Serialize};
@@ -36,7 +37,7 @@ impl SnapshotCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 
-        let context = Context::empty_from_dir(&self.output_directory);
+        let session_settings = SessionSettings::empty_from_dir(&self.output_directory);
 
         let mut quick_setup = VitBackendSettingsBuilder::new();
 
@@ -61,7 +62,7 @@ impl SnapshotCommandArgs {
 
         let deployment_tree = DeploymentTree::new(&self.output_directory, quick_setup.title());
 
-        let (_, controller, _, _) = quick_setup.build(context)?;
+        let (controller, _, _) = quick_setup.build(session_settings.into())?;
 
         let genesis_yaml = deployment_tree.genesis_path();
 

@@ -1,15 +1,13 @@
 use crate::builders::utils::io::{read_config, read_initials};
 use crate::builders::VitBackendSettingsBuilder;
-use crate::cli::start::mode::{parse_mode_from_str, Mode};
-use crate::scenario::network::service_mode;
-use crate::scenario::network::{endless_mode, interactive_mode, setup_network};
-use crate::Result;
-use hersir::builder::Seed;
-use hersir::config::SessionMode;
-use hersir::controller::Context;
-use jortestkit::prelude::parse_progress_bar_mode_from_str;
-use jortestkit::prelude::ProgressBarMode;
+use crate::config::mode::{parse_mode_from_str, Mode};
+use crate::scenario::spawn::spawn_network;
+use crate::scenario::spawn::NetworkSpawnParams;
+use crate::{error::Error, Result};
+use hersir::config::SessionSettings;
+use jormungandr_automation::jormungandr::LogLevel;
 use std::path::PathBuf;
+use std::str::FromStr;
 use structopt::StructOpt;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 
@@ -29,23 +27,6 @@ pub struct AdvancedStartCommandArgs {
     /// and will delete the files and documents
     #[structopt(long = "root-dir", default_value = ".")]
     pub testing_directory: PathBuf,
-
-    /// in some circumstances progress bar can spoil test logs (e.g. on test build job)
-    /// if this parametrer value is true, then no progress bar is visible,
-    /// but simple log on console enabled
-    ///
-    /// no progress bar, only simple console output
-    #[structopt(
-        long = "progress-bar-mode",
-        default_value = "Monitor",
-        parse(from_str = parse_progress_bar_mode_from_str)
-    )]
-    pub progress_bar_mode: ProgressBarMode,
-
-    /// to set if to reproduce an existing test
-    #[structopt(long = "seed")]
-    pub seed: Option<Seed>,
-
     /// level for all nodes
     #[structopt(long = "log-level", default_value = "info")]
     pub log_level: String,
@@ -111,10 +92,7 @@ impl AdvancedStartCommandArgs {
         // replacement?
         // as far as I can see it was only used to verify that the binary exists.
         // let jormungandr = prepare_command(&self.jormungandr);
-        // let jcli = prepare_command(&self.jcli);
         let jormungandr = &self.jormungandr;
-        let jcli = &self.jcli;
-        let mut progress_bar_mode = self.progress_bar_mode;
         let mut testing_directory = self.testing_directory;
         let generate_documentation = true;
         let log_level = self.log_level;
@@ -122,19 +100,14 @@ impl AdvancedStartCommandArgs {
         let endpoint = self.endpoint;
         let token = self.token;
 
-        if mode == Mode::Interactive {
-            progress_bar_mode = ProgressBarMode::None;
-        }
-
-        let context = Context {
-            jormungandr: jormungandr.to_path_buf(),
-            testing_directory: testing_directory.into(),
+        let session_settings = SessionSettings {
+            jormungandr: Some(jormungandr.to_path_buf()),
+            root: testing_directory.clone().into(),
             generate_documentation,
-            session_mode: match mode {
-                Mode::Service => todo!("fill these properly"),
-                Mode::Interactive => SessionMode::Interactive,
-                Mode::Endless => todo!("fill these properly"),
-            },
+            mode: mode.into(),
+            log: LogLevel::from_str(&log_level)
+                .map_err(|_| Error::UnknownLogLevel(log_level.clone()))?,
+            title: "advanced".to_string(),
         };
 
         let mut config = read_config(&self.config)?;
@@ -163,40 +136,20 @@ impl AdvancedStartCommandArgs {
         if testing_directory.exists() {
             std::fs::remove_dir_all(&testing_directory)?;
         }
-        match mode {
-            Mode::Service => {
-                service_mode(context, testing_directory, quick_setup, endpoint, token)?;
-            }
-            Mode::Endless => {
-                let (mut vit_controller, mut controller, vit_parameters, version) =
-                    quick_setup.build(context)?;
-                let (nodes_list, vit_station, wallet_proxy) = setup_network(
-                    &mut controller,
-                    &mut vit_controller,
-                    vit_parameters,
-                    &mut template_generator,
-                    endpoint,
-                    quick_setup.protocol(),
-                    version,
-                )?;
-                endless_mode(controller, nodes_list, vit_station, wallet_proxy)?;
-            }
-            Mode::Interactive => {
-                let (mut vit_controller, mut controller, vit_parameters, version) =
-                    quick_setup.build(context)?;
 
-                let (nodes_list, vit_station, wallet_proxy) = setup_network(
-                    &mut controller,
-                    &mut vit_controller,
-                    vit_parameters,
-                    &mut template_generator,
-                    endpoint,
-                    quick_setup.protocol(),
-                    version,
-                )?;
-                interactive_mode(controller, nodes_list, vit_station, wallet_proxy)?;
-            }
-        }
+        let network_spawn_params = NetworkSpawnParams::new(
+            endpoint,
+            &quick_setup.parameters(),
+            token,
+            testing_directory,
+        );
+        spawn_network(
+            mode,
+            session_settings,
+            network_spawn_params,
+            &mut template_generator,
+            quick_setup,
+        )?;
         Ok(())
     }
 }

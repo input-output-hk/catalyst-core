@@ -1,3 +1,6 @@
+use hersir::config::SessionSettings;
+use hersir::controller::Controller;
+use jormungandr_automation::jormungandr::LogLevel;
 use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -20,22 +23,17 @@ pub fn wait_until_folder_contains_all_qrs<P: AsRef<Path>>(qrs_count: usize, fold
     }
 }
 
-pub fn context(testing_directory: &Path) -> Context {
+pub fn session_settings(testing_directory: &Path) -> SessionSettings {
     let jormungandr = prepare_command(PathBuf::from_str("jormungandr").unwrap());
-    let jcli = prepare_command(PathBuf::from_str("jcli").unwrap());
-    let seed = Seed::generate(rand::rngs::OsRng);
     let generate_documentation = true;
-    let log_level = "info".to_string();
 
-    Context::new(
-        seed,
+    SessionSettings {
         jormungandr,
-        jcli,
-        Some(testing_directory.to_path_buf()),
+        root: Some(testing_directory.to_path_buf()),
         generate_documentation,
-        ProgressBarMode::None,
-        log_level,
-    )
+        mode: SessionMode::Standard,
+        log_level: LogLevel::from_str("INFO").unwrap(),
+    }
 }
 
 pub fn vitup_setup_default(
@@ -67,7 +65,7 @@ pub fn vitup_setup(
     mut quick_setup: VitBackendSettingsBuilder,
     mut testing_directory: PathBuf,
 ) -> (VitController, Controller, ValidVotePlanParameters, String) {
-    let context = context(&testing_directory);
+    let session_settings = session_settings(&testing_directory);
 
     testing_directory.push(quick_setup.title());
     if testing_directory.exists() {
@@ -75,6 +73,7 @@ pub fn vitup_setup(
     }
 
     let fund_name = quick_setup.fund_name();
-    let (vit_controller, controller, vit_parameters, _) = quick_setup.build(context).unwrap();
+    let (vit_controller, controller, vit_parameters, _) =
+        quick_setup.build(session_settings).unwrap();
     (vit_controller, controller, vit_parameters, fund_name)
 }

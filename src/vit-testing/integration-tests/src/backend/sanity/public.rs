@@ -3,13 +3,12 @@ use crate::common::{vitup_setup, wait_until_folder_contains_all_qrs, Error, Vote
 use assert_fs::TempDir;
 use chain_impl_mockchain::block::BlockDate;
 use chain_impl_mockchain::key::Hash;
-use jormungandr_testing_utils::testing::asserts::VotePlanStatusAssert;
-use jormungandr_testing_utils::testing::node::time;
-use jormungandr_testing_utils::testing::BlockDateGenerator;
-use jormungandr_testing_utils::testing::FragmentSender;
-use jormungandr_testing_utils::testing::FragmentSenderSetup;
+use jormungandr_automation::testing::asserts::VotePlanStatusAssert;
+use jormungandr_automation::testing::time;
+use jormungandr_automation::testing::BlockDateGenerator;
 use std::path::Path;
 use std::str::FromStr;
+use thor::{FragmentSender, FragmentSenderSetup};
 use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
@@ -84,8 +83,8 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
     // start mainnet wallets
     let mut david = iapyx_from_qr(&david_qr_code, PIN, &wallet_proxy).unwrap();
 
-    let fund1_vote_plan = &controller.vote_plans()[0];
-    let fund2_vote_plan = &controller.vote_plans()[1];
+    let fund1_vote_plan = &controller.defined_vote_plans()[0];
+    let fund2_vote_plan = &controller.defined_vote_plans()[1];
 
     let settings = wallet_node.rest().settings().unwrap();
     let block_date_generator = BlockDateGenerator::rolling(

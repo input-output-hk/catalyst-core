@@ -12,14 +12,10 @@ pub use wallet::{iapyx_from_qr, iapyx_from_secret_key};
 pub enum Error {
     #[error("vitup error")]
     VitupError(#[from] vitup::error::Error),
-    #[error("node error")]
-    NodeError(#[from] jormungandr_scenario_tests::node::Error),
     #[error("verification error")]
-    VerificationError(#[from] jormungandr_testing_utils::testing::VerificationError),
+    VerificationError(#[from] jormungandr_automation::testing::VerificationError),
     #[error("sender error")]
-    FragmentSenderError(#[from] jormungandr_testing_utils::testing::FragmentSenderError),
-    #[error("scenario error")]
-    ScenarioError(#[from] jormungandr_scenario_tests::scenario::Error),
+    FragmentSenderError(#[from] thor::FragmentSenderError),
     #[error("iapyx error")]
     IapyxError(#[from] iapyx::ControllerError),
 }

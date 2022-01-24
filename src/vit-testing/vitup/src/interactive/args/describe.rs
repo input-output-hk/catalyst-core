@@ -1,4 +1,5 @@
 use crate::interactive::{VitInteractiveCommandExec, VitUserInteractionController};
+use crate::Result;
 use hersir::controller::interactive::args::describe::{
     DescribeNodes, DescribeTopology, DescribeVotePlans, DescribeWallets,
 };
@@ -25,24 +26,27 @@ pub enum Describe {
 }
 
 impl Describe {
-    pub fn exec(&self, command: &mut VitInteractiveCommandExec) {
+    pub fn exec(&self, command: &mut VitInteractiveCommandExec) -> Result<()> {
         match self {
             Describe::Wallets(wallets) => {
-                wallets.exec(command.controller_mut());
+                wallets.exec(command.controller_mut())?;
             }
             Describe::Nodes(desc_nodes) => {
-                desc_nodes.exec(command.controller_mut());
+                desc_nodes.exec(command.controller_mut())?;
             }
-            Describe::All(all) => all.exec(command),
+            Describe::All(all) => {
+                all.exec(command)?;
+            }
             Describe::Topology(topology) => {
-                topology.exec(command.controller_mut());
+                topology.exec(command.controller_mut())?;
             }
             Describe::VotePlan(vote_plans) => {
-                vote_plans.exec(command.controller_mut());
+                vote_plans.exec(command.controller_mut())?;
             }
             Describe::Stations(stations) => stations.exec(command.vit_controller_mut()),
             Describe::Proxies(proxies) => proxies.exec(command.vit_controller_mut()),
         };
+        Ok(())
     }
 }
 
@@ -72,15 +76,16 @@ pub struct DescribeAll {
 }
 
 impl DescribeAll {
-    pub fn exec(&self, command: &mut VitInteractiveCommandExec) {
+    pub fn exec(&self, command: &mut VitInteractiveCommandExec) -> Result<()> {
         let describe_wallets = DescribeWallets { alias: None };
-        describe_wallets.exec(command.controller_mut());
+        describe_wallets.exec(command.controller_mut())?;
         let describe_nodes = DescribeNodes { alias: None };
-        describe_nodes.exec(command.controller_mut());
+        describe_nodes.exec(command.controller_mut())?;
         let describe_wallet_proxies = DescribeWalletProxies { alias: None };
         describe_wallet_proxies.exec(command.vit_controller_mut());
         let describe_vit_stations = DescribeVitStations { alias: None };
-        describe_vit_stations.exec(command.vit_controller_mut())
+        describe_vit_stations.exec(command.vit_controller_mut());
+        Ok(())
     }
 }
 

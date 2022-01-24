@@ -5,9 +5,10 @@ use crate::common::snapshot::wait_for_db_sync;
 use crate::common::{vitup_setup, Vote};
 use assert_fs::TempDir;
 use chain_impl_mockchain::header::BlockDate;
-use jormungandr_testing_utils::testing::asserts::VotePlanStatusAssert;
-use jormungandr_testing_utils::testing::node::time;
+use jormungandr_automation::testing::asserts::VotePlanStatusAssert;
+use jormungandr_automation::testing::time;
 use snapshot_trigger_service::config::JobParameters;
+use thor::FragmentSender;
 use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
@@ -84,8 +85,8 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     // start wallets
     let mut alice = iapyx_from_qr(&result.qr_code(), &result.pin(), &wallet_proxy).unwrap();
 
-    let fund1_vote_plan = &controller.vote_plans()[0];
-    let fund2_vote_plan = &controller.vote_plans()[1];
+    let fund1_vote_plan = &controller.defined_vote_plans()[0];
+    let fund2_vote_plan = &controller.defined_vote_plans()[1];
 
     alice
         .vote_for(fund1_vote_plan.id(), 0, Vote::Yes as u8)
@@ -101,13 +102,13 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     };
     time::wait_for_date(target_date.into(), leader_1.rest());
 
-    controller
-        .fragment_sender()
+    let fragment_sender = FragmentSender::from(&controller.settings().block0);
+
+    fragment_sender
         .send_public_vote_tally(&mut committee, &fund1_vote_plan.clone().into(), wallet_node)
         .unwrap();
 
-    controller
-        .fragment_sender()
+    fragment_sender
         .send_public_vote_tally(&mut committee, &fund2_vote_plan.clone().into(), wallet_node)
         .unwrap();
 

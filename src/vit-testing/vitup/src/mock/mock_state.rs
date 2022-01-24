@@ -2,7 +2,9 @@ use super::config::Configuration;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::VitStartParameters;
 use crate::mock::ledger_state::LedgerState;
+use hersir::config::{SessionMode, SessionSettings};
 use hersir::controller::Context;
+use jormungandr_automation::jormungandr::LogLevel;
 use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -24,12 +26,15 @@ pub fn context<P: AsRef<Path>>(testing_directory: P) -> Context {
     let jormungandr = PathBuf::from_str("jormungandr").unwrap();
     let generate_documentation = true;
 
-    Context {
-        jormungandr,
-        testing_directory: testing_directory.as_ref().to_path_buf().into(),
+    SessionSettings {
+        jormungandr: Some(jormungandr),
+        root: Some(testing_directory.as_ref().to_path_buf()),
         generate_documentation,
-        session_mode: todo!("session mode?"),
+        mode: SessionMode::Standard,
+        log: LogLevel::INFO,
+        title: "mock".to_string(),
     }
+    .into()
 }
 
 impl MockState {
@@ -42,7 +47,7 @@ impl MockState {
         quick_setup.upload_parameters(params);
 
         let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-        let (_, controller, vit_parameters, version) = quick_setup.build(context).unwrap();
+        let (controller, vit_parameters, version) = quick_setup.build(context).unwrap();
 
         let mut generator = ValidVotePlanGenerator::new(vit_parameters);
         let mut snapshot = generator.build(&mut template_generator);

@@ -1,4 +1,3 @@
-use hersir::controller::ProgressBarController;
 use jormungandr_automation::jormungandr::{JormungandrRest, NodeAlias, Status};
 use jormungandr_automation::testing::NamedProcess;
 use valgrind::{ProxyClient, ValgrindClient, ValgrindSettings};
@@ -10,18 +9,16 @@ use std::sync::{Arc, Mutex};
 use super::settings::WalletProxySettings;
 /// send query to a running node
 pub struct WalletProxyController {
-    alias: NodeAlias,
-    progress_bar: ProgressBarController,
-    settings: WalletProxySettings,
-    status: Arc<Mutex<Status>>,
-    process: Child,
-    client: ProxyClient,
+    pub(crate) alias: NodeAlias,
+    pub(crate) settings: WalletProxySettings,
+    pub(crate) status: Arc<Mutex<Status>>,
+    pub(crate) process: Child,
+    pub(crate) client: ProxyClient,
 }
 
 impl WalletProxyController {
     pub fn new(
         alias: NodeAlias,
-        progress_bar: ProgressBarController,
         settings: WalletProxySettings,
         status: Arc<Mutex<Status>>,
         process: Child,
@@ -29,7 +26,6 @@ impl WalletProxyController {
         let address = settings.address();
         Self {
             alias,
-            progress_bar,
             settings,
             status,
             process,
@@ -85,12 +81,12 @@ impl WalletProxyController {
         JormungandrRest::new(self.address())
     }
 
-    pub fn as_named_process(&self) -> NamedProcess {
-        NamedProcess::new(self.alias().to_string(), self.process.id() as usize)
+    pub fn std_err(&self) -> std::option::Option<std::process::ChildStderr> {
+        self.process.stderr
     }
 
-    pub fn progress_bar(&self) -> &ProgressBarController {
-        &self.progress_bar
+    pub fn as_named_process(&self) -> NamedProcess {
+        NamedProcess::new(self.alias().to_string(), self.process.id() as usize)
     }
 
     pub fn settings(&self) -> &WalletProxySettings {

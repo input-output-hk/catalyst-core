@@ -1,31 +1,46 @@
 use crate::scenario::{
     settings::VitSettings,
-    vit_station::{VitStation, VitStationController, VitStationControllerError},
-    wallet::{
-        Error as WalletProxyError, WalletProxy, WalletProxyController, WalletProxySpawnParams,
-    },
+    vit_station::{Error as VitStationControllerError, VitStationController},
+    wallet::{Error as WalletProxyError, WalletProxyController, WalletProxySpawnParams},
 };
+use crate::vit_station::BootstrapCommandBuilder;
+use crate::vit_station::DbGenerator;
+use crate::vit_station::RestClient;
+use crate::vit_station::STORAGE;
+use crate::vit_station::VIT_CONFIG;
 use crate::Result;
+use assert_fs::fixture::PathChild;
+use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
+use hersir::builder::NodeAlias;
+use hersir::builder::NodeSetting;
+use hersir::builder::Settings;
+use hersir::builder::SpawnParams;
+use hersir::builder::Wallet as WalletSettings;
 use hersir::{
-    builder::{Blockchain, Topology},
-    controller::{Context, MonitorController, MonitorControllerBuilder},
+    builder::{Blockchain, NetworkBuilder, Topology},
+    controller::Context,
 };
-use indicatif::ProgressBar;
+use jormungandr_automation::jormungandr::JormungandrProcess;
+use jormungandr_automation::jormungandr::Status;
+use std::path::PathBuf;
+use std::process::Command;
+use std::sync::Arc;
+use std::sync::Mutex;
+use thor::Wallet;
+use thor::WalletAlias;
+use valgrind::Protocol;
+use valgrind::ProxyClient;
+use vit_servicing_station_lib::server::settings::dump_settings_to_file;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 use vit_servicing_station_tests::common::data::ValidVotingTemplateGenerator;
-
 pub struct VitControllerBuilder {
-    controller_builder: MonitorControllerBuilder,
-}
-
-pub struct VitController {
-    vit_settings: VitSettings,
+    controller_builder: NetworkBuilder,
 }
 
 impl VitControllerBuilder {
-    pub fn new(title: &str) -> Self {
+    pub fn new() -> Self {
         Self {
-            controller_builder: MonitorControllerBuilder::new(title),
+            controller_builder: NetworkBuilder::default(),
         }
     }
 
@@ -35,29 +50,83 @@ impl VitControllerBuilder {
     }
 
     pub fn blockchain(mut self, blockchain: Blockchain) -> Self {
-        self.controller_builder = self.controller_builder.blockchain(blockchain);
+        self.controller_builder = self.controller_builder.blockchain_config(blockchain);
         self
     }
 
-    pub fn build(self, mut context: Context) -> Result<(VitController, MonitorController)> {
-        let vit_controller = VitController::new(VitSettings::new(&mut context));
-        let controller = self.controller_builder.build(context)?;
-        Ok((vit_controller, controller))
+    pub fn build(self, mut context: Context) -> Result<VitController> {
+        let controller = self.controller_builder.build()?;
+        Ok(VitController::new(
+            VitSettings::new(&mut context),
+            controller,
+        ))
     }
 }
 
+#[derive(Clone)]
+pub struct VitController {
+    vit_settings: VitSettings,
+    hersir_controller: hersir::controller::Controller,
+}
+
 impl VitController {
-    pub fn new(vit_settings: VitSettings) -> Self {
-        Self { vit_settings }
+    pub fn new(
+        vit_settings: VitSettings,
+        hersir_controller: hersir::controller::Controller,
+    ) -> Self {
+        Self {
+            vit_settings,
+            hersir_controller,
+        }
     }
 
     pub fn vit_settings(&self) -> &VitSettings {
         &self.vit_settings
     }
 
+    pub fn hersir_controller(&self) -> &hersir::controller::Controller {
+        self.hersir_controller.clone()
+    }
+
+    pub fn wallet(&mut self, wallet: &str) -> Result<Wallet> {
+        self.hersir_controller.wallet(wallet).map_err(Into::into)
+    }
+
+    pub fn spawn_node(&mut self, spawn_params: SpawnParams) -> Result<JormungandrProcess> {
+        self.hersir_controller
+            .spawn(spawn_params)
+            .map_err(Into::into)
+    }
+
+    pub fn settings(&self) -> &Settings {
+        self.hersir_controller.settings().clone()
+    }
+
+    pub fn block0_file(&self) -> PathBuf {
+        self.hersir_controller.block0_file().clone()
+    }
+
+    pub fn defined_nodes(&self) -> impl Iterator<Item = (&NodeAlias, &NodeSetting)> {
+        self.hersir_controller.defined_nodes()
+    }
+
+    pub fn defined_wallets(&self) -> impl Iterator<Item = (&WalletAlias, &WalletSettings)> {
+        self.hersir_controller.defined_wallets()
+    }
+
+    pub fn defined_vote_plan(&self, alias: &str) -> Result<VotePlanDef> {
+        self.hersir_controller
+            .defined_vote_plan(alias)
+            .map_err(Into::into)
+    }
+
+    pub fn defined_vote_plans(&self) -> Vec<VotePlanDef> {
+        self.hersir_controller.defined_vote_plans()
+    }
+
+    //TODO: move to vit station builder
     pub fn spawn_vit_station(
         &self,
-        controller: &mut MonitorController,
         vote_plan_parameters: ValidVotePlanParameters,
         template_generator: &mut dyn ValidVotingTemplateGenerator,
         version: String,
@@ -69,30 +138,38 @@ impl VitController {
             .next()
             .ok_or(VitStationControllerError::NoVitStationDefinedInSettings)?;
 
-        let pb = ProgressBar::new_spinner();
-        let pb = controller.add_to_progress_bar(pb);
+        let working_directory = self.hersir_controller.working_directory().path();
 
-        let block0_file = controller.block0_file();
-        let working_directory = controller.working_directory().path();
+        let dir = working_directory.join(alias);
+        std::fs::DirBuilder::new().recursive(true).create(&dir)?;
 
-        let vit_station = VitStation::spawn(
-            controller.context(),
-            vote_plan_parameters,
-            template_generator,
-            pb,
-            alias,
-            settings.clone(),
-            block0_file.as_path(),
-            working_directory,
-            &version,
-        )
-        .unwrap();
-        Ok(vit_station.controller())
+        let config_file = dir.join(VIT_CONFIG);
+        let db_file = dir.join(STORAGE);
+        dump_settings_to_file(config_file.to_str().unwrap(), &settings).unwrap();
+
+        DbGenerator::new(vote_plan_parameters, None).build(&db_file, template_generator);
+
+        let mut command_builder =
+            BootstrapCommandBuilder::new(PathBuf::from("vit-servicing-station-server"));
+        let mut command = command_builder
+            .in_settings_file(&config_file)
+            .db_url(db_file.to_str().unwrap())
+            .service_version(version)
+            .block0_path(self.hersir_controller.block0_file().to_str().unwrap())
+            .build();
+
+        Ok(VitStationController {
+            alias: alias.into(),
+            rest_client: RestClient::new(settings.address.to_string()),
+            process: command.spawn().unwrap(),
+            settings: settings.clone(),
+            status: Arc::new(Mutex::new(Status::Running)),
+        })
     }
 
+    //TODO: move to wallet builder
     pub fn spawn_wallet_proxy_custom(
         &self,
-        controller: &mut MonitorController,
         params: &mut WalletProxySpawnParams,
     ) -> Result<WalletProxyController> {
         let node_alias = params.alias.clone();
@@ -103,43 +180,60 @@ impl VitController {
             .iter()
             .next()
             .ok_or(WalletProxyError::NoWalletProxiesDefinedInSettings)?;
-        let node_setting = if let Some(node_setting) = controller.settings().nodes.get(&node_alias)
-        {
-            node_setting.clone()
-        } else {
-            return Err(crate::error::Error::ProxyNotFound {
-                alias: node_alias.to_string(),
-            });
-        };
+        let node_setting =
+            if let Some(node_setting) = self.hersir_controller.settings().nodes.get(&node_alias) {
+                node_setting.clone()
+            } else {
+                return Err(crate::error::Error::ProxyNotFound {
+                    alias: node_alias.to_string(),
+                });
+            };
 
         let mut settings_overriden = settings.clone();
         params.override_settings(&mut settings_overriden);
 
-        let pb = ProgressBar::new_spinner();
-        let pb = controller.add_to_progress_bar(pb);
+        let block0_file = self.hersir_controller.block0_file();
+        let working_directory = self.hersir_controller.working_directory();
 
-        let block0_file = controller.block0_file();
-        let working_directory = controller.working_directory();
+        let dir = working_directory.child(alias);
+        std::fs::DirBuilder::new().recursive(true).create(&dir)?;
 
-        let wallet_proxy = WalletProxy::spawn(
-            controller.context(),
-            pb,
-            alias,
-            settings_overriden,
-            &node_setting,
-            block0_file.as_path(),
-            working_directory.path(),
-            params.protocol.clone(),
-        )
-        .unwrap();
-        Ok(wallet_proxy.controller())
+        settings.node_backend_address = Some(node_setting.config.rest.listen);
+
+        let mut command = Command::new("valgrind");
+        command
+            .arg("--address")
+            .arg(settings.base_address().to_string())
+            .arg("--vit-address")
+            .arg(&settings.base_vit_address().to_string())
+            .arg("--node-address")
+            .arg(&settings.base_node_backend_address().unwrap().to_string())
+            .arg("--block0")
+            .arg(block0_file.as_path().to_str().unwrap());
+
+        if let Protocol::Https {
+            key_path,
+            cert_path,
+        } = params.protocol.clone()
+        {
+            command
+                .arg("--cert")
+                .arg(cert_path)
+                .arg("--key")
+                .arg(key_path);
+        }
+
+        Ok(WalletProxyController {
+            alias: alias.into(),
+            process: command.spawn().unwrap(),
+            client: ProxyClient::new(settings.address().to_string()),
+            settings: settings.clone(),
+            status: Arc::new(Mutex::new(Status::Running)),
+        })
     }
 
-    pub fn spawn_wallet_proxy(
-        &self,
-        controller: &mut MonitorController,
-        alias: &str,
-    ) -> Result<WalletProxyController> {
-        self.spawn_wallet_proxy_custom(controller, &mut WalletProxySpawnParams::new(alias))
+    //TODO: move to wallet builder
+    pub fn spawn_wallet_proxy(&self, alias: &str) -> Result<WalletProxyController> {
+        self.spawn_wallet_proxy_custom(&mut WalletProxySpawnParams::new(alias))
     }
 }

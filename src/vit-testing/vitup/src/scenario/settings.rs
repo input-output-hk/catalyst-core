@@ -24,7 +24,7 @@ pub trait PrepareSettings {
     fn prepare(topology: Topology, blockchain: Blockchain, context: &mut Context) -> Self;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VitSettings {
     pub vit_stations: HashMap<NodeAlias, ServiceSettings>,
     pub wallet_proxies: HashMap<NodeAlias, WalletProxySettings>,

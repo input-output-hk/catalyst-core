@@ -344,9 +344,12 @@ impl Controller {
         update_proposal: UpdateProposal,
         test_ledger: &mut TestLedger,
     ) -> Result<FragmentId, LedgerError> {
-        let fragment =
-            self.fragment_factory
-                .update_proposal(test_ledger.date(), owner, update_proposal);
+        let fragment = self.fragment_factory.update_proposal(
+            test_ledger.date(),
+            owner,
+            owner,
+            update_proposal,
+        );
         test_ledger.apply_fragment(&fragment, test_ledger.date())?;
         Ok(fragment.id())
     }
@@ -357,9 +360,9 @@ impl Controller {
         update_vote: UpdateVote,
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let fragment = self
-            .fragment_factory
-            .update_vote(test_ledger.date(), owner, update_vote);
+        let fragment =
+            self.fragment_factory
+                .update_vote(test_ledger.date(), owner, owner, update_vote);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 

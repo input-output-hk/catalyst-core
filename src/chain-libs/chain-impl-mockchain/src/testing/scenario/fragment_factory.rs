@@ -195,18 +195,32 @@ impl FragmentFactory {
         &self,
         valid_until: BlockDate,
         owner: &Wallet,
+        signer: &Wallet,
         update_proposal: UpdateProposal,
     ) -> Fragment {
-        self.transaction_with_cert(valid_until, Some(owner), &update_proposal.into())
+        TestTxCertBuilder::new(self.block0_hash, self.fee).make_transaction_different_signers(
+            valid_until,
+            owner,
+            vec![signer],
+            &update_proposal.into(),
+            self.witness_mode,
+        )
     }
 
     pub fn update_vote(
         &self,
         valid_until: BlockDate,
         owner: &Wallet,
+        signer: &Wallet,
         update_vote: UpdateVote,
     ) -> Fragment {
-        self.transaction_with_cert(valid_until, Some(owner), &update_vote.into())
+        TestTxCertBuilder::new(self.block0_hash, self.fee).make_transaction_different_signers(
+            valid_until,
+            owner,
+            vec![signer],
+            &update_vote.into(),
+            self.witness_mode,
+        )
     }
 
     pub fn mint_token(

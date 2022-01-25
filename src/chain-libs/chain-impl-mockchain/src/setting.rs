@@ -2,7 +2,7 @@
 //!
 
 #[cfg(feature = "evm")]
-use crate::config::EvmConfigParams;
+use crate::config::EvmConfig;
 use crate::fragment::{config::ConfigParams, BlockContentSize};
 use crate::milli::Milli;
 use crate::update;
@@ -44,7 +44,7 @@ pub struct Settings {
     pub committees: Arc<[CommitteeId]>,
     pub transaction_max_expiry_epochs: u8,
     #[cfg(feature = "evm")]
-    pub evm_params: EvmConfigParams,
+    pub evm_params: EvmConfig,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -133,7 +133,7 @@ impl Settings {
             committees: Arc::new([]),
             transaction_max_expiry_epochs: 1,
             #[cfg(feature = "evm")]
-            evm_params: EvmConfigParams::default(),
+            evm_params: EvmConfig::default(),
         }
     }
 
@@ -246,7 +246,7 @@ impl Settings {
                 }
                 #[cfg(feature = "evm")]
                 ConfigParam::EvmParams(evm_config_params) => {
-                    new_state.evm_params = *evm_config_params.clone();
+                    new_state.evm_params = *evm_config_params;
                 }
             }
         }
@@ -293,7 +293,7 @@ impl Settings {
             None => (),
         };
         #[cfg(feature = "evm")]
-        params.push(ConfigParam::EvmParams(Box::new(self.evm_params.clone())));
+        params.push(ConfigParam::EvmParams(self.evm_params));
 
         debug_assert_eq!(self, &Settings::new().try_apply(&params).unwrap());
 

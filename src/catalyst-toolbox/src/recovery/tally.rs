@@ -475,6 +475,15 @@ impl FragmentReplayer {
                 }
                 utxos.append(&mut new_committee_accounts);
             }
+
+            if let Initial::Token(ref mut mint) = initial {
+                for destination in mint.to.iter_mut() {
+                    destination.address = wallets[&destination.address]
+                        .account_id()
+                        .address(Discrimination::Production)
+                        .into();
+                }
+            }
         }
 
         Ok((

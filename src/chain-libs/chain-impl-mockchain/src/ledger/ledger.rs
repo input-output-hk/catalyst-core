@@ -8,6 +8,7 @@ use super::governance::{Governance, ParametersGovernanceAction, TreasuryGovernan
 use super::leaderlog::LeadersParticipationRecord;
 use super::pots::Pots;
 use super::reward_info::{EpochRewardsInfo, RewardsInfoParameters};
+use super::token_distribution::{TokenDistribution, TokenTotals};
 
 use crate::certificate::MintToken;
 use crate::chaineval::HeaderContentEvalContext;
@@ -36,7 +37,6 @@ use crate::{
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::Verification;
 use chain_time::{Epoch as TimeEpoch, SlotDuration, TimeEra, TimeFrame, Timeline};
-
 use std::collections::HashSet;
 use std::mem::swap;
 use std::sync::Arc;
@@ -100,6 +100,7 @@ pub struct Ledger {
     pub(crate) governance: Governance,
     #[cfg(feature = "evm")]
     pub(crate) evm: evm::Ledger,
+    pub(crate) token_totals: TokenTotals,
 }
 
 #[derive(Debug, Clone)]
@@ -361,6 +362,7 @@ impl Ledger {
             governance: Governance::default(),
             #[cfg(feature = "evm")]
             evm: evm::Ledger::new(),
+            token_totals: TokenTotals::default(),
         }
     }
 
@@ -1192,9 +1194,12 @@ impl Ledger {
 
         let mut actions = Vec::new();
 
+        let token_distribution =
+            TokenDistribution::new(self.token_totals.clone(), self.accounts.clone());
+
         self.votes = self.votes.apply_committee_result(
             self.date(),
-            &self.accounts,
+            token_distribution,
             &self.governance,
             tally,
             sig,
@@ -1232,9 +1237,15 @@ impl Ledger {
             return Err(Error::VoteTallyProofFailed);
         }
 
-        self.votes =
-            self.votes
-                .apply_encrypted_vote_tally(self.date(), &self.accounts, tally, sig.id)?;
+        let token_distribution =
+            TokenDistribution::new(self.token_totals.clone(), self.accounts.clone());
+
+        self.votes = self.votes.apply_encrypted_vote_tally(
+            self.date(),
+            token_distribution,
+            tally,
+            sig.id,
+        )?;
 
         Ok(self)
     }
@@ -1352,20 +1363,9 @@ impl Ledger {
         Ok(self)
     }
 
-    pub fn mint_token(mut self, mt: MintToken) -> Result<Self, Error> {
-        let MintToken {
-            name,
-            policy,
-            to,
-            value,
-        } = mt;
-        policy.check_minting_tx()?;
-        let token = TokenIdentifier {
-            policy_hash: policy.hash(),
-            token_name: name,
-        };
-        self.accounts = self.accounts.token_add(&to, token, value)?;
-        Ok(self)
+    pub fn mint_token(self, mt: MintToken) -> Result<Self, Error> {
+        mt.policy.check_minting_tx()?;
+        self.mint_token_unchecked(mt)
     }
 
     pub fn mint_token_unchecked(mut self, mt: MintToken) -> Result<Self, Error> {
@@ -1379,7 +1379,8 @@ impl Ledger {
             policy_hash: policy.hash(),
             token_name: name,
         };
-        self.accounts = self.accounts.token_add(&to, token, value)?;
+        self.accounts = self.accounts.token_add(&to, token.clone(), value)?;
+        self.token_totals = self.token_totals.add(token, value)?;
         Ok(self)
     }
 

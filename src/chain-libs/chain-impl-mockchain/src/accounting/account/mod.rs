@@ -208,16 +208,6 @@ impl<ID: Clone + Eq + Hash, Extra: Clone> Ledger<ID, Extra> {
             .map_err(|e| e.into())
     }
 
-    pub fn token_get_total(&self, token: &TokenIdentifier) -> Result<Value, ValueError> {
-        let values = self
-            .0
-            .iter()
-            .filter_map(|(_, account_state)| account_state.tokens.lookup(token))
-            .cloned();
-
-        Value::sum(values)
-    }
-
     pub fn iter(&self) -> Iter<'_, ID, Extra> {
         Iter(self.0.iter())
     }

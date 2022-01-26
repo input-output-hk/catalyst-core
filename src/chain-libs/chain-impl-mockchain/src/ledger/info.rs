@@ -21,6 +21,7 @@ impl Ledger {
             governance: _,
             #[cfg(feature = "evm")]
             evm,
+            token_totals: _,
         } = self;
 
         let stats = vec![
@@ -70,6 +71,7 @@ impl Ledger {
             governance: governance1,
             #[cfg(feature = "evm")]
                 evm: evm1,
+            token_totals: token_totals1,
         } = self;
 
         let Ledger {
@@ -90,6 +92,7 @@ impl Ledger {
             governance: governance2,
             #[cfg(feature = "evm")]
                 evm: evm2,
+            token_totals: token_totals2,
         } = other;
 
         let info = vec![
@@ -110,6 +113,7 @@ impl Ledger {
             format!("governance: {}", governance1 == governance2),
             #[cfg(feature = "evm")]
             evm1.info_eq(evm2),
+            format!("token-totals: {}", token_totals1 == token_totals2),
         ];
 
         info

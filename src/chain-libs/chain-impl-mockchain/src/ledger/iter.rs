@@ -9,6 +9,7 @@ use crate::date::BlockDate;
 use crate::key::Hash;
 #[cfg(feature = "evm")]
 use crate::ledger::evm;
+use crate::ledger::token_distribution::TokenTotals;
 use crate::stake::PoolsState;
 use crate::vote::{VotePlanLedger, VotePlanManager};
 use crate::{account, legacy, multisig, setting, update, utxo};
@@ -292,6 +293,7 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
         let governance = Governance::default();
         #[cfg(feature = "evm")]
         let evm = evm::Ledger::new();
+        let token_totals = TokenTotals::default();
 
         for entry in iter {
             match entry {
@@ -372,6 +374,7 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
             governance,
             #[cfg(feature = "evm")]
             evm,
+            token_totals,
         })
     }
 }

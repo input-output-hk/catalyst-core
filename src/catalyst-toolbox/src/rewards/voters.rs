@@ -102,11 +102,10 @@ fn account_hex_to_address(
 #[cfg(test)]
 mod test {
     use super::*;
-    use jormungandr_testing_utils::testing::jormungandr::ConfigurationBuilder;
-    use jormungandr_testing_utils::testing::startup;
-    use jormungandr_testing_utils::wallet::Wallet;
+    use jormungandr_automation::jormungandr::ConfigurationBuilder;
     use quickcheck::TestResult;
     use quickcheck_macros::quickcheck;
+    use thor::Wallet;
 
     #[quickcheck]
     pub fn test_calculate_stake(wallet_count: usize, committe_count: usize) -> TestResult {
@@ -114,10 +113,9 @@ mod test {
             return TestResult::discard();
         }
 
-        let wallets: Vec<Wallet> =
-            std::iter::from_fn(|| Some(startup::create_new_account_address()))
-                .take(wallet_count)
-                .collect();
+        let wallets: Vec<Wallet> = std::iter::from_fn(|| Some(Default::default()))
+            .take(wallet_count)
+            .collect();
         let wallet_initial_funds = 10;
 
         let block0 = ConfigurationBuilder::new()
@@ -149,10 +147,9 @@ mod test {
     pub fn test_calculate_rewards() {
         let wallet_count = 10usize;
 
-        let wallets: Vec<Wallet> =
-            std::iter::from_fn(|| Some(startup::create_new_account_address()))
-                .take(wallet_count)
-                .collect();
+        let wallets: Vec<Wallet> = std::iter::from_fn(|| Some(Default::default()))
+            .take(wallet_count)
+            .collect();
         let wallet_initial_funds = 1;
 
         let addresses: AddressesVoteCount = wallets

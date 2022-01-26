@@ -3,7 +3,6 @@ use catalyst_toolbox::rewards::voters::{
     calculate_reward_share, calculate_stake, reward_from_share, vote_count_with_addresses,
     AddressesVoteCount, Rewards, VoteCount, ADA_TO_LOVELACE_FACTOR,
 };
-
 use chain_addr::{Discrimination, Kind};
 use chain_impl_mockchain::vote::CommitteeId;
 use jcli_lib::jcli_lib::block::Common;

@@ -17,10 +17,11 @@ use chain_impl_mockchain::{
     vote::{Choice, PayloadType, VotePlanManager, VotePlanStatus},
 };
 use jormungandr_lib::{crypto::hash::Hash, interfaces::Block0Configuration};
-use jormungandr_testing_utils::wallet::Wallet;
 use rand::prelude::*;
 use rand_chacha::ChaChaRng;
 use std::collections::HashMap;
+use thor::FragmentBuilder;
+use thor::Wallet;
 
 pub struct VoteRoundGenerator {
     block0: Block0Configuration,
@@ -150,7 +151,7 @@ impl VoteRoundGenerator {
                     .expect("vote plan not found")
                     .plan()
                     .vote_start(),
-                address,
+                address.to_single_account().unwrap(),
                 vote_cast,
             );
             if let Ok(update_voteplan) = update_voteplan {
@@ -187,7 +188,7 @@ impl VoteRoundGenerator {
                         let mut manager = manager
                             .start_private_tally(
                                 vote_end,
-                                &stake_control,
+                                tmp_ledger.accounts(),
                                 self.block0.blockchain_configuration.committees[0].into(),
                             )
                             .unwrap();
@@ -213,7 +214,7 @@ impl VoteRoundGenerator {
                             let partial_res = encrypted_tally
                                 .validate_partial_decryptions(&member_keys, &sh)
                                 .unwrap()
-                                .decrypt_tally((*total_stake).into(), &table)
+                                .decrypt_tally((*total_stake).0, &table)
                                 .unwrap();
                             results.push(partial_res.votes.into_boxed_slice());
                             shares.push(sh);
@@ -250,7 +251,7 @@ impl VoteRoundGenerator {
                         let manager = manager
                             .public_tally(
                                 vote_end,
-                                &stake_control.clone(),
+                                &tmp_ledger.accounts().clone(),
                                 &Default::default(),
                                 self.block0.blockchain_configuration.committees[0].into(),
                                 |_| (),
@@ -278,28 +279,20 @@ impl VoteRoundGenerator {
         let committee_end = voteplan.committee_end();
         let committee_member = self.committee_wallets.values_mut().next().unwrap();
 
+        let fragment_builder = FragmentBuilder::new(
+            &self.block0_hash,
+            &self.block0.blockchain_configuration.linear_fees,
+            committee_end,
+        );
+
         if let VoteTallyPayload::Private { .. } = payload {
-            let encrypted_tally_fragment = committee_member
-                .issue_encrypted_tally_cert(
-                    &self.block0_hash,
-                    &self.block0.blockchain_configuration.linear_fees,
-                    committee_end,
-                    voteplan,
-                )
-                .unwrap();
+            let encrypted_tally_fragment =
+                fragment_builder.encrypted_tally(committee_member, voteplan);
             committee_member.confirm_transaction();
             res.push(encrypted_tally_fragment);
         }
 
-        let tally_fragment = committee_member
-            .issue_vote_tally_cert(
-                &self.block0_hash,
-                &self.block0.blockchain_configuration.linear_fees,
-                committee_end,
-                voteplan,
-                payload,
-            )
-            .unwrap();
+        let tally_fragment = fragment_builder.vote_tally(committee_member, voteplan, payload);
         committee_member.confirm_transaction();
         res.push(tally_fragment);
 
@@ -349,16 +342,12 @@ impl GenerationStrategy for TestStrategy {
                     let proposal_index = rng.gen_range(0..voteplan.proposals().len());
                     let choice = Choice::new(rng.gen_bool(0.5) as u8 + 1); // app votes ares 1-based
                     let valid_until = voteplan.vote_start().next_epoch();
-                    let fragment = wallet
-                        .issue_vote_cast_cert(
-                            block0_hash,
-                            fees,
-                            valid_until,
-                            voteplan,
-                            proposal_index as u8,
-                            &choice,
-                        )
-                        .unwrap();
+                    let fragment = FragmentBuilder::new(block0_hash, fees, valid_until).vote_cast(
+                        wallet,
+                        voteplan,
+                        proposal_index as u8,
+                        &choice,
+                    );
                     wallet.confirm_transaction();
 
                     fragments.push(fragment);

@@ -12,12 +12,12 @@ use chain_impl_mockchain::{
     vote::PayloadType,
 };
 use jormungandr_lib::interfaces::{
-    try_initials_vec_from_messages, Block0Configuration, BlockchainConfiguration, Initial,
+    try_initial_fragment_from_message, Block0Configuration, BlockchainConfiguration, Initial,
 };
 
-use jormungandr_testing_utils::wallet::Wallet;
 use rand::{CryptoRng, Rng};
 use std::collections::HashMap;
+use thor::Wallet;
 
 // rather arbitrary at this point
 const DEFAULT_WALLETS: u32 = 10;
@@ -129,11 +129,16 @@ impl TestBlockchainBuilder {
             })
             .collect::<Vec<VotePlan>>();
 
-        initial.extend(try_initials_vec_from_messages(vote_plans_fragments.iter()).unwrap());
+        let discrimination = Discrimination::Production;
+        initial.extend(
+            vote_plans_fragments
+                .iter()
+                .map(|message| try_initial_fragment_from_message(discrimination, message).unwrap()),
+        );
 
         let mut config = Block0Configuration {
             blockchain_configuration: BlockchainConfiguration::new(
-                Discrimination::Production,
+                discrimination,
                 ConsensusVersion::Bft,
                 LinearFee::new(0, 0, 0), // it is much easier not to account for feers in the tests verification alg
             ),

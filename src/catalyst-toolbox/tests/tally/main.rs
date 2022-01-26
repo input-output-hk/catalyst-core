@@ -3,6 +3,7 @@ mod blockchain;
 mod generator;
 
 use chain_addr::Discrimination;
+use chain_impl_mockchain::accounting::account::SpendingCounter;
 pub use chain_impl_mockchain::chaintypes::ConsensusVersion;
 use chain_impl_mockchain::{
     certificate::VoteTallyPayload,
@@ -16,10 +17,10 @@ use jormungandr_lib::{
     },
     time::SecondsSinceUnixEpoch,
 };
-use jormungandr_testing_utils::wallet::Wallet;
 use rand::SeedableRng;
 use rand_chacha::ChaChaRng;
 use std::collections::HashMap;
+use thor::{FragmentBuilder, Wallet};
 
 fn jump_to_epoch(epoch: u64, block0_config: &Block0Configuration) -> SecondsSinceUnixEpoch {
     let slots_per_epoch: u32 = block0_config
@@ -401,19 +402,21 @@ fn votes_outside_voting_phase() {
         .next()
         .unwrap()
         .clone();
-    committee_wallet.update_counter(0);
-    let early_tally_fragment = committee_wallet
-        .issue_vote_tally_cert(
-            &generator.block0().header().id().into(),
-            &generator
-                .block0_config()
-                .blockchain_configuration
-                .linear_fees,
-            generator.voteplans()[0].vote_end(),
-            generator.voteplans()[0],
-            VoteTallyPayload::Public,
-        )
-        .unwrap();
+    committee_wallet.update_counter(SpendingCounter::zero());
+
+    let early_tally_fragment = FragmentBuilder::new(
+        &generator.block0().header().id().into(),
+        &generator
+            .block0_config()
+            .blockchain_configuration
+            .linear_fees,
+        generator.voteplans()[0].vote_end(),
+    )
+    .vote_tally(
+        &committee_wallet,
+        generator.voteplans()[0],
+        VoteTallyPayload::Public,
+    );
 
     let early_tally = Ok(PersistentFragmentLog {
         fragment: early_tally_fragment,
@@ -481,18 +484,20 @@ fn transaction_transfer() {
         .collect::<HashMap<_, _>>();
 
     // transfer all funds from the first wallet to the second
-    let transaction = (&mut wallets[0])
-        .transaction_to(
-            &generator.block0().header().id().into(),
-            &generator
-                .block0_config()
-                .blockchain_configuration
-                .linear_fees,
-            generator.voteplans()[0].vote_start(),
-            wallet1_address,
-            *wallets_stake.get(&wallet0_address).unwrap(),
-        )
-        .unwrap();
+    let transaction = FragmentBuilder::new(
+        &generator.block0().header().id().into(),
+        &generator
+            .block0_config()
+            .blockchain_configuration
+            .linear_fees,
+        generator.voteplans()[0].vote_start(),
+    )
+    .transaction(
+        &wallets[0],
+        wallet1_address,
+        *wallets_stake.get(&wallet0_address).unwrap(),
+    )
+    .unwrap();
 
     let transaction = Ok(PersistentFragmentLog {
         fragment: transaction,
@@ -591,17 +596,18 @@ fn cast_vote(
     proposals_idx: u8,
     choice: u8,
 ) -> Fragment {
-    wallet
-        .issue_vote_cast_cert(
-            &generator.block0().header().id().into(),
-            &generator
-                .block0_config()
-                .blockchain_configuration
-                .linear_fees,
-            generator.voteplans()[0].vote_start().next_epoch(),
-            generator.voteplans()[0],
-            proposals_idx,
-            &Choice::new(choice),
-        )
-        .unwrap()
+    FragmentBuilder::new(
+        &generator.block0().header().id().into(),
+        &generator
+            .block0_config()
+            .blockchain_configuration
+            .linear_fees,
+        generator.voteplans()[0].vote_start().next_epoch(),
+    )
+    .vote_cast(
+        wallet,
+        generator.voteplans()[0],
+        proposals_idx,
+        &Choice::new(choice),
+    )
 }

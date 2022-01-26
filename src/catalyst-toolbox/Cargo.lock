@@ -421,7 +421,7 @@ dependencies = [
  "sscanf",
  "stderrlog",
  "structopt",
- "symmetric-cipher 0.5.0 (git+https://github.com/enzoc4/chain-wallet-libs.git?branch=master)",
+ "symmetric-cipher",
  "thiserror",
  "thor",
  "tokio",
@@ -2015,7 +2015,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "strum 0.22.0",
- "symmetric-cipher 0.5.0 (git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master)",
+ "symmetric-cipher",
  "sysinfo 0.21.2",
  "tar",
  "tempfile",
@@ -3924,16 +3924,6 @@ name = "subtle-ng"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "734676eb262c623cec13c3155096e08d1f8f29adce39ba17948b18dad1e54142"
-
-[[package]]
-name = "symmetric-cipher"
-version = "0.5.0"
-source = "git+https://github.com/enzoc4/chain-wallet-libs.git?branch=master#7dd062c9fade2a9c66e329b2710ed0288cd9cc22"
-dependencies = [
- "cryptoxide",
- "rand 0.8.4",
- "thiserror",
-]
 
 [[package]]
 name = "symmetric-cipher"

@@ -68,8 +68,8 @@ impl RIPEMD160 {
     pub(super) const ADDRESS: Address = super::make_address(0, 3);
 
     fn internal_impl(input: &[u8]) -> [u8; 20] {
-        use ripemd160::Digest;
-        let hash = ripemd160::Ripemd160::digest(input);
+        use ripemd::Digest;
+        let hash = ripemd::Ripemd160::digest(input);
         let mut output = [0u8; 20];
         output.copy_from_slice(&hash);
         output

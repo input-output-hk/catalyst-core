@@ -10,11 +10,10 @@ chain-ser = { path = "../chain-ser" }
 primitive-types = "0.10.1"
 base64 = { version = "0.13.0", default-features = false, features = ["alloc"] }
 blake2 = { version = "0.9.1", git = "https://github.com/near/near-blake2.git", rev = "736ff607cc8160af87ffa697c14ebef85050138f", default-features = false }
-borsh = { version = "0.8.2", default-features = false }
 bn = { package = "aurora-bn", version = "0.1.0", git = "https://github.com/aurora-is-near/aurora-bn.git", default-features = false, features = ["std"] }
-libsecp256k1 = { version = "0.3.5", default-features = false }
+libsecp256k1 = { version = "0.7.0", default-features = false, features = ["static-context"] }
 num = { version = "0.4.0", default-features = false, features = ["alloc"] }
-ripemd160 = { version = "0.9.1", default-features = false }
+ripemd = { version = "0.1", default-features = false }
 rlp = { version = "0.5.0", default-features = false }
 sha2 = { version = "0.10.1", default-features = false }
 sha3 = { version = "0.10.0", default-features = false }

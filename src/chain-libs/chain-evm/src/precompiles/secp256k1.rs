@@ -31,16 +31,16 @@ fn internal_impl(
 ) -> Result<Address, ExitError> {
     use sha3::Digest;
 
-    let hash = secp256k1::Message::parse_slice(hash.as_bytes()).unwrap();
+    let hash = libsecp256k1::Message::parse_slice(hash.as_bytes()).unwrap();
     let v = signature[64];
-    let signature = secp256k1::Signature::parse_slice(&signature[0..64]).unwrap();
+    let signature = libsecp256k1::Signature::parse_overflowing_slice(&signature[0..64]).unwrap();
     let bit = match v {
         0..=26 => v,
         _ => v - 27,
     };
 
-    if let Ok(recovery_id) = secp256k1::RecoveryId::parse(bit) {
-        if let Ok(public_key) = secp256k1::recover(&hash, &signature, &recovery_id) {
+    if let Ok(recovery_id) = libsecp256k1::RecoveryId::parse(bit) {
+        if let Ok(public_key) = libsecp256k1::recover(&hash, &signature, &recovery_id) {
             // recover returns a 65-byte key, but addresses come from the raw 64-byte key
             let r = sha3::Keccak256::digest(&public_key.serialize()[1..]);
             return Ok(Address::from_slice(&r[12..]));

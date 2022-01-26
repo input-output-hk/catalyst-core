@@ -595,11 +595,13 @@ mod test {
     use chain_core::property::Block as _;
     use chain_impl_mockchain::certificate::VoteTallyPayload;
     use chain_impl_mockchain::chaintypes::ConsensusType;
+    use chain_impl_mockchain::tokens::minting_policy::MintingPolicy;
     use chain_impl_mockchain::vote::Choice;
     use chain_impl_mockchain::vote::Tally;
     use jormungandr_automation::jormungandr::ConfigurationBuilder;
     use jormungandr_automation::testing::VotePlanBuilder;
     use jormungandr_lib::interfaces::load_persistent_fragments_logs_from_folder_path;
+    use jormungandr_lib::interfaces::InitialToken;
     use jormungandr_lib::interfaces::KesUpdateSpeed;
     use jormungandr_lib::interfaces::PersistentFragmentLog;
     use jormungandr_lib::time::SecondsSinceUnixEpoch;
@@ -635,6 +637,9 @@ mod test {
         )
         .into();
 
+        let minting_policy = MintingPolicy::new();
+        let token_id = vote_plan.voting_token();
+
         let block0_configuration = ConfigurationBuilder::new()
             .with_explorer()
             .with_funds(vec![
@@ -642,6 +647,15 @@ mod test {
                 bob.to_initial_fund(funds),
                 clarice.to_initial_fund(funds),
             ])
+            .with_token(InitialToken {
+                token_id: token_id.clone().into(),
+                policy: minting_policy.into(),
+                to: vec![
+                    alice.to_initial_token(funds),
+                    bob.to_initial_token(funds),
+                    clarice.to_initial_token(funds),
+                ],
+            })
             .with_certs(vec![vote_plan_cert])
             .with_block0_consensus(ConsensusType::Bft)
             .with_kes_update_speed(KesUpdateSpeed::new(43200).unwrap())

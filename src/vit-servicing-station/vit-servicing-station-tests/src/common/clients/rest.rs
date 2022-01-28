@@ -2,12 +2,13 @@ use hyper::StatusCode;
 use reqwest::blocking::Response;
 use std::collections::HashMap;
 use thiserror::Error;
+use vit_servicing_station_lib::db::models::challenges::Challenge;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::{
     db::models::{funds::Fund, proposals::Proposal},
     v0::api_token::API_TOKEN_HEADER,
-    v0::endpoints::service_version::ServiceVersion,
+    v0::endpoints::{proposals::ProposalVoteplanIdAndIndexes, service_version::ServiceVersion},
 };
 
 #[derive(Debug, Clone)]
@@ -144,9 +145,31 @@ impl RestClient {
         serde_json::from_str(&content).map_err(RestError::CannotDeserialize)
     }
 
+    pub fn proposals_by_voteplan_id_and_index(
+        &self,
+        request: &[ProposalVoteplanIdAndIndexes],
+    ) -> Result<Vec<FullProposalInfo>, RestError> {
+        let request_as_string = serde_json::to_string(&request)?;
+        serde_json::from_str(&self.post(&self.path_builder().proposals(), request_as_string)?)
+            .map_err(RestError::CannotDeserialize)
+    }
+
     pub fn fund_raw(&self, id: &str) -> Result<Response, RestError> {
         self.get(&self.path_builder().fund(id))
             .map_err(RestError::RequestError)
+    }
+
+    pub fn challenges_raw(&self) -> Result<Response, RestError> {
+        self.get(&self.path_builder().challenges())
+            .map_err(RestError::RequestError)
+    }
+
+    pub fn challenges(&self) -> Result<Vec<Challenge>, RestError> {
+        let response = self.challenges_raw()?;
+        self.verify_status_code(&response)?;
+        let content = response.text()?;
+        self.logger.log_text(&content);
+        serde_json::from_str(&content).map_err(RestError::CannotDeserialize)
     }
 
     pub fn genesis(&self) -> Result<Vec<u8>, RestError> {
@@ -223,6 +246,10 @@ impl RestClient {
         self.logger.set_enabled(false);
     }
 
+    pub fn enable_log(&mut self) {
+        self.logger.set_enabled(true);
+    }
+
     pub fn set_api_token(&mut self, token: String) {
         self.api_token = Some(token);
     }
@@ -231,13 +258,12 @@ impl RestClient {
         self.origin = Some(origin.into());
     }
 
-    // this is kept as part of the client even if not used
-    #[allow(dead_code)]
-    fn post(&self, path: &str, data: String) -> Result<serde_json::Value, RestError> {
+    fn post(&self, path: &str, data: String) -> Result<String, RestError> {
         let client = reqwest::blocking::Client::new();
-        let mut res = client.post(path).body(String::into_bytes(data.clone()));
-
         self.logger.log_post_body(&data);
+
+        let mut res = client.post(path).body(String::into_bytes(data));
+
         if let Some(api_token) = &self.api_token {
             res = res.header(API_TOKEN_HEADER, api_token.to_string());
         }
@@ -245,7 +271,7 @@ impl RestClient {
         self.logger.log_response(&response);
         let content = response.text()?;
         self.logger.log_text(&content);
-        Ok(serde_json::from_str(&content)?)
+        Ok(content)
     }
 }
 
@@ -269,6 +295,10 @@ impl RestPathBuilder {
 
     pub fn funds(&self) -> String {
         self.path("fund")
+    }
+
+    pub fn challenges(&self) -> String {
+        self.path("challenges")
     }
 
     pub fn proposal(&self, id: &str) -> String {

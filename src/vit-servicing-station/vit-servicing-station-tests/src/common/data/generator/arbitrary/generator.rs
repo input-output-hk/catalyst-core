@@ -1,4 +1,11 @@
+use crate::common::data::ValidVotePlanParameters;
+use chain_impl_mockchain::testing::scenario::template::ProposalDefBuilder;
+use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
+use chain_impl_mockchain::testing::scenario::template::VotePlanDefBuilder;
+use chrono::NaiveDateTime;
 use chrono::{offset::Utc, Duration};
+use fake::faker::name::en::Name;
+use fake::Fake;
 use rand::{rngs::OsRng, RngCore};
 use std::{collections::HashMap, iter};
 use vit_servicing_station_lib::{db::models::api_tokens::ApiTokenData, v0::api_token::ApiToken};
@@ -76,5 +83,62 @@ impl ArbitraryGenerator {
         let mut hash = [0u8; 32];
         self.id_generator.fill_bytes(&mut hash);
         base64::encode(hash)
+    }
+
+    pub fn vote_plan_def(&mut self) -> VotePlanDef {
+        let mut vote_plan_builder = VotePlanDefBuilder::new("fund_x");
+        vote_plan_builder.owner(&Name().fake::<String>());
+        vote_plan_builder.vote_phases(1, 2, 3);
+
+        for _ in 0..(self.next_u32() % 245 + 10) {
+            let mut proposal_builder = ProposalDefBuilder::new(
+                chain_impl_mockchain::testing::VoteTestGen::external_proposal_id(),
+            );
+            proposal_builder.options(3);
+            proposal_builder.action_off_chain();
+            vote_plan_builder.with_proposal(&mut proposal_builder);
+        }
+
+        vote_plan_builder.build()
+    }
+
+    pub fn vote_plan_def_collection(&mut self) -> Vec<VotePlanDef> {
+        let len = (self.next_u32() % 10 + 1) as usize;
+        std::iter::from_fn(|| Some(self.vote_plan_def()))
+            .take(len)
+            .collect()
+    }
+
+    pub fn valid_vote_plan_parameters(&mut self) -> ValidVotePlanParameters {
+        let format = "%Y-%m-%d %H:%M:%S";
+        let mut parameters =
+            ValidVotePlanParameters::new(self.vote_plan_def_collection(), "fund_x".to_string());
+        parameters.set_voting_power_threshold(8_000);
+        parameters.set_voting_start(
+            NaiveDateTime::parse_from_str("2015-09-05 23:56:04", format)
+                .unwrap()
+                .timestamp(),
+        );
+        parameters.set_voting_tally_start(
+            NaiveDateTime::parse_from_str("2015-09-05 23:56:04", format)
+                .unwrap()
+                .timestamp(),
+        );
+        parameters.set_voting_tally_end(
+            NaiveDateTime::parse_from_str("2015-09-05 23:56:04", format)
+                .unwrap()
+                .timestamp(),
+        );
+        parameters.set_next_fund_start_time(
+            NaiveDateTime::parse_from_str("2015-09-12 23:56:04", format)
+                .unwrap()
+                .timestamp(),
+        );
+        parameters.set_registration_snapshot_time(
+            NaiveDateTime::parse_from_str("2015-09-03 20:00:00", format)
+                .unwrap()
+                .timestamp(),
+        );
+        parameters
     }
 }

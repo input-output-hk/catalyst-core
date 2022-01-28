@@ -81,7 +81,7 @@ pub struct Tls {
 #[derive(Debug, Clone, Default, Serialize, PartialEq, Eq)]
 pub struct CorsOrigin(String);
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct AllowedOrigins(Vec<CorsOrigin>);
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq, StructOpt)]
@@ -108,7 +108,7 @@ pub enum LogLevel {
     Trace,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt)]
 #[serde(deny_unknown_fields)]
 #[structopt(rename_all = "kebab-case")]
 pub struct Log {
@@ -266,12 +266,6 @@ impl Deref for AllowedOrigins {
     }
 }
 
-impl Default for AllowedOrigins {
-    fn default() -> Self {
-        AllowedOrigins(Vec::new())
-    }
-}
-
 impl From<LogLevel> for LevelFilter {
     fn from(level: LogLevel) -> Self {
         match level {
@@ -333,15 +327,6 @@ impl fmt::Display for LogLevel {
 impl Default for LogLevel {
     fn default() -> Self {
         LogLevel::Disabled
-    }
-}
-
-impl Default for Log {
-    fn default() -> Self {
-        Self {
-            log_output_path: None,
-            log_level: None,
-        }
     }
 }
 

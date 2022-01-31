@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "port_update_proposals_test" }
+jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "port_update_proposals_test" }
 wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
 wallet-core = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
 hex = "0.4"
@@ -22,8 +22,8 @@ serde_json = "1.0"
 warp-reverse-proxy = "0.3.2"
 structopt = "0.3"
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
-vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
+vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 chain-core           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-crypto         = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
@@ -31,6 +31,7 @@ chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch 
 chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+url = "2.2.2"
 
 [dependencies.reqwest]
 version = "0.10.10"

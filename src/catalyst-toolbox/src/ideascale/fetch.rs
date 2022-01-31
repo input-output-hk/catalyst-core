@@ -17,6 +17,7 @@ pub enum Error {
 }
 
 pub type Scores = HashMap<u32, f32>;
+pub type Sponsors = HashMap<String, String>;
 
 static BASE_IDEASCALE_URL: Lazy<url::Url> = Lazy::new(|| {
     "https://cardano.ideascale.com/a/rest/v1/"
@@ -47,6 +48,19 @@ pub async fn get_funds_data(api_token: String) -> Result<Vec<Fund>, Error> {
 
 pub async fn get_stages(api_token: String) -> Result<Vec<Stage>, Error> {
     request_data(api_token, BASE_IDEASCALE_URL.join("stages").unwrap()).await
+}
+
+/// we test token by running lightweight query and observe response code
+pub async fn is_token_valid(api_token: String) -> Result<bool, Error> {
+    let url = BASE_IDEASCALE_URL.join("profile/avatars").unwrap();
+
+    let response = CLIENT
+        .get(url)
+        .header("api_token", api_token)
+        .send()
+        .await?;
+
+    Ok(response.status() == 200)
 }
 
 pub async fn get_proposals_data(

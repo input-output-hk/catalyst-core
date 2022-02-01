@@ -58,7 +58,7 @@ impl MonitorController {
     }
 
     pub fn spawn_vit_station(
-        &self,
+        &mut self,
         vote_plan_parameters: ValidVotePlanParameters,
         template_generator: &mut dyn ValidVotingTemplateGenerator,
         version: String,
@@ -72,7 +72,7 @@ impl MonitorController {
     }
 
     pub fn spawn_wallet_proxy_custom(
-        &self,
+        &mut self,
         params: &mut WalletProxySpawnParams,
     ) -> Result<WalletProxyMonitorController> {
         let wallet_proxy = self.inner.spawn_wallet_proxy_custom(params)?;
@@ -86,7 +86,7 @@ impl MonitorController {
         ))
     }
 
-    pub fn spawn_wallet_proxy(&self, alias: &str) -> Result<WalletProxyMonitorController> {
+    pub fn spawn_wallet_proxy(&mut self, alias: &str) -> Result<WalletProxyMonitorController> {
         self.spawn_wallet_proxy_custom(&mut WalletProxySpawnParams::new(alias))
     }
 

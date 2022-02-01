@@ -2,8 +2,10 @@ use crate::config::VitStartParameters;
 use crate::config::VoteBlockchainTime;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chain_impl_mockchain::testing::scenario::template::{ProposalDefBuilder, VotePlanDefBuilder};
+use chain_impl_mockchain::testing::TestGen;
 use chain_impl_mockchain::vote::PayloadType;
 pub use jormungandr_lib::interfaces::Initial;
+use jormungandr_lib::interfaces::TokenIdentifier;
 use std::iter;
 use thor::WalletAlias;
 
@@ -14,6 +16,7 @@ pub struct VitVotePlanDefBuilder {
     committee_wallet: Option<WalletAlias>,
     options: u8,
     parameters: Option<VitStartParameters>,
+    voting_token: TokenIdentifier,
 }
 
 impl VitVotePlanDefBuilder {
@@ -25,6 +28,7 @@ impl VitVotePlanDefBuilder {
             committee_wallet: None,
             parameters: None,
             options: 0,
+            voting_token: TestGen::token_id().into(),
         }
     }
 
@@ -45,6 +49,11 @@ impl VitVotePlanDefBuilder {
 
     pub fn with_committee(mut self, committe_wallet: WalletAlias) -> Self {
         self.committee_wallet = Some(committe_wallet);
+        self
+    }
+
+    pub fn with_voting_token(mut self, voting_token: TokenIdentifier) -> Self {
+        self.voting_token = voting_token;
         self
     }
 
@@ -85,11 +94,14 @@ impl VitVotePlanDefBuilder {
             };
 
             let mut vote_plan_builder = VotePlanDefBuilder::new(&vote_plan_name);
-            vote_plan_builder.owner(
-                self.committee_wallet
-                    .as_ref()
-                    .expect("committee wallet not defined"),
-            );
+
+            vote_plan_builder
+                .voting_token(self.voting_token.clone().into())
+                .owner(
+                    self.committee_wallet
+                        .as_ref()
+                        .expect("committee wallet not defined"),
+                );
 
             if parameters.private {
                 vote_plan_builder.payload_type(PayloadType::Private);

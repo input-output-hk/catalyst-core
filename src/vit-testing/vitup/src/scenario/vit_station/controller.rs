@@ -58,10 +58,6 @@ impl VitStationController {
         let _ = self.process.kill();
     }
 
-    pub fn std_err(&self) -> std::option::Option<std::process::ChildStderr> {
-        self.process.stderr
-    }
-
     pub fn wait(&mut self) -> Result<Status> {
         self.process.wait().map(Status::Exited).map_err(Into::into)
     }

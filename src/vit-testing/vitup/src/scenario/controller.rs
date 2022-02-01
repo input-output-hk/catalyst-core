@@ -16,12 +16,11 @@ use hersir::builder::NodeSetting;
 use hersir::builder::Settings;
 use hersir::builder::SpawnParams;
 use hersir::builder::Wallet as WalletSettings;
-use hersir::{
-    builder::{Blockchain, NetworkBuilder, Topology},
-    controller::Context,
-};
+use hersir::builder::{Blockchain, NetworkBuilder, Topology};
+use hersir::config::SessionSettings;
 use jormungandr_automation::jormungandr::JormungandrProcess;
 use jormungandr_automation::jormungandr::Status;
+use jormungandr_automation::jormungandr::TestingDirectory;
 use std::path::PathBuf;
 use std::process::Command;
 use std::sync::Arc;
@@ -29,10 +28,10 @@ use std::sync::Mutex;
 use thor::Wallet;
 use thor::WalletAlias;
 use valgrind::Protocol;
-use valgrind::ProxyClient;
 use vit_servicing_station_lib::server::settings::dump_settings_to_file;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 use vit_servicing_station_tests::common::data::ValidVotingTemplateGenerator;
+#[derive(Default)]
 pub struct VitControllerBuilder {
     controller_builder: NetworkBuilder,
 }
@@ -54,10 +53,13 @@ impl VitControllerBuilder {
         self
     }
 
-    pub fn build(self, mut context: Context) -> Result<VitController> {
-        let controller = self.controller_builder.build()?;
+    pub fn build(self, mut session_settings: SessionSettings) -> Result<VitController> {
+        let controller = self
+            .controller_builder
+            .session_settings(session_settings.clone())
+            .build()?;
         Ok(VitController::new(
-            VitSettings::new(&mut context),
+            VitSettings::new(&mut session_settings),
             controller,
         ))
     }
@@ -84,7 +86,7 @@ impl VitController {
         &self.vit_settings
     }
 
-    pub fn hersir_controller(&self) -> &hersir::controller::Controller {
+    pub fn hersir_controller(&self) -> hersir::controller::Controller {
         self.hersir_controller.clone()
     }
 
@@ -98,20 +100,20 @@ impl VitController {
             .map_err(Into::into)
     }
 
-    pub fn settings(&self) -> &Settings {
+    pub fn settings(&self) -> Settings {
         self.hersir_controller.settings().clone()
     }
 
     pub fn block0_file(&self) -> PathBuf {
-        self.hersir_controller.block0_file().clone()
+        self.hersir_controller.block0_file()
     }
 
-    pub fn defined_nodes(&self) -> impl Iterator<Item = (&NodeAlias, &NodeSetting)> {
-        self.hersir_controller.defined_nodes()
+    pub fn defined_nodes(&self) -> Vec<(&NodeAlias, &NodeSetting)> {
+        self.hersir_controller.defined_nodes().collect()
     }
 
-    pub fn defined_wallets(&self) -> impl Iterator<Item = (&WalletAlias, &WalletSettings)> {
-        self.hersir_controller.defined_wallets()
+    pub fn defined_wallets(&self) -> Vec<(&WalletAlias, &WalletSettings)> {
+        self.hersir_controller.defined_wallets().collect()
     }
 
     pub fn defined_vote_plan(&self, alias: &str) -> Result<VotePlanDef> {
@@ -122,6 +124,10 @@ impl VitController {
 
     pub fn defined_vote_plans(&self) -> Vec<VotePlanDef> {
         self.hersir_controller.defined_vote_plans()
+    }
+
+    pub fn working_directory(&self) -> &TestingDirectory {
+        self.hersir_controller.working_directory()
     }
 
     //TODO: move to vit station builder
@@ -145,7 +151,7 @@ impl VitController {
 
         let config_file = dir.join(VIT_CONFIG);
         let db_file = dir.join(STORAGE);
-        dump_settings_to_file(config_file.to_str().unwrap(), &settings).unwrap();
+        dump_settings_to_file(config_file.to_str().unwrap(), settings).unwrap();
 
         DbGenerator::new(vote_plan_parameters, None).build(&db_file, template_generator);
 
@@ -198,16 +204,21 @@ impl VitController {
         let dir = working_directory.child(alias);
         std::fs::DirBuilder::new().recursive(true).create(&dir)?;
 
-        settings.node_backend_address = Some(node_setting.config.rest.listen);
+        settings_overriden.node_backend_address = Some(node_setting.config.rest.listen);
 
         let mut command = Command::new("valgrind");
         command
             .arg("--address")
-            .arg(settings.base_address().to_string())
+            .arg(settings_overriden.base_address().to_string())
             .arg("--vit-address")
-            .arg(&settings.base_vit_address().to_string())
+            .arg(&settings_overriden.base_vit_address().to_string())
             .arg("--node-address")
-            .arg(&settings.base_node_backend_address().unwrap().to_string())
+            .arg(
+                &settings_overriden
+                    .base_node_backend_address()
+                    .unwrap()
+                    .to_string(),
+            )
             .arg("--block0")
             .arg(block0_file.as_path().to_str().unwrap());
 
@@ -223,13 +234,13 @@ impl VitController {
                 .arg(key_path);
         }
 
-        Ok(WalletProxyController {
-            alias: alias.into(),
-            process: command.spawn().unwrap(),
-            client: ProxyClient::new(settings.address().to_string()),
-            settings: settings.clone(),
-            status: Arc::new(Mutex::new(Status::Running)),
-        })
+        WalletProxyController::new(
+            alias.into(),
+            settings.clone(),
+            Arc::new(Mutex::new(Status::Running)),
+            command.spawn().unwrap(),
+        )
+        .map_err(Into::into)
     }
 
     //TODO: move to wallet builder

@@ -11,9 +11,10 @@ use crate::config::VoteTime;
 use crate::scenario::controller::VitController;
 use crate::scenario::controller::VitControllerBuilder;
 use crate::{config::Initials, Result};
-use assert_fs::fixture::{ChildPath, PathChild};
+use assert_fs::fixture::ChildPath;
 use chain_impl_mockchain::chaintypes::ConsensusVersion;
 use chain_impl_mockchain::fee::LinearFee;
+use chain_impl_mockchain::testing::TestGen;
 use chain_impl_mockchain::value::Value;
 use chrono::naive::NaiveDateTime;
 pub use helpers::{
@@ -25,15 +26,18 @@ use hersir::builder::Blockchain;
 use hersir::builder::Node;
 use hersir::builder::Topology;
 use hersir::builder::WalletTemplate;
-use hersir::controller::Context;
+use hersir::config::SessionSettings;
 use jormungandr_lib::interfaces::CommitteeIdDef;
 use jormungandr_lib::interfaces::ConsensusLeaderId;
 pub use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::interfaces::NumberOfSlotsPerEpoch;
 use jormungandr_lib::interfaces::SlotDuration;
+use jormungandr_lib::interfaces::TokenIdentifier;
 use jormungandr_lib::time::SecondsSinceUnixEpoch;
 pub use reviews::ReviewGenerator;
 use std::collections::HashMap;
+use std::io::Write;
+use std::path::Path;
 use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 
@@ -264,25 +268,22 @@ impl VitBackendSettingsBuilder {
         convert_to_blockchain_date(&self.config.params, self.block0_date)
     }
 
-    pub fn dump_qrs(
+    pub fn dump_qrs<P: AsRef<Path>>(
         &self,
         controller: &VitController,
         initials: &HashMap<WalletTemplate, String>,
-        child: &ChildPath,
+        child: P,
     ) -> Result<()> {
-        let folder = child.child("qr-codes");
-        std::fs::create_dir_all(folder.path())?;
+        let folder = child.as_ref().join("qr-codes");
+        std::fs::create_dir_all(&folder)?;
 
         let wallets: Vec<(_, _)> = controller
             .defined_wallets()
+            .iter()
             .filter(|(_, x)| !x.template().alias().starts_with("committee"))
-            .map(|(alias, _template)| {
-                (
-                    alias,
-                    controller
-                        .wallet(alias)
-                        .unwrap_or_else(|_| panic!("cannot find wallet with alias '{}'", alias)),
-                )
+            .map(|(alias, template)| {
+                let wallet: thor::Wallet = ((*template).clone()).into();
+                (*alias, wallet)
             })
             .collect();
 
@@ -291,65 +292,82 @@ impl VitBackendSettingsBuilder {
 
     pub fn build(
         &mut self,
-        context: Context,
+        session_settings: SessionSettings,
     ) -> Result<(VitController, ValidVotePlanParameters, String)> {
         let mut builder = VitControllerBuilder::new();
 
         let vote_blockchain_time =
             convert_to_blockchain_date(&self.config.params, self.block0_date);
 
-        let mut blockchain = Blockchain::default();
-        blockchain.set_consensus(ConsensusVersion::Bft);
-        blockchain.set_slots_per_epoch(
-            NumberOfSlotsPerEpoch::new(vote_blockchain_time.slots_per_epoch).unwrap(),
-        );
-        blockchain.set_slot_duration(SlotDuration::new(self.config.params.slot_duration).unwrap());
+        let mut blockchain = Blockchain::default()
+            .with_consensus(ConsensusVersion::Bft)
+            .with_slots_per_epoch(
+                NumberOfSlotsPerEpoch::new(vote_blockchain_time.slots_per_epoch).unwrap(),
+            )
+            .with_slot_duration(SlotDuration::new(self.config.params.slot_duration).unwrap());
 
         println!("building topology..");
 
         builder = builder.topology(self.build_topology());
-        blockchain.add_leader(LEADER_1);
-        blockchain.add_leader(LEADER_2);
-        blockchain.add_leader(LEADER_3);
+        blockchain = blockchain
+            .with_leader(LEADER_1)
+            .with_leader(LEADER_2)
+            .with_leader(LEADER_3);
 
         println!("building blockchain parameters..");
 
-        blockchain.set_linear_fee(self.config.linear_fees);
-        blockchain.set_tx_max_expiry_epochs(self.config.params.tx_max_expiry_epochs);
-        blockchain.set_discrimination(chain_addr::Discrimination::Production);
-        blockchain.set_block_content_max_size(self.config.params.block_content_max_size.into());
-        blockchain.set_block0_date(self.block0_date);
+        blockchain = blockchain
+            .with_linear_fee(self.config.linear_fees)
+            .with_tx_max_expiry_epochs(self.config.params.tx_max_expiry_epochs)
+            .with_discrimination(chain_addr::Discrimination::Production)
+            .with_block_content_max_size(self.config.params.block_content_max_size.into())
+            .with_block0_date(self.block0_date);
 
         if !self.config.consensus_leader_ids.is_empty() {
-            blockchain.set_external_consensus_leader_ids(self.config.consensus_leader_ids.clone());
+            blockchain = blockchain
+                .with_external_consensus_leader_ids(self.config.consensus_leader_ids.clone());
         }
 
         if !self.config.committees.is_empty() {
-            blockchain.set_external_committees(self.config.committees.clone());
+            blockchain = blockchain.with_external_committees(self.config.committees.clone());
         }
 
         let committee_wallet = WalletTemplate::new_account(
             self.committee_wallet.clone(),
             Value(1_000_000_000),
             blockchain.discrimination(),
+            Default::default(),
         );
-        blockchain.add_wallet(committee_wallet);
-        blockchain.add_committee(self.committee_wallet.clone());
+        blockchain = blockchain
+            .with_wallet(committee_wallet)
+            .with_committee(self.committee_wallet.clone());
 
-        let child = context.child_directory(self.title());
+        println!("building voting token..");
+
+        let root = session_settings.root.path().to_path_buf();
+
+        let token_id: TokenIdentifier = TestGen::token_id().into();
+
+        let mut file = std::fs::File::create(root.join("voting_token.txt")).unwrap();
+        writeln!(file, "{:?}", token_id).unwrap();
 
         println!("building initials..");
 
         let mut templates = HashMap::new();
         if self.config.params.initials.any() {
-            blockchain.set_external_wallets(self.config.params.initials.external_templates());
-            templates = self
-                .config
-                .params
-                .initials
-                .templates(self.config.params.voting_power, blockchain.discrimination());
+            blockchain = blockchain.with_external_wallets(
+                self.config
+                    .params
+                    .initials
+                    .external_templates(token_id.clone()),
+            );
+            templates = self.config.params.initials.templates(
+                self.config.params.voting_power,
+                blockchain.discrimination(),
+                token_id.clone(),
+            );
             for (wallet, _) in templates.iter().filter(|(x, _)| *x.value() > Value::zero()) {
-                blockchain.add_wallet(wallet.clone());
+                blockchain = blockchain.with_wallet(wallet.clone());
             }
         }
         println!("building voteplan..");
@@ -360,10 +378,11 @@ impl VitBackendSettingsBuilder {
             .fund_name(self.fund_name())
             .with_committee(self.committee_wallet.clone())
             .with_parameters(self.config.params.clone())
+            .with_voting_token(token_id.clone())
             .build()
             .into_iter()
         {
-            blockchain.add_vote_plan(
+            blockchain = blockchain.with_vote_plan(
                 vote_plan_def.alias(),
                 vote_plan_def.owner(),
                 chain_impl_mockchain::certificate::VotePlan::from(vote_plan_def).into(),
@@ -374,15 +393,17 @@ impl VitBackendSettingsBuilder {
 
         println!("building controllers..");
 
-        let controller = builder.build(context)?;
+        let controller = builder.build(session_settings)?;
 
         if !self.skip_qr_generation {
-            self.dump_qrs(&controller, &templates, &child)?;
+            self.dump_qrs(&controller, &templates, &root)?;
         }
 
-        println!("dumping secret keys..");
+        println!("dumping vote keys..");
 
-        controller.settings().dump_private_vote_keys(child);
+        controller
+            .settings()
+            .dump_private_vote_keys(ChildPath::new(root));
 
         println!("build servicing station static data..");
 

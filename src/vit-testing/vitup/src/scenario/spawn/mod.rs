@@ -18,43 +18,26 @@ use valgrind::Protocol;
 
 pub fn spawn_network(
     mode: Mode,
-    session_settings: SessionSettings,
     network_spawn_params: NetworkSpawnParams,
     generator: &mut dyn ValidVotingTemplateGenerator,
-    mut quick_setup: VitBackendSettingsBuilder,
+    quick_setup: VitBackendSettingsBuilder,
 ) -> Result<()> {
     match mode {
-        Mode::Standard => standard::spawn_network(
-            session_settings,
-            network_spawn_params,
-            quick_setup,
-            generator,
-        ),
-        Mode::Monitor => monitor::spawn_network(
-            session_settings,
-            network_spawn_params,
-            quick_setup,
-            generator,
-        ),
-        Mode::Interactive => interactive::spawn_network(
-            session_settings,
-            network_spawn_params,
-            quick_setup,
-            generator,
-        ),
-        Mode::Service => service::spawn_network(
-            session_settings,
-            network_spawn_params,
-            quick_setup,
-            generator,
-        ),
+        Mode::Standard => standard::spawn_network(network_spawn_params, quick_setup, generator),
+        Mode::Monitor => monitor::spawn_network(network_spawn_params, quick_setup, generator),
+        Mode::Interactive => {
+            interactive::spawn_network(network_spawn_params, quick_setup, generator)
+        }
+        Mode::Service => service::spawn_network(network_spawn_params, quick_setup, generator),
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct NetworkSpawnParams {
     token: Option<String>,
     endpoint: String,
     protocol: Protocol,
+    session_settings: SessionSettings,
     version: String,
     working_directory: PathBuf,
 }
@@ -63,16 +46,21 @@ impl NetworkSpawnParams {
     pub fn new<P: AsRef<Path>>(
         endpoint: String,
         parameters: &VitStartParameters,
+        session_settings: SessionSettings,
         token: Option<String>,
         working_directory: P,
     ) -> Self {
         Self {
             token,
-            endpoint: endpoint.clone(),
+            endpoint,
             protocol: parameters.protocol.clone(),
+            session_settings,
             version: parameters.version.clone(),
             working_directory: working_directory.as_ref().to_path_buf(),
         }
+    }
+    pub fn session_settings(&self) -> SessionSettings {
+        self.session_settings.clone()
     }
 
     pub fn token(&self) -> Option<String> {
@@ -85,25 +73,33 @@ impl NetworkSpawnParams {
 
     pub fn nodes_params(&self) -> Vec<SpawnParams> {
         vec![
-            SpawnParams::new(LEADER_1)
-                .leader()
-                .persistence_mode(PersistenceMode::Persistent),
-            SpawnParams::new(LEADER_2)
-                .leader()
-                .persistence_mode(PersistenceMode::Persistent),
-            SpawnParams::new(LEADER_3)
-                .leader()
-                .persistence_mode(PersistenceMode::Persistent),
-            SpawnParams::new(WALLET_NODE)
-                .passive()
-                .persistence_mode(PersistenceMode::Persistent)
-                .persistent_fragment_log(self.working_directory.clone().join("persistent_log")),
+            self.leader_node(LEADER_1),
+            self.leader_node(LEADER_2),
+            self.leader_node(LEADER_3),
+            self.passive_node(WALLET_NODE),
         ]
     }
 
+    fn leader_node(&self, alias: &str) -> SpawnParams {
+        SpawnParams::new(alias)
+            .leader()
+            .persistence_mode(PersistenceMode::Persistent)
+            .jormungandr(self.session_settings.jormungandr.clone())
+    }
+
+    fn passive_node(&self, alias: &str) -> SpawnParams {
+        SpawnParams::new(alias)
+            .passive()
+            .persistence_mode(PersistenceMode::Persistent)
+            .persistent_fragment_log(self.working_directory.clone().join("persistent_log"))
+            .jormungandr(self.session_settings.jormungandr.clone())
+    }
+
     pub fn proxy_params(&self) -> WalletProxySpawnParams {
-        *WalletProxySpawnParams::new(WALLET_NODE)
+        let mut params = WalletProxySpawnParams::new(WALLET_NODE);
+        params
             .with_base_address(self.endpoint.clone())
-            .with_protocol(self.protocol.clone())
+            .with_protocol(self.protocol.clone());
+        params
     }
 }

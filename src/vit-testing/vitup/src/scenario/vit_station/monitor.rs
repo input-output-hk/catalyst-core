@@ -1,11 +1,8 @@
+use super::Result;
+use crate::vit_station::VitStationController;
 use hersir::controller::ProgressBarController;
 use hersir::style;
 use jormungandr_automation::jormungandr::{NodeAlias, Status};
-use std::io::BufReader;
-pub type VitStationSettings = vit_servicing_station_lib::server::settings::ServiceSettings;
-use super::Result;
-use crate::vit_station::VitStationController;
-use std::io::BufRead;
 
 pub struct VitStationMonitorController {
     controller: VitStationController,
@@ -46,17 +43,8 @@ impl VitStationMonitorController {
         &self.progress_bar
     }
 
-    pub fn shutdown(&self) {
+    pub fn shutdown(self) {
         self.controller.shutdown();
-    }
-
-    pub fn capture_logs(&mut self) {
-        let stderr = self.controller.std_err().take().unwrap();
-        let reader = BufReader::new(stderr);
-        for line_result in reader.lines() {
-            let line = line_result.expect("failed to read a line from log output");
-            self.progress_bar.log_info(&line);
-        }
     }
 
     fn progress_bar_start(&self) {
@@ -73,7 +61,7 @@ impl VitStationMonitorController {
             self.controller.address(),
         ));
     }
-
+    #[allow(dead_code)]
     fn progress_bar_failure(&self) {
         self.progress_bar.finish_with_message(&format!(
             "{} {} {}",
@@ -83,6 +71,7 @@ impl VitStationMonitorController {
         ));
     }
 
+    #[allow(dead_code)]
     fn progress_bar_success(&self) {
         self.progress_bar.finish_with_message(&format!(
             "{} {} {}",

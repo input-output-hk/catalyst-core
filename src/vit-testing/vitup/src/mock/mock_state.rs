@@ -1,13 +1,9 @@
 use super::config::Configuration;
+use crate::builders::utils::SessionSettingsExtension;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::VitStartParameters;
 use crate::mock::ledger_state::LedgerState;
-use hersir::config::{SessionMode, SessionSettings};
-use hersir::controller::Context;
-use jormungandr_automation::jormungandr::LogLevel;
-use std::path::Path;
-use std::path::PathBuf;
-use std::str::FromStr;
+use hersir::config::SessionSettings;
 use thiserror::Error;
 use valgrind::VitVersion;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
@@ -22,32 +18,17 @@ pub struct MockState {
     vit_state: Snapshot,
 }
 
-pub fn context<P: AsRef<Path>>(testing_directory: P) -> Context {
-    let jormungandr = PathBuf::from_str("jormungandr").unwrap();
-    let generate_documentation = true;
-
-    SessionSettings {
-        jormungandr: Some(jormungandr),
-        root: Some(testing_directory.as_ref().to_path_buf()),
-        generate_documentation,
-        mode: SessionMode::Standard,
-        log: LogLevel::INFO,
-        title: "mock".to_string(),
-    }
-    .into()
-}
-
 impl MockState {
     pub fn new(params: VitStartParameters, config: Configuration) -> Result<Self, Error> {
         if config.working_dir.exists() {
             std::fs::remove_dir_all(&config.working_dir)?;
         }
         let mut quick_setup = VitBackendSettingsBuilder::new();
-        let context = context(&config.working_dir);
+        let session_settings = SessionSettings::empty_from_dir(&config.working_dir);
         quick_setup.upload_parameters(params);
 
         let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-        let (controller, vit_parameters, version) = quick_setup.build(context).unwrap();
+        let (controller, vit_parameters, version) = quick_setup.build(session_settings).unwrap();
 
         let mut generator = ValidVotePlanGenerator::new(vit_parameters);
         let mut snapshot = generator.build(&mut template_generator);
@@ -65,10 +46,7 @@ impl MockState {
         Ok(Self {
             available: true,
             error_code: 400,
-            ledger_state: LedgerState::new(
-                controller.settings().block0.clone(),
-                controller.block0_file(),
-            )?,
+            ledger_state: LedgerState::new(controller.settings().block0, controller.block0_file())?,
             vit_state: snapshot,
             version: VitVersion {
                 service_version: version,
@@ -125,6 +103,7 @@ impl MockState {
 }
 
 #[derive(Error, Debug)]
+#[allow(clippy::large_enum_variant)]
 pub enum Error {
     #[error("ledger error")]
     LedgerError(#[from] super::ledger_state::Error),

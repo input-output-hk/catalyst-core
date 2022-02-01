@@ -61,8 +61,7 @@ pub fn vitup_setup(
     }
 
     let fund_name = quick_setup.fund_name();
-    let (controller, vit_parameters, _) =
-        quick_setup.build(session_settings.clone()).unwrap();
+    let (controller, vit_parameters, _) = quick_setup.build(session_settings.clone()).unwrap();
 
     let network_spawn_params = NetworkSpawnParams::new(
         endpoint.to_string(),

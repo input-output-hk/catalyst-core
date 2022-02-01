@@ -1,7 +1,7 @@
 use crate::scenario::{
     settings::PrepareWalletProxySettings, vit_station::VitStationSettings, wallet::NodeAlias,
 };
-use hersir::controller::Context;
+use hersir::config::SessionSettings;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 
@@ -43,7 +43,7 @@ impl WalletProxySettings {
 
 impl PrepareWalletProxySettings for WalletProxySettings {
     fn prepare(
-        _context: &mut Context,
+        _session_settings: &mut SessionSettings,
         vit_stations: &HashMap<NodeAlias, VitStationSettings>,
     ) -> Self {
         let vit_station_settings = vit_stations

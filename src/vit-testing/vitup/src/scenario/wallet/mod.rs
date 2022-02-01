@@ -15,7 +15,7 @@ use std::io;
 use std::path::PathBuf;
 use std::time::Duration;
 
-pub use controller::WalletProxyController;
+pub use controller::{Error as WalletProxyControllerError, WalletProxyController};
 pub use monitor::WalletProxyMonitorController;
 pub use spawn_params::WalletProxySpawnParams;
 
@@ -32,6 +32,8 @@ pub enum Error {
     Reqwest(#[from] reqwest::Error),
     #[error(transparent)]
     BlockFormatError(#[from] chain_core::mempack::ReadError),
+    #[error(transparent)]
+    WalletProxyController(#[from] WalletProxyControllerError),
     #[error(transparent)]
     RestError(#[from] RestError),
     #[error(transparent)]

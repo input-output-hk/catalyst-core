@@ -1,7 +1,6 @@
 use jormungandr_automation::jormungandr::{JormungandrRest, NodeAlias, Status};
 use jormungandr_automation::testing::NamedProcess;
 use valgrind::{ProxyClient, ValgrindClient, ValgrindSettings};
-
 pub type VitStationSettings = vit_servicing_station_lib::server::settings::ServiceSettings;
 use std::process::Child;
 use std::sync::{Arc, Mutex};
@@ -14,6 +13,7 @@ pub struct WalletProxyController {
     pub(crate) status: Arc<Mutex<Status>>,
     pub(crate) process: Child,
     pub(crate) client: ProxyClient,
+    pub(crate) valgrind: ValgrindClient,
 }
 
 impl WalletProxyController {
@@ -22,33 +22,29 @@ impl WalletProxyController {
         settings: WalletProxySettings,
         status: Arc<Mutex<Status>>,
         process: Child,
-    ) -> Self {
+    ) -> Result<Self, Error> {
         let address = settings.address();
-        Self {
-            alias,
-            settings,
-            status,
-            process,
-            client: ProxyClient::new(address),
-        }
-    }
 
-    pub fn client(&self) -> ValgrindClient {
-        let settings = ValgrindSettings {
+        let valgrind_settings = ValgrindSettings {
             use_https: false,
             enable_debug: true,
             certificate: None,
             ..Default::default()
         };
 
-        let base_address = self.settings().base_address();
-
-        ValgrindClient::new_from_addresses(
-            base_address.to_string(),
-            base_address.to_string(),
-            base_address.to_string(),
+        let valgrind = ValgrindClient::new(settings.address(), valgrind_settings)?;
+        Ok(Self {
+            alias,
             settings,
-        )
+            status,
+            process,
+            client: ProxyClient::new(address),
+            valgrind,
+        })
+    }
+
+    pub fn client(&self) -> ValgrindClient {
+        self.valgrind.clone()
     }
 
     pub fn alias(&self) -> &NodeAlias {
@@ -81,10 +77,6 @@ impl WalletProxyController {
         JormungandrRest::new(self.address())
     }
 
-    pub fn std_err(&self) -> std::option::Option<std::process::ChildStderr> {
-        self.process.stderr
-    }
-
     pub fn as_named_process(&self) -> NamedProcess {
         NamedProcess::new(self.alias().to_string(), self.process.id() as usize)
     }
@@ -96,4 +88,10 @@ impl WalletProxyController {
     pub fn shutdown(mut self) {
         let _ = self.process.kill();
     }
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum Error {
+    #[error(transparent)]
+    Valgrind(#[from] valgrind::Error),
 }

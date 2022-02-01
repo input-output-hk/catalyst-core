@@ -3,24 +3,23 @@ use crate::interactive::VitInteractiveCommandExec;
 use crate::interactive::VitUserInteractionController;
 use crate::scenario::spawn::NetworkSpawnParams;
 use crate::Result;
-use hersir::config::SessionSettings;
 use hersir::controller::UserInteractionController;
 use jortestkit::prelude::UserInteraction;
 use vit_servicing_station_tests::common::data::ValidVotingTemplateGenerator;
 
 pub fn spawn_network(
-    session_settings: SessionSettings,
     network_spawn_params: NetworkSpawnParams,
-    quick_setup: VitBackendSettingsBuilder,
+    mut quick_setup: VitBackendSettingsBuilder,
     template_generator: &mut dyn ValidVotingTemplateGenerator,
 ) -> Result<()> {
     let (mut vit_controller, vit_parameters, version) =
-        quick_setup.build(session_settings.into())?;
+        quick_setup.build(network_spawn_params.session_settings())?;
 
-    let nodes_list = vec![];
+    let mut nodes_list = vec![];
     for spawn_param in network_spawn_params.nodes_params() {
         nodes_list.push(vit_controller.spawn_node(spawn_param)?);
     }
+
     let wallet_proxy =
         vit_controller.spawn_wallet_proxy_custom(&mut network_spawn_params.proxy_params())?;
     let vit_station =
@@ -28,7 +27,7 @@ pub fn spawn_network(
 
     let user_integration = vit_interaction();
     let mut interaction_controller =
-        UserInteractionController::new(vit_controller.hersir_controller().into());
+        UserInteractionController::new(vit_controller.hersir_controller());
     let mut vit_interaction_controller: VitUserInteractionController = Default::default();
     let nodes = interaction_controller.nodes_mut();
     nodes.extend(nodes_list);

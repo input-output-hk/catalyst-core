@@ -4,26 +4,18 @@ use crate::manager::{ControlContext, ControlContextLock, ManagerService};
 use crate::scenario::monitor::MonitorController;
 use crate::scenario::spawn::NetworkSpawnParams;
 use crate::Result;
-use hersir::config::SessionSettings;
 use std::sync::Arc;
 use std::sync::Mutex;
-use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vit_servicing_station_tests::common::data::ValidVotingTemplateGenerator;
 
 pub fn spawn_network(
-    session_settings: SessionSettings,
     network_params: NetworkSpawnParams,
     mut quick_setup: VitBackendSettingsBuilder,
     template_generator: &mut dyn ValidVotingTemplateGenerator,
 ) -> Result<()> {
-    let protocol = quick_setup.protocol().clone();
-
-    // TODO add failover
-    let working_dir = session_settings.root.as_ref().unwrap().to_path_buf();
-    working_dir.push(quick_setup.title());
-
+    let working_dir = network_params.session_settings().root;
     let control_context = Arc::new(Mutex::new(ControlContext::new(
-        working_dir.clone(),
+        working_dir.path(),
         quick_setup.parameters().clone(),
         network_params.token(),
     )));
@@ -33,21 +25,18 @@ pub fn spawn_network(
 
     loop {
         if manager.request_to_start() {
-            if working_dir.exists() {
-                std::fs::remove_dir_all(working_dir)?;
+            if working_dir.path().exists() {
+                std::fs::remove_dir_all(working_dir.path())?;
             }
-
-            let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
 
             let parameters = manager.setup();
             quick_setup.upload_parameters(parameters);
             manager.clear_requests();
             single_run(
                 control_context.clone(),
-                session_settings.clone(),
                 quick_setup.clone(),
-                network_params,
-                &mut template_generator,
+                network_params.clone(),
+                template_generator,
             )?;
         }
 
@@ -57,7 +46,6 @@ pub fn spawn_network(
 
 pub fn single_run(
     control_context: ControlContextLock,
-    session_settings: SessionSettings,
     mut quick_setup: VitBackendSettingsBuilder,
     network_params: NetworkSpawnParams,
     template_generator: &mut dyn ValidVotingTemplateGenerator,
@@ -68,27 +56,24 @@ pub fn single_run(
         *state = State::Starting;
     }
 
-    let (mut vit_controller, vit_parameters, version) =
-        quick_setup.build(session_settings.into())?;
+    let (vit_controller, vit_parameters, version) =
+        quick_setup.build(network_params.session_settings())?;
 
     let hersir_monitor_controller = hersir::controller::MonitorController::new(
         vit_controller.hersir_controller(),
-        session_settings.clone().into(),
+        network_params.session_settings(),
     )?;
-    let monitor_controller = MonitorController::new(vit_controller, hersir_monitor_controller);
+    let mut monitor_controller = MonitorController::new(vit_controller, hersir_monitor_controller);
 
     monitor_controller.monitor_nodes();
 
-    let nodes_list = vec![];
+    let mut nodes_list = vec![];
     for spawn_param in network_params.nodes_params() {
-        monitor_controller.spawn_node(spawn_param)?;
+        nodes_list.push(monitor_controller.spawn_node(spawn_param)?);
     }
 
-    let vit_station = monitor_controller.spawn_vit_station(
-        vit_parameters,
-        template_generator,
-        network_params.version(),
-    )?;
+    let vit_station =
+        monitor_controller.spawn_vit_station(vit_parameters, template_generator, version)?;
     let wallet_proxy =
         monitor_controller.spawn_wallet_proxy_custom(&mut network_params.proxy_params())?;
 

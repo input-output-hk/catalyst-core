@@ -1,5 +1,6 @@
 use crate::scenario::vit_station::Error as VitStationControllerError;
 use crate::scenario::wallet::WalletProxyError;
+use crate::wallet::WalletProxyControllerError;
 use hersir::controller::NodeError;
 use jormungandr_automation::testing::ConsumptionBenchmarkError;
 use jormungandr_automation::testing::VerificationError;
@@ -69,6 +70,8 @@ pub enum Error {
     Validate(#[from] crate::cli::ValidateError),
     #[error(transparent)]
     ControllerError(#[from] hersir::controller::Error),
+    #[error(transparent)]
+    WalletProxyController(#[from] WalletProxyControllerError),
     #[error("synchronization for nodes has failed. {}. Timeout was: {} s", info, timeout.as_secs())]
     SyncTimeoutOccurred { info: String, timeout: Duration },
     #[error("{info}")]

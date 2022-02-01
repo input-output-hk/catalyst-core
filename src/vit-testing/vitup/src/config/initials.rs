@@ -1,6 +1,8 @@
 use chain_addr::Discrimination;
 use chain_impl_mockchain::value::Value;
+use hersir::builder::wallet::template::builder::WalletTemplateBuilder;
 use hersir::builder::{ExternalWalletTemplate, WalletTemplate};
+use jormungandr_lib::interfaces::TokenIdentifier;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -40,6 +42,8 @@ pub enum Initial {
 
 pub const GRACE_VALUE: u64 = 1;
 
+// suppress, because when implementing complier gives error: deriving `Default` on enums is experimental
+#[allow(clippy::derivable_impls)]
 impl Default for Initials {
     fn default() -> Self {
         Self(Vec::new())
@@ -126,14 +130,20 @@ impl Initials {
         Self(templates)
     }
 
-    pub fn external_templates(&self) -> Vec<ExternalWalletTemplate> {
+    pub fn external_templates(&self, voting_token: TokenIdentifier) -> Vec<ExternalWalletTemplate> {
         let mut templates = Vec::new();
         for (index, initial) in self.0.iter().enumerate() {
             if let Initial::External { funds, address } = initial {
+                let funds = *funds as u64;
+
+                let mut tokens = HashMap::new();
+                tokens.insert(voting_token.clone(), funds);
+
                 templates.push(ExternalWalletTemplate::new(
                     format!("wallet_{}", index + 1),
-                    Value(*funds as u64),
+                    Value(funds),
                     address.to_string(),
+                    tokens,
                 ));
             }
         }
@@ -144,6 +154,7 @@ impl Initials {
         &self,
         threshold: u64,
         discrimination: Discrimination,
+        voting_token: TokenIdentifier,
     ) -> HashMap<WalletTemplate, String> {
         let mut rand = rand::thread_rng();
         let mut above_threshold_index = 0;
@@ -161,13 +172,14 @@ impl Initials {
                         above_threshold_index += 1;
                         let wallet_alias =
                             format!("wallet_{}_above_{}", above_threshold_index, threshold);
-                        let value: u64 = rand.gen_range(GRACE_VALUE..=threshold - GRACE_VALUE);
+                        let value: u64 =
+                            threshold + rand.gen_range(GRACE_VALUE..=threshold - GRACE_VALUE);
                         templates.insert(
-                            WalletTemplate::new_account(
-                                wallet_alias,
-                                Value(threshold + value),
-                                discrimination,
-                            ),
+                            WalletTemplateBuilder::new(&wallet_alias)
+                                .with(value)
+                                .with_token(voting_token.clone(), value)
+                                .discrimination(discrimination)
+                                .build(),
                             pin.to_string(),
                         );
                     }
@@ -180,13 +192,13 @@ impl Initials {
                         below_threshold_index += 1;
                         let wallet_alias =
                             format!("wallet_{}_below_{}", below_threshold_index, threshold);
-                        let value: u64 = rand.gen_range(GRACE_VALUE..=threshold - GRACE_VALUE);
+                        let value: u64 =
+                            threshold - rand.gen_range(GRACE_VALUE..=threshold - GRACE_VALUE);
                         templates.insert(
-                            WalletTemplate::new_account(
-                                wallet_alias,
-                                Value(threshold - value),
-                                discrimination,
-                            ),
+                            WalletTemplateBuilder::new(&wallet_alias)
+                                .with(value)
+                                .discrimination(discrimination)
+                                .build(),
                             pin.to_string(),
                         );
                     }
@@ -194,11 +206,10 @@ impl Initials {
                 Initial::Wallet { name, funds, pin } => {
                     let wallet_alias = format!("wallet_{}", name);
                     templates.insert(
-                        WalletTemplate::new_account(
-                            wallet_alias,
-                            Value(*funds as u64),
-                            discrimination,
-                        ),
+                        WalletTemplateBuilder::new(&wallet_alias)
+                            .with(*funds as u64)
+                            .discrimination(discrimination)
+                            .build(),
                         pin.to_string(),
                     );
                 }
@@ -209,7 +220,10 @@ impl Initials {
                             format!("wallet_{}_around_{}", around_level_index, threshold);
                         let value: u64 = rand.gen_range(level - GRACE_VALUE..=level + GRACE_VALUE);
                         templates.insert(
-                            WalletTemplate::new_account(wallet_alias, Value(value), discrimination),
+                            WalletTemplateBuilder::new(&wallet_alias)
+                                .with(value)
+                                .discrimination(discrimination)
+                                .build(),
                             pin.to_string(),
                         );
                     }

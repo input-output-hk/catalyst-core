@@ -45,6 +45,7 @@ pub struct TestBlockchain {
     pub committee_wallets: HashMap<Address, Wallet>,
     pub committee_manager: CommitteeMembersManager,
     pub vote_plans: Vec<VotePlan>,
+    pub voting_token: TokenIdentifier,
 }
 
 impl TestBlockchainBuilder {
@@ -95,6 +96,11 @@ impl TestBlockchainBuilder {
     }
 
     pub fn build<R: Rng + CryptoRng>(self, rng: &mut R) -> TestBlockchain {
+        let voting_token = TokenIdentifier {
+            policy_hash: PolicyHash::from([0u8; POLICY_HASH_SIZE]),
+            token_name: TokenName::try_from(vec![0u8; TOKEN_NAME_MAX_SIZE]).unwrap(),
+        };
+
         let mut initial = Vec::with_capacity(self.n_wallets as usize + self.n_committees as usize);
         let mut wallets = (0..self.n_wallets + self.n_committees as u32)
             .into_iter()
@@ -107,11 +113,7 @@ impl TestBlockchainBuilder {
                 // FIXME: this works because it's the default token in the vote plan builder, but it
                 // may be better to extract this out and set it explicitly.
                 initial.push(Initial::Token(InitialToken {
-                    token_id: TokenIdentifier {
-                        policy_hash: PolicyHash::from([0u8; POLICY_HASH_SIZE]),
-                        token_name: TokenName::try_from(vec![0u8; TOKEN_NAME_MAX_SIZE]).unwrap(),
-                    }
-                    .into(),
+                    token_id: voting_token.clone().into(),
                     policy: MintingPolicy::new().into(),
                     to: vec![wallet.to_initial_token(funds)],
                 }));
@@ -181,6 +183,7 @@ impl TestBlockchainBuilder {
             wallets: wallets.into_iter().collect::<HashMap<_, _>>(),
             committee_wallets: committee_wallets.into_iter().collect::<HashMap<_, _>>(),
             vote_plans,
+            voting_token,
         }
     }
 }

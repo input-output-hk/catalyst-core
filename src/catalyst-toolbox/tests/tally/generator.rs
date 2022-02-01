@@ -2,6 +2,9 @@ use chain_impl_mockchain::block::Block;
 
 use super::blockchain::TestBlockchain;
 use chain_addr::Address;
+use chain_impl_mockchain::ledger::token_distribution::TokenDistribution;
+use chain_impl_mockchain::ledger::token_distribution::TokenTotals;
+use chain_impl_mockchain::tokens::identifier::TokenIdentifier;
 use chain_impl_mockchain::{
     certificate::{
         DecryptedPrivateTally, DecryptedPrivateTallyProposal, VotePlan, VotePlanId,
@@ -30,6 +33,7 @@ pub struct VoteRoundGenerator {
     committee_wallets: HashMap<Address, Wallet>,
     voteplan_managers: HashMap<VotePlanId, VotePlanManager>,
     committee_manager: CommitteeMembersManager,
+    voting_token: TokenIdentifier,
 }
 
 fn account_from_slice<P>(
@@ -51,6 +55,7 @@ impl VoteRoundGenerator {
             committee_wallets,
             committee_manager,
             vote_plans,
+            voting_token,
         } = blockchain;
 
         let mut voteplan_managers = HashMap::new();
@@ -78,6 +83,7 @@ impl VoteRoundGenerator {
             committee_manager,
             voteplan_managers,
             wallets,
+            voting_token,
         }
     }
 
@@ -162,6 +168,28 @@ impl VoteRoundGenerator {
         };
     }
 
+    fn token_distribution(&self, ledger: &Ledger) -> TokenDistribution<()> {
+        let token_totals = TokenTotals::default()
+            .add(
+                self.voting_token.clone(),
+                ledger
+                    .accounts()
+                    .iter()
+                    .map(|(_id, state)| {
+                        state
+                            .tokens
+                            .iter()
+                            .find(|(id, _v)| **id == self.voting_token)
+                            .map(|(_, v)| *v)
+                            .unwrap()
+                    })
+                    .sum(),
+            )
+            .unwrap();
+
+        TokenDistribution::new(token_totals, ledger.accounts().clone())
+    }
+
     /// Tally voteplans and return the fragments to run the tally in a separate ledger
     pub fn tally_transactions<R: Rng + CryptoRng>(&mut self, rng: &mut R) -> Vec<Fragment> {
         let mut fragments = Vec::new();
@@ -187,8 +215,8 @@ impl VoteRoundGenerator {
                     PayloadType::Private => {
                         let mut manager = manager
                             .start_private_tally(
+                                self.token_distribution(&tmp_ledger),
                                 vote_end,
-                                tmp_ledger.accounts(),
                                 self.block0.blockchain_configuration.committees[0].into(),
                             )
                             .unwrap();
@@ -250,8 +278,8 @@ impl VoteRoundGenerator {
                     PayloadType::Public => {
                         let manager = manager
                             .public_tally(
+                                self.token_distribution(&tmp_ledger),
                                 vote_end,
-                                &tmp_ledger.accounts().clone(),
                                 &Default::default(),
                                 self.block0.blockchain_configuration.committees[0].into(),
                                 |_| (),

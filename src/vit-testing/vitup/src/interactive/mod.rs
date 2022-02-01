@@ -41,7 +41,7 @@ impl<'a> InteractiveCommandExec for VitInteractiveCommandExec {
         tokens: Vec<String>,
         console: ConsoleWriter,
     ) -> std::result::Result<(), InteractiveCommandError> {
-        match VitInteractiveCommand::from_iter_safe(&mut tokens.iter().map(|x| OsStr::new(x))) {
+        match VitInteractiveCommand::from_iter_safe(&mut tokens.iter().map(OsStr::new)) {
             Ok(interactive) => {
                 if let Err(err) = {
                     match interactive {

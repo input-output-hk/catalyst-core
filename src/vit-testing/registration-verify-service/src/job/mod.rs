@@ -110,10 +110,7 @@ impl RegistrationVerifyJob {
                         "successfully parsed public key",
                     )),
                     Err(err) => {
-                        checks.push(Assert::Failed(format!(
-                            "malformed public key: '{}'",
-                            err.to_string()
-                        )));
+                        checks.push(Assert::Failed(format!("malformed public key: '{}'", err)));
                         None
                     }
                 }
@@ -128,10 +125,7 @@ impl RegistrationVerifyJob {
                         "succesfully read qr code",
                     )),
                     Err(err) => {
-                        checks.push(Assert::Failed(format!(
-                            "malformed qr: '{}'",
-                            err.to_string()
-                        )));
+                        checks.push(Assert::Failed(format!("malformed qr: '{}'", err)));
                         None
                     }
                 }

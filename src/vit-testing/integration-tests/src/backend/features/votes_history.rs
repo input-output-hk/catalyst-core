@@ -1,4 +1,4 @@
-use crate::common::{iapyx_from_secret_key, vitup_setup};
+use crate::common::iapyx_from_secret_key;
 use assert_fs::TempDir;
 use chain_impl_mockchain::vote::Choice;
 use jormungandr_automation::testing::time;
@@ -7,21 +7,20 @@ use jormungandr_lib::interfaces::AccountVotes;
 use jormungandr_lib::interfaces::FragmentStatus;
 use std::collections::HashMap;
 use std::str::FromStr;
-use valgrind::{Proposal, Protocol};
+use valgrind::Proposal;
 use vit_servicing_station_lib::v0::endpoints::proposals::ProposalVoteplanIdAndIndexes;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
 use vitup::config::VoteBlockchainTime;
 use vitup::config::{InitialEntry, Initials};
-use vitup::scenario::network::setup_network;
+use vitup::testing::{spawn_network, vitup_setup};
+
 const PIN: &str = "1234";
 const ALICE: &str = "alice";
 
 #[test]
 pub fn votes_history_reflects_casted_votes() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
-    let endpoint = "127.0.0.1:8080";
-    let version = "2.0";
     let batch_size = 1;
     let vote_timing = VoteBlockchainTime {
         vote_start: 0,
@@ -44,21 +43,18 @@ pub fn votes_history_reflects_casted_votes() {
         .private(true);
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let (mut vit_controller, mut controller, vit_parameters, _fund_name) =
+    let (mut controller, vit_parameters, network_params, _fund_name) =
         vitup_setup(quick_setup, testing_directory.path().to_path_buf());
 
-    let (nodes, vit_station, wallet_proxy) = setup_network(
+    let (nodes, _vit_station, wallet_proxy) = spawn_network(
         &mut controller,
-        &mut vit_controller,
         vit_parameters,
+        network_params,
         &mut template_generator,
-        endpoint.to_string(),
-        &Protocol::Http,
-        version.to_owned(),
     )
     .unwrap();
 
-    let secret = testing_directory.path().join("vit_backend/wallet_alice");
+    let secret = testing_directory.path().join("wallet_alice");
     let mut alice = iapyx_from_secret_key(secret, &wallet_proxy).unwrap();
 
     let proposals = alice.proposals().unwrap();
@@ -152,11 +148,4 @@ pub fn votes_history_reflects_casted_votes() {
             .map(|(x, _)| x.internal_id)
             .collect::<Vec<i32>>()
     );
-
-    vit_station.shutdown();
-    wallet_proxy.shutdown();
-    for mut node in nodes {
-        node.shutdown().unwrap();
-    }
-    controller.finalize();
 }

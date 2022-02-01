@@ -730,7 +730,7 @@ pub async fn get_fragment_statuses(
     let ids = query.fragment_ids.split(',');
     let ids = ids
         .into_iter()
-        .map(|s| FragmentId::from_str(s))
+        .map(FragmentId::from_str)
         .collect::<Result<Vec<_>, _>>()
         .unwrap();
     Ok(HandlerResult(Ok(context

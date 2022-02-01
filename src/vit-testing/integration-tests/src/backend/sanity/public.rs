@@ -1,26 +1,25 @@
 use crate::common::iapyx_from_qr;
-use crate::common::{vitup_setup, wait_until_folder_contains_all_qrs, Error, Vote};
+use crate::common::{wait_until_folder_contains_all_qrs, Error, Vote};
 use assert_fs::TempDir;
 use chain_impl_mockchain::block::BlockDate;
 use chain_impl_mockchain::key::Hash;
 use jormungandr_automation::testing::asserts::VotePlanStatusAssert;
 use jormungandr_automation::testing::time;
-use jormungandr_automation::testing::BlockDateGenerator;
 use std::path::Path;
 use std::str::FromStr;
+use thor::BlockDateGenerator;
 use thor::{FragmentSender, FragmentSenderSetup};
-use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
 use vitup::config::VoteBlockchainTime;
 use vitup::config::{InitialEntry, Initials};
-use vitup::scenario::network::setup_network;
+use vitup::testing::spawn_network;
+use vitup::testing::vitup_setup;
 
 const PIN: &str = "1234";
 
 #[test]
 pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
-    let endpoint = "127.0.0.1:8080";
     let vote_timing = VoteBlockchainTime {
         vote_start: 0,
         tally_start: 1,
@@ -55,16 +54,13 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
 
-    let (mut vit_controller, mut controller, vit_parameters, _) =
+    let (mut controller, vit_parameters, network_params, _) =
         vitup_setup(quick_setup, testing_directory.path().to_path_buf());
-    let (nodes, vit_station, wallet_proxy) = setup_network(
+    let (nodes, _vit_station, wallet_proxy) = spawn_network(
         &mut controller,
-        &mut vit_controller,
         vit_parameters,
+        network_params,
         &mut template_generator,
-        endpoint.to_string(),
-        &Protocol::Http,
-        "2.0".to_owned(),
     )
     .unwrap();
 
@@ -73,7 +69,7 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
     let mut committee = controller.wallet("committee_1").unwrap();
 
     let mut qr_codes_folder = testing_directory.path().to_path_buf();
-    qr_codes_folder.push("vit_backend/qr-codes");
+    qr_codes_folder.push("qr-codes");
     wait_until_folder_contains_all_qrs(3, &qr_codes_folder);
 
     let david_qr_code = Path::new(&qr_codes_folder).join("wallet_david_1234.png");
@@ -140,12 +136,5 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
     vote_plans.assert_all_proposals_are_tallied();
     vote_plans.assert_proposal_tally(fund1_vote_plan.id(), 0, vec![10_000, 10_000]);
     vote_plans.assert_proposal_tally(fund2_vote_plan.id(), 0, vec![10_000, 0]);
-
-    vit_station.shutdown();
-    wallet_proxy.shutdown();
-    for mut node in nodes {
-        node.shutdown()?;
-    }
-    controller.finalize();
     Ok(())
 }

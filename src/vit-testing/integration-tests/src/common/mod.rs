@@ -1,9 +1,9 @@
-mod backend;
+mod assert;
 pub mod load;
 pub mod registration;
 pub mod snapshot;
 mod wallet;
-pub use backend::*;
+pub use assert::*;
 
 use thiserror::Error;
 pub use wallet::{iapyx_from_qr, iapyx_from_secret_key};

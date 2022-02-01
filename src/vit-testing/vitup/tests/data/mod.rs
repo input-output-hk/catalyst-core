@@ -1,18 +1,12 @@
 mod private;
 mod public;
 
-use hersir::controller::Controller;
 use std::collections::LinkedList;
-use std::path::{Path, PathBuf};
-use std::str::FromStr;
 use valgrind::{Challenge, Fund, Proposal, ValgrindClient};
 use vit_servicing_station_tests::common::data::ChallengeTemplate;
 use vit_servicing_station_tests::common::data::FundTemplate;
 use vit_servicing_station_tests::common::data::ProposalTemplate;
 use vit_servicing_station_tests::common::data::ReviewTemplate;
-use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
-use vitup::builders::VitBackendSettingsBuilder;
-use vitup::scenario::controller::VitController;
 
 pub fn funds_eq(expected: FundTemplate, actual: Fund) {
     assert_eq!(expected.id, actual.id, "fund id");
@@ -168,21 +162,4 @@ pub fn proposals_eq(expected_list: LinkedList<ProposalTemplate>, actual_list: Ve
             "challenge id"
         );
     }
-}
-
-pub fn vitup_setup(
-    mut quick_setup: VitBackendSettingsBuilder,
-    mut testing_directory: PathBuf,
-) -> (VitController, Controller, ValidVotePlanParameters, String) {
-    let session_settings = sesssion_settings(&testing_directory);
-
-    testing_directory.push(quick_setup.title());
-    if testing_directory.exists() {
-        std::fs::remove_dir_all(&testing_directory).unwrap();
-    }
-
-    let fund_name = quick_setup.fund_name();
-    let (vit_controller, controller, vit_parameters, _) =
-        quick_setup.build(session_settings).unwrap();
-    (vit_controller, controller, vit_parameters, fund_name)
 }

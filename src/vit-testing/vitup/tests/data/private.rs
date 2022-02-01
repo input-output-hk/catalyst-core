@@ -1,17 +1,15 @@
 use assert_fs::TempDir;
 use std::path::PathBuf;
 use std::str::FromStr;
-use valgrind::Protocol;
 use valgrind::ValgrindClient;
 
-use crate::data::vitup_setup;
 use jortestkit::prelude::read_file;
 use vit_servicing_station_tests::common::data::parse_funds;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
 use vitup::builders::{default_next_vote_date, default_snapshot_date};
 use vitup::config::VoteBlockchainTime;
-use vitup::scenario::network::setup_network;
+use vitup::testing::{spawn_network, vitup_setup};
 
 #[test]
 pub fn private_vote_multiple_vote_plans() {
@@ -31,7 +29,6 @@ pub fn private_vote_multiple_vote_plans() {
 
     let expected_fund = expected_funds.iter().next().unwrap().clone();
 
-    let endpoint = "127.0.0.1:8080";
     let testing_directory = TempDir::new().unwrap().into_persistent();
 
     let vote_timing = VoteBlockchainTime {
@@ -53,23 +50,19 @@ pub fn private_vote_multiple_vote_plans() {
         .voting_power(expected_fund.threshold.unwrap() as u64)
         .private(true);
 
-    let title = quick_setup.title();
-    let (mut vit_controller, mut controller, vit_parameters, _) =
+    let (mut controller, vit_parameters, network_params, _) =
         vitup_setup(quick_setup, testing_directory.path().to_path_buf());
-    let (mut nodes, vit_station, wallet_proxy) = setup_network(
+    let (_nodes, _vit_station, wallet_proxy) = spawn_network(
         &mut controller,
-        &mut vit_controller,
         vit_parameters,
+        network_params,
         &mut template_generator,
-        endpoint.to_string(),
-        &Protocol::Http,
-        "2.0".to_owned(),
     )
     .unwrap();
 
     std::thread::sleep(std::time::Duration::from_secs(10));
 
-    let backend_client = ValgrindClient::new(endpoint.to_string(), Default::default());
+    let backend_client = ValgrindClient::new(wallet_proxy.address(), Default::default()).unwrap();
     let fund = backend_client.funds().unwrap();
 
     for status in backend_client.vote_plan_statuses().unwrap() {
@@ -82,7 +75,6 @@ pub fn private_vote_multiple_vote_plans() {
         let expected_encryption_key = read_file(
             testing_directory
                 .path()
-                .join(&title)
                 .join(status.id.to_string() + "_committees")
                 .join("election_public_key.sk"),
         );
@@ -91,11 +83,4 @@ pub fn private_vote_multiple_vote_plans() {
             "invalid encryption key"
         );
     }
-
-    vit_station.shutdown();
-    wallet_proxy.shutdown();
-    for node in nodes.iter_mut() {
-        node.shutdown().unwrap();
-    }
-    controller.finalize();
 }

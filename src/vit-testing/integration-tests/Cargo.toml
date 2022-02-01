@@ -7,11 +7,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jormungandr-lib = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "port_update_proposals_test" }
-jormungandr-automation = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "port_update_proposals_test" }
-thor = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "port_update_proposals_test" }
-hersir = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "port_update_proposals_test" }
-jcli = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "port_update_proposals_test" }
+jormungandr-lib = { git ="https://github.com/zeegomo/jormungandr.git", branch = "update-load-metrics" }
+jormungandr-automation = { git ="https://github.com/zeegomo/jormungandr.git", branch = "update-load-metrics" }
+thor = { git ="https://github.com/zeegomo/jormungandr.git", branch = "update-load-metrics" }
+hersir = { git ="https://github.com/zeegomo/jormungandr.git", branch = "update-load-metrics" }
+jcli = { git ="https://github.com/zeegomo/jormungandr.git", branch = "update-load-metrics" }
 vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch="master" }

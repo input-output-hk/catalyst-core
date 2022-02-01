@@ -25,10 +25,10 @@ rand_core = "0.6"
 itertools = "0.9.0"
 cryptoxide = "0.3.2"
 ed25519-bip32 = "^0.3.1"
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "port_update_proposals_test" }
-jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "port_update_proposals_test" }
-thor = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "port_update_proposals_test" }
-hersir = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "port_update_proposals_test" }
+jormungandr-lib = { git = "https://github.com/zeegomo/jormungandr.git", branch = "update-load-metrics" }
+jormungandr-automation = { git = "https://github.com/zeegomo/jormungandr.git", branch = "update-load-metrics" }
+thor = { git = "https://github.com/zeegomo/jormungandr.git", branch = "update-load-metrics" }
+hersir = { git = "https://github.com/zeegomo/jormungandr.git", branch = "update-load-metrics" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "main"}
 valgrind = { path = "../valgrind"}

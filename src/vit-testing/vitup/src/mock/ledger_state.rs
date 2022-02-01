@@ -13,11 +13,11 @@ use jormungandr_lib::interfaces::{BlockDate, SettingsDto};
 use jormungandr_lib::interfaces::{FragmentLog, FragmentOrigin, FragmentStatus};
 use jormungandr_lib::interfaces::{FragmentRejectionReason, FragmentsProcessingSummary};
 use jormungandr_lib::time::SystemTime;
-use jormungandr_testing_utils::testing::BlockDateGenerator;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::PathBuf;
 use thiserror::Error;
+use thor::BlockDateGenerator;
 
 #[derive(Copy, Clone)]
 pub enum FragmentRecieveStrategy {

@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "port_update_proposals_test" }
-jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "port_update_proposals_test" }
+jormungandr-lib = { git = "https://github.com/zeegomo/jormungandr.git", branch = "update-load-metrics" }
+jormungandr-automation = { git = "https://github.com/zeegomo/jormungandr.git", branch = "update-load-metrics" }
 wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
 wallet-core = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
 hex = "0.4"

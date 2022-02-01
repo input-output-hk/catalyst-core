@@ -12,8 +12,8 @@ chrono = "0.4"
 walkdir = "2.3.1"
 structopt = "0.3"
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch= "master" }
-jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "port_update_proposals_test" }
-jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "port_update_proposals_test" }
+jormungandr-integration-tests = { git = "https://github.com/zeegomo/jormungandr.git", branch = "update-load-metrics" }
+jormungandr-automation = { git = "https://github.com/zeegomo/jormungandr.git", branch = "update-load-metrics" }
 
 futures = "0.3.8"
 serde = { version = "1", features = ["derive"] }

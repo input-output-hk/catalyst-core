@@ -9,15 +9,22 @@ use chain_impl_mockchain::{
         scenario::{proposal, template::VotePlanDefBuilder, vote_plan},
         VoteTestGen,
     },
+    tokens::{
+        identifier::TokenIdentifier,
+        minting_policy::MintingPolicy,
+        name::{TokenName, TOKEN_NAME_MAX_SIZE},
+        policy_hash::{PolicyHash, POLICY_HASH_SIZE},
+    },
     vote::PayloadType,
 };
 use jormungandr_lib::interfaces::{
-    try_initials_vec_from_messages, Block0Configuration, BlockchainConfiguration, Initial,
+    try_initial_fragment_from_message, Block0Configuration, BlockchainConfiguration, Initial,
+    InitialToken,
 };
 
-use jormungandr_testing_utils::wallet::Wallet;
 use rand::{CryptoRng, Rng};
-use std::collections::HashMap;
+use std::{collections::HashMap, convert::TryFrom};
+use thor::Wallet;
 
 // rather arbitrary at this point
 const DEFAULT_WALLETS: u32 = 10;
@@ -38,6 +45,7 @@ pub struct TestBlockchain {
     pub committee_wallets: HashMap<Address, Wallet>,
     pub committee_manager: CommitteeMembersManager,
     pub vote_plans: Vec<VotePlan>,
+    pub voting_token: TokenIdentifier,
 }
 
 impl TestBlockchainBuilder {
@@ -88,6 +96,11 @@ impl TestBlockchainBuilder {
     }
 
     pub fn build<R: Rng + CryptoRng>(self, rng: &mut R) -> TestBlockchain {
+        let voting_token = TokenIdentifier {
+            policy_hash: PolicyHash::from([0u8; POLICY_HASH_SIZE]),
+            token_name: TokenName::try_from(vec![0u8; TOKEN_NAME_MAX_SIZE]).unwrap(),
+        };
+
         let mut initial = Vec::with_capacity(self.n_wallets as usize + self.n_committees as usize);
         let mut wallets = (0..self.n_wallets + self.n_committees as u32)
             .into_iter()
@@ -97,9 +110,18 @@ impl TestBlockchainBuilder {
                     Wallet::new_account_with_discrimination(rng, Discrimination::Production);
                 initial.push(Initial::Fund(vec![wallet.to_initial_fund(funds)]));
 
+                // FIXME: this works because it's the default token in the vote plan builder, but it
+                // may be better to extract this out and set it explicitly.
+                initial.push(Initial::Token(InitialToken {
+                    token_id: voting_token.clone().into(),
+                    policy: MintingPolicy::new().into(),
+                    to: vec![wallet.to_initial_token(funds)],
+                }));
+
                 (wallet.address().into(), wallet)
             })
             .collect::<Vec<_>>();
+
         let committee_wallets = wallets.split_off(self.n_wallets as usize);
 
         let committee_manager = CommitteeMembersManager::new(
@@ -129,11 +151,16 @@ impl TestBlockchainBuilder {
             })
             .collect::<Vec<VotePlan>>();
 
-        initial.extend(try_initials_vec_from_messages(vote_plans_fragments.iter()).unwrap());
+        let discrimination = Discrimination::Production;
+        initial.extend(
+            vote_plans_fragments
+                .iter()
+                .map(|message| try_initial_fragment_from_message(discrimination, message).unwrap()),
+        );
 
         let mut config = Block0Configuration {
             blockchain_configuration: BlockchainConfiguration::new(
-                Discrimination::Production,
+                discrimination,
                 ConsensusVersion::Bft,
                 LinearFee::new(0, 0, 0), // it is much easier not to account for feers in the tests verification alg
             ),
@@ -156,6 +183,7 @@ impl TestBlockchainBuilder {
             wallets: wallets.into_iter().collect::<HashMap<_, _>>(),
             committee_wallets: committee_wallets.into_iter().collect::<HashMap<_, _>>(),
             vote_plans,
+            voting_token,
         }
     }
 }

@@ -26,10 +26,11 @@ chain-storage = { git = "https://github.com/input-output-hk/chain-libs.git", bra
 chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chrono = "0.4"
-jcli = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jcli = { git = "https://github.com/input-output-hk/jormungandr.git",  branch = "port_update_proposals_test"}
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "port_update_proposals_test" }
+jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "port_update_proposals_test" }
+jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr.git",  branch = "port_update_proposals_test" }
+thor = { git = "https://github.com/input-output-hk/jormungandr.git",  branch = "port_update_proposals_test" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 # TODO: Remove fixed and migrate to rust_decimal
 fixed = { version = "1.7", features = ["serde"] }

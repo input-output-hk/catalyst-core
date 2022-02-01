@@ -40,9 +40,6 @@ pub enum Error {
     #[error(transparent)]
     LedgerError(#[from] chain_impl_mockchain::ledger::Error),
 
-    #[error("Couldn't initiate a new wallet")]
-    WalletError(#[from] jormungandr_testing_utils::wallet::WalletError),
-
     #[error(transparent)]
     Block0ConfigurationError(#[from] jormungandr_lib::interfaces::Block0ConfigurationError),
 
@@ -140,11 +137,7 @@ fn verify_original_tx(
 
 fn increment_ledger_time_up_to(ledger: &Ledger, blockdate: BlockDate) -> Ledger {
     ledger
-        .begin_block(
-            ledger.get_ledger_parameters(),
-            ledger.chain_length().increase(),
-            blockdate,
-        )
+        .begin_block(ledger.chain_length().increase(), blockdate)
         .unwrap()
         .finish(&ConsensusEvalContext::Bft)
 }
@@ -161,12 +154,12 @@ pub fn deconstruct_account_transaction<P: chain_impl_mockchain::transaction::Pay
         return Err(ValidationError::InvalidUtxoInputs);
     };
 
-    let witness = if let Witness::Account(witness) = transaction.witnesses().iter().next().unwrap()
-    {
-        witness
-    } else {
-        return Err(ValidationError::InvalidUtxoWitnesses);
-    };
+    let witness =
+        if let Witness::Account(_, witness) = transaction.witnesses().iter().next().unwrap() {
+            witness
+        } else {
+            return Err(ValidationError::InvalidUtxoWitnesses);
+        };
 
     Ok((payload, identifier, witness))
 }
@@ -482,6 +475,15 @@ impl FragmentReplayer {
                 }
                 utxos.append(&mut new_committee_accounts);
             }
+
+            if let Initial::Token(ref mut mint) = initial {
+                for destination in mint.to.iter_mut() {
+                    destination.address = wallets[&destination.address]
+                        .account_id()
+                        .address(Discrimination::Production)
+                        .into();
+                }
+            }
         }
 
         Ok((
@@ -602,18 +604,21 @@ mod test {
     use chain_core::property::Block as _;
     use chain_impl_mockchain::certificate::VoteTallyPayload;
     use chain_impl_mockchain::chaintypes::ConsensusType;
+    use chain_impl_mockchain::tokens::minting_policy::MintingPolicy;
     use chain_impl_mockchain::vote::Choice;
     use chain_impl_mockchain::vote::Tally;
+    use jormungandr_automation::jormungandr::ConfigurationBuilder;
+    use jormungandr_automation::testing::VotePlanBuilder;
     use jormungandr_lib::interfaces::load_persistent_fragments_logs_from_folder_path;
+    use jormungandr_lib::interfaces::InitialToken;
     use jormungandr_lib::interfaces::KesUpdateSpeed;
     use jormungandr_lib::interfaces::PersistentFragmentLog;
     use jormungandr_lib::time::SecondsSinceUnixEpoch;
-    use jormungandr_testing_utils::testing::fragments::write_into_persistent_log;
-    use jormungandr_testing_utils::testing::jormungandr::ConfigurationBuilder;
-    use jormungandr_testing_utils::testing::vote_plan_cert;
-    use jormungandr_testing_utils::testing::VotePlanBuilder;
-    use jormungandr_testing_utils::wallet::Wallet as TestWallet;
     use rand::rngs::OsRng;
+    use thor::vote_plan_cert;
+    use thor::write_into_persistent_log;
+    use thor::FragmentBuilder;
+    use thor::Wallet as TestWallet;
 
     #[test]
     fn test_vote_flow() {
@@ -623,11 +628,10 @@ mod test {
         let slots_per_epoch = 10;
 
         let mut rng = OsRng;
-        let mut alice =
+        let alice =
             TestWallet::new_account_with_discrimination(&mut rng, Discrimination::Production);
-        let mut bob =
-            TestWallet::new_account_with_discrimination(&mut rng, Discrimination::Production);
-        let mut clarice =
+        let bob = TestWallet::new_account_with_discrimination(&mut rng, Discrimination::Production);
+        let clarice =
             TestWallet::new_account_with_discrimination(&mut rng, Discrimination::Production);
 
         let vote_plan = VotePlanBuilder::new().proposals_count(3).public().build();
@@ -642,6 +646,9 @@ mod test {
         )
         .into();
 
+        let minting_policy = MintingPolicy::new();
+        let token_id = vote_plan.voting_token();
+
         let block0_configuration = ConfigurationBuilder::new()
             .with_explorer()
             .with_funds(vec![
@@ -649,11 +656,20 @@ mod test {
                 bob.to_initial_fund(funds),
                 clarice.to_initial_fund(funds),
             ])
+            .with_token(InitialToken {
+                token_id: token_id.clone().into(),
+                policy: minting_policy.into(),
+                to: vec![
+                    alice.to_initial_token(funds),
+                    bob.to_initial_token(funds),
+                    clarice.to_initial_token(funds),
+                ],
+            })
             .with_certs(vec![vote_plan_cert])
             .with_block0_consensus(ConsensusType::Bft)
             .with_kes_update_speed(KesUpdateSpeed::new(43200).unwrap())
             .with_discrimination(Discrimination::Production)
-            .with_committees(&[&alice])
+            .with_committees(&[alice.to_committee_id()])
             .with_slot_duration(slot_duration)
             .with_slots_per_epoch(slots_per_epoch)
             .build_block0();
@@ -663,37 +679,18 @@ mod test {
             slot_id: 0,
         };
         let block0 = block0_configuration.to_block();
+
+        let fragment_builder = FragmentBuilder::new(
+            &block0.id().into(),
+            &block0_configuration.blockchain_configuration.linear_fees,
+            valid_until,
+        );
+
         //vote fragments
         let mut fragments: Vec<PersistentFragmentLog> = vec![
-            alice
-                .issue_vote_cast_cert(
-                    &block0.id().into(),
-                    &block0_configuration.blockchain_configuration.linear_fees,
-                    valid_until,
-                    &vote_plan,
-                    0,
-                    &Choice::new(1),
-                )
-                .unwrap(),
-            bob.issue_vote_cast_cert(
-                &block0.id().into(),
-                &block0_configuration.blockchain_configuration.linear_fees,
-                valid_until,
-                &vote_plan,
-                1,
-                &Choice::new(1),
-            )
-            .unwrap(),
-            clarice
-                .issue_vote_cast_cert(
-                    &block0.id().into(),
-                    &block0_configuration.blockchain_configuration.linear_fees,
-                    valid_until,
-                    &vote_plan,
-                    2,
-                    &Choice::new(1),
-                )
-                .unwrap(),
+            fragment_builder.vote_cast(&alice, &vote_plan, 0, &Choice::new(1)),
+            fragment_builder.vote_cast(&bob, &vote_plan, 1, &Choice::new(1)),
+            fragment_builder.vote_cast(&clarice, &vote_plan, 2, &Choice::new(1)),
         ]
         .into_iter()
         .map(|fragment| PersistentFragmentLog {
@@ -707,6 +704,12 @@ mod test {
             slot_id: 0,
         };
 
+        let fragment_builder = FragmentBuilder::new(
+            &block0.id().into(),
+            &block0_configuration.blockchain_configuration.linear_fees,
+            valid_until,
+        );
+
         //calculate tally period
         let new_secs = block0_configuration
             .blockchain_configuration
@@ -717,15 +720,7 @@ mod test {
         //push tally fragment
         fragments.push(PersistentFragmentLog {
             time: SecondsSinceUnixEpoch::from_secs(new_secs),
-            fragment: alice
-                .issue_vote_tally_cert(
-                    &block0.id().into(),
-                    &block0_configuration.blockchain_configuration.linear_fees,
-                    valid_until,
-                    &vote_plan,
-                    VoteTallyPayload::Public,
-                )
-                .unwrap(),
+            fragment: fragment_builder.vote_tally(&alice, &vote_plan, VoteTallyPayload::Public),
         });
 
         let persistent_fragment_log_output = temp_dir.child("fragments");

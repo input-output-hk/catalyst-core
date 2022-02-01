@@ -1853,7 +1853,7 @@ dependencies = [
 [[package]]
 name = "hersir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#6c69f0619cf56fe2d7e6ee412480e04a14b3a963"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#2ec790b92c6b4c94258a2feff2e783a188745ce7"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2183,7 +2183,7 @@ version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7baab56125e25686df467fe470785512329883aab42696d661247aca2a2896e4"
 dependencies = [
- "console 0.13.0",
+ "console 0.11.3",
  "lazy_static",
  "number_prefix",
  "regex 1.5.4",
@@ -2280,7 +2280,7 @@ checksum = "1aab8fc367588b89dcee83ab0fd66b72b50b72fa1904d7095045ace2b0c81c35"
 [[package]]
 name = "jcli"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#6c69f0619cf56fe2d7e6ee412480e04a14b3a963"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#2ec790b92c6b4c94258a2feff2e783a188745ce7"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2314,7 +2314,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-automation"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#6c69f0619cf56fe2d7e6ee412480e04a14b3a963"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#2ec790b92c6b4c94258a2feff2e783a188745ce7"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -2380,7 +2380,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-integration-tests"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#6c69f0619cf56fe2d7e6ee412480e04a14b3a963"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#2ec790b92c6b4c94258a2feff2e783a188745ce7"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -2432,7 +2432,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#6c69f0619cf56fe2d7e6ee412480e04a14b3a963"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#2ec790b92c6b4c94258a2feff2e783a188745ce7"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2619,7 +2619,7 @@ dependencies = [
 [[package]]
 name = "loki"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#6c69f0619cf56fe2d7e6ee412480e04a14b3a963"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#2ec790b92c6b4c94258a2feff2e783a188745ce7"
 dependencies = [
  "chain-addr",
  "chain-core",
@@ -2801,7 +2801,7 @@ dependencies = [
 [[package]]
 name = "mjolnir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#6c69f0619cf56fe2d7e6ee412480e04a14b3a963"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#2ec790b92c6b4c94258a2feff2e783a188745ce7"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -4817,7 +4817,7 @@ dependencies = [
 [[package]]
 name = "thor"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#6c69f0619cf56fe2d7e6ee412480e04a14b3a963"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#2ec790b92c6b4c94258a2feff2e783a188745ce7"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",

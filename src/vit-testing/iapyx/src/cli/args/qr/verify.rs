@@ -47,10 +47,7 @@ impl VerifyQrCommand {
                 let secret_key: SecretKey<Ed25519Extended> = SecretKey::from_binary(&bin).unwrap();
                 let kind = Kind::Account(secret_key.to_public());
                 let address = chain_addr::Address(Discrimination::Production, kind);
-                println!(
-                    "{}",
-                    AddressReadable::from_address("ca", &address).to_string()
-                );
+                println!("{}", AddressReadable::from_address("ca", &address));
 
                 Wallet::recover_from_utxo(&bin).unwrap()
             })

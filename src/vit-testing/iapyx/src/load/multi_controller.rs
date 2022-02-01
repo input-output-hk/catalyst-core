@@ -32,7 +32,7 @@ impl MultiController {
         count: usize,
         backend_settings: RestSettings,
     ) -> Result<Self, MultiControllerError> {
-        let backend = ValgrindClient::new(wallet_backend_address, backend_settings);
+        let backend = ValgrindClient::new(wallet_backend_address, backend_settings)?;
         let settings = backend.settings()?.into_wallet_settings();
         let wallets = iter::from_fn(|| Some(Wallet::generate(words_length).unwrap()))
             .take(count)
@@ -50,7 +50,7 @@ impl MultiController {
         password: &[u8],
         backend_settings: RestSettings,
     ) -> Result<Self, MultiControllerError> {
-        let backend = ValgrindClient::new(wallet_backend_address.to_string(), backend_settings);
+        let backend = ValgrindClient::new(wallet_backend_address.to_string(), backend_settings)?;
         let settings = backend.settings()?.into_wallet_settings();
         let wallets = mnemonics
             .iter()
@@ -69,7 +69,8 @@ impl MultiController {
         pin_mode: PinReadMode,
         backend_settings: RestSettings,
     ) -> Result<Self, MultiControllerError> {
-        let mut backend = ValgrindClient::new(wallet_backend_address.to_string(), backend_settings);
+        let mut backend =
+            ValgrindClient::new(wallet_backend_address.to_string(), backend_settings)?;
         let settings = backend.settings()?.into_wallet_settings();
 
         backend.enable_logs();
@@ -92,7 +93,7 @@ impl MultiController {
         private_keys: &[P],
         backend_settings: RestSettings,
     ) -> Result<Self, MultiControllerError> {
-        let backend = ValgrindClient::new(proxy_address.to_string(), backend_settings);
+        let backend = ValgrindClient::new(proxy_address.to_string(), backend_settings)?;
         let settings = backend.settings()?.into_wallet_settings();
         let wallets = private_keys
             .iter()

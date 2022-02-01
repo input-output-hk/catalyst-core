@@ -97,7 +97,7 @@ impl Wallet {
     }
 
     pub fn confirm_all_transactions(&mut self) {
-        for id in self.pending_transactions().clone() {
+        for id in self.pending_transactions() {
             self.confirm_transaction(id)
         }
     }
@@ -153,10 +153,6 @@ impl Wallet {
 
 impl std::fmt::Debug for Wallet {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            self.identifier(Discrimination::Production).to_string()
-        )
+        write!(f, "{}", self.identifier(Discrimination::Production))
     }
 }

@@ -20,15 +20,10 @@ fn levels(threshold: u64) -> Vec<Range<u64>> {
     ]
 }
 
+#[derive(Default)]
 pub struct Record {
     pub count: u32,
     pub total: u64,
-}
-
-impl Default for Record {
-    fn default() -> Self {
-        Record { count: 0, total: 0 }
-    }
 }
 
 pub struct Stats {

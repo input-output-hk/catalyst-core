@@ -42,19 +42,9 @@ pub fn count_active_voters<S: Into<String>>(endpoint: S) -> Result<(), IapyxStat
     Ok(())
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct Stats {
     total: u32,
     obtained_voting_power: u32,
     voted_at_least_once: u32,
-}
-
-impl Default for Stats {
-    fn default() -> Self {
-        Self {
-            total: 0,
-            obtained_voting_power: 0,
-            voted_at_least_once: 0,
-        }
-    }
 }

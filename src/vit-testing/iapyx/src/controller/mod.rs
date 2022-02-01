@@ -27,8 +27,13 @@ pub struct Controller {
 }
 
 impl Controller {
-    pub fn switch_backend(&mut self, proxy_address: String, backend_settings: RestSettings) {
-        self.backend = ValgrindClient::new(proxy_address, backend_settings);
+    pub fn switch_backend(
+        &mut self,
+        proxy_address: String,
+        backend_settings: RestSettings,
+    ) -> Result<(), ControllerError> {
+        self.backend = ValgrindClient::new(proxy_address, backend_settings)?;
+        Ok(())
     }
 
     pub fn account(&self, discrimination: chain_addr::Discrimination) -> chain_addr::Address {

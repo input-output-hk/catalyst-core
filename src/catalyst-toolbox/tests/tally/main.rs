@@ -443,7 +443,7 @@ fn votes_outside_voting_phase() {
 }
 
 #[test]
-fn transaction_transfer() {
+fn transaction_transfer_does_not_decrease_voting_power() {
     let (mut generator, _, tally_fragments) = setup_run! {
         seed = [0; 32],
         wallets = 4,
@@ -494,7 +494,7 @@ fn transaction_transfer() {
     )
     .transaction(
         &wallets[0],
-        wallet1_address,
+        wallet1_address.clone(),
         *wallets_stake.get(&wallet0_address).unwrap(),
     )
     .unwrap();
@@ -525,19 +525,15 @@ fn transaction_transfer() {
         .tally
         .clone()
         .unwrap();
+
+    let wallet0_weight: u64 = wallets_stake[&wallet0_address].into();
+    let wallet1_weight: u64 = wallets_stake[&wallet1_address].into();
     assert_eq!(tally.result().unwrap().results()[0], 0.into());
-    // the first wallet has not voting power anymore
-    assert_eq!(tally.result().unwrap().results()[1], 0.into());
-    // the second wallet should have all the voting power
-    assert_eq!(
-        tally.result().unwrap().results()[2],
-        wallets_stake
-            .values()
-            .cloned()
-            .map(<u64>::from)
-            .sum::<u64>()
-            .into()
-    );
+    // the first wallet has the same voting power as before
+    assert_eq!(tally.result().unwrap().results()[1], wallet0_weight.into());
+    // the second wallet should have also the same voting power
+    assert_eq!(tally.result().unwrap().results()[2], wallet1_weight.into());
+
     // No fragments are rejected because there are no fees in the current configuration, otherwise the first wallet
     // would not have enough funds for the vote cast transaction
     assert!(failed_fragments.is_empty());

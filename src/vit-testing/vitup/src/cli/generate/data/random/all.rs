@@ -45,7 +45,7 @@ impl AllRandomDataCommandArgs {
 
         let deployment_tree = DeploymentTree::new(&self.output_directory, quick_setup.title());
 
-        let (controller, vit_parameters, _) = quick_setup.build(session_settings.into())?;
+        let (controller, vit_parameters, _) = quick_setup.build(session_settings)?;
 
         generate_random_database(&deployment_tree, vit_parameters);
 

@@ -62,7 +62,7 @@ impl SnapshotCommandArgs {
 
         let deployment_tree = DeploymentTree::new(&self.output_directory, quick_setup.title());
 
-        let (controller, _, _) = quick_setup.build(session_settings.into())?;
+        let (mut controller, _, _) = quick_setup.build(session_settings)?;
 
         let genesis_yaml = deployment_tree.genesis_path();
 

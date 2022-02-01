@@ -91,7 +91,6 @@ impl AdvancedStartCommandArgs {
         // TODO: what happened to this function? should be re-implemented? does it have a
         // replacement?
         // as far as I can see it was only used to verify that the binary exists.
-        // let jormungandr = prepare_command(&self.jormungandr);
         let jormungandr = &self.jormungandr;
         let mut testing_directory = self.testing_directory;
         let generate_documentation = true;
@@ -99,15 +98,16 @@ impl AdvancedStartCommandArgs {
         let mode = self.mode;
         let endpoint = self.endpoint;
         let token = self.token;
+        let title = "advanced";
 
         let session_settings = SessionSettings {
-            jormungandr: Some(jormungandr.to_path_buf()),
-            root: testing_directory.clone().into(),
+            jormungandr: jormungandr.to_path_buf(),
+            root: testing_directory.join(title).into(),
             generate_documentation,
             mode: mode.into(),
             log: LogLevel::from_str(&log_level)
                 .map_err(|_| Error::UnknownLogLevel(log_level.clone()))?,
-            title: "advanced".to_string(),
+            title: title.to_owned(),
         };
 
         let mut config = read_config(&self.config)?;
@@ -139,13 +139,13 @@ impl AdvancedStartCommandArgs {
 
         let network_spawn_params = NetworkSpawnParams::new(
             endpoint,
-            &quick_setup.parameters(),
+            quick_setup.parameters(),
+            session_settings,
             token,
             testing_directory,
         );
         spawn_network(
             mode,
-            session_settings,
             network_spawn_params,
             &mut template_generator,
             quick_setup,

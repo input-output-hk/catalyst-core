@@ -52,7 +52,7 @@ impl QrCommandArgs {
         let deployment_tree = DeploymentTree::new(&self.output_directory, quick_setup.title());
 
         println!("{:?}", quick_setup.parameters().initials);
-        quick_setup.build(session_settings.into())?;
+        quick_setup.build(session_settings)?;
 
         //remove block0.bin
         std::fs::remove_file(deployment_tree.block0_path())?;

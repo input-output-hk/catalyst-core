@@ -136,27 +136,23 @@ impl QuickStartCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 
-        // TODO: remove this? or re-implement/replace it
-        // let jormungandr = prepare_command(&self.jormungandr);
-        // let jcli = prepare_command(&self.jcli);
-        // same comment than in AdvancedStartCommandArgs actually (seems loke there is some code
-        // repetition, btw)
         let jormungandr = &self.jormungandr;
-        let mut testing_directory = self.testing_directory;
+        let testing_directory = self.testing_directory;
         let generate_documentation = true;
         let log_level = self.log_level;
         let mode = self.mode;
         let endpoint = self.endpoint;
         let token = self.token;
+        let title = "quick";
 
         let session_settings = SessionSettings {
-            jormungandr: Some(jormungandr.to_path_buf()),
-            root: testing_directory.clone().into(),
+            jormungandr: jormungandr.to_path_buf(),
+            root: testing_directory.join(title).into(),
             generate_documentation,
             mode: mode.into(),
             log: LogLevel::from_str(&log_level)
                 .map_err(|_| Error::UnknownLogLevel(log_level.clone()))?,
-            title: "quick".to_string(),
+            title: title.to_owned(),
         };
 
         let mut quick_setup = VitBackendSettingsBuilder::new();
@@ -225,24 +221,23 @@ impl QuickStartCommandArgs {
             .private(self.private)
             .version(self.version);
 
-        print_intro(&session_settings.clone().into(), "VOTING BACKEND");
+        print_intro(&session_settings, "VOTING BACKEND");
 
         let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
 
-        testing_directory.push(quick_setup.title());
         if testing_directory.exists() {
             std::fs::remove_dir_all(&testing_directory)?;
         }
 
         let network_spawn_params = NetworkSpawnParams::new(
             endpoint,
-            &quick_setup.parameters(),
+            quick_setup.parameters(),
+            session_settings,
             token,
             testing_directory,
         );
         spawn_network(
             mode,
-            session_settings,
             network_spawn_params,
             &mut template_generator,
             quick_setup,

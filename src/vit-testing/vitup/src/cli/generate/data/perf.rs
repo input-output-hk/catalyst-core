@@ -84,7 +84,7 @@ impl PerfDataCommandArgs {
 
         let deployment_tree = DeploymentTree::new(&self.output_directory, quick_setup.title());
 
-        let (controller, vit_parameters, _) = quick_setup.build(session_settings.into())?;
+        let (controller, vit_parameters, _) = quick_setup.build(session_settings)?;
 
         let template_generator = ExternalValidVotingTemplateGenerator::new(
             self.proposals.clone(),

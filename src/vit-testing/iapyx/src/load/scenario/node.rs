@@ -35,7 +35,7 @@ impl NodeLoad {
                     self.config.use_v1,
                     self.config.reuse_accounts_lazy,
                 )?,
-                VoteStatusProvider::new(backend, self.config.debug),
+                VoteStatusProvider::new(backend, self.config.debug)?,
                 self.config.config,
                 measurement_name,
             )
@@ -64,4 +64,6 @@ pub enum Error {
     MultiControllerError(#[from] MultiControllerError),
     #[error("request gen error")]
     RequestGen(#[from] RequestGenError),
+    #[error("request gen error")]
+    StatusProvider(#[from] crate::load::StatusProviderError),
 }

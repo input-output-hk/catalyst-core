@@ -6,9 +6,9 @@ use jormungandr_lib::interfaces::{
     AccountState, AccountVotes, Address, FragmentLog, FragmentStatus, NodeStatsDto, SettingsDto,
     VotePlanId, VotePlanStatus,
 };
-use regex::Regex;
 use std::collections::HashMap;
 use std::str::FromStr;
+use url::Url;
 use wallet::AccountId;
 
 #[derive(Clone)]
@@ -17,9 +17,7 @@ pub struct WalletNodeRestClient {
 }
 
 impl WalletNodeRestClient {
-    pub fn new(address: String, settings: RestSettings) -> Self {
-        let re = Regex::new(r"/v0/?").unwrap();
-        let address = re.replace_all(&address, "");
+    pub fn new(address: Url, settings: RestSettings) -> Self {
         Self {
             rest_client: JormungandrRest::new_with_custom_settings(address.to_string(), settings),
         }

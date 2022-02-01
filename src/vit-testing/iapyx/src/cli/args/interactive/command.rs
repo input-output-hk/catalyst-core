@@ -198,7 +198,7 @@ impl Address {
                 &discrimination.into_prefix(),
                 &controller.account(discrimination),
             );
-            println!("Address: {}", address.to_string());
+            println!("Address: {}", address);
             println!("Account id: {}", controller.id());
             return Ok(());
         }
@@ -356,7 +356,7 @@ impl Connect {
         };
 
         if let Some(controller) = model.controller.as_mut() {
-            controller.switch_backend(self.address.clone(), settings);
+            controller.switch_backend(self.address.clone(), settings)?;
             return Ok(());
         }
 
@@ -395,7 +395,7 @@ pub struct RecoverFromSecretKey {
 impl RecoverFromSecretKey {
     pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
         let wallet_backend =
-            ValgrindClient::new(model.backend_address.clone(), model.settings.clone());
+            ValgrindClient::new(model.backend_address.clone(), model.settings.clone()).unwrap();
 
         model.controller = Some(
             ControllerBuilder::default()
@@ -492,4 +492,6 @@ pub enum IapyxCommandError {
     ControllerBuilder(#[from] crate::controller::ControllerBuilderError),
     #[error(transparent)]
     Hash(#[from] chain_crypto::hash::Error),
+    #[error(transparent)]
+    Valgrind(valgrind::Error),
 }

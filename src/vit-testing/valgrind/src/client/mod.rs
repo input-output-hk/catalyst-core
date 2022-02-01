@@ -26,6 +26,7 @@ use wallet::AccountId;
 
 pub use node::{RestError as NodeRestError, WalletNodeRestClient};
 pub use proxy::{Error as ProxyClientError, ProxyClient};
+use url::Url;
 use vit_servicing_station_tests::common::clients::RestClient as VitRestClient;
 pub use vit_station::{RestError as VitStationRestError, VitStationRestClient};
 
@@ -37,20 +38,35 @@ pub struct ValgrindClient {
     explorer_client: Explorer,
 }
 
+fn host_and_port(url: Url) -> String {
+    let port_part = url
+        .port()
+        .map(|p| format!(":{}", p))
+        .unwrap_or_else(|| "".to_string());
+    format!("{}{}", url.host_str().unwrap(), port_part)
+}
+
 impl ValgrindClient {
     pub fn new_from_addresses(
-        proxy_address: String,
-        node_address: String,
-        vit_address: String,
+        proxy_address: Url,
+        node_address: Url,
+        vit_address: Url,
         node_rest_settings: ValgrindSettings,
     ) -> Self {
+        println!(
+            "node_address: {}",
+            node_address.join("api").unwrap().as_str()
+        );
+        println!("vit_address: {:?}", host_and_port(vit_address.clone()));
+        println!("node_address: {:?}", proxy_address);
+
         let mut backend = Self {
             node_client: WalletNodeRestClient::new(
-                format!("http://{}/api", node_address),
+                node_address.join("api").unwrap(),
                 node_rest_settings.clone(),
             ),
-            vit_client: VitRestClient::new(vit_address),
-            proxy_client: ProxyClient::new(format!("http://{}", proxy_address)),
+            vit_client: VitRestClient::new(host_and_port(vit_address)),
+            proxy_client: ProxyClient::new(proxy_address.to_string()),
             explorer_client: Explorer::new(node_address),
         };
 
@@ -60,8 +76,13 @@ impl ValgrindClient {
         backend
     }
 
-    pub fn new(address: String, settings: ValgrindSettings) -> Self {
-        Self::new_from_addresses(address.clone(), address.clone(), address, settings)
+    pub fn new(address: String, settings: ValgrindSettings) -> Result<Self, Error> {
+        Ok(Self::new_from_addresses(
+            address.parse()?,
+            address.parse()?,
+            address.parse()?,
+            settings,
+        ))
     }
 
     pub fn node_client(&self) -> WalletNodeRestClient {
@@ -133,8 +154,7 @@ impl ValgrindClient {
     }
 
     pub fn challenges(&self) -> Result<Vec<Challenge>, Error> {
-        todo!("what happened to this?");
-        // Ok(self.vit_client.challenges()?)
+        Ok(self.vit_client.challenges()?)
     }
 
     pub fn vit(&self) -> VitRestClient {
@@ -215,4 +235,6 @@ pub enum Error {
     HashConversion(#[from] chain_crypto::hash::Error),
     #[error(transparent)]
     VitRest(#[from] vit_servicing_station_tests::common::clients::RestError),
+    #[error(transparent)]
+    Url(#[from] url::ParseError),
 }

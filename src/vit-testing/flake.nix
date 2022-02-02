@@ -10,7 +10,7 @@
     jormungandr.url =
       "github:input-output-hk/jormungandr?rev=50fc937159cbea328973af2a4a04d1c8d9d4b48e";
     cardano-node.url =
-      "github:input-output-hk/cardano-node/1.26.1-with-cardano-cli";
+      "github:input-output-hk/cardano-node/1.33.0-with-cardano-cli";
   };
   outputs = { self, nixpkgs, utils, rust-nix, voting-tools, vit-kedqr
     , jormungandr, cardano-node }:

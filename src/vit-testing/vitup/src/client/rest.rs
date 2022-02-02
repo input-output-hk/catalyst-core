@@ -1,6 +1,5 @@
 use crate::config::VitStartParameters;
-use crate::manager::file_lister::FolderDump;
-use crate::manager::State;
+use crate::mode::service::manager::{file_lister::FolderDump, State};
 use reqwest::blocking::Response;
 use thiserror::Error;
 

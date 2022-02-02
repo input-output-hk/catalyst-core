@@ -1,5 +1,6 @@
-use crate::builders::utils::io::read_config;
+
 use crate::builders::VitBackendSettingsBuilder;
+use crate::config::read_config;
 use crate::Result;
 use std::path::PathBuf;
 use structopt::StructOpt;

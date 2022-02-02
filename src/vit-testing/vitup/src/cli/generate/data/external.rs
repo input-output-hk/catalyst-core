@@ -1,8 +1,7 @@
-use crate::builders::post_deployment::generate_database;
-use crate::builders::post_deployment::DeploymentTree;
-use crate::builders::utils::io::read_config;
-use crate::builders::utils::SessionSettingsExtension;
+use crate::builders::utils::{DeploymentTree, SessionSettingsExtension};
 use crate::builders::VitBackendSettingsBuilder;
+use crate::config::read_config;
+use crate::mode::standard::generate_database;
 use crate::Result;
 use hersir::config::SessionSettings;
 use std::path::PathBuf;
@@ -53,7 +52,7 @@ impl ExternalDataCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 
-        let session_settings = SessionSettings::empty_from_dir(&self.output_directory);
+        let session_settings = SessionSettings::from_dir(&self.output_directory);
 
         let mut quick_setup = VitBackendSettingsBuilder::new();
         let mut config = read_config(&self.config)?;
@@ -74,7 +73,7 @@ impl ExternalDataCommandArgs {
             std::fs::create_dir_all(&self.output_directory)?;
         }
 
-        let deployment_tree = DeploymentTree::new(&self.output_directory, quick_setup.title());
+        let deployment_tree = DeploymentTree::new(&self.output_directory);
 
         let (controller, vit_parameters, _) = quick_setup.build(session_settings)?;
 

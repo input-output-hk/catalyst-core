@@ -1,10 +1,10 @@
-use crate::builders::post_deployment::DeploymentTree;
-use crate::builders::utils::io::read_genesis_yaml;
+use crate::builders::utils::DeploymentTree;
 use crate::builders::utils::SessionSettingsExtension;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::Initials;
 use crate::Result;
 use hersir::config::SessionSettings;
+use jormungandr_automation::testing::block0::read_genesis_yaml;
 use jormungandr_lib::interfaces::Initial;
 use jortestkit::prelude::read_file;
 use serde::{Deserialize, Serialize};
@@ -37,7 +37,7 @@ impl SnapshotCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 
-        let session_settings = SessionSettings::empty_from_dir(&self.output_directory);
+        let session_settings = SessionSettings::from_dir(&self.output_directory);
 
         let mut quick_setup = VitBackendSettingsBuilder::new();
 
@@ -60,7 +60,7 @@ impl SnapshotCommandArgs {
             std::fs::remove_dir_all(&self.output_directory)?;
         }
 
-        let deployment_tree = DeploymentTree::new(&self.output_directory, quick_setup.title());
+        let deployment_tree = DeploymentTree::new(&self.output_directory);
 
         let (mut controller, _, _) = quick_setup.build(session_settings)?;
 

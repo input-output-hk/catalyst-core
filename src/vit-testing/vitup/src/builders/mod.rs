@@ -1,16 +1,14 @@
 mod helpers;
-pub mod post_deployment;
 mod reviews;
 pub mod utils;
 
 use crate::builders::helpers::build_servicing_station_parameters;
-use crate::config::DataGenerationConfig;
-use crate::config::VitStartParameters;
-use crate::config::VoteBlockchainTime;
-use crate::config::VoteTime;
-use crate::scenario::controller::VitController;
-use crate::scenario::controller::VitControllerBuilder;
-use crate::{config::Initials, Result};
+use crate::builders::utils::DeploymentTree;
+use crate::config::{
+    DataGenerationConfig, Initials, VitStartParameters, VoteBlockchainTime, VoteTime,
+};
+use crate::mode::standard::{VitController, VitControllerBuilder};
+use crate::Result;
 use assert_fs::fixture::ChildPath;
 use chain_impl_mockchain::chaintypes::ConsensusVersion;
 use chain_impl_mockchain::fee::LinearFee;
@@ -53,7 +51,6 @@ use crate::config::VOTE_TIME_FORMAT as FORMAT;
 pub struct VitBackendSettingsBuilder {
     config: DataGenerationConfig,
     committee_wallet: String,
-    title: String,
     //needed for load tests when we rely on secret keys instead of qrs
     skip_qr_generation: bool,
     block0_date: SecondsSinceUnixEpoch,
@@ -69,7 +66,6 @@ impl VitBackendSettingsBuilder {
     pub fn new() -> Self {
         Self {
             config: Default::default(),
-            title: "vit_backend".to_owned(),
             committee_wallet: "committee_1".to_owned(),
             skip_qr_generation: false,
             block0_date: SecondsSinceUnixEpoch::now(),
@@ -103,10 +99,6 @@ impl VitBackendSettingsBuilder {
 
     pub fn protocol(&self) -> &Protocol {
         &self.config.params.protocol
-    }
-
-    pub fn title(&self) -> String {
-        self.title.clone()
     }
 
     pub fn initials(&mut self, initials: Initials) -> &mut Self {
@@ -275,7 +267,8 @@ impl VitBackendSettingsBuilder {
         initials: &HashMap<WalletTemplate, String>,
         child: P,
     ) -> Result<()> {
-        let folder = child.as_ref().join("qr-codes");
+        let deployment_tree = DeploymentTree::new(child.as_ref());
+        let folder = deployment_tree.qr_codes_path();
         std::fs::create_dir_all(&folder)?;
 
         let wallets: Vec<(_, _)> = controller

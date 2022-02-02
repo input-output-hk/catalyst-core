@@ -1,4 +1,5 @@
-use crate::builders::utils::io::read_config;
+
+use crate::config::read_config;
 use std::path::PathBuf;
 use structopt::StructOpt;
 use thiserror::Error;

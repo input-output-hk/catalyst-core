@@ -8,7 +8,7 @@ use crate::stats::archive::ArchiveReaderError;
 use archive::ArchiveCommand;
 use block0::Block0StatsCommand;
 use csv;
-use jormungandr_automation::testing::block0::GetBlock0Error;
+use jormungandr_automation::testing::block0::Block0Error;
 use jormungandr_lib::interfaces::Block0ConfigurationError;
 use live::LiveStatsCommand;
 use snapshot::SnapshotCommand;
@@ -37,7 +37,7 @@ impl IapyxStatsCommand {
 #[derive(Error, Debug)]
 pub enum IapyxStatsCommandError {
     #[error("get block0 ")]
-    GetBlock0(#[from] GetBlock0Error),
+    GetBlock0(#[from] Block0Error),
     #[error("pin error")]
     Pin(#[from] crate::qr::PinReadError),
     #[error("reqwest error")]

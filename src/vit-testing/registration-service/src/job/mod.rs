@@ -231,8 +231,8 @@ impl VoteRegistrationJob {
         let output = command.output()?;
 
         println!("status: {}", output.status);
-        std::io::stdout().write_all(&output.stdout).unwrap();
-        std::io::stderr().write_all(&output.stderr).unwrap();
+        std::io::stdout().write_all(&output.stdout)?;
+        std::io::stderr().write_all(&output.stderr)?;
 
         let slot_no = get_slot_no(output.as_multi_line())?;
         println!("voter-registration finished");

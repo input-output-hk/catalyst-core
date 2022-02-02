@@ -4,6 +4,7 @@ use jortestkit::prelude::ProcessOutput;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Write;
+use std::path::PathBuf;
 use std::process::Command;
 use thiserror::Error;
 use uuid::Uuid;
@@ -23,8 +24,12 @@ impl CardanoCliExecutor {
         tx_signed_file.push(id.to_string());
         tx_signed_file.push("tx.signed");
 
-        std::fs::create_dir_all(tx_signed_file.parent().unwrap())
-            .map_err(|x| Error::CannotCreateParentDirectory(x.to_string()))?;
+        std::fs::create_dir_all(
+            tx_signed_file
+                .parent()
+                .ok_or_else(|| Error::CannotGetParentDirectory(tx_signed_file.to_path_buf()))?,
+        )
+        .map_err(|x| Error::CannotCreateParentDirectory(x.to_string()))?;
 
         let mut file =
             File::create(&tx_signed_file).map_err(|x| Error::CannotCreateAFile(x.to_string()))?;
@@ -99,6 +104,8 @@ pub enum Error {
     CannotCreateAFile(String),
     #[error("io error: {0}")]
     CannotCreateParentDirectory(String),
+    #[error("cannot retrieve parent directory for: '{0:?}'")]
+    CannotGetParentDirectory(PathBuf),
     #[error("io error: {0}")]
     CannotWriteAFile(String),
     #[error("io error: {0}")]

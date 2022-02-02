@@ -19,11 +19,18 @@ impl FolderDump {
         }
     }
 
-    pub fn push<S: Into<String>>(&mut self, data: S) {
+    pub fn push<S: Into<String>>(&mut self, data: S) -> Result<(), Error> {
         let item = data.into();
-        let root_file_name = format!("{}", self.root.as_ref().unwrap().display());
+        let root_file_name = format!(
+            "{}",
+            self.root
+                .as_ref()
+                .ok_or(Error::RootFolderNotDefined)?
+                .display()
+        );
         self.content
             .push(item.replace(&root_file_name, "").replace("\\", "/"));
+        Ok(())
     }
 
     pub fn find_qr<S: Into<String>>(&self, job_id: S) -> Option<&String> {
@@ -39,6 +46,10 @@ impl FolderDump {
 pub enum Error {
     #[error("root folder does not exist yet. try to start backend")]
     RootFolderDoesNotExist(#[from] walkdir::Error),
+    #[error("internal error root folder does not defined")]
+    RootFolderNotDefined,
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
 }
 
 pub fn dump_json<P: AsRef<Path>>(root: P) -> Result<FolderDump, Error> {
@@ -47,9 +58,9 @@ pub fn dump_json<P: AsRef<Path>>(root: P) -> Result<FolderDump, Error> {
 
     for entry in walker {
         let entry = entry?;
-        let md = std::fs::metadata(entry.path()).unwrap();
+        let md = std::fs::metadata(entry.path())?;
         if !md.is_dir() {
-            data.push(format!("{}", entry.path().display()));
+            data.push(format!("{}", entry.path().display()))?;
         }
     }
     Ok(data)

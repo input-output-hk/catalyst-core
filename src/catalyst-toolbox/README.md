@@ -399,11 +399,13 @@ Usage: proposers_rewards.py [OPTIONS]
   /out/rewards_challenge_1.csv and /out/rewards_challenge_2.csv files.
 
 Options:
-  --conversion-factor FLOAT       [required]
   --output-file TEXT              [required]
-  --approval-threshold FLOAT      [default: 0.15]
+  --block0-path TEXT              [required]
+  --total-stake-threshold FLOAT   [default: 0.01]
+  --approval-threshold FLOAT      [default: 1.15]
   --output-format [csv|json]      [default: csv]
   --proposals-path TEXT
+  --excluded-proposals-path TEXT
   --active-voteplan-path TEXT
   --challenges-path TEXT
   --vit-station-url TEXT          [default: https://servicing-

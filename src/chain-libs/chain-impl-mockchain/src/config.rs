@@ -111,18 +111,24 @@ pub enum RewardParams {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 /// EVM Configuration parameters needed for execution.
 pub enum EvmConfig {
+    /// Configuration for the `Frontier` fork.
+    Frontier = 0,
     /// Configuration for the `Istanbul` fork.
-    Istanbul = 0,
+    Istanbul = 1,
     /// Configuration for the `Berlin` fork.
-    Berlin = 1,
+    Berlin = 2,
+    /// Configuration for the `London` fork.
+    London = 3,
 }
 
 #[cfg(feature = "evm")]
 impl From<EvmConfig> for Config {
     fn from(other: EvmConfig) -> Config {
         match other {
+            EvmConfig::Frontier => Config::frontier(),
             EvmConfig::Istanbul => Config::istanbul(),
             EvmConfig::Berlin => Config::berlin(),
+            EvmConfig::London => Config::london(),
         }
     }
 }

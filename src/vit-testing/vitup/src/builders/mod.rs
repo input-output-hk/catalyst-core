@@ -346,6 +346,7 @@ impl VitBackendSettingsBuilder {
 
         let root = session_settings.root.path().to_path_buf();
 
+        std::fs::create_dir_all(&root)?;
         let token_id: TokenIdentifier = TestGen::token_id().into();
 
         let mut file = std::fs::File::create(root.join("voting_token.txt")).unwrap();

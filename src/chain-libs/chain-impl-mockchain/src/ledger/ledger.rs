@@ -1194,8 +1194,7 @@ impl Ledger {
 
         let mut actions = Vec::new();
 
-        let token_distribution =
-            TokenDistribution::new(self.token_totals.clone(), self.accounts.clone());
+        let token_distribution = self.token_distribution();
 
         self.votes = self.votes.apply_committee_result(
             self.date(),
@@ -1237,8 +1236,7 @@ impl Ledger {
             return Err(Error::VoteTallyProofFailed);
         }
 
-        let token_distribution =
-            TokenDistribution::new(self.token_totals.clone(), self.accounts.clone());
+        let token_distribution = self.token_distribution();
 
         self.votes = self.votes.apply_encrypted_vote_tally(
             self.date(),
@@ -1395,6 +1393,14 @@ impl Ledger {
 
     pub fn accounts(&self) -> &account::Ledger {
         &self.accounts
+    }
+
+    pub fn token_totals(&self) -> &TokenTotals {
+        &self.token_totals
+    }
+
+    pub fn token_distribution(&self) -> TokenDistribution<()> {
+        TokenDistribution::new(self.token_totals.clone(), self.accounts.clone())
     }
 
     pub fn get_ledger_parameters(&self) -> LedgerParameters {

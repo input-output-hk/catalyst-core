@@ -32,7 +32,7 @@ pub struct QuickStartCommandArgs {
     /// set a directory in which the tests will be run, allowing every details
     /// to be save persistently. By default it will create temporary directories
     /// and will delete the files and documents
-    #[structopt(long = "root-dir", default_value = ".")]
+    #[structopt(long = "root-dir", default_value = "./catalyst")]
     pub testing_directory: PathBuf,
 
     /// level for all nodes

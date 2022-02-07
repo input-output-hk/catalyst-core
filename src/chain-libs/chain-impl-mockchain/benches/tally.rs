@@ -13,6 +13,7 @@ use chain_impl_mockchain::{
         scenario::{prepare_scenario, proposal, vote_plan, wallet},
         VoteTestGen,
     },
+    tokens::name::{TokenName, TOKEN_NAME_MAX_SIZE},
     value::Value,
     vote::{Choice, PayloadType},
 };
@@ -63,12 +64,14 @@ fn tally_benchmark(
         .take(voters_count)
         .collect();
     let total_votes = voting_powers.iter().sum();
+    let token_name: TokenName = vec![0u8; TOKEN_NAME_MAX_SIZE].try_into().unwrap();
     let mut voters_wallets: Vec<_> = voters_aliases
         .iter()
         .zip(voting_powers.iter())
         .map(|(alias, voting_power)| {
             let mut wallet_builder = WalletTemplateBuilder::new(alias);
             wallet_builder.with(*voting_power);
+            wallet_builder.with_token(token_name.clone(), *voting_power);
             wallet_builder
         })
         .collect();
@@ -173,7 +176,10 @@ fn tally_benchmark(
 
     let encrypted_tally = EncryptedVoteTally::new(vote_plan.to_id());
     let fragment = controller.fragment_factory().vote_encrypted_tally(
-        BlockDate::first(),
+        BlockDate {
+            epoch: 1,
+            slot_id: 1,
+        },
         &alice,
         encrypted_tally,
     );
@@ -269,10 +275,14 @@ fn tally_benchmark(
         vote_plan.to_id(),
         DecryptedPrivateTally::new(shares).unwrap(),
     );
-    let fragment =
-        controller
-            .fragment_factory()
-            .vote_tally(BlockDate::first(), &alice, decrypted_tally);
+    let fragment = controller.fragment_factory().vote_tally(
+        BlockDate {
+            epoch: 1,
+            slot_id: 1,
+        },
+        &alice,
+        decrypted_tally,
+    );
 
     c.bench_function(&format!("vote_tally_{}", benchmark_name), |b| {
         b.iter(|| {

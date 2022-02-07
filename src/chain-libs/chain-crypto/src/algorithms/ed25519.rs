@@ -9,7 +9,7 @@ use rand_core::{CryptoRng, RngCore};
 pub struct Ed25519;
 
 #[derive(Clone)]
-pub struct Priv([u8; ed25519::SEED_LENGTH]);
+pub struct Priv([u8; ed25519::PRIVATE_KEY_LENGTH]);
 
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Pub(pub(crate) [u8; ed25519::PUBLIC_KEY_LENGTH]);
@@ -58,7 +58,7 @@ impl AsymmetricKey for Ed25519 {
     const SECRET_BECH32_HRP: &'static str = "ed25519_sk";
 
     fn generate<T: RngCore + CryptoRng>(mut rng: T) -> Self::Secret {
-        let mut priv_bytes = [0u8; ed25519::SEED_LENGTH];
+        let mut priv_bytes = [0u8; ed25519::PRIVATE_KEY_LENGTH];
         rng.fill_bytes(&mut priv_bytes);
         Priv(priv_bytes)
     }
@@ -69,17 +69,17 @@ impl AsymmetricKey for Ed25519 {
     }
 
     fn secret_from_binary(data: &[u8]) -> Result<Self::Secret, SecretKeyError> {
-        if data.len() != ed25519::SEED_LENGTH {
+        if data.len() != ed25519::PRIVATE_KEY_LENGTH {
             return Err(SecretKeyError::SizeInvalid);
         }
-        let mut buf = [0; ed25519::SEED_LENGTH];
-        buf[0..ed25519::SEED_LENGTH].clone_from_slice(data);
+        let mut buf = [0; ed25519::PRIVATE_KEY_LENGTH];
+        buf[0..ed25519::PRIVATE_KEY_LENGTH].clone_from_slice(data);
         Ok(Priv(buf))
     }
 }
 
 impl SecretKeySizeStatic for Ed25519 {
-    const SECRET_KEY_SIZE: usize = ed25519::SEED_LENGTH;
+    const SECRET_KEY_SIZE: usize = ed25519::PRIVATE_KEY_LENGTH;
 }
 
 impl VerificationAlgorithm for Ed25519 {
@@ -105,7 +105,7 @@ impl VerificationAlgorithm for Ed25519 {
         signature: &Self::Signature,
         msg: &[u8],
     ) -> Verification {
-        ed25519::verify(msg, &pubkey.0, signature.as_ref()).into()
+        ed25519::verify(msg, &pubkey.0, &signature.0).into()
     }
 }
 

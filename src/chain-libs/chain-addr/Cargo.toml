@@ -13,7 +13,7 @@ property-test-api = ["chain-crypto/property-test-api", "quickcheck", "proptest",
 bech32 = "0.8"
 chain-core = { path = "../chain-core" }
 chain-crypto = { path = "../chain-crypto" }
-cryptoxide = "0.3"
+cryptoxide = "0.4"
 
 quickcheck = { version = "0.9", optional = true }
 proptest = { git = "https://github.com/input-output-hk/proptest.git", optional = true }

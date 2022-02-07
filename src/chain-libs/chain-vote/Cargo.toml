@@ -11,7 +11,7 @@ rand = "0.8"
 rand_core = "0.6"
 rayon = "1.5"
 thiserror = "1.0"
-cryptoxide = "0.3"
+cryptoxide = "^0.4.2"
 const_format = "0.2"
 
 [dev-dependencies]

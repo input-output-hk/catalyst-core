@@ -25,12 +25,12 @@ rand_core = "0.6"
 itertools = "0.9.0"
 cryptoxide = "0.3.2"
 ed25519-bip32 = "^0.3.1"
-jormungandr-lib = { git = "https://github.com/zeegomo/jormungandr.git", branch = "update-load-metrics" }
-jormungandr-automation = { git = "https://github.com/zeegomo/jormungandr.git", branch = "update-load-metrics" }
-thor = { git = "https://github.com/zeegomo/jormungandr.git", branch = "update-load-metrics" }
-hersir = { git = "https://github.com/zeegomo/jormungandr.git", branch = "update-load-metrics" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+thor = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+hersir = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
-catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "main"}
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "cargo_update"}
 valgrind = { path = "../valgrind"}
 hyper = "0.13.6"
 thiserror = "1.0"

@@ -430,6 +430,58 @@ dependencies = [
 [[package]]
 name = "catalyst-toolbox"
 version = "0.3.0"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=cargo_update#9b2902be745597d8cdd7e9e998e2a67385bd5c41"
+dependencies = [
+ "assert_fs",
+ "bech32 0.7.3",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-ser",
+ "chain-storage",
+ "chain-time",
+ "chrono",
+ "csv",
+ "fixed",
+ "futures",
+ "gag",
+ "graphql_client",
+ "hex",
+ "image",
+ "jcli 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-integration-tests 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jortestkit",
+ "log",
+ "once_cell",
+ "qrcode",
+ "quircs",
+ "rand 0.8.4",
+ "rand_chacha 0.3.1",
+ "regex 1.5.4",
+ "reqwest 0.11.9",
+ "rust_decimal",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "sscanf",
+ "stderrlog",
+ "structopt",
+ "symmetric-cipher",
+ "thiserror",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "tokio 1.15.0",
+ "url",
+ "versionisator",
+ "vit-servicing-station-lib 0.3.4-dev (git+https://github.com/danielsanchezq/vit-servicing-station.git?branch=master)",
+ "wallet",
+]
+
+[[package]]
+name = "catalyst-toolbox"
+version = "0.3.0"
 source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=main#65298972a1b44ed847a9785637d4c13a0fd9c75f"
 dependencies = [
  "assert_fs",
@@ -1853,6 +1905,38 @@ dependencies = [
 [[package]]
 name = "hersir"
 version = "0.1.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ff9bd5692caa66257ba8bb9229179e01113cdf4a"
+dependencies = [
+ "assert_fs",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "ctrlc",
+ "custom_debug",
+ "hex",
+ "indicatif",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jortestkit",
+ "parity-multiaddr 0.11.2",
+ "rand 0.8.4",
+ "rand_chacha 0.3.1",
+ "rand_core 0.6.3",
+ "reqwest 0.11.9",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_yaml",
+ "structopt",
+ "thiserror",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "yaml-rust",
+]
+
+[[package]]
+name = "hersir"
+version = "0.1.0"
 source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#2ec790b92c6b4c94258a2feff2e783a188745ce7"
 dependencies = [
  "assert_fs",
@@ -1879,38 +1963,6 @@ dependencies = [
  "structopt",
  "thiserror",
  "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test)",
- "yaml-rust",
-]
-
-[[package]]
-name = "hersir"
-version = "0.1.0"
-source = "git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics#420ad005e78a880c60b1617b14b7f0241c576116"
-dependencies = [
- "assert_fs",
- "chain-addr",
- "chain-core",
- "chain-crypto",
- "chain-impl-mockchain",
- "ctrlc",
- "custom_debug",
- "hex",
- "indicatif",
- "jormungandr-automation 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "jormungandr-lib 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "jortestkit",
- "parity-multiaddr 0.11.2",
- "rand 0.8.4",
- "rand_chacha 0.3.1",
- "rand_core 0.6.3",
- "reqwest 0.11.9",
- "serde",
- "serde_derive",
- "serde_json",
- "serde_yaml",
- "structopt",
- "thiserror",
- "thor 0.1.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
  "yaml-rust",
 ]
 
@@ -2094,7 +2146,7 @@ version = "0.0.1"
 dependencies = [
  "bech32 0.7.3",
  "bip39",
- "catalyst-toolbox",
+ "catalyst-toolbox 0.3.0 (git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=cargo_update)",
  "chain-addr",
  "chain-core",
  "chain-crypto",
@@ -2110,13 +2162,13 @@ dependencies = [
  "eccoxide",
  "ed25519-bip32 0.3.2",
  "hdkeygen",
- "hersir 0.1.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
+ "hersir 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "hex",
  "hyper 0.13.10",
  "image",
  "itertools 0.9.0",
- "jormungandr-automation 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "jormungandr-lib 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "jortestkit",
  "rand 0.8.4",
  "rand_core 0.6.3",
@@ -2127,7 +2179,7 @@ dependencies = [
  "serde_json",
  "structopt",
  "thiserror",
- "thor 0.1.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "tokio 1.15.0",
  "url",
  "valgrind",
@@ -2235,7 +2287,7 @@ name = "integration-tests"
 version = "0.1.0"
 dependencies = [
  "assert_fs",
- "catalyst-toolbox",
+ "catalyst-toolbox 0.3.0 (git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=cargo_update)",
  "cfg-if 1.0.0",
  "chain-addr",
  "chain-core",
@@ -2243,11 +2295,11 @@ dependencies = [
  "chain-impl-mockchain",
  "chain-ser",
  "chrono",
- "hersir 0.1.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
+ "hersir 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "iapyx",
- "jcli 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "jormungandr-automation 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "jormungandr-lib 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
+ "jcli 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "jortestkit",
  "libmath",
  "rand 0.8.4",
@@ -2256,7 +2308,7 @@ dependencies = [
  "serde_json",
  "snapshot-trigger-service",
  "thiserror",
- "thor 0.1.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "tokio 1.15.0",
  "valgrind",
  "vit-servicing-station-lib 0.3.4-dev (git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master)",
@@ -2312,7 +2364,7 @@ checksum = "1aab8fc367588b89dcee83ab0fd66b72b50b72fa1904d7095045ace2b0c81c35"
 [[package]]
 name = "jcli"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#2ec790b92c6b4c94258a2feff2e783a188745ce7"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ff9bd5692caa66257ba8bb9229179e01113cdf4a"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2328,7 +2380,7 @@ dependencies = [
  "ed25519-bip32 0.4.0",
  "gtmpl",
  "hex",
- "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "rand 0.8.4",
  "rand_chacha 0.3.1",
  "rayon",
@@ -2346,7 +2398,7 @@ dependencies = [
 [[package]]
 name = "jcli"
 version = "0.13.0"
-source = "git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics#420ad005e78a880c60b1617b14b7f0241c576116"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#2ec790b92c6b4c94258a2feff2e783a188745ce7"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2362,7 +2414,7 @@ dependencies = [
  "ed25519-bip32 0.4.0",
  "gtmpl",
  "hex",
- "jormungandr-lib 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test)",
  "rand 0.8.4",
  "rand_chacha 0.3.1",
  "rayon",
@@ -2375,6 +2427,72 @@ dependencies = [
  "structopt",
  "thiserror",
  "versionisator",
+]
+
+[[package]]
+name = "jormungandr-automation"
+version = "0.13.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ff9bd5692caa66257ba8bb9229179e01113cdf4a"
+dependencies = [
+ "assert_cmd 2.0.4",
+ "assert_fs",
+ "base64 0.13.0",
+ "bech32 0.8.1",
+ "bincode",
+ "bytesize",
+ "cardano-legacy-address",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-storage",
+ "chain-time",
+ "chain-vote",
+ "chrono",
+ "custom_debug",
+ "flate2",
+ "fs_extra",
+ "futures",
+ "graphql_client",
+ "hex",
+ "humantime",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jortestkit",
+ "json",
+ "keynesis",
+ "lazy_static",
+ "log",
+ "netstat2",
+ "os_info",
+ "parity-multiaddr 0.11.2",
+ "poldercast 1.2.0",
+ "predicates 2.1.1",
+ "prost",
+ "rand 0.8.4",
+ "rand_chacha 0.3.1",
+ "rand_core 0.6.3",
+ "regex 1.5.4",
+ "reqwest 0.11.9",
+ "semver",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_yaml",
+ "strum 0.22.0",
+ "sysinfo 0.21.2",
+ "tar",
+ "tempfile",
+ "thiserror",
+ "tokio 1.15.0",
+ "tokio-stream",
+ "tonic",
+ "tonic-build",
+ "tracing",
+ "tracing-subscriber 0.3.6",
+ "typed-bytes",
+ "url",
+ "warp",
+ "zip",
 ]
 
 [[package]]
@@ -2444,73 +2562,55 @@ dependencies = [
 ]
 
 [[package]]
-name = "jormungandr-automation"
+name = "jormungandr-integration-tests"
 version = "0.13.0"
-source = "git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics#420ad005e78a880c60b1617b14b7f0241c576116"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ff9bd5692caa66257ba8bb9229179e01113cdf4a"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
  "base64 0.13.0",
- "bech32 0.8.1",
- "bincode",
- "bytesize",
- "cardano-legacy-address",
+ "bech32 0.7.3",
  "chain-addr",
  "chain-core",
  "chain-crypto",
  "chain-impl-mockchain",
- "chain-storage",
  "chain-time",
  "chain-vote",
- "chrono",
- "custom_debug",
- "flate2",
  "fs_extra",
+ "function_name",
  "futures",
- "graphql_client",
+ "hersir 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "hex",
- "humantime",
- "image",
- "jormungandr-lib 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
+ "indicatif",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "jortestkit",
  "json",
- "keynesis",
  "lazy_static",
- "log",
- "netstat2",
- "os_info",
+ "loki 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "mjolnir 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "parity-multiaddr 0.11.2",
  "poldercast 1.2.0",
  "predicates 2.1.1",
  "prost",
- "qrcodegen",
- "quircs",
  "rand 0.8.4",
  "rand_chacha 0.3.1",
  "rand_core 0.6.3",
  "regex 1.5.4",
  "reqwest 0.11.9",
- "semver",
+ "rstest",
  "serde",
  "serde_derive",
  "serde_json",
  "serde_yaml",
- "strum 0.22.0",
- "symmetric-cipher",
- "sysinfo 0.21.2",
- "tar",
  "tempfile",
  "thiserror",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "tokio 1.15.0",
- "tokio-stream",
  "tonic",
- "tonic-build",
  "tracing",
- "tracing-subscriber 0.3.6",
- "typed-bytes",
  "url",
- "warp",
- "zip",
+ "yaml-rust",
 ]
 
 [[package]]
@@ -2566,61 +2666,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "jormungandr-integration-tests"
-version = "0.13.0"
-source = "git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics#420ad005e78a880c60b1617b14b7f0241c576116"
-dependencies = [
- "assert_cmd 2.0.4",
- "assert_fs",
- "base64 0.13.0",
- "bech32 0.7.3",
- "chain-addr",
- "chain-core",
- "chain-crypto",
- "chain-impl-mockchain",
- "chain-time",
- "chain-vote",
- "fs_extra",
- "function_name",
- "futures",
- "hersir 0.1.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "hex",
- "indicatif",
- "jormungandr-automation 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "jormungandr-lib 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "jortestkit",
- "json",
- "lazy_static",
- "loki 0.1.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "mjolnir 0.1.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "parity-multiaddr 0.11.2",
- "poldercast 1.2.0",
- "predicates 2.1.1",
- "prost",
- "rand 0.8.4",
- "rand_chacha 0.3.1",
- "rand_core 0.6.3",
- "regex 1.5.4",
- "reqwest 0.11.9",
- "rstest",
- "serde",
- "serde_derive",
- "serde_json",
- "serde_yaml",
- "tempfile",
- "thiserror",
- "thor 0.1.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "tokio 1.15.0",
- "tonic",
- "tracing",
- "url",
- "yaml-rust",
-]
-
-[[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#2ec790b92c6b4c94258a2feff2e783a188745ce7"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ff9bd5692caa66257ba8bb9229179e01113cdf4a"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2649,7 +2697,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
-source = "git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics#420ad005e78a880c60b1617b14b7f0241c576116"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#2ec790b92c6b4c94258a2feff2e783a188745ce7"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2836,6 +2884,31 @@ dependencies = [
 [[package]]
 name = "loki"
 version = "0.1.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ff9bd5692caa66257ba8bb9229179e01113cdf4a"
+dependencies = [
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "custom_debug",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "parity-multiaddr 0.11.2",
+ "rand 0.8.4",
+ "rand_core 0.6.3",
+ "reqwest 0.11.9",
+ "serde",
+ "serde_yaml",
+ "structopt",
+ "thiserror",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "tokio 1.15.0",
+ "warp",
+]
+
+[[package]]
+name = "loki"
+version = "0.1.0"
 source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#2ec790b92c6b4c94258a2feff2e783a188745ce7"
 dependencies = [
  "chain-addr",
@@ -2854,31 +2927,6 @@ dependencies = [
  "structopt",
  "thiserror",
  "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test)",
- "tokio 1.15.0",
- "warp",
-]
-
-[[package]]
-name = "loki"
-version = "0.1.0"
-source = "git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics#420ad005e78a880c60b1617b14b7f0241c576116"
-dependencies = [
- "chain-addr",
- "chain-core",
- "chain-crypto",
- "chain-impl-mockchain",
- "custom_debug",
- "jormungandr-automation 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "jormungandr-lib 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "parity-multiaddr 0.11.2",
- "rand 0.8.4",
- "rand_core 0.6.3",
- "reqwest 0.11.9",
- "serde",
- "serde_yaml",
- "structopt",
- "thiserror",
- "thor 0.1.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
  "tokio 1.15.0",
  "warp",
 ]
@@ -3043,6 +3091,33 @@ dependencies = [
 [[package]]
 name = "mjolnir"
 version = "0.1.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ff9bd5692caa66257ba8bb9229179e01113cdf4a"
+dependencies = [
+ "assert_fs",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-storage",
+ "chain-time",
+ "chain-vote",
+ "indicatif",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jortestkit",
+ "loki 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "rand 0.8.4",
+ "rand_core 0.6.3",
+ "structopt",
+ "thiserror",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "tokio 1.15.0",
+ "versionisator",
+]
+
+[[package]]
+name = "mjolnir"
+version = "0.1.0"
 source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#2ec790b92c6b4c94258a2feff2e783a188745ce7"
 dependencies = [
  "assert_fs",
@@ -3063,33 +3138,6 @@ dependencies = [
  "structopt",
  "thiserror",
  "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test)",
- "tokio 1.15.0",
- "versionisator",
-]
-
-[[package]]
-name = "mjolnir"
-version = "0.1.0"
-source = "git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics#420ad005e78a880c60b1617b14b7f0241c576116"
-dependencies = [
- "assert_fs",
- "chain-addr",
- "chain-core",
- "chain-crypto",
- "chain-impl-mockchain",
- "chain-storage",
- "chain-time",
- "chain-vote",
- "indicatif",
- "jormungandr-automation 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "jormungandr-lib 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "jortestkit",
- "loki 0.1.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "rand 0.8.4",
- "rand_core 0.6.3",
- "structopt",
- "thiserror",
- "thor 0.1.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
  "tokio 1.15.0",
  "versionisator",
 ]
@@ -3774,12 +3822,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "qrcodegen"
-version = "1.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "135e6754eed8ca897dd70584d895e72e36860b3e163b6bcedce48571cbaef343"
-
-[[package]]
 name = "quick-error"
 version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4088,8 +4130,8 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "futures",
- "jormungandr-automation 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "jormungandr-integration-tests 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-integration-tests 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "jortestkit",
  "regex 1.5.4",
  "reqwest 0.10.10",
@@ -4116,8 +4158,8 @@ dependencies = [
  "futures",
  "hex",
  "iapyx",
- "jormungandr-integration-tests 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "jormungandr-lib 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
+ "jormungandr-integration-tests 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "jortestkit",
  "reqwest 0.10.10",
  "serde",
@@ -4675,7 +4717,7 @@ dependencies = [
  "chain-addr",
  "chrono",
  "futures",
- "jormungandr-lib 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "jortestkit",
  "reqwest 0.10.10",
  "serde",
@@ -5092,6 +5134,31 @@ dependencies = [
 [[package]]
 name = "thor"
 version = "0.1.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ff9bd5692caa66257ba8bb9229179e01113cdf4a"
+dependencies = [
+ "assert_fs",
+ "bech32 0.8.1",
+ "bincode",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-vote",
+ "chrono",
+ "custom_debug",
+ "hex",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jortestkit",
+ "rand 0.8.4",
+ "rand_chacha 0.3.1",
+ "rand_core 0.6.3",
+ "thiserror",
+]
+
+[[package]]
+name = "thor"
+version = "0.1.0"
 source = "git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test#2ec790b92c6b4c94258a2feff2e783a188745ce7"
 dependencies = [
  "assert_fs",
@@ -5107,31 +5174,6 @@ dependencies = [
  "hex",
  "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test)",
  "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=port_update_proposals_test)",
- "jortestkit",
- "rand 0.8.4",
- "rand_chacha 0.3.1",
- "rand_core 0.6.3",
- "thiserror",
-]
-
-[[package]]
-name = "thor"
-version = "0.1.0"
-source = "git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics#420ad005e78a880c60b1617b14b7f0241c576116"
-dependencies = [
- "assert_fs",
- "bech32 0.8.1",
- "bincode",
- "chain-addr",
- "chain-core",
- "chain-crypto",
- "chain-impl-mockchain",
- "chain-vote",
- "chrono",
- "custom_debug",
- "hex",
- "jormungandr-automation 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "jormungandr-lib 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
  "jortestkit",
  "rand 0.8.4",
  "rand_chacha 0.3.1",
@@ -5727,8 +5769,8 @@ dependencies = [
  "hex",
  "hyper 0.13.10",
  "itertools 0.9.0",
- "jormungandr-automation 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "jormungandr-lib 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "jortestkit",
  "regex 0.2.11",
  "reqwest 0.10.10",
@@ -5771,6 +5813,35 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a11bb14ba286855b3313b543a6abc357656a005957582958bf7031854cd0a352"
 dependencies = [
  "platforms",
+]
+
+[[package]]
+name = "vit-servicing-station-lib"
+version = "0.3.4-dev"
+source = "git+https://github.com/danielsanchezq/vit-servicing-station.git?branch=master#acfc2a473f5d0a9e38938839afd04963aa0dd405"
+dependencies = [
+ "async-trait",
+ "base64 0.12.3",
+ "chrono",
+ "diesel",
+ "diesel_migrations",
+ "dotenv",
+ "http-zipkin",
+ "itertools 0.9.0",
+ "libsqlite3-sys",
+ "log",
+ "serde",
+ "serde_json",
+ "simplelog",
+ "structopt",
+ "strum 0.21.0",
+ "strum_macros 0.21.1",
+ "thiserror",
+ "tokio 1.15.0",
+ "tracing",
+ "tracing-futures",
+ "tracing-subscriber 0.2.25",
+ "warp",
 ]
 
 [[package]]
@@ -5874,7 +5945,7 @@ version = "0.0.1"
 dependencies = [
  "assert_fs",
  "base64 0.12.3",
- "catalyst-toolbox",
+ "catalyst-toolbox 0.3.0 (git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=main)",
  "chain-addr",
  "chain-core",
  "chain-crypto",
@@ -5891,13 +5962,13 @@ dependencies = [
  "function_name",
  "futures",
  "glob",
- "hersir 0.1.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
+ "hersir 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "hex",
  "image",
  "indicatif",
  "itertools 0.9.0",
- "jormungandr-automation 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
- "jormungandr-lib 0.13.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "jortestkit",
  "json",
  "lazy_static",
@@ -5915,7 +5986,7 @@ dependencies = [
  "strum_macros 0.21.1",
  "tempdir",
  "thiserror",
- "thor 0.1.0 (git+https://github.com/zeegomo/jormungandr.git?branch=update-load-metrics)",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "tokio 1.15.0",
  "tracing",
  "tracing-appender",

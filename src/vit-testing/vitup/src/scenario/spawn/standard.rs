@@ -15,8 +15,9 @@ pub fn spawn_network(
     for spawn_param in network_spawn_params.nodes_params() {
         nodes_list.push(vit_controller.spawn_node(spawn_param)?);
     }
-    let _ = vit_controller.spawn_wallet_proxy_custom(&mut network_spawn_params.proxy_params())?;
-    let _ = vit_controller.spawn_vit_station(
+    let _wallet_proxy =
+        vit_controller.spawn_wallet_proxy_custom(&mut network_spawn_params.proxy_params())?;
+    let _vit_station = vit_controller.spawn_vit_station(
         vit_parameters,
         template_generator,
         network_spawn_params.version(),

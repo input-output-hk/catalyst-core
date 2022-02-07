@@ -31,17 +31,12 @@ pub fn spawn_network(
         nodes_list.push(monitor_controller.spawn_node(spawn_param)?);
     }
 
-    let vit_station =
+    let _vit_station =
         monitor_controller.spawn_vit_station(vit_parameters, template_generator, version)?;
-    let wallet_proxy =
+    let _wallet_proxy =
         monitor_controller.spawn_wallet_proxy_custom(&mut network_spawn_params.proxy_params())?;
 
     rx.recv().expect("Could not receive from channel.");
-    for node in nodes_list.iter_mut() {
-        node.shutdown().unwrap();
-    }
-    vit_station.shutdown();
-    wallet_proxy.shutdown();
     monitor_controller.finalize();
 
     Ok(())

@@ -54,11 +54,18 @@ impl VitStationController {
         NamedProcess::new(self.alias().to_string(), self.process.id() as usize)
     }
 
-    pub fn shutdown(mut self) {
+    pub fn shutdown(&mut self) {
         let _ = self.process.kill();
     }
 
     pub fn wait(&mut self) -> Result<Status> {
         self.process.wait().map(Status::Exited).map_err(Into::into)
+    }
+}
+
+impl Drop for VitStationController {
+    fn drop(&mut self) {
+        self.shutdown();
+        self.wait().unwrap();
     }
 }

@@ -44,7 +44,7 @@ pub fn vitup_setup_default(
 
 pub fn vitup_setup(
     mut quick_setup: VitBackendSettingsBuilder,
-    mut testing_directory: PathBuf,
+    testing_directory: PathBuf,
 ) -> (
     VitController,
     ValidVotePlanParameters,
@@ -54,8 +54,6 @@ pub fn vitup_setup(
     let endpoint = "127.0.0.1:8080";
 
     let session_settings = SessionSettings::empty_from_dir(&testing_directory);
-
-    testing_directory.push(quick_setup.title());
     if testing_directory.exists() {
         std::fs::remove_dir_all(&testing_directory).unwrap();
     }

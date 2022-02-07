@@ -37,11 +37,11 @@ impl VitUserInteractionController {
     }
 
     pub fn finalize(self) {
-        for proxy in self.proxies {
+        for mut proxy in self.proxies {
             proxy.shutdown();
         }
 
-        for vit_station in self.vit_stations {
+        for mut vit_station in self.vit_stations {
             vit_station.shutdown();
         }
     }

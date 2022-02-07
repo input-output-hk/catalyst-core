@@ -85,8 +85,15 @@ impl WalletProxyController {
         &self.settings
     }
 
-    pub fn shutdown(mut self) {
+    pub fn shutdown(&mut self) {
         let _ = self.process.kill();
+    }
+}
+
+impl Drop for WalletProxyController {
+    fn drop(&mut self) {
+        self.shutdown();
+        self.process.wait().unwrap();
     }
 }
 

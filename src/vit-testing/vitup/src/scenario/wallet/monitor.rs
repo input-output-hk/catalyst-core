@@ -42,7 +42,7 @@ impl WalletProxyMonitorController {
         &self.progress_bar
     }
 
-    pub fn shutdown(self) {
+    pub fn shutdown(&mut self) {
         self.controller.shutdown();
     }
 

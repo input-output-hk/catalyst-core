@@ -62,7 +62,7 @@ pub fn public_vote_multiple_vote_plans() {
 
     let (mut controller, vit_parameters, network_params, _) =
         vitup_setup(quick_setup, testing_directory.path().to_path_buf());
-    let (_nodes, _vit_station, _wallet_proxy) = spawn_network(
+    let (_nodes, _vit_station, wallet_proxy) = spawn_network(
         &mut controller,
         vit_parameters,
         network_params,

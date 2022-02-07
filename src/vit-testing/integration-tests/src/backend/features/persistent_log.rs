@@ -18,7 +18,7 @@ use vitup::testing::{spawn_network, vitup_setup};
 #[test]
 pub fn persistent_log_contains_all_sent_votes() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
-    let endpoint = "127.0.0.1:8080";
+    let endpoint = "http://127.0.0.1:8080";
     let no_of_threads = 1;
     let number_requests_to_per_threads = 50;
     let batch_size = 20;

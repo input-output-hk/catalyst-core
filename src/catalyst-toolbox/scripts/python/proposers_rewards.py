@@ -262,14 +262,12 @@ def sanity_check_data(
 
 
 def extract_yes_no_votes(proposal: Proposal, voteplan_proposal: ProposalStatus):
-    blank_index = proposal.chain_vote_options["blank"]
     yes_index = proposal.chain_vote_options["yes"]
     no_index = proposal.chain_vote_options["no"]
     # we check before if tally is available, so it should be safe to direct access the data
-    blank_result = voteplan_proposal.tally.results[blank_index]  # type: ignore
     yes_result = voteplan_proposal.tally.results[yes_index]  # type: ignore
     no_result = voteplan_proposal.tally.results[no_index]  # type: ignore
-    return blank_result, yes_result, no_result
+    return yes_result, no_result
 
 
 def calc_approval_threshold(
@@ -278,10 +276,10 @@ def calc_approval_threshold(
     threshold: float,
     total_stake_threshold: float,
 ) -> Tuple[int, bool]:
-    blank_result, yes_result, no_result = extract_yes_no_votes(
+    yes_result, no_result = extract_yes_no_votes(
         proposal, voteplan_proposal
     )
-    total_stake = blank_result + yes_result + no_result
+    total_stake = yes_result + no_result
     pass_total_threshold = total_stake >= total_stake_threshold
     diff = yes_result - no_result
     pass_relative_threshold = (yes_result / no_result) >= threshold
@@ -347,7 +345,7 @@ def calc_results(
         proposal = proposals[proposal_id]
         voteplan_proposal = voteplan_proposals[proposal_id]
         total_result, threshold_success = success_results[proposal_id]
-        blank, yes_result, no_result = extract_yes_no_votes(proposal, voteplan_proposal)
+        yes_result, no_result = extract_yes_no_votes(proposal, voteplan_proposal)
         funded = all(
             (threshold_success, depletion > 0, depletion >= proposal.proposal_funds)
         )
@@ -519,7 +517,7 @@ def calculate_rewards(
         )
 
         with open(
-            challenge_output_file_path, "w", encoding="utf-8", newline=""
+            challenge_output_file_path.replace("/","-"), "w", encoding="utf-8", newline=""
         ) as out_file:
             if output_format == OutputFormat.JSON:
                 output_json(results, out_file)

@@ -104,7 +104,7 @@ pub struct NewJobCommand {
 impl NewJobCommand {
     pub fn exec(self, rest: SnapshotRestClient) -> Result<String, Error> {
         let params = JobParameters {
-            slot_no: self.slot_no
+            slot_no: self.slot_no,
         };
         rest.job_new(params).map_err(Into::into)
     }

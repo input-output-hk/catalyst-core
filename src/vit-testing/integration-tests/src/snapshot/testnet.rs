@@ -74,7 +74,7 @@ pub fn wallet_with_funds_equals_to_threshold_should_be_elligible_to_vote() {
     registartion.print_snapshot_entry().unwrap();
 
     let job_param = JobParameters {
-        slot_no: Some(registartion.slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT)
+        slot_no: Some(registartion.slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
     };
 
     wait_for_db_sync();

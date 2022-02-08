@@ -4,5 +4,4 @@ use serde::{Deserialize, Serialize};
 pub struct JobParameters {
     #[serde(rename = "slot-no")]
     pub slot_no: Option<u64>,
-    pub threshold: u64,
 }

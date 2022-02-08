@@ -29,7 +29,6 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
 
     let job_param = JobParameters {
         slot_no: Some(result.slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
-        threshold: 1_000_000,
     };
 
     wait_for_db_sync();

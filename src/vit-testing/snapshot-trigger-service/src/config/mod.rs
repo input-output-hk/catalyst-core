@@ -48,8 +48,6 @@ impl Configuration {
             command.arg("--slot-no").arg(slot_no.to_string());
         }
 
-        command.arg("--threshold").arg(params.threshold.to_string());
-
         println!("Running command: {:?} ", command);
         command.spawn().map_err(Into::into)
     }

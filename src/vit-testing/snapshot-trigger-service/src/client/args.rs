@@ -99,17 +99,12 @@ pub struct NewJobCommand {
     /// slot no
     #[structopt(short, long)]
     slot_no: Option<u64>,
-
-    /// threshold
-    #[structopt(short, long)]
-    threshold: u64,
 }
 
 impl NewJobCommand {
     pub fn exec(self, rest: SnapshotRestClient) -> Result<String, Error> {
         let params = JobParameters {
             slot_no: self.slot_no,
-            threshold: self.threshold,
         };
         rest.job_new(params).map_err(Into::into)
     }

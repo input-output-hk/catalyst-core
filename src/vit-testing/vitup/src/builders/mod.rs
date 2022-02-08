@@ -15,6 +15,8 @@ use assert_fs::fixture::ChildPath;
 use chain_impl_mockchain::chaintypes::ConsensusVersion;
 use chain_impl_mockchain::fee::LinearFee;
 use chain_impl_mockchain::testing::TestGen;
+use chain_impl_mockchain::tokens::identifier::TokenIdentifier;
+use chain_impl_mockchain::tokens::minting_policy::MintingPolicy;
 use chain_impl_mockchain::value::Value;
 use chrono::naive::NaiveDateTime;
 pub use helpers::{
@@ -32,7 +34,6 @@ use jormungandr_lib::interfaces::ConsensusLeaderId;
 pub use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::interfaces::NumberOfSlotsPerEpoch;
 use jormungandr_lib::interfaces::SlotDuration;
-use jormungandr_lib::interfaces::TokenIdentifier;
 use jormungandr_lib::time::SecondsSinceUnixEpoch;
 pub use reviews::ReviewGenerator;
 use std::collections::HashMap;
@@ -345,9 +346,13 @@ impl VitBackendSettingsBuilder {
         println!("building voting token..");
 
         let root = session_settings.root.path().to_path_buf();
-
         std::fs::create_dir_all(&root)?;
-        let token_id: TokenIdentifier = TestGen::token_id().into();
+        let policy = MintingPolicy::new();
+
+        let token_id: TokenIdentifier = TokenIdentifier {
+            policy_hash: policy.hash(),
+            token_name: TestGen::token_name(),
+        };
 
         let mut file = std::fs::File::create(root.join("voting_token.txt")).unwrap();
         writeln!(file, "{:?}", token_id).unwrap();
@@ -360,12 +365,12 @@ impl VitBackendSettingsBuilder {
                 self.config
                     .params
                     .initials
-                    .external_templates(token_id.clone()),
+                    .external_templates(token_id.clone().into()),
             );
             templates = self.config.params.initials.templates(
                 self.config.params.voting_power,
                 blockchain.discrimination(),
-                token_id.clone(),
+                token_id.clone().into(),
             );
             for (wallet, _) in templates.iter().filter(|(x, _)| *x.value() > Value::zero()) {
                 blockchain = blockchain.with_wallet(wallet.clone());
@@ -379,7 +384,7 @@ impl VitBackendSettingsBuilder {
             .fund_name(self.fund_name())
             .with_committee(self.committee_wallet.clone())
             .with_parameters(self.config.params.clone())
-            .with_voting_token(token_id.clone())
+            .with_voting_token(token_id.clone().into())
             .build()
             .into_iter()
         {

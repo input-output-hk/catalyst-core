@@ -1,4 +1,3 @@
-
 use crate::config::read_config;
 use std::path::PathBuf;
 use structopt::StructOpt;

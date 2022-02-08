@@ -1,8 +1,8 @@
 use super::FragmentRecieveStrategy;
 use super::{Configuration, Context, ContextLock};
 use crate::config::VitStartParameters;
-use crate::mode::service::manager::file_lister::dump_json;
 use crate::mode::mock::NetworkCongestionMode;
+use crate::mode::service::manager::file_lister::dump_json;
 use chain_core::property::Deserialize as _;
 use chain_core::property::Fragment as _;
 use chain_crypto::PublicKey;

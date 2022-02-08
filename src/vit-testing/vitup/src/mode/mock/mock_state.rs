@@ -1,10 +1,10 @@
 use super::config::Configuration;
+use super::LedgerState;
 use crate::builders::utils::SessionSettingsExtension;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::VitStartParameters;
 use crate::mode::mock::NetworkCongestion;
 use crate::mode::mock::NetworkCongestionMode;
-use super::LedgerState;
 use chain_impl_mockchain::testing::TestGen;
 use hersir::config::SessionSettings;
 use jormungandr_lib::interfaces::{NodeState, NodeStats, NodeStatsDto};

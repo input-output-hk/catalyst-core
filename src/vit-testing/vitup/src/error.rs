@@ -20,6 +20,8 @@ pub enum Error {
     #[error(transparent)]
     IoError(#[from] std::io::Error),
     #[error(transparent)]
+    Block0Error(#[from] jormungandr_automation::testing::block0::Block0Error),
+    #[error(transparent)]
     Node(#[from] NodeError),
     #[error(transparent)]
     Wallet(#[from] WalletError),

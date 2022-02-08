@@ -1,4 +1,4 @@
-use crate::mock::mock_state::MockState;
+use crate::mode::mock::mock_state::MockState;
 use jormungandr_lib::interfaces::{BlockDate, FragmentStatus};
 use vit_servicing_station_tests::common::data::Snapshot;
 

@@ -7,6 +7,7 @@ use jortestkit::web::api_token::TokenError;
 use jortestkit::web::api_token::{APIToken, APITokenManager, API_TOKEN_HEADER};
 use std::convert::Infallible;
 use std::sync::Arc;
+use std::sync::PoisonError;
 use thiserror::Error;
 use uuid::Uuid;
 use warp::{http::StatusCode, reject::Reject, Filter, Rejection, Reply};
@@ -19,6 +20,20 @@ impl Reject for crate::context::Error {}
 pub enum Error {
     #[error("cannot parse uuid")]
     CannotParseUuid(#[from] uuid::Error),
+    #[error("cannot stop server")]
+    CanntoStopServer,
+    #[error("cannot acquire lock on context")]
+    Poison,
+    #[error(transparent)]
+    Token(#[from] TokenError),
+    #[error(transparent)]
+    Send(#[from] futures::channel::mpsc::TrySendError<()>),
+}
+
+impl<T> From<PoisonError<T>> for Error {
+    fn from(_err: PoisonError<T>) -> Self {
+        Self::Poison
+    }
 }
 
 impl Reject for Error {}
@@ -28,8 +43,8 @@ impl Reject for crate::cardano::Error {}
 pub struct ServerStopper(mpsc::Sender<()>);
 
 impl ServerStopper {
-    pub fn stop(&self) {
-        self.0.clone().try_send(()).unwrap();
+    pub fn stop(&self) -> Result<(), Error> {
+        self.0.clone().try_send(()).map_err(Into::into)
     }
 }
 
@@ -37,17 +52,16 @@ fn job_prameters_json_body() -> impl Filter<Extract = (Request,), Error = warp::
     warp::body::content_length_limit(1024 * 16).and(warp::body::json())
 }
 
-pub async fn start_rest_server(context: ContextLock) {
+pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
     let (stopper_tx, stopper_rx) = mpsc::channel::<()>(0);
     let stopper_rx = stopper_rx.into_future().map(|_| ());
     context
-        .lock()
-        .unwrap()
+        .lock()?
         .set_server_stopper(ServerStopper(stopper_tx));
 
-    let is_token_enabled = context.lock().unwrap().api_token().is_some();
-    let address = *context.lock().unwrap().address();
-    let working_dir = context.lock().unwrap().working_directory().clone();
+    let is_token_enabled = context.lock()?.api_token().is_some();
+    let address = *context.lock()?.address();
+    let working_dir = context.lock()?.working_directory().clone();
     let with_context = warp::any().map(move || context.clone());
 
     let root = warp::path!("api" / ..).boxed();
@@ -135,16 +149,23 @@ pub async fn start_rest_server(context: ContextLock) {
 
     let (_, server_fut) = server.bind_with_graceful_shutdown(address, stopper_rx);
     server_fut.await;
+    Ok(())
 }
 
 pub async fn status_handler(id: String, context: ContextLock) -> Result<impl Reply, Rejection> {
     let uuid = Uuid::parse_str(&id).map_err(Error::CannotParseUuid)?;
-    let context_lock = context.lock().unwrap();
+    let context_lock = context
+        .lock()
+        .map_err(|_e| Error::Poison)
+        .map_err(warp::reject::custom)?;
     Ok(context_lock.status_by_id(uuid)).map(|r| warp::reply::json(&r))
 }
 
 pub async fn network_tip_handler(context: ContextLock) -> Result<impl Reply, Rejection> {
-    let context_lock = context.lock().unwrap();
+    let context_lock = context
+        .lock()
+        .map_err(|_e| Error::Poison)
+        .map_err(warp::reject::custom)?;
     Ok(context_lock.cardano_cli_executor().tip()).map(|r| warp::reply::json(&r))
 }
 
@@ -152,7 +173,10 @@ pub async fn query_utxo_handler(
     address: String,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    let context_lock = context.lock().unwrap();
+    let context_lock = context
+        .lock()
+        .map_err(|_e| Error::Poison)
+        .map_err(warp::reject::custom)?;
     Ok(context_lock.cardano_cli_executor().query_utxo(address)).map(|r| warp::reply::json(&r))
 }
 
@@ -160,7 +184,10 @@ pub async fn submit_transaction_handler(
     bytes: warp::hyper::body::Bytes,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    let context_lock = context.lock().unwrap();
+    let context_lock = context
+        .lock()
+        .map_err(|_e| Error::Poison)
+        .map_err(warp::reject::custom)?;
     context_lock
         .cardano_cli_executor()
         .transaction_submit(bytes.to_vec())?;
@@ -171,7 +198,10 @@ pub async fn job_new_handler(
     request: Request,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    let mut context_lock = context.lock().unwrap();
+    let mut context_lock = context
+        .lock()
+        .map_err(|_e| Error::Poison)
+        .map_err(warp::reject::custom)?;
     let id = context_lock.new_run(request)?;
     Ok(id).map(|r| warp::reply::json(&r))
 }
@@ -181,7 +211,10 @@ pub async fn health_handler() -> Result<impl Reply, Rejection> {
 }
 
 pub async fn files_handler(context: ContextLock) -> Result<impl Reply, Rejection> {
-    let context_lock = context.lock().unwrap();
+    let context_lock = context
+        .lock()
+        .map_err(|_e| Error::Poison)
+        .map_err(warp::reject::custom)?;
     Ok(file_lister::dump_json(context_lock.working_directory())?).map(|r| warp::reply::json(&r))
 }
 
@@ -203,14 +236,19 @@ pub async fn authorize_token(
     token: String,
     context: Arc<std::sync::Mutex<Context>>,
 ) -> Result<(), Rejection> {
+    let context = context
+        .lock()
+        .map_err(|_e| Error::Poison)
+        .map_err(warp::reject::custom)?;
+
     let api_token = APIToken::from_string(token).map_err(warp::reject::custom)?;
 
-    if context.lock().unwrap().api_token().is_none() {
+    if context.api_token().is_none() {
         return Ok(());
     }
 
-    let manager = APITokenManager::new(context.lock().unwrap().api_token().unwrap())
-        .map_err(warp::reject::custom)?;
+    let manager =
+        APITokenManager::new(context.api_token().unwrap()).map_err(warp::reject::custom)?;
 
     if !manager.is_token_valid(api_token) {
         return Err(warp::reject::custom(TokenError::UnauthorizedToken));

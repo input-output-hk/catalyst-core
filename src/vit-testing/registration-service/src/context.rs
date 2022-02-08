@@ -1,7 +1,7 @@
 pub type ContextLock = Arc<Mutex<Context>>;
 use crate::cardano::CardanoCliExecutor;
 use crate::config::Configuration;
-use crate::job::JobOutputInfo;
+use crate::job::{Error as JobError, JobOutputInfo};
 use crate::request::Request;
 use crate::rest::ServerStopper;
 use chrono::{NaiveDateTime, Utc};
@@ -47,7 +47,7 @@ impl Context {
 
     pub fn new_run(&mut self, request: Request) -> Result<Uuid, Error> {
         match self.state {
-            State::Idle | State::Finished { .. } => {
+            State::Idle | State::Finished { .. } | State::Failed { .. } => {
                 let id = Uuid::new_v4();
                 self.state = State::RequestToStart {
                     job_id: id,
@@ -73,20 +73,33 @@ impl Context {
         }
     }
 
-    pub fn run_finished(&mut self, info: JobOutputInfo) -> Result<(), Error> {
+    pub fn run_finished(&mut self, info: Result<JobOutputInfo, JobError>) -> Result<(), Error> {
         match &self.state {
             State::Running {
                 job_id,
                 start,
                 request,
             } => {
-                self.state = State::Finished {
-                    job_id: *job_id,
-                    start: *start,
-                    end: Utc::now().naive_utc(),
-                    request: request.clone(),
-                    info,
-                };
+                match info {
+                    Ok(info) => {
+                        self.state = State::Finished {
+                            job_id: *job_id,
+                            start: *start,
+                            end: Utc::now().naive_utc(),
+                            request: request.clone(),
+                            info,
+                        };
+                    }
+                    Err(err) => {
+                        self.state = State::Failed {
+                            job_id: *job_id,
+                            start: *start,
+                            end: Utc::now().naive_utc(),
+                            request: request.clone(),
+                            info_msg: format!("{:?}", err),
+                        };
+                    }
+                }
                 Ok(())
             }
             _ => Err(Error::RegistrationNotStarted),
@@ -105,6 +118,13 @@ impl Context {
                 }
             }
             State::Finished { job_id, .. } => {
+                if job_id == id {
+                    Ok(self.state.clone())
+                } else {
+                    Err(Error::JobNotFound)
+                }
+            }
+            State::Failed { job_id, .. } => {
                 if job_id == id {
                     Ok(self.state.clone())
                 } else {
@@ -157,6 +177,13 @@ pub enum State {
         end: NaiveDateTime,
         request: Request,
         info: JobOutputInfo,
+    },
+    Failed {
+        job_id: Uuid,
+        start: NaiveDateTime,
+        end: NaiveDateTime,
+        request: Request,
+        info_msg: String,
     },
 }
 

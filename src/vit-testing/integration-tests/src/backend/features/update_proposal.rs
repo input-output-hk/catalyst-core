@@ -1,28 +1,28 @@
-use crate::common::{iapyx_from_secret_key, vitup_setup};
+use crate::common::iapyx_from_secret_key;
 use assert_fs::TempDir;
 use chain_crypto::Ed25519;
 use chain_impl_mockchain::block::BlockDate;
 use chain_impl_mockchain::certificate::UpdateProposal;
 use chain_impl_mockchain::certificate::UpdateVote;
 use chain_impl_mockchain::vote::Choice;
+use jormungandr_automation::testing::time;
 use jormungandr_lib::crypto::hash::Hash;
 use jormungandr_lib::crypto::key::SigningKey;
 use jormungandr_lib::interfaces::BlockContentMaxSize;
 use jormungandr_lib::interfaces::ConfigParam;
 use jormungandr_lib::interfaces::ConfigParams;
 use jormungandr_lib::interfaces::FragmentStatus;
-use jormungandr_scenario_tests::test::utils::wait;
-use jormungandr_testing_utils::testing::node::time;
-use jormungandr_testing_utils::testing::BlockDateGenerator;
-use jormungandr_testing_utils::testing::FragmentSender;
-use jormungandr_testing_utils::wallet::Wallet;
 use std::str::FromStr;
-use valgrind::{Proposal, Protocol};
+use thor::BlockDateGenerator;
+use thor::FragmentSender;
+use thor::Wallet;
+use valgrind::Proposal;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
 use vitup::config::VoteBlockchainTime;
 use vitup::config::{InitialEntry, Initials};
-use vitup::scenario::network::setup_network;
+use vitup::testing::{spawn_network, vitup_setup};
+
 const PIN: &str = "1234";
 const ALICE: &str = "ALICE";
 const COMMITTEE: &str = "COMMITTEE";
@@ -32,8 +32,6 @@ pub fn increase_max_block_content_size_during_voting() {
     let new_block_context_max_size = 100_000;
 
     let testing_directory = TempDir::new().unwrap().into_persistent();
-    let endpoint = "127.0.0.1:8080";
-    let version = "2.0";
     let batch_size = 1;
     let vote_timing = VoteBlockchainTime {
         vote_start: 0,
@@ -64,35 +62,31 @@ pub fn increase_max_block_content_size_during_voting() {
         .private(true);
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let (mut vit_controller, mut controller, vit_parameters, _fund_name) =
+    let (mut controller, vit_parameters, network_params, _fund_name) =
         vitup_setup(quick_setup, testing_directory.path().to_path_buf());
 
-    let (nodes, vit_station, wallet_proxy) = setup_network(
+    let (nodes, _vit_station, wallet_proxy) = spawn_network(
         &mut controller,
-        &mut vit_controller,
         vit_parameters,
+        network_params,
         &mut template_generator,
-        endpoint.to_string(),
-        &Protocol::Http,
-        version.to_owned(),
     )
     .unwrap();
 
     let mut alice = iapyx_from_secret_key(
-        testing_directory
-            .path()
-            .join(format!("vit_backend/wallet_{}", ALICE)),
+        testing_directory.path().join(format!("wallet_{}", ALICE)),
         &wallet_proxy,
     )
     .unwrap();
     let mut committee = Wallet::import_account(
         testing_directory
             .path()
-            .join(format!("vit_backend/wallet_{}", COMMITTEE)),
-        Some(0u32),
+            .join(format!("wallet_{}", COMMITTEE)),
+        Some(0u32.into()),
     );
-    let bft_leader_secrets: Vec<&SigningKey<Ed25519>> = controller
-        .settings()
+
+    let settings = controller.settings();
+    let bft_leader_secrets: Vec<&SigningKey<Ed25519>> = settings
         .nodes
         .iter()
         .filter(|(_id, settings)| settings.secret.bft.is_some())
@@ -176,17 +170,10 @@ pub fn increase_max_block_content_size_during_voting() {
         .map(|item| item.to_string())
         .collect();
 
-    wait(30);
+    std::thread::sleep(std::time::Duration::from_secs(30));
 
     let fragment_statuses = nodes[1].rest().fragments_statuses(fragment_ids).unwrap();
     assert!(fragment_statuses
         .iter()
         .all(|(_, status)| matches!(status, FragmentStatus::InABlock { .. })));
-
-    vit_station.shutdown();
-    wallet_proxy.shutdown();
-    for mut node in nodes {
-        node.shutdown().unwrap();
-    }
-    controller.finalize();
 }

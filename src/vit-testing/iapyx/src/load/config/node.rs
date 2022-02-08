@@ -1,7 +1,7 @@
 use crate::load::MultiControllerError;
 use crate::MultiController;
 use crate::PinReadMode;
-use jormungandr_testing_utils::testing::node::RestSettings;
+use jormungandr_automation::jormungandr::RestSettings;
 use jortestkit::load::Configuration;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;

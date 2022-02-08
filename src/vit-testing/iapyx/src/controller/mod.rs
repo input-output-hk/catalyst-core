@@ -1,20 +1,19 @@
 mod builder;
 
-pub use builder::{ControllerBuilder, Error as ControllerBuilderError};
-
 use crate::Wallet;
+pub use builder::{ControllerBuilder, Error as ControllerBuilderError};
 use chain_impl_mockchain::{fragment::FragmentId, transaction::Input};
+use jormungandr_automation::jormungandr::RestError;
+use jormungandr_automation::jormungandr::RestSettings;
 use jormungandr_lib::interfaces::AccountVotes;
 use jormungandr_lib::interfaces::Address;
 use jormungandr_lib::interfaces::SettingsDto;
 use jormungandr_lib::interfaces::VotePlanId;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, FragmentStatus};
-use jormungandr_testing_utils::testing::node::RestError;
-use jormungandr_testing_utils::testing::node::RestSettings;
-use jormungandr_testing_utils::testing::BlockDateGenerator;
-use jormungandr_testing_utils::wallet::discrimination::DiscriminationExtension;
 use std::collections::HashMap;
 use thiserror::Error;
+use thor::BlockDateGenerator;
+use thor::DiscriminationExtension;
 use valgrind::ProposalExtension;
 use valgrind::{Fund, Proposal, ValgrindClient};
 use wallet::{AccountId, Settings};
@@ -28,8 +27,13 @@ pub struct Controller {
 }
 
 impl Controller {
-    pub fn switch_backend(&mut self, proxy_address: String, backend_settings: RestSettings) {
-        self.backend = ValgrindClient::new(proxy_address, backend_settings);
+    pub fn switch_backend(
+        &mut self,
+        proxy_address: String,
+        backend_settings: RestSettings,
+    ) -> Result<(), ControllerError> {
+        self.backend = ValgrindClient::new(proxy_address, backend_settings)?;
+        Ok(())
     }
 
     pub fn account(&self, discrimination: chain_addr::Discrimination) -> chain_addr::Address {
@@ -119,7 +123,8 @@ impl Controller {
     pub fn refresh_state(&mut self) -> Result<(), ControllerError> {
         let account_state = self.get_account_state()?;
         let value: u64 = (*account_state.value()).into();
-        self.wallet.set_state(Value(value), account_state.counter());
+        self.wallet
+            .set_state(Value(value), account_state.counters()[0]);
         Ok(())
     }
 
@@ -181,7 +186,7 @@ impl Controller {
     ) -> Result<Vec<FragmentId>, ControllerError> {
         let account_state = self.backend.account_state(self.wallet.id())?;
 
-        let mut counter = account_state.counter();
+        let mut counter = account_state.counters()[0];
         let settings = self.settings.clone();
         let txs = votes_data
             .into_iter()

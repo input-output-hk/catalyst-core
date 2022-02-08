@@ -1,22 +1,12 @@
 mod private;
 mod public;
 
-use jormungandr_scenario_tests::prepare_command;
-use jormungandr_scenario_tests::scenario::Controller;
-use jormungandr_scenario_tests::Seed;
-use jormungandr_scenario_tests::{Context, ProgressBarMode};
 use std::collections::LinkedList;
-use std::path::{Path, PathBuf};
-use std::str::FromStr;
 use valgrind::{Challenge, Fund, Proposal, ValgrindClient};
-
 use vit_servicing_station_tests::common::data::ChallengeTemplate;
 use vit_servicing_station_tests::common::data::FundTemplate;
 use vit_servicing_station_tests::common::data::ProposalTemplate;
 use vit_servicing_station_tests::common::data::ReviewTemplate;
-use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
-use vitup::builders::VitBackendSettingsBuilder;
-use vitup::scenario::controller::VitController;
 
 pub fn funds_eq(expected: FundTemplate, actual: Fund) {
     assert_eq!(expected.id, actual.id, "fund id");
@@ -172,38 +162,4 @@ pub fn proposals_eq(expected_list: LinkedList<ProposalTemplate>, actual_list: Ve
             "challenge id"
         );
     }
-}
-
-pub fn context(testing_directory: &Path) -> Context {
-    let jormungandr = prepare_command(PathBuf::from_str("jormungandr").unwrap());
-    let jcli = prepare_command(PathBuf::from_str("jcli").unwrap());
-    let seed = Seed::generate(rand::rngs::OsRng);
-    let generate_documentation = true;
-    let log_level = "info".to_string();
-
-    Context::new(
-        seed,
-        jormungandr,
-        jcli,
-        Some(testing_directory.to_path_buf()),
-        generate_documentation,
-        ProgressBarMode::None,
-        log_level,
-    )
-}
-
-pub fn vitup_setup(
-    mut quick_setup: VitBackendSettingsBuilder,
-    mut testing_directory: PathBuf,
-) -> (VitController, Controller, ValidVotePlanParameters, String) {
-    let context = context(&testing_directory);
-
-    testing_directory.push(quick_setup.title());
-    if testing_directory.exists() {
-        std::fs::remove_dir_all(&testing_directory).unwrap();
-    }
-
-    let fund_name = quick_setup.fund_name();
-    let (vit_controller, controller, vit_parameters, _) = quick_setup.build(context).unwrap();
-    (vit_controller, controller, vit_parameters, fund_name)
 }

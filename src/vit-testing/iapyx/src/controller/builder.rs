@@ -5,7 +5,7 @@ use crate::Wallet;
 use bech32::FromBase32;
 use bip39::Type;
 use catalyst_toolbox::kedqr::KeyQrCode;
-use jormungandr_testing_utils::testing::node::RestError;
+use jormungandr_automation::jormungandr::RestError;
 use std::convert::TryInto;
 use std::path::Path;
 use thiserror::Error;
@@ -14,20 +14,11 @@ use valgrind::ValgrindClient;
 use valgrind::ValgrindSettings;
 use wallet::Settings;
 
+#[derive(Default)]
 pub struct ControllerBuilder {
     backend: Option<ValgrindClient>,
     wallet: Option<Wallet>,
     settings: Option<Settings>,
-}
-
-impl Default for ControllerBuilder {
-    fn default() -> Self {
-        ControllerBuilder {
-            backend: None,
-            wallet: None,
-            settings: None,
-        }
-    }
 }
 
 impl ControllerBuilder {
@@ -36,7 +27,7 @@ impl ControllerBuilder {
         proxy_address: S,
         backend_settings: ValgrindSettings,
     ) -> Result<Self, Error> {
-        let backend = ValgrindClient::new(proxy_address.into(), backend_settings);
+        let backend = ValgrindClient::new(proxy_address.into(), backend_settings)?;
         self.settings = Some(backend.settings()?.into_wallet_settings());
         self.backend = Some(backend);
         Ok(self)

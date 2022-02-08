@@ -3,7 +3,7 @@ use crate::config::VitStartParameters;
 use chain_crypto::bech32::Bech32;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chain_vote::ElectionPublicKey;
-use jormungandr_testing_utils::testing::network::{Settings, VotePlanSettings};
+use hersir::builder::{Settings, VotePlanSettings};
 use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 

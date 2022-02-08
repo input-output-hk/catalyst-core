@@ -1,25 +1,23 @@
 use crate::common::iapyx_from_qr;
-use crate::common::{vitup_setup, wait_until_folder_contains_all_qrs, Error, Vote};
+use crate::common::{wait_until_folder_contains_all_qrs, Error, Vote};
 use assert_fs::TempDir;
 use chain_impl_mockchain::block::BlockDate;
 use chain_impl_mockchain::key::Hash;
-use jormungandr_testing_utils::testing::asserts::VotePlanStatusAssert;
-use jormungandr_testing_utils::testing::network::VotePlanSettings;
-use jormungandr_testing_utils::testing::BlockDateGenerator;
-use jormungandr_testing_utils::testing::FragmentSender;
-use jormungandr_testing_utils::testing::{node::time, FragmentSenderSetup};
+use hersir::builder::VotePlanSettings;
+use jormungandr_automation::testing::asserts::VotePlanStatusAssert;
+use jormungandr_automation::testing::time;
 use std::path::Path;
 use std::str::FromStr;
-use valgrind::Protocol;
+use thor::{BlockDateGenerator, FragmentSender, FragmentSenderSetup};
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
 use vitup::config::VoteBlockchainTime;
 use vitup::config::{InitialEntry, Initials};
-use vitup::scenario::network::setup_network;
+use vitup::testing::spawn_network;
+use vitup::testing::vitup_setup;
 
 #[test]
 pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
-    let endpoint = "127.0.0.1:8080";
     let vote_timing = VoteBlockchainTime {
         vote_start: 0,
         tally_start: 1,
@@ -54,16 +52,13 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
         .private(true);
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let (mut vit_controller, mut controller, vit_parameters, fund_name) =
+    let (mut controller, vit_parameters, network_params, fund_name) =
         vitup_setup(quick_setup, testing_directory.path().to_path_buf());
-    let (nodes, vit_station, wallet_proxy) = setup_network(
+    let (nodes, _vit_station, wallet_proxy) = spawn_network(
         &mut controller,
-        &mut vit_controller,
         vit_parameters,
+        network_params,
         &mut template_generator,
-        endpoint.to_string(),
-        &Protocol::Http,
-        "2.0".to_owned(),
     )
     .unwrap();
 
@@ -73,7 +68,7 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
     let wallet_node = &nodes[3];
 
     let mut qr_codes_folder = testing_directory.path().to_path_buf();
-    qr_codes_folder.push("vit_backend/qr-codes");
+    qr_codes_folder.push("qr-codes");
     wait_until_folder_contains_all_qrs(3, &qr_codes_folder);
     let david_qr_code = Path::new(&qr_codes_folder).join("wallet_david_1234.png");
     let edgar_qr_code = Path::new(&qr_codes_folder).join("wallet_edgar_1234.png");
@@ -82,7 +77,7 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
     // start mainnet wallets
     let mut david = iapyx_from_qr(&david_qr_code, "1234", &wallet_proxy).unwrap();
 
-    let fund1_vote_plan = controller.vote_plan(&fund_name).unwrap();
+    let fund1_vote_plan = controller.defined_vote_plan(&fund_name).unwrap();
 
     // start voting
     david
@@ -172,11 +167,5 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
         .unwrap()
         .assert_all_proposals_are_tallied();
 
-    vit_station.shutdown();
-    wallet_proxy.shutdown();
-    for mut node in nodes {
-        node.shutdown()?;
-    }
-    controller.finalize();
     Ok(())
 }

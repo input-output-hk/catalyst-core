@@ -2,6 +2,7 @@ use chain_impl_mockchain::fragment::FragmentId;
 use jormungandr_lib::interfaces::FragmentStatus;
 use jortestkit::load::RequestStatusProvider;
 use jortestkit::load::{Id, Status};
+use thiserror::Error;
 use valgrind::ValgrindClient;
 
 pub struct VoteStatusProvider {
@@ -9,14 +10,14 @@ pub struct VoteStatusProvider {
 }
 
 impl VoteStatusProvider {
-    pub fn new(backend_address: String, debug: bool) -> Self {
-        let mut backend = ValgrindClient::new(backend_address, Default::default());
+    pub fn new(backend_address: String, debug: bool) -> Result<Self, Error> {
+        let mut backend = ValgrindClient::new(backend_address, Default::default())?;
         if debug {
             backend.enable_logs();
         } else {
             backend.disable_logs();
         }
-        Self { backend }
+        Ok(Self { backend })
     }
 }
 
@@ -49,4 +50,18 @@ fn into_status(fragment_status: &FragmentStatus, id: &FragmentId) -> Status {
             Status::new_success(std::time::Duration::from_secs(0), id.to_string())
         }
     }
+}
+
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error("wallet error")]
+    Wallet(#[from] crate::wallet::Error),
+    #[error("wallet error")]
+    Backend(#[from] valgrind::Error),
+    #[error("controller error")]
+    Controller(#[from] crate::ControllerError),
+    #[error("pin read error")]
+    PinRead(#[from] crate::qr::PinReadError),
+    #[error("wallet time error")]
+    WalletTime(#[from] wallet::time::Error),
 }

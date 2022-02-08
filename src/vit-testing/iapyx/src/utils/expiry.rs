@@ -1,6 +1,6 @@
 use chain_impl_mockchain::header::BlockDate;
 use jormungandr_lib::interfaces::SettingsDto;
-use jormungandr_testing_utils::testing::BlockDateGenerator;
+use thor::BlockDateGenerator;
 
 pub fn from_block_or_shift(
     valid_until_fixed: Option<BlockDate>,

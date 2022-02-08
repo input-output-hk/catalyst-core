@@ -3,10 +3,10 @@ use crate::stats::distribution::Stats;
 use chain_addr::{Discrimination, Kind};
 use chain_crypto::Ed25519;
 use chain_impl_mockchain::vote::CommitteeId;
+use jormungandr_automation::testing::block0::get_block;
 use jormungandr_lib::interfaces::Address;
 use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::interfaces::InitialUTxO;
-use jormungandr_testing_utils::testing::block0::get_block;
 
 pub fn calculate_wallet_distribution<S: Into<String>>(
     block0: S,

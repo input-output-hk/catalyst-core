@@ -1,19 +1,17 @@
-use crate::common::{load::build_load_config, load::private_vote_test_scenario, vitup_setup};
+use crate::common::{load::build_load_config, load::private_vote_test_scenario};
 use assert_fs::TempDir;
 use iapyx::NodeLoad;
 use jortestkit::measurement::Status;
-use valgrind::Protocol;
+use thor::FragmentSender;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
 use vitup::config::VoteBlockchainTime;
-use vitup::scenario::network::setup_network;
+use vitup::testing::{spawn_network, vitup_setup};
 
 #[test]
 pub fn load_test_public_100_000_votes() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
     let endpoint = "127.0.0.1:8080";
-
-    let version = "2.0";
     let no_of_threads = 10;
     let no_of_wallets = 40_000;
     let vote_timing = VoteBlockchainTime {
@@ -34,22 +32,19 @@ pub fn load_test_public_100_000_votes() {
 
     let setup_parameters = quick_setup.parameters().clone();
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let (mut vit_controller, mut controller, vit_parameters, fund_name) =
+    let (mut controller, vit_parameters, network_params, fund_name) =
         vitup_setup(quick_setup, testing_directory.path().to_path_buf());
 
-    let (nodes, vit_station, wallet_proxy) = setup_network(
+    let (nodes, _vit_station, _wallet_proxy) = spawn_network(
         &mut controller,
-        &mut vit_controller,
         vit_parameters,
+        network_params,
         &mut template_generator,
-        endpoint.to_string(),
-        &Protocol::Http,
-        version.to_owned(),
     )
     .unwrap();
 
     let mut qr_codes_folder = testing_directory.path().to_path_buf();
-    qr_codes_folder.push("vit_backend/qr-codes");
+    qr_codes_folder.push("qr-codes");
 
     let config = build_load_config(
         endpoint,
@@ -67,23 +62,18 @@ pub fn load_test_public_100_000_votes() {
     vote_timing.wait_for_tally_start(nodes.get(0).unwrap().rest());
 
     let mut committee = controller.wallet("committee").unwrap();
-    let vote_plan = controller.vote_plan(&fund_name).unwrap();
+    let vote_plan = controller.defined_vote_plan(&fund_name).unwrap();
 
-    controller
-        .fragment_sender()
+    let fragment_sender = FragmentSender::from(&controller.settings().block0);
+
+    fragment_sender
         .send_public_vote_tally(&mut committee, &vote_plan.into(), nodes.get(0).unwrap())
         .unwrap();
 
-    vit_station.shutdown();
-    wallet_proxy.shutdown();
-
-    for mut node in nodes {
-        node.logger()
+    for node in nodes {
+        node.logger
             .assert_no_errors(&format!("Errors in logs for node: {}", node.alias()));
-        node.shutdown().unwrap();
     }
-
-    controller.finalize();
 }
 
 #[test]

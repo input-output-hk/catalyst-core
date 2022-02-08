@@ -5,14 +5,14 @@ use crate::ControllerBuilder;
 use bip39::Type;
 use chain_addr::{AddressReadable, Discrimination};
 use chain_impl_mockchain::block::BlockDate;
+use jormungandr_automation::jormungandr::RestSettings;
 use jormungandr_lib::crypto::hash::Hash;
-use jormungandr_testing_utils::testing::node::RestSettings;
-use jormungandr_testing_utils::wallet::discrimination::DiscriminationExtension;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::str::FromStr;
 use structopt::{clap::AppSettings, StructOpt};
 use thiserror::Error;
+use thor::DiscriminationExtension;
 use valgrind::{Proposal, ProposalExtension, ValgrindClient};
 use wallet_core::Choice;
 
@@ -143,7 +143,7 @@ impl IapyxCommand {
                     print_delim();
                     println!("- Delegation: {:?}", account_state.delegation());
                     println!("- Value: {}", account_state.value());
-                    println!("- Spending counter: {}", account_state.counter());
+                    println!("- Spending counters: {:?}", account_state.counters());
                     println!("- Rewards: {:?}", account_state.last_rewards());
                     print_delim();
                     return Ok(());
@@ -198,7 +198,7 @@ impl Address {
                 &discrimination.into_prefix(),
                 &controller.account(discrimination),
             );
-            println!("Address: {}", address.to_string());
+            println!("Address: {}", address);
             println!("Account id: {}", controller.id());
             return Ok(());
         }
@@ -356,7 +356,7 @@ impl Connect {
         };
 
         if let Some(controller) = model.controller.as_mut() {
-            controller.switch_backend(self.address.clone(), settings);
+            controller.switch_backend(self.address.clone(), settings)?;
             return Ok(());
         }
 
@@ -395,7 +395,7 @@ pub struct RecoverFromSecretKey {
 impl RecoverFromSecretKey {
     pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
         let wallet_backend =
-            ValgrindClient::new(model.backend_address.clone(), model.settings.clone());
+            ValgrindClient::new(model.backend_address.clone(), model.settings.clone()).unwrap();
 
         model.controller = Some(
             ControllerBuilder::default()
@@ -492,4 +492,6 @@ pub enum IapyxCommandError {
     ControllerBuilder(#[from] crate::controller::ControllerBuilderError),
     #[error(transparent)]
     Hash(#[from] chain_crypto::hash::Error),
+    #[error(transparent)]
+    Valgrind(valgrind::Error),
 }

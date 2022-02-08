@@ -8,4 +8,4 @@ pub use config::{ArtificialUserLoadConfig, NodeLoadConfig};
 pub use multi_controller::{MultiController, MultiControllerError};
 pub use request_generators::{ServicingStationRequestGen, WalletRequestGen};
 pub use scenario::*;
-pub use status_provider::VoteStatusProvider;
+pub use status_provider::{Error as StatusProviderError, VoteStatusProvider};

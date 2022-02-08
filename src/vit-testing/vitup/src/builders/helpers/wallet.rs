@@ -1,10 +1,10 @@
 use catalyst_toolbox::kedqr::generate;
 use catalyst_toolbox::kedqr::KeyQrCode;
 use chain_impl_mockchain::key::EitherEd25519SecretKey;
-use jormungandr_testing_utils::wallet::Wallet;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+use thor::Wallet;
 
 pub trait WalletExtension {
     fn save_qr_code<P: AsRef<Path>>(&self, path: P, password: &[u8]);

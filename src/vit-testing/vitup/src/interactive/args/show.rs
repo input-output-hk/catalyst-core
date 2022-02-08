@@ -2,9 +2,8 @@ use crate::interactive::VitInteractiveCommandExec;
 use chain_impl_mockchain::block::BlockDate;
 use chrono::NaiveDateTime;
 use chrono::Utc;
+use hersir::controller::interactive::args::show::ShowStatus as BasicShowStatus;
 use jormungandr_lib::interfaces::BlockchainConfiguration;
-use jormungandr_scenario_tests::interactive::args::show::ShowStatus as BasicShowStatus;
-use jormungandr_scenario_tests::test::Result;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
@@ -12,28 +11,29 @@ pub enum Show {
     /// Prints which nodes are upp
     Status(ShowStatus),
     /// Prints fragments counts
-    FragmentCount(jormungandr_scenario_tests::interactive::args::show::ShowFragmentCount),
+    FragmentCount(hersir::controller::interactive::args::show::ShowFragmentCount),
     /// Prints received fragment list
-    Fragments(jormungandr_scenario_tests::interactive::args::show::ShowFragments),
+    Fragments(hersir::controller::interactive::args::show::ShowFragments),
     /// Prints block height
-    BlockHeight(jormungandr_scenario_tests::interactive::args::show::ShowBlockHeight),
+    BlockHeight(hersir::controller::interactive::args::show::ShowBlockHeight),
     /// Prints peers stats
-    PeerStats(jormungandr_scenario_tests::interactive::args::show::ShowPeerStats),
+    PeerStats(hersir::controller::interactive::args::show::ShowPeerStats),
     /// Prints stats
-    Stats(jormungandr_scenario_tests::interactive::args::show::ShowNodeStats),
+    Stats(hersir::controller::interactive::args::show::ShowNodeStats),
     /// Prints logs, can filter logs to print
     /// only errors or filter by custom string  
-    Logs(jormungandr_scenario_tests::interactive::args::show::ShowLogs),
+    Logs(hersir::controller::interactive::args::show::ShowLogs),
     /// Active Vote Plans
-    VotePlans(jormungandr_scenario_tests::interactive::args::show::ActiveVotePlans),
-    /// Vote timing
-    VoteTime(VoteTimeStatus),
+    VotePlans(hersir::controller::interactive::args::show::ActiveVotePlans),
+    // TODO: not sure what to do here
+    //// Vote timing
+    // VoteTime(hersir::controller::interactive::args::show::VoteTimeStatus),
 }
 
 impl Show {
-    pub fn exec(&self, command: &mut VitInteractiveCommandExec) -> Result<()> {
+    pub fn exec(&self, command: &mut VitInteractiveCommandExec) {
         match self {
-            Show::Status(status) => status.exec(command)?,
+            Show::Status(status) => status.exec(command),
             Show::Stats(stats) => stats.exec(command.controller_mut()),
             Show::FragmentCount(fragment_counts) => fragment_counts.exec(command.controller_mut()),
             Show::Fragments(fragments) => fragments.exec(command.controller_mut()),
@@ -41,9 +41,8 @@ impl Show {
             Show::PeerStats(peer_stats) => peer_stats.exec(command.controller_mut()),
             Show::Logs(logs) => logs.exec(command.controller_mut()),
             Show::VotePlans(active_vote_plan) => active_vote_plan.exec(command.controller_mut()),
-            Show::VoteTime(vote_status) => vote_status.exec(command)?,
+            // Show::VoteTime(vote_status) => vote_status.exec(command)?,
         };
-        Ok(())
     }
 }
 
@@ -54,7 +53,7 @@ pub struct ShowStatus {
 }
 
 impl ShowStatus {
-    pub fn exec(&self, command: &mut VitInteractiveCommandExec) -> Result<()> {
+    pub fn exec(&self, command: &mut VitInteractiveCommandExec) {
         let basic_show_status = BasicShowStatus {
             alias: self.alias.clone(),
         };
@@ -68,7 +67,6 @@ impl ShowStatus {
         for proxy_wallet in command.vit_controller.proxies() {
             println!("{} is up", proxy_wallet.alias());
         }
-        Ok(())
     }
 }
 
@@ -79,7 +77,7 @@ pub struct VoteTimeStatus {
 }
 
 impl VoteTimeStatus {
-    pub fn exec(&self, command: &mut VitInteractiveCommandExec) -> Result<()> {
+    pub fn exec(&self, command: &mut VitInteractiveCommandExec) {
         let controller = &command.controller_mut();
 
         let blockchain_configuration = &controller
@@ -118,7 +116,6 @@ impl VoteTimeStatus {
             println!("{}: {}", alias, date);
         }
         println!("======================================");
-        Ok(())
     }
 
     pub fn calculate_date(

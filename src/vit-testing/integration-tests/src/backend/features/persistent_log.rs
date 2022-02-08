@@ -1,26 +1,24 @@
-use crate::common::{load::build_load_config_count, vitup_setup};
+use crate::common::load::build_load_config_count;
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
 use catalyst_toolbox::recovery::Replay;
 use iapyx::NodeLoad;
 use jcli_lib::utils::output_file::OutputFile;
 use jcli_lib::utils::output_format::{FormatVariant, OutputFormat};
+use jormungandr_automation::testing::block0::get_block;
 use jormungandr_lib::interfaces::VotePlanStatus;
-use jormungandr_testing_utils::testing::block0::get_block;
 use jortestkit::measurement::Status;
 use serde_json;
-use valgrind::Protocol;
+use thor::FragmentSender;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
 use vitup::config::VoteBlockchainTime;
-use vitup::scenario::network::setup_network;
+use vitup::testing::{spawn_network, vitup_setup};
 
 #[test]
 pub fn persistent_log_contains_all_sent_votes() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
-    let endpoint = "127.0.0.1:8080";
-
-    let version = "2.0";
+    let endpoint = "http://127.0.0.1:8080";
     let no_of_threads = 1;
     let number_requests_to_per_threads = 50;
     let batch_size = 20;
@@ -43,22 +41,19 @@ pub fn persistent_log_contains_all_sent_votes() {
         .private(false);
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let (mut vit_controller, mut controller, vit_parameters, fund_name) =
+    let (mut controller, vit_parameters, network_params, fund_name) =
         vitup_setup(quick_setup, testing_directory.path().to_path_buf());
 
-    let (nodes, vit_station, wallet_proxy) = setup_network(
+    let (nodes, _vit_station, wallet_proxy) = spawn_network(
         &mut controller,
-        &mut vit_controller,
         vit_parameters,
+        network_params,
         &mut template_generator,
-        endpoint.to_string(),
-        &Protocol::Http,
-        version.to_owned(),
     )
     .unwrap();
 
     let mut qr_codes_folder = testing_directory.path().to_path_buf();
-    qr_codes_folder.push("vit_backend/qr-codes");
+    qr_codes_folder.push("qr-codes");
 
     let config = build_load_config_count(
         endpoint,
@@ -79,10 +74,11 @@ pub fn persistent_log_contains_all_sent_votes() {
     vote_timing.wait_for_tally_start(nodes.get(0).unwrap().rest());
 
     let mut committee = controller.wallet("committee_1").unwrap();
-    let vote_plan = controller.vote_plan(&fund_name).unwrap();
+    let vote_plan = controller.defined_vote_plan(&fund_name).unwrap();
 
-    controller
-        .fragment_sender()
+    let fragment_sender = FragmentSender::from(&controller.settings().block0);
+
+    fragment_sender
         .send_public_vote_tally(&mut committee, &vote_plan.into(), nodes.get(0).unwrap())
         .unwrap();
 
@@ -108,16 +104,9 @@ pub fn persistent_log_contains_all_sent_votes() {
 
     let live_voteplan_status = wallet_proxy.client().vote_plan_statuses().unwrap();
 
-    vit_station.shutdown();
-    wallet_proxy.shutdown();
-
-    for mut node in nodes {
-        node.logger()
+    for node in nodes {
+        node.logger
             .assert_no_errors(&format!("Errors in logs for node: {}", node.alias()));
-        node.shutdown().unwrap();
     }
-
-    controller.finalize();
-
     assert_eq!(live_voteplan_status, offline_voteplan_status);
 }

@@ -50,14 +50,14 @@ impl Wallet {
 
     pub fn recover_from_account(secret_key: &[u8]) -> Result<Self, Error> {
         Ok(Self {
-            inner: Inner::recover_free_keys(secret_key, &[])
+            inner: Inner::recover_free_keys(secret_key, [].iter())
                 .map_err(|e| Error::CannotRecover(e.to_string()))?,
         })
     }
 
     pub fn recover_from_utxo(secret_key: &[u8; 64]) -> Result<Self, Error> {
         Ok(Self {
-            inner: Inner::recover_free_keys(secret_key, &[*secret_key])
+            inner: Inner::recover_free_keys(secret_key, [*secret_key].iter())
                 .map_err(|e| Error::CannotRecover(e.to_string()))?,
         })
     }
@@ -97,7 +97,7 @@ impl Wallet {
     }
 
     pub fn confirm_all_transactions(&mut self) {
-        for id in self.pending_transactions().clone() {
+        for id in self.pending_transactions() {
             self.confirm_transaction(id)
         }
     }
@@ -153,10 +153,6 @@ impl Wallet {
 
 impl std::fmt::Debug for Wallet {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            self.identifier(Discrimination::Production).to_string()
-        )
+        write!(f, "{}", self.identifier(Discrimination::Production))
     }
 }

@@ -2,7 +2,7 @@ pub mod command;
 
 use crate::Controller;
 pub use command::{IapyxCommand, IapyxCommandError};
-use jormungandr_testing_utils::testing::node::RestSettings;
+use jormungandr_automation::jormungandr::RestSettings;
 use jortestkit::prelude::{ConsoleWriter, InteractiveCommandError, InteractiveCommandExec};
 use std::ffi::OsStr;
 use structopt::StructOpt;
@@ -25,7 +25,7 @@ impl InteractiveCommandExec for IapyxInteractiveCommandExec {
         tokens: Vec<String>,
         console: ConsoleWriter,
     ) -> std::result::Result<(), InteractiveCommandError> {
-        match IapyxCommand::from_iter_safe(&mut tokens.iter().map(|x| OsStr::new(x))) {
+        match IapyxCommand::from_iter_safe(&mut tokens.iter().map(OsStr::new)) {
             Ok(interactive) => {
                 if let Err(err) = interactive.exec(&mut self.controller) {
                     console.format_error(InteractiveCommandError::UserError(err.to_string()));

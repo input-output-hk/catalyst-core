@@ -1,78 +1,98 @@
-use crate::scenario::vit_station::VitStationControllerError;
+use crate::scenario::vit_station::Error as VitStationControllerError;
 use crate::scenario::wallet::WalletProxyError;
+use crate::wallet::WalletProxyControllerError;
+use hersir::controller::NodeError;
+use jormungandr_automation::testing::ConsumptionBenchmarkError;
+use jormungandr_automation::testing::VerificationError;
 use jormungandr_lib::interfaces::Block0ConfigurationError;
 use jormungandr_lib::interfaces::FragmentStatus;
 use std::time::Duration;
+use thor::FragmentSenderError;
+use thor::FragmentVerifierError;
+use thor::WalletError;
 use vit_servicing_station_tests::common::startup::server::ServerBootstrapperError;
 
-error_chain! {
-
-    foreign_links {
-        Interactive(jortestkit::console::InteractiveCommandError);
-        IoError(std::io::Error);
-        Node(jormungandr_scenario_tests::node::Error);
-        Wallet(jormungandr_testing_utils::wallet::WalletError);
-        FragmentSender(jormungandr_testing_utils::testing::FragmentSenderError);
-        FragmentVerifier(jormungandr_testing_utils::testing::FragmentVerifierError);
-        VerificationFailed(jormungandr_testing_utils::testing::VerificationError);
-        MonitorResourcesError(jormungandr_testing_utils::testing::ConsumptionBenchmarkError);
-        ExplorerError(jormungandr_testing_utils::testing::node::ExplorerError);
-        VitStationControllerError(VitStationControllerError);
-        WalletProxyError(WalletProxyError);
-        TemplateLoadError(vit_servicing_station_tests::common::data::TemplateLoad);
-        SerdeError(serde_json::Error);
-        SerdeYamlError(serde_yaml::Error);
-        Block0EncodeError(chain_impl_mockchain::ledger::Error);
-        ScenarioError(jormungandr_scenario_tests::scenario::Error);
-        GeneralError(jormungandr_scenario_tests::test::Error);
-        ImageReadError(image::error::ImageError);
-        MockError(crate::cli::start::MockError);
-        ParseError(chrono::ParseError);
-        ClientRestError(crate::client::rest::Error);
-        Block0ConfigurationError(Block0ConfigurationError);
-        VitServerBootstrapperError(ServerBootstrapperError);
-        VitRestError(vit_servicing_station_tests::common::clients::RestError);
-        ChainAddressError(chain_addr::Error);
-        ChainBech32Error(chain_crypto::bech32::Error);
-        GlobError(glob::GlobError);
-        ValgrindError(valgrind::Error);
-        ImportError(crate::cli::import::ImportError);
-        Validate(crate::cli::ValidateError);
-    }
-
-    errors {
-        SyncTimeoutOccurred(info: String, timeout: Duration) {
-            description("synchronization for nodes has failed"),
-            display("synchronization for nodes has failed. {}. Timeout was: {} s", info, timeout.as_secs()),
-        }
-
-        AssertionFailed(info: String) {
-            description("assertion has failed"),
-            display("{}", info),
-        }
-        TransactionNotInBlock(node: String, status: FragmentStatus) {
-            description("transaction not in block"),
-            display("transaction should be 'In Block'. status: {:?}, node: {}", status, node),
-        }
-
-        ProxyNotFound(alias: String) {
-            description("proxy not found"),
-            display("proxy with alias: {} not found", alias),
-        }
-
-        EnvironmentIsDown {
-            description("environment is down"),
-            display("environment is down"),
-        }
-
-        SnapshotIntialReadError {
-            description("wrong format for snapshot data"),
-            display("wrong format for snapshot data"),
-        }
-
-        NoChallengeIdFound(proposal_id: String) {
-            description("no challenge id found"),
-            display("no challenge id found for proposal {}", proposal_id),
-        }
-    }
+#[derive(thiserror::Error, Debug)]
+pub enum Error {
+    #[error(transparent)]
+    Interactive(#[from] jortestkit::console::InteractiveCommandError),
+    #[error(transparent)]
+    IoError(#[from] std::io::Error),
+    #[error(transparent)]
+    Node(#[from] NodeError),
+    #[error(transparent)]
+    Wallet(#[from] WalletError),
+    #[error(transparent)]
+    FragmentSender(#[from] FragmentSenderError),
+    #[error(transparent)]
+    FragmentVerifier(#[from] FragmentVerifierError),
+    #[error(transparent)]
+    VerificationFailed(#[from] VerificationError),
+    #[error(transparent)]
+    MonitorResourcesError(#[from] ConsumptionBenchmarkError),
+    #[error(transparent)]
+    VitStationControllerError(#[from] VitStationControllerError),
+    #[error(transparent)]
+    WalletProxyError(#[from] WalletProxyError),
+    #[error(transparent)]
+    TemplateLoadError(#[from] vit_servicing_station_tests::common::data::TemplateLoad),
+    #[error(transparent)]
+    SerdeError(#[from] serde_json::Error),
+    #[error(transparent)]
+    SerdeYamlError(#[from] serde_yaml::Error),
+    #[error(transparent)]
+    Block0EncodeError(#[from] chain_impl_mockchain::ledger::Error),
+    #[error(transparent)]
+    ImageReadError(#[from] image::error::ImageError),
+    #[error(transparent)]
+    MockError(#[from] crate::cli::start::MockError),
+    #[error(transparent)]
+    ParseError(#[from] chrono::ParseError),
+    #[error(transparent)]
+    ClientRestError(#[from] crate::client::rest::Error),
+    #[error(transparent)]
+    Block0ConfigurationError(#[from] Block0ConfigurationError),
+    #[error(transparent)]
+    VitServerBootstrapperError(#[from] ServerBootstrapperError),
+    #[error(transparent)]
+    VitRestError(#[from] vit_servicing_station_tests::common::clients::RestError),
+    #[error(transparent)]
+    ChainAddressError(#[from] chain_addr::Error),
+    #[error(transparent)]
+    ChainBech32Error(#[from] chain_crypto::bech32::Error),
+    #[error(transparent)]
+    GlobError(#[from] glob::GlobError),
+    #[error(transparent)]
+    ValgrindError(#[from] valgrind::Error),
+    #[error(transparent)]
+    ImportError(#[from] crate::cli::import::ImportError),
+    #[error(transparent)]
+    Validate(#[from] crate::cli::ValidateError),
+    #[error(transparent)]
+    ControllerError(#[from] hersir::controller::Error),
+    #[error(transparent)]
+    WalletProxyController(#[from] WalletProxyControllerError),
+    #[error("synchronization for nodes has failed. {}. Timeout was: {} s", info, timeout.as_secs())]
+    SyncTimeoutOccurred { info: String, timeout: Duration },
+    #[error("{info}")]
+    AssertionFailed { info: String },
+    #[error(
+        "transaction should be 'In Block'. status: {:?}, node: {}",
+        status,
+        node
+    )]
+    TransactionNotInBlock {
+        node: String,
+        status: FragmentStatus,
+    },
+    #[error("proxy with alias: {alias} not found")]
+    ProxyNotFound { alias: String },
+    #[error("unknown log level: {0}")]
+    UnknownLogLevel(String),
+    #[error("environment is down")]
+    EnvironmentIsDown,
+    #[error("wrong format for snapshot data")]
+    SnapshotIntialReadError,
+    #[error("no challenge id found for proposal {proposal_id}")]
+    NoChallengeIdFound { proposal_id: String },
 }

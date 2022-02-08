@@ -8,7 +8,7 @@ pub mod validate;
 use crate::cli::generate::{CommitteeIdCommandArgs, QrCommandArgs, SnapshotCommandArgs};
 use crate::cli::start::AdvancedStartCommandArgs;
 use crate::cli::start::MockStartCommandArgs;
-use crate::error::Result;
+use crate::Result;
 use diff::DiffCommand;
 use generate::DataCommandArgs;
 use import::ImportCommand;

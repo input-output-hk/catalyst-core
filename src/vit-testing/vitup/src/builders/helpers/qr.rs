@@ -1,23 +1,23 @@
 use crate::builders::helpers::wallet::WalletExtension;
 use crate::config::VitStartParameters;
 use crate::Result;
-use assert_fs::fixture::ChildPath;
-use assert_fs::fixture::PathChild;
 use catalyst_toolbox::kedqr::{generate, KeyQrCode};
 use chain_crypto::SecretKey;
-use jormungandr_testing_utils::testing::network::WalletAlias;
-use jormungandr_testing_utils::testing::network::WalletTemplate;
-use jormungandr_testing_utils::wallet::Wallet;
-
+use hersir::builder::WalletTemplate;
 use jortestkit::prelude::append;
 use std::collections::HashMap;
-pub fn generate_qr_and_hashes(
+use std::path::Path;
+use thor::Wallet;
+use thor::WalletAlias;
+
+pub fn generate_qr_and_hashes<P: AsRef<Path>>(
     wallets: Vec<(&WalletAlias, Wallet)>,
     initials: &HashMap<WalletTemplate, String>,
     parameters: &VitStartParameters,
-    folder: &ChildPath,
+    folder: P,
 ) -> Result<()> {
     let total = wallets.len();
+    let folder = folder.as_ref();
 
     for (idx, (alias, wallet)) in wallets.iter().enumerate() {
         let pin = initials
@@ -30,18 +30,13 @@ pub fn generate_qr_and_hashes(
                 }
             })
             .unwrap();
-        let png = folder.child(format!("{}_{}.png", alias, pin));
-        println!("[{}/{}] Qr dumped to {:?}", idx + 1, total, png.path());
-        wallet.save_qr_code(png.path(), &pin_to_bytes(pin));
+        let png = folder.join(format!("{}_{}.png", alias, pin));
+        println!("[{}/{}] Qr dumped to {:?}", idx + 1, total, png);
+        wallet.save_qr_code(png, &pin_to_bytes(pin));
 
-        let hash = folder.child(format!("{}_{}.txt", alias, pin));
-        println!(
-            "[{}/{}] QR hash dumped to {:?}",
-            idx + 1,
-            total,
-            hash.path()
-        );
-        wallet.save_qr_code_hash(hash.path(), &pin_to_bytes(pin));
+        let hash = folder.join(format!("{}_{}.txt", alias, pin));
+        println!("[{}/{}] QR hash dumped to {:?}", idx + 1, total, hash);
+        wallet.save_qr_code_hash(hash, &pin_to_bytes(pin));
     }
 
     let zero_funds_initial_counts = parameters.initials.zero_funds_count();
@@ -53,10 +48,10 @@ pub fn generate_qr_and_hashes(
             let sk = SecretKey::generate(rand::thread_rng());
             let qr = KeyQrCode::generate(sk.clone(), &pin_to_bytes(&zero_funds_pin));
             let img = qr.to_img();
-            let png = folder.child(&format!("zero_funds_{}_{}.png", i, zero_funds_pin));
-            img.save(png.path())?;
+            let png = folder.join(&format!("zero_funds_{}_{}.png", i, zero_funds_pin));
+            img.save(png)?;
 
-            let hash = folder.child(format!("zero_funds_{}.txt", i));
+            let hash = folder.join(format!("zero_funds_{}.txt", i));
             append(hash, generate(sk, &pin_to_bytes(&zero_funds_pin)))?;
         }
     }

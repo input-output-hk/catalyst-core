@@ -143,12 +143,11 @@ impl DeploymentValidateCommand {
                 let pb = m.add(ProgressBar::new(1));
                 pb.set_style(spinner_style.clone());
                 pb.set_prefix(&format!("[{}/{}]", i + 1, len));
-                pb.set_message(&format!("{}...In progress", command.to_string()));
+                pb.set_message(&format!("{}...In progress", command));
 
                 let address = self.address.clone();
+                let wallet_backend = ValgrindClient::new(address, Default::default()).unwrap();
                 thread::spawn(move || {
-                    let wallet_backend = ValgrindClient::new(address.clone(), Default::default());
-
                     let finish_style =
                         ProgressStyle::default_spinner().template("{prefix:.bold.dim} {wide_msg}");
 
@@ -159,13 +158,12 @@ impl DeploymentValidateCommand {
                     match result {
                         Ok(elapsed) => pb.finish_with_message(&format!(
                             "[Passed] {}. Duration: {} ms",
-                            command.to_string(),
+                            command,
                             elapsed.as_millis()
                         )),
                         Err(error) => pb.finish_with_message(&format!(
                             "[Failed] {}. Error: {}",
-                            command.to_string(),
-                            error.to_string()
+                            command, error
                         )),
                     };
                 })

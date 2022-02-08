@@ -1,8 +1,9 @@
 use crate::builders::utils::io::read_config;
 use crate::builders::VitBackendSettingsBuilder;
-use crate::error::Result;
+use crate::Result;
 use std::path::PathBuf;
 use structopt::StructOpt;
+
 #[derive(StructOpt, Debug)]
 #[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct TimeCommand {

@@ -1,19 +1,19 @@
-use super::mode::{parse_mode_from_str, Mode};
 use crate::builders::utils::io::read_initials;
 use crate::builders::{default_next_vote_date, default_snapshot_date};
 pub use crate::builders::{VitBackendSettingsBuilder, LEADER_1, LEADER_2, LEADER_3, WALLET_NODE};
+use crate::config::mode::{parse_mode_from_str, Mode};
 use crate::config::Initials;
 use crate::config::VoteTime;
-use crate::scenario::network::service_mode;
-use crate::scenario::network::{endless_mode, interactive_mode, setup_network};
-use crate::Result;
-use jormungandr_scenario_tests::programs::prepare_command;
-use jormungandr_scenario_tests::{
-    parse_progress_bar_mode_from_str, Context, ProgressBarMode, Seed,
-};
+use crate::scenario::spawn::spawn_network;
+use crate::scenario::spawn::NetworkSpawnParams;
+use crate::{error::Error, Result};
+use hersir::config::SessionSettings;
+use hersir::utils::print_intro;
+use jormungandr_automation::jormungandr::LogLevel;
 use jortestkit::prelude::read_file;
 use std::path::Path;
 use std::path::PathBuf;
+use std::str::FromStr;
 use structopt::StructOpt;
 use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
@@ -34,22 +34,6 @@ pub struct QuickStartCommandArgs {
     /// and will delete the files and documents
     #[structopt(long = "root-dir", default_value = ".")]
     pub testing_directory: PathBuf,
-
-    /// in some circumstances progress bar can spoil test logs (e.g. on test build job)
-    /// if this parametrer value is true, then no progress bar is visible,
-    /// but simple log on console enabled
-    ///
-    /// no progress bar, only simple console output
-    #[structopt(
-        long = "progress-bar-mode",
-        default_value = "Monitor",
-        parse(from_str = parse_progress_bar_mode_from_str)
-    )]
-    pub progress_bar_mode: ProgressBarMode,
-
-    /// to set if to reproduce an existing test
-    #[structopt(long = "seed")]
-    pub seed: Option<Seed>,
 
     /// level for all nodes
     #[structopt(long = "log-level", default_value = "info")]
@@ -152,32 +136,24 @@ impl QuickStartCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 
-        let jormungandr = prepare_command(&self.jormungandr);
-        let jcli = prepare_command(&self.jcli);
-        let mut progress_bar_mode = self.progress_bar_mode;
-        let seed = self
-            .seed
-            .unwrap_or_else(|| Seed::generate(rand::rngs::OsRng));
-        let mut testing_directory = self.testing_directory;
+        let jormungandr = &self.jormungandr;
+        let testing_directory = self.testing_directory;
         let generate_documentation = true;
         let log_level = self.log_level;
         let mode = self.mode;
         let endpoint = self.endpoint;
         let token = self.token;
+        let title = "quick";
 
-        if mode == Mode::Interactive {
-            progress_bar_mode = ProgressBarMode::None;
-        }
-
-        let context = Context::new(
-            seed,
-            jormungandr,
-            jcli,
-            Some(testing_directory.clone()),
+        let session_settings = SessionSettings {
+            jormungandr: jormungandr.to_path_buf(),
+            root: testing_directory.join(title).into(),
             generate_documentation,
-            progress_bar_mode,
-            log_level,
-        );
+            mode: mode.into(),
+            log: LogLevel::from_str(&log_level)
+                .map_err(|_| Error::UnknownLogLevel(log_level.clone()))?,
+            title: title.to_owned(),
+        };
 
         let mut quick_setup = VitBackendSettingsBuilder::new();
 
@@ -245,48 +221,27 @@ impl QuickStartCommandArgs {
             .private(self.private)
             .version(self.version);
 
-        jormungandr_scenario_tests::introduction::print(&context, "VOTING BACKEND");
+        print_intro(&session_settings, "VOTING BACKEND");
 
         let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
 
-        testing_directory.push(quick_setup.title());
         if testing_directory.exists() {
             std::fs::remove_dir_all(&testing_directory)?;
         }
-        match mode {
-            Mode::Service => {
-                service_mode(context, testing_directory, quick_setup, endpoint, token)?
-            }
-            Mode::Endless => {
-                let (mut vit_controller, mut controller, vit_parameters, version) =
-                    quick_setup.build(context)?;
-                let (nodes_list, vit_station, wallet_proxy) = setup_network(
-                    &mut controller,
-                    &mut vit_controller,
-                    vit_parameters,
-                    &mut template_generator,
-                    endpoint,
-                    quick_setup.protocol(),
-                    version,
-                )?;
-                endless_mode(controller, nodes_list, vit_station, wallet_proxy)?;
-            }
-            Mode::Interactive => {
-                let (mut vit_controller, mut controller, vit_parameters, version) =
-                    quick_setup.build(context)?;
 
-                let (nodes_list, vit_station, wallet_proxy) = setup_network(
-                    &mut controller,
-                    &mut vit_controller,
-                    vit_parameters,
-                    &mut template_generator,
-                    endpoint,
-                    quick_setup.protocol(),
-                    version,
-                )?;
-                interactive_mode(controller, nodes_list, vit_station, wallet_proxy)?;
-            }
-        }
+        let network_spawn_params = NetworkSpawnParams::new(
+            endpoint,
+            quick_setup.parameters(),
+            session_settings,
+            token,
+            testing_directory,
+        );
+        spawn_network(
+            mode,
+            network_spawn_params,
+            &mut template_generator,
+            quick_setup,
+        )?;
         Ok(())
     }
 }

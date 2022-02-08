@@ -1,22 +1,20 @@
-use crate::common::{iapyx_from_secret_key, vitup_setup};
+use crate::common::iapyx_from_secret_key;
 use assert_fs::TempDir;
 use chain_impl_mockchain::vote::Choice;
+use jormungandr_automation::testing::time;
 use jormungandr_lib::interfaces::FragmentStatus;
-use jormungandr_testing_utils::testing::node::time;
-use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
 use vitup::config::VoteBlockchainTime;
 use vitup::config::{InitialEntry, Initials};
-use vitup::scenario::network::setup_network;
+use vitup::testing::spawn_network;
+use vitup::testing::vitup_setup;
 const PIN: &str = "1234";
 const ALICE: &str = "alice";
 
 #[test]
 pub fn transactions_are_send_between_nodes_with_correct_order() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
-    let endpoint = "127.0.0.1:8080";
-    let version = "2.0";
     let batch_size = 10;
     let vote_timing = VoteBlockchainTime {
         vote_start: 0,
@@ -39,21 +37,18 @@ pub fn transactions_are_send_between_nodes_with_correct_order() {
         .private(true);
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let (mut vit_controller, mut controller, vit_parameters, _fund_name) =
+    let (mut controller, vit_parameters, network_params, _fund_name) =
         vitup_setup(quick_setup, testing_directory.path().to_path_buf());
 
-    let (nodes, vit_station, wallet_proxy) = setup_network(
+    let (nodes, _vit_station, wallet_proxy) = spawn_network(
         &mut controller,
-        &mut vit_controller,
         vit_parameters,
+        network_params,
         &mut template_generator,
-        endpoint.to_string(),
-        &Protocol::Http,
-        version.to_owned(),
     )
     .unwrap();
 
-    let secret = testing_directory.path().join("vit_backend/wallet_alice");
+    let secret = testing_directory.path().join("wallet_alice");
     let mut alice = iapyx_from_secret_key(secret, &wallet_proxy).unwrap();
 
     let proposals = alice.proposals().unwrap();
@@ -70,17 +65,9 @@ pub fn transactions_are_send_between_nodes_with_correct_order() {
         .map(|item| item.to_string())
         .collect();
 
-    time::wait_for_epoch(1, nodes[0].rest());
+    time::wait_for_epoch(10, nodes[0].rest());
 
     let statuses = nodes[0].rest().fragments_statuses(fragment_ids).unwrap();
-
-    vit_station.shutdown();
-    wallet_proxy.shutdown();
-    for mut node in nodes {
-        node.shutdown().unwrap();
-    }
-    controller.finalize();
-
     assert!(statuses
         .iter()
         .all(|(_, status)| matches!(status, FragmentStatus::InABlock { .. })));

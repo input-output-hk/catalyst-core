@@ -2,9 +2,9 @@ use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
 use chain_addr::Discrimination;
 use iapyx::{PinReadMode, QrReader};
+use jormungandr_automation::jcli::JCli;
 use jormungandr_lib::interfaces::Address;
 use jormungandr_lib::interfaces::InitialUTxO;
-use jormungandr_testing_utils::testing::jcli::JCli;
 use jortestkit::prelude::WaitBuilder;
 use math::round;
 use registration_service::{

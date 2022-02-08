@@ -2,7 +2,7 @@ use crate::common::registration::do_registration;
 use crate::common::snapshot::do_snapshot;
 use crate::common::snapshot::wait_for_db_sync;
 use assert_fs::TempDir;
-use jormungandr_testing_utils::testing::asserts::InitialsAssert;
+use jormungandr_automation::testing::asserts::InitialsAssert;
 use snapshot_trigger_service::config::JobParameters;
 const GRACE_PERIOD_FOR_SNAPSHOT: u64 = 300;
 //SR001

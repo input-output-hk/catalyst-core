@@ -2,18 +2,19 @@ use crate::common::iapyx_from_qr;
 use crate::common::registration::do_registration;
 use crate::common::snapshot::do_snapshot;
 use crate::common::snapshot::wait_for_db_sync;
-use crate::common::{vitup_setup, Vote};
+use crate::common::Vote;
 use assert_fs::TempDir;
 use chain_impl_mockchain::header::BlockDate;
-use jormungandr_testing_utils::testing::asserts::VotePlanStatusAssert;
-use jormungandr_testing_utils::testing::node::time;
+use jormungandr_automation::testing::asserts::VotePlanStatusAssert;
+use jormungandr_automation::testing::time;
 use snapshot_trigger_service::config::JobParameters;
-use valgrind::Protocol;
+use thor::FragmentSender;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
 use vitup::config::Initials;
 use vitup::config::VoteBlockchainTime;
-use vitup::scenario::network::setup_network;
+use vitup::testing::spawn_network;
+use vitup::testing::vitup_setup;
 const GRACE_PERIOD_FOR_SNAPSHOT: u64 = 300;
 
 #[test]
@@ -41,7 +42,6 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
         .unwrap()
         .unwrap();
 
-    let endpoint = "127.0.0.1:8080";
     let vote_timing = VoteBlockchainTime {
         vote_start: 0,
         tally_start: 1,
@@ -64,16 +64,13 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     println!("{:?}", testing_directory.path().to_path_buf());
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let (mut vit_controller, mut controller, vit_parameters, _) =
+    let (mut controller, vit_parameters, network_params, _) =
         vitup_setup(quick_setup, testing_directory.path().to_path_buf());
-    let (nodes, vit_station, wallet_proxy) = setup_network(
+    let (nodes, _vit_station, wallet_proxy) = spawn_network(
         &mut controller,
-        &mut vit_controller,
         vit_parameters,
+        network_params,
         &mut template_generator,
-        endpoint.to_string(),
-        &Protocol::Http,
-        "2.0".to_owned(),
     )
     .unwrap();
 
@@ -84,8 +81,8 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     // start wallets
     let mut alice = iapyx_from_qr(&result.qr_code(), &result.pin(), &wallet_proxy).unwrap();
 
-    let fund1_vote_plan = &controller.vote_plans()[0];
-    let fund2_vote_plan = &controller.vote_plans()[1];
+    let fund1_vote_plan = &controller.defined_vote_plans()[0];
+    let fund2_vote_plan = &controller.defined_vote_plans()[1];
 
     alice
         .vote_for(fund1_vote_plan.id(), 0, Vote::Yes as u8)
@@ -101,13 +98,13 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     };
     time::wait_for_date(target_date.into(), leader_1.rest());
 
-    controller
-        .fragment_sender()
+    let fragment_sender = FragmentSender::from(&controller.settings().block0);
+
+    fragment_sender
         .send_public_vote_tally(&mut committee, &fund1_vote_plan.clone().into(), wallet_node)
         .unwrap();
 
-    controller
-        .fragment_sender()
+    fragment_sender
         .send_public_vote_tally(&mut committee, &fund2_vote_plan.clone().into(), wallet_node)
         .unwrap();
 
@@ -117,11 +114,4 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     vote_plans.assert_all_proposals_are_tallied();
     vote_plans.assert_proposal_tally(fund1_vote_plan.id(), 0, vec![0, u64::from(entry.value), 0]);
     vote_plans.assert_proposal_tally(fund2_vote_plan.id(), 0, vec![0, u64::from(entry.value), 0]);
-
-    vit_station.shutdown();
-    wallet_proxy.shutdown();
-    for mut node in nodes {
-        node.shutdown().unwrap();
-    }
-    controller.finalize();
 }

@@ -1,9 +1,7 @@
 use crate::interactive::{VitInteractiveCommandExec, VitUserInteractionController};
-use jormungandr_scenario_tests::{
-    interactive::args::describe::{
-        DescribeNodes, DescribeTopology, DescribeVotePlans, DescribeWallets,
-    },
-    test::Result,
+use crate::Result;
+use hersir::controller::interactive::args::describe::{
+    DescribeNodes, DescribeTopology, DescribeVotePlans, DescribeWallets,
 };
 use structopt::StructOpt;
 
@@ -30,14 +28,25 @@ pub enum Describe {
 impl Describe {
     pub fn exec(&self, command: &mut VitInteractiveCommandExec) -> Result<()> {
         match self {
-            Describe::Wallets(wallets) => wallets.exec(command.controller_mut()),
-            Describe::Nodes(desc_nodes) => desc_nodes.exec(command.controller_mut()),
-            Describe::All(all) => all.exec(command),
-            Describe::Topology(topology) => topology.exec(command.controller_mut()),
-            Describe::VotePlan(vote_plans) => vote_plans.exec(command.controller_mut()),
+            Describe::Wallets(wallets) => {
+                wallets.exec(command.controller_mut())?;
+            }
+            Describe::Nodes(desc_nodes) => {
+                desc_nodes.exec(command.controller_mut())?;
+            }
+            Describe::All(all) => {
+                all.exec(command)?;
+            }
+            Describe::Topology(topology) => {
+                topology.exec(command.controller_mut())?;
+            }
+            Describe::VotePlan(vote_plans) => {
+                vote_plans.exec(command.controller_mut())?;
+            }
             Describe::Stations(stations) => stations.exec(command.vit_controller_mut()),
             Describe::Proxies(proxies) => proxies.exec(command.vit_controller_mut()),
-        }
+        };
+        Ok(())
     }
 }
 
@@ -48,7 +57,7 @@ pub struct DescribeVitStations {
 }
 
 impl DescribeVitStations {
-    pub fn exec(&self, controller: &mut VitUserInteractionController) -> Result<()> {
+    pub fn exec(&self, controller: &mut VitUserInteractionController) {
         println!("Vit Stations:");
         for vit_station in controller.vit_stations() {
             println!(
@@ -57,7 +66,6 @@ impl DescribeVitStations {
                 vit_station.address()
             );
         }
-        Ok(())
     }
 }
 
@@ -74,9 +82,10 @@ impl DescribeAll {
         let describe_nodes = DescribeNodes { alias: None };
         describe_nodes.exec(command.controller_mut())?;
         let describe_wallet_proxies = DescribeWalletProxies { alias: None };
-        describe_wallet_proxies.exec(command.vit_controller_mut())?;
+        describe_wallet_proxies.exec(command.vit_controller_mut());
         let describe_vit_stations = DescribeVitStations { alias: None };
-        describe_vit_stations.exec(command.vit_controller_mut())
+        describe_vit_stations.exec(command.vit_controller_mut());
+        Ok(())
     }
 }
 
@@ -87,7 +96,7 @@ pub struct DescribeWalletProxies {
 }
 
 impl DescribeWalletProxies {
-    pub fn exec(&self, controller: &mut VitUserInteractionController) -> Result<()> {
+    pub fn exec(&self, controller: &mut VitUserInteractionController) {
         println!("Proxies:");
         for proxy in controller.proxies() {
             println!(
@@ -96,6 +105,5 @@ impl DescribeWalletProxies {
                 proxy.settings().proxy_address
             );
         }
-        Ok(())
     }
 }

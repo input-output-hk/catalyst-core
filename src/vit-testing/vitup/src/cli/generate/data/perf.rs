@@ -1,11 +1,11 @@
 use crate::builders::post_deployment::generate_database;
 use crate::builders::post_deployment::DeploymentTree;
 use crate::builders::utils::io::read_config;
-use crate::builders::utils::ContextExtension;
+use crate::builders::utils::SessionSettingsExtension;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::Result;
 use glob::glob;
-use jormungandr_scenario_tests::Context;
+use hersir::config::SessionSettings;
 use std::path::Path;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -63,7 +63,7 @@ impl PerfDataCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 
-        let context = Context::empty_from_dir(&self.output_directory);
+        let session_settings = SessionSettings::empty_from_dir(&self.output_directory);
 
         let mut quick_setup = VitBackendSettingsBuilder::new();
         let mut config = read_config(&self.config)?;
@@ -84,7 +84,7 @@ impl PerfDataCommandArgs {
 
         let deployment_tree = DeploymentTree::new(&self.output_directory, quick_setup.title());
 
-        let (_, controller, vit_parameters, _) = quick_setup.build(context)?;
+        let (controller, vit_parameters, _) = quick_setup.build(session_settings)?;
 
         let template_generator = ExternalValidVotingTemplateGenerator::new(
             self.proposals.clone(),
@@ -105,7 +105,7 @@ impl PerfDataCommandArgs {
         println!(
             "voteplan ids: {:?}",
             controller
-                .vote_plans()
+                .defined_vote_plans()
                 .iter()
                 .map(|x| x.id())
                 .collect::<Vec<String>>()

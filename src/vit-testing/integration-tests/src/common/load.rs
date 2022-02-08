@@ -1,23 +1,23 @@
-use crate::common::{vitup_setup, wait_until_folder_contains_all_qrs};
+use crate::common::wait_until_folder_contains_all_qrs;
 use assert_fs::TempDir;
 use chain_impl_mockchain::key::Hash;
+use hersir::builder::VotePlanSettings;
 use iapyx::{NodeLoad, NodeLoadConfig};
+use jormungandr_automation::jormungandr::FragmentNode;
+use jormungandr_automation::testing::asserts::VotePlanStatusAssert;
+use jormungandr_automation::testing::time;
 use jormungandr_lib::interfaces::BlockDate;
-use jormungandr_testing_utils::testing::asserts::VotePlanStatusAssert;
-use jormungandr_testing_utils::testing::network::VotePlanSettings;
-use jormungandr_testing_utils::testing::node::time;
-use jormungandr_testing_utils::testing::FragmentNode;
 use jortestkit::{
     load::{ConfigurationBuilder, Monitor},
     measurement::Status,
 };
 use std::str::FromStr;
 use std::{path::PathBuf, time::Duration};
-use valgrind::Protocol;
+use thor::FragmentSender;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
 use vitup::config::VitStartParameters;
-use vitup::scenario::network::setup_network;
+use vitup::testing::{spawn_network, vitup_setup};
 
 #[allow(dead_code)]
 pub fn private_vote_test_scenario(
@@ -31,18 +31,15 @@ pub fn private_vote_test_scenario(
     let wallet_count = parameters.initials.count();
     let vote_timing = quick_setup.blockchain_timing();
 
-    let (mut vit_controller, mut controller, vit_parameters, fund_name) =
+    let (mut controller, vit_parameters, network_params, fund_name) =
         vitup_setup(quick_setup, testing_directory.path().to_path_buf());
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let (nodes, vit_station, wallet_proxy) = setup_network(
+    let (nodes, _vit_station, _wallet_proxy) = spawn_network(
         &mut controller,
-        &mut vit_controller,
         vit_parameters,
+        network_params,
         &mut template_generator,
-        endpoint.to_string(),
-        &Protocol::Http,
-        "2.0".to_owned(),
     )
     .unwrap();
 
@@ -51,7 +48,7 @@ pub fn private_vote_test_scenario(
     println!("generating qr codes..");
 
     let mut qr_codes_folder = testing_directory.path().to_path_buf();
-    qr_codes_folder.push("vit_backend/qr-codes");
+    qr_codes_folder.push("qr-codes");
 
     wait_until_folder_contains_all_qrs(wallet_count, &qr_codes_folder);
 
@@ -80,9 +77,11 @@ pub fn private_vote_test_scenario(
     time::wait_for_epoch(vote_timing.tally_start, leader_1.rest());
 
     let mut committee = controller.wallet("committee_1").unwrap();
-    let vote_plan = controller.vote_plan(&fund_name).unwrap();
+    let vote_plan = controller.defined_vote_plan(&fund_name).unwrap();
 
-    match controller.fragment_sender().send_encrypted_tally(
+    let fragment_sender = FragmentSender::from(&controller.settings().block0);
+
+    match fragment_sender.send_encrypted_tally(
         &mut committee,
         &vote_plan.clone().into(),
         wallet_node,
@@ -119,7 +118,9 @@ pub fn private_vote_test_scenario(
         }
     };
 
-    match controller.fragment_sender().send_private_vote_tally(
+    let fragment_sender = FragmentSender::from(&controller.settings().block0);
+
+    match fragment_sender.send_private_vote_tally(
         &mut committee,
         &vote_plan.clone().into(),
         shares,
@@ -140,15 +141,10 @@ pub fn private_vote_test_scenario(
         .unwrap()
         .assert_all_proposals_are_tallied();
 
-    vit_station.shutdown();
-    wallet_proxy.shutdown();
-    for mut node in nodes {
-        node.logger()
+    for node in nodes {
+        node.logger
             .assert_no_errors(&format!("Errors in logs for node: {}", node.alias()));
-        node.shutdown().unwrap();
     }
-
-    controller.finalize();
 }
 
 #[allow(dead_code)]

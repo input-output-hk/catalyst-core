@@ -78,7 +78,7 @@ impl GetAddressFromQrCommand {
                     }) {
                         println!(
                             "Address corresponding to input qr found in block0: '{}' with value: '{}'", 
-                            AddressReadable::from_address(&self.prefix, &entry.address.clone().into()).to_string(),entry.value
+                            AddressReadable::from_address(&self.prefix, &entry.address.clone().into()),entry.value
                         );
                         return Ok(());
                     }
@@ -88,7 +88,7 @@ impl GetAddressFromQrCommand {
         } else {
             println!(
                 "Address: {}",
-                AddressReadable::from_address(&self.prefix, &address).to_string()
+                AddressReadable::from_address(&self.prefix, &address)
             );
         }
         Ok(())

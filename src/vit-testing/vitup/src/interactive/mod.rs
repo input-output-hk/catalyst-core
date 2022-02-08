@@ -2,12 +2,10 @@ mod args;
 mod controller;
 
 pub use args::{describe, show};
-
 pub use controller::VitUserInteractionController;
-use jormungandr_scenario_tests::interactive::{
-    args::{explorer, send},
-    UserInteractionController,
-};
+use hersir::controller::interactive::args::explorer;
+use hersir::controller::interactive::args::send;
+use hersir::controller::UserInteractionController;
 use jortestkit::prelude::ConsoleWriter;
 use jortestkit::prelude::InteractiveCommandError;
 use jortestkit::prelude::InteractiveCommandExec;
@@ -32,7 +30,8 @@ impl VitInteractiveCommandExec {
 impl VitInteractiveCommandExec {
     pub fn tear_down(self) {
         self.vit_controller.finalize();
-        self.controller.finalize();
+        // TODO: what happend to this?
+        // self.controller.finalize();
     }
 }
 
@@ -42,16 +41,21 @@ impl<'a> InteractiveCommandExec for VitInteractiveCommandExec {
         tokens: Vec<String>,
         console: ConsoleWriter,
     ) -> std::result::Result<(), InteractiveCommandError> {
-        match VitInteractiveCommand::from_iter_safe(&mut tokens.iter().map(|x| OsStr::new(x))) {
+        match VitInteractiveCommand::from_iter_safe(&mut tokens.iter().map(OsStr::new)) {
             Ok(interactive) => {
                 if let Err(err) = {
                     match interactive {
-                        VitInteractiveCommand::Show(show) => show.exec(self),
+                        VitInteractiveCommand::Show(show) => {
+                            show.exec(self);
+                            Ok(())
+                        }
                         VitInteractiveCommand::Exit => Ok(()),
                         VitInteractiveCommand::Describe(describe) => describe.exec(self),
-                        VitInteractiveCommand::Send(send) => send.exec(self.controller_mut()),
+                        VitInteractiveCommand::Send(send) => {
+                            send.exec(self.controller_mut()).map_err(Into::into)
+                        }
                         VitInteractiveCommand::Explorer(explorer) => {
-                            explorer.exec(self.controller_mut())
+                            explorer.exec(self.controller_mut()).map_err(Into::into)
                         }
                     }
                 } {

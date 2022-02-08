@@ -1,7 +1,6 @@
 use crate::Result;
 use chrono::NaiveDateTime;
-use jormungandr_testing_utils::testing::node::time;
-use jormungandr_testing_utils::testing::node::JormungandrRest;
+use jormungandr_automation::{jormungandr::JormungandrRest, testing::time};
 use serde::{Deserialize, Serialize};
 pub const FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 

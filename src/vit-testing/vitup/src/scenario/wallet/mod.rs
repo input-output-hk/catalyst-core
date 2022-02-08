@@ -1,35 +1,25 @@
 #![allow(dead_code)]
 
 mod controller;
+mod monitor;
 mod settings;
 mod spawn_params;
 
 use chain_impl_mockchain::fragment::FragmentId;
 
-pub use jormungandr_testing_utils::testing::{
-    jormungandr::Status,
-    network::{LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings},
-    node::{
-        grpc::{client::MockClientError, JormungandrClient},
-        uri_from_socket_addr, JormungandrLogger, JormungandrRest, RestError,
-    },
-    FragmentNode, MemPoolCheck, NamedProcess,
-};
+use hersir::builder::NodeAlias;
+use jormungandr_automation::jormungandr::grpc::client::MockClientError;
+use jormungandr_automation::jormungandr::RestError;
 
-use indicatif::ProgressBar;
-use jormungandr_scenario_tests::{node::ProgressBarController, style, Context};
-use rand_core::RngCore;
-
-use std::io::{self, BufRead, BufReader};
-use std::path::{Path, PathBuf};
-use std::process::{Child, Command};
-use std::sync::{Arc, Mutex};
+use std::io;
+use std::path::PathBuf;
 use std::time::Duration;
 
-pub use controller::WalletProxyController;
-pub use jormungandr_testing_utils::testing::network::WalletProxySettings;
+pub use controller::{Error as WalletProxyControllerError, WalletProxyController};
+pub use monitor::WalletProxyMonitorController;
 pub use spawn_params::WalletProxySpawnParams;
-use valgrind::Protocol;
+
+pub use self::settings::WalletProxySettings;
 pub type WalletProxyError = Error;
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -42,6 +32,8 @@ pub enum Error {
     Reqwest(#[from] reqwest::Error),
     #[error(transparent)]
     BlockFormatError(#[from] chain_core::mempack::ReadError),
+    #[error(transparent)]
+    WalletProxyController(#[from] WalletProxyControllerError),
     #[error(transparent)]
     RestError(#[from] RestError),
     #[error(transparent)]
@@ -103,159 +95,4 @@ pub enum Error {
         #[debug(skip)]
         logs: Vec<String>,
     },
-}
-
-/// Node is going to be used by the `Controller` to monitor the node process
-///
-/// To send queries to the Node, use the `NodeController`
-pub struct WalletProxy {
-    alias: NodeAlias,
-    process: Child,
-    status: Arc<Mutex<Status>>,
-    progress_bar: ProgressBarController,
-    settings: WalletProxySettings,
-}
-
-impl WalletProxy {
-    pub fn alias(&self) -> &NodeAlias {
-        &self.alias
-    }
-
-    pub fn address(&self) -> String {
-        self.settings.address()
-    }
-
-    pub fn controller(self) -> WalletProxyController {
-        WalletProxyController::new(
-            self.alias().clone(),
-            self.progress_bar.clone(),
-            self.settings.clone(),
-            self.status.clone(),
-            self.process,
-        )
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    pub fn spawn<R: RngCore>(
-        context: &Context<R>,
-        progress_bar: ProgressBar,
-        alias: &str,
-        mut settings: WalletProxySettings,
-        node_setting: &NodeSetting,
-        block0: &Path,
-        working_dir: &Path,
-        protocol: Protocol,
-    ) -> Result<Self> {
-        let dir = working_dir.join(alias);
-        std::fs::DirBuilder::new().recursive(true).create(&dir)?;
-
-        let progress_bar = ProgressBarController::new(
-            progress_bar,
-            format!("{}@{}", alias, settings.address()),
-            context.progress_bar_mode(),
-        );
-
-        settings.node_backend_address = Some(node_setting.config.rest.listen);
-
-        let mut command = Command::new("valgrind");
-        command
-            .arg("--address")
-            .arg(settings.base_address().to_string())
-            .arg("--vit-address")
-            .arg(&settings.base_vit_address().to_string())
-            .arg("--node-address")
-            .arg(&settings.base_node_backend_address().unwrap().to_string())
-            .arg("--block0")
-            .arg(block0.to_str().unwrap());
-
-        if let Protocol::Https {
-            key_path,
-            cert_path,
-        } = protocol
-        {
-            command
-                .arg("--cert")
-                .arg(cert_path)
-                .arg("--key")
-                .arg(key_path);
-        }
-
-        let wallet_proxy = WalletProxy {
-            alias: alias.into(),
-            process: command.spawn().unwrap(),
-            progress_bar,
-            settings,
-            status: Arc::new(Mutex::new(Status::Running)),
-        };
-
-        wallet_proxy.progress_bar_start();
-        wallet_proxy
-            .progress_bar
-            .log_info(&format!("{} bootstrapping: {:?}", alias, command));
-        Ok(wallet_proxy)
-    }
-
-    pub fn capture_logs(&mut self) {
-        let stderr = self.process.stderr.take().unwrap();
-        let reader = BufReader::new(stderr);
-        for line_result in reader.lines() {
-            let line = line_result.expect("failed to read a line from log output");
-            self.progress_bar.log_info(&line);
-        }
-    }
-
-    pub fn wait(&mut self) {
-        match self.process.wait() {
-            Err(err) => {
-                self.progress_bar.log_err(&err);
-                self.progress_bar_failure();
-            }
-            Ok(status) => {
-                if status.success() {
-                    self.progress_bar_success();
-                } else {
-                    self.progress_bar.log_err(&status);
-                    self.progress_bar_failure()
-                }
-                self.set_status(Status::Exited(status));
-            }
-        }
-    }
-
-    fn progress_bar_start(&self) {
-        self.progress_bar.set_style(
-            indicatif::ProgressStyle::default_spinner()
-                .template("{spinner:.green} {wide_msg}")
-                .tick_chars(style::TICKER),
-        );
-        self.progress_bar.enable_steady_tick(100);
-        self.progress_bar.set_message(&format!(
-            "{} {} ... [{}]",
-            *style::icons::jormungandr,
-            style::binary.apply_to(self.alias()),
-            self.address(),
-        ));
-    }
-
-    fn progress_bar_failure(&self) {
-        self.progress_bar.finish_with_message(&format!(
-            "{} {} {}",
-            *style::icons::jormungandr,
-            style::binary.apply_to(self.alias()),
-            style::error.apply_to(*style::icons::failure)
-        ));
-    }
-
-    fn progress_bar_success(&self) {
-        self.progress_bar.finish_with_message(&format!(
-            "{} {} {}",
-            *style::icons::jormungandr,
-            style::binary.apply_to(self.alias()),
-            style::success.apply_to(*style::icons::success)
-        ));
-    }
-
-    fn set_status(&self, status: Status) {
-        *self.status.lock().unwrap() = status
-    }
 }

@@ -15,7 +15,7 @@ use vit_servicing_station_tests::common::startup::server::ServerBootstrapper;
 #[derive(StructOpt, Debug)]
 #[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct DiffCommand {
-    #[structopt(short = "l", long = "local", default_value = "./data/vit_backend/")]
+    #[structopt(short = "l", long = "local", default_value = "./data/")]
     pub local: PathBuf,
 
     #[structopt(long = "vit-station", default_value = "vit-servicing-station-server")]
@@ -39,7 +39,7 @@ impl DiffCommand {
         let deployment_tree = DeploymentTree::new(&self.local, "");
         let local_genesis_yaml = deployment_tree.genesis_path();
         let local_vit_db = deployment_tree.database_path();
-        let remote_client = ValgrindClient::new(self.target.clone(), Default::default());
+        let remote_client = ValgrindClient::new(self.target.clone(), Default::default())?;
 
         let remote_genesis_yaml = remote.path().join("genesis_remote.yaml");
 

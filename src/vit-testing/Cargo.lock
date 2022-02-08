@@ -430,7 +430,7 @@ dependencies = [
 [[package]]
 name = "catalyst-toolbox"
 version = "0.3.0"
-source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=cargo_update#9b2902be745597d8cdd7e9e998e2a67385bd5c41"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=main#0c12f3b0a5ae6b69829698507ca4663cbdcbe007"
 dependencies = [
  "assert_fs",
  "bech32 0.7.3",

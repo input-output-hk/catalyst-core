@@ -8,10 +8,10 @@ edition = "2021"
 
 [dependencies]
 bech32 = "0.7"
-wallet-core = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
-wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
-hdkeygen = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
-bip39 = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
+wallet-core = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "fix_comp_issue_windows"}
+wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "fix_comp_issue_windows"}
+hdkeygen = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "fix_comp_issue_windows"}
+bip39 = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "fix_comp_issue_windows"}
 chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master"  }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }

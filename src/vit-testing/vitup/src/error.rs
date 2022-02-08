@@ -1,6 +1,7 @@
 use crate::mode::standard::{
     VitStationControllerError, WalletProxyControllerError, WalletProxyError,
 };
+use chain_impl_mockchain::ledger::Block0Error;
 use hersir::controller::NodeError;
 use jormungandr_automation::testing::ConsumptionBenchmarkError;
 use jormungandr_automation::testing::VerificationError;
@@ -71,7 +72,7 @@ pub enum Error {
     #[error(transparent)]
     ControllerError(#[from] hersir::controller::Error),
     #[error(transparent)]
-    Block0(#[from] jormungandr_automation::testing::block0::Block0Error),
+    Block0(#[from] Block0Error),
     #[error(transparent)]
     WalletProxyController(#[from] WalletProxyControllerError),
     #[error("synchronization for nodes has failed. {}. Timeout was: {} s", info, timeout.as_secs())]

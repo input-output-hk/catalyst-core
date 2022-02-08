@@ -52,7 +52,7 @@ pub fn vitup_setup(
 ) {
     let endpoint = "127.0.0.1:8080";
 
-    let session_settings = SessionSettings::empty_from_dir(&testing_directory);
+    let session_settings = SessionSettings::from_dir(&testing_directory);
     if testing_directory.exists() {
         std::fs::remove_dir_all(&testing_directory).unwrap();
     }

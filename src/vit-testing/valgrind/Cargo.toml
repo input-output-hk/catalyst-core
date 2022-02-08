@@ -8,8 +8,8 @@ edition = "2021"
 [dependencies]
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
-wallet-core = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
+wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "fix_comp_issue_windows" }
+wallet-core = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "fix_comp_issue_windows" }
 hex = "0.4"
 itertools = "0.9.0"
 thiserror = "1.0"

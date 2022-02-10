@@ -891,9 +891,9 @@ dependencies = [
 
 [[package]]
 name = "crypto-common"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "683d6b536309245c849479fba3da410962a43ed8e51c26b729208ec0ac2798d0"
+checksum = "a4600d695eb3f6ce1cd44e6e291adceb2cc3ab12f20a33777ecd0bf6eba34e06"
 dependencies = [
  "generic-array",
 ]
@@ -1158,13 +1158,12 @@ dependencies = [
 
 [[package]]
 name = "digest"
-version = "0.10.1"
+version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b697d66081d42af4fba142d56918a3cb21dc8eb63372c6b85d14f44fb9c5979b"
+checksum = "8cb780dce4f9a8f5c087362b3a4595936b2019e7c8b30f2c3e9a7e94e6ae9837"
 dependencies = [
  "block-buffer 0.10.2",
  "crypto-common",
- "generic-array",
 ]
 
 [[package]]
@@ -1850,7 +1849,7 @@ dependencies = [
 [[package]]
 name = "hersir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#d34b50b344a65e7a51bee7d6faec7480b1ab1655"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a313a27174b088cd57e5c193536794a01c969d25"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2277,7 +2276,7 @@ checksum = "1aab8fc367588b89dcee83ab0fd66b72b50b72fa1904d7095045ace2b0c81c35"
 [[package]]
 name = "jcli"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#d34b50b344a65e7a51bee7d6faec7480b1ab1655"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a313a27174b088cd57e5c193536794a01c969d25"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2311,7 +2310,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-automation"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#d34b50b344a65e7a51bee7d6faec7480b1ab1655"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a313a27174b088cd57e5c193536794a01c969d25"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -2376,7 +2375,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-integration-tests"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#d34b50b344a65e7a51bee7d6faec7480b1ab1655"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a313a27174b088cd57e5c193536794a01c969d25"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -2428,7 +2427,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#d34b50b344a65e7a51bee7d6faec7480b1ab1655"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a313a27174b088cd57e5c193536794a01c969d25"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2615,7 +2614,7 @@ dependencies = [
 [[package]]
 name = "loki"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#d34b50b344a65e7a51bee7d6faec7480b1ab1655"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a313a27174b088cd57e5c193536794a01c969d25"
 dependencies = [
  "chain-addr",
  "chain-core",
@@ -2806,7 +2805,7 @@ dependencies = [
 [[package]]
 name = "mjolnir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#d34b50b344a65e7a51bee7d6faec7480b1ab1655"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a313a27174b088cd57e5c193536794a01c969d25"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -4317,7 +4316,7 @@ checksum = "99c3bd8169c58782adad9290a9af5939994036b76187f7b4f0e6de91dbbfc0ec"
 dependencies = [
  "cfg-if 1.0.0",
  "cpufeatures",
- "digest 0.10.1",
+ "digest 0.10.2",
 ]
 
 [[package]]
@@ -4810,7 +4809,7 @@ dependencies = [
 [[package]]
 name = "thor"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#d34b50b344a65e7a51bee7d6faec7480b1ab1655"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a313a27174b088cd57e5c193536794a01c969d25"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",

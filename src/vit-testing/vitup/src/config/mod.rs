@@ -7,9 +7,9 @@ pub use env::VitStartParameters;
 pub use initials::{Initial as InitialEntry, Initials};
 pub use vote_time::{VoteBlockchainTime, VoteTime, FORMAT as VOTE_TIME_FORMAT};
 
-use crate::builders::utils::io::read_initials;
 use crate::Result;
 use chain_impl_mockchain::fee::LinearFee;
+use jormungandr_automation::testing::block0::read_initials;
 use jormungandr_lib::interfaces::{CommitteeIdDef, ConsensusLeaderId, LinearFeeDef};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
@@ -49,4 +49,9 @@ impl DataGenerationConfig {
 pub fn read_params<P: AsRef<Path>>(params: P) -> Result<VitStartParameters> {
     let contents = std::fs::read_to_string(&params)?;
     serde_yaml::from_str(&contents).map_err(Into::into)
+}
+
+pub fn read_config<P: AsRef<Path>>(config: P) -> Result<DataGenerationConfig> {
+    let contents = std::fs::read_to_string(&config)?;
+    serde_json::from_str(&contents).map_err(Into::into)
 }

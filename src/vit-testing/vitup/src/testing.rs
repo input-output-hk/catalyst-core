@@ -1,12 +1,11 @@
 use crate::builders::utils::SessionSettingsExtension;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::VoteBlockchainTime;
-use crate::scenario::controller::VitController;
-use crate::scenario::spawn::NetworkSpawnParams;
-use crate::vit_station::ValidVotePlanParameters;
-use crate::vit_station::ValidVotingTemplateGenerator;
-use crate::vit_station::VitStationController;
-use crate::wallet::WalletProxyController;
+use crate::mode::spawn::NetworkSpawnParams;
+use crate::mode::standard::{
+    ValidVotePlanParameters, ValidVotingTemplateGenerator, VitController, VitStationController,
+    WalletProxyController,
+};
 use crate::Result;
 use hersir::config::SessionSettings;
 use jormungandr_automation::jormungandr::JormungandrProcess;
@@ -53,7 +52,7 @@ pub fn vitup_setup(
 ) {
     let endpoint = "127.0.0.1:8080";
 
-    let session_settings = SessionSettings::empty_from_dir(&testing_directory);
+    let session_settings = SessionSettings::from_dir(&testing_directory);
     if testing_directory.exists() {
         std::fs::remove_dir_all(&testing_directory).unwrap();
     }

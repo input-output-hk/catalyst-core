@@ -1,7 +1,7 @@
 use crate::builders::convert_to_human_date;
-use crate::builders::post_deployment::DeploymentTree;
+use crate::builders::utils::DeploymentTree;
 use crate::config::VitStartParameters;
-use crate::vit_station::DbGenerator;
+use crate::mode::standard::DbGenerator;
 use chain_impl_mockchain::testing::scenario::template::ProposalDefBuilder;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDefBuilder;
@@ -168,9 +168,9 @@ impl IdeascaleValidateCommand {
         challenges_count: usize,
         reviews_count: usize,
     ) -> Result<(), Error> {
-        std::fs::create_dir_all(&self.output.join("database"))?;
+        std::fs::create_dir_all(&self.output)?;
 
-        let deployment_tree = DeploymentTree::new(self.output.to_path_buf(), "database");
+        let deployment_tree = DeploymentTree::new(self.output.to_path_buf());
 
         let mut template_generator = ExternalValidVotingTemplateGenerator::new(
             proposals_path,

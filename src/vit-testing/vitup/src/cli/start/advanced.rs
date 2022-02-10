@@ -1,11 +1,11 @@
-use crate::builders::utils::io::{read_config, read_initials};
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::mode::{parse_mode_from_str, Mode};
-use crate::scenario::spawn::spawn_network;
-use crate::scenario::spawn::NetworkSpawnParams;
+use crate::config::read_config;
+use crate::mode::spawn::{spawn_network, NetworkSpawnParams};
 use crate::{error::Error, Result};
 use hersir::config::SessionSettings;
 use jormungandr_automation::jormungandr::LogLevel;
+use jormungandr_automation::testing::block0::read_initials;
 use std::path::PathBuf;
 use std::str::FromStr;
 use structopt::StructOpt;
@@ -92,7 +92,7 @@ impl AdvancedStartCommandArgs {
         // replacement?
         // as far as I can see it was only used to verify that the binary exists.
         let jormungandr = &self.jormungandr;
-        let mut testing_directory = self.testing_directory;
+        let testing_directory = self.testing_directory;
         let generate_documentation = true;
         let log_level = self.log_level;
         let mode = self.mode;
@@ -132,7 +132,6 @@ impl AdvancedStartCommandArgs {
         )
         .unwrap();
 
-        testing_directory.push(quick_setup.title());
         if testing_directory.exists() {
             std::fs::remove_dir_all(&testing_directory)?;
         }

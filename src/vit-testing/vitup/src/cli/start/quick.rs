@@ -1,15 +1,15 @@
-use crate::builders::utils::io::read_initials;
 use crate::builders::{default_next_vote_date, default_snapshot_date};
 pub use crate::builders::{VitBackendSettingsBuilder, LEADER_1, LEADER_2, LEADER_3, WALLET_NODE};
-use crate::config::mode::{parse_mode_from_str, Mode};
-use crate::config::Initials;
-use crate::config::VoteTime;
-use crate::scenario::spawn::spawn_network;
-use crate::scenario::spawn::NetworkSpawnParams;
+use crate::config::{
+    mode::{parse_mode_from_str, Mode},
+    Initials, VoteTime,
+};
+use crate::mode::spawn::{spawn_network, NetworkSpawnParams};
 use crate::{error::Error, Result};
 use hersir::config::SessionSettings;
 use hersir::utils::print_intro;
 use jormungandr_automation::jormungandr::LogLevel;
+use jormungandr_automation::testing::block0::read_initials;
 use jortestkit::prelude::read_file;
 use std::path::Path;
 use std::path::PathBuf;

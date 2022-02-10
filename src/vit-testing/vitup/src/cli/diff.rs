@@ -1,9 +1,9 @@
-use crate::builders::post_deployment::DeploymentTree;
-use crate::builders::utils::io::decode_block0;
+use crate::builders::utils::DeploymentTree;
 use crate::Result;
 use assert_fs::TempDir;
 use diffy::create_patch;
 use diffy::PatchFormatter;
+use jormungandr_automation::testing::block0::decode_block0;
 use jortestkit::prelude::read_file;
 use std::fs::File;
 use std::io::Write;
@@ -36,7 +36,7 @@ impl DiffCommand {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
         let remote = TempDir::new().unwrap();
-        let deployment_tree = DeploymentTree::new(&self.local, "");
+        let deployment_tree = DeploymentTree::new(&self.local);
         let local_genesis_yaml = deployment_tree.genesis_path();
         let local_vit_db = deployment_tree.database_path();
         let remote_client = ValgrindClient::new(self.target.clone(), Default::default())?;

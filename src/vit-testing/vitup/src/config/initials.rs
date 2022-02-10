@@ -197,6 +197,7 @@ impl Initials {
                         templates.insert(
                             WalletTemplateBuilder::new(&wallet_alias)
                                 .with(value)
+                                .with_token(voting_token.clone(), value)
                                 .discrimination(discrimination)
                                 .build(),
                             pin.to_string(),
@@ -209,6 +210,7 @@ impl Initials {
                         WalletTemplateBuilder::new(&wallet_alias)
                             .with(*funds as u64)
                             .discrimination(discrimination)
+                            .with_token(voting_token.clone(), (*funds) as u64)
                             .build(),
                         pin.to_string(),
                     );
@@ -223,6 +225,7 @@ impl Initials {
                             WalletTemplateBuilder::new(&wallet_alias)
                                 .with(value)
                                 .discrimination(discrimination)
+                                .with_token(voting_token.clone(), value)
                                 .build(),
                             pin.to_string(),
                         );

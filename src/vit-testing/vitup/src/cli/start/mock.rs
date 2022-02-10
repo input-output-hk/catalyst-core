@@ -1,5 +1,5 @@
 use crate::config::read_params;
-use crate::mock::{read_config, start_rest_server, Configuration, Context};
+use crate::mode::mock::{read_config, start_rest_server, Configuration, Context};
 use std::sync::Mutex;
 use std::{path::PathBuf, sync::Arc};
 use structopt::StructOpt;
@@ -47,11 +47,11 @@ pub enum Error {
     #[error(transparent)]
     CannotSpawnCommand(#[from] std::io::Error),
     #[error(transparent)]
-    CannotReadConfiguration(#[from] crate::mock::MockConfigError),
+    CannotReadConfiguration(#[from] crate::mode::mock::MockConfigError),
     #[error(transparent)]
     CannotReadParameters(#[from] serde_yaml::Error),
     #[error(transparent)]
     Join(#[from] tokio::task::JoinError),
     #[error(transparent)]
-    Mock(#[from] crate::mock::ContextError),
+    Mock(#[from] crate::mode::mock::ContextError),
 }

@@ -1,5 +1,5 @@
 use std::path::Path;
-use vitup::scenario::wallet::WalletProxyController;
+use vitup::mode::standard::WalletProxyController;
 
 pub fn iapyx_from_secret_key<P: AsRef<Path>>(
     secret: P,

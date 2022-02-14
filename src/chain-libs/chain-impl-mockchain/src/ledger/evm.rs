@@ -1,7 +1,8 @@
+use crate::chaineval::HeaderContentEvalContext;
 use crate::evm::EvmTransaction;
 use crate::ledger::Error;
 use chain_evm::{
-    machine::{Config, Environment, VirtualMachine},
+    machine::{BlockHash, BlockNumber, Config, Environment, VirtualMachine},
     state::{AccountTrie, Balance, LogsState},
 };
 
@@ -62,7 +63,6 @@ impl Ledger {
                 // update ledger state
                 self.accounts = new_state.clone();
                 self.logs = new_logs.clone();
-                Ok(())
             }
             EvmTransaction::Create2 {
                 caller,
@@ -84,7 +84,6 @@ impl Ledger {
                 // update ledger state
                 self.accounts = new_state.clone();
                 self.logs = new_logs.clone();
-                Ok(())
             }
             EvmTransaction::Call {
                 caller,
@@ -99,9 +98,17 @@ impl Ledger {
                 // update ledger state
                 self.accounts = new_state.clone();
                 self.logs = new_logs.clone();
-                Ok(())
             }
         }
+        Ok(())
+    }
+    /// Updates block values for EVM environment
+    pub fn update_block_environment(&mut self, metadata: &HeaderContentEvalContext) {
+        // use content hash from the apply block as the EVM block hash
+        let next_hash: BlockHash = <[u8; 32]>::from(metadata.content_hash).into();
+        self.environment.block_hashes.insert(0, next_hash);
+        self.environment.block_number = BlockNumber::from(self.environment.block_hashes.len());
+        // TODO: update block timestamp
     }
 }
 

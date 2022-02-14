@@ -26,10 +26,7 @@ use crate::{
 };
 
 /// Export EVM types
-pub use evm::{
-    backend::{Log, MemoryVicinity as Environment},
-    Config, ExitReason,
-};
+pub use evm::{backend::Log, Config, ExitReason};
 
 /// An address of an EVM account.
 pub type Address = H160;
@@ -55,6 +52,9 @@ pub type BlockDifficulty = U256;
 /// A block's gas limit.
 pub type BlockGasLimit = U256;
 
+/// A block's base fee per gas.
+pub type BlockBaseFeePerGas = U256;
+
 /// A block's origin
 pub type Origin = H160;
 
@@ -69,6 +69,21 @@ pub type GasPrice = U256;
 
 /// Gas limit for EVM operations.
 pub type GasLimit = U256;
+
+#[derive(Clone, Default, Debug, PartialEq, Eq)]
+/// EVM Environment parameters needed for execution.
+pub struct Environment {
+    pub gas_price: GasPrice,
+    pub origin: Origin,
+    pub chain_id: ChainId,
+    pub block_hashes: BlockHashes,
+    pub block_number: BlockNumber,
+    pub block_coinbase: BlockCoinBase,
+    pub block_timestamp: BlockTimestamp,
+    pub block_difficulty: BlockDifficulty,
+    pub block_gas_limit: BlockGasLimit,
+    pub block_base_fee_per_gas: BlockBaseFeePerGas,
+}
 
 /// Integer of the value sent with an EVM transaction.
 pub type Value = U256;

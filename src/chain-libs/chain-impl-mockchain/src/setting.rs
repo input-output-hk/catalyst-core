@@ -2,7 +2,7 @@
 //!
 
 #[cfg(feature = "evm")]
-use crate::config::EvmConfig;
+use crate::config::{EvmConfig, EvmEnvSettings};
 use crate::fragment::{config::ConfigParams, BlockContentSize};
 use crate::milli::Milli;
 use crate::update;
@@ -44,7 +44,9 @@ pub struct Settings {
     pub committees: Arc<[CommitteeId]>,
     pub transaction_max_expiry_epochs: u8,
     #[cfg(feature = "evm")]
-    pub evm_params: EvmConfig,
+    pub evm_config: EvmConfig,
+    #[cfg(feature = "evm")]
+    pub evm_environment: EvmEnvSettings,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -133,7 +135,9 @@ impl Settings {
             committees: Arc::new([]),
             transaction_max_expiry_epochs: 1,
             #[cfg(feature = "evm")]
-            evm_params: EvmConfig::default(),
+            evm_config: EvmConfig::default(),
+            #[cfg(feature = "evm")]
+            evm_environment: EvmEnvSettings::default(),
         }
     }
 
@@ -245,8 +249,12 @@ impl Settings {
                     new_state.transaction_max_expiry_epochs = *max_expiry_epochs;
                 }
                 #[cfg(feature = "evm")]
-                ConfigParam::EvmParams(evm_config_params) => {
-                    new_state.evm_params = *evm_config_params;
+                ConfigParam::EvmConfiguration(evm_config_params) => {
+                    new_state.evm_config = *evm_config_params;
+                }
+                #[cfg(feature = "evm")]
+                ConfigParam::EvmEnvironment(evm_env_params) => {
+                    new_state.evm_environment = evm_env_params.clone();
                 }
             }
         }
@@ -293,7 +301,9 @@ impl Settings {
             None => (),
         };
         #[cfg(feature = "evm")]
-        params.push(ConfigParam::EvmParams(self.evm_params));
+        params.push(ConfigParam::EvmConfiguration(self.evm_config));
+        #[cfg(feature = "evm")]
+        params.push(ConfigParam::EvmEnvironment(self.evm_environment.clone()));
 
         debug_assert_eq!(self, &Settings::new().try_apply(&params).unwrap());
 

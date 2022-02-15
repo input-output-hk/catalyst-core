@@ -138,3 +138,73 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: -- --deny warnings
+		  
+    test_coverage:
+      name: Test Coverage
+      needs: update_deps
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+        - name: Download Cargo.lock
+          uses: actions/download-artifact@v2
+          with:
+            name: lockfile
+            
+        - name: Install Rust toolchain
+          uses: actions-rs/toolchain@v1
+          with:
+            profile: minimal
+            toolchain: stable
+            override: true
+  
+        - name: Restore cargo registry index
+          uses: actions/cache@v2
+          with:
+            path: ~/.cargo/registry/index
+            key: 'cargo-index-v2-${{ needs.update_deps.outputs.crates-io-index-head }}'
+  
+        - name: Restore dependency crates
+          uses: actions/cache@v2
+          with:
+            path: ~/.cargo/registry/cache
+            key: 'cargo-deps-v2-${{ hashFiles(''Cargo.lock'') }}'
+  
+        - name: Run tarpaulin
+          uses: actions-rs/tarpaulin@v0.1
+          with:
+            out-type: Html
+            timeout: 600
+  
+        - name: Set branch name
+          if: '${{ github.event_name == ''pull_request'' }}'
+          run: 'echo "BRANCH_NAME=${{ github.head_ref }}" >> $GITHUB_ENV'
+          shell: bash
+  
+        - name: Set branch name
+          if: '${{ github.event_name == ''push'' }}'
+          run: >-
+            echo "BRANCH_NAME=$(echo $GITHUB_REF | cut -d '/' -f 3)" >>
+            $GITHUB_ENV
+          shell: bash
+  
+        - name: Construct reference slug
+          run: >
+            TIME=$(TZ=UTC git show --quiet --date='format-local:%Y%m%dT%H%M%SZ'
+            --format="%cd")
+  
+            SHA=${GITHUB_SHA:0:8}
+  
+            SLUG=$(echo ${BRANCH_NAME}_${TIME}_${SHA} | sed -r
+            's/[^[:alnum:]_-]/-/g')
+  
+            echo "SLUG=$SLUG" >> $GITHUB_ENV
+          shell: bash
+  
+        - name: Rename coverage report
+          run: 'mv tarpaulin-report.html test_coverage_${{ env.SLUG }}.html'
+  
+        - name: Upload coverage report
+          uses: actions/upload-artifact@v2
+          with:
+            name: 'test_coverage_${{ env.SLUG }}'
+            path: 'test_coverage_${{ env.SLUG }}.html'

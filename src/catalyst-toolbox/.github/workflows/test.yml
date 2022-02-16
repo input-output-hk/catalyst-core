@@ -143,6 +143,11 @@ jobs:
     name: Test Coverage
     needs: update-deps
     runs-on: ubuntu-latest
+    env:
+      CARGO_INCREMENTAL: 0
+      NOTIFICATION_APP_CODE: ${{ secrets.NOTIFICATION_APP_CODE }}
+      NOTIFICATION_ACCESS_TOKEN: ${{ secrets.NOTIFICATION_ACCESS_TOKEN }}
+      
     steps:
       - uses: actions/checkout@v2
           

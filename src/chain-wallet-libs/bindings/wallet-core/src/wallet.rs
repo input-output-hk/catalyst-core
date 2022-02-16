@@ -1,5 +1,8 @@
 use crate::{Conversion, Error, Proposal};
-use chain_core::property::Serialize as _;
+use chain_core::{
+    packer::Codec,
+    property::{DeserializeFromSlice as _, Serialize as _},
+};
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::{
     block::{Block, BlockDate},
@@ -8,7 +11,6 @@ use chain_impl_mockchain::{
     value::Value,
     vote::Choice,
 };
-use chain_ser::mempack::{ReadBuf, Readable as _};
 use wallet::{AccountId, Settings};
 
 /// the wallet
@@ -129,9 +131,8 @@ impl Wallet {
     /// * the block is not valid (cannot be decoded)
     ///
     pub fn retrieve_funds(&mut self, block0_bytes: &[u8]) -> Result<wallet::Settings, Error> {
-        let mut block0_bytes = ReadBuf::from(block0_bytes);
-        let block0 =
-            Block::read(&mut block0_bytes).map_err(|e| Error::invalid_input("block0").with(e))?;
+        let block0 = Block::deserialize_from_slice(&mut Codec::new(block0_bytes))
+            .map_err(|e| Error::invalid_input("block0").with(e))?;
 
         let settings = wallet::Settings::new(&block0).unwrap();
         for fragment in block0.contents().iter() {
@@ -311,11 +312,10 @@ impl Wallet {
             .map_err(|e| Error::wallet_transaction().with(e))?;
 
         let fragment = Fragment::VoteCast(tx);
-        let raw = fragment.to_raw();
-        let id = raw.id();
+        let id = fragment.hash();
 
         account_tx_builder.add_fragment_id(id);
 
-        Ok(raw.serialize_as_vec().unwrap().into_boxed_slice())
+        Ok(fragment.serialize_as_vec().unwrap().into_boxed_slice())
     }
 }

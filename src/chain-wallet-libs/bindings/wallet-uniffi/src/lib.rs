@@ -4,8 +4,11 @@ use chain_crypto::SecretKey;
 use chain_impl_mockchain::certificate::VotePlanId;
 use chain_impl_mockchain::config;
 use chain_impl_mockchain::fee;
-use chain_impl_mockchain::fragment::FragmentRaw;
-use chain_ser::deser::{Deserialize, Serialize};
+use chain_impl_mockchain::fragment;
+use chain_ser::{
+    deser::{DeserializeFromSlice, Serialize},
+    packer::Codec,
+};
 use chain_vote::ElectionPublicKey;
 use std::convert::{TryFrom, TryInto};
 use std::num::NonZeroU64;
@@ -44,7 +47,7 @@ pub struct Wallet(Mutex<InnerWallet>);
 
 pub struct Settings(Mutex<InnerSettings>);
 
-pub struct Fragment(Mutex<FragmentRaw>);
+pub struct Fragment(Mutex<fragment::Fragment>);
 
 pub struct Proposal {
     pub vote_plan_id: Vec<u8>,
@@ -397,8 +400,8 @@ impl SecretKeyEd25519Extended {
 
 impl Fragment {
     pub fn new(bytes: Vec<u8>) -> Result<Self, WalletError> {
-        let raw =
-            FragmentRaw::deserialize(bytes.as_ref()).map_err(|_| WalletError::InvalidFragment)?;
+        let raw = fragment::Fragment::deserialize_from_slice(&mut Codec::new(bytes.as_ref()))
+            .map_err(|_| WalletError::InvalidFragment)?;
 
         Ok(Self(Mutex::new(raw)))
     }
@@ -406,7 +409,7 @@ impl Fragment {
     pub fn id(&self) -> Vec<u8> {
         let fraw = self.0.lock().unwrap();
 
-        fraw.id().as_ref().to_vec()
+        fraw.hash().as_ref().to_vec()
     }
 
     pub fn serialize(&self) -> Vec<u8> {

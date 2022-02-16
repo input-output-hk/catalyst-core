@@ -62,7 +62,7 @@ fn test_free_utxo_key_dump() {
     account.check_fragment(&fragment.hash(), &fragment);
 
     state
-        .apply_fragments(&[fragment.to_raw()])
+        .apply_fragments(&[fragment.clone()])
         .expect("the dump fragments should be valid");
 
     let (_counter, value) = state.get_account_state(account.account_id()).unwrap();

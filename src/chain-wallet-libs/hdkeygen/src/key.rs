@@ -95,7 +95,7 @@ impl<P> Key<XPrv, P> {
     /// get key's chain code
     #[inline]
     pub fn chain_code(&self) -> [u8; 32] {
-        self.key.chain_code()
+        self.key.chain_code().clone()
     }
 
     /// derive the private key against the given derivation index and scheme

@@ -1,10 +1,10 @@
 use chain_impl_mockchain::{
     block::Block,
-    fragment::{Fragment, FragmentRaw},
+    fragment::Fragment,
     ledger::{Error as LedgerError, Ledger},
     value::Value,
 };
-use chain_ser::mempack::{ReadBuf, Readable as _};
+use chain_ser::{deser::DeserializeFromSlice, packer::Codec};
 use wallet::Settings;
 
 pub struct State {
@@ -17,8 +17,8 @@ impl State {
     where
         B: AsRef<[u8]>,
     {
-        let mut block0_bytes = ReadBuf::from(block0_bytes.as_ref());
-        let block0 = Block::read(&mut block0_bytes).expect("valid block0");
+        let block0 = Block::deserialize_from_slice(&mut Codec::new(block0_bytes.as_ref()))
+            .expect("valid block0");
         let hh = block0.header().id();
         let ledger = Ledger::new(hh, block0.fragments()).unwrap();
 
@@ -36,13 +36,12 @@ impl State {
 
     pub fn apply_fragments<'a, F>(&'a mut self, fragments: F) -> Result<(), LedgerError>
     where
-        F: IntoIterator<Item = &'a FragmentRaw>,
+        F: IntoIterator<Item = &'a Fragment>,
     {
         let ledger_params = self.ledger.get_ledger_parameters();
         let block_date = self.ledger.date();
         let mut new_ledger = self.ledger.clone();
         for fragment in fragments {
-            let fragment = Fragment::from_raw(fragment).unwrap();
             new_ledger = self
                 .ledger
                 .apply_fragment(&ledger_params, &fragment, block_date)?;

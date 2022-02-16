@@ -87,12 +87,11 @@ fn cast_vote() {
     let tx = builder.finalize_tx(()).unwrap();
 
     let fragment = Fragment::VoteCast(tx);
-    let raw = fragment.to_raw();
-    let id = raw.id();
+    let id = fragment.hash();
 
     account_tx_builder.add_fragment_id(id);
 
     state
-        .apply_fragments(&[raw])
+        .apply_fragments(&[fragment])
         .expect("couldn't apply votecast fragment");
 }

@@ -86,6 +86,12 @@ impl<'a, K: Hash + Eq, V> IntoIterator for &'a Trie<K, V> {
     }
 }
 
+impl<K: Hash + Eq + Clone, V: Clone> FromIterator<(K, V)> for Trie<K, V> {
+    fn from_iter<T: IntoIterator<Item = (K, V)>>(iter: T) -> Self {
+        Self(iter.into_iter().collect())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

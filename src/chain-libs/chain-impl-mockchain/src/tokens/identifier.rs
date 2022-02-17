@@ -138,7 +138,7 @@ mod tests {
         let result = TokenIdentifier::read(&mut buf);
         let left = Ok(id);
         assert_eq!(left, result);
-        assert_eq!(buf.get_slice_end(), &[]);
+        assert!(buf.get_slice_end().is_empty());
         TestResult::from_bool(left == result)
     }
 }

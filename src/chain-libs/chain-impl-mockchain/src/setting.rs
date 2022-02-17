@@ -2,7 +2,7 @@
 //!
 
 #[cfg(feature = "evm")]
-use crate::config::{EvmConfig, EvmEnvSettings};
+use crate::config::EvmEnvSettings;
 use crate::fragment::{config::ConfigParams, BlockContentSize};
 use crate::milli::Milli;
 use crate::update;
@@ -44,7 +44,7 @@ pub struct Settings {
     pub committees: Arc<[CommitteeId]>,
     pub transaction_max_expiry_epochs: u8,
     #[cfg(feature = "evm")]
-    pub evm_config: EvmConfig,
+    pub evm_config: chain_evm::Config,
     #[cfg(feature = "evm")]
     pub evm_environment: EvmEnvSettings,
 }
@@ -135,7 +135,7 @@ impl Settings {
             committees: Arc::new([]),
             transaction_max_expiry_epochs: 1,
             #[cfg(feature = "evm")]
-            evm_config: EvmConfig::default(),
+            evm_config: chain_evm::Config::default(),
             #[cfg(feature = "evm")]
             evm_environment: EvmEnvSettings::default(),
         }

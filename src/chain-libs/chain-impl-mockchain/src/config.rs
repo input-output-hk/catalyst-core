@@ -1,6 +1,4 @@
 use crate::date::Epoch;
-#[cfg(feature = "evm")]
-use crate::evm::{BlockGasLimit, Config, GasPrice};
 use crate::key::BftLeaderId;
 use crate::milli::Milli;
 use crate::rewards::{Ratio, TaxType};
@@ -15,6 +13,8 @@ use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::packer::Codec;
 use chain_core::property;
 use chain_crypto::PublicKey;
+#[cfg(feature = "evm")]
+use chain_evm::{BlockGasLimit, Config, GasPrice};
 use std::{
     fmt::{self, Display, Formatter},
     io::{self, Cursor, Write},
@@ -88,7 +88,7 @@ pub enum ConfigParam {
     PerVoteCertificateFees(PerVoteCertificateFee),
     TransactionMaxExpiryEpochs(u8),
     #[cfg(feature = "evm")]
-    EvmConfiguration(EvmConfig),
+    EvmConfiguration(Config),
     #[cfg(feature = "evm")]
     EvmEnvironment(EvmEnvSettings),
 }
@@ -107,39 +107,6 @@ pub enum RewardParams {
         epoch_start: Epoch,
         epoch_rate: NonZeroU32,
     },
-}
-
-#[cfg(feature = "evm")]
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-/// EVM Configuration parameters needed for execution.
-pub enum EvmConfig {
-    /// Configuration for the `Frontier` fork.
-    Frontier = 0,
-    /// Configuration for the `Istanbul` fork.
-    Istanbul = 1,
-    /// Configuration for the `Berlin` fork.
-    Berlin = 2,
-    /// Configuration for the `London` fork.
-    London = 3,
-}
-
-#[cfg(feature = "evm")]
-impl From<EvmConfig> for Config {
-    fn from(other: EvmConfig) -> Config {
-        match other {
-            EvmConfig::Frontier => Config::frontier(),
-            EvmConfig::Istanbul => Config::istanbul(),
-            EvmConfig::Berlin => Config::berlin(),
-            EvmConfig::London => Config::london(),
-        }
-    }
-}
-
-#[cfg(feature = "evm")]
-impl Default for EvmConfig {
-    fn default() -> Self {
-        EvmConfig::Berlin
-    }
 }
 
 #[cfg(feature = "evm")]
@@ -823,9 +790,9 @@ impl ConfigParamVariant for CommitteeId {
 }
 
 #[cfg(feature = "evm")]
-impl ConfigParamVariant for EvmConfig {
+impl ConfigParamVariant for Config {
     fn to_payload(&self) -> Vec<u8> {
-        let bb: ByteBuilder<EvmConfig> = ByteBuilder::new().u8(*self as u8);
+        let bb: ByteBuilder<Config> = ByteBuilder::new().u8(*self as u8);
         bb.finalize_as_vec()
     }
 
@@ -834,8 +801,10 @@ impl ConfigParamVariant for EvmConfig {
 
         // Read EvmConfig and match hard fork variant
         let config = match rb.get_u8()? {
-            n if n == EvmConfig::Istanbul as u8 => EvmConfig::Istanbul,
-            n if n == EvmConfig::Berlin as u8 => EvmConfig::Berlin,
+            n if n == Config::Frontier as u8 => Config::Frontier,
+            n if n == Config::Istanbul as u8 => Config::Istanbul,
+            n if n == Config::Berlin as u8 => Config::Berlin,
+            n if n == Config::London as u8 => Config::London,
             _ => return Err(Error::InvalidTag),
         };
 
@@ -900,9 +869,9 @@ mod test {
     #[cfg(feature = "evm")]
     #[test]
     fn to_and_from_payload_evm_config_params() {
-        let evm_params = EvmConfig::default();
+        let evm_params = Config::default();
         let payload = evm_params.to_payload();
-        let other_evm = EvmConfig::from_payload(&payload).unwrap();
+        let other_evm = Config::from_payload(&payload).unwrap();
         assert_eq!(evm_params, other_evm);
     }
 
@@ -988,17 +957,6 @@ mod test {
                     epoch_start: Arbitrary::arbitrary(g),
                     epoch_rate: NonZeroU32::new(20).unwrap(),
                 }
-            }
-        }
-    }
-
-    #[cfg(feature = "evm")]
-    impl Arbitrary for EvmConfig {
-        fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            match u8::arbitrary(g) % 2 {
-                0 => EvmConfig::Istanbul,
-                1 => EvmConfig::Berlin,
-                _ => unreachable!(),
             }
         }
     }

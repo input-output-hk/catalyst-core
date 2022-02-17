@@ -8,13 +8,10 @@
 //! ## Handler <- EVM Context Handler
 //! ## StackState<'config>
 //!
-
-use std::rc::Rc;
-
 use evm::{
     backend::{Apply, ApplyBackend, Backend, Basic},
     executor::stack::{MemoryStackState, StackExecutor, StackSubstateMetadata},
-    Context, ExitError, ExitFatal, ExitRevert, Runtime,
+    Context, ExitError, ExitFatal, ExitReason, ExitRevert,
 };
 use primitive_types::{H160, H256, U256};
 
@@ -26,7 +23,7 @@ use crate::{
 };
 
 /// Export EVM types
-pub use evm::{backend::Log, Config, ExitReason};
+pub use evm::backend::Log;
 
 /// An address of an EVM account.
 pub type Address = H160;
@@ -70,6 +67,36 @@ pub type GasPrice = U256;
 /// Gas limit for EVM operations.
 pub type GasLimit = U256;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+/// EVM Configuration parameters needed for execution.
+pub enum Config {
+    /// Configuration for the `Frontier` fork.
+    Frontier = 0,
+    /// Configuration for the `Istanbul` fork.
+    Istanbul = 1,
+    /// Configuration for the `Berlin` fork.
+    Berlin = 2,
+    /// Configuration for the `London` fork.
+    London = 3,
+}
+
+impl From<Config> for evm::Config {
+    fn from(other: Config) -> Self {
+        match other {
+            Config::Frontier => Self::frontier(),
+            Config::Istanbul => Self::istanbul(),
+            Config::Berlin => Self::berlin(),
+            Config::London => Self::london(),
+        }
+    }
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Config::Berlin
+    }
+}
+
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
 /// EVM Environment parameters needed for execution.
 pub struct Environment {
@@ -105,23 +132,18 @@ pub enum Error {
 /// necessary types used to get the runtime going.
 pub struct VirtualMachine<'runtime> {
     /// EVM Block Configuration.
-    config: &'runtime Config,
+    config: Config,
     environment: &'runtime Environment,
     precompiles: Precompiles,
     state: AccountTrie,
     logs: LogsState,
 }
 
-/// Ethereum Hard-Fork variants
-pub enum HardFork {
-    Istanbul,
-    Berlin,
-}
-
-fn precompiles(fork: HardFork) -> Precompiles {
-    match fork {
-        HardFork::Istanbul => Precompiles::new_istanbul(),
-        HardFork::Berlin => Precompiles::new_berlin(),
+fn precompiles(config: Config) -> Precompiles {
+    match config {
+        Config::Istanbul => Precompiles::new_istanbul(),
+        Config::Berlin => Precompiles::new_berlin(),
+        config => unimplemented!("EVM precompiles for the {:?} config", config),
     }
 }
 
@@ -133,28 +155,23 @@ impl<'runtime> VirtualMachine<'runtime> {
         f: F,
     ) -> Result<(&AccountTrie, &LogsState, T), Error>
     where
-        F: Fn(
+        for<'config> F: FnOnce(
             &mut StackExecutor<
-                'runtime,
+                'config,
                 '_,
-                MemoryStackState<'_, 'runtime, VirtualMachine>,
+                MemoryStackState<'_, 'config, VirtualMachine>,
                 Precompiles,
             >,
             u64,
         ) -> (ExitReason, T),
     {
-        let executable = |gas_limit| {
-            let metadata = StackSubstateMetadata::new(gas_limit, self.config);
-            let memory_stack_state = MemoryStackState::new(metadata, self);
-            let mut executor = StackExecutor::new_with_precompiles(
-                memory_stack_state,
-                self.config,
-                &self.precompiles,
-            );
-            (f(&mut executor, gas_limit), executor)
-        };
+        let config = &(self.config.into());
+        let metadata = StackSubstateMetadata::new(gas_limit, config);
+        let memory_stack_state = MemoryStackState::new(metadata, self);
+        let mut executor =
+            StackExecutor::new_with_precompiles(memory_stack_state, config, &self.precompiles);
 
-        let ((exit_reason, val), executor) = executable(gas_limit);
+        let (exit_reason, val) = f(&mut executor, gas_limit);
         match exit_reason {
             ExitReason::Succeed(_) => {
                 // apply and return state
@@ -177,13 +194,13 @@ impl<'runtime> VirtualMachine<'runtime> {
 
 impl<'runtime> VirtualMachine<'runtime> {
     /// Creates a new `VirtualMachine` given configuration parameters.
-    pub fn new(config: &'runtime Config, environment: &'runtime Environment) -> Self {
+    pub fn new(config: Config, environment: &'runtime Environment) -> Self {
         Self::new_with_state(config, environment, Default::default(), Default::default())
     }
 
     /// Creates a new `VirtualMachine` given configuration params and a given account storage.
     pub fn new_with_state(
-        config: &'runtime Config,
+        config: Config,
         environment: &'runtime Environment,
         state: AccountTrie,
         logs: LogsState,
@@ -191,20 +208,10 @@ impl<'runtime> VirtualMachine<'runtime> {
         Self {
             config,
             environment,
-            precompiles: precompiles(HardFork::Berlin),
+            precompiles: precompiles(config),
             state,
             logs,
         }
-    }
-
-    /// Returns an initialized instance of `evm::Runtime`.
-    pub fn runtime(
-        &self,
-        code: Rc<Vec<u8>>,
-        data: Rc<Vec<u8>>,
-        context: RuntimeContext,
-    ) -> Runtime<'_> {
-        Runtime::new(code, data, context, self.config)
     }
 
     /// Execute a CREATE transaction
@@ -417,17 +424,28 @@ impl<'runtime> ApplyBackend for VirtualMachine<'runtime> {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use std::rc::Rc;
-
-    use evm::{Capture, ExitReason, ExitSucceed};
-
+#[cfg(any(test, feature = "property-test-api"))]
+mod test {
     use super::*;
+
+    impl quickcheck::Arbitrary for Config {
+        fn arbitrary<G: quickcheck::Gen>(g: &mut G) -> Self {
+            match u8::arbitrary(g) % 4 {
+                0 => Config::Frontier,
+                1 => Config::Istanbul,
+                2 => Config::Berlin,
+                3 => Config::London,
+                _ => unreachable!(),
+            }
+        }
+    }
 
     #[test]
     fn code_to_execute_evm_runtime_with_defaults_and_no_code_no_data() {
-        let config = Config::istanbul();
+        use evm::{Capture, ExitReason, ExitSucceed, Runtime};
+        use std::rc::Rc;
+
+        let config = Config::Istanbul;
         let environment = Environment {
             gas_price: Default::default(),
             origin: Default::default(),
@@ -441,15 +459,17 @@ mod tests {
             block_base_fee_per_gas: Default::default(),
         };
 
-        let vm = VirtualMachine::new(&config, &environment);
+        let evm_config = config.into();
+
+        let vm = VirtualMachine::new(config, &environment);
 
         let gas_limit = u64::max_value();
 
-        let metadata = StackSubstateMetadata::new(gas_limit, &config);
+        let metadata = StackSubstateMetadata::new(gas_limit, &evm_config);
         let memory_stack_state = MemoryStackState::new(metadata, &vm);
-        let precompiles = precompiles(HardFork::Berlin);
+        let precompiles = precompiles(config);
         let mut executor =
-            StackExecutor::new_with_precompiles(memory_stack_state, &config, &precompiles);
+            StackExecutor::new_with_precompiles(memory_stack_state, &evm_config, &precompiles);
 
         // Byte-encoded smart contract code
         let code = Rc::new(Vec::new());
@@ -462,7 +482,7 @@ mod tests {
             apparent_value: Default::default(),
         };
         // Handle for the EVM runtime
-        let mut runtime = vm.runtime(code, data, context);
+        let mut runtime = Runtime::new(code, data, context, &evm_config);
 
         let exit_reason = runtime.run(&mut executor);
 

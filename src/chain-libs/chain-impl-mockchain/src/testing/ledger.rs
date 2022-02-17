@@ -1,7 +1,5 @@
 use quickcheck::{Arbitrary, Gen};
 
-#[cfg(feature = "evm")]
-use crate::config::EvmConfig;
 use crate::{
     account::Ledger as AccountLedger,
     block::Block,
@@ -62,7 +60,7 @@ pub struct ConfigBuilder {
     pool_capping_ratio: Ratio,
     transaction_max_expiry_epochs: Option<u8>,
     #[cfg(feature = "evm")]
-    evm_params: EvmConfig,
+    evm_params: chain_evm::Config,
 }
 
 impl Default for ConfigBuilder {
@@ -106,7 +104,7 @@ impl ConfigBuilder {
             consensus_version: ConsensusVersion::Bft,
             transaction_max_expiry_epochs: None,
             #[cfg(feature = "evm")]
-            evm_params: EvmConfig::Istanbul,
+            evm_params: chain_evm::Config::Istanbul,
         }
     }
 
@@ -221,7 +219,7 @@ impl ConfigBuilder {
     }
 
     #[cfg(feature = "evm")]
-    pub fn with_evm_params(mut self, params: EvmConfig) -> Self {
+    pub fn with_evm_params(mut self, params: chain_evm::Config) -> Self {
         self.evm_params = params;
         self
     }

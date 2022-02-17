@@ -41,7 +41,7 @@ impl Ledger {
     pub fn run_transaction(
         &mut self,
         contract: EvmTransaction,
-        config: &Config,
+        config: Config,
     ) -> Result<(), Error> {
         let mut vm = VirtualMachine::new_with_state(
             config,

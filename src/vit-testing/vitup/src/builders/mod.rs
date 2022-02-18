@@ -209,7 +209,15 @@ impl VitBackendSettingsBuilder {
 
         for vote_plan_def in VitVotePlanDefBuilder::default()
             .vote_phases(vote_blockchain_time)
-            .options(2)
+            .options(
+                self.config
+                    .data
+                    .options
+                    .0
+                    .len()
+                    .try_into()
+                    .map_err(|_| Error::TooManyOptions)?,
+            )
             .split_by(255)
             .fund_name(self.config.data.fund_name.to_string())
             .committee(self.committee_wallet.clone())
@@ -261,4 +269,6 @@ pub enum Error {
     Qr(#[from] helpers::QrError),
     #[error(transparent)]
     Controller(#[from] crate::mode::standard::VitControllerError),
+    #[error("too many vote options provided, only 128 are supported")]
+    TooManyOptions,
 }

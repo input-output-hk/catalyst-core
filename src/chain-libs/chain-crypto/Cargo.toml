@@ -17,7 +17,7 @@ generic-array = "^0.14"
 rand_core = "0.6"
 rand = { version = "0.8", features = ["small_rng"], optional = true }
 rayon = "1.5"
-ed25519-bip32 = "0.4"
+ed25519-bip32 = "0.4.1"
 hex = "0.4.0"
 typed-bytes = { path = "../typed-bytes" }
 

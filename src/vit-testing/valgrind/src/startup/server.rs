@@ -1,4 +1,4 @@
-use crate::startup::Protocol;
+use crate::startup::Certs;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use thiserror::Error;
@@ -14,7 +14,7 @@ pub enum Error {
 }
 
 pub struct ProxyServerStub {
-    protocol: Protocol,
+    certs: Certs,
     address: String,
     vit_address: String,
     node_rest_address: String,
@@ -22,7 +22,7 @@ pub struct ProxyServerStub {
 }
 
 impl ProxyServerStub {
-    pub fn new_https(
+    pub fn new(
         key_path: PathBuf,
         cert_path: PathBuf,
         address: String,
@@ -30,8 +30,8 @@ impl ProxyServerStub {
         node_rest_address: String,
         block0: Vec<u8>,
     ) -> Self {
-        Self::new(
-            Protocol::Https {
+        Self {
+            certs: Certs {
                 key_path,
                 cert_path,
             },
@@ -39,42 +39,11 @@ impl ProxyServerStub {
             vit_address,
             node_rest_address,
             block0,
-        )
-    }
-
-    pub fn new_http(
-        address: String,
-        vit_address: String,
-        node_rest_address: String,
-        block0: Vec<u8>,
-    ) -> Self {
-        Self::new(
-            Protocol::Http,
-            address,
-            vit_address,
-            node_rest_address,
-            block0,
-        )
-    }
-
-    pub fn protocol(&self) -> &Protocol {
-        &self.protocol
-    }
-
-    pub fn new(
-        protocol: Protocol,
-        address: String,
-        vit_address: String,
-        node_rest_address: String,
-        block0: Vec<u8>,
-    ) -> Self {
-        Self {
-            protocol,
-            address,
-            vit_address,
-            node_rest_address,
-            block0,
         }
+    }
+
+    pub fn certs(&self) -> &Certs {
+        &self.certs
     }
 
     pub fn block0(&self) -> Vec<u8> {

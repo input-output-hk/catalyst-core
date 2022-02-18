@@ -7,4 +7,4 @@ pub use client::{
     ValgrindSettings, VitStationRestClient, VitStationRestError, WalletNodeRestClient,
 };
 pub use data::{AdvisorReview, Challenge, Fund, Proposal, ProposalExtension, VitVersion};
-pub use startup::{Error as ValigrindStartupCommandError, Protocol, ValigrindStartupCommand};
+pub use startup::{Certs, Error as ValigrindStartupCommandError, ValigrindStartupCommand};

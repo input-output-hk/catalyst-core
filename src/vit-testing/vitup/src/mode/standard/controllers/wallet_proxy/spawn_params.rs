@@ -1,11 +1,11 @@
 use super::WalletProxySettings;
 use std::net::SocketAddr;
-use valgrind::{Protocol, VitVersion};
+use valgrind::{Certs, VitVersion};
 
 pub struct WalletProxySpawnParams {
     pub alias: String,
     pub base_address: Option<SocketAddr>,
-    pub protocol: Protocol,
+    pub certs: Option<Certs>,
     pub version: VitVersion,
 }
 
@@ -14,7 +14,7 @@ impl WalletProxySpawnParams {
         Self {
             alias: alias.into(),
             base_address: None,
-            protocol: Protocol::Http,
+            certs: None,
             version: VitVersion {
                 service_version: "2.0".to_string(),
             },
@@ -26,8 +26,8 @@ impl WalletProxySpawnParams {
         self
     }
 
-    pub fn with_protocol(&mut self, protocol: Protocol) -> &mut Self {
-        self.protocol = protocol;
+    pub fn with_certs(&mut self, certs: Certs) -> &mut Self {
+        self.certs = Some(certs);
         self
     }
 

@@ -13,7 +13,7 @@ use hersir::config::SessionSettings;
 use jormungandr_automation::jormungandr::PersistenceMode;
 use std::path::Path;
 use std::path::PathBuf;
-use valgrind::Protocol;
+use valgrind::Certs;
 
 pub fn spawn_network(
     mode: Mode,
@@ -35,7 +35,7 @@ pub fn spawn_network(
 pub struct NetworkSpawnParams {
     token: Option<String>,
     endpoint: String,
-    protocol: Protocol,
+    certs: Certs,
     session_settings: SessionSettings,
     version: String,
     working_directory: PathBuf,
@@ -44,19 +44,21 @@ pub struct NetworkSpawnParams {
 impl NetworkSpawnParams {
     pub fn new<P: AsRef<Path>>(
         endpoint: String,
-        parameters: &VitStartParameters,
+        parameters: &Config,
         session_settings: SessionSettings,
         token: Option<String>,
         working_directory: P,
-    ) -> Self {
-        Self {
+    ) -> Result<Self> {
+        let working_directory = working_directory.as_ref();
+
+        Ok(Self {
             token,
             endpoint,
-            protocol: parameters.protocol.clone(),
+            certs: CertificatesBuilder::default().build(&working_directory)?,
             session_settings,
             version: parameters.version.clone(),
-            working_directory: working_directory.as_ref().to_path_buf(),
-        }
+            working_directory: working_directory.to_path_buf(),
+        })
     }
     pub fn session_settings(&self) -> SessionSettings {
         self.session_settings.clone()
@@ -98,7 +100,7 @@ impl NetworkSpawnParams {
         let mut params = WalletProxySpawnParams::new(WALLET_NODE);
         params
             .with_base_address(self.endpoint.clone())
-            .with_protocol(self.protocol.clone());
+            .with_certs(self.certs.clone());
         params
     }
 }

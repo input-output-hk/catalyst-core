@@ -1,5 +1,5 @@
 use structopt::StructOpt;
-use valgrind::{Protocol, ValigrindStartupCommand};
+use valgrind::ValigrindStartupCommand;
 use warp::Filter;
 use warp_reverse_proxy::reverse_proxy_filter;
 
@@ -102,20 +102,12 @@ async fn main() {
     ));
     let app = api.and(v0.or(v1).or(vit_version));
 
-    match server_stub.protocol() {
-        Protocol::Https {
-            key_path,
-            cert_path,
-        } => {
-            warp::serve(app)
-                .tls()
-                .cert_path(cert_path)
-                .key_path(key_path)
-                .run(server_stub.base_address())
-                .await;
-        }
-        Protocol::Http => {
-            warp::serve(app).run(server_stub.base_address()).await;
-        }
-    }
+    let certs = server_stub.certs();
+
+    warp::serve(app)
+        .tls()
+        .cert_path(certs.cert_path.clone())
+        .key_path(certs.key_path.clone())
+        .run(server_stub.base_address())
+        .await;
 }

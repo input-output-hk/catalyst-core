@@ -1,6 +1,7 @@
 use super::FragmentRecieveStrategy;
-use super::{Configuration, Context, ContextLock};
-use crate::config::VitStartParameters;
+use super::{Context, ContextLock};
+use crate::config::CertificatesBuilder;
+use crate::config::Config;
 use crate::mode::mock::LedgerState;
 use crate::mode::mock::NetworkCongestionMode;
 use crate::mode::service::manager::file_lister::dump_json;
@@ -29,7 +30,6 @@ use thiserror::Error;
 use tokio::net::TcpListener;
 use tokio_rustls::TlsAcceptor;
 use tracing_subscriber::fmt::format::FmtSpan;
-use valgrind::Protocol;
 use vit_servicing_station_lib::db::models::challenges::Challenge;
 use vit_servicing_station_lib::db::models::funds::Fund;
 use vit_servicing_station_lib::db::models::proposals::Proposal;
@@ -75,6 +75,8 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) -> R
     let mut default_headers = HeaderMap::new();
     default_headers.insert("Access-Control-Allow-Origin", HeaderValue::from_static("*"));
     default_headers.insert("vary", HeaderValue::from_static("Origin"));
+
+    let certs = CertificatesBuilder::default().build(&working_dir).unwrap();
 
     let filter = std::env::var("RUST_LOG").unwrap_or_else(|_| "tracing=info,warp=debug".to_owned());
     tracing_subscriber::fmt()
@@ -741,7 +743,7 @@ pub async fn debug_message(
 
 pub async fn command_reset_mock(
     context: ContextLock,
-    parameters: VitStartParameters,
+    parameters: Config,
 ) -> Result<impl Reply, Rejection> {
     context.lock().unwrap().reset(parameters)?;
     Ok(warp::reply())

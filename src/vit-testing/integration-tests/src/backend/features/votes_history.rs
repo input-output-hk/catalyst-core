@@ -35,6 +35,7 @@ pub fn votes_history_reflects_casted_votes() {
             name: ALICE.to_string(),
             funds: 10_000,
             pin: PIN.to_string(),
+            role: Default::default(),
         }]))
         .vote_timing(vote_timing.into())
         .slot_duration_in_seconds(2)

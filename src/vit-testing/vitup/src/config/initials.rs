@@ -15,29 +15,53 @@ pub enum Initial {
     AboveThreshold {
         above_threshold: usize,
         pin: String,
+        #[serde(default)]
+        role: Role,
     },
     BelowThreshold {
         below_threshold: usize,
         pin: String,
+        #[serde(default)]
+        role: Role,
     },
     AroundLevel {
         count: usize,
         level: u64,
         pin: String,
+        #[serde(default)]
+        role: Role,
     },
     ZeroFunds {
         zero_funds: usize,
         pin: String,
+        #[serde(default)]
+        role: Role,
     },
     Wallet {
         name: String,
         funds: usize,
         pin: String,
+        #[serde(default)]
+        role: Role,
     },
     External {
         address: String,
         funds: u64,
+        #[serde(default)]
+        role: Role,
     },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum Role {
+    Representative,
+    Voter,
+}
+
+impl Default for Role {
+    fn default() -> Self {
+        Role::Voter
+    }
 }
 
 pub const GRACE_VALUE: u64 = 1;
@@ -67,7 +91,12 @@ impl Initials {
 
     pub fn zero_funds_count(&self) -> usize {
         for initial in self.0.iter() {
-            if let Initial::ZeroFunds { zero_funds, pin: _ } = initial {
+            if let Initial::ZeroFunds {
+                zero_funds,
+                pin: _,
+                role: _,
+            } = initial
+            {
                 return *zero_funds;
             }
         }
@@ -78,20 +107,27 @@ impl Initials {
         let mut sum = 0;
         for initial in self.0.iter() {
             match initial {
-                Initial::ZeroFunds { zero_funds, pin: _ } => sum += *zero_funds,
+                Initial::ZeroFunds {
+                    zero_funds,
+                    pin: _,
+                    role: _,
+                } => sum += *zero_funds,
                 Initial::BelowThreshold {
                     below_threshold,
                     pin: _,
+                    role: _,
                 } => sum += below_threshold,
                 Initial::AboveThreshold {
                     above_threshold,
                     pin: _,
+                    role: _,
                 } => sum += above_threshold,
                 Initial::Wallet { .. } => sum += 1,
                 Initial::AroundLevel {
                     level: _,
                     count,
                     pin: _,
+                    role: _,
                 } => sum += count,
                 _ => {}
             }
@@ -101,7 +137,12 @@ impl Initials {
 
     pub fn zero_funds_pin(&self) -> Option<String> {
         for initial in self.0.iter() {
-            if let Initial::ZeroFunds { zero_funds: _, pin } = initial {
+            if let Initial::ZeroFunds {
+                zero_funds: _,
+                pin,
+                role: _,
+            } = initial
+            {
                 return Some(pin.clone());
             }
         }
@@ -112,6 +153,7 @@ impl Initials {
         Self(vec![Initial::AboveThreshold {
             above_threshold: count,
             pin: pin.to_string(),
+            role: Default::default(),
         }])
     }
 
@@ -123,6 +165,7 @@ impl Initials {
                     templates.push(Initial::External {
                         address: utxo.address.to_string(),
                         funds: utxo.value.into(),
+                        role: Default::default(),
                     });
                 }
             }
@@ -133,7 +176,12 @@ impl Initials {
     pub fn external_templates(&self, voting_token: TokenIdentifier) -> Vec<ExternalWalletTemplate> {
         let mut templates = Vec::new();
         for (index, initial) in self.0.iter().enumerate() {
-            if let Initial::External { funds, address } = initial {
+            if let Initial::External {
+                funds,
+                address,
+                role: _,
+            } = initial
+            {
                 let funds = *funds as u64;
 
                 let mut tokens = HashMap::new();
@@ -167,6 +215,7 @@ impl Initials {
                 Initial::AboveThreshold {
                     above_threshold,
                     pin,
+                    role: _,
                 } => {
                     for _ in 0..*above_threshold {
                         above_threshold_index += 1;
@@ -187,6 +236,7 @@ impl Initials {
                 Initial::BelowThreshold {
                     below_threshold,
                     pin,
+                    role: _,
                 } => {
                     for _ in 0..*below_threshold {
                         below_threshold_index += 1;
@@ -204,7 +254,12 @@ impl Initials {
                         );
                     }
                 }
-                Initial::Wallet { name, funds, pin } => {
+                Initial::Wallet {
+                    name,
+                    funds,
+                    pin,
+                    role: _,
+                } => {
                     let wallet_alias = format!("wallet_{}", name);
                     templates.insert(
                         WalletTemplateBuilder::new(&wallet_alias)
@@ -215,7 +270,12 @@ impl Initials {
                         pin.to_string(),
                     );
                 }
-                Initial::AroundLevel { level, count, pin } => {
+                Initial::AroundLevel {
+                    level,
+                    count,
+                    pin,
+                    role: _,
+                } => {
                     for _ in 0..*count {
                         around_level_index += 1;
                         let wallet_alias =

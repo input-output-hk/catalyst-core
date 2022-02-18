@@ -48,11 +48,13 @@ pub fn increase_max_block_content_size_during_voting() {
                 name: ALICE.to_string(),
                 funds: 10_000,
                 pin: PIN.to_string(),
+                role: Default::default(),
             },
             InitialEntry::Wallet {
                 name: COMMITTEE.to_string(),
                 funds: 10_000,
                 pin: PIN.to_string(),
+                role: Default::default(),
             },
         ]))
         .vote_timing(vote_timing.into())

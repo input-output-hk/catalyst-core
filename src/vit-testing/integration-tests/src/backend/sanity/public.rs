@@ -34,16 +34,19 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
                 name: "david".to_string(),
                 funds: 10_000,
                 pin: PIN.to_string(),
+                role: Default::default(),
             },
             InitialEntry::Wallet {
                 name: "edgar".to_string(),
                 funds: 10_000,
                 pin: PIN.to_string(),
+                role: Default::default(),
             },
             InitialEntry::Wallet {
                 name: "filip".to_string(),
                 funds: 10_000,
                 pin: PIN.to_string(),
+                role: Default::default(),
             },
         ]))
         .slot_duration_in_seconds(2)

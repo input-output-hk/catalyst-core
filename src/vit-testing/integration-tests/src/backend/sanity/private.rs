@@ -33,16 +33,19 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
                 name: "david".to_string(),
                 funds: 10_000,
                 pin: "1234".to_string(),
+                role: Default::default(),
             },
             InitialEntry::Wallet {
                 name: "edgar".to_string(),
                 funds: 10_000,
                 pin: "1234".to_string(),
+                role: Default::default(),
             },
             InitialEntry::Wallet {
                 name: "filip".to_string(),
                 funds: 10_000,
                 pin: "1234".to_string(),
+                role: Default::default(),
             },
         ]))
         .slot_duration_in_seconds(2)

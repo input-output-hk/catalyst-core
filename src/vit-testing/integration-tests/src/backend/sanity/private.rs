@@ -10,7 +10,7 @@ use std::path::Path;
 use std::str::FromStr;
 use thor::{BlockDateGenerator, FragmentSender, FragmentSenderSetup};
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
-use vitup::builders::VitBackendSettingsBuilder;
+use vitup::config::ConfigBuilder;
 use vitup::config::VoteBlockchainTime;
 use vitup::config::{InitialEntry, Initials};
 use vitup::testing::spawn_network;
@@ -26,8 +26,7 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
     };
 
     let testing_directory = TempDir::new().unwrap().into_persistent();
-    let mut quick_setup = VitBackendSettingsBuilder::new();
-    quick_setup
+    let config = ConfigBuilder::default()
         .initials(Initials(vec![
             InitialEntry::Wallet {
                 name: "david".to_string(),
@@ -52,11 +51,12 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
         .proposals_count(1)
         .vote_timing(vote_timing.into())
         .voting_power(8_000)
-        .private(true);
+        .private(true)
+        .build();
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let (mut controller, vit_parameters, network_params, fund_name) =
-        vitup_setup(quick_setup, testing_directory.path().to_path_buf());
+    let (mut controller, vit_parameters, network_params) =
+        vitup_setup(&config, testing_directory.path().to_path_buf()).unwrap();
     let (nodes, _vit_station, wallet_proxy) = spawn_network(
         &mut controller,
         vit_parameters,
@@ -80,7 +80,9 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
     // start mainnet wallets
     let mut david = iapyx_from_qr(&david_qr_code, "1234", &wallet_proxy).unwrap();
 
-    let fund1_vote_plan = controller.defined_vote_plan(&fund_name).unwrap();
+    let fund1_vote_plan = controller
+        .defined_vote_plan(&config.data.fund_name)
+        .unwrap();
 
     // start voting
     david
@@ -132,7 +134,7 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
             .settings()
             .vote_plans
             .iter()
-            .find(|(key, _)| key.alias == fund_name)
+            .find(|(key, _)| key.alias == config.data.fund_name)
             .map(|(_, vote_plan)| vote_plan)
             .unwrap()
         {

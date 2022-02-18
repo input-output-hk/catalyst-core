@@ -19,9 +19,8 @@ use thor::FragmentSender;
 use thor::Wallet;
 use valgrind::Proposal;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
-use vitup::builders::VitBackendSettingsBuilder;
 use vitup::config::VoteBlockchainTime;
-use vitup::config::{InitialEntry, Initials};
+use vitup::config::{ConfigBuilder, InitialEntry, Initials};
 use vitup::testing::{spawn_network, vitup_setup};
 
 const PIN: &str = "1234";
@@ -41,8 +40,7 @@ pub fn increase_max_block_content_size_during_voting() {
         slots_per_epoch: 30,
     };
 
-    let mut quick_setup = VitBackendSettingsBuilder::new();
-    quick_setup
+    let config = ConfigBuilder::default()
         .initials(Initials(vec![
             InitialEntry::Wallet {
                 name: ALICE.to_string(),
@@ -62,11 +60,12 @@ pub fn increase_max_block_content_size_during_voting() {
         .proposals_count(300)
         .block_content_max_size(old_block_context_max_size)
         .voting_power(31_000)
-        .private(true);
+        .private(true)
+        .build();
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let (mut controller, vit_parameters, network_params, _fund_name) =
-        vitup_setup(quick_setup, testing_directory.path().to_path_buf());
+    let (mut controller, vit_parameters, network_params) =
+        vitup_setup(&config, testing_directory.path().to_path_buf()).unwrap();
 
     let (nodes, _vit_station, wallet_proxy) = spawn_network(
         &mut controller,

@@ -10,6 +10,7 @@ use super::{
 use crate::Result;
 use assert_fs::fixture::PathChild;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
+use hersir::builder::ControllerError;
 use hersir::{
     builder::{
         Blockchain, NetworkBuilder, NodeAlias, NodeSetting, Settings, SpawnParams, Topology,
@@ -23,8 +24,9 @@ use std::{
     process::Command,
     sync::{Arc, Mutex},
 };
+use thiserror::Error;
 use thor::{Wallet, WalletAlias};
-use valgrind::Protocol;
+
 #[derive(Default)]
 pub struct VitControllerBuilder {
     controller_builder: NetworkBuilder,
@@ -47,7 +49,10 @@ impl VitControllerBuilder {
         self
     }
 
-    pub fn build(self, mut session_settings: SessionSettings) -> Result<VitController> {
+    pub fn build(
+        self,
+        mut session_settings: SessionSettings,
+    ) -> std::result::Result<VitController, Error> {
         let controller = self
             .controller_builder
             .session_settings(session_settings.clone())
@@ -57,6 +62,12 @@ impl VitControllerBuilder {
             controller,
         ))
     }
+}
+
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error(transparent)]
+    Controller(#[from] ControllerError),
 }
 
 #[derive(Clone)]
@@ -216,16 +227,12 @@ impl VitController {
             .arg("--block0")
             .arg(block0_file.as_path().to_str().unwrap());
 
-        if let Protocol::Https {
-            key_path,
-            cert_path,
-        } = params.protocol.clone()
-        {
+        if let Some(certs) = &params.certs {
             command
                 .arg("--cert")
-                .arg(cert_path)
+                .arg(&certs.cert_path)
                 .arg("--key")
-                .arg(key_path);
+                .arg(&certs.key_path);
         }
 
         WalletProxyController::new(

@@ -1,6 +1,6 @@
 pub type ContextLock = Arc<Mutex<Context>>;
 use super::{mock_state::MockState, Configuration, Logger};
-use crate::config::VitStartParameters;
+use crate::config::Config;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -16,7 +16,7 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(config: Configuration, params: Option<VitStartParameters>) -> Result<Self, Error> {
+    pub fn new(config: Configuration, params: Option<Config>) -> Result<Self, Error> {
         Ok(Self {
             address: ([0, 0, 0, 0], config.port).into(),
             state: MockState::new(params.unwrap_or_default(), config.clone())?,
@@ -41,7 +41,7 @@ impl Context {
         self.state.version()
     }
 
-    pub fn reset(&mut self, params: VitStartParameters) -> Result<(), Error> {
+    pub fn reset(&mut self, params: Config) -> Result<(), Error> {
         self.state = MockState::new(params, self.config.clone())?;
         Ok(())
     }

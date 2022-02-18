@@ -11,8 +11,7 @@ use jortestkit::measurement::Status;
 use serde_json;
 use thor::FragmentSender;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
-use vitup::builders::VitBackendSettingsBuilder;
-use vitup::config::VoteBlockchainTime;
+use vitup::config::{ConfigBuilder, VoteBlockchainTime};
 use vitup::testing::{spawn_network, vitup_setup};
 
 #[test]
@@ -31,18 +30,18 @@ pub fn persistent_log_contains_all_sent_votes() {
         slots_per_epoch: 60,
     };
 
-    let mut quick_setup = VitBackendSettingsBuilder::new();
-    quick_setup
+    let config = ConfigBuilder::default()
         .initials_count(no_of_wallets, "1234")
         .slot_duration_in_seconds(2)
         .vote_timing(vote_timing.into())
         .proposals_count(300)
         .voting_power(31_000)
-        .private(false);
+        .private(false)
+        .build();
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let (mut controller, vit_parameters, network_params, fund_name) =
-        vitup_setup(quick_setup, testing_directory.path().to_path_buf());
+    let (mut controller, vit_parameters, network_params) =
+        vitup_setup(&config, testing_directory.path().to_path_buf()).unwrap();
 
     let (nodes, _vit_station, wallet_proxy) = spawn_network(
         &mut controller,
@@ -55,7 +54,7 @@ pub fn persistent_log_contains_all_sent_votes() {
     let mut qr_codes_folder = testing_directory.path().to_path_buf();
     qr_codes_folder.push("qr-codes");
 
-    let config = build_load_config_count(
+    let load_config = build_load_config_count(
         endpoint,
         qr_codes_folder,
         no_of_threads,
@@ -63,7 +62,7 @@ pub fn persistent_log_contains_all_sent_votes() {
         1000,
         batch_size,
     );
-    let iapyx_load = NodeLoad::new(config);
+    let iapyx_load = NodeLoad::new(load_config);
 
     vote_timing.wait_for_vote_start(nodes.get(0).unwrap().rest());
 
@@ -74,7 +73,9 @@ pub fn persistent_log_contains_all_sent_votes() {
     vote_timing.wait_for_tally_start(nodes.get(0).unwrap().rest());
 
     let mut committee = controller.wallet("committee_1").unwrap();
-    let vote_plan = controller.defined_vote_plan(&fund_name).unwrap();
+    let vote_plan = controller
+        .defined_vote_plan(&config.data.fund_name)
+        .unwrap();
 
     let fragment_sender = FragmentSender::from(&controller.settings().block0);
 

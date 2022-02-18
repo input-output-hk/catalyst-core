@@ -2,7 +2,7 @@ use super::{
     file_lister, APIToken, APITokenManager, ControlContext, ControlContextLock, State,
     API_TOKEN_HEADER,
 };
-use crate::config::VitStartParameters;
+use crate::config::Config;
 use futures::FutureExt;
 use futures::{channel::mpsc, StreamExt};
 use jortestkit::web::api_token::TokenError;
@@ -107,7 +107,7 @@ pub async fn file_lister_handler(context: ControlContextLock) -> Result<impl Rep
 
 pub async fn start_handler(
     context: ControlContextLock,
-    parameters: VitStartParameters,
+    parameters: Config,
 ) -> Result<impl Reply, Rejection> {
     let mut context_lock = context.lock().unwrap();
     context_lock.set_parameters(parameters);

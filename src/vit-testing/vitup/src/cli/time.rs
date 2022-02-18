@@ -1,4 +1,3 @@
-use crate::builders::VitBackendSettingsBuilder;
 use crate::config::read_config;
 use crate::Result;
 use std::path::PathBuf;
@@ -15,13 +14,7 @@ pub struct TimeCommand {
 impl TimeCommand {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
-
-        let config = read_config(&self.config)?;
-
-        let mut quick_setup = VitBackendSettingsBuilder::new();
-        quick_setup.skip_qr_generation();
-        quick_setup.upload_parameters(config.params);
-        quick_setup.print_report();
+        read_config(&self.config)?.print_report();
         Ok(())
     }
 }

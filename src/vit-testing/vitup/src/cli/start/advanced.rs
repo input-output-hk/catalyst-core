@@ -1,4 +1,3 @@
-use crate::builders::VitBackendSettingsBuilder;
 use crate::config::mode::{parse_mode_from_str, Mode};
 use crate::config::read_config;
 use crate::mode::spawn::{spawn_network, NetworkSpawnParams};
@@ -114,23 +113,16 @@ impl AdvancedStartCommandArgs {
 
         if let Some(snapshot) = self.snapshot {
             config
-                .params
                 .initials
                 .extend_from_external(read_initials(snapshot)?);
         }
-
-        let mut quick_setup = VitBackendSettingsBuilder::new();
-        quick_setup.upload_parameters(config.params.clone());
-        quick_setup.fees(config.linear_fees);
-        quick_setup.set_external_committees(config.committees);
 
         let mut template_generator = ExternalValidVotingTemplateGenerator::new(
             self.proposals,
             self.challenges,
             self.funds,
             self.reviews,
-        )
-        .unwrap();
+        )?;
 
         if testing_directory.exists() {
             std::fs::remove_dir_all(&testing_directory)?;
@@ -138,17 +130,12 @@ impl AdvancedStartCommandArgs {
 
         let network_spawn_params = NetworkSpawnParams::new(
             endpoint,
-            quick_setup.parameters(),
+            &config,
             session_settings,
             token,
             testing_directory,
-        );
-        spawn_network(
-            mode,
-            network_spawn_params,
-            &mut template_generator,
-            quick_setup,
         )?;
-        Ok(())
+        spawn_network(mode, network_spawn_params, &mut template_generator, config)
+            .map_err(Into::into)
     }
 }

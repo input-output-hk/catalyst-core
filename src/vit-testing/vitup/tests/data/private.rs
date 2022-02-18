@@ -6,9 +6,8 @@ use valgrind::ValgrindClient;
 use jortestkit::prelude::read_file;
 use vit_servicing_station_tests::common::data::parse_funds;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
-use vitup::builders::VitBackendSettingsBuilder;
 use vitup::builders::{default_next_vote_date, default_snapshot_date};
-use vitup::config::VoteBlockchainTime;
+use vitup::config::{ConfigBuilder, VoteBlockchainTime};
 use vitup::testing::{spawn_network, vitup_setup};
 
 #[test]
@@ -38,8 +37,7 @@ pub fn private_vote_multiple_vote_plans() {
         slots_per_epoch: 30,
     };
 
-    let mut quick_setup = VitBackendSettingsBuilder::new();
-    quick_setup
+    let config = ConfigBuilder::default()
         .vote_timing(vote_timing.into())
         .fund_id(expected_fund.id)
         .next_vote_timestamp(default_next_vote_date())
@@ -50,10 +48,11 @@ pub fn private_vote_multiple_vote_plans() {
         //TODO: implement review_count in template_generator struct
         .reviews_count(3)
         .voting_power(expected_fund.threshold.unwrap() as u64)
-        .private(true);
+        .private(true)
+        .build();
 
-    let (mut controller, vit_parameters, network_params, _) =
-        vitup_setup(quick_setup, testing_directory.path().to_path_buf());
+    let (mut controller, vit_parameters, network_params) =
+        vitup_setup(&config, testing_directory.path().to_path_buf()).unwrap();
     let (_nodes, _vit_station, wallet_proxy) = spawn_network(
         &mut controller,
         vit_parameters,

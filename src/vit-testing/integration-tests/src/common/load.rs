@@ -14,24 +14,23 @@ use std::str::FromStr;
 use std::{path::PathBuf, time::Duration};
 use thor::FragmentSender;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
-use vitup::builders::VitBackendSettingsBuilder;
-use vitup::config::VitStartParameters;
+use vitup::builders::convert_to_blockchain_date;
+use vitup::config::Config;
 use vitup::testing::{spawn_network, vitup_setup};
 
 #[allow(dead_code)]
 pub fn private_vote_test_scenario(
-    quick_setup: VitBackendSettingsBuilder,
+    config: Config,
     endpoint: &str,
     no_of_threads: usize,
     batch_size: usize,
 ) {
     let testing_directory = TempDir::new().unwrap().into_persistent();
-    let parameters = quick_setup.parameters().clone();
-    let wallet_count = parameters.initials.count();
-    let vote_timing = quick_setup.blockchain_timing();
 
-    let (mut controller, vit_parameters, network_params, fund_name) =
-        vitup_setup(quick_setup, testing_directory.path().to_path_buf());
+    let wallet_count = config.initials.count();
+
+    let (mut controller, vit_parameters, network_params) =
+        vitup_setup(&config, testing_directory.path().to_path_buf()).unwrap();
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
     let (nodes, _vit_station, _wallet_proxy) = spawn_network(
@@ -53,15 +52,15 @@ pub fn private_vote_test_scenario(
 
     println!("load test setup..");
 
-    let config = build_load_config(
+    let load_config = build_load_config(
         endpoint,
         qr_codes_folder,
         no_of_threads,
         1000,
         batch_size,
-        parameters,
+        config.clone(),
     );
-    let iapyx_load = NodeLoad::new(config);
+    let iapyx_load = NodeLoad::new(load_config);
     if let Some(benchmark) = iapyx_load.start().unwrap() {
         assert!(
             benchmark.status() == Status::Green,
@@ -73,10 +72,14 @@ pub fn private_vote_test_scenario(
 
     let leader_1 = nodes.get(0).unwrap();
     let wallet_node = nodes.get(4).unwrap();
-    time::wait_for_epoch(vote_timing.tally_start, leader_1.rest());
+
+    let vote_timing = convert_to_blockchain_date(&config);
+    vote_timing.wait_for_tally_start(leader_1.rest());
 
     let mut committee = controller.wallet("committee_1").unwrap();
-    let vote_plan = controller.defined_vote_plan(&fund_name).unwrap();
+    let vote_plan = controller
+        .defined_vote_plan(&config.data.fund_name)
+        .unwrap();
 
     let target_date = BlockDate::new(vote_timing.tally_end, vote_timing.slots_per_epoch / 2);
     time::wait_for_date(target_date, leader_1.rest());
@@ -92,7 +95,7 @@ pub fn private_vote_test_scenario(
             .settings()
             .vote_plans
             .iter()
-            .find(|(key, _)| key.alias == fund_name)
+            .find(|(key, _)| key.alias == config.data.fund_name.clone())
             .map(|(_, vote_plan)| vote_plan)
             .unwrap()
         {
@@ -133,7 +136,7 @@ pub fn build_load_config(
     threads_no: usize,
     delay: u64,
     batch_size: usize,
-    parameters: VitStartParameters,
+    parameters: Config,
 ) -> NodeLoadConfig {
     let config = ConfigurationBuilder::duration(parameters.calculate_vote_duration())
         .thread_no(threads_no)

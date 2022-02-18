@@ -1,5 +1,5 @@
 use super::{start_rest_server, ControlContextLock};
-use crate::config::VitStartParameters;
+use crate::config::Config;
 use tokio::runtime::Runtime;
 
 pub struct ManagerService {
@@ -31,7 +31,7 @@ impl ManagerService {
         self.control_context.lock().unwrap().request_to_stop()
     }
 
-    pub fn setup(&self) -> VitStartParameters {
+    pub fn setup(&self) -> Config {
         self.control_context.lock().unwrap().setup().clone()
     }
 

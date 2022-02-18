@@ -1,4 +1,3 @@
-use crate::config::read_params;
 use crate::mode::mock::{read_config, start_rest_server, Configuration, Context};
 use std::sync::Mutex;
 use std::{path::PathBuf, sync::Arc};
@@ -21,16 +20,16 @@ impl MockStartCommandArgs {
     #[tokio::main]
     pub async fn exec(self) -> Result<(), Error> {
         let mut configuration: Configuration = read_config(&self.config)?;
-        let start_params = self.params.as_ref().map(|x| read_params(x).unwrap());
+        let start_params = self
+            .params
+            .as_ref()
+            .map(|x| crate::config::read_config(x).unwrap());
 
         if self.token.is_some() {
             configuration.token = self.token;
         }
 
-        let control_context = Arc::new(Mutex::new(Context::new(
-            configuration.clone(),
-            start_params,
-        )?));
+        let control_context = Arc::new(Mutex::new(Context::new(configuration, start_params)?));
 
         tokio::spawn(async move { start_rest_server(control_context.clone(), configuration).await })
             .await

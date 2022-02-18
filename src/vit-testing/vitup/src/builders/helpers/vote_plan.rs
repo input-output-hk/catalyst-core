@@ -1,4 +1,3 @@
-use crate::config::VitStartParameters;
 use crate::config::VoteBlockchainTime;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chain_impl_mockchain::testing::scenario::template::{ProposalDefBuilder, VotePlanDefBuilder};
@@ -14,6 +13,7 @@ pub struct VitVotePlanDefBuilder {
     fund_name: String,
     vote_phases: VoteBlockchainTime,
     committee_wallet: WalletAlias,
+    proposals_count: usize,
     options: u8,
     parameters: VitStartParameters,
     voting_token: TokenIdentifier,
@@ -24,6 +24,7 @@ impl Default for VitVotePlanDefBuilder {
         Self {
             vote_phases: Default::default(),
             split_by: 255,
+            proposals_count: 0,
             fund_name: "undefined".to_string(),
             committee_wallet: "undefined".to_string(),
             parameters: Default::default(),
@@ -59,13 +60,23 @@ impl VitVotePlanDefBuilder {
         self
     }
 
-    pub fn with_voting_token(mut self, voting_token: TokenIdentifier) -> Self {
-        self.voting_token = voting_token;
+    pub fn proposals_count(mut self, proposals_count: usize) -> Self {
+        self.proposals_count = proposals_count;
+        self
+    }
+
+    pub fn committee(mut self, committe_wallet: WalletAlias) -> Self {
+        self.committee_wallet = Some(committe_wallet);
         self
     }
 
     pub fn with_parameters(mut self, parameters: VitStartParameters) -> Self {
         self.parameters = parameters;
+        self
+    }
+
+    pub fn voting_token(mut self, voting_token: TokenIdentifier) -> Self {
+        self.voting_token = voting_token;
         self
     }
 
@@ -80,6 +91,7 @@ impl VitVotePlanDefBuilder {
                 .clone(),
             )
         })
+        .take(parameters.proposals as usize)
         .take(self.parameters.proposals as usize)
         .collect::<Vec<ProposalDefBuilder>>()
         .chunks(self.split_by)

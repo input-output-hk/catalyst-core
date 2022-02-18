@@ -1,57 +1,120 @@
-mod env;
+mod blockchain;
+mod builder;
 mod initials;
-pub mod mode;
+mod static_data;
+mod vote_plan;
 mod vote_time;
 
-pub use env::VitStartParameters;
+pub mod certs;
+pub mod mode;
+
+use crate::config::builder::convert_to_human_date;
+pub use blockchain::Blockchain;
+pub use builder::ConfigBuilder;
+pub use certs::CertificatesBuilder;
 pub use initials::{Initial as InitialEntry, Initials};
+pub use static_data::StaticData;
+pub use vote_plan::VotePlan;
 pub use vote_time::{VoteBlockchainTime, VoteTime, FORMAT as VOTE_TIME_FORMAT};
 
 use crate::Result;
-use chain_impl_mockchain::fee::LinearFee;
 use jormungandr_automation::testing::block0::read_initials;
-use jormungandr_lib::interfaces::{CommitteeIdDef, ConsensusLeaderId, LinearFeeDef};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+use std::time::Duration;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct DataGenerationConfig {
+pub struct Config {
     #[serde(default)]
-    pub consensus_leader_ids: Vec<ConsensusLeaderId>,
-    #[serde(with = "LinearFeeDef")]
-    pub linear_fees: LinearFee,
-    #[serde(default)]
-    pub committees: Vec<CommitteeIdDef>,
+    pub initials: Initials,
     #[serde(flatten)]
-    pub params: VitStartParameters,
+    pub vote_plan: VotePlan,
+    #[serde(default)]
+    pub blockchain: Blockchain,
+    #[serde(default)]
+    pub data: StaticData,
+    pub version: String,
 }
 
-impl Default for DataGenerationConfig {
+impl Default for Config {
     fn default() -> Self {
         Self {
-            consensus_leader_ids: Vec::new(),
-            linear_fees: LinearFee::new(0, 0, 0),
-            committees: Vec::new(),
-            params: Default::default(),
+            initials: Default::default(),
+            vote_plan: Default::default(),
+            blockchain: Default::default(),
+            data: Default::default(),
+            version: "3.6".to_string(),
         }
     }
 }
 
-impl DataGenerationConfig {
+impl Config {
     pub fn extend_from_initials_file<P: AsRef<Path>>(&mut self, snapshot: P) -> Result<()> {
-        self.params
-            .initials
-            .extend_from_external(read_initials(snapshot)?);
+        self.initials.extend_from_external(read_initials(snapshot)?);
         Ok(())
+    }
+
+    pub fn calculate_vote_duration(&self) -> Duration {
+        match self.vote_plan.vote_time {
+            VoteTime::Blockchain(blockchain) => {
+                let duration_as_secs = (blockchain.tally_end - blockchain.vote_start) as u64
+                    * self.blockchain.slot_duration as u64
+                    * (blockchain.slots_per_epoch - 1) as u64;
+
+                Duration::from_secs(duration_as_secs)
+            }
+            VoteTime::Real {
+                vote_start_timestamp,
+                tally_start_timestamp,
+                tally_end_timestamp: _,
+                find_best_match: _,
+            } => Duration::from_secs(
+                (tally_start_timestamp - vote_start_timestamp).num_seconds() as u64
+            ),
+        }
+    }
+
+    pub fn print_report(&self) {
+        let (vote_start_timestamp, tally_start_timestamp, tally_end_timestamp) =
+            convert_to_human_date(self);
+
+        println!("Fund id: {}", self.data.fund_id);
+        println!(
+            "block0 date:\t\t(block0_date):\t\t\t\t\t{}",
+            jormungandr_lib::time::SystemTime::from_secs_since_epoch(
+                self.blockchain.block0_date_as_unix().to_secs()
+            )
+        );
+
+        println!(
+            "refresh timestamp:\t(registration_snapshot_time):\t\t\t{:?}",
+            self.data.snapshot_time
+        );
+
+        println!(
+            "vote start timestamp:\t(fund_start_time, chain_vote_start_time):\t{:?}",
+            vote_start_timestamp
+        );
+        println!(
+            "tally start timestamp:\t(fund_end_time, chain_vote_end_time):\t\t{:?}",
+            tally_start_timestamp
+        );
+        println!(
+            "tally end timestamp:\t(chain_committee_end_time):\t\t\t{:?}",
+            tally_end_timestamp
+        );
+        println!(
+            "next refresh timestamp:\t(next registration_snapshot_time):\t\t{:?}",
+            self.data.next_snapshot_time
+        );
+        println!(
+            "next vote start time:\t(next_fund_start_time):\t\t\t\t{:?}",
+            self.data.next_vote_start_time
+        );
     }
 }
 
-pub fn read_params<P: AsRef<Path>>(params: P) -> Result<VitStartParameters> {
-    let contents = std::fs::read_to_string(&params)?;
-    serde_yaml::from_str(&contents).map_err(Into::into)
-}
-
-pub fn read_config<P: AsRef<Path>>(config: P) -> Result<DataGenerationConfig> {
+pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Config> {
     let contents = std::fs::read_to_string(&config)?;
     serde_json::from_str(&contents).map_err(Into::into)
 }

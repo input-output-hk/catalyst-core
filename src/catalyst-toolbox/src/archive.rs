@@ -1,8 +1,8 @@
 use chain_addr::Discrimination;
+use chain_core::{packer::Codec, property::DeserializeFromSlice};
 use chain_impl_mockchain::{
     block::Block, chaintypes::HeaderId, fragment::Fragment, transaction::InputEnum,
 };
-use chain_ser::mempack::{ReadBuf, Readable};
 use jormungandr_lib::interfaces::{AccountIdentifier, Address};
 
 use serde::Serialize;
@@ -55,8 +55,8 @@ pub fn generate_archive_files(jormungandr_database: &Path, output_dir: &Path) ->
 
     for iter_res in block_iter {
         let block_bin = iter_res?;
-        let mut buf = ReadBuf::from(block_bin.as_ref());
-        let block: Block = Readable::read(&mut buf).unwrap();
+        let mut codec = Codec::new(block_bin.as_ref());
+        let block: Block = DeserializeFromSlice::deserialize_from_slice(&mut codec).unwrap();
 
         for fragment in block.fragments() {
             if let Fragment::VoteCast(tx) = fragment {

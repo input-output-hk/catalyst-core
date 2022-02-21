@@ -2,7 +2,10 @@ use super::tally::Error;
 use catalyst_toolbox::recovery::tally::{
     deconstruct_account_transaction, ValidatedFragment, ValidationError, VoteFragmentFilter,
 };
-use chain_core::property::{Deserialize, Fragment as _};
+use chain_core::{
+    packer::Codec,
+    property::{Deserialize, Fragment as _},
+};
 use chain_impl_mockchain::{
     account::SpendingCounter, block::Block, fragment::Fragment, vote::Payload,
 };
@@ -10,7 +13,7 @@ use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 use jormungandr_lib::interfaces::load_persistent_fragments_logs_from_folder_path;
 use serde::Serialize;
 use std::collections::HashMap;
-use std::io::{BufReader, Write};
+use std::io::Write;
 use std::iter::IntoIterator;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -101,7 +104,7 @@ impl VotesPrintout {
 
         stderrlog::new().verbosity(verbose).init().unwrap();
         let reader = std::fs::File::open(block0_path)?;
-        let block0 = Block::deserialize(BufReader::new(reader)).unwrap();
+        let block0 = Block::deserialize(&mut Codec::new(reader)).unwrap();
 
         let (original, to_filter): (Vec<_>, Vec<_>) =
             load_persistent_fragments_logs_from_folder_path(&logs_path)?

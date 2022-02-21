@@ -72,7 +72,7 @@ impl VotersRewards {
         } = self;
         let block = common.input.load_block()?;
         let block0 = Block0Configuration::from_block(&block)
-            .map_err(jcli_lib::jcli_lib::block::Error::BuildingGenesisFromBlock0Failed)?;
+            .map_err(|e| jcli_lib::jcli_lib::block::Error::BuildingGenesisFromBlock0Failed(e))?;
 
         let vote_count: VoteCount = serde_json::from_reader(jcli_lib::utils::io::open_file_read(
             &Some(votes_count_path),

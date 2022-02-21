@@ -174,7 +174,7 @@ dependencies = [
 [[package]]
 name = "cardano-legacy-address"
 version = "0.1.1"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#8a3bbce6ddc12872d02cf1db69a6f4828c907a67"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#e92ee141d3b0d77b0e0cab5829c5c1585b106371"
 dependencies = [
  "cbor_event",
  "chain-ser",
@@ -232,7 +232,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chain-addr"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#8a3bbce6ddc12872d02cf1db69a6f4828c907a67"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#e92ee141d3b0d77b0e0cab5829c5c1585b106371"
 dependencies = [
  "bech32 0.8.1",
  "chain-core",
@@ -243,7 +243,7 @@ dependencies = [
 [[package]]
 name = "chain-core"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#8a3bbce6ddc12872d02cf1db69a6f4828c907a67"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#e92ee141d3b0d77b0e0cab5829c5c1585b106371"
 dependencies = [
  "chain-ser",
 ]
@@ -251,7 +251,7 @@ dependencies = [
 [[package]]
 name = "chain-crypto"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#8a3bbce6ddc12872d02cf1db69a6f4828c907a67"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#e92ee141d3b0d77b0e0cab5829c5c1585b106371"
 dependencies = [
  "bech32 0.8.1",
  "cryptoxide 0.4.2",
@@ -269,7 +269,7 @@ dependencies = [
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#8a3bbce6ddc12872d02cf1db69a6f4828c907a67"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#e92ee141d3b0d77b0e0cab5829c5c1585b106371"
 dependencies = [
  "cardano-legacy-address",
  "chain-addr",
@@ -304,7 +304,7 @@ dependencies = [
 [[package]]
 name = "chain-ser"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#8a3bbce6ddc12872d02cf1db69a6f4828c907a67"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#e92ee141d3b0d77b0e0cab5829c5c1585b106371"
 dependencies = [
  "thiserror",
 ]
@@ -312,7 +312,7 @@ dependencies = [
 [[package]]
 name = "chain-time"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#8a3bbce6ddc12872d02cf1db69a6f4828c907a67"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#e92ee141d3b0d77b0e0cab5829c5c1585b106371"
 dependencies = [
  "chain-core",
  "chain-ser",
@@ -321,9 +321,9 @@ dependencies = [
 [[package]]
 name = "chain-vote"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#8a3bbce6ddc12872d02cf1db69a6f4828c907a67"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#e92ee141d3b0d77b0e0cab5829c5c1585b106371"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if 0.1.10",
  "chain-core",
  "chain-crypto",
  "const_format",
@@ -661,7 +661,7 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 [[package]]
 name = "imhamt"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#8a3bbce6ddc12872d02cf1db69a6f4828c907a67"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#e92ee141d3b0d77b0e0cab5829c5c1585b106371"
 dependencies = [
  "thiserror",
 ]
@@ -1125,7 +1125,7 @@ checksum = "c19772be3c4dd2ceaacf03cb41d5885f2a02c4d8804884918e3a258480803335"
 [[package]]
 name = "sparse-array"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#8a3bbce6ddc12872d02cf1db69a6f4828c907a67"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#e92ee141d3b0d77b0e0cab5829c5c1585b106371"
 
 [[package]]
 name = "static_assertions"
@@ -1259,7 +1259,7 @@ dependencies = [
 [[package]]
 name = "typed-bytes"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#8a3bbce6ddc12872d02cf1db69a6f4828c907a67"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=remove-deserialize-trait#e92ee141d3b0d77b0e0cab5829c5c1585b106371"
 
 [[package]]
 name = "typenum"

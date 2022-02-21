@@ -99,7 +99,7 @@ checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
 name = "bip39"
 version = "0.1.0"
 dependencies = [
- "cryptoxide",
+ "cryptoxide 0.3.3",
  "hex",
  "quickcheck",
  "quickcheck_macros",
@@ -174,11 +174,11 @@ dependencies = [
 [[package]]
 name = "cardano-legacy-address"
 version = "0.1.1"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#9f60ec124c8c7a5ac3228e5dbe74e12a89e196b3"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
 dependencies = [
  "cbor_event",
  "chain-ser",
- "cryptoxide",
+ "cryptoxide 0.4.2",
  "ed25519-bip32",
 ]
 
@@ -232,18 +232,18 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chain-addr"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#9f60ec124c8c7a5ac3228e5dbe74e12a89e196b3"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
 dependencies = [
  "bech32 0.8.1",
  "chain-core",
  "chain-crypto",
- "cryptoxide",
+ "cryptoxide 0.4.2",
 ]
 
 [[package]]
 name = "chain-core"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#9f60ec124c8c7a5ac3228e5dbe74e12a89e196b3"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
 dependencies = [
  "chain-ser",
 ]
@@ -251,10 +251,10 @@ dependencies = [
 [[package]]
 name = "chain-crypto"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#9f60ec124c8c7a5ac3228e5dbe74e12a89e196b3"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
 dependencies = [
  "bech32 0.8.1",
- "cryptoxide",
+ "cryptoxide 0.4.2",
  "curve25519-dalek-ng",
  "ed25519-bip32",
  "ed25519-dalek",
@@ -269,7 +269,7 @@ dependencies = [
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#9f60ec124c8c7a5ac3228e5dbe74e12a89e196b3"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
 dependencies = [
  "cardano-legacy-address",
  "chain-addr",
@@ -278,7 +278,7 @@ dependencies = [
  "chain-ser",
  "chain-time",
  "chain-vote",
- "cryptoxide",
+ "cryptoxide 0.4.2",
  "hex",
  "imhamt",
  "rand 0.8.4",
@@ -304,12 +304,12 @@ dependencies = [
 [[package]]
 name = "chain-ser"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#9f60ec124c8c7a5ac3228e5dbe74e12a89e196b3"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
 
 [[package]]
 name = "chain-time"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#9f60ec124c8c7a5ac3228e5dbe74e12a89e196b3"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
 dependencies = [
  "chain-core",
  "chain-ser",
@@ -318,13 +318,13 @@ dependencies = [
 [[package]]
 name = "chain-vote"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#9f60ec124c8c7a5ac3228e5dbe74e12a89e196b3"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if 0.1.10",
  "chain-core",
  "chain-crypto",
  "const_format",
- "cryptoxide",
+ "cryptoxide 0.4.2",
  "rand 0.8.4",
  "rand_core 0.6.3",
  "rayon",
@@ -450,6 +450,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b8c4fdc86023bc33b265f256ce8205329125b86c38a8a96e243a6a705b7230ec"
 
 [[package]]
+name = "cryptoxide"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "129eabb7b0b78644a3a7e7cf220714aba47463bb281f69fa7a71ca5d12564cca"
+
+[[package]]
 name = "curve25519-dalek"
 version = "3.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -506,11 +512,11 @@ dependencies = [
 
 [[package]]
 name = "ed25519-bip32"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c091ed784fcf257830c75851d6c88fd5991f98d2f3fa9ed23c3f6bac4eec3cc"
+checksum = "cb588f93c0d91b2f668849fd6d030cddb0b2e31f105963be189da5acdf492a21"
 dependencies = [
- "cryptoxide",
+ "cryptoxide 0.4.2",
 ]
 
 [[package]]
@@ -617,7 +623,7 @@ dependencies = [
  "chain-addr",
  "chain-crypto",
  "chain-path-derivation",
- "cryptoxide",
+ "cryptoxide 0.3.3",
  "ed25519-bip32",
  "hex",
  "quickcheck",
@@ -652,7 +658,7 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 [[package]]
 name = "imhamt"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#9f60ec124c8c7a5ac3228e5dbe74e12a89e196b3"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
 dependencies = [
  "thiserror",
 ]
@@ -1010,6 +1016,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
 
 [[package]]
+name = "rustversion"
+version = "1.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f2cc38e8fa666e2de3c4aba7edeb5ffc5246c1c2ed0e3d17e560aeeba736b23f"
+
+[[package]]
 name = "ryu"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1110,7 +1122,7 @@ checksum = "c19772be3c4dd2ceaacf03cb41d5885f2a02c4d8804884918e3a258480803335"
 [[package]]
 name = "sparse-array"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#9f60ec124c8c7a5ac3228e5dbe74e12a89e196b3"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
 
 [[package]]
 name = "static_assertions"
@@ -1120,19 +1132,20 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "strum"
-version = "0.22.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7ac893c7d471c8a21f31cfe213ec4f6d9afeed25537c772e08ef3f005f8729e"
+checksum = "cae14b91c7d11c9a851d3fbc80a963198998c2a64eec840477fa92d8ce9b70bb"
 
 [[package]]
 name = "strum_macros"
-version = "0.22.0"
+version = "0.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "339f799d8b549e3744c7ac7feb216383e4005d94bdb22561b3ab8f3b808ae9fb"
+checksum = "5bb0dc7ee9c15cea6199cde9a127fa16a4c5819af85395457ad72d68edc85a38"
 dependencies = [
  "heck",
  "proc-macro2",
  "quote",
+ "rustversion",
  "syn",
 ]
 
@@ -1152,7 +1165,7 @@ checksum = "8049cf85f0e715d6af38dde439cb0ccb91f67fb9f5f63c80f8b43e48356e1a3f"
 name = "symmetric-cipher"
 version = "0.5.0"
 dependencies = [
- "cryptoxide",
+ "cryptoxide 0.3.3",
  "rand 0.8.4",
  "rand_chacha 0.3.1",
  "thiserror",
@@ -1243,7 +1256,7 @@ dependencies = [
 [[package]]
 name = "typed-bytes"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#9f60ec124c8c7a5ac3228e5dbe74e12a89e196b3"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
 
 [[package]]
 name = "typenum"
@@ -1358,7 +1371,7 @@ dependencies = [
  "chain-path-derivation",
  "chain-ser",
  "chain-time",
- "cryptoxide",
+ "cryptoxide 0.3.3",
  "ed25519-bip32",
  "hashlink",
  "hdkeygen",

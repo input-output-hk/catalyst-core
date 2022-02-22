@@ -113,6 +113,73 @@ pub fn private_vote_cast_action_transfer_to_rewards_all_shares() {
 }
 
 #[test]
+pub fn shouldnt_panic_when_no_initial_tokens_and_no_votes() {
+    let mut rng = TestGen::rand();
+    let favorable = Choice::new(1);
+    let members = VoteTestGen::committee_members_manager(MEMBERS_NO, THRESHOLD);
+
+    let (mut ledger, controller) = prepare_scenario()
+        .with_config(
+            ConfigBuilder::new()
+                .with_fee(LinearFee::new(1, 1, 1))
+                .with_rewards(Value(1000)),
+        )
+        .with_initials(vec![wallet(ALICE)
+            .with(1_000)
+            .owns(STAKE_POOL)
+            .committee_member()])
+        .with_vote_plans(vec![vote_plan(VOTE_PLAN)
+            .owner(ALICE)
+            .consecutive_epoch_dates()
+            .payload_type(PayloadType::Private)
+            .committee_keys(members.members_keys())
+            .with_proposal(
+                proposal(VoteTestGen::external_proposal_id())
+                    .options(3)
+                    .action_transfer_to_rewards(100),
+            )])
+        .build()
+        .unwrap();
+
+    let mut alice = controller.wallet(ALICE).unwrap();
+    let vote_plan = controller.vote_plan(VOTE_PLAN).unwrap();
+    let proposal = vote_plan.proposal(0);
+
+    controller
+        .cast_vote_private(
+            &alice,
+            &vote_plan,
+            &proposal.id(),
+            favorable,
+            &mut ledger,
+            &mut rng,
+        )
+        .unwrap();
+    alice.confirm_transaction();
+
+    ledger.fast_forward_to(BlockDate {
+        epoch: 1,
+        slot_id: 1,
+    });
+
+    controller
+        .encrypted_tally(&alice, &vote_plan, &mut ledger)
+        .unwrap();
+    alice.confirm_transaction();
+
+    let vote_plans = ledger.ledger.active_vote_plans();
+    let vote_plan_status = vote_plans
+        .iter()
+        .find(|c_vote_plan| {
+            let vote_plan: VotePlan = vote_plan.clone().into();
+            c_vote_plan.id == vote_plan.to_id()
+        })
+        .unwrap();
+
+    decrypt_tally(vote_plan_status, &members).unwrap();
+}
+
+#[test]
 #[should_panic]
 pub fn private_vote_plan_without_keys() {
     let committee_keys = vec![];

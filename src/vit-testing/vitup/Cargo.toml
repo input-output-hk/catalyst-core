@@ -63,6 +63,10 @@ tracing-subscriber = "0.2.16"
 tracing = "0.1"
 tracing-appender = "0.1.2"
 
+[dev-dependencies]
+quickcheck = "0.9"
+quickcheck_macros = "0.9"
+
 [dependencies.reqwest]
 version = "0.10.10"
 default-features = false

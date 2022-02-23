@@ -27,7 +27,7 @@ hersir = { git = "https://github.com/input-output-hk/jormungandr.git", branch = 
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
-catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "switch_chain_wallet_libs" }
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "main" }
 valgrind = { path = "../valgrind" }
 poldercast = { git = "https://github.com/primetype/poldercast.git", rev = "8305f1560392a9d26673ca996e7646c8834533ef" }
 rand = "0.8"

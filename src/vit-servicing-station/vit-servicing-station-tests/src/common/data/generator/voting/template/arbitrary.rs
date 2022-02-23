@@ -25,14 +25,14 @@ use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
 
 #[derive(Clone)]
 pub struct ArbitraryValidVotingTemplateGenerator {
-    generator: ArbitraryGenerator,
-    funds: Vec<FundTemplate>,
-    challenges: Vec<ChallengeTemplate>,
-    proposals: Vec<ProposalTemplate>,
-    reviews: Vec<ReviewTemplate>,
-    next_proposal_id: i32,
-    next_challenge_id: i32,
-    next_review_id: i32,
+    pub(crate) generator: ArbitraryGenerator,
+    pub(crate) funds: Vec<FundTemplate>,
+    pub(crate) challenges: Vec<ChallengeTemplate>,
+    pub(crate) proposals: Vec<ProposalTemplate>,
+    pub(crate) reviews: Vec<ReviewTemplate>,
+    pub(crate) next_proposal_id: i32,
+    pub(crate) next_challenge_id: i32,
+    pub(crate) next_review_id: i32,
 }
 
 impl Default for ArbitraryValidVotingTemplateGenerator {
@@ -144,38 +144,44 @@ impl ArbitraryValidVotingTemplateGenerator {
             }
         }
     }
-}
 
-impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
-    fn next_proposal(&mut self) -> ProposalTemplate {
+    pub fn proposal(&mut self, challenge: ChallengeTemplate, funds: i64) -> ProposalTemplate {
         let proposal_url = self.gen_http_address();
-        let challenge = self
-            .challenges
-            .get(self.generator.random_index(self.challenges.len()))
-            .unwrap()
-            .clone();
         let challenge_type = challenge.challenge_type.clone();
         let proposal_challenge_info = self.proposals_challenge_info(&challenge_type);
-        let proposal_template = ProposalTemplate {
+        ProposalTemplate {
             proposal_id: self.next_proposal_id().to_string(),
             internal_id: self.generator.id().to_string(),
             category_name: Industry().fake::<String>(),
             proposal_title: CatchPhase().fake::<String>(),
             proposal_summary: CatchPhase().fake::<String>(),
 
-            proposal_funds: self.proposal_fund().to_string(),
+            proposal_funds: funds.to_string(),
             proposal_url: proposal_url.to_string(),
             proposal_impact_score: self.impact_score().to_string(),
             files_url: format!("{}/files", proposal_url),
             proposer_relevant_experience: self.proposer().proposer_relevant_experience,
-            chain_vote_options: VoteOptions::parse_coma_separated_value("blank,yes,no"),
+            chain_vote_options: VoteOptions::parse_coma_separated_value("yes,no"),
             proposer_name: Name().fake::<String>(),
             proposer_url: self.gen_http_address(),
             chain_vote_type: "public".to_string(),
             challenge_id: Some(challenge.id),
             challenge_type,
             proposal_challenge_info,
-        };
+        }
+    }
+}
+
+impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
+    fn next_proposal(&mut self) -> ProposalTemplate {
+        let challenge = self
+            .challenges
+            .get(self.generator.random_index(self.challenges.len()))
+            .unwrap()
+            .clone();
+
+        let funds = self.proposal_fund();
+        let proposal_template = self.proposal(challenge, funds);
         self.proposals.push(proposal_template.clone());
         proposal_template
     }

@@ -371,7 +371,8 @@ impl VitBackendSettingsBuilder {
         }
         println!("building voteplan..");
 
-        for vote_plan_def in VitVotePlanDefBuilder::new(vote_blockchain_time)
+        for vote_plan_def in VitVotePlanDefBuilder::default()
+            .vote_phases(vote_blockchain_time)
             .options(2)
             .split_by(255)
             .fund_name(self.fund_name())

@@ -417,8 +417,8 @@ mod tests {
             .transaction(&alice, bob.address(), 1u64.into())
             .unwrap();
 
+        assert_eq!(fragment.id(), ledger_state.message(fragment.clone()));
         assert!(ledger_state.received_fragments().contains(&fragment));
-        assert_eq!(fragment.id(), ledger_state.message(fragment));
     }
 
     #[quickcheck]
@@ -443,9 +443,9 @@ mod tests {
             .transaction(&alice, bob.address(), 1u64.into())
             .unwrap();
 
+        assert_eq!(fragment.id(), ledger_state.message(fragment.clone()));
         assert_eq!(ledger_state.received_fragments().len(), 1);
         assert!(ledger_state.received_fragments().contains(&fragment));
-        assert_eq!(fragment.id(), ledger_state.message(fragment.clone()));
 
         match fragment_strategy {
             FragmentRecieveStrategy::Pending => {

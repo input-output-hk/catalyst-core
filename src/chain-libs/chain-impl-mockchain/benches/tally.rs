@@ -2,8 +2,7 @@ use chain_crypto::testing::TestCryptoRng;
 use chain_impl_mockchain::testing::scenario::template::WalletTemplateBuilder;
 use chain_impl_mockchain::{
     certificate::{
-        DecryptedPrivateTally, DecryptedPrivateTallyProposal, EncryptedVoteTally, VoteCast,
-        VotePlan, VoteTally,
+        DecryptedPrivateTally, DecryptedPrivateTallyProposal, VoteCast, VotePlan, VoteTally,
     },
     fee::LinearFee,
     header::BlockDate,
@@ -171,35 +170,8 @@ fn tally_benchmark(
         slot_id: 1,
     });
 
-    // Get encrypted tally
-    let mut alice = controller.wallet(ALICE).unwrap();
-
-    let encrypted_tally = EncryptedVoteTally::new(vote_plan.to_id());
-    let fragment = controller.fragment_factory().vote_encrypted_tally(
-        BlockDate {
-            epoch: 1,
-            slot_id: 1,
-        },
-        &alice,
-        encrypted_tally,
-    );
-
+    let alice = controller.wallet(ALICE).unwrap();
     let parameters = ledger.parameters.clone();
-    let date = ledger.date();
-
-    // benchmark the creation of encrypted tally
-    c.bench_function(&format!("vote_encrypted_tally_{}", benchmark_name), |b| {
-        b.iter(|| {
-            ledger
-                .ledger
-                .apply_fragment(&parameters, &fragment, date)
-                .unwrap();
-        })
-    });
-
-    // apply encrypted tally fragment
-    ledger.apply_fragment(&fragment, ledger.date()).unwrap();
-    alice.confirm_transaction();
 
     // benchmark producing decryption
     let vote_plans = ledger.ledger.active_vote_plans();
@@ -243,7 +215,6 @@ fn tally_benchmark(
                 proposal
                     .tally
                     .clone()
-                    .unwrap()
                     .private_encrypted()
                     .unwrap()
                     .0

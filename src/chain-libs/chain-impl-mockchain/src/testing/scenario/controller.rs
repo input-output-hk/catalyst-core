@@ -1,7 +1,7 @@
 use crate::{
     certificate::{
-        DecryptedPrivateTally, EncryptedVoteTally, ExternalProposalId, MintToken, Proposal,
-        UpdateProposal, UpdateVote, VoteCast, VotePlan, VoteTally,
+        DecryptedPrivateTally, ExternalProposalId, MintToken, Proposal, UpdateProposal, UpdateVote,
+        VoteCast, VotePlan, VoteTally,
     },
     date::BlockDate,
     fee::LinearFee,
@@ -290,20 +290,6 @@ impl Controller {
         let fragment = self
             .fragment_factory
             .vote_cast(test_ledger.date(), owner, vote_cast);
-        test_ledger.apply_fragment(&fragment, test_ledger.date())
-    }
-
-    pub fn encrypted_tally(
-        &self,
-        owner: &Wallet,
-        vote_plan_def: &VotePlanDef,
-        test_ledger: &mut TestLedger,
-    ) -> Result<(), LedgerError> {
-        let vote_plan: VotePlan = vote_plan_def.clone().into();
-        let encrypted_tally = EncryptedVoteTally::new(vote_plan.to_id());
-        let fragment =
-            self.fragment_factory
-                .vote_encrypted_tally(test_ledger.date(), owner, encrypted_tally);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 

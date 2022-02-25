@@ -308,25 +308,9 @@ impl Arbitrary for TallyProof {
     }
 }
 
-impl Arbitrary for EncryptedVoteTally {
-    fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        let id = Arbitrary::arbitrary(g);
-        Self::new(id)
-    }
-}
-
-impl Arbitrary for EncryptedVoteTallyProof {
-    fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        Self {
-            id: Arbitrary::arbitrary(g),
-            signature: Arbitrary::arbitrary(g),
-        }
-    }
-}
-
 impl Arbitrary for Certificate {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        let option = u8::arbitrary(g) % 12;
+        let option = u8::arbitrary(g) % 11;
         match option {
             0 => Certificate::StakeDelegation(Arbitrary::arbitrary(g)),
             1 => Certificate::OwnerStakeDelegation(Arbitrary::arbitrary(g)),
@@ -336,10 +320,9 @@ impl Arbitrary for Certificate {
             5 => Certificate::VotePlan(Arbitrary::arbitrary(g)),
             6 => Certificate::VoteCast(Arbitrary::arbitrary(g)),
             7 => Certificate::VoteTally(Arbitrary::arbitrary(g)),
-            8 => Certificate::EncryptedVoteTally(Arbitrary::arbitrary(g)),
-            9 => Certificate::UpdateProposal(Arbitrary::arbitrary(g)),
-            10 => Certificate::UpdateVote(Arbitrary::arbitrary(g)),
-            11 => Certificate::MintToken(Arbitrary::arbitrary(g)),
+            8 => Certificate::UpdateProposal(Arbitrary::arbitrary(g)),
+            9 => Certificate::UpdateVote(Arbitrary::arbitrary(g)),
+            10 => Certificate::MintToken(Arbitrary::arbitrary(g)),
             _ => panic!("unimplemented"),
         }
     }

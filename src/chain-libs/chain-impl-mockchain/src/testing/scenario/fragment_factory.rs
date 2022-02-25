@@ -1,8 +1,8 @@
 use crate::{
     accounting::account::{DelegationRatio, DelegationType},
     certificate::{
-        Certificate, EncryptedVoteTally, MintToken, PoolId, PoolUpdate, UpdateProposal, UpdateVote,
-        VoteCast, VotePlan, VoteTally,
+        Certificate, MintToken, PoolId, PoolUpdate, UpdateProposal, UpdateVote, VoteCast, VotePlan,
+        VoteTally,
     },
     date::BlockDate,
     fee::LinearFee,
@@ -171,15 +171,6 @@ impl FragmentFactory {
         vote_cast: VoteCast,
     ) -> Fragment {
         self.transaction_with_cert(valid_until, Some(owner), &vote_cast.into())
-    }
-
-    pub fn vote_encrypted_tally(
-        &self,
-        valid_until: BlockDate,
-        owner: &Wallet,
-        encrypted_tally: EncryptedVoteTally,
-    ) -> Fragment {
-        self.transaction_with_cert(valid_until, Some(owner), &encrypted_tally.into())
     }
 
     pub fn vote_tally(

@@ -36,7 +36,6 @@ pub enum Fragment {
     VotePlan(Transaction<certificate::VotePlan>),
     VoteCast(Transaction<certificate::VoteCast>),
     VoteTally(Transaction<certificate::VoteTally>),
-    EncryptedVoteTally(Transaction<certificate::EncryptedVoteTally>),
     MintToken(Transaction<certificate::MintToken>),
     Evm(Transaction<EvmTransaction>),
 }
@@ -64,9 +63,8 @@ pub(super) enum FragmentTag {
     VotePlan = 10,
     VoteCast = 11,
     VoteTally = 12,
-    EncryptedVoteTally = 13,
-    MintToken = 14,
-    Evm = 15,
+    MintToken = 13,
+    Evm = 14,
 }
 
 impl FragmentTag {
@@ -85,9 +83,8 @@ impl FragmentTag {
             10 => Some(FragmentTag::VotePlan),
             11 => Some(FragmentTag::VoteCast),
             12 => Some(FragmentTag::VoteTally),
-            13 => Some(FragmentTag::EncryptedVoteTally),
-            14 => Some(FragmentTag::MintToken),
-            15 => Some(FragmentTag::Evm),
+            13 => Some(FragmentTag::MintToken),
+            14 => Some(FragmentTag::Evm),
             _ => None,
         }
     }
@@ -110,7 +107,6 @@ impl Fragment {
             Fragment::VotePlan(_) => FragmentTag::VotePlan,
             Fragment::VoteCast(_) => FragmentTag::VoteCast,
             Fragment::VoteTally(_) => FragmentTag::VoteTally,
-            Fragment::EncryptedVoteTally(_) => FragmentTag::EncryptedVoteTally,
             Fragment::MintToken(_) => FragmentTag::MintToken,
             Fragment::Evm(_) => FragmentTag::Evm,
         }
@@ -138,7 +134,6 @@ impl Fragment {
             Fragment::VotePlan(vote_plan) => vote_plan.serialize(&mut codec).unwrap(),
             Fragment::VoteCast(vote_plan) => vote_plan.serialize(&mut codec).unwrap(),
             Fragment::VoteTally(vote_tally) => vote_tally.serialize(&mut codec).unwrap(),
-            Fragment::EncryptedVoteTally(vote_tally) => vote_tally.serialize(&mut codec).unwrap(),
             Fragment::MintToken(mint_token) => mint_token.serialize(&mut codec).unwrap(),
             Fragment::Evm(deployment) => deployment.serialize(&mut codec).unwrap(),
         }
@@ -198,9 +193,6 @@ impl Readable for Fragment {
             Some(FragmentTag::VotePlan) => Transaction::read(buf).map(Fragment::VotePlan),
             Some(FragmentTag::VoteCast) => Transaction::read(buf).map(Fragment::VoteCast),
             Some(FragmentTag::VoteTally) => Transaction::read(buf).map(Fragment::VoteTally),
-            Some(FragmentTag::EncryptedVoteTally) => {
-                Transaction::read(buf).map(Fragment::EncryptedVoteTally)
-            }
             Some(FragmentTag::MintToken) => Transaction::read(buf).map(Fragment::MintToken),
             Some(FragmentTag::Evm) => Transaction::read(buf).map(Fragment::Evm),
             None => Err(ReadError::UnknownTag(tag as u32)),

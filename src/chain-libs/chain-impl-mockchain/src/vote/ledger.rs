@@ -1,4 +1,3 @@
-use crate::certificate::EncryptedVoteTally;
 use crate::ledger::token_distribution::TokenDistribution;
 use crate::{
     account,
@@ -69,12 +68,14 @@ impl VotePlanLedger {
         block_date: BlockDate,
         identifier: account::Identifier,
         vote: VoteCast,
+        token_distribution: TokenDistribution<()>,
     ) -> Result<Self, VotePlanLedgerError> {
         let id = vote.vote_plan().clone();
 
-        let r = self
-            .plans
-            .update(&id, move |v| v.vote(block_date, identifier, vote).map(Some));
+        let r = self.plans.update(&id, move |v| {
+            v.vote(block_date, identifier, vote, token_distribution)
+                .map(Some)
+        });
 
         match r {
             Err(reason) => Err(VotePlanLedgerError::VoteError { reason, id }),
@@ -139,10 +140,10 @@ impl VotePlanLedger {
     pub fn apply_committee_result<F>(
         &self,
         block_date: BlockDate,
-        token_distribution: TokenDistribution<()>,
         governance: &Governance,
         tally: &VoteTally,
         sig: TallyProof,
+        token_distribution: TokenDistribution<()>,
         f: F,
     ) -> Result<Self, VotePlanLedgerError>
     where
@@ -156,41 +157,20 @@ impl VotePlanLedger {
         };
         let r = self.plans.update(&id, move |v| match sig {
             TallyProof::Public { .. } => v
-                .public_tally(token_distribution, block_date, governance, committee_id, f)
+                .public_tally(block_date, governance, committee_id, token_distribution, f)
                 .map(Some),
             TallyProof::Private { .. } => {
                 let shares = tally.tally_decrypted().unwrap();
-                v.finalize_private_tally(shares, governance, f).map(Some)
-            }
-        });
-
-        match r {
-            Err(reason) => Err(VotePlanLedgerError::VoteError { reason, id }),
-            Ok(plans) => Ok(Self { plans }),
-        }
-    }
-
-    /// apply the committee result for the associated vote plan
-    ///
-    /// # Errors
-    ///
-    /// This function may fail:
-    ///
-    /// * if the Committee time has elapsed
-    /// * if the tally is not a private tally
-    ///
-    pub fn apply_encrypted_vote_tally(
-        &self,
-        block_date: BlockDate,
-        token_distribution: TokenDistribution<()>,
-        encrypted_tally: &EncryptedVoteTally,
-        committee_id: CommitteeId,
-    ) -> Result<Self, VotePlanLedgerError> {
-        let id = encrypted_tally.id().clone();
-
-        let r = self.plans.update(&id, move |v| {
-            v.start_private_tally(token_distribution, block_date, committee_id)
+                v.private_tally(
+                    block_date,
+                    shares,
+                    governance,
+                    committee_id,
+                    token_distribution,
+                    f,
+                )
                 .map(Some)
+            }
         });
 
         match r {

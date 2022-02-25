@@ -1,5 +1,4 @@
 mod delegation;
-mod encrypted_vote_tally;
 mod mint_token;
 mod pool;
 mod update_proposal;
@@ -13,7 +12,6 @@ mod test;
 
 use crate::transaction::{Payload, PayloadData, PayloadSlice};
 
-pub use self::encrypted_vote_tally::{EncryptedVoteTally, EncryptedVoteTallyProof};
 pub use self::vote_cast::VoteCast;
 pub use self::vote_plan::{
     ExternalProposalDocument, ExternalProposalId, Proposal, Proposals, PushProposal, VoteAction,
@@ -42,7 +40,6 @@ pub enum CertificateSlice<'a> {
     VotePlan(PayloadSlice<'a, VotePlan>),
     VoteCast(PayloadSlice<'a, VoteCast>),
     VoteTally(PayloadSlice<'a, VoteTally>),
-    EncryptedVoteTally(PayloadSlice<'a, EncryptedVoteTally>),
     UpdateProposal(PayloadSlice<'a, UpdateProposal>),
     UpdateVote(PayloadSlice<'a, UpdateVote>),
     MintToken(PayloadSlice<'a, MintToken>),
@@ -95,12 +92,6 @@ impl<'a> From<PayloadSlice<'a, VoteTally>> for CertificateSlice<'a> {
     }
 }
 
-impl<'a> From<PayloadSlice<'a, EncryptedVoteTally>> for CertificateSlice<'a> {
-    fn from(payload: PayloadSlice<'a, EncryptedVoteTally>) -> CertificateSlice<'a> {
-        CertificateSlice::EncryptedVoteTally(payload)
-    }
-}
-
 impl<'a> From<PayloadSlice<'a, UpdateProposal>> for CertificateSlice<'a> {
     fn from(payload: PayloadSlice<'a, UpdateProposal>) -> CertificateSlice<'a> {
         CertificateSlice::UpdateProposal(payload)
@@ -134,9 +125,6 @@ impl<'a> CertificateSlice<'a> {
             CertificateSlice::VotePlan(c) => Certificate::VotePlan(c.into_payload()),
             CertificateSlice::VoteCast(c) => Certificate::VoteCast(c.into_payload()),
             CertificateSlice::VoteTally(c) => Certificate::VoteTally(c.into_payload()),
-            CertificateSlice::EncryptedVoteTally(c) => {
-                Certificate::EncryptedVoteTally(c.into_payload())
-            }
             CertificateSlice::UpdateProposal(c) => Certificate::UpdateProposal(c.into_payload()),
             CertificateSlice::UpdateVote(c) => Certificate::UpdateVote(c.into_payload()),
             CertificateSlice::MintToken(c) => Certificate::MintToken(c.into_payload()),
@@ -154,7 +142,6 @@ pub enum CertificatePayload {
     VotePlan(PayloadData<VotePlan>),
     VoteCast(PayloadData<VoteCast>),
     VoteTally(PayloadData<VoteTally>),
-    EncryptedVoteTally(PayloadData<EncryptedVoteTally>),
     UpdateProposal(PayloadData<UpdateProposal>),
     UpdateVote(PayloadData<UpdateVote>),
     MintToken(PayloadData<MintToken>),
@@ -171,7 +158,6 @@ impl CertificatePayload {
             CertificatePayload::VotePlan(payload) => payload.borrow().into(),
             CertificatePayload::VoteCast(payload) => payload.borrow().into(),
             CertificatePayload::VoteTally(payload) => payload.borrow().into(),
-            CertificatePayload::EncryptedVoteTally(payload) => payload.borrow().into(),
             CertificatePayload::UpdateProposal(payload) => payload.borrow().into(),
             CertificatePayload::UpdateVote(payload) => payload.borrow().into(),
             CertificatePayload::MintToken(payload) => payload.borrow().into(),
@@ -202,9 +188,6 @@ impl<'a> From<&'a Certificate> for CertificatePayload {
             Certificate::VoteTally(payload) => {
                 CertificatePayload::VoteTally(payload.payload_data())
             }
-            Certificate::EncryptedVoteTally(payload) => {
-                CertificatePayload::EncryptedVoteTally(payload.payload_data())
-            }
             Certificate::UpdateProposal(payload) => {
                 CertificatePayload::UpdateProposal(payload.payload_data())
             }
@@ -229,7 +212,6 @@ pub enum Certificate {
     VotePlan(VotePlan),
     VoteCast(VoteCast),
     VoteTally(VoteTally),
-    EncryptedVoteTally(EncryptedVoteTally),
     UpdateProposal(UpdateProposal),
     UpdateVote(UpdateVote),
     MintToken(MintToken),
@@ -295,12 +277,6 @@ impl From<UpdateVote> for Certificate {
     }
 }
 
-impl From<EncryptedVoteTally> for Certificate {
-    fn from(vote_tally: EncryptedVoteTally) -> Self {
-        Self::EncryptedVoteTally(vote_tally)
-    }
-}
-
 impl From<MintToken> for Certificate {
     fn from(mint_token: MintToken) -> Self {
         Self::MintToken(mint_token)
@@ -318,7 +294,6 @@ impl Certificate {
             Certificate::VotePlan(_) => <VotePlan as Payload>::HAS_AUTH,
             Certificate::VoteCast(_) => <VoteCast as Payload>::HAS_AUTH,
             Certificate::VoteTally(_) => <VoteTally as Payload>::HAS_AUTH,
-            Certificate::EncryptedVoteTally(_) => <EncryptedVoteTally as Payload>::HAS_AUTH,
             Certificate::UpdateProposal(_) => <UpdateProposal as Payload>::HAS_AUTH,
             Certificate::UpdateVote(_) => <UpdateVote as Payload>::HAS_AUTH,
             Certificate::MintToken(_) => <MintToken as Payload>::HAS_AUTH,
@@ -339,7 +314,6 @@ pub enum SignedCertificate {
     PoolUpdate(PoolUpdate, <PoolUpdate as Payload>::Auth),
     VotePlan(VotePlan, <VotePlan as Payload>::Auth),
     VoteTally(VoteTally, <VoteTally as Payload>::Auth),
-    EncryptedVoteTally(EncryptedVoteTally, <EncryptedVoteTally as Payload>::Auth),
     UpdateProposal(UpdateProposal, <UpdateProposal as Payload>::Auth),
     UpdateVote(UpdateVote, <UpdateVote as Payload>::Auth),
 }
@@ -361,7 +335,6 @@ mod tests {
             Certificate::VotePlan(_) => true,
             Certificate::VoteCast(_) => false,
             Certificate::VoteTally(_) => true,
-            Certificate::EncryptedVoteTally(_) => true,
             Certificate::UpdateProposal(_) => true,
             Certificate::UpdateVote(_) => true,
             Certificate::MintToken(_) => false,

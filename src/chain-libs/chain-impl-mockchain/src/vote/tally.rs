@@ -7,6 +7,8 @@ use chain_vote::EncryptedTally;
 use std::fmt;
 use thiserror::Error;
 
+use super::VoteError;
+
 /// weight of a vote
 ///
 /// it is often associated to the `stake`. when the tally is counted,
@@ -167,14 +169,14 @@ impl TallyResult {
     /// # Errors
     ///
     /// The function will fail if the `choice` is not a valid `Option`
-    pub fn add_vote<W>(&mut self, choice: Choice, weight: W) -> Result<(), TallyError>
+    pub fn add_vote<W>(&mut self, choice: Choice, weight: W) -> Result<(), VoteError>
     where
         W: Into<Weight>,
     {
         let weight = weight.into();
 
         if !self.options.validate(choice) {
-            Err(TallyError::InvalidChoice {
+            Err(VoteError::InvalidChoice {
                 options: self.options.clone(),
                 choice,
             })
@@ -227,10 +229,10 @@ impl fmt::Display for Weight {
 
 #[cfg(test)]
 mod tests {
-    use super::{Tally, TallyError, TallyResult, Weight};
+    use super::{Tally, TallyResult, Weight};
     use crate::{
         stake::Stake,
-        vote::{Choice, Options},
+        vote::{Choice, Options, VoteError},
     };
     use quickcheck::TestResult;
     use quickcheck::{Arbitrary, Gen};
@@ -262,7 +264,7 @@ mod tests {
         let choice = Choice::new(4);
         assert_eq!(
             tally_result.add_vote(choice, Weight(1)),
-            Err(TallyError::InvalidChoice { options, choice })
+            Err(VoteError::InvalidChoice { options, choice })
         );
     }
 

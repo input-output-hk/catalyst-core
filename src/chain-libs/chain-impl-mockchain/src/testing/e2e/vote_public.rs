@@ -80,6 +80,8 @@ pub fn vote_cast_action_transfer_to_rewards() {
 pub fn vote_cast_action_action_parameters_no_op() {
     let favorable = Choice::new(1);
 
+    let voting_token = TokenName::try_from(vec![0u8; TOKEN_NAME_MAX_SIZE]).unwrap();
+
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
             ConfigBuilder::new()
@@ -88,6 +90,7 @@ pub fn vote_cast_action_action_parameters_no_op() {
         )
         .with_initials(vec![wallet(ALICE)
             .with(1_000)
+            .with_token(voting_token, 1_000)
             .owns(STAKE_POOL)
             .committee_member()])
         .with_vote_plans(vec![vote_plan(VOTE_PLAN)
@@ -307,6 +310,8 @@ pub fn vote_cast_by_non_committe_member() {
     let favorable = Choice::new(1);
     let rejection = Choice::new(2);
 
+    let voting_token = TokenName::try_from(vec![0u8; TOKEN_NAME_MAX_SIZE]).unwrap();
+
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
             ConfigBuilder::new()
@@ -318,7 +323,10 @@ pub fn vote_cast_by_non_committe_member() {
                 .with(1_000)
                 .owns(STAKE_POOL)
                 .committee_member(),
-            wallet(BOB).with(1_000).delegates_to(STAKE_POOL),
+            wallet(BOB)
+                .with(1_000)
+                .with_token(voting_token, 1_000)
+                .delegates_to(STAKE_POOL),
         ])
         .with_vote_plans(vec![vote_plan(VOTE_PLAN)
             .owner(ALICE)
@@ -350,6 +358,8 @@ pub fn vote_on_same_proposal() {
     let favorable = Choice::new(1);
     let rejection = Choice::new(2);
 
+    let voting_token = TokenName::try_from(vec![0u8; TOKEN_NAME_MAX_SIZE]).unwrap();
+
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
             ConfigBuilder::new()
@@ -358,6 +368,7 @@ pub fn vote_on_same_proposal() {
         )
         .with_initials(vec![wallet(ALICE)
             .with(1_000)
+            .with_token(voting_token, 1_000)
             .owns(STAKE_POOL)
             .committee_member()])
         .with_vote_plans(vec![vote_plan(VOTE_PLAN)
@@ -393,6 +404,8 @@ pub fn vote_on_different_proposal() {
     let favorable = Choice::new(1);
     let rejection = Choice::new(2);
 
+    let voting_token = TokenName::try_from(vec![0u8; TOKEN_NAME_MAX_SIZE]).unwrap();
+
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
             ConfigBuilder::new()
@@ -401,6 +414,7 @@ pub fn vote_on_different_proposal() {
         )
         .with_initials(vec![wallet(ALICE)
             .with(1_000)
+            .with_token(voting_token, 1_000)
             .owns(STAKE_POOL)
             .committee_member()])
         .with_vote_plans(vec![vote_plan(VOTE_PLAN)
@@ -535,9 +549,14 @@ pub fn votes_with_fees() {
 pub fn voting_consistency() {
     let favorable = Choice::new(1);
 
+    let voting_token = TokenName::try_from(vec![0u8; TOKEN_NAME_MAX_SIZE]).unwrap();
+
     let (mut ledger, controller) = prepare_scenario()
         .with_config(ConfigBuilder::new())
-        .with_initials(vec![wallet(ALICE).with(1_000).committee_member()])
+        .with_initials(vec![wallet(ALICE)
+            .with(1_000)
+            .with_token(voting_token, 1_000)
+            .committee_member()])
         .with_vote_plans(vec![vote_plan(VOTE_PLAN)
             .owner(ALICE)
             .consecutive_epoch_dates()

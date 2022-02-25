@@ -512,9 +512,6 @@ impl Ledger {
                 Fragment::VoteTally(_) => {
                     return Err(Error::Block0(Block0Error::HasVoteTally));
                 }
-                Fragment::EncryptedVoteTally(_) => {
-                    return Err(Error::Block0(Block0Error::HasVoteTally));
-                }
                 Fragment::MintToken(tx) => {
                     let tx = tx.as_slice();
                     check::valid_block0_cert_transaction(&tx)?;
@@ -1047,18 +1044,6 @@ impl Ledger {
                     tx.payload_auth().into_payload_auth(),
                 )?;
             }
-            Fragment::EncryptedVoteTally(tx) => {
-                let tx = tx.as_slice();
-
-                let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
-
-                new_ledger = new_ledger_.apply_encrypted_vote_tally(
-                    &tx.payload().into_payload(),
-                    &tx.transaction_binding_auth_data(),
-                    tx.payload_auth().into_payload_auth(),
-                )?;
-            }
             Fragment::MintToken(tx) => {
                 let tx = tx.as_slice();
 
@@ -1188,7 +1173,9 @@ impl Ledger {
         account_id: account::Identifier,
         vote: VoteCast,
     ) -> Result<Self, Error> {
-        self.votes = self.votes.apply_vote(self.date(), account_id, vote)?;
+        self.votes =
+            self.votes
+                .apply_vote(self.date(), account_id, vote, self.token_distribution())?;
         Ok(self)
     }
 
@@ -1196,7 +1183,7 @@ impl Ledger {
         self.votes
             .plans
             .iter()
-            .map(|(_, plan)| plan.statuses())
+            .map(|(_, plan)| plan.statuses(self.token_distribution()))
             .collect()
     }
 
@@ -1212,14 +1199,12 @@ impl Ledger {
 
         let mut actions = Vec::new();
 
-        let token_distribution = self.token_distribution();
-
         self.votes = self.votes.apply_committee_result(
             self.date(),
-            token_distribution,
             &self.governance,
             tally,
             sig,
+            self.token_distribution(),
             |action: &VoteAction| actions.push(action.clone()),
         )?;
 
@@ -1240,28 +1225,6 @@ impl Ledger {
                 }
             }
         }
-
-        Ok(self)
-    }
-
-    pub fn apply_encrypted_vote_tally<'a>(
-        mut self,
-        tally: &certificate::EncryptedVoteTally,
-        bad: &TransactionBindingAuthData<'a>,
-        sig: certificate::EncryptedVoteTallyProof,
-    ) -> Result<Self, Error> {
-        if sig.verify(bad) == Verification::Failed {
-            return Err(Error::VoteTallyProofFailed);
-        }
-
-        let token_distribution = self.token_distribution();
-
-        self.votes = self.votes.apply_encrypted_vote_tally(
-            self.date(),
-            token_distribution,
-            tally,
-            sig.id,
-        )?;
 
         Ok(self)
     }
@@ -1418,7 +1381,7 @@ impl Ledger {
     }
 
     pub fn token_distribution(&self) -> TokenDistribution<()> {
-        TokenDistribution::new(self.token_totals.clone(), self.accounts.clone())
+        TokenDistribution::new(&self.token_totals, &self.accounts)
     }
 
     pub fn get_ledger_parameters(&self) -> LedgerParameters {

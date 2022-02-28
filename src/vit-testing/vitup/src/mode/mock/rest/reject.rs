@@ -66,8 +66,4 @@ pub async fn report_invalid(r: Rejection) -> Result<impl Reply, Rejection> {
         ));
     }
     Err(r)
-    /*Ok(warp::reply::with_status(
-        format!("internal error: {:?}", r),
-        StatusCode::INTERNAL_SERVER_ERROR,
-    ))*/
 }

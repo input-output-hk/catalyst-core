@@ -47,7 +47,7 @@ impl Context {
     }
 
     pub fn block0_bin(&self) -> Vec<u8> {
-        self.state.ledger().block0_bin()
+        self.state.block0_bin()
     }
 
     pub fn working_dir(&self) -> PathBuf {

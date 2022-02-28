@@ -20,6 +20,7 @@ pub struct MockState {
     version: VitVersion,
     ledger_state: LedgerState,
     vit_state: Snapshot,
+    block0_bin: Vec<u8>,
     network_congestion: NetworkCongestion,
 }
 
@@ -51,12 +52,13 @@ impl MockState {
         Ok(Self {
             available: true,
             error_code: 400,
-            ledger_state: LedgerState::new(controller.settings().block0, controller.block0_file())?,
+            ledger_state: LedgerState::new(controller.settings().block0)?,
             network_congestion: NetworkCongestion::new(&snapshot),
             vit_state: snapshot,
             version: VitVersion {
                 service_version: version,
             },
+            block0_bin: jortestkit::file::get_file_as_byte_vec(controller.block0_file()),
         })
     }
 
@@ -64,6 +66,10 @@ impl MockState {
         VitVersion {
             service_version: self.version.service_version.clone(),
         }
+    }
+
+    pub fn block0_bin(&self) -> Vec<u8> {
+        self.block0_bin.clone()
     }
 
     pub fn set_congestion(&mut self, network_congestion_mode: NetworkCongestionMode) {

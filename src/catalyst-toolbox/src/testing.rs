@@ -8,6 +8,7 @@ pub struct ProposerRewardsExecutor {
     total_stake_threshold: f64,
     approval_threshold: f64,
     output_format: String,
+    committee_keys_path: Option<String>,
     proposals_path: Option<String>,
     excluded_proposals_path: Option<String>,
     active_voteplan_path: Option<String>,
@@ -19,10 +20,12 @@ impl Default for ProposerRewardsExecutor {
     fn default() -> Self {
         Self {
             output_file: PathBuf::from_str("./output").unwrap(),
+            output_file: PathBuf::from_str("./output").unwrap(),
             block0_path: PathBuf::from_str("./block0.bin").unwrap(),
             total_stake_threshold: 0.01,
             approval_threshold: 1.15,
             output_format: "csv".to_string(),
+            committee_keys_path: None,
             proposals_path: None,
             excluded_proposals_path: None,
             active_voteplan_path: None,
@@ -61,6 +64,12 @@ impl ProposerRewardsExecutor {
         self.excluded_proposals_path = Some(excluded_proposals_path);
         self
     }
+
+    pub fn committee_keys_path(mut self, committee_keys_path: String) -> Self {
+        self.committee_keys_path = Some(committee_keys_path);
+        self
+    }
+
     pub fn active_voteplan_path(mut self, active_voteplan_path: String) -> Self {
         self.active_voteplan_path = Some(active_voteplan_path);
         self
@@ -96,6 +105,7 @@ impl ProposerRewardsExecutor {
                 self.active_voteplan_path,
                 self.challenges_path,
                 self.vit_station_url,
+                self.committee_keys_path,
             );
             fun.call1(py, args)
         })?;

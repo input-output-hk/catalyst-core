@@ -26,7 +26,8 @@ chain-storage = { git = "https://github.com/input-output-hk/chain-libs.git", bra
 chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chrono = "0.4"
-jcli = { git = "https://github.com/input-output-hk/jormungandr.git",  branch = "master"}
+itertools = "0.10"
+jcli = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr.git",  branch = "master" }

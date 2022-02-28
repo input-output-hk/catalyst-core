@@ -398,6 +398,7 @@ dependencies = [
  "graphql_client",
  "hex",
  "image",
+ "itertools 0.10.3",
  "jcli",
  "jormungandr-automation",
  "jormungandr-integration-tests",

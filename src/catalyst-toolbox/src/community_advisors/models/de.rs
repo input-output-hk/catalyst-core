@@ -1,6 +1,10 @@
 use crate::utils::serde::deserialize_truthy_falsy;
 use serde::Deserialize;
 
+/// (Proposal Id, Assessor Id), an assessor cannot assess the same proposal more than once
+pub type AdvisorReviewId = (String, String);
+pub type VeteranAdvisorId = String;
+
 #[derive(Deserialize)]
 pub struct AdvisorReviewRow {
     pub proposal_id: String,
@@ -24,37 +28,83 @@ pub struct AdvisorReviewRow {
     excellent: bool,
     #[serde(alias = "Good", deserialize_with = "deserialize_truthy_falsy")]
     good: bool,
+    #[serde(
+        default,
+        alias = "Filtered Out",
+        deserialize_with = "deserialize_truthy_falsy"
+    )]
+    filtered_out: bool,
 }
 
-pub enum ReviewScore {
+#[derive(Deserialize)]
+pub struct VeteranRankingRow {
+    pub proposal_id: String,
+    #[serde(alias = "Assessor")]
+    pub assessor: String,
+    #[serde(alias = "Excellent", deserialize_with = "deserialize_truthy_falsy")]
+    excellent: bool,
+    #[serde(alias = "Good", deserialize_with = "deserialize_truthy_falsy")]
+    good: bool,
+    #[serde(
+        default,
+        alias = "Filtered Out",
+        deserialize_with = "deserialize_truthy_falsy"
+    )]
+    filtered_out: bool,
+    pub vca: VeteranAdvisorId,
+}
+
+#[derive(Hash, Clone, PartialEq, Eq, Debug)]
+pub enum ReviewRanking {
     Excellent,
     Good,
     FilteredOut,
     NA, // not reviewed by vCAs
 }
 
+impl ReviewRanking {
+    pub fn is_positive(&self) -> bool {
+        matches!(self, Self::Excellent | Self::Good)
+    }
+}
+
+impl VeteranRankingRow {
+    pub fn score(&self) -> ReviewRanking {
+        ranking_mux(self.excellent, self.good, self.filtered_out)
+    }
+
+    pub fn review_id(&self) -> AdvisorReviewId {
+        (self.proposal_id.clone(), self.assessor.clone())
+    }
+}
+
 impl AdvisorReviewRow {
-    pub fn score(&self) -> ReviewScore {
-        match (self.excellent, self.good) {
-            (true, false) => ReviewScore::Excellent,
-            (false, true) => ReviewScore::Good,
-            (false, false) => ReviewScore::NA,
-            _ => {
-                // This should never happen, from the source of information a review could be either
-                // Excellent or Good or not assessed. It cannot be both and it is considered
-                // a malformed information input.
-                panic!(
-                    "Invalid combination of scores from assessor {} for proposal {}",
-                    self.assessor, self.proposal_id
-                )
-            }
+    pub fn score(&self) -> ReviewRanking {
+        ranking_mux(self.excellent, self.good, self.filtered_out)
+    }
+}
+
+fn ranking_mux(excellent: bool, good: bool, filtered_out: bool) -> ReviewRanking {
+    match (excellent, good, filtered_out) {
+        (true, false, false) => ReviewRanking::Excellent,
+        (false, true, false) => ReviewRanking::Good,
+        (false, false, true) => ReviewRanking::FilteredOut,
+        (false, false, false) => ReviewRanking::NA,
+        _ => {
+            // This should never happen, from the source of information a review could be either
+            // Excellent or Good or not assessed. It cannot be both and it is considered
+            // a malformed information input.
+            panic!(
+                "Invalid combination of scores {} {} {}",
+                excellent, good, filtered_out
+            )
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::ReviewScore;
+    use super::{ReviewRanking, VeteranRankingRow};
     use crate::community_advisors::models::AdvisorReviewRow;
     use crate::utils::csv as csv_utils;
     use rand::{distributions::Alphanumeric, Rng};
@@ -68,15 +118,32 @@ mod tests {
         assert_eq!(data.len(), 1);
     }
 
-    impl AdvisorReviewRow {
-        pub fn dummy(score: ReviewScore) -> Self {
-            let (excellent, good) = match score {
-                ReviewScore::Good => (false, true),
-                ReviewScore::Excellent => (true, false),
-                ReviewScore::NA => (false, false),
-                _ => unimplemented!(),
-            };
+    fn ranking_demux(ranking: ReviewRanking) -> (bool, bool, bool) {
+        match ranking {
+            ReviewRanking::Good => (false, true, false),
+            ReviewRanking::Excellent => (true, false, false),
+            ReviewRanking::FilteredOut => (false, false, true),
+            ReviewRanking::NA => (false, false, false),
+        }
+    }
 
+    impl VeteranRankingRow {
+        pub fn dummy(score: ReviewRanking, assessor: String, vca: String) -> Self {
+            let (excellent, good, filtered_out) = ranking_demux(score);
+            Self {
+                proposal_id: String::new(),
+                assessor,
+                excellent,
+                good,
+                filtered_out,
+                vca,
+            }
+        }
+    }
+
+    impl AdvisorReviewRow {
+        pub fn dummy(score: ReviewRanking) -> Self {
+            let (excellent, good, filtered_out) = ranking_demux(score);
             AdvisorReviewRow {
                 proposal_id: String::new(),
                 idea_url: String::new(),
@@ -91,6 +158,7 @@ mod tests {
                 auditability_rating: 0,
                 excellent,
                 good,
+                filtered_out,
             }
         }
     }

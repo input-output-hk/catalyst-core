@@ -1,21 +1,19 @@
 mod funding;
 mod lottery;
 
-use crate::community_advisors::models::{AdvisorReviewRow, ReviewScore};
+use crate::community_advisors::models::{AdvisorReviewRow, ReviewRanking};
 use lottery::{CasWinnings, TicketsDistribution};
 use rand::{Rng, SeedableRng};
 use rand_chacha::{ChaCha8Rng, ChaChaRng};
 
 use std::collections::{BTreeMap, BTreeSet};
 
-pub use crate::rewards::community_advisors::funding::ProposalRewardSlots;
-pub use funding::{FundSetting, Funds};
+pub use crate::rewards::{community_advisors::funding::ProposalRewardSlots, Funds, Rewards};
+pub use funding::FundSetting;
 
 pub type Seed = <ChaChaRng as SeedableRng>::Seed;
 pub type CommunityAdvisor = String;
 pub type ProposalId = String;
-// Lets match to the same type as the funds, but naming it funds would be confusing
-pub type Rewards = Funds;
 
 pub type CaRewards = BTreeMap<CommunityAdvisor, Rewards>;
 pub type ProposalsReviews = BTreeMap<ProposalId, Vec<AdvisorReviewRow>>;
@@ -52,7 +50,7 @@ fn get_tickets_per_proposal(
         .map(|(id, reviews)| {
             let filtered = reviews
                 .into_iter()
-                .filter(|review| !matches!(review.score(), ReviewScore::FilteredOut))
+                .filter(|review| !matches!(review.score(), ReviewRanking::FilteredOut))
                 .collect::<Vec<_>>();
             let tickets = load_tickets_from_reviews(&filtered, rewards_slots);
             let winning_tickets = match tickets {
@@ -130,7 +128,7 @@ fn load_tickets_from_reviews(
 ) -> ProposalTickets {
     let is_legacy = proposal_reviews
         .iter()
-        .any(|rev| matches!(rev.score(), ReviewScore::NA));
+        .any(|rev| matches!(rev.score(), ReviewRanking::NA));
 
     if is_legacy {
         return ProposalTickets::Legacy {
@@ -146,8 +144,8 @@ fn load_tickets_from_reviews(
     let (excellent_tkts, good_tkts): (TicketsDistribution, TicketsDistribution) =
         // a full match is used so that we don't forget to consider new review types which may be added in the future
         proposal_reviews.iter().map(|rev| match rev.score() {
-            ReviewScore::Excellent => (rev.assessor.clone(), rewards_slots.excellent_slots),
-            ReviewScore::Good => (rev.assessor.clone(), rewards_slots.good_slots),
+            ReviewRanking::Excellent => (rev.assessor.clone(), rewards_slots.excellent_slots),
+            ReviewRanking::Good => (rev.assessor.clone(), rewards_slots.good_slots),
             _ => unreachable!("we've already filtered out other review scores"),
         }).partition(|(_ca, tkts)| *tkts == rewards_slots.excellent_slots);
 
@@ -266,9 +264,9 @@ mod tests {
 
     fn gen_dummy_reviews(n_excellent: u32, n_good: u32, n_na: u32) -> Vec<AdvisorReviewRow> {
         (0..n_excellent)
-            .map(|_| AdvisorReviewRow::dummy(ReviewScore::Excellent))
-            .chain((0..n_good).map(|_| AdvisorReviewRow::dummy(ReviewScore::Good)))
-            .chain((0..n_na).map(|_| AdvisorReviewRow::dummy(ReviewScore::NA)))
+            .map(|_| AdvisorReviewRow::dummy(ReviewRanking::Excellent))
+            .chain((0..n_good).map(|_| AdvisorReviewRow::dummy(ReviewRanking::Good)))
+            .chain((0..n_na).map(|_| AdvisorReviewRow::dummy(ReviewRanking::NA)))
             .collect()
     }
 

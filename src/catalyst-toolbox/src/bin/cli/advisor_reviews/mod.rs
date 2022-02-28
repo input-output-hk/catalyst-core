@@ -2,6 +2,7 @@ use catalyst_toolbox::utils;
 use catalyst_toolbox::vca_reviews::{read_vca_reviews_aggregated_file, Error as ReviewsError};
 
 use jcli_lib::utils::io::open_file_write;
+use std::fmt;
 use std::path::PathBuf;
 use std::str::FromStr;
 use structopt::StructOpt;
@@ -24,6 +25,7 @@ pub enum Error {
     Io(#[from] std::io::Error),
 }
 
+#[derive(Debug)]
 pub enum OutputFormat {
     Csv,
     Json,
@@ -56,6 +58,12 @@ impl FromStr for OutputFormat {
             "json" => Ok(Self::Json),
             other => Err(Error::InvalidFormat(other.to_string())),
         }
+    }
+}
+
+impl fmt::Display for OutputFormat {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
     }
 }
 

@@ -17,7 +17,7 @@ bench = false
 bech32 = "0.7"
 assert_fs = "1"
 csv = "1.1"
-wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
+wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "fix_comp_issue_windows" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
@@ -55,7 +55,7 @@ hex = "0.4"
 image = "0.23.12"
 qrcode = "0.12"
 quircs = "0.10.0"
-symmetric-cipher = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
+symmetric-cipher = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "fix_comp_issue_windows" }
 graphql_client = "0.10"
 gag = "1"
 vit-servicing-station-lib = { git = "https://github.com/danielsanchezq/vit-servicing-station.git", branch = "master" }
@@ -69,5 +69,15 @@ chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
 
+[dependencies.pyo3]
+version = "0.15.1"
+features = ["auto-initialize"]
+optional = true
+
+
 [build-dependencies]
 versionisator = "1.0.3"
+
+
+[features]
+test-api = ["pyo3"]

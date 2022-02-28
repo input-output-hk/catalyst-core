@@ -79,8 +79,7 @@ pub async fn fetch_all(
         .into_iter()
         // forcefully unwrap to pop errors directly
         // TODO: Handle error better here
-        .map(Result::unwrap)
-        .flatten()
+        .flat_map(Result::unwrap)
         // filter out non approved or staged proposals
         .filter(|p| p.approved && filter_proposal_by_stage_type(&p.stage_type, &matches))
         .filter(|p| !excluded_proposals.contains(&p.proposal_id))

@@ -13,7 +13,7 @@ pub fn get_proposals_list_is_not_empty() {
         .rest_client_with_token(&snapshot.token_hash())
         .proposals()
         .expect("cannot get proposals");
-    assert!(proposals.len() > 0);
+    assert!(!proposals.is_empty());
 }
 
 #[test]
@@ -29,7 +29,7 @@ pub fn get_proposal_by_id() -> Result<(), Box<dyn std::error::Error>> {
     let db_path = DbBuilder::new()
         .with_token(token)
         .with_proposals(vec![expected_proposal.clone()])
-        .with_challenges(vec![expected_challenge.clone()])
+        .with_challenges(vec![expected_challenge])
         .build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()

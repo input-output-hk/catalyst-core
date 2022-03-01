@@ -12,7 +12,7 @@ use assert_fs::TempDir;
 use std::{
     fs::{self, File},
     io::Read,
-    path::PathBuf,
+    path::{Path, PathBuf},
     str::FromStr,
 };
 use vit_servicing_station_lib::server::exit_codes::ApplicationExitCode;
@@ -64,7 +64,7 @@ pub fn in_settings_file_malformed() {
         .code(ApplicationExitCode::LoadSettingsError as i32);
 }
 
-pub fn remove_first_char_in_file(settings_file: &PathBuf) {
+pub fn remove_first_char_in_file(settings_file: &Path) {
     let mut file = File::open(settings_file).unwrap();
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();

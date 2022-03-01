@@ -35,9 +35,9 @@ pub fn get_proposals_by_voteplan_id_and_index() {
         .collect();
 
     let mut actual_proposals: Vec<Proposal> = rest_client
-        .proposals_by_voteplan_id_and_index(&vec![ProposalVoteplanIdAndIndexes {
+        .proposals_by_voteplan_id_and_index(&[ProposalVoteplanIdAndIndexes {
             vote_plan_id,
-            indexes: indexes.clone(),
+            indexes,
         }])
         .unwrap()
         .into_iter()

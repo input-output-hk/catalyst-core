@@ -79,7 +79,7 @@ impl ArbitraryValidVotingTemplateGenerator {
             CompanyName()
                 .fake::<String>()
                 .to_lowercase()
-                .replace(" ", "-"),
+                .replace(' ', "-"),
             DomainSuffix().fake::<String>()
         )
     }

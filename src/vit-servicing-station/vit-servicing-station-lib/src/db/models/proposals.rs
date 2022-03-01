@@ -456,7 +456,7 @@ pub mod test {
             proposals::proposal_title.eq(proposal.proposal_title.clone()),
             proposals::proposal_summary.eq(proposal.proposal_summary.clone()),
             proposals::proposal_public_key.eq(proposal.proposal_public_key.clone()),
-            proposals::proposal_funds.eq(proposal.proposal_funds.clone()),
+            proposals::proposal_funds.eq(proposal.proposal_funds),
             proposals::proposal_url.eq(proposal.proposal_url.clone()),
             proposals::proposal_files_url.eq(proposal.proposal_files_url.clone()),
             proposals::proposal_impact_score.eq(proposal.proposal_impact_score),
@@ -469,7 +469,7 @@ pub mod test {
             proposals::chain_proposal_index.eq(proposal.chain_proposal_index),
             proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),
             proposals::chain_voteplan_id.eq(proposal.chain_voteplan_id.clone()),
-            proposals::challenge_id.eq(proposal.challenge_id.clone()),
+            proposals::challenge_id.eq(proposal.challenge_id),
         );
 
         diesel::insert_into(proposals::table)

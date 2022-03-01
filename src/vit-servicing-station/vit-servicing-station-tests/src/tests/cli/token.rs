@@ -59,7 +59,7 @@ pub fn add_generated_token_to_db() -> Result<(), Box<dyn Error>> {
     vit_cli
         .api_token()
         .add()
-        .db_url(server.settings().db_url.clone())
+        .db_url(server.settings().db_url)
         .tokens(&tokens)
         .build()
         .assert()
@@ -99,7 +99,7 @@ pub fn add_generated_token_to_db_negative() -> Result<(), Box<dyn Error>> {
     vit_cli
         .api_token()
         .add()
-        .db_url(server.settings().db_url.clone())
+        .db_url(server.settings().db_url)
         .tokens_as_str("some_random_token")
         .build()
         .assert()
@@ -109,7 +109,7 @@ pub fn add_generated_token_to_db_negative() -> Result<(), Box<dyn Error>> {
     vit_cli
         .api_token()
         .add()
-        .db_url(server.settings().db_url.clone())
+        .db_url(server.settings().db_url)
         .tokens_as_str("randomtoken1;randomtoken2")
         .build()
         .assert()

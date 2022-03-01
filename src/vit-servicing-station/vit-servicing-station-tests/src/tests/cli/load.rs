@@ -6,11 +6,6 @@ use crate::common::{
 };
 use assert_cmd::assert::OutputAssertExt;
 use assert_fs::{fixture::PathChild, TempDir};
-<<<<<<< HEAD
-=======
-use chain_impl_mockchain::testing::scenario::template::{ProposalDefBuilder, VotePlanDefBuilder};
-use time::{macros::format_description, OffsetDateTime};
->>>>>>> 5846dff (switch from chrono to time-rs)
 
 #[test]
 pub fn load_data_test() {
@@ -92,56 +87,6 @@ pub fn load_data_test() {
 #[test]
 pub fn voting_snapshot_build() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
-<<<<<<< HEAD
-=======
-    let mut vote_plan_builder = VotePlanDefBuilder::new("fund_3");
-    vote_plan_builder.owner("committe_wallet_name");
-    vote_plan_builder.vote_phases(1, 2, 3);
-
-    for _ in 0..10 {
-        let mut proposal_builder = ProposalDefBuilder::new(
-            chain_impl_mockchain::testing::VoteTestGen::external_proposal_id(),
-        );
-        proposal_builder.options(3);
-        proposal_builder.action_off_chain();
-        vote_plan_builder.with_proposal(&mut proposal_builder);
-    }
-
-    let vote_plan = vote_plan_builder.build();
-    let format = format_description!("[year]-[month]-[day] [hour]:[minute]:[second] [offset_hour]");
-    let mut parameters = ValidVotePlanParameters::from_single(vote_plan);
-    parameters.set_voting_power_threshold(8_000);
-    parameters.set_voting_start(
-        OffsetDateTime::parse("2015-09-05 23:56:04 00", format)
-            .unwrap()
-            .unix_timestamp(),
-    );
-    parameters.set_voting_tally_start(
-        OffsetDateTime::parse("2015-09-05 23:56:04 00", format)
-            .unwrap()
-            .unix_timestamp(),
-    );
-    parameters.set_voting_tally_end(
-        OffsetDateTime::parse("2015-09-05 23:56:04 00", format)
-            .unwrap()
-            .unix_timestamp(),
-    );
-    parameters.set_next_fund_start_time(
-        OffsetDateTime::parse("2015-09-12 23:56:04 00", format)
-            .unwrap()
-            .unix_timestamp(),
-    );
-    parameters.set_registration_snapshot_time(
-        OffsetDateTime::parse("2015-09-03 20:00:00 00", format)
-            .unwrap()
-            .unix_timestamp(),
-    );
-
-    let mut template = ArbitraryValidVotingTemplateGenerator::new();
-    let mut generator = ValidVotePlanGenerator::new(parameters);
-    let snapshot = generator.build(&mut template);
-
->>>>>>> 5846dff (switch from chrono to time-rs)
     let mut db_builder = DbBuilder::new();
     db_builder.with_snapshot(&multivoteplan_snapshot());
     db_builder.build(&temp_dir).unwrap();

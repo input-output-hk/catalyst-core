@@ -391,8 +391,8 @@ pub mod test {
         },
         DbConnectionPool,
     };
-    use chrono::Utc;
     use diesel::{ExpressionMethods, RunQueryDsl};
+    use time::OffsetDateTime;
 
     pub fn get_test_proposal() -> FullProposalInfo {
         const CHALLENGE_ID: i32 = 9001;
@@ -424,9 +424,9 @@ pub mod test {
                 chain_proposal_index: 0,
                 chain_vote_options: VoteOptions::parse_coma_separated_value("b,a,r"),
                 chain_voteplan_id: "voteplain_id".to_string(),
-                chain_vote_start_time: Utc::now().timestamp(),
-                chain_vote_end_time: Utc::now().timestamp(),
-                chain_committee_end_time: Utc::now().timestamp(),
+                chain_vote_start_time: OffsetDateTime::now_utc().unix_timestamp(),
+                chain_vote_end_time: OffsetDateTime::now_utc().unix_timestamp(),
+                chain_committee_end_time: OffsetDateTime::now_utc().unix_timestamp(),
                 chain_voteplan_payload: "none".to_string(),
                 chain_vote_encryption_key: "none".to_string(),
                 fund_id: 1,

@@ -9,7 +9,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 base64 = "0.12.1"
-chrono = "0.4.13"
+time = "0.3"
 csv = "1.1"
 diesel = "1.4"
 rand = "0.7.3"

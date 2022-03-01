@@ -57,17 +57,16 @@ impl Insertable<voteplans::table> for Voteplan {
 #[cfg(test)]
 pub mod test {
     use crate::db::{models::voteplans::Voteplan, schema::voteplans, DbConnectionPool};
-
-    use chrono::Utc;
     use diesel::{ExpressionMethods, RunQueryDsl};
+    use time::OffsetDateTime;
 
     pub fn get_test_voteplan_with_fund_id(fund_id: i32) -> Voteplan {
         Voteplan {
             id: 1,
             chain_voteplan_id: "test_vote_plan".to_string(),
-            chain_vote_start_time: Utc::now().timestamp(),
-            chain_vote_end_time: Utc::now().timestamp(),
-            chain_committee_end_time: Utc::now().timestamp(),
+            chain_vote_start_time: OffsetDateTime::now_utc().unix_timestamp(),
+            chain_vote_end_time: OffsetDateTime::now_utc().unix_timestamp(),
+            chain_committee_end_time: OffsetDateTime::now_utc().unix_timestamp(),
             chain_voteplan_payload: "foopayload".to_string(),
             chain_vote_encryption_key: "enckey".to_string(),
             fund_id,

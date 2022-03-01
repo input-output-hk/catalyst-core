@@ -1,9 +1,8 @@
 use crate::common::data::ArbitraryGenerator;
 use crate::common::data::ArbitraryValidVotingTemplateGenerator;
 use crate::common::data::{Snapshot, ValidVotingTemplateGenerator};
-use chrono::{offset::Utc, Duration};
-use fake::{faker::chrono::en::DateTimeBetween, Fake};
 use std::iter;
+use time::{Duration, OffsetDateTime};
 use vit_servicing_station_lib::db::models::{
     api_tokens::ApiTokenData,
     challenges::Challenge,
@@ -12,24 +11,21 @@ use vit_servicing_station_lib::db::models::{
     voteplans::Voteplan,
 };
 
-use chrono::DateTime;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
-type UtcDateTime = DateTime<Utc>;
-
 struct FundDateTimes {
-    start: UtcDateTime,
-    end: UtcDateTime,
-    next: UtcDateTime,
-    snapshot: UtcDateTime,
-    next_snapshot: UtcDateTime,
+    start: OffsetDateTime,
+    end: OffsetDateTime,
+    next: OffsetDateTime,
+    snapshot: OffsetDateTime,
+    next_snapshot: OffsetDateTime,
 }
 
 struct VoteplanDateTimes {
-    start: UtcDateTime,
-    end: UtcDateTime,
-    tally: UtcDateTime,
+    start: OffsetDateTime,
+    end: OffsetDateTime,
+    tally: OffsetDateTime,
 }
 
 #[derive(Clone)]
@@ -64,12 +60,12 @@ impl ArbitrarySnapshotGenerator {
             id: id.abs(),
             fund_name: format!("Fund{}", id),
             fund_goal: fund.goal,
-            fund_start_time: dates.start.timestamp(),
+            fund_start_time: dates.start.unix_timestamp(),
             voting_power_threshold: fund.threshold.unwrap().into(),
-            fund_end_time: dates.end.timestamp(),
-            next_fund_start_time: dates.next.timestamp(),
-            registration_snapshot_time: dates.snapshot.timestamp(),
-            next_registration_snapshot_time: dates.next_snapshot.timestamp(),
+            fund_end_time: dates.end.unix_timestamp(),
+            next_fund_start_time: dates.next.unix_timestamp(),
+            registration_snapshot_time: dates.snapshot.unix_timestamp(),
+            next_registration_snapshot_time: dates.next_snapshot.unix_timestamp(),
             chain_vote_plans: vec![self.voteplan_with_fund_id(id.abs())],
             challenges: self.challenges_with_fund_id(id.abs()),
         }
@@ -123,14 +119,14 @@ impl ArbitrarySnapshotGenerator {
     }
 
     fn fund_date_times(&self) -> FundDateTimes {
-        let range_start_time = Utc::now() - Duration::days(10);
-        let range_end_time = Utc::now() + Duration::days(10);
+        let range_start_time = OffsetDateTime::now_utc() - Duration::days(10);
+        let range_end_time = OffsetDateTime::now_utc() + Duration::days(10);
         let range_next_start_time = range_end_time + Duration::days(10);
-        let start = DateTimeBetween(range_start_time, Utc::now()).fake::<UtcDateTime>();
-        let end = DateTimeBetween(Utc::now(), range_end_time).fake::<UtcDateTime>();
-        let next = DateTimeBetween(range_end_time, range_next_start_time).fake::<UtcDateTime>();
-        let snapshot = DateTimeBetween(start, end).fake::<UtcDateTime>();
-        let next_snapshot = DateTimeBetween(end, end + Duration::days(30)).fake::<UtcDateTime>();
+        let start = rand_datetime_in_range(range_start_time, OffsetDateTime::now_utc());
+        let end = rand_datetime_in_range(OffsetDateTime::now_utc(), range_end_time);
+        let next = rand_datetime_in_range(range_end_time, range_next_start_time);
+        let snapshot = rand_datetime_in_range(start, end);
+        let next_snapshot = rand_datetime_in_range(end, end + Duration::days(30));
 
         FundDateTimes {
             start,
@@ -142,12 +138,12 @@ impl ArbitrarySnapshotGenerator {
     }
 
     fn voteplan_date_times(&self) -> VoteplanDateTimes {
-        let range_start_time = Utc::now() - Duration::days(10);
-        let range_end_time = Utc::now() + Duration::days(10);
+        let range_start_time = OffsetDateTime::now_utc() - Duration::days(10);
+        let range_end_time = OffsetDateTime::now_utc() + Duration::days(10);
         let range_tally_time = range_end_time + Duration::days(10);
-        let start = DateTimeBetween(range_start_time, Utc::now()).fake::<UtcDateTime>();
-        let end = DateTimeBetween(Utc::now(), range_end_time).fake::<UtcDateTime>();
-        let tally = DateTimeBetween(range_end_time, range_tally_time).fake::<UtcDateTime>();
+        let start = rand_datetime_in_range(range_start_time, OffsetDateTime::now_utc());
+        let end = rand_datetime_in_range(OffsetDateTime::now_utc(), range_end_time);
+        let tally = rand_datetime_in_range(range_end_time, range_tally_time);
         VoteplanDateTimes { start, end, tally }
     }
 
@@ -188,9 +184,9 @@ impl ArbitrarySnapshotGenerator {
         Voteplan {
             id: id.abs(),
             chain_voteplan_id: self.id_generator.hash(),
-            chain_vote_start_time: dates.start.timestamp(),
-            chain_vote_end_time: dates.end.timestamp(),
-            chain_committee_end_time: dates.tally.timestamp(),
+            chain_vote_start_time: dates.start.unix_timestamp(),
+            chain_vote_end_time: dates.end.unix_timestamp(),
+            chain_committee_end_time: dates.tally.unix_timestamp(),
             chain_voteplan_payload: "public".to_string(),
             chain_vote_encryption_key: "".to_string(),
             fund_id,
@@ -274,4 +270,14 @@ impl ArbitrarySnapshotGenerator {
 
         Snapshot::new(funds, proposals, challenges, tokens, voteplans, reviews)
     }
+}
+
+fn rand_datetime_in_range(left: OffsetDateTime, right: OffsetDateTime) -> OffsetDateTime {
+    use rand::Rng;
+    let left_timestamp = left.unix_timestamp();
+    let right_timestamp = right.unix_timestamp();
+    OffsetDateTime::from_unix_timestamp(
+        rand::thread_rng().gen_range(left_timestamp, right_timestamp),
+    )
+    .unwrap()
 }

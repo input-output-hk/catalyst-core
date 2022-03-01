@@ -1,11 +1,11 @@
 use crate::db_utils::{backup_db_file, restore_db_file};
 use crate::{db_utils::db_file_exists, task::ExecTask};
-use chrono::{Duration, Utc};
 use rand::Rng;
 use std::collections::HashSet;
 use std::io;
 use structopt::StructOpt;
 use thiserror::Error;
+use time::{Duration, OffsetDateTime};
 use vit_servicing_station_lib::{
     db::{
         load_db_connection_pool, models::api_tokens::ApiTokenData,
@@ -99,8 +99,8 @@ impl ApiTokenCmd {
                 })?;
             let api_token_data = ApiTokenData {
                 token: ApiToken::new(token),
-                creation_time: Utc::now().timestamp(),
-                expire_time: (Utc::now() + Duration::days(365)).timestamp(),
+                creation_time: OffsetDateTime::now_utc().unix_timestamp(),
+                expire_time: (OffsetDateTime::now_utc() + Duration::days(365)).unix_timestamp(),
             };
             insert_token_data(api_token_data, db_conn).map_err(Error::Db)?;
         }

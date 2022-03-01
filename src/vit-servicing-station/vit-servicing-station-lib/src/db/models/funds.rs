@@ -161,8 +161,8 @@ pub mod test {
         DbConnectionPool,
     };
 
-    use chrono::{Duration, Utc};
     use diesel::{ExpressionMethods, RunQueryDsl};
+    use time::{Duration, OffsetDateTime};
 
     pub fn get_test_fund() -> Fund {
         const FUND_ID: i32 = 42;
@@ -170,12 +170,14 @@ pub mod test {
             id: FUND_ID,
             fund_name: "hey oh let's go".to_string(),
             fund_goal: "test this endpoint".to_string(),
-            registration_snapshot_time: (Utc::now() + Duration::days(3)).timestamp(),
-            next_registration_snapshot_time: (Utc::now() + Duration::days(30)).timestamp(),
+            registration_snapshot_time: (OffsetDateTime::now_utc() + Duration::days(3))
+                .unix_timestamp(),
+            next_registration_snapshot_time: (OffsetDateTime::now_utc() + Duration::days(30))
+                .unix_timestamp(),
             voting_power_threshold: 100,
-            fund_start_time: Utc::now().timestamp(),
-            fund_end_time: Utc::now().timestamp(),
-            next_fund_start_time: Utc::now().timestamp(),
+            fund_start_time: OffsetDateTime::now_utc().unix_timestamp(),
+            fund_end_time: OffsetDateTime::now_utc().unix_timestamp(),
+            next_fund_start_time: OffsetDateTime::now_utc().unix_timestamp(),
             chain_vote_plans: vec![voteplans_testing::get_test_voteplan_with_fund_id(FUND_ID)],
             challenges: vec![challenges_testing::get_test_challenge_with_fund_id(FUND_ID)],
         }

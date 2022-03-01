@@ -1,5 +1,5 @@
-use chrono::{DateTime, NaiveDateTime, Utc};
+use time::OffsetDateTime;
 
-pub fn unix_timestamp_to_datetime(timestamp: i64) -> DateTime<Utc> {
-    DateTime::from_utc(NaiveDateTime::from_timestamp(timestamp, 0), Utc)
+pub fn unix_timestamp_to_datetime(timestamp: i64) -> OffsetDateTime {
+    OffsetDateTime::from_unix_timestamp(timestamp).expect("invalid timestamp")
 }

@@ -133,7 +133,6 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
     vote_timing.wait_for_tally_end(leader_1.rest());
 
     let vote_plans = leader_1.rest().vote_plan_statuses().unwrap();
-    vote_plans.assert_all_proposals_are_tallied();
     vote_plans.assert_proposal_tally(fund1_vote_plan.id(), 0, vec![10_000, 10_000]);
     vote_plans.assert_proposal_tally(fund2_vote_plan.id(), 0, vec![10_000, 0]);
     Ok(())

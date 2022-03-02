@@ -271,16 +271,16 @@ mod tests {
             let mut ledger = Ledger::new();
 
             // Add all arbitrary accounts
-            for account_id in arbitrary_accounts_ids.iter().cloned() {
+            for account_id in arbitrary_accounts_ids.iter() {
                 ledger = ledger
-                    .add_account(&account_id, AverageValue::arbitrary(gen).into(), ())
+                    .add_account(account_id, AverageValue::arbitrary(gen).into(), ())
                     .unwrap();
 
                 for token in &arbitrary_voting_tokens {
                     // TODO: maybe less probability is better (for performance)
                     if bool::arbitrary(gen) {
                         ledger = ledger
-                            .token_add(&account_id, token.clone(), Value::arbitrary(gen))
+                            .token_add(account_id, token.clone(), Value::arbitrary(gen))
                             .unwrap();
                     }
                 }

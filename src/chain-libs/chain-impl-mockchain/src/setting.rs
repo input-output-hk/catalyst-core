@@ -254,7 +254,7 @@ impl Settings {
                 }
                 #[cfg(feature = "evm")]
                 ConfigParam::EvmEnvironment(evm_env_params) => {
-                    new_state.evm_environment = evm_env_params.clone();
+                    new_state.evm_environment = *evm_env_params;
                 }
             }
         }
@@ -303,7 +303,7 @@ impl Settings {
         #[cfg(feature = "evm")]
         params.push(ConfigParam::EvmConfiguration(self.evm_config));
         #[cfg(feature = "evm")]
-        params.push(ConfigParam::EvmEnvironment(self.evm_environment.clone()));
+        params.push(ConfigParam::EvmEnvironment(self.evm_environment));
 
         debug_assert_eq!(self, &Settings::new().try_apply(&params).unwrap());
 

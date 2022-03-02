@@ -167,7 +167,7 @@ mod tests {
         run(|ctx| {
             forall(fe_vec_generator().and(table_generator_default()))
                 .ensure(|(points, table)| {
-                    let (points, ks): (Vec<_>, Vec<_>) = points.to_vec().into_iter().unzip();
+                    let (points, ks): (Vec<_>, Vec<_>) = points.iter().cloned().unzip();
 
                     property::equal(
                         ks,
@@ -177,7 +177,7 @@ mod tests {
                 .test(ctx);
             forall(fe_vec_generator().and(table_generator_with_balance()))
                 .ensure(|(points, table)| {
-                    let (points, ks): (Vec<_>, Vec<_>) = points.to_vec().into_iter().unzip();
+                    let (points, ks): (Vec<_>, Vec<_>) = points.iter().cloned().unzip();
                     property::equal(
                         ks,
                         baby_step_giant_step(points.to_vec(), u16::MAX.into(), table).unwrap(),

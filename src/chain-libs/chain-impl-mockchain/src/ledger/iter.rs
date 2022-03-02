@@ -356,7 +356,7 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
 
         let globals = globals.ok_or(Error::IncompleteLedger)?;
 
-        Ok(Ledger {
+        let ledger = Ledger {
             utxos: utxos.into_iter().collect(),
             oldutxos: oldutxos.into_iter().collect(),
             accounts: accounts.into_iter().collect(),
@@ -375,7 +375,10 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
             #[cfg(feature = "evm")]
             evm,
             token_totals,
-        })
+        };
+        #[cfg(feature = "evm")]
+        let ledger = ledger.set_evm_block0().set_evm_environment();
+        Ok(ledger)
     }
 }
 

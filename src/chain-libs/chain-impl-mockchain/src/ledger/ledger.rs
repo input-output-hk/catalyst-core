@@ -344,7 +344,7 @@ impl Ledger {
         era: TimeEra,
         pots: Pots,
     ) -> Self {
-        Ledger {
+        let ledger = Ledger {
             utxos: utxo::Ledger::new(),
             oldutxos: utxo::Ledger::new(),
             accounts: account::Ledger::new(),
@@ -363,7 +363,10 @@ impl Ledger {
             #[cfg(feature = "evm")]
             evm: evm::Ledger::new(),
             token_totals: TokenTotals::default(),
-        }
+        };
+        #[cfg(feature = "evm")]
+        let ledger = ledger.set_evm_block0().set_evm_environment();
+        ledger
     }
 
     pub fn new<'a, I>(block0_initial_hash: HeaderId, contents: I) -> Result<Self, Error>
@@ -533,6 +536,23 @@ impl Ledger {
 
         ledger.validate_utxo_total_value()?;
         Ok(ledger)
+    }
+
+    #[cfg(feature = "evm")]
+    pub fn set_evm_block0(self) -> Self {
+        let mut ledger = self;
+        ledger.evm.environment.chain_id =
+            <[u8; 32]>::from(ledger.static_params.block0_initial_hash).into();
+        ledger.evm.environment.block_timestamp = ledger.static_params.block0_start_time.0.into();
+        ledger
+    }
+
+    #[cfg(feature = "evm")]
+    pub fn set_evm_environment(self) -> Self {
+        let mut ledger = self;
+        ledger.evm.environment.gas_price = ledger.settings.evm_environment.gas_price;
+        ledger.evm.environment.block_gas_limit = ledger.settings.evm_environment.block_gas_limit;
+        ledger
     }
 
     pub fn can_distribute_reward(&self) -> bool {
@@ -809,20 +829,6 @@ impl Ledger {
         new_ledger.updates = updates;
         new_ledger.settings = settings;
 
-        #[cfg(feature = "evm")]
-        {
-            // Set EVM environment values derived from block0 values
-            new_ledger.evm.environment.chain_id =
-                <[u8; 32]>::from(new_ledger.static_params.block0_initial_hash).into();
-            // TODO: set Origin, coinbase, and set block timestamp when
-            // they are defined. Using default values meanwhile.
-
-            // Set EVM environment values from settings
-            new_ledger.evm.environment.gas_price = new_ledger.settings.evm_environment.gas_price;
-            new_ledger.evm.environment.block_gas_limit =
-                new_ledger.settings.evm_environment.block_gas_limit;
-        }
-
         Ok(ApplyBlockLedger {
             ledger_params: new_ledger.get_ledger_parameters(),
             ledger: new_ledger,
@@ -856,7 +862,7 @@ impl Ledger {
         let new_block_ledger = self.begin_block(metadata.chain_length, metadata.block_date)?;
 
         #[cfg(feature = "evm")]
-        let new_block_ledger = new_block_ledger.update_evm_block(metadata);
+        let new_block_ledger = new_block_ledger.begin_evm_block(metadata);
 
         let new_block_ledger = contents
             .iter()
@@ -1681,12 +1687,15 @@ impl ApplyBlockLedger {
     }
 
     #[cfg(feature = "evm")]
-    pub fn update_evm_block(self, metadata: &HeaderContentEvalContext) -> Self {
+    pub fn begin_evm_block(self, metadata: &HeaderContentEvalContext) -> Self {
         let mut apply_block_ledger = self;
-        apply_block_ledger
-            .ledger
-            .evm
-            .update_block_environment(metadata);
+        let slots_per_epoch = apply_block_ledger.ledger.settings.slots_per_epoch;
+        let slot_duration = apply_block_ledger.ledger.settings.slot_duration;
+        apply_block_ledger.ledger.evm.update_block_environment(
+            metadata,
+            slots_per_epoch,
+            slot_duration,
+        );
         apply_block_ledger
     }
 

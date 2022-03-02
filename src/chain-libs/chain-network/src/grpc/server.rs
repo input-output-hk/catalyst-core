@@ -167,8 +167,8 @@ where
         let res = proto::node::PeersResponse {
             peers: peers
                 .nodes
-                .to_vec()
-                .into_iter()
+                .iter()
+                .cloned()
                 .map(|node| node.into_bytes())
                 .collect(),
         };

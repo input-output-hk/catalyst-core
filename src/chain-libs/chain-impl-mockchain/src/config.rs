@@ -110,7 +110,7 @@ pub enum RewardParams {
 }
 
 #[cfg(feature = "evm")]
-#[derive(Clone, Default, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Default, Debug, PartialEq, Eq)]
 /// Settings for EVM Environment
 pub struct EvmEnvSettings {
     pub gas_price: GasPrice,

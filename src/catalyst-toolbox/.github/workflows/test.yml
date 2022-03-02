@@ -59,6 +59,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Allow long paths on Windows
+        if: ${{ runner.os == 'Windows' }}
+        shell: powershell
+        run: |
+          reg add HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1 /f
+          git config --system core.longpaths true
+
       - if: ${{ runner.os == 'Windows' }}
         name: Fix up Cargo.lock hash
         run: |

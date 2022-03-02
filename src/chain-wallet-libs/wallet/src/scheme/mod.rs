@@ -25,7 +25,6 @@ where
         Fragment::VotePlan(tx) => for_each_output(tx, on_output),
         Fragment::VoteCast(tx) => for_each_output(tx, on_output),
         Fragment::VoteTally(tx) => for_each_output(tx, on_output),
-        Fragment::EncryptedVoteTally(tx) => for_each_output(tx, on_output),
         Fragment::MintToken(tx) => for_each_output(tx, on_output),
         Fragment::Evm(tx) => for_each_output(tx, on_output),
     }
@@ -62,7 +61,6 @@ where
         Fragment::VotePlan(tx) => tx.as_slice().inputs().iter().for_each(on_input),
         Fragment::VoteCast(tx) => tx.as_slice().inputs().iter().for_each(on_input),
         Fragment::VoteTally(tx) => tx.as_slice().inputs().iter().for_each(on_input),
-        Fragment::EncryptedVoteTally(tx) => tx.as_slice().inputs().iter().for_each(on_input),
         Fragment::MintToken(tx) => tx.as_slice().inputs().iter().for_each(on_input),
         Fragment::Evm(tx) => tx.as_slice().inputs().iter().for_each(on_input),
     }
@@ -118,11 +116,6 @@ where
             .iter()
             .for_each(on_input),
         Fragment::VoteTally(tx) => tx
-            .as_slice()
-            .inputs_and_witnesses()
-            .iter()
-            .for_each(on_input),
-        Fragment::EncryptedVoteTally(tx) => tx
             .as_slice()
             .inputs_and_witnesses()
             .iter()

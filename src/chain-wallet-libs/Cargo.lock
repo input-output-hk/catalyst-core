@@ -174,7 +174,7 @@ dependencies = [
 [[package]]
 name = "cardano-legacy-address"
 version = "0.1.1"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1626503c539d31925fcd99c2683edc4f73ee15a6"
 dependencies = [
  "cbor_event",
  "chain-ser",
@@ -232,7 +232,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chain-addr"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1626503c539d31925fcd99c2683edc4f73ee15a6"
 dependencies = [
  "bech32 0.8.1",
  "chain-core",
@@ -243,7 +243,7 @@ dependencies = [
 [[package]]
 name = "chain-core"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1626503c539d31925fcd99c2683edc4f73ee15a6"
 dependencies = [
  "chain-ser",
 ]
@@ -251,7 +251,7 @@ dependencies = [
 [[package]]
 name = "chain-crypto"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1626503c539d31925fcd99c2683edc4f73ee15a6"
 dependencies = [
  "bech32 0.8.1",
  "cryptoxide 0.4.2",
@@ -269,7 +269,7 @@ dependencies = [
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1626503c539d31925fcd99c2683edc4f73ee15a6"
 dependencies = [
  "cardano-legacy-address",
  "chain-addr",
@@ -283,7 +283,6 @@ dependencies = [
  "imhamt",
  "rand 0.8.4",
  "rand_core 0.6.3",
- "rayon",
  "sparse-array",
  "strum",
  "strum_macros",
@@ -304,12 +303,12 @@ dependencies = [
 [[package]]
 name = "chain-ser"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1626503c539d31925fcd99c2683edc4f73ee15a6"
 
 [[package]]
 name = "chain-time"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1626503c539d31925fcd99c2683edc4f73ee15a6"
 dependencies = [
  "chain-core",
  "chain-ser",
@@ -318,9 +317,9 @@ dependencies = [
 [[package]]
 name = "chain-vote"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1626503c539d31925fcd99c2683edc4f73ee15a6"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "chain-core",
  "chain-crypto",
  "const_format",
@@ -658,7 +657,7 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 [[package]]
 name = "imhamt"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1626503c539d31925fcd99c2683edc4f73ee15a6"
 dependencies = [
  "thiserror",
 ]
@@ -1122,7 +1121,7 @@ checksum = "c19772be3c4dd2ceaacf03cb41d5885f2a02c4d8804884918e3a258480803335"
 [[package]]
 name = "sparse-array"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1626503c539d31925fcd99c2683edc4f73ee15a6"
 
 [[package]]
 name = "static_assertions"
@@ -1256,7 +1255,7 @@ dependencies = [
 [[package]]
 name = "typed-bytes"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1626503c539d31925fcd99c2683edc4f73ee15a6"
 
 [[package]]
 name = "typenum"

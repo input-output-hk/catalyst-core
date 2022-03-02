@@ -1,12 +1,11 @@
-use chrono::DateTime;
 use serde::{Deserialize, Serialize};
 
 use std::collections::HashMap;
-use std::fmt::Display;
+use time::{format_description::FormatItem, macros::format_description, OffsetDateTime};
 
 use thiserror::Error;
 
-pub const DATETIME_FMT: &str = "%Y-%m-%d %H:%M";
+pub const DATETIME_FMT: &[FormatItem] = format_description!("[year]-[month]-[day] [hour]:[minute]");
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Error)]
@@ -80,12 +79,10 @@ impl ContentSettingsBuilder {
         Self::default()
     }
 
-    pub fn with_send_date<Tz>(mut self, datetime: DateTime<Tz>) -> Self
-    where
-        Tz: chrono::TimeZone,
-        Tz::Offset: Display,
-    {
-        self.send_date = datetime.format("%Y-%m-%d %H:%M").to_string();
+    pub fn with_send_date(mut self, datetime: OffsetDateTime) -> Self {
+        self.send_date = datetime
+            .format(&DATETIME_FMT)
+            .expect("could not format date");
         self
     }
 

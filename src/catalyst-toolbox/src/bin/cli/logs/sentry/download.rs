@@ -4,9 +4,9 @@ use jcli_lib::utils::io::open_file_write;
 
 use std::path::PathBuf;
 
-use chrono::{DateTime, FixedOffset};
 use std::str::FromStr;
 use structopt::StructOpt;
+use time::OffsetDateTime;
 use url::Url;
 
 const DATE_TIME_TAG: &str = "dateCreated";
@@ -19,11 +19,11 @@ pub enum Mode {
 #[derive(StructOpt)]
 pub struct DateFilter {
     // Optional [From, To] date range, start
-    #[structopt(long, parse(try_from_str = DateTime::parse_from_rfc3339))]
-    from: Option<DateTime<FixedOffset>>,
+    #[structopt(long, parse(try_from_str = parse_datetime_from_rfc3339))]
+    from: Option<OffsetDateTime>,
     // Optional [From, To] date range, end
-    #[structopt(long, parse( try_from_str = DateTime::parse_from_rfc3339))]
-    to: Option<DateTime<FixedOffset>>,
+    #[structopt(long, parse( try_from_str = parse_datetime_from_rfc3339))]
+    to: Option<OffsetDateTime>,
 }
 
 #[derive(StructOpt)]
@@ -165,12 +165,16 @@ fn dump_logs_to_json(logs: &[RawLog], out: PathBuf) -> Result<(), Error> {
     Ok(())
 }
 
-fn date_time_from_raw_log(l: &RawLog) -> DateTime<FixedOffset> {
-    DateTime::parse_from_rfc3339(
+fn date_time_from_raw_log(l: &RawLog) -> OffsetDateTime {
+    parse_datetime_from_rfc3339(
         l.get(DATE_TIME_TAG)
             .expect("A dateCreated entry should be present in sentry logs")
             .as_str()
             .expect("dateCreated should be a str"),
     )
     .expect("A rfc3339 compatible DateTime str")
+}
+
+fn parse_datetime_from_rfc3339(datetime: &str) -> Result<OffsetDateTime, time::error::Parse> {
+    OffsetDateTime::parse(datetime, &time::format_description::well_known::Rfc3339)
 }

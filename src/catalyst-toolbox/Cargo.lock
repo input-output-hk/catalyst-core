@@ -390,7 +390,6 @@ dependencies = [
  "chain-storage",
  "chain-time",
  "chain-vote",
- "chrono",
  "csv",
  "fixed",
  "futures",
@@ -426,6 +425,7 @@ dependencies = [
  "symmetric-cipher",
  "thiserror",
  "thor",
+ "time 0.3.7",
  "tokio",
  "url",
  "versionisator",
@@ -574,7 +574,7 @@ name = "chain-vote"
 version = "0.1.0"
 source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#b2128c8522ebf650fe13fe898c04bdc1de2527a8"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if 0.1.10",
  "chain-core",
  "chain-crypto",
  "const_format",

@@ -93,8 +93,7 @@ impl<K> UtxoGroup<K> {
         self.by_value
             .iter()
             .sorted_by_key(|x| x.0)
-            .map(|(_k, set)| set.iter())
-            .flatten()
+            .flat_map(|(_k, set)| set.iter())
     }
 
     /// total value of the given group
@@ -180,8 +179,7 @@ impl<K: Groupable> UtxoStore<K> {
         self.by_value
             .iter()
             .sorted_by_key(|x| x.0)
-            .map(|(_, set)| set.iter())
-            .flatten()
+            .flat_map(|(_, set)| set.iter())
     }
 
     /// lookup the UTxO group (if any) associated to the given derivation path

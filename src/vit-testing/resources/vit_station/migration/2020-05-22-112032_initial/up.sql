@@ -93,7 +93,8 @@ create table community_advisors_reviews (
   feasibility_rating_given INTEGER NOT NULL,
   feasibility_note VARCHAR NOT NULL,
   auditability_rating_given INTEGER NOT NULL,
-  auditability_note VARCHAR NOT NULL
+  auditability_note VARCHAR NOT NULL,
+  ranking INTEGER NOT NULL
 );
 
 CREATE VIEW full_proposals_info

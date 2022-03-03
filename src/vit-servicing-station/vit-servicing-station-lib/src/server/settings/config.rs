@@ -401,7 +401,7 @@ mod test {
             SocketAddr::from_str("127.0.0.1:3030").unwrap()
         );
         assert_eq!(config.block0_path, "./test/bin.test");
-        assert_eq!(config.enable_api_tokens, true);
+        assert!(config.enable_api_tokens);
         assert_eq!(
             config.log.log_output_path.unwrap(),
             std::path::PathBuf::from_str("./server.log").unwrap()
@@ -460,7 +460,7 @@ mod test {
         );
 
         assert!(settings.tls.is_loaded());
-        assert_eq!(settings.enable_api_tokens, true);
+        assert!(settings.enable_api_tokens);
         assert_eq!(settings.tls.cert_file.unwrap(), "foo.bar");
         assert_eq!(settings.tls.priv_key_file.unwrap(), "bar.foo");
         assert_eq!(settings.db_url, "database.sqlite3");

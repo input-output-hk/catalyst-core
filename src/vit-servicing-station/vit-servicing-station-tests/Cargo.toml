@@ -9,7 +9,7 @@ edition = "2018"
 [dependencies]
 base64 = "0.12.1"
 cfg-if = "0.1"
-chrono = { version = "0.4", features = ["serde"] }
+time = { version = "0.3", features = ["formatting", "parsing", "macros"] }
 diesel = { version = "1.4.4", features = ["sqlite", "r2d2"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.53"
@@ -20,24 +20,24 @@ diesel_migrations = "1.4.0"
 tempfile = "3"
 rand_core = "0.5"
 assert_fs = "1.0.0"
-assert_cmd = "1.0.7"
+assert_cmd = "2"
 hyper = "0.14.2"
 vit-servicing-station-lib = {path= "../vit-servicing-station-lib"}
 lazy_static = "1.4"
 rand = "0.7"
 quickcheck = { version = "0.9" }
 quickcheck_macros = { version = "0.9" }
-predicates = { version = "1.0", default-features = false, features = ["difference"] }
+predicates = { version = "2.0", default-features = false, features = ["diff"] }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 chain-addr      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 chain-crypto    = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
-fake = { version = "2.2", features=['chrono','http']}
+fake = { version = "2.2", features=['http']}
 pretty_assertions = "0.6"
 dyn-clone = "1.0.4"
 
 [dependencies.reqwest]
-version = "0.10.6"
+version = "0.11"
 default-features = false
 features = ["blocking"]
 

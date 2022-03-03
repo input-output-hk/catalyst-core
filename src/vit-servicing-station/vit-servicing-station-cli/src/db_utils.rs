@@ -37,7 +37,7 @@ mod test {
     fn backup_file() -> io::Result<()> {
         let file_path = "./tmp_db.db";
         let content = b"foo bar";
-        let content_vec = content.iter().cloned().collect::<Vec<u8>>();
+        let content_vec = content.to_vec();
         // create a file with some content
         fs::write(file_path, content)?;
 

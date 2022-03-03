@@ -1,9 +1,9 @@
 use crate::db::models::vote_options::VoteOptions;
 use crate::utils::datetime::unix_timestamp_to_datetime;
-use chrono::{DateTime, Utc};
 use serde::de::Visitor;
-use serde::{Deserialize, Deserializer, Serializer};
+use serde::{ser::Error, Deserialize, Deserializer, Serializer};
 use std::fmt;
+use time::{format_description::well_known::Rfc3339, OffsetDateTime};
 
 // this warning should be disable here since the interface for this function requires
 // the first argument to be passed by value
@@ -13,7 +13,11 @@ pub fn serialize_unix_timestamp_as_rfc3339<S: Serializer>(
     serializer: S,
 ) -> Result<S::Ok, S::Error> {
     let datetime = unix_timestamp_to_datetime(*timestamp);
-    serializer.serialize_str(&datetime.to_rfc3339())
+    serializer.serialize_str(
+        &datetime
+            .format(&Rfc3339)
+            .map_err(|e| S::Error::custom(format!("Could not serialize date: {}", e)))?,
+    )
 }
 
 pub fn deserialize_unix_timestamp_from_rfc3339<'de, D>(deserializer: D) -> Result<i64, D::Error>
@@ -23,26 +27,23 @@ where
     struct Rfc3339Deserializer();
 
     impl<'de> Visitor<'de> for Rfc3339Deserializer {
-        type Value = DateTime<Utc>;
+        type Value = OffsetDateTime;
 
         fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
             formatter.write_str("An rfc3339 compatible string is needed")
         }
 
-        fn visit_str<E>(self, value: &str) -> Result<DateTime<Utc>, E>
+        fn visit_str<E>(self, value: &str) -> Result<OffsetDateTime, E>
         where
             E: serde::de::Error,
         {
-            let date: DateTime<Utc> = DateTime::parse_from_rfc3339(value)
-                .map_err(|e| E::custom(format!("{}", e)))?
-                .with_timezone(&Utc);
-            Ok(date)
+            OffsetDateTime::parse(value, &Rfc3339).map_err(|e| E::custom(format!("{}", e)))
         }
     }
 
     deserializer
         .deserialize_str(Rfc3339Deserializer())
-        .map(|datetime| datetime.timestamp())
+        .map(|datetime| datetime.unix_timestamp())
 }
 
 pub fn serialize_bin_as_str<S: Serializer>(data: &[u8], serializer: S) -> Result<S::Ok, S::Error> {

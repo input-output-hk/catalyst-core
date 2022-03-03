@@ -46,15 +46,15 @@ pub mod test {
         let pool = &shared_context.read().await.db_connection_pool;
         db_testing::initialize_db_with_migration(&pool.get().unwrap());
         let mut proposal: FullProposalInfo = proposals_testing::get_test_proposal();
-        proposals_testing::populate_db_with_proposal(&proposal, &pool);
+        proposals_testing::populate_db_with_proposal(&proposal, pool);
         let challenge: Challenge =
             challenges_testing::get_test_challenge_with_fund_id(proposal.proposal.fund_id);
-        challenges_testing::populate_db_with_challenge(&challenge, &pool);
+        challenges_testing::populate_db_with_challenge(&challenge, pool);
 
         let review = reviews_testing::get_test_advisor_review_with_proposal_id(
             proposal.proposal.proposal_id.parse().unwrap(),
         );
-        reviews_testing::populate_db_with_advisor_review(&review, &pool);
+        reviews_testing::populate_db_with_advisor_review(&review, pool);
         proposal.proposal.reviews_count = 1;
         // build filter
         let filter = warp::path!(i32)
@@ -85,10 +85,10 @@ pub mod test {
         let pool = &shared_context.read().await.db_connection_pool;
         db_testing::initialize_db_with_migration(&pool.get().unwrap());
         let proposal: FullProposalInfo = proposals_testing::get_test_proposal();
-        proposals_testing::populate_db_with_proposal(&proposal, &pool);
+        proposals_testing::populate_db_with_proposal(&proposal, pool);
         let challenge: Challenge =
             challenges_testing::get_test_challenge_with_fund_id(proposal.proposal.fund_id);
-        challenges_testing::populate_db_with_challenge(&challenge, &pool);
+        challenges_testing::populate_db_with_challenge(&challenge, pool);
         // build filter
         let filter = warp::any()
             .and(warp::get())
@@ -113,10 +113,10 @@ pub mod test {
         let pool = &shared_context.read().await.db_connection_pool;
         db_testing::initialize_db_with_migration(&pool.get().unwrap());
         let proposal: FullProposalInfo = proposals_testing::get_test_proposal();
-        proposals_testing::populate_db_with_proposal(&proposal, &pool);
+        proposals_testing::populate_db_with_proposal(&proposal, pool);
         let challenge: Challenge =
             challenges_testing::get_test_challenge_with_fund_id(proposal.proposal.fund_id);
-        challenges_testing::populate_db_with_challenge(&challenge, &pool);
+        challenges_testing::populate_db_with_challenge(&challenge, pool);
         // build filter
         let filter = warp::any()
             .and(warp::post())

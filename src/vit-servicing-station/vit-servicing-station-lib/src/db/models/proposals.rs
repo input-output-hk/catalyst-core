@@ -391,8 +391,8 @@ pub mod test {
         },
         DbConnectionPool,
     };
-    use chrono::Utc;
     use diesel::{ExpressionMethods, RunQueryDsl};
+    use time::OffsetDateTime;
 
     pub fn get_test_proposal() -> FullProposalInfo {
         const CHALLENGE_ID: i32 = 9001;
@@ -424,9 +424,9 @@ pub mod test {
                 chain_proposal_index: 0,
                 chain_vote_options: VoteOptions::parse_coma_separated_value("b,a,r"),
                 chain_voteplan_id: "voteplain_id".to_string(),
-                chain_vote_start_time: Utc::now().timestamp(),
-                chain_vote_end_time: Utc::now().timestamp(),
-                chain_committee_end_time: Utc::now().timestamp(),
+                chain_vote_start_time: OffsetDateTime::now_utc().unix_timestamp(),
+                chain_vote_end_time: OffsetDateTime::now_utc().unix_timestamp(),
+                chain_committee_end_time: OffsetDateTime::now_utc().unix_timestamp(),
                 chain_voteplan_payload: "none".to_string(),
                 chain_vote_encryption_key: "none".to_string(),
                 fund_id: 1,
@@ -456,7 +456,7 @@ pub mod test {
             proposals::proposal_title.eq(proposal.proposal_title.clone()),
             proposals::proposal_summary.eq(proposal.proposal_summary.clone()),
             proposals::proposal_public_key.eq(proposal.proposal_public_key.clone()),
-            proposals::proposal_funds.eq(proposal.proposal_funds.clone()),
+            proposals::proposal_funds.eq(proposal.proposal_funds),
             proposals::proposal_url.eq(proposal.proposal_url.clone()),
             proposals::proposal_files_url.eq(proposal.proposal_files_url.clone()),
             proposals::proposal_impact_score.eq(proposal.proposal_impact_score),
@@ -469,7 +469,7 @@ pub mod test {
             proposals::chain_proposal_index.eq(proposal.chain_proposal_index),
             proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),
             proposals::chain_voteplan_id.eq(proposal.chain_voteplan_id.clone()),
-            proposals::challenge_id.eq(proposal.challenge_id.clone()),
+            proposals::challenge_id.eq(proposal.challenge_id),
         );
 
         diesel::insert_into(proposals::table)

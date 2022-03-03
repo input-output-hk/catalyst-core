@@ -6,9 +6,9 @@ use crate::db::{
 };
 use crate::v0::api_token::ApiToken;
 use crate::v0::errors::HandleError;
-use chrono::{Duration, Utc};
 use diesel::query_dsl::RunQueryDsl;
 use diesel::{ExpressionMethods, Insertable, OptionalExtension, QueryDsl, QueryResult};
+use time::{Duration, OffsetDateTime};
 
 pub async fn query_token(
     token: ApiToken,
@@ -30,8 +30,8 @@ pub async fn insert_token(token: &ApiToken, pool: &DbConnectionPool) -> Result<(
 
     let api_token_data = ApiTokenData {
         token: token.clone(),
-        creation_time: Utc::now().timestamp(),
-        expire_time: (Utc::now() + Duration::days(365)).timestamp(),
+        creation_time: OffsetDateTime::now_utc().unix_timestamp(),
+        expire_time: (OffsetDateTime::now_utc() + Duration::days(365)).unix_timestamp(),
     };
 
     tokio::task::spawn_blocking(move || {

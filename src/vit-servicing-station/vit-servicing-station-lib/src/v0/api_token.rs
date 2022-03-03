@@ -105,15 +105,15 @@ mod test {
     };
     use crate::v0::api_token::{api_token_filter, ApiToken, API_TOKEN_HEADER};
     use crate::v0::context::test::new_in_memmory_db_test_shared_context;
-    use chrono::Utc;
     use diesel::{ExpressionMethods, RunQueryDsl};
+    use time::OffsetDateTime;
 
     pub fn get_testing_token() -> (api_token_model::ApiTokenData, String) {
         let data = b"ffffffffffffffffffffffffffffffff".to_vec();
         let token_data = ApiTokenData {
             token: ApiToken(data.clone()),
-            creation_time: Utc::now().timestamp(),
-            expire_time: Utc::now().timestamp(),
+            creation_time: OffsetDateTime::now_utc().unix_timestamp(),
+            expire_time: OffsetDateTime::now_utc().unix_timestamp(),
         };
         (
             token_data,

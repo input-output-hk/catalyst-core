@@ -31,6 +31,7 @@ table! {
         feasibility_note -> Text,
         auditability_rating_given -> Integer,
         auditability_note -> Text,
+        ranking -> Integer,
     }
 }
 

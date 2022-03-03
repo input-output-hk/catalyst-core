@@ -1,4 +1,6 @@
 use serde::Deserialize;
+use std::convert::TryInto;
+use vit_servicing_station_lib::db::models::community_advisors_reviews::{self, ReviewRanking};
 use vit_servicing_station_lib::db::models::proposals::{
     self, community_choice, simple, Category, ChallengeType, ProposalChallengeInfo, Proposer,
 };
@@ -187,5 +189,67 @@ impl Proposal {
             }
         };
         Ok((proposal, challenge_info))
+    }
+}
+
+#[derive(Deserialize)]
+pub struct AdvisorReview {
+    id: i32,
+    proposal_id: i32,
+    assessor: String,
+    impact_alignment_rating_given: i32,
+    impact_alignment_note: String,
+    feasibility_rating_given: i32,
+    feasibility_note: String,
+    auditability_rating_given: i32,
+    auditability_note: String,
+    #[serde(
+        alias = "Excellent",
+        deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_truthy_falsy"
+    )]
+    excellent: bool,
+    #[serde(
+        alias = "Good",
+        deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_truthy_falsy"
+    )]
+    good: bool,
+    #[serde(
+        default,
+        alias = "Filtered Out",
+        deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_truthy_falsy"
+    )]
+    filtered_out: bool,
+}
+
+impl TryInto<community_advisors_reviews::AdvisorReview> for AdvisorReview {
+    type Error = std::io::Error;
+
+    fn try_into(self) -> Result<community_advisors_reviews::AdvisorReview, Self::Error> {
+        Ok(community_advisors_reviews::AdvisorReview {
+            id: self.id,
+            proposal_id: self.proposal_id,
+            assessor: self.assessor,
+            feasibility_note: self.feasibility_note,
+            feasibility_rating_given: self.feasibility_rating_given,
+            impact_alignment_note: self.impact_alignment_note,
+            impact_alignment_rating_given: self.impact_alignment_rating_given,
+            auditability_note: self.auditability_note,
+            auditability_rating_given: self.auditability_rating_given,
+            ranking: match (self.excellent, self.good, self.filtered_out) {
+                (true, false, false) => ReviewRanking::Excellent,
+                (false, true, false) => ReviewRanking::Good,
+                (false, false, true) => ReviewRanking::FilteredOut,
+                (false, false, false) => ReviewRanking::NA,
+                _ => {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::InvalidData,
+                        format!(
+                            "expected one-hot encoding, found {}-{}-{}",
+                            self.excellent, self.good, self.filtered_out
+                        ),
+                    ))
+                }
+            },
+        })
     }
 }

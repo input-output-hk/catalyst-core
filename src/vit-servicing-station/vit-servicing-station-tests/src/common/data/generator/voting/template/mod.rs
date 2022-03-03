@@ -8,6 +8,7 @@ pub use external::{
 };
 use serde::{Deserialize, Serialize};
 use vit_servicing_station_lib::db::models::challenges::ChallengeHighlights;
+use vit_servicing_station_lib::db::models::community_advisors_reviews::ReviewRanking;
 use vit_servicing_station_lib::db::models::proposals::{ChallengeType, ProposalChallengeInfo};
 use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
 
@@ -71,6 +72,7 @@ pub struct ReviewTemplate {
     pub feasibility_note: String,
     pub auditability_rating_given: i32,
     pub auditability_note: String,
+    pub ranking: ReviewRanking,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

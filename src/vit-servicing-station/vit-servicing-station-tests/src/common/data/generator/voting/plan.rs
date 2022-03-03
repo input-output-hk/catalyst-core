@@ -311,7 +311,7 @@ impl ValidVotePlanGenerator {
             Some(AdvisorReview {
                 id: review_data
                     .id
-                    .unwrap_or_else(|| 0.to_string())
+                    .unwrap_or_else(|| 0i32.to_string())
                     .parse()
                     .unwrap(),
                 proposal_id: review_data.proposal_id.parse().unwrap(),
@@ -322,6 +322,7 @@ impl ValidVotePlanGenerator {
                 feasibility_note: review_data.feasibility_note,
                 auditability_rating_given: review_data.auditability_rating_given,
                 auditability_note: review_data.auditability_note,
+                ranking: review_data.ranking,
             })
         })
         .take(self.parameters.reviews_count)

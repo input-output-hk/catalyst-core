@@ -2,7 +2,7 @@ use crate::db::models::vote_options::VoteOptions;
 use crate::utils::datetime::unix_timestamp_to_datetime;
 use chrono::{DateTime, Utc};
 use serde::de::Visitor;
-use serde::{Deserializer, Serializer};
+use serde::{Deserialize, Deserializer, Serializer};
 use std::fmt;
 
 // this warning should be disable here since the interface for this function requires
@@ -130,4 +130,15 @@ where
     }
 
     deserializer.deserialize_str(VoteOptionsDeserializer())
+}
+
+pub fn deserialize_truthy_falsy<'de, D>(deserializer: D) -> Result<bool, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let truthy_value = <&str>::deserialize(deserializer)?;
+    Ok(matches!(
+        truthy_value.to_lowercase().as_ref(),
+        "x" | "1" | "true"
+    ))
 }

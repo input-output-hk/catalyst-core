@@ -3,6 +3,7 @@ use crate::{db_utils::db_file_exists, task::ExecTask};
 use csv::Trim;
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
+use std::convert::TryInto;
 use std::io;
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
@@ -12,10 +13,7 @@ use vit_servicing_station_lib::db::models::proposals::{
 };
 use vit_servicing_station_lib::db::{
     load_db_connection_pool,
-    models::{
-        challenges::Challenge, community_advisors_reviews::AdvisorReview, funds::Fund,
-        proposals::Proposal, voteplans::Voteplan,
-    },
+    models::{challenges::Challenge, funds::Fund, proposals::Proposal, voteplans::Voteplan},
 };
 
 #[derive(Error, Debug)]
@@ -109,7 +107,10 @@ impl CsvDataCmd {
                 .map(|c| (c.id, c))
                 .collect();
         let csv_proposals = CsvDataCmd::load_from_csv::<super::models::Proposal>(proposals_path)?;
-        let reviews = CsvDataCmd::load_from_csv::<AdvisorReview>(reviews_path)?;
+        let reviews = CsvDataCmd::load_from_csv::<super::models::AdvisorReview>(reviews_path)?
+            .into_iter()
+            .map(TryInto::try_into)
+            .collect::<Result<Vec<_>, _>>()?;
         let mut proposals: Vec<Proposal> = Vec::new();
         let mut simple_proposals_data: Vec<simple::ChallengeSqlValues> = Vec::new();
         let mut community_proposals_data: Vec<community_choice::ChallengeSqlValues> = Vec::new();

@@ -6443,7 +6443,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#7d16d8507dfedd805bdf42add49da1a243a2e43f"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#76304f56ae3e60d863ec96d887678803586dff1d"
 dependencies = [
  "assert_cmd 1.0.8",
  "assert_fs",

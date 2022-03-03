@@ -23,6 +23,7 @@ use jormungandr_lib::{crypto::hash::Hash, interfaces::Block0Configuration};
 use rand::prelude::*;
 use rand_chacha::ChaChaRng;
 use std::collections::HashMap;
+use std::num::NonZeroU64;
 use thor::FragmentBuilder;
 use thor::Wallet;
 
@@ -47,7 +48,7 @@ fn account_from_slice<P>(
     }
 }
 
-impl VoteRoundGenerator {
+impl<'a> VoteRoundGenerator {
     pub fn new(blockchain: TestBlockchain) -> Self {
         let TestBlockchain {
             config,
@@ -146,9 +147,11 @@ impl VoteRoundGenerator {
     /// within their validity window
     pub fn feed_vote_cast(&mut self, fragment: &Fragment) {
         if let Fragment::VoteCast(ref transaction) = fragment {
+            let ledger = self.ledger();
             let vote_cast = transaction.as_slice().payload().into_payload();
             let vote_plan_id = vote_cast.vote_plan().clone();
-
+            let token_totals = self.token_totals(&ledger);
+            let token_distribution = TokenDistribution::new(&token_totals, ledger.accounts());
             let address =
                 account_from_slice(&transaction.as_slice()).expect("utxo votes not supported");
             let update_voteplan = self.voteplan_managers.get(&vote_plan_id).unwrap().vote(
@@ -159,6 +162,7 @@ impl VoteRoundGenerator {
                     .vote_start(),
                 address.to_single_account().unwrap(),
                 vote_cast,
+                token_distribution,
             );
             if let Ok(update_voteplan) = update_voteplan {
                 self.voteplan_managers.insert(vote_plan_id, update_voteplan);
@@ -168,8 +172,8 @@ impl VoteRoundGenerator {
         };
     }
 
-    fn token_distribution(&self, ledger: &Ledger) -> TokenDistribution<()> {
-        let token_totals = TokenTotals::default()
+    fn token_totals(&self, ledger: &'a Ledger) -> TokenTotals {
+        TokenTotals::default()
             .add(
                 self.voting_token.clone(),
                 ledger
@@ -185,15 +189,17 @@ impl VoteRoundGenerator {
                     })
                     .sum(),
             )
-            .unwrap();
+            .unwrap()
+    }
 
-        TokenDistribution::new(token_totals, ledger.accounts().clone())
+    pub fn ledger(&self) -> Ledger {
+        let block0 = self.block0.to_block();
+        Ledger::new(block0.header().id(), block0.fragments()).unwrap()
     }
 
     /// Tally voteplans and return the fragments to run the tally in a separate ledger
     pub fn tally_transactions<R: Rng + CryptoRng>(&mut self, rng: &mut R) -> Vec<Fragment> {
         let mut fragments = Vec::new();
-        let block0 = self.block0.to_block();
         let member_keys = self
             .committee_manager
             .members()
@@ -201,9 +207,12 @@ impl VoteRoundGenerator {
             .map(|member| member.public_key())
             .collect::<Vec<_>>();
 
-        let tmp_ledger = Ledger::new(block0.header().id(), block0.fragments()).unwrap();
+        let tmp_ledger = self.ledger();
         let stake_control = StakeControl::new_with(tmp_ledger.accounts(), &utxo::Ledger::new());
-        let table = chain_vote::TallyOptimizationTable::generate(stake_control.assigned().into());
+        let table = chain_vote::TallyOptimizationTable::generate(
+            NonZeroU64::new(stake_control.assigned().into()).unwrap(),
+        );
+        let token_totals = self.token_totals(&tmp_ledger);
 
         self.voteplan_managers = self
             .voteplan_managers
@@ -211,25 +220,16 @@ impl VoteRoundGenerator {
             .into_iter()
             .map(|(id, manager)| {
                 let vote_end = manager.plan().vote_end();
+                let token_distribution =
+                    TokenDistribution::new(&token_totals, tmp_ledger.accounts());
+
                 match manager.plan().payload_type() {
                     PayloadType::Private => {
-                        let mut manager = manager
-                            .start_private_tally(
-                                self.token_distribution(&tmp_ledger),
-                                vote_end,
-                                self.block0.blockchain_configuration.committees[0].into(),
-                            )
-                            .unwrap();
-
                         let mut results = Vec::new();
                         let mut shares = Vec::new();
-                        for proposal in manager.statuses().proposals {
-                            let (encrypted_tally, total_stake) = proposal
-                                .tally
-                                .as_ref()
-                                .unwrap()
-                                .private_encrypted()
-                                .unwrap();
+                        for proposal in manager.statuses(token_distribution.clone()).proposals {
+                            let (encrypted_tally, _total_stake) =
+                                proposal.tally.private_encrypted().unwrap();
 
                             let sh = self
                                 .committee_manager
@@ -242,7 +242,7 @@ impl VoteRoundGenerator {
                             let partial_res = encrypted_tally
                                 .validate_partial_decryptions(&member_keys, &sh)
                                 .unwrap()
-                                .decrypt_tally((*total_stake).0, &table)
+                                .decrypt_tally(&table)
                                 .unwrap();
                             results.push(partial_res.votes.into_boxed_slice());
                             shares.push(sh);
@@ -262,8 +262,15 @@ impl VoteRoundGenerator {
                         )
                         .unwrap();
 
-                        manager = manager
-                            .finalize_private_tally(&decrypted_tally, &Default::default(), |_| ())
+                        let manager = manager
+                            .private_tally(
+                                vote_end,
+                                &decrypted_tally,
+                                &Default::default(),
+                                self.block0.blockchain_configuration.committees[0].into(),
+                                token_distribution,
+                                |_| (),
+                            )
                             .unwrap();
 
                         fragments.extend(self.prepare_tally_fragments(
@@ -278,10 +285,10 @@ impl VoteRoundGenerator {
                     PayloadType::Public => {
                         let manager = manager
                             .public_tally(
-                                self.token_distribution(&tmp_ledger),
                                 vote_end,
                                 &Default::default(),
                                 self.block0.blockchain_configuration.committees[0].into(),
+                                token_distribution,
                                 |_| (),
                             )
                             .unwrap();
@@ -313,13 +320,6 @@ impl VoteRoundGenerator {
             committee_end,
         );
 
-        if let VoteTallyPayload::Private { .. } = payload {
-            let encrypted_tally_fragment =
-                fragment_builder.encrypted_tally(committee_member, voteplan);
-            committee_member.confirm_transaction();
-            res.push(encrypted_tally_fragment);
-        }
-
         let tally_fragment = fragment_builder.vote_tally(committee_member, voteplan, payload);
         committee_member.confirm_transaction();
         res.push(tally_fragment);
@@ -327,10 +327,15 @@ impl VoteRoundGenerator {
         res
     }
 
-    pub fn statuses(&mut self) -> Vec<VotePlanStatus> {
+    pub fn statuses(&mut self, ledger: &'a Ledger) -> Vec<VotePlanStatus> {
         self.voteplan_managers
             .values()
-            .map(|manager| manager.statuses())
+            .map(|manager| {
+                manager.statuses(TokenDistribution::new(
+                    &self.token_totals(ledger),
+                    ledger.accounts(),
+                ))
+            })
             .collect::<Vec<_>>()
     }
 }

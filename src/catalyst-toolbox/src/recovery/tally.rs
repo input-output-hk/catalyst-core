@@ -737,7 +737,7 @@ mod test {
         for voteplan in ledger.active_vote_plans() {
             println!("Voteplan: {}", voteplan.id);
             for proposal in voteplan.proposals {
-                match proposal.tally.as_ref().unwrap() {
+                match proposal.tally {
                     Tally::Public { result } => {
                         let results = result.results();
                         assert_eq!(*results.get(0).unwrap(), 0.into());

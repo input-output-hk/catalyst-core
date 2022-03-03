@@ -1,8 +1,38 @@
 use crate::db::schema::community_advisors_reviews;
 
 use diesel::prelude::*;
-use diesel::{Insertable, Queryable};
+use diesel::{
+    backend::Backend,
+    deserialize::{self, FromSql},
+    sql_types::Integer,
+    FromSqlRow, Insertable, Queryable,
+};
 use serde::{Deserialize, Serialize};
+
+#[derive(Copy, Clone, PartialEq, Eq, Debug, Serialize, FromSqlRow, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ReviewRanking {
+    Excellent = 0,
+    Good = 1,
+    FilteredOut = 2,
+    NA = 3, // not reviewed by vCAs
+}
+
+impl<DB> FromSql<Integer, DB> for ReviewRanking
+where
+    DB: Backend,
+    i32: FromSql<Integer, DB>,
+{
+    fn from_sql(bytes: Option<&DB::RawValue>) -> deserialize::Result<Self> {
+        match i32::from_sql(bytes)? {
+            0 => Ok(ReviewRanking::Excellent),
+            1 => Ok(ReviewRanking::Good),
+            2 => Ok(ReviewRanking::FilteredOut),
+            3 => Ok(ReviewRanking::NA),
+            x => Err(format!("Unrecognized variant {}", x).into()),
+        }
+    }
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Queryable)]
 pub struct AdvisorReview {
@@ -15,6 +45,7 @@ pub struct AdvisorReview {
     pub feasibility_note: String,
     pub auditability_rating_given: i32,
     pub auditability_note: String,
+    pub ranking: ReviewRanking,
 }
 
 impl Insertable<community_advisors_reviews::table> for AdvisorReview {
@@ -28,6 +59,7 @@ impl Insertable<community_advisors_reviews::table> for AdvisorReview {
         diesel::dsl::Eq<community_advisors_reviews::feasibility_note, String>,
         diesel::dsl::Eq<community_advisors_reviews::auditability_rating_given, i32>,
         diesel::dsl::Eq<community_advisors_reviews::auditability_note, String>,
+        diesel::dsl::Eq<community_advisors_reviews::ranking, i32>,
     );
 
     fn values(self) -> Self::Values {
@@ -42,6 +74,7 @@ impl Insertable<community_advisors_reviews::table> for AdvisorReview {
             community_advisors_reviews::auditability_rating_given
                 .eq(self.auditability_rating_given),
             community_advisors_reviews::auditability_note.eq(self.auditability_note),
+            community_advisors_reviews::ranking.eq(self.ranking as i32),
         )
     }
 }
@@ -63,6 +96,7 @@ pub mod test {
             feasibility_note: "feasibility note".to_string(),
             auditability_rating_given: 0,
             auditability_note: "auditability".to_string(),
+            ranking: ReviewRanking::Good,
         }
     }
 

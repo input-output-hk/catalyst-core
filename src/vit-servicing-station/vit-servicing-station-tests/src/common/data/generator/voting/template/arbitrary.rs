@@ -14,6 +14,7 @@ use fake::{
     Fake,
 };
 use vit_servicing_station_lib::db::models::challenges::ChallengeHighlights;
+use vit_servicing_station_lib::db::models::community_advisors_reviews::ReviewRanking;
 use vit_servicing_station_lib::db::models::proposals::community_choice::ChallengeInfo as CommunityChoiceChallengeInfo;
 use vit_servicing_station_lib::db::models::proposals::simple::ChallengeInfo as SimpleChallengeInfo;
 use vit_servicing_station_lib::db::models::proposals::Category;
@@ -212,6 +213,11 @@ impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
             .get(self.generator.random_index(self.proposals.len()))
             .map(|proposal| proposal.proposal_id.clone())
             .unwrap();
+        let ranking = match self.generator.next_u32() % 2 {
+            0 => ReviewRanking::Excellent,
+            1 => ReviewRanking::Good,
+            _ => unreachable!("do not generate other review types for now"),
+        };
 
         let review = ReviewTemplate {
             id: Some(self.next_review_id().to_string()),
@@ -223,6 +229,7 @@ impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
             feasibility_note: fake::faker::lorem::en::Sentence(0..100).fake::<String>(),
             auditability_rating_given: (self.generator.next_u32() % 5) as i32,
             auditability_note: fake::faker::lorem::en::Sentence(0..100).fake::<String>(),
+            ranking,
         };
         self.reviews.push(review.clone());
         review

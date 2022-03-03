@@ -129,6 +129,8 @@ impl CsvConverter {
             "feasibility_note",
             "auditability_rating_given",
             "auditability_note",
+            "excellent",
+            "good",
         ];
 
         let content: Vec<Vec<String>> = challenges.iter().map(convert_advisor_review).collect();
@@ -256,5 +258,7 @@ fn convert_advisor_review(review: &AdvisorReview) -> Vec<String> {
         review.feasibility_note.to_string(),
         review.auditability_rating_given.to_string(),
         review.auditability_note.to_string(),
+        (review.ranking as u8 == 0).to_string(),
+        (review.ranking as u8 == 1).to_string(),
     ]
 }

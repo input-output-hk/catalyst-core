@@ -260,6 +260,7 @@ impl ArbitrarySnapshotGenerator {
             feasibility_note: review.feasibility_note,
             auditability_rating_given: review.auditability_rating_given,
             auditability_note: review.auditability_note,
+            ranking: review.ranking,
         }
     }
 

@@ -6,7 +6,7 @@ use std::ops::Deref;
 ///
 /// See module documentation for mode details about how to use
 /// `Entropy`.
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, zeroize::ZeroizeOnDrop)]
 pub enum Entropy {
     Entropy9([u8; 12]),
     Entropy12([u8; 16]),
@@ -243,18 +243,5 @@ impl Deref for Entropy {
     type Target = [u8];
     fn deref(&self) -> &Self::Target {
         self.as_ref()
-    }
-}
-
-impl Drop for Entropy {
-    fn drop(&mut self) {
-        match self {
-            Entropy::Entropy9(b) => cryptoxide::util::secure_memset(b, 0),
-            Entropy::Entropy12(b) => cryptoxide::util::secure_memset(b, 0),
-            Entropy::Entropy15(b) => cryptoxide::util::secure_memset(b, 0),
-            Entropy::Entropy18(b) => cryptoxide::util::secure_memset(b, 0),
-            Entropy::Entropy21(b) => cryptoxide::util::secure_memset(b, 0),
-            Entropy::Entropy24(b) => cryptoxide::util::secure_memset(b, 0),
-        }
     }
 }

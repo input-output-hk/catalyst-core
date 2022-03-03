@@ -4,6 +4,7 @@ use cryptoxide::pbkdf2::pbkdf2;
 use cryptoxide::sha2::Sha512;
 use std::convert::TryInto;
 use thiserror::Error;
+use zeroize::Zeroizing;
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -56,9 +57,9 @@ pub fn encrypt<G: rand::Rng + rand::CryptoRng>(
         nonce
     };
 
-    let mut symmetric_key = derive_symmetric_key(password, salt);
+    let symmetric_key = derive_symmetric_key(password, salt);
 
-    let mut chacha20 = ChaCha20Poly1305::new(&symmetric_key, &nonce, &aad);
+    let mut chacha20 = ChaCha20Poly1305::new(&*symmetric_key, &nonce, &aad);
 
     let (ciphertext, tag) = {
         let mut ciphertext = vec![0u8; data.as_ref().len()];
@@ -67,8 +68,6 @@ pub fn encrypt<G: rand::Rng + rand::CryptoRng>(
 
         (ciphertext.into_boxed_slice(), tag)
     };
-
-    cryptoxide::util::secure_memset(&mut symmetric_key, 0x55);
 
     let mut buffer =
         vec![0u8; PROTOCOL_SIZE + SALT_SIZE + NONCE_SIZE + ciphertext.len() + TAG_SIZE];
@@ -94,13 +93,11 @@ pub fn decrypt<T: AsRef<[u8]>>(password: impl AsRef<[u8]>, data: T) -> Result<Bo
         return Err(Error::InvalidProtocol);
     }
 
-    let mut key = derive_symmetric_key(password, data.salt().try_into().unwrap());
+    let key = derive_symmetric_key(password, data.salt().try_into().unwrap());
 
-    let mut chacha20 = ChaCha20Poly1305::new(&key, data.nonce(), &aad);
+    let mut chacha20 = ChaCha20Poly1305::new(&*key, data.nonce(), &aad);
 
     let mut plaintext = vec![0u8; data.encrypted_data().len()];
-
-    cryptoxide::util::secure_memset(&mut key, 0x55);
 
     if chacha20.decrypt(data.encrypted_data(), &mut plaintext, data.tag()) {
         Ok(plaintext.into_boxed_slice())
@@ -156,13 +153,13 @@ impl<T: AsRef<[u8]>> View<T> {
     }
 }
 
-fn derive_symmetric_key(password: impl AsRef<[u8]>, salt: [u8; SALT_SIZE]) -> [u8; 32] {
+fn derive_symmetric_key(password: impl AsRef<[u8]>, salt: [u8; SALT_SIZE]) -> Zeroizing<[u8; 32]> {
     let mut symmetric_key = [0u8; 32];
 
     let mut mac = Hmac::new(Sha512::new(), password.as_ref());
     pbkdf2(&mut mac, &salt[..], ITERS, &mut symmetric_key);
 
-    symmetric_key
+    Zeroizing::new(symmetric_key)
 }
 
 #[cfg(test)]

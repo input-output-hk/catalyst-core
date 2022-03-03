@@ -12,3 +12,6 @@ members = [
 
 [profile.release]
 lto = "yes"
+
+[patch.crates-io]
+cryptoxide = { git = "https://github.com/typed-io/cryptoxide.git" }

@@ -7,15 +7,14 @@
 
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::{AsymmetricKey, Ed25519, Ed25519Extended, PublicKey, SecretKey};
-use cryptoxide::ed25519;
+use cryptoxide::ed25519::{self, PRIVATE_KEY_LENGTH};
 use std::{
     convert::TryInto,
     fmt::{self, Display},
     str::FromStr,
 };
 
-pub use cryptoxide::ed25519::SEED_LENGTH;
-pub type Seed = [u8; SEED_LENGTH];
+pub type Seed = [u8; PRIVATE_KEY_LENGTH];
 
 pub struct Account<K: AsymmetricKey> {
     secret: SecretKey<K>,
@@ -167,7 +166,7 @@ mod tests {
 
     impl Arbitrary for Account<Ed25519> {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            let mut seed = [0; SEED_LENGTH];
+            let mut seed = [0; PRIVATE_KEY_LENGTH];
             g.fill_bytes(&mut seed);
             Self::from_seed(seed)
         }

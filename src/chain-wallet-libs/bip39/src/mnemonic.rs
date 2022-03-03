@@ -1,3 +1,5 @@
+use zeroize::ZeroizeOnDrop;
+
 use crate::{dictionary, Error, Result, Type};
 use std::{fmt, ops::Deref, str};
 
@@ -33,7 +35,7 @@ pub struct Mnemonics(Vec<MnemonicIndex>);
 ///
 /// See the module documentation for more details about how to use it
 /// within the `chain_wallet` library.
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, ZeroizeOnDrop)]
 pub struct MnemonicString(String);
 
 impl MnemonicString {
@@ -222,11 +224,5 @@ impl Drop for Mnemonics {
         for byte in self.0.iter_mut() {
             *byte = MnemonicIndex(0);
         }
-    }
-}
-
-impl Drop for MnemonicString {
-    fn drop(&mut self) {
-        unsafe { cryptoxide::util::secure_memset(self.0.as_mut_vec(), 0) }
     }
 }

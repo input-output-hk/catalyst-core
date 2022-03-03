@@ -12,6 +12,7 @@ pub const SEED_SIZE: usize = 64;
 ///
 /// See the module documentation for more details about how to use it
 /// within the `chain_wallet` library.
+#[derive(zeroize::ZeroizeOnDrop)]
 pub struct Seed([u8; SEED_SIZE]);
 
 impl Seed {
@@ -109,11 +110,5 @@ impl Deref for Seed {
     type Target = [u8];
     fn deref(&self) -> &Self::Target {
         self.as_ref()
-    }
-}
-
-impl Drop for Seed {
-    fn drop(&mut self) {
-        cryptoxide::util::secure_memset(&mut self.0, 0)
     }
 }

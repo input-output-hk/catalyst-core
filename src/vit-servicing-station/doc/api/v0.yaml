@@ -517,6 +517,14 @@ components:
           $ref: "#/components/schemas/Rating"
         auditability_note:
           type: string
+        ranking:
+          description: Measure of quality of this review according to veteran community advisors
+          type: string
+          enum:
+            - Excellent
+            - Good
+            - FilteredOut
+            - NA
 
     Rating:
       type: integer

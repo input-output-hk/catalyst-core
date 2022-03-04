@@ -165,6 +165,18 @@ jobs:
           path: ~/.cargo/registry/cache
           key: cargo-deps-v2-${{ hashFiles('Cargo.lock') }}
 
+      - name: Install libsqlite3 (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install libsqlite3-dev
+
+      - uses: actions-rs/cargo@v1
+        continue-on-error: false
+        with:
+          command: build
+          args: --locked
+
       - name: Run cargo-tarpaulin
         uses: actions-rs/tarpaulin@v0.1
         with:

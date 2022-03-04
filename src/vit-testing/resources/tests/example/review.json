@@ -9,7 +9,7 @@
         "feasibility_note": "maiores.",
         "auditability_rating_given": 3,
         "auditability_note": "blanditiis eos deleniti est assumenda.",
-        "ranking": "Good"
+        "ranking": "good"
     },
     {
         "id": "2",
@@ -21,7 +21,7 @@
         "feasibility_note": "recusandae aut ut minima neque.",
         "auditability_rating_given": 4,
         "auditability_note": "unde.",
-        "ranking": "Excellent"
+        "ranking": "excellent"
     },
     {
         "id": "3",
@@ -33,6 +33,7 @@
         "feasibility_note": ".",
         "auditability_rating_given": 1,
         "auditability_note": "nihil reprehenderit et voluptatem vero consequatur sit dolores dolor.",
-        "ranking": "Excellent"
+        "ranking": "excellent"
     }
 ]
+

@@ -4,7 +4,8 @@ use crate::header::BlockDate;
 use crate::ledger::Error;
 use chain_evm::{
     machine::{BlockHash, BlockNumber, BlockTimestamp, Config, Environment, VirtualMachine},
-    state::{AccountTrie, Balance, LogsState},
+    primitive_types::U256,
+    state::{AccountTrie, LogsState},
 };
 
 #[derive(Clone, PartialEq, Eq)]
@@ -173,10 +174,10 @@ impl Ledger {
     pub(crate) fn stats(&self) -> String {
         let Ledger { accounts, .. } = self;
         let mut count = 0;
-        let mut total = Balance::zero();
+        let mut total = U256::zero();
         for (_, account) in accounts {
             count += 1;
-            total += account.balance;
+            total += account.balance.into();
         }
         format!("EVM accounts: #{} Total={:?}", count, total)
     }

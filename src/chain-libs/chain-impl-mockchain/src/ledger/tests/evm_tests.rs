@@ -208,7 +208,9 @@ impl TryFrom<TestAccountState> for Account {
         }
         Ok(Self {
             nonce: U256::from_str(&account.nonce).map_err(|_| "Can not parse nonce")?,
-            balance: U256::from_str(&account.balance).map_err(|_| "Can not parse balance")?,
+            balance: U256::from_str(&account.balance)
+                .map_err(|_| "Can not parse balance")?
+                .try_into()?,
             storage,
             code: hex::decode(
                 account.code[0..2]

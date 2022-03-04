@@ -19,7 +19,7 @@ use thiserror::Error;
 
 use crate::{
     precompiles::Precompiles,
-    state::{AccountTrie, ByteCode, Key, LogsState},
+    state::{AccountTrie, ByteCode, Error as StateError, Key, LogsState},
 };
 
 /// Export EVM types
@@ -126,6 +126,8 @@ pub enum Error {
     TransactionFatalError(ExitFatal),
     #[error("transaction has been reverted: machine encountered an explict revert")]
     TransactionRevertError(ExitRevert),
+    #[error("state error: {0}")]
+    StateError(StateError),
 }
 
 /// Top-level abstraction for the EVM with the
@@ -175,9 +177,9 @@ impl<'runtime> VirtualMachine<'runtime> {
         let (exit_reason, val) = f(&mut executor, gas_limit);
         match exit_reason {
             ExitReason::Succeed(_) => {
-                let used_gas = U256::from(executor.used_gas());
-                let gas_fees = used_gas * self.gas_price();
-                // apply and return state
+                // calculate the gas fees given the
+                // gas price in the environment
+                let gas_fees = executor.fee(self.gas_price());
                 // apply changes to the state, this consumes the executor
                 let state = executor.into_state();
                 // Next, we consume the stack state and extract the values and logs
@@ -188,10 +190,7 @@ impl<'runtime> VirtualMachine<'runtime> {
 
                 // pay gas fees
                 self.state = self.state.clone().modify_account(caller, |mut account| {
-                    account.balance = account
-                        .balance
-                        .checked_sub(gas_fees)
-                        .expect("Acount does not have enough funds to pay gas fees");
+                    account.balance = account.balance.checked_sub(gas_fees)?;
                     Some(account)
                 });
 
@@ -355,7 +354,7 @@ impl<'runtime> Backend for VirtualMachine<'runtime> {
         self.state
             .get(&address)
             .map(|a| Basic {
-                balance: a.balance,
+                balance: a.balance.into(),
                 nonce: a.nonce,
             })
             .unwrap_or_default()
@@ -398,7 +397,7 @@ impl<'runtime> ApplyBackend for VirtualMachine<'runtime> {
                     // If reset_storage is set, the account's balance is
                     // set to be Default::default().
                     self.state = self.state.clone().modify_account(address, |mut account| {
-                        account.balance = balance;
+                        account.balance = balance.try_into().unwrap();
                         account.nonce = nonce;
                         if let Some(code) = code {
                             account.code = code

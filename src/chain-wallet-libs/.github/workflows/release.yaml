@@ -383,6 +383,13 @@ jobs:
         working-directory: ./bindings/wallet-cordova/scripts
         run: python3 ./build_wasm.py
 
+      - name: Install uniffi
+        uses: actions-rs/install@v0.1
+        with:
+          crate: uniffi_bindgen
+          version: 0.16.0
+          use-tool-cache: true
+
       - name: copy java definitions from jni
         run: python3 ./bindings/wallet-cordova/scripts/copy_jni_definitions.py
 

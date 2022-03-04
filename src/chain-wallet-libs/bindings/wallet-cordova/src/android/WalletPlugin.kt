@@ -107,7 +107,7 @@ class WalletPlugin
         val accountKey = args.getArrayBuffer(0).toUByteArray().toList()
         val utxoKeys = args.getArrayBuffer(1).toUByteArray()
 
-        val mappedKeys = utxoKeys.windowed(64).map { SecretKeyEd25519Extended(it) }
+        val mappedKeys = utxoKeys.chunked(64).map { SecretKeyEd25519Extended(it) }
 
         try {
             val walletId = nextWalletId.incrementAndGet()

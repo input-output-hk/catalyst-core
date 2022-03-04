@@ -8,6 +8,26 @@ from directories import repository_directory, plugin_directory
 
 
 def run():
+    if (
+        subprocess.run(
+            [
+                "uniffi-bindgen",
+                "generate",
+                "-l",
+                "kotlin",
+                "src/lib.udl",
+                "--config-path",
+                "uniffi.toml",
+                "-o",
+                "codegen/kotlin",
+            ],
+            cwd=repository_directory / "bindings" / "wallet-uniffi",
+        ).returncode
+        != 0
+    ):
+        print("couldn't build kotlin bindings")
+        sys.exit(1)
+
     src_files = (
         repository_directory
         / "bindings"

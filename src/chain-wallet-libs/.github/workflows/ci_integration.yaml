@@ -272,6 +272,13 @@ jobs:
       - name: Setup cordova
         run: sudo npm install -g cordova
 
+      - name: Install uniffi
+        uses: actions-rs/install@v0.1
+        with:
+          crate: uniffi_bindgen
+          version: 0.16.0
+          use-tool-cache: true
+
       - name: build test app
         run: |
           python3 bindings/wallet-cordova/scripts/test.py \

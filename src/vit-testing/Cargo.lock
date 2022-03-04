@@ -568,10 +568,10 @@ dependencies = [
  "hex",
  "image",
  "itertools 0.10.3",
- "jcli",
- "jormungandr-automation",
- "jormungandr-integration-tests",
- "jormungandr-lib",
+ "jcli 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-integration-tests 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "jortestkit",
  "log",
  "once_cell",
@@ -590,7 +590,7 @@ dependencies = [
  "structopt",
  "symmetric-cipher 0.5.0 (git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=fix_comp_issue_windows)",
  "thiserror",
- "thor",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "time 0.3.7",
  "tokio 1.17.0",
  "url",
@@ -2304,7 +2304,7 @@ dependencies = [
 [[package]]
 name = "hersir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ebeb8b31e70cb40897401aac7b79987b734add35"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion#adcb9953997a97e7e5cda37909bf3447baa84eff"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2315,8 +2315,8 @@ dependencies = [
  "custom_debug",
  "hex",
  "indicatif",
- "jormungandr-automation",
- "jormungandr-lib",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "jortestkit",
  "parity-multiaddr 0.11.2",
  "rand 0.8.5",
@@ -2329,7 +2329,39 @@ dependencies = [
  "serde_yaml",
  "structopt",
  "thiserror",
- "thor",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "yaml-rust",
+]
+
+[[package]]
+name = "hersir"
+version = "0.1.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ebeb8b31e70cb40897401aac7b79987b734add35"
+dependencies = [
+ "assert_fs",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "ctrlc",
+ "custom_debug",
+ "hex",
+ "indicatif",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jortestkit",
+ "parity-multiaddr 0.11.2",
+ "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "rand_core 0.6.3",
+ "reqwest 0.11.9",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_yaml",
+ "structopt",
+ "thiserror",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "yaml-rust",
 ]
 
@@ -2539,13 +2571,13 @@ dependencies = [
  "eccoxide",
  "ed25519-bip32 0.3.2",
  "hdkeygen",
- "hersir",
+ "hersir 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "hex",
  "hyper 0.13.10",
  "image",
  "itertools 0.9.0",
- "jormungandr-automation",
- "jormungandr-lib",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "jortestkit",
  "rand 0.8.5",
  "rand_core 0.6.3",
@@ -2556,7 +2588,7 @@ dependencies = [
  "serde_json",
  "structopt",
  "thiserror",
- "thor",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "tokio 1.17.0",
  "url",
  "valgrind",
@@ -2701,11 +2733,11 @@ dependencies = [
  "chain-impl-mockchain",
  "chain-ser",
  "chrono",
- "hersir",
+ "hersir 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "iapyx",
- "jcli",
- "jormungandr-automation",
- "jormungandr-lib",
+ "jcli 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "jortestkit",
  "libmath",
  "rand 0.8.5",
@@ -2714,7 +2746,7 @@ dependencies = [
  "serde_json",
  "snapshot-trigger-service",
  "thiserror",
- "thor",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "tokio 1.17.0",
  "valgrind",
  "vit-servicing-station-lib 0.3.4-dev (git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master)",
@@ -2770,6 +2802,40 @@ checksum = "1aab8fc367588b89dcee83ab0fd66b72b50b72fa1904d7095045ace2b0c81c35"
 [[package]]
 name = "jcli"
 version = "0.13.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion#adcb9953997a97e7e5cda37909bf3447baa84eff"
+dependencies = [
+ "base64 0.13.0",
+ "bech32 0.8.1",
+ "bincode",
+ "bytes 1.1.0",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-time",
+ "chain-vote",
+ "clap",
+ "ed25519-bip32 0.4.1",
+ "gtmpl",
+ "hex",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "rayon",
+ "reqwest 0.11.9",
+ "rpassword",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_yaml",
+ "structopt",
+ "thiserror",
+ "versionisator",
+]
+
+[[package]]
+name = "jcli"
+version = "0.13.0"
 source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ebeb8b31e70cb40897401aac7b79987b734add35"
 dependencies = [
  "base64 0.13.0",
@@ -2786,7 +2852,7 @@ dependencies = [
  "ed25519-bip32 0.4.1",
  "gtmpl",
  "hex",
- "jormungandr-lib",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "rayon",
@@ -2799,6 +2865,71 @@ dependencies = [
  "structopt",
  "thiserror",
  "versionisator",
+]
+
+[[package]]
+name = "jormungandr-automation"
+version = "0.13.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion#adcb9953997a97e7e5cda37909bf3447baa84eff"
+dependencies = [
+ "assert_cmd 2.0.4",
+ "assert_fs",
+ "base64 0.13.0",
+ "bech32 0.8.1",
+ "bincode",
+ "bytesize",
+ "cardano-legacy-address",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-storage",
+ "chain-time",
+ "chain-vote",
+ "custom_debug",
+ "flate2",
+ "fs_extra",
+ "futures",
+ "graphql_client",
+ "hex",
+ "humantime",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "jortestkit",
+ "json",
+ "keynesis",
+ "lazy_static",
+ "log",
+ "netstat2",
+ "os_info",
+ "parity-multiaddr 0.11.2",
+ "poldercast 1.2.1",
+ "predicates 2.1.1",
+ "prost",
+ "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "rand_core 0.6.3",
+ "regex 1.5.4",
+ "reqwest 0.11.9",
+ "semver",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_yaml",
+ "strum 0.23.0",
+ "sysinfo 0.23.5",
+ "tar",
+ "tempfile",
+ "thiserror",
+ "tokio 1.17.0",
+ "tokio-stream",
+ "tonic",
+ "tonic-build",
+ "tracing",
+ "tracing-subscriber 0.3.6",
+ "typed-bytes",
+ "url",
+ "warp",
+ "zip",
 ]
 
 [[package]]
@@ -2827,7 +2958,7 @@ dependencies = [
  "graphql_client",
  "hex",
  "humantime",
- "jormungandr-lib",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "jortestkit",
  "json",
  "keynesis",
@@ -2869,7 +3000,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-integration-tests"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ebeb8b31e70cb40897401aac7b79987b734add35"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion#adcb9953997a97e7e5cda37909bf3447baa84eff"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -2884,16 +3015,16 @@ dependencies = [
  "fs_extra",
  "function_name",
  "futures",
- "hersir",
+ "hersir 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "hex",
  "indicatif",
- "jormungandr-automation",
- "jormungandr-lib",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "jortestkit",
  "json",
  "lazy_static",
- "loki",
- "mjolnir",
+ "loki 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "mjolnir 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "parity-multiaddr 0.11.2",
  "poldercast 1.2.1",
  "predicates 2.1.1",
@@ -2910,12 +3041,93 @@ dependencies = [
  "serde_yaml",
  "tempfile",
  "thiserror",
- "thor",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "tokio 1.17.0",
  "tonic",
  "tracing",
  "url",
  "yaml-rust",
+]
+
+[[package]]
+name = "jormungandr-integration-tests"
+version = "0.13.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ebeb8b31e70cb40897401aac7b79987b734add35"
+dependencies = [
+ "assert_cmd 2.0.4",
+ "assert_fs",
+ "base64 0.13.0",
+ "bech32 0.7.3",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-time",
+ "chain-vote",
+ "fs_extra",
+ "function_name",
+ "futures",
+ "hersir 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "hex",
+ "indicatif",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jortestkit",
+ "json",
+ "lazy_static",
+ "loki 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "mjolnir 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "parity-multiaddr 0.11.2",
+ "poldercast 1.2.1",
+ "predicates 2.1.1",
+ "prost",
+ "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "rand_core 0.6.3",
+ "regex 1.5.4",
+ "reqwest 0.11.9",
+ "rstest",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_yaml",
+ "tempfile",
+ "thiserror",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "tokio 1.17.0",
+ "tonic",
+ "tracing",
+ "url",
+ "yaml-rust",
+]
+
+[[package]]
+name = "jormungandr-lib"
+version = "0.13.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion#adcb9953997a97e7e5cda37909bf3447baa84eff"
+dependencies = [
+ "base64 0.13.0",
+ "bech32 0.8.1",
+ "bincode",
+ "cardano-legacy-address",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-time",
+ "chain-vote",
+ "hex",
+ "http",
+ "humantime",
+ "parity-multiaddr 0.11.2",
+ "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "rand_core 0.6.3",
+ "serde",
+ "serde_with",
+ "thiserror",
+ "time 0.3.7",
+ "typed-bytes",
 ]
 
 [[package]]
@@ -3177,15 +3389,15 @@ dependencies = [
 [[package]]
 name = "loki"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ebeb8b31e70cb40897401aac7b79987b734add35"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion#adcb9953997a97e7e5cda37909bf3447baa84eff"
 dependencies = [
  "chain-addr",
  "chain-core",
  "chain-crypto",
  "chain-impl-mockchain",
  "custom_debug",
- "jormungandr-automation",
- "jormungandr-lib",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "parity-multiaddr 0.11.2",
  "rand 0.8.5",
  "rand_core 0.6.3",
@@ -3194,7 +3406,32 @@ dependencies = [
  "serde_yaml",
  "structopt",
  "thiserror",
- "thor",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "tokio 1.17.0",
+ "warp",
+]
+
+[[package]]
+name = "loki"
+version = "0.1.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ebeb8b31e70cb40897401aac7b79987b734add35"
+dependencies = [
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "custom_debug",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "parity-multiaddr 0.11.2",
+ "rand 0.8.5",
+ "rand_core 0.6.3",
+ "reqwest 0.11.9",
+ "serde",
+ "serde_yaml",
+ "structopt",
+ "thiserror",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "tokio 1.17.0",
  "warp",
 ]
@@ -3374,6 +3611,33 @@ dependencies = [
 [[package]]
 name = "mjolnir"
 version = "0.1.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion#adcb9953997a97e7e5cda37909bf3447baa84eff"
+dependencies = [
+ "assert_fs",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-storage",
+ "chain-time",
+ "chain-vote",
+ "indicatif",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "jortestkit",
+ "loki 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "rand 0.8.5",
+ "rand_core 0.6.3",
+ "structopt",
+ "thiserror",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "tokio 1.17.0",
+ "versionisator",
+]
+
+[[package]]
+name = "mjolnir"
+version = "0.1.0"
 source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ebeb8b31e70cb40897401aac7b79987b734add35"
 dependencies = [
  "assert_fs",
@@ -3385,15 +3649,15 @@ dependencies = [
  "chain-time",
  "chain-vote",
  "indicatif",
- "jormungandr-automation",
- "jormungandr-lib",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "jortestkit",
- "loki",
+ "loki 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "rand 0.8.5",
  "rand_core 0.6.3",
  "structopt",
  "thiserror",
- "thor",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "tokio 1.17.0",
  "versionisator",
 ]
@@ -4524,8 +4788,8 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "futures",
- "jormungandr-automation",
- "jormungandr-integration-tests",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "jormungandr-integration-tests 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "jortestkit",
  "regex 1.5.4",
  "reqwest 0.10.10",
@@ -4552,8 +4816,8 @@ dependencies = [
  "futures",
  "hex",
  "iapyx",
- "jormungandr-integration-tests",
- "jormungandr-lib",
+ "jormungandr-integration-tests 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "jortestkit",
  "reqwest 0.10.10",
  "serde",
@@ -5218,7 +5482,7 @@ dependencies = [
  "chain-addr",
  "chrono",
  "futures",
- "jormungandr-lib",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "jortestkit",
  "reqwest 0.10.10",
  "serde",
@@ -5639,6 +5903,37 @@ dependencies = [
 [[package]]
 name = "thor"
 version = "0.1.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion#adcb9953997a97e7e5cda37909bf3447baa84eff"
+dependencies = [
+ "assert_fs",
+ "bech32 0.8.1",
+ "bincode",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-vote",
+ "cocoon",
+ "custom_debug",
+ "dirs",
+ "hex",
+ "jcli 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "jortestkit",
+ "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "rand_core 0.6.3",
+ "serde",
+ "serde_yaml",
+ "structopt",
+ "thiserror",
+ "time 0.3.7",
+]
+
+[[package]]
+name = "thor"
+version = "0.1.0"
 source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ebeb8b31e70cb40897401aac7b79987b734add35"
 dependencies = [
  "assert_fs",
@@ -5653,9 +5948,9 @@ dependencies = [
  "custom_debug",
  "dirs",
  "hex",
- "jcli",
- "jormungandr-automation",
- "jormungandr-lib",
+ "jcli 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
  "jortestkit",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
@@ -6330,8 +6625,8 @@ dependencies = [
  "hex",
  "hyper 0.13.10",
  "itertools 0.9.0",
- "jormungandr-automation",
- "jormungandr-lib",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "jortestkit",
  "regex 1.5.4",
  "reqwest 0.10.10",
@@ -6500,14 +6795,14 @@ dependencies = [
  "function_name",
  "futures",
  "glob",
- "hersir",
+ "hersir 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "hex",
  "hyper 0.14.17",
  "image",
  "indicatif",
  "itertools 0.9.0",
- "jormungandr-automation",
- "jormungandr-lib",
+ "jormungandr-automation 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
+ "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "jortestkit",
  "json",
  "lazy_static",
@@ -6529,7 +6824,7 @@ dependencies = [
  "strum_macros 0.21.1",
  "tempdir",
  "thiserror",
- "thor",
+ "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=implement_vote_plan_assertion)",
  "tokio 1.17.0",
  "tokio-rustls 0.23.2",
  "tokio-stream",

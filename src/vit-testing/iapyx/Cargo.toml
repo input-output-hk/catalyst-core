@@ -25,10 +25,10 @@ rand_core = "0.6"
 itertools = "0.9.0"
 cryptoxide = "0.3.2"
 ed25519-bip32 = "^0.3.1"
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-thor = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-hersir = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "implement_vote_plan_assertion" }
+jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "implement_vote_plan_assertion" }
+thor = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "implement_vote_plan_assertion" }
+hersir = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "implement_vote_plan_assertion" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "update_chain_wallet_libs" }
 valgrind = { path = "../valgrind"}

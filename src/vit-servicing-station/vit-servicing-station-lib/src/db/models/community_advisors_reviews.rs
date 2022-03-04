@@ -10,7 +10,6 @@ use diesel::{
 use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Serialize, FromSqlRow, Deserialize)]
-#[serde(rename_all = "snake_case")]
 pub enum ReviewRanking {
     Excellent = 0,
     Good = 1,

@@ -22,7 +22,7 @@ use serde::{Deserialize as SerdeDeserialize, Serialize as SerdeSerialize};
 use std::collections::HashMap;
 use std::convert::Infallible;
 use std::fs::{self, File};
-use std::path::PathBuf;
+use std::path::Path;
 use std::str::FromStr;
 use std::sync::Arc;
 use thiserror::Error;
@@ -550,7 +550,7 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) -> R
     Ok(())
 }
 
-fn load_cert(filename: &PathBuf) -> Result<Vec<rustls::Certificate>, Error> {
+fn load_cert(filename: &Path) -> Result<Vec<rustls::Certificate>, Error> {
     let certfile = fs::File::open(filename)?;
     let mut reader = std::io::BufReader::new(certfile);
 
@@ -565,7 +565,7 @@ fn load_cert(filename: &PathBuf) -> Result<Vec<rustls::Certificate>, Error> {
     }
 }
 
-fn load_private_key(filename: &PathBuf) -> Result<rustls::PrivateKey, Error> {
+fn load_private_key(filename: &Path) -> Result<rustls::PrivateKey, Error> {
     let keyfile = File::open(filename)?;
     let mut reader = std::io::BufReader::new(keyfile);
 

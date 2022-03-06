@@ -1,5 +1,6 @@
 use crate::common::iapyx_from_secret_key;
 use assert_fs::TempDir;
+use chain_addr::Discrimination;
 use chain_crypto::Ed25519;
 use chain_impl_mockchain::block::BlockDate;
 use chain_impl_mockchain::certificate::UpdateProposal;
@@ -83,6 +84,7 @@ pub fn increase_max_block_content_size_during_voting() {
             .path()
             .join(format!("wallet_{}", COMMITTEE)),
         Some(0u32.into()),
+        Discrimination::Production,
     );
 
     let settings = controller.settings();

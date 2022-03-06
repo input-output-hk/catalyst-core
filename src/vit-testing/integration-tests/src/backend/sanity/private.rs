@@ -153,7 +153,7 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
 
     let vote_plan_statuses = leader_1.rest().vote_plan_statuses().unwrap();
 
-    vote_plan_statuses.assert_proposal_tally(fund1_vote_plan.id(), 0, vec![10_000 * 3, 0]);
+    vote_plan_statuses.assert_proposal_tally(fund1_vote_plan.id(), 0, vec![20_000, 10_000]);
 
     Ok(())
 }

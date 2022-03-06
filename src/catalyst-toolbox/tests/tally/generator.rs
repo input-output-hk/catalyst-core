@@ -137,8 +137,10 @@ impl<'a> VoteRoundGenerator {
             fragments.shuffle(rng);
         }
 
+        let ledger = self.ledger();
+        let token_totals = self.token_totals(&ledger);
         for fragment in &fragments {
-            self.feed_vote_cast(fragment);
+            self.feed_vote_cast(fragment, &ledger, &token_totals);
         }
 
         fragments
@@ -146,13 +148,16 @@ impl<'a> VoteRoundGenerator {
 
     /// Since this has no internal ledger, it assumes all transactions are correctly signed and
     /// within their validity window
-    pub fn feed_vote_cast(&mut self, fragment: &Fragment) {
+    pub fn feed_vote_cast(
+        &mut self,
+        fragment: &Fragment,
+        ledger: &'a Ledger,
+        token_totals: &TokenTotals,
+    ) {
         if let Fragment::VoteCast(ref transaction) = fragment {
-            let ledger = self.ledger();
             let vote_cast = transaction.as_slice().payload().into_payload();
+            let token_distribution = TokenDistribution::new(token_totals, ledger.accounts());
             let vote_plan_id = vote_cast.vote_plan().clone();
-            let token_totals = self.token_totals(&ledger);
-            let token_distribution = TokenDistribution::new(&token_totals, ledger.accounts());
             let address =
                 account_from_slice(&transaction.as_slice()).expect("utxo votes not supported");
             let update_voteplan = self.voteplan_managers.get(&vote_plan_id).unwrap().vote(
@@ -329,13 +334,11 @@ impl<'a> VoteRoundGenerator {
     }
 
     pub fn statuses(&mut self, ledger: &'a Ledger) -> Vec<VotePlanStatus> {
+        let token_totals = self.token_totals(ledger);
         self.voteplan_managers
             .values()
             .map(|manager| {
-                manager.statuses(TokenDistribution::new(
-                    &self.token_totals(ledger),
-                    ledger.accounts(),
-                ))
+                manager.statuses(TokenDistribution::new(&token_totals, ledger.accounts()))
             })
             .collect::<Vec<_>>()
     }

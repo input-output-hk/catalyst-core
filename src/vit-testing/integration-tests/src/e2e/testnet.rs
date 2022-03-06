@@ -110,7 +110,6 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     vote_timing.wait_for_tally_end(leader_1.rest());
 
     let vote_plans = leader_1.rest().vote_plan_statuses().unwrap();
-    vote_plans.assert_all_proposals_are_tallied();
-    vote_plans.assert_proposal_tally(fund1_vote_plan.id(), 0, vec![0, u64::from(entry.value), 0]);
-    vote_plans.assert_proposal_tally(fund2_vote_plan.id(), 0, vec![0, u64::from(entry.value), 0]);
+    vote_plans.assert_proposal_tally(fund1_vote_plan.id(), 0, vec![u64::from(entry.value), 0]);
+    vote_plans.assert_proposal_tally(fund2_vote_plan.id(), 0, vec![u64::from(entry.value), 0]);
 }

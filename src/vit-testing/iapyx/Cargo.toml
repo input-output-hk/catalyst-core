@@ -8,10 +8,10 @@ edition = "2021"
 
 [dependencies]
 bech32 = "0.7"
-wallet-core = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "fix_comp_issue_windows"}
-wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "fix_comp_issue_windows"}
-hdkeygen = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "fix_comp_issue_windows"}
-bip39 = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "fix_comp_issue_windows"}
+wallet-core = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master"}
+wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master"}
+hdkeygen = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master"}
+bip39 = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master"}
 chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master"  }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
@@ -30,7 +30,7 @@ jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr
 thor = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 hersir = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
-catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "main" }
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "update_chain_wallet_libs" }
 valgrind = { path = "../valgrind"}
 hyper = "0.13.6"
 thiserror = "1.0"

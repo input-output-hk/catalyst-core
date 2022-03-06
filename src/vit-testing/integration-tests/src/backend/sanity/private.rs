@@ -118,16 +118,6 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
         FragmentSenderSetup::resend_3_times(),
     );
 
-    fragment_sender
-        .send_encrypted_tally(&mut committee, &fund1_vote_plan.clone().into(), wallet_node)
-        .unwrap();
-
-    let target_date = BlockDate {
-        epoch: 1,
-        slot_id: 30,
-    };
-    time::wait_for_date(target_date.into(), leader_1.rest());
-
     let active_vote_plans = leader_1.rest().vote_plan_statuses().unwrap();
     let vote_plan_status = active_vote_plans
         .iter()
@@ -161,11 +151,9 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
 
     vote_timing.wait_for_tally_end(leader_1.rest());
 
-    leader_1
-        .rest()
-        .vote_plan_statuses()
-        .unwrap()
-        .assert_all_proposals_are_tallied();
+    let vote_plan_statuses = leader_1.rest().vote_plan_statuses().unwrap();
+
+    vote_plan_statuses.assert_proposal_tally(fund1_vote_plan.id(), 0, vec![20_000, 10_000]);
 
     Ok(())
 }

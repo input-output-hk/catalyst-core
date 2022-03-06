@@ -32,12 +32,10 @@ impl MockStartCommandArgs {
             start_params,
         )?));
 
-        tokio::spawn(async move {
-            start_rest_server(control_context.clone(), configuration).await;
-        })
-        .await
-        .map(|_| ())
-        .map_err(Into::into)
+        tokio::spawn(async move { start_rest_server(control_context.clone(), configuration).await })
+            .await
+            .map(|_| ())
+            .map_err(Into::into)
     }
 }
 
@@ -54,4 +52,6 @@ pub enum Error {
     Join(#[from] tokio::task::JoinError),
     #[error(transparent)]
     Mock(#[from] crate::mode::mock::ContextError),
+    #[error(transparent)]
+    ServerError(crate::mode::mock::RestError),
 }

@@ -13,3 +13,4 @@ pub use ledger_state::{FragmentRecieveStrategy, LedgerState};
 pub use logger::Logger;
 pub use mock_state::MockState;
 pub use rest::start_rest_server;
+pub use rest::Error as RestError;

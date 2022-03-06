@@ -27,7 +27,7 @@ hersir = { git = "https://github.com/input-output-hk/jormungandr.git", branch = 
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
-catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "main" }
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "update_chain_wallet_libs" }
 valgrind = { path = "../valgrind" }
 poldercast = { git = "https://github.com/primetype/poldercast.git", rev = "8305f1560392a9d26673ca996e7646c8834533ef" }
 rand = "0.8"
@@ -62,6 +62,11 @@ uuid = { version = "0.8", features = ["serde", "v4"] }
 tracing-subscriber = "0.2.16"
 tracing = "0.1"
 tracing-appender = "0.1.2"
+hyper = { version = "0.14.17", features = ["server"] }
+rustls = "0.20.4"
+rustls-pemfile = "0.2.1"
+tokio-rustls = "0.23.2"
+tokio-stream = { version = "0.1.8", features = ["net"] }
 
 [dev-dependencies]
 quickcheck = "0.9"

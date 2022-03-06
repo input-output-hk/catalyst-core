@@ -5,6 +5,7 @@ use chain_addr::Address;
 use chain_impl_mockchain::ledger::token_distribution::TokenDistribution;
 use chain_impl_mockchain::ledger::token_distribution::TokenTotals;
 use chain_impl_mockchain::tokens::identifier::TokenIdentifier;
+use chain_impl_mockchain::value::Value;
 use chain_impl_mockchain::{
     certificate::{
         DecryptedPrivateTally, DecryptedPrivateTallyProposal, VotePlan, VotePlanId,
@@ -185,7 +186,7 @@ impl<'a> VoteRoundGenerator {
                             .iter()
                             .find(|(id, _v)| **id == self.voting_token)
                             .map(|(_, v)| *v)
-                            .unwrap()
+                            .unwrap_or(Value(0))
                     })
                     .sum(),
             )

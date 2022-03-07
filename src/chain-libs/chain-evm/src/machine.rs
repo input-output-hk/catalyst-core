@@ -392,7 +392,7 @@ impl<'runtime> ApplyBackend for VirtualMachine<'runtime> {
                     address,
                     basic: Basic { balance, nonce },
                     code,
-                    storage: apply_storage,
+                    storage,
                     reset_storage,
                 } => {
                     // get the account if stored, else use Default::default().
@@ -409,10 +409,19 @@ impl<'runtime> ApplyBackend for VirtualMachine<'runtime> {
                             account.storage = Default::default();
                         }
 
+                        // cleanup storage from zero values
+                        // ref: https://github.com/rust-blockchain/evm/blob/8b1875c83105f47b74d3d7be7302f942e92eb374/src/backend/memory.rs#L185
+                        account.storage = account
+                            .storage
+                            .iter()
+                            .filter(|(_, v)| v != &&Default::default())
+                            .map(|(k, v)| (*k, *v))
+                            .collect();
+
                         // iterate over the apply_storage keys and values
                         // and put them into the account.
-                        for (index, value) in apply_storage {
-                            account.storage = if value == crate::state::Value::default() {
+                        for (index, value) in storage {
+                            account.storage = if value == Default::default() {
                                 // value is full of zeroes, remove it
                                 account.storage.remove(&index)
                             } else {

@@ -62,7 +62,7 @@ impl Ledger {
     ) -> Result<(), Error> {
         let mut vm = VirtualMachine::new_with_state(
             config,
-            &self.environment,
+            &mut self.environment,
             self.accounts.clone(),
             self.logs.clone(),
         );

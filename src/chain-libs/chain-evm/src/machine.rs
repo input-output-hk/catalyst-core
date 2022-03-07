@@ -135,7 +135,7 @@ pub enum Error {
 pub struct VirtualMachine<'runtime> {
     /// EVM Block Configuration.
     config: Config,
-    environment: &'runtime Environment,
+    environment: &'runtime mut Environment,
     precompiles: Precompiles,
     state: AccountTrie,
     logs: LogsState,
@@ -170,6 +170,7 @@ impl<'runtime> VirtualMachine<'runtime> {
             u64,
         ) -> (ExitReason, T),
     {
+        self.environment.origin = caller;
         let config = &(self.config.into());
         let metadata = StackSubstateMetadata::new(gas_limit, config);
         let memory_stack_state = MemoryStackState::new(metadata, self);
@@ -208,14 +209,14 @@ impl<'runtime> VirtualMachine<'runtime> {
 
 impl<'runtime> VirtualMachine<'runtime> {
     /// Creates a new `VirtualMachine` given configuration parameters.
-    pub fn new(config: Config, environment: &'runtime Environment) -> Self {
+    pub fn new(config: Config, environment: &'runtime mut Environment) -> Self {
         Self::new_with_state(config, environment, Default::default(), Default::default())
     }
 
     /// Creates a new `VirtualMachine` given configuration params and a given account storage.
     pub fn new_with_state(
         config: Config,
-        environment: &'runtime Environment,
+        environment: &'runtime mut Environment,
         state: AccountTrie,
         logs: LogsState,
     ) -> Self {
@@ -460,7 +461,7 @@ mod test {
         use std::rc::Rc;
 
         let config = Config::Istanbul;
-        let environment = Environment {
+        let mut environment = Environment {
             gas_price: Default::default(),
             origin: Default::default(),
             chain_id: Default::default(),
@@ -475,7 +476,7 @@ mod test {
 
         let evm_config = config.into();
 
-        let vm = VirtualMachine::new(config, &environment);
+        let vm = VirtualMachine::new(config, &mut environment);
 
         let gas_limit = u64::max_value();
 

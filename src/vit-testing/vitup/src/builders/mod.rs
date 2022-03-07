@@ -148,6 +148,11 @@ impl VitBackendSettingsBuilder {
         self
     }
 
+    pub fn reviews_count(&mut self, reviews_count: usize) -> &mut Self {
+        self.config.params.reviews = reviews_count;
+        self
+    }
+
     pub fn voting_power(&mut self, voting_power: u64) -> &mut Self {
         self.config.params.voting_power = voting_power;
         self

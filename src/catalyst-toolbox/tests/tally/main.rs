@@ -105,7 +105,7 @@ fn tally_ok() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses(&ledger));
     assert!(failed_fragments.is_empty());
 }
 
@@ -133,7 +133,7 @@ fn shuffle_tally_ok() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses(&ledger));
 }
 
 #[test]
@@ -159,7 +159,7 @@ fn shuffle_tally_ok_private() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses(&ledger));
 }
 
 //TV 003
@@ -200,7 +200,7 @@ fn wallet_not_in_block0() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses(&ledger));
     assert_eq!(failed_fragments.len(), 1);
 }
 
@@ -246,10 +246,7 @@ fn only_last_vote_is_counted() {
     )
     .unwrap();
 
-    let tally = ledger.active_vote_plans()[0].proposals[0]
-        .tally
-        .clone()
-        .unwrap();
+    let tally = ledger.active_vote_plans()[0].proposals[0].tally.clone();
     dbg!(&tally);
     assert_eq!(tally.result().unwrap().results()[0], 0.into());
     assert_eq!(tally.result().unwrap().results()[2], 0.into());
@@ -296,10 +293,7 @@ fn replay_not_counted() {
     )
     .unwrap();
 
-    let tally = ledger.active_vote_plans()[0].proposals[0]
-        .tally
-        .clone()
-        .unwrap();
+    let tally = ledger.active_vote_plans()[0].proposals[0].tally.clone();
     dbg!(&tally);
     assert_eq!(tally.result().unwrap().results()[0], 0.into());
     assert!(tally.result().unwrap().results()[1] > 0.into());
@@ -335,7 +329,7 @@ fn multi_voteplan_ok() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses(&ledger));
 }
 
 #[test]
@@ -365,7 +359,7 @@ fn multi_voteplan_ok_private() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses(&ledger));
 }
 
 #[test]
@@ -431,10 +425,7 @@ fn votes_outside_voting_phase() {
     )
     .unwrap();
 
-    let tally = ledger.active_vote_plans()[0].proposals[0]
-        .tally
-        .clone()
-        .unwrap();
+    let tally = ledger.active_vote_plans()[0].proposals[0].tally.clone();
     dbg!(&tally);
     assert_eq!(tally.result().unwrap().results()[0], 0.into());
     assert_eq!(tally.result().unwrap().results()[1], 0.into());
@@ -521,10 +512,7 @@ fn transaction_transfer_does_not_decrease_voting_power() {
     )
     .unwrap();
 
-    let tally = ledger.active_vote_plans()[0].proposals[0]
-        .tally
-        .clone()
-        .unwrap();
+    let tally = ledger.active_vote_plans()[0].proposals[0].tally.clone();
 
     let wallet0_weight: u64 = wallets_stake[&wallet0_address].into();
     let wallet1_weight: u64 = wallets_stake[&wallet1_address].into();
@@ -569,7 +557,7 @@ fn expired_transaction() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses(&ledger));
     assert_eq!(failed_fragments.len(), 1);
 }
 

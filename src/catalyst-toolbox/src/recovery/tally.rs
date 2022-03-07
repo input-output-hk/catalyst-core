@@ -328,7 +328,6 @@ impl<I: Iterator<Item = PersistentFragmentLog>> Iterator for VoteFragmentFilter<
                     self.validate_tx(&transaction_slice, fragment.id())
                 }
                 Fragment::VoteTally(tx) => self.validate_tx(&tx.as_slice(), fragment.id()),
-                Fragment::EncryptedVoteTally(tx) => self.validate_tx(&tx.as_slice(), fragment.id()),
                 Fragment::Transaction(tx) => self.validate_tx(&tx.as_slice(), fragment.id()),
                 _ => Err(ValidationError::NotAVotingFragment),
             }
@@ -574,9 +573,7 @@ impl FragmentReplayer {
         let replayed = match &original.fragment {
             Fragment::VoteCast(ref tx) => self.replay_votecast(tx.as_slice()),
             Fragment::Transaction(ref tx) => self.replay_tx(tx.as_slice()),
-            fragment @ Fragment::VoteTally(_) | fragment @ Fragment::EncryptedVoteTally(_) => {
-                Ok(fragment.clone())
-            }
+            fragment @ Fragment::VoteTally(_) => Ok(fragment.clone()),
             fragment => Err(ReplayError::NotAVotingFragment {
                 id: fragment.id().to_string(),
             }
@@ -740,7 +737,7 @@ mod test {
         for voteplan in ledger.active_vote_plans() {
             println!("Voteplan: {}", voteplan.id);
             for proposal in voteplan.proposals {
-                match proposal.tally.as_ref().unwrap() {
+                match proposal.tally {
                     Tally::Public { result } => {
                         let results = result.results();
                         assert_eq!(*results.get(0).unwrap(), 0.into());

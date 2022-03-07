@@ -62,7 +62,7 @@ impl ValidVotingTemplateGenerator for ArbitraryValidVotePlanBuilder {
 
         let funds = proposals_builder
             .funds
-            .unwrap_or(self.template_generator.proposal_fund());
+            .unwrap_or_else(|| self.template_generator.proposal_fund());
         let proposal_template = self.template_generator.proposal(challenge, funds);
         self.template_generator
             .proposals

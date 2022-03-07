@@ -145,6 +145,8 @@ fn precompiles(config: Config) -> Precompiles {
     match config {
         Config::Istanbul => Precompiles::new_istanbul(),
         Config::Berlin => Precompiles::new_berlin(),
+        // TODO: change it to new_london() after it will be implemented
+        Config::London => Precompiles::new_berlin(),
         config => unimplemented!("EVM precompiles for the {:?} config", config),
     }
 }

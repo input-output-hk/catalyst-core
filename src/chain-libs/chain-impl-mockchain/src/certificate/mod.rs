@@ -1,4 +1,5 @@
 mod delegation;
+mod evm_mapping;
 mod mint_token;
 mod pool;
 mod update_proposal;
@@ -22,6 +23,7 @@ pub use self::vote_tally::{
     VoteTally, VoteTallyPayload,
 };
 pub use delegation::{OwnerStakeDelegation, StakeDelegation};
+pub use evm_mapping::EvmMapping;
 pub use mint_token::MintToken;
 pub use pool::{
     GenesisPraosLeaderHash, IndexSignatures, ManagementThreshold, PoolId, PoolOwnersSigned,
@@ -43,6 +45,7 @@ pub enum CertificateSlice<'a> {
     UpdateProposal(PayloadSlice<'a, UpdateProposal>),
     UpdateVote(PayloadSlice<'a, UpdateVote>),
     MintToken(PayloadSlice<'a, MintToken>),
+    EvmMapping(PayloadSlice<'a, EvmMapping>),
 }
 
 impl<'a> From<PayloadSlice<'a, StakeDelegation>> for CertificateSlice<'a> {
@@ -110,6 +113,12 @@ impl<'a> From<PayloadSlice<'a, MintToken>> for CertificateSlice<'a> {
     }
 }
 
+impl<'a> From<PayloadSlice<'a, EvmMapping>> for CertificateSlice<'a> {
+    fn from(payload: PayloadSlice<'a, EvmMapping>) -> CertificateSlice<'a> {
+        CertificateSlice::EvmMapping(payload)
+    }
+}
+
 impl<'a> CertificateSlice<'a> {
     pub fn into_owned(self) -> Certificate {
         match self {
@@ -128,6 +137,7 @@ impl<'a> CertificateSlice<'a> {
             CertificateSlice::UpdateProposal(c) => Certificate::UpdateProposal(c.into_payload()),
             CertificateSlice::UpdateVote(c) => Certificate::UpdateVote(c.into_payload()),
             CertificateSlice::MintToken(c) => Certificate::MintToken(c.into_payload()),
+            CertificateSlice::EvmMapping(c) => Certificate::EvmMapping(c.into_payload()),
         }
     }
 }
@@ -145,6 +155,7 @@ pub enum CertificatePayload {
     UpdateProposal(PayloadData<UpdateProposal>),
     UpdateVote(PayloadData<UpdateVote>),
     MintToken(PayloadData<MintToken>),
+    EvmMapping(PayloadData<EvmMapping>),
 }
 
 impl CertificatePayload {
@@ -161,6 +172,7 @@ impl CertificatePayload {
             CertificatePayload::UpdateProposal(payload) => payload.borrow().into(),
             CertificatePayload::UpdateVote(payload) => payload.borrow().into(),
             CertificatePayload::MintToken(payload) => payload.borrow().into(),
+            CertificatePayload::EvmMapping(payload) => payload.borrow().into(),
         }
     }
 }
@@ -197,6 +209,9 @@ impl<'a> From<&'a Certificate> for CertificatePayload {
             Certificate::MintToken(payload) => {
                 CertificatePayload::MintToken(payload.payload_data())
             }
+            Certificate::EvmMapping(payload) => {
+                CertificatePayload::EvmMapping(payload.payload_data())
+            }
         }
     }
 }
@@ -215,6 +230,7 @@ pub enum Certificate {
     UpdateProposal(UpdateProposal),
     UpdateVote(UpdateVote),
     MintToken(MintToken),
+    EvmMapping(EvmMapping),
 }
 
 impl From<StakeDelegation> for Certificate {
@@ -283,6 +299,12 @@ impl From<MintToken> for Certificate {
     }
 }
 
+impl From<EvmMapping> for Certificate {
+    fn from(evm_mapping: EvmMapping) -> Self {
+        Self::EvmMapping(evm_mapping)
+    }
+}
+
 impl Certificate {
     pub fn need_auth(&self) -> bool {
         match self {
@@ -297,6 +319,7 @@ impl Certificate {
             Certificate::UpdateProposal(_) => <UpdateProposal as Payload>::HAS_AUTH,
             Certificate::UpdateVote(_) => <UpdateVote as Payload>::HAS_AUTH,
             Certificate::MintToken(_) => <MintToken as Payload>::HAS_AUTH,
+            Certificate::EvmMapping(_) => <EvmMapping as Payload>::HAS_AUTH,
         }
     }
 }
@@ -316,6 +339,7 @@ pub enum SignedCertificate {
     VoteTally(VoteTally, <VoteTally as Payload>::Auth),
     UpdateProposal(UpdateProposal, <UpdateProposal as Payload>::Auth),
     UpdateVote(UpdateVote, <UpdateVote as Payload>::Auth),
+    EvmMapping(EvmMapping, <EvmMapping as Payload>::Auth),
 }
 
 #[cfg(test)]
@@ -338,6 +362,7 @@ mod tests {
             Certificate::UpdateProposal(_) => true,
             Certificate::UpdateVote(_) => true,
             Certificate::MintToken(_) => false,
+            Certificate::EvmMapping(_) => true,
         };
         TestResult::from_bool(certificate.need_auth() == expected_result)
     }

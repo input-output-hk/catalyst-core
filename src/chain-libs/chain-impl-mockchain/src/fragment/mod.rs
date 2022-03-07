@@ -38,6 +38,7 @@ pub enum Fragment {
     VoteTally(Transaction<certificate::VoteTally>),
     MintToken(Transaction<certificate::MintToken>),
     Evm(Transaction<EvmTransaction>),
+    EvmMapping(Transaction<certificate::EvmMapping>),
 }
 
 impl PartialEq for Fragment {
@@ -65,6 +66,7 @@ pub(super) enum FragmentTag {
     VoteTally = 12,
     MintToken = 13,
     Evm = 14,
+    EvmMapping = 15,
 }
 
 impl FragmentTag {
@@ -109,6 +111,7 @@ impl Fragment {
             Fragment::VoteTally(_) => FragmentTag::VoteTally,
             Fragment::MintToken(_) => FragmentTag::MintToken,
             Fragment::Evm(_) => FragmentTag::Evm,
+            Fragment::EvmMapping(_) => FragmentTag::EvmMapping,
         }
     }
 
@@ -136,6 +139,7 @@ impl Fragment {
             Fragment::VoteTally(vote_tally) => vote_tally.serialize(&mut codec).unwrap(),
             Fragment::MintToken(mint_token) => mint_token.serialize(&mut codec).unwrap(),
             Fragment::Evm(deployment) => deployment.serialize(&mut codec).unwrap(),
+            Fragment::EvmMapping(evm_mapping) => evm_mapping.serialize(&mut codec).unwrap(),
         }
         FragmentRaw(codec.into_inner())
     }
@@ -195,6 +199,7 @@ impl Readable for Fragment {
             Some(FragmentTag::VoteTally) => Transaction::read(buf).map(Fragment::VoteTally),
             Some(FragmentTag::MintToken) => Transaction::read(buf).map(Fragment::MintToken),
             Some(FragmentTag::Evm) => Transaction::read(buf).map(Fragment::Evm),
+            Some(FragmentTag::EvmMapping) => Transaction::read(buf).map(Fragment::EvmMapping),
             None => Err(ReadError::UnknownTag(tag as u32)),
         }
     }

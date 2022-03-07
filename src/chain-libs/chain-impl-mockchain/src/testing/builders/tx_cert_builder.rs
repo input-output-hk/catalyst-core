@@ -1,6 +1,6 @@
 use crate::{
     certificate::{
-        BftLeaderBindingSignature, Certificate, CertificatePayload, PoolOwnersSigned,
+        BftLeaderBindingSignature, Certificate, CertificatePayload, EvmMapping, PoolOwnersSigned,
         PoolSignature, TallyProof, UpdateProposal, UpdateVote, VotePlan, VotePlanProof, VoteTally,
     },
     chaintypes::HeaderId,
@@ -242,6 +242,19 @@ impl TestTxCertBuilder {
                 let tx = builder.set_payload_auth(&());
                 Fragment::MintToken(tx)
             }
+            Certificate::EvmMapping(evm_mapping) => {
+                let builder = self.set_initial_ios(
+                    valid_until,
+                    TxBuilder::new().set_payload(evm_mapping),
+                    funder,
+                    inputs,
+                    outputs,
+                    make_witness,
+                );
+                let signature = evm_mapping_sign(&keys, &builder);
+                let tx = builder.set_payload_auth(&signature);
+                Fragment::EvmMapping(tx)
+            }
         }
     }
 
@@ -362,6 +375,16 @@ pub fn update_vote_sign(
 
     let auth_data = builder.get_auth_data();
     BftLeaderBindingSignature::new(&auth_data, |d| key.sign_slice(d.0))
+}
+
+pub fn evm_mapping_sign(
+    keys: &[EitherEd25519SecretKey],
+    builder: &TxBuilderState<SetAuthData<EvmMapping>>,
+) -> SingleAccountBindingSignature {
+    let key: EitherEd25519SecretKey = keys[0].clone();
+
+    let auth_data = builder.get_auth_data();
+    SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(d.0))
 }
 
 /// this struct can create any transaction including not valid one

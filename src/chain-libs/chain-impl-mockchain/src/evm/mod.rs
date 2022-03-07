@@ -311,11 +311,12 @@ impl Payload for EvmTransaction {
 #[cfg(all(any(test, feature = "property-test-api"), feature = "evm"))]
 mod test {
     use super::*;
+    use chain_evm::primitive_types::{H160, H256};
     use quickcheck::Arbitrary;
 
     impl Arbitrary for EvmTransaction {
         fn arbitrary<G: quickcheck::Gen>(g: &mut G) -> Self {
-            let caller = [u8::arbitrary(g); 20].into();
+            let caller = [u8::arbitrary(g); H160::len_bytes()].into();
             let value = u128::arbitrary(g).into();
             let gas_limit = Arbitrary::arbitrary(g);
             let access_list = Vec::new();
@@ -331,13 +332,13 @@ mod test {
                     caller,
                     value,
                     init_code: Arbitrary::arbitrary(g),
-                    salt: [u8::arbitrary(g); 32].into(),
+                    salt: [u8::arbitrary(g); H256::len_bytes()].into(),
                     gas_limit,
                     access_list,
                 },
                 2 => Self::Call {
                     caller,
-                    address: [u8::arbitrary(g); 20].into(),
+                    address: [u8::arbitrary(g); H160::len_bytes()].into(),
                     value,
                     data: Arbitrary::arbitrary(g),
                     gas_limit,

@@ -531,6 +531,10 @@ impl Ledger {
                         return Err(Error::DisabledEvmTransactions);
                     }
                 }
+                Fragment::EvmMapping(_tx) => {
+                    // TODO: implement
+                    unimplemented!()
+                }
             }
         }
 
@@ -1070,6 +1074,10 @@ impl Ledger {
                 {
                     return Err(Error::DisabledEvmTransactions);
                 }
+            }
+            Fragment::EvmMapping(_tx) => {
+                // TODO implement
+                unimplemented!()
             }
         }
 

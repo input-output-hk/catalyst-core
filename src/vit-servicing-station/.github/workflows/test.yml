@@ -180,7 +180,7 @@ jobs:
       - name: Run cargo-tarpaulin
         uses: actions-rs/tarpaulin@v0.1
         with:
-          args: '--ignore-tests --out Lcov'
+          args: '--ignore-tests --out Lcov --skip-clean'
           timeout: 600
 
       - name: upload to Coveralls

@@ -38,10 +38,7 @@ impl ConfigBuilder {
     }
 
     pub fn initials_count(self, initials_count: usize, pin: &str) -> Self {
-        self.initials(Initials::new_above_threshold(
-            initials_count,
-            &pin.to_string(),
-        ))
+        self.initials(Initials::new_above_threshold(initials_count, pin))
     }
 
     pub fn extend_initials(mut self, initials: Vec<Initial>) -> Self {
@@ -70,6 +67,11 @@ impl ConfigBuilder {
 
     pub fn challenges_count(mut self, challenges_count: usize) -> Self {
         self.config.data.challenges = challenges_count;
+        self
+    }
+
+    pub fn reviews_count(mut self, reviews_count: usize) -> Self {
+        self.config.data.reviews = reviews_count;
         self
     }
 

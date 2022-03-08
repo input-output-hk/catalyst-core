@@ -277,9 +277,7 @@ def calc_approval_threshold(
     threshold: float,
     total_stake_threshold: float,
 ) -> Tuple[int, bool]:
-    yes_result, no_result = extract_yes_no_votes(
-        proposal, voteplan_proposal
-    )
+    yes_result, no_result = extract_yes_no_votes(proposal, voteplan_proposal)
     total_stake = yes_result + no_result
     pass_total_threshold = total_stake >= total_stake_threshold
     diff = yes_result - no_result
@@ -413,8 +411,7 @@ def filter_excluded_proposals(
 
 
 def calculate_total_stake_from_block0_configuration(
-    block0_config: Dict[str, Dict],
-    committee_keys: List[Dict[str, str]]
+    block0_config: Dict[str, Dict], committee_keys: List[Dict[str, str]]
 ):
     funds = (
         initial["fund"] for initial in block0_config["initial"] if "fund" in initial
@@ -506,13 +503,10 @@ def calculate_rewards(
 
     block0_config = load_block0_data(block0_path)
     committee_keys = (
-        load_json_from_file(committee_keys_path)
-        if committee_keys_path
-        else []
+        load_json_from_file(committee_keys_path) if committee_keys_path else []
     )
     total_stake = calculate_total_stake_from_block0_configuration(
-        block0_config,
-        committee_keys
+        block0_config, committee_keys
     )
     # minimum amount of stake needed for a proposal to be accepted
     total_stake_approval_threshold = total_stake_threshold * total_stake
@@ -532,10 +526,8 @@ def calculate_rewards(
         challenge_output_file_path = build_path_for_challenge(
             output_file,
             re.sub(
-                r'(?u)[^-\w.]',
-                '',
-                challenge.title.replace(" ", "_").replace(":", "_")
-            )
+                r"(?u)[^-\w.]", "", challenge.title.replace(" ", "_").replace(":", "_")
+            ),
         )
 
         with open(

@@ -79,7 +79,7 @@ impl CommitteeMember {
             .proposals
             .iter()
             .map(|proposal| {
-                let encrypted_tally = proposal.tally.private_encrypted().unwrap().0.clone();
+                let encrypted_tally = proposal.tally.private_encrypted().unwrap().clone();
                 encrypted_tally.partial_decrypt(&mut thread_rng(), self.secret_key())
             })
             .collect()

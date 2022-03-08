@@ -32,13 +32,8 @@ pub enum Tally {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum PrivateTallyState {
-    Encrypted {
-        encrypted_tally: EncryptedTally,
-        total_stake: Value,
-    },
-    Decrypted {
-        result: TallyResult,
-    },
+    Encrypted { encrypted_tally: EncryptedTally },
+    Decrypted { result: TallyResult },
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
@@ -73,12 +68,9 @@ impl Tally {
         Self::Public { result }
     }
 
-    pub fn new_private(encrypted_tally: EncryptedTally, total_stake: Value) -> Self {
+    pub fn new_private(encrypted_tally: EncryptedTally) -> Self {
         Self::Private {
-            state: PrivateTallyState::Encrypted {
-                encrypted_tally,
-                total_stake,
-            },
+            state: PrivateTallyState::Encrypted { encrypted_tally },
         }
     }
 
@@ -100,27 +92,11 @@ impl Tally {
         }
     }
 
-    pub fn private_encrypted(&self) -> Result<(&EncryptedTally, &Value), TallyError> {
+    pub fn private_encrypted(&self) -> Result<&EncryptedTally, TallyError> {
         match self {
             Self::Private {
-                state:
-                    PrivateTallyState::Encrypted {
-                        encrypted_tally,
-                        total_stake,
-                    },
-            } => Ok((encrypted_tally, total_stake)),
-            Self::Private {
-                state: PrivateTallyState::Decrypted { .. },
-            } => Err(TallyError::TallyAlreadyDecrypted),
-            Self::Public { .. } => Err(TallyError::InvalidPrivacy),
-        }
-    }
-
-    pub fn private_total_power(&self) -> Result<u64, TallyError> {
-        match self {
-            Self::Private {
-                state: PrivateTallyState::Encrypted { total_stake, .. },
-            } => Ok(total_stake.0),
+                state: PrivateTallyState::Encrypted { encrypted_tally },
+            } => Ok(encrypted_tally),
             Self::Private {
                 state: PrivateTallyState::Decrypted { .. },
             } => Err(TallyError::TallyAlreadyDecrypted),

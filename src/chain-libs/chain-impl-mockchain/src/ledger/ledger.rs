@@ -1197,7 +1197,7 @@ impl Ledger {
         self.votes
             .plans
             .iter()
-            .map(|(_, plan)| plan.statuses(self.token_distribution()))
+            .map(|(_, plan)| plan.statuses())
             .collect()
     }
 

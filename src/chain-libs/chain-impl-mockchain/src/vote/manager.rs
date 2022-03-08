@@ -675,11 +675,7 @@ impl VotePlanManager {
         &self.plan
     }
 
-    pub fn statuses(&self, token_distribution: TokenDistribution<()>) -> VotePlanStatus {
-        let total_stake = token_distribution
-            .token(self.plan.voting_token())
-            .get_total();
-
+    pub fn statuses(&self) -> VotePlanStatus {
         let proposals = self
             .plan()
             .proposals()
@@ -693,10 +689,7 @@ impl VotePlanManager {
                 tally: match manager.tally.clone() {
                     IncrementalTally::Public(result) => Tally::Public { result },
                     IncrementalTally::Private(encrypted_tally) => Tally::Private {
-                        state: PrivateTallyState::Encrypted {
-                            encrypted_tally,
-                            total_stake,
-                        },
+                        state: PrivateTallyState::Encrypted { encrypted_tally },
                     },
                     IncrementalTally::Decrypted(result) => Tally::Private {
                         state: PrivateTallyState::Decrypted { result },
@@ -1029,10 +1022,7 @@ mod tests {
 
         let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), HashSet::new());
 
-        let token_totals = Default::default();
-        let account_ledger = Default::default();
-        let token_distribution = TokenDistribution::new(&token_totals, &account_ledger);
-        let status = vote_plan_manager.statuses(token_distribution);
+        let status = vote_plan_manager.statuses();
 
         assert_eq!(status.id, vote_plan.to_id());
         assert_eq!(status.payload, vote_plan.payload_type());
@@ -1238,11 +1228,7 @@ mod tests {
 
         let members = VoteTestGen::committee_members_manager(1, 1);
 
-        let shares = decrypt_tally(
-            &vote_plan_manager.statuses(token_distribution.clone()),
-            &members,
-        )
-        .unwrap();
+        let shares = decrypt_tally(&vote_plan_manager.statuses(), &members).unwrap();
 
         //invalid committee
         assert_eq!(
@@ -1310,11 +1296,7 @@ mod tests {
 
         let token_distribution = TokenDistribution::new(&token_totals, &account_ledger);
 
-        let shares = decrypt_tally(
-            &vote_plan_manager.statuses(token_distribution.clone()),
-            &members,
-        )
-        .unwrap();
+        let shares = decrypt_tally(&vote_plan_manager.statuses(), &members).unwrap();
 
         //not in committee time
         assert_eq!(

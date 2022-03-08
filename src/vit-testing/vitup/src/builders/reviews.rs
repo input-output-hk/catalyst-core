@@ -3,6 +3,7 @@ use fake::faker::name::en::Name;
 use fake::Fake;
 use rand::rngs::OsRng;
 use rand::RngCore;
+use vit_servicing_station_lib::db::models::community_advisors_reviews::ReviewRanking;
 use vit_servicing_station_tests::common::data::ProposalTemplate;
 use vit_servicing_station_tests::common::data::ReviewTemplate;
 
@@ -89,6 +90,10 @@ impl ReviewGenerator {
             auditability_rating_given: (self.generator.next_u32() % 5) as i32,
             feasibility_note: fake::faker::lorem::en::Sentence(0..10).fake::<String>(),
             feasibility_rating_given: (self.generator.next_u32() % 5) as i32,
+            ranking: match self.generator.next_u32() % 2 {
+                0 => ReviewRanking::Excellent,
+                _ => ReviewRanking::Good,
+            },
         }
     }
 }

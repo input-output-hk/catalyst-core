@@ -338,6 +338,7 @@ fn is_fragment_valid(fragment: &Fragment) -> bool {
         Fragment::OldUtxoDeclaration(_) => false,
         // general transactions stuff
         Fragment::Evm(_) => false,
+        Fragment::EvmMapping(ref tx) => is_transaction_valid(tx),
         Fragment::MintToken(ref tx) => is_transaction_valid(tx),
         Fragment::Transaction(ref tx) => is_transaction_valid(tx),
         Fragment::StakeDelegation(ref tx) => is_transaction_valid(tx),

@@ -57,6 +57,8 @@ pub fn public_vote_multiple_vote_plans() {
         .slot_duration_in_seconds(2)
         .proposals_count(expected_proposals.len() as u32)
         .challenges_count(expected_challenges.len())
+        //TODO: implement review_count in template_generator struct
+        .reviews_count(3)
         .voting_power(expected_fund.threshold.unwrap() as u64)
         .private(false);
 

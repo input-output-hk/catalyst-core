@@ -63,7 +63,7 @@ impl Default for VitStartParameters {
             vote_time: Default::default(),
             proposals: 100,
             challenges: 9,
-            reviews: 3,
+            reviews: 300,
             slot_duration: 20,
             voting_power: 8000,
             block0_time: None,

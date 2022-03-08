@@ -20,7 +20,6 @@ impl Default for ProposerRewardsExecutor {
     fn default() -> Self {
         Self {
             output_file: PathBuf::from_str("./output").unwrap(),
-            output_file: PathBuf::from_str("./output").unwrap(),
             block0_path: PathBuf::from_str("./block0.bin").unwrap(),
             total_stake_threshold: 0.01,
             approval_threshold: 1.15,

@@ -336,10 +336,7 @@ pub fn run_evm_test(path: PathBuf) {
     }
 }
 
-// TODO: need to fix following tests
-// "../evm-tests/BlockchainTests/GeneralStateTests/VMTests/vmIOandFlowOperations/jumpToPush.json"
 #[test]
-#[ignore]
 fn run_evm_tests() {
     let vm_tests_dir = std::fs::read_dir("../evm-tests/BlockchainTests/GeneralStateTests/VMTests")
         .expect("Can not find vm tests directory");
@@ -351,6 +348,7 @@ fn run_evm_tests() {
             vm_test_dir.file_name().to_str().unwrap()
         );
 
+        // Heavy perfomance tests, so we just skip them
         if vm_test_dir.file_name().to_str().unwrap() == "vmPerformance" {
             println!("Skipping");
             continue;
@@ -358,6 +356,14 @@ fn run_evm_tests() {
 
         for vm_test in std::fs::read_dir(vm_test_dir.path()).unwrap() {
             let vm_test = vm_test.expect("Can not open vm test entry");
+            // "jumpToPush.json" has a different structure it is does not have a 'postState' field
+            // as a final state which we would have as a result of the test execution.
+            // "jumpToPush.json" test has only "postStateHash" which should be equal to the Ethereum "stateRoot"
+            // which we dont need to implement in our implementation currently as we are not emulating Ethereum blockchain structure
+            if vm_test.file_name().to_str().unwrap() == "jumpToPush.json" {
+                println!("Skipping");
+                continue;
+            }
             run_evm_test(vm_test.path());
         }
     }

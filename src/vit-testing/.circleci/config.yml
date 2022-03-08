@@ -63,7 +63,7 @@ jobs:
           command: |
             git clone https://github.com/input-output-hk/jormungandr.git
             cd jormungandr
-            git checkout master
+            git checkout update-chain-lib
       - run:
           name: install jormungandr
           command: |
@@ -136,7 +136,7 @@ commands:
           command: |
             git clone https://github.com/input-output-hk/jormungandr.git
             cd jormungandr
-            git checkout master
+            git checkout update-chain-lib
       - run:
           name: install jormungandr
           command: |

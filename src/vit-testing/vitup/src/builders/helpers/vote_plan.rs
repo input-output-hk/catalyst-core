@@ -141,8 +141,7 @@ mod tests {
         TestResult::from_bool(
             vote_plans_defs
                 .into_iter()
-                .map(|v| v.proposals())
-                .flatten()
+                .flat_map(|v| v.proposals())
                 .into_iter()
                 .map(|p| p.id())
                 .all(move |x| uniq.insert(x)),

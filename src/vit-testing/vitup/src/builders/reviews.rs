@@ -52,7 +52,7 @@ impl ReviewGenerator {
     fn generate_assessor_name(&mut self) -> String {
         format!(
             "{}_{}",
-            Name().fake::<String>().to_lowercase().replace(" ", "_"),
+            Name().fake::<String>().to_lowercase().replace("' '", "_"),
             (self.generator.next_u32() % 100)
         )
     }

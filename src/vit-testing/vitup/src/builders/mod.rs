@@ -112,10 +112,7 @@ impl VitBackendSettingsBuilder {
     }
 
     pub fn initials_count(&mut self, initials_count: usize, pin: &str) -> &mut Self {
-        self.initials(Initials::new_above_threshold(
-            initials_count,
-            &pin.to_string(),
-        ));
+        self.initials(Initials::new_above_threshold(initials_count, pin));
         self
     }
 

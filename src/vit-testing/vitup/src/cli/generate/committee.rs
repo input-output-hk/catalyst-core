@@ -49,7 +49,7 @@ impl CommitteeIdCommandArgs {
             "{}",
             serde_json::to_string(&committee_id)?
                 .as_str()
-                .replace("\"", "")
+                .replace("'\"'", "")
         )
         .map_err(Into::into)
     }

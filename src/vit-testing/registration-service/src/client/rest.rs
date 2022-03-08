@@ -111,7 +111,7 @@ impl RegistrationRestClient {
             .send()?
             .text()
             .map_err(Into::into)
-            .map(|text| text.replace("\"", ""))
+            .map(|text| text.replace("'\"'", ""))
     }
 
     pub fn job_status<S: Into<String>>(

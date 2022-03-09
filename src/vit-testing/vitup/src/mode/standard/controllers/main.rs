@@ -171,7 +171,7 @@ impl VitController {
 
         Ok(VitStationController {
             alias: alias.into(),
-            rest_client: RestClient::new(settings.address.to_string()),
+            rest_client: RestClient::from(settings),
             process: command.spawn().unwrap(),
             settings: settings.clone(),
             status: Arc::new(Mutex::new(Status::Running)),

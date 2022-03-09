@@ -3,7 +3,9 @@ use crate::evm::EvmTransaction;
 use crate::header::BlockDate;
 use crate::ledger::Error;
 use chain_evm::{
-    machine::{BlockHash, BlockNumber, BlockTimestamp, Config, Environment, VirtualMachine},
+    machine::{
+        BlockHash, BlockNumber, BlockTimestamp, Config, Environment, EvmState, VirtualMachine,
+    },
     primitive_types::U256,
     state::{AccountTrie, LogsState},
 };
@@ -22,6 +24,28 @@ impl Default for Ledger {
     }
 }
 
+impl EvmState for Ledger {
+    fn environment(&self) -> &Environment {
+        &self.environment
+    }
+
+    fn accounts(&self) -> &AccountTrie {
+        &self.accounts
+    }
+
+    fn logs(&self) -> &LogsState {
+        &self.logs
+    }
+
+    fn update_accounts(&mut self, accounts: AccountTrie) {
+        self.accounts = accounts;
+    }
+
+    fn update_logs(&mut self, logs: LogsState) {
+        self.logs = logs;
+    }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct BlockEpoch {
     epoch: u32,
@@ -37,7 +61,6 @@ impl Ledger {
             logs: Default::default(),
             environment: Environment {
                 gas_price: Default::default(),
-                origin: Default::default(),
                 chain_id: Default::default(),
                 block_hashes: Default::default(),
                 block_number: Default::default(),
@@ -60,12 +83,7 @@ impl Ledger {
         contract: EvmTransaction,
         config: Config,
     ) -> Result<(), Error> {
-        let mut vm = VirtualMachine::new_with_state(
-            config,
-            &mut self.environment,
-            self.accounts.clone(),
-            self.logs.clone(),
-        );
+        let mut vm = VirtualMachine::new(self);
         match contract {
             EvmTransaction::Create {
                 caller,
@@ -74,12 +92,15 @@ impl Ledger {
                 gas_limit,
                 access_list,
             } => {
-                //
-                let (new_state, new_logs) =
-                    vm.transact_create(caller, value, init_code, gas_limit, access_list, true)?;
-                // update ledger state
-                self.accounts = new_state.clone();
-                self.logs = new_logs.clone();
+                vm.transact_create(
+                    config,
+                    caller,
+                    value,
+                    init_code,
+                    gas_limit,
+                    access_list,
+                    true,
+                )?;
             }
             EvmTransaction::Create2 {
                 caller,
@@ -89,7 +110,8 @@ impl Ledger {
                 gas_limit,
                 access_list,
             } => {
-                let (new_state, new_logs) = vm.transact_create2(
+                vm.transact_create2(
+                    config,
                     caller,
                     value,
                     init_code,
@@ -98,9 +120,6 @@ impl Ledger {
                     access_list,
                     true,
                 )?;
-                // update ledger state
-                self.accounts = new_state.clone();
-                self.logs = new_logs.clone();
             }
             EvmTransaction::Call {
                 caller,
@@ -110,11 +129,16 @@ impl Ledger {
                 gas_limit,
                 access_list,
             } => {
-                let (new_state, new_logs, _byte_code_msg) =
-                    vm.transact_call(caller, address, value, data, gas_limit, access_list, true)?;
-                // update ledger state
-                self.accounts = new_state.clone();
-                self.logs = new_logs.clone();
+                let _byte_code_msg = vm.transact_call(
+                    config,
+                    caller,
+                    address,
+                    value,
+                    data,
+                    gas_limit,
+                    access_list,
+                    true,
+                )?;
             }
         }
         Ok(())

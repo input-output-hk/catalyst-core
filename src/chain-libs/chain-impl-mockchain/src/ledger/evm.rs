@@ -4,10 +4,11 @@ use crate::header::BlockDate;
 use crate::ledger::Error;
 use chain_evm::{
     machine::{
-        BlockHash, BlockNumber, BlockTimestamp, Config, Environment, EvmState, VirtualMachine,
+        BlockHash, BlockNumber, BlockTimestamp, Config, Environment, EvmState, Log, VirtualMachine,
     },
-    primitive_types::U256,
-    state::{AccountTrie, LogsState},
+    primitive_types::{H256, U256},
+    state::{Account, AccountTrie, LogsState},
+    Address,
 };
 
 #[derive(Clone, PartialEq, Eq)]
@@ -24,60 +25,32 @@ impl Default for Ledger {
     }
 }
 
-impl EvmState for Ledger {
+impl EvmState for super::Ledger {
     fn environment(&self) -> &Environment {
-        &self.environment
+        &self.evm.environment
     }
 
-    fn accounts(&self) -> &AccountTrie {
-        &self.accounts
+    fn account(&self, address: Address) -> Option<Account> {
+        self.evm.accounts.get(&address).cloned()
     }
 
-    fn logs(&self) -> &LogsState {
-        &self.logs
+    fn contains(&self, address: Address) -> bool {
+        self.evm.accounts.contains(&address)
     }
 
-    fn update_accounts(&mut self, accounts: AccountTrie) {
-        self.accounts = accounts;
+    fn modify_account<F>(&mut self, address: Address, f: F)
+    where
+        F: FnOnce(Account) -> Option<Account>,
+    {
+        self.evm.accounts = self.evm.accounts.clone().modify_account(address, f);
     }
 
-    fn update_logs(&mut self, logs: LogsState) {
-        self.logs = logs;
+    fn update_logs(&mut self, block_hash: H256, logs: Vec<Log>) {
+        self.evm.logs.put(block_hash, logs);
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub struct BlockEpoch {
-    epoch: u32,
-    epoch_start: BlockTimestamp,
-    slots_per_epoch: u32,
-    slot_duration: u8,
-}
-
-impl Ledger {
-    pub fn new() -> Self {
-        Self {
-            accounts: Default::default(),
-            logs: Default::default(),
-            environment: Environment {
-                gas_price: Default::default(),
-                chain_id: Default::default(),
-                block_hashes: Default::default(),
-                block_number: Default::default(),
-                block_coinbase: Default::default(),
-                block_timestamp: Default::default(),
-                block_difficulty: Default::default(),
-                block_gas_limit: Default::default(),
-                block_base_fee_per_gas: Default::default(),
-            },
-            current_epoch: BlockEpoch {
-                epoch: 0,
-                epoch_start: BlockTimestamp::default(),
-                slots_per_epoch: 1,
-                slot_duration: 10,
-            },
-        }
-    }
+impl super::Ledger {
     pub fn run_transaction(
         &mut self,
         contract: EvmTransaction,
@@ -143,6 +116,17 @@ impl Ledger {
         }
         Ok(())
     }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct BlockEpoch {
+    epoch: u32,
+    epoch_start: BlockTimestamp,
+    slots_per_epoch: u32,
+    slot_duration: u8,
+}
+
+impl Ledger {
     /// Updates block values for EVM environment
     pub fn update_block_environment(
         &mut self,
@@ -191,6 +175,32 @@ impl Ledger {
             + slot_id as u64 * self.current_epoch.slot_duration as u64;
         // update EVM enviroment
         self.environment.block_timestamp = block_timestamp;
+    }
+}
+
+impl Ledger {
+    pub fn new() -> Self {
+        Self {
+            accounts: Default::default(),
+            logs: Default::default(),
+            environment: Environment {
+                gas_price: Default::default(),
+                chain_id: Default::default(),
+                block_hashes: Default::default(),
+                block_number: Default::default(),
+                block_coinbase: Default::default(),
+                block_timestamp: Default::default(),
+                block_difficulty: Default::default(),
+                block_gas_limit: Default::default(),
+                block_base_fee_per_gas: Default::default(),
+            },
+            current_epoch: BlockEpoch {
+                epoch: 0,
+                epoch_start: BlockTimestamp::default(),
+                slots_per_epoch: 1,
+                slot_duration: 10,
+            },
+        }
     }
 }
 

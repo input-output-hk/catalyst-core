@@ -12,7 +12,9 @@ use chain_evm::{
 };
 
 use crate::evm::EvmTransaction;
-use crate::ledger::evm::Ledger;
+use crate::ledger::{Ledger, Pots};
+use crate::setting::Settings;
+use crate::testing::TestGen;
 
 struct TestEvmState {
     ledger: Ledger,
@@ -23,7 +25,12 @@ struct TestEvmState {
 impl TestEvmState {
     fn new() -> Self {
         Self {
-            ledger: Default::default(),
+            ledger: Ledger::empty(
+                Settings::new(),
+                TestGen::static_parameters(),
+                TestGen::time_era(),
+                Pots::zero(),
+            ),
             config: Default::default(),
             coinbase_addresses: Default::default(),
         }
@@ -37,12 +44,12 @@ impl TestEvmState {
     }
 
     fn set_account(mut self, address: Address, account: Account) -> Self {
-        self.ledger.accounts = self.ledger.accounts.put(address, account);
+        self.ledger.evm.accounts = self.ledger.evm.accounts.put(address, account);
         self
     }
 
     fn set_chain_id(mut self, chain_id: U256) -> Self {
-        self.ledger.environment.chain_id = chain_id;
+        self.ledger.evm.environment.chain_id = chain_id;
         self
     }
 }
@@ -76,18 +83,19 @@ impl TestEvmState {
     }
 
     fn try_apply_block_header(mut self, block_header: TestBlockHeader) -> Result<Self, String> {
-        self.ledger.environment.block_gas_limit =
+        self.ledger.evm.environment.block_gas_limit =
             U256::from_str(&block_header.gas_limit).map_err(|_| "Can not parse gas limit")?;
-        self.ledger.environment.block_number =
+        self.ledger.evm.environment.block_number =
             U256::from_str(&block_header.number).map_err(|_| "Can not parse number")?;
-        self.ledger.environment.block_timestamp =
+        self.ledger.evm.environment.block_timestamp =
             U256::from_str(&block_header.timestamp).map_err(|_| "Can not parse timestamp")?;
-        self.ledger.environment.block_difficulty =
+        self.ledger.evm.environment.block_difficulty =
             U256::from_str(&block_header.difficulty).map_err(|_| "Can not parse difficulty")?;
-        self.ledger.environment.block_coinbase =
+        self.ledger.evm.environment.block_coinbase =
             H160::from_str(&block_header.coinbase).map_err(|_| "Can not parse coinbase")?;
 
         self.ledger
+            .evm
             .environment
             .block_hashes
             .push(H256::from_str(&block_header.hash).expect("Can not parse hash"));
@@ -101,7 +109,7 @@ impl TestEvmState {
         let gas_price =
             U256::from_str(&tx.gas_price).map_err(|_| "Can not parse transaction gas limit")?;
 
-        self.ledger.environment.gas_price = gas_price;
+        self.ledger.evm.environment.gas_price = gas_price;
 
         self.ledger
             .run_transaction(tx.try_into()?, self.config)
@@ -150,6 +158,7 @@ impl TestEvmState {
         if !self.coinbase_addresses.contains(&address) {
             let account = self
                 .ledger
+                .evm
                 .accounts
                 .get(&H160::from_str(&address).map_err(|_| "Can not parse address")?)
                 .ok_or("Can not find account")?;

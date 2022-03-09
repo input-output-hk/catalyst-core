@@ -1,20 +1,20 @@
-use super::ProposalBuilder;
+use super::ProposalConfig;
 use std::collections::VecDeque;
 
 #[derive(Debug, Clone, Default)]
-pub struct ChallengeBuilder {
-    pub(crate) proposals: VecDeque<ProposalBuilder>,
+pub struct ChallengeConfig {
+    pub(crate) proposals: VecDeque<ProposalConfig>,
     pub(crate) rewards_total: Option<u64>,
     pub(crate) proposers_rewards: Option<u64>,
 }
 
-impl ChallengeBuilder {
-    pub fn proposals(mut self, proposals: Vec<ProposalBuilder>) -> Self {
+impl ChallengeConfig {
+    pub fn proposals(mut self, proposals: Vec<ProposalConfig>) -> Self {
         self.proposals = VecDeque::from(proposals);
         self
     }
 
-    pub fn proposal(mut self, proposal: ProposalBuilder) -> Self {
+    pub fn proposal(mut self, proposal: ProposalConfig) -> Self {
         self.proposals.push_back(proposal);
         self
     }

@@ -7,24 +7,24 @@ use crate::common::data::FundTemplate;
 use crate::common::data::ProposalTemplate;
 use crate::common::data::ReviewTemplate;
 use crate::common::data::ValidVotingTemplateGenerator;
-pub use challenge::ChallengeBuilder;
-pub use proposal::ProposalBuilder;
+pub use challenge::ChallengeConfig;
+pub use proposal::ProposalConfig;
 
 #[derive(Clone, Default)]
-pub struct ArbitraryValidVotePlanBuilder {
+pub struct ArbitraryValidVotePlanConfig {
     template_generator: ArbitraryValidVotingTemplateGenerator,
-    challenges: Vec<ChallengeBuilder>,
+    challenges: Vec<ChallengeConfig>,
 }
 
-impl ArbitraryValidVotePlanBuilder {
-    pub fn challenges(mut self, challenges: Vec<ChallengeBuilder>) -> Self {
+impl ArbitraryValidVotePlanConfig {
+    pub fn challenges(mut self, challenges: Vec<ChallengeConfig>) -> Self {
         for challenge in challenges.into_iter() {
             self = self.challenge(challenge);
         }
         self
     }
 
-    pub fn challenge(mut self, mut challenge: ChallengeBuilder) -> Self {
+    pub fn challenge(mut self, mut challenge: ChallengeConfig) -> Self {
         challenge
             .proposals
             .iter_mut()
@@ -36,7 +36,7 @@ impl ArbitraryValidVotePlanBuilder {
         self
     }
 
-    pub fn pop_proposal(&mut self) -> ProposalBuilder {
+    pub fn pop_proposal(&mut self) -> ProposalConfig {
         for challenge in self.challenges.iter_mut() {
             if let Some(proposal) = challenge.proposals.pop_front() {
                 return proposal;
@@ -46,7 +46,7 @@ impl ArbitraryValidVotePlanBuilder {
     }
 }
 
-impl ValidVotingTemplateGenerator for ArbitraryValidVotePlanBuilder {
+impl ValidVotingTemplateGenerator for ArbitraryValidVotePlanConfig {
     fn next_proposal(&mut self) -> ProposalTemplate {
         let proposals_builder = self.pop_proposal();
         let challenge = self
@@ -121,11 +121,11 @@ mod test {
         vote_plan_parameters.vote_plans = vec![vote_plan_builder.build().into()];
         vote_plan_parameters.challenges_count = 1;
 
-        let mut template = ArbitraryValidVotePlanBuilder::default().challenge(
-            ChallengeBuilder::default()
+        let mut template = ArbitraryValidVotePlanConfig::default().challenge(
+            ChallengeConfig::default()
                 .rewards_total(1000)
                 .proposers_rewards(1000)
-                .proposal(ProposalBuilder::default().funds(100)),
+                .proposal(ProposalConfig::default().funds(100)),
         );
         let mut generator = ValidVotePlanGenerator::new(vote_plan_parameters);
         let snapshot = generator.build(&mut template);

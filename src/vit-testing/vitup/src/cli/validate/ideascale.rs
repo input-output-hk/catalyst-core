@@ -170,7 +170,7 @@ impl IdeascaleValidateCommand {
     ) -> Result<(), Error> {
         std::fs::create_dir_all(&self.output)?;
 
-        let deployment_tree = DeploymentTree::new(self.output.to_path_buf());
+        let deployment_tree = DeploymentTree::new(&self.output);
 
         let mut template_generator = ExternalValidVotingTemplateGenerator::new(
             proposals_path,

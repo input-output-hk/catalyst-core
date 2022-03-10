@@ -29,7 +29,7 @@ impl FolderDump {
                 .display()
         );
         self.content
-            .push(item.replace(&root_file_name, "").replace("\\", "/"));
+            .push(item.replace(&root_file_name, "").replace("'\\'", "/"));
         Ok(())
     }
 

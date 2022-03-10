@@ -23,7 +23,7 @@ impl FolderDump {
         let item = data.into();
         let root_file_name = format!("{}", self.root.display());
         self.content
-            .push(item.replace(&root_file_name, "").replace("\\", "/"));
+            .push(item.replace(&root_file_name, "").replace("'\\'", "/"));
     }
 }
 

@@ -65,7 +65,7 @@ impl FolderDump {
     }
 
     pub fn push_path<P: AsRef<Path>>(&mut self, input: P) {
-        let path = input.as_ref().display().to_string().replace("\\", "/");
+        let path = input.as_ref().display().to_string().replace("'\\'", "/");
         let path = path.replace(
             &format!("./{}/", self.root.file_name().unwrap().to_str().unwrap()),
             "",

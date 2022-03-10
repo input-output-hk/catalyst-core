@@ -7,6 +7,7 @@ import csv
 import itertools
 import enum
 import os
+import re
 from collections import namedtuple
 from io import StringIO
 
@@ -265,8 +266,8 @@ def extract_yes_no_votes(proposal: Proposal, voteplan_proposal: ProposalStatus):
     yes_index = proposal.chain_vote_options["yes"]
     no_index = proposal.chain_vote_options["no"]
     # we check before if tally is available, so it should be safe to direct access the data
-    yes_result = int(voteplan_proposal.tally.results[yes_index])  # type: ignore
-    no_result = int(voteplan_proposal.tally.results[no_index])  # type: ignore
+    yes_result = int(voteplan_proposal.tally.results[yes_index])
+    no_result = int(voteplan_proposal.tally.results[no_index])
     return yes_result, no_result
 
 
@@ -345,11 +346,7 @@ def calc_results(
         total_result, threshold_success = success_results[proposal_id]
         yes_result, no_result = extract_yes_no_votes(proposal, voteplan_proposal)
         funded = all(
-            (
-                threshold_success,
-                depletion > 0,
-                depletion >= int(proposal.proposal_funds),
-            )
+            (threshold_success, depletion > 0, depletion >= proposal.proposal_funds)
         )
         not_funded_reason = (
             ""
@@ -413,11 +410,17 @@ def filter_excluded_proposals(
     }
 
 
-def calculate_total_stake_from_block0_configuration(block0_config: Dict[str, Dict]):
+def calculate_total_stake_from_block0_configuration(
+    block0_config: Dict[str, Dict], committee_keys: List[Dict[str, str]]
+):
     funds = (
         initial["fund"] for initial in block0_config["initial"] if "fund" in initial
     )
-    return sum(fund["value"] for fund in itertools.chain.from_iterable(funds))
+    return sum(
+        fund["value"]
+        for fund in itertools.chain.from_iterable(funds)
+        if fund["address"] not in [key["address"] for key in committee_keys]
+    )
 
 
 # Output results
@@ -458,6 +461,7 @@ def calculate_rewards(
     active_voteplan_path: Optional[str] = typer.Option(None),
     challenges_path: Optional[str] = typer.Option(None),
     vit_station_url: str = typer.Option("https://servicing-station.vit.iohk.io"),
+    committee_keys_path: Optional[str] = typer.Option(None),
 ):
     """
     Calculate catalyst rewards after tallying process.
@@ -496,8 +500,14 @@ def calculate_rewards(
     )
 
     proposals = filter_excluded_proposals(proposals, excluded_proposals)
+
     block0_config = load_block0_data(block0_path)
-    total_stake = calculate_total_stake_from_block0_configuration(block0_config)
+    committee_keys = (
+        load_json_from_file(committee_keys_path) if committee_keys_path else []
+    )
+    total_stake = calculate_total_stake_from_block0_configuration(
+        block0_config, committee_keys
+    )
     # minimum amount of stake needed for a proposal to be accepted
     total_stake_approval_threshold = float(total_stake_threshold) * float(total_stake)
 
@@ -514,14 +524,14 @@ def calculate_rewards(
         )
 
         challenge_output_file_path = build_path_for_challenge(
-            output_file, challenge.title.replace(" ", "_").replace(":", "_")
+            output_file,
+            re.sub(
+                r"(?u)[^-\w.]", "", challenge.title.replace(" ", "_").replace(":", "_")
+            ),
         )
 
         with open(
-            challenge_output_file_path.replace("/", "-"),
-            "w",
-            encoding="utf-8",
-            newline="",
+            challenge_output_file_path, "w", encoding="utf-8", newline=""
         ) as out_file:
             if output_format == OutputFormat.JSON:
                 output_json(results, out_file)

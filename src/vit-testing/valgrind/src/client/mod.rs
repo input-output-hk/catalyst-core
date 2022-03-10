@@ -70,7 +70,9 @@ impl ValgrindClient {
 
     pub fn new(address: String, settings: ValgrindSettings) -> Result<Self, Error> {
         let mut proxy_address: Url = address.parse()?;
-        proxy_address.set_scheme("https").map_err(|_|Error::CannotAlterScheme(address.clone()))?;
+        proxy_address
+            .set_scheme("https")
+            .map_err(|_| Error::CannotAlterScheme(address.clone()))?;
 
         Ok(Self::new_from_addresses(
             proxy_address.clone(),
@@ -233,5 +235,5 @@ pub enum Error {
     #[error(transparent)]
     Url(#[from] url::ParseError),
     #[error("cannot alter scheme for url (0)")]
-    CannotAlterScheme(String)
+    CannotAlterScheme(String),
 }

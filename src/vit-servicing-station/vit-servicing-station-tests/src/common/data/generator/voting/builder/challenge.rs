@@ -1,42 +1,20 @@
 use super::ProposalConfig;
 use std::collections::VecDeque;
-use std::sync::atomic::{AtomicUsize, Ordering};
 
-lazy_static! {
-    static ref NEXT_CHALLENGE_ID: AtomicUsize = AtomicUsize::new(0);
-}
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct ChallengeConfig {
-    pub(crate) id: usize,
     pub(crate) proposals: VecDeque<ProposalConfig>,
     pub(crate) rewards_total: Option<u64>,
     pub(crate) proposers_rewards: Option<u64>,
 }
 
-impl Default for ChallengeConfig {
-    fn default() -> Self {
-        Self {
-            id: NEXT_CHALLENGE_ID.fetch_add(1, Ordering::SeqCst),
-            proposals: VecDeque::new(),
-            rewards_total: None,
-            proposers_rewards: None,
-        }
-    }
-}
-
 impl ChallengeConfig {
     pub fn proposals(mut self, proposals: Vec<ProposalConfig>) -> Self {
-        for proposal in proposals.into_iter() {
-            self = self.proposal(proposal);
-        }
+        self.proposals = VecDeque::from(proposals);
         self
     }
 
-    pub fn proposal(mut self, mut proposal: ProposalConfig) -> Self {
-        if proposal.challenge_id.is_none() {
-            proposal.challenge_id = Some(self.id);
-        }
+    pub fn proposal(mut self, proposal: ProposalConfig) -> Self {
         self.proposals.push_back(proposal);
         self
     }

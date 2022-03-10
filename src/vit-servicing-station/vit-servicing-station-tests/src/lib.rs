@@ -3,5 +3,5 @@ pub mod common;
 #[cfg(test)]
 pub mod tests;
 
-#[macro_use]
+#[cfg(test)]
 extern crate lazy_static;

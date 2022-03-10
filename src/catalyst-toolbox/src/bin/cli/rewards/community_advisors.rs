@@ -1,13 +1,13 @@
 use chain_crypto::digest::DigestOf;
 use serde::Serialize;
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use super::Error;
 use catalyst_toolbox::rewards::community_advisors::{
-    calculate_ca_rewards, ApprovedProposals, CaRewards, FundSetting, Funds, ProposalRewardSlots,
-    ProposalsReviews, Rewards, Seed,
+    calculate_ca_rewards, ApprovedProposals, CommunityAdvisor, FundSetting, Funds,
+    ProposalRewardSlots, ProposalsReviews, Rewards, Seed,
 };
 use catalyst_toolbox::utils;
 
@@ -66,6 +66,10 @@ pub struct CommunityAdvisors {
 
     #[structopt(long)]
     seed: String,
+
+    /// Output bonus rewards per proposal in a separate file
+    #[structopt(long)]
+    proposal_bonus_output: Option<PathBuf>,
 }
 
 impl CommunityAdvisors {
@@ -77,6 +81,7 @@ impl CommunityAdvisors {
             rewards_slots,
             output,
             seed,
+            proposal_bonus_output,
         } = self;
 
         if fund_settings.bonus_ratio + fund_settings.proposal_ratio != 100 {
@@ -101,17 +106,33 @@ impl CommunityAdvisors {
                 diff,
             );
         }
+        let (good_slots, excellent_slots) =
+            (rewards_slots.good_slots, rewards_slots.excellent_slots);
 
         let rewards = calculate_ca_rewards(
             proposal_reviews,
-            &approved_proposals,
+            approved_proposals,
             &fund_settings.into(),
             &rewards_slots.into(),
             Seed::from(DigestOf::digest(&seed)),
         );
 
-        let csv_data = rewards_to_csv_data(&rewards);
+        let csv_data = rewards_to_csv_data(&rewards.rewards);
         dump_data_to_csv(&csv_data, &output)?;
+
+        println!(
+            "Reward for (full) good review {}",
+            rewards.base_ticket_reward * Rewards::from(good_slots)
+        );
+        println!(
+            "Reward for (full) excellent review {}",
+            rewards.base_ticket_reward * Rewards::from(excellent_slots)
+        );
+        if let Some(file) = proposal_bonus_output {
+            let csv_data = bonus_to_csv_data(rewards.bonus_rewards);
+            dump_data_to_csv(&csv_data, &file)?;
+        }
+
         Ok(())
     }
 }
@@ -167,7 +188,7 @@ impl From<ProposalRewardsSlotsOpt> for ProposalRewardSlots {
     }
 }
 
-fn rewards_to_csv_data(rewards: &CaRewards) -> Vec<impl Serialize> {
+fn rewards_to_csv_data(rewards: &BTreeMap<CommunityAdvisor, Rewards>) -> Vec<impl Serialize> {
     #[derive(Serialize)]
     struct Entry {
         id: String,
@@ -179,6 +200,22 @@ fn rewards_to_csv_data(rewards: &CaRewards) -> Vec<impl Serialize> {
         .map(|(id, rewards)| Entry {
             id: id.clone(),
             rewards: *rewards,
+        })
+        .collect()
+}
+
+fn bonus_to_csv_data(rewards: BTreeMap<String, Rewards>) -> Vec<impl Serialize> {
+    #[derive(Serialize)]
+    struct Entry {
+        proposal_id: String,
+        bonus_rewards: Rewards,
+    }
+
+    rewards
+        .into_iter()
+        .map(|(proposal_id, bonus_rewards)| Entry {
+            proposal_id,
+            bonus_rewards,
         })
         .collect()
 }

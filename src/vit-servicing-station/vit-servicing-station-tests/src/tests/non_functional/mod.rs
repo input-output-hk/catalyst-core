@@ -79,7 +79,7 @@ impl RequestGenerator for VitRestRequestGenerator {
                     ids: vec![Option::None],
                     duration: Duration::ZERO,
                 })
-                .map_err(|e| RequestFailure::General(format!("Health: {}", e.to_string()))),
+                .map_err(|e| RequestFailure::General(format!("Health: {}", e))),
             1 => self
                 .rest_client
                 .proposals()
@@ -87,7 +87,7 @@ impl RequestGenerator for VitRestRequestGenerator {
                     ids: vec![Option::None],
                     duration: Duration::ZERO,
                 })
-                .map_err(|e| RequestFailure::General(format!("Proposals: {}", e.to_string()))),
+                .map_err(|e| RequestFailure::General(format!("Proposals: {}", e))),
             2 => self
                 .rest_client
                 .proposal(&self.snapshot_randomizer.random_proposal_id().to_string())
@@ -95,9 +95,7 @@ impl RequestGenerator for VitRestRequestGenerator {
                     ids: vec![Option::None],
                     duration: Duration::ZERO,
                 })
-                .map_err(|e| {
-                    RequestFailure::General(format!("Proposals by id: {}", e.to_string()))
-                }),
+                .map_err(|e| RequestFailure::General(format!("Proposals by id: {}", e))),
             3 => self
                 .rest_client
                 .fund(&self.snapshot_randomizer.random_fund_id().to_string())
@@ -105,7 +103,7 @@ impl RequestGenerator for VitRestRequestGenerator {
                     ids: vec![Option::None],
                     duration: Duration::ZERO,
                 })
-                .map_err(|e| RequestFailure::General(format!("Funds by id: {}", e.to_string()))),
+                .map_err(|e| RequestFailure::General(format!("Funds by id: {}", e))),
             _ => unreachable!(),
         }
     }

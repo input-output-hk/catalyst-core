@@ -55,7 +55,7 @@ impl MockState {
             network_congestion: NetworkCongestion::new(&snapshot),
             vit_state: snapshot,
             version: VitVersion {
-                service_version: params.version,
+                service_version: params.service.version,
             },
             block0_bin: jortestkit::file::get_file_as_byte_vec(controller.block0_file()),
         })

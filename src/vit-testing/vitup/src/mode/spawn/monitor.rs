@@ -35,8 +35,11 @@ pub fn spawn_network(
         nodes_list.push(monitor_controller.spawn_node(spawn_param)?);
     }
 
-    let _vit_station =
-        monitor_controller.spawn_vit_station(vit_parameters, template_generator, config.version)?;
+    let _vit_station = monitor_controller.spawn_vit_station(
+        vit_parameters,
+        template_generator,
+        config.service.version,
+    )?;
     let _wallet_proxy =
         monitor_controller.spawn_wallet_proxy_custom(&mut network_spawn_params.proxy_params())?;
 

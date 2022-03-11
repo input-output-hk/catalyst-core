@@ -220,11 +220,12 @@ impl QuickStartCommandArgs {
 
         let network_spawn_params = NetworkSpawnParams::new(
             endpoint,
-            &config,
+            config.protocol(&testing_directory)?,
             session_settings,
             token,
+            config.service.version.clone(),
             testing_directory,
-        )?;
+        );
         spawn_network(mode, network_spawn_params, &mut template_generator, config)
             .map_err(Into::into)
     }

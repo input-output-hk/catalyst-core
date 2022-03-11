@@ -1,6 +1,7 @@
 mod blockchain;
 mod builder;
 mod initials;
+mod service;
 mod static_data;
 mod vote_plan;
 mod vote_time;
@@ -13,7 +14,9 @@ pub use blockchain::Blockchain;
 pub use builder::ConfigBuilder;
 pub use certs::CertificatesBuilder;
 pub use initials::{Initial as InitialEntry, Initials};
+pub use service::Service;
 pub use static_data::StaticData;
+use valgrind::Protocol;
 pub use vote_plan::VotePlan;
 pub use vote_time::{VoteBlockchainTime, VoteTime, FORMAT as VOTE_TIME_FORMAT};
 
@@ -23,7 +26,7 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::time::Duration;
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, Default)]
 pub struct Config {
     #[serde(default)]
     pub initials: Initials,
@@ -33,22 +36,19 @@ pub struct Config {
     pub blockchain: Blockchain,
     #[serde(default)]
     pub data: StaticData,
-    pub version: String,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            initials: Default::default(),
-            vote_plan: Default::default(),
-            blockchain: Default::default(),
-            data: Default::default(),
-            version: "3.6".to_string(),
-        }
-    }
+    #[serde(default)]
+    pub service: Service,
 }
 
 impl Config {
+    pub fn protocol<P: AsRef<Path>>(&self, working_dir: P) -> Result<Protocol> {
+        if self.service.https {
+            Ok(CertificatesBuilder::default().build(working_dir)?.into())
+        } else {
+            Ok(Default::default())
+        }
+    }
+
     pub fn extend_from_initials_file<P: AsRef<Path>>(&mut self, snapshot: P) -> Result<()> {
         self.initials.extend_from_external(read_initials(snapshot)?);
         Ok(())

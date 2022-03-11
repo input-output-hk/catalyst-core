@@ -74,7 +74,7 @@ pub fn single_run(
     let vit_station = monitor_controller.spawn_vit_station(
         vit_parameters,
         template_generator,
-        config.version.clone(),
+        config.service.version.clone(),
     )?;
     let mut wallet_proxy =
         monitor_controller.spawn_wallet_proxy_custom(&mut network_params.proxy_params())?;

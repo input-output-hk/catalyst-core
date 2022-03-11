@@ -56,7 +56,7 @@ impl ConfigBuilder {
     }
 
     pub fn version(mut self, version: String) -> Self {
-        self.config.version = version;
+        self.config.service.version = version;
         self
     }
 

@@ -33,35 +33,49 @@ pub struct ValigrindStartupCommand {
     pub block0_path: PathBuf,
 
     #[structopt(long = "cert")]
-    pub cert_path: PathBuf,
+    pub cert_path: Option<PathBuf>,
 
     #[structopt(long = "key")]
-    pub key_path: PathBuf,
+    pub key_path: Option<PathBuf>,
 }
 
 impl ValigrindStartupCommand {
     pub fn build(self) -> Result<ProxyServerStub, Error> {
-        let Self {
-            address,
-            vit_address,
-            node_address,
-            block0_path,
-            key_path,
-            cert_path,
-        } = self;
+        let proxy_address = self.address.clone();
+        let vit_address = self.vit_address.clone();
+        let node_address = self.node_address.clone();
+        let block0_path = self.block0_path.clone();
 
-        if !key_path.exists() {
-            return Err(Error::KeyFileDoesNotExist);
+        if let Some(cert_path) = self.cert_path {
+            let key_path = self
+                .key_path
+                .clone()
+                .ok_or(Error::UnsufficientHttpConfiguration)?;
+
+            if !key_path.exists() {
+                return Err(Error::KeyFileDoesNotExist);
+            }
+
+            if !cert_path.exists() {
+                return Err(Error::CertFileDoesNotExist);
+            }
+
+            let certs = Certs {
+                key_path,
+                cert_path,
+            };
+
+            return Ok(ProxyServerStub::new_https(
+                certs,
+                proxy_address,
+                vit_address,
+                node_address,
+                jortestkit::file::get_file_as_byte_vec(&block0_path),
+            ));
         }
 
-        if !cert_path.exists() {
-            return Err(Error::CertFileDoesNotExist);
-        }
-
-        Ok(ProxyServerStub::new(
-            key_path,
-            cert_path,
-            address,
+        Ok(ProxyServerStub::new_http(
+            proxy_address,
             vit_address,
             node_address,
             jortestkit::file::get_file_as_byte_vec(&block0_path),
@@ -70,7 +84,26 @@ impl ValigrindStartupCommand {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Protocol {
+    Http,
+    Https(Certs),
+}
+
+impl Default for Protocol {
+    fn default() -> Self {
+        Self::Http
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Certs {
     pub key_path: PathBuf,
     pub cert_path: PathBuf,
+}
+
+impl From<Certs> for Protocol {
+    fn from(certs: Certs) -> Self {
+        Self::Https(certs)
+    }
 }

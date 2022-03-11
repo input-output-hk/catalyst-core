@@ -227,7 +227,7 @@ impl VitController {
             .arg("--block0")
             .arg(block0_file.as_path().to_str().unwrap());
 
-        if let Some(certs) = &params.certs {
+        if let valgrind::Protocol::Https(certs) = &params.protocol {
             command
                 .arg("--cert")
                 .arg(&certs.cert_path)

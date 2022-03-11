@@ -6,6 +6,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
 use thiserror::Error;
+use valgrind::Protocol;
 use valgrind::VitVersion;
 
 pub struct Context {
@@ -72,6 +73,10 @@ impl Context {
 
     pub fn api_token(&self) -> Option<String> {
         self.config.token.clone()
+    }
+
+    pub fn protocol(&self) -> Protocol {
+        self.config.protocol.clone()
     }
 
     #[allow(dead_code)]

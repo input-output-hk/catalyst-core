@@ -1,6 +1,5 @@
 use super::FragmentRecieveStrategy;
 use super::{Context, ContextLock};
-use crate::config::CertificatesBuilder;
 use crate::config::Config;
 use crate::mode::mock::LedgerState;
 use crate::mode::mock::NetworkCongestionMode;
@@ -30,6 +29,7 @@ use thiserror::Error;
 use tokio::net::TcpListener;
 use tokio_rustls::TlsAcceptor;
 use tracing_subscriber::fmt::format::FmtSpan;
+use valgrind::Protocol;
 use vit_servicing_station_lib::db::models::challenges::Challenge;
 use vit_servicing_station_lib::db::models::funds::Fund;
 use vit_servicing_station_lib::db::models::proposals::Proposal;
@@ -67,6 +67,7 @@ impl Reject for Error {}
 pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
     let is_token_enabled = context.lock().unwrap().api_token().is_some();
     let address = *context.lock().unwrap().address();
+    let protocol = context.lock().unwrap().protocol();
     let working_dir = context.lock().unwrap().working_dir();
     let with_context = warp::any().map(move || context.clone());
 
@@ -75,8 +76,6 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
     let mut default_headers = HeaderMap::new();
     default_headers.insert("Access-Control-Allow-Origin", HeaderValue::from_static("*"));
     default_headers.insert("vary", HeaderValue::from_static("Origin"));
-
-    let certs = CertificatesBuilder::default().build(&working_dir).unwrap();
 
     let filter = std::env::var("RUST_LOG").unwrap_or_else(|_| "tracing=info,warp=debug".to_owned());
     tracing_subscriber::fmt()
@@ -492,51 +491,61 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
         .recover(report_invalid)
         .with(cors);
 
-    let tls_cfg = {
-        let certificate = load_cert(&certs.cert_path)?;
-        let key = load_private_key(&certs.key_path)?;
-        let mut cfg = rustls::ServerConfig::builder()
-            .with_safe_defaults()
-            .with_no_client_auth()
-            .with_single_cert(certificate, key)?;
+    match protocol {
+        Protocol::Https(certs) => {
+            let tls_cfg = {
+                let cert = load_cert(&certs.cert_path)?;
+                let key = load_private_key(&certs.key_path)?;
+                let mut cfg = rustls::ServerConfig::builder()
+                    .with_safe_defaults()
+                    .with_no_client_auth()
+                    .with_single_cert(cert, key)?;
 
-        cfg.key_log = Arc::new(KeyLogFile::new());
-        cfg.alpn_protocols = vec![b"h2".to_vec(), b"http/1.1".to_vec()];
-        Arc::new(cfg)
-    };
+                cfg.key_log = Arc::new(KeyLogFile::new());
+                cfg.alpn_protocols = vec![b"h2".to_vec(), b"http/1.1".to_vec()];
+                Arc::new(cfg)
+            };
 
-    let tls_acceptor = TlsAcceptor::from(tls_cfg);
-    let arc_acceptor = Arc::new(tls_acceptor);
+            let tls_acceptor = TlsAcceptor::from(tls_cfg);
+            let arc_acceptor = Arc::new(tls_acceptor);
 
-    let listener =
-        tokio_stream::wrappers::TcpListenerStream::new(TcpListener::bind(&address).await?);
+            let listener =
+                tokio_stream::wrappers::TcpListenerStream::new(TcpListener::bind(&address).await?);
 
-    let incoming = hyper::server::accept::from_stream(listener.filter_map(|socket| async {
-        match socket {
-            Ok(stream) => match arc_acceptor.clone().accept(stream).await {
-                Ok(val) => Some(Ok::<_, hyper::Error>(val)),
-                Err(e) => {
-                    tracing::warn!("handshake failed {}", e);
-                    None
-                }
-            },
-            Err(e) => {
-                tracing::error!("tcp socket outer err: {}", e);
-                None
-            }
+            let incoming =
+                hyper::server::accept::from_stream(listener.filter_map(|socket| async {
+                    match socket {
+                        Ok(stream) => match arc_acceptor.clone().accept(stream).await {
+                            Ok(val) => Some(Ok::<_, hyper::Error>(val)),
+                            Err(e) => {
+                                tracing::warn!("handshake failed {}", e);
+                                None
+                            }
+                        },
+                        Err(e) => {
+                            tracing::error!("tcp socket outer err: {}", e);
+                            None
+                        }
+                    }
+                }));
+
+            let svc = warp::service(api);
+            let service = make_service_fn(move |_| {
+                let svc = svc.clone();
+                async move { Ok::<_, Infallible>(svc) }
+            });
+
+            let server = hyper::Server::builder(incoming).serve(service);
+
+            println!("serving at: https://{}", address);
+            Ok(server.await?)
         }
-    }));
-
-    let svc = warp::service(api);
-    let service = make_service_fn(move |_| {
-        let svc = svc.clone();
-        async move { Ok::<_, Infallible>(svc) }
-    });
-
-    let server = hyper::Server::builder(incoming).serve(service);
-
-    println!("serving at: https://{}", address);
-    Ok(server.await?)
+        Protocol::Http => {
+            println!("serving at: http://{}", address);
+            warp::serve(api).bind(address).await;
+            Ok(())
+        }
+    }
 }
 
 fn load_cert(filename: &Path) -> Result<Vec<rustls::Certificate>, Error> {
@@ -730,9 +739,9 @@ pub async fn debug_message(
 
 pub async fn command_reset_mock(
     context: ContextLock,
-    parameters: Config,
+    config: Config,
 ) -> Result<impl Reply, Rejection> {
-    context.lock().unwrap().reset(parameters)?;
+    context.lock().unwrap().reset(config)?;
     Ok(warp::reply())
 }
 

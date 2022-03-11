@@ -10,6 +10,8 @@ pub struct Configuration {
     pub ideascale: bool,
     #[serde(alias = "working-dir")]
     pub working_dir: PathBuf,
+    #[serde(default)]
+    pub protocol: valgrind::Protocol,
 }
 
 pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Configuration, Error> {

@@ -24,8 +24,11 @@ pub fn spawn_network(
 
     let wallet_proxy =
         vit_controller.spawn_wallet_proxy_custom(&mut network_spawn_params.proxy_params())?;
-    let vit_station =
-        vit_controller.spawn_vit_station(vit_parameters, template_generator, config.version)?;
+    let vit_station = vit_controller.spawn_vit_station(
+        vit_parameters,
+        template_generator,
+        config.service.version,
+    )?;
 
     let user_integration = vit_interaction();
     let mut interaction_controller =

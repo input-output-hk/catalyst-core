@@ -1,3 +1,0 @@
-[submodule "evm-tests"]
-	path = evm-tests
-	url = https://github.com/ethereum/tests.git

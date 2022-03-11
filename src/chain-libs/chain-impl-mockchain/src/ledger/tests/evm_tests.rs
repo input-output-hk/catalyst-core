@@ -346,6 +346,7 @@ pub fn run_evm_test(path: PathBuf) {
 }
 
 #[test]
+#[ignore]
 fn run_evm_tests() {
     let vm_tests_dir = std::fs::read_dir("../evm-tests/BlockchainTests/GeneralStateTests/VMTests")
         .expect("Can not find vm tests directory");

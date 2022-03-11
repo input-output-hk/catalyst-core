@@ -507,7 +507,7 @@ dependencies = [
 [[package]]
 name = "cardano-legacy-address"
 version = "0.1.1"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4d3f351c175d7135ad9c207a03087ec85ec4e091"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6c8b145feb6c68a7feb63e10e75bd14d3a2b3841"
 dependencies = [
  "cbor_event",
  "chain-ser",
@@ -527,7 +527,7 @@ dependencies = [
 [[package]]
 name = "catalyst-toolbox"
 version = "0.3.0"
-source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=update-dependencies#47fa12797175ae732e4702a31d38604ffba9565d"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=update-dependencies#b8abb063dbaf6d8e93bb9ecdbb1d12b9f884ea1d"
 dependencies = [
  "assert_fs",
  "bech32 0.7.3",
@@ -629,7 +629,7 @@ dependencies = [
 [[package]]
 name = "chain-addr"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4d3f351c175d7135ad9c207a03087ec85ec4e091"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6c8b145feb6c68a7feb63e10e75bd14d3a2b3841"
 dependencies = [
  "bech32 0.8.1",
  "chain-core",
@@ -643,7 +643,7 @@ dependencies = [
 [[package]]
 name = "chain-core"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4d3f351c175d7135ad9c207a03087ec85ec4e091"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6c8b145feb6c68a7feb63e10e75bd14d3a2b3841"
 dependencies = [
  "chain-ser",
 ]
@@ -651,7 +651,7 @@ dependencies = [
 [[package]]
 name = "chain-crypto"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4d3f351c175d7135ad9c207a03087ec85ec4e091"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6c8b145feb6c68a7feb63e10e75bd14d3a2b3841"
 dependencies = [
  "bech32 0.8.1",
  "cryptoxide 0.4.2",
@@ -673,7 +673,7 @@ dependencies = [
 [[package]]
 name = "chain-evm"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4d3f351c175d7135ad9c207a03087ec85ec4e091"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6c8b145feb6c68a7feb63e10e75bd14d3a2b3841"
 dependencies = [
  "aurora-bn",
  "base64 0.13.0",
@@ -700,7 +700,7 @@ dependencies = [
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4d3f351c175d7135ad9c207a03087ec85ec4e091"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6c8b145feb6c68a7feb63e10e75bd14d3a2b3841"
 dependencies = [
  "cardano-legacy-address",
  "chain-addr",
@@ -738,12 +738,12 @@ dependencies = [
 [[package]]
 name = "chain-ser"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4d3f351c175d7135ad9c207a03087ec85ec4e091"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6c8b145feb6c68a7feb63e10e75bd14d3a2b3841"
 
 [[package]]
 name = "chain-storage"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4d3f351c175d7135ad9c207a03087ec85ec4e091"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6c8b145feb6c68a7feb63e10e75bd14d3a2b3841"
 dependencies = [
  "criterion",
  "data-pile",
@@ -756,7 +756,7 @@ dependencies = [
 [[package]]
 name = "chain-time"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4d3f351c175d7135ad9c207a03087ec85ec4e091"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6c8b145feb6c68a7feb63e10e75bd14d3a2b3841"
 dependencies = [
  "chain-core",
  "chain-ser",
@@ -768,7 +768,7 @@ dependencies = [
 [[package]]
 name = "chain-vote"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4d3f351c175d7135ad9c207a03087ec85ec4e091"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6c8b145feb6c68a7feb63e10e75bd14d3a2b3841"
 dependencies = [
  "cfg-if 1.0.0",
  "chain-core",
@@ -2282,7 +2282,7 @@ dependencies = [
 [[package]]
 name = "hersir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#817cb7eeb19746b1fc76894df8b2eedbf43b6fb4"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#4b7bb3082c59a23f5dd969ea0d84ccab117b05be"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2601,7 +2601,7 @@ dependencies = [
 [[package]]
 name = "imhamt"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4d3f351c175d7135ad9c207a03087ec85ec4e091"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6c8b145feb6c68a7feb63e10e75bd14d3a2b3841"
 dependencies = [
  "thiserror",
 ]
@@ -2748,7 +2748,7 @@ checksum = "1aab8fc367588b89dcee83ab0fd66b72b50b72fa1904d7095045ace2b0c81c35"
 [[package]]
 name = "jcli"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#817cb7eeb19746b1fc76894df8b2eedbf43b6fb4"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#4b7bb3082c59a23f5dd969ea0d84ccab117b05be"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2782,7 +2782,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-automation"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#817cb7eeb19746b1fc76894df8b2eedbf43b6fb4"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#4b7bb3082c59a23f5dd969ea0d84ccab117b05be"
 dependencies = [
  "assert_cmd",
  "assert_fs",
@@ -2847,7 +2847,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-integration-tests"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#817cb7eeb19746b1fc76894df8b2eedbf43b6fb4"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#4b7bb3082c59a23f5dd969ea0d84ccab117b05be"
 dependencies = [
  "assert_cmd",
  "assert_fs",
@@ -2899,7 +2899,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#817cb7eeb19746b1fc76894df8b2eedbf43b6fb4"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#4b7bb3082c59a23f5dd969ea0d84ccab117b05be"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -3155,7 +3155,7 @@ dependencies = [
 [[package]]
 name = "loki"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#817cb7eeb19746b1fc76894df8b2eedbf43b6fb4"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#4b7bb3082c59a23f5dd969ea0d84ccab117b05be"
 dependencies = [
  "chain-addr",
  "chain-core",
@@ -3317,14 +3317,15 @@ dependencies = [
 
 [[package]]
 name = "mio"
-version = "0.8.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba272f85fa0b41fc91872be579b3bbe0f56b792aa361a380eb669469f68dafb2"
+checksum = "7ba42135c6a5917b9db9cd7b293e5409e1c6b041e6f9825e92e55a894c63b6f8"
 dependencies = [
  "libc",
  "log",
  "miow 0.3.7",
  "ntapi",
+ "wasi 0.11.0+wasi-snapshot-preview1",
  "winapi 0.3.9",
 ]
 
@@ -3352,7 +3353,7 @@ dependencies = [
 [[package]]
 name = "mjolnir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#817cb7eeb19746b1fc76894df8b2eedbf43b6fb4"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#4b7bb3082c59a23f5dd969ea0d84ccab117b05be"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -3621,9 +3622,9 @@ dependencies = [
 
 [[package]]
 name = "num_threads"
-version = "0.1.3"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "97ba99ba6393e2c3734791401b66902d981cb03bf190af674ca69949b6d5fb15"
+checksum = "c539a50b93a303167eded6e8dff5220cd39447409fb659f4cd24b1f72fe4f133"
 dependencies = [
  "libc",
 ]
@@ -5190,7 +5191,7 @@ dependencies = [
 [[package]]
 name = "sparse-array"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4d3f351c175d7135ad9c207a03087ec85ec4e091"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6c8b145feb6c68a7feb63e10e75bd14d3a2b3841"
 
 [[package]]
 name = "spin"
@@ -5557,7 +5558,7 @@ dependencies = [
 [[package]]
 name = "thor"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#817cb7eeb19746b1fc76894df8b2eedbf43b6fb4"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#4b7bb3082c59a23f5dd969ea0d84ccab117b05be"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",
@@ -5696,7 +5697,7 @@ dependencies = [
  "bytes 1.1.0",
  "libc",
  "memchr",
- "mio 0.8.0",
+ "mio 0.8.1",
  "num_cpus",
  "once_cell",
  "pin-project-lite 0.2.8",
@@ -6083,7 +6084,7 @@ dependencies = [
 [[package]]
 name = "typed-bytes"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4d3f351c175d7135ad9c207a03087ec85ec4e091"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6c8b145feb6c68a7feb63e10e75bd14d3a2b3841"
 
 [[package]]
 name = "typenum"
@@ -6591,6 +6592,12 @@ name = "wasi"
 version = "0.10.0+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a143597ca7c7793eff794def352d41792a93c481eb1042423ff7ff72ba2c31f"
+
+[[package]]
+name = "wasi"
+version = "0.11.0+wasi-snapshot-preview1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 
 [[package]]
 name = "wasm-bindgen"

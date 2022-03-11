@@ -10,12 +10,14 @@ pub mod certs;
 pub mod mode;
 
 use crate::config::builder::convert_to_human_date;
+use crate::config::vote_time::FORMAT;
 pub use blockchain::Blockchain;
 pub use builder::ConfigBuilder;
 pub use certs::CertificatesBuilder;
 pub use initials::{Initial as InitialEntry, Initials};
 pub use service::Service;
 pub use static_data::StaticData;
+use time::format_description::{self, FormatItem};
 use valgrind::Protocol;
 pub use vote_plan::VotePlan;
 pub use vote_time::{VoteBlockchainTime, VoteTime, FORMAT as VOTE_TIME_FORMAT};
@@ -69,7 +71,7 @@ impl Config {
                 tally_end_timestamp: _,
                 find_best_match: _,
             } => Duration::from_secs(
-                (tally_start_timestamp - vote_start_timestamp).num_seconds() as u64
+                (tally_start_timestamp - vote_start_timestamp).whole_seconds() as u64,
             ),
         }
     }
@@ -117,4 +119,8 @@ impl Config {
 pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Config> {
     let contents = std::fs::read_to_string(&config)?;
     serde_json::from_str(&contents).map_err(Into::into)
+}
+
+pub fn date_format() -> Vec<FormatItem<'static>> {
+    format_description::parse(FORMAT).unwrap()
 }

@@ -5,6 +5,7 @@ pub mod start;
 pub mod time;
 pub mod validate;
 
+use self::time::TimeCommand;
 use crate::cli::generate::{CommitteeIdCommandArgs, QrCommandArgs, SnapshotCommandArgs};
 use crate::cli::start::AdvancedStartCommandArgs;
 use crate::cli::start::MockStartCommandArgs;
@@ -14,7 +15,6 @@ use generate::DataCommandArgs;
 use import::ImportCommand;
 use start::QuickStartCommandArgs;
 use structopt::StructOpt;
-use time::TimeCommand;
 pub use validate::Error as ValidateError;
 use validate::ValidateCommand;
 

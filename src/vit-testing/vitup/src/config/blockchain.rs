@@ -1,9 +1,8 @@
 use chain_impl_mockchain::fee::LinearFee;
-use chrono::NaiveDateTime;
-use chrono::Utc;
 use jormungandr_lib::interfaces::{CommitteeIdDef, ConsensusLeaderId, LinearFeeDef};
 use jormungandr_lib::time::SecondsSinceUnixEpoch;
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Blockchain {
@@ -12,7 +11,7 @@ pub struct Blockchain {
     #[serde(default)]
     pub block_content_max_size: u32,
     #[serde(default = "default_block0_time")]
-    pub block0_time: NaiveDateTime,
+    pub block0_time: OffsetDateTime,
     #[serde(default)]
     pub tx_max_expiry_epochs: Option<u8>,
     #[serde(default)]
@@ -38,10 +37,10 @@ impl Default for Blockchain {
 }
 impl Blockchain {
     pub fn block0_date_as_unix(&self) -> SecondsSinceUnixEpoch {
-        SecondsSinceUnixEpoch::from_secs(self.block0_time.timestamp() as u64)
+        SecondsSinceUnixEpoch::from_secs(self.block0_time.unix_timestamp() as u64)
     }
 }
 
-fn default_block0_time() -> NaiveDateTime {
-    Utc::now().naive_utc()
+fn default_block0_time() -> OffsetDateTime {
+    OffsetDateTime::now_utc()
 }

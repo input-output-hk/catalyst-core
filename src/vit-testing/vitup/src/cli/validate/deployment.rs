@@ -1,4 +1,3 @@
-use chrono::ParseError;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar, ProgressStyle};
 use std::fmt;
 use std::thread;
@@ -183,8 +182,6 @@ impl DeploymentValidateCommand {
 pub enum CheckError {
     #[error(transparent)]
     WalletBackend(#[from] ValgrindError),
-    #[error(transparent)]
-    Parser(#[from] ParseError),
     #[error("{0}")]
     Assert(String),
 }

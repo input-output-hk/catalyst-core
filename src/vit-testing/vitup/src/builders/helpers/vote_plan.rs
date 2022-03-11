@@ -133,8 +133,6 @@ mod tests {
     #[quickcheck]
     pub fn external_proposal_ids_are_unique(proposal_count: usize) -> TestResult {
         let vote_plans_defs = VitVotePlanDefBuilder::default()
-            .fund_name("fundX".to_string())
-            .committee("fake".to_string())
             .proposals_count(proposal_count)
             .build();
 

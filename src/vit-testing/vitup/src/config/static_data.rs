@@ -1,6 +1,6 @@
 use crate::builders::{default_next_snapshot_date, default_next_vote_date, default_snapshot_date};
-use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
 use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -9,9 +9,9 @@ pub struct StaticData {
         deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_vote_options_from_string"
     )]
     pub options: VoteOptions,
-    pub next_vote_start_time: NaiveDateTime,
-    pub snapshot_time: NaiveDateTime,
-    pub next_snapshot_time: NaiveDateTime,
+    pub next_vote_start_time: OffsetDateTime,
+    pub snapshot_time: OffsetDateTime,
+    pub next_snapshot_time: OffsetDateTime,
     pub proposals: u32,
     pub challenges: usize,
     pub reviews: usize,

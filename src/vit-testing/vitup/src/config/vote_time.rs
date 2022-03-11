@@ -1,7 +1,8 @@
+use crate::config::date_format;
 use crate::Result;
-use chrono::NaiveDateTime;
-use jormungandr_automation::{jormungandr::JormungandrRest, testing::time};
+use jormungandr_automation::{jormungandr::JormungandrRest, testing::time::wait_for_epoch};
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
 pub const FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -9,9 +10,9 @@ pub const FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 pub enum VoteTime {
     Blockchain(VoteBlockchainTime),
     Real {
-        vote_start_timestamp: NaiveDateTime,
-        tally_start_timestamp: NaiveDateTime,
-        tally_end_timestamp: NaiveDateTime,
+        vote_start_timestamp: OffsetDateTime,
+        tally_start_timestamp: OffsetDateTime,
+        tally_end_timestamp: OffsetDateTime,
         find_best_match: bool,
     },
 }
@@ -23,26 +24,26 @@ impl VoteTime {
         tally_end_timestamp: S,
     ) -> Result<Self> {
         Ok(Self::Real {
-            vote_start_timestamp: NaiveDateTime::parse_from_str(
+            vote_start_timestamp: OffsetDateTime::parse(
                 &vote_start_timestamp.into(),
-                FORMAT,
+                &date_format(),
             )?,
-            tally_start_timestamp: NaiveDateTime::parse_from_str(
+            tally_start_timestamp: OffsetDateTime::parse(
                 &tally_start_timestamp.into(),
-                FORMAT,
+                &date_format(),
             )?,
-            tally_end_timestamp: NaiveDateTime::parse_from_str(
+            tally_end_timestamp: OffsetDateTime::parse(
                 &tally_end_timestamp.into(),
-                FORMAT,
+                &date_format(),
             )?,
             find_best_match: false,
         })
     }
 
     pub fn real(
-        vote_start_timestamp: NaiveDateTime,
-        tally_start_timestamp: NaiveDateTime,
-        tally_end_timestamp: NaiveDateTime,
+        vote_start_timestamp: OffsetDateTime,
+        tally_start_timestamp: OffsetDateTime,
+        tally_end_timestamp: OffsetDateTime,
     ) -> Self {
         Self::Real {
             vote_start_timestamp,
@@ -94,15 +95,15 @@ pub struct VoteBlockchainTime {
 
 impl VoteBlockchainTime {
     pub fn wait_for_vote_start(self, rest: JormungandrRest) {
-        time::wait_for_epoch(self.vote_start, rest);
+        wait_for_epoch(self.vote_start, rest);
     }
 
     pub fn wait_for_tally_start(self, rest: JormungandrRest) {
-        time::wait_for_epoch(self.tally_start, rest);
+        wait_for_epoch(self.tally_start, rest);
     }
 
     pub fn wait_for_tally_end(self, rest: JormungandrRest) {
-        time::wait_for_epoch(self.tally_end, rest);
+        wait_for_epoch(self.tally_end, rest);
     }
 }
 

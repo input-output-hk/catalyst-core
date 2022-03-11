@@ -20,6 +20,8 @@ pub enum Error {
     #[error(transparent)]
     IoError(#[from] std::io::Error),
     #[error(transparent)]
+    ParseTime(#[from] time::error::Parse),
+    #[error(transparent)]
     Block0Error(#[from] jormungandr_automation::testing::block0::Block0Error),
     #[error(transparent)]
     Node(#[from] NodeError),
@@ -49,8 +51,6 @@ pub enum Error {
     ImageReadError(#[from] image::error::ImageError),
     #[error(transparent)]
     MockError(#[from] crate::cli::start::MockError),
-    #[error(transparent)]
-    ParseError(#[from] chrono::ParseError),
     #[error(transparent)]
     ClientRestError(#[from] crate::client::rest::Error),
     #[error(transparent)]

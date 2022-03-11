@@ -27,10 +27,11 @@ hersir = { git = "https://github.com/input-output-hk/jormungandr.git", branch = 
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "https_client" }
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "https_client" }
-catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "update-dependencies" }
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "update-dependencies", features=["test-api"]}
 valgrind = { path = "../valgrind" }
 poldercast = { git = "https://github.com/primetype/poldercast.git", rev = "8305f1560392a9d26673ca996e7646c8834533ef" }
 rand = "0.8"
+time = "0.3.7"
 fake = { version = "2.2", features=['chrono','http']}
 strum = "0.21.0"
 strum_macros = "0.21.0"
@@ -38,7 +39,6 @@ rand_core = "0.6"
 rand_chacha = "0.3"
 tempdir = "0.3.7"
 function_name = "0.2.0"
-chrono = "0.4"
 diffy = "0.2.1"
 regex = "1.4"
 structopt = "0.3"

@@ -1,6 +1,5 @@
-use chrono::offset::Utc;
-use chrono::DateTime;
 use std::time::SystemTime;
+use time::{format_description, OffsetDateTime};
 
 pub struct LogEntry {
     timestamp: SystemTime,
@@ -27,7 +26,7 @@ impl Logger {
     pub fn log<S: Into<String>>(&mut self, message: S) {
         let message = message.into();
         let timestamp = SystemTime::now();
-        let datetime: DateTime<Utc> = timestamp.into();
+        let datetime: OffsetDateTime = timestamp.into();
 
         println!("{}", self.format_log(message.clone(), datetime));
 
@@ -38,14 +37,19 @@ impl Logger {
         self.entries
             .iter()
             .map(|x| {
-                let datetime: DateTime<Utc> = x.timestamp.into();
+                let datetime: OffsetDateTime = x.timestamp.into();
                 self.format_log(x.message.clone(), datetime)
             })
             .collect()
     }
 
-    pub fn format_log<S: Into<String>>(&self, message: S, datetime: DateTime<Utc>) -> String {
-        format!("[{}] {} ", datetime.format("%d/%m/%Y %T"), message.into())
+    pub fn format_log<S: Into<String>>(&self, message: S, datetime: OffsetDateTime) -> String {
+        let format = format_description::parse("%d/%m/%Y %T").unwrap();
+        format!(
+            "[{}] {} ",
+            datetime.format(&format).unwrap(),
+            message.into()
+        )
     }
 
     pub fn clear(&mut self) {

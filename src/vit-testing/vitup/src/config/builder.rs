@@ -4,14 +4,13 @@ pub use crate::builders::{
     default_next_vote_date, default_snapshot_date, generate_qr_and_hashes, VitVotePlanDefBuilder,
     WalletExtension,
 };
+use crate::config::date_format;
 use crate::config::{Config, Initials, VoteTime};
 use chain_impl_mockchain::fee::LinearFee;
-use chrono::naive::NaiveDateTime;
 use jormungandr_lib::interfaces::CommitteeIdDef;
 use jormungandr_lib::interfaces::ConsensusLeaderId;
 pub use jormungandr_lib::interfaces::Initial;
-
-use crate::config::vote_time::FORMAT;
+use time::OffsetDateTime;
 
 #[derive(Default)]
 pub struct ConfigBuilder {
@@ -85,7 +84,7 @@ impl ConfigBuilder {
         self
     }
 
-    pub fn next_vote_timestamp(mut self, next_vote_start_time: NaiveDateTime) -> Self {
+    pub fn next_vote_timestamp(mut self, next_vote_start_time: OffsetDateTime) -> Self {
         self.config.data.next_vote_start_time = next_vote_start_time;
         self
     }
@@ -93,7 +92,7 @@ impl ConfigBuilder {
     pub fn next_vote_timestamp_from_string_or_default(
         self,
         next_vote_timestamp: Option<String>,
-        default: NaiveDateTime,
+        default: OffsetDateTime,
     ) -> Self {
         if let Some(next_vote_timestamp) = next_vote_timestamp {
             self.next_vote_timestamp_from_string(next_vote_timestamp)
@@ -104,14 +103,14 @@ impl ConfigBuilder {
 
     pub fn next_vote_timestamp_from_string(self, next_vote_timestamp: String) -> Self {
         self.next_vote_timestamp(
-            NaiveDateTime::parse_from_str(&next_vote_timestamp, FORMAT).unwrap(),
+            OffsetDateTime::parse(&next_vote_timestamp, &date_format()).unwrap(),
         )
     }
 
     pub fn snapshot_timestamp_from_string_or_default(
         self,
         snapshot_timestamp: Option<String>,
-        default: NaiveDateTime,
+        default: OffsetDateTime,
     ) -> Self {
         if let Some(snapshot_timestamp) = snapshot_timestamp {
             self.snapshot_timestamp_from_string(snapshot_timestamp)
@@ -120,13 +119,13 @@ impl ConfigBuilder {
         }
     }
 
-    pub fn snapshot_timestamp(mut self, snapshot_time: NaiveDateTime) -> Self {
+    pub fn snapshot_timestamp(mut self, snapshot_time: OffsetDateTime) -> Self {
         self.config.data.snapshot_time = snapshot_time;
         self
     }
 
     pub fn snapshot_timestamp_from_string(self, snapshot_timestamp: String) -> Self {
-        self.snapshot_timestamp(NaiveDateTime::parse_from_str(&snapshot_timestamp, FORMAT).unwrap())
+        self.snapshot_timestamp(OffsetDateTime::parse(&snapshot_timestamp, &date_format()).unwrap())
     }
 
     pub fn fund_id(mut self, id: i32) -> Self {

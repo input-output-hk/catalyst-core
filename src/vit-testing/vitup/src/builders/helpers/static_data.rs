@@ -19,13 +19,13 @@ pub fn build_servicing_station_parameters(
     let (vote_start_timestamp, tally_start_timestamp, tally_end_timestamp) =
         time::convert_to_human_date(config);
 
-    parameters.set_voting_start(vote_start_timestamp.timestamp());
-    parameters.set_voting_tally_start(tally_start_timestamp.timestamp());
-    parameters.set_voting_tally_end(tally_end_timestamp.timestamp());
+    parameters.set_voting_start(vote_start_timestamp.unix_timestamp());
+    parameters.set_voting_tally_start(tally_start_timestamp.unix_timestamp());
+    parameters.set_voting_tally_end(tally_end_timestamp.unix_timestamp());
     parameters.set_vote_options(config.data.options.clone());
-    parameters.set_next_fund_start_time(config.data.next_vote_start_time.timestamp());
-    parameters.set_registration_snapshot_time(config.data.snapshot_time.timestamp());
-    parameters.set_next_registration_snapshot_time(config.data.next_snapshot_time.timestamp());
+    parameters.set_next_fund_start_time(config.data.next_vote_start_time.unix_timestamp());
+    parameters.set_registration_snapshot_time(config.data.snapshot_time.unix_timestamp());
+    parameters.set_next_registration_snapshot_time(config.data.next_snapshot_time.unix_timestamp());
     parameters.set_fund_id(config.data.fund_id);
     parameters.calculate_challenges_total_funds = false;
 

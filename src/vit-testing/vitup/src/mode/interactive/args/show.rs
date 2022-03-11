@@ -1,10 +1,9 @@
 use super::super::VitInteractiveCommandExec;
 use chain_impl_mockchain::block::BlockDate;
-use chrono::NaiveDateTime;
-use chrono::Utc;
 use hersir::controller::interactive::args::show::ShowStatus as BasicShowStatus;
 use jormungandr_lib::interfaces::BlockchainConfiguration;
 use structopt::StructOpt;
+use time::OffsetDateTime;
 
 #[derive(StructOpt, Debug)]
 pub enum Show {
@@ -102,7 +101,7 @@ impl VoteTimeStatus {
                 "Tally period end",
                 self.calculate_date(blockchain_configuration, vote_plan.committee_end.into()),
             ),
-            ("> Current time", Utc::now().naive_utc()),
+            ("> Current time", OffsetDateTime::now_utc()),
         ];
 
         dates.sort_by(|a, b| a.1.cmp(&b.1));
@@ -110,7 +109,10 @@ impl VoteTimeStatus {
         println!("======================================");
         println!(
             "Blockchain start: {}",
-            NaiveDateTime::from_timestamp(blockchain_configuration.block0_date.to_secs() as i64, 0)
+            OffsetDateTime::from_unix_timestamp(
+                blockchain_configuration.block0_date.to_secs() as i64
+            )
+            .unwrap()
         );
         for (alias, date) in dates {
             println!("{}: {}", alias, date);
@@ -122,7 +124,7 @@ impl VoteTimeStatus {
         &self,
         blockchain_configuration: &BlockchainConfiguration,
         block_date: BlockDate,
-    ) -> NaiveDateTime {
+    ) -> OffsetDateTime {
         let slot_duration: u8 = blockchain_configuration.slot_duration.into();
         let slots_per_epoch: u32 = blockchain_configuration.slots_per_epoch.into();
         let epoch_duration: u64 = (slot_duration as u64) * (slots_per_epoch as u64);
@@ -134,6 +136,6 @@ impl VoteTimeStatus {
 
         let timestamp = block0_date_secs + block_epoch_part + block_slot_part;
 
-        NaiveDateTime::from_timestamp(timestamp, 0)
+        OffsetDateTime::from_unix_timestamp(timestamp).unwrap()
     }
 }

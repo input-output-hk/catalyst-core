@@ -1,15 +1,8 @@
-use crate::config::VitStartParameters;
-use crate::config::VoteBlockchainTime;
-use crate::config::VoteTime;
-use chrono::NaiveDateTime;
-use chrono::Utc;
-use jormungandr_lib::time::SecondsSinceUnixEpoch;
+use crate::config::{Config, VoteBlockchainTime, VoteTime};
+use time::{ext::NumericalDuration, OffsetDateTime};
 
-pub fn convert_to_blockchain_date(
-    parameters: &VitStartParameters,
-    _block0_date: SecondsSinceUnixEpoch,
-) -> VoteBlockchainTime {
-    match parameters.vote_time {
+pub fn convert_to_blockchain_date(config: &Config) -> VoteBlockchainTime {
+    match config.vote_plan.vote_time {
         VoteTime::Blockchain(blockchain_date) => blockchain_date,
         // TODO Implement proper conversion.
         // Right now it's not used.
@@ -24,26 +17,27 @@ pub fn convert_to_blockchain_date(
     }
 }
 
-pub fn convert_to_human_date(
-    parameters: &VitStartParameters,
-    block0_date: SecondsSinceUnixEpoch,
-) -> (NaiveDateTime, NaiveDateTime, NaiveDateTime) {
-    let parameters = parameters.clone();
+pub fn convert_to_human_date(config: &Config) -> (OffsetDateTime, OffsetDateTime, OffsetDateTime) {
+    let config = config.clone();
 
-    match parameters.vote_time {
+    match config.vote_plan.vote_time {
         VoteTime::Blockchain(blockchain) => {
-            let epoch_duration = parameters.slot_duration as u32 * blockchain.slots_per_epoch;
+            let block0_date = config.blockchain.block0_date_as_unix();
+
+            let epoch_duration =
+                config.blockchain.slot_duration as u32 * blockchain.slots_per_epoch;
             let vote_start_timestamp =
                 block0_date.to_secs() as u32 + epoch_duration * blockchain.vote_start;
             let vote_start_timestamp =
-                NaiveDateTime::from_timestamp(vote_start_timestamp as i64, 0);
+                OffsetDateTime::from_unix_timestamp(vote_start_timestamp as i64).unwrap();
             let tally_start_timestamp =
                 block0_date.to_secs() as u32 + epoch_duration * blockchain.tally_start;
             let tally_start_timestamp =
-                NaiveDateTime::from_timestamp(tally_start_timestamp as i64, 0);
+                OffsetDateTime::from_unix_timestamp(tally_start_timestamp as i64).unwrap();
             let tally_end_timestamp =
                 block0_date.to_secs() as u32 + epoch_duration * blockchain.tally_end;
-            let tally_end_timestamp = NaiveDateTime::from_timestamp(tally_end_timestamp as i64, 0);
+            let tally_end_timestamp =
+                OffsetDateTime::from_unix_timestamp(tally_end_timestamp as i64).unwrap();
 
             (
                 vote_start_timestamp,
@@ -64,19 +58,16 @@ pub fn convert_to_human_date(
     }
 }
 
-pub fn default_snapshot_date() -> NaiveDateTime {
-    let dt = Utc::now();
-    NaiveDateTime::from_timestamp((dt - chrono::Duration::hours(3)).timestamp(), 0)
+pub fn default_snapshot_date() -> OffsetDateTime {
+    OffsetDateTime::now_utc() - 3.hours()
 }
 
-pub fn default_next_vote_date() -> NaiveDateTime {
-    let dt = Utc::now();
-    NaiveDateTime::from_timestamp((dt + chrono::Duration::days(30)).timestamp(), 0)
+pub fn default_next_vote_date() -> OffsetDateTime {
+    OffsetDateTime::now_utc() + 30.days()
 }
 
-pub fn default_next_snapshot_date() -> NaiveDateTime {
-    let dt = Utc::now();
-    NaiveDateTime::from_timestamp((dt + chrono::Duration::days(29)).timestamp(), 0)
+pub fn default_next_snapshot_date() -> OffsetDateTime {
+    OffsetDateTime::now_utc() + 29.days()
 }
 
 /*
@@ -89,7 +80,7 @@ mod tests {
     #[test]
     fn time_test() {
         let block0_date = SecondsSinceUnixEpoch::now();
-        let mut parameters = VitStartParameters::default();
+        let mut parameters = Config::default();
 
         let vote_time = VoteTime::real_from_str(
             "2021-10-06 11:00:00",

@@ -13,4 +13,4 @@ pub use wallet_proxy::{
     WalletProxySettings, WalletProxySpawnParams,
 };
 
-pub use main::{VitController, VitControllerBuilder};
+pub use main::{Error as VitControllerError, VitController, VitControllerBuilder};

@@ -38,14 +38,6 @@ pub struct ValgrindClient {
     explorer_client: Explorer,
 }
 
-fn host_and_port(url: Url) -> String {
-    let port_part = url
-        .port()
-        .map(|p| format!(":{}", p))
-        .unwrap_or_else(|| "".to_string());
-    format!("{}{}", url.host_str().unwrap(), port_part)
-}
-
 impl ValgrindClient {
     pub fn new_from_addresses(
         proxy_address: Url,
@@ -57,15 +49,15 @@ impl ValgrindClient {
             "node_address: {}",
             node_address.join("api").unwrap().as_str()
         );
-        println!("vit_address: {:?}", host_and_port(vit_address.clone()));
-        println!("node_address: {:?}", proxy_address);
+        println!("vit_address: {:?}", vit_address.to_string());
+        println!("proxy_address: {:?}", proxy_address.to_string());
 
         let mut backend = Self {
             node_client: WalletNodeRestClient::new(
                 node_address.join("api").unwrap(),
                 node_rest_settings.clone(),
             ),
-            vit_client: VitRestClient::new(host_and_port(vit_address)),
+            vit_client: VitRestClient::new(vit_address),
             proxy_client: ProxyClient::new(proxy_address.to_string()),
             explorer_client: Explorer::new(node_address),
         };
@@ -77,10 +69,11 @@ impl ValgrindClient {
     }
 
     pub fn new(address: String, settings: ValgrindSettings) -> Result<Self, Error> {
+        let proxy_address: Url = address.parse()?;
         Ok(Self::new_from_addresses(
-            address.parse()?,
-            address.parse()?,
-            address.parse()?,
+            proxy_address.clone(),
+            proxy_address.clone(),
+            proxy_address,
             settings,
         ))
     }

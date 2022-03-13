@@ -10,11 +10,12 @@ use jormungandr_automation::testing::time;
 use snapshot_trigger_service::config::JobParameters;
 use thor::FragmentSender;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
-use vitup::builders::VitBackendSettingsBuilder;
+use vitup::config::ConfigBuilder;
 use vitup::config::Initials;
 use vitup::config::VoteBlockchainTime;
 use vitup::testing::spawn_network;
 use vitup::testing::vitup_setup;
+
 const GRACE_PERIOD_FOR_SNAPSHOT: u64 = 300;
 
 #[test]
@@ -49,8 +50,7 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     };
 
     let testing_directory = TempDir::new().unwrap().into_persistent();
-    let mut quick_setup = VitBackendSettingsBuilder::new();
-    quick_setup
+    let config = ConfigBuilder::default()
         .slot_duration_in_seconds(2)
         .vote_timing(vote_timing.into())
         .proposals_count(300)
@@ -58,13 +58,14 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
         .initials(Initials::new_from_external(
             snapshot_result.initials().to_vec(),
         ))
-        .private(false);
+        .private(false)
+        .build();
 
     println!("{:?}", testing_directory.path().to_path_buf());
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let (mut controller, vit_parameters, network_params, _) =
-        vitup_setup(quick_setup, testing_directory.path().to_path_buf());
+    let (mut controller, vit_parameters, network_params) =
+        vitup_setup(&config, testing_directory.path().to_path_buf()).unwrap();
     let (nodes, _vit_station, wallet_proxy) = spawn_network(
         &mut controller,
         vit_parameters,

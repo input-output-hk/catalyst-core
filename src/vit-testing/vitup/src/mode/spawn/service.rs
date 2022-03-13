@@ -1,5 +1,6 @@
 use super::NetworkSpawnParams;
 use crate::builders::VitBackendSettingsBuilder;
+use crate::config::Config;
 use crate::mode::monitor::MonitorController;
 use crate::mode::service::manager::{ControlContext, ControlContextLock, ManagerService, State};
 use crate::mode::standard::ValidVotingTemplateGenerator;
@@ -8,13 +9,13 @@ use std::sync::{Arc, Mutex};
 
 pub fn spawn_network(
     network_params: NetworkSpawnParams,
-    mut quick_setup: VitBackendSettingsBuilder,
+    config: Config,
     template_generator: &mut dyn ValidVotingTemplateGenerator,
 ) -> Result<()> {
     let working_dir = network_params.session_settings().root;
     let control_context = Arc::new(Mutex::new(ControlContext::new(
         working_dir.path(),
-        quick_setup.parameters().clone(),
+        config.clone(),
         network_params.token(),
     )));
 
@@ -27,12 +28,10 @@ pub fn spawn_network(
                 std::fs::remove_dir_all(working_dir.path())?;
             }
 
-            let parameters = manager.setup();
-            quick_setup.upload_parameters(parameters);
             manager.clear_requests();
             single_run(
                 control_context.clone(),
-                quick_setup.clone(),
+                &config,
                 network_params.clone(),
                 template_generator,
             )?;
@@ -44,7 +43,7 @@ pub fn spawn_network(
 
 pub fn single_run(
     control_context: ControlContextLock,
-    mut quick_setup: VitBackendSettingsBuilder,
+    config: &Config,
     network_params: NetworkSpawnParams,
     template_generator: &mut dyn ValidVotingTemplateGenerator,
 ) -> Result<()> {
@@ -54,8 +53,10 @@ pub fn single_run(
         *state = State::Starting;
     }
 
-    let (vit_controller, vit_parameters, version) =
-        quick_setup.build(network_params.session_settings())?;
+    let (vit_controller, vit_parameters) = VitBackendSettingsBuilder::default()
+        .config(config)
+        .session_settings(network_params.session_settings())
+        .build()?;
 
     let hersir_monitor_controller = hersir::controller::MonitorController::new(
         vit_controller.hersir_controller(),
@@ -70,8 +71,11 @@ pub fn single_run(
         nodes_list.push(monitor_controller.spawn_node(spawn_param)?);
     }
 
-    let vit_station =
-        monitor_controller.spawn_vit_station(vit_parameters, template_generator, version)?;
+    let vit_station = monitor_controller.spawn_vit_station(
+        vit_parameters,
+        template_generator,
+        config.service.version.clone(),
+    )?;
     let mut wallet_proxy =
         monitor_controller.spawn_wallet_proxy_custom(&mut network_params.proxy_params())?;
 

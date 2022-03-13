@@ -40,13 +40,13 @@ pub struct ValigrindStartupCommand {
 }
 
 impl ValigrindStartupCommand {
-    pub fn build(&self) -> Result<ProxyServerStub, Error> {
+    pub fn build(self) -> Result<ProxyServerStub, Error> {
         let proxy_address = self.address.clone();
         let vit_address = self.vit_address.clone();
         let node_address = self.node_address.clone();
         let block0_path = self.block0_path.clone();
 
-        if let Some(cert_path) = &self.cert_path {
+        if let Some(cert_path) = self.cert_path {
             let key_path = self
                 .key_path
                 .clone()
@@ -60,9 +60,13 @@ impl ValigrindStartupCommand {
                 return Err(Error::CertFileDoesNotExist);
             }
 
-            return Ok(ProxyServerStub::new_https(
+            let certs = Certs {
                 key_path,
-                cert_path.to_path_buf(),
+                cert_path,
+            };
+
+            return Ok(ProxyServerStub::new_https(
+                certs,
                 proxy_address,
                 vit_address,
                 node_address,
@@ -83,14 +87,23 @@ impl ValigrindStartupCommand {
 #[serde(untagged)]
 pub enum Protocol {
     Http,
-    Https {
-        key_path: PathBuf,
-        cert_path: PathBuf,
-    },
+    Https(Certs),
 }
 
-impl Protocol {
-    pub fn http() -> Self {
+impl Default for Protocol {
+    fn default() -> Self {
         Self::Http
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Certs {
+    pub key_path: PathBuf,
+    pub cert_path: PathBuf,
+}
+
+impl From<Certs> for Protocol {
+    fn from(certs: Certs) -> Self {
+        Self::Https(certs)
     }
 }

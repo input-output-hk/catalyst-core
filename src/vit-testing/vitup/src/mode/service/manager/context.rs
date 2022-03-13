@@ -1,6 +1,6 @@
 pub type ControlContextLock = Arc<Mutex<ControlContext>>;
 use super::ServerStopper;
-use crate::config::VitStartParameters;
+use crate::config::Config;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::net::SocketAddr;
@@ -9,7 +9,7 @@ use std::sync::{Arc, Mutex};
 
 pub struct ControlContext {
     server_stopper: Option<ServerStopper>,
-    setup: VitStartParameters,
+    setup: Config,
     address: SocketAddr,
     working_directory: PathBuf,
     state: State,
@@ -19,11 +19,7 @@ pub struct ControlContext {
 }
 
 impl ControlContext {
-    pub fn new<P: AsRef<Path>>(
-        working_dir: P,
-        setup: VitStartParameters,
-        api_token: Option<String>,
-    ) -> Self {
+    pub fn new<P: AsRef<Path>>(working_dir: P, setup: Config, api_token: Option<String>) -> Self {
         Self {
             server_stopper: None,
             setup,
@@ -40,7 +36,7 @@ impl ControlContext {
         self.server_stopper = Some(server_stopper)
     }
 
-    pub fn set_parameters(&mut self, setup: VitStartParameters) {
+    pub fn set_parameters(&mut self, setup: Config) {
         self.setup = setup;
     }
 
@@ -56,11 +52,11 @@ impl ControlContext {
         &self.working_directory
     }
 
-    pub fn setup(&self) -> &VitStartParameters {
+    pub fn setup(&self) -> &Config {
         &self.setup
     }
 
-    pub fn setup_mut(&mut self) -> &mut VitStartParameters {
+    pub fn setup_mut(&mut self) -> &mut Config {
         &mut self.setup
     }
 

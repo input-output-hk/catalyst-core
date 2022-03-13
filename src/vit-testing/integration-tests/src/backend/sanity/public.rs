@@ -10,7 +10,7 @@ use std::str::FromStr;
 use thor::BlockDateGenerator;
 use thor::{FragmentSender, FragmentSenderSetup};
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
-use vitup::builders::VitBackendSettingsBuilder;
+use vitup::config::ConfigBuilder;
 use vitup::config::VoteBlockchainTime;
 use vitup::config::{InitialEntry, Initials};
 use vitup::testing::spawn_network;
@@ -27,35 +27,38 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
         slots_per_epoch: 30,
     };
     let testing_directory = TempDir::new().unwrap().into_persistent();
-    let mut quick_setup = VitBackendSettingsBuilder::new();
-    quick_setup
+    let config = ConfigBuilder::default()
         .initials(Initials(vec![
             InitialEntry::Wallet {
                 name: "david".to_string(),
                 funds: 10_000,
                 pin: PIN.to_string(),
+                role: Default::default(),
             },
             InitialEntry::Wallet {
                 name: "edgar".to_string(),
                 funds: 10_000,
                 pin: PIN.to_string(),
+                role: Default::default(),
             },
             InitialEntry::Wallet {
                 name: "filip".to_string(),
                 funds: 10_000,
                 pin: PIN.to_string(),
+                role: Default::default(),
             },
         ]))
         .slot_duration_in_seconds(2)
         .vote_timing(vote_timing.into())
         .proposals_count(300)
         .voting_power(8_000)
-        .private(false);
+        .private(false)
+        .build();
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
 
-    let (mut controller, vit_parameters, network_params, _) =
-        vitup_setup(quick_setup, testing_directory.path().to_path_buf());
+    let (mut controller, vit_parameters, network_params) =
+        vitup_setup(&config, testing_directory.path().to_path_buf()).unwrap();
     let (nodes, _vit_station, wallet_proxy) = spawn_network(
         &mut controller,
         vit_parameters,

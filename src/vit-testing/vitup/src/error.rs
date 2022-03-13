@@ -20,6 +20,8 @@ pub enum Error {
     #[error(transparent)]
     IoError(#[from] std::io::Error),
     #[error(transparent)]
+    ParseTime(#[from] time::error::Parse),
+    #[error(transparent)]
     Block0Error(#[from] jormungandr_automation::testing::block0::Block0Error),
     #[error(transparent)]
     Node(#[from] NodeError),
@@ -50,8 +52,6 @@ pub enum Error {
     #[error(transparent)]
     MockError(#[from] crate::cli::start::MockError),
     #[error(transparent)]
-    ParseError(#[from] chrono::ParseError),
-    #[error(transparent)]
     ClientRestError(#[from] crate::client::rest::Error),
     #[error(transparent)]
     Block0ConfigurationError(#[from] Block0ConfigurationError),
@@ -75,6 +75,10 @@ pub enum Error {
     ControllerError(#[from] hersir::controller::Error),
     #[error(transparent)]
     Block0(#[from] Block0Error),
+    #[error(transparent)]
+    Builder(#[from] crate::builders::Error),
+    #[error(transparent)]
+    Certs(#[from] crate::config::certs::Error),
     #[error(transparent)]
     WalletProxyController(#[from] WalletProxyControllerError),
     #[error("synchronization for nodes has failed. {}. Timeout was: {} s", info, timeout.as_secs())]

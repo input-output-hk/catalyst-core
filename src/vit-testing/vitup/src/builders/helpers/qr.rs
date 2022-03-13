@@ -1,22 +1,31 @@
-use crate::config::VitStartParameters;
-use crate::Result;
+use crate::config::Config;
 use catalyst_toolbox::kedqr::{generate, KeyQrCode};
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::key::EitherEd25519SecretKey;
 use hersir::builder::WalletTemplate;
+use image::ImageError;
 use jortestkit::prelude::append;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+use thiserror::Error;
 use thor::{Wallet, WalletAlias};
+
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error(transparent)]
+    Image(#[from] ImageError),
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+}
 
 pub fn generate_qr_and_hashes<P: AsRef<Path>>(
     wallets: Vec<(&WalletAlias, Wallet)>,
     initials: &HashMap<WalletTemplate, String>,
-    parameters: &VitStartParameters,
+    parameters: &Config,
     folder: P,
-) -> Result<()> {
+) -> Result<(), Error> {
     let total = wallets.len();
     let folder = folder.as_ref();
 

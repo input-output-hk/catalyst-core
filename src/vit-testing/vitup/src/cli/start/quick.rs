@@ -1,5 +1,6 @@
 use crate::builders::{default_next_vote_date, default_snapshot_date};
 pub use crate::builders::{VitBackendSettingsBuilder, LEADER_1, LEADER_2, LEADER_3, WALLET_NODE};
+use crate::config::ConfigBuilder;
 use crate::config::{
     mode::{parse_mode_from_str, Mode},
     Initials, VoteTime,
@@ -11,11 +12,9 @@ use hersir::utils::print_intro;
 use jormungandr_automation::jormungandr::LogLevel;
 use jormungandr_automation::testing::block0::read_initials;
 use jortestkit::prelude::read_file;
-use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
 use structopt::StructOpt;
-use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 
 #[derive(StructOpt, Debug)]
@@ -120,10 +119,6 @@ pub struct QuickStartCommandArgs {
     #[structopt(long = "version", default_value = "2.0")]
     pub version: String,
 
-    /// use tls
-    #[structopt(long = "https")]
-    pub https: bool,
-
     /// token, only applicable if service mode is used
     #[structopt(long = "token")]
     pub token: Option<String>,
@@ -155,26 +150,19 @@ impl QuickStartCommandArgs {
             title: title.to_owned(),
         };
 
-        let mut quick_setup = VitBackendSettingsBuilder::new();
+        let mut config_builder = ConfigBuilder::default();
 
         if let Some(mapping) = self.initials_mapping {
             let content = read_file(mapping);
             let initials: Initials =
                 serde_json::from_str(&content).expect("JSON was not well-formatted");
-            quick_setup.initials(initials);
+            config_builder = config_builder.initials(initials);
         } else {
-            quick_setup.initials_count(self.initials.unwrap_or(10), "1234");
+            config_builder = config_builder.initials_count(self.initials.unwrap_or(10), "1234");
         }
 
         if let Some(snapshot) = self.snapshot {
-            quick_setup.extend_initials(read_initials(snapshot)?);
-        }
-
-        if self.https {
-            quick_setup.with_protocol(Protocol::Https {
-                key_path: Path::new("../").join("resources/tls/server.key"),
-                cert_path: Path::new("../").join("resources/tls/server.crt"),
-            });
+            config_builder = config_builder.extend_initials(read_initials(snapshot)?);
         }
 
         let vote_timestamps = vec![
@@ -205,7 +193,7 @@ impl QuickStartCommandArgs {
             }
         };
 
-        quick_setup
+        let config = config_builder
             .vote_timing(vote_timing)
             .next_vote_timestamp_from_string_or_default(
                 self.next_vote_timestamp,
@@ -219,7 +207,8 @@ impl QuickStartCommandArgs {
             .proposals_count(self.proposals)
             .voting_power(self.voting_power)
             .private(self.private)
-            .version(self.version);
+            .version(self.version)
+            .build();
 
         print_intro(&session_settings, "VOTING BACKEND");
 
@@ -231,17 +220,13 @@ impl QuickStartCommandArgs {
 
         let network_spawn_params = NetworkSpawnParams::new(
             endpoint,
-            quick_setup.parameters(),
+            config.protocol(&testing_directory)?,
             session_settings,
             token,
+            config.service.version.clone(),
             testing_directory,
         );
-        spawn_network(
-            mode,
-            network_spawn_params,
-            &mut template_generator,
-            quick_setup,
-        )?;
-        Ok(())
+        spawn_network(mode, network_spawn_params, &mut template_generator, config)
+            .map_err(Into::into)
     }
 }

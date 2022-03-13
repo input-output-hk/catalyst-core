@@ -1,6 +1,7 @@
 use crate::builders::utils::DeploymentTree;
 use crate::builders::utils::SessionSettingsExtension;
 use crate::builders::VitBackendSettingsBuilder;
+use crate::config::ConfigBuilder;
 use crate::config::Initials;
 use crate::Result;
 use hersir::config::SessionSettings;
@@ -32,15 +33,16 @@ impl QrCommandArgs {
 
         let session_settings = SessionSettings::from_dir(&self.output_directory);
 
-        let mut quick_setup = VitBackendSettingsBuilder::new();
+        let mut config_builder = ConfigBuilder::default();
 
         if let Some(mapping) = self.initials_mapping {
             let content = read_file(mapping);
             let initials: Initials =
                 serde_json::from_str(&content).expect("JSON was not well-formatted");
-            quick_setup.initials(initials);
+            config_builder = config_builder.initials(initials);
         } else {
-            quick_setup.initials_count(self.initials.unwrap(), &self.global_pin);
+            config_builder =
+                config_builder.initials_count(self.initials.unwrap(), &self.global_pin);
         }
 
         if !self.output_directory.exists() {
@@ -50,9 +52,13 @@ impl QrCommandArgs {
         }
 
         let deployment_tree = DeploymentTree::new(&self.output_directory);
+        let config = config_builder.build();
 
-        println!("{:?}", quick_setup.parameters().initials);
-        quick_setup.build(session_settings)?;
+        println!("{:?}", config.initials);
+        let _ = VitBackendSettingsBuilder::default()
+            .session_settings(session_settings)
+            .config(&config)
+            .build()?;
 
         //remove block0.bin
         std::fs::remove_file(deployment_tree.block0_path())?;

@@ -65,18 +65,11 @@ impl PerfDataCommandArgs {
 
         let session_settings = SessionSettings::from_dir(&self.output_directory);
 
-        let mut quick_setup = VitBackendSettingsBuilder::new();
         let mut config = read_config(&self.config)?;
 
         if let Some(ref snapshot) = self.snapshot {
             config.extend_from_initials_file(snapshot)?;
         }
-
-        quick_setup.skip_qr_generation();
-        quick_setup.upload_parameters(config.params.clone());
-        quick_setup.fees(config.linear_fees);
-        quick_setup.set_external_committees(config.committees);
-        quick_setup.consensus_leaders_ids(config.consensus_leader_ids);
 
         if !self.output_directory.exists() {
             std::fs::create_dir_all(&self.output_directory)?;
@@ -84,7 +77,11 @@ impl PerfDataCommandArgs {
 
         let deployment_tree = DeploymentTree::new(&self.output_directory);
 
-        let (controller, vit_parameters, _) = quick_setup.build(session_settings)?;
+        let (controller, vit_parameters) = VitBackendSettingsBuilder::default()
+            .skip_qr_generation()
+            .config(&config)
+            .session_settings(session_settings)
+            .build()?;
 
         let template_generator = ExternalValidVotingTemplateGenerator::new(
             self.proposals.clone(),
@@ -111,7 +108,7 @@ impl PerfDataCommandArgs {
                 .collect::<Vec<String>>()
         );
 
-        quick_setup.print_report();
+        config.print_report();
         Ok(())
     }
 

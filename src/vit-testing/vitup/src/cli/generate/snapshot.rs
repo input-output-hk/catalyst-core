@@ -1,6 +1,7 @@
 use crate::builders::utils::DeploymentTree;
 use crate::builders::utils::SessionSettingsExtension;
 use crate::builders::VitBackendSettingsBuilder;
+use crate::config::ConfigBuilder;
 use crate::config::Initials;
 use crate::Result;
 use hersir::config::SessionSettings;
@@ -39,19 +40,22 @@ impl SnapshotCommandArgs {
 
         let session_settings = SessionSettings::from_dir(&self.output_directory);
 
-        let mut quick_setup = VitBackendSettingsBuilder::new();
+        let mut config_builder = ConfigBuilder::default();
 
         if let Some(mapping) = self.initials_mapping {
             let content = read_file(mapping);
             let initials: Initials =
                 serde_json::from_str(&content).expect("JSON was not well-formatted");
-            quick_setup.initials(initials);
+            config_builder = config_builder.initials(initials);
         } else {
-            quick_setup.initials_count(self.initials.unwrap(), &self.global_pin);
+            config_builder =
+                config_builder.initials_count(self.initials.unwrap(), &self.global_pin);
         }
 
+        let mut quick_setup = VitBackendSettingsBuilder::default();
+
         if self.skip_qr_generation {
-            quick_setup.skip_qr_generation();
+            quick_setup = quick_setup.skip_qr_generation();
         }
 
         if !self.output_directory.exists() {
@@ -62,7 +66,10 @@ impl SnapshotCommandArgs {
 
         let deployment_tree = DeploymentTree::new(&self.output_directory);
 
-        let (mut controller, _, _) = quick_setup.build(session_settings)?;
+        let (mut controller, _) = quick_setup
+            .session_settings(session_settings)
+            .config(&config_builder.build())
+            .build()?;
 
         let genesis_yaml = deployment_tree.genesis_path();
 

@@ -1,7 +1,7 @@
 use crate::client::rest::VitupAdminRestClient;
 use crate::client::rest::VitupDisruptionRestClient;
 use crate::client::rest::VitupRest;
-use crate::config::VitStartParameters;
+use crate::config::Config;
 use crate::Result;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -218,7 +218,7 @@ pub struct MockStartCustomCommand {
 impl MockStartCustomCommand {
     pub fn exec(self, rest: VitupAdminRestClient) -> Result<()> {
         let content = jortestkit::prelude::read_file(self.params);
-        let params: VitStartParameters = serde_json::from_str(&content)?;
+        let params: Config = serde_json::from_str(&content)?;
         println!("{}", rest.start_custom(params)?);
         Ok(())
     }

@@ -1,6 +1,5 @@
-use crate::startup::Protocol;
+use crate::startup::{Certs, Protocol};
 use std::net::SocketAddr;
-use std::path::PathBuf;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -23,18 +22,14 @@ pub struct ProxyServerStub {
 
 impl ProxyServerStub {
     pub fn new_https(
-        key_path: PathBuf,
-        cert_path: PathBuf,
+        certs: Certs,
         address: String,
         vit_address: String,
         node_rest_address: String,
         block0: Vec<u8>,
     ) -> Self {
         Self::new(
-            Protocol::Https {
-                key_path,
-                cert_path,
-            },
+            certs.into(),
             address,
             vit_address,
             node_rest_address,
@@ -49,7 +44,7 @@ impl ProxyServerStub {
         block0: Vec<u8>,
     ) -> Self {
         Self::new(
-            Protocol::Http,
+            Default::default(),
             address,
             vit_address,
             node_rest_address,

@@ -103,14 +103,11 @@ async fn main() {
     let app = api.and(v0.or(v1).or(vit_version));
 
     match server_stub.protocol() {
-        Protocol::Https {
-            key_path,
-            cert_path,
-        } => {
+        Protocol::Https(certs) => {
             warp::serve(app)
                 .tls()
-                .cert_path(cert_path)
-                .key_path(key_path)
+                .cert_path(&certs.cert_path)
+                .key_path(&certs.key_path)
                 .run(server_stub.base_address())
                 .await;
         }

@@ -10,9 +10,8 @@ use std::str::FromStr;
 use valgrind::Proposal;
 use vit_servicing_station_lib::v0::endpoints::proposals::ProposalVoteplanIdAndIndexes;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
-use vitup::builders::VitBackendSettingsBuilder;
 use vitup::config::VoteBlockchainTime;
-use vitup::config::{InitialEntry, Initials};
+use vitup::config::{ConfigBuilder, InitialEntry, Initials};
 use vitup::testing::{spawn_network, vitup_setup};
 
 const PIN: &str = "1234";
@@ -29,22 +28,23 @@ pub fn votes_history_reflects_casted_votes() {
         slots_per_epoch: 30,
     };
 
-    let mut quick_setup = VitBackendSettingsBuilder::new();
-    quick_setup
+    let config = ConfigBuilder::default()
         .initials(Initials(vec![InitialEntry::Wallet {
             name: ALICE.to_string(),
             funds: 10_000,
             pin: PIN.to_string(),
+            role: Default::default(),
         }]))
         .vote_timing(vote_timing.into())
         .slot_duration_in_seconds(2)
         .proposals_count(300)
         .voting_power(31_000)
-        .private(true);
+        .private(true)
+        .build();
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let (mut controller, vit_parameters, network_params, _fund_name) =
-        vitup_setup(quick_setup, testing_directory.path().to_path_buf());
+    let (mut controller, vit_parameters, network_params) =
+        vitup_setup(&config, testing_directory.path().to_path_buf()).unwrap();
 
     let (nodes, _vit_station, wallet_proxy) = spawn_network(
         &mut controller,

@@ -3,9 +3,8 @@ mod monitor;
 mod service;
 mod standard;
 
-use crate::builders::VitBackendSettingsBuilder;
 use crate::builders::{LEADER_1, LEADER_2, LEADER_3, WALLET_NODE};
-use crate::config::{mode::Mode, VitStartParameters};
+use crate::config::{mode::Mode, Config};
 use crate::mode::standard::{ValidVotingTemplateGenerator, WalletProxySpawnParams};
 use crate::Result;
 use hersir::builder::SpawnParams;
@@ -19,15 +18,13 @@ pub fn spawn_network(
     mode: Mode,
     network_spawn_params: NetworkSpawnParams,
     generator: &mut dyn ValidVotingTemplateGenerator,
-    quick_setup: VitBackendSettingsBuilder,
+    config: Config,
 ) -> Result<()> {
     match mode {
-        Mode::Standard => standard::spawn_network(network_spawn_params, quick_setup, generator),
-        Mode::Monitor => monitor::spawn_network(network_spawn_params, quick_setup, generator),
-        Mode::Interactive => {
-            interactive::spawn_network(network_spawn_params, quick_setup, generator)
-        }
-        Mode::Service => service::spawn_network(network_spawn_params, quick_setup, generator),
+        Mode::Standard => standard::spawn_network(network_spawn_params, config, generator),
+        Mode::Monitor => monitor::spawn_network(network_spawn_params, config, generator),
+        Mode::Interactive => interactive::spawn_network(network_spawn_params, config, generator),
+        Mode::Service => service::spawn_network(network_spawn_params, config, generator),
     }
 }
 
@@ -44,17 +41,18 @@ pub struct NetworkSpawnParams {
 impl NetworkSpawnParams {
     pub fn new<P: AsRef<Path>>(
         endpoint: String,
-        parameters: &VitStartParameters,
+        protocol: Protocol,
         session_settings: SessionSettings,
         token: Option<String>,
+        version: String,
         working_directory: P,
     ) -> Self {
         Self {
             token,
             endpoint,
-            protocol: parameters.protocol.clone(),
+            protocol,
             session_settings,
-            version: parameters.version.clone(),
+            version,
             working_directory: working_directory.as_ref().to_path_buf(),
         }
     }

@@ -1,4 +1,3 @@
-use crate::config::VitStartParameters;
 use crate::config::VoteBlockchainTime;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chain_impl_mockchain::testing::scenario::template::{ProposalDefBuilder, VotePlanDefBuilder};
@@ -14,8 +13,9 @@ pub struct VitVotePlanDefBuilder {
     fund_name: String,
     vote_phases: VoteBlockchainTime,
     committee_wallet: WalletAlias,
+    proposals_count: usize,
     options: u8,
-    parameters: VitStartParameters,
+    private: bool,
     voting_token: TokenIdentifier,
 }
 
@@ -24,9 +24,10 @@ impl Default for VitVotePlanDefBuilder {
         Self {
             vote_phases: Default::default(),
             split_by: 255,
+            proposals_count: 0,
             fund_name: "undefined".to_string(),
             committee_wallet: "undefined".to_string(),
-            parameters: Default::default(),
+            private: false,
             options: 0,
             voting_token: TestGen::token_id().into(),
         }
@@ -54,18 +55,23 @@ impl VitVotePlanDefBuilder {
         self
     }
 
-    pub fn with_committee(mut self, committe_wallet: WalletAlias) -> Self {
+    pub fn proposals_count(mut self, proposals_count: usize) -> Self {
+        self.proposals_count = proposals_count;
+        self
+    }
+
+    pub fn committee(mut self, committe_wallet: WalletAlias) -> Self {
         self.committee_wallet = committe_wallet;
         self
     }
 
-    pub fn with_voting_token(mut self, voting_token: TokenIdentifier) -> Self {
-        self.voting_token = voting_token;
+    pub fn private(mut self, private: bool) -> Self {
+        self.private = private;
         self
     }
 
-    pub fn with_parameters(mut self, parameters: VitStartParameters) -> Self {
-        self.parameters = parameters;
+    pub fn voting_token(mut self, voting_token: TokenIdentifier) -> Self {
+        self.voting_token = voting_token;
         self
     }
 
@@ -80,7 +86,7 @@ impl VitVotePlanDefBuilder {
                 .clone(),
             )
         })
-        .take(self.parameters.proposals as usize)
+        .take(self.proposals_count)
         .collect::<Vec<ProposalDefBuilder>>()
         .chunks(self.split_by)
         .into_iter()
@@ -104,7 +110,7 @@ impl VitVotePlanDefBuilder {
                     self.vote_phases.tally_end,
                 );
 
-            if self.parameters.private {
+            if self.private {
                 vote_plan_builder.payload_type(PayloadType::Private);
             }
 
@@ -125,16 +131,9 @@ mod tests {
     use std::collections::HashSet;
 
     #[quickcheck]
-    pub fn external_proposal_ids_are_unique(proposal_count: u32) -> TestResult {
-        let params = VitStartParameters {
-            proposals: proposal_count,
-            ..Default::default()
-        };
-
+    pub fn external_proposal_ids_are_unique(proposal_count: usize) -> TestResult {
         let vote_plans_defs = VitVotePlanDefBuilder::default()
-            .fund_name("fundX".to_string())
-            .with_committee("fake".to_string())
-            .with_parameters(params)
+            .proposals_count(proposal_count)
             .build();
 
         let mut uniq = HashSet::new();

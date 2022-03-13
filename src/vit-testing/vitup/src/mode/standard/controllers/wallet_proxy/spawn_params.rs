@@ -14,7 +14,7 @@ impl WalletProxySpawnParams {
         Self {
             alias: alias.into(),
             base_address: None,
-            protocol: Protocol::Http,
+            protocol: Default::default(),
             version: VitVersion {
                 service_version: "2.0".to_string(),
             },

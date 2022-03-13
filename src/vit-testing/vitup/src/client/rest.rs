@@ -1,4 +1,4 @@
-use crate::config::VitStartParameters;
+use crate::config::Config;
 use crate::mode::service::manager::{file_lister::FolderDump, State};
 use reqwest::blocking::Response;
 use thiserror::Error;
@@ -153,7 +153,7 @@ impl VitupAdminRestClient {
         serde_json::from_str(&self.inner.get("api/files/list")?).map_err(Into::into)
     }
 
-    pub fn start_custom(&self, params: VitStartParameters) -> Result<String, Error> {
+    pub fn start_custom(&self, params: Config) -> Result<String, Error> {
         let path = self.inner.path("control/command/start/custom");
         let client = reqwest::blocking::Client::new();
         let response = client.post(&path).json(&params).send()?;

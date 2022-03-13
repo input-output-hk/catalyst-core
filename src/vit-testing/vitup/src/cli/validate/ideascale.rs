@@ -1,11 +1,10 @@
 use crate::builders::convert_to_human_date;
 use crate::builders::utils::DeploymentTree;
-use crate::config::VitStartParameters;
+use crate::config::Config;
 use crate::mode::standard::DbGenerator;
 use chain_impl_mockchain::testing::scenario::template::ProposalDefBuilder;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDefBuilder;
-use jormungandr_lib::time::SecondsSinceUnixEpoch;
 use serde_json::Value;
 use std::collections::LinkedList;
 use std::fs::File;
@@ -179,9 +178,9 @@ impl IdeascaleValidateCommand {
             reviews_path,
         )?;
 
-        let input_parameters = VitStartParameters::default();
+        let input_parameters = Config::default();
         let (vote_start_timestamp, tally_start_timestamp, tally_end_timestamp) =
-            convert_to_human_date(&input_parameters, SecondsSinceUnixEpoch::now());
+            convert_to_human_date(&input_parameters);
 
         let mut parameters = ValidVotePlanParameters::new(
             (0..proposals_count)
@@ -191,18 +190,22 @@ impl IdeascaleValidateCommand {
                 .collect(),
             "test".to_string(),
         );
-        parameters.set_voting_power_threshold((input_parameters.voting_power * 1_000_000) as i64);
+        parameters
+            .set_voting_power_threshold((input_parameters.data.voting_power * 1_000_000) as i64);
         parameters.set_challenges_count(challenges_count);
         parameters.set_reviews_count(reviews_count);
-        parameters.set_voting_start(vote_start_timestamp.timestamp());
-        parameters.set_voting_tally_start(tally_start_timestamp.timestamp());
-        parameters.set_voting_tally_end(tally_end_timestamp.timestamp());
+        parameters.set_voting_start(vote_start_timestamp.unix_timestamp());
+        parameters.set_voting_tally_start(tally_start_timestamp.unix_timestamp());
+        parameters.set_voting_tally_end(tally_end_timestamp.unix_timestamp());
         parameters.set_vote_options(VoteOptions::parse_coma_separated_value("yes,no"));
-        parameters.set_next_fund_start_time(input_parameters.next_vote_start_time.timestamp());
-        parameters.set_registration_snapshot_time(input_parameters.snapshot_time.timestamp());
         parameters
-            .set_next_registration_snapshot_time(input_parameters.next_snapshot_time.timestamp());
-        parameters.set_fund_id(input_parameters.fund_id);
+            .set_next_fund_start_time(input_parameters.data.next_vote_start_time.unix_timestamp());
+        parameters
+            .set_registration_snapshot_time(input_parameters.data.snapshot_time.unix_timestamp());
+        parameters.set_next_registration_snapshot_time(
+            input_parameters.data.next_snapshot_time.unix_timestamp(),
+        );
+        parameters.set_fund_id(input_parameters.data.fund_id);
         parameters.calculate_challenges_total_funds = false;
 
         DbGenerator::new(parameters, self.migration_scripts_path.clone())

@@ -4,7 +4,7 @@ use iapyx::NodeLoad;
 use jortestkit::measurement::Status;
 use thor::FragmentSender;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
-use vitup::builders::VitBackendSettingsBuilder;
+use vitup::config::ConfigBuilder;
 use vitup::config::VoteBlockchainTime;
 use vitup::testing::{spawn_network, vitup_setup};
 
@@ -21,19 +21,18 @@ pub fn load_test_public_100_000_votes() {
         slots_per_epoch: 60,
     };
 
-    let mut quick_setup = VitBackendSettingsBuilder::new();
-    quick_setup
+    let config = ConfigBuilder::default()
         .initials_count(no_of_wallets, "1234")
         .vote_timing(vote_timing.into())
         .slot_duration_in_seconds(2)
         .proposals_count(300)
         .voting_power(31_000)
-        .private(false);
+        .private(false)
+        .build();
 
-    let setup_parameters = quick_setup.parameters().clone();
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let (mut controller, vit_parameters, network_params, fund_name) =
-        vitup_setup(quick_setup, testing_directory.path().to_path_buf());
+    let (mut controller, vit_parameters, network_params) =
+        vitup_setup(&config, testing_directory.path().to_path_buf()).unwrap();
 
     let (nodes, _vit_station, _wallet_proxy) = spawn_network(
         &mut controller,
@@ -46,15 +45,15 @@ pub fn load_test_public_100_000_votes() {
     let mut qr_codes_folder = testing_directory.path().to_path_buf();
     qr_codes_folder.push("qr-codes");
 
-    let config = build_load_config(
+    let load_config = build_load_config(
         endpoint,
         qr_codes_folder,
         no_of_threads,
         100,
         1,
-        setup_parameters,
+        config.clone(),
     );
-    let iapyx_load = NodeLoad::new(config);
+    let iapyx_load = NodeLoad::new(load_config);
     if let Some(benchmark) = iapyx_load.start().unwrap() {
         assert!(benchmark.status() == Status::Green, "too low efficiency");
     }
@@ -62,7 +61,9 @@ pub fn load_test_public_100_000_votes() {
     vote_timing.wait_for_tally_start(nodes.get(0).unwrap().rest());
 
     let mut committee = controller.wallet("committee").unwrap();
-    let vote_plan = controller.defined_vote_plan(&fund_name).unwrap();
+    let vote_plan = controller
+        .defined_vote_plan(&config.data.fund_name)
+        .unwrap();
 
     let fragment_sender = FragmentSender::from(&controller.settings().block0);
 
@@ -81,7 +82,7 @@ pub fn load_test_private_pesimistic() {
     let no_of_threads = 10;
     let endpoint = "127.0.0.1:8080";
     let no_of_wallets = 8_000;
-    let mut quick_setup = VitBackendSettingsBuilder::new();
+
     let vote_timing = VoteBlockchainTime {
         vote_start: 0,
         tally_start: 11,
@@ -89,15 +90,16 @@ pub fn load_test_private_pesimistic() {
         slots_per_epoch: 3,
     };
 
-    quick_setup
+    let config = ConfigBuilder::default()
         .initials_count(no_of_wallets, "1234")
         .vote_timing(vote_timing.into())
         .slot_duration_in_seconds(20)
         .proposals_count(250)
         .voting_power(31_000)
-        .private(true);
+        .private(true)
+        .build();
 
-    private_vote_test_scenario(quick_setup, endpoint, no_of_threads, 1);
+    private_vote_test_scenario(config, endpoint, no_of_threads, 1);
 }
 
 #[test]
@@ -112,14 +114,14 @@ pub fn load_test_private_optimistic() {
         slots_per_epoch: 180,
     };
 
-    let mut quick_setup = VitBackendSettingsBuilder::new();
-    quick_setup
+    let config = ConfigBuilder::default()
         .initials_count(no_of_wallets, "1234")
         .vote_timing(vote_timing.into())
         .slot_duration_in_seconds(20)
         .proposals_count(500)
         .voting_power(31_000)
-        .private(true);
+        .private(true)
+        .build();
 
-    private_vote_test_scenario(quick_setup, endpoint, no_of_threads, 1);
+    private_vote_test_scenario(config, endpoint, no_of_threads, 1);
 }

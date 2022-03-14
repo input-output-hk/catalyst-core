@@ -1,10 +1,10 @@
 use crate::qr::PinReadMode;
 use crate::qr::QrReader;
-use crate::utils::bech32::read_bech32;
 use crate::Wallet;
 use bech32::FromBase32;
 use bip39::Type;
 use chain_impl_mockchain::{block::BlockDate, fragment::FragmentId};
+use jcli_lib::key::read_bech32;
 pub use jormungandr_automation::jormungandr::RestSettings;
 use std::iter;
 use std::path::Path;
@@ -98,7 +98,7 @@ impl MultiController {
         let wallets = private_keys
             .iter()
             .map(|x| {
-                let (_, data) = read_bech32(x.as_ref()).unwrap();
+                let (_, data, _) = read_bech32(Some(&x.as_ref().to_path_buf())).unwrap();
                 let key_bytes = Vec::<u8>::from_base32(&data).unwrap();
                 let data: [u8; 64] = key_bytes.try_into().unwrap();
                 Wallet::recover_from_account(&data).unwrap()

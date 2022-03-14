@@ -20,10 +20,10 @@ use wallet::{AccountId, Settings};
 use wallet_core::{Choice, Value};
 
 pub struct Controller {
-    pub(self) backend: ValgrindClient,
-    pub(self) wallet: Wallet,
-    pub(self) settings: Settings,
-    pub(self) block_date_generator: BlockDateGenerator,
+    pub(crate) backend: ValgrindClient,
+    pub(crate) wallet: Wallet,
+    pub(crate) settings: Settings,
+    pub(crate) block_date_generator: BlockDateGenerator,
 }
 
 impl Controller {

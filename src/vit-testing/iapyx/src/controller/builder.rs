@@ -1,4 +1,3 @@
-use crate::utils::bech32::read_bech32;
 use crate::utils::expiry;
 use crate::Controller;
 use crate::PinReadError;
@@ -7,6 +6,7 @@ use crate::{PinReadMode, QrReader};
 use bech32::FromBase32;
 use bip39::Type;
 use catalyst_toolbox::kedqr::KeyQrCode;
+use jcli_lib::key::read_bech32;
 use jormungandr_automation::jormungandr::RestError;
 use std::convert::TryInto;
 use std::path::Path;
@@ -45,7 +45,7 @@ impl ControllerBuilder {
         mut self,
         private_key: P,
     ) -> Result<Self, Error> {
-        let (_, data) = read_bech32(private_key)?;
+        let (_, data, _) = read_bech32(&private_key.as_ref().to_path_buf())?;
         let key_bytes = Vec::<u8>::from_base32(&data)?;
         let data: [u8; 64] = key_bytes.try_into().unwrap();
         self.wallet = Some(Wallet::recover_from_utxo(&data)?);
@@ -144,4 +144,6 @@ pub enum Error {
     Rest(#[from] RestError),
     #[error(transparent)]
     PinRead(#[from] PinReadError),
+    #[error(transparent)]
+    Key(#[from] jcli_lib::key::Error),
 }

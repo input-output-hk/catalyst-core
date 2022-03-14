@@ -83,8 +83,11 @@ impl WalletNodeRestClient {
 
     pub fn account_state(&self, account_id: AccountId) -> Result<AccountState, RestError> {
         let public_key: PublicKey<Ed25519> = account_id.into();
-        self.rest_client
-            .account_state_by_pk(&public_key.to_bech32_str())
+        self.account_state_by_pk(public_key.to_bech32_str())
+    }
+
+    pub fn account_state_by_pk(&self, bech32: String) -> Result<AccountState, RestError> {
+        self.rest_client.account_state_by_pk(&bech32)
     }
 
     pub fn settings(&self) -> Result<SettingsDto, RestError> {

@@ -83,7 +83,11 @@ impl QrReader {
     pub fn read_qr_as_bech32<P: AsRef<Path>>(&self, qr: P) -> Result<String, PinReadError> {
         let sk = self.read_qr(qr)?;
         let hrp = Ed25519Extended::SECRET_BECH32_HRP;
-        Ok(bech32::encode(hrp, sk.leak_secret().to_base32())?)
+        Ok(bech32::encode(
+            hrp,
+            sk.leak_secret().to_base32(),
+            bech32::Variant::Bech32,
+        )?)
     }
 
     pub fn read_qr_from_hash_file<P: AsRef<Path>>(

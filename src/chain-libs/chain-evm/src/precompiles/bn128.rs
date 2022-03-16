@@ -1,32 +1,21 @@
-use super::prelude::{Address, PhantomData, Vec};
-use super::{Byzantium, EvmPrecompileResult, HardFork, Istanbul, Precompile, PrecompileOutput};
+use super::prelude::{Address, Vec};
+use super::{EvmPrecompileResult, Precompile, PrecompileOutput};
 use evm::{Context, ExitError};
 
 /// bn128 costs.
 mod costs {
-    /// Cost of the Byzantium alt_bn128_add operation.
-    pub(super) const BYZANTIUM_ADD: u64 = 500;
-
-    /// Cost of the Byzantium alt_bn128_mul operation.
-    pub(super) const BYZANTIUM_MUL: u64 = 40_000;
-
-    /// Cost of the alt_bn128_pair per point.
-    pub(super) const BYZANTIUM_PAIR_PER_POINT: u64 = 80_000;
-
-    /// Cost of the alt_bn128_pair operation.
-    pub(super) const BYZANTIUM_PAIR_BASE: u64 = 100_000;
 
     /// Cost of the Istanbul alt_bn128_add operation.
-    pub(super) const ISTANBUL_ADD: u64 = 150;
+    pub(super) const ADD: u64 = 150;
 
     /// Cost of the Istanbul alt_bn128_mul operation.
-    pub(super) const ISTANBUL_MUL: u64 = 6_000;
+    pub(super) const MUL: u64 = 6_000;
 
     /// Cost of the Istanbul alt_bn128_pair per point.
-    pub(super) const ISTANBUL_PAIR_PER_POINT: u64 = 34_000;
+    pub(super) const PAIR_PER_POINT: u64 = 34_000;
 
     /// Cost of the Istanbul alt_bn128_pair operation.
-    pub(super) const ISTANBUL_PAIR_BASE: u64 = 45_000;
+    pub(super) const PAIR_BASE: u64 = 45_000;
 }
 
 /// bn128 constants.
@@ -62,13 +51,14 @@ fn read_point(input: &[u8], pos: usize) -> Result<bn::G1, ExitError> {
     })
 }
 
-pub(super) struct Bn128Add<HF: HardFork>(PhantomData<HF>);
+// "Istanbul" implementation
+pub(super) struct Bn128Add;
 
-impl<HF: HardFork> Bn128Add<HF> {
+impl Bn128Add {
     pub(super) const ADDRESS: Address = super::make_address(0, 6);
 }
 
-impl<HF: HardFork> Bn128Add<HF> {
+impl Bn128Add {
     fn run_inner(input: &[u8], _context: &Context) -> Result<Vec<u8>, ExitError> {
         use bn::AffineG1;
 
@@ -90,37 +80,9 @@ impl<HF: HardFork> Bn128Add<HF> {
     }
 }
 
-impl Precompile for Bn128Add<Byzantium> {
+impl Precompile for Bn128Add {
     fn required_gas(_input: &[u8]) -> Result<u64, ExitError> {
-        Ok(costs::BYZANTIUM_ADD)
-    }
-
-    /// Takes in two points on the elliptic curve alt_bn128 and calculates the sum
-    /// of them.
-    ///
-    /// See: https://eips.ethereum.org/EIPS/eip-196
-    /// See: https://etherscan.io/address/0000000000000000000000000000000000000006
-    fn run(
-        input: &[u8],
-        target_gas: Option<u64>,
-        context: &Context,
-        _is_static: bool,
-    ) -> EvmPrecompileResult {
-        let cost = Self::required_gas(input)?;
-        if let Some(target_gas) = target_gas {
-            if cost > target_gas {
-                return Err(ExitError::OutOfGas);
-            }
-        }
-
-        let output = Self::run_inner(input, context)?;
-        Ok(PrecompileOutput::without_logs(cost, output).into())
-    }
-}
-
-impl Precompile for Bn128Add<Istanbul> {
-    fn required_gas(_input: &[u8]) -> Result<u64, ExitError> {
-        Ok(costs::ISTANBUL_ADD)
+        Ok(costs::ADD)
     }
 
     /// Takes in two points on the elliptic curve alt_bn128 and calculates the sum
@@ -145,13 +107,14 @@ impl Precompile for Bn128Add<Istanbul> {
     }
 }
 
-pub(super) struct Bn128Mul<HF: HardFork>(PhantomData<HF>);
+// "Istanbul" implementation
+pub(super) struct Bn128Mul;
 
-impl<HF: HardFork> Bn128Mul<HF> {
+impl Bn128Mul {
     pub(super) const ADDRESS: Address = super::make_address(0, 7);
 }
 
-impl<HF: HardFork> Bn128Mul<HF> {
+impl Bn128Mul {
     fn run_inner(input: &[u8], _context: &Context) -> Result<Vec<u8>, ExitError> {
         use bn::AffineG1;
 
@@ -176,9 +139,9 @@ impl<HF: HardFork> Bn128Mul<HF> {
     }
 }
 
-impl Precompile for Bn128Mul<Byzantium> {
+impl Precompile for Bn128Mul {
     fn required_gas(_input: &[u8]) -> Result<u64, ExitError> {
-        Ok(costs::BYZANTIUM_MUL)
+        Ok(costs::MUL)
     }
 
     /// Takes in two points on the elliptic curve alt_bn128 and multiples them.
@@ -203,40 +166,14 @@ impl Precompile for Bn128Mul<Byzantium> {
     }
 }
 
-impl Precompile for Bn128Mul<Istanbul> {
-    fn required_gas(_input: &[u8]) -> Result<u64, ExitError> {
-        Ok(costs::ISTANBUL_MUL)
-    }
+// "Istanbul" implementation
+pub(super) struct Bn128Pair;
 
-    /// Takes in two points on the elliptic curve alt_bn128 and multiples them.
-    ///
-    /// See: https://eips.ethereum.org/EIPS/eip-196
-    /// See: https://etherscan.io/address/0000000000000000000000000000000000000007
-    fn run(
-        input: &[u8],
-        target_gas: Option<u64>,
-        context: &Context,
-        _is_static: bool,
-    ) -> EvmPrecompileResult {
-        let cost = Self::required_gas(input)?;
-        if let Some(target_gas) = target_gas {
-            if cost > target_gas {
-                return Err(ExitError::OutOfGas);
-            }
-        }
-
-        let output = Self::run_inner(input, context)?;
-        Ok(PrecompileOutput::without_logs(cost, output).into())
-    }
-}
-
-pub(super) struct Bn128Pair<HF: HardFork>(PhantomData<HF>);
-
-impl<HF: HardFork> Bn128Pair<HF> {
+impl Bn128Pair {
     pub(super) const ADDRESS: Address = super::make_address(0, 8);
 }
 
-impl<HF: HardFork> Bn128Pair<HF> {
+impl Bn128Pair {
     fn run_inner(input: &[u8], _context: &Context) -> Result<Vec<u8>, ExitError> {
         use bn::{arith::U256, AffineG1, AffineG2, Fq, Fq2, Group, Gt, G1, G2};
 
@@ -330,41 +267,11 @@ impl<HF: HardFork> Bn128Pair<HF> {
     }
 }
 
-impl Precompile for Bn128Pair<Byzantium> {
+impl Precompile for Bn128Pair {
     fn required_gas(input: &[u8]) -> Result<u64, ExitError> {
         Ok(
-            costs::BYZANTIUM_PAIR_PER_POINT * input.len() as u64 / consts::PAIR_ELEMENT_LEN as u64
-                + costs::BYZANTIUM_PAIR_BASE,
-        )
-    }
-
-    /// Takes in elements and calculates the pair.
-    ///
-    /// See: https://eips.ethereum.org/EIPS/eip-197
-    /// See: https://etherscan.io/address/0000000000000000000000000000000000000008
-    fn run(
-        input: &[u8],
-        target_gas: Option<u64>,
-        context: &Context,
-        _is_static: bool,
-    ) -> EvmPrecompileResult {
-        let cost = Self::required_gas(input)?;
-        if let Some(target_gas) = target_gas {
-            if cost > target_gas {
-                return Err(ExitError::OutOfGas);
-            }
-        }
-
-        let output = Self::run_inner(input, context)?;
-        Ok(PrecompileOutput::without_logs(cost, output).into())
-    }
-}
-
-impl Precompile for Bn128Pair<Istanbul> {
-    fn required_gas(input: &[u8]) -> Result<u64, ExitError> {
-        Ok(
-            costs::ISTANBUL_PAIR_PER_POINT * input.len() as u64 / consts::PAIR_ELEMENT_LEN as u64
-                + costs::ISTANBUL_PAIR_BASE,
+            costs::PAIR_PER_POINT * input.len() as u64 / consts::PAIR_ELEMENT_LEN as u64
+                + costs::PAIR_BASE,
         )
     }
 
@@ -413,7 +320,7 @@ mod tests {
         )
         .unwrap();
 
-        let res = Bn128Add::<Byzantium>::run(&input, Some(500), &new_context(), false)
+        let res = Bn128Add::run(&input, Some(costs::ADD), &new_context(), false)
             .unwrap()
             .output;
         assert_eq!(res, expected);
@@ -434,7 +341,7 @@ mod tests {
         )
         .unwrap();
 
-        let res = Bn128Add::<Byzantium>::run(&input, Some(500), &new_context(), false)
+        let res = Bn128Add::run(&input, Some(costs::ADD), &new_context(), false)
             .unwrap()
             .output;
         assert_eq!(res, expected);
@@ -448,7 +355,7 @@ mod tests {
             0000000000000000000000000000000000000000000000000000000000000000",
         )
         .unwrap();
-        let res = Bn128Add::<Byzantium>::run(&input, Some(499), &new_context(), false);
+        let res = Bn128Add::run(&input, Some(costs::ADD - 1), &new_context(), false);
         assert_eq!(res, Err(ExitError::OutOfGas));
 
         // no input test
@@ -460,7 +367,7 @@ mod tests {
         )
         .unwrap();
 
-        let res = Bn128Add::<Byzantium>::run(&input, Some(500), &new_context(), false)
+        let res = Bn128Add::run(&input, Some(costs::ADD), &new_context(), false)
             .unwrap()
             .output;
         assert_eq!(res, expected);
@@ -475,7 +382,7 @@ mod tests {
         )
         .unwrap();
 
-        let res = Bn128Add::<Byzantium>::run(&input, Some(500), &new_context(), false);
+        let res = Bn128Add::run(&input, Some(costs::ADD), &new_context(), false);
         assert_eq!(res, Err(ExitError::Other("ERR_BN128_INVALID_POINT".into())));
     }
 
@@ -495,7 +402,7 @@ mod tests {
         )
         .unwrap();
 
-        let res = Bn128Mul::<Byzantium>::run(&input, Some(40_000), &new_context(), false)
+        let res = Bn128Mul::run(&input, Some(costs::MUL), &new_context(), false)
             .unwrap()
             .output;
         assert_eq!(res, expected);
@@ -508,7 +415,7 @@ mod tests {
             0200000000000000000000000000000000000000000000000000000000000000",
         )
         .unwrap();
-        let res = Bn128Mul::<Byzantium>::run(&input, Some(39_999), &new_context(), false);
+        let res = Bn128Mul::run(&input, Some(costs::MUL - 1), &new_context(), false);
         assert_eq!(res, Err(ExitError::OutOfGas));
 
         // zero multiplication test
@@ -526,7 +433,7 @@ mod tests {
         )
         .unwrap();
 
-        let res = Bn128Mul::<Byzantium>::run(&input, Some(40_000), &new_context(), false)
+        let res = Bn128Mul::run(&input, Some(costs::MUL), &new_context(), false)
             .unwrap()
             .output;
         assert_eq!(res, expected);
@@ -540,7 +447,7 @@ mod tests {
         )
         .unwrap();
 
-        let res = Bn128Mul::<Byzantium>::run(&input, Some(40_000), &new_context(), false)
+        let res = Bn128Mul::run(&input, Some(costs::MUL), &new_context(), false)
             .unwrap()
             .output;
         assert_eq!(res, expected);
@@ -554,7 +461,7 @@ mod tests {
         )
         .unwrap();
 
-        let res = Bn128Mul::<Byzantium>::run(&input, Some(40_000), &new_context(), false);
+        let res = Bn128Mul::run(&input, Some(costs::MUL), &new_context(), false);
         assert_eq!(res, Err(ExitError::Other("ERR_BN128_INVALID_POINT".into())));
     }
 
@@ -580,9 +487,14 @@ mod tests {
             hex::decode("0000000000000000000000000000000000000000000000000000000000000001")
                 .unwrap();
 
-        let res = Bn128Pair::<Byzantium>::run(&input, Some(260_000), &new_context(), false)
-            .unwrap()
-            .output;
+        let res = Bn128Pair::run(
+            &input,
+            Some(costs::PAIR_BASE + 2 * costs::PAIR_PER_POINT),
+            &new_context(),
+            false,
+        )
+        .unwrap()
+        .output;
         assert_eq!(res, expected);
 
         // out of gas test
@@ -602,7 +514,12 @@ mod tests {
             12c85ea5db8c6deb4aab71808dcb408fe3d1e7690c43d37b4ce6cc0166fa7daa",
         )
         .unwrap();
-        let res = Bn128Pair::<Byzantium>::run(&input, Some(259_999), &new_context(), false);
+        let res = Bn128Pair::run(
+            &input,
+            Some(costs::PAIR_BASE + 2 * costs::PAIR_PER_POINT - 1),
+            &new_context(),
+            false,
+        );
         assert_eq!(res, Err(ExitError::OutOfGas));
 
         // no input test
@@ -611,9 +528,14 @@ mod tests {
             hex::decode("0000000000000000000000000000000000000000000000000000000000000001")
                 .unwrap();
 
-        let res = Bn128Pair::<Byzantium>::run(&input, Some(260_000), &new_context(), false)
-            .unwrap()
-            .output;
+        let res = Bn128Pair::run(
+            &input,
+            Some(costs::PAIR_BASE + 2 * costs::PAIR_PER_POINT),
+            &new_context(),
+            false,
+        )
+        .unwrap()
+        .output;
         assert_eq!(res, expected);
 
         // point not on curve fail
@@ -628,7 +550,12 @@ mod tests {
         )
         .unwrap();
 
-        let res = Bn128Pair::<Byzantium>::run(&input, Some(260_000), &new_context(), false);
+        let res = Bn128Pair::run(
+            &input,
+            Some(costs::PAIR_BASE + 2 * costs::PAIR_PER_POINT),
+            &new_context(),
+            false,
+        );
         assert_eq!(res, Err(ExitError::Other("ERR_BN128_INVALID_A".into())));
 
         // invalid input length
@@ -641,7 +568,12 @@ mod tests {
         )
         .unwrap();
 
-        let res = Bn128Pair::<Byzantium>::run(&input, Some(260_000), &new_context(), false);
+        let res = Bn128Pair::run(
+            &input,
+            Some(costs::PAIR_BASE + 2 * costs::PAIR_PER_POINT),
+            &new_context(),
+            false,
+        );
         assert_eq!(res, Err(ExitError::Other("ERR_BN128_INVALID_LEN".into())));
     }
 }

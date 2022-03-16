@@ -9,8 +9,11 @@ pub struct StaticData {
         deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_vote_options_from_string"
     )]
     pub options: VoteOptions,
+    #[serde(with = "time::serde::rfc3339")]
     pub next_vote_start_time: OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339")]
     pub snapshot_time: OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339")]
     pub next_snapshot_time: OffsetDateTime,
     pub proposals: u32,
     pub challenges: usize,

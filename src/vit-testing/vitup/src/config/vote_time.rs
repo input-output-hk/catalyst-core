@@ -10,8 +10,11 @@ pub const FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 pub enum VoteTime {
     Blockchain(VoteBlockchainTime),
     Real {
+        #[serde(with = "time::serde::rfc3339")]
         vote_start_timestamp: OffsetDateTime,
+        #[serde(with = "time::serde::rfc3339")]
         tally_start_timestamp: OffsetDateTime,
+        #[serde(with = "time::serde::rfc3339")]
         tally_end_timestamp: OffsetDateTime,
         find_best_match: bool,
     },

@@ -261,6 +261,8 @@ impl Header {
             chain_length: self.chain_length(),
             content_hash: self.block_content_hash(),
             consensus_eval_context: self.get_consensus_eval_context(),
+            #[cfg(feature = "evm")]
+            block_id: self.id(),
         }
     }
 }

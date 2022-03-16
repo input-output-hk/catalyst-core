@@ -135,7 +135,7 @@ impl Ledger {
         slot_duration: u8,
     ) {
         // use content hash from the apply block as the EVM block hash
-        let next_hash: BlockHash = <[u8; 32]>::from(metadata.content_hash).into();
+        let next_hash: BlockHash = <[u8; 32]>::from(metadata.block_id).into();
         self.environment.block_hashes.insert(0, next_hash);
         self.environment.block_number = BlockNumber::from(self.environment.block_hashes.len());
         self.update_block_timestamp(metadata.block_date, slots_per_epoch, slot_duration);

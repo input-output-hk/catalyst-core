@@ -7,13 +7,20 @@
     voting-tools.url =
       "github:input-output-hk/voting-tools?rev=6da7c45cbd1c756285ca2a1db99f82dd1a8cc16b";
     vit-kedqr.url = "github:input-output-hk/vit-kedqr";
-    jormungandr.url =
-      "github:input-output-hk/jormungandr?rev=50fc937159cbea328973af2a4a04d1c8d9d4b48e";
-    cardano-node.url =
-      "github:input-output-hk/cardano-node/1.33.0-with-cardano-cli";
+    vit-servicing-station.url = "github:input-output-hk/vit-servicing-station/master";
+    jormungandr.url = "github:input-output-hk/jormungandr/master";
+    cardano-node.url = "github:input-output-hk/cardano-node/1.33.0";
   };
-  outputs = { self, nixpkgs, utils, rust-nix, voting-tools, vit-kedqr
-    , jormungandr, cardano-node }:
+  outputs = { self
+            , nixpkgs
+            , utils
+            , rust-nix
+            , voting-tools
+            , vit-kedqr
+            , vit-servicing-station
+            , jormungandr
+            , cardano-node
+            }:
     let
       workspaceCargo = builtins.fromTOML (builtins.readFile ./Cargo.toml);
       inherit (workspaceCargo.workspace) members;
@@ -86,11 +93,15 @@
         , registration-service, registration-verify-service }@pkgs:
         pkgs;
 
-      devShell = { mkShell, rustc, cargo, pkg-config, openssl, protobuf, rustfmt }:
+      devShell = { system, mkShell, rustc, cargo, pkg-config, openssl, protobuf, rustfmt }:
         mkShell {
           PROTOC = "${protobuf}/bin/protoc";
           PROTOC_INCLUDE = "${protobuf}/include";
           buildInputs = [ rustc cargo pkg-config openssl protobuf rustfmt ];
+          shellHook = ''
+            export PATH="${jormungandr.packages.${system}.jormungandr}/bin:$PATH"
+            export PATH="${vit-servicing-station.legacyPackages.${system}.vit-servicing-station-server}/bin:$PATH"
+          '';
         };
 
       hydraJobs = { iapyx, vitup, integration-tests, snapshot-trigger-service

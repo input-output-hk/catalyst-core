@@ -106,6 +106,13 @@ jobs:
         name: Clean up cargo registry files
         run: rm -r -fo $env:UserProfile\.cargo\registry
 
+      - if: ${{ runner.os == 'Windows' }}
+        name: Allow long paths on Windows
+        shell: powershell
+        run: |
+          reg add HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1 /f
+          git config --system core.longpaths true
+
       - name: Restore cargo registry index
         uses: actions/cache@v2
         with:

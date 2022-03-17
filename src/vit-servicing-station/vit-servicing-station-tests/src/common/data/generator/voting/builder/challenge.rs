@@ -14,6 +14,10 @@ impl ChallengeConfig {
         self
     }
 
+    pub fn proposals_len(&self) -> usize {
+        self.proposals.len()
+    }
+
     pub fn proposal(mut self, proposal: ProposalConfig) -> Self {
         self.proposals.push_back(proposal);
         self

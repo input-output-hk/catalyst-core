@@ -24,6 +24,10 @@ impl ArbitraryValidVotePlanConfig {
         self
     }
 
+    pub fn get_challenges(&self) -> &[ChallengeConfig] {
+        &self.challenges
+    }
+
     pub fn challenge(mut self, mut challenge: ChallengeConfig) -> Self {
         challenge
             .proposals

@@ -1,3 +1,4 @@
+# coding: utf-8
 from typing import Dict, Optional, List, Tuple, Generator, TextIO, Union, Any, Set
 
 import sys
@@ -263,8 +264,8 @@ def sanity_check_data(
 
 
 def extract_yes_no_votes(proposal: Proposal, voteplan_proposal: ProposalStatus):
-    yes_index = proposal.chain_vote_options["yes"]
-    no_index = proposal.chain_vote_options["no"]
+    yes_index = int(proposal.chain_vote_options["yes"])
+    no_index = int(proposal.chain_vote_options["no"])
     # we check before if tally is available, so it should be safe to direct access the data
     yes_result = int(voteplan_proposal.tally.results[yes_index])
     no_result = int(voteplan_proposal.tally.results[no_index])
@@ -411,7 +412,7 @@ def filter_excluded_proposals(
 
 
 def calculate_total_stake_from_block0_configuration(
-    block0_config: Dict[str, Dict], committee_keys: List[Dict[str, str]]
+    block0_config: Dict[str, Dict], committee_keys: List[str]
 ):
     funds = (
         initial["fund"] for initial in block0_config["initial"] if "fund" in initial
@@ -419,7 +420,7 @@ def calculate_total_stake_from_block0_configuration(
     return sum(
         fund["value"]
         for fund in itertools.chain.from_iterable(funds)
-        if fund["address"] not in [key["address"] for key in committee_keys]
+        if fund["address"] not in [key for key in committee_keys]
     )
 
 

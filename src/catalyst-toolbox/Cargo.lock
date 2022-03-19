@@ -2098,7 +2098,7 @@ dependencies = [
 [[package]]
 name = "hersir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#8c7bdea8f2191d75dd5a315fddaf8916f465288e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#19eb779e110030d885436b11fca90b0b4af39148"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2448,7 +2448,7 @@ checksum = "1aab8fc367588b89dcee83ab0fd66b72b50b72fa1904d7095045ace2b0c81c35"
 [[package]]
 name = "jcli"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#8c7bdea8f2191d75dd5a315fddaf8916f465288e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#19eb779e110030d885436b11fca90b0b4af39148"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2482,7 +2482,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-automation"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#8c7bdea8f2191d75dd5a315fddaf8916f465288e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#19eb779e110030d885436b11fca90b0b4af39148"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -2547,7 +2547,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-integration-tests"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#8c7bdea8f2191d75dd5a315fddaf8916f465288e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#19eb779e110030d885436b11fca90b0b4af39148"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -2599,7 +2599,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#8c7bdea8f2191d75dd5a315fddaf8916f465288e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#19eb779e110030d885436b11fca90b0b4af39148"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2836,7 +2836,7 @@ dependencies = [
 [[package]]
 name = "loki"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#8c7bdea8f2191d75dd5a315fddaf8916f465288e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#19eb779e110030d885436b11fca90b0b4af39148"
 dependencies = [
  "chain-addr",
  "chain-core",
@@ -2985,7 +2985,7 @@ dependencies = [
 [[package]]
 name = "mjolnir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#8c7bdea8f2191d75dd5a315fddaf8916f465288e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#19eb779e110030d885436b11fca90b0b4af39148"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -4981,7 +4981,7 @@ dependencies = [
 [[package]]
 name = "thor"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#8c7bdea8f2191d75dd5a315fddaf8916f465288e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#19eb779e110030d885436b11fca90b0b4af39148"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",

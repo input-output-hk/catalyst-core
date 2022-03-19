@@ -647,7 +647,6 @@ mod test {
         let token_id = vote_plan.voting_token();
 
         let block0_configuration = ConfigurationBuilder::new()
-            .with_explorer()
             .with_funds(vec![
                 alice.to_initial_fund(funds),
                 bob.to_initial_fund(funds),

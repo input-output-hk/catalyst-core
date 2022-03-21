@@ -11,7 +11,7 @@ pub fn use_as_monitor_progress_bar(monitor: &Monitor, title: &str, progress_bar:
         Monitor::Standard(_) => println!("{}", banner),
         Monitor::Progress(_) => {
             progress_bar.set_prefix(&banner);
-            progress_bar.set_message(&"initializing...".to_string());
+            progress_bar.set_message("initializing...");
         }
         _ => (),
     };

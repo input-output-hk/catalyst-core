@@ -202,10 +202,8 @@ impl<'a> VoteRoundGenerator {
                     PayloadType::Private => {
                         let mut results = Vec::new();
                         let mut shares = Vec::new();
-                        for proposal in manager.statuses(tmp_ledger.token_distribution()).proposals
-                        {
-                            let (encrypted_tally, _total_stake) =
-                                proposal.tally.private_encrypted().unwrap();
+                        for proposal in manager.statuses().proposals {
+                            let encrypted_tally = proposal.tally.private_encrypted().unwrap();
 
                             let sh = self
                                 .committee_manager
@@ -303,10 +301,10 @@ impl<'a> VoteRoundGenerator {
         res
     }
 
-    pub fn statuses(&mut self, ledger: &'a Ledger) -> Vec<VotePlanStatus> {
+    pub fn statuses(&self) -> Vec<VotePlanStatus> {
         self.voteplan_managers
             .values()
-            .map(|manager| manager.statuses(ledger.token_distribution()))
+            .map(|manager| manager.statuses())
             .collect::<Vec<_>>()
     }
 }

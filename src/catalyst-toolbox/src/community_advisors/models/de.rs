@@ -1,5 +1,6 @@
 use crate::utils::serde::deserialize_truthy_falsy;
 use serde::Deserialize;
+use vit_servicing_station_lib::db::models::community_advisors_reviews::ReviewRanking as VitReviewRanking;
 
 /// (Proposal Id, Assessor Id), an assessor cannot assess the same proposal more than once
 pub type AdvisorReviewId = (String, String);
@@ -60,6 +61,18 @@ pub enum ReviewRanking {
     Good,
     FilteredOut,
     NA, // not reviewed by vCAs
+}
+
+#[allow(clippy::from_over_into)]
+impl Into<VitReviewRanking> for ReviewRanking {
+    fn into(self) -> VitReviewRanking {
+        match self {
+            ReviewRanking::Good => VitReviewRanking::Good,
+            ReviewRanking::Excellent => VitReviewRanking::Excellent,
+            ReviewRanking::FilteredOut => VitReviewRanking::FilteredOut,
+            ReviewRanking::NA => VitReviewRanking::NA,
+        }
+    }
 }
 
 impl ReviewRanking {

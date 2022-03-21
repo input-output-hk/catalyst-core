@@ -56,10 +56,10 @@ hex = "0.4"
 image = "0.23.12"
 qrcode = "0.12"
 quircs = "0.10.0"
-symmetric-cipher = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "fix_comp_issue_windows" }
+symmetric-cipher = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
 graphql_client = "0.10"
 gag = "1"
-vit-servicing-station-lib = { git = "https://github.com/danielsanchezq/vit-servicing-station.git", branch = "master" }
+vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 
 [dev-dependencies]
 rand_chacha = "0.3"
@@ -70,15 +70,13 @@ chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
 
+[build-dependencies]
+versionisator = "1.0.3"
+
 [dependencies.pyo3]
 version = "0.15.1"
 features = ["auto-initialize"]
 optional = true
-
-
-[build-dependencies]
-versionisator = "1.0.3"
-
 
 [features]
 test-api = ["pyo3"]

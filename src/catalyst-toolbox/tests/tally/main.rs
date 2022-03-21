@@ -84,7 +84,7 @@ macro_rules! setup_run {
 //TV 001
 #[test]
 fn tally_ok() {
-    let (mut generator, vote_fragments, tally_fragments) = setup_run! {
+    let (generator, vote_fragments, tally_fragments) = setup_run! {
         seed = [0; 32],
         voteplans = [
             dates 0 => 1 => 2,
@@ -105,14 +105,14 @@ fn tally_ok() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.statuses(&ledger));
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
     assert!(failed_fragments.is_empty());
 }
 
 //TV 002
 #[test]
 fn shuffle_tally_ok() {
-    let (mut generator, vote_fragments, tally_fragments) = setup_run! {
+    let (generator, vote_fragments, tally_fragments) = setup_run! {
         seed = [0; 32],
         voteplans = [
             dates 0 => 1 => 2,
@@ -133,12 +133,12 @@ fn shuffle_tally_ok() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.statuses(&ledger));
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
 }
 
 #[test]
 fn shuffle_tally_ok_private() {
-    let (mut generator, vote_fragments, tally_fragments) = setup_run! {
+    let (generator, vote_fragments, tally_fragments) = setup_run! {
         seed = [0; 32],
         voteplans = [
             dates 0 => 1 => 2,
@@ -159,13 +159,13 @@ fn shuffle_tally_ok_private() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.statuses(&ledger));
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
 }
 
 //TV 003
 #[test]
 fn wallet_not_in_block0() {
-    let (mut generator, vote_fragments, tally_fragments) = setup_run! {
+    let (generator, vote_fragments, tally_fragments) = setup_run! {
         seed = [0; 32],
         voteplans = [
             dates 0 => 1 => 2,
@@ -200,7 +200,7 @@ fn wallet_not_in_block0() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.statuses(&ledger));
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
     assert_eq!(failed_fragments.len(), 1);
 }
 
@@ -304,7 +304,7 @@ fn replay_not_counted() {
 //TV 006
 #[test]
 fn multi_voteplan_ok() {
-    let (mut generator, vote_fragments, tally_fragments) = setup_run! {
+    let (generator, vote_fragments, tally_fragments) = setup_run! {
         seed = [0; 32],
         wallets = 1000,
         voteplans = [
@@ -329,12 +329,12 @@ fn multi_voteplan_ok() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.statuses(&ledger));
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
 }
 
 #[test]
 fn multi_voteplan_ok_private() {
-    let (mut generator, vote_fragments, tally_fragments) = setup_run! {
+    let (generator, vote_fragments, tally_fragments) = setup_run! {
         seed = [0; 32],
         wallets = 1000,
         voteplans = [
@@ -359,7 +359,7 @@ fn multi_voteplan_ok_private() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.statuses(&ledger));
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
 }
 
 #[test]
@@ -557,7 +557,7 @@ fn expired_transaction() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.statuses(&ledger));
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
     assert_eq!(failed_fragments.len(), 1);
 }
 

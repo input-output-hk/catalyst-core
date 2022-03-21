@@ -7,19 +7,22 @@ use std::{
     path::{Path, PathBuf},
 };
 
-pub fn find_file<P: AsRef<Path>>(root: P, part_of_name: &str) -> Option<PathBuf> {
-    for entry in fs::read_dir(root).expect("cannot read root directory") {
+pub fn find_file<P: AsRef<Path>>(
+    root: P,
+    part_of_name: &str,
+) -> Result<Option<PathBuf>, std::io::Error> {
+    for entry in fs::read_dir(root)? {
         let entry = entry.unwrap();
         if entry.file_name().to_str().unwrap().contains(part_of_name) {
-            return Some(entry.path());
+            return Ok(Some(entry.path()));
         }
     }
-    None
+    Ok(None)
 }
 
-pub fn read_file(path: impl AsRef<Path>) -> String {
-    let contents = fs::read_to_string(path).expect("cannot read file");
-    trim_new_line_at_end(contents)
+pub fn read_file(path: impl AsRef<Path>) -> Result<String, std::io::Error> {
+    let contents = fs::read_to_string(path)?;
+    Ok(trim_new_line_at_end(contents))
 }
 
 fn trim_new_line_at_end(mut content: String) -> String {
@@ -39,22 +42,26 @@ pub fn make_readonly(path: &Path) {
     fs::set_permissions(path.as_os_str(), perms).expect("cannot set permissions");
 }
 
-pub fn copy_folder(from: &Path, to: &Path, overwrite: bool) {
+pub fn copy_folder(from: &Path, to: &Path, overwrite: bool) -> Result<(), fs_extra::error::Error> {
     let mut options = CopyOptions::new();
     options.overwrite = overwrite;
-    copy(from, to, &options).expect("cannot copy folder");
+    copy(from, to, &options).map(|_| ())
 }
 
-pub fn copy_file<P: AsRef<Path>, Q: AsRef<Path>>(from: P, to: Q, preserve_old: bool) {
+pub fn copy_file<P: AsRef<Path>, Q: AsRef<Path>>(
+    from: P,
+    to: Q,
+    preserve_old: bool,
+) -> Result<(), std::io::Error> {
     if preserve_old {
         let mut old_to = to.as_ref().to_path_buf();
         old_to.set_file_name(format!(
             "old_{}",
             old_to.file_name().unwrap().to_str().unwrap()
         ));
-        copy_file(to.as_ref(), old_to.as_path(), false);
+        return copy_file(to.as_ref(), old_to.as_path(), false);
     }
-    fs::copy(from, to).expect("cannot copy files");
+    fs::copy(from, to).map(|_| ())
 }
 
 pub fn read_file_as_vector(
@@ -70,17 +77,17 @@ pub fn read_file_as_vector(
     Ok(output)
 }
 
-pub fn have_the_same_content<P: AsRef<Path>>(left: P, right: P) -> bool {
-    read_file(left) == read_file(right)
+pub fn have_the_same_content<P: AsRef<Path>>(left: P, right: P) -> Result<bool, std::io::Error> {
+    Ok(read_file(left)? == read_file(right)?)
 }
 
-pub fn get_file_as_byte_vec<P: AsRef<Path>>(filename: P) -> Vec<u8> {
-    let mut f = File::open(&filename).expect("no file found");
-    let metadata = std::fs::metadata(&filename).expect("unable to read metadata");
+pub fn get_file_as_byte_vec<P: AsRef<Path>>(filename: P) -> Result<Vec<u8>, std::io::Error> {
+    let mut f = File::open(&filename)?;
+    let metadata = std::fs::metadata(&filename)?;
     let mut buffer = vec![0; metadata.len() as usize];
-    f.read_exact(&mut buffer).expect("buffer overflow");
+    f.read_exact(&mut buffer)?;
 
-    buffer
+    Ok(buffer)
 }
 
 pub fn append<P: AsRef<Path>, S: Into<String>>(filename: P, line: S) -> Result<(), std::io::Error> {

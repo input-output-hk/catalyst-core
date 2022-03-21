@@ -160,6 +160,10 @@ impl Release {
         &self.releases_per_os
     }
 
+    pub fn released_date(&self) -> &Option<SystemTime> {
+        &self.released_date
+    }
+
     pub fn version_str(&self) -> String {
         self.version.clone()
     }

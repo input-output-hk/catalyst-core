@@ -14,8 +14,8 @@ test = false
 bench = false
 
 [dependencies]
-bech32 = "0.7"
 assert_fs = "1"
+bech32 = "0.8.1"
 csv = "1.1"
 wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
@@ -33,8 +33,6 @@ jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jorm
 jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr.git",  branch = "master" }
 thor = { git = "https://github.com/input-output-hk/jormungandr.git",  branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
-# TODO: Remove fixed and migrate to rust_decimal
-fixed = { version = "1.7", features = ["serde"] }
 rust_decimal = "1.16"
 futures = "0.3"
 log = "0.4"
@@ -67,8 +65,8 @@ assert_cmd = "0.10"
 predicates = "1"
 assert_fs = "1.0.0"
 chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-quickcheck = "0.9"
-quickcheck_macros = "0.9"
+proptest = { git = "https://github.com/input-output-hk/proptest", branch = "master" }
+test-strategy = "0.1"
 
 [build-dependencies]
 versionisator = "1.0.3"

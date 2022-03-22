@@ -1,4 +1,4 @@
-use bech32::ToBase32;
+use bech32::{ToBase32, Variant};
 use catalyst_toolbox::kedqr::KeyQrCode;
 use catalyst_toolbox::kedqr::QrPin;
 use chain_crypto::AsymmetricKey;
@@ -17,7 +17,7 @@ pub fn secret_from_qr(
     let secret = KeyQrCode::decode(img, &pin.password)?;
     let sk = secret.first().unwrap().clone();
     let hrp = Ed25519Extended::SECRET_BECH32_HRP;
-    let secret_key = bech32::encode(hrp, sk.leak_secret().to_base32())?;
+    let secret_key = bech32::encode(hrp, sk.leak_secret().to_base32(), Variant::Bech32)?;
 
     match output {
         Some(path) => {

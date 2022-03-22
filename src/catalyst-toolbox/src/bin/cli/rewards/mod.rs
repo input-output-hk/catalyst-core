@@ -25,6 +25,9 @@ pub enum Error {
 
     #[error(transparent)]
     Json(#[from] serde_json::Error),
+
+    #[error(transparent)]
+    Rewards(#[from] catalyst_toolbox::rewards::voters::Error),
 }
 
 #[derive(StructOpt)]

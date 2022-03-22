@@ -6,7 +6,6 @@ use chain_evm::{
     machine::Value,
     primitive_types,
     state::{ByteCode, Key},
-    Address,
 };
 use typed_bytes::ByteBuilder;
 
@@ -16,7 +15,10 @@ use crate::{
 };
 
 #[cfg(feature = "evm")]
-pub use chain_evm::machine::{BlockGasLimit, Config, Environment, GasPrice};
+pub use chain_evm::{
+    machine::{BlockGasLimit, Config, Environment, GasPrice},
+    Address,
+};
 
 /// Variants of supported EVM transactions
 #[derive(Clone, Debug, PartialEq, Eq)]

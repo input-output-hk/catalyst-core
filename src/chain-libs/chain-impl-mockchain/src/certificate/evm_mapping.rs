@@ -2,10 +2,10 @@ use chain_core::{
     mempack::{ReadBuf, ReadError, Readable},
     property,
 };
-#[cfg(feature = "evm")]
-use chain_evm::Address;
 use typed_bytes::{ByteArray, ByteBuilder};
 
+#[cfg(feature = "evm")]
+use crate::evm::Address;
 #[cfg(feature = "evm")]
 use crate::transaction::UnspecifiedAccountIdentifier;
 use crate::transaction::{

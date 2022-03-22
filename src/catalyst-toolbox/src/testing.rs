@@ -1,12 +1,17 @@
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
 use std::process::Command;
-use std::{path::PathBuf, str::FromStr};
+use std::{
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 use thiserror::Error;
 
+/// Wrapper over proposers rewards scripts. It uses script from ../scripts/python/proposers_rewards.py location.
+/// NOTE: by default struct uses python3 as script executable
 #[derive(Debug)]
 pub struct ProposerRewardsCommand {
-    python_exec: String,
+    python_exec: PathBuf,
     output_file: PathBuf,
     block0_path: PathBuf,
     total_stake_threshold: f64,
@@ -29,7 +34,7 @@ pub enum Error {
 impl Default for ProposerRewardsCommand {
     fn default() -> Self {
         Self {
-            python_exec: "python3".to_string(),
+            python_exec: PathBuf::from_str("python3").unwrap(),
             output_file: PathBuf::from_str("./output").unwrap(),
             block0_path: PathBuf::from_str("./block0.bin").unwrap(),
             total_stake_threshold: 0.01,
@@ -46,6 +51,11 @@ impl Default for ProposerRewardsCommand {
 }
 
 impl ProposerRewardsCommand {
+    pub fn python_exec<P: AsRef<Path>>(mut self, python_exec: P) -> Self {
+        self.python_exec = python_exec.as_ref().to_path_buf();
+        self
+    }
+
     pub fn output_file(mut self, output_file: PathBuf) -> Self {
         self.output_file = output_file;
         self

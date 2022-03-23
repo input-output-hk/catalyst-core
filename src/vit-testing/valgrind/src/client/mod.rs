@@ -59,7 +59,7 @@ impl ValgrindClient {
             ),
             vit_client: VitRestClient::new(vit_address),
             proxy_client: ProxyClient::new(proxy_address.to_string()),
-            explorer_client: Explorer::new(node_address),
+            explorer_client: Explorer::new(node_address.to_string(), None),
         };
 
         if node_rest_settings.enable_debug {

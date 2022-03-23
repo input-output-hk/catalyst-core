@@ -227,12 +227,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
-name = "az"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f771a5d1f5503f7f4279a30f3643d3421ba149848b89ecaaec0ea2acf04a5ac4"
-
-[[package]]
 name = "backtrace"
 version = "0.3.64"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -527,10 +521,10 @@ dependencies = [
 [[package]]
 name = "catalyst-toolbox"
 version = "0.3.0"
-source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=update-dependencies#06d07b146a56fcf4d538501334ebc4344c547e9b"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=swtich_stake_from_funds_to_token#99fdd821b82c75e26315dfa0b7959b927c2d3fa0"
 dependencies = [
  "assert_fs",
- "bech32 0.7.3",
+ "bech32 0.8.1",
  "chain-addr",
  "chain-core",
  "chain-crypto",
@@ -539,7 +533,6 @@ dependencies = [
  "chain-storage",
  "chain-time",
  "csv",
- "fixed",
  "futures",
  "gag",
  "graphql_client",
@@ -1701,19 +1694,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fixed"
-version = "1.13.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3342b127378d13cfdbd56de8d7e7feec33a9772d5657b9605e59a6e4a337e36"
-dependencies = [
- "az",
- "bytemuck",
- "half",
- "serde",
- "typenum",
-]
-
-[[package]]
 name = "fixed-hash"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2272,7 +2252,7 @@ dependencies = [
 [[package]]
 name = "hersir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#8c7bdea8f2191d75dd5a315fddaf8916f465288e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#baa81f2fc351ac6ce9600726dd2ad90e2673f8d6"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2743,7 +2723,7 @@ checksum = "1aab8fc367588b89dcee83ab0fd66b72b50b72fa1904d7095045ace2b0c81c35"
 [[package]]
 name = "jcli"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#8c7bdea8f2191d75dd5a315fddaf8916f465288e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#baa81f2fc351ac6ce9600726dd2ad90e2673f8d6"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2777,7 +2757,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-automation"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#8c7bdea8f2191d75dd5a315fddaf8916f465288e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#baa81f2fc351ac6ce9600726dd2ad90e2673f8d6"
 dependencies = [
  "assert_cmd",
  "assert_fs",
@@ -2842,7 +2822,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-integration-tests"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#8c7bdea8f2191d75dd5a315fddaf8916f465288e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#baa81f2fc351ac6ce9600726dd2ad90e2673f8d6"
 dependencies = [
  "assert_cmd",
  "assert_fs",
@@ -2894,7 +2874,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#8c7bdea8f2191d75dd5a315fddaf8916f465288e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#baa81f2fc351ac6ce9600726dd2ad90e2673f8d6"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -3150,7 +3130,7 @@ dependencies = [
 [[package]]
 name = "loki"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#8c7bdea8f2191d75dd5a315fddaf8916f465288e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#baa81f2fc351ac6ce9600726dd2ad90e2673f8d6"
 dependencies = [
  "chain-addr",
  "chain-core",
@@ -3348,7 +3328,7 @@ dependencies = [
 [[package]]
 name = "mjolnir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#8c7bdea8f2191d75dd5a315fddaf8916f465288e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#baa81f2fc351ac6ce9600726dd2ad90e2673f8d6"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -5563,7 +5543,7 @@ dependencies = [
 [[package]]
 name = "thor"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update-chain-lib#8c7bdea8f2191d75dd5a315fddaf8916f465288e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#baa81f2fc351ac6ce9600726dd2ad90e2673f8d6"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",

@@ -4,3 +4,5 @@
 **/*.rs.bk
 **/__pycache__
 bindings/wallet-uniffi/codegen
+**/*node_modules
+**/*package-lock.json

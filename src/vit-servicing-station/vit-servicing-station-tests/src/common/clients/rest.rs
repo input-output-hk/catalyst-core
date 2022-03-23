@@ -2,9 +2,11 @@ use hyper::StatusCode;
 use reqwest::blocking::Response;
 use std::collections::HashMap;
 use thiserror::Error;
+use url::Url;
 use vit_servicing_station_lib::db::models::challenges::Challenge;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
+use vit_servicing_station_lib::server::settings::ServiceSettings;
 use vit_servicing_station_lib::{
     db::models::{funds::Fund, proposals::Proposal},
     v0::api_token::API_TOKEN_HEADER,
@@ -64,11 +66,31 @@ pub struct RestClient {
     origin: Option<String>,
 }
 
+impl From<&ServiceSettings> for RestClient {
+    fn from(settings: &ServiceSettings) -> Self {
+        let url = {
+            let scheme = {
+                if settings.tls.cert_file.is_some() {
+                    "https"
+                } else {
+                    "http"
+                }
+            };
+            //we accepted ServiceSettings struct in constructor, so address should be proper
+            //SockerAddr struct, therefore we won't have any problems with parsing result
+            format!("{}://{}", scheme, settings.address)
+                .parse()
+                .unwrap()
+        };
+        Self::new(url)
+    }
+}
+
 impl RestClient {
-    pub fn new(address: String) -> Self {
+    pub fn new(url: Url) -> Self {
         Self {
             api_token: None,
-            path_builder: RestPathBuilder::new(address),
+            path_builder: RestPathBuilder::new(url),
             logger: RestClientLogger { enabled: true },
             origin: None,
         }
@@ -212,7 +234,10 @@ impl RestClient {
 
     pub fn get(&self, path: &str) -> Result<reqwest::blocking::Response, reqwest::Error> {
         self.logger.log_request(path);
-        let client = reqwest::blocking::Client::new();
+        let client = reqwest::blocking::Client::builder()
+            .danger_accept_invalid_certs(true)
+            .danger_accept_invalid_hostnames(true)
+            .build()?;
         let mut res = client.get(path);
 
         if let Some(api_token) = &self.api_token {
@@ -277,15 +302,15 @@ impl RestClient {
 
 #[derive(Debug, Clone)]
 pub struct RestPathBuilder {
-    address: String,
+    address: Url,
     root: String,
 }
 
 impl RestPathBuilder {
-    pub fn new<S: Into<String>>(address: S) -> Self {
+    pub fn new(address: Url) -> Self {
         RestPathBuilder {
-            root: "/api/v0/".to_string(),
-            address: address.into(),
+            root: "api/v0/".to_string(),
+            address,
         }
     }
 
@@ -322,11 +347,11 @@ impl RestPathBuilder {
     }
 
     pub fn service_version(&self) -> String {
-        format!("http://{}{}{}", self.address, "/api/", "vit-version")
+        format!("{}{}{}", self.address, "api/", "vit-version")
     }
 
     pub fn path(&self, path: &str) -> String {
-        format!("http://{}{}{}", self.address, self.root, path)
+        format!("{}{}{}", self.address, self.root, path)
     }
 }
 

@@ -20,7 +20,7 @@ impl Server {
     }
 
     pub fn rest_client(&self) -> RestClient {
-        RestClient::new(self.settings.address.to_string())
+        RestClient::from(&self.settings)
     }
 
     pub fn settings(&self) -> ServiceSettings {

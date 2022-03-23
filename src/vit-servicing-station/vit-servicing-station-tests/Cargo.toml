@@ -25,6 +25,7 @@ hyper = "0.14.2"
 vit-servicing-station-lib = {path= "../vit-servicing-station-lib"}
 lazy_static = "1.4"
 rand = "0.7"
+url = "2.2"
 quickcheck = { version = "0.9" }
 quickcheck_macros = { version = "0.9" }
 predicates = { version = "2.0", default-features = false, features = ["diff"] }
@@ -39,7 +40,7 @@ dyn-clone = "1.0.4"
 [dependencies.reqwest]
 version = "0.11"
 default-features = false
-features = ["blocking"]
+features = ["blocking","native-tls"]
 
 # This solves building on windows when sqlite3lib is not installed or missing in the `$PATH`
 # as it happens with the github actions pipeline associated to this project.

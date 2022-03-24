@@ -44,7 +44,7 @@ impl State {
         for fragment in fragments {
             new_ledger = self
                 .ledger
-                .apply_fragment(&ledger_params, &fragment, block_date)?;
+                .apply_fragment(&ledger_params, fragment, block_date)?;
         }
 
         self.ledger = new_ledger;

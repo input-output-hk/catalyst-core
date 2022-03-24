@@ -84,7 +84,7 @@ macro_rules! setup_run {
 //TV 001
 #[test]
 fn tally_ok() {
-    let (mut generator, vote_fragments, tally_fragments) = setup_run! {
+    let (generator, vote_fragments, tally_fragments) = setup_run! {
         seed = [0; 32],
         voteplans = [
             dates 0 => 1 => 2,
@@ -112,7 +112,7 @@ fn tally_ok() {
 //TV 002
 #[test]
 fn shuffle_tally_ok() {
-    let (mut generator, vote_fragments, tally_fragments) = setup_run! {
+    let (generator, vote_fragments, tally_fragments) = setup_run! {
         seed = [0; 32],
         voteplans = [
             dates 0 => 1 => 2,
@@ -138,7 +138,7 @@ fn shuffle_tally_ok() {
 
 #[test]
 fn shuffle_tally_ok_private() {
-    let (mut generator, vote_fragments, tally_fragments) = setup_run! {
+    let (generator, vote_fragments, tally_fragments) = setup_run! {
         seed = [0; 32],
         voteplans = [
             dates 0 => 1 => 2,
@@ -165,7 +165,7 @@ fn shuffle_tally_ok_private() {
 //TV 003
 #[test]
 fn wallet_not_in_block0() {
-    let (mut generator, vote_fragments, tally_fragments) = setup_run! {
+    let (generator, vote_fragments, tally_fragments) = setup_run! {
         seed = [0; 32],
         voteplans = [
             dates 0 => 1 => 2,
@@ -246,10 +246,7 @@ fn only_last_vote_is_counted() {
     )
     .unwrap();
 
-    let tally = ledger.active_vote_plans()[0].proposals[0]
-        .tally
-        .clone()
-        .unwrap();
+    let tally = ledger.active_vote_plans()[0].proposals[0].tally.clone();
     dbg!(&tally);
     assert_eq!(tally.result().unwrap().results()[0], 0.into());
     assert_eq!(tally.result().unwrap().results()[2], 0.into());
@@ -296,10 +293,7 @@ fn replay_not_counted() {
     )
     .unwrap();
 
-    let tally = ledger.active_vote_plans()[0].proposals[0]
-        .tally
-        .clone()
-        .unwrap();
+    let tally = ledger.active_vote_plans()[0].proposals[0].tally.clone();
     dbg!(&tally);
     assert_eq!(tally.result().unwrap().results()[0], 0.into());
     assert!(tally.result().unwrap().results()[1] > 0.into());
@@ -310,7 +304,7 @@ fn replay_not_counted() {
 //TV 006
 #[test]
 fn multi_voteplan_ok() {
-    let (mut generator, vote_fragments, tally_fragments) = setup_run! {
+    let (generator, vote_fragments, tally_fragments) = setup_run! {
         seed = [0; 32],
         wallets = 1000,
         voteplans = [
@@ -340,7 +334,7 @@ fn multi_voteplan_ok() {
 
 #[test]
 fn multi_voteplan_ok_private() {
-    let (mut generator, vote_fragments, tally_fragments) = setup_run! {
+    let (generator, vote_fragments, tally_fragments) = setup_run! {
         seed = [0; 32],
         wallets = 1000,
         voteplans = [
@@ -431,10 +425,7 @@ fn votes_outside_voting_phase() {
     )
     .unwrap();
 
-    let tally = ledger.active_vote_plans()[0].proposals[0]
-        .tally
-        .clone()
-        .unwrap();
+    let tally = ledger.active_vote_plans()[0].proposals[0].tally.clone();
     dbg!(&tally);
     assert_eq!(tally.result().unwrap().results()[0], 0.into());
     assert_eq!(tally.result().unwrap().results()[1], 0.into());
@@ -521,10 +512,7 @@ fn transaction_transfer_does_not_decrease_voting_power() {
     )
     .unwrap();
 
-    let tally = ledger.active_vote_plans()[0].proposals[0]
-        .tally
-        .clone()
-        .unwrap();
+    let tally = ledger.active_vote_plans()[0].proposals[0].tally.clone();
 
     let wallet0_weight: u64 = wallets_stake[&wallet0_address].into();
     let wallet1_weight: u64 = wallets_stake[&wallet1_address].into();

@@ -1,7 +1,5 @@
-use rust_decimal::Decimal;
+use crate::rewards::Funds;
 use serde::Deserialize;
-
-pub type Funds = Decimal;
 
 #[derive(Deserialize)]
 pub struct FundSetting {

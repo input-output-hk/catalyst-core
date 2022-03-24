@@ -57,7 +57,6 @@ impl CheckNode {
 
         let temp_dir = TempDir::new().unwrap();
         let node_config = NodeConfigBuilder::new()
-            .with_explorer()
             .with_storage(storage)
             .with_log(Log(LogEntry {
                 level: "info".to_string(),

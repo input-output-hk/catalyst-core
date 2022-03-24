@@ -11,9 +11,9 @@ use catalyst_toolbox::notifications::{
 };
 use jcli_lib::utils::io;
 
-use chrono::{DateTime, FixedOffset};
 use reqwest::Url;
 use structopt::StructOpt;
+use time::OffsetDateTime;
 
 use std::io::Read;
 use std::path::PathBuf;
@@ -39,8 +39,8 @@ pub struct Args {
     application: String,
 
     /// Date and time to send notification of format  "Y-m-d H:M"
-    #[structopt(long, parse(try_from_str=parse_date_time))]
-    send_date: Option<DateTime<FixedOffset>>,
+    #[structopt(long, parse(try_from_str=parse_datetime))]
+    send_date: Option<OffsetDateTime>,
 
     /// Ignore user timezones when sending a message
     #[structopt(long)]
@@ -144,6 +144,6 @@ impl Content {
     }
 }
 
-fn parse_date_time(dt: &str) -> chrono::ParseResult<DateTime<FixedOffset>> {
-    DateTime::parse_from_str(dt, DATETIME_FMT)
+fn parse_datetime(dt: &str) -> Result<OffsetDateTime, time::error::Parse> {
+    OffsetDateTime::parse(dt, &DATETIME_FMT)
 }

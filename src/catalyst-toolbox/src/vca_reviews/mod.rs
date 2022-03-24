@@ -25,6 +25,7 @@ impl AdvisorReviewRow {
             feasibility_note: self.feasibility_note.clone(),
             auditability_rating_given: self.auditability_rating as i32,
             auditability_note: self.auditability_note.clone(),
+            ranking: self.score().into(),
         }
     }
 }

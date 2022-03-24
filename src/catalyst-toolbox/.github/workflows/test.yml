@@ -59,6 +59,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Allow long paths on Windows
+        if: ${{ runner.os == 'Windows' }}
+        shell: powershell
+        run: |
+          reg add HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1 /f
+          git config --system core.longpaths true
+
       - if: ${{ runner.os == 'Windows' }}
         name: Fix up Cargo.lock hash
         run: |
@@ -170,42 +177,14 @@ jobs:
           path: ~/.cargo/registry/cache
           key: 'cargo-deps-v2-${{ hashFiles(''Cargo.lock'') }}'
 
-      - name: Run tarpaulin
+      - name: Run cargo-tarpaulin
         uses: actions-rs/tarpaulin@v0.1
         with:
-          out-type: Html
+          args: '--ignore-tests --out Lcov'
           timeout: 3600
 
-      - name: Set branch name
-        if: '${{ github.event_name == ''pull_request'' }}'
-        run: 'echo "BRANCH_NAME=${{ github.head_ref }}" >> $GITHUB_ENV'
-        shell: bash
-
-      - name: Set branch name
-        if: '${{ github.event_name == ''push'' }}'
-        run: >-
-          echo "BRANCH_NAME=$(echo $GITHUB_REF | cut -d '/' -f 3)" >>
-          $GITHUB_ENV
-        shell: bash
-
-      - name: Construct reference slug
-        run: >
-          TIME=$(TZ=UTC git show --quiet --date='format-local:%Y%m%dT%H%M%SZ'
-          --format="%cd")
-
-          SHA=${GITHUB_SHA:0:8}
-
-          SLUG=$(echo ${BRANCH_NAME}_${TIME}_${SHA} | sed -r
-          's/[^[:alnum:]_-]/-/g')
-
-          echo "SLUG=$SLUG" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Rename coverage report
-        run: 'mv tarpaulin-report.html test_coverage_${{ env.SLUG }}.html'
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v2
+      - name: upload to Coveralls
+        uses: coverallsapp/github-action@master
         with:
-          name: 'test_coverage_${{ env.SLUG }}'
-          path: 'test_coverage_${{ env.SLUG }}.html'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: './lcov.info'

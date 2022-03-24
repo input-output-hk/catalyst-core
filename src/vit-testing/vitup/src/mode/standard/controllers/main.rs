@@ -168,6 +168,8 @@ impl VitController {
             .service_version(version)
             .block0_path(self.hersir_controller.block0_file().to_str().unwrap())
             .build();
+        
+        println!("Starting vit-servicing-station: {:?}", command);
 
         Ok(VitStationController {
             alias: alias.into(),

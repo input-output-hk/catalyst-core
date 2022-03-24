@@ -2,7 +2,6 @@ mod node;
 mod proxy;
 pub mod utils;
 mod vit_station;
-
 use chain_core::packer::Codec;
 use chain_core::property::Fragment as _;
 use chain_impl_mockchain::fragment::{Fragment, FragmentId};
@@ -35,8 +34,7 @@ pub use vit_station::{RestError as VitStationRestError, VitStationRestClient};
 pub struct ValgrindClient {
     node_client: WalletNodeRestClient,
     vit_client: VitRestClient,
-    proxy_client: ProxyClient,
-    explorer_client: Explorer,
+    proxy_client: ProxyClient
 }
 
 impl ValgrindClient {
@@ -60,7 +58,6 @@ impl ValgrindClient {
             ),
             vit_client: VitRestClient::new(vit_address),
             proxy_client: ProxyClient::new(proxy_address.to_string()),
-            explorer_client: Explorer::new(node_address.to_string(), None),
         };
 
         if node_rest_settings.enable_debug {
@@ -112,12 +109,8 @@ impl ValgrindClient {
             .send_fragments(transactions.clone(), use_v1)?;
         Ok(transactions
             .iter()
-            .map(|tx| {
-                Fragment::deserialize(&mut Codec::new(tx.as_slice()))
-                    .unwrap()
-                    .id()
-            })
-            .collect())
+            .map(|tx| Fragment::deserialize(&mut Codec::new(tx.as_slice())).unwrap().id())
+            .collect())         
     }
 
     pub fn fragment_logs(&self) -> Result<HashMap<FragmentId, FragmentLog>, Error> {
@@ -184,12 +177,14 @@ impl ValgrindClient {
 
     pub fn are_fragments_in_blockchain(
         &self,
-        fragment_ids: Vec<FragmentId>,
+        _fragment_ids: Vec<FragmentId>,
     ) -> Result<bool, Error> {
-        Ok(fragment_ids.iter().all(|x| {
+          ///Removing until explorer client would be provided
+        unimplemented!();
+       /* Ok(fragment_ids.iter().all(|x| {
             let hash = jormungandr_lib::crypto::hash::Hash::from_str(&x.to_string()).unwrap();
             self.explorer_client.transaction(hash).is_ok()
-        }))
+        }))*/
     }
 
     pub fn active_vote_plan(&self) -> Result<Vec<VotePlanStatus>, Error> {
@@ -234,9 +229,10 @@ pub enum Error {
     #[error("cannot convert hash")]
     HashConversion(#[from] chain_crypto::hash::Error),
     #[error(transparent)]
-    VitRest(#[from] vit_servicing_station_tests::common::clients::RestError),
-    #[error(transparent)]
     Url(#[from] url::ParseError),
     #[error(transparent)]
     Read(#[from] ReadError),
+    #[error(transparent)]
+    Rest(#[from] vit_servicing_station_tests::common::clients::RestError),
+    
 }

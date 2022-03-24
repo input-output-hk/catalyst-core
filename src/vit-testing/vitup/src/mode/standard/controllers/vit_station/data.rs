@@ -36,8 +36,7 @@ impl DbGenerator {
             .with_migrations_from(self.migration_scripts_path)
             .build(&temp_dir)
             .unwrap();
-
-        jortestkit::file::copy_file(temp_db_path, db_file, true).unwrap();
+        std::fs::copy(temp_db_path, db_file).unwrap();
     }
 }
 

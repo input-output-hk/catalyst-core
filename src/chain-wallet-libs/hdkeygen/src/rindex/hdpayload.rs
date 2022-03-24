@@ -9,10 +9,7 @@
 //! payload and find the derivation path associated with it.
 //!
 use chain_path_derivation::{AnyScheme, Derivation, DerivationPath};
-use cryptoxide::{
-    chacha20poly1305::ChaCha20Poly1305, hmac::Hmac, pbkdf2::pbkdf2, sha2::Sha512,
-    util::secure_memset,
-};
+use cryptoxide::{chacha20poly1305::ChaCha20Poly1305, hmac::Hmac, pbkdf2::pbkdf2, sha2::Sha512};
 use ed25519_bip32::XPub;
 use thiserror::Error;
 
@@ -144,7 +141,7 @@ pub fn decode_derivation_path(buf: &[u8]) -> Option<DerivationPath<AnyScheme>> {
 }
 
 /// The key to encrypt and decrypt HD payload
-#[derive(Clone)]
+#[derive(Clone, zeroize::ZeroizeOnDrop)]
 pub struct HdKey([u8; HDKEY_SIZE]);
 impl HdKey {
     /// Create a new `HDKey` from an extended public key
@@ -188,11 +185,6 @@ impl HdKey {
         } else {
             Err(Error::CannotDecrypt)
         }
-    }
-}
-impl Drop for HdKey {
-    fn drop(&mut self) {
-        secure_memset(&mut self.0, 0)
     }
 }
 

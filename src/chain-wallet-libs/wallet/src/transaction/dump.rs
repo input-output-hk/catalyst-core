@@ -15,8 +15,6 @@ pub struct DumpIter<'a, W> {
     valid_until: BlockDate,
 }
 
-pub type DumpIcarus<'a> =
-    DumpIter<'a, crate::scheme::bip44::Wallet<chain_impl_mockchain::legacy::OldAddress>>;
 pub type DumpFreeKeys<'a> = DumpIter<'a, crate::scheme::freeutxo::Wallet>;
 
 pub fn send_to_one_address<K: Clone + Groupable, WB: WitnessBuilder>(

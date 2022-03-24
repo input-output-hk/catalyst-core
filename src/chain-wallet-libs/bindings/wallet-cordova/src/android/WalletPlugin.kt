@@ -30,10 +30,6 @@ class WalletPlugin
     private val proposalPool: MutableMap<Int, Proposal> = mutableMapOf()
     private var nextProposalId = AtomicInteger()
 
-    @ExperimentalUnsignedTypes
-    private val conversionPool: MutableMap<Int, Conversion> = mutableMapOf()
-    private var nextConversionId = AtomicInteger()
-
     /**
      * Sets the context of the Command. This can then be used to do things like get
      * file paths associated with the Activity.
@@ -65,22 +61,14 @@ class WalletPlugin
         Log.d(TAG, "action: $action")
         when (action) {
             "WALLET_IMPORT_KEYS" -> walletImportKeys(args, callbackContext)
-            "WALLET_RESTORE" -> walletRestore(args, callbackContext)
             "SYMMETRIC_CIPHER_DECRYPT" -> symmetricCipherDecrypt(args, callbackContext)
             "SETTINGS_NEW" -> settingsNew(args, callbackContext)
             "SETTINGS_GET" -> settingsGet(args, callbackContext)
-            "WALLET_RETRIEVE_FUNDS" -> walletRetrieveFunds(args, callbackContext)
             "WALLET_VOTE" -> walletVote(args, callbackContext)
             "WALLET_TOTAL_FUNDS" -> walletTotalFunds(args, callbackContext)
             "WALLET_SPENDING_COUNTER" -> walletSpendingCounter(args, callbackContext)
             "WALLET_ID" -> walletId(args, callbackContext)
             "WALLET_SET_STATE" -> walletSetState(args, callbackContext)
-            "WALLET_PENDING_TRANSACTIONS" -> walletPendingTransactions(args, callbackContext)
-            "WALLET_CONFIRM_TRANSACTION" -> walletConfirmTransaction(args, callbackContext)
-            "WALLET_CONVERT" -> walletConvert(args, callbackContext)
-            "CONVERSION_TRANSACTIONS_SIZE" -> conversionTransactionsSize(args, callbackContext)
-            "CONVERSION_TRANSACTIONS_GET" -> conversionTransactionsGet(args, callbackContext)
-            "CONVERSION_IGNORED" -> conversionIgnored(args, callbackContext)
             "PENDING_TRANSACTIONS_SIZE" -> pendingTransactionsSize(args, callbackContext)
             "PENDING_TRANSACTIONS_GET" -> pendingTransactionsGet(args, callbackContext)
             "BLOCK_DATE_FROM_SYSTEM_TIME" -> blockDateFromSystemTime(args, callbackContext)
@@ -92,7 +80,6 @@ class WalletPlugin
             "SETTINGS_DELETE" -> settingsDelete(args, callbackContext)
             "PROPOSAL_DELETE" -> proposalDelete(args, callbackContext)
             "PENDING_TRANSACTIONS_DELETE" -> pendingTransactionsDelete(args, callbackContext)
-            "CONVERSION_DELETE" -> conversionDelete(args, callbackContext)
             else -> {
                 Log.w(TAG, "not found: $action")
                 return false
@@ -107,7 +94,7 @@ class WalletPlugin
         val accountKey = args.getArrayBuffer(0).toUByteArray().toList()
         val utxoKeys = args.getArrayBuffer(1).toUByteArray()
 
-        val mappedKeys = utxoKeys.windowed(64).map { SecretKeyEd25519Extended(it) }
+        val mappedKeys = utxoKeys.chunked(64).map { SecretKeyEd25519Extended(it) }
 
         try {
             val walletId = nextWalletId.incrementAndGet()
@@ -117,25 +104,6 @@ class WalletPlugin
             callbackContext.error(e.message)
         }
     }
-
-    @ExperimentalUnsignedTypes
-    @Throws(JSONException::class)
-    private fun walletRestore(args: CordovaArgs, callbackContext: CallbackContext) {
-        val mnemonics = args.getString(0)
-        cordova.threadPool.execute {
-            try {
-                val normalized: String = Normalizer.normalize(mnemonics, Form.NFKD)
-                val wallet = Wallet.fromMnemonics(normalized, emptyList())
-
-                val walletId = nextWalletId.incrementAndGet()
-                wallets[walletId] = wallet
-                callbackContext.success(walletId)
-            } catch (e: Exception) {
-                callbackContext.error(e.message)
-            }
-        }
-    }
-
 
     @ExperimentalUnsignedTypes
     @Throws(JSONException::class)
@@ -261,27 +229,6 @@ class WalletPlugin
 
     @ExperimentalUnsignedTypes
     @Throws(JSONException::class)
-    private fun walletRetrieveFunds(args: CordovaArgs, callbackContext: CallbackContext) {
-        val walletPtr = args.getInt(0)
-        val block0 = args.getArrayBuffer(1).toUByteArray().toList()
-
-        val wallet = wallets[walletPtr]
-        cordova.threadPool.execute {
-            try {
-                val settingsId = nextSettingsId.incrementAndGet()
-                val settings: Settings = wallet?.retrieveFunds(block0)!!
-
-                settingsPool[settingsId] = settings
-
-                callbackContext.success(settingsId.toString())
-            } catch (e: Exception) {
-                callbackContext.error(e.message)
-            }
-        }
-    }
-
-    @ExperimentalUnsignedTypes
-    @Throws(JSONException::class)
     private fun walletVote(args: CordovaArgs, callbackContext: CallbackContext) {
         val walletId = args.getInt(0)
         val settingsId = args.getInt(1)
@@ -355,68 +302,6 @@ class WalletPlugin
             callbackContext.success()
         } catch (e: Exception) {
             callbackContext.error(e.message)
-        }
-    }
-
-    @ExperimentalUnsignedTypes
-    @Throws(JSONException::class)
-    private fun walletPendingTransactions(args: CordovaArgs, callbackContext: CallbackContext) {
-        val walletId = args.getInt(0)
-        val wallet = wallets[walletId]
-        try {
-            val pendingTransactions = wallet?.pendingTransactions()!!
-
-            val pid = nextPendingTransactionsId.incrementAndGet()
-            pendingTransactionsPool[pid] = pendingTransactions
-
-            callbackContext.success(pid)
-        } catch (e: Exception) {
-            callbackContext.error(e.message)
-        }
-    }
-
-    @ExperimentalUnsignedTypes
-    @Throws(JSONException::class)
-    private fun walletConfirmTransaction(args: CordovaArgs, callbackContext: CallbackContext) {
-        val walletId = args.getInt(0)
-        val fragmentId = args.getArrayBuffer(1).toUByteArray()
-
-        val wallet = wallets[walletId]
-
-        try {
-            wallet?.confirmTransaction(fragmentId.toList())
-            callbackContext.success()
-        } catch (e: Exception) {
-            callbackContext.error(e.message)
-        }
-    }
-
-    @ExperimentalUnsignedTypes
-    @Throws(JSONException::class)
-    private fun walletConvert(args: CordovaArgs, callbackContext: CallbackContext) {
-        val walletId = args.getInt(0)
-        val settingsId = args.getInt(1)
-        val expirationDate = args[2] as JSONObject
-        val epoch = expirationDate.getString("epoch").toULong()
-        val slot = expirationDate.getString("slot").toULong()
-
-        val wallet = wallets[walletId]
-        val settings = settingsPool[settingsId]
-
-        cordova.threadPool.execute {
-            try {
-                val conversion = wallet?.convert(
-                    settings!!, BlockDate(
-                        epoch.toUInt(),
-                        slot.toUInt()
-                    )
-                )
-                val conversionId = nextConversionId.incrementAndGet()
-                conversionPool[conversionId] = conversion!!
-                callbackContext.success(conversionId.toString())
-            } catch (e: Exception) {
-                callbackContext.error(e.message)
-            }
         }
     }
 
@@ -540,50 +425,6 @@ class WalletPlugin
 
     @ExperimentalUnsignedTypes
     @Throws(JSONException::class)
-    private fun conversionTransactionsSize(args: CordovaArgs, callbackContext: CallbackContext) {
-        val conversionId = args.getInt(0)
-        val conversion = conversionPool[conversionId]
-        try {
-            callbackContext.success(conversion?.fragments?.size.toString())
-        } catch (e: Exception) {
-            callbackContext.error(e.message)
-        }
-    }
-
-    @ExperimentalUnsignedTypes
-    @Throws(JSONException::class)
-    private fun conversionTransactionsGet(args: CordovaArgs, callbackContext: CallbackContext) {
-        val conversionId = args.getInt(0)
-        val index = args.getInt(1)
-        val conversion = conversionPool[conversionId]
-        try {
-            val transaction: ByteArray? = conversion?.fragments?.get(index)?.serialize()?.toUByteArray()?.toByteArray()
-            callbackContext.success(transaction)
-        } catch (e: Exception) {
-            callbackContext.error(e.message)
-        }
-    }
-
-    @ExperimentalUnsignedTypes
-    @Throws(JSONException::class)
-    private fun conversionIgnored(args: CordovaArgs, callbackContext: CallbackContext) {
-        val conversionId = args.getInt(0)
-        val conversion = conversionPool[conversionId]
-
-        try {
-            val value = conversion?.ignoredValue
-            val count = conversion?.ignoredCount
-
-            val json = JSONObject().put("value", value).put("ignored", count)
-            callbackContext.success(json)
-
-        } catch (e: Exception) {
-            callbackContext.error(e.message)
-        }
-    }
-
-    @ExperimentalUnsignedTypes
-    @Throws(JSONException::class)
     private fun walletDelete(args: CordovaArgs, callbackContext: CallbackContext) {
         val walletId: Int = args.getInt(0)
         try {
@@ -630,19 +471,8 @@ class WalletPlugin
         }
     }
 
-    @ExperimentalUnsignedTypes
-    @Throws(JSONException::class)
-    private fun conversionDelete(args: CordovaArgs, callbackContext: CallbackContext) {
-        val cid: Int = args.getInt(0)
-        try {
-            conversionPool.remove(cid)
-            callbackContext.success()
-        } catch (e: Exception) {
-            callbackContext.error(e.message)
-        }
-    }
-
     companion object {
         const val TAG = "WALLET"
     }
 }
+

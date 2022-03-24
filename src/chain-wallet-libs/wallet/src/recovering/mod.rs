@@ -105,7 +105,7 @@ impl RecoveryBuilder {
                 let entropy = self.entropy.clone().ok_or(RecoveryError::MissingEntropy)?;
                 let password = self.password.clone().unwrap_or_default();
 
-                let mut seed = [0u8; hdkeygen::account::SEED_LENGTH];
+                let mut seed = [0u8; cryptoxide::ed25519::PRIVATE_KEY_LENGTH];
                 keygen::generate_seed(&entropy, password.as_ref(), &mut seed);
 
                 Wallet::new_from_seed(seed)

@@ -1,7 +1,6 @@
-use cryptoxide::util::secure_memset;
 use std::ops::{Deref, DerefMut};
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, zeroize::ZeroizeOnDrop)]
 pub struct ScrubbedBytes(Vec<u8>);
 
 pub type Password = ScrubbedBytes;
@@ -33,11 +32,5 @@ impl Deref for ScrubbedBytes {
 impl DerefMut for ScrubbedBytes {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.0.deref_mut()
-    }
-}
-
-impl Drop for ScrubbedBytes {
-    fn drop(&mut self) {
-        secure_memset(&mut self.0, 0)
     }
 }

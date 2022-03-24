@@ -1,13 +1,9 @@
-use crate::{Conversion, Error, Proposal};
-use chain_core::{
-    packer::Codec,
-    property::{DeserializeFromSlice as _, Serialize as _},
-};
+use crate::{Error, Proposal};
+use chain_core::property::Serialize as _;
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::{
-    block::{Block, BlockDate},
+    block::BlockDate,
     fragment::{Fragment, FragmentId},
-    transaction::Input,
     value::Value,
     vote::Choice,
 };
@@ -21,7 +17,6 @@ use wallet::{AccountId, Settings};
 ///
 pub struct Wallet {
     account: wallet::Wallet,
-    free_keys: wallet::scheme::freeutxo::Wallet,
 }
 
 impl Wallet {
@@ -34,48 +29,6 @@ impl Wallet {
         self.account.account_id()
     }
 
-    /// Retrieve a wallet from the given BIP39 mnemonics and password.
-    ///
-    /// You can also use this function to recover a wallet even after you have transferred all the
-    /// funds to the account addressed by the public key (see the [convert] function).
-    ///
-    /// Returns the recovered wallet on success.
-    ///
-    /// Parameters
-    ///
-    /// * `mnemonics`: a UTF-8 string (already normalized NFKD) with space-separated words in English;
-    /// * `password`: the password (any string of bytes).
-    ///
-    /// # Errors
-    ///
-    /// The function may fail if:
-    ///
-    /// * the mnemonics are not valid (invalid length or checksum);
-    ///
-    pub fn recover(mnemonics: &str, password: &[u8]) -> Result<Self, Error> {
-        let builder = wallet::RecoveryBuilder::new();
-
-        let builder = builder
-            .mnemonics(&bip39::dictionary::ENGLISH, mnemonics)
-            .map_err(|err| Error::invalid_input("mnemonics").with(err))?;
-
-        let builder = if !password.is_empty() {
-            builder.password(password.to_vec().into())
-        } else {
-            builder
-        };
-
-        let account = builder
-            .build_wallet()
-            .expect("build the account cannot fail as expected");
-
-        let free_keys = builder
-            .build_free_utxos()
-            .expect("build without free keys cannot fail");
-
-        Ok(Wallet { account, free_keys })
-    }
-
     /// Retrieve a wallet from a list of free keys used as utxo's
     ///
     /// You can also use this function to recover a wallet even after you have
@@ -84,7 +37,7 @@ impl Wallet {
     /// Parameters
     ///
     /// * `account_key`: the private key used for voting
-    /// * `keys`: single keys used to retrieve UTxO inputs
+    /// * `keys`: unused
     ///
     /// # Errors
     ///
@@ -94,140 +47,24 @@ impl Wallet {
     ///
     pub fn recover_free_keys<'a, U: Iterator<Item = &'a [u8; 64]>>(
         account_key: &[u8],
-        keys: U,
+        _keys: U,
     ) -> Result<Self, Error> {
         let builder = wallet::RecoveryBuilder::new();
 
         let builder = builder.account_secret_key(SecretKey::from_binary(account_key).unwrap());
 
-        let builder = keys.fold(builder, |builder, key| {
-            builder.add_key(SecretKey::from_binary(key.as_ref()).unwrap())
-        });
-
-        let free_keys = builder.build_free_utxos().map_err(|err| {
-            Error::invalid_input("invalid secret keys for UTxO retrieval").with(err)
-        })?;
-
         let account = builder
             .build_wallet()
             .expect("build the account cannot fail as expected");
 
-        Ok(Wallet { account, free_keys })
-    }
-
-    /// retrieve funds from bip44 hd sequential wallet in the given block0 (or any other blocks).
-    ///
-    /// After this function is executed, the wallet user can check how much
-    /// funds have been retrieved from fragments of the given block.
-    ///
-    /// This function can take some time to run, so it is better to only
-    /// call it if needed.
-    ///
-    /// This function should not be called twice with the same block.
-    /// In a future revision of this library, this limitation may be lifted.
-    ///
-    /// # Errors
-    ///
-    /// * the block is not valid (cannot be decoded)
-    ///
-    pub fn retrieve_funds(&mut self, block0_bytes: &[u8]) -> Result<wallet::Settings, Error> {
-        let block0 = Block::deserialize_from_slice(&mut Codec::new(block0_bytes))
-            .map_err(|e| Error::invalid_input("block0").with(e))?;
-
-        let settings = wallet::Settings::new(&block0).unwrap();
-        for fragment in block0.contents().iter() {
-            self.free_keys.check_fragment(&fragment.hash(), fragment);
-            self.account.check_fragment(&fragment.hash(), fragment);
-
-            self.confirm_transaction(fragment.hash());
-        }
-
-        Ok(settings)
-    }
-
-    /// once funds have been retrieved with `iohk_jormungandr_wallet_retrieve_funds`
-    /// it is possible to convert all existing funds to the new wallet.
-    ///
-    /// The returned arrays are transactions to send to the network in order to do the
-    /// funds conversion.
-    ///
-    /// Don't forget to call `iohk_jormungandr_wallet_delete_conversion` to
-    /// properly free the memory
-    ///
-    /// # Safety
-    ///
-    /// This function dereference raw pointers (wallet, settings and conversion_out). Even though
-    /// the function checks if the pointers are null. Mind not to put random values
-    /// in or you may see unexpected behaviors
-    ///
-    pub fn convert(&mut self, settings: Settings, valid_until: &BlockDate) -> Conversion {
-        let address = self.account.account_id().address(settings.discrimination());
-
-        let mut raws = Vec::new();
-        let mut ignored = Vec::new();
-
-        let account = &mut self.account;
-        let mut for_each = |fragment: Fragment, mut ignored_inputs: Vec<Input>| {
-            raws.push(fragment.serialize_as_vec().unwrap());
-            ignored.append(&mut ignored_inputs);
-            account.check_fragment(&fragment.hash(), &fragment);
-        };
-
-        for (fragment, ignored) in wallet::transaction::dump_free_utxo(
-            &settings,
-            &address,
-            &mut self.free_keys,
-            *valid_until,
-        ) {
-            for_each(fragment, ignored)
-        }
-
-        Conversion {
-            ignored,
-            transactions: raws,
-        }
+        Ok(Wallet { account })
     }
 
     /// use this function to confirm a transaction has been properly received
     ///
     /// This function will automatically update the state of the wallet
     pub fn confirm_transaction(&mut self, id: FragmentId) {
-        self.free_keys.confirm(&id);
         self.account.confirm(&id);
-    }
-
-    /// Get IDs of all pending transactions. Pending transactions
-    /// can be produced by `convert`, and remain in this list until confirmed
-    /// with the `confirm_transaction` method, or removed
-    /// with the `remove_pending_transaction` method.
-    ///
-    // TODO: this might need to be updated to have a more user friendly
-    //       API. Currently do this for simplicity
-    pub fn pending_transactions(&self) -> Vec<FragmentId> {
-        let mut check = std::collections::HashSet::new();
-        let mut result = vec![];
-
-        for id in self.free_keys.pending_transactions() {
-            if check.insert(*id) {
-                result.push(*id);
-            }
-        }
-
-        for id in self.account.pending_transactions() {
-            if check.insert(*id) {
-                result.push(*id);
-            }
-        }
-
-        result
-    }
-
-    /// remove a given pending transaction returning the associated Inputs
-    /// that were used for this transaction
-    pub fn remove_pending_transaction(&mut self, _id: &FragmentId) -> Option<Vec<Input>> {
-        // there are no cordova bindings for this, so this todo is not that important right now
-        // and I'm not that sure what's the best api here.
-        todo!("pending transactions");
     }
 
     /// get the current spending counter
@@ -245,10 +82,7 @@ impl Wallet {
     /// how much the wallet started with or retrieved from the chain.
     ///
     pub fn total_value(&self) -> Value {
-        self.free_keys
-            .utxos()
-            .total_value()
-            .saturating_add(self.account.value())
+        self.account.value()
     }
 
     /// Update the wallet's account state.

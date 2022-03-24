@@ -27,20 +27,12 @@ interface Wallet {
         sequence<SecretKeyEd25519Extended> utxo_keys
     );
 
-    [Name=from_mnemonics, Throws=WalletError]
-    constructor(string mnemonics, sequence<u8> password);
-
-    Conversion convert(Settings settings, BlockDate valid_until);
     void set_state(u64 value, u32 counter);
     [Throws=WalletError]
     sequence<u8> vote(Settings settings, Proposal proposal, u8 choice, BlockDate valid_until);
-    void confirm_transaction(sequence<u8> fragment_id);
-    sequence<sequence<u8>> pending_transactions();
     sequence<u8> account_id();
     u32 spending_counter();
     u64 total_value();
-    [Throws=WalletError]
-    Settings retrieve_funds(sequence<u8> block0);
 };
 
 interface SecretKeyEd25519Extended {
@@ -111,12 +103,6 @@ dictionary Proposal {
 dictionary BlockDate {
     u32 epoch;
     u32 slot;
-};
-
-dictionary Conversion {
-    u64 ignored_value;
-    u32 ignored_count;
-    sequence<Fragment> fragments;
 };
 
 [Enum]

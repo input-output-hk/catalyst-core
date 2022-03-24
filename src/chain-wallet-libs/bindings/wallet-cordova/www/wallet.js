@@ -4,29 +4,19 @@ var base64 = require('cordova/base64');
 
 const NATIVE_CLASS_NAME = 'WalletPlugin';
 
-const WALLET_RESTORE_ACTION_TAG = 'WALLET_RESTORE';
 const WALLET_IMPORT_KEYS_TAG = 'WALLET_IMPORT_KEYS';
-const WALLET_RETRIEVE_FUNDS_ACTION_TAG = 'WALLET_RETRIEVE_FUNDS';
 const WALLET_TOTAL_FUNDS_ACTION_TAG = 'WALLET_TOTAL_FUNDS';
 const WALLET_SPENDING_COUNTER_ACTION_TAG = 'WALLET_SPENDING_COUNTER';
 const WALLET_ID_TAG = 'WALLET_ID';
-const WALLET_CONVERT_ACTION_TAG = 'WALLET_CONVERT';
 const WALLET_SET_STATE_ACTION_TAG = 'WALLET_SET_STATE';
 const WALLET_VOTE_ACTION_TAG = 'WALLET_VOTE';
 const WALLET_CONFIRM_TRANSACTION = 'WALLET_CONFIRM_TRANSACTION';
-const CONVERSION_TRANSACTIONS_SIZE_ACTION_TAG = 'CONVERSION_TRANSACTIONS_SIZE';
-const CONVERSION_TRANSACTIONS_GET_ACTION_TAG = 'CONVERSION_TRANSACTIONS_GET';
-const CONVERSION_IGNORED_GET_ACTION_TAG = 'CONVERSION_IGNORED';
 const PROPOSAL_NEW_PUBLIC_ACTION_TAG = 'PROPOSAL_NEW_PUBLIC';
 const PROPOSAL_NEW_PRIVATE_ACTION_TAG = 'PROPOSAL_NEW_PRIVATE';
 const WALLET_DELETE_ACTION_TAG = 'WALLET_DELETE';
 const SETTINGS_DELETE_ACTION_TAG = 'SETTINGS_DELETE';
-const CONVERSION_DELETE_ACTION_TAG = 'CONVERSION_DELETE';
 const PROPOSAL_DELETE_ACTION_TAG = 'PROPOSAL_DELETE';
 const WALLET_PENDING_TRANSACTIONS = 'WALLET_PENDING_TRANSACTIONS';
-const PENDING_TRANSACTIONS_DELETE = 'PENDING_TRANSACTIONS_DELETE';
-const PENDING_TRANSACTIONS_GET = 'PENDING_TRANSACTIONS_GET';
-const PENDING_TRANSACTIONS_SIZE = 'PENDING_TRANSACTIONS_SIZE';
 const SYMMETRIC_CIPHER_DECRYPT = 'SYMMETRIC_CIPHER_DECRYPT';
 const SETTINGS_NEW = 'SETTINGS_NEW';
 const SETTINGS_GET = 'SETTINGS_GET';
@@ -115,21 +105,6 @@ var plugin = {
     },
 
     /**
-     * @callback TransactionIdCallback
-     * @param {Uint8Array} id
-     */
-
-    /**
-     * @param {string} mnemonics a string with the mnemonic phrase
-     * @param {pointerCallback} successCallback on success returns a pointer to a Wallet object
-     * @param {errorCallback} errorCallback this function can fail if the mnemonics are invalid
-     */
-    walletRestore: function (mnemonics, successCallback, errorCallback) {
-        argscheck.checkArgs('sff', 'walletRestore', arguments);
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_RESTORE_ACTION_TAG, [mnemonics]);
-    },
-
-    /**
      * @param {Uint8Array} accountKeys a 64bytes array representing an Ed25519Extended private key
      * @param {Uint8Array} utxoKeys a contiguous array of Ed25519Extended private keys (64 bytes each)
      * @param {pointerCallback} successCallback on success returns a pointer to a Wallet object
@@ -141,19 +116,6 @@ var plugin = {
         checkUint8Array({ name: 'utxoKeys', testee: utxoKeys });
 
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_IMPORT_KEYS_TAG, [accountKeys.buffer, utxoKeys.buffer]);
-    },
-
-    /**
-     * @param {string} ptr a pointer to a wallet obtained with walletRestore
-     * @param {Uint8Array} block0 a byte array representing the block
-     * @param {function} successCallback returns a pointer to the blockchain settings extracted from the block
-     * @param {errorCallback} errorCallback this can fail if the block or the pointer are invalid
-     */
-    walletRetrieveFunds: function (ptr, block0, successCallback, errorCallback) {
-        argscheck.checkArgs('s*ff', 'walletRetrieveFunds', arguments);
-        checkUint8Array({ name: 'block0', testee: block0 });
-
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_RETRIEVE_FUNDS_ACTION_TAG, [ptr, block0.buffer]);
     },
 
     /**
@@ -252,45 +214,12 @@ var plugin = {
 
     /**
      * @param {string} walletPtr a pointer to a wallet obtained with walletRestore
-     * @param {string} settingsPtr a pointer to a settings object obtained with walletRetrieveFunds
-     * @param {BlockDate} validUntil maximum date in which this fragment can be applied to the ledger
-     * @param {pointerCallback} successCallback returns a Conversion object
-     * @param {errorCallback} errorCallback description (TODO)
-     */
-    walletConvert: function (walletPtr, settingsPtr, validUntil, successCallback, errorCallback) {
-        argscheck.checkArgs('ss*ff', 'walletConvert', arguments);
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_CONVERT_ACTION_TAG, [walletPtr, settingsPtr, validUntil]);
-    },
-
-    /**
-     * @param {string} walletPtr a pointer to a wallet obtained with walletRestore
      * @param {pointerCallback} successCallback
      * @param {errorCallback} errorCallback
      */
     walletPendingTransactions: function (walletPtr, successCallback, errorCallback) {
         argscheck.checkArgs('sff', 'walletPendingTransactions', arguments);
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_PENDING_TRANSACTIONS, [walletPtr]);
-    },
-
-    /**
-     * @param {string} ptr a pointer to a Conversion object obtained with walletConvert
-     * @param {function} successCallback returns a number representing the number of transactions produced by the conversion
-     * @param {errorCallback} errorCallback description (TODO)
-     */
-    pendingTransactionsSize: function (ptr, successCallback, errorCallback) {
-        argscheck.checkArgs('*ff', 'pendingTransactionsSize', arguments);
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PENDING_TRANSACTIONS_SIZE, [ptr]);
-    },
-
-    /**
-     * @param {string} ptr a pointer to a PendingTransactions object obtained with walletPendingTransactions
-     * @param {number} index an index (starting from 0). Use pendingTransactionsSize to get the upper bound
-     * @param {TransactionIdCallback} successCallback callback that receives a transaction id in binary form
-     * @param {errorCallback} errorCallback this function can fail if the index is out of range
-     */
-    pendingTransactionsGet: function (ptr, index, successCallback, errorCallback) {
-        argscheck.checkArgs('*nff', 'pendingTransactionsGet', arguments);
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PENDING_TRANSACTIONS_GET, [ptr, index]);
     },
 
     /**
@@ -304,37 +233,6 @@ var plugin = {
         checkUint8Array({ name: 'transactionId', testee: transactionId, optLength: FRAGMENT_ID_LENGTH });
 
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_CONFIRM_TRANSACTION, [walletPtr, transactionId.buffer]);
-    },
-
-    /**
-     * @param {string} ptr a pointer to a Conversion object obtained with walletConvert
-     * @param {function} successCallback returns a number representing the number of transactions produced by the conversion
-     * @param {errorCallback} errorCallback description (TODO)
-     */
-    conversionTransactionsSize: function (ptr, successCallback, errorCallback) {
-        argscheck.checkArgs('sff', 'conversionTransactionsSize', arguments);
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, CONVERSION_TRANSACTIONS_SIZE_ACTION_TAG, [ptr]);
-    },
-
-    /**
-     * @param {string} ptr a pointer to a Conversion object obtained with walletConvert
-     * @param {number} index an index (starting from 0). Use conversionTransactionsSize to get the upper bound
-     * @param {function} successCallback callback that receives a transaction in binary form
-     * @param {errorCallback} errorCallback this function can fail if the index is out of range
-     */
-    conversionTransactionsGet: function (ptr, index, successCallback, errorCallback) {
-        argscheck.checkArgs('snff', 'conversionTransactionsGet', arguments);
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, CONVERSION_TRANSACTIONS_GET_ACTION_TAG, [ptr, index]);
-    },
-
-    /**
-     * @param {string} ptr a pointer to a Conversion object obtained with walletConvert
-     * @param {function} successCallback returns an object with ignored, and value properties
-     * @param {errorCallback} errorCallback
-     */
-    conversionGetIgnored: function (ptr, successCallback, errorCallback) {
-        argscheck.checkArgs('sff', 'conversionGetIgnored', arguments);
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, CONVERSION_IGNORED_GET_ACTION_TAG, [ptr]);
     },
 
     /**
@@ -495,16 +393,6 @@ var plugin = {
     },
 
     /**
-     * @param {string} ptr a pointer to a Conversion object obtained with walletConvert
-     * @param {function} successCallback  indicates success. Does not return anything.
-     * @param {errorCallback} errorCallback
-     */
-    conversionDelete: function (ptr, successCallback, errorCallback) {
-        argscheck.checkArgs('sff', 'conversionDelete', arguments);
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, CONVERSION_DELETE_ACTION_TAG, [ptr]);
-    },
-
-    /**
      * @param {string} ptr a pointer to a Proposal object obtained with proposalNew
      * @param {function} successCallback  indicates success. Does not return anything.
      * @param {errorCallback} errorCallback
@@ -512,16 +400,6 @@ var plugin = {
     proposalDelete: function (ptr, successCallback, errorCallback) {
         argscheck.checkArgs('sff', 'proposalDelete', arguments);
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PROPOSAL_DELETE_ACTION_TAG, [ptr]);
-    },
-
-    /**
-     * @param {string} ptr a pointer to a Proposal object obtained with proposalNew
-     * @param {function} successCallback  indicates success. Does not return anything.
-     * @param {errorCallback} errorCallback
-     */
-    pendingTransactionsDelete: function (ptr, successCallback, errorCallback) {
-        argscheck.checkArgs('*ff', 'pendingTransactionsDelete', arguments);
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PENDING_TRANSACTIONS_DELETE, [ptr]);
     }
 };
 

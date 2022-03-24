@@ -1,12 +1,14 @@
 use catalyst_toolbox::recovery::{Replay, ReplayError};
-use chain_core::property::Deserialize;
+use chain_core::{
+    packer::Codec,
+    property::{Deserialize, ReadError},
+};
 use chain_impl_mockchain::block::Block;
 use jcli_lib::utils::{
     output_file::{Error as OutputFileError, OutputFile},
     output_format::{Error as OutputFormatError, OutputFormat},
 };
 
-use std::io::BufReader;
 use std::path::PathBuf;
 
 use reqwest::Url;
@@ -37,7 +39,7 @@ pub enum Error {
     Block0Unavailable,
 
     #[error("Could not load block0")]
-    Block0Loading(#[source] std::io::Error),
+    Block0Loading(#[source] ReadError),
 }
 
 /// Recover the tally from fragment log files and the initial preloaded block0 binary file.
@@ -69,12 +71,12 @@ pub struct ReplayCli {
 
 fn read_block0(path: PathBuf) -> Result<Block, Error> {
     let reader = std::fs::File::open(path)?;
-    Block::deserialize(BufReader::new(reader)).map_err(Error::Block0Loading)
+    Block::deserialize(&mut Codec::new(reader)).map_err(Error::Block0Loading)
 }
 
 fn load_block0_from_url(url: Url) -> Result<Block, Error> {
     let block0_body = reqwest::blocking::get(url)?.bytes()?;
-    Block::deserialize(BufReader::new(&block0_body[..])).map_err(Error::Block0Loading)
+    Block::deserialize(&mut Codec::new(&block0_body[..])).map_err(Error::Block0Loading)
 }
 
 impl ReplayCli {

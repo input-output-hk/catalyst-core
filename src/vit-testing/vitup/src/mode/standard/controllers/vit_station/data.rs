@@ -37,7 +37,7 @@ impl DbGenerator {
             .build(&temp_dir)
             .unwrap();
 
-        jortestkit::file::copy_file(temp_db_path, db_file, true);
+        jortestkit::file::copy_file(temp_db_path, db_file, true).unwrap();
     }
 }
 

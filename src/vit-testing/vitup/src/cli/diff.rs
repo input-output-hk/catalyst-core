@@ -45,8 +45,8 @@ impl DiffCommand {
 
         decode_block0(remote_client.block0()?, remote_genesis_yaml.clone())?;
 
-        let local_genesis_content = read_file(&local_genesis_yaml);
-        let remote_genesis_content = read_file(remote_genesis_yaml);
+        let local_genesis_content = read_file(&local_genesis_yaml)?;
+        let remote_genesis_content = read_file(remote_genesis_yaml)?;
 
         let server = ServerBootstrapper::new()
             .with_db_path(local_vit_db.to_str().unwrap())

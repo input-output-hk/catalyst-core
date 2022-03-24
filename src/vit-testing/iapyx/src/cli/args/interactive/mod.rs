@@ -207,6 +207,8 @@ pub enum Error {
     Controller(#[from] crate::controller::ControllerError),
     #[error(transparent)]
     Wallet(#[from] crate::wallet::Error),
+    #[error(transparent)]
+    Read(#[from] chain_core::property::ReadError),
 }
 
 impl From<cocoon::Error> for Error {

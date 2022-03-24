@@ -320,8 +320,6 @@ pub enum IapyxCommandError {
     ControllerError(#[from] crate::controller::ControllerError),
     #[error(transparent)]
     Inner(#[from] thor::cli::Error),
-    #[error("wrong word count for generating wallet")]
-    GenerateWalletError(#[from] bip39::Error),
     #[error(transparent)]
     CannotParseChoicesString(#[from] serde_json::Error),
     #[error("no valid until defined")]
@@ -354,6 +352,10 @@ pub enum IapyxCommandError {
     KeyQrCode(#[from] KeyQrCodeError),
     #[error(transparent)]
     Key(#[from] jcli_lib::key::Error),
+    #[error(transparent)]
+    Read(#[from] chain_core::property::ReadError),
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
 }
 
 #[derive(StructOpt, Debug)]
@@ -511,7 +513,7 @@ impl WalletAddSubcommand {
             }
             Self::Hash { hash, pin, testing } => {
                 let bytes: Vec<u8> = pin.chars().map(|x| x.to_digit(10).unwrap() as u8).collect();
-                let secret = decode(jortestkit::file::read_file(hash), &bytes)
+                let secret = decode(jortestkit::file::read_file(hash)?, &bytes)
                     .unwrap()
                     .leak_secret();
                 controller

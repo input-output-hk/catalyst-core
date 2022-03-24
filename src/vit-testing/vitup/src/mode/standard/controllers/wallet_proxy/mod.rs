@@ -28,8 +28,6 @@ pub enum Error {
     #[error(transparent)]
     Reqwest(#[from] reqwest::Error),
     #[error(transparent)]
-    BlockFormatError(#[from] chain_core::mempack::ReadError),
-    #[error(transparent)]
     WalletProxyController(#[from] WalletProxyControllerError),
     #[error(transparent)]
     RestError(#[from] RestError),

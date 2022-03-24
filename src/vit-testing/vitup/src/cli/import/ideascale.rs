@@ -42,7 +42,7 @@ pub struct ImportProposals {
 impl ImportProposals {
     pub fn exec(self) -> Result<(), Error> {
         let data: serde_json::Value =
-            serde_json::from_str(&jortestkit::file::read_file(&self.input))?;
+            serde_json::from_str(&jortestkit::file::read_file(&self.input)?)?;
         let proposals = &data["proposals.csv"];
         let content = serde_json::to_string_pretty(&proposals)?;
         let mut file = File::create(self.output)?;
@@ -66,7 +66,7 @@ pub struct ImportChallenges {
 impl ImportChallenges {
     pub fn exec(self) -> Result<(), Error> {
         let data: serde_json::Value =
-            serde_json::from_str(&jortestkit::file::read_file(&self.input))?;
+            serde_json::from_str(&jortestkit::file::read_file(&self.input)?)?;
         let challenges = &data["challenges.csv"];
         let content = serde_json::to_string_pretty(&challenges)?;
         let mut file = File::create(self.output)?;
@@ -90,10 +90,10 @@ pub struct ImportScores {
 impl ImportScores {
     pub fn exec(self) -> Result<(), Error> {
         let scores: Vec<InputScores> =
-            serde_json::from_str(&jortestkit::file::read_file(&self.input))?;
+            serde_json::from_str(&jortestkit::file::read_file(&self.input)?)?;
 
         let mut proposals_data: serde_json::Value =
-            serde_json::from_str(&jortestkit::file::read_file(&self.proposals))?;
+            serde_json::from_str(&jortestkit::file::read_file(&self.proposals)?)?;
 
         for score in scores {
             let proposal = proposals_data
@@ -148,7 +148,7 @@ pub struct ImportReviews {
 impl ImportReviews {
     pub fn exec(self) -> Result<(), Error> {
         let mut reviews_data: serde_json::Value =
-            serde_json::from_str(&jortestkit::file::read_file(&self.input))?;
+            serde_json::from_str(&jortestkit::file::read_file(&self.input)?)?;
 
         for review in reviews_data.as_array_mut().unwrap() {
             review["impact_alignment_rating_given"] = review["impact_alignment_rating_given"]

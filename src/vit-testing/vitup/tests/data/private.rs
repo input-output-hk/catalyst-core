@@ -78,7 +78,7 @@ pub fn private_vote_multiple_vote_plans() {
                 .path()
                 .join(status.id.to_string() + "_committees")
                 .join("election_public_key.sk"),
-        );
+        ).unwrap();
         assert_eq!(
             actual_encryption_key, expected_encryption_key,
             "invalid encryption key"

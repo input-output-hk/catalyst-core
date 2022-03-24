@@ -24,6 +24,8 @@ pub enum IapyxLoadCommandError {
     ServicingStationError(#[from] crate::load::ServicingStationLoadError),
     #[error("artificial users error")]
     ArtificialUserError(#[from] crate::load::ArtificialUserLoadError),
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
 }
 
 #[derive(StructOpt, Debug)]
@@ -51,7 +53,7 @@ pub struct ArtificialLoadCommand {
 
 impl ArtificialLoadCommand {
     pub fn exec(&self) -> Result<(), IapyxLoadCommandError> {
-        let config = serde_json::from_str(&jortestkit::file::read_file(&self.config))?;
+        let config = serde_json::from_str(&jortestkit::file::read_file(&self.config)?)?;
         let load = ArtificialUserLoad::new(config);
         load.start().map(|_| ()).map_err(Into::into)
     }
@@ -65,7 +67,7 @@ pub struct StaticOnlyLoadCommand {
 
 impl StaticOnlyLoadCommand {
     pub fn exec(&self) -> Result<(), IapyxLoadCommandError> {
-        let config = serde_json::from_str(&jortestkit::file::read_file(&self.config))?;
+        let config = serde_json::from_str(&jortestkit::file::read_file(&self.config)?)?;
         let load = ServicingStationLoad::new(config);
         load.start().map(|_| ()).map_err(Into::into)
     }

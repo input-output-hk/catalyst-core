@@ -920,17 +920,18 @@ pub async fn post_message(
     message: warp::hyper::body::Bytes,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    let fragment = match Fragment::deserialize(message.as_ref()) {
-        Ok(fragment) => fragment,
-        Err(err) => {
-            let code = context.lock().unwrap().state().error_code;
-            context.lock().unwrap().log(format!(
-                "post_message with wrong fragment. Reason '{:?}'... Error code: {}",
-                err, code
-            ));
-            return Err(warp::reject::custom(ForcedErrorCode { code }));
-        }
-    };
+    let fragment =
+        match Fragment::deserialize(&mut chain_core::packer::Codec::new(message.as_ref())) {
+            Ok(fragment) => fragment,
+            Err(err) => {
+                let code = context.lock().unwrap().state().error_code;
+                context.lock().unwrap().log(format!(
+                    "post_message with wrong fragment. Reason '{:?}'... Error code: {}",
+                    err, code
+                ));
+                return Err(warp::reject::custom(ForcedErrorCode { code }));
+            }
+        };
 
     context
         .lock()

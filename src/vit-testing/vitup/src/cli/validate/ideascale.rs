@@ -438,7 +438,8 @@ impl IdeascaleValidateCommand {
         &self,
         path: P,
     ) -> Result<Vec<Value>, ProposalError> {
-        let mut data: serde_json::Value = serde_json::from_str(&jortestkit::file::read_file(path))?;
+        let mut data: serde_json::Value =
+            serde_json::from_str(&jortestkit::file::read_file(path)?)?;
         Ok(data.as_array_mut().unwrap().to_vec())
     }
 

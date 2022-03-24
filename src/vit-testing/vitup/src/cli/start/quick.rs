@@ -153,7 +153,7 @@ impl QuickStartCommandArgs {
         let mut config_builder = ConfigBuilder::default();
 
         if let Some(mapping) = self.initials_mapping {
-            let content = read_file(mapping);
+            let content = read_file(mapping)?;
             let initials: Initials =
                 serde_json::from_str(&content).expect("JSON was not well-formatted");
             config_builder = config_builder.initials(initials);

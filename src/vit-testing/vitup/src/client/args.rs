@@ -217,7 +217,7 @@ pub struct MockStartCustomCommand {
 
 impl MockStartCustomCommand {
     pub fn exec(self, rest: VitupAdminRestClient) -> Result<()> {
-        let content = jortestkit::prelude::read_file(self.params);
+        let content = jortestkit::prelude::read_file(self.params)?;
         let params: Config = serde_json::from_str(&content)?;
         println!("{}", rest.start_custom(params)?);
         Ok(())

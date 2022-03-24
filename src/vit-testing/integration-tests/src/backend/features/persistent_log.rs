@@ -101,7 +101,7 @@ pub fn persistent_log_contains_all_sent_votes() {
     );
     replay.exec().unwrap();
     let offline_voteplan_status: Vec<VotePlanStatus> =
-        serde_json::from_str(&jortestkit::file::read_file(offline_tally.path())).unwrap();
+        serde_json::from_str(&jortestkit::file::read_file(offline_tally.path()).unwrap()).unwrap();
 
     let live_voteplan_status = wallet_proxy.client().vote_plan_statuses().unwrap();
 

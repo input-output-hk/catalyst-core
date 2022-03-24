@@ -180,7 +180,7 @@ impl VoteRegistrationJob {
         self.generate_stake_address(&stake_vkey_path, &rewards_address_path)?;
         println!("rewards.addr saved");
 
-        let rewards_address = read_file(&rewards_address_path);
+        let rewards_address = read_file(&rewards_address_path)?;
         println!("rewards.addr: {}", rewards_address);
 
         println!("saving payment.addr...");
@@ -188,7 +188,7 @@ impl VoteRegistrationJob {
         self.generate_payment_address(&payment_vkey_path, &stake_vkey_path, &payment_address_path)?;
         println!("payment.addr saved");
 
-        let payment_address = read_file(&payment_address_path);
+        let payment_address = read_file(&payment_address_path)?;
         println!("payment.addr: {}", payment_address);
 
         let mut command = Command::new(&self.cardano_cli);

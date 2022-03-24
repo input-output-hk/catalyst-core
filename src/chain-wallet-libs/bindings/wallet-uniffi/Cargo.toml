@@ -13,12 +13,12 @@ uniffi_macros = "0.16.0"
 wallet-core = { path = "../wallet-core" }
 wallet = {path = "../../wallet"}
 symmetric-cipher = {path = "../../symmetric-cipher"}
-chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "remove-deserialize-trait" }
-chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "remove-deserialize-trait" }
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "remove-deserialize-trait" }
-chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "remove-deserialize-trait" }
-chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "remove-deserialize-trait" }
-chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "remove-deserialize-trait" }
+chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 thiserror = {version = "1.0", default-features = false}
 
 [build-dependencies]

@@ -17,14 +17,14 @@ hex = "0.4.2"
 itertools = "0.9"
 hashlink = "0.7.0"
 
-chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "remove-deserialize-trait" }
-chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "remove-deserialize-trait" }
-chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "remove-deserialize-trait" }
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "remove-deserialize-trait" }
-cardano-legacy-address = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "remove-deserialize-trait" }
-imhamt = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "remove-deserialize-trait" }
+chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+cardano-legacy-address = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+imhamt = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 
 [dev-dependencies]
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
-chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "remove-deserialize-trait" }
+chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }

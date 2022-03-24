@@ -13,7 +13,7 @@ jobs:
     name: gh-pages
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Bundle
         uses: seeebiii/redoc-cli-github-action@v9

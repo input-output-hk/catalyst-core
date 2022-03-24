@@ -12,7 +12,7 @@ jobs:
     name: Update dependencies
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - id: cargo-deps
         name: Cache cargo dependencies
@@ -56,7 +56,7 @@ jobs:
     env:
       CARGO_INCREMENTAL: 0
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - if: ${{ runner.os == 'Windows' }}
         name: Fix up Cargo.lock hash
@@ -106,7 +106,7 @@ jobs:
     env:
       CARGO_INCREMENTAL: 0
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -142,7 +142,7 @@ jobs:
     needs: update-deps
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
 

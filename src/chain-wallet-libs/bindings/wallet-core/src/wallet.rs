@@ -146,11 +146,10 @@ impl Wallet {
             .map_err(|e| Error::wallet_transaction().with(e))?;
 
         let fragment = Fragment::VoteCast(tx);
-        let raw = fragment.to_raw();
-        let id = raw.id();
+        let id = fragment.hash();
 
         account_tx_builder.add_fragment_id(id);
 
-        Ok(raw.serialize_as_vec().unwrap().into_boxed_slice())
+        Ok(fragment.serialize_as_vec().unwrap().into_boxed_slice())
     }
 }

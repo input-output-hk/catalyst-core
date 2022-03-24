@@ -12,8 +12,10 @@ mod witness;
 #[cfg(any(test, feature = "property-test-api"))]
 pub mod test;
 
-use chain_core::mempack::{ReadBuf, ReadError, Readable};
-use chain_core::property;
+use chain_core::{
+    packer::Codec,
+    property::{Deserialize, ReadError, Serialize, WriteError},
+};
 
 // to remove..
 pub use builder::{
@@ -28,16 +30,20 @@ pub use transfer::*;
 pub use utxo::*;
 pub use witness::*;
 
-impl<Extra: Payload> property::Serialize for Transaction<Extra> {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
-        writer.write_all(self.as_ref())
+impl<Extra: Payload> Serialize for Transaction<Extra> {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
+        codec.put_bytes(self.as_ref())
     }
 }
 
-impl<Extra: Payload> Readable for Transaction<Extra> {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let utx = UnverifiedTransactionSlice::from(buf.get_slice_end());
+impl<Extra: Payload> Deserialize for Transaction<Extra> {
+    fn deserialize<R: std::io::Read>(codec: &mut Codec<R>) -> Result<Self, ReadError> {
+        let mut buf = Vec::new();
+        // TODO: implicitly define size of the Transaction object in the deserialize function, do not use read_to_end,
+        // it narrows the usage of the deserialize trait for the Transaction struct,
+        // which is not obvious from the Deserialze trait description, so leads to mistakes
+        codec.read_to_end(&mut buf)?;
+        let utx = UnverifiedTransactionSlice::from(buf.as_slice());
         match utx.check() {
             Ok(tx) => Ok(tx.to_owned()),
             Err(e) => Err(ReadError::StructureInvalid(e.to_string())),

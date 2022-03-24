@@ -1,7 +1,8 @@
 use crate::date::Epoch;
 use crate::stake::Stake;
 use crate::value::{Value, ValueError};
-use chain_core::mempack::{ReadBuf, ReadError};
+use chain_core::packer::Codec;
+use chain_core::property::ReadError;
 use std::num::{NonZeroU32, NonZeroU64};
 use typed_bytes::ByteBuilder;
 
@@ -69,11 +70,11 @@ impl TaxType {
             .u64(self.max_limit.map_or(0, |v| v.get()))
     }
 
-    pub fn read_frombuf(rb: &mut ReadBuf) -> Result<Self, ReadError> {
-        let fixed = rb.get_u64().map(Value)?;
-        let num = rb.get_u64()?;
-        let denom = rb.get_u64()?;
-        let limit = rb.get_u64()?;
+    pub fn read_frombuf<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Self, ReadError> {
+        let fixed = codec.get_be_u64().map(Value)?;
+        let num = codec.get_be_u64()?;
+        let denom = codec.get_be_u64()?;
+        let limit = codec.get_be_u64()?;
         let denominator = NonZeroU64::new(denom).map_or_else(
             || {
                 Err(ReadError::StructureInvalid(

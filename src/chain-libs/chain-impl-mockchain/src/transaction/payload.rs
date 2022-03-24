@@ -1,15 +1,15 @@
 use chain_core::{
-    mempack::{ReadBuf, ReadError, Readable},
-    property,
+    packer::Codec,
+    property::{DeserializeFromSlice, ReadError, Serialize, WriteError},
 };
 
 use crate::certificate::CertificateSlice;
 use std::marker::PhantomData;
 
-pub trait Payload: Readable {
+pub trait Payload: DeserializeFromSlice {
     const HAS_DATA: bool;
     const HAS_AUTH: bool;
-    type Auth: Readable;
+    type Auth: DeserializeFromSlice;
 
     fn payload_data(&self) -> PayloadData<Self>;
 
@@ -68,13 +68,13 @@ impl<'a, P: ?Sized> Clone for PayloadAuthSlice<'a, P> {
 
 impl<'a, P: Payload> PayloadSlice<'a, P> {
     pub fn into_payload(self) -> P {
-        P::read(&mut ReadBuf::from(self.0)).unwrap()
+        P::deserialize_from_slice(&mut Codec::new(self.0)).unwrap()
     }
 }
 
 impl<'a, P: Payload> PayloadAuthSlice<'a, P> {
     pub fn into_payload_auth(self) -> P::Auth {
-        P::Auth::read(&mut ReadBuf::from(self.0)).unwrap()
+        P::Auth::deserialize_from_slice(&mut Codec::new(self.0)).unwrap()
     }
 }
 
@@ -123,21 +123,14 @@ impl<'a, P: ?Sized> PayloadAuthSlice<'a, P> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NoExtra;
 
-impl property::Serialize for NoExtra {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, _: W) -> Result<(), Self::Error> {
+impl Serialize for NoExtra {
+    fn serialize<W: std::io::Write>(&self, _: &mut Codec<W>) -> Result<(), WriteError> {
         Ok(())
     }
 }
 
-impl property::Deserialize for NoExtra {
-    type Error = std::io::Error;
-    fn deserialize<R: std::io::BufRead>(_: R) -> Result<Self, Self::Error> {
-        Ok(NoExtra)
-    }
-}
-impl Readable for NoExtra {
-    fn read(_: &mut ReadBuf) -> Result<Self, ReadError> {
+impl DeserializeFromSlice for NoExtra {
+    fn deserialize_from_slice(_: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
         Ok(NoExtra)
     }
 }

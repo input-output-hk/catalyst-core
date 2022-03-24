@@ -7,7 +7,10 @@ use super::witness::Witness;
 use crate::date::BlockDate;
 use crate::value::{Value, ValueError};
 use chain_addr::Address;
-use chain_core::mempack::{ReadBuf, Readable};
+use chain_core::{
+    packer::Codec,
+    property::{Deserialize, DeserializeFromSlice},
+};
 use chain_crypto::digest::Digest;
 use std::fmt::{self, Debug};
 use std::marker::PhantomData;
@@ -128,10 +131,10 @@ impl<'a> Iterator for OutputsIter<'a> {
         if self.index == self.slice.1.len() {
             None
         } else {
-            let mut rb = ReadBuf::from(self.slice.1);
-            rb.skip_bytes(self.index).unwrap();
-            let output = Output::read(&mut rb).unwrap();
-            self.index = rb.position();
+            let mut codec = Codec::new(self.slice.1);
+            codec.skip_bytes(self.index);
+            let output = Output::deserialize_from_slice(&mut codec).unwrap();
+            self.index = self.slice.1.len() - codec.bytes_left();
             Some(output)
         }
     }
@@ -144,10 +147,10 @@ impl<'a> Iterator for WitnessesIter<'a> {
         if self.index == self.slice.1.len() {
             None
         } else {
-            let mut rb = ReadBuf::from(self.slice.1);
-            rb.skip_bytes(self.index).unwrap();
-            let output = Witness::read(&mut rb).unwrap();
-            self.index = rb.position();
+            let mut codec = Codec::new(self.slice.1);
+            codec.skip_bytes(self.index);
+            let output = Witness::deserialize_from_slice(&mut codec).unwrap();
+            self.index = self.slice.1.len() - codec.bytes_left();
             Some(output)
         }
     }
@@ -261,55 +264,57 @@ pub(super) struct TransactionStruct {
 /// Verify the structure of the transaction and return all the offsets
 fn get_spine<P: Payload>(slice: &[u8]) -> Result<TransactionStruct, TransactionStructError> {
     let sz = slice.len();
-    let mut rb = ReadBuf::from(slice);
+    let mut codec = Codec::new(slice);
 
     // read payload
     if P::HAS_DATA {
-        P::read_validate(&mut rb).map_err(|_| TransactionStructError::PayloadInvalid)?;
+        P::deserialize_validate_from_slice(&mut codec)
+            .map_err(|_| TransactionStructError::PayloadInvalid)?;
     }
 
     // read date
-    let epoch = rb
-        .get_u32()
+    let epoch = codec
+        .get_be_u32()
         .map_err(|_| TransactionStructError::CannotReadExpiryDate)?;
-    let slot_id = rb
-        .get_u32()
+    let slot_id = codec
+        .get_be_u32()
         .map_err(|_| TransactionStructError::CannotReadExpiryDate)?;
     let valid_until = BlockDate { epoch, slot_id };
 
     // read input and outputs
-    let nb_inputs = rb
+    let nb_inputs = codec
         .get_u8()
         .map_err(|_| TransactionStructError::CannotReadNbInputs)?;
-    let nb_outputs = rb
+    let nb_outputs = codec
         .get_u8()
         .map_err(|_| TransactionStructError::CannotReadNbOutputs)?;
 
-    let inputs_pos = rb.position();
-    rb.skip_bytes(nb_inputs as usize * INPUT_SIZE)
-        .map_err(|_| TransactionStructError::InputsInvalid)?;
-    let outputs_pos = rb.position();
+    let inputs_pos = sz - codec.bytes_left();
+    codec.skip_bytes(nb_inputs as usize * INPUT_SIZE);
+    let outputs_pos = sz - codec.bytes_left();
     for _ in 0..nb_outputs {
-        Output::<Address>::read_validate(&mut rb)
+        Output::<Address>::deserialize_validate(&mut codec)
             .map_err(|_| TransactionStructError::OutputsInvalid)?;
     }
 
     // read witnesses
-    let witnesses_pos = rb.position();
+    let witnesses_pos = sz - codec.bytes_left();
     for _ in 0..nb_inputs {
-        Witness::read_validate(&mut rb).map_err(|_| TransactionStructError::WitnessesInvalid)?;
+        Witness::deserialize_validate_from_slice(&mut codec)
+            .map_err(|_| TransactionStructError::WitnessesInvalid)?;
     }
 
     // read payload auth
-    let payload_auth_pos = rb.position();
+    let payload_auth_pos = sz - codec.bytes_left();
     if P::HAS_DATA && P::HAS_AUTH {
-        if rb.is_end() {
+        if !codec.has_bytes_left() {
             return Err(TransactionStructError::PayloadAuthMissing);
         }
-        P::Auth::read_validate(&mut rb).map_err(|_| TransactionStructError::PayloadAuthInvalid)?;
+        P::Auth::deserialize_validate_from_slice(&mut codec)
+            .map_err(|_| TransactionStructError::PayloadAuthInvalid)?;
     }
 
-    if !rb.is_end() {
+    if codec.has_bytes_left() {
         return Err(TransactionStructError::SpuriousTrailingData);
     }
     Ok(TransactionStruct {

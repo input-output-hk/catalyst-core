@@ -6,7 +6,8 @@
 //! written by Dmytro Kaidalov.
 
 use crate::{GroupElement, Scalar};
-use chain_core::mempack::{ReadBuf, ReadError};
+use chain_core::packer::Codec;
+use chain_core::property::ReadError;
 use rand_core::{CryptoRng, RngCore};
 use {rand::thread_rng, std::iter};
 
@@ -234,18 +235,18 @@ impl Zkp {
     }
 
     /// Try to generate a `Proof` from a buffer
-    pub fn from_buffer(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let bits = buf.get_u8()? as usize;
+    pub fn from_buffer(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
+        let bits = codec.get_u8()? as usize;
         let mut ibas = Vec::with_capacity(bits);
         for _ in 0..bits {
-            let elem_buf = buf.get_slice(Announcement::BYTES_LEN)?;
+            let elem_buf = codec.get_slice(Announcement::BYTES_LEN)?;
             let iba = Announcement::from_bytes(elem_buf)
                 .ok_or_else(|| ReadError::StructureInvalid("Invalid IBA component".to_string()))?;
             ibas.push(iba);
         }
         let mut bs = Vec::with_capacity(bits);
         for _ in 0..bits {
-            let elem_buf = buf.get_slice(Ciphertext::BYTES_LEN)?;
+            let elem_buf = codec.get_slice(Ciphertext::BYTES_LEN)?;
             let ciphertext = Ciphertext::from_bytes(elem_buf).ok_or_else(|| {
                 ReadError::StructureInvalid("Invalid encoded ciphertext".to_string())
             })?;
@@ -253,12 +254,12 @@ impl Zkp {
         }
         let mut zwvs = Vec::with_capacity(bits);
         for _ in 0..bits {
-            let elem_buf = buf.get_slice(ResponseRandomness::BYTES_LEN)?;
+            let elem_buf = codec.get_slice(ResponseRandomness::BYTES_LEN)?;
             let zwv = ResponseRandomness::from_bytes(elem_buf)
                 .ok_or_else(|| ReadError::StructureInvalid("Invalid ZWV component".to_string()))?;
             zwvs.push(zwv);
         }
-        let r_buf = buf.get_slice(Scalar::BYTES_LEN)?;
+        let r_buf = codec.get_slice(Scalar::BYTES_LEN)?;
         let r = Scalar::from_bytes(r_buf).ok_or_else(|| {
             ReadError::StructureInvalid("Invalid Proof encoded R scalar".to_string())
         })?;

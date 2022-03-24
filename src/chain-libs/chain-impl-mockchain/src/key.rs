@@ -1,8 +1,12 @@
 //! Module provides cryptographic utilities and types related to
 //! the user keys.
 //!
-use chain_core::mempack::{read_mut_slice, ReadBuf, ReadError, Readable};
-use chain_core::property;
+use chain_core::{
+    packer::Codec,
+    property::{
+        BlockId, Deserialize, DeserializeFromSlice, FragmentId, ReadError, Serialize, WriteError,
+    },
+};
 use chain_crypto as crypto;
 use chain_crypto::{
     digest::DigestOf, AsymmetricKey, AsymmetricPublicKey, Blake2b256, Ed25519, PublicKey,
@@ -11,7 +15,6 @@ use chain_crypto::{
 use rand_core::{CryptoRng, RngCore};
 use typed_bytes::ByteBuilder;
 
-use chain_core::packer::Codec;
 use std::str::FromStr;
 
 #[derive(Clone)]
@@ -79,34 +82,36 @@ fn chain_crypto_sig_err(e: crypto::SignatureError) -> ReadError {
 #[inline]
 pub fn serialize_public_key<A: AsymmetricPublicKey, W: std::io::Write>(
     key: &crypto::PublicKey<A>,
-    mut writer: W,
-) -> Result<(), std::io::Error> {
-    writer.write_all(key.as_ref())
+    codec: &mut Codec<W>,
+) -> Result<(), WriteError> {
+    codec.put_bytes(key.as_ref())
 }
 #[inline]
 pub fn serialize_signature<A: VerificationAlgorithm, T, W: std::io::Write>(
     signature: &crypto::Signature<T, A>,
-    mut writer: W,
-) -> Result<(), std::io::Error> {
-    writer.write_all(signature.as_ref())
+    codec: &mut Codec<W>,
+) -> Result<(), WriteError> {
+    codec.put_bytes(signature.as_ref())
 }
 #[inline]
-pub fn deserialize_public_key<A>(buf: &mut ReadBuf) -> Result<crypto::PublicKey<A>, ReadError>
+pub fn deserialize_public_key<A>(
+    codec: &mut Codec<&[u8]>,
+) -> Result<crypto::PublicKey<A>, ReadError>
 where
     A: AsymmetricPublicKey,
 {
-    let mut bytes = vec![0u8; A::PUBLIC_KEY_SIZE];
-    read_mut_slice(buf, &mut bytes[..])?;
-    crypto::PublicKey::from_binary(&bytes).map_err(chain_crypto_pub_err)
+    let bytes = codec.get_slice(A::PUBLIC_KEY_SIZE)?;
+    crypto::PublicKey::from_binary(bytes).map_err(chain_crypto_pub_err)
 }
 #[inline]
-pub fn deserialize_signature<A, T>(buf: &mut ReadBuf) -> Result<crypto::Signature<T, A>, ReadError>
+pub fn deserialize_signature<A, T>(
+    codec: &mut Codec<&[u8]>,
+) -> Result<crypto::Signature<T, A>, ReadError>
 where
     A: VerificationAlgorithm,
 {
-    let mut bytes = vec![0u8; A::SIGNATURE_SIZE];
-    read_mut_slice(buf, &mut bytes[..])?;
-    crypto::Signature::from_binary(&bytes).map_err(chain_crypto_sig_err)
+    let bytes = codec.get_slice(A::SIGNATURE_SIZE)?;
+    crypto::Signature::from_binary(bytes).map_err(chain_crypto_sig_err)
 }
 
 pub fn make_signature<T, A>(
@@ -116,7 +121,7 @@ pub fn make_signature<T, A>(
 where
     A: SigningAlgorithm,
     <A as AsymmetricKey>::PubAlg: VerificationAlgorithm,
-    T: property::Serialize,
+    T: Serialize,
 {
     let bytes = data.serialize_as_vec().unwrap();
     spending_key.sign(&bytes).coerce()
@@ -129,7 +134,7 @@ pub fn verify_signature<T, A>(
 ) -> crypto::Verification
 where
     A: VerificationAlgorithm,
-    T: property::Serialize,
+    T: Serialize,
 {
     let bytes = data.serialize_as_vec().unwrap();
     signature.clone().coerce().verify(public_key, &bytes)
@@ -142,7 +147,7 @@ pub fn verify_multi_signature<T, A>(
 ) -> crypto::Verification
 where
     A: VerificationAlgorithm,
-    T: property::Serialize,
+    T: Serialize,
 {
     assert!(!public_key.is_empty());
     let bytes = data.serialize_as_vec().unwrap();
@@ -155,7 +160,7 @@ pub struct Signed<T, A: VerificationAlgorithm> {
     pub sig: crypto::Signature<T, A>,
 }
 
-pub fn signed_new<T: property::Serialize, A: SigningAlgorithm>(
+pub fn signed_new<T: Serialize, A: SigningAlgorithm>(
     secret_key: &crypto::SecretKey<A>,
     data: T,
 ) -> Signed<T, A::PubAlg>
@@ -170,23 +175,18 @@ where
     }
 }
 
-impl<T: property::Serialize, A: VerificationAlgorithm> property::Serialize for Signed<T, A>
-where
-    std::io::Error: From<T::Error>,
-{
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
-        self.data.serialize(&mut writer)?;
-        serialize_signature(&self.sig, &mut writer)?;
-        Ok(())
+impl<T: Serialize, A: VerificationAlgorithm> Serialize for Signed<T, A> {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
+        self.data.serialize(codec)?;
+        serialize_signature(&self.sig, codec)
     }
 }
 
-impl<T: Readable, A: VerificationAlgorithm> Readable for Signed<T, A> {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
+impl<T: Deserialize, A: VerificationAlgorithm> DeserializeFromSlice for Signed<T, A> {
+    fn deserialize_from_slice(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
         Ok(Signed {
-            data: T::read(buf)?,
-            sig: deserialize_signature(buf)?,
+            data: T::deserialize(codec)?,
+            sig: deserialize_signature(codec)?,
         })
     }
 }
@@ -255,37 +255,26 @@ impl<'a> From<&'a Hash> for &'a [u8; 32] {
     }
 }
 
-impl property::Serialize for Hash {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
-        writer.write_all(self.0.as_hash_bytes())?;
-        Ok(())
+impl Serialize for Hash {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
+        codec.put_bytes(self.0.as_hash_bytes())
     }
 }
 
-impl property::Deserialize for Hash {
-    type Error = std::io::Error;
-    fn deserialize<R: std::io::BufRead>(mut reader: R) -> Result<Self, Self::Error> {
-        let mut buffer = [0; crypto::Blake2b256::HASH_SIZE];
-        reader.read_exact(&mut buffer)?;
-        Ok(Hash(crypto::Blake2b256::from(buffer)))
-    }
-}
-
-impl Readable for Hash {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let bytes = <[u8; crypto::Blake2b256::HASH_SIZE]>::read(buf)?;
+impl Deserialize for Hash {
+    fn deserialize<R: std::io::Read>(codec: &mut Codec<R>) -> Result<Self, ReadError> {
+        let bytes = <[u8; crypto::Blake2b256::HASH_SIZE]>::deserialize(codec)?;
         Ok(Hash(crypto::Blake2b256::from(bytes)))
     }
 }
 
-impl property::BlockId for Hash {
+impl BlockId for Hash {
     fn zero() -> Hash {
         Hash(crypto::Blake2b256::from([0; crypto::Blake2b256::HASH_SIZE]))
     }
 }
 
-impl property::FragmentId for Hash {}
+impl FragmentId for Hash {}
 
 impl AsRef<[u8]> for Hash {
     fn as_ref(&self) -> &[u8] {
@@ -329,34 +318,15 @@ impl BftLeaderId {
     }
 }
 
-impl property::Serialize for BftLeaderId {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        serialize_public_key(&self.0, writer)
+impl Serialize for BftLeaderId {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
+        serialize_public_key(&self.0, codec)
     }
 }
 
-impl property::Deserialize for BftLeaderId {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let size: usize = 32;
-        let bytes = codec.get_bytes(size)?;
-        let mut buff = ReadBuf::from(&bytes);
-        match deserialize_public_key(&mut buff) {
-            Ok(pk) => Ok(BftLeaderId(pk)),
-            Err(e) => Err(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("Error reading LeaderId public key: {}", e),
-            )),
-        }
-    }
-}
-
-impl Readable for BftLeaderId {
-    fn read(reader: &mut ReadBuf) -> Result<Self, ReadError> {
-        deserialize_public_key(reader).map(BftLeaderId)
+impl DeserializeFromSlice for BftLeaderId {
+    fn deserialize_from_slice(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
+        deserialize_public_key(codec).map(BftLeaderId)
     }
 }
 
@@ -390,10 +360,10 @@ impl GenesisPraosLeader {
     }
 }
 
-impl Readable for GenesisPraosLeader {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let vrf_public_key = deserialize_public_key(buf)?;
-        let kes_public_key = deserialize_public_key(buf)?;
+impl DeserializeFromSlice for GenesisPraosLeader {
+    fn deserialize_from_slice(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
+        let vrf_public_key = deserialize_public_key(codec)?;
+        let kes_public_key = deserialize_public_key(codec)?;
         Ok(GenesisPraosLeader {
             kes_public_key,
             vrf_public_key,

@@ -5,10 +5,9 @@ use crate::{
     transaction::{Payload, PayloadAuthData, PayloadData, PayloadSlice},
     value::Value,
 };
-
 use chain_core::{
-    mempack::{ReadBuf, ReadError, Readable},
-    property::Serialize,
+    packer::Codec,
+    property::{Deserialize, DeserializeFromSlice, ReadError, Serialize, WriteError},
 };
 use typed_bytes::{ByteArray, ByteBuilder};
 
@@ -63,21 +62,20 @@ impl Payload for MintToken {
 }
 
 impl Serialize for MintToken {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
-        self.name.serialize(&mut writer)?;
-        self.policy.serialize(&mut writer)?;
-        self.to.serialize(&mut writer)?;
-        self.value.serialize(writer)
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
+        self.name.serialize(codec)?;
+        self.policy.serialize(codec)?;
+        self.to.serialize(codec)?;
+        self.value.serialize(codec)
     }
 }
 
-impl Readable for MintToken {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let name = TokenName::read(buf)?;
-        let policy = MintingPolicy::read(buf)?;
-        let to = Identifier::read(buf)?;
-        let value = Value::read(buf)?;
+impl DeserializeFromSlice for MintToken {
+    fn deserialize_from_slice(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
+        let name = TokenName::deserialize(codec)?;
+        let policy = MintingPolicy::deserialize(codec)?;
+        let to = Identifier::deserialize_from_slice(codec)?;
+        let value = Value::deserialize(codec)?;
 
         Ok(Self {
             name,
@@ -92,7 +90,7 @@ impl Readable for MintToken {
 mod tests {
     use super::*;
     #[cfg(test)]
-    use crate::testing::serialization::serialization_bijection_r;
+    use crate::testing::serialization::serialization_bijection;
     #[cfg(test)]
     use quickcheck::TestResult;
     use quickcheck::{Arbitrary, Gen};
@@ -114,7 +112,7 @@ mod tests {
 
     quickcheck! {
         fn minttoken_serialization_bijection(b: MintToken) -> TestResult {
-            serialization_bijection_r(b)
+            serialization_bijection(b)
         }
     }
 }

@@ -1,9 +1,6 @@
-use std::convert::TryFrom;
-
 use chain_core::{
-    mempack::{ReadBuf, ReadError, Readable},
     packer::Codec,
-    property::Serialize,
+    property::{Deserialize, ReadError, Serialize, WriteError},
 };
 use thiserror::Error;
 use typed_bytes::ByteBuilder;
@@ -51,21 +48,19 @@ impl TryFrom<Vec<u8>> for TokenName {
 }
 
 impl Serialize for TokenName {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         codec.put_u8(self.0.len() as u8)?;
         codec.put_bytes(self.0.as_slice())
     }
 }
 
-impl Readable for TokenName {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let name_length = buf.get_u8()? as usize;
+impl Deserialize for TokenName {
+    fn deserialize<R: std::io::Read>(codec: &mut Codec<R>) -> Result<Self, ReadError> {
+        let name_length = codec.get_u8()? as usize;
         if name_length > TOKEN_NAME_MAX_SIZE {
             return Err(ReadError::SizeTooBig(TOKEN_NAME_MAX_SIZE, name_length));
         }
-        let bytes = buf.get_slice(name_length)?.into();
+        let bytes = codec.get_bytes(name_length)?;
         Ok(Self(bytes))
     }
 }
@@ -91,11 +86,8 @@ mod tests {
     #[quickcheck_macros::quickcheck]
     fn token_name_serialization_bijection(token_name: TokenName) -> TestResult {
         let token_name_got = token_name.bytes();
-        let mut buf = ReadBuf::from(token_name_got.as_ref());
-        let result = TokenName::read(&mut buf);
-        let left = Ok(token_name);
-        assert_eq!(left, result);
-        assert!(buf.get_slice_end().is_empty());
-        TestResult::from_bool(left == result)
+        let mut codec = Codec::new(token_name_got.as_slice());
+        let result = TokenName::deserialize(&mut codec).unwrap();
+        TestResult::from_bool(token_name == result)
     }
 }

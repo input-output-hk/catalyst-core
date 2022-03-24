@@ -34,7 +34,8 @@ pub use chain_ser::deser::*;
 use std::{fmt::Debug, hash::Hash};
 
 /// Trait identifying the block identifier type.
-pub trait BlockId: Eq + Ord + Clone + Debug + Hash + Serialize + Deserialize {
+/// TODO: add a Readable trait bound
+pub trait BlockId: Eq + Ord + Clone + Debug + Hash + Serialize {
     /// A special ID used to denote a non-existent block (e.g. the
     /// parent of the first block).
     fn zero() -> Self;
@@ -95,7 +96,8 @@ pub trait Header: Serialize {
 /// recent block to the furthest/oldest block.
 ///
 /// The Oldest block is called the Genesis Block.
-pub trait Block: Serialize + Deserialize {
+/// TODO: add a Readable trait bound
+pub trait Block: Serialize {
     /// the Block identifier. It must be unique. This mean that
     /// 2 different blocks have 2 different identifiers.
     ///
@@ -148,14 +150,16 @@ pub trait HasHeader {
 }
 
 /// Trait identifying the fragment identifier type.
-pub trait FragmentId: Eq + Hash + Clone + Debug + Serialize + Deserialize {}
+/// TODO: add a Readable trait bound
+pub trait FragmentId: Eq + Hash + Clone + Debug + Serialize {}
 
 /// A fragment is some item contained in a block, such as a
 /// transaction, a delegation-related certificate, an update proposal,
 /// and so on. Fragments can be serialized (so that they can be
 /// concatenated to form a binary block( and have a unique ID
 /// (typically the hash of their serialization).
-pub trait Fragment: Serialize + Deserialize {
+/// TODO: add a Readable trait bound
+pub trait Fragment: Serialize {
     type Id: FragmentId;
 
     /// Return the message's identifier.
@@ -181,7 +185,8 @@ pub trait HasFragments<'a> {
 /// for the UTxO model. However it can also be used for any other elements that
 /// the blockchain has (a transaction type to add Stacking Pools and so on...).
 ///
-pub trait Transaction: Serialize + Deserialize {
+/// TODO: add a Readable trait bound
+pub trait Transaction: Serialize {
     /// The input type of the transaction (if none use `()`).
     type Input;
     /// The output type of the transaction (if none use `()`).

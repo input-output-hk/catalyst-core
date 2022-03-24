@@ -9,15 +9,17 @@ use crate::{
     vote::CommitteeId,
 };
 use chain_addr::Discrimination;
-use chain_core::mempack::{ReadBuf, ReadError, Readable};
-use chain_core::packer::Codec;
-use chain_core::property;
+use chain_core::property::WriteError;
+use chain_core::{
+    packer::Codec,
+    property::{DeserializeFromSlice, ReadError, Serialize},
+};
 use chain_crypto::PublicKey;
 #[cfg(feature = "evm")]
 use chain_evm::{BlockGasLimit, Config, GasPrice};
 use std::{
     fmt::{self, Display, Formatter},
-    io::{self, Cursor, Write},
+    io::{self, Write},
     num::{NonZeroU32, NonZeroU64},
 };
 use strum_macros::{AsRefStr, EnumIter, EnumString};
@@ -257,10 +259,10 @@ impl<'a> From<&'a ConfigParam> for Tag {
     }
 }
 
-impl Readable for ConfigParam {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let taglen = TagLen(buf.get_u16()?);
-        let bytes = buf.get_slice(taglen.get_len())?;
+impl DeserializeFromSlice for ConfigParam {
+    fn deserialize_from_slice(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
+        let taglen = TagLen(codec.get_be_u16()?);
+        let bytes = codec.get_slice(taglen.get_len())?;
         match taglen.get_tag()? {
             Tag::Block0Date => ConfigParamVariant::from_payload(bytes).map(ConfigParam::Block0Date),
             Tag::Discrimination => {
@@ -349,10 +351,8 @@ impl Readable for ConfigParam {
     }
 }
 
-impl property::Serialize for ConfigParam {
-    type Error = io::Error;
-
-    fn serialize<W: Write>(&self, writer: W) -> Result<(), Self::Error> {
+impl Serialize for ConfigParam {
+    fn serialize<W: Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         let tag = Tag::from(self);
         let bytes = match self {
             ConfigParam::Block0Date(data) => data.to_payload(),
@@ -392,36 +392,8 @@ impl property::Serialize for ConfigParam {
                 "initial ent payload too big".to_string(),
             )
         })?;
-        let mut codec = Codec::new(writer);
         codec.put_be_u16(taglen.0)?;
-        codec.write_all(&bytes)
-    }
-}
-
-impl property::Deserialize for ConfigParam {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let tag_len = TagLen(codec.get_be_u16()?);
-        let len = tag_len.get_len();
-        let bytes = codec.get_bytes(len)?;
-        // we will replicate the buffer so we can reuse the reader method
-        let mut cursor = Cursor::new(Vec::with_capacity(2 + len));
-        {
-            let mut writer = Codec::new(&mut cursor);
-            writer.put_be_u16(tag_len.0)?;
-            writer.put_bytes(&bytes)?;
-        }
-        cursor.set_position(0);
-        let mut read_buff = ReadBuf::from(cursor.get_ref());
-        match ConfigParam::read(&mut read_buff) {
-            Ok(res) => Ok(res),
-            Err(err) => Err(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("Error reading ConfigParam: {}", err),
-            )),
-        }
+        codec.put_bytes(&bytes)
     }
 }
 
@@ -450,9 +422,8 @@ impl ConfigParamVariant for TaxType {
     }
 
     fn from_payload(payload: &[u8]) -> Result<Self, Error> {
-        let mut rb = ReadBuf::from(payload);
-        let tax_type = TaxType::read_frombuf(&mut rb)?;
-        rb.expect_end()?;
+        let mut codec = Codec::new(payload);
+        let tax_type = TaxType::read_frombuf(&mut codec)?;
         Ok(tax_type)
     }
 }
@@ -466,10 +437,9 @@ impl ConfigParamVariant for Ratio {
     }
 
     fn from_payload(payload: &[u8]) -> Result<Self, Error> {
-        let mut rb = ReadBuf::from(payload);
-        let num = rb.get_u64()?;
-        let denom = rb.get_nz_u64()?;
-        rb.expect_end()?;
+        let mut codec = Codec::new(payload);
+        let num = codec.get_be_u64()?;
+        let denom = codec.get_nz_u64()?;
         Ok(Ratio {
             numerator: num,
             denominator: denom,
@@ -508,15 +478,14 @@ impl ConfigParamVariant for RewardParams {
     }
 
     fn from_payload(payload: &[u8]) -> Result<Self, Error> {
-        let mut rb = ReadBuf::from(payload);
-        match rb.get_u8()? {
+        let mut codec = Codec::new(payload);
+        match codec.get_u8()? {
             1 => {
-                let start = rb.get_u64()?;
-                let num = rb.get_u64()?;
-                let denom = rb.get_nz_u64()?;
-                let estart = rb.get_u32()?;
-                let erate = rb.get_nz_u32()?;
-                rb.expect_end()?;
+                let start = codec.get_be_u64()?;
+                let num = codec.get_be_u64()?;
+                let denom = codec.get_nz_u64()?;
+                let estart = codec.get_be_u32()?;
+                let erate = codec.get_nz_u32()?;
                 Ok(RewardParams::Linear {
                     constant: start,
                     ratio: Ratio {
@@ -528,12 +497,11 @@ impl ConfigParamVariant for RewardParams {
                 })
             }
             2 => {
-                let start = rb.get_u64()?;
-                let num = rb.get_u64()?;
-                let denom = rb.get_nz_u64()?;
-                let estart = rb.get_u32()?;
-                let erate = rb.get_nz_u32()?;
-                rb.expect_end()?;
+                let start = codec.get_be_u64()?;
+                let num = codec.get_be_u64()?;
+                let denom = codec.get_nz_u64()?;
+                let estart = codec.get_be_u32()?;
+                let erate = codec.get_nz_u32()?;
                 Ok(RewardParams::Halving {
                     constant: start,
                     ratio: Ratio {
@@ -677,9 +645,9 @@ impl ConfigParamVariant for (NonZeroU32, NonZeroU32) {
     }
 
     fn from_payload(payload: &[u8]) -> Result<Self, Error> {
-        let mut rb = ReadBuf::from(payload);
-        let x = rb.get_nz_u32()?;
-        let y = rb.get_nz_u32()?;
+        let mut codec = Codec::new(payload);
+        let x = codec.get_nz_u32()?;
+        let y = codec.get_nz_u32()?;
         Ok((x, y))
     }
 }
@@ -797,10 +765,10 @@ impl ConfigParamVariant for Config {
     }
 
     fn from_payload(payload: &[u8]) -> Result<Self, Error> {
-        let mut rb = ReadBuf::from(payload);
+        let mut codec = Codec::new(payload);
 
         // Read EvmConfig and match hard fork variant
-        let config = match rb.get_u8()? {
+        let config = match codec.get_u8()? {
             n if n == Config::Frontier as u8 => Config::Frontier,
             n if n == Config::Istanbul as u8 => Config::Istanbul,
             n if n == Config::Berlin as u8 => Config::Berlin,
@@ -824,10 +792,9 @@ impl ConfigParamVariant for EvmEnvSettings {
 
     fn from_payload(payload: &[u8]) -> Result<Self, Error> {
         use crate::evm::read_u256;
-        let mut buf = ReadBuf::from(payload);
-        let gas_price = read_u256(&mut buf)?;
-        let block_gas_limit = read_u256(&mut buf)?;
-        buf.expect_end()?;
+        let mut codec = Codec::new(payload);
+        let gas_price = read_u256(&mut codec)?;
+        let block_gas_limit = read_u256(&mut codec)?;
         Ok(EvmEnvSettings {
             gas_price,
             block_gas_limit,
@@ -899,20 +866,10 @@ mod test {
             TestResult::from_bool(fee == decoded)
         }
 
-        fn config_param_serialize_correct(param: ConfigParam) -> bool {
-            use chain_core::property::{Serialize as _, Deserialize as _};
-            let bytes = param.serialize_as_vec().unwrap();
-            let reader = std::io::Cursor::new(&bytes);
-            let decoded = ConfigParam::deserialize(reader).unwrap();
-
-            param == decoded
-        }
-
         fn config_param_serialize_readable(param: ConfigParam) -> bool {
             use chain_core::property::Serialize as _;
             let bytes = param.serialize_as_vec().unwrap();
-            let mut reader = ReadBuf::from(&bytes);
-            let decoded = ConfigParam::read(&mut reader).unwrap();
+            let decoded = ConfigParam::deserialize_from_slice(&mut Codec::new(bytes.as_slice())).unwrap();
 
             param == decoded
         }

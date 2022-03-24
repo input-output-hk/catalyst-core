@@ -1,4 +1,7 @@
-use chain_core::property;
+use chain_core::{
+    packer::Codec,
+    property::{Deserialize, ReadError, Serialize, WriteError},
+};
 
 /// Block Header Bytes
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -10,32 +13,17 @@ impl AsRef<[u8]> for HeaderRaw {
     }
 }
 
-impl property::Serialize for HeaderRaw {
-    type Error = std::io::Error;
-
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        use chain_core::packer::*;
-        use std::io::Write;
-
-        let mut codec = Codec::new(writer);
+impl Serialize for HeaderRaw {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         codec.put_be_u16(self.0.len() as u16)?;
-        codec.write_all(&self.0)?;
-        Ok(())
+        codec.put_bytes(&self.0)
     }
 }
 
-impl property::Deserialize for HeaderRaw {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        use chain_core::packer::Codec;
-        use std::io::Read;
-
-        let mut codec = Codec::new(reader);
-
+impl Deserialize for HeaderRaw {
+    fn deserialize<R: std::io::Read>(codec: &mut Codec<R>) -> Result<Self, ReadError> {
         let header_size = codec.get_be_u16()? as usize;
-        let mut v = vec![0u8; header_size];
-        codec.read_exact(&mut v[..])?;
+        let v = codec.get_bytes(header_size)?;
         Ok(HeaderRaw(v))
     }
 }

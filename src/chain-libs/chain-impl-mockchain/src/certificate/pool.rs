@@ -5,9 +5,10 @@ use crate::transaction::{
     AccountIdentifier, Payload, PayloadAuthData, PayloadData, PayloadSlice,
     SingleAccountBindingSignature, TransactionBindingAuthData,
 };
+use chain_core::property::WriteError;
 use chain_core::{
-    mempack::{ReadBuf, ReadError, Readable},
-    property,
+    packer::Codec,
+    property::{Deserialize, DeserializeFromSlice, ReadError, Serialize},
 };
 use chain_crypto::{digest::DigestOf, Blake2b256, Ed25519, PublicKey, Verification};
 use chain_time::{DurationSeconds, TimeOffsetSeconds};
@@ -155,11 +156,11 @@ impl PoolUpdate {
     }
 }
 
-impl Readable for PoolUpdate {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let pool_id = <[u8; 32]>::read(buf)?.into();
-        let last_pool_reg_hash = <[u8; 32]>::read(buf)?.into();
-        let new_pool_reg = PoolRegistration::read(buf)?;
+impl DeserializeFromSlice for PoolUpdate {
+    fn deserialize_from_slice(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
+        let pool_id = <[u8; 32]>::deserialize(codec)?.into();
+        let last_pool_reg_hash = <[u8; 32]>::deserialize(codec)?.into();
+        let new_pool_reg = PoolRegistration::deserialize_from_slice(codec)?;
         Ok(PoolUpdate {
             pool_id,
             last_pool_reg_hash,
@@ -179,10 +180,10 @@ impl PoolRetirement {
     }
 }
 
-impl Readable for PoolRetirement {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let pool_id = <[u8; 32]>::read(buf)?.into();
-        let retirement_time = DurationSeconds::from(buf.get_u64()?).into();
+impl Deserialize for PoolRetirement {
+    fn deserialize<R: std::io::Read>(codec: &mut Codec<R>) -> Result<Self, ReadError> {
+        let pool_id = <[u8; 32]>::deserialize(codec)?.into();
+        let retirement_time = DurationSeconds::from(codec.get_be_u64()?).into();
         Ok(PoolRetirement {
             pool_id,
             retirement_time,
@@ -190,19 +191,15 @@ impl Readable for PoolRetirement {
     }
 }
 
-impl property::Serialize for PoolUpdate {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
-        writer.write_all(self.serialize().as_slice())?;
-        Ok(())
+impl Serialize for PoolUpdate {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
+        codec.put_bytes(self.serialize().as_slice())
     }
 }
 
-impl property::Serialize for PoolRetirement {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
-        writer.write_all(self.serialize().as_slice())?;
-        Ok(())
+impl Serialize for PoolRetirement {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
+        codec.put_bytes(self.serialize().as_slice())
     }
 }
 
@@ -256,45 +253,43 @@ impl Payload for PoolRetirement {
     }
 }
 
-impl property::Serialize for PoolRegistration {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
-        writer.write_all(self.serialize().as_slice())?;
-        Ok(())
+impl Serialize for PoolRegistration {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
+        codec.put_bytes(self.serialize().as_slice())
     }
 }
 
-impl Readable for PoolRegistration {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let serial = buf.get_u128()?;
-        let start_validity = DurationSeconds::from(buf.get_u64()?).into();
-        let permissions = PoolPermissions::from_u64(buf.get_u64()?).ok_or_else(|| {
+impl DeserializeFromSlice for PoolRegistration {
+    fn deserialize_from_slice(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
+        let serial = codec.get_be_u128()?;
+        let start_validity = DurationSeconds::from(codec.get_be_u64()?).into();
+        let permissions = PoolPermissions::from_u64(codec.get_be_u64()?).ok_or_else(|| {
             ReadError::StructureInvalid("permission value not correct".to_string())
         })?;
-        let keys = GenesisPraosLeader::read(buf)?;
+        let keys = GenesisPraosLeader::deserialize_from_slice(codec)?;
 
-        let owners_nb = buf.get_u8()?;
+        let owners_nb = codec.get_u8()?;
         let mut owners = Vec::with_capacity(owners_nb as usize);
         for _ in 0..owners_nb {
-            owners.push(deserialize_public_key(buf)?);
+            owners.push(deserialize_public_key(codec)?);
         }
 
-        let operators_nb = buf.get_u8()?;
+        let operators_nb = codec.get_u8()?;
         let mut operators = Vec::with_capacity(operators_nb as usize);
         for _ in 0..operators_nb {
-            operators.push(deserialize_public_key(buf)?);
+            operators.push(deserialize_public_key(codec)?);
         }
 
-        let rewards = TaxType::read_frombuf(buf)?;
-        let reward_account = match buf.get_u8()? {
+        let rewards = TaxType::read_frombuf(codec)?;
+        let reward_account = match codec.get_u8()? {
             0 => None,
             1 => {
-                let pk = deserialize_public_key(buf)?;
+                let pk = deserialize_public_key(codec)?;
                 Some(AccountIdentifier::Single(pk.into()))
             }
             2 => {
                 let mut pk = [0u8; 32];
-                buf.copy_to_slice_mut(&mut pk)?;
+                codec.copy_to_slice(&mut pk)?;
                 Some(AccountIdentifier::Multi(pk.into()))
             }
             n => return Err(ReadError::UnknownTag(n as u32)),
@@ -348,7 +343,7 @@ impl PoolSignature {
             PoolSignature::Owners(owners) => {
                 assert!(!owners.signatures.is_empty());
                 assert!(owners.signatures.len() < 256);
-                bb.iter8(&mut owners.signatures.iter(), |bb, (i, s)| {
+                bb.u8(1).iter8(&mut owners.signatures.iter(), |bb, (i, s)| {
                     bb.u8(*i).bytes(s.as_ref())
                 })
             }
@@ -419,9 +414,9 @@ impl PoolOwnersSignature {
     }
 }
 
-impl Readable for PoolOwnersSigned {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let sigs_nb = buf.get_u8()? as usize;
+impl DeserializeFromSlice for PoolOwnersSigned {
+    fn deserialize_from_slice(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
+        let sigs_nb = codec.get_u8()? as usize;
         if sigs_nb == 0 {
             return Err(ReadError::StructureInvalid(
                 "pool owner signature with 0 signatures".to_string(),
@@ -429,23 +424,23 @@ impl Readable for PoolOwnersSigned {
         }
         let mut signatures = Vec::new();
         for _ in 0..sigs_nb {
-            let nb = buf.get_u8()?;
-            let sig = deserialize_signature(buf)?;
+            let nb = codec.get_u8()?;
+            let sig = deserialize_signature(codec)?;
             signatures.push((nb, SingleAccountBindingSignature(sig)))
         }
         Ok(PoolOwnersSigned { signatures })
     }
 }
 
-impl Readable for PoolSignature {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        match buf.peek_u8()? {
+impl DeserializeFromSlice for PoolSignature {
+    fn deserialize_from_slice(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
+        match codec.get_u8()? {
             0 => {
-                let _ = buf.get_u8()?;
-                let sig = deserialize_signature(buf)?;
+                let sig = deserialize_signature(codec)?;
                 Ok(PoolSignature::Operator(SingleAccountBindingSignature(sig)))
             }
-            _ => PoolOwnersSigned::read(buf).map(PoolSignature::Owners),
+            1 => PoolOwnersSigned::deserialize_from_slice(codec).map(PoolSignature::Owners),
+            code => Err(ReadError::UnknownTag(code as u32)),
         }
     }
 }

@@ -19,7 +19,6 @@ use crate::{
 use chain_vote::MemberPublicKey;
 use std::{
     collections::{HashMap, HashSet},
-    convert::TryFrom,
     num::NonZeroU64,
 };
 

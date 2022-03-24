@@ -1,6 +1,8 @@
 use crate::stake::Stake;
-use chain_core::mempack::{ReadBuf, ReadError, Readable};
-use chain_core::property;
+use chain_core::{
+    packer::Codec,
+    property::{Deserialize, ReadError, Serialize, WriteError},
+};
 use std::{iter::Sum, ops};
 use thiserror::Error;
 
@@ -113,26 +115,14 @@ impl AsRef<u64> for Value {
     }
 }
 
-impl property::Deserialize for Value {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        use chain_core::packer::*;
-        let mut codec = Codec::new(reader);
+impl Deserialize for Value {
+    fn deserialize<R: std::io::Read>(codec: &mut Codec<R>) -> Result<Self, ReadError> {
         codec.get_be_u64().map(Value)
     }
 }
-impl Readable for Value {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        buf.get_u64().map(Value)
-    }
-}
 
-impl property::Serialize for Value {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        use chain_core::packer::*;
-        let mut codec = Codec::new(writer);
+impl Serialize for Value {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         codec.put_be_u64(self.0)
     }
 }

@@ -1,7 +1,10 @@
 //! Split timeframe in eras
 
 use crate::timeframe::Slot;
-use chain_ser::packer::Codec;
+use chain_core::{
+    packer::Codec,
+    property::{ReadError, WriteError},
+};
 use std::fmt;
 
 /// Epoch number
@@ -45,16 +48,14 @@ pub struct TimeEra {
 pub fn pack_time_era<W: std::io::Write>(
     time_era: &TimeEra,
     codec: &mut Codec<W>,
-) -> Result<(), std::io::Error> {
+) -> Result<(), WriteError> {
     codec.put_be_u32(time_era.epoch_start.0)?;
     codec.put_be_u64(time_era.slot_start.0)?;
     codec.put_be_u32(time_era.slots_per_epoch)?;
     Ok(())
 }
 
-pub fn unpack_time_era<R: std::io::BufRead>(
-    codec: &mut Codec<R>,
-) -> Result<TimeEra, std::io::Error> {
+pub fn unpack_time_era<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<TimeEra, ReadError> {
     let epoch_start = Epoch(codec.get_be_u32()?);
     let slot_start = Slot(codec.get_be_u64()?);
     let slots_per_epoch = codec.get_be_u32()?;
@@ -115,7 +116,6 @@ mod test {
     use crate::timeframe::*;
     use crate::timeline::Timeline;
 
-    use std::io::Cursor;
     use std::time::{Duration, SystemTime};
 
     use chain_ser::packer::Codec;
@@ -124,13 +124,12 @@ mod test {
 
     #[proptest]
     fn time_era_pack_unpack_bijection(time_era: TimeEra) {
-        let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-        let mut codec = Codec::new(c);
-
+        let cursor = std::io::Cursor::new(Vec::new());
+        let mut codec = Codec::new(cursor);
         pack_time_era(&time_era, &mut codec).unwrap();
-        c = codec.into_inner();
-        c.set_position(0);
-        codec = Codec::new(c);
+        let mut cursor = codec.into_inner();
+        cursor.set_position(0);
+        codec = Codec::new(cursor);
         let other_time_era = unpack_time_era(&mut codec).unwrap();
         prop_assert_eq!(time_era, other_time_era);
     }

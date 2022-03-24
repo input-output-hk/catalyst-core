@@ -1,7 +1,8 @@
 use crate::key::deserialize_signature;
 use crate::transaction::TransactionBindingAuthData;
 use crate::value::{Value, ValueError};
-use chain_core::mempack::{ReadBuf, ReadError, Readable};
+use chain_core::packer::Codec;
+use chain_core::property::{DeserializeFromSlice, ReadError};
 use chain_crypto::{digest::DigestOf, Blake2b256, Ed25519, PublicKey, Signature, Verification};
 use thiserror::Error;
 use typed_bytes::ByteBuilder;
@@ -63,9 +64,9 @@ impl AsRef<[u8]> for SingleAccountBindingSignature {
     }
 }
 
-impl Readable for SingleAccountBindingSignature {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        deserialize_signature(buf).map(SingleAccountBindingSignature)
+impl DeserializeFromSlice for SingleAccountBindingSignature {
+    fn deserialize_from_slice(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
+        deserialize_signature(codec).map(SingleAccountBindingSignature)
     }
 }
 
@@ -96,11 +97,11 @@ impl AccountBindingSignature {
     }
 }
 
-impl Readable for AccountBindingSignature {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        match buf.get_u8()? {
+impl DeserializeFromSlice for AccountBindingSignature {
+    fn deserialize_from_slice(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
+        match codec.get_u8()? {
             1 => {
-                let sig = deserialize_signature(buf).map(SingleAccountBindingSignature)?;
+                let sig = deserialize_signature(codec).map(SingleAccountBindingSignature)?;
                 Ok(AccountBindingSignature::Single(sig))
             }
             2 => unimplemented!(),

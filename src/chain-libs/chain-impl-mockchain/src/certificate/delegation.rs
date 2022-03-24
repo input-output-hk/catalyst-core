@@ -5,9 +5,10 @@ use crate::transaction::{
     UnspecifiedAccountIdentifier,
 };
 
+use chain_core::property::WriteError;
 use chain_core::{
-    mempack::{ReadBuf, ReadError, Readable},
-    property,
+    packer::Codec,
+    property::{Deserialize, ReadError, Serialize},
 };
 use std::marker::PhantomData;
 use typed_bytes::{ByteArray, ByteBuilder};
@@ -54,18 +55,17 @@ impl StakeDelegation {
     }
 }
 
-impl property::Serialize for OwnerStakeDelegation {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
+impl Serialize for OwnerStakeDelegation {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         let delegation_buf =
             serialize_delegation_type(&self.delegation, ByteBuilder::new()).finalize_as_vec();
-        writer.write_all(&delegation_buf)
+        codec.put_bytes(&delegation_buf)
     }
 }
 
-impl Readable for OwnerStakeDelegation {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let delegation = deserialize_delegation_type(buf)?;
+impl Deserialize for OwnerStakeDelegation {
+    fn deserialize<R: std::io::Read>(codec: &mut Codec<R>) -> Result<Self, ReadError> {
+        let delegation = deserialize_delegation_type(codec)?;
         Ok(Self { delegation })
     }
 }
@@ -90,25 +90,19 @@ impl Payload for OwnerStakeDelegation {
     }
 }
 
-impl property::Serialize for StakeDelegation {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        use chain_core::packer::*;
-        use std::io::Write;
-
+impl Serialize for StakeDelegation {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         let delegation_buf =
             serialize_delegation_type(&self.delegation, ByteBuilder::new()).finalize_as_vec();
-        let mut codec = Codec::new(writer);
-        codec.write_all(self.account_id.as_ref())?;
-        codec.write_all(&delegation_buf)?;
-        Ok(())
+        codec.put_bytes(self.account_id.as_ref())?;
+        codec.put_bytes(&delegation_buf)
     }
 }
 
-impl Readable for StakeDelegation {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let account_identifier = <[u8; 32]>::read(buf)?;
-        let delegation = deserialize_delegation_type(buf)?;
+impl Deserialize for StakeDelegation {
+    fn deserialize<R: std::io::Read>(codec: &mut Codec<R>) -> Result<Self, ReadError> {
+        let account_identifier = <[u8; 32]>::deserialize(codec)?;
+        let delegation = deserialize_delegation_type(codec)?;
         Ok(StakeDelegation {
             account_id: account_identifier.into(),
             delegation,
@@ -160,16 +154,18 @@ fn serialize_delegation_type(
     }
 }
 
-fn deserialize_delegation_type(buf: &mut ReadBuf) -> Result<DelegationType, ReadError> {
-    let parts = buf.get_u8()?;
+fn deserialize_delegation_type<R: std::io::Read>(
+    codec: &mut Codec<R>,
+) -> Result<DelegationType, ReadError> {
+    let parts = codec.get_u8()?;
     match parts {
         0 => Ok(DelegationType::NonDelegated),
         1 => {
-            let pool_id = <[u8; 32]>::read(buf)?.into();
+            let pool_id = <[u8; 32]>::deserialize(codec)?.into();
             Ok(DelegationType::Full(pool_id))
         }
         _ => {
-            let sz = buf.get_u8()?;
+            let sz = codec.get_u8()?;
             if sz as usize > DELEGATION_RATIO_MAX_DECLS {
                 return Err(ReadError::SizeTooBig(
                     sz as usize,
@@ -178,8 +174,8 @@ fn deserialize_delegation_type(buf: &mut ReadBuf) -> Result<DelegationType, Read
             }
             let mut pools = Vec::with_capacity(sz as usize);
             for _ in 0..sz {
-                let pool_parts = buf.get_u8()?;
-                let pool_id = <[u8; 32]>::read(buf)?.into();
+                let pool_parts = codec.get_u8()?;
+                let pool_id = <[u8; 32]>::deserialize(codec)?.into();
                 pools.push((pool_id, pool_parts))
             }
             match DelegationRatio::new(parts, pools) {

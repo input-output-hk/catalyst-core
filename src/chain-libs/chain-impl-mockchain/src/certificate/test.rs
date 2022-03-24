@@ -7,7 +7,7 @@ use crate::testing::data::CommitteeMembersManager;
 use crate::vote;
 use crate::{accounting::account::DelegationType, tokens::identifier::TokenIdentifier};
 #[cfg(test)]
-use chain_core::mempack::{ReadBuf, Readable};
+use chain_core::{packer::Codec, property::DeserializeFromSlice};
 use chain_crypto::{testing, Ed25519};
 use chain_time::DurationSeconds;
 use chain_vote::{Crs, EncryptedTally};
@@ -331,10 +331,6 @@ impl Arbitrary for Certificate {
 #[quickcheck]
 fn pool_reg_serialization_bijection(b: PoolRegistration) -> TestResult {
     let b_got = b.serialize();
-    let mut buf = ReadBuf::from(b_got.as_ref());
-    let result = PoolRegistration::read(&mut buf);
-    let left = Ok(b);
-    assert_eq!(left, result);
-    assert!(buf.get_slice_end().is_empty());
-    TestResult::from_bool(left == result)
+    let result = PoolRegistration::deserialize_from_slice(&mut Codec::new(b_got.as_ref())).unwrap();
+    TestResult::from_bool(b == result)
 }

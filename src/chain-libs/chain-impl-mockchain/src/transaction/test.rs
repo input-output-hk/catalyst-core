@@ -8,7 +8,7 @@ use crate::certificate::OwnerStakeDelegation;
 use crate::date::BlockDate;
 use crate::key::{EitherEd25519SecretKey, SpendingSignature};
 #[cfg(test)]
-use crate::testing::serialization::serialization_bijection_r;
+use crate::testing::serialization::serialization_bijection;
 use chain_crypto::{testing::arbitrary_secret_key, Ed25519, SecretKey, Signature};
 #[cfg(test)]
 use quickcheck::TestResult;
@@ -17,18 +17,18 @@ use quickcheck_macros::quickcheck;
 
 quickcheck! {
     fn transaction_encode_decode(transaction: Transaction<NoExtra>) -> TestResult {
-        serialization_bijection_r(transaction)
+        serialization_bijection(transaction)
     }
     fn stake_owner_delegation_tx_encode_decode(transaction: Transaction<OwnerStakeDelegation>) -> TestResult {
-        serialization_bijection_r(transaction)
+        serialization_bijection(transaction)
     }
     /*
     fn certificate_tx_encode_decode(transaction: Transaction<Address, Certificate>) -> TestResult {
-        chain_core::property::testing::serialization_bijection_r(transaction)
+        chain_core::property::testing::serialization_bijection(transaction)
     }
     */
     fn signed_transaction_encode_decode(transaction: Transaction<NoExtra>) -> TestResult {
-        serialization_bijection_r(transaction)
+        serialization_bijection(transaction)
     }
 }
 

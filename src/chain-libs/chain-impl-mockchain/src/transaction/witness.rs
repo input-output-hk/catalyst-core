@@ -6,8 +6,11 @@ use crate::key::{
     SpendingSignature,
 };
 use crate::multisig;
-use chain_core::mempack::{ReadBuf, ReadError, Readable};
-use chain_core::property;
+use chain_core::property::WriteError;
+use chain_core::{
+    packer::Codec,
+    property::{Deserialize, DeserializeFromSlice, ReadError, Serialize},
+};
 use chain_crypto::{Ed25519, PublicKey, Signature};
 
 /// Structure that proofs that certain user agrees with
@@ -178,7 +181,6 @@ impl Witness {
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
-        use chain_core::property::Serialize;
         self.serialize_as_vec()
             .expect("memory serialize is expected to just work")
     }
@@ -189,57 +191,51 @@ const WITNESS_TAG_UTXO: u8 = 1u8;
 const WITNESS_TAG_ACCOUNT: u8 = 2u8;
 const WITNESS_TAG_MULTISIG: u8 = 3u8;
 
-impl property::Serialize for Witness {
-    type Error = std::io::Error;
-
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        use chain_core::packer::*;
-        use std::io::Write;
-
-        let mut codec = Codec::new(writer);
+impl Serialize for Witness {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         match self {
             Witness::OldUtxo(pk, cc, sig) => {
                 codec.put_u8(WITNESS_TAG_OLDUTXO)?;
-                serialize_public_key(pk, &mut codec)?;
-                codec.write_all(cc)?;
-                serialize_signature(sig, &mut codec)
+                serialize_public_key(pk, codec)?;
+                codec.put_bytes(cc)?;
+                serialize_signature(sig, codec)
             }
             Witness::Utxo(sig) => {
                 codec.put_u8(WITNESS_TAG_UTXO)?;
-                serialize_signature(sig, codec.into_inner())
+                serialize_signature(sig, codec)
             }
             Witness::Account(nonce, sig) => {
                 codec.put_u8(WITNESS_TAG_ACCOUNT)?;
                 codec.put_be_u32((*nonce).into())?;
-                serialize_signature(sig, codec.into_inner())
+                serialize_signature(sig, codec)
             }
             Witness::Multisig(nonce, msig) => {
                 codec.put_u8(WITNESS_TAG_MULTISIG)?;
                 codec.put_be_u32((*nonce).into())?;
-                msig.serialize(codec.into_inner())
+                msig.serialize(codec)
             }
         }
     }
 }
 
-impl Readable for Witness {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        match buf.get_u8()? {
+impl DeserializeFromSlice for Witness {
+    fn deserialize_from_slice(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
+        match codec.get_u8()? {
             WITNESS_TAG_OLDUTXO => {
-                let pk = deserialize_public_key(buf)?;
-                let some_bytes = <[u8; 32]>::read(buf)?;
-                let sig = deserialize_signature(buf)?;
+                let pk = deserialize_public_key(codec)?;
+                let some_bytes = <[u8; 32]>::deserialize(codec)?;
+                let sig = deserialize_signature(codec)?;
                 Ok(Witness::OldUtxo(pk, some_bytes, sig))
             }
-            WITNESS_TAG_UTXO => deserialize_signature(buf).map(Witness::Utxo),
+            WITNESS_TAG_UTXO => deserialize_signature(codec).map(Witness::Utxo),
             WITNESS_TAG_ACCOUNT => {
-                let nonce = buf.get_u32()?.into();
-                let sig = deserialize_signature(buf)?;
+                let nonce = codec.get_be_u32()?.into();
+                let sig = deserialize_signature(codec)?;
                 Ok(Witness::Account(nonce, sig))
             }
             WITNESS_TAG_MULTISIG => {
-                let nonce = buf.get_u32()?.into();
-                let msig = multisig::Witness::read(buf)?;
+                let nonce = codec.get_be_u32()?.into();
+                let msig = multisig::Witness::deserialize_from_slice(codec)?;
                 Ok(Witness::Multisig(nonce, msig))
             }
             i => Err(ReadError::UnknownTag(i as u32)),

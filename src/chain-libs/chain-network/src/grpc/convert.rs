@@ -7,8 +7,6 @@ use crate::data::{
 use crate::error::{self, Error};
 use tonic::{Code, Status};
 
-use std::convert::TryFrom;
-
 pub(super) fn error_into_grpc(err: Error) -> Status {
     use error::Code::*;
 

@@ -3,8 +3,11 @@ use crate::value::Value;
 pub use cardano_legacy_address::Addr as OldAddress;
 pub use cardano_legacy_address::AddressMatchXPub as OldAddressMatchXPub;
 
-use chain_core::mempack::{ReadBuf, ReadError, Readable};
-use chain_core::property;
+use chain_core::property::WriteError;
+use chain_core::{
+    packer::Codec,
+    property::{Deserialize, DeserializeFromSlice, ReadError, Serialize},
+};
 use chain_crypto::{Ed25519, PublicKey};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -22,18 +25,18 @@ pub fn oldaddress_from_xpub(
     address.identical_with_pubkey_raw(&pkraw, some_bytes)
 }
 
-impl Readable for UtxoDeclaration {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let nb_entries = buf.get_u8()? as usize;
+impl DeserializeFromSlice for UtxoDeclaration {
+    fn deserialize_from_slice(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
+        let nb_entries = codec.get_u8()? as usize;
         if nb_entries >= 0xff {
             return Err(ReadError::StructureInvalid("nb entries".to_string()));
         }
 
         let mut addrs = Vec::with_capacity(nb_entries);
         for _ in 0..nb_entries {
-            let value = Value::read(buf)?;
-            let addr_size = buf.get_u16()? as usize;
-            let addr = OldAddress::try_from(buf.get_slice(addr_size)?)
+            let value = Value::deserialize(codec)?;
+            let addr_size = codec.get_be_u16()? as usize;
+            let addr = OldAddress::try_from(codec.get_slice(addr_size)?)
                 .map_err(|err| ReadError::StructureInvalid(format!("{}", err)))?;
             addrs.push((addr, value))
         }
@@ -42,21 +45,16 @@ impl Readable for UtxoDeclaration {
     }
 }
 
-impl property::Serialize for UtxoDeclaration {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        use chain_core::packer::*;
-        use std::io::Write;
-
+impl Serialize for UtxoDeclaration {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         assert!(self.addrs.len() < 255);
 
-        let mut codec = Codec::new(writer);
         codec.put_u8(self.addrs.len() as u8)?;
         for (b, v) in &self.addrs {
-            v.serialize(&mut codec)?;
+            v.serialize(codec)?;
             let bs = b.as_ref();
             codec.put_be_u16(bs.len() as u16)?;
-            codec.write_all(bs)?;
+            codec.put_bytes(bs)?;
         }
         Ok(())
     }

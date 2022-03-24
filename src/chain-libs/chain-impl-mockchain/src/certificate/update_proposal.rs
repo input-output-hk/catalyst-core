@@ -6,9 +6,10 @@ use crate::{
     key::BftLeaderId,
     transaction::{Payload, PayloadAuthData, PayloadData, PayloadSlice},
 };
+use chain_core::property::WriteError;
 use chain_core::{
-    mempack::{ReadBuf, ReadError, Readable},
-    property::{self, Serialize},
+    packer::Codec,
+    property::{DeserializeFromSlice, ReadError, Serialize},
 };
 use typed_bytes::{ByteArray, ByteBuilder};
 
@@ -79,35 +80,17 @@ impl Payload for UpdateProposal {
 
 /* Ser/De ******************************************************************* */
 
-impl property::Serialize for UpdateProposal {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        use chain_core::packer::*;
-        let mut codec = Codec::new(writer);
-        self.changes.serialize(&mut codec)?;
-        self.proposer_id.serialize(&mut codec)?;
-        Ok(())
+impl Serialize for UpdateProposal {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
+        self.changes.serialize(codec)?;
+        self.proposer_id.serialize(codec)
     }
 }
 
-impl property::Deserialize for UpdateProposal {
-    type Error = std::io::Error;
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        use chain_core::packer::*;
-        let mut codec = Codec::new(reader);
-        let changes = ConfigParams::deserialize(&mut codec)?;
-        let proposer_id = UpdateProposerId::deserialize(&mut codec)?;
-        Ok(Self {
-            changes,
-            proposer_id,
-        })
-    }
-}
-
-impl Readable for UpdateProposal {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let changes = ConfigParams::read(buf)?;
-        let proposer_id = UpdateProposerId::read(buf)?;
+impl DeserializeFromSlice for UpdateProposal {
+    fn deserialize_from_slice(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
+        let changes = ConfigParams::deserialize_from_slice(codec)?;
+        let proposer_id = UpdateProposerId::deserialize_from_slice(codec)?;
 
         Ok(Self::new(changes, proposer_id))
     }

@@ -1,6 +1,6 @@
 use crate::fragment::Fragment;
 use crate::key::Hash;
-use chain_core::property::Serialize;
+use chain_core::{packer::Codec, property::Serialize};
 use std::slice;
 
 pub type BlockContentHash = Hash;
@@ -44,7 +44,7 @@ impl Contents {
         let mut bytes = Vec::with_capacity(4096);
 
         for message in self.iter() {
-            message.to_raw().serialize(&mut bytes).unwrap();
+            message.serialize(&mut Codec::new(&mut bytes)).unwrap();
         }
 
         let hash = Hash::hash_bytes(&bytes);

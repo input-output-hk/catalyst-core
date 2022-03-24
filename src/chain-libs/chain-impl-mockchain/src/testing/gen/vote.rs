@@ -20,7 +20,6 @@ use chain_vote::{Crs, ElectionPublicKey, Vote};
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 use rand_core::{CryptoRng, RngCore};
-use std::convert::TryFrom;
 use typed_bytes::ByteBuilder;
 
 pub struct VoteTestGen;

@@ -1,7 +1,7 @@
 use chain_ser::packer::Codec;
 use evm::{Context, ExitError};
 
-use super::prelude::{mem, Address, TryInto};
+use super::prelude::{mem, Address};
 use super::{EvmPrecompileResult, Precompile, PrecompileOutput};
 
 /// Blake2 costs.

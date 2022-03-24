@@ -1,4 +1,7 @@
-use chain_core::mempack::{ReadBuf, ReadError, Readable};
+use chain_core::{
+    packer::Codec,
+    property::{Deserialize, ReadError},
+};
 
 pub const POLICY_HASH_SIZE: usize = 28;
 
@@ -22,14 +25,14 @@ impl TryFrom<&[u8]> for PolicyHash {
     type Error = ReadError;
 
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-        Self::read(&mut ReadBuf::from(value))
+        Self::deserialize(&mut Codec::new(value))
     }
 }
 
-impl Readable for PolicyHash {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let bytes = buf
-            .get_slice(POLICY_HASH_SIZE)?
+impl Deserialize for PolicyHash {
+    fn deserialize<R: std::io::Read>(codec: &mut Codec<R>) -> Result<Self, ReadError> {
+        let bytes = codec
+            .get_bytes(POLICY_HASH_SIZE)?
             .try_into()
             .unwrap_or_else(|_| panic!("already read {} bytes", POLICY_HASH_SIZE));
         Ok(Self(bytes))
@@ -56,11 +59,8 @@ mod tests {
     #[quickcheck_macros::quickcheck]
     fn policy_hash_serialization_bijection(ph: PolicyHash) -> TestResult {
         let ph_got = ph.as_ref();
-        let mut buf = ReadBuf::from(ph_got);
-        let result = PolicyHash::read(&mut buf);
-        let left = Ok(ph.clone());
-        assert_eq!(left, result);
-        assert!(buf.get_slice_end().is_empty());
-        TestResult::from_bool(left == result)
+        let mut codec = Codec::new(ph_got);
+        let result = PolicyHash::deserialize(&mut codec).unwrap();
+        TestResult::from_bool(ph == result)
     }
 }

@@ -14,6 +14,7 @@ use crate::leadership;
 use std::fmt::{self, Debug};
 use std::num::NonZeroUsize;
 
+use chain_core::property::WriteError;
 pub use cstruct::HeaderError;
 
 /// Finalized Unsigned Header
@@ -293,21 +294,24 @@ impl Debug for Header {
 }
 
 use chain_core::{
-    mempack::{ReadBuf, ReadError, Readable},
-    property,
+    packer::Codec,
+    property::{Deserialize, ReadError, Serialize},
 };
 
-impl property::Serialize for Header {
-    type Error = std::io::Error;
-
-    fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
-        writer.write_all(self.as_slice())
+impl Serialize for Header {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
+        codec.put_bytes(self.as_slice())
     }
 }
 
-impl Readable for Header {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        Header::from_slice(buf.get_slice_end()).map_err(|e| match e {
+impl Deserialize for Header {
+    fn deserialize<R: std::io::Read>(codec: &mut Codec<R>) -> Result<Self, ReadError> {
+        let mut buf = Vec::new();
+        // TODO: implicitly define size of the Header object in the deserialize function, do not use read_to_end,
+        // it narrows the usage of the deserialize trait for the Header struct,
+        // which is not obvious from the Deserialze trait description, so leads to mistakes
+        codec.read_to_end(&mut buf)?;
+        Header::from_slice(buf.as_slice()).map_err(|e| match e {
             HeaderError::InvalidSize => ReadError::NotEnoughBytes(0, 0),
             HeaderError::UnknownVersion => ReadError::UnknownTag(0),
             HeaderError::SizeMismatch { expected, got } => ReadError::SizeTooBig(expected, got),

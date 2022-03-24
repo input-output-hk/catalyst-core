@@ -4,8 +4,8 @@ use crate::{
     vote,
 };
 use chain_core::{
-    mempack::{ReadBuf, ReadError, Readable},
-    property,
+    packer::Codec,
+    property::{Deserialize, DeserializeFromSlice, ReadError, Serialize, WriteError},
 };
 use typed_bytes::{ByteArray, ByteBuilder};
 
@@ -78,19 +78,17 @@ impl Payload for VoteCast {
 
 /* Ser/De ******************************************************************* */
 
-impl property::Serialize for VoteCast {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
-        writer.write_all(self.serialize().as_slice())?;
-        Ok(())
+impl Serialize for VoteCast {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
+        codec.put_bytes(self.serialize().as_slice())
     }
 }
 
-impl Readable for VoteCast {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let vote_plan = <[u8; 32]>::read(buf)?.into();
-        let proposal_index = buf.get_u8()?;
-        let payload = vote::Payload::read(buf)?;
+impl DeserializeFromSlice for VoteCast {
+    fn deserialize_from_slice(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
+        let vote_plan = <[u8; 32]>::deserialize(codec)?.into();
+        let proposal_index = codec.get_u8()?;
+        let payload = vote::Payload::read(codec)?;
 
         Ok(Self::new(vote_plan, proposal_index, payload))
     }

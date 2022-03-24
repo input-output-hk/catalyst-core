@@ -1,5 +1,8 @@
 use crate::{ledger::governance::GovernanceAcceptanceCriteria, value::Value};
-use chain_core::mempack::{ReadBuf, ReadError, Readable};
+use chain_core::{
+    packer::Codec,
+    property::{Deserialize, ReadError},
+};
 use imhamt::Hamt;
 use std::collections::hash_map::DefaultHasher;
 use typed_bytes::ByteBuilder;
@@ -102,12 +105,12 @@ impl ParametersGovernance {
 
 /* Ser/De ******************************************************************* */
 
-impl Readable for ParametersGovernanceAction {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        match buf.get_u8()? {
+impl Deserialize for ParametersGovernanceAction {
+    fn deserialize<R: std::io::Read>(codec: &mut Codec<R>) -> Result<Self, ReadError> {
+        match codec.get_u8()? {
             0 => Ok(Self::NoOp),
             1 => {
-                let value = Value::read(buf)?;
+                let value = Value::deserialize(codec)?;
                 Ok(Self::RewardAdd { value })
             }
             t => Err(ReadError::UnknownTag(t as u32)),

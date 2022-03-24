@@ -2,10 +2,11 @@ use crate::tokens::{
     name::{TokenName, TokenNameTooLong},
     policy_hash::PolicyHash,
 };
-
+use chain_core::{
+    packer::Codec,
+    property::{Deserialize, ReadError},
+};
 use std::{fmt, str::FromStr};
-
-use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use thiserror::Error;
 use typed_bytes::ByteBuilder;
 
@@ -52,10 +53,10 @@ impl TokenIdentifier {
     }
 }
 
-impl Readable for TokenIdentifier {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let policy_hash = PolicyHash::read(buf)?;
-        let token_name = TokenName::read(buf)?;
+impl Deserialize for TokenIdentifier {
+    fn deserialize<R: std::io::Read>(codec: &mut Codec<R>) -> Result<Self, ReadError> {
+        let policy_hash = PolicyHash::deserialize(codec)?;
+        let token_name = TokenName::deserialize(codec)?;
         Ok(Self {
             policy_hash,
             token_name,
@@ -134,11 +135,8 @@ mod tests {
     #[quickcheck_macros::quickcheck]
     fn token_identifier_serialization_bijection(id: TokenIdentifier) -> TestResult {
         let id_got = id.bytes();
-        let mut buf = ReadBuf::from(id_got.as_ref());
-        let result = TokenIdentifier::read(&mut buf);
-        let left = Ok(id);
-        assert_eq!(left, result);
-        assert!(buf.get_slice_end().is_empty());
-        TestResult::from_bool(left == result)
+        let mut codec = Codec::new(id_got.as_slice());
+        let result = TokenIdentifier::deserialize(&mut codec).unwrap();
+        TestResult::from_bool(id == result)
     }
 }

@@ -649,8 +649,8 @@ mod tests {
     #[cfg(test)]
     #[derive(Debug, Copy, Clone)]
     struct ExpiryBlockDate {
-        pub block_date: BlockDate,
-        pub proposal_expiration: u32,
+        block_date: BlockDate,
+        proposal_expiration: u32,
     }
 
     #[cfg(test)]
@@ -681,6 +681,7 @@ mod tests {
         }
     }
 
+    #[cfg(test)]
     #[quickcheck]
     fn rejected_proposals_are_removed_after_expiration_period(
         expiry_block_data: ExpiryBlockDate,

@@ -35,8 +35,10 @@ use std::string::ToString;
 
 use chain_crypto::{Ed25519, PublicKey, PublicKeyError};
 
-use chain_core::mempack::{ReadBuf, ReadError, Readable};
-use chain_core::property::{self, Serialize as PropertySerialize};
+use chain_core::{
+    packer::Codec,
+    property::{Deserialize, ReadError, Serialize, WriteError},
+};
 
 #[cfg(any(test, feature = "property-test-api"))]
 mod testing;
@@ -416,89 +418,31 @@ impl std::str::FromStr for AddressReadable {
     }
 }
 
-impl PropertySerialize for Address {
-    type Error = std::io::Error;
-
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        use chain_core::packer::*;
-        use std::io::Write;
-        let mut codec = Codec::new(writer);
-
+impl Serialize for Address {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         let first_byte = match self.0 {
             Discrimination::Production => self.to_kind_value(),
             Discrimination::Test => self.to_kind_value() | 0b1000_0000,
         };
         codec.put_u8(first_byte)?;
         match &self.1 {
-            Kind::Single(spend) => codec.write_all(spend.as_ref())?,
+            Kind::Single(spend) => codec.put_bytes(spend.as_ref())?,
             Kind::Group(spend, group) => {
-                codec.write_all(spend.as_ref())?;
-                codec.write_all(group.as_ref())?;
+                codec.put_bytes(spend.as_ref())?;
+                codec.put_bytes(group.as_ref())?;
             }
-            Kind::Account(stake_key) => codec.write_all(stake_key.as_ref())?,
-            Kind::Multisig(hash) => codec.write_all(&hash[..])?,
-            Kind::Script(hash) => codec.write_all(&hash[..])?,
+            Kind::Account(stake_key) => codec.put_bytes(stake_key.as_ref())?,
+            Kind::Multisig(hash) => codec.put_bytes(&hash[..])?,
+            Kind::Script(hash) => codec.put_bytes(&hash[..])?,
         };
 
         Ok(())
     }
 
-    fn serialize_as_vec(&self) -> Result<Vec<u8>, Self::Error> {
+    fn serialize_as_vec(&self) -> Result<Vec<u8>, WriteError> {
         let mut data = Vec::with_capacity(self.to_size());
-        self.serialize(&mut data)?;
+        self.serialize(&mut Codec::new(&mut data))?;
         Ok(data)
-    }
-}
-impl property::Deserialize for Address {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        use chain_core::packer::*;
-        use std::io::Read;
-        let mut codec = Codec::new(reader);
-        // is_valid_data(bytes)?;
-
-        let byte = codec.get_u8()?;
-
-        let discr = get_discrimination_value(byte);
-        let kind = match get_kind_value(byte) {
-            ADDR_KIND_SINGLE => {
-                let mut bytes = [0u8; 32];
-                codec.read_exact(&mut bytes)?;
-                let spending = PublicKey::from_binary(&bytes[..]).map_err(|err| {
-                    std::io::Error::new(std::io::ErrorKind::InvalidData, Box::new(err))
-                })?;
-                Kind::Single(spending)
-            }
-            ADDR_KIND_GROUP => {
-                let mut bytes = [0u8; 32];
-                codec.read_exact(&mut bytes)?;
-                let spending = PublicKey::from_binary(&bytes[..]).map_err(|err| {
-                    std::io::Error::new(std::io::ErrorKind::InvalidData, Box::new(err))
-                })?;
-                let mut bytes = [0u8; 32];
-                codec.read_exact(&mut bytes)?;
-                let group = PublicKey::from_binary(&bytes[..]).map_err(|err| {
-                    std::io::Error::new(std::io::ErrorKind::InvalidData, Box::new(err))
-                })?;
-                Kind::Group(spending, group)
-            }
-            ADDR_KIND_ACCOUNT => {
-                let mut bytes = [0u8; 32];
-                codec.read_exact(&mut bytes)?;
-                let stake_key = PublicKey::from_binary(&bytes[..]).map_err(|err| {
-                    std::io::Error::new(std::io::ErrorKind::InvalidData, Box::new(err))
-                })?;
-                Kind::Account(stake_key)
-            }
-            ADDR_KIND_MULTISIG => {
-                let mut bytes = [0u8; 32];
-                codec.read_exact(&mut bytes)?;
-                Kind::Multisig(bytes)
-            }
-            _ => unreachable!(),
-        };
-        Ok(Address(discr, kind))
     }
 }
 
@@ -513,34 +457,34 @@ fn chain_crypto_err(e: chain_crypto::PublicKeyError) -> ReadError {
     }
 }
 
-impl Readable for Address {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let byte = buf.get_u8()?;
+impl Deserialize for Address {
+    fn deserialize<R: std::io::Read>(codec: &mut Codec<R>) -> Result<Self, ReadError> {
+        let byte = codec.get_u8()?;
         let discr = get_discrimination_value(byte);
         let kind = match get_kind_value(byte) {
             ADDR_KIND_SINGLE => {
-                let bytes = <[u8; 32]>::read(buf)?;
+                let bytes = <[u8; 32]>::deserialize(codec)?;
                 let spending = PublicKey::from_binary(&bytes[..]).map_err(chain_crypto_err)?;
                 Kind::Single(spending)
             }
             ADDR_KIND_GROUP => {
-                let bytes = <[u8; 32]>::read(buf)?;
+                let bytes = <[u8; 32]>::deserialize(codec)?;
                 let spending = PublicKey::from_binary(&bytes[..]).map_err(chain_crypto_err)?;
-                let bytes = <[u8; 32]>::read(buf)?;
+                let bytes = <[u8; 32]>::deserialize(codec)?;
                 let group = PublicKey::from_binary(&bytes[..]).map_err(chain_crypto_err)?;
                 Kind::Group(spending, group)
             }
             ADDR_KIND_ACCOUNT => {
-                let bytes = <[u8; 32]>::read(buf)?;
+                let bytes = <[u8; 32]>::deserialize(codec)?;
                 let stake_key = PublicKey::from_binary(&bytes[..]).map_err(chain_crypto_err)?;
                 Kind::Account(stake_key)
             }
             ADDR_KIND_MULTISIG => {
-                let bytes = <[u8; 32]>::read(buf)?;
+                let bytes = <[u8; 32]>::deserialize(codec)?;
                 Kind::Multisig(bytes)
             }
             ADDR_KIND_SCRIPT => {
-                let bytes = <[u8; 32]>::read(buf)?;
+                let bytes = <[u8; 32]>::deserialize(codec)?;
                 Kind::Script(bytes)
             }
             n => return Err(ReadError::UnknownTag(n as u32)),

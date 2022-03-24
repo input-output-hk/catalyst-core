@@ -3,16 +3,18 @@ use crate::block::Header;
 #[cfg(test)]
 use crate::header::HeaderDesc;
 #[cfg(test)]
-use crate::testing::serialization::{serialization_bijection, serialization_bijection_r};
+use crate::testing::serialization::serialization_bijection;
 use crate::{
     block::{Block, BlockVersion, HeaderRaw},
     fragment::{Contents, ContentsBuilder, Fragment},
     header::{BftProof, GenesisPraosProof, HeaderBuilderNew},
 };
 #[cfg(test)]
-use chain_core::property::{Block as _, Deserialize, Serialize};
+use chain_core::{
+    packer::Codec,
+    property::{Block as _, Deserialize, Serialize},
+};
 #[cfg(test)]
-use chain_ser::mempack::{ReadBuf, Readable};
 #[cfg(test)]
 use quickcheck::TestResult;
 use quickcheck::{Arbitrary, Gen};
@@ -21,32 +23,12 @@ quickcheck! {
     fn headerraw_serialization_bijection(b: HeaderRaw) -> TestResult {
         serialization_bijection(b)
     }
-
     fn header_serialization_bijection(b: Header) -> TestResult {
-        serialization_bijection_r(b)
+        serialization_bijection(b)
     }
 
     fn block_serialization_bijection(b: Block) -> TestResult {
         serialization_bijection(b)
-    }
-
-    fn block_serialization_bijection_r(b: Block) -> TestResult {
-        serialization_bijection_r(b)
-    }
-
-    fn block_properties(block: Block) -> TestResult {
-
-        let vec = block.serialize_as_vec().unwrap();
-        let new_block = Block::deserialize(&vec[..]).unwrap();
-
-        assert!(block.fragments().eq(new_block.fragments()));
-        assert_eq!(block.header(),new_block.header());
-        assert_eq!(block.id(),new_block.id());
-        assert_eq!(block.parent_id(),new_block.parent_id());
-        assert_eq!(block.date(),new_block.date());
-        assert_eq!(block.version(),new_block.version());
-
-        TestResult::from_bool(block.chain_length() == new_block.chain_length())
     }
 
     fn header_properties(block: Block) -> TestResult {
@@ -75,15 +57,10 @@ quickcheck! {
         let (content_hash, content_size) = contents.compute_hash_size();
 
         let maybe_block = Block { header: header.clone(), contents };
-        let block_de = Block::deserialize(maybe_block.serialize_as_vec().unwrap().as_ref());
-        let block_read = Block::read(&mut ReadBuf::from(maybe_block.serialize_as_vec().unwrap().as_ref()));
 
-        assert_eq!(
-            content_hash != header.block_content_hash() || content_size != header.block_content_size(),
-            block_de.is_err()
-        );
+        let block = Block::deserialize(&mut Codec::new(maybe_block.serialize_as_vec().unwrap().as_slice()));
 
-        block_de.is_err() == block_read.is_err()
+        (content_hash != header.block_content_hash() || content_size != header.block_content_size()) == block.is_err()
     }
 }
 

@@ -5,8 +5,8 @@ use crate::{
 };
 
 use chain_core::{
-    mempack::{ReadBuf, ReadError, Readable},
-    property,
+    packer::Codec,
+    property::{Deserialize, DeserializeFromSlice, ReadError, Serialize, WriteError},
 };
 use typed_bytes::{ByteArray, ByteBuilder};
 
@@ -75,21 +75,18 @@ impl Payload for UpdateVote {
 
 /* Ser/De ******************************************************************* */
 
-impl property::Serialize for UpdateVote {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        use chain_core::packer::*;
-        let mut codec = Codec::new(writer);
-        self.proposal_id.serialize(&mut codec)?;
-        self.voter_id.serialize(&mut codec)?;
+impl Serialize for UpdateVote {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
+        self.proposal_id.serialize(codec)?;
+        self.voter_id.serialize(codec)?;
         Ok(())
     }
 }
 
-impl Readable for UpdateVote {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let proposal_id = UpdateProposalId::read(buf)?;
-        let voter_id = UpdateVoterId::read(buf)?;
+impl DeserializeFromSlice for UpdateVote {
+    fn deserialize_from_slice(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
+        let proposal_id = UpdateProposalId::deserialize(codec)?;
+        let voter_id = UpdateVoterId::deserialize_from_slice(codec)?;
 
         Ok(Self::new(proposal_id, voter_id))
     }

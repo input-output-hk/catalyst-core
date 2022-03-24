@@ -1,9 +1,11 @@
 //! Representation of the block in the mockchain.
-use crate::fragment::{Fragment, FragmentRaw};
-use chain_core::mempack::{read_from_raw, ReadBuf, ReadError, Readable};
-use chain_core::property;
+use crate::fragment::Fragment;
+use chain_core::{
+    packer::Codec,
+    property::{self, Deserialize, ReadError, Serialize, WriteError},
+};
 
-use std::{io, slice};
+use std::slice;
 
 mod builder;
 mod header;
@@ -92,86 +94,32 @@ impl property::Block for Block {
     }
 }
 
-impl property::Serialize for Block {
-    type Error = std::io::Error;
-
-    fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
+impl Serialize for Block {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         let header_raw = {
             let mut v = Vec::new();
-            self.header.serialize(&mut v)?;
+            self.header.serialize(&mut Codec::new(&mut v))?;
             HeaderRaw(v)
         };
-        header_raw.serialize(&mut writer)?;
+        header_raw.serialize(codec)?;
 
         for message in self.contents.iter() {
-            let message_raw = message.to_raw();
-            message_raw.serialize(&mut writer)?;
+            message.serialize(codec)?;
         }
         Ok(())
     }
 }
 
-impl property::Deserialize for Block {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(mut reader: R) -> Result<Self, Self::Error> {
-        let header_raw = HeaderRaw::deserialize(&mut reader)?;
-        let header = read_from_raw::<Header>(header_raw.as_ref())?;
-
-        let mut serialized_content_size = header.block_content_size();
-        let mut contents = ContentsBuilder::new();
-
-        while serialized_content_size > 0 {
-            let message_raw = FragmentRaw::deserialize(&mut reader)?;
-            let message_size = message_raw.size_bytes_plus_size() as u32;
-
-            if message_size > serialized_content_size {
-                return Err(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    format!(
-                        "{} bytes remaining according to the header but got a fragment of size {}",
-                        message_size, serialized_content_size,
-                    ),
-                ));
-            }
-
-            let message = Fragment::from_raw(&message_raw)
-                .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e))?;
-            contents.push(message);
-
-            serialized_content_size -= message_size;
-        }
-
-        let contents: Contents = contents.into();
-        let (content_hash, _content_size) = contents.compute_hash_size();
-
-        if content_hash != header.block_content_hash() {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                format!(
-                    "Inconsistent block content hash in header: block {} header {}",
-                    content_hash,
-                    header.block_content_hash()
-                ),
-            ));
-        }
-
-        Ok(Block { header, contents })
-    }
-}
-
-impl Readable for Block {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let header_size = buf.get_u16()? as usize;
-        let mut header_buf = buf.split_to(header_size)?;
-        let header = Header::read(&mut header_buf)?;
-
+impl Deserialize for Block {
+    fn deserialize<R: std::io::Read>(codec: &mut Codec<R>) -> Result<Self, ReadError> {
+        let header_raw = HeaderRaw::deserialize(codec)?;
+        let header = Header::deserialize(&mut Codec::new(header_raw.as_ref()))?;
         let mut remaining_content_size = header.block_content_size() as usize;
         let mut contents = ContentsBuilder::new();
 
         while remaining_content_size > 0 {
-            let message_raw = FragmentRaw::read(buf)?;
-            let message_size = message_raw.size_bytes_plus_size();
+            let message = Fragment::deserialize(codec)?;
+            let message_size = message.serialized_size();
 
             if message_size > remaining_content_size {
                 return Err(ReadError::StructureInvalid(format!(
@@ -180,8 +128,6 @@ impl Readable for Block {
                 )));
             }
 
-            let message = Fragment::from_raw(&message_raw)
-                .map_err(|e| ReadError::StructureInvalid(e.to_string()))?;
             contents.push(message);
 
             remaining_content_size -= message_size;

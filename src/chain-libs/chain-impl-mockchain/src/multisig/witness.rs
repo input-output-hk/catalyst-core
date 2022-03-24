@@ -1,8 +1,10 @@
 use crate::key::{
     deserialize_public_key, deserialize_signature, serialize_public_key, serialize_signature,
 };
-use chain_core::mempack::{ReadBuf, ReadError, Readable};
-use chain_core::property;
+use chain_core::{
+    packer::Codec,
+    property::{DeserializeFromSlice, ReadError, Serialize, WriteError},
+};
 use chain_crypto::{Ed25519, PublicKey, Verification};
 
 use std::collections::BTreeMap;
@@ -57,57 +59,51 @@ impl Witness {
     }
 }
 
-fn deserialize_index(buf: &mut ReadBuf) -> Result<TreeIndex, ReadError> {
-    let idx = buf.get_u16()?;
+fn deserialize_index<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<TreeIndex, ReadError> {
+    let idx = codec.get_be_u16()?;
     match TreeIndex::unpack(idx) {
         None => Err(ReadError::StructureInvalid("invalid index".to_string())),
         Some(ti) => Ok(ti),
     }
 }
 
-impl property::Serialize for Witness {
-    type Error = std::io::Error;
-
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        use chain_core::packer::*;
-
-        let mut codec = Codec::new(writer);
+impl Serialize for Witness {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         codec.put_u8(self.0.len() as u8)?;
         for (ti, pk, sig) in self.0.iter() {
             codec.put_be_u16(ti.pack())?;
-            serialize_public_key(pk, &mut codec)?;
-            serialize_signature(sig, &mut codec)?;
+            serialize_public_key(pk, codec)?;
+            serialize_signature(sig, codec)?;
         }
         Ok(())
     }
 }
 
-impl Readable for Witness {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let len = buf.get_u8()? as usize;
-
+impl DeserializeFromSlice for Witness {
+    fn deserialize_from_slice(codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
+        let len = codec.get_u8()? as usize;
         if len == 0 {
             return Err(ReadError::StructureInvalid(
                 "zero length not permitted".to_string(),
             ));
         }
 
-        let first_index = deserialize_index(buf)?;
-        let first_key = deserialize_public_key(buf)?;
-        let first_sig = deserialize_signature(buf)?;
+        let first_index = deserialize_index(codec)?;
+        let first_key = deserialize_public_key(codec)?;
+        let first_sig = deserialize_signature(codec)?;
 
         let mut v = vec![(first_index, first_key, first_sig)];
 
         let mut prev_index = first_index;
         for _ in 0..len {
-            let ti = deserialize_index(buf)?;
+            let ti = deserialize_index(codec)?;
             if ti <= prev_index {
                 return Err(ReadError::StructureInvalid(
                     "index not in order".to_string(),
                 ));
             }
-            let pk = deserialize_public_key(buf)?;
-            let sig = deserialize_signature(buf)?;
+            let pk = deserialize_public_key(codec)?;
+            let sig = deserialize_signature(codec)?;
             prev_index = ti;
             v.push((ti, pk, sig))
         }

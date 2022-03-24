@@ -25,7 +25,7 @@ where
     let mut matrix: Vec<Vec<T>> = (0..number_of_splits)
         .map(|_| Vec::with_capacity(number_of_splits))
         .collect();
-    for x in source.iter() {
+    for x in source {
         let index = usize::arbitrary(gen) % number_of_splits;
         matrix.get_mut(index).unwrap().push(x.clone());
     }

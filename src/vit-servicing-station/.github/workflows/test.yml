@@ -16,7 +16,7 @@ jobs:
 
       - id: cargo-deps
         name: Cache cargo dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry/index
@@ -35,7 +35,7 @@ jobs:
           echo "::set-output name=head::$commit"
       - if: ${{ steps.cargo-deps.outputs.cache-hit != 'true' }}
         name: Cache cargo registry index
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cargo/registry/index
           key: cargo-index-${{ steps.ls-crates-io-index.outputs.head }}
@@ -68,7 +68,7 @@ jobs:
           }
 
       - name: Restore cargo dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry/index
@@ -122,7 +122,7 @@ jobs:
           args: -- --check
 
       - name: Restore cargo dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry/index
@@ -154,13 +154,13 @@ jobs:
           override: true
 
       - name: Restore cargo registry index
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cargo/registry/index
           key: cargo-index-v2-${{ needs.update_deps.outputs.crates-io-index-head }}
 
       - name: Restore dependency crates
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cargo/registry/cache
           key: cargo-deps-v2-${{ hashFiles('Cargo.lock') }}

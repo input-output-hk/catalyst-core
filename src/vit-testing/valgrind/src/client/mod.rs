@@ -7,7 +7,6 @@ use chain_core::property::Fragment as _;
 use chain_impl_mockchain::fragment::{Fragment, FragmentId};
 use chain_ser::deser::Deserialize;
 use chain_ser::deser::ReadError;
-use jormungandr_automation::jormungandr::Explorer;
 pub use jormungandr_automation::jormungandr::RestSettings as ValgrindSettings;
 use jormungandr_lib::interfaces::AccountVotes;
 use jormungandr_lib::interfaces::Address;
@@ -16,7 +15,6 @@ use jormungandr_lib::interfaces::SettingsDto;
 use jormungandr_lib::interfaces::VotePlanId;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, VotePlanStatus};
 use std::collections::HashMap;
-use std::str::FromStr;
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::challenges::Challenge;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
@@ -179,7 +177,6 @@ impl ValgrindClient {
         &self,
         _fragment_ids: Vec<FragmentId>,
     ) -> Result<bool, Error> {
-          ///Removing until explorer client would be provided
         unimplemented!();
        /* Ok(fragment_ids.iter().all(|x| {
             let hash = jormungandr_lib::crypto::hash::Hash::from_str(&x.to_string()).unwrap();

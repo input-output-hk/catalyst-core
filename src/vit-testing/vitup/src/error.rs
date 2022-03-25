@@ -80,6 +80,8 @@ pub enum Error {
     #[error(transparent)]
     Certs(#[from] crate::config::certs::Error),
     #[error(transparent)]
+    Data(#[from] crate::mode::standard::DataError),
+    #[error(transparent)]
     WalletProxyController(#[from] WalletProxyControllerError),
     #[error("synchronization for nodes has failed. {}. Timeout was: {} s", info, timeout.as_secs())]
     SyncTimeoutOccurred { info: String, timeout: Duration },

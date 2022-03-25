@@ -84,7 +84,7 @@ impl ExternalDataCommandArgs {
         )
         .unwrap();
 
-        generate_database(&deployment_tree, vit_parameters, template_generator);
+        generate_database(&deployment_tree, vit_parameters, template_generator)?;
 
         println!(
             "voteplan ids: {:?}",

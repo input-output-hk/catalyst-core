@@ -521,7 +521,7 @@ dependencies = [
 [[package]]
 name = "catalyst-toolbox"
 version = "0.3.0"
-source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=swtich_stake_from_funds_to_token#0586460f10f90d02c55a484995ca3ceb3322a8a5"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=swtich_stake_from_funds_to_token#7ba2f89f742917f606ea3005e704e47d8357290b"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",
@@ -566,7 +566,7 @@ dependencies = [
  "tokio 1.17.0",
  "url",
  "versionisator",
- "vit-servicing-station-lib",
+ "vit-servicing-station-lib 0.3.4-dev (git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master)",
  "wallet",
 ]
 
@@ -2256,7 +2256,7 @@ dependencies = [
 [[package]]
 name = "hersir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update_jortestkit#93bd6787e0771ac5f49a3206032af86efab5402e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e8c4bca46527798adb631dff7d99605115af97c2"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2682,7 +2682,7 @@ dependencies = [
  "thor",
  "tokio 1.17.0",
  "valgrind",
- "vit-servicing-station-lib",
+ "vit-servicing-station-lib 0.3.4-dev (git+https://github.com/input-output-hk/vit-servicing-station.git?branch=add_build_db_to_path)",
  "vit-servicing-station-tests",
  "vitup",
 ]
@@ -2735,7 +2735,7 @@ checksum = "1aab8fc367588b89dcee83ab0fd66b72b50b72fa1904d7095045ace2b0c81c35"
 [[package]]
 name = "jcli"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update_jortestkit#93bd6787e0771ac5f49a3206032af86efab5402e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e8c4bca46527798adb631dff7d99605115af97c2"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2769,7 +2769,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-automation"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update_jortestkit#93bd6787e0771ac5f49a3206032af86efab5402e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e8c4bca46527798adb631dff7d99605115af97c2"
 dependencies = [
  "assert_cmd",
  "assert_fs",
@@ -2833,7 +2833,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-integration-tests"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update_jortestkit#93bd6787e0771ac5f49a3206032af86efab5402e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e8c4bca46527798adb631dff7d99605115af97c2"
 dependencies = [
  "assert_cmd",
  "assert_fs",
@@ -2885,7 +2885,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update_jortestkit#93bd6787e0771ac5f49a3206032af86efab5402e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e8c4bca46527798adb631dff7d99605115af97c2"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -3140,7 +3140,7 @@ dependencies = [
 [[package]]
 name = "loki"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update_jortestkit#93bd6787e0771ac5f49a3206032af86efab5402e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e8c4bca46527798adb631dff7d99605115af97c2"
 dependencies = [
  "chain-addr",
  "chain-core",
@@ -3338,7 +3338,7 @@ dependencies = [
 [[package]]
 name = "mjolnir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update_jortestkit#93bd6787e0771ac5f49a3206032af86efab5402e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e8c4bca46527798adb631dff7d99605115af97c2"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -5553,7 +5553,7 @@ dependencies = [
 [[package]]
 name = "thor"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=update_jortestkit#93bd6787e0771ac5f49a3206032af86efab5402e"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e8c4bca46527798adb631dff7d99605115af97c2"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",
@@ -6243,7 +6243,7 @@ dependencies = [
  "thiserror",
  "tokio 1.17.0",
  "url",
- "vit-servicing-station-lib",
+ "vit-servicing-station-lib 0.3.4-dev (git+https://github.com/input-output-hk/vit-servicing-station.git?branch=add_build_db_to_path)",
  "vit-servicing-station-tests",
  "wallet",
  "wallet-core",
@@ -6287,6 +6287,35 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.3.4-dev"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=add_build_db_to_path#8a2f482a7e3d1f5d940737d9fbde2d1088422996"
+dependencies = [
+ "async-trait",
+ "base64 0.12.3",
+ "diesel",
+ "diesel_migrations",
+ "dotenv",
+ "http-zipkin",
+ "itertools 0.9.0",
+ "libsqlite3-sys",
+ "log",
+ "serde",
+ "serde_json",
+ "simplelog",
+ "structopt",
+ "strum 0.21.0",
+ "strum_macros 0.21.1",
+ "thiserror",
+ "time 0.3.9",
+ "tokio 1.17.0",
+ "tracing",
+ "tracing-futures",
+ "tracing-subscriber 0.3.6",
+ "warp",
+]
+
+[[package]]
+name = "vit-servicing-station-lib"
+version = "0.3.4-dev"
 source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#71582bc561eb9e5344050c095de92ed36cdab513"
 dependencies = [
  "async-trait",
@@ -6316,7 +6345,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#71582bc561eb9e5344050c095de92ed36cdab513"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=add_build_db_to_path#8a2f482a7e3d1f5d940737d9fbde2d1088422996"
 dependencies = [
  "assert_cmd",
  "assert_fs",
@@ -6348,7 +6377,7 @@ dependencies = [
  "time 0.3.9",
  "tokio 1.17.0",
  "url",
- "vit-servicing-station-lib",
+ "vit-servicing-station-lib 0.3.4-dev (git+https://github.com/input-output-hk/vit-servicing-station.git?branch=add_build_db_to_path)",
 ]
 
 [[package]]
@@ -6412,7 +6441,7 @@ dependencies = [
  "tracing-subscriber 0.2.25",
  "uuid",
  "valgrind",
- "vit-servicing-station-lib",
+ "vit-servicing-station-lib 0.3.4-dev (git+https://github.com/input-output-hk/vit-servicing-station.git?branch=add_build_db_to_path)",
  "vit-servicing-station-tests",
  "walkdir",
  "warp",

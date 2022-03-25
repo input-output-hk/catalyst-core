@@ -5,7 +5,7 @@ mod wallet_proxy;
 pub use vit_station::{
     generate_database, generate_random_database, DbGenerator, Error as VitStationControllerError,
     ValidVotePlanParameters, ValidVotingTemplateGenerator, VitStationController,
-    VitStationSettings,
+    VitStationSettings, DataError
 };
 
 pub use wallet_proxy::{

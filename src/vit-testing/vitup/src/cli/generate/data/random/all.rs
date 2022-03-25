@@ -45,7 +45,7 @@ impl AllRandomDataCommandArgs {
             .session_settings(session_settings)
             .build()?;
 
-        generate_random_database(&deployment_tree, vit_parameters);
+        generate_random_database(&deployment_tree, vit_parameters)?;
 
         println!(
             "voteplan ids: {:?}",

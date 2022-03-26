@@ -32,7 +32,7 @@ pub use vit_station::{RestError as VitStationRestError, VitStationRestClient};
 pub struct ValgrindClient {
     node_client: WalletNodeRestClient,
     vit_client: VitRestClient,
-    proxy_client: ProxyClient
+    proxy_client: ProxyClient,
 }
 
 impl ValgrindClient {
@@ -107,8 +107,12 @@ impl ValgrindClient {
             .send_fragments(transactions.clone(), use_v1)?;
         Ok(transactions
             .iter()
-            .map(|tx| Fragment::deserialize(&mut Codec::new(tx.as_slice())).unwrap().id())
-            .collect())         
+            .map(|tx| {
+                Fragment::deserialize(&mut Codec::new(tx.as_slice()))
+                    .unwrap()
+                    .id()
+            })
+            .collect())
     }
 
     pub fn fragment_logs(&self) -> Result<HashMap<FragmentId, FragmentLog>, Error> {
@@ -178,7 +182,7 @@ impl ValgrindClient {
         _fragment_ids: Vec<FragmentId>,
     ) -> Result<bool, Error> {
         unimplemented!();
-       /* Ok(fragment_ids.iter().all(|x| {
+        /* Ok(fragment_ids.iter().all(|x| {
             let hash = jormungandr_lib::crypto::hash::Hash::from_str(&x.to_string()).unwrap();
             self.explorer_client.transaction(hash).is_ok()
         }))*/
@@ -231,5 +235,4 @@ pub enum Error {
     Read(#[from] ReadError),
     #[error(transparent)]
     Rest(#[from] vit_servicing_station_tests::common::clients::RestError),
-    
 }

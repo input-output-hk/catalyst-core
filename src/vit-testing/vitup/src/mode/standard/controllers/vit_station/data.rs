@@ -6,7 +6,7 @@ use crate::builders::utils::DeploymentTree;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
-#[derive(Error,Debug)]
+#[derive(Error, Debug)]
 pub enum Error {
     #[error(transparent)]
     Io(#[from] std::io::Error),
@@ -32,7 +32,11 @@ impl DbGenerator {
         }
     }
 
-    pub fn build(self, db_file: &Path, template_generator: &mut dyn ValidVotingTemplateGenerator) -> Result<(), Error> {
+    pub fn build(
+        self,
+        db_file: &Path,
+        template_generator: &mut dyn ValidVotingTemplateGenerator,
+    ) -> Result<(), Error> {
         std::fs::File::create(&db_file)?;
 
         let mut generator = ValidVotePlanGenerator::new(self.parameters);
@@ -46,7 +50,10 @@ impl DbGenerator {
     }
 }
 
-pub fn generate_random_database(tree: &DeploymentTree, vit_parameters: ValidVotePlanParameters)-> Result<(), Error>  {
+pub fn generate_random_database(
+    tree: &DeploymentTree,
+    vit_parameters: ValidVotePlanParameters,
+) -> Result<(), Error> {
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
     DbGenerator::new(vit_parameters, None).build(&tree.database_path(), &mut template_generator)
 }

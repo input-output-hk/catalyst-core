@@ -4,15 +4,12 @@ use crate::QrReader;
 use crate::cli::args::qr::IapyxQrCommandError;
 use chain_addr::AddressReadable;
 use chain_addr::{Discrimination, Kind};
-use chain_core::mempack::ReadBuf;
-use chain_core::mempack::Readable;
 use chain_core::property::Deserialize;
 use chain_crypto::Ed25519Extended;
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::block::Block;
 use jormungandr_lib::interfaces::{Block0Configuration, Initial};
 use std::convert::TryInto;
-use std::io::BufReader;
 use std::path::Path;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -52,18 +49,13 @@ impl GetAddressFromQrCommand {
 
             let block = {
                 if Path::new(block0_path).exists() {
-                    let reader = std::fs::OpenOptions::new()
-                        .create(false)
-                        .write(false)
-                        .read(true)
-                        .append(false)
-                        .open(block0_path)?;
-                    let reader = BufReader::new(reader);
-                    Block::deserialize(reader)?
+                    Block::deserialize(&mut chain_ser::packer::Codec::new(
+                        &jortestkit::file::get_file_as_byte_vec(block0_path)?[..],
+                    ))?
                 } else if Url::parse(block0_path).is_ok() {
                     let response = reqwest::blocking::get(block0_path)?;
                     let block0_bytes = response.bytes()?.to_vec();
-                    Block::read(&mut ReadBuf::from(&block0_bytes))?
+                    Block::deserialize(&mut chain_ser::packer::Codec::new(&block0_bytes[..]))?
                 } else {
                     panic!(" block0 should be either path to filesystem or url ");
                 }

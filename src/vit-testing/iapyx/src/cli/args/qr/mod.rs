@@ -32,8 +32,8 @@ pub enum IapyxQrCommandError {
     Block0ParseError(#[from] Block0ConfigurationError),
     #[error("io error")]
     IoError(#[from] std::io::Error),
-    #[error("read error")]
-    ReadError(#[from] chain_core::mempack::ReadError),
     #[error("bech32 error")]
     Bech32Error(#[from] bech32::Error),
+    #[error(transparent)]
+    Read(#[from] chain_core::property::ReadError),
 }

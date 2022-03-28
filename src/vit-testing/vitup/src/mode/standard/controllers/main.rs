@@ -158,7 +158,7 @@ impl VitController {
         let db_file = dir.join(STORAGE);
         dump_settings_to_file(config_file.to_str().unwrap(), settings).unwrap();
 
-        DbGenerator::new(vote_plan_parameters, None).build(&db_file, template_generator);
+        DbGenerator::new(vote_plan_parameters, None).build(&db_file, template_generator)?;
 
         let mut command_builder =
             BootstrapCommandBuilder::new(PathBuf::from("vit-servicing-station-server"));
@@ -168,6 +168,8 @@ impl VitController {
             .service_version(version)
             .block0_path(self.hersir_controller.block0_file().to_str().unwrap())
             .build();
+
+        println!("Starting vit-servicing-station: {:?}", command);
 
         Ok(VitStationController {
             alias: alias.into(),

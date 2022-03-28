@@ -63,7 +63,7 @@ jobs:
           command: |
             git clone https://github.com/input-output-hk/jormungandr.git
             cd jormungandr
-            git checkout update-chain-lib
+            git checkout master
       - run:
           name: install jormungandr
           command: |
@@ -136,7 +136,7 @@ commands:
           command: |
             git clone https://github.com/input-output-hk/jormungandr.git
             cd jormungandr
-            git checkout update-chain-lib
+            git checkout master
       - run:
           name: install jormungandr
           command: |
@@ -148,7 +148,7 @@ commands:
           command: |
             git clone https://github.com/input-output-hk/vit-servicing-station.git
             cd vit-servicing-station
-            git checkout master
+            git checkout add_build_db_to_path
       - run:
           name: install vit-station-service
           command: |

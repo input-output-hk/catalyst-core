@@ -46,8 +46,6 @@ pub enum IapyxStatsCommandError {
     Block0Parse(#[from] Block0ConfigurationError),
     #[error("io error")]
     Io(#[from] std::io::Error),
-    #[error("read error")]
-    Read(#[from] chain_core::mempack::ReadError),
     #[error("bech32 error")]
     Bech32(#[from] bech32::Error),
     #[error("csv error")]
@@ -58,4 +56,6 @@ pub enum IapyxStatsCommandError {
     ArchiveCalculator(#[from] ArchiveCalculatorError),
     #[error(transparent)]
     Serde(#[from] serde_json::Error),
+    #[error(transparent)]
+    Read(#[from] chain_core::property::ReadError),
 }

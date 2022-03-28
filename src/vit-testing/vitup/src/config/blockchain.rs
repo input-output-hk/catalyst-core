@@ -10,7 +10,7 @@ pub struct Blockchain {
     pub slot_duration: u8,
     #[serde(default)]
     pub block_content_max_size: u32,
-    #[serde(default = "default_block0_time")]
+    #[serde(with = "time::serde::rfc3339", default = "default_block0_time")]
     pub block0_time: OffsetDateTime,
     #[serde(default)]
     pub tx_max_expiry_epochs: Option<u8>,

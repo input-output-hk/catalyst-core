@@ -4,7 +4,6 @@ use crate::PinReadError;
 use crate::Wallet;
 use crate::{PinReadMode, QrReader};
 use bech32::FromBase32;
-use bip39::Type;
 use catalyst_toolbox::kedqr::KeyQrCode;
 use jcli_lib::key::read_bech32;
 use jormungandr_automation::jormungandr::RestError;
@@ -75,7 +74,7 @@ impl ControllerBuilder {
     }
 
     pub fn with_wallet_from_account(mut self, account: &[u8]) -> Result<Self, Error> {
-        self.wallet = Some(Wallet::recover_from_account(account)?);
+        self.wallet = Some(Wallet::recover(account)?);
         Ok(self)
     }
 
@@ -86,26 +85,12 @@ impl ControllerBuilder {
     ) -> Result<Self, Error> {
         let qr_code_reader = QrReader::new(PinReadMode::Global(password.to_string()));
 
-        self.wallet = Some(Wallet::recover_from_account(
+        self.wallet = Some(Wallet::recover(
             qr_code_reader
                 .read_qr_from_hash_file(qr_hash_file.as_ref())?
                 .leak_secret()
                 .as_ref(),
         )?);
-        Ok(self)
-    }
-
-    pub fn with_wallet_from_mnemonics(
-        mut self,
-        mnemonics: &str,
-        password: &[u8],
-    ) -> Result<Self, Error> {
-        self.wallet = Some(Wallet::recover(mnemonics, password)?);
-        Ok(self)
-    }
-
-    pub fn with_new_wallet(mut self, words_length: Type) -> Result<Self, Error> {
-        self.wallet = Some(Wallet::generate(words_length)?);
         Ok(self)
     }
 

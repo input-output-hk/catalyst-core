@@ -5,6 +5,7 @@ mod ideascale;
 use config::ConfigValidateCommand;
 use deployment::CheckError;
 use deployment::DeploymentValidateCommand;
+pub use ideascale::Error as IdeascaleError;
 use ideascale::IdeascaleValidateCommand;
 use structopt::StructOpt;
 use thiserror::Error;

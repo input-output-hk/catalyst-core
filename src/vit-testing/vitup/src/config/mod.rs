@@ -32,7 +32,7 @@ use std::time::Duration;
 pub struct Config {
     #[serde(default)]
     pub initials: Initials,
-    #[serde(flatten)]
+    #[serde(default)]
     pub vote_plan: VotePlan,
     #[serde(default)]
     pub blockchain: Blockchain,

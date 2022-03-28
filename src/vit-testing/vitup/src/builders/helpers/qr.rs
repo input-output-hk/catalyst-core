@@ -4,7 +4,6 @@ use chain_crypto::SecretKey;
 use chain_impl_mockchain::key::EitherEd25519SecretKey;
 use hersir::builder::WalletTemplate;
 use image::ImageError;
-use jortestkit::prelude::append;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
@@ -62,7 +61,7 @@ pub fn generate_qr_and_hashes<P: AsRef<Path>>(
             img.save(png)?;
 
             let hash = folder.join(format!("zero_funds_{}.txt", i));
-            append(hash, generate(sk, &pin_to_bytes(&zero_funds_pin)))?;
+            std::fs::write(hash, generate(sk, &pin_to_bytes(&zero_funds_pin)))?;
         }
     }
     Ok(())

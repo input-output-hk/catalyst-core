@@ -44,7 +44,8 @@ impl Logger {
     }
 
     pub fn format_log<S: Into<String>>(&self, message: S, datetime: OffsetDateTime) -> String {
-        let format = format_description::parse("%d/%m/%Y %T").unwrap();
+        let format =
+            format_description::parse("[year]-[month]-[day] [hour]:[minute]:[second]").unwrap();
         format!(
             "[{}] {} ",
             datetime.format(&format).unwrap(),

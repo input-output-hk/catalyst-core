@@ -26,10 +26,6 @@ pub struct ConstDurationIapyxLoadCommand {
     #[structopt(long = "duration")]
     pub duration: u64,
 
-    /// wallet mnemonics file
-    #[structopt(long = "mnemonics")]
-    pub wallet_mnemonics_file: Option<PathBuf>,
-
     #[structopt(short = "q", long = "qr-codes-folder")]
     pub qr_codes_folder: Option<PathBuf>,
 
@@ -100,7 +96,6 @@ impl ConstDurationIapyxLoadCommand {
             batch_size: 1,
             criterion: self.criterion,
             address: self.address.clone(),
-            wallet_mnemonics_file: self.wallet_mnemonics_file.clone(),
             qr_codes_folder: self.qr_codes_folder.clone(),
             reuse_accounts_early: self.reuse_accounts_early,
             reuse_accounts_lazy: self.reuse_accounts_lazy,

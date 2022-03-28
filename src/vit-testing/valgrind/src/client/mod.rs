@@ -2,17 +2,12 @@ mod node;
 mod proxy;
 pub mod utils;
 mod vit_station;
-
-use jormungandr_automation::jormungandr::Explorer;
-pub use jormungandr_automation::jormungandr::RestSettings as ValgrindSettings;
-use vit_servicing_station_lib::db::models::challenges::Challenge;
-use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
-use vit_servicing_station_lib::db::models::funds::Fund;
-use vit_servicing_station_lib::db::models::proposals::Proposal;
-
+use chain_core::packer::Codec;
 use chain_core::property::Fragment as _;
 use chain_impl_mockchain::fragment::{Fragment, FragmentId};
 use chain_ser::deser::Deserialize;
+use chain_ser::deser::ReadError;
+pub use jormungandr_automation::jormungandr::RestSettings as ValgrindSettings;
 use jormungandr_lib::interfaces::AccountVotes;
 use jormungandr_lib::interfaces::Address;
 use jormungandr_lib::interfaces::FragmentStatus;
@@ -20,8 +15,11 @@ use jormungandr_lib::interfaces::SettingsDto;
 use jormungandr_lib::interfaces::VotePlanId;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, VotePlanStatus};
 use std::collections::HashMap;
-use std::str::FromStr;
 use thiserror::Error;
+use vit_servicing_station_lib::db::models::challenges::Challenge;
+use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
+use vit_servicing_station_lib::db::models::funds::Fund;
+use vit_servicing_station_lib::db::models::proposals::Proposal;
 use wallet::AccountId;
 
 pub use node::{RestError as NodeRestError, WalletNodeRestClient};
@@ -35,7 +33,6 @@ pub struct ValgrindClient {
     node_client: WalletNodeRestClient,
     vit_client: VitRestClient,
     proxy_client: ProxyClient,
-    explorer_client: Explorer,
 }
 
 impl ValgrindClient {
@@ -59,7 +56,6 @@ impl ValgrindClient {
             ),
             vit_client: VitRestClient::new(vit_address),
             proxy_client: ProxyClient::new(proxy_address.to_string()),
-            explorer_client: Explorer::new(node_address),
         };
 
         if node_rest_settings.enable_debug {
@@ -84,7 +80,7 @@ impl ValgrindClient {
 
     pub fn send_fragment(&self, transaction: Vec<u8>) -> Result<FragmentId, Error> {
         self.node_client.send_fragment(transaction.clone())?;
-        let fragment = Fragment::deserialize(transaction.as_slice())?;
+        let fragment = Fragment::deserialize(&mut Codec::new(transaction.as_slice()))?;
         Ok(fragment.id())
     }
 
@@ -94,7 +90,11 @@ impl ValgrindClient {
         }
         Ok(transactions
             .iter()
-            .map(|tx| Fragment::deserialize(tx.as_slice()).unwrap().id())
+            .map(|tx| {
+                Fragment::deserialize(&mut Codec::new(tx.as_slice()))
+                    .unwrap()
+                    .id()
+            })
             .collect())
     }
 
@@ -107,7 +107,11 @@ impl ValgrindClient {
             .send_fragments(transactions.clone(), use_v1)?;
         Ok(transactions
             .iter()
-            .map(|tx| Fragment::deserialize(tx.as_slice()).unwrap().id())
+            .map(|tx| {
+                Fragment::deserialize(&mut Codec::new(tx.as_slice()))
+                    .unwrap()
+                    .id()
+            })
             .collect())
     }
 
@@ -175,12 +179,13 @@ impl ValgrindClient {
 
     pub fn are_fragments_in_blockchain(
         &self,
-        fragment_ids: Vec<FragmentId>,
+        _fragment_ids: Vec<FragmentId>,
     ) -> Result<bool, Error> {
-        Ok(fragment_ids.iter().all(|x| {
+        unimplemented!();
+        /* Ok(fragment_ids.iter().all(|x| {
             let hash = jormungandr_lib::crypto::hash::Hash::from_str(&x.to_string()).unwrap();
             self.explorer_client.transaction(hash).is_ok()
-        }))
+        }))*/
     }
 
     pub fn active_vote_plan(&self) -> Result<Vec<VotePlanStatus>, Error> {
@@ -221,13 +226,13 @@ pub enum Error {
     #[error("io error")]
     IoError(#[from] std::io::Error),
     #[error("block0 retrieve error")]
-    Block0Read(#[from] chain_core::mempack::ReadError),
-    #[error("block0 retrieve error")]
     SettingsRead(#[from] Box<chain_impl_mockchain::ledger::Error>),
     #[error("cannot convert hash")]
     HashConversion(#[from] chain_crypto::hash::Error),
     #[error(transparent)]
-    VitRest(#[from] vit_servicing_station_tests::common::clients::RestError),
-    #[error(transparent)]
     Url(#[from] url::ParseError),
+    #[error(transparent)]
+    Read(#[from] ReadError),
+    #[error(transparent)]
+    Rest(#[from] vit_servicing_station_tests::common::clients::RestError),
 }

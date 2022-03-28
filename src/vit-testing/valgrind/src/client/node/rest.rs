@@ -1,3 +1,4 @@
+use chain_core::packer::Codec;
 use chain_core::property::Deserialize;
 use chain_crypto::{bech32::Bech32, Ed25519, PublicKey};
 use chain_impl_mockchain::fragment::{Fragment, FragmentId};
@@ -32,7 +33,7 @@ impl WalletNodeRestClient {
             self.rest_client.send_fragment_batch(
                 bodies
                     .iter()
-                    .map(|tx| Fragment::deserialize(tx.as_slice()).unwrap())
+                    .map(|tx| Fragment::deserialize(&mut Codec::new(tx.as_slice())).unwrap())
                     .collect(),
                 true,
             )?;

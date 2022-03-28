@@ -3,8 +3,16 @@ use super::{
     ValidVotePlanGenerator, ValidVotePlanParameters, ValidVotingTemplateGenerator,
 };
 use crate::builders::utils::DeploymentTree;
-use assert_fs::TempDir;
 use std::path::{Path, PathBuf};
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+    #[error(transparent)]
+    DbBuilder(#[from] vit_servicing_station_tests::common::startup::db::DbBuilderError),
+}
 
 pub struct DbGenerator {
     parameters: ValidVotePlanParameters,
@@ -24,32 +32,36 @@ impl DbGenerator {
         }
     }
 
-    pub fn build(self, db_file: &Path, template_generator: &mut dyn ValidVotingTemplateGenerator) {
-        std::fs::File::create(&db_file).unwrap();
+    pub fn build(
+        self,
+        db_file: &Path,
+        template_generator: &mut dyn ValidVotingTemplateGenerator,
+    ) -> Result<(), Error> {
+        std::fs::File::create(&db_file)?;
 
         let mut generator = ValidVotePlanGenerator::new(self.parameters);
         let snapshot = generator.build(template_generator);
-
-        let temp_dir = TempDir::new().unwrap().into_persistent();
-        let temp_db_path = DbBuilder::new()
+        DbBuilder::new()
             .with_snapshot(&snapshot)
             .with_migrations_from(self.migration_scripts_path)
-            .build(&temp_dir)
-            .unwrap();
-
-        jortestkit::file::copy_file(temp_db_path, db_file, true);
+            .build_into_path(db_file)
+            .map(|_| ())
+            .map_err(Into::into)
     }
 }
 
-pub fn generate_random_database(tree: &DeploymentTree, vit_parameters: ValidVotePlanParameters) {
+pub fn generate_random_database(
+    tree: &DeploymentTree,
+    vit_parameters: ValidVotePlanParameters,
+) -> Result<(), Error> {
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    DbGenerator::new(vit_parameters, None).build(&tree.database_path(), &mut template_generator);
+    DbGenerator::new(vit_parameters, None).build(&tree.database_path(), &mut template_generator)
 }
 
 pub fn generate_database(
     tree: &DeploymentTree,
     vit_parameters: ValidVotePlanParameters,
     mut template_generator: ExternalValidVotingTemplateGenerator,
-) {
-    DbGenerator::new(vit_parameters, None).build(&tree.database_path(), &mut template_generator);
+) -> Result<(), Error> {
+    DbGenerator::new(vit_parameters, None).build(&tree.database_path(), &mut template_generator)
 }

@@ -61,6 +61,8 @@ pub enum Error {
     Io(#[from] std::io::Error),
     #[error(transparent)]
     Template(#[from] vit_servicing_station_tests::common::data::TemplateLoad),
+    #[error(transparent)]
+    Data(#[from] crate::mode::standard::DataError),
 }
 
 #[derive(Debug, Error)]
@@ -209,7 +211,7 @@ impl IdeascaleValidateCommand {
         parameters.calculate_challenges_total_funds = false;
 
         DbGenerator::new(parameters, self.migration_scripts_path.clone())
-            .build(&deployment_tree.database_path(), &mut template_generator);
+            .build(&deployment_tree.database_path(), &mut template_generator)?;
 
         Ok(())
     }
@@ -438,7 +440,8 @@ impl IdeascaleValidateCommand {
         &self,
         path: P,
     ) -> Result<Vec<Value>, ProposalError> {
-        let mut data: serde_json::Value = serde_json::from_str(&jortestkit::file::read_file(path))?;
+        let mut data: serde_json::Value =
+            serde_json::from_str(&jortestkit::file::read_file(path)?)?;
         Ok(data.as_array_mut().unwrap().to_vec())
     }
 

@@ -2,7 +2,7 @@ mod builder;
 
 use crate::Wallet;
 pub use builder::{ControllerBuilder, Error as ControllerBuilderError};
-use chain_impl_mockchain::{fragment::FragmentId, transaction::Input};
+use chain_impl_mockchain::fragment::FragmentId;
 use jormungandr_automation::jormungandr::RestError;
 use jormungandr_automation::jormungandr::RestSettings;
 use jormungandr_lib::interfaces::AccountVotes;
@@ -93,7 +93,7 @@ impl Controller {
                 if let Some(fragment) = fragment_logs.get(id) {
                     match fragment.status() {
                         FragmentStatus::Rejected { .. } => {
-                            self.remove_pending_transaction(id);
+                            self.remove_pending_transaction(*id);
                         }
                         FragmentStatus::InABlock { .. } => {
                             self.confirm_transaction(*id);
@@ -112,8 +112,8 @@ impl Controller {
         }
     }
 
-    pub fn remove_pending_transaction(&mut self, id: &FragmentId) -> Option<Vec<Input>> {
-        self.wallet.remove_pending_transaction(id)
+    pub fn remove_pending_transaction(&mut self, id: FragmentId) {
+        self.wallet.remove_pending_transaction(id);
     }
 
     pub fn total_value(&self) -> Value {

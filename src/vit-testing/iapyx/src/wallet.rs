@@ -1,18 +1,10 @@
-use bip39::{dictionary, Entropy, Type};
 use chain_addr::{AddressReadable, Discrimination};
-use chain_core::property::Deserialize;
-use chain_core::property::Fragment as _;
-use chain_impl_mockchain::{
-    block::BlockDate,
-    fragment::{Fragment, FragmentId},
-    transaction::Input,
-};
+use chain_impl_mockchain::{block::BlockDate, fragment::FragmentId};
 use hdkeygen::account::AccountId;
 use jormungandr_lib::interfaces::AccountIdentifier;
 use std::str::FromStr;
 use thiserror::Error;
 use wallet::Settings;
-use wallet_core::Conversion;
 use wallet_core::Proposal;
 use wallet_core::Wallet as Inner;
 use wallet_core::{Choice, Value};
@@ -32,26 +24,15 @@ pub enum Error {
 
 pub struct Wallet {
     inner: Inner,
+    pending_txs: Vec<FragmentId>,
 }
 
 impl Wallet {
-    pub fn generate(words_length: Type) -> Result<Self, Error> {
-        let entropy = Entropy::generate(words_length, rand::random);
-        let mnemonics = entropy.to_mnemonics().to_string(&dictionary::ENGLISH);
-        Self::recover(&mnemonics, b"iapyx")
-    }
-
-    pub fn recover(mnemonics: &str, password: &[u8]) -> Result<Self, Error> {
-        Ok(Self {
-            inner: Inner::recover(mnemonics, password)
-                .map_err(|e| Error::CannotRecover(e.to_string()))?,
-        })
-    }
-
-    pub fn recover_from_account(secret_key: &[u8]) -> Result<Self, Error> {
+    pub fn recover(secret_key: &[u8]) -> Result<Self, Error> {
         Ok(Self {
             inner: Inner::recover_free_keys(secret_key, [].iter())
                 .map_err(|e| Error::CannotRecover(e.to_string()))?,
+            pending_txs: Vec::new(),
         })
     }
 
@@ -59,6 +40,7 @@ impl Wallet {
         Ok(Self {
             inner: Inner::recover_free_keys(secret_key, [*secret_key].iter())
                 .map_err(|e| Error::CannotRecover(e.to_string()))?,
+            pending_txs: Vec::new(),
         })
     }
 
@@ -70,32 +52,6 @@ impl Wallet {
         self.inner.id()
     }
 
-    pub fn retrieve_funds(&mut self, block0_bytes: &[u8]) -> Result<wallet::Settings, Error> {
-        self.inner
-            .retrieve_funds(block0_bytes)
-            .map_err(|e| Error::CannotRetrieveFunds(e.to_string()))
-    }
-
-    pub fn convert(&mut self, settings: Settings, valid_until: &BlockDate) -> Conversion {
-        self.inner.convert(settings, valid_until)
-    }
-
-    pub fn conversion_fragment_ids(
-        &mut self,
-        settings: Settings,
-        valid_until: &BlockDate,
-    ) -> Vec<FragmentId> {
-        self.convert(settings, valid_until)
-            .transactions()
-            .iter()
-            .map(|x| {
-                let fragment = Fragment::deserialize(x.as_slice()).unwrap();
-                self.remove_pending_transaction(&fragment.id());
-                fragment.id()
-            })
-            .collect()
-    }
-
     pub fn confirm_all_transactions(&mut self) {
         for id in self.pending_transactions() {
             self.confirm_transaction(id)
@@ -104,14 +60,17 @@ impl Wallet {
 
     pub fn confirm_transaction(&mut self, id: FragmentId) {
         self.inner.confirm_transaction(id);
+        self.remove_pending_transaction(id);
     }
 
     pub fn pending_transactions(&self) -> Vec<FragmentId> {
-        self.inner.pending_transactions().into_iter().collect()
+        self.pending_txs.clone()
     }
 
-    pub fn remove_pending_transaction(&mut self, id: &FragmentId) -> Option<Vec<Input>> {
-        self.inner.remove_pending_transaction(id)
+    pub fn remove_pending_transaction(&mut self, id: FragmentId) {
+        if let Some(index) = self.pending_txs.iter().position(|x| *x == id) {
+            self.pending_txs.remove(index);
+        }
     }
 
     pub fn total_value(&self) -> Value {

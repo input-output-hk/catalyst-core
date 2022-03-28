@@ -57,7 +57,7 @@ impl MockState {
             version: VitVersion {
                 service_version: params.service.version,
             },
-            block0_bin: jortestkit::file::get_file_as_byte_vec(controller.block0_file()),
+            block0_bin: jortestkit::file::get_file_as_byte_vec(controller.block0_file())?,
         })
     }
 

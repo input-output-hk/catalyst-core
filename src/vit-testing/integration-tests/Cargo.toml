@@ -7,13 +7,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jormungandr-lib = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "update-chain-lib" }
-jormungandr-automation = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "update-chain-lib" }
-thor = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "update-chain-lib" }
-hersir = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "update-chain-lib" }
-jcli = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "update-chain-lib" }
-vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "https_client" }
-vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "https_client" }
+jormungandr-lib = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-automation = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+thor = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+hersir = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jcli = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "add_build_db_to_path" }
+vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "add_build_db_to_path" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch="master" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
@@ -27,7 +27,7 @@ registration-service = { path = "../registration-service" }
 rand_chacha = "0.2"
 tokio = { version = "1.1", features = ["macros","rt","rt-multi-thread"] }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
-catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "update-dependencies" }
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "swtich_stake_from_funds_to_token" }
 thiserror = "1.0"
 rand = "0.8"
 libmath = "0.2.1"

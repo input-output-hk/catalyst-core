@@ -16,6 +16,8 @@ pub enum Error {
     CertFileDoesNotExist,
     #[error("key file does not exists")]
     KeyFileDoesNotExist,
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
 }
 
 #[derive(StructOpt, Debug)]
@@ -70,7 +72,7 @@ impl ValigrindStartupCommand {
                 proxy_address,
                 vit_address,
                 node_address,
-                jortestkit::file::get_file_as_byte_vec(&block0_path),
+                jortestkit::file::get_file_as_byte_vec(&block0_path)?,
             ));
         }
 
@@ -78,7 +80,7 @@ impl ValigrindStartupCommand {
             proxy_address,
             vit_address,
             node_address,
-            jortestkit::file::get_file_as_byte_vec(&block0_path),
+            jortestkit::file::get_file_as_byte_vec(&block0_path)?,
         ))
     }
 }

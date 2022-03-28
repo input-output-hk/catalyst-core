@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 pub struct VotePlan {
     #[serde(default)]
     pub vote_time: VoteTime,
+    #[serde(default)]
     pub private: bool,
+    #[serde(default)]
     pub representatives_vote_plan: bool,
 }

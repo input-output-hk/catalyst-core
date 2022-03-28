@@ -2,11 +2,9 @@ use crate::qr::PinReadMode;
 use crate::qr::QrReader;
 use crate::Wallet;
 use bech32::FromBase32;
-use bip39::Type;
 use chain_impl_mockchain::{block::BlockDate, fragment::FragmentId};
 use jcli_lib::key::read_bech32;
 pub use jormungandr_automation::jormungandr::RestSettings;
-use std::iter;
 use std::path::Path;
 use thiserror::Error;
 use valgrind::Proposal;
@@ -26,43 +24,6 @@ pub struct MultiController {
 }
 
 impl MultiController {
-    pub fn generate(
-        wallet_backend_address: String,
-        words_length: Type,
-        count: usize,
-        backend_settings: RestSettings,
-    ) -> Result<Self, MultiControllerError> {
-        let backend = ValgrindClient::new(wallet_backend_address, backend_settings)?;
-        let settings = backend.settings()?.into_wallet_settings();
-        let wallets = iter::from_fn(|| Some(Wallet::generate(words_length).unwrap()))
-            .take(count)
-            .collect();
-        Ok(Self {
-            backend,
-            wallets,
-            settings,
-        })
-    }
-
-    pub fn recover(
-        wallet_backend_address: &str,
-        mnemonics: Vec<String>,
-        password: &[u8],
-        backend_settings: RestSettings,
-    ) -> Result<Self, MultiControllerError> {
-        let backend = ValgrindClient::new(wallet_backend_address.to_string(), backend_settings)?;
-        let settings = backend.settings()?.into_wallet_settings();
-        let wallets = mnemonics
-            .iter()
-            .map(|x| Wallet::recover(x, password).unwrap())
-            .collect();
-        Ok(Self {
-            backend,
-            wallets,
-            settings,
-        })
-    }
-
     pub fn recover_from_qrs<P: AsRef<Path>>(
         wallet_backend_address: &str,
         qrs: &[P],
@@ -78,7 +39,7 @@ impl MultiController {
         let secrets = pin_reader.read_qrs(qrs, false);
         let wallets = secrets
             .into_iter()
-            .map(|secret| Wallet::recover_from_account(secret.leak_secret().as_ref()).unwrap())
+            .map(|secret| Wallet::recover(secret.leak_secret().as_ref()).unwrap())
             .collect();
 
         Ok(Self {
@@ -101,7 +62,7 @@ impl MultiController {
                 let (_, data, _) = read_bech32(Some(&x.as_ref().to_path_buf())).unwrap();
                 let key_bytes = Vec::<u8>::from_base32(&data).unwrap();
                 let data: [u8; 64] = key_bytes.try_into().unwrap();
-                Wallet::recover_from_account(&data).unwrap()
+                Wallet::recover(&data).unwrap()
             })
             .collect();
 

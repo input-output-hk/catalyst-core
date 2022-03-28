@@ -128,6 +128,20 @@ checksum = "eab1c04a571841102f5345a8fc0f6bb3d31c315dec879b5c6e42e40ce7ffa34e"
 
 [[package]]
 name = "assert_cmd"
+version = "1.0.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c98233c6673d8601ab23e77eb38f999c51100d46c5703b17288c57fddf3a1ffe"
+dependencies = [
+ "bstr",
+ "doc-comment",
+ "predicates",
+ "predicates-core",
+ "predicates-tree",
+ "wait-timeout",
+]
+
+[[package]]
+name = "assert_cmd"
 version = "2.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93ae1ddd39efd67689deb1979d80bad3bf7f2b09c6e6117c8d1f2443b5e2f83e"
@@ -521,7 +535,7 @@ dependencies = [
 [[package]]
 name = "catalyst-toolbox"
 version = "0.3.0"
-source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=swtich_stake_from_funds_to_token#7ba2f89f742917f606ea3005e704e47d8357290b"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=swtich_stake_from_funds_to_token#faef4b62f01e38b968a1c293d340a0b14a80ac10"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",
@@ -2629,7 +2643,7 @@ version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7baab56125e25686df467fe470785512329883aab42696d661247aca2a2896e4"
 dependencies = [
- "console 0.15.0",
+ "console 0.11.3",
  "lazy_static",
  "number_prefix",
  "regex",
@@ -2657,6 +2671,7 @@ dependencies = [
 name = "integration-tests"
 version = "0.1.0"
 dependencies = [
+ "assert_cmd 1.0.8",
  "assert_fs",
  "catalyst-toolbox",
  "cfg-if 1.0.0",
@@ -2666,6 +2681,7 @@ dependencies = [
  "chain-impl-mockchain",
  "chain-ser",
  "chrono",
+ "csv",
  "hersir",
  "iapyx",
  "jcli",
@@ -2676,6 +2692,7 @@ dependencies = [
  "rand 0.8.5",
  "rand_chacha 0.2.2",
  "registration-service",
+ "serde",
  "serde_json",
  "snapshot-trigger-service",
  "thiserror",
@@ -2771,7 +2788,7 @@ name = "jormungandr-automation"
 version = "0.13.0"
 source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e8c4bca46527798adb631dff7d99605115af97c2"
 dependencies = [
- "assert_cmd",
+ "assert_cmd 2.0.4",
  "assert_fs",
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2835,7 +2852,7 @@ name = "jormungandr-integration-tests"
 version = "0.13.0"
 source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e8c4bca46527798adb631dff7d99605115af97c2"
 dependencies = [
- "assert_cmd",
+ "assert_cmd 2.0.4",
  "assert_fs",
  "base64 0.13.0",
  "bech32 0.7.3",
@@ -6347,7 +6364,7 @@ name = "vit-servicing-station-tests"
 version = "0.3.4-dev"
 source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=add_build_db_to_path#8a2f482a7e3d1f5d940737d9fbde2d1088422996"
 dependencies = [
- "assert_cmd",
+ "assert_cmd 2.0.4",
  "assert_fs",
  "base64 0.12.3",
  "cfg-if 0.1.10",

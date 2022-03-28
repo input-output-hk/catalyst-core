@@ -28,7 +28,19 @@ jobs:
           name: install build reqs
           command: |
             sudo apt update && sudo apt upgrade -y
-            sudo apt install build-essential libssl-dev pkg-config    
+            sudo apt install build-essential pkg-config libssl-dev zlib1g-dev libncurses5-dev libncursesw5-dev libreadline-dev libsqlite3-dev libgdbm-dev libdb5.3-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev libffi-dev
+      - run:
+          name: install python 3.8
+          command: |
+            sudo add-apt-repository --yes ppa:deadsnakes/ppa
+            sudo apt-get update
+            sudo apt-get install python3-distutils
+            sudo apt-get install python3-dev
+            sudo apt-get install python
+            wget https://bootstrap.pypa.io/get-pip.py
+            sudo python3.8 get-pip.py
+            sudo python3.8 -m pip install --upgrade pip setuptools wheel
+            sudo python3.8 -m pip install pipenv
       - run:
           name: Run tests build
           no_output_timeout: 60m
@@ -57,7 +69,19 @@ jobs:
           name: install build reqs
           command: |
             sudo apt update && sudo apt upgrade -y
-            sudo apt install build-essential libssl-dev pkg-config    
+            sudo apt install build-essential pkg-config libssl-dev zlib1g-dev libncurses5-dev libncursesw5-dev libreadline-dev libsqlite3-dev libgdbm-dev libdb5.3-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev libffi-dev
+      - run:
+          name: install python 3.8
+          command: |
+            sudo add-apt-repository --yes ppa:deadsnakes/ppa
+            sudo apt-get update
+            sudo apt-get install python
+            sudo apt-get install python3-dev
+            sudo apt-get install python3-distutils
+            wget https://bootstrap.pypa.io/get-pip.py
+            sudo python3.8 get-pip.py
+            sudo python3.8 -m pip install --upgrade pip setuptools wheel
+            sudo python3.8 -m pip install pipenv
       - run:
           name: checkout jormungandr
           command: |
@@ -122,15 +146,32 @@ commands:
           name: install build reqs
           command: |
             sudo apt update && sudo apt upgrade -y
-            sudo apt install build-essential libssl-dev pkg-config    
+            sudo apt install build-essential pkg-config libssl-dev zlib1g-dev libncurses5-dev libncursesw5-dev libreadline-dev libsqlite3-dev libgdbm-dev libdb5.3-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev libffi-dev
+      - run:
+          name: install python 3.8
+          command: |
+            sudo add-apt-repository --yes ppa:deadsnakes/ppa
+            sudo apt-get update
+            sudo apt-get install python3.8
+            sudo apt-get install python3-dev
+            sudo apt-get install python3-distutils
+            wget https://bootstrap.pypa.io/get-pip.py
+            sudo python3.8 get-pip.py
+            sudo python3.8 -m pip install --upgrade pip setuptools wheel
+            sudo python3.8 -m pip install pipenv
+      - run:
+          name: install python libs
+          command: | 
+            pip install httpx
+            pip install pydantic
+            pip install typer
+            pip install pyaml
       - run:
           name: Print version information
           command: rustc --version; cargo --version
       - run:
-          name: install build reqs
-          command: |
-            sudo apt update && sudo apt upgrade -y
-            sudo apt install build-essential libssl-dev pkg-config    
+          name: Print python version
+          command: python3 --version
       - run:
           name: checkout jormungandr
           command: |

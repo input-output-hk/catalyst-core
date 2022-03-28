@@ -1,11 +1,14 @@
 use chain_addr::Discrimination;
 use chain_impl_mockchain::value::Value;
+use fake::faker::name::en::Name;
+use fake::Fake;
 use hersir::builder::wallet::template::builder::WalletTemplateBuilder;
 use hersir::builder::{ExternalWalletTemplate, WalletTemplate};
 use jormungandr_lib::interfaces::TokenIdentifier;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Initials(pub Vec<Initial>);
 
@@ -39,7 +42,7 @@ pub enum Initial {
     },
     Wallet {
         name: String,
-        funds: usize,
+        funds: u64,
         pin: String,
         #[serde(default)]
         role: Role,
@@ -50,6 +53,17 @@ pub enum Initial {
         #[serde(default)]
         role: Role,
     },
+}
+
+impl Initial {
+    pub fn new_random_wallet(funds: u64) -> Self {
+        Self::Wallet {
+            name: Name().fake::<String>(),
+            funds,
+            pin: "1234".to_string(),
+            role: Default::default(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

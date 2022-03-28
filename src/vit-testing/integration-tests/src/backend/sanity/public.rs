@@ -1,14 +1,12 @@
 use crate::common::iapyx_from_qr;
-use crate::common::{wait_until_folder_contains_all_qrs, Error, Vote};
+use crate::common::{wait_until_folder_contains_all_qrs, Error};
+use crate::Vote;
 use assert_fs::TempDir;
 use chain_impl_mockchain::block::BlockDate;
-use chain_impl_mockchain::key::Hash;
 use jormungandr_automation::testing::asserts::VotePlanStatusAssert;
 use jormungandr_automation::testing::time;
 use std::path::Path;
-use std::str::FromStr;
-use thor::BlockDateGenerator;
-use thor::{FragmentSender, FragmentSenderSetup};
+use thor::FragmentSender;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::ConfigBuilder;
 use vitup::config::VoteBlockchainTime;
@@ -84,16 +82,7 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
 
     let fund1_vote_plan = &controller.defined_vote_plans()[0];
     let fund2_vote_plan = &controller.defined_vote_plans()[1];
-
     let settings = wallet_node.rest().settings().unwrap();
-    let block_date_generator = BlockDateGenerator::rolling(
-        &settings,
-        BlockDate {
-            epoch: 1,
-            slot_id: 0,
-        },
-        false,
-    );
 
     // start voting
     david
@@ -118,12 +107,7 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
     };
     time::wait_for_date(target_date.into(), leader_1.rest());
 
-    let fragment_sender = FragmentSender::new(
-        Hash::from_str(&settings.block0_hash).unwrap().into(),
-        settings.fees,
-        block_date_generator,
-        FragmentSenderSetup::resend_3_times(),
-    );
+    let fragment_sender = FragmentSender::from(&settings);
 
     fragment_sender
         .send_public_vote_tally(&mut committee, &fund1_vote_plan.clone().into(), wallet_node)

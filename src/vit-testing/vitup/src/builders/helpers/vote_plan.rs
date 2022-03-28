@@ -27,8 +27,8 @@ impl Default for VitVotePlanDefBuilder {
             proposals_count: 0,
             fund_name: "undefined".to_string(),
             committee_wallet: "undefined".to_string(),
-            private: false,
             options: 0,
+            private: false,
             voting_token: TestGen::token_id().into(),
         }
     }
@@ -55,6 +55,11 @@ impl VitVotePlanDefBuilder {
         self
     }
 
+    pub fn private(mut self, private: bool) -> Self {
+        self.private = private;
+        self
+    }
+
     pub fn proposals_count(mut self, proposals_count: usize) -> Self {
         self.proposals_count = proposals_count;
         self
@@ -62,11 +67,6 @@ impl VitVotePlanDefBuilder {
 
     pub fn committee(mut self, committe_wallet: WalletAlias) -> Self {
         self.committee_wallet = committe_wallet;
-        self
-    }
-
-    pub fn private(mut self, private: bool) -> Self {
-        self.private = private;
         self
     }
 

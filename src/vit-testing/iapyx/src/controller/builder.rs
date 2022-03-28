@@ -3,8 +3,11 @@ use crate::Controller;
 use crate::PinReadError;
 use crate::Wallet;
 use crate::{PinReadMode, QrReader};
+
 use bech32::FromBase32;
 use catalyst_toolbox::kedqr::KeyQrCode;
+use chain_crypto::Ed25519Extended;
+use chain_crypto::SecretKey;
 use jcli_lib::key::read_bech32;
 use jormungandr_automation::jormungandr::RestError;
 use std::convert::TryInto;
@@ -48,6 +51,16 @@ impl ControllerBuilder {
         let key_bytes = Vec::<u8>::from_base32(&data)?;
         let data: [u8; 64] = key_bytes.try_into().unwrap();
         self.wallet = Some(Wallet::recover_from_utxo(&data)?);
+        Ok(self)
+    }
+
+    pub fn with_wallet_from_secret_key(
+        mut self,
+        private_key: SecretKey<Ed25519Extended>,
+    ) -> Result<Self, Error> {
+        self.wallet = Some(Wallet::recover_from_utxo(
+            &private_key.leak_secret().as_ref().try_into().unwrap(),
+        )?);
         Ok(self)
     }
 

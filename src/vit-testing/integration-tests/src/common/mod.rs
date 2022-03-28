@@ -1,12 +1,20 @@
 mod assert;
 pub mod load;
+mod mainnet;
 pub mod registration;
+mod rewards;
 pub mod snapshot;
+mod static_data;
+mod vote_plan_status;
 mod wallet;
-pub use assert::*;
 
+pub use assert::*;
+pub use mainnet::MainnetWallet;
+pub use rewards::{funded_proposals, VotesRegistry};
+pub use static_data::SnapshotExtensions;
 use thiserror::Error;
-pub use wallet::{iapyx_from_qr, iapyx_from_secret_key};
+pub use vote_plan_status::{CastedVote, VotePlanStatusProvider};
+pub use wallet::{iapyx_from_mainnet, iapyx_from_qr, iapyx_from_secret_key};
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -18,10 +26,4 @@ pub enum Error {
     FragmentSenderError(#[from] thor::FragmentSenderError),
     #[error("iapyx error")]
     IapyxError(#[from] iapyx::ControllerError),
-}
-
-#[allow(dead_code)]
-pub enum Vote {
-    Yes = 0,
-    No = 1,
 }

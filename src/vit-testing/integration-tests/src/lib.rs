@@ -25,10 +25,10 @@ pub enum Error {
 }
 
 #[allow(dead_code)]
+#[derive(Copy, Clone)]
 pub enum Vote {
-    Blank = 0,
-    Yes = 1,
-    No = 2,
+    Yes = 0,
+    No = 1,
 }
 
 #[allow(dead_code)]

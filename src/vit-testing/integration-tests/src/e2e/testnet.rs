@@ -2,7 +2,7 @@ use crate::common::iapyx_from_qr;
 use crate::common::registration::do_registration;
 use crate::common::snapshot::do_snapshot;
 use crate::common::snapshot::wait_for_db_sync;
-use crate::common::Vote;
+use crate::Vote;
 use assert_fs::TempDir;
 use chain_impl_mockchain::header::BlockDate;
 use jormungandr_automation::testing::asserts::VotePlanStatusAssert;

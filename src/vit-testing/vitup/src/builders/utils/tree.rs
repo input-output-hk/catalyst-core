@@ -1,3 +1,4 @@
+use assert_fs::TempDir;
 use std::path::{Path, PathBuf};
 
 pub struct DeploymentTree {
@@ -33,5 +34,15 @@ impl DeploymentTree {
 
     pub fn wallet_search_pattern(&self) -> String {
         format!("{}/wallet_*_*", self.root.display())
+    }
+
+    pub fn wallet_secret<S: Into<String>>(&self, alias: S) -> PathBuf {
+        self.root.join("wallet_".to_owned() + &alias.into())
+    }
+}
+
+impl From<&TempDir> for DeploymentTree {
+    fn from(temp_dir: &TempDir) -> Self {
+        Self::new(temp_dir.path())
     }
 }

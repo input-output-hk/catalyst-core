@@ -31,7 +31,7 @@ jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr
 thor = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 hersir = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
-catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "swtich_stake_from_funds_to_token" }
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "swtich_stake_from_funds_to_token", features=["test-api"]}
 valgrind = { path = "../valgrind"}
 hyper = "0.13.6"
 thiserror = "1.0"

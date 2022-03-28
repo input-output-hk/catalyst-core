@@ -9,7 +9,6 @@ use jormungandr_lib::interfaces::VoteProposalStatus;
 use jormungandr_lib::interfaces::{Tally, VotePlanStatus};
 use std::path::Path;
 use std::str::FromStr;
-use valgrind::Proposal;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
 pub trait VotePlanStatusExtension {
@@ -38,12 +37,10 @@ impl VotePlanStatusProvider for Block0Configuration {
                     .iter_mut()
                     .find(|p| p.proposal_id == vote.proposal_id)
                 {
-                    let new_tally = match proposal.tally {
+                    let new_tally = match &proposal.tally {
                         Tally::Public { result } => {
                             let mut chain_result: TallyResultLib = result.clone().into();
-                            chain_result
-                                .add_vote(vote.choice(), vote.weight.clone())
-                                .unwrap();
+                            chain_result.add_vote(vote.choice(), vote.weight).unwrap();
                             Tally::Public {
                                 result: chain_result.into(),
                             }
@@ -51,9 +48,7 @@ impl VotePlanStatusProvider for Block0Configuration {
                         Tally::Private { state } => {
                             if let PrivateTallyState::Decrypted { result } = state {
                                 let mut chain_result: TallyResultLib = result.clone().into();
-                                chain_result
-                                    .add_vote(vote.choice(), vote.weight.clone())
-                                    .unwrap();
+                                chain_result.add_vote(vote.choice(), vote.weight).unwrap();
                                 Tally::Private {
                                     state: PrivateTallyState::Decrypted {
                                         result: chain_result.into(),
@@ -89,7 +84,7 @@ impl VotePlanStatusProvider for Block0Configuration {
                         committee_member_keys: v.committee_public_keys().into(),
                         proposals: v
                             .proposals()
-                            .into_iter()
+                            .iter()
                             .enumerate()
                             .map(|(idx, p)| VoteProposalStatus {
                                 index: idx as u8,
@@ -129,7 +124,7 @@ impl CastedVote {
 
     pub fn from_vec(proposal_id: &[u8], option: Vote, weight: u64) -> Self {
         Self::new(
-            Hash::from_hex(std::str::from_utf8(&proposal_id).unwrap()).unwrap(),
+            Hash::from_hex(std::str::from_utf8(proposal_id).unwrap()).unwrap(),
             option,
             weight,
         )

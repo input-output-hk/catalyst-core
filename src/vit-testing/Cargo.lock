@@ -6445,7 +6445,7 @@ dependencies = [
  "serde_yaml",
  "structopt",
  "strum 0.21.0",
- "strum_macros 0.21.1",
+ "strum_macros 0.23.1",
  "tempdir",
  "thiserror",
  "thor",

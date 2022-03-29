@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use chain_addr::{Discrimination, Kind};
 use jormungandr_lib::crypto::account::Identifier;
-use jormungandr_lib::interfaces::{Address, Initial, InitialUTxO, Stake, Value};
+use jormungandr_lib::interfaces::{Address, InitialUTxO, Stake, Value};
 use serde::{de::Error, Deserialize, Deserializer};
 use std::iter::Iterator;
 
@@ -51,23 +51,24 @@ impl Snapshot {
         self.stake_threshold
     }
 
-    pub fn to_block0_initials(&self, discrimination: Discrimination) -> Initial {
-        Initial::Fund(
-            self.inner
-                .iter()
-                .map(|(vk, regs)| {
-                    let value: Value = regs
-                        .iter()
-                        .map(|reg| u64::from(reg.voting_power))
-                        .sum::<u64>()
-                        .into();
-                    let address: Address =
-                        chain_addr::Address(discrimination, Kind::Account(vk.to_inner().into()))
-                            .into();
-                    InitialUTxO { address, value }
-                })
-                .collect::<Vec<_>>(),
-        )
+    /// Produces a list of initial UTxOs.
+    /// Whether this can be directly converted into an entry in the blockchain
+    /// genesis block may depend on further limitations imposed by the blockchain deployment and that
+    /// are ignored at this level (e.g. maximum number of outputs in a single fragment)
+    pub fn to_block0_initials(&self, discrimination: Discrimination) -> Vec<InitialUTxO> {
+        self.inner
+            .iter()
+            .map(|(vk, regs)| {
+                let value: Value = regs
+                    .iter()
+                    .map(|reg| u64::from(reg.voting_power))
+                    .sum::<u64>()
+                    .into();
+                let address: Address =
+                    chain_addr::Address(discrimination, Kind::Account(vk.to_inner().into())).into();
+                InitialUTxO { address, value }
+            })
+            .collect::<Vec<_>>()
     }
 
     pub fn voting_keys(&self) -> impl Iterator<Item = &Identifier> {

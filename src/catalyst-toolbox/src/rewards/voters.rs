@@ -184,16 +184,17 @@ mod tests {
     use chain_impl_mockchain::fee::LinearFee;
     use jormungandr_lib::crypto::account::Identifier;
     use jormungandr_lib::interfaces::{BlockchainConfiguration, Stake};
+    use jormungandr_lib::interfaces::{Initial, InitialUTxO};
     use test_strategy::proptest;
 
-    fn blockchain_configuration(initial_funds: Initial) -> Block0Configuration {
+    fn blockchain_configuration(initial_funds: Vec<InitialUTxO>) -> Block0Configuration {
         Block0Configuration {
             blockchain_configuration: BlockchainConfiguration::new(
                 Discrimination::Test,
                 ConsensusVersion::Bft,
                 LinearFee::new(1, 1, 1),
             ),
-            initial: vec![initial_funds],
+            initial: vec![Initial::Fund(initial_funds)],
         }
     }
 

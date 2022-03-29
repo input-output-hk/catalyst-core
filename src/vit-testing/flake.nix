@@ -3,11 +3,11 @@
 
   nixConfig.extra-substituters = [
     "https://hydra.iohk.io"
-    "https://vit-ops.cachix.org"
+    "https://vit.cachix.org"
   ];
   nixConfig.extra-trusted-public-keys = [
     "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
-    "vit-ops.cachix.org-1:LY84nIKdW7g1cvhJ6LsupHmGtGcKAlUXo+l1KByoDho="
+    "vit.cachix.org-1:tuLYwbnzbxLzQHHN0fvZI2EMpVm/+R7AKUGqukc6eh8="
   ];
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -98,7 +98,7 @@
 
         mkPackage = name: let
           pkgCargo = readTOML ./${name}/Cargo.toml;
-          cargoOptions = [ "--package" name ];
+          cargoOptions = ["--package" name];
         in
           naersk-lib.buildPackage {
             root = gitignore.lib.gitignoreSource self;
@@ -109,30 +109,32 @@
             PROTOC = "${pkgs.protobuf}/bin/protoc";
             PROTOC_INCLUDE = "${pkgs.protobuf}/include";
 
-            nativeBuildInputs = with pkgs; [
-              pkg-config
-              protobuf
-              rustfmt
-            ] ++ (pkgs.lib.optional
-              (builtins.elem name [ "snapshot-trigger-service"
-                                    "registration-service"
-                                    "registration-verify-service"
-                                  ])
-              pkgs.makeWrapper);
+            nativeBuildInputs = with pkgs;
+              [
+                pkg-config
+                protobuf
+                rustfmt
+              ]
+              ++ (pkgs.lib.optional
+                (builtins.elem name [
+                  "snapshot-trigger-service"
+                  "registration-service"
+                  "registration-verify-service"
+                ])
+                pkgs.makeWrapper);
 
             buildInputs = with pkgs; [
               openssl
             ];
 
             postInstall =
-              if name == "snapshot-trigger-service" then
-                "wrapProgram $out/bin/${name} --prefix PATH : ${pkgs.lib.makeBinPath [ voting-tools ]}"
-              else if name == "registration-service" then
-                "wrapProgram $out/bin/${name} --prefix PATH : ${pkgs.lib.makeBinPath [ vit-kedqr jcli cardano-cli ]}"
-              else if name == "registration-verify-service" then
-                "wrapProgram $out/bin/${name} --prefix PATH : ${pkgs.lib.makeBinPath [ jcli ]}"
-              else
-                "";
+              if name == "snapshot-trigger-service"
+              then "wrapProgram $out/bin/${name} --prefix PATH : ${pkgs.lib.makeBinPath [voting-tools]}"
+              else if name == "registration-service"
+              then "wrapProgram $out/bin/${name} --prefix PATH : ${pkgs.lib.makeBinPath [vit-kedqr jcli cardano-cli]}"
+              else if name == "registration-verify-service"
+              then "wrapProgram $out/bin/${name} --prefix PATH : ${pkgs.lib.makeBinPath [jcli]}"
+              else "";
           };
 
         workspace =
@@ -162,13 +164,15 @@
         warnToUpdateNix = pkgs.lib.warn "Consider updating to Nix > 2.7 to remove this warning!";
       in rec {
         packages = {
-          inherit (workspace)
-              iapyx
-              vitup
-              integration-tests
-              snapshot-trigger-service
-              registration-service
-              registration-verify-service;
+          inherit
+            (workspace)
+            iapyx
+            vitup
+            integration-tests
+            snapshot-trigger-service
+            registration-service
+            registration-verify-service
+            ;
           inherit voting-tools;
           default = workspace.vitup;
         };

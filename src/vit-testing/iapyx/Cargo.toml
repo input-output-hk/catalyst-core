@@ -40,7 +40,7 @@ serde_yaml = "0.8.23"
 serde = { version = "1.0", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde"] }
 regex = "*"
-dialoguer = "0.9"
+dialoguer = "0.10"
 structopt = "0.3"
 console = "0.11"
 csv = "1.1"

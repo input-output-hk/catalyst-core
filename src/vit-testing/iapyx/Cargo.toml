@@ -22,7 +22,7 @@ hex = "0.4"
 rand = "0.8"
 dirs = "4.0"
 rand_core = "0.6"
-itertools = "0.9.0"
+itertools = "0.10.3"
 cryptoxide = "0.3.2"
 ed25519-bip32 = "^0.3.1"
 jcli = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }

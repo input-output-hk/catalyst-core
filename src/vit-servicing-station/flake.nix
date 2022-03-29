@@ -1,5 +1,7 @@
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs.flake-compat.url = "github:edolstra/flake-compat";
+  inputs.flake-compat.flake = false;
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.gitignore.url = "github:hercules-ci/gitignore.nix";
   inputs.gitignore.inputs.nixpkgs.follows = "nixpkgs";
@@ -16,16 +18,17 @@
 
   nixConfig.extra-substituters = [
     "https://hydra.iohk.io"
-    "https://vit-ops.cachix.org"
+    "https://vit.cachix.org"
   ];
   nixConfig.extra-trusted-public-keys = [
     "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
-    "vit-ops.cachix.org-1:LY84nIKdW7g1cvhJ6LsupHmGtGcKAlUXo+l1KByoDho="
+    "vit.cachix.org-1:tuLYwbnzbxLzQHHN0fvZI2EMpVm/+R7AKUGqukc6eh8="
   ];
 
   outputs = {
     self,
     nixpkgs,
+    flake-compat,
     flake-utils,
     gitignore,
     pre-commit-hooks,

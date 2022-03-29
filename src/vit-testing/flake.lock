@@ -148,12 +148,12 @@
       "inputs": {
         "customConfig": "customConfig_2",
         "haskellNix": [
-          "voting-tools",
+          "voting-tools_",
           "haskellNix"
         ],
         "iohkNix": "iohkNix_2",
         "nixpkgs": [
-          "voting-tools",
+          "voting-tools_",
           "nixpkgs"
         ],
         "utils": "utils_4"
@@ -451,7 +451,7 @@
         "hpc-coveralls": "hpc-coveralls_2",
         "nix-tools": "nix-tools_2",
         "nixpkgs": [
-          "voting-tools",
+          "voting-tools_",
           "nixpkgs"
         ],
         "nixpkgs-2003": "nixpkgs-2003_2",
@@ -549,7 +549,7 @@
     "iohkNix_3": {
       "inputs": {
         "nixpkgs": [
-          "voting-tools",
+          "voting-tools_",
           "nixpkgs"
         ]
       },
@@ -966,7 +966,7 @@
         "rust-overlay": "rust-overlay_2",
         "vit-kedqr": "vit-kedqr",
         "vit-servicing-station": "vit-servicing-station",
-        "voting-tools": "voting-tools"
+        "voting-tools_": "voting-tools_"
       }
     },
     "rust-nix": {
@@ -1186,13 +1186,13 @@
         "type": "github"
       }
     },
-    "voting-tools": {
+    "voting-tools_": {
       "inputs": {
         "cardano-node": "cardano-node_2",
         "haskellNix": "haskellNix_2",
         "iohkNix": "iohkNix_3",
         "nixpkgs": [
-          "voting-tools",
+          "voting-tools_",
           "haskellNix",
           "nixpkgs-2105"
         ],

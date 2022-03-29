@@ -24,7 +24,7 @@
   #inputs.naersk.url = "github:nix-community/naersk";
   inputs.naersk.url = "github:yusdacra/naersk/feat/cargolock-git-deps";
   inputs.naersk.inputs.nixpkgs.follows = "nixpkgs";
-  inputs.voting-tools.url = "github:input-output-hk/voting-tools?rev=6da7c45cbd1c756285ca2a1db99f82dd1a8cc16b";
+  inputs.voting-tools_.url = "github:input-output-hk/voting-tools?rev=6da7c45cbd1c756285ca2a1db99f82dd1a8cc16b";
   inputs.vit-kedqr.url = "github:input-output-hk/vit-kedqr";
   inputs.vit-servicing-station.url = "github:input-output-hk/vit-servicing-station/master";
   inputs.jormungandr_.url = "github:input-output-hk/jormungandr/master";
@@ -38,7 +38,7 @@
     pre-commit-hooks,
     rust-overlay,
     naersk,
-    voting-tools,
+    voting-tools_,
     vit-kedqr,
     vit-servicing-station,
     jormungandr_,
@@ -59,7 +59,7 @@
           overlays = [(import rust-overlay)];
         };
 
-        inherit (voting-tools.packages.${system}) voting-tools voter-registration;
+        inherit (voting-tools_.packages.${system}) voting-tools voter-registration;
         inherit (jormungandr_.packages.${system}) jormungandr jcli;
         inherit (vit-servicing-station.legacyPackages.${system}) vit-servicing-station-server;
         inherit (cardano-node.packages.${system}) cardano-cli;

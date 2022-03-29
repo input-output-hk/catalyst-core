@@ -881,23 +881,6 @@ dependencies = [
 
 [[package]]
 name = "console"
-version = "0.11.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c0994e656bba7b922d8dd1245db90672ffb701e684e45be58f20719d69abc5a"
-dependencies = [
- "encode_unicode",
- "lazy_static",
- "libc",
- "regex",
- "terminal_size",
- "termios",
- "unicode-width",
- "winapi 0.3.9",
- "winapi-util",
-]
-
-[[package]]
-name = "console"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a50aab2529019abfabfa93f1e6c41ef392f91fbf179b347a7e96abb524884a08"
@@ -2483,7 +2466,7 @@ dependencies = [
  "chain-vote",
  "chrono",
  "cocoon",
- "console 0.11.3",
+ "console 0.15.0",
  "cryptoxide 0.3.6",
  "csv",
  "dialoguer 0.10.0",
@@ -2627,7 +2610,7 @@ version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7baab56125e25686df467fe470785512329883aab42696d661247aca2a2896e4"
 dependencies = [
- "console 0.11.3",
+ "console 0.13.0",
  "lazy_static",
  "number_prefix",
  "regex",
@@ -5495,15 +5478,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "termios"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "411c5bf740737c7918b8b1fe232dca4dc9f8e754b8ad5e20966814001ed0ac6b"
-dependencies = [
- "libc",
-]
-
-[[package]]
 name = "termtree"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6394,7 +6368,7 @@ dependencies = [
  "chain-impl-mockchain",
  "chain-time",
  "chain-vote",
- "console 0.13.0",
+ "console 0.15.0",
  "ctrlc",
  "custom_debug",
  "dialoguer 0.10.0",

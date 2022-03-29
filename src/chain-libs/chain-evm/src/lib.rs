@@ -1,4 +1,4 @@
-pub use primitive_types;
+pub use ethereum_types;
 
 pub mod machine;
 mod precompiles;

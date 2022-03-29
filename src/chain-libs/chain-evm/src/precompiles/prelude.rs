@@ -1,5 +1,5 @@
 pub use crate::Address;
-pub use primitive_types::{H160, H256, U256};
+pub use ethereum_types::{H160, H256, U256};
 pub use std::collections::BTreeMap;
 pub use std::marker::PhantomData;
 pub use std::mem;

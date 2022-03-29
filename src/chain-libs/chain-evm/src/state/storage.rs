@@ -1,6 +1,6 @@
 use crate::state::trie::Trie;
 
-use primitive_types::H256;
+use ethereum_types::H256;
 
 /// Representation of a storage key. Fixed-size uninterpreted hash type with 32 bytes (256 bits) size.
 pub type Key = H256;

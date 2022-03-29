@@ -2,8 +2,7 @@ use crate::{
     state::{storage::Storage, trie::Trie, Error},
     Address,
 };
-
-use primitive_types::U256;
+use ethereum_types::U256;
 
 pub type Nonce = U256;
 

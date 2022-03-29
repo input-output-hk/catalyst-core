@@ -5,7 +5,7 @@ use chain_core::{
 };
 #[cfg(feature = "evm")]
 use chain_evm::{
-    primitive_types,
+    ethereum_types::{H256, U256},
     state::{ByteCode, Key},
 };
 use typed_bytes::ByteBuilder;
@@ -27,7 +27,7 @@ pub enum EvmTransaction {
     #[cfg(feature = "evm")]
     Create {
         caller: Address,
-        value: primitive_types::U256,
+        value: U256,
         init_code: ByteCode,
         gas_limit: u64,
         access_list: Vec<(Address, Vec<Key>)>,
@@ -35,9 +35,9 @@ pub enum EvmTransaction {
     #[cfg(feature = "evm")]
     Create2 {
         caller: Address,
-        value: primitive_types::U256,
+        value: U256,
         init_code: ByteCode,
-        salt: primitive_types::H256,
+        salt: H256,
         gas_limit: u64,
         access_list: Vec<(Address, Vec<Key>)>,
     },
@@ -45,7 +45,7 @@ pub enum EvmTransaction {
     Call {
         caller: Address,
         address: Address,
-        value: primitive_types::U256,
+        value: U256,
         data: ByteCode,
         gas_limit: u64,
         access_list: Vec<(Address, Vec<Key>)>,
@@ -120,7 +120,7 @@ pub fn serialize_address<T>(bb: ByteBuilder<T>, caller: &Address) -> ByteBuilder
 
 #[cfg(feature = "evm")]
 /// Serializes U256 types as fixed bytes.
-pub fn serialize_u256<T>(bb: ByteBuilder<T>, value: &primitive_types::U256) -> ByteBuilder<T> {
+pub fn serialize_u256<T>(bb: ByteBuilder<T>, value: &U256) -> ByteBuilder<T> {
     let mut value_bytes = [0u8; 32];
     value.to_big_endian(&mut value_bytes);
     bb.bytes(&value_bytes)
@@ -128,16 +128,13 @@ pub fn serialize_u256<T>(bb: ByteBuilder<T>, value: &primitive_types::U256) -> B
 
 #[cfg(feature = "evm")]
 /// Serializes H256 types as fixed bytes.
-pub fn serialize_h256<T>(bb: ByteBuilder<T>, value: &primitive_types::H256) -> ByteBuilder<T> {
+pub fn serialize_h256<T>(bb: ByteBuilder<T>, value: &H256) -> ByteBuilder<T> {
     bb.bytes(value.as_fixed_bytes())
 }
 
 #[cfg(feature = "evm")]
 /// Serializes H256 types as fixed bytes.
-pub fn serialize_h256_list<T>(
-    bb: ByteBuilder<T>,
-    value: &[primitive_types::H256],
-) -> ByteBuilder<T> {
+pub fn serialize_h256_list<T>(bb: ByteBuilder<T>, value: &[H256]) -> ByteBuilder<T> {
     bb.u64(value.len() as u64)
         .fold(value.iter(), serialize_h256)
 }
@@ -174,13 +171,13 @@ fn read_address(codec: &mut Codec<&[u8]>) -> Result<Address, ReadError> {
 }
 
 #[cfg(feature = "evm")]
-fn read_h256(codec: &mut Codec<&[u8]>) -> Result<primitive_types::H256, ReadError> {
-    Ok(primitive_types::H256::from_slice(codec.get_slice(32)?))
+fn read_h256(codec: &mut Codec<&[u8]>) -> Result<H256, ReadError> {
+    Ok(H256::from_slice(codec.get_slice(32)?))
 }
 
 #[cfg(feature = "evm")]
-pub fn read_u256(codec: &mut Codec<&[u8]>) -> Result<primitive_types::U256, ReadError> {
-    Ok(primitive_types::U256::from(codec.get_slice(32)?))
+pub fn read_u256(codec: &mut Codec<&[u8]>) -> Result<U256, ReadError> {
+    Ok(U256::from(codec.get_slice(32)?))
 }
 
 #[cfg(feature = "evm")]
@@ -304,7 +301,7 @@ impl Payload for EvmTransaction {
 #[cfg(all(any(test, feature = "property-test-api"), feature = "evm"))]
 mod test {
     use super::*;
-    use chain_evm::primitive_types::{H160, H256};
+    use chain_evm::ethereum_types::H160;
     use quickcheck::Arbitrary;
 
     impl Arbitrary for EvmTransaction {

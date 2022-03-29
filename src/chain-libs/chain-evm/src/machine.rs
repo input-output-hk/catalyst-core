@@ -8,12 +8,12 @@
 //! ## Handler <- EVM Context Handler
 //! ## StackState<'config>
 //!
+use ethereum_types::{H160, H256, U256};
 use evm::{
     backend::{Backend, Basic},
     executor::stack::{Accessed, StackExecutor, StackState, StackSubstateMetadata},
     Context, ExitError, ExitFatal, ExitReason, ExitRevert, Transfer,
 };
-use primitive_types::{H160, H256, U256};
 use std::collections::{BTreeMap, BTreeSet};
 
 use thiserror::Error;
@@ -133,7 +133,7 @@ pub trait EvmState {
     where
         F: FnOnce(Account) -> Option<Account>;
 
-    fn update_logs(&mut self, block_hash: H256, logs: Vec<Log>);
+    fn update_logs(&mut self, block_hash: BlockHash, logs: Vec<Log>);
 }
 
 struct VirtualMachineSubstate<'a> {

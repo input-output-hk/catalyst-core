@@ -7,7 +7,6 @@ use chain_evm::{
         transact_call, transact_create, transact_create2, BlockHash, BlockNumber, BlockTimestamp,
         Config, Environment, EvmState, Log, VirtualMachine,
     },
-    primitive_types::{H256, U256},
     state::{Account, AccountTrie, LogsState},
     Address,
 };
@@ -46,7 +45,7 @@ impl EvmState for super::Ledger {
         self.evm.accounts = self.evm.accounts.clone().modify_account(address, f);
     }
 
-    fn update_logs(&mut self, block_hash: H256, logs: Vec<Log>) {
+    fn update_logs(&mut self, block_hash: BlockHash, logs: Vec<Log>) {
         self.evm.logs.put(block_hash, logs);
     }
 }
@@ -186,12 +185,10 @@ impl Ledger {
     pub(crate) fn stats(&self) -> String {
         let Ledger { accounts, .. } = self;
         let mut count = 0;
-        let mut total = U256::zero();
-        for (_, account) in accounts {
+        for (_, _) in accounts {
             count += 1;
-            total += account.balance.into();
         }
-        format!("EVM accounts: #{} Total={:?}", count, total)
+        format!("EVM accounts: #{}", count)
     }
 
     pub(crate) fn info_eq(&self, other: &Self) -> String {

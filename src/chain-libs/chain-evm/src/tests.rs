@@ -1,8 +1,8 @@
 use crate::machine::test::TestEvmState;
 use crate::machine::{transact_call, VirtualMachine};
 use crate::{state::Account, Config};
+use ethereum_types::{H160, U256};
 use evm_test_suite::{AccountState, BlockHeader, CallTransaction, NetworkType};
-use primitive_types::{H160, U256};
 use std::collections::BTreeSet;
 
 struct TestEvmLedger {

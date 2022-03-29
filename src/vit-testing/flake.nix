@@ -11,6 +11,8 @@
   ];
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs.flake-compat.url = "github:edolstra/flake-compat";
+  inputs.flake-compat.flake = false;
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.gitignore.url = "github:hercules-ci/gitignore.nix";
   inputs.gitignore.inputs.nixpkgs.follows = "nixpkgs";
@@ -33,6 +35,7 @@
   outputs = {
     self,
     nixpkgs,
+    flake-compat,
     flake-utils,
     gitignore,
     pre-commit-hooks,
@@ -47,7 +50,6 @@
     flake-utils.lib.eachSystem
     [
       flake-utils.lib.system.x86_64-linux
-      flake-utils.lib.system.aarch64-linux
     ]
     (
       system: let
@@ -61,7 +63,7 @@
 
         inherit (voting-tools_.packages.${system}) voting-tools voter-registration;
         inherit (jormungandr_.packages.${system}) jormungandr jcli;
-        inherit (vit-servicing-station.legacyPackages.${system}) vit-servicing-station-server;
+        inherit (vit-servicing-station.packages.${system}) vit-servicing-station-server;
         inherit (cardano-node.packages.${system}) cardano-cli;
 
         rust = let

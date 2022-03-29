@@ -17,6 +17,6 @@ jobs:
       with:
         CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
     - name: Flake check
-      run: nix flake check
+      run: nix flake check --option allow-import-from-derivation true
     - name: Build
       run: nix build .#vitup

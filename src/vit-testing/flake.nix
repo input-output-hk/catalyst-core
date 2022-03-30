@@ -2,12 +2,12 @@
   description = "Incubator for catalyst related testing projects";
 
   nixConfig.extra-substituters = [
-    "https://hydra.iohk.io"
     "https://vit.cachix.org"
+    "https://hydra.iohk.io"
   ];
   nixConfig.extra-trusted-public-keys = [
-    "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
     "vit.cachix.org-1:tuLYwbnzbxLzQHHN0fvZI2EMpVm/+R7AKUGqukc6eh8="
+    "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
   ];
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -100,9 +100,14 @@
 
         mkPackage = name: let
           pkgCargo = readTOML ./${name}/Cargo.toml;
-          cargoOptions = ["--package" name];
+          cargoOptions = [
+            "--package"
+            "file://$PWD/\"${name}\""
+          ];
         in
           naersk-lib.buildPackage {
+            inherit (pkgCargo.package) name version;
+
             root = gitignore.lib.gitignoreSource self;
 
             cargoBuildOptions = x: x ++ cargoOptions;

@@ -104,8 +104,7 @@
             "--package"
             "file://$PWD/\"${name}\""
           ];
-        in
-          naersk-lib.buildPackage {
+          unwrapped = naersk-lib.buildPackage {
             inherit (pkgCargo.package) name version;
 
             root = gitignore.lib.gitignoreSource self;
@@ -116,33 +115,30 @@
             PROTOC = "${pkgs.protobuf}/bin/protoc";
             PROTOC_INCLUDE = "${pkgs.protobuf}/include";
 
-            nativeBuildInputs = with pkgs;
-              [
-                pkg-config
-                protobuf
-                rustfmt
-              ]
-              ++ (pkgs.lib.optional
-                (builtins.elem name [
-                  "snapshot-trigger-service"
-                  "registration-service"
-                  "registration-verify-service"
-                ])
-                pkgs.makeWrapper);
+            nativeBuildInputs = with pkgs; [
+              pkg-config
+              protobuf
+              rustfmt
+            ];
 
             buildInputs = with pkgs; [
               openssl
             ];
-
-            postInstall =
-              if name == "snapshot-trigger-service"
-              then "wrapProgram $out/bin/${name} --prefix PATH : ${pkgs.lib.makeBinPath [voting-tools]}"
-              else if name == "registration-service"
-              then "wrapProgram $out/bin/${name} --prefix PATH : ${pkgs.lib.makeBinPath [vit-kedqr jcli cardano-cli]}"
-              else if name == "registration-verify-service"
-              then "wrapProgram $out/bin/${name} --prefix PATH : ${pkgs.lib.makeBinPath [jcli]}"
-              else "";
           };
+          extraBinPath = {
+            snapshot-trigger-service = [voting-tools];
+            registration-service = [vit-kedqr jcli cardano-cli];
+            registration-verify-service = [jcli];
+          };
+        in
+          if builtins.elem name (builtins.attrNames extraBinPath)
+          then
+            pkgs.runCommand "wrapped-${unwrapped.name}" {nativeBuildInputs = [pkgs.makeWrapper];} ''
+              mkdir -p $out/bin
+              ln -s ${unwrapped}/bin/${name} $out/bin/${name}
+              wrapProgram $out/bin/${name} --prefix PATH : ${pkgs.lib.makeBinPath extraBinPath.${name}}
+            ''
+          else unwrapped;
 
         workspace =
           builtins.listToAttrs

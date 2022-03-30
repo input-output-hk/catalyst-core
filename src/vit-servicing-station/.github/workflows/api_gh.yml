@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Bundle
-        uses: seeebiii/redoc-cli-github-action@v9
+        uses: seeebiii/redoc-cli-github-action@v10
         with:
           args: 'bundle doc/api/v0.yaml -o html/index.html'
 

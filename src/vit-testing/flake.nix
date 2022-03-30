@@ -170,19 +170,12 @@
 
         warnToUpdateNix = pkgs.lib.warn "Consider updating to Nix > 2.7 to remove this warning!";
       in rec {
-        packages = {
-          inherit
-            (workspace)
-            iapyx
-            vitup
-            integration-tests
-            snapshot-trigger-service
-            registration-service
-            registration-verify-service
-            ;
-          inherit voting-tools;
-          default = workspace.vitup;
-        };
+        packages =
+          workspace
+          // {
+            inherit voting-tools;
+            default = workspace.vitup;
+          };
 
         devShells.default = pkgs.mkShell {
           PROTOC = "${pkgs.protobuf}/bin/protoc";

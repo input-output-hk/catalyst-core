@@ -374,12 +374,11 @@ pub struct Connect {
 
 impl Connect {
     pub fn exec(&self, mut controller: CliController) -> Result<(), IapyxCommandError> {
-        controller.wallets_mut().config_mut().connection = Connection {
+        controller.update_connection(Connection {
             address: self.address.clone(),
             https: self.use_https,
             debug: self.enable_debug,
-        };
-
+        });
         controller.check_connection()?;
         controller.save_config().map_err(Into::into)
     }

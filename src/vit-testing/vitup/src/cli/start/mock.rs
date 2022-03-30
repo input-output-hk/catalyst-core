@@ -31,7 +31,7 @@ impl MockStartCommandArgs {
 
         let control_context = Arc::new(Mutex::new(Context::new(configuration, start_params)?));
 
-        tokio::spawn(async move { start_rest_server(control_context.clone()).await })
+        tokio::spawn(async move { start_rest_server(control_context.clone()).await.unwrap() })
             .await
             .map(|_| ())
             .map_err(Into::into)

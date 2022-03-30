@@ -3,7 +3,7 @@
   "working_dir": "./mock",
   "ideascale": false,
   "protocol": {
-    "key_path": "../resources/tls/server.key",
-    "cert_path": "../resources/tls/server.crt"
+    "key_path": "./resources/tls/server.key",
+    "cert_path": "./resources/tls/server.crt"
   }
 }

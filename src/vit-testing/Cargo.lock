@@ -2439,6 +2439,19 @@ dependencies = [
 
 [[package]]
 name = "hyper-tls"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d979acc56dcb5b8dddba3917601745e877576475aa046df3226eabdecef78eed"
+dependencies = [
+ "bytes 0.5.6",
+ "hyper 0.13.10",
+ "native-tls",
+ "tokio 0.2.25",
+ "tokio-tls",
+]
+
+[[package]]
+name = "hyper-tls"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6183ddfa99b85da61a140bea0efc93fdf56ceaa041b37d553518030827f9905"
@@ -4509,12 +4522,14 @@ dependencies = [
  "http-body 0.3.1",
  "hyper 0.13.10",
  "hyper-rustls 0.21.0",
+ "hyper-tls 0.4.3",
  "ipnet",
  "js-sys",
  "lazy_static",
  "log",
  "mime",
  "mime_guess",
+ "native-tls",
  "percent-encoding",
  "pin-project-lite 0.2.8",
  "rustls 0.18.1",
@@ -4523,6 +4538,7 @@ dependencies = [
  "serde_urlencoded",
  "tokio 0.2.25",
  "tokio-rustls 0.14.1",
+ "tokio-tls",
  "url",
  "wasm-bindgen",
  "wasm-bindgen-futures",
@@ -4547,7 +4563,7 @@ dependencies = [
  "http-body 0.4.4",
  "hyper 0.14.18",
  "hyper-rustls 0.23.0",
- "hyper-tls",
+ "hyper-tls 0.5.0",
  "ipnet",
  "js-sys",
  "lazy_static",
@@ -5754,6 +5770,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "tokio-tls"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a70f4fcd7b3b24fb194f837560168208f669ca8cb70d0c4b862944452396343"
+dependencies = [
+ "native-tls",
+ "tokio 0.2.25",
+]
+
+[[package]]
 name = "tokio-tungstenite"
 version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6359,6 +6385,7 @@ dependencies = [
 name = "vitup"
 version = "0.0.1"
 dependencies = [
+ "assert_cmd 1.0.8",
  "assert_fs",
  "base64 0.12.3",
  "catalyst-toolbox",

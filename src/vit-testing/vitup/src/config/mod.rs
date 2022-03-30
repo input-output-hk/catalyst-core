@@ -89,28 +89,28 @@ impl Config {
         );
 
         println!(
-            "refresh timestamp:\t(registration_snapshot_time):\t\t\t{:?}",
+            "refresh timestamp:\t(registration_snapshot_time):\t\t\t{}",
             self.data.snapshot_time
         );
 
         println!(
-            "vote start timestamp:\t(fund_start_time, chain_vote_start_time):\t{:?}",
+            "vote start timestamp:\t(fund_start_time, chain_vote_start_time):\t{}",
             vote_start_timestamp
         );
         println!(
-            "tally start timestamp:\t(fund_end_time, chain_vote_end_time):\t\t{:?}",
+            "tally start timestamp:\t(fund_end_time, chain_vote_end_time):\t\t{}",
             tally_start_timestamp
         );
         println!(
-            "tally end timestamp:\t(chain_committee_end_time):\t\t\t{:?}",
+            "tally end timestamp:\t(chain_committee_end_time):\t\t\t{}",
             tally_end_timestamp
         );
         println!(
-            "next refresh timestamp:\t(next registration_snapshot_time):\t\t{:?}",
+            "next refresh timestamp:\t(next registration_snapshot_time):\t\t{}",
             self.data.next_snapshot_time
         );
         println!(
-            "next vote start time:\t(next_fund_start_time):\t\t\t\t{:?}",
+            "next vote start time:\t(next_fund_start_time):\t\t\t\t{}",
             self.data.next_vote_start_time
         );
     }

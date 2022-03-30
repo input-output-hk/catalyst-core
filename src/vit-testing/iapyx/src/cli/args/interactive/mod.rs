@@ -18,6 +18,7 @@ use std::collections::HashMap;
 use thiserror::Error;
 use thor::cli::CliController as ThorCliController;
 use thor::cli::ConfigManager;
+use thor::cli::Connection;
 use thor::cli::WalletController;
 use thor::BlockDateGenerator;
 use valgrind::Fund;
@@ -44,6 +45,10 @@ impl CliController {
             inner: ThorCliController::new_from_client(config.connection.into(), config_manager)?,
             backend_client,
         })
+    }
+
+    pub fn update_connection(&mut self, connection: Connection) {
+        self.inner.update_connection(connection);
     }
 
     pub fn check_connection(&self) -> Result<(), Error> {

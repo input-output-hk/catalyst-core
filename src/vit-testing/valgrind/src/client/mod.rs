@@ -15,18 +15,18 @@ use jormungandr_lib::interfaces::SettingsDto;
 use jormungandr_lib::interfaces::VotePlanId;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, VotePlanStatus};
 use std::collections::HashMap;
+
+pub use node::{RestError as NodeRestError, WalletNodeRestClient};
+pub use proxy::{Error as ProxyClientError, ProxyClient};
 use thiserror::Error;
+use url::Url;
 use vit_servicing_station_lib::db::models::challenges::Challenge;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::funds::Fund;
 use vit_servicing_station_lib::db::models::proposals::Proposal;
-use wallet::AccountId;
-
-pub use node::{RestError as NodeRestError, WalletNodeRestClient};
-pub use proxy::{Error as ProxyClientError, ProxyClient};
-use url::Url;
 use vit_servicing_station_tests::common::clients::RestClient as VitRestClient;
 pub use vit_station::{RestError as VitStationRestError, VitStationRestClient};
+use wallet::AccountId;
 
 #[derive(Clone)]
 pub struct ValgrindClient {
@@ -35,25 +35,31 @@ pub struct ValgrindClient {
     proxy_client: ProxyClient,
 }
 
+fn remove_api_segment_if_exists(address: &mut Url) {
+    if address.path_segments().unwrap().any(|x| x == "api") {
+        address.path_segments_mut().unwrap().pop();
+    }
+}
+
+fn add_api_segment_if_not_exists(address: &mut Url) {
+    if !address.path_segments().unwrap().any(|x| x == "api") {
+        address.path_segments_mut().unwrap().push("api");
+    }
+}
+
 impl ValgrindClient {
     pub fn new_from_addresses(
-        proxy_address: Url,
-        node_address: Url,
-        vit_address: Url,
+        mut proxy_address: Url,
+        mut node_address: Url,
+        mut vit_address: Url,
         node_rest_settings: ValgrindSettings,
     ) -> Self {
-        println!(
-            "node_address: {}",
-            node_address.join("api").unwrap().as_str()
-        );
-        println!("vit_address: {:?}", vit_address.to_string());
-        println!("proxy_address: {:?}", proxy_address.to_string());
+        remove_api_segment_if_exists(&mut vit_address);
+        add_api_segment_if_not_exists(&mut proxy_address);
+        add_api_segment_if_not_exists(&mut node_address);
 
         let mut backend = Self {
-            node_client: WalletNodeRestClient::new(
-                node_address.join("api").unwrap(),
-                node_rest_settings.clone(),
-            ),
+            node_client: WalletNodeRestClient::new(node_address, node_rest_settings.clone()),
             vit_client: VitRestClient::new(vit_address),
             proxy_client: ProxyClient::new(proxy_address.to_string()),
         };

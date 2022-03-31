@@ -84,6 +84,8 @@ pub struct AccountState<Extra> {
     pub value: Value,
     pub tokens: Hamt<DefaultHasher, TokenIdentifier, Value>,
     pub last_rewards: LastRewards,
+    #[cfg(feature = "evm")]
+    pub evm_state: chain_evm::state::AccountState,
     pub extra: Extra,
 }
 
@@ -96,6 +98,8 @@ impl<Extra> AccountState<Extra> {
             value: v,
             tokens: Hamt::new(),
             last_rewards: LastRewards::default(),
+            #[cfg(feature = "evm")]
+            evm_state: chain_evm::state::AccountState::default(),
             extra: e,
         }
     }
@@ -103,6 +107,13 @@ impl<Extra> AccountState<Extra> {
     pub fn new_reward(epoch: Epoch, v: Value, extra: Extra) -> Self {
         let mut st = Self::new(v, extra);
         st.last_rewards.add_for(epoch, v);
+        st
+    }
+
+    #[cfg(feature = "evm")]
+    pub fn new_evm(evm_state: chain_evm::state::AccountState, v: Value, extra: Extra) -> Self {
+        let mut st = Self::new(v, extra);
+        st.evm_state = evm_state;
         st
     }
 
@@ -326,6 +337,8 @@ mod tests {
                 value: result_value,
                 tokens: Hamt::new(),
                 last_rewards: LastRewards::default(),
+                #[cfg(feature = "evm")]
+                evm_state: chain_evm::state::AccountState::default(),
                 extra: (),
             }
         }

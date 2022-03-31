@@ -8,23 +8,22 @@
 //! ## Handler <- EVM Context Handler
 //! ## StackState<'config>
 //!
-use ethereum_types::{H160, H256, U256};
-use evm::{
-    backend::{Backend, Basic},
-    executor::stack::{Accessed, StackExecutor, StackState, StackSubstateMetadata},
-    Context, ExitError, ExitFatal, ExitReason, ExitRevert, Transfer,
-};
-use std::collections::{BTreeMap, BTreeSet};
-
-use thiserror::Error;
-
 use crate::{
     precompiles::Precompiles,
     state::{Account, Balance, ByteCode, Key},
 };
+use ethereum_types::{H160, H256, U256};
+use evm::{
+    backend::{Backend, Basic},
+    executor::stack::{Accessed, StackExecutor, StackState, StackSubstateMetadata},
+    Context, ExitFatal, ExitReason, ExitRevert, Transfer,
+};
+use std::collections::{BTreeMap, BTreeSet};
+use thiserror::Error;
 
 /// Export EVM types
 pub use evm::backend::Log;
+pub use evm::ExitError;
 
 /// An address of an EVM account.
 pub type Address = H160;
@@ -125,11 +124,11 @@ pub enum Error {
 pub trait EvmState {
     fn environment(&self) -> &Environment;
 
-    fn account(&self, address: Address) -> Option<Account>;
+    fn account(&self, address: &Address) -> Option<Account>;
 
-    fn contains(&self, address: Address) -> bool;
+    fn contains(&self, address: &Address) -> bool;
 
-    fn modify_account<F>(&mut self, address: Address, f: F)
+    fn modify_account<F>(&mut self, address: Address, f: F) -> Result<(), ExitError>
     where
         F: FnOnce(Account) -> Option<Account>;
 
@@ -181,7 +180,7 @@ impl<'a> VirtualMachineSubstate<'a> {
         let account = self
             .known_account(&address)
             .cloned()
-            .unwrap_or_else(|| state.account(address).unwrap_or_default());
+            .unwrap_or_else(|| state.account(&address).unwrap_or_default());
         self.accounts.entry(address).or_insert(account)
     }
 }
@@ -245,12 +244,18 @@ where
             let vm = executor.into_state();
 
             // pay gas fees
-            if let Some(mut account) = vm.state.account(vm.origin) {
+            if let Some(mut account) = vm.state.account(&vm.origin) {
                 account.balance = account
                     .balance
-                    .checked_sub(gas_fees)
+                    .checked_sub(
+                        gas_fees
+                            .try_into()
+                            .map_err(|_| Error::TransactionError(ExitError::OutOfFund))?,
+                    )
                     .ok_or(Error::TransactionError(ExitError::OutOfFund))?;
-                vm.state.modify_account(vm.origin, |_| Some(account));
+                vm.state
+                    .modify_account(vm.origin, |_| Some(account))
+                    .map_err(Error::TransactionError)?;
             }
 
             // exit_reason
@@ -369,21 +374,21 @@ impl<'a, State: EvmState> Backend for VirtualMachine<'a, State> {
         self.state.environment().chain_id
     }
     fn exists(&self, address: H160) -> bool {
-        self.substate.known_account(&address).is_some() || self.state.contains(address)
+        self.substate.known_account(&address).is_some() || self.state.contains(&address)
     }
     fn basic(&self, address: H160) -> Basic {
         self.substate
             .known_account(&address)
             .map(|account| Basic {
                 balance: account.balance.into(),
-                nonce: account.nonce,
+                nonce: account.state.nonce,
             })
             .unwrap_or_else(|| {
                 self.state
-                    .account(address)
+                    .account(&address)
                     .map(|account| Basic {
                         balance: account.balance.into(),
-                        nonce: account.nonce,
+                        nonce: account.state.nonce,
                     })
                     .unwrap_or_default()
             })
@@ -391,28 +396,42 @@ impl<'a, State: EvmState> Backend for VirtualMachine<'a, State> {
     fn code(&self, address: H160) -> Vec<u8> {
         self.substate
             .known_account(&address)
-            .map(|account| account.code.clone())
+            .map(|account| account.state.code.clone())
             .unwrap_or_else(|| {
                 self.state
-                    .account(address)
-                    .map(|account| account.code)
+                    .account(&address)
+                    .map(|account| account.state.code)
                     .unwrap_or_default()
             })
     }
     fn storage(&self, address: H160, index: H256) -> H256 {
         self.substate
             .known_account(&address)
-            .map(|account| account.storage.get(&index).cloned().unwrap_or_default())
+            .map(|account| {
+                account
+                    .state
+                    .storage
+                    .get(&index)
+                    .cloned()
+                    .unwrap_or_default()
+            })
             .unwrap_or_else(|| {
                 self.state
-                    .account(address)
-                    .map(|account| account.storage.get(&index).cloned().unwrap_or_default())
+                    .account(&address)
+                    .map(|account| {
+                        account
+                            .state
+                            .storage
+                            .get(&index)
+                            .cloned()
+                            .unwrap_or_default()
+                    })
                     .unwrap_or_default()
             })
     }
     fn original_storage(&self, address: H160, index: H256) -> Option<H256> {
-        match self.state.account(address) {
-            Some(account) => account.storage.get(&index).cloned(),
+        match self.state.account(&address) {
+            Some(account) => account.state.storage.get(&index).cloned(),
             None => None,
         }
     }
@@ -461,7 +480,8 @@ impl<'a, State: EvmState> StackState<'a> for VirtualMachine<'a, State> {
             let mut account = account.clone();
             // cleanup storage from zero values
             // ref: https://github.com/rust-blockchain/evm/blob/8b1875c83105f47b74d3d7be7302f942e92eb374/src/backend/memory.rs#L185
-            account.storage = account
+            account.state.storage = account
+                .state
                 .storage
                 .iter()
                 .filter(|(_, v)| v != &&Default::default())
@@ -474,12 +494,12 @@ impl<'a, State: EvmState> StackState<'a> for VirtualMachine<'a, State> {
                 } else {
                     Some(account)
                 }
-            });
+            })?;
         }
 
         // delete account
         for address in self.substate.deletes.iter() {
-            self.state.modify_account(*address, |_| None);
+            self.state.modify_account(*address, |_| None)?;
         }
 
         // save the logs
@@ -515,7 +535,7 @@ impl<'a, State: EvmState> StackState<'a> for VirtualMachine<'a, State> {
     fn is_empty(&self, address: H160) -> bool {
         match self.substate.known_account(&address) {
             Some(account) => account.is_empty(),
-            None => match self.state.account(address) {
+            None => match self.state.account(&address) {
                 Some(account) => account.is_empty(),
                 None => true,
             },
@@ -537,16 +557,16 @@ impl<'a, State: EvmState> StackState<'a> for VirtualMachine<'a, State> {
     }
 
     fn inc_nonce(&mut self, address: H160) {
-        self.substate.account_mut(address, self.state).nonce += U256::one();
+        self.substate.account_mut(address, self.state).state.nonce += U256::one();
     }
 
     fn set_storage(&mut self, address: H160, key: H256, value: H256) {
         let account = self.substate.account_mut(address, self.state);
-        account.storage = account.storage.clone().put(key, value);
+        account.state.storage = account.state.storage.clone().put(key, value);
     }
 
     fn reset_storage(&mut self, address: H160) {
-        self.substate.account_mut(address, self.state).storage = Default::default();
+        self.substate.account_mut(address, self.state).state.storage = Default::default();
     }
 
     fn log(&mut self, address: H160, topics: Vec<H256>, data: Vec<u8>) {
@@ -562,19 +582,29 @@ impl<'a, State: EvmState> StackState<'a> for VirtualMachine<'a, State> {
     }
 
     fn set_code(&mut self, address: H160, code: Vec<u8>) {
-        self.substate.account_mut(address, self.state).code = code;
+        self.substate.account_mut(address, self.state).state.code = code;
     }
 
     fn transfer(&mut self, transfer: Transfer) -> Result<(), ExitError> {
         let source = self.substate.account_mut(transfer.source, self.state);
 
-        source.balance = match source.balance.checked_sub(transfer.value) {
+        source.balance = match source.balance.checked_sub(
+            transfer
+                .value
+                .try_into()
+                .map_err(|_| ExitError::OutOfFund)?,
+        ) {
             Some(res) => res,
-            None => return Err(ExitError::OutOfGas),
+            None => return Err(ExitError::OutOfFund),
         };
 
         let target = self.substate.account_mut(transfer.target, self.state);
-        target.balance = match target.balance.checked_add(transfer.value) {
+        target.balance = match target.balance.checked_add(
+            transfer
+                .value
+                .try_into()
+                .map_err(|_| ExitError::Other("Balance overflow".into()))?,
+        ) {
             Some(res) => res,
             None => return Err(ExitError::Other("Balance overflow".into())),
         };
@@ -609,19 +639,20 @@ pub mod test {
             &self.environment
         }
 
-        fn account(&self, address: Address) -> Option<Account> {
-            self.accounts.get(&address).cloned()
+        fn account(&self, address: &Address) -> Option<Account> {
+            self.accounts.get(address).cloned()
         }
 
-        fn contains(&self, address: Address) -> bool {
-            self.accounts.contains(&address)
+        fn contains(&self, address: &Address) -> bool {
+            self.accounts.contains(address)
         }
 
-        fn modify_account<F>(&mut self, address: Address, f: F)
+        fn modify_account<F>(&mut self, address: Address, f: F) -> Result<(), ExitError>
         where
             F: FnOnce(Account) -> Option<Account>,
         {
             self.accounts = self.accounts.clone().modify_account(address, f);
+            Ok(())
         }
 
         fn update_logs(&mut self, block_hash: H256, logs: Vec<Log>) {

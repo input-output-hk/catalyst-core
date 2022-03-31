@@ -176,6 +176,57 @@ fn unpack_spending_strategy(
     })
 }
 
+#[cfg(feature = "evm")]
+fn pack_evm_state<W: std::io::Write>(
+    evm_state: &chain_evm::state::AccountState,
+    codec: &mut Codec<W>,
+) -> Result<(), WriteError> {
+    codec.put_be_u32(evm_state.code.len().try_into().unwrap())?;
+    codec.put_bytes(evm_state.code.as_slice())?;
+
+    let mut bytes = [0; 32];
+    evm_state.nonce.to_big_endian(&mut bytes);
+    codec.put_bytes(&bytes)?;
+
+    codec.put_be_u32(evm_state.storage.size().try_into().unwrap())?;
+    for (key, value) in evm_state.storage.iter() {
+        codec.put_bytes(key.as_bytes())?;
+        codec.put_bytes(value.as_bytes())?;
+    }
+    Ok(())
+}
+
+#[cfg(feature = "evm")]
+fn unpack_evm_state<R: std::io::BufRead>(
+    codec: &mut Codec<R>,
+) -> Result<chain_evm::state::AccountState, ReadError> {
+    use chain_evm::state::Key;
+    use chain_evm::state::Value;
+
+    let code_size = codec.get_be_u32()? as usize;
+    let code = codec.get_bytes(code_size)?;
+
+    let nonce_bytes = codec.get_bytes(32)?;
+    let nonce = chain_evm::ethereum_types::U256::from_big_endian(&nonce_bytes);
+
+    let storage_size = codec.get_be_u32()? as usize;
+    let mut storage = chain_evm::state::Trie::<Key, Value>::new();
+    for _ in 0..storage_size {
+        let k = codec.get_bytes(Key::len_bytes())?;
+        let v = codec.get_bytes(Value::len_bytes())?;
+        storage = storage.put(
+            Key::from_slice(k.as_slice()),
+            Value::from_slice(v.as_slice()),
+        );
+    }
+
+    Ok(chain_evm::state::AccountState {
+        code,
+        storage,
+        nonce,
+    })
+}
+
 fn pack_account_state<W: std::io::Write>(
     account_state: &AccountState<()>,
     codec: &mut Codec<W>,
@@ -184,6 +235,8 @@ fn pack_account_state<W: std::io::Write>(
     pack_delegation_type(&account_state.delegation, codec)?;
     codec.put_be_u64(account_state.value.0)?;
     pack_last_rewards(&account_state.last_rewards, codec)?;
+    #[cfg(feature = "evm")]
+    pack_evm_state(&account_state.evm_state, codec)?;
     Ok(())
 }
 
@@ -192,11 +245,15 @@ fn unpack_account_state(codec: &mut Codec<&[u8]>) -> Result<AccountState<()>, Re
     let delegation = unpack_delegation_type(codec)?;
     let value = codec.get_be_u64()?;
     let last_rewards = unpack_last_rewards(codec)?;
+    #[cfg(feature = "evm")]
+    let evm_state = unpack_evm_state(codec)?;
     Ok(AccountState {
         spending,
         delegation,
         value: Value(value),
         tokens: Hamt::new(),
+        #[cfg(feature = "evm")]
+        evm_state,
         last_rewards,
         extra: (),
     })

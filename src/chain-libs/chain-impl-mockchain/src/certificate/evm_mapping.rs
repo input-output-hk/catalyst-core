@@ -1,7 +1,7 @@
 #[cfg(feature = "evm")]
-use crate::evm::Address;
+use crate::account::Identifier;
 #[cfg(feature = "evm")]
-use crate::transaction::UnspecifiedAccountIdentifier;
+use crate::evm::Address;
 use crate::transaction::{
     Payload, PayloadAuthData, PayloadData, PayloadSlice, SingleAccountBindingSignature,
 };
@@ -16,14 +16,14 @@ use super::CertificateSlice;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EvmMapping {
     #[cfg(feature = "evm")]
-    pub account_id: UnspecifiedAccountIdentifier,
+    pub account_id: Identifier,
     #[cfg(feature = "evm")]
     pub evm_address: Address,
 }
 
 impl EvmMapping {
     #[cfg(feature = "evm")]
-    pub fn new(evm_address: Address, account_id: UnspecifiedAccountIdentifier) -> Self {
+    pub fn new(evm_address: Address, account_id: Identifier) -> Self {
         Self {
             account_id,
             evm_address,
@@ -36,14 +36,14 @@ impl EvmMapping {
     }
 
     #[cfg(feature = "evm")]
-    pub fn account_id(&self) -> &UnspecifiedAccountIdentifier {
+    pub fn account_id(&self) -> &Identifier {
         &self.account_id
     }
 
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
         #[cfg(feature = "evm")]
         {
-            bb.bytes(self.account_id().as_ref())
+            bb.bytes(self.account_id.as_ref().as_ref())
                 .bytes(self.evm_address.as_bytes())
         }
         #[cfg(not(feature = "evm"))]
@@ -89,7 +89,7 @@ impl Serialize for EvmMapping {
     fn serialize<W: std::io::Write>(&self, _codec: &mut Codec<W>) -> Result<(), WriteError> {
         #[cfg(feature = "evm")]
         {
-            _codec.put_bytes(self.account_id.as_ref())?;
+            self.account_id.serialize(_codec)?;
             _codec.put_bytes(self.evm_address.as_bytes())?;
         }
         Ok(())
@@ -100,14 +100,11 @@ impl DeserializeFromSlice for EvmMapping {
     fn deserialize_from_slice(_codec: &mut Codec<&[u8]>) -> Result<Self, ReadError> {
         #[cfg(feature = "evm")]
         {
-            let buf: [u8; crate::transaction::INPUT_PTR_SIZE] = _codec
-                .get_bytes(crate::transaction::INPUT_PTR_SIZE)?
-                .try_into()
-                .unwrap();
+            let account_id = Identifier::deserialize_from_slice(_codec)?;
             let evm_address = _codec.get_bytes(Address::len_bytes())?;
 
             Ok(Self {
-                account_id: buf.into(),
+                account_id,
                 evm_address: Address::from_slice(evm_address.as_slice()),
             })
         }
@@ -127,7 +124,7 @@ mod test {
     impl Arbitrary for EvmMapping {
         fn arbitrary<G: quickcheck::Gen>(g: &mut G) -> Self {
             Self {
-                account_id: [u8::arbitrary(g); crate::transaction::INPUT_PTR_SIZE].into(),
+                account_id: Arbitrary::arbitrary(g),
                 evm_address: [u8::arbitrary(g); Address::len_bytes()].into(),
             }
         }

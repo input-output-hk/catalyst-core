@@ -173,6 +173,8 @@ pub enum Block0Error {
     HasVoteCast,
     #[error("Vote tallying are not valid in the block0")]
     HasVoteTally,
+    #[error("EvmMapping are not valid in the block0")]
+    HasEvmMapping,
 }
 
 pub type OutputOldAddress = Output<legacy::OldAddress>;
@@ -327,8 +329,8 @@ pub enum Error {
     #[error("evm transactions are disabled, the node was built without the 'evm' feature")]
     DisabledEvmTransactions,
     #[cfg(feature = "evm")]
-    #[error("evm transaction error")]
-    EvmTransactionError(#[from] chain_evm::machine::Error),
+    #[error("evm error: {0}")]
+    EvmError(#[from] evm::Error),
 }
 
 impl LedgerParameters {
@@ -524,7 +526,7 @@ impl Ledger {
                     #[cfg(feature = "evm")]
                     {
                         let tx = _tx.as_slice().payload().into_payload();
-                        ledger.run_transaction(tx, ledger.settings.evm_config)?;
+                        ledger = ledger.run_transaction(tx)?;
                     }
                     #[cfg(not(feature = "evm"))]
                     {
@@ -532,8 +534,14 @@ impl Ledger {
                     }
                 }
                 Fragment::EvmMapping(_tx) => {
-                    // TODO: implement
-                    unimplemented!()
+                    #[cfg(feature = "evm")]
+                    {
+                        return Err(Error::Block0(Block0Error::HasEvmMapping));
+                    }
+                    #[cfg(not(feature = "evm"))]
+                    {
+                        return Err(Error::DisabledEvmTransactions);
+                    }
                 }
             }
         }
@@ -1066,7 +1074,7 @@ impl Ledger {
                 #[cfg(feature = "evm")]
                 {
                     let tx = _tx.as_slice().payload().into_payload();
-                    new_ledger.run_transaction(tx, new_ledger.settings.evm_config)?;
+                    new_ledger = new_ledger.run_transaction(tx)?;
                 }
                 #[cfg(not(feature = "evm"))]
                 {
@@ -1074,8 +1082,26 @@ impl Ledger {
                 }
             }
             Fragment::EvmMapping(_tx) => {
-                // TODO implement
-                unimplemented!()
+                #[cfg(feature = "evm")]
+                {
+                    let tx = _tx.as_slice();
+                    let (new_ledger_, _fee) = new_ledger.apply_transaction(
+                        &fragment_id,
+                        &tx,
+                        block_date,
+                        ledger_params,
+                    )?;
+
+                    new_ledger = new_ledger_.apply_map_accounts(
+                        &tx.payload().into_payload(),
+                        &tx.transaction_binding_auth_data(),
+                        tx.payload_auth().into_payload_auth(),
+                    )?;
+                }
+                #[cfg(not(feature = "evm"))]
+                {
+                    return Err(Error::DisabledEvmTransactions);
+                }
             }
         }
 

@@ -208,6 +208,29 @@ impl<ID: Clone + Eq + Hash, Extra: Clone> Ledger<ID, Extra> {
             .map_err(|e| e.into())
     }
 
+    #[cfg(feature = "evm")]
+    pub fn evm_insert_or_update(
+        &self,
+        identifier: &ID,
+        value: Value,
+        evm_state: chain_evm::state::AccountState,
+        extra: Extra,
+    ) -> Result<Self, LedgerError> {
+        self.0
+            .insert_or_update(
+                identifier.clone(),
+                AccountState::new_evm(evm_state.clone(), value, extra),
+                |st| {
+                    Ok(Some(AccountState {
+                        evm_state,
+                        value,
+                        ..st.clone()
+                    }))
+                },
+            )
+            .map(Ledger)
+    }
+
     pub fn iter(&self) -> Iter<'_, ID, Extra> {
         Iter(self.0.iter())
     }
@@ -428,6 +451,8 @@ mod tests {
                     delegation: DelegationType::Full(stake_pool_id),
                     value: value_after_reward,
                     tokens: Hamt::new(),
+                    #[cfg(feature = "evm")]
+                    evm_state: chain_evm::state::AccountState::default(),
                     extra: (),
                 };
 

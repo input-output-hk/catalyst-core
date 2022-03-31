@@ -9,7 +9,7 @@ mod logs;
 mod storage;
 mod trie;
 
-pub use account::{Account, AccountTrie, Balance, ByteCode, Nonce};
+pub use account::{Account, AccountState, AccountTrie, Balance, ByteCode, Nonce};
 use evm::ExitError;
 pub use logs::LogsState;
 use std::borrow::Cow;

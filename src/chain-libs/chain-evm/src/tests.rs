@@ -15,13 +15,15 @@ impl TryFrom<AccountState> for Account {
     type Error = String;
     fn try_from(val: AccountState) -> Result<Self, Self::Error> {
         Ok(Self {
-            nonce: val.nonce,
             balance: val
                 .balance
                 .try_into()
                 .map_err(|_| "can not convert balance")?,
-            storage: val.storage.into_iter().collect(),
-            code: val.code,
+            state: crate::state::AccountState {
+                nonce: val.nonce,
+                storage: val.storage.into_iter().collect(),
+                code: val.code,
+            },
         })
     }
 }
@@ -56,7 +58,7 @@ impl evm_test_suite::TestEvmState for TestEvmLedger {
             if &expected_account != account {
                 let storage_info = |account: &Account| {
                     let mut storage = "{".to_string();
-                    for (key, value) in account.storage.iter() {
+                    for (key, value) in account.state.storage.iter() {
                         storage = format!("{} |key: {} , value: {}| ", storage, key, value);
                     }
                     format!("{}}}", storage)
@@ -72,12 +74,12 @@ impl evm_test_suite::TestEvmState for TestEvmLedger {
                     expected: {{ balance: {}, nonce: {}, code: {}, storage: {} }}",
                     address,
                     account.balance,
-                    account.nonce,
-                    hex::encode(&account.code),
+                    account.state.nonce,
+                    hex::encode(&account.state.code),
                     account_storage,
                     expected_account.balance,
-                    expected_account.nonce,
-                    hex::encode(expected_account.code),
+                    expected_account.state.nonce,
+                    hex::encode(expected_account.state.code),
                     expected_storage
                 ))
             } else {

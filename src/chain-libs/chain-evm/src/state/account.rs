@@ -8,7 +8,7 @@ pub type Nonce = U256;
 
 /// Ethereum account balance which uses the least 64 significant bits of the `U256` type.
 #[derive(Clone, Copy, Default, Debug, PartialEq, Eq, PartialOrd)]
-pub struct Balance(U256);
+pub struct Balance(u64);
 
 impl std::fmt::Display for Balance {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -20,7 +20,7 @@ impl TryFrom<U256> for Balance {
     type Error = Error;
     fn try_from(other: U256) -> Result<Self, Self::Error> {
         match other {
-            U256([_, 0, 0, 0]) => Ok(Balance(other)),
+            U256([val, 0, 0, 0]) => Ok(Balance(val)),
             _ => Err(Error::ValueOverflow),
         }
     }
@@ -28,36 +28,34 @@ impl TryFrom<U256> for Balance {
 
 impl From<u64> for Balance {
     fn from(other: u64) -> Self {
-        Balance(other.into())
+        Balance(other)
+    }
+}
+
+impl From<Balance> for u64 {
+    fn from(other: Balance) -> Self {
+        other.0
     }
 }
 
 impl From<Balance> for U256 {
     fn from(other: Balance) -> U256 {
-        other.0
+        other.0.into()
     }
 }
 
 impl Balance {
     /// Zero (additive identity) of this type.
     pub fn zero() -> Self {
-        Balance(U256::zero())
+        Balance(0)
     }
-    /// Checked addition of `U256` types. Returns `Some(balance)` or `None` if overflow
-    /// occurred.
-    pub fn checked_add(self, other: U256) -> Option<Balance> {
-        match self.0.checked_add(other) {
-            Some(U256([v, 0, 0, 0])) => Some(Balance::from(v)),
-            _ => None,
-        }
+    /// Returns `Some(balance)` or `None` if overflow occurred.
+    pub fn checked_add(self, other: Balance) -> Option<Balance> {
+        self.0.checked_add(other.0).map(Self)
     }
-    /// Checked substraction of `U256` types. Returns `Some(balance)` or `None` if overflow
-    /// occurred.
-    pub fn checked_sub(self, other: U256) -> Option<Balance> {
-        match self.0.checked_sub(other) {
-            Some(U256([v, 0, 0, 0])) => Some(Balance::from(v)),
-            _ => None,
-        }
+    /// Returns `Some(balance)` or `None` if overflow occurred.
+    pub fn checked_sub(self, other: Balance) -> Option<Balance> {
+        self.0.checked_sub(other.0).map(Self)
     }
 }
 
@@ -67,19 +65,28 @@ pub type ByteCode = Vec<u8>;
 /// A represantation of an EVM account.
 #[derive(Clone, Default, PartialEq, Eq)]
 pub struct Account {
-    /// Account nonce. A number of value transfers from this account.
-    pub nonce: Nonce,
     /// Account balance.
     pub balance: Balance,
+    /// Account state.
+    pub state: AccountState,
+}
+
+/// A representation of an EVM account state.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct AccountState {
     /// Account data storage.
     pub storage: Storage,
     /// EVM bytecode of this account.
     pub code: ByteCode,
+    /// Account nonce. A number of value transfers from this account.
+    pub nonce: Nonce,
 }
 
 impl Account {
     pub fn is_empty(&self) -> bool {
-        self.nonce == Nonce::zero() && self.balance == Balance::zero() && self.storage.is_empty()
+        self.state.nonce.is_zero()
+            && self.balance == Balance::zero()
+            && self.state.storage.is_empty()
     }
 }
 
@@ -116,18 +123,18 @@ mod test {
 
     #[test]
     fn account_balance_u256_zero() {
-        assert_eq!(Balance::zero(), Balance(U256::zero()));
+        assert_eq!(Balance::zero(), Balance(0));
     }
 
     #[test]
     fn account_balance_u256_checked_add() {
         let val = 100u64;
         assert_eq!(
-            Balance::from(val).checked_add(U256::from(0u64)),
-            Some(Balance(val.into()))
+            Balance::from(val).checked_add(U256::from(0u64).try_into().unwrap()),
+            Some(Balance(val))
         );
         assert_eq!(
-            Balance(U256([MAX_SIZE, 0, 0, 0])).checked_add(U256::from(1u64)),
+            Balance(MAX_SIZE).checked_add(U256::from(1u64).try_into().unwrap()),
             None
         );
     }
@@ -136,16 +143,19 @@ mod test {
     fn account_balance_u256_checked_sub() {
         let val = 100u64;
         assert_eq!(
-            Balance::from(val).checked_sub(U256::from(0u64)),
-            Some(Balance(val.into()))
+            Balance::from(val).checked_sub(U256::from(0u64).try_into().unwrap()),
+            Some(Balance(val))
         );
-        assert_eq!(Balance::from(0u64).checked_sub(U256::from(1u64)), None);
+        assert_eq!(
+            Balance::from(0u64).checked_sub(U256::from(1u64).try_into().unwrap()),
+            None
+        );
     }
 
     #[test]
     fn account_balance_u256_can_never_use_more_than_64_bits() {
         // convert from u64
-        assert_eq!(Balance::from(MAX_SIZE), Balance(MAX_SIZE.into()));
+        assert_eq!(Balance::from(MAX_SIZE), Balance(MAX_SIZE));
         // try to convert from U256
         assert!(Balance::try_from(U256::from(MAX_SIZE)).is_ok());
         assert!(Balance::try_from(U256::from(MAX_SIZE) + U256::from(1_u64)).is_err());

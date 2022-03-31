@@ -25,6 +25,8 @@ impl Arbitrary for AccountState<()> {
             value: Arbitrary::arbitrary(gen),
             tokens: Hamt::new(),
             last_rewards: LastRewards::default(),
+            #[cfg(feature = "evm")]
+            evm_state: chain_evm::state::AccountState::default(),
             extra: (),
         }
     }

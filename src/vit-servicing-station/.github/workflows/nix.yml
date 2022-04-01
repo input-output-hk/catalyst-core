@@ -42,4 +42,4 @@ jobs:
       with:
         CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
     - name: Build
-      run: nix build .vit-servicing-station-#${{ matrix.package }}
+      run: nix build .#vit-servicing-station-${{ matrix.package }}

@@ -119,15 +119,24 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
     NSString* wallet_ptr_raw = [command.arguments objectAtIndex:0];
 
     WalletPtr wallet_ptr = (WalletPtr)[wallet_ptr_raw longLongValue];
-    uint32_t value;
-    ErrorPtr result = iohk_jormungandr_wallet_spending_counter(wallet_ptr, &value);
+
+    SpendingCounters spending_counters;
+
+    ErrorPtr result = iohk_jormungandr_wallet_spending_counters(wallet_ptr, &spending_counters);
 
     if (result != nil) {
         pluginResult = jormungandr_error_to_plugin_result(result);
     } else {
-        NSString* returnValue = [NSString stringWithFormat:@"%u", value];
+        NSMutableArray *returnValue = [NSMutableArray new];
+
+        for(int i = 0; i < 8; i++){
+            [returnValue addObject:@(spending_counters.data[i])];
+        }
+
+        iohk_jormungandr_delete_spending_counters(spending_counters);
+
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
-                                         messageAsString:returnValue];
+                                         messageAsArray:returnValue];
     }
 
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -179,13 +188,25 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
 
     NSString* wallet_ptr_raw = [command.arguments objectAtIndex:0];
     NSString* value_raw = [command.arguments objectAtIndex:1];
-    NSString* counter_raw = [command.arguments objectAtIndex:2];
+    NSArray* counters_raw = [command.arguments objectAtIndex:2];
+
+    uint32_t counters[8];
+
+    for(int i = 0; i < 8; ++i) {
+        NSString* counter_raw = [counters_raw objectAtIndex:i];
+        int64_t counter = (int64_t) [counter_raw longLongValue];
+        counters[i] = (uint32_t) counter;
+    }
 
     WalletPtr wallet_ptr = (WalletPtr)[wallet_ptr_raw longLongValue];
     uint64_t value = (uint64_t)[value_raw longLongValue];
-    uint32_t counter = (uint32_t)[counter_raw longLongValue];
 
-    ErrorPtr result = iohk_jormungandr_wallet_set_state(wallet_ptr, value, counter);
+    SpendingCounters spending_counters = {
+        &counters,
+        8,
+    };
+
+    ErrorPtr result = iohk_jormungandr_wallet_set_state(wallet_ptr, value, spending_counters);
 
     if (result != nil) {
         pluginResult = jormungandr_error_to_plugin_result(result);
@@ -205,6 +226,7 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
     NSString* proposal_ptr_raw = [command.arguments objectAtIndex:2];
     NSString* choice_raw = [command.arguments objectAtIndex:3];
     NSDictionary* expirationDate = [command.arguments objectAtIndex:4];
+    NSString* lane_raw = [command.arguments objectAtIndex:5];
 
     uint32_t epoch = (uint32_t)[expirationDate[@"epoch"] longLongValue];
     uint32_t slot = (uint32_t)[expirationDate[@"slot"] longLongValue];
@@ -215,26 +237,27 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
     SettingsPtr settings_ptr = (SettingsPtr)[settings_ptr_raw longLongValue];
     ProposalPtr proposal_ptr = (ProposalPtr)[proposal_ptr_raw longLongValue];
     uint8_t choice = (uint8_t)[choice_raw intValue];
+    uint8_t lane = (uint8_t)[lane_raw intValue];
 
-    uint8_t* transaction_out = nil;
-    uintptr_t len_out;
+    TransactionOut transaction_out;
 
     ErrorPtr result = iohk_jormungandr_wallet_vote_cast(wallet_ptr,
         settings_ptr,
         proposal_ptr,
         choice,
         date,
-        &transaction_out,
-        &len_out);
+        lane,
+        &transaction_out
+    );
 
     if (result != nil) {
         pluginResult = jormungandr_error_to_plugin_result(result);
     } else {
-        NSData* returnValue = [NSData dataWithBytes:transaction_out length:len_out];
+        NSData* returnValue = [NSData dataWithBytes:transaction_out.data length:transaction_out.len];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                     messageAsArrayBuffer:returnValue];
 
-        iohk_jormungandr_wallet_delete_buffer(transaction_out, len_out);
+        iohk_jormungandr_wallet_delete_buffer(transaction_out.data, transaction_out.len);
     }
 
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -325,7 +348,7 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
     uint8_t slot_duration = (uint8_t)[slot_duration_raw longLongValue];
     NSDictionary* era = [command.arguments objectAtIndex:5];
     NSString* max_expiry_epochs_raw = [command.arguments objectAtIndex:6];
-    uint8_t max_expiry_epochs = (uint8_t)[slot_duration_raw longLongValue];
+    uint8_t max_expiry_epochs = (uint8_t)[max_expiry_epochs_raw longLongValue];
 
     if ([block0_hash isEqual:[NSNull null]] || [fees isEqual:[NSNull null]]) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR

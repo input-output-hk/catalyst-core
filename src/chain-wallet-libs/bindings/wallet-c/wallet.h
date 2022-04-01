@@ -50,6 +50,12 @@ typedef struct Fragment
 
 typedef struct Fragment *FragmentPtr;
 
+typedef struct SpendingCounters
+{
+  uint32_t *data;
+  uintptr_t len;
+} SpendingCounters;
+
 typedef struct Proposal
 {
 
@@ -121,6 +127,12 @@ typedef struct SettingsInit
   uint8_t transaction_max_expiry_epochs;
 } SettingsInit;
 
+typedef struct TransactionOut
+{
+  const uint8_t *data;
+  uintptr_t len;
+} TransactionOut;
+
 /**
  * This function dereference raw pointers. Even though the function checks if
  * the pointers are null. Mind not to put random values in or you may see
@@ -153,6 +165,17 @@ ErrorPtr iohk_jormungandr_block_date_from_system_time(const struct Settings *set
  * in or you may see unexpected behaviors
  */
 void iohk_jormungandr_delete_fragment(FragmentPtr fragment);
+
+/**
+ * delete the inner buffer that was allocated by this library
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ */
+void iohk_jormungandr_delete_spending_counters(struct SpendingCounters spending_counters);
 
 /**
  * deserialize a fragment from bytes
@@ -513,7 +536,7 @@ ErrorPtr iohk_jormungandr_wallet_import_keys(const uint8_t *account_key,
  */
 ErrorPtr iohk_jormungandr_wallet_set_state(WalletPtr wallet,
                                            uint64_t value,
-                                           uint32_t counter);
+                                           struct SpendingCounters counters);
 
 /**
  * # Safety
@@ -562,8 +585,10 @@ ErrorPtr iohk_jormungandr_wallet_settings_new(struct SettingsInit settings_init,
                                               SettingsPtr *settings_out);
 
 /**
- * get the current spending counter for the (only) account in this wallet
+ * get the current spending counters for the (only) account in this wallet
  *
+ * iohk_jormungandr_spending_counters_delete should be called to deallocate the memory when it's
+ * not longer needed
  *
  * # Errors
  *
@@ -576,8 +601,8 @@ ErrorPtr iohk_jormungandr_wallet_settings_new(struct SettingsInit settings_init,
  * in or you may see unexpected behaviors
  *
  */
-ErrorPtr iohk_jormungandr_wallet_spending_counter(WalletPtr wallet,
-                                                  uint32_t *spending_counter_ptr);
+ErrorPtr iohk_jormungandr_wallet_spending_counters(WalletPtr wallet,
+                                                   struct SpendingCounters *spending_counters_ptr);
 
 /**
  * get the total value in the wallet
@@ -630,7 +655,7 @@ ErrorPtr iohk_jormungandr_wallet_vote_cast(WalletPtr wallet,
                                            ProposalPtr proposal,
                                            uint8_t choice,
                                            struct BlockDate valid_until,
-                                           const uint8_t **transaction_out,
-                                           uintptr_t *len_out);
+                                           uint8_t lane,
+                                           struct TransactionOut *transaction_out);
 
 #endif /* IOHK_CHAIN_WALLET_LIBC_ */

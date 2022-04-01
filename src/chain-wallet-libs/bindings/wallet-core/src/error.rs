@@ -71,6 +71,9 @@ pub enum ErrorCode {
     /// invalid transaction validity date, it's either before the current blockchain or after the
     /// maximum possible interval
     InvalidTransactionValidityDate = 11,
+
+    /// invalid spending counters provided to the set_state function
+    InvalidSpendingCounters = 12,
 }
 
 #[derive(Debug)]
@@ -113,6 +116,9 @@ pub enum ErrorKind {
 
     /// invalid transaction validity date
     InvalidTransactionValidityDate,
+
+    /// invalid spending counters provided to the set_state function
+    InvalidSpendingCounters,
 }
 
 impl ErrorKind {
@@ -133,6 +139,7 @@ impl ErrorKind {
             Self::NotEnoughFunds => ErrorCode::NotEnoughFunds,
             Self::InvalidFragment => ErrorCode::InvalidFragment,
             Self::InvalidTransactionValidityDate => ErrorCode::InvalidTransactionValidityDate,
+            Self::InvalidSpendingCounters => ErrorCode::InvalidSpendingCounters,
         }
     }
 }
@@ -251,6 +258,13 @@ impl Error {
     pub fn invalid_transaction_validity_date() -> Self {
         Self {
             kind: ErrorKind::InvalidTransactionValidityDate,
+            details: None,
+        }
+    }
+
+    pub fn invalid_spending_counters() -> Self {
+        Self {
+            kind: ErrorKind::InvalidSpendingCounters,
             details: None,
         }
     }
@@ -401,6 +415,9 @@ impl Display for ErrorKind {
             Self::InvalidFragment => f.write_str("invalid fragment"),
             Self::InvalidTransactionValidityDate => {
                 f.write_str("invalid transaction validity date")
+            }
+            Self::InvalidSpendingCounters => {
+                f.write_str("invalid spending counters provided to the set account state function")
             }
         }
     }

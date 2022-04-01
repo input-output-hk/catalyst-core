@@ -2,6 +2,7 @@ use crate::{Error, Proposal};
 use chain_core::property::Serialize as _;
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::{
+    account::SpendingCounter,
     block::BlockDate,
     fragment::{Fragment, FragmentId},
     value::Value,
@@ -69,8 +70,12 @@ impl Wallet {
 
     /// get the current spending counter
     ///
-    pub fn spending_counter(&self) -> u32 {
-        self.account.spending_counter().into()
+    pub fn spending_counter(&self) -> Vec<u32> {
+        self.account
+            .spending_counter()
+            .into_iter()
+            .map(SpendingCounter::into)
+            .collect()
     }
 
     /// get the total value in the wallet
@@ -95,8 +100,13 @@ impl Wallet {
     /// before doing any transactions, otherwise future transactions may fail
     /// to be accepted by the blockchain nodes because of an invalid witness
     /// signature.
-    pub fn set_state(&mut self, value: Value, counter: u32) {
-        self.account.update_state(value, counter.into())
+    pub fn set_state(&mut self, value: Value, counters: Vec<u32>) -> Result<(), Error> {
+        self.account
+            .set_state(
+                value,
+                counters.into_iter().map(SpendingCounter::from).collect(),
+            )
+            .map_err(|_| Error::invalid_spending_counters())
     }
 
     /// Cast a vote
@@ -120,6 +130,7 @@ impl Wallet {
         proposal: &Proposal,
         choice: Choice,
         valid_until: &BlockDate,
+        lane: u8,
     ) -> Result<Box<[u8]>, Error> {
         let payload = if let Some(payload) = proposal.vote(choice) {
             payload
@@ -133,7 +144,7 @@ impl Wallet {
 
         let account_tx_builder = self
             .account
-            .new_transaction(value)
+            .new_transaction(value, lane)
             .map_err(|_| Error::not_enough_funds())?;
 
         let input = account_tx_builder.input();

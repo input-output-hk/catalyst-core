@@ -18,6 +18,7 @@ enum WalletError {
     "TimeError",
     "CipherError",
     "InvalidFragment",
+    "InvalidSpendingCounters",
 };
 
 interface Wallet {
@@ -27,11 +28,12 @@ interface Wallet {
         sequence<SecretKeyEd25519Extended> utxo_keys
     );
 
-    void set_state(u64 value, u32 counter);
     [Throws=WalletError]
-    sequence<u8> vote(Settings settings, Proposal proposal, u8 choice, BlockDate valid_until);
+    void set_state(u64 value, sequence<u32> counter);
+    [Throws=WalletError]
+    sequence<u8> vote(Settings settings, Proposal proposal, u8 choice, BlockDate valid_until, u8 lane);
     sequence<u8> account_id();
-    u32 spending_counter();
+    sequence<u32> spending_counters();
     u64 total_value();
 };
 

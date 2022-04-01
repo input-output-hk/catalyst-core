@@ -37,7 +37,7 @@ fn test_free_utxo_key_dump() {
     let address = account.account_id().address(settings.discrimination());
 
     for fragment in state.initial_contents() {
-        account.check_fragment(&fragment.hash(), fragment);
+        account.check_fragment(&fragment.hash(), fragment).unwrap();
         free_keys.check_fragment(&fragment.hash(), fragment);
 
         account.confirm(&fragment.hash());
@@ -59,7 +59,7 @@ fn test_free_utxo_key_dump() {
 
     assert!(ignored.is_empty());
 
-    account.check_fragment(&fragment.hash(), &fragment);
+    account.check_fragment(&fragment.hash(), &fragment).unwrap();
 
     state
         .apply_fragments(&[fragment.clone()])

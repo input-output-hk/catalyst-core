@@ -48,7 +48,24 @@ function promisify(thisArg, f) {
 }
 
 function uint8ArrayEquals(a, b) {
+    if (!(a instanceof Uint8Array) || !(b instanceof Uint8Array)) {
+        throw Error('invalid arguments, expected a Uint8Array');
+    }
+
+    return arrayEquals(a, b);
+}
+
+function uint32ArrayEquals(a, b) {
+    if (!(a instanceof Uint32Array) || !(b instanceof Uint32Array)) {
+        throw Error('invalid arguments, expected a Uint32Array');
+    }
+
+    return arrayEquals(a, b);
+}
+
+function arrayEquals(a, b) {
     const length = a.length === b.length;
+
     let elements = true;
 
     for (let i = 0; i < a.length; i++) {
@@ -59,5 +76,5 @@ function uint8ArrayEquals(a, b) {
 }
 
 module.exports = {
-    hex, hexStringToBytes, promisify, uint8ArrayEquals
+    hex, hexStringToBytes, promisify, uint8ArrayEquals, uint32ArrayEquals
 }

@@ -41,6 +41,8 @@ pub enum WalletError {
     CipherError(#[from] symmetric_cipher::Error),
     #[error("invalid fragment")]
     InvalidFragment,
+    #[error("invalid spending counters")]
+    InvalidSpendingCounters,
 }
 
 pub struct Wallet(Mutex<InnerWallet>);
@@ -167,10 +169,14 @@ impl Wallet {
         Ok(Self(Mutex::new(inner)))
     }
 
-    pub fn set_state(&self, value: u64, counter: u32) {
+    pub fn set_state(&self, value: u64, counter: Vec<u32>) -> Result<(), WalletError> {
         let mut guard = self.0.lock().unwrap();
 
-        guard.set_state(wallet_core::Value(value), counter);
+        guard
+            .set_state(wallet_core::Value(value), counter)
+            .map_err(|_| WalletError::InvalidSpendingCounters)?;
+
+        Ok(())
     }
 
     pub fn account_id(&self) -> AccountId {
@@ -188,6 +194,7 @@ impl Wallet {
         proposal: Proposal,
         choice: u8,
         valid_until: BlockDate,
+        lane: u8,
     ) -> Result<Vec<u8>, WalletError> {
         let settings = settings.0.lock().unwrap();
         let mut wallet = self.0.lock().unwrap();
@@ -198,12 +205,13 @@ impl Wallet {
                 &proposal.try_into()?,
                 wallet_core::Choice::new(choice),
                 &valid_until.into(),
+                lane,
             )
             .map(|bytes| bytes.into_vec())
             .map_err(WalletError::from)
     }
 
-    pub fn spending_counter(&self) -> u32 {
+    pub fn spending_counters(&self) -> Vec<u32> {
         let wallet = self.0.lock().unwrap();
 
         wallet.spending_counter()

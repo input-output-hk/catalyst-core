@@ -130,17 +130,13 @@ var plugin = {
 
     /**
      * @param {string} ptr a pointer to a wallet
-     * @param {function} successCallback returns a number
+     * @param {function} successCallback returns an array of spending counters
      * @param {errorCallback} errorCallback this function should not fail
      */
-    walletSpendingCounter: function (ptr, successCallback, errorCallback) {
+    walletSpendingCounters: function (ptr, successCallback, errorCallback) {
         argscheck.checkArgs('sff', 'walletTotalFunds', arguments);
 
-        const toNumber = function (arg) {
-            successCallback(Number(arg));
-        };
-
-        exec(toNumber, errorCallback, NATIVE_CLASS_NAME, WALLET_SPENDING_COUNTER_ACTION_TAG, [ptr]);
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_SPENDING_COUNTER_ACTION_TAG, [ptr]);
     },
 
     /**
@@ -181,14 +177,14 @@ var plugin = {
      * this function may fail if the wallet pointer is null;
      * @param {string} ptr a pointer to a Wallet object obtained with WalletRestore
      * @param {number} value
-     * @param {number} counter
+     * @param {number[]} an array of numbers between 0 and 2^32
      * @param {function} successCallback
      * @param {function} errorCallback
      *
      */
-    walletSetState: function (ptr, value, counter, successCallback, errorCallback) {
-        argscheck.checkArgs('snnff', 'walletSetState', arguments);
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_SET_STATE_ACTION_TAG, [ptr, value, counter]);
+    walletSetState: function (ptr, value, nonces, successCallback, errorCallback) {
+        argscheck.checkArgs('snaff', 'walletSetState', arguments);
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_SET_STATE_ACTION_TAG, [ptr, value, nonces]);
     },
 
     /**
@@ -203,13 +199,14 @@ var plugin = {
      * @param {string} proposalPtr a pointer to a Proposal object obtained with proposalNew
      * @param {number} choice a number between 0 and Proposal's numChoices - 1
      * @param {BlockDate} validUntil maximum date in which this fragment can be applied to the ledger
+     * @param {number} lane to use for the spending counter (or nonce). Must be a number in the interval of [0, 7]
      * @param {function} successCallback on success the callback returns a byte array representing a transaction
      * @param {function} errorCallback can fail if the choice doesn't validate with the given proposal
      *
      */
-    walletVote: function (walletPtr, settingsPtr, proposalPtr, choice, validUntil, successCallback, errorCallback) {
-        argscheck.checkArgs('sssn*ff', 'walletVote', arguments);
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_VOTE_ACTION_TAG, [walletPtr, settingsPtr, proposalPtr, choice, validUntil]);
+    walletVote: function (walletPtr, settingsPtr, proposalPtr, choice, validUntil, lane, successCallback, errorCallback) {
+        argscheck.checkArgs('sssn*nff', 'walletVote', arguments);
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_VOTE_ACTION_TAG, [walletPtr, settingsPtr, proposalPtr, choice, validUntil, lane]);
     },
 
     /**

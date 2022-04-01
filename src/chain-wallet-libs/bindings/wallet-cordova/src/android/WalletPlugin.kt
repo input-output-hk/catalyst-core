@@ -3,6 +3,7 @@ package com.iohk.jormungandr_wallet;
 import android.util.Base64
 import android.util.Log
 import org.apache.cordova.*
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.text.Normalizer
@@ -66,7 +67,7 @@ class WalletPlugin
             "SETTINGS_GET" -> settingsGet(args, callbackContext)
             "WALLET_VOTE" -> walletVote(args, callbackContext)
             "WALLET_TOTAL_FUNDS" -> walletTotalFunds(args, callbackContext)
-            "WALLET_SPENDING_COUNTER" -> walletSpendingCounter(args, callbackContext)
+            "WALLET_SPENDING_COUNTER" -> walletSpendingCounters(args, callbackContext)
             "WALLET_ID" -> walletId(args, callbackContext)
             "WALLET_SET_STATE" -> walletSetState(args, callbackContext)
             "PENDING_TRANSACTIONS_SIZE" -> pendingTransactionsSize(args, callbackContext)
@@ -237,6 +238,7 @@ class WalletPlugin
         val expirationDate = args[4] as JSONObject
         val epoch = expirationDate.getString("epoch").toUInt()
         val slot = expirationDate.getString("slot").toUInt()
+        val lane = args.getString(5).toUByte()
 
         val wallet = wallets[walletId]
         val settings = settingsPool[settingsId]
@@ -245,7 +247,7 @@ class WalletPlugin
         val validUntil = BlockDate(epoch, slot)
 
         try {
-            val tx = wallet?.vote(settings!!, proposal!!, choice, validUntil)
+            val tx = wallet?.vote(settings!!, proposal!!, choice, validUntil, lane)
 
             callbackContext.success(tx?.toUByteArray()?.toByteArray())
         } catch (e: Exception) {
@@ -267,11 +269,15 @@ class WalletPlugin
 
     @ExperimentalUnsignedTypes
     @Throws(JSONException::class)
-    private fun walletSpendingCounter(args: CordovaArgs, callbackContext: CallbackContext) {
+    private fun walletSpendingCounters(args: CordovaArgs, callbackContext: CallbackContext) {
         val walletId = args.getInt(0)
         val wallet = wallets[walletId]
         try {
-            callbackContext.success(wallet?.spendingCounter().toString())
+            val array = JSONArray()
+            for (nonce in wallet?.spendingCounters()!!) {
+                array.put(nonce)
+            }
+            callbackContext.success(array)
         } catch (e: Exception) {
             callbackContext.error(e.message)
         }
@@ -296,9 +302,15 @@ class WalletPlugin
     private fun walletSetState(args: CordovaArgs, callbackContext: CallbackContext) {
         val walletId = args.getInt(0)
         val value = args.getString(1).toULong()
-        val counter = args.getString(2).toUInt()
+        val rawCounters = args.getJSONArray(2)
+
+        val counters = mutableListOf<UInt>()
+        for (i in 0 until rawCounters.length()) {
+            counters.add(rawCounters.getString(i).toUInt())
+        }
+
         try {
-            wallets[walletId]?.setState(value, counter)
+            wallets[walletId]?.setState(value, counters)
             callbackContext.success()
         } catch (e: Exception) {
             callbackContext.error(e.message)

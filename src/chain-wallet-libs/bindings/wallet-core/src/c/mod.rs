@@ -31,6 +31,7 @@ struct NulPtr;
 struct OutOfBound;
 
 pub const FRAGMENT_ID_LENGTH: usize = 32;
+pub const NONCES_SIZE: usize = 8 * 4;
 
 /// recover a wallet from an account and a list of utxo keys
 ///
@@ -154,10 +155,12 @@ pub unsafe fn wallet_confirm_transaction(wallet: WalletPtr, fragment_id: *const 
 
 /// get the current spending counter for the (only) account in this wallet
 ///
+/// the memory can be deallocated with `spending_counters_delete`.
 ///
 /// # Errors
 ///
 /// * this function may fail if the wallet pointer is null;
+///
 ///
 /// # Safety
 ///
@@ -165,11 +168,20 @@ pub unsafe fn wallet_confirm_transaction(wallet: WalletPtr, fragment_id: *const 
 /// the function checks if the pointers are null. Mind not to put random values
 /// in or you may see unexpected behaviors
 ///
-pub unsafe fn wallet_spending_counter(wallet: WalletPtr, spending_counter_ptr: *mut u32) -> Result {
+pub unsafe fn wallet_spending_counters(
+    wallet: WalletPtr,
+    spending_counters_ptr_out: *mut SpendingCounters,
+) -> Result {
     let wallet = non_null!(wallet);
-    let spending_counter = non_null_mut!(spending_counter_ptr);
+    let spending_counters_out = non_null_mut!(spending_counters_ptr_out);
 
-    *spending_counter = wallet.spending_counter();
+    let counters = wallet.spending_counter().into_boxed_slice();
+    let len = counters.len();
+
+    let raw_ptr = Box::into_raw(counters);
+
+    (*spending_counters_out).data = raw_ptr as *mut u32;
+    (*spending_counters_out).len = len;
 
     Result::success()
 }
@@ -209,6 +221,12 @@ pub unsafe fn wallet_total_value(wallet: WalletPtr, total_out: *mut u64) -> Resu
     Result::success()
 }
 
+#[repr(C)]
+pub struct SpendingCounters {
+    pub data: *mut u32,
+    pub len: usize,
+}
+
 /// update the wallet account state
 ///
 /// this is the value retrieved from any jormungandr endpoint that allows to query
@@ -223,17 +241,27 @@ pub unsafe fn wallet_total_value(wallet: WalletPtr, total_out: *mut u64) -> Resu
 ///
 /// * this function may fail if the wallet pointer is null;
 ///
-pub fn wallet_set_state(wallet: WalletPtr, value: u64, counter: u32) -> Result {
+pub fn wallet_set_state(wallet: WalletPtr, value: u64, nonces: SpendingCounters) -> Result {
     let wallet = if let Some(wallet) = unsafe { wallet.as_mut() } {
         wallet
     } else {
         return Error::invalid_input("wallet").with(NulPtr).into();
     };
+
     let value = Value(value);
 
-    wallet.set_state(value, counter);
+    let nonces = unsafe { std::slice::from_raw_parts_mut(nonces.data, nonces.len) }.to_vec();
 
-    Result::success()
+    match wallet.set_state(value, nonces) {
+        Ok(_) => Result::success(),
+        Err(e) => e.into(),
+    }
+}
+
+#[repr(C)]
+pub struct TransactionOut {
+    pub data: *const u8,
+    pub len: usize,
 }
 
 /// build the vote cast transaction
@@ -254,8 +282,8 @@ pub unsafe fn wallet_vote_cast(
     proposal: ProposalPtr,
     choice: u8,
     valid_until: BlockDate,
-    transaction_out: *mut *const u8,
-    len_out: *mut usize,
+    lane: u8,
+    transaction_out: *mut TransactionOut,
 ) -> Result {
     let wallet = if let Some(wallet) = wallet.as_mut() {
         wallet
@@ -278,19 +306,16 @@ pub unsafe fn wallet_vote_cast(
     if transaction_out.is_null() {
         return Error::invalid_input("transaction_out").with(NulPtr).into();
     }
-    if len_out.is_null() {
-        return Error::invalid_input("len_out").with(NulPtr).into();
-    }
 
     let choice = Choice::new(choice);
 
-    let transaction = match wallet.vote(settings, proposal, choice, &valid_until.into()) {
+    let transaction = match wallet.vote(settings, proposal, choice, &valid_until.into(), lane) {
         Ok(transaction) => Box::leak(transaction),
         Err(err) => return err.into(),
     };
 
-    *transaction_out = transaction.as_ptr();
-    *len_out = transaction.len();
+    (*transaction_out).data = transaction.as_ptr();
+    (*transaction_out).len = transaction.len();
 
     Result::success()
 }
@@ -377,6 +402,22 @@ pub fn wallet_delete_proposal(proposal: ProposalPtr) {
         let boxed = unsafe { Box::from_raw(proposal) };
 
         std::mem::drop(boxed);
+    }
+}
+
+/// Release the memory holding the spending counters
+///
+/// # Safety
+///
+/// This function is safe as long as the structure returned by this library is not modified.
+/// This function should only be called with a structure returned by this library.
+///
+pub unsafe fn spending_counters_delete(spending_counters: SpendingCounters) {
+    let SpendingCounters { data, len } = spending_counters;
+    if !data.is_null() {
+        let data = std::slice::from_raw_parts_mut(data, len);
+        let data = Box::from_raw(data as *mut [u32]);
+        std::mem::drop(data);
     }
 }
 

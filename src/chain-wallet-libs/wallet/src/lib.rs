@@ -10,7 +10,7 @@ pub mod time;
 pub mod transaction;
 
 pub use self::{
-    account::Wallet,
+    account::{Wallet, MAX_LANES},
     blockchain::Settings,
     password::{Password, ScrubbedBytes},
     recovering::{RecoveryBuilder, RecoveryError},

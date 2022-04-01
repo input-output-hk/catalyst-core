@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+- *breaking change*: wallet_spending_counter replaced by wallet_spending_counters
+- *breaking change*: wallet_set_state now takes an array of spending counters 
+- *breaking change* wallet_vote now takes a lane as an argument
+
 ## [0.8.0-alpha1]
 
 - Remove the keygen crate due to lack of need for it.

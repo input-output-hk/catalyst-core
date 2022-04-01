@@ -3,7 +3,7 @@ import "regenerator-runtime/runtime";
 
 const primitives = require('wallet-cordova-plugin.wallet');
 
-const { hexStringToBytes, promisify, uint8ArrayEquals } = require('./src/utils.js');
+const { hexStringToBytes, promisify, uint8ArrayEquals, uint32ArrayEquals } = require('./src/utils.js');
 const keys = require('../../../test-vectors/free_keys/keys.json');
 const genesis = require('../../../test-vectors/block0.json');
 const BLOCK0_ID = genesis.id;
@@ -15,6 +15,17 @@ PASSWORD[2] = keys.password[2];
 PASSWORD[3] = keys.password[3];
 const VOTE_ENCRYPTION_KEY = 'ristretto255_votepk1nc988wtjlrm5k0z43088p0rrvd5yhvc96k7zh99p6w74gupxggtqyx4792';
 
+const DEFAULT_NONCES = [
+    (2 ** 29) * 0,
+    (2 ** 29) * 1,
+    (2 ** 29) * 2,
+    (2 ** 29) * 3,
+    (2 ** 29) * 4,
+    (2 ** 29) * 5,
+    (2 ** 29) * 6,
+    (2 ** 29) * 7,
+];
+
 // TODO: write settings getter for this
 const BLOCK0_DATE = 1586637936;
 const SLOT_DURATION = 10;
@@ -22,8 +33,8 @@ const SLOTS_PER_EPOCH = 100;
 
 let promisifyP = f => promisify(primitives, f)
 const importKeys = promisifyP(primitives.walletImportKeys);
-const spendingCounter = promisifyP(primitives.walletSpendingCounter);
 const walletId = promisifyP(primitives.walletId);
+const spendingCounters = promisifyP(primitives.walletSpendingCounters);
 const totalFunds = promisifyP(primitives.walletTotalFunds);
 const setState = promisifyP(primitives.walletSetState);
 const deleteWallet = promisifyP(primitives.walletDelete);
@@ -58,7 +69,7 @@ const tests = [
 
         const accountId = await walletId(walletPtr);
 
-        uint8ArrayEquals(accountId, hexStringToBytes(keys.account.account_id));
+        uint8ArrayEquals(new Uint8Array(accountId), hexStringToBytes(keys.account.account_id));
 
         await deleteSettings(settingsPtr);
         await deleteWallet(walletPtr);
@@ -67,8 +78,7 @@ const tests = [
     ['should be able to set state', async function () {
         const wallet = await walletFromFile();
         const value = 1000;
-        const counter = 2;
-        await setState(wallet, value, counter);
+        await setState(wallet, value, DEFAULT_NONCES);
     }],
     ['can cast vote', async function () {
         const array = new Array(32);
@@ -85,13 +95,17 @@ const tests = [
 
         const settingsPtr = await defaultSettings();
 
-        await walletSetState(walletPtr, 1000000, 0);
+        await walletSetState(walletPtr, 1000000, DEFAULT_NONCES);
+        expect(uint32ArrayEquals(new Uint32Array(await spendingCounters(walletPtr)), new Uint32Array(DEFAULT_NONCES))).toBe(true);
 
-        expect(await spendingCounter(walletPtr)).toBe(0);
+        await walletVote(walletPtr, settingsPtr, proposalPtr, 0, await maxExpirationDate(settingsPtr, BLOCK0_DATE + 600), 0);
 
-        await walletVote(walletPtr, settingsPtr, proposalPtr, 0, await maxExpirationDate(settingsPtr, BLOCK0_DATE + 600));
+        const noncesAfterVote = new Uint32Array(await spendingCounters(walletPtr));
 
-        expect(await spendingCounter(walletPtr)).toBe(1);
+        const expectedNoncesAfter = DEFAULT_NONCES.slice();
+        expectedNoncesAfter[0] = 1;
+
+        expect(uint32ArrayEquals(new Uint32Array(noncesAfterVote), new Uint32Array(expectedNoncesAfter))).toBe(true);
 
         await deleteSettings(settingsPtr);
         await deleteWallet(walletPtr);
@@ -110,8 +124,8 @@ const tests = [
         const proposalPtr = await proposalNewPrivate(votePlanId, index, numChoices, VOTE_ENCRYPTION_KEY);
         const walletPtr = await walletFromFile();
         const settingsPtr = await defaultSettings();
-        await walletSetState(walletPtr, 1000000, 1);
-        await walletVote(walletPtr, settingsPtr, proposalPtr, 0, await maxExpirationDate(settingsPtr, BLOCK0_DATE + 600));
+        await walletSetState(walletPtr, 1000000, DEFAULT_NONCES);
+        await walletVote(walletPtr, settingsPtr, proposalPtr, 0, await maxExpirationDate(settingsPtr, BLOCK0_DATE + 600), 0);
 
         await deleteSettings(settingsPtr);
         await deleteWallet(walletPtr);
@@ -165,7 +179,7 @@ const tests = [
 
         const block0Date = "110";
         const slotDuration = "10";
-        const era = {epochStart: "0", slotStart: "0", slotsPerEpoch: "100"};
+        const era = { epochStart: "0", slotStart: "0", slotsPerEpoch: "100" };
         const transactionMaxExpiryEpochs = "2";
 
         const settingsPtr = await settingsNew(settingsExpected.block0Hash,
@@ -207,11 +221,11 @@ const tests = [
         const walletPtr = await walletFromFile();
 
         const settingsPtr = await defaultSettings();
-        await walletSetState(walletPtr, 1000000, 0);
 
-        // TODO: maybe walletVote should return an object with the both tx and the id
-        const tx1 = await walletVote(walletPtr, settingsPtr, proposalPtr, 1, await maxExpirationDate(settingsPtr, BLOCK0_DATE + 600));
-        const tx2 = await walletVote(walletPtr, settingsPtr, proposalPtr, 2, await maxExpirationDate(settingsPtr, BLOCK0_DATE + 600));
+        await walletSetState(walletPtr, 1000000, DEFAULT_NONCES);
+
+        const tx1 = await walletVote(walletPtr, settingsPtr, proposalPtr, 1, await maxExpirationDate(settingsPtr, BLOCK0_DATE + 600), 0);
+        const tx2 = await walletVote(walletPtr, settingsPtr, proposalPtr, 2, await maxExpirationDate(settingsPtr, BLOCK0_DATE + 600), 1);
 
         await fragmentId(new Uint8Array(tx1));
         await fragmentId(new Uint8Array(tx2));

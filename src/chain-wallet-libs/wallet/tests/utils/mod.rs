@@ -1,5 +1,7 @@
 use chain_impl_mockchain::{
+    accounting::account::SpendingCounterIncreasing,
     block::Block,
+    certificate::VotePlanId,
     fragment::Fragment,
     ledger::{Error as LedgerError, Ledger},
     value::Value,
@@ -34,6 +36,15 @@ impl State {
         Settings::new(&self.block0)
     }
 
+    #[allow(dead_code)]
+    pub fn active_vote_plans(&self) -> Vec<VotePlanId> {
+        self.ledger
+            .active_vote_plans()
+            .into_iter()
+            .map(|plan| plan.id)
+            .collect()
+    }
+
     pub fn apply_fragments<'a, F>(&'a mut self, fragments: F) -> Result<(), LedgerError>
     where
         F: IntoIterator<Item = &'a Fragment>,
@@ -56,16 +67,11 @@ impl State {
     pub fn get_account_state(
         &self,
         account_id: wallet::AccountId,
-    ) -> Option<(chain_impl_mockchain::account::SpendingCounter, Value)> {
+    ) -> Option<(SpendingCounterIncreasing, Value)> {
         self.ledger
             .accounts()
             .get_state(&chain_crypto::PublicKey::from(account_id).into())
             .ok()
-            .map(|account_state| {
-                (
-                    account_state.spending.get_valid_counter(),
-                    account_state.value,
-                )
-            })
+            .map(|account_state| (account_state.spending.clone(), account_state.value))
     }
 }

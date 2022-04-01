@@ -135,16 +135,11 @@
 
         warnToUpdateNix = pkgs.lib.warn "Consider updating to Nix > 2.7 to remove this warning!";
       in rec {
-        packages = {
-          inherit
-            (workspace)
-            vit-servicing-station-cli
-            vit-servicing-station-lib
-            vit-servicing-station-server
-            vit-servicing-station-tests
-            ;
-          default = workspace.vit-servicing-station-server;
-        };
+        packages =
+          workspace
+          // {
+            default = workspace.vit-servicing-station-server;
+          };
 
         devShells.default = pkgs.mkShell {
           PROTOC = "${pkgs.protobuf}/bin/protoc";

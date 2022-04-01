@@ -296,6 +296,45 @@ mod tests {
     }
 
     #[test]
+    pub fn test_leader_with_invalid_pool_id() {
+        // Arrange
+        let leader_election_parameters = LeaderElectionParameters::new();
+
+        let cb = ConfigBuilder::new()
+            .with_slots_per_epoch(leader_election_parameters.slots_per_epoch)
+            .with_active_slots_coeff(leader_election_parameters.active_slots_coeff_as_milli());
+
+        let mut ledger = LedgerBuilder::from_config(cb)
+            .build()
+            .expect("cannot build test ledger")
+            .ledger;
+
+        let pools: HashMap<_, _> = std::iter::from_fn(|| {
+            let (pool_id, pool_vrf_private_key) = make_pool(&mut ledger);
+            Some((
+                pool_id,
+                (pool_vrf_private_key, 0, leader_election_parameters.value),
+            ))
+        })
+        .take(leader_election_parameters.pools_count)
+        .collect();
+
+        let selection = make_leadership_with_pools(&ledger, &pools);
+
+        let (invalid_pool_id, invalid_pool_vrf_private_key) = make_pool(&mut ledger);
+
+        // Act
+        let invalid_leader = selection.leader(
+            &invalid_pool_id,
+            &invalid_pool_vrf_private_key,
+            ledger.date(),
+        );
+
+        // Assert
+        assert!(invalid_leader.unwrap().is_none());
+    }
+
+    #[test]
     pub fn test_leader_election_is_consistent_with_stake_distribution() {
         let leader_election_parameters = LeaderElectionParameters::new();
 

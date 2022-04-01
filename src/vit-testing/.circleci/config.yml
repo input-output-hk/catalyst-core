@@ -181,11 +181,12 @@ commands:
           command: |
             cargo install --path valgrind --locked
       - run:
-          name: Run tests
+          name: Run Integration tests
           no_output_timeout: 60m
           environment:
             RUST_BACKTRACE: 1
           command: |
+            cd integration-tests
             cargo test --jobs 1 -- --test-threads=1
 workflows:
   version: 2

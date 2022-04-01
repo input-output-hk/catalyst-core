@@ -4,6 +4,7 @@ use assert_fs::TempDir;
 use std::io::Write;
 use std::path::Path;
 use std::process::Command;
+use std::process::Stdio;
 use vitup::mode::mock::Configuration;
 
 pub fn write_config<P: AsRef<Path>>(config: &Configuration, output: P) {
@@ -22,6 +23,7 @@ pub fn start_mock() {
         ideascale: false,
         protocol: Default::default(),
         token: None,
+        local: true,
     };
 
     let config_child = temp_dir.child("config.yaml");
@@ -34,16 +36,21 @@ pub fn start_mock() {
         .arg("mock")
         .arg("--config")
         .arg(&config_file_path)
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
         .spawn()
         .unwrap();
 
+    std::thread::sleep(std::time::Duration::from_secs(10));
+
     let request = reqwest::blocking::Client::new()
         .get(&format!(
-            "http://localhost:{}/api/health",
+            "http://127.0.0.1:{}/api/health",
             configuration.port
         ))
         .send();
 
-    mock_process.kill().unwrap();
     assert_eq!(request.unwrap().status(), 200);
+
+    mock_process.kill().unwrap();
 }

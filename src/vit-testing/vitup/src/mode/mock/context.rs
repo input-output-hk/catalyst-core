@@ -19,7 +19,11 @@ pub struct Context {
 impl Context {
     pub fn new(config: Configuration, params: Option<Config>) -> Result<Self, Error> {
         Ok(Self {
-            address: ([0, 0, 0, 0], config.port).into(),
+            address: if config.local {
+                ([127, 0, 0, 1], config.port).into()
+            } else {
+                ([0, 0, 0, 0], config.port).into()
+            },
             state: MockState::new(params.unwrap_or_default(), config.clone())?,
             config,
             logger: Logger::new(),

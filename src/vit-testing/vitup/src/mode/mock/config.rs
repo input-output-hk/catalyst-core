@@ -12,6 +12,8 @@ pub struct Configuration {
     pub working_dir: PathBuf,
     #[serde(default)]
     pub protocol: valgrind::Protocol,
+    #[serde(default)]
+    pub local: bool,
 }
 
 pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Configuration, Error> {

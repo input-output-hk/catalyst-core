@@ -2,15 +2,17 @@
   description = "Incubator for catalyst related testing projects";
 
   nixConfig.extra-substituters = [
+    "https://vit.cachix.org"
     "https://hydra.iohk.io"
-    "https://vit-ops.cachix.org"
   ];
   nixConfig.extra-trusted-public-keys = [
+    "vit.cachix.org-1:tuLYwbnzbxLzQHHN0fvZI2EMpVm/+R7AKUGqukc6eh8="
     "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
-    "vit-ops.cachix.org-1:LY84nIKdW7g1cvhJ6LsupHmGtGcKAlUXo+l1KByoDho="
   ];
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs.flake-compat.url = "github:edolstra/flake-compat";
+  inputs.flake-compat.flake = false;
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.gitignore.url = "github:hercules-ci/gitignore.nix";
   inputs.gitignore.inputs.nixpkgs.follows = "nixpkgs";
@@ -24,7 +26,7 @@
   #inputs.naersk.url = "github:nix-community/naersk";
   inputs.naersk.url = "github:yusdacra/naersk/feat/cargolock-git-deps";
   inputs.naersk.inputs.nixpkgs.follows = "nixpkgs";
-  inputs.voting-tools.url = "github:input-output-hk/voting-tools?rev=6da7c45cbd1c756285ca2a1db99f82dd1a8cc16b";
+  inputs.voting-tools_.url = "github:input-output-hk/voting-tools?rev=6da7c45cbd1c756285ca2a1db99f82dd1a8cc16b";
   inputs.vit-kedqr.url = "github:input-output-hk/vit-kedqr";
   inputs.vit-servicing-station.url = "github:input-output-hk/vit-servicing-station/master";
   inputs.jormungandr_.url = "github:input-output-hk/jormungandr/master";
@@ -33,12 +35,13 @@
   outputs = {
     self,
     nixpkgs,
+    flake-compat,
     flake-utils,
     gitignore,
     pre-commit-hooks,
     rust-overlay,
     naersk,
-    voting-tools,
+    voting-tools_,
     vit-kedqr,
     vit-servicing-station,
     jormungandr_,
@@ -47,7 +50,6 @@
     flake-utils.lib.eachSystem
     [
       flake-utils.lib.system.x86_64-linux
-      flake-utils.lib.system.aarch64-linux
     ]
     (
       system: let
@@ -59,9 +61,9 @@
           overlays = [(import rust-overlay)];
         };
 
-        inherit (voting-tools.packages.${system}) voting-tools voter-registration;
+        inherit (voting-tools_.packages.${system}) voting-tools voter-registration;
         inherit (jormungandr_.packages.${system}) jormungandr jcli;
-        inherit (vit-servicing-station.legacyPackages.${system}) vit-servicing-station-server;
+        inherit (vit-servicing-station.packages.${system}) vit-servicing-station-server;
         inherit (cardano-node.packages.${system}) cardano-cli;
 
         rust = let
@@ -98,9 +100,13 @@
 
         mkPackage = name: let
           pkgCargo = readTOML ./${name}/Cargo.toml;
-          cargoOptions = [ "--package" name ];
-        in
-          naersk-lib.buildPackage {
+          cargoOptions = [
+            "--package"
+            "file://$PWD/\"${name}\""
+          ];
+          unwrapped = naersk-lib.buildPackage {
+            inherit (pkgCargo.package) name version;
+
             root = gitignore.lib.gitignoreSource self;
 
             cargoBuildOptions = x: x ++ cargoOptions;
@@ -113,27 +119,26 @@
               pkg-config
               protobuf
               rustfmt
-            ] ++ (pkgs.lib.optional
-              (builtins.elem name [ "snapshot-trigger-service"
-                                    "registration-service"
-                                    "registration-verify-service"
-                                  ])
-              pkgs.makeWrapper);
+            ];
 
             buildInputs = with pkgs; [
               openssl
             ];
-
-            postInstall =
-              if name == "snapshot-trigger-service" then
-                "wrapProgram $out/bin/${name} --prefix PATH : ${pkgs.lib.makeBinPath [ voting-tools ]}"
-              else if name == "registration-service" then
-                "wrapProgram $out/bin/${name} --prefix PATH : ${pkgs.lib.makeBinPath [ vit-kedqr jcli cardano-cli ]}"
-              else if name == "registration-verify-service" then
-                "wrapProgram $out/bin/${name} --prefix PATH : ${pkgs.lib.makeBinPath [ jcli ]}"
-              else
-                "";
           };
+          extraBinPath = {
+            snapshot-trigger-service = [voting-tools];
+            registration-service = [vit-kedqr jcli cardano-cli];
+            registration-verify-service = [jcli];
+          };
+        in
+          if builtins.elem name (builtins.attrNames extraBinPath)
+          then
+            pkgs.runCommand "wrapped-${unwrapped.name}" {nativeBuildInputs = [pkgs.makeWrapper];} ''
+              mkdir -p $out/bin
+              ln -s ${unwrapped}/bin/${name} $out/bin/${name}
+              wrapProgram $out/bin/${name} --prefix PATH : ${pkgs.lib.makeBinPath extraBinPath.${name}}
+            ''
+          else unwrapped;
 
         workspace =
           builtins.listToAttrs
@@ -161,17 +166,12 @@
 
         warnToUpdateNix = pkgs.lib.warn "Consider updating to Nix > 2.7 to remove this warning!";
       in rec {
-        packages = {
-          inherit (workspace)
-              iapyx
-              vitup
-              integration-tests
-              snapshot-trigger-service
-              registration-service
-              registration-verify-service;
-          inherit voting-tools;
-          default = workspace.vitup;
-        };
+        packages =
+          workspace
+          // {
+            inherit voting-tools;
+            default = workspace.vitup;
+          };
 
         devShells.default = pkgs.mkShell {
           PROTOC = "${pkgs.protobuf}/bin/protoc";

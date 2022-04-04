@@ -22,6 +22,12 @@ pub struct CatalystRegistration {
 #[derive(Deserialize, Clone, Debug)]
 pub struct RawSnapshot(Vec<CatalystRegistration>);
 
+impl From<Vec<CatalystRegistration>> for RawSnapshot {
+    fn from(from: Vec<CatalystRegistration>) -> Self {
+        Self(from)
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Snapshot {
     // a raw public key is preferred so that we don't have to worry about discrimination when deserializing from
@@ -147,9 +153,7 @@ mod tests {
         type Strategy = BoxedStrategy<RawSnapshot>;
 
         fn arbitrary_with(_args: Self::Parameters) -> Self::Strategy {
-            any::<Vec<CatalystRegistration>>()
-                .prop_map(|regs| Self(regs))
-                .boxed()
+            any::<Vec<CatalystRegistration>>().prop_map(Self).boxed()
         }
     }
 
@@ -173,12 +177,6 @@ mod tests {
                     Self::from_raw_snapshot(raw_snapshot, threshold.into())
                 })
                 .boxed()
-        }
-    }
-
-    impl From<Vec<CatalystRegistration>> for RawSnapshot {
-        fn from(from: Vec<CatalystRegistration>) -> Self {
-            Self(from)
         }
     }
 

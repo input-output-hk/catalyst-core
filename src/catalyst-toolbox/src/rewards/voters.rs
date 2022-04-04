@@ -182,9 +182,11 @@ mod tests {
     use crate::utils::assert_are_close;
     use chain_impl_mockchain::chaintypes::ConsensusVersion;
     use chain_impl_mockchain::fee::LinearFee;
+    use chain_impl_mockchain::tokens::{identifier::TokenIdentifier, name::TokenName};
     use jormungandr_lib::crypto::account::Identifier;
     use jormungandr_lib::interfaces::{BlockchainConfiguration, Stake};
-    use jormungandr_lib::interfaces::{Initial, InitialUTxO};
+    use jormungandr_lib::interfaces::{Destination, Initial, InitialToken, InitialUTxO};
+    use std::convert::TryFrom;
     use test_strategy::proptest;
 
     fn blockchain_configuration(initial_funds: Vec<InitialUTxO>) -> Block0Configuration {
@@ -194,7 +196,22 @@ mod tests {
                 ConsensusVersion::Bft,
                 LinearFee::new(1, 1, 1),
             ),
-            initial: vec![Initial::Fund(initial_funds)],
+            // Temporarily create dummy until we update the snapshot
+            initial: vec![Initial::Token(InitialToken {
+                token_id: TokenIdentifier {
+                    policy_hash: [0; 28].into(),
+                    token_name: TokenName::try_from(Vec::new()).unwrap(),
+                }
+                .into(),
+                policy: Default::default(),
+                to: initial_funds
+                    .into_iter()
+                    .map(|utxo| Destination {
+                        address: utxo.address,
+                        value: utxo.value,
+                    })
+                    .collect(),
+            })],
         }
     }
 

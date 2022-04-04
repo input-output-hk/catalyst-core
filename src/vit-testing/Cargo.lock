@@ -535,7 +535,7 @@ dependencies = [
 [[package]]
 name = "catalyst-toolbox"
 version = "0.3.0"
-source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=swtich_stake_from_funds_to_token#9f6128c42f0b8a00f20fc8998c48cdc1e89a0e13"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=swtich_stake_from_funds_to_token#0f99fc7ce516ed3f31d95ee75a4356d41de5b7d6"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",

@@ -28,8 +28,8 @@
   inputs.naersk.inputs.nixpkgs.follows = "nixpkgs";
   inputs.voting-tools_.url = "github:input-output-hk/voting-tools?rev=6da7c45cbd1c756285ca2a1db99f82dd1a8cc16b";
   inputs.vit-kedqr.url = "github:input-output-hk/vit-kedqr";
-  inputs.vit-servicing-station.url = "github:input-output-hk/vit-servicing-station/master";
-  inputs.jormungandr_.url = "github:input-output-hk/jormungandr/master";
+  inputs.vit-servicing-station.url = "github:input-output-hk/vit-servicing-station/catalyst-fund8";
+  inputs.jormungandr_.url = "github:input-output-hk/jormungandr/catalyst-fund8";
   inputs.cardano-node.url = "github:input-output-hk/cardano-node/1.33.0";
 
   outputs = {

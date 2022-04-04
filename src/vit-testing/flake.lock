@@ -251,6 +251,38 @@
         "type": "github"
       }
     },
+    "flake-compat_2": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1648199409,
+        "narHash": "sha256-JwPKdC2PoVBkG6E+eWw3j6BMR6sL3COpYWfif7RVb8Y=",
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "rev": "64a525ee38886ab9028e6f61790de0832aa3ef03",
+        "type": "github"
+      },
+      "original": {
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "type": "github"
+      }
+    },
+    "flake-compat_3": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1648199409,
+        "narHash": "sha256-JwPKdC2PoVBkG6E+eWw3j6BMR6sL3COpYWfif7RVb8Y=",
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "rev": "64a525ee38886ab9028e6f61790de0832aa3ef03",
+        "type": "github"
+      },
+      "original": {
+        "owner": "edolstra",
+        "repo": "flake-compat",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "locked": {
         "lastModified": 1623875721,
@@ -621,6 +653,7 @@
     },
     "jormungandr_": {
       "inputs": {
+        "flake-compat": "flake-compat_2",
         "flake-utils": "flake-utils_3",
         "gitignore": "gitignore_2",
         "naersk": "naersk",
@@ -629,16 +662,16 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1648479740,
-        "narHash": "sha256-LqfJpKVpg3XMyflyX4rpaeVWBpenooQLBzJXYzAvG3M=",
+        "lastModified": 1649059242,
+        "narHash": "sha256-ThtccuY6BQIav4ZF2q8vEFkP5N2q22PbhotpyfnfrwA=",
         "owner": "input-output-hk",
         "repo": "jormungandr",
-        "rev": "698781ef1581e78b8b27f40cd197a9a156802928",
+        "rev": "1581428a3689dbcb1de3ec607f875d7cfab51d95",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
-        "ref": "master",
+        "ref": "catalyst-fund8",
         "repo": "jormungandr",
         "type": "github"
       }
@@ -886,11 +919,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1648390671,
-        "narHash": "sha256-u69opCeHUx3CsdIerD0wVSR+DjfDQjnztObqfk9Trqc=",
+        "lastModified": 1648632716,
+        "narHash": "sha256-kCmnDeiaMsdhfnNKjxdOzwRh2H6eQb8yWAL+nNabC/Y=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "ce8cbe3c01fd8ee2de526ccd84bbf9b82397a510",
+        "rev": "710fed5a2483f945b14f4a58af2cd3676b42d8c8",
         "type": "github"
       },
       "original": {
@@ -1015,11 +1048,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1646153636,
-        "narHash": "sha256-AlWHMzK+xJ1mG267FdT8dCq/HvLCA6jwmx2ZUy5O8tY=",
+        "lastModified": 1649054408,
+        "narHash": "sha256-wz8AH7orqUE4Xog29WMTqOYBs0DMj2wFM8ulrTRVgz0=",
         "owner": "cachix",
         "repo": "pre-commit-hooks.nix",
-        "rev": "b6bc0b21e1617e2b07d8205e7fae7224036dfa4b",
+        "rev": "e5e7b3b542e7f4f96967966a943d7e1c07558042",
         "type": "github"
       },
       "original": {
@@ -1126,11 +1159,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1648521261,
-        "narHash": "sha256-3wTylxx9CKZKm2VbzcxnYShqVhkOc+BY9LTH9driT0g=",
+        "lastModified": 1649039748,
+        "narHash": "sha256-WJvIJcbiXtQig2j/AocM2zg714JyyEpwviDD19nQWQc=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "65761098e463a18a8d7580ed990406d3e718800a",
+        "rev": "87d24beaf538aeed40f1d25c10a27fb527f19d7d",
         "type": "github"
       },
       "original": {
@@ -1278,6 +1311,7 @@
     },
     "vit-servicing-station": {
       "inputs": {
+        "flake-compat": "flake-compat_3",
         "flake-utils": "flake-utils_4",
         "gitignore": "gitignore_3",
         "naersk": "naersk_3",
@@ -1286,16 +1320,16 @@
         "rust-overlay": "rust-overlay_3"
       },
       "locked": {
-        "lastModified": 1648467071,
-        "narHash": "sha256-2n5E3o3GC2QeRlPWPiNA3f9TU2fmdwUVunm6LoMUuJ0=",
+        "lastModified": 1648817197,
+        "narHash": "sha256-5xO8HSqXTHJ5fa2j/pe2hH/wUnEFi/jxihpl2T2EPMU=",
         "owner": "input-output-hk",
         "repo": "vit-servicing-station",
-        "rev": "ffe3493c1e0779a142317a6be58b702368ce082a",
+        "rev": "232fe96576b76e30cba5f5af58e27a3593910445",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
-        "ref": "master",
+        "ref": "catalyst-fund8",
         "repo": "vit-servicing-station",
         "type": "github"
       }

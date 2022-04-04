@@ -104,6 +104,7 @@ impl VotesPrintout {
 
         stderrlog::new().verbosity(verbose).init().unwrap();
         let reader = std::fs::File::open(block0_path)?;
+        let reader = std::io::BufReader::new(reader);
         let block0 = Block::deserialize(&mut Codec::new(reader)).unwrap();
 
         let (original, to_filter): (Vec<_>, Vec<_>) =

@@ -1,7 +1,7 @@
 [package]
 name = "catalyst-toolbox"
 version = "0.3.0"
-edition = "2018"
+edition = "2021"
 
 authors = ["danielsanchezq <daniel.sanchez@iohk.io>"]
 license = "MIT OR Apache-2.0"
@@ -34,6 +34,7 @@ jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr
 thor = { git = "https://github.com/input-output-hk/jormungandr.git",  branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 rust_decimal = "1.16"
+rust_decimal_macros = "1"
 futures = "0.3"
 log = "0.4"
 once_cell = "1.8"

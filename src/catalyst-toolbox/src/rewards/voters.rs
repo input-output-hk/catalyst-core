@@ -27,24 +27,24 @@ fn calculate_active_stake<'address>(
 
     for fund in &block0.initial {
         match fund {
-            Initial::Fund(fund) => {
-                for utxo in fund {
+            Initial::Fund(_) => {}
+            Initial::Cert(_) => {}
+            Initial::LegacyFund(_) => {}
+            Initial::Token(token) => {
+                for destination in &token.to {
                     // Exclude committee addresses (managed by IOG) and
                     // non active voters from total active stake for the purpose of calculating
                     // voter rewards
-                    if !committee_keys.contains(&utxo.address)
-                        && active_addresses.contains(&utxo.address)
+                    if !committee_keys.contains(&destination.address)
+                        && active_addresses.contains(&destination.address)
                     {
-                        let value: u64 = utxo.value.into();
+                        let value: u64 = destination.value.into();
                         total_stake = total_stake.checked_add(value).ok_or(Error::Overflow)?;
-                        let entry = stake_per_voter.entry(&utxo.address).or_default();
+                        let entry = stake_per_voter.entry(&destination.address).or_default();
                         *entry += value;
                     }
                 }
             }
-            Initial::Cert(_) => {}
-            Initial::LegacyFund(_) => {}
-            Initial::Token(_) => todo!("use the tokens for the initial stake?"),
         }
     }
     Ok((total_stake, stake_per_voter))
@@ -182,9 +182,11 @@ mod tests {
     use crate::utils::assert_are_close;
     use chain_impl_mockchain::chaintypes::ConsensusVersion;
     use chain_impl_mockchain::fee::LinearFee;
+    use chain_impl_mockchain::tokens::{identifier::TokenIdentifier, name::TokenName};
     use jormungandr_lib::crypto::account::Identifier;
     use jormungandr_lib::interfaces::{BlockchainConfiguration, Stake};
-    use jormungandr_lib::interfaces::{Initial, InitialUTxO};
+    use jormungandr_lib::interfaces::{Destination, Initial, InitialToken, InitialUTxO};
+    use std::convert::TryFrom;
     use test_strategy::proptest;
 
     fn blockchain_configuration(initial_funds: Vec<InitialUTxO>) -> Block0Configuration {
@@ -194,7 +196,22 @@ mod tests {
                 ConsensusVersion::Bft,
                 LinearFee::new(1, 1, 1),
             ),
-            initial: vec![Initial::Fund(initial_funds)],
+            // Temporarily create dummy until we update the snapshot
+            initial: vec![Initial::Token(InitialToken {
+                token_id: TokenIdentifier {
+                    policy_hash: [0; 28].into(),
+                    token_name: TokenName::try_from(Vec::new()).unwrap(),
+                }
+                .into(),
+                policy: Default::default(),
+                to: initial_funds
+                    .into_iter()
+                    .map(|utxo| Destination {
+                        address: utxo.address,
+                        value: utxo.value,
+                    })
+                    .collect(),
+            })],
         }
     }
 

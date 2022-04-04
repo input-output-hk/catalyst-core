@@ -72,10 +72,5 @@ test-strategy = "0.1"
 [build-dependencies]
 versionisator = "1.0.3"
 
-[dependencies.pyo3]
-version = "0.15.1"
-features = ["auto-initialize"]
-optional = true
-
 [features]
-test-api = ["pyo3"]
+test-api = []

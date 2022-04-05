@@ -5509,7 +5509,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#7e0812f34ea1aaa218232db9a2c39d2e69358b9c"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=catalyst-fund8#3e80ccfd1fbf2b3964e54b8543c782e41e7e5ef8"
 dependencies = [
  "async-trait",
  "base64 0.12.3",

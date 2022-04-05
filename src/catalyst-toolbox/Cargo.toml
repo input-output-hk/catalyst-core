@@ -58,7 +58,7 @@ quircs = "0.10.0"
 symmetric-cipher = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "catalyst-fund8" }
 graphql_client = "0.10"
 gag = "1"
-vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
+vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "catalyst-fund8" }
 
 [dev-dependencies]
 rand_chacha = "0.3"

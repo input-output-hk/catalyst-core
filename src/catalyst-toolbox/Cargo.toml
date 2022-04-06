@@ -1,6 +1,6 @@
 [package]
 name = "catalyst-toolbox"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 
 authors = ["danielsanchezq <daniel.sanchez@iohk.io>"]
@@ -45,7 +45,7 @@ regex = "1.5"
 serde = "1.0"
 serde_json = "1.0"
 structopt = "0.3"
-stderrlog = "0.5"
+env_logger = "0.9"
 serde_yaml = "0.8.17"
 sscanf = "0.1"
 thiserror = "1.0"

@@ -61,9 +61,9 @@ pub struct ReplayCli {
     #[structopt(flatten)]
     output_format: OutputFormat,
 
-    /// Verbose mode (-v, -vv, -vvv, etc)
-    #[structopt(short = "v", long = "verbose", parse(from_occurrences))]
-    verbose: usize,
+    /// Verbose mode
+    #[structopt(short = "v", long = "verbose")]
+    verbose: log::LevelFilter,
 }
 
 fn read_block0(path: PathBuf) -> Result<Block, Error> {
@@ -87,7 +87,7 @@ impl ReplayCli {
             output_format,
             verbose,
         } = self;
-        stderrlog::new().verbosity(verbose).init().unwrap();
+        env_logger::Builder::new().filter_level(verbose).init();
 
         let block0 = if let Some(path) = block0_path {
             read_block0(path)?

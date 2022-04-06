@@ -35,9 +35,9 @@ pub struct VotesPrintout {
     #[structopt(flatten)]
     output_format: OutputFormat,
 
-    /// Verbose mode (-v, -vv, -vvv, etc)
-    #[structopt(short = "v", long = "verbose", parse(from_occurrences))]
-    verbose: usize,
+    /// Verbose mode
+    #[structopt(short = "v", long = "verbose")]
+    verbose: log::LevelFilter,
 }
 
 #[derive(Serialize)]
@@ -102,7 +102,7 @@ impl VotesPrintout {
             verbose,
         } = self;
 
-        stderrlog::new().verbosity(verbose).init().unwrap();
+        env_logger::Builder::new().filter_level(verbose).init();
         let reader = std::fs::File::open(block0_path)?;
         let reader = std::io::BufReader::new(reader);
         let block0 = Block::deserialize(&mut Codec::new(reader)).unwrap();

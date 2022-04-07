@@ -74,7 +74,7 @@ impl Ledger {
         let new_decls = self
             .declarations
             .insert(identifier.clone(), declaration.clone())?;
-        let new_accts = self.accounts.add_account(&identifier, Value::zero(), ())?;
+        let new_accts = self.accounts.add_account(identifier, Value::zero(), ())?;
         Ok(Self {
             accounts: new_accts,
             declarations: new_decls,

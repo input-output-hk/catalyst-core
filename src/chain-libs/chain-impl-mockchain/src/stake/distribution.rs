@@ -421,7 +421,7 @@ mod tests {
             };
             accounts = accounts
                 .add_account(
-                    &Identifier::from(account_public_key.clone()),
+                    Identifier::from(account_public_key.clone()),
                     Value::zero(),
                     (),
                 )
@@ -445,12 +445,12 @@ mod tests {
 
         // add accounts without delegation
         for (id, value) in stake_distribution_data.unassigned_accounts.iter().cloned() {
-            accounts = accounts.add_account(&id, value, ()).unwrap();
+            accounts = accounts.add_account(id, value, ()).unwrap();
         }
 
         // add accounts with delegation
         for (id, value) in stake_distribution_data.assigned_accounts.iter().cloned() {
-            accounts = accounts.add_account(&id, value, ()).unwrap();
+            accounts = accounts.add_account(id.clone(), value, ()).unwrap();
             accounts = accounts
                 .set_delegation(&id, &DelegationType::Full(id_active_pool.clone()))
                 .unwrap();
@@ -459,7 +459,7 @@ mod tests {
         // add accounts with delegation as a target for delegation addresses
         let single_account = stake_distribution_data.single_account.clone();
         accounts = accounts
-            .add_account(&single_account.0, single_account.1, ())
+            .add_account(single_account.0.clone(), single_account.1, ())
             .unwrap();
         accounts = accounts
             .set_delegation(&single_account.0, &DelegationType::Full(id_active_pool))
@@ -467,7 +467,7 @@ mod tests {
 
         // add accounts with retired stake pool
         for (id, value) in stake_distribution_data.dangling_accounts.iter().cloned() {
-            accounts = accounts.add_account(&id, value, ()).unwrap();
+            accounts = accounts.add_account(id.clone(), value, ()).unwrap();
             accounts = accounts
                 .set_delegation(&id, &DelegationType::Full(id_retired_pool.clone()))
                 .unwrap();

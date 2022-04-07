@@ -911,7 +911,7 @@ mod tests {
             .unwrap();
 
         let account_ledger = account::Ledger::default()
-            .add_account(&identifier, Value(0), ())
+            .add_account(identifier.clone(), Value(0), ())
             .unwrap()
             .token_add(&identifier, vote_plan.voting_token().clone(), Value(100))
             .unwrap();
@@ -1586,7 +1586,7 @@ mod tests {
         };
         let value = Value(51);
         let account_ledger = account::Ledger::new()
-            .add_account(&wallet.clone().into(), Value(0), ())
+            .add_account(wallet.clone().into(), Value(0), ())
             .unwrap()
             .token_add(&wallet.into(), token.clone(), value)
             .unwrap();
@@ -1618,7 +1618,7 @@ mod tests {
             .unwrap();
 
         let account_ledger = account::Ledger::default()
-            .add_account(&identifier, Value(0), ())
+            .add_account(identifier.clone(), Value(0), ())
             .unwrap()
             .token_add(&identifier, vote_plan.voting_token().clone(), Value(100))
             .unwrap();
@@ -1687,7 +1687,7 @@ mod tests {
             .unwrap();
 
         let account_ledger = account::Ledger::default()
-            .add_account(&identifier, Value(0), ())
+            .add_account(identifier.clone(), Value(0), ())
             .unwrap()
             .token_add(&identifier, vote_plan.voting_token().clone(), Value(100))
             .unwrap();
@@ -1870,7 +1870,7 @@ mod tests {
         let account = TestGen::identifier();
         let token_totals = Default::default();
         let account_ledger = account::Ledger::default()
-            .add_account(&account, Value(1_000), ())
+            .add_account(account.clone(), Value(1_000), ())
             .unwrap()
             .token_add(&account, token_id, Value(1_000))
             .unwrap();
@@ -1909,7 +1909,7 @@ mod tests {
         let account = TestGen::identifier();
         let token_totals = Default::default();
         let account_ledger = account::Ledger::default()
-            .add_account(&account, Value(1_000), ())
+            .add_account(account.clone(), Value(1_000), ())
             .unwrap();
 
         let token_distribution = TokenDistribution::new(&token_totals, &account_ledger);

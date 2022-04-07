@@ -1568,15 +1568,14 @@ impl Ledger {
                     let account_id = account_id.clone().into();
                     // TODO: probably faster to just call add_account and check for already exists error
                     if !self.accounts.exists(&account_id) {
-                        self.accounts =
-                            self.accounts.add_account(&account_id, Value::zero(), ())?;
+                        self.accounts = self.accounts.add_account(account_id, Value::zero(), ())?;
                     }
                     new_utxos.push((index as u8, output.clone()));
                 }
                 Kind::Account(identifier) => {
                     // don't have a way to make a newtype ref from the ref so .clone()
                     let account = identifier.clone().into();
-                    self.add_value_or_create_account(&account, output.value)?;
+                    self.add_value_or_create_account(account, output.value)?;
                 }
                 Kind::Multisig(identifier) => {
                     let identifier = multisig::Identifier::from(*identifier);
@@ -1596,10 +1595,10 @@ impl Ledger {
 
     fn add_value_or_create_account(
         &mut self,
-        account: &account::Identifier,
+        account: account::Identifier,
         value: Value,
     ) -> Result<(), Error> {
-        self.accounts = match self.accounts.add_value(account, value) {
+        self.accounts = match self.accounts.add_value(&account, value) {
             Ok(accounts) => accounts,
             Err(account::LedgerError::NonExistent) => {
                 self.accounts.add_account(account, value, ())?
@@ -2043,7 +2042,7 @@ mod tests {
     ) -> TestResult {
         let mut account_ledger = account::Ledger::new();
         account_ledger = account_ledger
-            .add_account(&id, account_state.value(), ())
+            .add_account(id.clone(), account_state.value(), ())
             .unwrap();
         let result = super::input_single_account_verify(
             account_ledger,
@@ -2089,7 +2088,9 @@ mod tests {
     fn account_ledger_with_initials(initials: &[(Identifier, Value)]) -> account::Ledger {
         let mut account_ledger = account::Ledger::new();
         for (id, initial_value) in initials {
-            account_ledger = account_ledger.add_account(id, *initial_value, ()).unwrap();
+            account_ledger = account_ledger
+                .add_account(id.clone(), *initial_value, ())
+                .unwrap();
         }
         account_ledger
     }
@@ -2397,7 +2398,7 @@ mod tests {
 
         let account = AddressData::account(Discrimination::Test);
         accounts = accounts
-            .add_account(&account.to_id(), Value(100), ())
+            .add_account(account.to_id(), Value(100), ())
             .unwrap();
 
         let delegation = AddressData::delegation_for(&account);
@@ -2471,7 +2472,7 @@ mod tests {
 
         let account = AddressData::account(Discrimination::Test);
         accounts = accounts
-            .add_account(&account.to_id(), Value(100), ())
+            .add_account(account.to_id(), Value(100), ())
             .unwrap();
 
         let ledger = build_ledger(utxos, accounts, multisig_ledger, params.static_params());

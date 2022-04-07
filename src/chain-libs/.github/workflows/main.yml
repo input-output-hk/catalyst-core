@@ -82,6 +82,7 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     timeout-minutes: 120
     env:
+      PROPTEST_MAX_SHRINK_ITERS: 10000
       CARGO_INCREMENTAL: 0
     steps:
       - uses: actions/checkout@v2

@@ -6,15 +6,31 @@ use cryptoxide::ed25519;
 use rand_core::{CryptoRng, RngCore};
 
 /// ED25519 Signing Algorithm
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary, Debug)
+)]
 pub struct Ed25519;
 
 #[derive(Clone)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary, Debug)
+)]
 pub struct Priv([u8; ed25519::PRIVATE_KEY_LENGTH]);
 
 #[derive(Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary, Debug)
+)]
 pub struct Pub(pub(crate) [u8; ed25519::PUBLIC_KEY_LENGTH]);
 
 #[derive(Clone)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary, Debug)
+)]
 pub struct Sig(pub(crate) [u8; ed25519::SIGNATURE_LENGTH]);
 
 impl AsRef<[u8]> for Priv {

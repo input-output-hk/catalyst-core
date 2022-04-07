@@ -389,6 +389,10 @@ impl SecretKey {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct PublicKey([u8; PUBLIC_KEY_SIZE]);
 
 impl PublicKey {

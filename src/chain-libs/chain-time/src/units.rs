@@ -2,6 +2,10 @@ use std::time::Duration;
 
 /// Represent a Duration where the maximum precision is in the second
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct DurationSeconds(pub u64);
 
 impl From<u64> for DurationSeconds {

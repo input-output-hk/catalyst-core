@@ -1,5 +1,7 @@
 use crate::bech32::{self, Bech32};
 use hex::FromHexError;
+#[cfg(any(test, feature = "property-test-api"))]
+use proptest::strategy::{BoxedStrategy, Strategy};
 use rand_core::{CryptoRng, RngCore};
 use std::fmt;
 use std::hash::Hash;
@@ -52,8 +54,19 @@ pub trait SecretKeySizeStatic: AsymmetricKey {
 
 pub struct SecretKey<A: AsymmetricKey>(pub(crate) A::Secret);
 
+#[cfg(any(test, feature = "property-test-api"))]
+impl<A: AsymmetricPublicKey + 'static> proptest::arbitrary::Arbitrary for PublicKey<A>
+where
+    A::Public: proptest::arbitrary::Arbitrary,
+{
+    type Parameters = ();
+    type Strategy = BoxedStrategy<Self>;
+    fn arbitrary_with((): ()) -> Self::Strategy {
+        let x = proptest::arbitrary::any::<A::Public>();
+        x.prop_map(|x| Self(x)).boxed()
+    }
+}
 pub struct PublicKey<A: AsymmetricPublicKey>(pub(crate) A::Public);
-
 pub struct KeyPair<A: AsymmetricKey>(SecretKey<A>, PublicKey<A::PubAlg>);
 
 impl<A: AsymmetricKey> KeyPair<A> {

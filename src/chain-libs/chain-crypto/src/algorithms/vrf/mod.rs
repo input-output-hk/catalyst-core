@@ -10,6 +10,10 @@ use rand_core::{CryptoRng, RngCore};
 pub use vrf::ProvenOutputSeed;
 
 /// VRF
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary, Debug)
+)]
 pub struct RistrettoGroup2HashDh;
 
 impl AsymmetricPublicKey for RistrettoGroup2HashDh {

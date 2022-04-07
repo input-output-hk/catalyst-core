@@ -7,6 +7,8 @@ pub struct SpendingCounterIncreasing {
     nexts: Vec<SpendingCounter>,
 }
 
+// SpendingCounterIncreasing has extra invariants (e.g. nexts has 8 elements, each belongs to a different lane), so a derived implementation is not suitable
+
 // number of bits reserved for lanes
 const LANES_BITS: usize = 3;
 // number of bits reserved for counter (unrespective of the lane)
@@ -89,6 +91,10 @@ impl Default for SpendingCounterIncreasing {
 /// Note that the leading LANES_BITS bits are used to codify the
 /// implicit lane.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct SpendingCounter(pub(crate) u32);
 
 impl SpendingCounter {
@@ -275,5 +281,30 @@ mod tests {
         let mut sc_increasing = SpendingCounterIncreasing::default();
         let incorrect_sc = SpendingCounter::new(SpendingCounterIncreasing::LANES, 1);
         assert!(sc_increasing.next_verify(incorrect_sc).is_err());
+    }
+
+    #[cfg(any(test, feature = "property-test-api"))]
+    mod prop_impls {
+        use proptest::prelude::*;
+
+        use crate::{account::SpendingCounter, accounting::account::SpendingCounterIncreasing};
+
+        impl Arbitrary for SpendingCounterIncreasing {
+            type Parameters = ();
+            type Strategy = BoxedStrategy<Self>;
+
+            fn arbitrary_with((): Self::Parameters) -> Self::Strategy {
+                prop_oneof![
+                    any::<SpendingCounter>()
+                        .prop_map(|counter| Some(Self::new_from_counter(counter)))
+                        .boxed(),
+                    any::<Vec<SpendingCounter>>()
+                        .prop_map(Self::new_from_counters)
+                        .boxed(),
+                ]
+                .prop_filter_map("must be valid spending counter set", |i| i)
+                .boxed()
+            }
+        }
     }
 }

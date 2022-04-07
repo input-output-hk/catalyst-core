@@ -11,6 +11,10 @@ pub const TOKEN_NAME_MAX_SIZE: usize = 32;
 /// voting policies hashes are different tokens. A name can be empty. The maximum length of a token
 /// name is 32 bytes.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct TokenName(Vec<u8>);
 
 #[derive(Debug, Error)]

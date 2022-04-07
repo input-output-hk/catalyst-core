@@ -14,6 +14,10 @@ pub type UpdateVoterId = BftLeaderId;
 pub type UpdateProposalId = crate::fragment::FragmentId;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct UpdateVote {
     proposal_id: UpdateProposalId,
     voter_id: UpdateVoterId,

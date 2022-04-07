@@ -1,11 +1,10 @@
+use super::spending::{SpendingCounter, SpendingCounterIncreasing};
+use super::{LastRewards, LedgerError};
 use crate::date::Epoch;
 use crate::value::*;
 use crate::{certificate::PoolId, tokens::identifier::TokenIdentifier};
 use imhamt::{Hamt, HamtIter};
 use std::collections::hash_map::DefaultHasher;
-
-use super::spending::{SpendingCounter, SpendingCounterIncreasing};
-use super::{LastRewards, LedgerError};
 
 /// Set the choice of delegation:
 ///
@@ -13,6 +12,10 @@ use super::{LastRewards, LedgerError};
 /// * Full delegation of this account to a specific pool
 /// * Ratio of stake to multiple pools
 #[derive(Clone, PartialEq, Eq, Debug)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub enum DelegationType {
     NonDelegated,
     Full(PoolId),
@@ -30,6 +33,10 @@ pub enum DelegationType {
 /// and by extension parts need to be equal to the sum of individual
 /// pools parts.
 #[derive(Clone, PartialEq, Eq, Debug)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct DelegationRatio {
     pub(crate) parts: u8,
     pub(crate) pools: Box<[(PoolId, u8)]>,
@@ -208,41 +215,41 @@ mod tests {
         certificate::PoolId, testing::builders::StakePoolBuilder, testing::TestGen, value::Value,
     };
     use imhamt::Hamt;
-    use quickcheck::{Arbitrary, Gen, TestResult};
-    use quickcheck_macros::quickcheck;
+    use quickcheck::{Arbitrary, Gen};
     use std::iter;
+    use test_strategy::proptest;
 
-    #[quickcheck]
-    pub fn account_sub_is_consistent(
-        init_value: Value,
-        sub_value: Value,
-        counter: u32,
-    ) -> TestResult {
+    #[proptest]
+    fn account_sub_is_consistent(init_value: Value, sub_value: Value, counter: u32) {
         let mut account_state = AccountState::new(init_value, ());
         let counter = SpendingCounter::from(counter);
         account_state.spending = SpendingCounterIncreasing::new_from_counter(counter);
-        TestResult::from_bool(
-            should_sub_fail(account_state.clone(), sub_value)
-                == account_state.sub(counter, sub_value).is_err(),
+        assert_eq!(
+            should_sub_fail(account_state.clone(), sub_value),
+            account_state.sub(counter, sub_value).is_err(),
         )
     }
 
-    #[quickcheck]
-    pub fn add_value(init_value: Value, value_to_add: Value) -> TestResult {
+    #[proptest]
+    fn add_value(init_value: Value, value_to_add: Value) {
         let account_state = AccountState::new(init_value, ());
         let left = account_state.add_value(value_to_add);
         let right = account_state.add(value_to_add);
         match (left, right) {
-            (Err(_), Err(_)) => TestResult::passed(),
+            (Err(_), Err(_)) => {}
             (Ok(next_left), Ok(next_right)) => {
-                TestResult::from_bool(next_left.value() == next_right.value())
+                assert_eq!(next_left.value(), next_right.value())
             }
-            (Ok(_), Err(_)) => TestResult::error("add_value() success while add() failed"),
-            (Err(_), Ok(_)) => TestResult::error("add() success while add_value() failed"),
+            (Ok(_), Err(_)) => panic!("add_value() success while add() failed"),
+            (Err(_), Ok(_)) => panic!("add() success while add_value() failed"),
         }
     }
 
     #[derive(Clone, Debug)]
+    #[cfg_attr(
+        any(test, feature = "property-test-api"),
+        derive(test_strategy::Arbitrary)
+    )]
     pub enum ArbitraryAccountStateOp {
         Add(Value),
         Sub(Value),
@@ -264,6 +271,10 @@ mod tests {
     }
 
     #[derive(Clone, Debug)]
+    #[cfg_attr(
+        any(test, feature = "property-test-api"),
+        derive(test_strategy::Arbitrary)
+    )]
     pub struct ArbitraryOperationChain(pub Vec<ArbitraryAccountStateOp>);
 
     impl Arbitrary for ArbitraryOperationChain {
@@ -353,11 +364,11 @@ mod tests {
         }
     }
 
-    #[quickcheck]
-    pub fn account_state_is_consistent(
+    #[proptest]
+    fn account_state_is_consistent(
         mut account_state: AccountState<()>,
         operations: ArbitraryOperationChain,
-    ) -> TestResult {
+    ) {
         let initial_account_state = account_state.clone();
         let mut strategy = initial_account_state.spending.clone();
         let mut counter = strategy.get_valid_counter();
@@ -368,8 +379,8 @@ mod tests {
                     match (should_fail, account_state.add(value)) {
                         (false, Ok(account_state)) => account_state,
                         (true, Err(_)) => account_state,
-                        (false,  Err(err)) => return TestResult::error(format!("Operation {}: unexpected add operation failure. Expected success but got: {:?}",op_counter,err)),
-                        (true, Ok(account_state)) => return TestResult::error(format!("Operation {}: unexpected add operation success. Expected failure but got: success. AccountState: {:?}",op_counter, &account_state)),
+                        (false,  Err(err)) => panic!("Operation {}: unexpected add operation failure. Expected success but got: {:?}",op_counter,err),
+                        (true, Ok(account_state)) => panic!("Operation {}: unexpected add operation success. Expected failure but got: success. AccountState: {:?}",op_counter, &account_state),
                     }
                 }
                 ArbitraryAccountStateOp::Sub(value) => {
@@ -381,12 +392,15 @@ mod tests {
                             // check if account has any funds left
                             match account_state {
                                 Some(account_state) => account_state,
-                                None => return verify_account_lost_all_funds(initial_account_state,operations,op_counter,account_state.unwrap())
+                                None => return {
+                                    verify_account_lost_all_funds(initial_account_state,operations,op_counter,account_state.unwrap());
+                                    Ok(())
+                                }
                             }
                         }
                         (true, Err(_)) => account_state,
-                        (false,  Err(err)) => return TestResult::error(format!("Operation {}: unexpected sub operation failure. Expected success but got: {:?}",op_counter,err)),
-                        (true, Ok(account_state)) => return TestResult::error(format!("Operation {}: unexpected sub operation success. Expected failure but got: success. AccountState: {:?}",op_counter, &account_state)),
+                        (false,  Err(err)) => panic!("Operation {}: unexpected sub operation failure. Expected success but got: {:?}",op_counter,err),
+                        (true, Ok(account_state)) => panic!("Operation {}: unexpected sub operation success. Expected failure but got: success. AccountState: {:?}",op_counter, &account_state),
                     }
                 }
                 ArbitraryAccountStateOp::Delegate(stake_pool_id) => {
@@ -398,13 +412,11 @@ mod tests {
             };
         }
         let expected_account_state = operations.get_account_state(initial_account_state);
-        if expected_account_state == account_state {
-            TestResult::passed()
-        } else {
-            TestResult::error(format!(
+        if expected_account_state != account_state {
+            panic!(
                 "Actual AccountState is not equal to expected one. Expected {:?}, but got {:?}",
                 expected_account_state, account_state
-            ))
+            )
         }
     }
 
@@ -413,13 +425,11 @@ mod tests {
         operations: ArbitraryOperationChain,
         counter: usize,
         actual_account_state: AccountState<()>,
-    ) -> TestResult {
+    ) {
         let expected_account =
             operations.get_account_state_after_n_ops(initial_account_state, counter);
-        if expected_account.value == Value::zero() {
-            TestResult::passed()
-        } else {
-            TestResult::error(format!("Account is dry out from funds after {} operations, while expectation was different. Expected: {:?}, Actual {:?}",counter,expected_account,actual_account_state))
+        if expected_account.value != Value::zero() {
+            panic!("Account is dry out from funds after {} operations, while expectation was different. Expected: {:?}, Actual {:?}",counter,expected_account,actual_account_state)
         }
     }
 
@@ -497,8 +507,14 @@ mod tests {
         assert!(DelegationRatio::new(parts, pools).is_none());
     }
 
-    #[quickcheck]
-    pub fn add_rewards(account_state_no_reward: AccountState<()>, value: Value) -> TestResult {
+    #[proptest]
+    fn add_rewards(account_state_no_reward: AccountState<()>, value: Value) {
+        // explicitly ignore the case where integer overflow happens
+        let sum = account_state_no_reward.value.0.checked_add(value.0);
+        if sum.is_none() {
+            return Ok(());
+        }
+
         let initial_value = account_state_no_reward.value();
         let account_state_reward = account_state_no_reward.clone();
 
@@ -509,11 +525,11 @@ mod tests {
             .add_rewards(1, value)
             .expect("cannot add reward");
 
-        accounts_are_the_same(account_state_no_reward, account_state_reward, initial_value)
+        accounts_are_the_same(account_state_no_reward, account_state_reward, initial_value);
     }
 
-    #[quickcheck]
-    pub fn new_account_rewards(value: Value) -> TestResult {
+    #[proptest]
+    fn new_account_rewards(value: Value) {
         let account_state = AccountState::new(value, ());
         let account_with_reward = AccountState::new_reward(1, value, ());
         accounts_are_the_same(account_state, account_with_reward, Value::zero())
@@ -523,34 +539,33 @@ mod tests {
         account_without_reward: AccountState<()>,
         account_with_reward: AccountState<()>,
         initial_value: Value,
-    ) -> TestResult {
+    ) {
         if account_without_reward.value() != account_with_reward.value() {
-            return TestResult::error(format!(
+            panic!(
                 "value should be the same {} vs {}",
                 account_without_reward.value(),
                 account_with_reward.value()
-            ));
+            );
         }
 
         let expected_reward_account_state =
             (account_with_reward.last_rewards.reward + initial_value).unwrap();
         if account_without_reward.value() != expected_reward_account_state {
-            return TestResult::error(format!(
+            panic!(
                 "reward should be the same {} vs {}",
                 account_without_reward.value(),
                 expected_reward_account_state
-            ));
+            );
         }
-        TestResult::passed()
     }
 
     use crate::tokens::identifier::TokenIdentifier;
 
-    #[quickcheck]
-    pub fn add_token(value: Value, token: TokenIdentifier) -> TestResult {
+    #[proptest]
+    fn add_token(value: Value, token: TokenIdentifier) {
         let mut account_state = AccountState::new(Value::zero(), ());
         account_state = account_state.token_add(token.clone(), value).unwrap();
-        TestResult::from_bool(account_state.tokens.lookup(&token).unwrap() == &value)
+        assert!(account_state.tokens.lookup(&token).unwrap() == &value)
     }
 
     #[test]
@@ -594,5 +609,46 @@ mod tests {
             .token_add(token.clone(), Value(u64::MAX))
             .unwrap();
         assert!(account_state.token_add(token, Value(1)).is_err());
+    }
+
+    #[cfg(any(test, feature = "property-test-api"))]
+    mod prop_impls {
+        use imhamt::Hamt;
+        use proptest::prelude::*;
+
+        use crate::{
+            account::DelegationType,
+            accounting::account::{AccountState, LastRewards, SpendingCounterIncreasing},
+            certificate::PoolId,
+            value::Value,
+        };
+
+        prop_compose! {
+            fn arbitrary_account_state()(
+                spending in any::<SpendingCounterIncreasing>(),
+                pool_id in any::<PoolId>(),
+                value in any::<Value>(),
+            ) -> AccountState<()> {
+                AccountState {
+                    spending,
+                    delegation: DelegationType::Full(pool_id),
+                    value,
+                    tokens: Hamt::new(),
+                    last_rewards: LastRewards::default(),
+                    extra: (),
+                    #[cfg(feature = "evm")]
+                    evm_state: chain_evm::state::AccountState::default(),
+                }
+            }
+        }
+
+        impl Arbitrary for AccountState<()> {
+            type Parameters = ();
+            type Strategy = BoxedStrategy<Self>;
+
+            fn arbitrary_with((): Self::Parameters) -> Self::Strategy {
+                arbitrary_account_state().boxed()
+            }
+        }
     }
 }

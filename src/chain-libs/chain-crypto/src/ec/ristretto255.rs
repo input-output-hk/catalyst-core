@@ -8,6 +8,8 @@ use curve25519_dalek_ng::{
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
 
+#[cfg(any(test, feature = "property-test-api"))]
+use proptest::strategy::{BoxedStrategy, Strategy};
 use rand_core::{CryptoRng, RngCore};
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, Mul, Sub};
@@ -20,6 +22,18 @@ pub struct Scalar(IScalar);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GroupElement(Point);
+
+#[cfg(any(test, feature = "property-test-api"))]
+impl proptest::arbitrary::Arbitrary for GroupElement {
+    type Parameters = ();
+    type Strategy = BoxedStrategy<Self>;
+
+    fn arbitrary_with((): ()) -> Self::Strategy {
+        proptest::arbitrary::any::<[u8; 64]>()
+            .prop_map(|bytes| GroupElement(Point::from_uniform_bytes(&bytes)))
+            .boxed()
+    }
+}
 
 #[allow(clippy::derive_hash_xor_eq)]
 impl Hash for GroupElement {

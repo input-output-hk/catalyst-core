@@ -14,6 +14,7 @@ use typed_bytes::{ByteArray, ByteBuilder};
 use super::CertificateSlice;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+
 pub struct EvmMapping {
     #[cfg(feature = "evm")]
     pub account_id: Identifier,
@@ -135,6 +136,42 @@ mod test {
             let bytes = b.serialize_in(ByteBuilder::new()).finalize_as_vec();
             let decoded = EvmMapping::deserialize_from_slice(&mut Codec::new(bytes.as_slice())).unwrap();
             decoded == b
+        }
+    }
+}
+
+#[cfg(any(test, feature = "property-test-api"))]
+mod prop_impl {
+    use proptest::prelude::*;
+
+    #[cfg(feature = "evm")]
+    use crate::account::Identifier;
+    use crate::certificate::EvmMapping;
+    #[cfg(feature = "evm")]
+    use chain_evm::Address;
+    #[cfg(feature = "evm")]
+    use proptest::{arbitrary::StrategyFor, strategy::Map};
+
+    impl Arbitrary for EvmMapping {
+        type Parameters = ();
+
+        #[cfg(not(feature = "evm"))]
+        type Strategy = Just<Self>;
+        #[cfg(not(feature = "evm"))]
+        fn arbitrary_with((): Self::Parameters) -> Self::Strategy {
+            Just(Self {})
+        }
+
+        #[cfg(feature = "evm")]
+        type Strategy =
+            Map<StrategyFor<(Identifier, [u8; 20])>, fn((Identifier, [u8; 20])) -> Self>;
+
+        #[cfg(feature = "evm")]
+        fn arbitrary_with((): Self::Parameters) -> Self::Strategy {
+            any::<(Identifier, [u8; 20])>().prop_map(|(account_id, evm_address)| Self {
+                account_id,
+                evm_address: Address::from_slice(&evm_address),
+            })
         }
     }
 }

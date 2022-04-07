@@ -26,6 +26,10 @@ impl AsRef<[u8]> for SecretKey {
 
 /// VRF Public Key
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct PublicKey(GroupElement, [u8; Self::BYTES_LEN]);
 
 #[allow(clippy::derive_hash_xor_eq)]

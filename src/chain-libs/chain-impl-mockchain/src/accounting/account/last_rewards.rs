@@ -6,6 +6,10 @@ use crate::value::Value;
 /// It tracks the epoch where the rewards has been received,
 /// and the total amount of reward for such an epoch
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct LastRewards {
     pub epoch: Epoch,
     pub reward: Value,

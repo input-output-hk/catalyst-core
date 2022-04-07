@@ -7,6 +7,8 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 thiserror = "1.0"
+proptest = { git = "https://github.com/input-output-hk/proptest.git", optional = true }
+test-strategy = { version = "0.1", optional = true }
 
 [dev-dependencies]
 criterion = "0.3.0"
@@ -24,3 +26,6 @@ path = "examples/memdump/main.rs"
 [[bench]]
 harness = false
 name = "imhamt"
+
+[features]
+property-test-api = ["proptest", "test-strategy"]

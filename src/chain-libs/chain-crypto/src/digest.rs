@@ -136,6 +136,10 @@ impl<H: DigestAlg> Context<H> {
     }
 }
 
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct Digest<H: DigestAlg>(H::DigestData);
 
 impl<H: DigestAlg> Clone for Digest<H> {
@@ -264,6 +268,10 @@ impl<H: DigestAlg> Digest<H> {
 use std::marker::PhantomData;
 
 /// A typed version of Digest
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct DigestOf<H: DigestAlg, T> {
     inner: Digest<H>,
     marker: PhantomData<T>,

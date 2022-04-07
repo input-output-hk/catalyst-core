@@ -13,6 +13,10 @@ pub enum CompoundingType {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct Ratio {
     pub numerator: u64,
     pub denominator: NonZeroU64,
@@ -45,6 +49,10 @@ impl Ratio {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct TaxType {
     // what get subtracted as fixed value
     pub fixed: Value,

@@ -21,6 +21,10 @@ use rand_core::{CryptoRng, RngCore};
 
 // MMM sum scheme instanciated over the Ed25519 signature system
 // and a specific depth of 12
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary, Debug)
+)]
 pub struct SumEd25519_12;
 
 const DEPTH: common::Depth = common::Depth(12);

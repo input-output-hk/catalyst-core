@@ -1,4 +1,7 @@
 use crate::tokens::policy_hash::{PolicyHash, POLICY_HASH_SIZE};
+#[cfg(any(test, feature = "property-test-api"))]
+use proptest::prelude::*;
+
 use chain_core::{
     packer::Codec,
     property::{Deserialize, ReadError, Serialize, WriteError},
@@ -13,7 +16,17 @@ use typed_bytes::ByteBuilder;
 ///
 /// Minting policies are meant to be ignored in block0 fragments.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MintingPolicy(Vec<MintingPolicyEntry>);
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
+pub struct MintingPolicy(
+    #[cfg_attr(
+        any(test, feature = "property-test-api"),
+        strategy(Just(vec![]))
+    )]
+    Vec<MintingPolicyEntry>,
+);
 
 /// An entry of a minting policy. Currently there are no entries available.
 /// This is reserved for the future use.

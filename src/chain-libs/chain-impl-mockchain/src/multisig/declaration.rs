@@ -7,6 +7,10 @@ use thiserror::Error;
 
 /// Account Identifier (also used as Public Key)
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct Identifier(pub(crate) key::Hash);
 
 impl AsRef<[u8]> for Identifier {

@@ -96,8 +96,8 @@ mod property {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use quickcheck::TestResult;
-    use quickcheck_macros::quickcheck;
+    use proptest::prelude::*;
+    use test_strategy::proptest;
 
     fn validate_choices<I>(options: &Options, choices: I, expected: bool)
     where
@@ -130,15 +130,15 @@ mod tests {
         }
     }
 
-    #[quickcheck]
-    pub fn vote_options_max(num_choices: u8) -> TestResult {
+    #[proptest]
+    fn vote_options_max(#[strategy(any::<u8>())] num_choices: u8) {
         let options = Options::new_length(num_choices);
 
         if num_choices == 0 || num_choices > Options::NUM_CHOICES_MAX {
-            TestResult::from_bool(options.is_err())
+            assert!(options.is_err())
         } else {
             let options = options.expect("non `0` options should always be valid");
-            TestResult::from_bool(options.as_byte() == num_choices)
+            assert!(options.as_byte() == num_choices)
         }
     }
 }

@@ -14,6 +14,10 @@ use typed_bytes::{ByteArray, ByteBuilder};
 use std::marker::PhantomData;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct MintToken {
     pub name: TokenName,
     pub policy: MintingPolicy,

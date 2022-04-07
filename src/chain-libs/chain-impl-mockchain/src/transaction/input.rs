@@ -19,6 +19,10 @@ pub const INPUT_PTR_SIZE: usize = 32;
 
 /// This is either an single account or a multisig account depending on the witness type
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct UnspecifiedAccountIdentifier([u8; INPUT_PTR_SIZE]);
 
 impl UnspecifiedAccountIdentifier {
@@ -56,6 +60,10 @@ impl From<[u8; INPUT_PTR_SIZE]> for UnspecifiedAccountIdentifier {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub enum AccountIdentifier {
     Single(account::Identifier),
     Multi(multisig::Identifier),

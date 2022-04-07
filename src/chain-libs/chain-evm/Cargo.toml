@@ -22,7 +22,7 @@ hex = { version = "0.4", default-features = false, features = ["alloc"] }
 byte-slice-cast = { version = "1.0", default-features = false }
 thiserror = "1.0"
 quickcheck = { version = "0.9", optional = true }
-evm = { version = "0.34.0" }
+evm = { version = "0.35.0" }
 ethereum-types = { version = "0.13.1", features = ["rlp"] }
 
 [dev-dependencies]

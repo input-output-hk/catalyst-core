@@ -12,8 +12,8 @@ jormungandr-automation = { git ="https://github.com/input-output-hk/jormungandr.
 thor = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 hersir = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jcli = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "add_build_db_to_path" }
-vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "add_build_db_to_path" }
+vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
+vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch="master" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }

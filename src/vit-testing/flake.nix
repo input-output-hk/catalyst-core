@@ -22,9 +22,7 @@
   inputs.rust-overlay.url = "github:oxalica/rust-overlay";
   inputs.rust-overlay.inputs.flake-utils.follows = "flake-utils";
   inputs.rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
-  # XXX: https://github.com/nix-community/naersk/pull/167
-  #inputs.naersk.url = "github:nix-community/naersk";
-  inputs.naersk.url = "github:yusdacra/naersk/feat/cargolock-git-deps";
+  inputs.naersk.url = "github:nix-community/naersk";
   inputs.naersk.inputs.nixpkgs.follows = "nixpkgs";
   inputs.voting-tools_.url = "github:input-output-hk/voting-tools?rev=6da7c45cbd1c756285ca2a1db99f82dd1a8cc16b";
   inputs.vit-kedqr.url = "github:input-output-hk/vit-kedqr";

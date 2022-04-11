@@ -295,7 +295,7 @@ mod tests {
             counter: usize,
         ) -> AccountState<()> {
             let n_ops: Vec<ArbitraryAccountStateOp> =
-                self.0.iter().cloned().take(counter).collect();
+                self.0.iter().take(counter).cloned().collect();
             self.calculate_account_state(initial_account_state, n_ops.iter())
         }
 

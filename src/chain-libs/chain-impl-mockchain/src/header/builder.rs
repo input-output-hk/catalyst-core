@@ -46,7 +46,7 @@ fn header_builder_raw(
     content_hash: &BlockContentHash,
     content_size: BlockContentSize,
 ) -> HeaderBuilder<HeaderSetParenting> {
-    let mut hdr = cstruct::Header::new(version.to_u16());
+    let mut hdr = cstruct::Header::new(version.to_u8());
     hdr.set_content_size(content_size);
     hdr.set_content_hash(content_hash.into());
     HeaderBuilder(hdr, PhantomData)

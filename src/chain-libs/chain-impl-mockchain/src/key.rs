@@ -176,6 +176,10 @@ where
 }
 
 impl<T: Serialize, A: VerificationAlgorithm> Serialize for Signed<T, A> {
+    fn serialized_size(&self) -> usize {
+        self.data.serialized_size() + self.sig.as_ref().len()
+    }
+
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         self.data.serialize(codec)?;
         serialize_signature(&self.sig, codec)
@@ -260,6 +264,10 @@ impl<'a> From<&'a Hash> for &'a [u8; 32] {
 }
 
 impl Serialize for Hash {
+    fn serialized_size(&self) -> usize {
+        self.0.as_hash_bytes().serialized_size()
+    }
+
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         codec.put_bytes(self.0.as_hash_bytes())
     }
@@ -327,6 +335,10 @@ impl BftLeaderId {
 }
 
 impl Serialize for BftLeaderId {
+    fn serialized_size(&self) -> usize {
+        self.0.as_ref().len()
+    }
+
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         serialize_public_key(&self.0, codec)
     }

@@ -9,7 +9,6 @@ use std::slice;
 
 mod builder;
 mod header;
-mod headerraw;
 
 #[cfg(any(test, feature = "property-test-api"))]
 pub mod test;
@@ -17,7 +16,6 @@ pub mod test;
 //pub use self::builder::BlockBuilder;
 pub use crate::fragment::{BlockContentHash, BlockContentSize, Contents, ContentsBuilder};
 
-pub use self::headerraw::HeaderRaw;
 pub use crate::header::{
     BftProof, BftSignature, Common, GenesisPraosProof, Header, HeaderId, KesSignature, Proof,
 };
@@ -95,14 +93,16 @@ impl property::Block for Block {
 }
 
 impl Serialize for Block {
-    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
-        let header_raw = {
-            let mut v = Vec::new();
-            self.header.serialize(&mut Codec::new(&mut v))?;
-            HeaderRaw(v)
-        };
-        header_raw.serialize(codec)?;
+    fn serialized_size(&self) -> usize {
+        let mut res = self.header.serialized_size();
+        for message in self.contents.iter() {
+            res += message.serialized_size();
+        }
+        res
+    }
 
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
+        self.header.serialize(codec)?;
         for message in self.contents.iter() {
             message.serialize(codec)?;
         }
@@ -112,8 +112,7 @@ impl Serialize for Block {
 
 impl Deserialize for Block {
     fn deserialize<R: std::io::Read>(codec: &mut Codec<R>) -> Result<Self, ReadError> {
-        let header_raw = HeaderRaw::deserialize(codec)?;
-        let header = Header::deserialize(&mut Codec::new(header_raw.as_ref()))?;
+        let header = Header::deserialize(codec)?;
         let mut remaining_content_size = header.block_content_size() as usize;
         let mut contents = ContentsBuilder::new();
 

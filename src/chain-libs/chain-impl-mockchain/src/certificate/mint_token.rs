@@ -66,6 +66,13 @@ impl Payload for MintToken {
 }
 
 impl Serialize for MintToken {
+    fn serialized_size(&self) -> usize {
+        self.name.serialized_size()
+            + self.policy.serialized_size()
+            + self.to.serialized_size()
+            + self.value.serialized_size()
+    }
+
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         self.name.serialize(codec)?;
         self.policy.serialize(codec)?;

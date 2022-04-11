@@ -410,7 +410,7 @@ mod tests {
             bft::LeadershipData::new(&ledger).expect("leaders ids collection is empty");
         let bft_leadership_consensus = LeadershipConsensus::Bft(leadership_data);
 
-        for leader in leaders_keys.iter().cloned().take(leaders_count - 1) {
+        for leader in leaders_keys.iter().take(leaders_count - 1).cloned() {
             let _leader_output = bft_leadership_consensus.is_leader(
                 &leader.into(),
                 BlockDate {

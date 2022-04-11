@@ -30,6 +30,11 @@ pub enum WriteError {
 pub trait Serialize {
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError>;
 
+    /// Default implementation, not efficient, not recommended to use it
+    fn serialized_size(&self) -> usize {
+        self.serialize_as_vec().unwrap().len()
+    }
+
     /// Convenience method to serialize into a byte vector.
     fn serialize_as_vec(&self) -> Result<Vec<u8>, WriteError> {
         let mut data = Vec::new();
@@ -82,5 +87,15 @@ impl<const N: usize> Deserialize for [u8; N] {
         let mut buf = [0u8; N];
         codec.copy_to_slice(&mut buf)?;
         Ok(buf)
+    }
+}
+
+impl<const N: usize> Serialize for [u8; N] {
+    fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
+        codec.put_bytes(self)
+    }
+
+    fn serialized_size(&self) -> usize {
+        std::mem::size_of::<[u8; N]>()
     }
 }

@@ -6,10 +6,9 @@ use crate::key::{
     SpendingSignature,
 };
 use crate::multisig;
-use chain_core::property::WriteError;
 use chain_core::{
     packer::Codec,
-    property::{Deserialize, DeserializeFromSlice, ReadError, Serialize},
+    property::{Deserialize, DeserializeFromSlice, ReadError, Serialize, WriteError},
 };
 use chain_crypto::{Ed25519, PublicKey, Signature};
 
@@ -192,6 +191,19 @@ const WITNESS_TAG_ACCOUNT: u8 = 2u8;
 const WITNESS_TAG_MULTISIG: u8 = 3u8;
 
 impl Serialize for Witness {
+    fn serialized_size(&self) -> usize {
+        match self {
+            Witness::OldUtxo(pk, cc, sig) => {
+                Codec::u8_size() + pk.as_ref().len() + cc.serialized_size() + sig.as_ref().len()
+            }
+            Witness::Utxo(sig) => Codec::u8_size() + sig.as_ref().len(),
+            Witness::Account(_, sig) => Codec::u8_size() + Codec::u32_size() + sig.as_ref().len(),
+            Witness::Multisig(_, msig) => {
+                Codec::u8_size() + Codec::u32_size() + msig.serialized_size()
+            }
+        }
+    }
+
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         match self {
             Witness::OldUtxo(pk, cc, sig) => {

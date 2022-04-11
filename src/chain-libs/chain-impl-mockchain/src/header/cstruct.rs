@@ -7,7 +7,7 @@ use std::mem::size_of;
 // Offset and Basic Types
 // ************************************************************************
 
-pub(super) type Version = u16;
+pub(super) type Version = u8;
 pub(super) type ContentSize = u32;
 pub(super) type DateEpoch = u32;
 pub(super) type DateSlotid = u32;

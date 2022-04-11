@@ -68,6 +68,14 @@ fn deserialize_index<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<TreeIn
 }
 
 impl Serialize for Witness {
+    fn serialized_size(&self) -> usize {
+        let mut res = Codec::u8_size();
+        for (_, pk, sig) in self.0.iter() {
+            res += Codec::u16_size() + pk.as_ref().len() + sig.as_ref().len()
+        }
+        res
+    }
+
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         codec.put_u8(self.0.len() as u8)?;
         for (ti, pk, sig) in self.0.iter() {

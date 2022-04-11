@@ -5,7 +5,7 @@ use crate::header::HeaderDesc;
 #[cfg(test)]
 use crate::testing::serialization::serialization_bijection;
 use crate::{
-    block::{Block, BlockVersion, HeaderRaw},
+    block::{Block, BlockVersion},
     fragment::{Contents, ContentsBuilder, Fragment},
     header::{BftProof, GenesisPraosProof, HeaderBuilderNew},
 };
@@ -20,9 +20,6 @@ use quickcheck::TestResult;
 use quickcheck::{Arbitrary, Gen};
 
 quickcheck! {
-    fn headerraw_serialization_bijection(b: HeaderRaw) -> TestResult {
-        serialization_bijection(b)
-    }
     fn header_serialization_bijection(b: Header) -> TestResult {
         serialization_bijection(b)
     }
@@ -67,17 +64,6 @@ quickcheck! {
 #[cfg(test)]
 fn are_desc_equal(left: HeaderDesc, right: HeaderDesc) -> bool {
     left.id == right.id
-}
-
-impl Arbitrary for HeaderRaw {
-    fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        let len = u16::arbitrary(g);
-        let mut v = Vec::new();
-        for _ in 0..len {
-            v.push(u8::arbitrary(g))
-        }
-        HeaderRaw(v)
-    }
 }
 
 impl Arbitrary for Contents {

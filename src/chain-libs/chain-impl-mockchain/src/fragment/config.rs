@@ -22,6 +22,14 @@ impl ConfigParams {
 }
 
 impl Serialize for ConfigParams {
+    fn serialized_size(&self) -> usize {
+        let mut res = Codec::u16_size();
+        for config in &self.0 {
+            res += config.serialized_size();
+        }
+        res
+    }
+
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         // FIXME: put params in canonical order (e.g. sorted by tag)?
         codec.put_be_u16(self.0.len() as u16)?;

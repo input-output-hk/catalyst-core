@@ -46,6 +46,16 @@ impl DeserializeFromSlice for UtxoDeclaration {
 }
 
 impl Serialize for UtxoDeclaration {
+    fn serialized_size(&self) -> usize {
+        assert!(self.addrs.len() < 255);
+
+        let mut res = Codec::u8_size();
+        for (b, v) in &self.addrs {
+            res += v.serialized_size() + Codec::u16_size() + b.as_ref().len();
+        }
+        res
+    }
+
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         assert!(self.addrs.len() < 255);
 

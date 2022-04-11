@@ -126,6 +126,10 @@ impl FromStr for CommitteeId {
 /* Ser/De ****************************************************************** */
 
 impl Serialize for CommitteeId {
+    fn serialized_size(&self) -> usize {
+        self.as_ref().len()
+    }
+
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         codec.put_bytes(self.as_ref())
     }

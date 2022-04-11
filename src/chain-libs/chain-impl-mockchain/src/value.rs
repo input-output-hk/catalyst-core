@@ -126,6 +126,10 @@ impl Deserialize for Value {
 }
 
 impl Serialize for Value {
+    fn serialized_size(&self) -> usize {
+        Codec::u64_size()
+    }
+
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         codec.put_be_u64(self.0)
     }

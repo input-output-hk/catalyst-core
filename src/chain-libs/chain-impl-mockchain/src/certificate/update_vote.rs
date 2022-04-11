@@ -80,10 +80,13 @@ impl Payload for UpdateVote {
 /* Ser/De ******************************************************************* */
 
 impl Serialize for UpdateVote {
+    fn serialized_size(&self) -> usize {
+        self.proposal_id.serialized_size() + self.voter_id.serialized_size()
+    }
+
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         self.proposal_id.serialize(codec)?;
-        self.voter_id.serialize(codec)?;
-        Ok(())
+        self.voter_id.serialize(codec)
     }
 }
 

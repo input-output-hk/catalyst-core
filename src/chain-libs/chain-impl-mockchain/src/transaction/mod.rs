@@ -31,6 +31,10 @@ pub use utxo::*;
 pub use witness::*;
 
 impl<Extra: Payload> Serialize for Transaction<Extra> {
+    fn serialized_size(&self) -> usize {
+        self.as_ref().len()
+    }
+
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         codec.put_bytes(self.as_ref())
     }

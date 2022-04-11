@@ -124,6 +124,10 @@ impl<'a, P: ?Sized> PayloadAuthSlice<'a, P> {
 pub struct NoExtra;
 
 impl Serialize for NoExtra {
+    fn serialized_size(&self) -> usize {
+        0
+    }
+
     fn serialize<W: std::io::Write>(&self, _: &mut Codec<W>) -> Result<(), WriteError> {
         Ok(())
     }

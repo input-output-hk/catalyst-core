@@ -81,6 +81,10 @@ impl Payload for UpdateProposal {
 /* Ser/De ******************************************************************* */
 
 impl Serialize for UpdateProposal {
+    fn serialized_size(&self) -> usize {
+        self.changes.serialized_size() + self.proposer_id.serialized_size()
+    }
+
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         self.changes.serialize(codec)?;
         self.proposer_id.serialize(codec)

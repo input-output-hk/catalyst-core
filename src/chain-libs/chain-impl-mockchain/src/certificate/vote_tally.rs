@@ -226,6 +226,10 @@ impl Payload for VoteTally {
 /* Ser/De ******************************************************************* */
 
 impl Serialize for VoteTally {
+    fn serialized_size(&self) -> usize {
+        self.serialize().as_slice().len()
+    }
+
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         codec.put_bytes(self.serialize().as_slice())
     }

@@ -5,7 +5,7 @@ use std::num::NonZeroUsize;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AnyBlockVersion {
     Supported(BlockVersion),
-    Unsupported(u16),
+    Unsupported(u8),
 }
 
 impl AnyBlockVersion {
@@ -26,19 +26,19 @@ impl PartialEq<BlockVersion> for AnyBlockVersion {
     }
 }
 
-impl From<u16> for AnyBlockVersion {
-    fn from(n: u16) -> Self {
-        match BlockVersion::from_u16(n) {
+impl From<u8> for AnyBlockVersion {
+    fn from(n: u8) -> Self {
+        match BlockVersion::from_u8(n) {
             Some(supported) => AnyBlockVersion::Supported(supported),
             None => AnyBlockVersion::Unsupported(n),
         }
     }
 }
 
-impl From<AnyBlockVersion> for u16 {
-    fn from(block_version: AnyBlockVersion) -> u16 {
+impl From<AnyBlockVersion> for u8 {
+    fn from(block_version: AnyBlockVersion) -> u8 {
         match block_version {
-            AnyBlockVersion::Supported(version) => version as u16,
+            AnyBlockVersion::Supported(version) => version as u8,
             AnyBlockVersion::Unsupported(n) => n,
         }
     }
@@ -58,7 +58,7 @@ pub enum BlockVersion {
 }
 
 impl BlockVersion {
-    pub fn from_u16(v: u16) -> Option<Self> {
+    pub fn from_u8(v: u8) -> Option<Self> {
         match v {
             cstruct::VERSION_UNSIGNED => Some(BlockVersion::Genesis),
             cstruct::VERSION_BFT => Some(BlockVersion::Ed25519Signed),
@@ -67,7 +67,7 @@ impl BlockVersion {
         }
     }
 
-    pub fn to_u16(self) -> u16 {
+    pub fn to_u8(self) -> u8 {
         match self {
             BlockVersion::Genesis => cstruct::VERSION_UNSIGNED,
             BlockVersion::Ed25519Signed => cstruct::VERSION_BFT,
@@ -150,8 +150,8 @@ mod tests {
     }
 
     #[quickcheck]
-    pub fn conversion_u16(block_version: AnyBlockVersion) -> TestResult {
-        let bytes: u16 = block_version.into();
+    pub fn conversion_u8(block_version: AnyBlockVersion) -> TestResult {
+        let bytes: u8 = block_version.into();
         let new_block_version: AnyBlockVersion = AnyBlockVersion::from(bytes);
         TestResult::from_bool(block_version == new_block_version)
     }

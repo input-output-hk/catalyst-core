@@ -122,11 +122,6 @@ impl Fragment {
     pub fn hash(&self) -> FragmentId {
         FragmentId::hash_bytes(self.serialize_as_vec().unwrap().as_slice())
     }
-
-    /// How many bytes it will take up once serialized in a block
-    pub fn serialized_size(&self) -> usize {
-        self.serialize_as_vec().unwrap().len()
-    }
 }
 
 impl Deserialize for Fragment {
@@ -199,6 +194,30 @@ impl Deserialize for Fragment {
 }
 
 impl Serialize for Fragment {
+    fn serialized_size(&self) -> usize {
+        Codec::u8_size()
+            + Codec::u8_size()
+            + match self {
+                Fragment::Initial(i) => i.serialized_size(),
+                Fragment::OldUtxoDeclaration(s) => s.serialized_size(),
+                Fragment::Transaction(signed) => signed.serialized_size(),
+                Fragment::OwnerStakeDelegation(od) => od.serialized_size(),
+                Fragment::StakeDelegation(od) => od.serialized_size(),
+                Fragment::PoolRegistration(atx) => atx.serialized_size(),
+                Fragment::PoolRetirement(pm) => pm.serialized_size(),
+                Fragment::PoolUpdate(pm) => pm.serialized_size(),
+                Fragment::UpdateProposal(proposal) => proposal.serialized_size(),
+                Fragment::UpdateVote(vote) => vote.serialized_size(),
+                Fragment::VotePlan(vote_plan) => vote_plan.serialized_size(),
+                Fragment::VoteCast(vote_plan) => vote_plan.serialized_size(),
+                Fragment::VoteTally(vote_tally) => vote_tally.serialized_size(),
+                Fragment::MintToken(mint_token) => mint_token.serialized_size(),
+                Fragment::Evm(deployment) => deployment.serialized_size(),
+                Fragment::EvmMapping(evm_mapping) => evm_mapping.serialized_size(),
+            }
+            + Codec::u32_size()
+    }
+
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         let mut tmp = Codec::new(Vec::new());
         tmp.put_u8(0).unwrap();

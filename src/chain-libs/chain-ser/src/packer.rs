@@ -32,6 +32,48 @@ impl<I> Codec<I> {
     }
 }
 
+impl Codec<()> {
+    pub const fn u8_size() -> usize {
+        std::mem::size_of::<u8>()
+    }
+
+    pub const fn u16_size() -> usize {
+        std::mem::size_of::<u16>()
+    }
+
+    pub const fn u32_size() -> usize {
+        std::mem::size_of::<u32>()
+    }
+
+    pub const fn u64_size() -> usize {
+        std::mem::size_of::<u64>()
+    }
+
+    pub const fn u128_size() -> usize {
+        std::mem::size_of::<u128>()
+    }
+
+    pub const fn i8_size() -> usize {
+        std::mem::size_of::<i8>()
+    }
+
+    pub const fn i16_size() -> usize {
+        std::mem::size_of::<i16>()
+    }
+
+    pub const fn i32_size() -> usize {
+        std::mem::size_of::<i32>()
+    }
+
+    pub const fn i64_size() -> usize {
+        std::mem::size_of::<i64>()
+    }
+
+    pub const fn i128_size() -> usize {
+        std::mem::size_of::<i128>()
+    }
+}
+
 impl Codec<&[u8]> {
     #[inline]
     pub fn get_slice(&mut self, n: usize) -> Result<&[u8], ReadError> {

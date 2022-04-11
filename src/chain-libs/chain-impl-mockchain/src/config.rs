@@ -352,6 +352,42 @@ impl DeserializeFromSlice for ConfigParam {
 }
 
 impl Serialize for ConfigParam {
+    fn serialized_size(&self) -> usize {
+        Codec::u16_size()
+            + match self {
+                ConfigParam::Block0Date(data) => data.to_payload().len(),
+                ConfigParam::Discrimination(data) => data.to_payload().len(),
+                ConfigParam::ConsensusVersion(data) => data.to_payload().len(),
+                ConfigParam::SlotsPerEpoch(data) => data.to_payload().len(),
+                ConfigParam::SlotDuration(data) => data.to_payload().len(),
+                ConfigParam::EpochStabilityDepth(data) => data.to_payload().len(),
+                ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(data) => data.to_payload().len(),
+                ConfigParam::BlockContentMaxSize(data) => data.to_payload().len(),
+                ConfigParam::AddBftLeader(data) => data.to_payload().len(),
+                ConfigParam::RemoveBftLeader(data) => data.to_payload().len(),
+                ConfigParam::LinearFee(data) => data.to_payload().len(),
+                ConfigParam::ProposalExpiration(data) => data.to_payload().len(),
+                ConfigParam::KesUpdateSpeed(data) => data.to_payload().as_slice().len(),
+                ConfigParam::TreasuryAdd(data) => data.to_payload().len(),
+                ConfigParam::TreasuryParams(data) => data.to_payload().len(),
+                ConfigParam::RewardPot(data) => data.to_payload().len(),
+                ConfigParam::RewardParams(data) => data.to_payload().len(),
+                ConfigParam::PerCertificateFees(data) => data.to_payload().len(),
+                ConfigParam::FeesInTreasury(data) => data.to_payload().len(),
+                ConfigParam::RewardLimitNone => 0,
+                ConfigParam::RewardLimitByAbsoluteStake(data) => data.to_payload().len(),
+                ConfigParam::PoolRewardParticipationCapping(data) => data.to_payload().len(),
+                ConfigParam::AddCommitteeId(data) => data.to_payload().len(),
+                ConfigParam::RemoveCommitteeId(data) => data.to_payload().len(),
+                ConfigParam::PerVoteCertificateFees(data) => data.to_payload().len(),
+                ConfigParam::TransactionMaxExpiryEpochs(data) => data.to_payload().len(),
+                #[cfg(feature = "evm")]
+                ConfigParam::EvmConfiguration(data) => data.to_payload().len(),
+                #[cfg(feature = "evm")]
+                ConfigParam::EvmEnvironment(data) => data.to_payload().len(),
+            }
+    }
+
     fn serialize<W: Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         let tag = Tag::from(self);
         let bytes = match self {

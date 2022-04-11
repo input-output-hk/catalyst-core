@@ -1183,8 +1183,7 @@ impl Serialize for Ledger {
             pack_entry(&entry, codec)?;
         }
         // Write finish flag
-        codec.put_u8(EntrySerializeCode::SerializationEnd as u8)?;
-        Ok(())
+        codec.put_u8(EntrySerializeCode::SerializationEnd as u8)
     }
 }
 

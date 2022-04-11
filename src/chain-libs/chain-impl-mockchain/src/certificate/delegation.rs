@@ -56,10 +56,16 @@ impl StakeDelegation {
 }
 
 impl Serialize for OwnerStakeDelegation {
+    fn serialized_size(&self) -> usize {
+        let delegation_buf =
+            serialize_delegation_type(&self.delegation, ByteBuilder::new()).finalize_as_vec();
+        delegation_buf.len()
+    }
+
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         let delegation_buf =
             serialize_delegation_type(&self.delegation, ByteBuilder::new()).finalize_as_vec();
-        codec.put_bytes(&delegation_buf)
+        codec.put_bytes(delegation_buf.as_slice())
     }
 }
 
@@ -91,11 +97,17 @@ impl Payload for OwnerStakeDelegation {
 }
 
 impl Serialize for StakeDelegation {
+    fn serialized_size(&self) -> usize {
+        let delegation_buf =
+            serialize_delegation_type(&self.delegation, ByteBuilder::new()).finalize_as_vec();
+        self.account_id.as_ref().len() + delegation_buf.len()
+    }
+
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
         let delegation_buf =
             serialize_delegation_type(&self.delegation, ByteBuilder::new()).finalize_as_vec();
         codec.put_bytes(self.account_id.as_ref())?;
-        codec.put_bytes(&delegation_buf)
+        codec.put_bytes(delegation_buf.as_slice())
     }
 }
 

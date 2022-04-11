@@ -87,6 +87,16 @@ impl Payload for EvmMapping {
 /* Ser/De ******************************************************************* */
 
 impl Serialize for EvmMapping {
+    fn serialized_size(&self) -> usize {
+        #[allow(unused_mut)]
+        let mut res = 0;
+        #[cfg(feature = "evm")]
+        {
+            res += self.account_id.serialized_size() + self.evm_address.0.serialized_size();
+        }
+        res
+    }
+
     fn serialize<W: std::io::Write>(&self, _codec: &mut Codec<W>) -> Result<(), WriteError> {
         #[cfg(feature = "evm")]
         {

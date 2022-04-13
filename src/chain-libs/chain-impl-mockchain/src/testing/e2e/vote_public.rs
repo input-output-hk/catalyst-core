@@ -501,7 +501,7 @@ pub fn votes_with_fees() {
             .with_proposal(
                 proposal(VoteTestGen::external_proposal_id())
                     .options(3)
-                    .action_transfer_to_rewards(rewards_add),
+                    .action_rewards_add(rewards_add),
             )])
         .build()
         .unwrap();

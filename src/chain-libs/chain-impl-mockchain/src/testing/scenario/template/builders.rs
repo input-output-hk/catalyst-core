@@ -383,8 +383,8 @@ impl ProposalDefBuilder {
     }
 
     pub fn action_rewards_add(&mut self, value: u64) -> &mut Self {
-        self.action_type = VoteAction::Treasury {
-            action: TreasuryGovernanceAction::TransferToRewards {
+        self.action_type = VoteAction::Parameters {
+            action: ParametersGovernanceAction::RewardAdd {
                 value: Value(value),
             },
         };
@@ -392,8 +392,8 @@ impl ProposalDefBuilder {
     }
 
     pub fn action_transfer_to_rewards(&mut self, value: u64) -> &mut Self {
-        self.action_type = VoteAction::Parameters {
-            action: ParametersGovernanceAction::RewardAdd {
+        self.action_type = VoteAction::Treasury {
+            action: TreasuryGovernanceAction::TransferToRewards {
                 value: Value(value),
             },
         };

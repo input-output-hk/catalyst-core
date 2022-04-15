@@ -332,7 +332,7 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
                     multisig_declarations.push((id.clone(), decl.clone()));
                 }
                 Entry::StakePool((pool_id, pool_state)) => {
-                    delegation
+                    let _ = delegation
                         .stake_pools
                         .insert(pool_id.clone(), pool_state.clone())
                         .unwrap();

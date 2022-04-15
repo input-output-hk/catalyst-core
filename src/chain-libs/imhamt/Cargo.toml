@@ -14,6 +14,7 @@ test-strategy = { version = "0.1", optional = true }
 criterion = "0.3.0"
 proptest = { git = "https://github.com/input-output-hk/proptest.git" }
 test-strategy = "0.1"
+trybuild = "1"
 
 [target.'cfg(unix)'.dev-dependencies]
 jemalloc-ctl = "0.3"
@@ -29,3 +30,6 @@ name = "imhamt"
 
 [features]
 property-test-api = ["proptest", "test-strategy"]
+
+[build-dependencies]
+rustc_version = "0.4"

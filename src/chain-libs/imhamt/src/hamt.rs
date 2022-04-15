@@ -13,6 +13,7 @@ use std::mem::swap;
 use std::slice;
 
 #[derive(Debug, Clone)]
+#[must_use = "`Hamt`s are not modified in place, instead modified copies are returned`"]
 pub struct Hamt<H: Hasher + Default, K: PartialEq + Eq + Hash, V> {
     root: Node<K, V>,
     hasher: PhantomData<H>,

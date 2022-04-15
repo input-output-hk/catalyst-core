@@ -1,0 +1,53 @@
+error: unused `imhamt::Hamt` that must be used
+  --> testing/ui/fail/ignored_must_use.rs:10:5
+   |
+10 |     map.insert(1, 2).unwrap();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: the lint level is defined here
+  --> testing/ui/fail/ignored_must_use.rs:2:9
+   |
+2  | #![deny(warnings)]
+   |         ^^^^^^^^
+   = note: `#[deny(unused_must_use)]` implied by `#[deny(warnings)]`
+   = note: `Hamt`s are not modified in place, instead modified copies are returned`
+
+error: unused `imhamt::Hamt` that must be used
+  --> testing/ui/fail/ignored_must_use.rs:13:5
+   |
+13 |     map.remove(&1).unwrap();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `Hamt`s are not modified in place, instead modified copies are returned`
+
+error: unused `imhamt::Hamt` that must be used
+  --> testing/ui/fail/ignored_must_use.rs:16:5
+   |
+16 |     map.remove_match(&1, &2).unwrap();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `Hamt`s are not modified in place, instead modified copies are returned`
+
+error: unused `imhamt::Hamt` in tuple element 0 that must be used
+  --> testing/ui/fail/ignored_must_use.rs:19:5
+   |
+19 |     map.replace(&1, 2).unwrap();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `Hamt`s are not modified in place, instead modified copies are returned`
+
+error: unused `imhamt::Hamt` that must be used
+  --> testing/ui/fail/ignored_must_use.rs:22:5
+   |
+22 |     map.update(&1, update).unwrap();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `Hamt`s are not modified in place, instead modified copies are returned`
+
+error: unused `imhamt::Hamt` that must be used
+  --> testing/ui/fail/ignored_must_use.rs:25:5
+   |
+25 |     map.insert_or_update(1, 2, update).unwrap();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `Hamt`s are not modified in place, instead modified copies are returned`

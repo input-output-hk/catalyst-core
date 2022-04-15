@@ -35,6 +35,13 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(feature = "nightly", ignore)]
+    fn ui_test() {
+        let t = trybuild::TestCases::new();
+        t.compile_fail("testing/ui/fail/*.rs");
+    }
+
+    #[test]
     fn insert_lookup() {
         let h: Hamt<DefaultHasher, String, u32> = Hamt::new();
 

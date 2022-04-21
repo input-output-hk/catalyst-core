@@ -12,19 +12,12 @@ pub async fn filter(
     let fund = warp::path::end()
         .and(warp::get())
         .and(with_context.clone())
-        .and_then(get_fund)
-        .boxed();
+        .and_then(get_fund);
 
     let fund_by_id = warp::path!(i32)
         .and(warp::get())
-        .and(with_context.clone())
-        .and_then(get_fund_by_id)
-        .boxed();
-
-    let search = warp::path!("search" / String)
-        .and(warp::get())
         .and(with_context)
-        .and_then(search_fund_by_name);
+        .and_then(get_fund_by_id);
     // fund_by_id need to be checked first otherwise requests are swallowed by the fund::any
-    root.and(fund_by_id.or(fund).or(search)).boxed()
+    root.and(fund_by_id.or(fund)).boxed()
 }

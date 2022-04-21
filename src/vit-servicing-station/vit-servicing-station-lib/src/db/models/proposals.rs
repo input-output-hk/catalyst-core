@@ -389,9 +389,12 @@ pub mod test {
         schema::{
             proposal_community_choice_challenge, proposal_simple_challenge, proposals, voteplans,
         },
-        DbConnectionPool,
+        DbConnection, DbConnectionPool,
     };
-    use diesel::{ExpressionMethods, RunQueryDsl};
+    use diesel::{
+        r2d2::{ConnectionManager, PooledConnection},
+        ExpressionMethods, RunQueryDsl,
+    };
     use time::OffsetDateTime;
 
     pub fn get_test_proposal() -> FullProposalInfo {
@@ -448,6 +451,13 @@ pub mod test {
 
     pub fn populate_db_with_proposal(full_proposal: &FullProposalInfo, pool: &DbConnectionPool) {
         let connection = pool.get().unwrap();
+        populate_db_with_proposal_conn(full_proposal, &connection);
+    }
+
+    pub fn populate_db_with_proposal_conn(
+        full_proposal: &FullProposalInfo,
+        connection: &PooledConnection<ConnectionManager<DbConnection>>,
+    ) {
         let proposal = &full_proposal.proposal;
         // insert the proposal information
         let values = (
@@ -474,7 +484,7 @@ pub mod test {
 
         diesel::insert_into(proposals::table)
             .values(values)
-            .execute(&connection)
+            .execute(connection)
             .unwrap();
 
         // insert the related fund voteplan information
@@ -490,7 +500,7 @@ pub mod test {
 
         diesel::insert_into(voteplans::table)
             .values(voteplan_values)
-            .execute(&connection)
+            .execute(connection)
             .unwrap();
 
         match &full_proposal.challenge_info {
@@ -501,7 +511,7 @@ pub mod test {
                 );
                 diesel::insert_into(proposal_simple_challenge::table)
                     .values(simple_values)
-                    .execute(&connection)
+                    .execute(connection)
                     .unwrap();
             }
             ProposalChallengeInfo::CommunityChoice(data) => {
@@ -519,7 +529,7 @@ pub mod test {
                 );
                 diesel::insert_into(proposal_community_choice_challenge::table)
                     .values(community_values)
-                    .execute(&connection)
+                    .execute(connection)
                     .unwrap();
             }
         };

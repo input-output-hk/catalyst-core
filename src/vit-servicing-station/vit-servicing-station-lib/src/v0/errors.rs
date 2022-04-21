@@ -17,6 +17,9 @@ pub enum HandleError {
 
     #[error("Invalid header {0}, cause: {1}")]
     InvalidHeader(&'static str, &'static str),
+
+    #[error("Bad Request: {0}")]
+    BadRequest(String),
 }
 
 impl HandleError {
@@ -27,6 +30,7 @@ impl HandleError {
             HandleError::InternalError(_) => warp::http::StatusCode::INTERNAL_SERVER_ERROR,
             HandleError::UnauthorizedToken => warp::http::StatusCode::UNAUTHORIZED,
             HandleError::InvalidHeader(_, _) => warp::http::StatusCode::BAD_REQUEST,
+            HandleError::BadRequest(_) => warp::http::StatusCode::BAD_REQUEST,
         }
     }
 

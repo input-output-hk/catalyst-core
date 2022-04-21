@@ -1,13 +1,28 @@
 use diesel::{
-    dsl::{Filter, Like},
-    expression::{bound::Bound, AsExpression},
-    query_dsl::{methods::FilterDsl, LoadQuery},
-    r2d2::{ConnectionManager, PooledConnection},
-    sql_types::VarChar,
-    Column, Expression, RunQueryDsl, SqliteConnection, Table, TextExpressionMethods,
+    dsl::Like, expression::bound::Bound, query_dsl::methods::FilterDsl, sql_types::Text,
+    Expression, TextExpressionMethods,
 };
 
-type SqlStr = VarChar;
+type SqlStr = Text;
+
+/// A macro is needed instead of a regular function due to cyclic trait bounds
+///
+/// It's possible some extra trait bounds would resolve this, but it seems non-trivial
+/// 
+/// Example usage:
+/// ```ignore
+/// fn search_funds_by_name() {
+///   let conn = pool.get().unwrap();
+///   db_search!(&conn => search in funds.fund_name)
+/// }
+/// ```
+#[macro_export]
+macro_rules! db_search {
+    ($conn:expr => $query:ident in $table:ident.$col:ident) => {{
+       let query = search_query($table, $col, $query);
+       query.load($conn)
+    }};
+}
 
 pub fn search_query<T, C>(
     table: T,

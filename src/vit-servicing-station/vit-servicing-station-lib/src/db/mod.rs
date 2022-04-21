@@ -4,15 +4,17 @@ pub mod queries;
 pub mod schema;
 pub mod views_schema;
 
-use diesel::r2d2::{ConnectionManager, Pool};
+use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
 use diesel::sqlite::SqliteConnection;
 use diesel::Connection;
 
-pub type DbConnectionPool = Pool<ConnectionManager<SqliteConnection>>;
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 // TODO: Right now this is forced as the current backend. But it should be abstracted so it works for any diesel::Backend
 type Db = diesel::sqlite::Sqlite;
 pub type DbConnection = SqliteConnection;
+
+pub type DbPoolConn = PooledConnection<ConnectionManager<DbConnection>>;
+pub type DbConnectionPool = Pool<ConnectionManager<DbConnection>>;
 
 // ⚠ WARNING ⚠ : This query is sqlite specific, would need to be changed if backend changes
 const TEST_CONN_QUERY: &str = "

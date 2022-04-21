@@ -1,6 +1,6 @@
 use super::Error;
 use catalyst_toolbox::rewards::voters::{calc_voter_rewards, Rewards, VoteCount};
-use catalyst_toolbox::snapshot::{MainnetRewardAddress, Snapshot};
+use catalyst_toolbox::snapshot::{registration::MainnetRewardAddress, Snapshot};
 use catalyst_toolbox::utils::assert_are_close;
 
 use jcli_lib::jcli_lib::block::Common;

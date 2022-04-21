@@ -67,7 +67,8 @@ predicates = "1"
 assert_fs = "1.0.0"
 chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 proptest = { git = "https://github.com/input-output-hk/proptest", branch = "master" }
-test-strategy = "0.1"
+test-strategy = "0.2"
+serde_test = "1"
 
 [build-dependencies]
 versionisator = "1.0.3"

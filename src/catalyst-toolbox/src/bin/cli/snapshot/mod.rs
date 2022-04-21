@@ -4,7 +4,7 @@ use jcli_lib::utils::{
     output_file::{Error as OutputFileError, OutputFile},
     output_format::{Error as OutputFormatError, OutputFormat},
 };
-use jormungandr_lib::interfaces::Stake;
+use jormungandr_lib::interfaces::Value;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
@@ -20,7 +20,7 @@ pub struct SnapshotCmd {
     snapshot: PathBuf,
     /// Registrations voting power threshold for eligibility
     #[structopt(short, long)]
-    threshold: Stake,
+    threshold: Value,
 
     /// Discrimination to use for initial addresses
     #[structopt(short, long)]

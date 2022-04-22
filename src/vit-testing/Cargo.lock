@@ -2481,7 +2481,7 @@ dependencies = [
  "chrono",
  "cocoon",
  "console 0.15.0",
- "cryptoxide 0.3.6",
+ "cryptoxide 0.4.2",
  "csv",
  "dialoguer 0.10.0",
  "dirs",

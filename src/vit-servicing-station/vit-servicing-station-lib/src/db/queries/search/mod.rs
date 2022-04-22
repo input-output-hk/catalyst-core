@@ -1,7 +1,5 @@
 mod generic;
 
-use std::str::FromStr;
-
 use crate::{
     db::{
         models::{challenges::Challenge, proposals::FullProposalInfo},

@@ -7,20 +7,26 @@ use crate::{
 };
 
 #[derive(Debug, Deserialize)]
-pub(super) struct SearchSortQueryParams {
+#[cfg_attr(test, derive(serde::Serialize))]
+pub(super) struct SearchQuery {
+    table: SearchTable,
+    column: SearchColumn,
     sort: Option<SearchSort>,
+    query: String,
 }
 
 pub(super) async fn search(
-    table: SearchTable,
-    column: SearchColumn,
-    search: String,
-    sort: SearchSortQueryParams,
+    SearchQuery {
+        table,
+        column,
+        sort,
+        query,
+    }: SearchQuery,
     ctx: SharedContext,
 ) -> Result<impl Reply, Rejection> {
     let pool = ctx.read().await.db_connection_pool.clone();
     Ok(HandlerResult(
-        search_db(table, column, sort.sort, search, &pool).await,
+        search_db(table, column, sort, query, &pool).await,
     ))
 }
 
@@ -50,15 +56,24 @@ mod test {
         populate_db_with_proposal_conn(&proposal, &conn);
         populate_db_with_challenge_conn(&challenge, &conn);
 
-        let filter = warp::path!("search" / SearchTable / SearchColumn / String)
-            .and(warp::get())
-            .and(warp::query().map(|sort: SearchSortQueryParams| sort))
+        let filter = warp::path!("search")
+            .and(warp::post())
+            .and(warp::body::json())
             .and(with_context)
             .and_then(search);
 
+        let body = serde_json::to_string(&SearchQuery {
+            table: SearchTable::Challenge,
+            column: SearchColumn::ChallengeDesc,
+            sort: None,
+            query: "desc".to_string(),
+        })
+        .unwrap();
+
         let challenges: Vec<Challenge> = warp::test::request()
-            .method("GET")
-            .path("/search/challenges/challenge_title/len")
+            .method("POST")
+            .path("/search")
+            .body(body)
             .reply(&filter)
             .await
             .as_json();

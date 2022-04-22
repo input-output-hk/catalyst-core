@@ -76,5 +76,4 @@ pub mod test {
             serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
         assert_eq!(fund, result_fund);
     }
-
 }

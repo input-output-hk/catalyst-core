@@ -11,4 +11,3 @@ pub async fn get_fund(context: SharedContext) -> Result<Fund, HandleError> {
     let pool = &context.read().await.db_connection_pool;
     funds_queries::query_fund(pool).await
 }
-

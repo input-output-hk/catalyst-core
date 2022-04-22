@@ -1,33 +1,35 @@
 use diesel::{
-    dsl::Like, expression::bound::Bound, query_dsl::methods::FilterDsl, sql_types::Text,
+    dsl::Like,
+    expression::bound::Bound,
+    query_dsl::{methods::FilterDsl, LoadQuery},
+    sql_types::Text,
     Expression, TextExpressionMethods,
 };
 
+use crate::{db::DbPoolConn, v0::errors::HandleError};
+
 type SqlStr = Text;
 
-/// A macro is needed instead of a regular function due to cyclic trait bounds
-///
-/// It's possible some extra trait bounds would resolve this, but it seems non-trivial
-/// 
-/// Example usage:
-/// ```ignore
-/// fn search_funds_by_name() {
-///   let conn = pool.get().unwrap();
-///   db_search!(&conn => search in funds.fund_name)
-/// }
-/// ```
-#[macro_export]
-macro_rules! db_search {
-    ($conn:expr => $query:ident in $table:ident.$col:ident) => {{
-       let query = search_query($table, $col, $query);
-       query.load($conn)
-    }};
+pub fn execute_search<T, C, M, P>(
+    table: T,
+    col: C,
+    query: &str,
+    conn: &DbPoolConn,
+) -> Result<Vec<M>, HandleError>
+where
+    T: FilterDsl<Like<C, Bound<SqlStr, String>>, Output = P>,
+    C: Expression<SqlType = SqlStr> + TextExpressionMethods,
+    P: LoadQuery<DbPoolConn, M>,
+{
+    search_query(table, col, query)
+        .load(conn)
+        .map_err(|_| HandleError::InternalError("Error searching".to_string()))
 }
 
 pub fn search_query<T, C>(
     table: T,
     col: C,
-    query: String,
+    query: &str,
 ) -> <T as FilterDsl<Like<C, Bound<SqlStr, String>>>>::Output
 where
     T: FilterDsl<Like<C, Bound<SqlStr, String>>>,
@@ -37,7 +39,7 @@ where
     table.filter(p)
 }
 
-fn predicate<C>(col: C, query: String) -> Like<C, Bound<SqlStr, String>>
+fn predicate<C>(col: C, query: &str) -> Like<C, Bound<SqlStr, String>>
 where
     C: Expression<SqlType = SqlStr> + TextExpressionMethods,
 {

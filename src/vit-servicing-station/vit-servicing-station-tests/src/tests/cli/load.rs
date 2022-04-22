@@ -18,7 +18,7 @@ pub fn load_data_test() {
     let funds = temp_dir.child("funds.csv");
     csv_converter
         .funds(
-            snapshot.funds().iter().cloned().take(1).collect(),
+            snapshot.funds().iter().take(1).cloned().collect(),
             funds.path(),
         )
         .unwrap();
@@ -26,7 +26,7 @@ pub fn load_data_test() {
     let proposals = temp_dir.child("proposals.csv");
     csv_converter
         .proposals(
-            snapshot.proposals().iter().cloned().take(1).collect(),
+            snapshot.proposals().iter().take(1).cloned().collect(),
             proposals.path(),
         )
         .unwrap();
@@ -34,7 +34,7 @@ pub fn load_data_test() {
     let voteplans = temp_dir.child("voteplans.csv");
     csv_converter
         .voteplans(
-            snapshot.voteplans().iter().cloned().take(1).collect(),
+            snapshot.voteplans().iter().take(1).cloned().collect(),
             voteplans.path(),
         )
         .unwrap();
@@ -42,7 +42,7 @@ pub fn load_data_test() {
     let challenges = temp_dir.child("challenges.csv");
     csv_converter
         .challenges(
-            snapshot.challenges().iter().cloned().take(1).collect(),
+            snapshot.challenges().iter().take(1).cloned().collect(),
             challenges.path(),
         )
         .unwrap();

@@ -18,6 +18,13 @@ Currently we use only one migration and make changes to it as needed. This is du
 Another file to look at is the `.env` file. This file holds the environment variables used by this project sql configuration.
 `diesel` uses a `DATABASE_URL` variable to know where should he generate the database file. 
 
+### Running tests
+
+Tests are run using `cargo test`, but require the binaries to be present in `target`:
+ - `cargo build --all-targets --locked` (**without** `--release`)
+ - `cargo test`
+
+
 ### Server settings
 
 The server settings can be loaded via three options, **environment variables**, **command line flags** and a **json file**.

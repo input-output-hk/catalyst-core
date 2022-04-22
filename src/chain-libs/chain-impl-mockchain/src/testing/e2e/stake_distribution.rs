@@ -106,3 +106,79 @@ pub fn stake_distribution_changes_after_rewards_are_collected() {
         .unassigned_is(Stake::from_value(Value(2000)))
         .pools_distribution_is(vec![(alice_stake_pool.id(), Value(1009))]);
 }
+
+#[test]
+pub fn stake_distribution_to_many_stake_pools_and_retire() {
+    let (mut ledger, controller) = prepare_scenario()
+        .with_config(
+            ConfigBuilder::new()
+                .with_discrimination(Discrimination::Test)
+                .with_fee(LinearFee::new(1, 1, 1)),
+        )
+        .with_initials(vec![
+            wallet("Alice").with(9_03),
+            wallet("Bob").with(1_000).owns("bob_stake_pool"),
+            wallet("Clarice").with(1_000).owns("clarice_stake_pool"),
+            wallet("David").with(1_000).owns("david_stake_pool")
+        ])
+        .build()
+        .unwrap();
+
+    
+    let bob_stake_pool = controller.stake_pool("bob_stake_pool").unwrap();
+    let clarice_stake_pool = controller.stake_pool("clarice_stake_pool").unwrap();
+    let david_stake_pool = controller.stake_pool("david_stake_pool").unwrap();        
+
+    let alice = controller.wallet("Alice").unwrap();
+    let bob = controller.wallet("Bob").unwrap();
+
+    let delegation_ratio = vec![
+        (&bob_stake_pool, 3u8),
+        (&clarice_stake_pool, 3u8),
+        (&david_stake_pool, 3u8),
+    ];
+
+    controller
+        .delegates_to_many(&alice, &delegation_ratio, &mut ledger)
+        .unwrap();
+
+    let expected_distribution = vec![
+        (bob_stake_pool.id(), Value(300)),
+        (clarice_stake_pool.id(), Value(300)),
+        (david_stake_pool.id(), Value(300)),
+    ];
+
+    LedgerStateVerifier::new(ledger.clone().into())
+        .info("after delegation to many stake pools")
+        .distribution()
+        .pools_distribution_is(expected_distribution)
+        .unassigned_is(Stake::from_value(Value(3000)))
+        .and()
+        .dangling_is(Stake::from_value(Value::zero()))
+        .and()
+        .pools_total_stake_is(Stake::from_value(Value(900)));       
+        
+    assert!(controller
+            .retire(&[bob], &bob_stake_pool, &mut ledger)
+            .is_ok());
+        
+    let expected_distribution = vec![
+        (clarice_stake_pool.id(), Value(300)),
+        (david_stake_pool.id(), Value(300)),
+    ];
+
+    LedgerStateVerifier::new(ledger.clone().into())
+        .info("after retiring stake pool")
+        .stake_pools()
+        .is_retired(&bob_stake_pool);
+    
+    LedgerStateVerifier::new(ledger.clone().into())
+        .info("distribution after retiring stake pool")
+        .distribution()
+        .pools_distribution_is(expected_distribution)
+        .unassigned_is(Stake::from_value(Value(2997)))
+        .and()
+        .dangling_is(Stake::from_value(Value(300)))
+        .and()
+        .pools_total_stake_is(Stake::from_value(Value(600)));
+}

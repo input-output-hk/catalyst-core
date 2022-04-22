@@ -521,9 +521,12 @@ mod tests {
             leadership.date_at_slot(slot_id),
             BlockDate { epoch: 0, slot_id }
         );
-        assert_eq!(leadership.stake_distribution(),Some(&test_ledger.ledger.get_stake_distribution()));
+        assert_eq!(
+            leadership.stake_distribution(),
+            Some(&test_ledger.ledger.get_stake_distribution())
+        );
     }
-    
+
     #[test]
     fn leadership_is_leader_for_date() {
         let leaders_count = 5;

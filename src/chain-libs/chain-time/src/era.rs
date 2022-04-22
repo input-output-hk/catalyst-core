@@ -146,28 +146,27 @@ mod test {
     #[should_panic]
     //BUG_ID NPG-1002 owerflow look at fn time_era_from_era_to_slot_overflow()
     //BUG_ID NPG-1001 attempt to divide by zero when slots_per_epoch = 0
-    fn time_era_slot_era_bijection(slot: Slot, era: TimeEra) {            
-        match era.from_slot_to_era(slot){
-            Some(epoch_pos) =>{
-                let other_slot = era.from_era_to_slot(epoch_pos);  
-                prop_assert_eq!(slot, other_slot); 
+    fn time_era_slot_era_bijection(slot: Slot, era: TimeEra) {
+        match era.from_slot_to_era(slot) {
+            Some(epoch_pos) => {
+                let other_slot = era.from_era_to_slot(epoch_pos);
+                prop_assert_eq!(slot, other_slot);
             }
-            None =>{
+            None => {
                 prop_assert!(slot < era.slot_start);
             }
         }
-        
     }
-    
+
     #[proptest]
     #[should_panic]
     //BUG_ID NPG-1003 Epoch is u32 but should be u64
     fn time_era_slot_to_era(slot: Slot) {
         let slot_start = Slot(0);
         let epoch_start = Epoch(0);
-        let slots_per_epoch = 1; 
-        let era = TimeEra::new(slot_start, epoch_start, slots_per_epoch);   
-        let epoch_pos = era.from_slot_to_era(slot).unwrap(); 
+        let slots_per_epoch = 1;
+        let era = TimeEra::new(slot_start, epoch_start, slots_per_epoch);
+        let epoch_pos = era.from_slot_to_era(slot).unwrap();
         //with one slot per epoch the input slot will be equal to the epoch
         prop_assert_eq!(slot.0, epoch_pos.epoch.0.into());
     }
@@ -178,7 +177,7 @@ mod test {
     fn time_era_from_era_to_slot(epoch_pos: EpochPosition) {
         let slot_start = Slot(0);
         let epoch_start = Epoch(0);
-        let slots_per_epoch = 1; 
+        let slots_per_epoch = 1;
         let era = TimeEra::new(slot_start, epoch_start, slots_per_epoch);
         let slot = era.from_era_to_slot(epoch_pos);
         //with one slot per epoch the input slot will be equal to the epoch

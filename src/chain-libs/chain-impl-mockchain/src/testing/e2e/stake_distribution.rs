@@ -119,15 +119,14 @@ pub fn stake_distribution_to_many_stake_pools_and_retire() {
             wallet("Alice").with(9_03),
             wallet("Bob").with(1_000).owns("bob_stake_pool"),
             wallet("Clarice").with(1_000).owns("clarice_stake_pool"),
-            wallet("David").with(1_000).owns("david_stake_pool")
+            wallet("David").with(1_000).owns("david_stake_pool"),
         ])
         .build()
         .unwrap();
 
-    
     let bob_stake_pool = controller.stake_pool("bob_stake_pool").unwrap();
     let clarice_stake_pool = controller.stake_pool("clarice_stake_pool").unwrap();
-    let david_stake_pool = controller.stake_pool("david_stake_pool").unwrap();        
+    let david_stake_pool = controller.stake_pool("david_stake_pool").unwrap();
 
     let alice = controller.wallet("Alice").unwrap();
     let bob = controller.wallet("Bob").unwrap();
@@ -156,12 +155,12 @@ pub fn stake_distribution_to_many_stake_pools_and_retire() {
         .and()
         .dangling_is(Stake::from_value(Value::zero()))
         .and()
-        .pools_total_stake_is(Stake::from_value(Value(900)));       
-        
+        .pools_total_stake_is(Stake::from_value(Value(900)));
+
     assert!(controller
-            .retire(&[bob], &bob_stake_pool, &mut ledger)
-            .is_ok());
-        
+        .retire(&[bob], &bob_stake_pool, &mut ledger)
+        .is_ok());
+
     let expected_distribution = vec![
         (clarice_stake_pool.id(), Value(300)),
         (david_stake_pool.id(), Value(300)),
@@ -171,7 +170,7 @@ pub fn stake_distribution_to_many_stake_pools_and_retire() {
         .info("after retiring stake pool")
         .stake_pools()
         .is_retired(&bob_stake_pool);
-    
+
     LedgerStateVerifier::new(ledger.clone().into())
         .info("distribution after retiring stake pool")
         .distribution()

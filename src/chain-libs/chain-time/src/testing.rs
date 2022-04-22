@@ -1,4 +1,4 @@
-use crate::{Epoch, Slot, TimeEra, EpochPosition, EpochSlotOffset};
+use crate::{Epoch, EpochPosition, EpochSlotOffset, Slot, TimeEra};
 use quickcheck::{Arbitrary, Gen};
 
 impl Arbitrary for TimeEra {
@@ -25,9 +25,9 @@ impl Arbitrary for Epoch {
 
 impl Arbitrary for EpochPosition {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        EpochPosition{
+        EpochPosition {
             epoch: Epoch(Arbitrary::arbitrary(g)),
-            slot: EpochSlotOffset(u32::arbitrary(g))            
+            slot: EpochSlotOffset(u32::arbitrary(g)),
         }
     }
 }

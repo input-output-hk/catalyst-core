@@ -502,6 +502,29 @@ mod tests {
     }
 
     #[test]
+    fn ledership_getters_praos() {
+        let epoch = 0;
+        let slot_id = 1;
+
+        let test_ledger = LedgerBuilder::from_config(
+            ConfigBuilder::new()
+                .with_consensus_version(ConsensusType::GenesisPraos)
+                .with_slots_per_epoch(60),
+        )
+        .build()
+        .unwrap();
+
+        let leadership = Leadership::new(epoch, &test_ledger.ledger);
+
+        assert_eq!(leadership.epoch(), epoch);
+        assert_eq!(
+            leadership.date_at_slot(slot_id),
+            BlockDate { epoch: 0, slot_id }
+        );
+        assert_eq!(leadership.stake_distribution(),Some(&test_ledger.ledger.get_stake_distribution()));
+    }
+    
+    #[test]
     fn leadership_is_leader_for_date() {
         let leaders_count = 5;
         let leaders_keys: Vec<SecretKey<Ed25519>> =

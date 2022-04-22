@@ -17,10 +17,18 @@ pub struct Epoch(pub u32);
 
 /// Slot Offset *in* a given epoch
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct EpochSlotOffset(pub u32);
 
 /// Epoch position: this is an epoch and a slot offset
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct EpochPosition {
     pub epoch: Epoch,
     pub slot: EpochSlotOffset,
@@ -77,7 +85,7 @@ impl TimeEra {
         }
     }
 
-    /// retrieve the number of slots in an epoch during a given Epoch
+    /// retrieve the number of slots in an epoch during a given Era
     pub fn slots_per_epoch(&self) -> u32 {
         self.slots_per_epoch
     }
@@ -132,6 +140,49 @@ mod test {
         codec = Codec::new(cursor);
         let other_time_era = unpack_time_era(&mut codec).unwrap();
         prop_assert_eq!(time_era, other_time_era);
+    }
+
+    #[proptest]
+    #[should_panic]
+    //BUG_ID NPG-1002 owerflow look at fn time_era_from_era_to_slot_overflow()
+    //BUG_ID NPG-1001 attempt to divide by zero when slots_per_epoch = 0
+    fn time_era_slot_era_bijection(slot: Slot, era: TimeEra) {            
+        match era.from_slot_to_era(slot){
+            Some(epoch_pos) =>{
+                let other_slot = era.from_era_to_slot(epoch_pos);  
+                prop_assert_eq!(slot, other_slot); 
+            }
+            None =>{
+                prop_assert!(slot < era.slot_start);
+            }
+        }
+        
+    }
+    
+    #[proptest]
+    #[should_panic]
+    //BUG_ID NPG-1003 Epoch is u32 but should be u64
+    fn time_era_slot_to_era(slot: Slot) {
+        let slot_start = Slot(0);
+        let epoch_start = Epoch(0);
+        let slots_per_epoch = 1; 
+        let era = TimeEra::new(slot_start, epoch_start, slots_per_epoch);   
+        let epoch_pos = era.from_slot_to_era(slot).unwrap(); 
+        //with one slot per epoch the input slot will be equal to the epoch
+        prop_assert_eq!(slot.0, epoch_pos.epoch.0.into());
+    }
+
+    #[proptest]
+    #[should_panic]
+    //BUG_ID NPG-1000 from_era_to_slot should handle the error returning <Result> instead of panicking
+    fn time_era_from_era_to_slot(epoch_pos: EpochPosition) {
+        let slot_start = Slot(0);
+        let epoch_start = Epoch(0);
+        let slots_per_epoch = 1; 
+        let era = TimeEra::new(slot_start, epoch_start, slots_per_epoch);
+        let slot = era.from_era_to_slot(epoch_pos);
+        //with one slot per epoch the input slot will be equal to the epoch
+        prop_assert_eq!(slot.0, (epoch_pos.epoch.0 + epoch_pos.slot.0) as u64);
     }
 
     #[test]

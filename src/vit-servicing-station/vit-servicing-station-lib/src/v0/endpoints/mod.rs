@@ -4,7 +4,7 @@ mod funds;
 mod genesis;
 mod health;
 pub mod proposals;
-mod search;
+pub mod search;
 pub mod service_version;
 
 use crate::v0::context::SharedContext;

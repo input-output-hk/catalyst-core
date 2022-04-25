@@ -2,143 +2,127 @@ mod generic;
 
 use crate::{
     db::{
-        models::{challenges::Challenge, proposals::FullProposalInfo},
-        queries::search::generic::execute_search,
+        queries::search::generic::{search, RANDOM},
         DbConnection, DbConnectionPool,
     },
-    v0::errors::HandleError,
+    v0::{endpoints::search::requests::*, errors::HandleError},
 };
 use diesel::r2d2::{ConnectionManager, PooledConnection};
-use rand::{prelude::SliceRandom, thread_rng};
-use serde::{Deserialize, Serialize};
 
 pub async fn search_db(
-    table: SearchTable,
-    column: SearchColumn,
-    sort: Option<SearchSort>,
-    search: String,
+    SearchRequest {
+        table,
+        column,
+        sort,
+        query,
+    }: SearchRequest,
     pool: &DbConnectionPool,
-) -> Result<SearchItems, HandleError> {
+) -> Result<SearchResponse, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
-    tokio::task::spawn_blocking(move || search_sync(table, column, sort, search, &db_conn))
-        .await
-        .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
+    tokio::task::spawn_blocking(move || {
+        validate_table_column_sort(table, column, sort)?;
+        match table {
+            SearchTable::Proposal => search_proposals(column, sort, &query, &db_conn),
+            SearchTable::Challenge => search_challenges(column, sort, &query, &db_conn),
+        }
+    })
+    .await
+    .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
 }
 
-fn search_sync(
-    table: SearchTable,
+fn search_proposals(
     column: SearchColumn,
-    sort: Option<SearchSort>,
-    search: String,
+    sort: SearchSort,
+    query: &str,
     conn: &PooledConnection<ConnectionManager<DbConnection>>,
-) -> Result<SearchItems, HandleError> {
-    use SearchColumn::*;
+) -> Result<SearchResponse, HandleError> {
+    use crate::db::views_schema::full_proposals_info::dsl::*;
+    use full_proposals_info as proposals;
 
-    validate_table_column_sort(table, column, sort)?;
-
-    match table {
-        SearchTable::Proposal => {
-            use crate::db::views_schema::full_proposals_info::dsl::*;
-            use full_proposals_info as proposals;
-
-            let mut items = match column {
-                ProposalTitle => execute_search(proposals, proposal_title, &search, conn),
-                ProposalAuthor => execute_search(proposals, proposer_name, &search, conn),
-                ProposalSummary => execute_search(proposals, proposal_summary, &search, conn),
-                _ => unreachable!(),
-            }?;
-
-            sort_proposals(&mut items, sort);
-            Ok(SearchItems::Proposal(items))
-        }
-        SearchTable::Challenge => {
-            use crate::db::schema::challenges::dsl::*;
-
-            let mut items = match column {
-                ChallengeTitle => execute_search(challenges, title, &search, conn),
-                ChallengeType => execute_search(challenges, challenge_type, &search, conn),
-                ChallengeDesc => execute_search(challenges, description, &search, conn),
-                _ => unreachable!(),
-            }?;
-
-            sort_challenges(&mut items, sort);
-            Ok(SearchItems::Challenge(items))
-        }
-    }
+    let vec = match column {
+        SearchColumn::ProposalTitle => match sort {
+            SearchSort::Index => search(proposals, proposal_title, id, query, conn),
+            SearchSort::Random => search(proposals, proposal_title, RANDOM, query, conn),
+            SearchSort::ProposalFunds => {
+                search(proposals, proposal_title, proposal_funds, query, conn)
+            }
+            SearchSort::ProposalAdvisor => {
+                search(proposals, proposal_title, proposer_name, query, conn)
+            }
+            SearchSort::ProposalTitle => {
+                search(proposals, proposal_title, proposal_title, query, conn)
+            }
+            _ => unreachable!(),
+        },
+        SearchColumn::ProposalAuthor => match sort {
+            SearchSort::Index => search(proposals, proposer_name, id, query, conn),
+            SearchSort::Random => search(proposals, proposer_name, RANDOM, query, conn),
+            SearchSort::ProposalFunds => {
+                search(proposals, proposer_name, proposal_funds, query, conn)
+            }
+            SearchSort::ProposalAdvisor => {
+                search(proposals, proposer_name, proposer_name, query, conn)
+            }
+            SearchSort::ProposalTitle => {
+                search(proposals, proposer_name, proposal_title, query, conn)
+            }
+            _ => unreachable!(),
+        },
+        SearchColumn::ProposalSummary => match sort {
+            SearchSort::Index => search(proposals, proposal_summary, id, query, conn),
+            SearchSort::Random => search(proposals, proposal_summary, RANDOM, query, conn),
+            SearchSort::ProposalFunds => {
+                search(proposals, proposal_summary, proposal_funds, query, conn)
+            }
+            SearchSort::ProposalAdvisor => {
+                search(proposals, proposal_summary, proposer_name, query, conn)
+            }
+            SearchSort::ProposalTitle => {
+                search(proposals, proposal_summary, proposal_title, query, conn)
+            }
+            _ => unreachable!(),
+        },
+        _ => unreachable!(),
+    }?;
+    Ok(SearchResponse::Proposal(vec))
 }
 
-fn sort_proposals(items: &mut [FullProposalInfo], sort: Option<SearchSort>) {
-    match sort {
-        None => {}
-        Some(SearchSort::Random) => items.shuffle(&mut thread_rng()),
-        Some(SearchSort::ProposalFunds) => items.sort_unstable_by(|a, b| {
-            Ord::cmp(&a.proposal.proposal_funds, &b.proposal.proposal_funds)
-        }),
-        Some(SearchSort::ProposalTitle) => items.sort_unstable_by(|a, b| {
-            Ord::cmp(&a.proposal.proposal_title, &b.proposal.proposal_title)
-        }),
-        Some(SearchSort::ProposalAdvisor) => {
-            items.sort_unstable_by(|a, b| {
-                Ord::cmp(
-                    &a.proposal.proposer.proposer_name,
-                    &b.proposal.proposer.proposer_name,
-                )
-            });
-        }
-        Some(SearchSort::ChallengeTitle) => unreachable!(),
-    }
-}
+fn search_challenges(
+    column: SearchColumn,
+    sort: SearchSort,
+    query: &str,
+    conn: &PooledConnection<ConnectionManager<DbConnection>>,
+) -> Result<SearchResponse, HandleError> {
+    use crate::db::schema::challenges::dsl::*;
 
-fn sort_challenges(items: &mut [Challenge], sort: Option<SearchSort>) {
-    match sort {
-        None => {}
-        Some(SearchSort::Random) => items.shuffle(&mut thread_rng()),
-        Some(SearchSort::ChallengeTitle) => items.sort_unstable_by(|a, b| a.title.cmp(&b.title)),
-        Some(SearchSort::ProposalFunds)
-        | Some(SearchSort::ProposalTitle)
-        | Some(SearchSort::ProposalAdvisor) => unreachable!(),
-    }
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(untagged)] // should serialize as if it is either a `Vec<Challenge>` or `Vec<FullProposalInfo>`
-pub enum SearchItems {
-    Challenge(Vec<Challenge>),
-    Proposal(Vec<FullProposalInfo>),
-}
-
-#[derive(Debug, Clone, Copy, Deserialize)]
-#[cfg_attr(test, derive(serde::Serialize))]
-pub enum SearchTable {
-    Challenge,
-    Proposal,
-}
-
-#[derive(Debug, Clone, Copy, Deserialize)]
-#[cfg_attr(test, derive(serde::Serialize))]
-pub enum SearchColumn {
-    ChallengeTitle,
-    ChallengeType,
-    ChallengeDesc,
-    ProposalAuthor,
-    ProposalTitle,
-    ProposalSummary,
-}
-
-#[derive(Debug, Clone, Copy, Deserialize)]
-#[cfg_attr(test, derive(serde::Serialize))]
-pub enum SearchSort {
-    ChallengeTitle,
-    ProposalFunds,
-    ProposalAdvisor,
-    ProposalTitle,
-    Random,
+    let vec = match column {
+        SearchColumn::ChallengeType => match sort {
+            SearchSort::Index => search(challenges, challenge_type, id, query, conn),
+            SearchSort::Random => search(challenges, challenge_type, RANDOM, query, conn),
+            SearchSort::ChallengeTitle => search(challenges, challenge_type, title, query, conn),
+            _ => unreachable!(),
+        },
+        SearchColumn::ChallengeTitle => match sort {
+            SearchSort::Index => search(challenges, title, id, query, conn),
+            SearchSort::Random => search(challenges, title, RANDOM, query, conn),
+            SearchSort::ChallengeTitle => search(challenges, title, title, query, conn),
+            _ => unreachable!(),
+        },
+        SearchColumn::ChallengeDesc => match sort {
+            SearchSort::Index => search(challenges, description, id, query, conn),
+            SearchSort::Random => search(challenges, description, RANDOM, query, conn),
+            SearchSort::ChallengeTitle => search(challenges, description, title, query, conn),
+            _ => unreachable!(),
+        },
+        _ => unreachable!(),
+    }?;
+    Ok(SearchResponse::Challenge(vec))
 }
 
 fn validate_table_column_sort(
     table: SearchTable,
     column: SearchColumn,
-    sort: Option<SearchSort>,
+    sort: SearchSort,
 ) -> Result<(), HandleError> {
     use SearchColumn::*;
     use SearchTable::*;
@@ -158,9 +142,9 @@ fn validate_table_column_sort(
         use SearchSort::*;
         use SearchTable::*;
         match (table, sort) {
-            (_, None | Some(Random)) => {}
-            (Challenge, Some(ChallengeTitle)) => {}
-            (Proposal, Some(ProposalFunds | ProposalTitle | ProposalAdvisor)) => {}
+            (_, Index | Random) => {}
+            (Challenge, ChallengeTitle) => {}
+            (Proposal, ProposalFunds | ProposalTitle | ProposalAdvisor) => {}
             _ => {
                 return Err(HandleError::BadRequest(format!(
                     "cannot sort table {table:?} by column {column:?}"
@@ -181,20 +165,24 @@ mod tests {
         validate_table_column_sort(
             SearchTable::Proposal,
             SearchColumn::ProposalTitle,
-            Some(SearchSort::ProposalAdvisor),
+            SearchSort::ProposalAdvisor,
         )
         .unwrap();
     }
 
     #[test]
     fn should_be_err_with_mismatching_column_or_sort() {
-        validate_table_column_sort(SearchTable::Proposal, SearchColumn::ChallengeType, None)
-            .unwrap_err();
+        validate_table_column_sort(
+            SearchTable::Proposal,
+            SearchColumn::ChallengeType,
+            SearchSort::Index,
+        )
+        .unwrap_err();
 
         validate_table_column_sort(
             SearchTable::Proposal,
             SearchColumn::ProposalTitle,
-            Some(SearchSort::ChallengeTitle),
+            SearchSort::ChallengeTitle,
         )
         .unwrap_err();
     }

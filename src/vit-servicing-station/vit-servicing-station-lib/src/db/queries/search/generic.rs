@@ -1,48 +1,46 @@
 use diesel::{
     dsl::Like,
     expression::bound::Bound,
-    query_dsl::{methods::FilterDsl, LoadQuery},
+    query_dsl::{
+        methods::{FilterDsl, OrderDsl},
+        LoadQuery,
+    },
+    r2d2::{ConnectionManager, PooledConnection},
     sql_types::Text,
     Expression, TextExpressionMethods,
 };
 
-use crate::{db::DbPoolConn, v0::errors::HandleError};
+use crate::{db::DbConnection, v0::errors::HandleError};
 
 type SqlStr = Text;
 
-pub fn execute_search<T, C, M, P>(
-    table: T,
-    col: C,
-    query: &str,
-    conn: &DbPoolConn,
-) -> Result<Vec<M>, HandleError>
-where
-    T: FilterDsl<Like<C, Bound<SqlStr, String>>, Output = P>,
-    C: Expression<SqlType = SqlStr> + TextExpressionMethods,
-    P: LoadQuery<DbPoolConn, M>,
-{
-    search_query(table, col, query)
-        .load(conn)
-        .map_err(|_| HandleError::InternalError("Error searching".to_string()))
-}
+diesel::no_arg_sql_function!(RANDOM, (), "Represents the sql RANDOM() function");
 
-pub fn search_query<T, C>(
-    table: T,
-    col: C,
+// Temp1 and Temp2 are intermediates set by the implementation
+//
+// They are needed to mitigate a compiler bug to do with overly restrictive bounds on the types of
+// intermediate values
+//
+// They "bubble up" the constraint to the caller, while giving the compiler flexibility to reject
+// if it can't find values for Temp1 and Temp2 that match
+pub fn search<Table, Column, Order, Model, Temp1, Temp2>(
+    table: Table,
+    col: Column,
+    order: Order,
     query: &str,
-) -> <T as FilterDsl<Like<C, Bound<SqlStr, String>>>>::Output
+    conn: &PooledConnection<ConnectionManager<DbConnection>>,
+) -> Result<Vec<Model>, HandleError>
 where
-    T: FilterDsl<Like<C, Bound<SqlStr, String>>>,
-    C: Expression<SqlType = SqlStr> + TextExpressionMethods,
-{
-    let p = predicate(col, query);
-    table.filter(p)
-}
-
-fn predicate<C>(col: C, query: &str) -> Like<C, Bound<SqlStr, String>>
-where
-    C: Expression<SqlType = SqlStr> + TextExpressionMethods,
+    Table: FilterDsl<Like<Column, Bound<SqlStr, String>>, Output = Temp1>,
+    Column: Expression<SqlType = SqlStr> + TextExpressionMethods,
+    Order: Expression,
+    Temp1: OrderDsl<Order, Output = Temp2>,
+    Temp2: LoadQuery<PooledConnection<ConnectionManager<DbConnection>>, Model>,
 {
     let query = format!("%{query}%");
-    col.like(query)
+    table
+        .filter(col.like(query))
+        .order(order)
+        .load(conn)
+        .map_err(|_| HandleError::InternalError("Error searching".to_string()))
 }

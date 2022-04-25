@@ -385,7 +385,13 @@ impl From<ProposalChallengeInfo> for SerdeProposalChallengeInfo {
 pub mod test {
     use super::*;
     use crate::db::{
-        models::vote_options::VoteOptions,
+        models::{
+            challenges::{
+                test::{get_test_challenge_with_fund_id, populate_db_with_challenge_conn},
+                Challenge,
+            },
+            vote_options::VoteOptions,
+        },
         schema::{
             proposal_community_choice_challenge, proposal_simple_challenge, proposals, voteplans,
         },
@@ -396,6 +402,27 @@ pub mod test {
         ExpressionMethods, RunQueryDsl,
     };
     use time::OffsetDateTime;
+
+    pub fn add_test_proposal_and_challenge(
+        key: i32,
+        conn: &PooledConnection<ConnectionManager<DbConnection>>,
+    ) -> (FullProposalInfo, Challenge) {
+        let mut proposal = get_test_proposal();
+        proposal.proposal.internal_id = key;
+        proposal.proposal.proposal_id = key.to_string();
+        proposal.proposal.proposal_title = format!("proposal number {key}");
+        proposal.proposal.chain_voteplan_id = format!("voteplan_id_{key}");
+
+        let mut challenge = get_test_challenge_with_fund_id(proposal.proposal.fund_id);
+        challenge.title = format!("challenge {key}");
+        challenge.description = format!("challenge description {key}");
+        challenge.id = key;
+
+        populate_db_with_proposal_conn(&proposal, conn);
+        populate_db_with_challenge_conn(&challenge, conn);
+
+        (proposal, challenge)
+    }
 
     pub fn get_test_proposal() -> FullProposalInfo {
         const CHALLENGE_ID: i32 = 9001;

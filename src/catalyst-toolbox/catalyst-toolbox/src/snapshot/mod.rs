@@ -13,6 +13,12 @@ pub const CATALYST_VOTING_PURPOSE_TAG: u64 = 0;
 #[derive(Deserialize, Clone, Debug)]
 pub struct RawSnapshot(Vec<VotingRegistration>);
 
+impl From<Vec<VotingRegistration>> for RawSnapshot {
+    fn from(from: Vec<VotingRegistration>) -> Self {
+        Self(from)
+    }
+}
+
 /// Contribution to a voting key for some registration
 #[derive(Clone, Debug, PartialEq)]
 pub struct KeyContribution {
@@ -219,12 +225,6 @@ mod tests {
             .sum();
         assert_eq!(vp_2 + vp_1, n * (n + 1) / 2);
         assert_eq!(vp_2 - vp_1, n / 2); // last key get the remainder during distribution
-    }
-
-    impl From<Vec<VotingRegistration>> for RawSnapshot {
-        fn from(from: Vec<VotingRegistration>) -> Self {
-            Self(from)
-        }
     }
 
     #[test]

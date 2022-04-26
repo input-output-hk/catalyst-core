@@ -47,6 +47,7 @@ mod test {
             column: SearchColumn::ChallengeTitle,
             sort: SearchSort::Index,
             query: "1".to_string(),
+            reverse: false,
         })
         .unwrap();
 
@@ -77,13 +78,15 @@ mod test {
             .and(with_context)
             .and_then(search);
 
-        let body = serde_json::to_string(&SearchRequest {
+        let request = SearchRequest {
             table: SearchTable::Challenge,
             column: SearchColumn::ChallengeDesc,
             sort: SearchSort::ChallengeTitle,
             query: "1".to_string(),
-        })
-        .unwrap();
+            reverse: false,
+        };
+
+        let body = serde_json::to_string(&request).unwrap();
 
         let challenges: Vec<Challenge> = warp::test::request()
             .method("POST")
@@ -93,6 +96,29 @@ mod test {
             .await
             .as_json();
 
-        assert_eq!(challenges, vec![challenge_1, challenge_2, challenge_3]);
+        assert_eq!(
+            challenges,
+            vec![
+                challenge_1.clone(),
+                challenge_2.clone(),
+                challenge_3.clone()
+            ]
+        );
+
+        let body = serde_json::to_string(&SearchRequest {
+            reverse: true,
+            ..request
+        })
+        .unwrap();
+
+        let reversed: Vec<Challenge> = warp::test::request()
+            .method("POST")
+            .path("/search")
+            .body(body)
+            .reply(&filter)
+            .await
+            .as_json();
+
+        assert_eq!(reversed, vec![challenge_3, challenge_2, challenge_1]);
     }
 }

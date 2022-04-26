@@ -1,6 +1,7 @@
 use chain_addr::{Discrimination, Kind};
 use chain_core::property::Fragment as _;
 use chain_crypto::{Ed25519Extended, SecretKey};
+use chain_impl_mockchain::accounting::account::SpendingCounterIncreasing;
 use chain_impl_mockchain::{
     account::{self, LedgerError, SpendingCounter},
     block::{Block, BlockDate, HeaderId},
@@ -462,7 +463,12 @@ impl FragmentReplayer {
                             .into(),
                         value: utxo.value,
                     };
-                    wallet.update_state(utxo.value.into(), 0.into());
+                    wallet
+                        .set_state(
+                            utxo.value.into(),
+                            SpendingCounterIncreasing::default().get_valid_counters(),
+                        )
+                        .unwrap();
                     wallets.insert(utxo.address.clone(), wallet);
                     if committee_members.contains(&utxo.address) {
                         trace!("Committee account found {}", &utxo.address);
@@ -508,7 +514,9 @@ impl FragmentReplayer {
             .ok_or_else(|| ReplayError::NonVotingAccount(address.to_string()))?;
 
         // unwrap checked in the validation step
-        let builder_help = wallet.new_transaction(tx.total_input().unwrap()).unwrap();
+        let builder_help = wallet
+            .new_transaction(tx.total_input().unwrap(), 0)
+            .unwrap();
         let mut builder = TransactionBuilder::new(&self.settings, vote_cast, tx.valid_until());
         builder.add_input(builder_help.input(), builder_help.witness_builder());
         let res = Fragment::VoteCast(builder.finalize_tx(()).unwrap());
@@ -556,7 +564,9 @@ impl FragmentReplayer {
 
         warn!("replaying a plain transaction from {} to {:?} with value {}, this is not coming from the app, might want to look into this", identifier, output_address, output.value);
         // unwrap checked in the validation step
-        let builder_help = wallet.new_transaction(tx.total_input().unwrap()).unwrap();
+        let builder_help = wallet
+            .new_transaction(tx.total_input().unwrap(), 0)
+            .unwrap();
         let mut builder = TransactionBuilder::new(&self.settings, NoExtra, tx.valid_until());
         builder.add_input(builder_help.input(), builder_help.witness_builder());
         builder.add_output(Output::from_address(output_address, output.value));
@@ -586,7 +596,7 @@ impl FragmentReplayer {
     fn confirm_fragment(&mut self, fragment: &Fragment) {
         if let Some(addr) = self.pending_requests.get(&fragment.id()) {
             if let Some(wallet) = self.wallets.get_mut(addr) {
-                wallet.check_fragment(&fragment.id(), fragment);
+                wallet.check_fragment(&fragment.id(), fragment).unwrap();
             }
         }
     }

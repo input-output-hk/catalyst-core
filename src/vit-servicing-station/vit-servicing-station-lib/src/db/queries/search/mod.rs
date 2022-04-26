@@ -15,16 +15,23 @@ pub async fn search_db(
         column,
         sort,
         query,
+        reverse,
     }: SearchRequest,
     pool: &DbConnectionPool,
 ) -> Result<SearchResponse, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     tokio::task::spawn_blocking(move || {
         validate_table_column_sort(table, column, sort)?;
-        match table {
+        let mut response = match table {
             SearchTable::Proposal => search_proposals(column, sort, &query, &db_conn),
             SearchTable::Challenge => search_challenges(column, sort, &query, &db_conn),
+        }?;
+
+        if reverse {
+            response.reverse();
         }
+
+        Ok(response)
     })
     .await
     .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?

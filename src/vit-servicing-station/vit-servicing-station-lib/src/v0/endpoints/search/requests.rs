@@ -9,8 +9,18 @@ pub enum SearchResponse {
     Proposal(Vec<FullProposalInfo>),
 }
 
+impl SearchResponse {
+    pub fn reverse(&mut self) {
+        match self {
+            Self::Challenge(vec) => vec.reverse(),
+            Self::Proposal(vec) => vec.reverse(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, Deserialize)]
 #[cfg_attr(test, derive(Serialize))]
+#[serde(rename_all = "kebab-case")]
 pub enum SearchTable {
     Challenge,
     Proposal,
@@ -18,6 +28,7 @@ pub enum SearchTable {
 
 #[derive(Debug, Clone, Copy, Deserialize)]
 #[cfg_attr(test, derive(Serialize))]
+#[serde(rename_all = "kebab-case")]
 pub enum SearchColumn {
     ChallengeTitle,
     ChallengeType,
@@ -29,6 +40,7 @@ pub enum SearchColumn {
 
 #[derive(Debug, Clone, Copy, Deserialize)]
 #[cfg_attr(test, derive(Serialize))]
+#[serde(rename_all = "kebab-case")]
 pub enum SearchSort {
     ChallengeTitle,
     ProposalFunds,
@@ -44,12 +56,30 @@ impl Default for SearchSort {
     }
 }
 
+fn fals() -> bool {
+    false
+}
+
 #[derive(Debug, Deserialize)]
 #[cfg_attr(test, derive(Serialize))]
+#[serde(rename_all = "kebab-case")]
 pub struct SearchRequest {
     pub table: SearchTable,
     pub column: SearchColumn,
     #[serde(default)]
     pub sort: SearchSort,
     pub query: String,
+    #[serde(default = "fals")]
+    pub reverse: bool,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn request_sort_is_optional() {
+        let req = r#"{"table": "challenge", "column": "challenge-title", "query": "query"}"#;
+        serde_json::from_str::<SearchRequest>(req).unwrap();
+    }
 }

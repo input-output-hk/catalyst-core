@@ -106,7 +106,7 @@ jobs:
         continue-on-error: false
         with:
           command: test
-          args: --locked --all-targets
+          args: --locked --all-targets --all-features
 
   lints:
     name: Rust lints
@@ -144,7 +144,7 @@ jobs:
         continue-on-error: false
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: -- --deny warnings
+          args: --all-features -- --deny warnings 
 
   test_coverage:
     name: Test Coverage

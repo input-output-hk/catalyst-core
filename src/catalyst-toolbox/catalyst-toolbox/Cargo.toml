@@ -1,0 +1,77 @@
+[package]
+name = "catalyst-toolbox"
+version = "0.3.0"
+edition = "2021"
+
+authors = ["danielsanchezq <daniel.sanchez@iohk.io>"]
+license = "MIT OR Apache-2.0"
+description = "Rust based CLI utility for catalyst operations"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "catalyst-toolbox"
+test = false
+bench = false
+
+[dependencies]
+assert_fs = "1"
+bech32 = "0.8.1"
+csv = "1.1"
+wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-storage = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+time = { version = "0.3", features = ["formatting", "parsing", "macros"] }
+itertools = "0.10"
+jcli = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr.git",  branch = "master" }
+thor = { git = "https://github.com/input-output-hk/jormungandr.git",  branch = "master" }
+jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
+rust_decimal = "1.16"
+rust_decimal_macros = "1"
+futures = "0.3"
+log = "0.4"
+once_cell = "1.8"
+reqwest = { version = "0.11", features = ["blocking", "json"] }
+rand = "0.8.3"
+rand_chacha = "0.3"
+regex = "1.5"
+serde = "1.0"
+serde_json = "1.0"
+structopt = "0.3"
+stderrlog = "0.5"
+serde_yaml = "0.8.17"
+sscanf = "0.1"
+thiserror = "1.0"
+tokio = { version = "1.8", features = ["rt", "macros"] }
+url = "2.2"
+hex = "0.4"
+image = "0.23.12"
+qrcode = "0.12"
+quircs = "0.10.0"
+symmetric-cipher = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
+graphql_client = "0.10"
+gag = "1"
+vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
+
+[dev-dependencies]
+rand_chacha = "0.3"
+assert_cmd = "0.10"
+predicates = "1"
+assert_fs = "1.0.0"
+chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+proptest = { git = "https://github.com/input-output-hk/proptest", branch = "master" }
+test-strategy = "0.2"
+serde_test = "1"
+
+[build-dependencies]
+versionisator = "1.0.3"
+
+[features]
+test-api = []

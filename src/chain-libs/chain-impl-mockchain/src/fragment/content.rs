@@ -54,6 +54,14 @@ impl Contents {
     pub fn compute_hash(&self) -> BlockContentHash {
         self.compute_hash_size().0
     }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
 }
 
 #[derive(Clone, Default)]

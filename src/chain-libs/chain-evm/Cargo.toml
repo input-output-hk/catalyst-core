@@ -6,7 +6,6 @@ edition = "2021"
 [dependencies]
 imhamt = { path = "../imhamt" }
 chain-ser = { path = "../chain-ser" }
-base64 = { version = "0.13.0", default-features = false, features = ["alloc"] }
 blake2 = { version = "0.9.1", git = "https://github.com/near/near-blake2.git", rev = "736ff607cc8160af87ffa697c14ebef85050138f", default-features = false }
 bn = { package = "aurora-bn", version = "0.1.0", git = "https://github.com/aurora-is-near/aurora-bn.git", default-features = false, features = ["std"] }
 libsecp256k1 = { version = "0.7.0", default-features = false, features = ["static-context"] }
@@ -15,8 +14,6 @@ ripemd = { version = "0.1", default-features = false }
 rlp = { version = "0.5.1", default-features = false }
 sha2 = { version = "0.10.1", default-features = false }
 sha3 = { version = "0.10.0", default-features = false }
-wee_alloc = { version = "0.4.5", default-features = false }
-logos = { version = "0.12", default-features = false, features = ["export_derive"] }
 ethabi = { version = "17.0", default-features = false }
 hex = { version = "0.4", default-features = false, features = ["alloc"] }
 byte-slice-cast = { version = "1.0", default-features = false }

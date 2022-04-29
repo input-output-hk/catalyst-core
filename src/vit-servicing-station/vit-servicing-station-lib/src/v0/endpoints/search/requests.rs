@@ -2,6 +2,41 @@ use serde::{Deserialize, Serialize};
 
 use crate::db::models::{challenges::Challenge, proposals::FullProposalInfo};
 
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct Query {
+    pub table: Table,
+    pub filter: Vec<Constraint>,
+    pub order_by: Vec<OrderBy>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct Constraint {
+    pub search: String,
+    pub column: Column,
+}
+
+#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
+pub struct OrderBy {
+    pub column: Column,
+    #[serde(default)]
+    pub descending: bool,
+}
+
+#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
+pub enum Table {
+    Challenges,
+    Proposals,
+}
+
+#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
+pub enum Column {
+    Title,
+    Type,
+    Desc,
+    Author,
+    Funds,
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(untagged)] // should serialize as if it is either a `Vec<Challenge>` or `Vec<FullProposalInfo>`
 pub enum SearchResponse {
@@ -9,77 +44,19 @@ pub enum SearchResponse {
     Proposal(Vec<FullProposalInfo>),
 }
 
-impl SearchResponse {
-    pub fn reverse(&mut self) {
-        match self {
-            Self::Challenge(vec) => vec.reverse(),
-            Self::Proposal(vec) => vec.reverse(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, Deserialize)]
-#[cfg_attr(test, derive(Serialize))]
-#[serde(rename_all = "kebab-case")]
-pub enum SearchTable {
-    Challenge,
-    Proposal,
-}
-
-#[derive(Debug, Clone, Copy, Deserialize)]
-#[cfg_attr(test, derive(Serialize))]
-#[serde(rename_all = "kebab-case")]
-pub enum SearchColumn {
-    ChallengeTitle,
-    ChallengeType,
-    ChallengeDesc,
-    ProposalAuthor,
-    ProposalTitle,
-    ProposalSummary,
-}
-
-#[derive(Debug, Clone, Copy, Deserialize)]
-#[cfg_attr(test, derive(Serialize))]
-#[serde(rename_all = "kebab-case")]
-pub enum SearchSort {
-    ChallengeTitle,
-    ProposalFunds,
-    ProposalAdvisor,
-    ProposalTitle,
-    Random,
-    Index,
-}
-
-impl Default for SearchSort {
-    fn default() -> Self {
-        Self::Index
-    }
-}
-
-fn fals() -> bool {
-    false
-}
-
-#[derive(Debug, Deserialize)]
-#[cfg_attr(test, derive(Serialize))]
-#[serde(rename_all = "kebab-case")]
-pub struct SearchRequest {
-    pub table: SearchTable,
-    pub column: SearchColumn,
-    #[serde(default)]
-    pub sort: SearchSort,
-    pub query: String,
-    #[serde(default = "fals")]
-    pub reverse: bool,
-}
-
 #[cfg(test)]
 mod tests {
+    use serde_json::to_string;
+
+    use crate::db::models::proposals::test::get_test_proposal;
+
     use super::*;
 
     #[test]
-    fn request_sort_is_optional() {
-        let req = r#"{"table": "challenge", "column": "challenge-title", "query": "query"}"#;
-        serde_json::from_str::<SearchRequest>(req).unwrap();
+    fn response_serializes_as_vec() {
+        let response = SearchResponse::Proposal(vec![get_test_proposal()]);
+        let s = to_string(&response).unwrap();
+        assert!(s.starts_with("["));
+        assert!(s.ends_with("]"));
     }
 }

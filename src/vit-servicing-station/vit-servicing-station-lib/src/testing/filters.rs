@@ -50,7 +50,6 @@ impl ResponseBytesExt for Response<Bytes> {
         T: Deserialize<'a>,
     {
         let s = self.as_str();
-        println!("s is <>{s}<>");
         serde_json::from_str(s).unwrap()
     }
 }

@@ -5,14 +5,11 @@ use crate::{
     v0::{context::SharedContext, result::HandlerResult},
 };
 
-use super::requests::SearchRequest;
+use super::requests::Query;
 
-pub(super) async fn search(
-    req: SearchRequest,
-    ctx: SharedContext,
-) -> Result<impl Reply, Rejection> {
+pub(super) async fn search(query: Query, ctx: SharedContext) -> Result<impl Reply, Rejection> {
     let pool = ctx.read().await.db_connection_pool.clone();
-    Ok(HandlerResult(search_db(req, &pool).await))
+    Ok(HandlerResult(search_db(query, &pool).await))
 }
 
 #[cfg(test)]
@@ -22,9 +19,10 @@ mod test {
     use crate::db::models::proposals::test::add_test_proposal_and_challenge;
     use crate::testing::filters::test_context;
     use crate::testing::filters::ResponseBytesExt;
-    use crate::v0::endpoints::search::requests::{
-        SearchColumn, SearchRequest, SearchSort, SearchTable,
-    };
+    use crate::v0::endpoints::search::requests::Column;
+    use crate::v0::endpoints::search::requests::Constraint;
+    use crate::v0::endpoints::search::requests::OrderBy;
+    use crate::v0::endpoints::search::requests::Table;
     use warp::Filter;
 
     #[tokio::test]
@@ -42,12 +40,13 @@ mod test {
             .and(with_context)
             .and_then(search);
 
-        let body = serde_json::to_string(&SearchRequest {
-            table: SearchTable::Challenge,
-            column: SearchColumn::ChallengeTitle,
-            sort: SearchSort::Index,
-            query: "1".to_string(),
-            reverse: false,
+        let body = serde_json::to_string(&Query {
+            table: Table::Challenges,
+            filter: vec![Constraint {
+                search: "1".to_string(),
+                column: Column::Title,
+            }],
+            order_by: vec![],
         })
         .unwrap();
 
@@ -78,15 +77,19 @@ mod test {
             .and(with_context)
             .and_then(search);
 
-        let request = SearchRequest {
-            table: SearchTable::Challenge,
-            column: SearchColumn::ChallengeDesc,
-            sort: SearchSort::ChallengeTitle,
-            query: "1".to_string(),
-            reverse: false,
+        let query = Query {
+            table: Table::Challenges,
+            filter: vec![Constraint {
+                column: Column::Title,
+                search: "1".to_string(),
+            }],
+            order_by: vec![OrderBy {
+                column: Column::Title,
+                descending: false,
+            }],
         };
 
-        let body = serde_json::to_string(&request).unwrap();
+        let body = serde_json::to_string(&query).unwrap();
 
         let challenges: Vec<Challenge> = warp::test::request()
             .method("POST")
@@ -96,18 +99,15 @@ mod test {
             .await
             .as_json();
 
-        assert_eq!(
-            challenges,
-            vec![
-                challenge_1.clone(),
-                challenge_2.clone(),
-                challenge_3.clone()
-            ]
-        );
+        let output = vec![challenge_1, challenge_2, challenge_3];
+        assert_eq!(challenges, output);
 
-        let body = serde_json::to_string(&SearchRequest {
-            reverse: true,
-            ..request
+        let body = serde_json::to_string(&Query {
+            order_by: vec![OrderBy {
+                column: Column::Title,
+                descending: true,
+            }],
+            ..query
         })
         .unwrap();
 
@@ -119,6 +119,11 @@ mod test {
             .await
             .as_json();
 
-        assert_eq!(reversed, vec![challenge_3, challenge_2, challenge_1]);
+        let reversed_output = {
+            let mut temp = output.clone();
+            temp.reverse();
+            temp
+        };
+        assert_eq!(reversed, reversed_output);
     }
 }

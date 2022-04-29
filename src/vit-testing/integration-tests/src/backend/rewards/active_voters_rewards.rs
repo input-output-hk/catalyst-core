@@ -23,9 +23,9 @@ pub fn voters_with_at_least_one_vote() {
     let clarice_wallet = MainnetWallet::new(stake);
 
     let raw_snapshot = vec![
-        alice_wallet.as_catalyst_registration(),
-        bob_wallet.as_catalyst_registration(),
-        clarice_wallet.as_catalyst_registration(),
+        alice_wallet.as_voting_registration(),
+        bob_wallet.as_voting_registration(),
+        clarice_wallet.as_voting_registration(),
     ];
 
     let snapshot = Snapshot::from_raw_snapshot(RawSnapshot::from(raw_snapshot), 450.into());

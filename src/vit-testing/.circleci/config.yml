@@ -166,7 +166,7 @@ commands:
           command: |
             git clone https://github.com/input-output-hk/vit-servicing-station.git
             cd vit-servicing-station
-            git checkout add_build_db_to_path
+            git checkout master
       - run:
           name: install vit-station-service
           command: |

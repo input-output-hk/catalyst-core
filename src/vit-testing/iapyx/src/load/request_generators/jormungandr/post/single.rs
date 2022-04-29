@@ -74,7 +74,9 @@ impl WalletRequestGen {
         // Then relay on mechanism of spending counter auto-update
         if self.update_account_before_vote {
             self.multi_controller
-                .update_wallet_state_if(index, &|wallet: &Wallet| wallet.spending_counter() == 0);
+                .update_wallet_state_if(index, &|wallet: &Wallet| {
+                    wallet.spending_counter()[0] == 0
+                });
         }
 
         let counter = self.vote_cast_counter.advance_single(index).unwrap();

@@ -65,7 +65,7 @@ pub fn transactions_are_send_between_nodes_with_correct_order() {
         .map(|item| item.to_string())
         .collect();
 
-    time::wait_for_epoch(10, nodes[0].rest());
+    time::wait_for_epoch(1, nodes[0].rest());
 
     let statuses = nodes[0].rest().fragments_statuses(fragment_ids).unwrap();
     assert!(statuses

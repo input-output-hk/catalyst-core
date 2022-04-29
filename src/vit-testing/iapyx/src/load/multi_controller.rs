@@ -87,7 +87,7 @@ impl MultiController {
         for (idx, wallet) in self.wallets.iter_mut().enumerate() {
             let account_state = backend.account_state(wallet.id()).unwrap();
             println!("{}/{} Updating account state", idx + 1, count);
-            wallet.set_state((*account_state.value()).into(), account_state.counters()[0]);
+            wallet.set_state((*account_state.value()).into(), account_state.counters());
         }
     }
 
@@ -95,7 +95,7 @@ impl MultiController {
         let backend = self.backend().clone();
         let wallet = self.wallets.get_mut(wallet_index).unwrap();
         let account_state = backend.account_state(wallet.id()).unwrap();
-        wallet.set_state((*account_state.value()).into(), account_state.counters()[0]);
+        wallet.set_state((*account_state.value()).into(), account_state.counters());
     }
     pub fn update_wallet_state_if(
         &mut self,
@@ -137,12 +137,12 @@ impl MultiController {
         let wallet = self.wallets.get_mut(wallet_index).unwrap();
         let account_state = self.backend.account_state(wallet.id())?;
 
-        let mut counter = account_state.counters()[0];
+        let mut counters = account_state.counters();
         let settings = self.settings.clone();
         let txs = votes_data
             .into_iter()
             .map(|(p, c)| {
-                wallet.set_state((*account_state.value()).into(), counter);
+                wallet.set_state((*account_state.value()).into(), counters.clone());
                 let tx = wallet
                     .vote(
                         settings.clone(),
@@ -152,7 +152,7 @@ impl MultiController {
                     )
                     .unwrap()
                     .to_vec();
-                counter += 1;
+                counters[0] += 1;
                 tx
             })
             .rev()
@@ -179,7 +179,7 @@ impl MultiController {
         let wallet = self.wallets.get_mut(wallet_index).unwrap();
         let account_state = self.backend.account_state(wallet.id())?;
         let value: u64 = (*account_state.value()).into();
-        wallet.set_state(Value(value), account_state.counters()[0]);
+        wallet.set_state(Value(value), account_state.counters());
         Ok(())
     }
 

@@ -81,11 +81,11 @@ impl BatchWalletRequestGen {
         };
 
         // update state of wallet only before first vote.
-        // Then relay on mechanism of spending counter auto-update
+        // Then rely on mechanism of spending counter auto-update
         if self.update_account_before_vote {
             self.multi_controller
                 .update_wallet_state_if(wallet_index, &|wallet: &Wallet| {
-                    wallet.spending_counter() == 0
+                    wallet.spending_counter()[0] == 0
                 });
         }
 

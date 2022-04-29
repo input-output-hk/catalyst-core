@@ -304,7 +304,7 @@ impl IdeascaleValidateCommand {
 
     pub fn check_and_eventually_fix_private_data(
         &self,
-        data: &mut Vec<Value>,
+        data: &mut [Value],
         fix: bool,
         mail_replacement: String,
     ) {
@@ -327,7 +327,7 @@ impl IdeascaleValidateCommand {
 
     pub fn check_and_eventually_fix_proposal_funds(
         &self,
-        data: &mut Vec<Value>,
+        data: &mut [Value],
         fix: bool,
     ) -> Result<(), ProposalError> {
         let illegal_char = ",";
@@ -361,7 +361,7 @@ impl IdeascaleValidateCommand {
 
     pub fn check_proposals_wrong_syntax(
         &self,
-        data: &mut Vec<Value>,
+        data: &mut [Value],
         challenges: LinkedList<ChallengeTemplate>,
     ) -> Result<(), ProposalError> {
         for (idx, proposal) in data.iter_mut().enumerate() {

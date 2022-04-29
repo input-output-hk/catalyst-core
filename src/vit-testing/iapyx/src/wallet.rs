@@ -77,11 +77,12 @@ impl Wallet {
         self.inner.total_value()
     }
 
-    pub fn set_state(&mut self, value: Value, counter: u32) {
-        self.inner.set_state(value, counter);
+    pub fn set_state(&mut self, value: Value, counter: Vec<u32>) {
+        //TODO map error instead of unwrapping
+        self.inner.set_state(value, counter).unwrap();
     }
 
-    pub fn spending_counter(&self) -> u32 {
+    pub fn spending_counter(&self) -> Vec<u32> {
         self.inner.spending_counter()
     }
 
@@ -93,7 +94,7 @@ impl Wallet {
         valid_until: &BlockDate,
     ) -> Result<Box<[u8]>, Error> {
         self.inner
-            .vote(settings, proposal, choice, valid_until)
+            .vote(settings, proposal, choice, valid_until, 0u8)
             .map_err(|e| Error::CannotSendVote(e.to_string()))
     }
 

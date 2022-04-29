@@ -96,7 +96,7 @@ impl CliController {
         let key_bytes = Vec::<u8>::from_base32(&data_u5)?;
 
         let mut wallet = Wallet::recover_from_utxo(&key_bytes.try_into().unwrap())?;
-        wallet.set_state(Value(template.value), template.spending_counters[0]);
+        wallet.set_state(Value(template.value), template.spending_counters);
 
         let settings = self.backend_client.node_client().settings()?;
         Ok(Controller {

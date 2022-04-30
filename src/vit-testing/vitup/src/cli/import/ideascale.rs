@@ -85,30 +85,66 @@ pub struct ImportScores {
         default_value = "../resources/external/proposals.json"
     )]
     pub proposals: PathBuf,
+
+    #[structopt(long = "format", short = "f")]
+    pub format: Format,
+}
+
+#[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub enum Format {
+    Json,
+    Csv,
+}
+
+impl std::str::FromStr for Format {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match &*s.trim().to_lowercase() {
+            "csv" => Ok(Format::Csv),
+            "json" => Ok(Format::Json),
+            "default" => Ok(Format::Json),
+            other => Err(format!("unknown format '{}'", other)),
+        }
+    }
 }
 
 impl ImportScores {
     pub fn exec(self) -> Result<(), Error> {
-        let scores: Vec<InputScores> =
-            serde_json::from_str(&jortestkit::file::read_file(&self.input)?)?;
+        let scores: Vec<InputScores> = match self.format {
+            Format::Json => serde_json::from_str(&jortestkit::file::read_file(&self.input)?)?,
+            Format::Csv => csv::ReaderBuilder::new()
+                .has_headers(true)
+                .delimiter(b',')
+                .from_path(self.input)?
+                .deserialize()
+                .collect::<Result<_, _>>()?,
+        };
 
         let mut proposals_data: serde_json::Value =
             serde_json::from_str(&jortestkit::file::read_file(&self.proposals)?)?;
 
         for score in scores {
-            let proposal = proposals_data
+            let maybe_proposal = proposals_data
                 .as_array_mut()
                 .unwrap()
                 .iter_mut()
-                .find(|x| x["proposal_id"] == score.proposal_id)
-                .ok_or_else(|| Error::CannotFindProposalWithId(score.proposal_id.to_string()))?;
+                .find(|x| x["proposal_id"] == score.proposal_id);
 
-            let rating_given: f32 = score
-                .rating_given
-                .parse()
-                .map_err(|_| Error::CannotFindProposalWithId(score.proposal_id.to_string()))?;
+            if let Some(proposal) = maybe_proposal {
+                let rating_given: f32 = score
+                    .rating_given
+                    .parse()
+                    .map_err(|_| Error::CannotFindProposalWithId(score.proposal_id.to_string()))?;
 
-            proposal["proposal_impact_score"] = ((rating_given * 100.0) as u32).to_string().into();
+                proposal["proposal_impact_score"] =
+                    ((rating_given * 100.0) as u32).to_string().into();
+            } else {
+                eprintln!(
+                    "cannot find proposal with id {}. Ignoring..",
+                    score.proposal_id
+                )
+            }
         }
 
         let content = serde_json::to_string_pretty(&proposals_data)?;
@@ -128,6 +164,8 @@ pub enum Error {
     Io(#[from] std::io::Error),
     #[error(transparent)]
     CannotParseRatingToFloat(#[from] std::num::ParseFloatError),
+    #[error(transparent)]
+    Csv(#[from] csv::Error),
 }
 
 #[derive(Serialize, Deserialize)]

@@ -52,6 +52,12 @@ impl Config {
     }
 
     pub fn extend_from_initials_file<P: AsRef<Path>>(&mut self, snapshot: P) -> Result<()> {
+        let snapshot = snapshot.as_ref();
+        if !snapshot.exists() {
+            return Err(crate::error::Error::CannotFindSnapshotFile(
+                snapshot.to_path_buf(),
+            ));
+        }
         self.initials.extend_from_external(read_initials(snapshot)?);
         Ok(())
     }
@@ -117,6 +123,11 @@ impl Config {
 }
 
 pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Config> {
+    let config = config.as_ref();
+    if !config.exists() {
+        return Err(crate::error::Error::CannotFindConfig(config.to_path_buf()));
+    }
+
     let contents = std::fs::read_to_string(&config)?;
     serde_json::from_str(&contents).map_err(Into::into)
 }

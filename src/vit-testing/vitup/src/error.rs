@@ -7,6 +7,7 @@ use jormungandr_automation::testing::ConsumptionBenchmarkError;
 use jormungandr_automation::testing::VerificationError;
 use jormungandr_lib::interfaces::Block0ConfigurationError;
 use jormungandr_lib::interfaces::FragmentStatus;
+use std::path::PathBuf;
 use std::time::Duration;
 use thor::FragmentSenderError;
 use thor::FragmentVerifierError;
@@ -83,6 +84,10 @@ pub enum Error {
     Data(#[from] crate::mode::standard::DataError),
     #[error(transparent)]
     WalletProxyController(#[from] WalletProxyControllerError),
+    #[error("Cannot find snapshot file in: {0}")]
+    CannotFindSnapshotFile(PathBuf),
+    #[error("Cannot find config in: {0}")]
+    CannotFindConfig(PathBuf),
     #[error("synchronization for nodes has failed. {}. Timeout was: {} s", info, timeout.as_secs())]
     SyncTimeoutOccurred { info: String, timeout: Duration },
     #[error("{info}")]

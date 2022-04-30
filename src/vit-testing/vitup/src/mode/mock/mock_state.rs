@@ -21,6 +21,7 @@ pub struct MockState {
     vit_state: Snapshot,
     block0_bin: Vec<u8>,
     network_congestion: NetworkCongestion,
+    block_account_endpoint_counter: u32,
 }
 
 impl MockState {
@@ -58,7 +59,26 @@ impl MockState {
                 service_version: params.service.version,
             },
             block0_bin: jortestkit::file::get_file_as_byte_vec(controller.block0_file())?,
+            block_account_endpoint_counter: 0,
         })
+    }
+
+    pub fn set_block_account_endpoint(&mut self, block_account_endpoint_counter: u32) {
+        self.block_account_endpoint_counter = block_account_endpoint_counter;
+    }
+
+    pub fn decrement_block_account_endpoint(&mut self) {
+        if self.block_account_endpoint_counter > 0 {
+            self.block_account_endpoint_counter -= 1;
+        }
+    }
+
+    pub fn reset_block_account_endpoint(&mut self) {
+        self.block_account_endpoint_counter = 0;
+    }
+
+    pub fn block_account_endpoint(&self) -> u32 {
+        self.block_account_endpoint_counter
     }
 
     pub fn version(&self) -> VitVersion {

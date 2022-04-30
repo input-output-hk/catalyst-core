@@ -88,6 +88,25 @@ Mock will accept all connections
 ```
 curl --location --request POST 'http://{mock_address}/api/control/command/available/true'
 ```
+
+##### Make account endpoint unavailable
+
+Mock will reject n calls to account endpoint and as a result voting app won't recieve voting power for some time.
+This endpoint assume that one who changes block-account endpoint knows what is the frequency of calls from client
+and ultimately can be translated to some time of unavailability.
+
+```
+curl --location --request POST 'http://{mock_address}/api/control/command/block-account/{number_of_calls_to_reject}'
+```
+
+##### Make account endpoint available
+
+Mock will reset account endpoint unavailability 
+
+```
+curl --location --request POST 'http://{mock_address}/api/control/command/block-account/reset'
+```
+
 ##### Reset environment
 
 Resets environment data

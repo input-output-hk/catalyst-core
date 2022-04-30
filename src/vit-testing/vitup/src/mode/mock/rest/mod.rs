@@ -157,6 +157,22 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
                 .and(with_context.clone())
                 .and_then(command_version);
 
+            let block_account = {
+                let root = warp::path!("block-account" / ..);
+
+                let block_counter = warp::path!(u32)
+                    .and(warp::post())
+                    .and(with_context.clone())
+                    .and_then(command_block_account);
+
+                let reset = warp::path!("reset")
+                    .and(warp::post())
+                    .and(with_context.clone())
+                    .and_then(command_reset_block_account);
+
+                root.and(block_counter.or(reset)).boxed()
+            };
+
             let fragment_strategy = {
                 let root = warp::path!("fragments" / ..);
 
@@ -217,7 +233,8 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
                         .or(pending)
                         .or(reset)
                         .or(update)
-                        .or(forget),
+                        .or(forget)
+                        .or(block_account),
                 )
                 .boxed()
             };
@@ -750,6 +767,27 @@ pub async fn command_available(
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
     context.lock().unwrap().state_mut().available = available;
+    Ok(warp::reply())
+}
+
+pub async fn command_block_account(
+    block_account_endpoint_counter: u32,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
+    context
+        .lock()
+        .unwrap()
+        .state_mut()
+        .set_block_account_endpoint(block_account_endpoint_counter);
+    Ok(warp::reply())
+}
+
+pub async fn command_reset_block_account(context: ContextLock) -> Result<impl Reply, Rejection> {
+    context
+        .lock()
+        .unwrap()
+        .state_mut()
+        .reset_block_account_endpoint();
     Ok(warp::reply())
 }
 
@@ -1328,6 +1366,20 @@ pub async fn get_account(
         ));
         return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
+
+    let mut context_lock = context.lock().unwrap();
+    let state = context_lock.state_mut();
+
+    if state.block_account_endpoint() != 0 {
+        state.decrement_block_account_endpoint();
+        let code = state.error_code;
+        context_lock.log(&format!(
+            "block account endpoint mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
+    }
+
     let account_state: jormungandr_lib::interfaces::AccountState = context
         .lock()
         .unwrap()

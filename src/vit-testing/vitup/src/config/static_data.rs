@@ -1,4 +1,5 @@
 use crate::builders::{default_next_snapshot_date, default_next_vote_date, default_snapshot_date};
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
@@ -20,6 +21,7 @@ pub struct StaticData {
     pub reviews: usize,
     pub voting_power: u64,
     pub fund_name: String,
+    #[serde(default = "default_fund_id")]
     pub fund_id: i32,
 }
 
@@ -35,7 +37,12 @@ impl Default for StaticData {
             next_vote_start_time: default_next_vote_date(),
             options: VoteOptions::parse_coma_separated_value("yes,no"),
             fund_name: "fund_3".to_owned(),
-            fund_id: 1,
+            fund_id: default_fund_id(),
         }
     }
+}
+
+fn default_fund_id() -> i32 {
+    let mut rng = rand::thread_rng();
+    rng.gen_range(0..10_000) + 1
 }

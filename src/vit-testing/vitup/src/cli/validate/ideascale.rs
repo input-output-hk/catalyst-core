@@ -36,10 +36,6 @@ pub struct IdeascaleValidateCommand {
     #[structopt(long = "prefix")]
     pub prefix: Option<String>,
 
-    /// migration - path to migration scritps for vit-servicing station
-    #[structopt(long = "migration")]
-    pub migration_scripts_path: Option<PathBuf>,
-
     /// should i fix data is possible
     #[structopt(long = "fix")]
     pub fix: bool,
@@ -210,7 +206,7 @@ impl IdeascaleValidateCommand {
         parameters.set_fund_id(input_parameters.data.fund_id);
         parameters.calculate_challenges_total_funds = false;
 
-        DbGenerator::new(parameters, self.migration_scripts_path.clone())
+        DbGenerator::new(parameters, self.output.clone())
             .build(&deployment_tree.database_path(), &mut template_generator)?;
 
         Ok(())

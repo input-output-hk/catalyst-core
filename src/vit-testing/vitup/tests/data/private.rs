@@ -12,12 +12,12 @@ use vitup::testing::{spawn_network, vitup_setup};
 
 #[test]
 pub fn private_vote_multiple_vote_plans() {
-    let funds_path = PathBuf::from_str("../resources/tests/example/funds.json").unwrap();
+    let funds_path = PathBuf::from_str("./resources/example/funds.json").unwrap();
     let mut template_generator = ExternalValidVotingTemplateGenerator::new(
-        PathBuf::from_str("../resources/tests/example/proposals.json").unwrap(),
-        PathBuf::from_str("../resources/tests/example/challenges.json").unwrap(),
+        PathBuf::from_str("./resources/example/proposals.json").unwrap(),
+        PathBuf::from_str("./resources/example/challenges.json").unwrap(),
         funds_path.clone(),
-        PathBuf::from_str("../resources/tests/example/review.json").unwrap(),
+        PathBuf::from_str("./resources/example/review.json").unwrap(),
     )
     .unwrap();
     let expected_funds = parse_funds(funds_path).unwrap();

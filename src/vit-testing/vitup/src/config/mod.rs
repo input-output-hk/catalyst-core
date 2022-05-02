@@ -1,6 +1,7 @@
 mod blockchain;
 mod builder;
 mod initials;
+mod migrations;
 mod service;
 mod static_data;
 mod vote_plan;
@@ -15,6 +16,7 @@ pub use blockchain::Blockchain;
 pub use builder::ConfigBuilder;
 pub use certs::CertificatesBuilder;
 pub use initials::{Initial as InitialEntry, Initials};
+pub use migrations::{Error as MigrationError, MigrationFilesBuilder};
 pub use service::Service;
 pub use static_data::StaticData;
 use time::format_description::{self, FormatItem};

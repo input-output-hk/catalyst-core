@@ -16,10 +16,10 @@ use vitup::testing::{spawn_network, vitup_setup};
 
 #[test]
 pub fn public_vote_multiple_vote_plans() {
-    let proposals_path = PathBuf::from_str("../resources/tests/example/proposals.json").unwrap();
-    let challenges_path = PathBuf::from_str("../resources/tests/example/challenges.json").unwrap();
-    let funds_path = PathBuf::from_str("../resources/tests/example/funds.json").unwrap();
-    let reviews_path = PathBuf::from_str("../resources/tests/example/review.json").unwrap();
+    let proposals_path = PathBuf::from_str("./resources/example/proposals.json").unwrap();
+    let challenges_path = PathBuf::from_str("./resources/example/challenges.json").unwrap();
+    let funds_path = PathBuf::from_str("./resources/example/funds.json").unwrap();
+    let reviews_path = PathBuf::from_str("./resources/example/review.json").unwrap();
 
     let mut template_generator = ExternalValidVotingTemplateGenerator::new(
         proposals_path.clone(),

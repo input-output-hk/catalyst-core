@@ -5,6 +5,7 @@ mod ledger_state;
 mod logger;
 mod mock_state;
 mod rest;
+mod snapshot;
 
 pub use config::{read_config, Configuration, Error as MockConfigError};
 pub use congestion::{NetworkCongestion, NetworkCongestionData, NetworkCongestionMode};

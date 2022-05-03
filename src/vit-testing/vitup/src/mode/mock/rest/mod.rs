@@ -36,6 +36,7 @@ use vit_servicing_station_lib::db::models::proposals::Proposal;
 use vit_servicing_station_lib::v0::endpoints::proposals::ProposalsByVoteplanIdAndIndex;
 use vit_servicing_station_lib::v0::errors::HandleError;
 use vit_servicing_station_lib::v0::result::HandlerResult;
+use voting_hir::VoterHIR;
 use warp::http::header::{HeaderMap, HeaderValue};
 use warp::hyper::service::make_service_fn;
 use warp::{reject::Reject, Filter, Rejection, Reply};
@@ -265,6 +266,12 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
                 root.and(normal.or(jammed).or(moderate).or(reset)).boxed()
             };
 
+            let snapshot_service = warp::path!("add-snapshot" / String)
+                .and(warp::post())
+                .and(warp::body::json())
+                .and(with_context.clone())
+                .and_then(command_add_snapshot);
+
             root.and(
                 reset
                     .or(availability)
@@ -272,7 +279,8 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
                     .or(fund_id)
                     .or(fragment_strategy)
                     .or(network_strategy)
-                    .or(version),
+                    .or(version)
+                    .or(snapshot_service),
             )
             .boxed()
         };
@@ -429,6 +437,30 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
             })
             .with(warp::reply::with::headers(default_headers.clone()));
 
+        let snapshot = {
+            let root = warp::path!("snapshot" / ..);
+
+            let voting_power = warp::path!(String / String)
+                .and(warp::get())
+                .and(with_context.clone())
+                .and_then(get_voting_power)
+                .boxed();
+
+            let tags = warp::path::end()
+                .and(warp::get())
+                .and(with_context.clone())
+                .and_then(get_tags)
+                .boxed();
+
+            let dump = warp::path!(String)
+                .and(warp::get())
+                .and(with_context.clone())
+                .and_then(get_snapshot)
+                .boxed();
+
+            root.and(tags.or(voting_power).or(dump))
+        };
+
         root.and(
             proposals
                 .or(challenges)
@@ -440,7 +472,8 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
                 .or(account)
                 .or(fragment)
                 .or(votes)
-                .or(message),
+                .or(message)
+                .or(snapshot),
         )
         .boxed()
     };
@@ -954,6 +987,20 @@ pub async fn command_forget(context: ContextLock) -> Result<impl Reply, Rejectio
     Ok(warp::reply())
 }
 
+async fn command_add_snapshot(
+    tag: String,
+    new_snapshot: Vec<VoterHIR>,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
+    context
+        .lock()
+        .unwrap()
+        .state_mut()
+        .voters_mut()
+        .update_tag(tag, new_snapshot);
+    Ok(warp::reply())
+}
+
 pub async fn post_message(
     message: warp::hyper::body::Bytes,
     context: ContextLock,
@@ -1414,4 +1461,54 @@ pub async fn authorize_token(
         return Err(warp::reject::custom(TokenError::UnauthorizedToken));
     }
     Ok(())
+}
+
+async fn get_voting_power(
+    tag: String,
+    key_hex: String,
+    context: Arc<std::sync::Mutex<Context>>,
+) -> Result<impl Reply, Rejection> {
+    let entries = context
+        .lock()
+        .unwrap()
+        .state()
+        .voters()
+        .get_voting_power(&tag, &parse_account_id(&key_hex)?.into())
+        .into_iter()
+        .map(
+            |VoterHIR {
+                 voting_group,
+                 voting_power,
+                 ..
+             }| serde_json::json!({"voting_power": voting_power, "voting_group": voting_group}),
+        )
+        .collect::<Vec<_>>();
+    Ok(warp::reply::json(&entries))
+}
+
+async fn get_snapshot(
+    tag: String,
+    context: Arc<std::sync::Mutex<Context>>,
+) -> Result<impl Reply, Rejection> {
+    let entries = context
+        .lock()
+        .unwrap()
+        .state()
+        .voters()
+        .get_snapshot(&tag)
+        .into_iter()
+        .map(
+            |VoterHIR {
+                 voting_group,
+                 voting_power,
+                 voting_key,
+             }| serde_json::json!({"voting_key": voting_key.to_hex(), "voting_power": voting_power, "voting_group": voting_group}),
+        )
+        .collect::<Vec<_>>();
+    Ok(warp::reply::json(&entries))
+}
+
+async fn get_tags(context: Arc<std::sync::Mutex<Context>>) -> Result<impl Reply, Rejection> {
+    let entries = context.lock().unwrap().state().voters().tags();
+    Ok(warp::reply::json(&entries))
 }

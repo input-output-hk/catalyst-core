@@ -286,12 +286,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
 
 [[package]]
-name = "beef"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bed554bd50246729a1ec158d08aa3235d1b69d94ad120ebe187e28894787e736"
-
-[[package]]
 name = "bincode"
 version = "1.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -494,10 +488,9 @@ dependencies = [
 [[package]]
 name = "cardano-legacy-address"
 version = "0.1.1"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#41325015888e0a62a3e3b1718c278d4bec9d71f8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#bbb9552defaf3ea1fa4efcca697bc3edf513095f"
 dependencies = [
  "cbor_event",
- "chain-ser",
  "cryptoxide 0.4.2",
  "ed25519-bip32 0.4.1",
 ]
@@ -618,7 +611,7 @@ dependencies = [
 [[package]]
 name = "chain-addr"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#41325015888e0a62a3e3b1718c278d4bec9d71f8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#bbb9552defaf3ea1fa4efcca697bc3edf513095f"
 dependencies = [
  "bech32 0.8.1",
  "chain-core",
@@ -632,7 +625,7 @@ dependencies = [
 [[package]]
 name = "chain-core"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#41325015888e0a62a3e3b1718c278d4bec9d71f8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#bbb9552defaf3ea1fa4efcca697bc3edf513095f"
 dependencies = [
  "chain-ser",
 ]
@@ -640,7 +633,7 @@ dependencies = [
 [[package]]
 name = "chain-crypto"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#41325015888e0a62a3e3b1718c278d4bec9d71f8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#bbb9552defaf3ea1fa4efcca697bc3edf513095f"
 dependencies = [
  "bech32 0.8.1",
  "cryptoxide 0.4.2",
@@ -662,10 +655,9 @@ dependencies = [
 [[package]]
 name = "chain-evm"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#41325015888e0a62a3e3b1718c278d4bec9d71f8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#bbb9552defaf3ea1fa4efcca697bc3edf513095f"
 dependencies = [
  "aurora-bn",
- "base64 0.13.0",
  "blake2",
  "byte-slice-cast",
  "chain-ser",
@@ -675,7 +667,6 @@ dependencies = [
  "hex",
  "imhamt",
  "libsecp256k1",
- "logos",
  "num",
  "quickcheck",
  "ripemd",
@@ -683,13 +674,12 @@ dependencies = [
  "sha2 0.10.2",
  "sha3 0.10.1",
  "thiserror",
- "wee_alloc",
 ]
 
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#41325015888e0a62a3e3b1718c278d4bec9d71f8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#bbb9552defaf3ea1fa4efcca697bc3edf513095f"
 dependencies = [
  "cardano-legacy-address",
  "chain-addr",
@@ -729,7 +719,7 @@ dependencies = [
 [[package]]
 name = "chain-ser"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#41325015888e0a62a3e3b1718c278d4bec9d71f8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#bbb9552defaf3ea1fa4efcca697bc3edf513095f"
 dependencies = [
  "thiserror",
 ]
@@ -737,7 +727,7 @@ dependencies = [
 [[package]]
 name = "chain-storage"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#41325015888e0a62a3e3b1718c278d4bec9d71f8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#bbb9552defaf3ea1fa4efcca697bc3edf513095f"
 dependencies = [
  "criterion",
  "data-pile",
@@ -750,7 +740,7 @@ dependencies = [
 [[package]]
 name = "chain-time"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#41325015888e0a62a3e3b1718c278d4bec9d71f8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#bbb9552defaf3ea1fa4efcca697bc3edf513095f"
 dependencies = [
  "chain-core",
  "chain-ser",
@@ -762,7 +752,7 @@ dependencies = [
 [[package]]
 name = "chain-vote"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#41325015888e0a62a3e3b1718c278d4bec9d71f8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#bbb9552defaf3ea1fa4efcca697bc3edf513095f"
 dependencies = [
  "cfg-if 1.0.0",
  "chain-core",
@@ -825,10 +815,34 @@ dependencies = [
  "atty",
  "bitflags",
  "strsim 0.8.0",
- "term_size",
- "textwrap",
+ "textwrap 0.11.0",
  "unicode-width",
  "vec_map",
+]
+
+[[package]]
+name = "clap"
+version = "3.1.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "535434c063ced786eb04aaf529308092c5ab60889e8fe24275d15de07b01fa97"
+dependencies = [
+ "atty",
+ "bitflags",
+ "clap_lex",
+ "indexmap",
+ "strsim 0.10.0",
+ "termcolor",
+ "terminal_size",
+ "textwrap 0.15.0",
+]
+
+[[package]]
+name = "clap_lex"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a37c35f1112dad5e6e0b1adaff798507497a18fceeb30cceb3bae7d1427b9213"
+dependencies = [
+ "os_str_bytes",
 ]
 
 [[package]]
@@ -947,7 +961,7 @@ checksum = "1604dafd25fba2fe2d5895a9da139f8dc9b319a5fe5354ca137cbbce4e178d10"
 dependencies = [
  "atty",
  "cast",
- "clap",
+ "clap 2.34.0",
  "criterion-plot",
  "csv",
  "itertools 0.10.3",
@@ -2191,7 +2205,7 @@ dependencies = [
 [[package]]
 name = "hersir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a5ce1309f5465706a9d1ec3c87e5951ad1844c31"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#fe45259f818ade0c74f4e273573e001d633e98e5"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2536,7 +2550,7 @@ dependencies = [
 [[package]]
 name = "imhamt"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#41325015888e0a62a3e3b1718c278d4bec9d71f8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#bbb9552defaf3ea1fa4efcca697bc3edf513095f"
 dependencies = [
  "proptest",
  "rustc_version",
@@ -2707,7 +2721,7 @@ checksum = "1aab8fc367588b89dcee83ab0fd66b72b50b72fa1904d7095045ace2b0c81c35"
 [[package]]
 name = "jcli"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a5ce1309f5465706a9d1ec3c87e5951ad1844c31"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#fe45259f818ade0c74f4e273573e001d633e98e5"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2719,7 +2733,7 @@ dependencies = [
  "chain-impl-mockchain",
  "chain-time",
  "chain-vote",
- "clap",
+ "clap 3.1.14",
  "ed25519-bip32 0.4.1",
  "gtmpl",
  "hex",
@@ -2750,7 +2764,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-automation"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a5ce1309f5465706a9d1ec3c87e5951ad1844c31"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#fe45259f818ade0c74f4e273573e001d633e98e5"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -2814,7 +2828,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-integration-tests"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a5ce1309f5465706a9d1ec3c87e5951ad1844c31"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#fe45259f818ade0c74f4e273573e001d633e98e5"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -2866,7 +2880,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a5ce1309f5465706a9d1ec3c87e5951ad1844c31"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#fe45259f818ade0c74f4e273573e001d633e98e5"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -3095,33 +3109,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "logos"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "427e2abca5be13136da9afdbf874e6b34ad9001dd70f2b103b083a85daa7b345"
-dependencies = [
- "logos-derive",
-]
-
-[[package]]
-name = "logos-derive"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56a7d287fd2ac3f75b11f19a1c8a874a7d55744bd91f7a1b3e7cf87d4343c36d"
-dependencies = [
- "beef",
- "fnv",
- "proc-macro2 1.0.36",
- "quote 1.0.16",
- "regex-syntax",
- "syn 1.0.89",
- "utf8-ranges",
-]
-
-[[package]]
 name = "loki"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a5ce1309f5465706a9d1ec3c87e5951ad1844c31"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#fe45259f818ade0c74f4e273573e001d633e98e5"
 dependencies = [
  "chain-addr",
  "chain-core",
@@ -3199,12 +3189,6 @@ checksum = "5aa361d4faea93603064a027415f07bd8e1d5c88c9fbf68bf56a285428fd79ce"
 dependencies = [
  "autocfg",
 ]
-
-[[package]]
-name = "memory_units"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8452105ba047068f40ff7093dd1d9da90898e63dd61736462e9cdda6a90ad3c3"
 
 [[package]]
 name = "migrations_internals"
@@ -3319,7 +3303,7 @@ dependencies = [
 [[package]]
 name = "mjolnir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a5ce1309f5465706a9d1ec3c87e5951ad1844c31"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#fe45259f818ade0c74f4e273573e001d633e98e5"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -3670,6 +3654,12 @@ dependencies = [
  "log",
  "winapi 0.3.9",
 ]
+
+[[package]]
+name = "os_str_bytes"
+version = "6.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e22443d1643a904602595ba1cd8f7d896afe56d26712531c5ff73a15b2fbf64"
 
 [[package]]
 name = "output_vt100"
@@ -5196,7 +5186,7 @@ dependencies = [
 [[package]]
 name = "sparse-array"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#41325015888e0a62a3e3b1718c278d4bec9d71f8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#bbb9552defaf3ea1fa4efcca697bc3edf513095f"
 
 [[package]]
 name = "spin"
@@ -5288,7 +5278,7 @@ version = "0.3.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c6b5c64445ba8094a6ab0c3cd2ad323e07171012d9c98b0b15651daf1787a10"
 dependencies = [
- "clap",
+ "clap 2.34.0",
  "lazy_static",
  "structopt-derive",
 ]
@@ -5475,16 +5465,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "term_size"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e4129646ca0ed8f45d09b929036bafad5377103edd06e50bf574b353d2b08d9"
-dependencies = [
- "libc",
- "winapi 0.3.9",
-]
-
-[[package]]
 name = "termcolor"
 version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5527,8 +5507,16 @@ version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d326610f408c7a4eb6f51c37c330e496b08506c9457c9d34287ecc38809fb060"
 dependencies = [
- "term_size",
  "unicode-width",
+]
+
+[[package]]
+name = "textwrap"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1141d4d61095b28419e22cb0bbf02755f5e54e0526f97f1e3d1d160e60885fb"
+dependencies = [
+ "terminal_size",
 ]
 
 [[package]]
@@ -5554,7 +5542,7 @@ dependencies = [
 [[package]]
 name = "thor"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a5ce1309f5465706a9d1ec3c87e5951ad1844c31"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#fe45259f818ade0c74f4e273573e001d633e98e5"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",
@@ -6090,7 +6078,7 @@ dependencies = [
 [[package]]
 name = "typed-bytes"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#41325015888e0a62a3e3b1718c278d4bec9d71f8"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#bbb9552defaf3ea1fa4efcca697bc3edf513095f"
 
 [[package]]
 name = "typenum"
@@ -6212,12 +6200,6 @@ name = "utf-8"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09cc8ee72d2a9becf2f2febe0205bbed8fc6615b7cb429ad062dc7b7ddd036a9"
-
-[[package]]
-name = "utf8-ranges"
-version = "1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4ae116fef2b7fea257ed6440d3cfcff7f190865f170cdad00bb6465bf18ecba"
 
 [[package]]
 name = "uuid"
@@ -6377,6 +6359,7 @@ dependencies = [
  "chain-time",
  "chain-vote",
  "console",
+ "csv",
  "ctrlc",
  "custom_debug",
  "dialoguer 0.10.0",
@@ -6397,6 +6380,7 @@ dependencies = [
  "json",
  "lazy_static",
  "poldercast 0.14.0-dev",
+ "proptest",
  "quickcheck",
  "quickcheck_macros",
  "rand 0.8.5",
@@ -6426,6 +6410,7 @@ dependencies = [
  "valgrind",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
+ "voting-hir",
  "walkdir",
  "warp",
  "warp-reverse-proxy",
@@ -6437,6 +6422,15 @@ name = "void"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a02e4885ed3bc0f2de90ea6dd45ebcbb66dacffe03547fadbb0eeae2770887d"
+
+[[package]]
+name = "voting-hir"
+version = "0.1.0"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=main#9d638274cd36cae2567089603b4d3843c7bea0e4"
+dependencies = [
+ "jormungandr-lib",
+ "serde",
+]
 
 [[package]]
 name = "wait-timeout"
@@ -6691,18 +6685,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "552ceb903e957524388c4d3475725ff2c8b7960922063af6ce53c9a43da07449"
 dependencies = [
  "webpki 0.22.0",
-]
-
-[[package]]
-name = "wee_alloc"
-version = "0.4.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dbb3b5a6b2bb17cb6ad44a2e68a43e8d2722c997da10e928665c72ec6c0a0b8e"
-dependencies = [
- "cfg-if 0.1.10",
- "libc",
- "memory_units",
- "winapi 0.3.9",
 ]
 
 [[package]]

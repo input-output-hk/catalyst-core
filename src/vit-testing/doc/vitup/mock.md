@@ -188,3 +188,15 @@ example:
 ```
 vitup-cli --endpoint {mock} disruption control health
 ```
+
+
+##### Add new voters snapshot for specific tag
+
+Add (or overwrite) voters snapshot for this particular tag
+
+```
+curl --location --request POST 'http://{mock_address}/api/control/command/add-snapshot/{tag}' \
+--header 'Content-Type: application/json' \
+--data-raw '
+  [{"voting_group":"direct","voting_key":"241799302733178aca5c0beaa7a43d054cafa36ca5f929edd46313d49e6a0fd5","voting_power":10131166116863755484},{"voting_group":"dreps","voting_key":"0e3fe9b3e4098759df6f7b44bd9b962a53e4b7b821d50bb72cbcdf1ff7f669f8","voting_power":9327154517439309883}]'
+```

@@ -1,4 +1,4 @@
-use super::{Configuration as MockConfig, LedgerState};
+use super::{snapshot::VoterSnapshot, Configuration as MockConfig, LedgerState};
 use crate::builders::utils::SessionSettingsExtension;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::Config;
@@ -19,6 +19,8 @@ pub struct MockState {
     version: VitVersion,
     ledger_state: LedgerState,
     vit_state: Snapshot,
+    // ATTENTION: this is not in sync with the ledger
+    voters: VoterSnapshot,
     block0_bin: Vec<u8>,
     network_congestion: NetworkCongestion,
     block_account_endpoint_counter: u32,
@@ -58,6 +60,7 @@ impl MockState {
             version: VitVersion {
                 service_version: params.service.version,
             },
+            voters: VoterSnapshot::dummy(),
             block0_bin: jortestkit::file::get_file_as_byte_vec(controller.block0_file())?,
             block_account_endpoint_counter: 0,
         })
@@ -103,6 +106,14 @@ impl MockState {
 
     pub fn vit(&self) -> &Snapshot {
         &self.vit_state
+    }
+
+    pub fn voters(&self) -> &VoterSnapshot {
+        &self.voters
+    }
+
+    pub fn voters_mut(&mut self) -> &mut VoterSnapshot {
+        &mut self.voters
     }
 
     pub fn ledger(&self) -> &LedgerState {

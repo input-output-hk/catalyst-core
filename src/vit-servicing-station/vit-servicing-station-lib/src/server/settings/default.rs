@@ -1,5 +1,5 @@
 use super::config::ServiceSettings;
-use super::config::{Cors, Log, Tls};
+use super::config::{Cors, Log, Tls, ADDRESS_DEFAULT, BLOCK0_PATH_DEFAULT, DB_URL_DEFAULT};
 use std::net::SocketAddr;
 use std::str::FromStr;
 
@@ -8,11 +8,11 @@ impl Default for ServiceSettings {
         Self {
             in_settings_file: None,
             out_settings_file: None,
-            address: SocketAddr::from_str("0.0.0.0:3030").unwrap(),
+            address: SocketAddr::from_str(ADDRESS_DEFAULT).unwrap(),
             tls: Tls::default(),
             cors: Cors::default(),
-            db_url: "./db/database.sqlite3".to_string(),
-            block0_path: "./resources/v0/block0.bin".to_string(),
+            db_url: DB_URL_DEFAULT.to_string(),
+            block0_path: BLOCK0_PATH_DEFAULT.to_string(),
             enable_api_tokens: false,
             log: Log::default(),
             service_version: "".to_string(),

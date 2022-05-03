@@ -179,6 +179,55 @@ paths:
               schema:
                 $ref: "#/components/schemas/AdvisorReviews"
 
+  /api/v0/snapshot/{tag}/{voting_key}:
+    get:
+      operationId: getVotingPower
+      summary: Get voting power by voting key
+      tags: [snapshot]
+      description: |
+        Get voting power by voting key
+      parameters:
+        - in: path
+          name: voting_key
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VotingPowers"
+        "400":
+          description: Not found
+
+  /api/v0/snapshot/:
+    get:
+      operationId: getSnapshotTags
+      summary: Get list of available versions
+      tags: [snapshot]
+      description: |
+        Get list of available snapshot versions, which can be used to retrieve
+        voting power
+      responses:
+        "200":
+          description: Success
+
+  /api/v0/snapshot/{tag}:
+    put:
+      operationId: updateSnapshot
+      summary: Replace the snapshot data for the given tag
+      tags: [snapshot]
+      description: |
+        Replace the snapshot data for the given tag
+      requestBody:
+        description: list of VoterHIR entries in json format
+        required: true
+      responses:
+        "200":
+          description: Success
+
 components:
   schemas:
     Fund:
@@ -567,3 +616,23 @@ components:
           items:
               type: integer
               format: i64
+
+    VotingPowers:
+      type: array
+      items:
+        $ref: "#/components/schemas/VotingPower"
+      example:
+        [
+          {
+            "voting_power": 1000,
+            "voting_group": "representative",
+          },
+        ]
+
+    VotingPower:
+      properties:
+        voting_power:
+          type: integer
+          format: u64
+        voting_group:
+          type: String

@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::db::models::{challenges::Challenge, proposals::FullProposalInfo};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
 pub struct Query {
     pub table: Table,
     pub filter: Vec<Constraint>,
@@ -10,12 +11,14 @@ pub struct Query {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
 pub struct Constraint {
     pub search: String,
     pub column: Column,
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
 pub struct OrderBy {
     pub column: Column,
     #[serde(default)]
@@ -23,12 +26,14 @@ pub struct OrderBy {
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
 pub enum Table {
     Challenges,
     Proposals,
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
 pub enum Column {
     Title,
     Type,
@@ -56,7 +61,7 @@ mod tests {
     fn response_serializes_as_vec() {
         let response = SearchResponse::Proposal(vec![get_test_proposal()]);
         let s = to_string(&response).unwrap();
-        assert!(s.starts_with("["));
-        assert!(s.ends_with("]"));
+        assert!(s.starts_with('['));
+        assert!(s.ends_with(']'));
     }
 }

@@ -452,7 +452,13 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
                 .and_then(get_tags)
                 .boxed();
 
-            root.and(tags.or(voting_power))
+            let dump = warp::path!(String)
+                .and(warp::get())
+                .and(with_context.clone())
+                .and_then(get_snapshot)
+                .boxed();
+
+            root.and(tags.or(voting_power).or(dump))
         };
 
         root.and(
@@ -1475,6 +1481,28 @@ async fn get_voting_power(
                  voting_power,
                  ..
              }| serde_json::json!({"voting_power": voting_power, "voting_group": voting_group}),
+        )
+        .collect::<Vec<_>>();
+    Ok(warp::reply::json(&entries))
+}
+
+async fn get_snapshot(
+    tag: String,
+    context: Arc<std::sync::Mutex<Context>>,
+) -> Result<impl Reply, Rejection> {
+    let entries = context
+        .lock()
+        .unwrap()
+        .state()
+        .voters()
+        .get_snapshot(&tag)
+        .into_iter()
+        .map(
+            |VoterHIR {
+                 voting_group,
+                 voting_power,
+                 voting_key,
+             }| serde_json::json!({"voting_key": voting_key.to_hex(), "voting_power": voting_power, "voting_group": voting_group}),
         )
         .collect::<Vec<_>>();
     Ok(warp::reply::json(&entries))

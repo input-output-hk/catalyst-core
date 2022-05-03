@@ -31,6 +31,10 @@ impl VoterSnapshot {
         self.hirs_by_tag.keys().cloned().collect()
     }
 
+    pub fn get_snapshot(&self, tag: &str) -> Vec<VoterHIR> {
+        self.hirs_by_tag.get(tag).cloned().unwrap_or_default()
+    }
+
     pub fn dummy() -> Self {
         let mut test_runner = TestRunner::deterministic();
         Self::arbitrary_with(())

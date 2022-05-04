@@ -72,6 +72,7 @@ fn search(
             let mut query = proposals.into_boxed();
 
             for Constraint { search, column } in filter {
+                let search = format!("%{search}%");
                 query = match column {
                     Title => query.filter(proposal_title.like(search)),
                     Desc => query.filter(proposal_summary.like(search)),

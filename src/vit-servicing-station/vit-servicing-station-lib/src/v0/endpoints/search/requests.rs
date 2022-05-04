@@ -6,7 +6,9 @@ use crate::db::models::{challenges::Challenge, proposals::FullProposalInfo};
 #[serde(rename_all = "kebab-case")]
 pub struct Query {
     pub table: Table,
+    #[serde(default)]
     pub filter: Vec<Constraint>,
+    #[serde(default)]
     pub order_by: Vec<OrderBy>,
 }
 
@@ -51,7 +53,7 @@ pub enum SearchResponse {
 
 #[cfg(test)]
 mod tests {
-    use serde_json::to_string;
+    use serde_json::{from_value, json, to_string};
 
     use crate::db::models::proposals::test::get_test_proposal;
 
@@ -63,5 +65,10 @@ mod tests {
         let s = to_string(&response).unwrap();
         assert!(s.starts_with('['));
         assert!(s.ends_with(']'));
+    }
+
+    #[test]
+    fn filters_and_orders_are_optional() {
+        from_value::<Query>(json!({"table": "proposals"})).unwrap();
     }
 }

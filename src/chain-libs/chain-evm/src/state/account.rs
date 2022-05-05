@@ -60,7 +60,7 @@ impl Balance {
 }
 
 /// Smart-contract bytecode, such as the one compiled from Solidity code, for example.
-pub type ByteCode = Vec<u8>;
+pub type ByteCode = Box<[u8]>;
 
 /// A represantation of an EVM account.
 #[derive(Clone, Default, PartialEq, Eq)]

@@ -274,14 +274,14 @@ pub fn transact_create<State: EvmState>(
     value: U256,
     init_code: ByteCode,
     access_list: Vec<(Address, Vec<Key>)>,
-) -> Result<ByteCode, Error> {
+) -> Result<Vec<u8>, Error> {
     let caller = vm.origin;
     let gas_limit = vm.gas_limit;
     execute_transaction(vm, |executor| {
         executor.transact_create(
             caller,
             value,
-            init_code.to_vec(),
+            init_code.into(),
             gas_limit,
             access_list.clone(),
         )
@@ -296,14 +296,14 @@ pub fn transact_create2<State: EvmState>(
     init_code: ByteCode,
     salt: H256,
     access_list: Vec<(Address, Vec<Key>)>,
-) -> Result<ByteCode, Error> {
+) -> Result<Vec<u8>, Error> {
     let caller = vm.origin;
     let gas_limit = vm.gas_limit;
     execute_transaction(vm, |executor| {
         executor.transact_create2(
             caller,
             value,
-            init_code.to_vec(),
+            init_code.into(),
             salt,
             gas_limit,
             access_list.clone(),
@@ -319,7 +319,7 @@ pub fn transact_call<State: EvmState>(
     value: U256,
     data: ByteCode,
     access_list: Vec<(Address, Vec<Key>)>,
-) -> Result<ByteCode, Error> {
+) -> Result<Vec<u8>, Error> {
     let caller = vm.origin;
     let gas_limit = vm.gas_limit;
     execute_transaction(vm, |executor| {
@@ -327,7 +327,7 @@ pub fn transact_call<State: EvmState>(
             caller,
             address,
             value,
-            data.to_vec(),
+            data.into(),
             gas_limit,
             access_list.clone(),
         )
@@ -403,6 +403,7 @@ impl<'a, State: EvmState> Backend for VirtualMachine<'a, State> {
                     .map(|account| account.state.code)
                     .unwrap_or_default()
             })
+            .into()
     }
     fn storage(&self, address: H160, index: H256) -> H256 {
         self.substate
@@ -582,7 +583,7 @@ impl<'a, State: EvmState> StackState<'a> for VirtualMachine<'a, State> {
     }
 
     fn set_code(&mut self, address: H160, code: Vec<u8>) {
-        self.substate.account_mut(address, self.state).state.code = code;
+        self.substate.account_mut(address, self.state).state.code = code.into();
     }
 
     fn transfer(&mut self, transfer: Transfer) -> Result<(), ExitError> {

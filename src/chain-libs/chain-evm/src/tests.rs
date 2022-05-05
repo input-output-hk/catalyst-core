@@ -22,7 +22,7 @@ impl TryFrom<AccountState> for Account {
             state: crate::state::AccountState {
                 nonce: val.nonce,
                 storage: val.storage.into_iter().collect(),
-                code: val.code,
+                code: val.code.into(),
             },
         })
     }
@@ -133,7 +133,7 @@ impl evm_test_suite::TestEvmState for TestEvmLedger {
             tx.gas_limit.as_u64(),
             true,
         );
-        transact_call(vm, tx.to, tx.value, tx.data, Vec::new())
+        transact_call(vm, tx.to, tx.value, tx.data.into(), Vec::new())
             .map_err(|e| format!("can not run transaction, err: {}", e))?;
 
         Ok(self)

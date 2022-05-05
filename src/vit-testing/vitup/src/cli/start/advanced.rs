@@ -114,6 +114,7 @@ impl AdvancedStartCommandArgs {
         if let Some(snapshot) = self.snapshot {
             config
                 .initials
+                .block0
                 .extend_from_external(read_initials(snapshot)?);
         }
 

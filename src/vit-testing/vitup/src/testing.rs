@@ -26,7 +26,7 @@ pub fn vitup_setup_default(
     };
 
     let config = ConfigBuilder::default()
-        .initials_count(no_of_wallets, "1234")
+        .block0_initials_count(no_of_wallets, "1234")
         .slot_duration_in_seconds(5)
         .vote_timing(vote_timing.into())
         .proposals_count(100)

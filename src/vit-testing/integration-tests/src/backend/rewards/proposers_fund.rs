@@ -5,7 +5,7 @@ use assert_fs::TempDir;
 use vit_servicing_station_tests::common::data::{
     ArbitraryValidVotePlanConfig, ChallengeConfig, ProposalConfig, Snapshot, ValidVotePlanGenerator,
 };
-use vitup::config::{ConfigBuilder, InitialEntry, Initials};
+use vitup::config::{Block0Initial, Block0Initials, ConfigBuilder};
 use vitup::testing::vitup_setup;
 
 #[test]
@@ -49,11 +49,11 @@ pub struct ProposalRewardsTestConfig {
 
 impl ProposalRewardsTestConfig {
     pub fn voter_funds(mut self, voters_funds: &[u64]) -> Self {
-        self.config_builder = self.config_builder.initials(Initials(
+        self.config_builder = self.config_builder.block0_initials(Block0Initials(
             voters_funds
                 .iter()
                 .cloned()
-                .map(InitialEntry::new_random_wallet)
+                .map(Block0Initial::new_random_wallet)
                 .collect(),
         ));
         self

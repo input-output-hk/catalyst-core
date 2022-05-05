@@ -13,7 +13,7 @@ use thor::FragmentSender;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::ConfigBuilder;
 use vitup::config::VoteBlockchainTime;
-use vitup::config::{InitialEntry, Initials};
+use vitup::config::{Block0Initial, Block0Initials};
 use vitup::testing::spawn_network;
 use vitup::testing::vitup_setup;
 
@@ -28,20 +28,20 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
 
     let testing_directory = TempDir::new().unwrap().into_persistent();
     let config = ConfigBuilder::default()
-        .initials(Initials(vec![
-            InitialEntry::Wallet {
+        .block0_initials(Block0Initials(vec![
+            Block0Initial::Wallet {
                 name: "david".to_string(),
                 funds: 10_000,
                 pin: "1234".to_string(),
                 role: Default::default(),
             },
-            InitialEntry::Wallet {
+            Block0Initial::Wallet {
                 name: "edgar".to_string(),
                 funds: 10_000,
                 pin: "1234".to_string(),
                 role: Default::default(),
             },
-            InitialEntry::Wallet {
+            Block0Initial::Wallet {
                 name: "filip".to_string(),
                 funds: 10_000,
                 pin: "1234".to_string(),

@@ -190,13 +190,14 @@ impl VitBackendSettingsBuilder {
         println!("building initials..");
 
         let mut templates = HashMap::new();
-        if self.config.initials.any() {
+        if self.config.initials.block0.any() {
             blockchain = blockchain.with_external_wallets(
                 self.config
                     .initials
+                    .block0
                     .external_templates(token_id.clone().into()),
             );
-            templates = self.config.initials.templates(
+            templates = self.config.initials.block0.templates(
                 self.config.data.voting_power,
                 blockchain.discrimination(),
                 token_id.clone().into(),

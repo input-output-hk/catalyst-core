@@ -15,7 +15,9 @@ use crate::config::vote_time::FORMAT;
 pub use blockchain::Blockchain;
 pub use builder::ConfigBuilder;
 pub use certs::CertificatesBuilder;
-pub use initials::{Initial as InitialEntry, Initials};
+pub use initials::{
+    Block0Initial, Block0Initials, Initials, SnapshotError, SnapshotInitial, SnapshotInitials,
+};
 pub use migrations::{Error as MigrationError, MigrationFilesBuilder};
 pub use service::Service;
 pub use static_data::StaticData;
@@ -60,7 +62,9 @@ impl Config {
                 snapshot.to_path_buf(),
             ));
         }
-        self.initials.extend_from_external(read_initials(snapshot)?);
+        self.initials
+            .block0
+            .extend_from_external(read_initials(snapshot)?);
         Ok(())
     }
 

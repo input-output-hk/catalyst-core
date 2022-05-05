@@ -1,18 +1,36 @@
+use crate::config::{SnapshotError, SnapshotInitials};
+use hersir::builder::Wallet as WalletSettings;
 use jormungandr_lib::crypto::account::Identifier;
 use proptest::{
     arbitrary::Arbitrary, prelude::*, strategy::BoxedStrategy, test_runner::TestRunner,
 };
 use std::collections::BTreeMap;
+use thor::WalletAlias;
 use voting_hir::VoterHIR;
 
 // TODO: this is a temporary impl until the snapshot service is available as a standalone
 // microservice.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct VoterSnapshot {
     hirs_by_tag: BTreeMap<String, Vec<VoterHIR>>,
 }
 
 impl VoterSnapshot {
+    pub fn from_config_or_default(
+        defined_wallets: Vec<(&WalletAlias, &WalletSettings)>,
+        snapshot_config: &Option<SnapshotInitials>,
+    ) -> Result<Self, SnapshotError> {
+        if let Some(snapshot_config) = snapshot_config {
+            let mut snapshot = Self::default();
+            snapshot.update_tag(
+                snapshot_config.tag.clone(),
+                snapshot_config.as_voters_hirs(defined_wallets)?,
+            );
+            Ok(snapshot)
+        } else {
+            Ok(Self::dummy())
+        }
+    }
     pub fn get_voting_power(&self, tag: &str, voting_key: &Identifier) -> Vec<VoterHIR> {
         self.hirs_by_tag
             .get(tag)

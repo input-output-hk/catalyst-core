@@ -5,6 +5,7 @@ pub use crate::builders::{
     WalletExtension,
 };
 use crate::config::date_format;
+use crate::config::Block0Initials;
 use crate::config::{Config, Initials, VoteTime};
 use chain_impl_mockchain::fee::LinearFee;
 use jormungandr_lib::interfaces::CommitteeIdDef;
@@ -31,17 +32,22 @@ impl ConfigBuilder {
         self
     }
 
+    pub fn block0_initials(mut self, initials: Block0Initials) -> Self {
+        self.config.initials.block0 = initials;
+        self
+    }
+
     pub fn block_content_max_size(mut self, block_content_max_size: u32) -> Self {
         self.config.blockchain.block_content_max_size = block_content_max_size;
         self
     }
 
-    pub fn initials_count(self, initials_count: usize, pin: &str) -> Self {
-        self.initials(Initials::new_above_threshold(initials_count, pin))
+    pub fn block0_initials_count(self, initials_count: usize, pin: &str) -> Self {
+        self.block0_initials(Block0Initials::new_above_threshold(initials_count, pin))
     }
 
-    pub fn extend_initials(mut self, initials: Vec<Initial>) -> Self {
-        self.config.initials.extend_from_external(initials);
+    pub fn extend_block0_initials(mut self, initials: Vec<Initial>) -> Self {
+        self.config.initials.block0.extend_from_external(initials);
         self
     }
 

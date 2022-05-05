@@ -11,7 +11,7 @@ use valgrind::Proposal;
 use vit_servicing_station_lib::v0::endpoints::proposals::ProposalVoteplanIdAndIndexes;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::VoteBlockchainTime;
-use vitup::config::{ConfigBuilder, InitialEntry, Initials};
+use vitup::config::{Block0Initial, Block0Initials, ConfigBuilder};
 use vitup::testing::{spawn_network, vitup_setup};
 
 const PIN: &str = "1234";
@@ -29,7 +29,7 @@ pub fn votes_history_reflects_casted_votes() {
     };
 
     let config = ConfigBuilder::default()
-        .initials(Initials(vec![InitialEntry::Wallet {
+        .block0_initials(Block0Initials(vec![Block0Initial::Wallet {
             name: ALICE.to_string(),
             funds: 10_000,
             pin: PIN.to_string(),

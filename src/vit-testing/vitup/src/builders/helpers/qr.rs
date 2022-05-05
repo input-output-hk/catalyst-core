@@ -48,10 +48,10 @@ pub fn generate_qr_and_hashes<P: AsRef<Path>>(
         wallet.save_qr_code_hash(hash, &pin_to_bytes(pin));
     }
 
-    let zero_funds_initial_counts = parameters.initials.zero_funds_count();
+    let zero_funds_initial_counts = parameters.initials.block0.zero_funds_count();
 
     if zero_funds_initial_counts > 0 {
-        let zero_funds_pin = parameters.initials.zero_funds_pin().unwrap();
+        let zero_funds_pin = parameters.initials.block0.zero_funds_pin().unwrap();
 
         for i in 1..zero_funds_initial_counts + 1 {
             let sk = SecretKey::generate(rand::thread_rng());

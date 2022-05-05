@@ -3,7 +3,7 @@ pub use crate::builders::{VitBackendSettingsBuilder, LEADER_1, LEADER_2, LEADER_
 use crate::config::ConfigBuilder;
 use crate::config::{
     mode::{parse_mode_from_str, Mode},
-    Initials, VoteTime,
+    Block0Initials as Initials, VoteTime,
 };
 use crate::mode::spawn::{spawn_network, NetworkSpawnParams};
 use crate::{error::Error, Result};
@@ -48,7 +48,7 @@ pub struct QuickStartCommandArgs {
     ///   "8000",
     ///   "10000",
     /// }
-    #[structopt(long = "initials-mapping", conflicts_with = "initials")]
+    #[structopt(long = "block-initials-mapping", conflicts_with = "initials")]
     pub initials_mapping: Option<PathBuf>,
 
     /// vote start epoch of vote plan
@@ -156,13 +156,14 @@ impl QuickStartCommandArgs {
             let content = read_file(mapping)?;
             let initials: Initials =
                 serde_json::from_str(&content).expect("JSON was not well-formatted");
-            config_builder = config_builder.initials(initials);
+            config_builder = config_builder.block0_initials(initials);
         } else {
-            config_builder = config_builder.initials_count(self.initials.unwrap_or(10), "1234");
+            config_builder =
+                config_builder.block0_initials_count(self.initials.unwrap_or(10), "1234");
         }
 
         if let Some(snapshot) = self.snapshot {
-            config_builder = config_builder.extend_initials(read_initials(snapshot)?);
+            config_builder = config_builder.extend_block0_initials(read_initials(snapshot)?);
         }
 
         let vote_timestamps = vec![

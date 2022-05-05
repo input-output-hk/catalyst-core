@@ -10,8 +10,8 @@ use jormungandr_automation::testing::time;
 use snapshot_trigger_service::config::JobParameters;
 use thor::FragmentSender;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
+use vitup::config::Block0Initials;
 use vitup::config::ConfigBuilder;
-use vitup::config::Initials;
 use vitup::config::VoteBlockchainTime;
 use vitup::testing::spawn_network;
 use vitup::testing::vitup_setup;
@@ -55,7 +55,7 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
         .vote_timing(vote_timing.into())
         .proposals_count(300)
         .voting_power(1)
-        .initials(Initials::new_from_external(
+        .block0_initials(Block0Initials::new_from_external(
             snapshot_result.initials().to_vec(),
         ))
         .private(false)

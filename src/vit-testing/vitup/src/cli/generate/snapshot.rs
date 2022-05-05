@@ -1,8 +1,8 @@
 use crate::builders::utils::DeploymentTree;
 use crate::builders::utils::SessionSettingsExtension;
 use crate::builders::VitBackendSettingsBuilder;
+use crate::config::Block0Initials;
 use crate::config::ConfigBuilder;
-use crate::config::Initials;
 use crate::Result;
 use hersir::config::SessionSettings;
 use jormungandr_automation::testing::block0::read_genesis_yaml;
@@ -44,12 +44,12 @@ impl SnapshotCommandArgs {
 
         if let Some(mapping) = self.initials_mapping {
             let content = read_file(mapping)?;
-            let initials: Initials =
+            let initials: Block0Initials =
                 serde_json::from_str(&content).expect("JSON was not well-formatted");
-            config_builder = config_builder.initials(initials);
+            config_builder = config_builder.block0_initials(initials);
         } else {
             config_builder =
-                config_builder.initials_count(self.initials.unwrap(), &self.global_pin);
+                config_builder.block0_initials_count(self.initials.unwrap(), &self.global_pin);
         }
 
         let mut quick_setup = VitBackendSettingsBuilder::default();

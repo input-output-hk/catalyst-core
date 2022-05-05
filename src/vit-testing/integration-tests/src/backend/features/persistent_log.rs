@@ -31,7 +31,7 @@ pub fn persistent_log_contains_all_sent_votes() {
     };
 
     let config = ConfigBuilder::default()
-        .initials_count(no_of_wallets, "1234")
+        .block0_initials_count(no_of_wallets, "1234")
         .slot_duration_in_seconds(2)
         .vote_timing(vote_timing.into())
         .proposals_count(300)

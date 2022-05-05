@@ -15,7 +15,7 @@ pub fn soak_test_private_super_optimistic() {
     };
 
     let config = ConfigBuilder::default()
-        .initials_count(no_of_wallets, "1234")
+        .block0_initials_count(no_of_wallets, "1234")
         .vote_timing(vote_timing.into())
         .slot_duration_in_seconds(2)
         .proposals_count(500)

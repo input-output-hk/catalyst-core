@@ -1,7 +1,7 @@
 use catalyst_toolbox::snapshot::registration::{Delegations, VotingRegistration};
 use chain_addr::Discrimination;
 use jormungandr_lib::crypto::account::SigningKey;
-use vitup::config::InitialEntry;
+use vitup::config::Block0Initial;
 
 pub struct MainnetWallet {
     inner: thor::Wallet,
@@ -49,8 +49,8 @@ impl MainnetWallet {
         }
     }
 
-    pub fn as_initial_entry(&self) -> InitialEntry {
-        InitialEntry::External {
+    pub fn as_initial_entry(&self) -> Block0Initial {
+        Block0Initial::External {
             address: self.inner.address().to_string(),
             funds: self.stake,
             role: Default::default(),

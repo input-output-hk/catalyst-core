@@ -107,6 +107,43 @@ Mock will reset account endpoint unavailability
 curl --location --request POST 'http://{mock_address}/api/control/command/block-account/reset'
 ```
 
+##### Add new voters snapshot for specific tag
+
+Add (or overwrite) voters snapshot for this particular tag
+
+```
+curl --location --request POST 'http://{mock_address}/api/control/command/snapshot/add/{tag}' \
+--header 'Content-Type: application/json' \
+--data-raw '
+  [{"voting_group":"direct","voting_key":"241799302733178aca5c0beaa7a43d054cafa36ca5f929edd46313d49e6a0fd5","voting_power":10131166116863755484},{"voting_group":"dreps","voting_key":"0e3fe9b3e4098759df6f7b44bd9b962a53e4b7b821d50bb72cbcdf1ff7f669f8","voting_power":9327154517439309883}]'
+```
+
+##### Add new voters snapshot for specific tag
+
+Create snapshot json which can be uploaded to mock by using `../snapshot/add` command. See [mock configuration](./configuration.md) for more details. Example:
+
+```
+curl --location --request POST 'http://{mock_address}/api/control/command/snapshot/create' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "tag": "daily",
+    "content": [
+    {
+        "count": 2,
+        "level": 5000
+    },
+    {
+        "name": "darek",
+        "funds": 100
+    },
+    {
+        "key":"318947a91d109da7109feaf4625c0cc4e83fe1636ed19408e43a1dabed4090a3",
+        "funds":300
+    }
+]
+}'
+```
+
 ##### Reset environment
 
 Resets environment data
@@ -115,17 +152,19 @@ Resets environment data
 curl --location --request POST 'http://{mock_address}/api/control/command/reset' \
 --header 'Content-Type: application/json' \
 --data-raw '{ 
-  "initials": [ 
-    { 
-      "above_threshold": 10,
-      "pin": "1234"
-    },
-    {
-      "name": "darek",
-      "pin": "1234",
-      "funds": 10000
-    }
-  ],
+  "initials": {
+    "block0": [
+      { 
+        "above_threshold": 10,
+        "pin": "1234"
+      },
+      {
+        "name": "darek",
+        "pin": "1234",
+        "funds": 10000
+      }
+    ]
+  },
   "vote_plan": {
         "vote_time": {
             "vote_start": 0,
@@ -187,16 +226,4 @@ example:
 
 ```
 vitup-cli --endpoint {mock} disruption control health
-```
-
-
-##### Add new voters snapshot for specific tag
-
-Add (or overwrite) voters snapshot for this particular tag
-
-```
-curl --location --request POST 'http://{mock_address}/api/control/command/add-snapshot/{tag}' \
---header 'Content-Type: application/json' \
---data-raw '
-  [{"voting_group":"direct","voting_key":"241799302733178aca5c0beaa7a43d054cafa36ca5f929edd46313d49e6a0fd5","voting_power":10131166116863755484},{"voting_group":"dreps","voting_key":"0e3fe9b3e4098759df6f7b44bd9b962a53e4b7b821d50bb72cbcdf1ff7f669f8","voting_power":9327154517439309883}]'
 ```

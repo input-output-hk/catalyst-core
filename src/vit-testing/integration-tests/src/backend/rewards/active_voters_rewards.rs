@@ -10,7 +10,7 @@ use chain_impl_mockchain::block::BlockDate;
 use jormungandr_automation::testing::time;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::VoteBlockchainTime;
-use vitup::config::{ConfigBuilder, Initials};
+use vitup::config::{Block0Initials, ConfigBuilder};
 use vitup::testing::spawn_network;
 use vitup::testing::vitup_setup;
 
@@ -38,7 +38,7 @@ pub fn voters_with_at_least_one_vote() {
         slots_per_epoch: 30,
     };
     let config = ConfigBuilder::default()
-        .initials(Initials(vec![
+        .block0_initials(Block0Initials(vec![
             alice_wallet.as_initial_entry(),
             bob_wallet.as_initial_entry(),
             clarice_wallet.as_initial_entry(),

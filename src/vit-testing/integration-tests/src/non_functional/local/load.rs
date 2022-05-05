@@ -22,7 +22,7 @@ pub fn load_test_public_100_000_votes() {
     };
 
     let config = ConfigBuilder::default()
-        .initials_count(no_of_wallets, "1234")
+        .block0_initials_count(no_of_wallets, "1234")
         .vote_timing(vote_timing.into())
         .slot_duration_in_seconds(2)
         .proposals_count(300)
@@ -91,7 +91,7 @@ pub fn load_test_private_pesimistic() {
     };
 
     let config = ConfigBuilder::default()
-        .initials_count(no_of_wallets, "1234")
+        .block0_initials_count(no_of_wallets, "1234")
         .vote_timing(vote_timing.into())
         .slot_duration_in_seconds(20)
         .proposals_count(250)
@@ -115,7 +115,7 @@ pub fn load_test_private_optimistic() {
     };
 
     let config = ConfigBuilder::default()
-        .initials_count(no_of_wallets, "1234")
+        .block0_initials_count(no_of_wallets, "1234")
         .vote_timing(vote_timing.into())
         .slot_duration_in_seconds(20)
         .proposals_count(500)

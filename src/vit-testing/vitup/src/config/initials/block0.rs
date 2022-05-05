@@ -1,3 +1,4 @@
+use crate::config::initials::Role;
 use chain_addr::Discrimination;
 use chain_impl_mockchain::value::Value;
 use fake::faker::name::en::Name;
@@ -65,19 +66,6 @@ impl Initial {
         }
     }
 }
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum Role {
-    Representative,
-    Voter,
-}
-
-impl Default for Role {
-    fn default() -> Self {
-        Role::Voter
-    }
-}
-
 pub const GRACE_VALUE: u64 = 1;
 
 // suppress, because when implementing complier gives error: deriving `Default` on enums is experimental

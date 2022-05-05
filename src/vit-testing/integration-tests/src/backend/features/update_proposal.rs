@@ -20,7 +20,7 @@ use thor::Wallet;
 use valgrind::Proposal;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::VoteBlockchainTime;
-use vitup::config::{ConfigBuilder, InitialEntry, Initials};
+use vitup::config::{Block0Initial, Block0Initials, ConfigBuilder};
 use vitup::testing::{spawn_network, vitup_setup};
 
 const PIN: &str = "1234";
@@ -41,14 +41,14 @@ pub fn increase_max_block_content_size_during_voting() {
     };
 
     let config = ConfigBuilder::default()
-        .initials(Initials(vec![
-            InitialEntry::Wallet {
+        .block0_initials(Block0Initials(vec![
+            Block0Initial::Wallet {
                 name: ALICE.to_string(),
                 funds: 10_000,
                 pin: PIN.to_string(),
                 role: Default::default(),
             },
-            InitialEntry::Wallet {
+            Block0Initial::Wallet {
                 name: COMMITTEE.to_string(),
                 funds: 10_000,
                 pin: PIN.to_string(),

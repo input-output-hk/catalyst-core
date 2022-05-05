@@ -1,6 +1,7 @@
 use super::FragmentRecieveStrategy;
 use super::{Context, ContextLock};
 use crate::config::Config;
+use crate::config::SnapshotInitials;
 use crate::mode::mock::LedgerState;
 use crate::mode::mock::NetworkCongestionMode;
 use crate::mode::service::manager::file_lister::dump_json;
@@ -266,11 +267,23 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
                 root.and(normal.or(jammed).or(moderate).or(reset)).boxed()
             };
 
-            let snapshot_service = warp::path!("add-snapshot" / String)
-                .and(warp::post())
-                .and(warp::body::json())
-                .and(with_context.clone())
-                .and_then(command_add_snapshot);
+            let snapshot_service = {
+                let root = warp::path!("snapshot" / ..);
+
+                let add = warp::path!("add" / String)
+                    .and(warp::post())
+                    .and(warp::body::json())
+                    .and(with_context.clone())
+                    .and_then(command_add_snapshot);
+
+                let create = warp::path!("create")
+                    .and(warp::post())
+                    .and(warp::body::json())
+                    .and(with_context.clone())
+                    .and_then(command_create_snapshot);
+
+                root.and(add.or(create)).boxed()
+            };
 
             root.and(
                 reset
@@ -999,6 +1012,25 @@ async fn command_add_snapshot(
         .voters_mut()
         .update_tag(tag, new_snapshot);
     Ok(warp::reply())
+}
+
+async fn command_create_snapshot(
+    config: SnapshotInitials,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
+    let context_lock = context.lock().unwrap();
+    let state = context_lock.state();
+
+    let voters_hirs = config
+        .as_voters_hirs(state.defined_wallets())
+        .map_err(|err| {
+            warp::reject::custom(GeneralException {
+                summary: err.to_string(),
+                code: 500,
+            })
+        })?;
+
+    Ok(HandlerResult(Ok(voters_hirs)))
 }
 
 pub async fn post_message(

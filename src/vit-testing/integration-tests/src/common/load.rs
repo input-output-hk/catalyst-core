@@ -27,7 +27,7 @@ pub fn private_vote_test_scenario(
 ) {
     let testing_directory = TempDir::new().unwrap().into_persistent();
 
-    let wallet_count = config.initials.count();
+    let wallet_count = config.initials.block0.count();
 
     let (mut controller, vit_parameters, network_params) =
         vitup_setup(&config, testing_directory.path().to_path_buf()).unwrap();

@@ -42,7 +42,7 @@ impl QrCommandArgs {
             config_builder = config_builder.initials(initials);
         } else {
             config_builder =
-                config_builder.initials_count(self.initials.unwrap(), &self.global_pin);
+                config_builder.block0_initials_count(self.initials.unwrap(), &self.global_pin);
         }
 
         if !self.output_directory.exists() {

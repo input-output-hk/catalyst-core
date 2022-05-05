@@ -4,8 +4,10 @@ This section describe configuration file which can be passed as argument for or 
 
 ### Initials
 
+#### block0
+
 Allows to provide initial addresses/voters which addresses would be put in block0.
-Supported syntax
+Supported syntax:
 
 ##### above threshold 
 
@@ -83,6 +85,50 @@ Example:
         "address":"ca1qknqa67aflzndy0rvkmxhd3gvccme5637qch53kfh0slzkfgv5nwyq4hxu4",
         "funds":8000     
       },
+```
+
+#### snapshot
+
+Allows to provide initial addresses/voters which addresses would be put in initial snapshot.
+Supported syntax:
+
+##### random
+
+Some number of random allets which receive specified amount of voting power
+
+Example: 
+
+```
+  {
+    "count": 2,
+    "level": 5000
+  },
+```
+
+##### external
+
+A single entry with specified voting key and voting power
+
+Example: 
+
+```
+  {
+    "key":"3877098d14e80c62c071a1d82e3df0eb9a6cd339a5f66e9ec338274fdcd9d0f4",
+    "funds":300
+  }
+```
+
+##### named
+
+A single entry with specified alias from block0 and optional voting power. If voting power is not defined it would be taken from block0 section. If vitup cannot find alias it will produce an error
+
+Example: 
+
+```
+  {
+    "name": "darek",
+    "funds": 100
+  },
 ```
 
 ### vote plan
@@ -265,26 +311,44 @@ Controls protocol over which vitup is available for client
 
 ```
 {  
-  "initials": [
-    {
-      "above_threshold": 10,
-      "pin": "1234"
-    },
-    {
-      "name": "alice",
-      "pin": "1234",
-      "funds": 10000
-    },
-    {
-      "name": "bob",
-      "pin": "1234",
-      "funds": 10000
-    },
-    {
-      "zero_funds": 10,
-      "pin": "1234"
+  "initials": {
+    "snapsthot": {
+      tag: "daily",
+      content: [
+        {
+          "count": 2,
+          "funds": "1234"
+        },
+        {
+          "name": "alice",
+        }
+        {
+          "name": "bob",
+          "funds": 10001
+        }
+      ]
     }
-  ],
+    "block0":  [
+      {
+        "above_threshold": 10,
+        "pin": "1234"
+      },
+      {
+        "name": "alice",
+        "pin": "1234",
+        "funds": 10000
+      },
+      {
+        "name": "bob",
+        "pin": "1234",
+        "funds": 10000
+      },
+      {
+        "zero_funds": 10,
+        "pin": "1234"
+      }
+    ]
+  },
   "vote_plan": {
         "vote_time": {
             "vote_start": 13,

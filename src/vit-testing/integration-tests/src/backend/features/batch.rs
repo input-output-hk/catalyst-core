@@ -5,7 +5,7 @@ use jormungandr_automation::testing::time;
 use jormungandr_lib::interfaces::FragmentStatus;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::VoteBlockchainTime;
-use vitup::config::{ConfigBuilder, InitialEntry, Initials};
+use vitup::config::{Block0Initial, Block0Initials, ConfigBuilder};
 use vitup::testing::spawn_network;
 use vitup::testing::vitup_setup;
 const PIN: &str = "1234";
@@ -23,7 +23,7 @@ pub fn transactions_are_send_between_nodes_with_correct_order() {
     };
 
     let config = ConfigBuilder::default()
-        .initials(Initials(vec![InitialEntry::Wallet {
+        .block0_initials(Block0Initials(vec![Block0Initial::Wallet {
             name: ALICE.to_string(),
             funds: 10_000,
             pin: PIN.to_string(),

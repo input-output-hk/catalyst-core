@@ -46,6 +46,16 @@ table! {
         fund_start_time -> BigInt,
         fund_end_time -> BigInt,
         next_fund_start_time -> BigInt,
+        insight_sharing_start -> BigInt,
+        proposal_submission_start -> BigInt,
+        refine_proposals_start -> BigInt,
+        finalize_proposals_start -> BigInt,
+        proposal_assessment_start -> BigInt,
+        assessment_qa_start -> BigInt,
+        snapshot_start -> BigInt,
+        voting_start -> BigInt,
+        voting_end -> BigInt,
+        tallying_end -> BigInt,
     }
 }
 

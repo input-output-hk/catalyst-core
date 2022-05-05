@@ -3,6 +3,7 @@ use crate::common::data::ArbitraryValidVotingTemplateGenerator;
 use crate::common::data::{Snapshot, ValidVotingTemplateGenerator};
 use std::iter;
 use time::{Duration, OffsetDateTime};
+use vit_servicing_station_lib::db::models::funds::FundStageDates;
 use vit_servicing_station_lib::db::models::{
     api_tokens::ApiTokenData,
     challenges::Challenge,
@@ -20,6 +21,16 @@ struct FundDateTimes {
     next: OffsetDateTime,
     snapshot: OffsetDateTime,
     next_snapshot: OffsetDateTime,
+    insight_sharing_start: OffsetDateTime,
+    proposal_submission_start: OffsetDateTime,
+    refine_proposals_start: OffsetDateTime,
+    finalize_proposals_start: OffsetDateTime,
+    proposal_assessment_start: OffsetDateTime,
+    assessment_qa_start: OffsetDateTime,
+    snapshot_start: OffsetDateTime,
+    voting_start: OffsetDateTime,
+    voting_end: OffsetDateTime,
+    tallying_end: OffsetDateTime,
 }
 
 struct VoteplanDateTimes {
@@ -68,6 +79,18 @@ impl ArbitrarySnapshotGenerator {
             next_registration_snapshot_time: dates.next_snapshot.unix_timestamp(),
             chain_vote_plans: vec![self.voteplan_with_fund_id(id.abs())],
             challenges: self.challenges_with_fund_id(id.abs()),
+            stage_dates: FundStageDates {
+                insight_sharing_start: dates.insight_sharing_start.unix_timestamp(),
+                proposal_submission_start: dates.proposal_submission_start.unix_timestamp(),
+                refine_proposals_start: dates.refine_proposals_start.unix_timestamp(),
+                finalize_proposals_start: dates.finalize_proposals_start.unix_timestamp(),
+                proposal_assessment_start: dates.proposal_assessment_start.unix_timestamp(),
+                assessment_qa_start: dates.assessment_qa_start.unix_timestamp(),
+                snapshot_start: dates.snapshot_start.unix_timestamp(),
+                voting_start: dates.voting_start.unix_timestamp(),
+                voting_end: dates.voting_end.unix_timestamp(),
+                tallying_end: dates.tallying_end.unix_timestamp(),
+            },
         }
     }
 
@@ -128,12 +151,33 @@ impl ArbitrarySnapshotGenerator {
         let snapshot = rand_datetime_in_range(start, end);
         let next_snapshot = rand_datetime_in_range(end, end + Duration::days(30));
 
+        let insight_sharing_start = rand_datetime_in_range(start, end);
+        let proposal_submission_start = rand_datetime_in_range(insight_sharing_start, end);
+        let refine_proposals_start = rand_datetime_in_range(proposal_submission_start, end);
+        let finalize_proposals_start = rand_datetime_in_range(refine_proposals_start, end);
+        let proposal_assessment_start = rand_datetime_in_range(finalize_proposals_start, end);
+        let assessment_qa_start = rand_datetime_in_range(finalize_proposals_start, end);
+        let snapshot_start = rand_datetime_in_range(assessment_qa_start, end);
+        let voting_start = rand_datetime_in_range(snapshot_start, end);
+        let voting_end = rand_datetime_in_range(voting_start, end);
+        let tallying_end = rand_datetime_in_range(voting_end, end);
+
         FundDateTimes {
             start,
             end,
             next,
             snapshot,
             next_snapshot,
+            insight_sharing_start,
+            proposal_submission_start,
+            refine_proposals_start,
+            finalize_proposals_start,
+            proposal_assessment_start,
+            assessment_qa_start,
+            snapshot_start,
+            voting_start,
+            voting_end,
+            tallying_end,
         }
     }
 

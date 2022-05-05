@@ -139,17 +139,7 @@ impl<'a> DbInserter<'a> {
 
     pub fn insert_funds(&self, funds: &[Fund]) -> Result<(), DbInserterError> {
         for fund in funds {
-            let values = (
-                funds::id.eq(fund.id),
-                funds::fund_name.eq(fund.fund_name.clone()),
-                funds::fund_goal.eq(fund.fund_goal.clone()),
-                funds::voting_power_threshold.eq(fund.voting_power_threshold),
-                funds::fund_start_time.eq(fund.fund_start_time),
-                funds::fund_end_time.eq(fund.fund_end_time),
-                funds::next_fund_start_time.eq(fund.next_fund_start_time),
-                funds::registration_snapshot_time.eq(fund.registration_snapshot_time),
-                funds::next_registration_snapshot_time.eq(fund.next_registration_snapshot_time),
-            );
+            let values = fund.clone().values();
 
             diesel::insert_into(funds::table)
                 .values(values)

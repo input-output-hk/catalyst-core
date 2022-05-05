@@ -3,6 +3,7 @@ use chain_impl_mockchain::certificate::VotePlan;
 use chain_impl_mockchain::testing::scenario::template::ProposalDef;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
+use vit_servicing_station_lib::db::models::funds::FundStageDates;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::db::models::{
     challenges::Challenge,
@@ -227,6 +228,18 @@ impl ValidVotePlanGenerator {
             next_registration_snapshot_time,
             chain_vote_plans: vote_plans.clone(),
             challenges,
+            stage_dates: FundStageDates {
+                insight_sharing_start: voting_start,
+                proposal_submission_start: voting_start,
+                refine_proposals_start: voting_start,
+                finalize_proposals_start: voting_start,
+                proposal_assessment_start: voting_start,
+                assessment_qa_start: voting_start,
+                snapshot_start: voting_start,
+                voting_start,
+                voting_end: voting_start,
+                tallying_end: voting_start,
+            },
         };
 
         let mut proposals = vec![];

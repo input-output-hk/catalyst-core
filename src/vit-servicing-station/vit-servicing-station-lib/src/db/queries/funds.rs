@@ -1,5 +1,9 @@
 use crate::db::{
-    models::{challenges::Challenge, funds::Fund, voteplans::Voteplan},
+    models::{
+        challenges::Challenge,
+        funds::{Fund, FundStageDates},
+        voteplans::Voteplan,
+    },
     schema::{
         challenges::dsl as challenges_dsl, funds, funds::dsl as fund_dsl,
         voteplans::dsl as voteplans_dsl,
@@ -8,6 +12,7 @@ use crate::db::{
 };
 use crate::v0::errors::HandleError;
 use diesel::{ExpressionMethods, Insertable, QueryDsl, QueryResult, RunQueryDsl};
+use serde::{Deserialize, Serialize};
 
 pub async fn query_fund_by_id(id: i32, pool: &DbConnectionPool) -> Result<Fund, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
@@ -40,48 +45,74 @@ pub async fn query_fund_by_id(id: i32, pool: &DbConnectionPool) -> Result<Fund, 
     .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
 }
 
-pub async fn query_fund(pool: &DbConnectionPool) -> Result<Fund, HandleError> {
-    let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
-    tokio::task::spawn_blocking(move || {
-        let fund = fund_dsl::funds
-            .first::<Fund>(&db_conn)
-            .map_err(|_e| HandleError::NotFound("fund".to_string()));
-        let fund = match fund {
-            Ok(mut fund) => diesel::QueryDsl::filter(
-                voteplans_dsl::voteplans,
-                voteplans_dsl::fund_id.eq(fund.id),
-            )
-            .load::<Voteplan>(&db_conn)
-            .map_err(|_e| HandleError::NotFound("fund voteplans".to_string()))
-            .map(|mut voteplans| {
-                fund.chain_vote_plans.append(&mut voteplans);
-                Ok(fund)
-            }),
-            Err(e) => Err(e),
-        }?;
-        match fund {
-            Ok(mut fund) => diesel::QueryDsl::filter(
-                challenges_dsl::challenges,
-                challenges_dsl::fund_id.eq(fund.id),
-            )
-            .load::<Challenge>(&db_conn)
-            .map_err(|_e| HandleError::NotFound("fund challenges".to_string()))
-            .map(|mut challenges| {
-                fund.challenges.append(&mut challenges);
-                Ok(fund)
-            }),
-            Err(e) => Err(e),
-        }
-    })
-    .await
-    .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))??
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FundWithNext {
+    #[serde(flatten)]
+    pub fund: Fund,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub next: Option<FundNextInfo>,
 }
 
-pub async fn query_all_funds(pool: &DbConnectionPool) -> Result<Vec<Fund>, HandleError> {
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FundNextInfo {
+    pub id: i32,
+    pub fund_name: String,
+    #[serde(flatten)]
+    pub stage_dates: FundStageDates,
+}
+
+pub async fn query_current_fund(pool: &DbConnectionPool) -> Result<FundWithNext, HandleError> {
+    let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
+    tokio::task::spawn_blocking(move || {
+        let funds: Vec<Fund> = fund_dsl::funds
+            // TODO: Not sure if sorting by the PK is actually necessary
+            //
+            // this assumes that the next will be the second inserted
+            // and that the current is the first.
+            .order(fund_dsl::id)
+            .limit(2)
+            .load(&db_conn)
+            .map_err(|_e| HandleError::NotFound("fund".to_string()))?;
+
+        let mut funds = funds.into_iter();
+        let mut current = funds
+            .next()
+            .ok_or_else(|| HandleError::NotFound("current found not found".to_string()))?;
+
+        let next = funds.next();
+
+        let voteplans = voteplans_dsl::voteplans
+            .filter(voteplans_dsl::fund_id.eq(current.id))
+            .load::<Voteplan>(&db_conn)
+            .map_err(|_e| HandleError::NotFound("Error loading voteplans".to_string()))?;
+
+        let challenges = challenges_dsl::challenges
+            .filter(challenges_dsl::fund_id.eq(current.id))
+            .load::<Challenge>(&db_conn)
+            .map_err(|_e| HandleError::NotFound("Error loading challenges".to_string()))?;
+
+        current.chain_vote_plans = voteplans;
+        current.challenges = challenges;
+
+        Ok(FundWithNext {
+            fund: current,
+            next: next.map(|f| FundNextInfo {
+                id: f.id,
+                fund_name: f.fund_name,
+                stage_dates: f.stage_dates,
+            }),
+        })
+    })
+    .await
+    .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
+}
+
+pub async fn query_all_funds(pool: &DbConnectionPool) -> Result<Vec<i32>, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     tokio::task::spawn_blocking(move || {
         fund_dsl::funds
-            .load::<Fund>(&db_conn)
+            .select(fund_dsl::id)
+            .load::<i32>(&db_conn)
             .map_err(|_| HandleError::InternalError("Error retrieving funds".to_string()))
     })
     .await
@@ -95,4 +126,17 @@ pub fn insert_fund(fund: Fund, db_conn: &DbConnection) -> QueryResult<Fund> {
     // This can be done in a single query if we move to postgres or any DB that supports `get_result`
     // instead of `execute` in the previous insert
     funds::table.order(fund_dsl::id.desc()).first(db_conn)
+}
+
+pub async fn put_fund(fund: Fund, pool: &DbConnectionPool) -> Result<(), HandleError> {
+    let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
+    diesel::replace_into(funds::table)
+        .values(fund.values())
+        .execute(&db_conn)
+        .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?;
+
+    // TODO:
+    // replace the voteplan and challenges too?
+
+    Ok(())
 }

@@ -21,7 +21,7 @@ pub enum Error {
     #[error(transparent)]
     IoError(#[from] std::io::Error),
 
-    #[error("Wrong number of input fund in {0}, just one fund data can be process at a time")]
+    #[error("Invalid Fund Data: {0}")]
     InvalidFundData(String),
 }
 
@@ -34,6 +34,10 @@ pub enum CsvDataCmd {
         db_url: String,
 
         /// Path to the csv containing funds information
+        /// At the moment, it's required these are ordered.
+        ///
+        /// Also the first fund being the current one, which means previous funds should not be
+        /// included. This restriction may be lifted in the future.
         #[structopt(long = "funds")]
         funds: PathBuf,
 
@@ -95,11 +99,7 @@ impl CsvDataCmd {
     ) -> Result<(), Error> {
         db_file_exists(db_url)?;
         let funds = CsvDataCmd::load_from_csv::<Fund>(funds_path)?;
-        if funds.len() != 1 {
-            return Err(Error::InvalidFundData(
-                funds_path.to_string_lossy().to_string(),
-            ));
-        }
+
         let mut voteplans = CsvDataCmd::load_from_csv::<Voteplan>(voteplans_path)?;
         let mut challenges: HashMap<i32, Challenge> =
             CsvDataCmd::load_from_csv::<Challenge>(challenges_path)?
@@ -146,10 +146,21 @@ impl CsvDataCmd {
             .get()
             .map_err(|e| io::Error::new(io::ErrorKind::NotConnected, format!("{}", e)))?;
 
+        let mut funds_iter = funds.into_iter();
+
         // insert fund and retrieve fund with id
-        let fund =
-            vit_servicing_station_lib::db::queries::funds::insert_fund(funds[0].clone(), &db_conn)
+        let fund = vit_servicing_station_lib::db::queries::funds::insert_fund(
+            funds_iter
+                .next()
+                .ok_or_else(|| Error::InvalidFundData(funds_path.to_string_lossy().to_string()))?,
+            &db_conn,
+        )
+        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+
+        for fund in funds_iter {
+            vit_servicing_station_lib::db::queries::funds::insert_fund(fund, &db_conn)
                 .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+        }
 
         // apply fund id in voteplans
         for voteplan in voteplans.iter_mut() {

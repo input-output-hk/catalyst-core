@@ -16,12 +16,7 @@ pub fn load_data_test() {
     let csv_converter = CsvConverter;
 
     let funds = temp_dir.child("funds.csv");
-    csv_converter
-        .funds(
-            snapshot.funds().iter().take(1).cloned().collect(),
-            funds.path(),
-        )
-        .unwrap();
+    csv_converter.funds(snapshot.funds(), funds.path()).unwrap();
 
     let proposals = temp_dir.child("proposals.csv");
     csv_converter

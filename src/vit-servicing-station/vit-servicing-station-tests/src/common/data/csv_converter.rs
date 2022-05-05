@@ -29,6 +29,16 @@ impl CsvConverter {
             "next_fund_start_time",
             "registration_snapshot_time",
             "next_registration_snapshot_time",
+            "insight_sharing_start",
+            "proposal_submission_start",
+            "refine_proposals_start",
+            "finalize_proposals_start",
+            "proposal_assessment_start",
+            "assessment_qa_start",
+            "snapshot_start",
+            "voting_start",
+            "voting_end",
+            "tallying_end",
         ];
         let content: Vec<Vec<String>> = funds.iter().map(convert_fund).collect();
         self.build_file(headers, content, path)
@@ -219,6 +229,16 @@ fn convert_fund(fund: &Fund) -> Vec<String> {
         unix_timestamp_to_rfc3339(fund.next_fund_start_time),
         unix_timestamp_to_rfc3339(fund.registration_snapshot_time),
         unix_timestamp_to_rfc3339(fund.next_registration_snapshot_time),
+        unix_timestamp_to_rfc3339(fund.stage_dates.insight_sharing_start),
+        unix_timestamp_to_rfc3339(fund.stage_dates.proposal_submission_start),
+        unix_timestamp_to_rfc3339(fund.stage_dates.refine_proposals_start),
+        unix_timestamp_to_rfc3339(fund.stage_dates.finalize_proposals_start),
+        unix_timestamp_to_rfc3339(fund.stage_dates.proposal_assessment_start),
+        unix_timestamp_to_rfc3339(fund.stage_dates.assessment_qa_start),
+        unix_timestamp_to_rfc3339(fund.stage_dates.snapshot_start),
+        unix_timestamp_to_rfc3339(fund.stage_dates.voting_start),
+        unix_timestamp_to_rfc3339(fund.stage_dates.voting_end),
+        unix_timestamp_to_rfc3339(fund.stage_dates.tallying_end),
     ]
 }
 

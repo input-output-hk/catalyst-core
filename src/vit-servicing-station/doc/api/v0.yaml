@@ -32,7 +32,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Fund"
+                allOf:
+                  - $ref: "#/components/schemas/Fund"
+                  - $ref: "#/components/schemas/NextFundInfo"
 
   /api/v0/fund/{id}:
     get:
@@ -54,6 +56,46 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Fund"
+        "404":
+          description: The requested fund was not found
+    put:
+      operationId: putFund
+      summary: Update or create fund
+      tags: [fund]
+      description: |
+        Update or replace the fund in the db with the one provided.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        "200":
+          description: Valid response
+        "400":
+          description: The input is malformed.
+
+  /api/v0/funds/:
+    get:
+      operationId: getFunds
+      summary: Get list of the fund id
+      tags: [fund]
+      description: |
+        Get list of all the funds in the db.
+      responses:
+        "200":
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      type: integer
+                      format: int32
+                      description: Identifier of the fund campaign.
         "404":
           description: The requested fund was not found
 
@@ -284,6 +326,36 @@ components:
           items:
             $ref: "#/components/schemas/Challenge"
           description: A list of campaign challenges structuring the proposals.
+        insight_sharing_start:
+          type: string
+          format: date-time
+        proposal_submission_start:
+          type: string
+          format: date-time
+        refine_proposals_start:
+          type: string
+          format: date-time
+        finalize_proposals_start:
+          type: string
+          format: date-time
+        proposal_assessment_start:
+          type: string
+          format: date-time
+        assessment_qa_start:
+          type: string
+          format: date-time
+        snapshot_start:
+          type: string
+          format: date-time
+        voting_start:
+          type: string
+          format: date-time
+        voting_end:
+          type: string
+          format: date-time
+        tallying_end:
+          type: string
+          format: date-time
 
     VotePlan:
       properties:
@@ -636,3 +708,45 @@ components:
           format: u64
         voting_group:
           type: String
+
+    NextFundInfo:
+      properties:
+        next:
+          properties:
+            id:
+              type: integer
+              format: int32
+              description: Identifier of the fund campaign.
+            fund_name:
+              type: string
+              description: Human-readable name of the fund campaign.
+            insight_sharing_start:
+              type: string
+              format: date-time
+            proposal_submission_start:
+              type: string
+              format: date-time
+            refine_proposals_start:
+              type: string
+              format: date-time
+            finalize_proposals_start:
+              type: string
+              format: date-time
+            proposal_assessment_start:
+              type: string
+              format: date-time
+            assessment_qa_start:
+              type: string
+              format: date-time
+            snapshot_start:
+              type: string
+              format: date-time
+            voting_start:
+              type: string
+              format: date-time
+            voting_end:
+              type: string
+              format: date-time
+            tallying_end:
+              type: string
+              format: date-time

@@ -37,6 +37,53 @@ curl --location --request GET 'http://{mock_address}/api/health'
 
 ```
 curl --location --request POST 'http://{mock_address}/api/control/command/fund/id/{new_fund_id}'
+
+##### Add new fund
+
+```
+curl --location --request PUT 'http://{mock_address}/api/control/command/fund/update' \
+--header 'Content-Type: application/json' \
+--data-raw '
+{
+  "id": 20,
+  "fund_name": "fund_3",
+  "fund_goal": "How will we encourage developers and entrepreneurs to build Dapps and businesses on top of Cardano in the next 6 months?",
+  "voting_power_threshold": 8000000000,
+  "fund_start_time": "2022-05-04T10:50:41Z",
+  "fund_end_time": "2022-05-04T11:00:41Z",
+  "next_fund_start_time": "2022-06-03T10:40:41Z",
+  "registration_snapshot_time": "2022-05-04T07:40:41Z",
+  "next_registration_snapshot_time": "2022-06-02T10:40:41Z",
+  "chain_vote_plans": [
+    {
+      "id": 2136640212,
+      "chain_voteplan_id": "ad6eaebafd2cca7e1829df26c57b340a98b9d513b7eddec8561883f1b99f3b9e",
+      "chain_vote_start_time": "2022-05-04T10:50:41Z",
+      "chain_vote_end_time": "2022-05-04T11:00:41Z",
+      "chain_committee_end_time": "2022-05-04T11:10:41Z",
+      "chain_voteplan_payload": "public",
+      "chain_vote_encryption_key": "",
+      "fund_id": 20
+    }
+  ],
+  "challenges": [
+    {
+      "id": 1,
+      "challenge_type": "community-choice",
+      "title": "Universal even-keeled installation",
+      "description": "Upgradable",
+      "rewards_total": 7686,
+      "proposers_rewards": 844,
+      "fund_id": 20,
+      "challenge_url": "http://schneider-group.info",
+      "highlights": {
+        "sponsor": "Kreiger and Wuckert and Sons"
+      }
+    }
+  ]
+}
+
+'
 ```
 
 ##### Accept all Fragments

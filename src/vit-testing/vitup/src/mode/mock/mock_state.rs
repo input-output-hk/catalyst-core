@@ -12,6 +12,8 @@ use jormungandr_lib::interfaces::{NodeState, NodeStats, NodeStatsDto};
 use thiserror::Error;
 use thor::WalletAlias;
 use valgrind::VitVersion;
+use vit_servicing_station_lib::db::models::funds::Fund;
+use vit_servicing_station_tests::common::data::ArbitrarySnapshotGenerator;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vit_servicing_station_tests::common::data::Snapshot;
 use vit_servicing_station_tests::common::data::ValidVotePlanGenerator;
@@ -44,6 +46,9 @@ impl MockState {
 
         let mut generator = ValidVotePlanGenerator::new(vit_parameters);
         let mut vit_state = generator.build(&mut template_generator);
+        vit_state
+            .funds_mut()
+            .extend(ArbitrarySnapshotGenerator::default().funds());
 
         let reviews = vit_state.advisor_reviews();
 
@@ -138,7 +143,7 @@ impl MockState {
 
     pub fn set_fund_id(&mut self, id: i32) {
         let funds = self.vit_state.funds_mut();
-        let mut fund = funds.last_mut().unwrap();
+        let mut fund = funds.first_mut().unwrap();
 
         fund.id = id;
 
@@ -156,6 +161,18 @@ impl MockState {
 
         for proposal in self.vit_state.proposals_mut() {
             proposal.proposal.fund_id = id;
+        }
+    }
+
+    pub fn update_fund(&mut self, new_fund: Fund) {
+        let old = self
+            .vit_state
+            .funds()
+            .iter()
+            .position(|f| f.id == new_fund.id);
+        self.vit_state.funds_mut().push(new_fund);
+        if let Some(pos) = old {
+            self.vit_state.funds_mut().swap_remove(pos);
         }
     }
 

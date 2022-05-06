@@ -34,6 +34,7 @@ use valgrind::Protocol;
 use vit_servicing_station_lib::db::models::challenges::Challenge;
 use vit_servicing_station_lib::db::models::funds::Fund;
 use vit_servicing_station_lib::db::models::proposals::Proposal;
+use vit_servicing_station_lib::db::queries::funds::{FundNextInfo, FundWithNext};
 use vit_servicing_station_lib::v0::endpoints::proposals::ProposalsByVoteplanIdAndIndex;
 use vit_servicing_station_lib::v0::errors::HandleError;
 use vit_servicing_station_lib::v0::result::HandlerResult;
@@ -149,10 +150,22 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
                 .and(with_context.clone())
                 .and_then(command_error_code);
 
-            let fund_id = warp::path!("fund" / "id" / i32)
-                .and(warp::post())
-                .and(with_context.clone())
-                .and_then(command_fund_id);
+            let fund = {
+                let root = warp::path!("fund");
+
+                let fund_id = warp::path!("id" / i32)
+                    .and(warp::post())
+                    .and(with_context.clone())
+                    .and_then(command_fund_id);
+
+                let fund_update = warp::path!("update")
+                    .and(warp::put())
+                    .and(warp::body::json())
+                    .and(with_context.clone())
+                    .and_then(command_update_fund);
+
+                root.and(fund_id.or(fund_update))
+            };
 
             let version = warp::path!("version" / String)
                 .and(warp::post())
@@ -289,7 +302,7 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
                 reset
                     .or(availability)
                     .or(set_error_code)
-                    .or(fund_id)
+                    .or(fund)
                     .or(fragment_strategy)
                     .or(network_strategy)
                     .or(version)
@@ -383,7 +396,12 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
                 .with(warp::reply::with::headers(default_headers.clone()))
                 .boxed();
 
-            root.and(fund_by_id.or(fund)).boxed()
+            let all_funds = warp::path!("funds")
+                .and(warp::get())
+                .and(with_context.clone())
+                .and_then(get_all_funds);
+
+            root.and(fund_by_id.or(fund)).or(all_funds).boxed()
         };
 
         let settings = warp::path!("settings")
@@ -908,6 +926,14 @@ pub async fn command_fund_id(id: i32, context: ContextLock) -> Result<impl Reply
     Ok(warp::reply())
 }
 
+pub async fn command_update_fund(
+    fund: Fund,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
+    context.lock().unwrap().state_mut().update_fund(fund);
+    Ok(warp::reply())
+}
+
 pub async fn command_version(
     version: String,
     context: ContextLock,
@@ -1384,8 +1410,34 @@ pub async fn get_fund(context: ContextLock) -> Result<impl Reply, Rejection> {
     }
 
     let funds: Vec<Fund> = context.lock().unwrap().state().vit().funds().to_vec();
+    let next = funds.get(1).map(|f| FundNextInfo {
+        id: f.id,
+        fund_name: f.fund_name.clone(),
+        stage_dates: f.stage_dates.clone(),
+    });
+    let fund_with_next = FundWithNext {
+        fund: funds.first().unwrap().clone(),
+        next,
+    };
 
-    Ok(HandlerResult(Ok(funds.first().unwrap().clone())))
+    Ok(HandlerResult(Ok(fund_with_next)))
+}
+
+pub async fn get_all_funds(context: ContextLock) -> Result<impl Reply, Rejection> {
+    context.lock().unwrap().log("get_all_fund ...");
+
+    if !context.lock().unwrap().available() {
+        let code = context.lock().unwrap().state().error_code;
+        context.lock().unwrap().log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
+    }
+
+    let funds: Vec<Fund> = context.lock().unwrap().state().vit().funds().to_vec();
+
+    Ok(warp::reply::json(&funds))
 }
 
 pub async fn get_node_stats(context: ContextLock) -> Result<impl Reply, Rejection> {

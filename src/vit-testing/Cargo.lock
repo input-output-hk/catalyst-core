@@ -550,7 +550,7 @@ dependencies = [
  "thiserror",
  "thor",
  "time 0.3.9",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "url",
  "versionisator",
  "vit-servicing-station-lib",
@@ -1742,6 +1742,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2022715d62ab30faffd124d40b76f4134a550a87792276512b18d63272333394"
 
 [[package]]
+name = "fsevent-sys"
+version = "4.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "76ee7a02da4d231650c7cea31349b889be2f45ddb3ef3032d2ec8185f6313fd2"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "fuchsia-cprng"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2097,7 +2106,7 @@ dependencies = [
  "http",
  "indexmap",
  "slab",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "tokio-util 0.6.9",
  "tracing",
 ]
@@ -2367,7 +2376,7 @@ dependencies = [
  "itoa 1.0.1",
  "pin-project-lite 0.2.8",
  "socket2 0.4.4",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "tower-service",
  "tracing",
  "want",
@@ -2398,7 +2407,7 @@ dependencies = [
  "http",
  "hyper 0.14.18",
  "rustls 0.20.4",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "tokio-rustls 0.23.3",
 ]
 
@@ -2410,7 +2419,7 @@ checksum = "bbb958482e8c7be4bc3cf272a766a2b0bf1a6755e7a6ae777f017a31d11b13b1"
 dependencies = [
  "hyper 0.14.18",
  "pin-project-lite 0.2.8",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "tokio-io-timeout",
 ]
 
@@ -2436,7 +2445,7 @@ dependencies = [
  "bytes 1.1.0",
  "hyper 0.14.18",
  "native-tls",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "tokio-native-tls",
 ]
 
@@ -2484,7 +2493,7 @@ dependencies = [
  "structopt",
  "thiserror",
  "thor",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "url",
  "valgrind",
  "wallet",
@@ -2619,6 +2628,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "inotify"
+version = "0.9.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f8069d3ec154eb856955c1c0fbffefbf5f3c40a104ec912d4797314c1801abff"
+dependencies = [
+ "bitflags",
+ "inotify-sys",
+ "libc",
+]
+
+[[package]]
+name = "inotify-sys"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e05c02b5e89bff3b946cedeca278abc628fe811e604f027c45a8aa3cf793d0eb"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "inout"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2666,7 +2695,7 @@ dependencies = [
  "snapshot-trigger-service",
  "thiserror",
  "thor",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "valgrind",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
@@ -2813,7 +2842,7 @@ dependencies = [
  "tar",
  "tempfile",
  "thiserror",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "tokio-stream",
  "tonic",
  "tonic-build",
@@ -2870,7 +2899,7 @@ dependencies = [
  "tempfile",
  "thiserror",
  "thor",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "tonic",
  "tracing",
  "url",
@@ -2942,7 +2971,7 @@ dependencies = [
  "tar",
  "thiserror",
  "time 0.3.9",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "warp",
  "zip",
 ]
@@ -2998,6 +3027,26 @@ dependencies = [
  "rand_chacha 0.3.1",
  "rand_core 0.6.3",
  "thiserror",
+]
+
+[[package]]
+name = "kqueue"
+version = "1.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4d6112e8f37b59803ac47a42d14f1f3a59bbf72fc6857ffc5be455e28a691f8e"
+dependencies = [
+ "kqueue-sys",
+ "libc",
+]
+
+[[package]]
+name = "kqueue-sys"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8367585489f01bc55dd27404dcf56b95e6da061a256a666ab23be9ba96a2e587"
+dependencies = [
+ "bitflags",
+ "libc",
 ]
 
 [[package]]
@@ -3129,7 +3178,7 @@ dependencies = [
  "structopt",
  "thiserror",
  "thor",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "warp",
 ]
 
@@ -3267,6 +3316,19 @@ dependencies = [
 
 [[package]]
 name = "mio"
+version = "0.7.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8067b404fe97c70829f082dec8bcf4f71225d7eaea1d8645349cb76fa06205cc"
+dependencies = [
+ "libc",
+ "log",
+ "miow 0.3.7",
+ "ntapi",
+ "winapi 0.3.9",
+]
+
+[[package]]
+name = "mio"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "52da4364ffb0e4fe33a9841a98a3f3014fb964045ce4f7a45a398243c8d6b0c9"
@@ -3323,7 +3385,7 @@ dependencies = [
  "structopt",
  "thiserror",
  "thor",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "versionisator",
 ]
 
@@ -3452,6 +3514,24 @@ name = "normalize-line-endings"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "61807f77802ff30975e01f4f071c8ba10c022052f98b3294119f3e615d13e5be"
+
+[[package]]
+name = "notify"
+version = "5.0.0-pre.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c614e7ed2b1cf82ec99aeffd8cf6225ef5021b9951148eb161393c394855032c"
+dependencies = [
+ "bitflags",
+ "crossbeam-channel",
+ "filetime",
+ "fsevent-sys",
+ "inotify",
+ "kqueue",
+ "libc",
+ "mio 0.7.14",
+ "walkdir",
+ "winapi 0.3.9",
+]
 
 [[package]]
 name = "ntapi"
@@ -4456,7 +4536,7 @@ dependencies = [
  "signals-handler",
  "structopt",
  "thiserror",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "uuid",
  "walkdir",
  "warp",
@@ -4484,7 +4564,7 @@ dependencies = [
  "snapshot-trigger-service",
  "structopt",
  "thiserror",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "uuid",
  "walkdir",
  "warp",
@@ -4569,7 +4649,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_urlencoded",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "tokio-native-tls",
  "tokio-rustls 0.23.3",
  "url",
@@ -5091,7 +5171,7 @@ name = "signals-handler"
 version = "0.1.0"
 dependencies = [
  "futures",
- "tokio 1.17.0",
+ "tokio 1.18.1",
 ]
 
 [[package]]
@@ -5140,6 +5220,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f2dd574626839106c320a323308629dcb1acfc96e32a8cba364ddc61ac23ee83"
 
 [[package]]
+name = "snapshot-service"
+version = "0.1.0"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#1f6272cb0e85366534ca487a376a838e1487d165"
+dependencies = [
+ "jormungandr-lib",
+ "notify",
+ "serde",
+ "serde_json",
+ "sled",
+ "thiserror",
+ "tokio 1.18.1",
+ "tracing",
+ "voting-hir",
+ "warp",
+]
+
+[[package]]
 name = "snapshot-trigger-service"
 version = "0.1.0"
 dependencies = [
@@ -5156,7 +5253,7 @@ dependencies = [
  "signals-handler",
  "structopt",
  "thiserror",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "uuid",
  "walkdir",
  "warp",
@@ -5674,9 +5771,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.17.0"
+version = "1.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2af73ac49756f3f7c01172e34a23e5d0216f6c32333757c2c61feb2bbff5a5ee"
+checksum = "dce653fb475565de9f6fb0614b28bca8df2c430c0cf84bcd9c843f15de5414cc"
 dependencies = [
  "bytes 1.1.0",
  "libc",
@@ -5698,7 +5795,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "30b74022ada614a1b4834de765f9bb43877f910cc8ce4be40e89042c9223a8bf"
 dependencies = [
  "pin-project-lite 0.2.8",
- "tokio 1.17.0",
+ "tokio 1.18.1",
 ]
 
 [[package]]
@@ -5719,7 +5816,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f7d995660bd2b7f8c1568414c1126076c13fbb725c40112dc0120b78eb9b717b"
 dependencies = [
  "native-tls",
- "tokio 1.17.0",
+ "tokio 1.18.1",
 ]
 
 [[package]]
@@ -5741,7 +5838,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc6844de72e57df1980054b38be3a9f4702aba4858be64dd700181a8a6d0e1b6"
 dependencies = [
  "rustls 0.19.1",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "webpki 0.21.4",
 ]
 
@@ -5752,7 +5849,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4151fda0cf2798550ad0b34bcfc9b9dcc2a9d2471c895c68f3a8818e54f2389e"
 dependencies = [
  "rustls 0.20.4",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "webpki 0.22.0",
 ]
 
@@ -5764,7 +5861,7 @@ checksum = "50145484efff8818b5ccd256697f36863f587da82cf8b409c53adf1e840798e3"
 dependencies = [
  "futures-core",
  "pin-project-lite 0.2.8",
- "tokio 1.17.0",
+ "tokio 1.18.1",
 ]
 
 [[package]]
@@ -5786,7 +5883,7 @@ dependencies = [
  "futures-util",
  "log",
  "pin-project",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "tungstenite",
 ]
 
@@ -5815,7 +5912,7 @@ dependencies = [
  "futures-sink",
  "log",
  "pin-project-lite 0.2.8",
- "tokio 1.17.0",
+ "tokio 1.18.1",
 ]
 
 [[package]]
@@ -5829,7 +5926,7 @@ dependencies = [
  "futures-sink",
  "log",
  "pin-project-lite 0.2.8",
- "tokio 1.17.0",
+ "tokio 1.18.1",
 ]
 
 [[package]]
@@ -5862,7 +5959,7 @@ dependencies = [
  "pin-project",
  "prost",
  "prost-derive",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "tokio-stream",
  "tokio-util 0.6.9",
  "tower",
@@ -5897,7 +5994,7 @@ dependencies = [
  "pin-project-lite 0.2.8",
  "rand 0.8.5",
  "slab",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "tokio-util 0.7.0",
  "tower-layer",
  "tower-service",
@@ -5918,9 +6015,9 @@ checksum = "360dfd1d6d30e05fda32ace2c8c70e9c0a9da713275777f5a4dbb8a1893930c6"
 
 [[package]]
 name = "tracing"
-version = "0.1.32"
+version = "0.1.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a1bdf54a7c28a2bbf701e1d2233f6c77f473486b94bee4f9678da5a148dca7f"
+checksum = "5d0ecdcb44a79f0fe9844f0c4f33a342cbcbb5117de8001e6ba0dc2351327d09"
 dependencies = [
  "cfg-if 1.0.0",
  "log",
@@ -6234,7 +6331,7 @@ dependencies = [
  "serde_json",
  "structopt",
  "thiserror",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "url",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
@@ -6280,7 +6377,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#070d14afda63f9ab7af4f86cc7623da2d104d8f4"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#1f6272cb0e85366534ca487a376a838e1487d165"
 dependencies = [
  "async-trait",
  "base64 0.12.3",
@@ -6291,25 +6388,28 @@ dependencies = [
  "itertools 0.9.0",
  "libsqlite3-sys",
  "log",
+ "notify",
  "serde",
  "serde_json",
  "simplelog",
+ "snapshot-service",
  "structopt",
  "strum 0.21.0",
  "strum_macros 0.21.1",
  "thiserror",
  "time 0.3.9",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "tracing",
  "tracing-futures",
  "tracing-subscriber 0.3.6",
+ "voting-hir",
  "warp",
 ]
 
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#f179dc62fbb13c7af24663aef1180b2fbb8e65c3"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#1f6272cb0e85366534ca487a376a838e1487d165"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -6339,7 +6439,7 @@ dependencies = [
  "tempfile",
  "thiserror",
  "time 0.3.9",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "url",
  "vit-servicing-station-lib",
 ]
@@ -6400,7 +6500,7 @@ dependencies = [
  "thiserror",
  "thor",
  "time 0.3.9",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "tokio-rustls 0.23.3",
  "tokio-stream",
  "tracing",
@@ -6530,7 +6630,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_urlencoded",
- "tokio 1.17.0",
+ "tokio 1.18.1",
  "tokio-rustls 0.22.0",
  "tokio-stream",
  "tokio-tungstenite",

@@ -1,3 +1,4 @@
+use catalyst_toolbox::stats::distribution::Stats;
 use catalyst_toolbox::stats::snapshot::read_initials;
 use catalyst_toolbox::stats::voters::calculate_wallet_distribution_from_initials;
 use color_eyre::Report;
@@ -28,17 +29,19 @@ impl SnapshotCommand {
 
         match self.command {
             Command::Count => calculate_wallet_distribution_from_initials(
+                Stats::new(self.threshold),
                 initials,
                 vec![],
-                self.threshold,
                 self.support_lovelace,
+                |stats, _, _| stats.add(1),
             )?
             .print_count_per_level(),
             Command::Ada => calculate_wallet_distribution_from_initials(
+                Stats::new(self.threshold),
                 initials,
                 vec![],
-                self.threshold,
                 self.support_lovelace,
+                |stats, value, _| stats.add(value),
             )?
             .print_ada_per_level(),
         };

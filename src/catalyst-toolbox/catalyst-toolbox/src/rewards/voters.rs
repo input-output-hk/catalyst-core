@@ -108,6 +108,24 @@ fn filter_active_addresses(
         .collect()
 }
 
+pub fn account_hex_to_address(
+    account_hex: String,
+    discrimination: Discrimination,
+) -> Result<Address, hex::FromHexError> {
+    let mut buffer = [0u8; 32];
+    hex::decode_to_slice(account_hex, &mut buffer)?;
+    let identifier: UnspecifiedAccountIdentifier = UnspecifiedAccountIdentifier::from(buffer);
+    Ok(Address::from(chain_addr::Address(
+        discrimination,
+        Kind::Account(
+            identifier
+                .to_single_account()
+                .expect("Only single accounts are supported")
+                .into(),
+        ),
+    )))
+}
+
 fn rewards_to_mainnet_addresses(
     rewards: HashMap<Identifier, Rewards>,
     voters: Vec<SnapshotInfo>,

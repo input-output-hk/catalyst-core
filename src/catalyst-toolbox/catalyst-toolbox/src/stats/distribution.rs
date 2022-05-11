@@ -3,8 +3,12 @@ use std::collections::HashMap;
 
 fn levels(threshold: u64) -> Vec<Range<u64>> {
     vec![
-        (0..threshold),
-        (threshold..10_000),
+        (0..450),
+        (450..threshold),
+        (500..1_000),
+        (1_000..2_000),
+        (2_000..5_000),
+        (5_000..10_000),
         (10_000..20_000),
         (20_000..50_000),
         (50_000..100_000),
@@ -31,22 +35,30 @@ pub struct Stats {
 
 impl Stats {
     pub fn new(threshold: u64) -> Self {
+        Self::new_with_levels(levels(threshold))
+    }
+
+    pub fn new_with_levels(levels: Vec<Range<u64>>) -> Self {
         Self {
-            content: levels(threshold)
+            content: levels
                 .into_iter()
                 .map(|range| (range, Default::default()))
                 .collect(),
         }
     }
 
-    pub fn add(&mut self, value: u64) {
+    pub fn add_with_weight(&mut self, value: u64, weight: u32) {
         for (range, record) in self.content.iter_mut() {
             if range.contains(&value) {
-                record.count += 1;
+                record.count += weight;
                 record.total += value;
                 return;
             }
         }
+    }
+
+    pub fn add(&mut self, value: u64) {
+        self.add_with_weight(value, 1);
     }
 
     pub fn print_count_per_level(&self) {

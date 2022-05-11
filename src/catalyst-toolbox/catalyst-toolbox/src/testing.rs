@@ -104,7 +104,7 @@ impl ProposerRewardsCommand {
     }
 
     pub fn cmd(self, temp_dir: &TempDir) -> Result<Command, Error> {
-        let script_content = include_str!("../../scripts/python/proposers_rewards.py");
+        let script_content = include_str!("../scripts/python/proposers_rewards.py");
         let script_file = temp_dir.child("proposers_rewards.py");
 
         std::fs::write(script_file.path(), script_content)?;

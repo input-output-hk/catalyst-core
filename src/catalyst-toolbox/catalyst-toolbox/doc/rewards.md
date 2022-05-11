@@ -75,7 +75,7 @@ There are 2 (two) main input files needed for calculating the community advisors
 1. Proposers reward result output file (approved proposals): We need this to check which of the proposals were approved. 
 Notice that the proposers rewards script output is per challenge. So in order to use it we need to aggregate all the csv
 into a single file (same headers, order is irrelevant). For this we can use the 
-[`csv_merger.py`](https://github.com/input-output-hk/catalyst-toolbox/blob/main/scripts/python/csv_merger.py) script,
+[`csv_merger.py`](https://github.com/input-output-hk/catalyst-toolbox/blob/main/catalyst-toolbox/scripts/python/csv_merger.py) script,
 or any other handier tool.
 2.Assessments csv (assessments): This is a file that comes from the community. It holds the information with the reviews performed
 by the CAs.

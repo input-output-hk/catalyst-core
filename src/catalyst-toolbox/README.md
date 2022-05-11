@@ -380,7 +380,7 @@ OPTIONS:
 ## Python scripts
 
 Use an updated version of `python3` and either create a venv or just install the dependencies from the
-`requirements.txt` file inside the `/scripts/python` folder. 
+`requirements.txt` file inside the `/catalyst-toolbox/scripts/python` folder. 
 
 #### Calculate proposers rewards
 

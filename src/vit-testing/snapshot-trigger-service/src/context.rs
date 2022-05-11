@@ -54,7 +54,7 @@ impl Context {
     }
 
     pub fn run_started(&mut self) -> Result<(), Error> {
-        match self.state {
+        match self.state.clone() {
             State::RequestToStart { job_id, parameters } => {
                 self.state = State::Running {
                     job_id,
@@ -68,7 +68,7 @@ impl Context {
     }
 
     pub fn run_finished(&mut self) -> Result<(), Error> {
-        match self.state {
+        match self.state.clone() {
             State::Running {
                 job_id,
                 start,
@@ -89,17 +89,17 @@ impl Context {
     pub fn status_by_id(&self, id: Uuid) -> Result<State, Error> {
         match self.state {
             State::Idle => Err(Error::NoJobRun),
-            State::RequestToStart { .. } => Ok(self.state),
+            State::RequestToStart { .. } => Ok(self.state.clone()),
             State::Running { job_id, .. } => {
                 if job_id == id {
-                    Ok(self.state)
+                    Ok(self.state.clone())
                 } else {
                     Err(Error::JobNotFound)
                 }
             }
             State::Finished { job_id, .. } => {
                 if job_id == id {
-                    Ok(self.state)
+                    Ok(self.state.clone())
                 } else {
                     Err(Error::JobNotFound)
                 }
@@ -132,7 +132,7 @@ impl Context {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 pub enum State {
     Idle,
     RequestToStart {

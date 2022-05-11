@@ -32,6 +32,8 @@ impl Configuration {
             NetworkType::Testnet(magic) => command.arg("--testnet-magic").arg(magic.to_string()),
         };
 
+        let output_filename = self.crate_snapshot_output_file_name(&params.tag);
+
         command
             .arg("--db")
             .arg(&self.voting_tools.db)
@@ -40,7 +42,7 @@ impl Configuration {
             .arg("--db-host")
             .arg(&self.voting_tools.db_host)
             .arg("--out-file")
-            .arg(output_folder.join("snapshot.json"))
+            .arg(output_folder.join(output_filename))
             .arg("--scale")
             .arg(self.voting_tools.scale.to_string());
 
@@ -50,6 +52,16 @@ impl Configuration {
 
         println!("Running command: {:?} ", command);
         command.spawn().map_err(Into::into)
+    }
+
+    pub fn crate_snapshot_output_file_name(&self, tag: &Option<String>) -> String {
+        const SNAPSHOT_FILE: &str = "snapshot.json";
+
+        if let Some(tag) = tag {
+            format!("{}_{}", tag, SNAPSHOT_FILE)
+        } else {
+            SNAPSHOT_FILE.to_string()
+        }
     }
 }
 

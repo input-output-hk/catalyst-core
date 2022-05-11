@@ -151,6 +151,7 @@ impl RegistrationVerifyJob {
     pub fn start(&self, request: Request, context: ContextLock) -> Result<JobOutputInfo, Error> {
         let jobs_params = JobParameters {
             slot_no: request.slot_no,
+            tag: request.tag.clone(),
         };
 
         let registration = RegistrationInfo {

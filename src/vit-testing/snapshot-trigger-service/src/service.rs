@@ -39,7 +39,7 @@ impl ManagerService {
 
     pub fn request_to_start(&self) -> Option<(Uuid, JobParameters)> {
         match self.context.lock().unwrap().state() {
-            State::RequestToStart { job_id, parameters } => Some((*job_id, *parameters)),
+            State::RequestToStart { job_id, parameters } => Some((*job_id, (*parameters).clone())),
             _ => None,
         }
     }

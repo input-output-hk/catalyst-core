@@ -50,12 +50,13 @@ impl TriggerServiceCommand {
                     control_context.lock().unwrap().run_started().unwrap();
 
                     child.wait().unwrap();
-                    control_context.lock().unwrap().run_finished().unwrap();
 
                     let status = control_context.lock().unwrap().status_by_id(job_id)?;
                     job_result_dir.push("status.yaml");
                     persist_status(&job_result_dir, status)
                         .map_err(|_| Error::CannotPersistJobState)?;
+
+                    control_context.lock().unwrap().run_finished().unwrap();
                 }
                 tokio::time::sleep(std::time::Duration::from_secs(5)).await;
             }

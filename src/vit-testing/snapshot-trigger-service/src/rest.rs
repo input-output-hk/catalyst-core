@@ -131,7 +131,6 @@ pub async fn health_handler() -> Result<impl Reply, Rejection> {
 
 pub async fn files_handler(context: ContextLock) -> Result<impl Reply, Rejection> {
     let context_lock = context.lock().unwrap();
-    println!("Reading files from: {:?}", context_lock.working_directory());
     Ok(file_lister::dump_json(context_lock.working_directory())?).map(|r| warp::reply::json(&r))
 }
 

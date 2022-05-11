@@ -94,6 +94,7 @@ pub async fn parse_multipart(form: warp::multipart::FormData) -> Result<Request,
         expected_funds,
         threshold,
         slot_no,
+        tag: None,
     })
 }
 

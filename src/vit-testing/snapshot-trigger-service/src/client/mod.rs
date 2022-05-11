@@ -92,7 +92,7 @@ impl SnapshotResult {
     }
 
     pub fn status(&self) -> State {
-        self.status
+        self.status.clone()
     }
 
     pub fn initials(&self) -> &Vec<Initial> {

@@ -6,11 +6,10 @@ use crate::transaction::{SingleAccountBindingSignature, TransactionBindingAuthDa
 use crate::value::Value;
 use crate::{account::Identifier as JorAddress, accounting::account::AccountState as JorAccount};
 use chain_crypto::Verification;
-use chain_evm::ExitError;
 use chain_evm::{
     machine::{
         transact_call, transact_create, transact_create2, BlockHash, BlockNumber, BlockTimestamp,
-        Environment, EvmState, Log, VirtualMachine,
+        Environment, EvmState, ExitError, Log, VirtualMachine,
     },
     state::{Account as EvmAccount, LogsState},
     Address as EvmAddress,

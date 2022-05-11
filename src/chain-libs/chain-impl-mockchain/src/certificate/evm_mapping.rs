@@ -1,7 +1,5 @@
 #[cfg(feature = "evm")]
 use crate::account::Identifier;
-#[cfg(feature = "evm")]
-use crate::evm::Address;
 use crate::transaction::{
     Payload, PayloadAuthData, PayloadData, PayloadSlice, SingleAccountBindingSignature,
 };
@@ -9,6 +7,8 @@ use chain_core::{
     packer::Codec,
     property::{DeserializeFromSlice, ReadError, Serialize, WriteError},
 };
+#[cfg(feature = "evm")]
+use chain_evm::Address;
 use typed_bytes::{ByteArray, ByteBuilder};
 
 use super::CertificateSlice;

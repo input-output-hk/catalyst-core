@@ -1,5 +1,5 @@
 use chain_addr::Discrimination;
-use chain_core::{packer::Codec, property::Deserialize};
+use chain_core::{packer::Codec, property::DeserializeFromSlice};
 use chain_impl_mockchain::{
     block::Block, chaintypes::HeaderId, fragment::Fragment, transaction::InputEnum,
 };
@@ -56,7 +56,7 @@ pub fn generate_archive_files(jormungandr_database: &Path, output_dir: &Path) ->
     for iter_res in block_iter {
         let block_bin = iter_res?;
         let mut codec = Codec::new(block_bin.as_ref());
-        let block: Block = Block::deserialize(&mut codec).unwrap();
+        let block: Block = DeserializeFromSlice::deserialize_from_slice(&mut codec).unwrap();
 
         for fragment in block.fragments() {
             if let Fragment::VoteCast(tx) = fragment {

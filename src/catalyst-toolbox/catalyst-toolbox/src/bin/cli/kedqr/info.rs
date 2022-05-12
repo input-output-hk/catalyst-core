@@ -2,14 +2,11 @@ use super::QrCodeOpts;
 use crate::cli::kedqr::decode::{secret_from_payload, secret_from_qr};
 use catalyst_toolbox::kedqr::QrPin;
 use chain_addr::{AddressReadable, Discrimination, Kind};
-use chain_core::{
-    mempack::{ReadBuf, Readable},
-    property::Deserialize,
-};
+use chain_core::property::Deserialize;
 use chain_crypto::{Ed25519Extended, SecretKey};
 use chain_impl_mockchain::block::Block;
+use chain_ser::packer::Codec;
 use jormungandr_lib::interfaces::{Block0Configuration, Initial};
-use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 use url::Url;
@@ -55,12 +52,11 @@ impl InfoForQrCodeCmd {
                         .read(true)
                         .append(false)
                         .open(block0_path)?;
-                    let reader = BufReader::new(reader);
-                    Block::deserialize(reader)?
+                    Block::deserialize(&mut Codec::new(reader))?
                 } else if Url::parse(block0_path).is_ok() {
                     let response = reqwest::blocking::get(block0_path)?;
                     let block0_bytes = response.bytes()?.to_vec();
-                    Block::read(&mut ReadBuf::from(&block0_bytes))?
+                    Block::deserialize(&mut Codec::new(&block0_bytes[..]))?
                 } else {
                     panic!("invalid block0: should be either path to filesystem or url ");
                 }

@@ -1,5 +1,8 @@
 use catalyst_toolbox::recovery::{Replay, ReplayError};
-use chain_core::{packer::Codec, property::Deserialize};
+use chain_core::{
+    packer::Codec,
+    property::{Deserialize, ReadError},
+};
 use chain_impl_mockchain::block::Block;
 use jcli_lib::utils::{
     output_file::{Error as OutputFileError, OutputFile},
@@ -36,7 +39,7 @@ pub enum Error {
     Block0Unavailable,
 
     #[error("Could not load block0")]
-    Block0Loading(#[source] std::io::Error),
+    Block0Loading(#[source] ReadError),
 }
 
 /// Recover the tally from fragment log files and the initial preloaded block0 binary file.
@@ -68,7 +71,6 @@ pub struct ReplayCli {
 
 fn read_block0(path: PathBuf) -> Result<Block, Error> {
     let reader = std::fs::File::open(path)?;
-    let reader = std::io::BufReader::new(reader);
     Block::deserialize(&mut Codec::new(reader)).map_err(Error::Block0Loading)
 }
 

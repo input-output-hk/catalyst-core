@@ -118,7 +118,7 @@ impl CommunityAdvisors {
         );
 
         let csv_data = rewards_to_csv_data(&rewards.rewards);
-        dump_data_to_csv(&csv_data, &output)?;
+        dump_data_to_csv(csv_data.iter(), &output)?;
 
         println!(
             "Reward for (full) good review {}",
@@ -130,7 +130,7 @@ impl CommunityAdvisors {
         );
         if let Some(file) = proposal_bonus_output {
             let csv_data = bonus_to_csv_data(rewards.bonus_rewards);
-            dump_data_to_csv(&csv_data, &file)?;
+            dump_data_to_csv(csv_data.iter(), &file)?;
         }
 
         Ok(())

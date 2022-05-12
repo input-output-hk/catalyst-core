@@ -7,6 +7,7 @@ mod notifications;
 mod recovery;
 mod rewards;
 mod snapshot;
+mod stats;
 mod vote_check;
 
 use std::error::Error;
@@ -50,6 +51,8 @@ pub enum CatalystCommand {
     Archive(archive::Archive),
     /// Validate catalyst elections
     VoteCheck(vote_check::VoteCheck),
+    /// Prints voting statistics
+    Stats(stats::Stats),
     /// Process raw registrations to produce initial blockchain setup
     Snapshot(snapshot::SnapshotCmd),
 }
@@ -83,6 +86,7 @@ impl CatalystCommand {
             Reviews(reviews) => reviews.exec()?,
             Archive(archive) => archive.exec()?,
             VoteCheck(vote_check) => vote_check.exec()?,
+            Stats(stats) => stats.exec()?,
             Snapshot(snapshot) => snapshot.exec()?,
         };
         Ok(())

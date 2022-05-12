@@ -83,7 +83,7 @@ impl Export {
         let reviews = read_vca_reviews_aggregated_file(&from)?;
         match format {
             OutputFormat::Csv => {
-                utils::csv::dump_data_to_csv(&reviews, &to)?;
+                utils::csv::dump_data_to_csv(reviews.iter(), &to)?;
             }
             OutputFormat::Json => {
                 serde_json::to_writer(open_file_write(&Some(to))?, &reviews)?;

@@ -120,7 +120,7 @@ impl VeteransRewards {
                 .collect(),
         );
 
-        csv::dump_data_to_csv(&rewards_to_csv_data(results), &to).unwrap();
+        csv::dump_data_to_csv(rewards_to_csv_data(results).iter(), &to).unwrap();
 
         Ok(())
     }

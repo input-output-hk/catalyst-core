@@ -1,6 +1,6 @@
-use super::hash;
+use super::payload;
 use chain_crypto::{Ed25519Extended, SecretKey, SecretKeyError};
-use image::{DynamicImage, ImageBuffer, Luma};
+use image::{DynamicImage, ImageBuffer, ImageError, Luma};
 use qrcode::{
     render::{svg, unicode},
     EcLevel, QrCode,
@@ -29,7 +29,9 @@ pub enum KeyQrCodeError {
     #[error("failed to decode hex")]
     HexDecodeError(#[from] hex::FromHexError),
     #[error("failed to decode hex")]
-    QrCodeHashError(#[from] super::hash::Error),
+    QrCodeHashError(#[from] super::payload::Error),
+    #[error(transparent)]
+    Image(#[from] ImageError),
 }
 
 #[derive(Error, Debug)]
@@ -44,7 +46,7 @@ pub enum QrDecodeError {
 
 impl KeyQrCode {
     pub fn generate(key: SecretKey<Ed25519Extended>, password: &[u8]) -> Self {
-        let enc_hex = hash::generate(key, password);
+        let enc_hex = payload::generate(key, password);
         let inner = QrCode::with_error_correction_level(&enc_hex, EcLevel::H).unwrap();
 
         KeyQrCode { inner }
@@ -89,7 +91,7 @@ impl KeyQrCode {
                 // TODO: I actually don't know if this can fail
                 let h = std::str::from_utf8(&decoded.payload)
                     .map_err(|_| QrDecodeError::NonUtf8Payload)?;
-                hash::decode(h, password).map_err(Into::into)
+                payload::decode(h, password).map_err(Into::into)
             })
             .collect()
     }

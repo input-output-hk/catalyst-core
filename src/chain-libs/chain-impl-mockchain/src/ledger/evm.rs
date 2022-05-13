@@ -334,16 +334,14 @@ impl Ledger {
                 slots_per_epoch: spe,
                 slot_duration: sdur,
             } = self.current_epoch;
-            let new_epoch = this_epoch;
             let new_epoch_start = epoch_start + spe as u64 * sdur as u64;
             self.current_epoch = BlockEpoch {
-                epoch: new_epoch,
+                epoch: this_epoch,
                 epoch_start: new_epoch_start,
                 slots_per_epoch,
                 slot_duration,
             };
         }
-
         // calculate the U256 value from epoch and slot parameters
         let block_timestamp = self.current_epoch.epoch_start
             + slot_id as u64 * self.current_epoch.slot_duration as u64;
@@ -418,6 +416,47 @@ mod test {
             transform_evm_to_jor(&evm_id);
             true
         }
+    }
+
+    #[test]
+    fn update_block_timestamp_test() {
+        let mut evm = Ledger::new();
+        let slots_per_epoch = 5;
+        let slot_duration = 10;
+
+        assert_eq!(evm.environment.block_timestamp, 0.into());
+
+        let block0_data = BlockDate {
+            epoch: 0,
+            slot_id: 0,
+        };
+
+        evm.update_block_timestamp(block0_data, slots_per_epoch, slot_duration);
+        assert_eq!(evm.environment.block_timestamp, 0.into());
+
+        let block1_data = BlockDate {
+            epoch: 1,
+            slot_id: 0,
+        };
+
+        evm.update_block_timestamp(block1_data, slots_per_epoch, slot_duration);
+        assert_eq!(evm.environment.block_timestamp, 10.into());
+
+        let block2_data = BlockDate {
+            epoch: 2,
+            slot_id: 0,
+        };
+
+        evm.update_block_timestamp(block2_data, slots_per_epoch, slot_duration);
+        assert_eq!(evm.environment.block_timestamp, 60.into());
+
+        let block2_data = BlockDate {
+            epoch: 2,
+            slot_id: 2,
+        };
+
+        evm.update_block_timestamp(block2_data, slots_per_epoch, slot_duration);
+        assert_eq!(evm.environment.block_timestamp, 80.into());
     }
 
     #[test]

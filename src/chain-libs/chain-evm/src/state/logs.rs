@@ -7,7 +7,7 @@ use super::Trie;
 /// In-memory representation of all logs.
 pub type BlockLogsTrie = Trie<BlockHash, Vec<Log>>;
 
-#[derive(Default, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct LogsState {
     block_logs: BlockLogsTrie,
 }

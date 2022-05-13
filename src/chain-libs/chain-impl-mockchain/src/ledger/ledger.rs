@@ -329,6 +329,9 @@ pub enum Error {
     #[error("evm transactions are disabled, the node was built without the 'evm' feature")]
     DisabledEvmTransactions,
     #[cfg(feature = "evm")]
+    #[error("Protocol evm mapping payload signature failed")]
+    EvmMappingSignatureFailed,
+    #[cfg(feature = "evm")]
     #[error("evm error: {0}")]
     EvmError(#[from] evm::Error),
 }
@@ -531,7 +534,12 @@ impl Ledger {
                     #[cfg(feature = "evm")]
                     {
                         let tx = _tx.as_slice().payload().into_payload();
-                        ledger = ledger.run_transaction(tx)?;
+                        (ledger.accounts, ledger.evm) = evm::Ledger::run_transaction(
+                            ledger.evm,
+                            ledger.accounts,
+                            tx,
+                            ledger.settings.evm_config,
+                        )?;
                     }
                     #[cfg(not(feature = "evm"))]
                     {
@@ -1079,7 +1087,12 @@ impl Ledger {
                 #[cfg(feature = "evm")]
                 {
                     let tx = _tx.as_slice().payload().into_payload();
-                    new_ledger = new_ledger.run_transaction(tx)?;
+                    (new_ledger.accounts, new_ledger.evm) = evm::Ledger::run_transaction(
+                        new_ledger.evm,
+                        new_ledger.accounts,
+                        tx,
+                        new_ledger.settings.evm_config,
+                    )?;
                 }
                 #[cfg(not(feature = "evm"))]
                 {
@@ -1090,14 +1103,14 @@ impl Ledger {
                 #[cfg(feature = "evm")]
                 {
                     let tx = _tx.as_slice();
-                    let (new_ledger_, _fee) = new_ledger.apply_transaction(
+                    (new_ledger, _) = new_ledger.apply_transaction(
                         &fragment_id,
                         &tx,
                         block_date,
                         ledger_params,
                     )?;
 
-                    new_ledger = new_ledger_.apply_map_accounts(
+                    new_ledger = new_ledger.apply_map_accounts(
                         &tx.payload().into_payload(),
                         &tx.transaction_binding_auth_data(),
                         tx.payload_auth().into_payload_auth(),
@@ -1403,6 +1416,26 @@ impl Ledger {
         };
         self.accounts = self.accounts.token_add(&to, token.clone(), value)?;
         self.token_totals = self.token_totals.add(token, value)?;
+        Ok(self)
+    }
+
+    #[cfg(feature = "evm")]
+    pub fn apply_map_accounts<'a>(
+        mut self,
+        mapping: &crate::certificate::EvmMapping,
+        auth_data: &TransactionBindingAuthData<'a>,
+        sig: SingleAccountBindingSignature,
+    ) -> Result<Self, Error> {
+        if sig.verify_slice(&mapping.account_id().clone().into(), auth_data)
+            != Verification::Success
+        {
+            return Err(Error::EvmMappingSignatureFailed);
+        }
+
+        // TODO need to add Ethereum signature validation
+
+        (self.accounts, self.evm) =
+            evm::Ledger::apply_map_accounts(self.evm, self.accounts, mapping)?;
         Ok(self)
     }
 

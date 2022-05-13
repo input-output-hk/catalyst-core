@@ -73,38 +73,21 @@ pub struct Precompiles(pub prelude::BTreeMap<prelude::Address, PrecompileFn>);
 
 impl Precompiles {
     pub fn new() -> Self {
-        let addresses = prelude::vec![
-            ECRecover::ADDRESS,
-            SHA256::ADDRESS,
-            RIPEMD160::ADDRESS,
-            Identity::ADDRESS,
-            ModExp::ADDRESS,
-            Bn128Add::ADDRESS,
-            Bn128Mul::ADDRESS,
-            Bn128Pair::ADDRESS,
-            Blake2F::ADDRESS,
-            ExitToNear::ADDRESS,
-            ExitToEthereum::ADDRESS,
+        let fun: Vec<(prelude::Address, PrecompileFn)> = vec![
+            (ECRecover::ADDRESS, ECRecover::run),
+            (SHA256::ADDRESS, SHA256::run),
+            (RIPEMD160::ADDRESS, RIPEMD160::run),
+            (Identity::ADDRESS, Identity::run),
+            (ModExp::ADDRESS, ModExp::run),
+            (Bn128Add::ADDRESS, Bn128Add::run),
+            (Bn128Mul::ADDRESS, Bn128Mul::run),
+            (Bn128Pair::ADDRESS, Bn128Pair::run),
+            (Blake2F::ADDRESS, Blake2F::run),
+            (ExitToNear::ADDRESS, ExitToNear::run),
+            (ExitToEthereum::ADDRESS, ExitToEthereum::run),
         ];
-        let fun: prelude::Vec<PrecompileFn> = prelude::vec![
-            ECRecover::run,
-            SHA256::run,
-            RIPEMD160::run,
-            Identity::run,
-            ModExp::run,
-            Bn128Add::run,
-            Bn128Mul::run,
-            Bn128Pair::run,
-            Blake2F::run,
-            ExitToNear::run,
-            ExitToEthereum::run,
-        ];
-        let mut map = prelude::BTreeMap::new();
-        for (address, fun) in addresses.into_iter().zip(fun) {
-            map.insert(address, fun);
-        }
 
-        Precompiles(map)
+        Precompiles(fun.into_iter().collect())
     }
 }
 

@@ -16,8 +16,10 @@ use ethereum_types::{H160, H256, U256};
 use evm::{
     backend::{Backend, Basic},
     executor::stack::{Accessed, StackExecutor, StackState, StackSubstateMetadata},
-    Context, ExitFatal, ExitReason, ExitRevert, Transfer,
+    Context, CreateScheme, ExitFatal, ExitReason, ExitRevert, Transfer,
 };
+use ripemd::Digest;
+use sha3::Keccak256;
 use std::collections::{BTreeMap, BTreeSet};
 use thiserror::Error;
 
@@ -220,6 +222,36 @@ impl<'a, T> VirtualMachine<'a, T> {
     }
 }
 
+pub fn generate_address_create<State: EvmState>(
+    vm: VirtualMachine<State>,
+    caller: Address,
+) -> Address {
+    let precompiles = Precompiles::new();
+    let config = vm.config;
+    let executor = StackExecutor::new_with_precompiles(vm, config, &precompiles);
+
+    executor.create_address(CreateScheme::Legacy { caller })
+}
+
+pub fn generate_address_create2<State: EvmState>(
+    vm: VirtualMachine<State>,
+    caller: Address,
+    init_code: ByteCode,
+    salt: H256,
+) -> Address {
+    let precompiles = Precompiles::new();
+    let config = vm.config;
+    let executor = StackExecutor::new_with_precompiles(vm, config, &precompiles);
+
+    let code_hash = H256::from_slice(Keccak256::digest(&init_code).as_slice());
+
+    executor.create_address(CreateScheme::Create2 {
+        caller,
+        code_hash,
+        salt,
+    })
+}
+
 /// Top-level abstraction for the EVM with the
 /// necessary types used to get the runtime going.
 fn execute_transaction<State: EvmState, F, T>(vm: VirtualMachine<State>, f: F) -> Result<T, Error>
@@ -232,7 +264,6 @@ where
     let config = vm.config;
     let gas_price = vm.gas_price();
 
-    // let memory_stack_state = MemoryStackState::new(vm.substate.metadata.clone(), &vm);
     let mut executor = StackExecutor::new_with_precompiles(vm, config, &precompiles);
 
     let (exit_reason, val) = f(&mut executor);
@@ -284,8 +315,6 @@ fn convert_access_list_to_tuples_vec(access_list: AccessList) -> Vec<(Address, V
 }
 
 /// Execute a CREATE transaction
-#[allow(clippy::too_many_arguments)]
-#[allow(clippy::boxed_local)]
 pub fn transact_create<State: EvmState>(
     vm: VirtualMachine<State>,
     value: U256,
@@ -296,12 +325,11 @@ pub fn transact_create<State: EvmState>(
     let gas_limit = vm.gas_limit;
     let access_list = convert_access_list_to_tuples_vec(access_list);
     execute_transaction(vm, |executor| {
-        executor.transact_create(caller, value, init_code.to_vec(), gas_limit, access_list)
+        executor.transact_create(caller, value, init_code.into(), gas_limit, access_list)
     })
 }
 
 /// Execute a CREATE2 transaction
-#[allow(clippy::too_many_arguments)]
 pub fn transact_create2<State: EvmState>(
     vm: VirtualMachine<State>,
     value: U256,
@@ -325,7 +353,6 @@ pub fn transact_create2<State: EvmState>(
 }
 
 /// Execute a CALL transaction
-#[allow(clippy::too_many_arguments)]
 pub fn transact_call<State: EvmState>(
     vm: VirtualMachine<State>,
     address: Address,

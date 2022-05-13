@@ -84,9 +84,13 @@ pub struct AccountState {
 
 impl Account {
     pub fn is_empty(&self) -> bool {
-        self.state.nonce.is_zero()
-            && self.balance == Balance::zero()
-            && self.state.storage.is_empty()
+        self.balance == Balance::zero() && self.state.is_empty()
+    }
+}
+
+impl AccountState {
+    pub fn is_empty(&self) -> bool {
+        self.nonce.is_zero() && self.code.is_empty() && self.storage.is_empty()
     }
 }
 
@@ -115,11 +119,20 @@ impl AccountTrie {
     }
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "property-test-api"))]
 mod test {
     use super::*;
+    use quickcheck::{Arbitrary, Gen};
 
-    const MAX_SIZE: u64 = u64::MAX;
+    impl Arbitrary for AccountState {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            Self {
+                storage: Storage::new(),
+                code: Box::new([Arbitrary::arbitrary(g); 32]),
+                nonce: u64::arbitrary(g).into(),
+            }
+        }
+    }
 
     #[test]
     fn account_balance_u256_zero() {
@@ -128,6 +141,8 @@ mod test {
 
     #[test]
     fn account_balance_u256_checked_add() {
+        const MAX_SIZE: u64 = u64::MAX;
+
         let val = 100u64;
         assert_eq!(
             Balance::from(val).checked_add(U256::from(0u64).try_into().unwrap()),
@@ -154,6 +169,8 @@ mod test {
 
     #[test]
     fn account_balance_u256_can_never_use_more_than_64_bits() {
+        const MAX_SIZE: u64 = u64::MAX;
+
         // convert from u64
         assert_eq!(Balance::from(MAX_SIZE), Balance(MAX_SIZE));
         // try to convert from U256

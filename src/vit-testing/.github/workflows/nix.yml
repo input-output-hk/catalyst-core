@@ -18,9 +18,9 @@ jobs:
       with:
         CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
     - name: Flake check
-      run: nix flake check --option allow-import-from-derivation true
+      run: nix flake check -L --option allow-import-from-derivation true
     - name: Build
-      run: nix build .#vitup
+      run: nix build -L .#vitup
 
   build:
     name: Build ${{ matrix.package }}
@@ -46,4 +46,4 @@ jobs:
       with:
         CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
     - name: Build
-      run: nix build .#${{ matrix.package }}
+      run: nix build -L .#${{ matrix.package }}

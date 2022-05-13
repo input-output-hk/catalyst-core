@@ -1479,6 +1479,16 @@ impl Ledger {
         self.settings.consensus_version
     }
 
+    #[cfg(feature = "evm")]
+    pub fn evm_gas_price(&self) -> chain_evm::ethereum_types::U256 {
+        self.settings.evm_environment.gas_price
+    }
+
+    #[cfg(feature = "evm")]
+    pub fn evm_block_gas_limit(&self) -> chain_evm::ethereum_types::U256 {
+        self.settings.evm_environment.block_gas_limit
+    }
+
     pub fn utxo_out(
         &self,
         fragment_id: FragmentId,

@@ -16,7 +16,7 @@ use chain_core::{
 };
 use chain_crypto::PublicKey;
 #[cfg(feature = "evm")]
-use chain_evm::{BlockGasLimit, Config, GasPrice};
+use chain_evm::Config;
 use std::{
     fmt::{self, Display, Formatter},
     io::{self, Write},
@@ -115,8 +115,8 @@ pub enum RewardParams {
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq)]
 /// Settings for EVM Environment
 pub struct EvmEnvSettings {
-    pub gas_price: GasPrice,
-    pub block_gas_limit: BlockGasLimit,
+    pub gas_price: u64,
+    pub block_gas_limit: u64,
 }
 
 // Discriminants can NEVER be 1024 or higher
@@ -819,18 +819,16 @@ impl ConfigParamVariant for Config {
 #[cfg(feature = "evm")]
 impl ConfigParamVariant for EvmEnvSettings {
     fn to_payload(&self) -> Vec<u8> {
-        use crate::evm::serialize_u256;
-        let bb: ByteBuilder<EvmEnvSettings> = ByteBuilder::new();
-        let bb = serialize_u256(bb, &self.gas_price);
-        let bb = serialize_u256(bb, &self.block_gas_limit);
-        bb.finalize_as_vec()
+        let mut codec = Codec::new(Vec::<u8>::new());
+        codec.put_be_u64(self.gas_price).unwrap();
+        codec.put_be_u64(self.block_gas_limit).unwrap();
+        codec.into_inner()
     }
 
     fn from_payload(payload: &[u8]) -> Result<Self, Error> {
-        use crate::evm::read_u256;
         let mut codec = Codec::new(payload);
-        let gas_price = read_u256(&mut codec)?;
-        let block_gas_limit = read_u256(&mut codec)?;
+        let gas_price = codec.get_be_u64()?;
+        let block_gas_limit = codec.get_be_u64()?;
         Ok(EvmEnvSettings {
             gas_price,
             block_gas_limit,
@@ -958,8 +956,8 @@ mod test {
     impl Arbitrary for EvmEnvSettings {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             EvmEnvSettings {
-                gas_price: [u8::arbitrary(g); 32].into(),
-                block_gas_limit: [u8::arbitrary(g); 32].into(),
+                gas_price: Arbitrary::arbitrary(g),
+                block_gas_limit: Arbitrary::arbitrary(g),
             }
         }
     }

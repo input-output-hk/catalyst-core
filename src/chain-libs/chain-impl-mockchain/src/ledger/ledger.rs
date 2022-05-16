@@ -575,8 +575,9 @@ impl Ledger {
     #[cfg(feature = "evm")]
     pub fn set_evm_environment(self) -> Self {
         let mut ledger = self;
-        ledger.evm.environment.gas_price = ledger.settings.evm_environment.gas_price;
-        ledger.evm.environment.block_gas_limit = ledger.settings.evm_environment.block_gas_limit;
+        ledger.evm.environment.gas_price = ledger.settings.evm_environment.gas_price.into();
+        ledger.evm.environment.block_gas_limit =
+            ledger.settings.evm_environment.block_gas_limit.into();
         ledger
     }
 
@@ -1480,12 +1481,12 @@ impl Ledger {
     }
 
     #[cfg(feature = "evm")]
-    pub fn evm_gas_price(&self) -> chain_evm::ethereum_types::U256 {
+    pub fn evm_gas_price(&self) -> u64 {
         self.settings.evm_environment.gas_price
     }
 
     #[cfg(feature = "evm")]
-    pub fn evm_block_gas_limit(&self) -> chain_evm::ethereum_types::U256 {
+    pub fn evm_block_gas_limit(&self) -> u64 {
         self.settings.evm_environment.block_gas_limit
     }
 

@@ -26,7 +26,7 @@ pub enum EvmTransaction {
     #[cfg(feature = "evm")]
     Create {
         caller: Address,
-        value: U256,
+        value: u64,
         init_code: ByteCode,
         gas_limit: u64,
         access_list: AccessList,
@@ -34,7 +34,7 @@ pub enum EvmTransaction {
     #[cfg(feature = "evm")]
     Create2 {
         caller: Address,
-        value: U256,
+        value: u64,
         init_code: ByteCode,
         salt: H256,
         gas_limit: u64,
@@ -44,11 +44,25 @@ pub enum EvmTransaction {
     Call {
         caller: Address,
         address: Address,
-        value: U256,
+        value: u64,
         data: ByteCode,
         gas_limit: u64,
         access_list: AccessList,
     },
+}
+
+#[cfg(feature = "evm")]
+impl Default for EvmTransaction {
+    fn default() -> Self {
+        Self::Call {
+            caller: Default::default(),
+            address: Default::default(),
+            value: Default::default(),
+            data: Default::default(),
+            gas_limit: Default::default(),
+            access_list: Default::default(),
+        }
+    }
 }
 
 #[cfg(feature = "evm")]
@@ -265,7 +279,7 @@ mod test {
     impl Arbitrary for EvmTransaction {
         fn arbitrary<G: quickcheck::Gen>(g: &mut G) -> Self {
             let caller = [u8::arbitrary(g); H160::len_bytes()].into();
-            let value = u128::arbitrary(g).into();
+            let value = u64::arbitrary(g);
             let gas_limit = Arbitrary::arbitrary(g);
             let access_list: AccessList = match u8::arbitrary(g) % 2 {
                 0 => vec![],

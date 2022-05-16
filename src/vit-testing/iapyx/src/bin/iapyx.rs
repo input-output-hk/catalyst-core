@@ -1,5 +1,6 @@
-use iapyx::cli::args::interactive::CliController;
-use iapyx::cli::args::interactive::IapyxCommand;
+mod interactive;
+
+use interactive::{CliController, IapyxCommand};
 use structopt::StructOpt;
 
 pub fn main() {

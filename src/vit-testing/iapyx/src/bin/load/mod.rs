@@ -1,9 +1,12 @@
 mod burst;
 mod constant;
 
-use crate::load::{ArtificialUserLoad, MultiControllerError, NodeLoadError, ServicingStationLoad};
 use burst::BurstIapyxLoadCommand;
 use constant::ConstIapyxLoadCommand;
+use iapyx::ArtificialUserLoad;
+use iapyx::MultiControllerError;
+use iapyx::NodeLoadError;
+use iapyx::ServicingStationLoad;
 pub use jortestkit::console::progress_bar::{parse_progress_bar_mode_from_str, ProgressBarMode};
 use jortestkit::load::Monitor;
 use std::path::PathBuf;
@@ -12,8 +15,6 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum IapyxLoadCommandError {
-    #[error("duration or requests per thread stategy has to be defined")]
-    NoStrategyDefined,
     #[error("load runner error")]
     NodeLoadError(#[from] NodeLoadError),
     #[error("internal error")]
@@ -21,9 +22,9 @@ pub enum IapyxLoadCommandError {
     #[error("serialize error")]
     SerializeError(#[from] serde_json::Error),
     #[error("servicing station error")]
-    ServicingStationError(#[from] crate::load::ServicingStationLoadError),
+    ServicingStationError(#[from] iapyx::ServicingStationLoadError),
     #[error("artificial users error")]
-    ArtificialUserError(#[from] crate::load::ArtificialUserLoadError),
+    ArtificialUserError(#[from] iapyx::ArtificialUserLoadError),
     #[error(transparent)]
     Io(#[from] std::io::Error),
 }

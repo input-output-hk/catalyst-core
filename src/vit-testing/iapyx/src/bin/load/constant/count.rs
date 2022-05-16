@@ -1,7 +1,7 @@
-use crate::cli::args::load::build_monitor;
-use crate::cli::args::load::IapyxLoadCommandError;
-use crate::load::NodeLoad;
-use crate::load::NodeLoadConfig;
+use crate::load::build_monitor;
+use crate::load::IapyxLoadCommandError;
+use iapyx::NodeLoad;
+use iapyx::NodeLoadConfig;
 pub use jortestkit::console::progress_bar::{parse_progress_bar_mode_from_str, ProgressBarMode};
 use jortestkit::load::ConfigurationBuilder;
 use std::path::PathBuf;

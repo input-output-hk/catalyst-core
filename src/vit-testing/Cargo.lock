@@ -236,6 +236,15 @@ dependencies = [
 
 [[package]]
 name = "autocfg"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0dde43e75fd43e8a1bf86103336bc699aa8d17ad1be60c76c0bdfd4828e19b78"
+dependencies = [
+ "autocfg 1.1.0",
+]
+
+[[package]]
+name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
@@ -488,7 +497,7 @@ dependencies = [
 [[package]]
 name = "cardano-legacy-address"
 version = "0.1.1"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ba8113bc5096f9827865f42bb05ad8bfcb551bcb"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#3bee2748d43497aa37a5f22254b8d41a8368a958"
 dependencies = [
  "cbor_event",
  "cryptoxide 0.4.2",
@@ -507,7 +516,7 @@ dependencies = [
 [[package]]
 name = "catalyst-toolbox"
 version = "0.3.0"
-source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=main#e1c6b420f9f11a976f4022031f22dea4caa8624c"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=main#f540007b055ca5aea84837f6219b5079118fff27"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",
@@ -545,6 +554,7 @@ dependencies = [
  "serde_yaml",
  "sscanf",
  "stderrlog",
+ "stopwatch",
  "structopt",
  "symmetric-cipher",
  "thiserror",
@@ -611,7 +621,7 @@ dependencies = [
 [[package]]
 name = "chain-addr"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ba8113bc5096f9827865f42bb05ad8bfcb551bcb"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#3bee2748d43497aa37a5f22254b8d41a8368a958"
 dependencies = [
  "bech32 0.8.1",
  "chain-core",
@@ -625,7 +635,7 @@ dependencies = [
 [[package]]
 name = "chain-core"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ba8113bc5096f9827865f42bb05ad8bfcb551bcb"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#3bee2748d43497aa37a5f22254b8d41a8368a958"
 dependencies = [
  "chain-ser",
 ]
@@ -633,7 +643,7 @@ dependencies = [
 [[package]]
 name = "chain-crypto"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ba8113bc5096f9827865f42bb05ad8bfcb551bcb"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#3bee2748d43497aa37a5f22254b8d41a8368a958"
 dependencies = [
  "bech32 0.8.1",
  "cryptoxide 0.4.2",
@@ -655,31 +665,36 @@ dependencies = [
 [[package]]
 name = "chain-evm"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ba8113bc5096f9827865f42bb05ad8bfcb551bcb"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#3bee2748d43497aa37a5f22254b8d41a8368a958"
 dependencies = [
  "aurora-bn",
+ "base64 0.13.0",
  "blake2",
  "byte-slice-cast",
+ "chain-core",
  "chain-ser",
  "ethabi",
+ "ethereum",
  "ethereum-types",
  "evm",
  "hex",
  "imhamt",
  "libsecp256k1",
- "num",
+ "num 0.4.0",
  "quickcheck",
  "ripemd",
  "rlp",
+ "secp256k1",
  "sha2 0.10.2",
  "sha3 0.10.1",
  "thiserror",
+ "typed-bytes",
 ]
 
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ba8113bc5096f9827865f42bb05ad8bfcb551bcb"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#3bee2748d43497aa37a5f22254b8d41a8368a958"
 dependencies = [
  "cardano-legacy-address",
  "chain-addr",
@@ -719,7 +734,7 @@ dependencies = [
 [[package]]
 name = "chain-ser"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ba8113bc5096f9827865f42bb05ad8bfcb551bcb"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#3bee2748d43497aa37a5f22254b8d41a8368a958"
 dependencies = [
  "thiserror",
 ]
@@ -727,7 +742,7 @@ dependencies = [
 [[package]]
 name = "chain-storage"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ba8113bc5096f9827865f42bb05ad8bfcb551bcb"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#3bee2748d43497aa37a5f22254b8d41a8368a958"
 dependencies = [
  "criterion",
  "data-pile",
@@ -740,7 +755,7 @@ dependencies = [
 [[package]]
 name = "chain-time"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ba8113bc5096f9827865f42bb05ad8bfcb551bcb"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#3bee2748d43497aa37a5f22254b8d41a8368a958"
 dependencies = [
  "chain-core",
  "chain-ser",
@@ -752,7 +767,7 @@ dependencies = [
 [[package]]
 name = "chain-vote"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ba8113bc5096f9827865f42bb05ad8bfcb551bcb"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#3bee2748d43497aa37a5f22254b8d41a8368a958"
 dependencies = [
  "cfg-if 1.0.0",
  "chain-core",
@@ -843,6 +858,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a37c35f1112dad5e6e0b1adaff798507497a18fceeb30cceb3bae7d1427b9213"
 dependencies = [
  "os_str_bytes",
+]
+
+[[package]]
+name = "cloudabi"
+version = "0.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ddfc5b9aa5d4507acaf872de71051dfd0e309860e88966e1051e462a077aac4f"
+dependencies = [
+ "bitflags",
 ]
 
 [[package]]
@@ -1016,7 +1040,7 @@ version = "0.9.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1145cf131a2c6ba0615079ab6a638f7e1973ac9c2634fcbeaaad6114246efe8c"
 dependencies = [
- "autocfg",
+ "autocfg 1.1.0",
  "cfg-if 1.0.0",
  "crossbeam-utils",
  "lazy_static",
@@ -2214,7 +2238,7 @@ dependencies = [
 [[package]]
 name = "hersir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#b809836d32e552fd4d089de05013d2b18590cbbe"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#26000281078521c7a40985f331040a628393fcc4"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2559,7 +2583,7 @@ dependencies = [
 [[package]]
 name = "imhamt"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ba8113bc5096f9827865f42bb05ad8bfcb551bcb"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#3bee2748d43497aa37a5f22254b8d41a8368a958"
 dependencies = [
  "proptest",
  "rustc_version",
@@ -2611,7 +2635,7 @@ version = "1.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0f647032dfaa1f8b6dc29bd3edb7bbef4861b8b8007ebb118d6db284fd59f6ee"
 dependencies = [
- "autocfg",
+ "autocfg 1.1.0",
  "hashbrown",
 ]
 
@@ -2750,7 +2774,7 @@ checksum = "1aab8fc367588b89dcee83ab0fd66b72b50b72fa1904d7095045ace2b0c81c35"
 [[package]]
 name = "jcli"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#b809836d32e552fd4d089de05013d2b18590cbbe"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#26000281078521c7a40985f331040a628393fcc4"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2793,7 +2817,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-automation"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#b809836d32e552fd4d089de05013d2b18590cbbe"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#26000281078521c7a40985f331040a628393fcc4"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -2857,7 +2881,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-integration-tests"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#b809836d32e552fd4d089de05013d2b18590cbbe"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#26000281078521c7a40985f331040a628393fcc4"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -2909,7 +2933,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#b809836d32e552fd4d089de05013d2b18590cbbe"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#26000281078521c7a40985f331040a628393fcc4"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -3144,7 +3168,7 @@ version = "0.4.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "327fa5b6a6940e4699ec49a9beae1ea4845c6bab9314e4f84ac68742139d8c53"
 dependencies = [
- "autocfg",
+ "autocfg 1.1.0",
  "scopeguard",
 ]
 
@@ -3161,7 +3185,7 @@ dependencies = [
 [[package]]
 name = "loki"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#b809836d32e552fd4d089de05013d2b18590cbbe"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#26000281078521c7a40985f331040a628393fcc4"
 dependencies = [
  "chain-addr",
  "chain-core",
@@ -3237,7 +3261,7 @@ version = "0.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5aa361d4faea93603064a027415f07bd8e1d5c88c9fbf68bf56a285428fd79ce"
 dependencies = [
- "autocfg",
+ "autocfg 1.1.0",
 ]
 
 [[package]]
@@ -3293,7 +3317,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a92518e98c078586bc6c934028adcca4c92a53d6a958196de835170a01d84e4b"
 dependencies = [
  "adler",
- "autocfg",
+ "autocfg 1.1.0",
 ]
 
 [[package]]
@@ -3373,7 +3397,7 @@ dependencies = [
 [[package]]
 name = "mjolnir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#b809836d32e552fd4d089de05013d2b18590cbbe"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#26000281078521c7a40985f331040a628393fcc4"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -3550,12 +3574,26 @@ dependencies = [
 
 [[package]]
 name = "num"
+version = "0.1.42"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4703ad64153382334aa8db57c637364c322d3372e097840c72000dabdcf6156e"
+dependencies = [
+ "num-bigint 0.1.44",
+ "num-complex 0.1.43",
+ "num-integer",
+ "num-iter",
+ "num-rational 0.1.42",
+ "num-traits",
+]
+
+[[package]]
+name = "num"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "43db66d1170d347f9a065114077f7dccb00c1b9478c89384490a3425279a4606"
 dependencies = [
- "num-bigint",
- "num-complex",
+ "num-bigint 0.4.3",
+ "num-complex 0.4.1",
  "num-integer",
  "num-iter",
  "num-rational 0.4.0",
@@ -3564,13 +3602,35 @@ dependencies = [
 
 [[package]]
 name = "num-bigint"
+version = "0.1.44"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e63899ad0da84ce718c14936262a41cee2c79c981fc0a0e7c7beb47d5a07e8c1"
+dependencies = [
+ "num-integer",
+ "num-traits",
+ "rand 0.3.23",
+ "rustc-serialize",
+]
+
+[[package]]
+name = "num-bigint"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f93ab6289c7b344a8a9f60f88d80aa20032336fe78da341afc91c8a2341fc75f"
 dependencies = [
- "autocfg",
+ "autocfg 1.1.0",
  "num-integer",
  "num-traits",
+]
+
+[[package]]
+name = "num-complex"
+version = "0.1.43"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b288631d7878aaf59442cffd36910ea604ecd7745c36054328595114001c9656"
+dependencies = [
+ "num-traits",
+ "rustc-serialize",
 ]
 
 [[package]]
@@ -3599,7 +3659,7 @@ version = "0.1.45"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "225d3389fb3509a24c93f5c29eb6bde2586b98d9f016636dff58d7c6f7569cd9"
 dependencies = [
- "autocfg",
+ "autocfg 1.1.0",
  "num-traits",
 ]
 
@@ -3609,9 +3669,21 @@ version = "0.1.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d03e6c028c5dc5cac6e2dec0efda81fc887605bb3d884578bb6d6bf7514e252"
 dependencies = [
- "autocfg",
+ "autocfg 1.1.0",
  "num-integer",
  "num-traits",
+]
+
+[[package]]
+name = "num-rational"
+version = "0.1.42"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee314c74bd753fc86b4780aa9475da469155f3848473a261d2d18e35245a784e"
+dependencies = [
+ "num-bigint 0.1.44",
+ "num-integer",
+ "num-traits",
+ "rustc-serialize",
 ]
 
 [[package]]
@@ -3620,7 +3692,7 @@ version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "12ac428b1cb17fce6f731001d307d351ec70a6d202fc2e60f7d4c5e42d8f4f07"
 dependencies = [
- "autocfg",
+ "autocfg 1.1.0",
  "num-integer",
  "num-traits",
 ]
@@ -3631,8 +3703,8 @@ version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d41702bd167c2df5520b384281bc111a4b5efcf7fbc4c9c222c815b07e0a6a6a"
 dependencies = [
- "autocfg",
- "num-bigint",
+ "autocfg 1.1.0",
+ "num-bigint 0.4.3",
  "num-integer",
  "num-traits",
 ]
@@ -3643,7 +3715,7 @@ version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "578ede34cf02f8924ab9447f50c28075b4d3e5b269972345e7e0372b38c6cdcd"
 dependencies = [
- "autocfg",
+ "autocfg 1.1.0",
 ]
 
 [[package]]
@@ -3736,7 +3808,7 @@ version = "0.9.73"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9d5fd19fb3e0a8191c1e34935718976a3e70c112ab9a24af6d7cadccd9d90bc0"
 dependencies = [
- "autocfg",
+ "autocfg 1.1.0",
  "cc",
  "libc",
  "pkg-config",
@@ -4170,7 +4242,7 @@ dependencies = [
  "quick-error 2.0.1",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
- "rand_xorshift",
+ "rand_xorshift 0.3.0",
  "rand_xoshiro",
  "regex-syntax",
  "rusty-fork",
@@ -4337,6 +4409,25 @@ dependencies = [
 
 [[package]]
 name = "rand"
+version = "0.6.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d71dacdc3c88c1fde3885a3be3fbab9f35724e6ce99467f7d9c5026132184ca"
+dependencies = [
+ "autocfg 0.1.8",
+ "libc",
+ "rand_chacha 0.1.1",
+ "rand_core 0.4.2",
+ "rand_hc 0.1.0",
+ "rand_isaac",
+ "rand_jitter",
+ "rand_os",
+ "rand_pcg",
+ "rand_xorshift 0.1.1",
+ "winapi 0.3.9",
+]
+
+[[package]]
+name = "rand"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a6b1679d49b24bbfe0c803429aa1874472f50d9b363131f0e89fc356b544d03"
@@ -4345,7 +4436,7 @@ dependencies = [
  "libc",
  "rand_chacha 0.2.2",
  "rand_core 0.5.1",
- "rand_hc",
+ "rand_hc 0.2.0",
 ]
 
 [[package]]
@@ -4357,6 +4448,16 @@ dependencies = [
  "libc",
  "rand_chacha 0.3.1",
  "rand_core 0.6.3",
+]
+
+[[package]]
+name = "rand_chacha"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "556d3a1ca6600bfcbab7c7c91ccb085ac7fbbcd70e008a98742e7847f4f7bcef"
+dependencies = [
+ "autocfg 0.1.8",
+ "rand_core 0.3.1",
 ]
 
 [[package]]
@@ -4414,11 +4515,73 @@ dependencies = [
 
 [[package]]
 name = "rand_hc"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b40677c7be09ae76218dc623efbf7b18e34bced3f38883af07bb75630a21bc4"
+dependencies = [
+ "rand_core 0.3.1",
+]
+
+[[package]]
+name = "rand_hc"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ca3129af7b92a17112d59ad498c6f81eaf463253766b90396d39ea7a39d6613c"
 dependencies = [
  "rand_core 0.5.1",
+]
+
+[[package]]
+name = "rand_isaac"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ded997c9d5f13925be2a6fd7e66bf1872597f759fd9dd93513dd7e92e5a5ee08"
+dependencies = [
+ "rand_core 0.3.1",
+]
+
+[[package]]
+name = "rand_jitter"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1166d5c91dc97b88d1decc3285bb0a99ed84b05cfd0bc2341bdf2d43fc41e39b"
+dependencies = [
+ "libc",
+ "rand_core 0.4.2",
+ "winapi 0.3.9",
+]
+
+[[package]]
+name = "rand_os"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b75f676a1e053fc562eafbb47838d67c84801e38fc1ba459e8f180deabd5071"
+dependencies = [
+ "cloudabi",
+ "fuchsia-cprng",
+ "libc",
+ "rand_core 0.4.2",
+ "rdrand",
+ "winapi 0.3.9",
+]
+
+[[package]]
+name = "rand_pcg"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "abf9b09b01790cfe0364f52bf32995ea3c39f4d2dd011eac241d2914146d0b44"
+dependencies = [
+ "autocfg 0.1.8",
+ "rand_core 0.4.2",
+]
+
+[[package]]
+name = "rand_xorshift"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cbf7e9e623549b0e21f6e97cf8ecf247c1a8fd2e8a992ae265314300b2455d5c"
+dependencies = [
+ "rand_core 0.3.1",
 ]
 
 [[package]]
@@ -4445,7 +4608,7 @@ version = "1.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd249e82c21598a9a426a4e00dd7adc1d640b22445ec8545feef801d1a74c221"
 dependencies = [
- "autocfg",
+ "autocfg 1.1.0",
  "crossbeam-deque",
  "either",
  "rayon-core",
@@ -4546,6 +4709,7 @@ name = "registration-verify-service"
 version = "0.1.0"
 dependencies = [
  "bytes 1.1.0",
+ "catalyst-toolbox",
  "chain-addr",
  "chain-crypto",
  "chrono",
@@ -4761,6 +4925,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3e75f6a532d0fd9f7f13144f392b6ad56a32696bfcd9c78f797f16bbb6f072d6"
 
 [[package]]
+name = "rustc-serialize"
+version = "0.3.24"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dcf128d1287d2ea9d80910b5f1120d0b8eede3fbf1abe91c40d39ea7d51e6fda"
+
+[[package]]
 name = "rustc_version"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4944,6 +5114,25 @@ checksum = "d53dcdb7c9f8158937a7981b48accfd39a43af418591a5d008c7b22b5e1b7ca4"
 dependencies = [
  "ring",
  "untrusted",
+]
+
+[[package]]
+name = "secp256k1"
+version = "0.22.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26947345339603ae8395f68e2f3d85a6b0a8ddfe6315818e80b8504415099db0"
+dependencies = [
+ "rand 0.6.5",
+ "secp256k1-sys",
+]
+
+[[package]]
+name = "secp256k1-sys"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "152e20a0fd0519390fc43ab404663af8a0b794273d2a91d60ad4a39f13ffe110"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
@@ -5282,7 +5471,7 @@ dependencies = [
 [[package]]
 name = "sparse-array"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ba8113bc5096f9827865f42bb05ad8bfcb551bcb"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#3bee2748d43497aa37a5f22254b8d41a8368a958"
 
 [[package]]
 name = "spin"
@@ -5331,6 +5520,15 @@ dependencies = [
  "log",
  "termcolor",
  "thread_local",
+]
+
+[[package]]
+name = "stopwatch"
+version = "0.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d04b5ebc78da44d3a456319d8bc2783e7d8cc7ccbb5cb4dc3f54afbd93bf728"
+dependencies = [
+ "num 0.1.42",
 ]
 
 [[package]]
@@ -5627,7 +5825,7 @@ dependencies = [
 [[package]]
 name = "thor"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#b809836d32e552fd4d089de05013d2b18590cbbe"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#26000281078521c7a40985f331040a628393fcc4"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",
@@ -6163,7 +6361,7 @@ dependencies = [
 [[package]]
 name = "typed-bytes"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ba8113bc5096f9827865f42bb05ad8bfcb551bcb"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#3bee2748d43497aa37a5f22254b8d41a8368a958"
 
 [[package]]
 name = "typenum"
@@ -6508,7 +6706,7 @@ checksum = "6a02e4885ed3bc0f2de90ea6dd45ebcbb66dacffe03547fadbb0eeae2770887d"
 [[package]]
 name = "voting-hir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=main#e1c6b420f9f11a976f4022031f22dea4caa8624c"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=main#f540007b055ca5aea84837f6219b5079118fff27"
 dependencies = [
  "jormungandr-lib",
  "serde",

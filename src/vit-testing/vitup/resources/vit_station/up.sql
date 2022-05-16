@@ -9,7 +9,17 @@ create table funds
     voting_power_threshold BIGINT NOT NULL,
     fund_start_time BIGINT NOT NULL,
     fund_end_time BIGINT NOT NULL,
-    next_fund_start_time BIGINT NOT NULL
+    next_fund_start_time BIGINT NOT NULL,
+    insight_sharing_start BIGINT NOT NULL,
+    proposal_submission_start BIGINT NOT NULL,
+    refine_proposals_start BIGINT NOT NULL,
+    finalize_proposals_start BIGINT NOT NULL,
+    proposal_assessment_start BIGINT NOT NULL,
+    assessment_qa_start BIGINT NOT NULL,
+    snapshot_start BIGINT NOT NULL,
+    voting_start BIGINT NOT NULL,
+    voting_end BIGINT NOT NULL,
+    tallying_end BIGINT NOT NULL
 );
 
 create table proposals

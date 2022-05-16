@@ -7,12 +7,14 @@ use crate::job::info::Checks;
 use crate::job::info::RegistrationInfo;
 use crate::job::info::SnapshotInfo;
 use crate::request::{Request, Source};
+use catalyst_toolbox::kedqr::PinReadMode;
 use chain_addr::Address;
 use chain_addr::AddressReadable;
 use chain_addr::{Discrimination, Kind};
 use chain_crypto::Ed25519;
-use iapyx::PinReadMode;
-use iapyx::QrReader;
+use iapyx::utils::qr::PinReadError;
+use iapyx::utils::qr::Secret;
+use iapyx::utils::qr::SecretFromQrCode;
 pub use info::JobOutputInfo;
 use snapshot_trigger_service::client::do_snapshot;
 use snapshot_trigger_service::client::get_snapshot_from_history_by_id;
@@ -116,9 +118,7 @@ impl RegistrationVerifyJob {
                 }
             }
             Source::Qr { pin, content } => {
-                match QrReader::new(PinReadMode::Global(pin.clone()))
-                    .read_qr_from_bytes(content.clone())
-                {
+                match Secret::from_bytes(content.clone(), PinReadMode::Global(pin.clone())) {
                     Ok(secret_key) => Some(self.extract_address_from_public_key(
                         secret_key.to_public(),
                         checks,
@@ -270,7 +270,7 @@ pub enum Error {
     #[error("snapshot trigger service")]
     SnapshotTriggerService(#[from] snapshot_trigger_service::client::Error),
     #[error("snapshot trigger service")]
-    PinReadError(#[from] iapyx::PinReadError),
+    PinReadError(#[from] PinReadError),
     #[error("in mainnet mode snapshot is not runned on each request. Can't find job id of last snapshot job")]
     SnapshotJobIdNotDefined,
 }

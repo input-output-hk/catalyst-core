@@ -1,11 +1,12 @@
 use crate::utils::expiry;
+use crate::utils::qr::PinReadError;
+use crate::utils::qr::Secret;
+use crate::utils::qr::SecretFromQrCode;
 use crate::Controller;
-use crate::PinReadError;
 use crate::Wallet;
-use crate::{PinReadMode, QrReader};
-
 use bech32::FromBase32;
 use catalyst_toolbox::kedqr::KeyQrCode;
+use catalyst_toolbox::kedqr::PinReadMode;
 use chain_crypto::Ed25519Extended;
 use chain_crypto::SecretKey;
 use jcli_lib::key::read_bech32;
@@ -93,14 +94,13 @@ impl ControllerBuilder {
 
     pub fn with_wallet_from_qr_hash_file<P: AsRef<Path>>(
         mut self,
-        qr_hash_file: P,
+        qr_payload_file: P,
         password: &str,
     ) -> Result<Self, Error> {
-        let qr_code_reader = QrReader::new(PinReadMode::Global(password.to_string()));
+        let pin_read_mode = PinReadMode::Global(password.to_string());
 
         self.wallet = Some(Wallet::recover(
-            qr_code_reader
-                .read_qr_from_hash_file(qr_hash_file.as_ref())?
+            Secret::from_payload_file(qr_payload_file.as_ref(), pin_read_mode)?
                 .leak_secret()
                 .as_ref(),
         )?);

@@ -1,6 +1,6 @@
 use crate::load::MultiControllerError;
+use crate::utils::qr::PinReadModeSettings;
 use crate::MultiController;
-use crate::PinReadMode;
 use jormungandr_automation::jormungandr::RestSettings;
 use jortestkit::load::Configuration;
 use serde::{Deserialize, Serialize};
@@ -33,10 +33,6 @@ impl Config {
         }
     }
 
-    pub fn pin_read_mode(&self) -> PinReadMode {
-        PinReadMode::new(self.read_pin_from_filename, &self.global_pin)
-    }
-
     pub fn build_multi_controller(&self) -> Result<MultiController, Error> {
         if let Some(qr_codes) = &self.qr_codes_folder {
             let qr_codes: Vec<PathBuf> = std::fs::read_dir(qr_codes)
@@ -48,7 +44,10 @@ impl Config {
             MultiController::recover_from_qrs(
                 &self.address,
                 &qr_codes,
-                self.pin_read_mode(),
+                PinReadModeSettings {
+                    from_filename: self.read_pin_from_filename,
+                    global_pin: self.global_pin.clone(),
+                },
                 self.rest_settings(),
             )
             .map_err(Into::into)

@@ -1,7 +1,5 @@
-use crate::cli::args::load::build_monitor;
-use crate::cli::args::load::IapyxLoadCommandError;
-use crate::load::NodeLoad;
-use crate::load::NodeLoadConfig;
+use crate::load::{build_monitor, IapyxLoadCommandError};
+use iapyx::{NodeLoad, NodeLoadConfig};
 pub use jortestkit::console::progress_bar::{parse_progress_bar_mode_from_str, ProgressBarMode};
 use jortestkit::load::ConfigurationBuilder;
 use std::path::PathBuf;
@@ -9,7 +7,7 @@ use std::time::Duration;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
-pub struct BurstDurationIapyxLoadCommand {
+pub struct BurstCountIapyxLoadCommand {
     /// Prints nodes related data, like stats,fragments etc.
     #[structopt(short = "t", long = "threads", default_value = "3")]
     pub threads: usize,
@@ -26,13 +24,9 @@ pub struct BurstDurationIapyxLoadCommand {
     #[structopt(short = "b", long = "batch-size", default_value = "100")]
     pub batch_size: usize,
 
-    // use v1 endpoint for bursts
-    #[structopt(long = "v1")]
-    pub use_v1: bool,
-
-    // duration of scenario
-    #[structopt(long = "duration")]
-    pub duration: u64,
+    /// how many requests per thread should be sent
+    #[structopt(short = "n", long = "bursts-count")]
+    pub count: u32,
 
     #[structopt(short = "q", long = "qr-codes-folder")]
     pub qr_codes_folder: Option<PathBuf>,
@@ -66,8 +60,12 @@ pub struct BurstDurationIapyxLoadCommand {
     pub status_pace: u64,
 
     // measure
-    #[structopt(long = "criterion")]
+    #[structopt(short = "c", long = "criterion")]
     pub criterion: Option<u8>,
+
+    // use v1 endpoint for bursts
+    #[structopt(long = "v1")]
+    pub use_v1: bool,
 
     // show progress
     #[structopt(
@@ -78,7 +76,7 @@ pub struct BurstDurationIapyxLoadCommand {
     progress_bar_mode: ProgressBarMode,
 }
 
-impl BurstDurationIapyxLoadCommand {
+impl BurstCountIapyxLoadCommand {
     pub fn exec(&self) -> Result<(), IapyxLoadCommandError> {
         let config = self.build_config();
         let iapyx_load = NodeLoad::new(config);
@@ -89,7 +87,7 @@ impl BurstDurationIapyxLoadCommand {
     }
 
     fn build_config(&self) -> NodeLoadConfig {
-        let config = ConfigurationBuilder::duration(Duration::from_secs(self.duration))
+        let config = ConfigurationBuilder::requests_per_thread(self.count)
             .thread_no(self.threads)
             .step_delay(Duration::from_millis(self.delay))
             .fetch_limit(250)

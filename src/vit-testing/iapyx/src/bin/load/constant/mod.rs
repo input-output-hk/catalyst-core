@@ -1,7 +1,7 @@
 mod count;
 mod duration;
 
-use crate::cli::args::load::IapyxLoadCommandError;
+use crate::load::IapyxLoadCommandError;
 pub use count::ConstantCountIapyxLoadCommand;
 pub use duration::ConstDurationIapyxLoadCommand;
 use structopt::StructOpt;

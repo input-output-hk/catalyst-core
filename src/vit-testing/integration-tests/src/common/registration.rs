@@ -1,7 +1,8 @@
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
+use catalyst_toolbox::kedqr::PinReadMode;
 use chain_addr::Discrimination;
-use iapyx::{PinReadMode, QrReader};
+use iapyx::utils::qr::{Secret, SecretFromQrCode};
 use jormungandr_automation::jcli::JCli;
 use jormungandr_lib::interfaces::Address;
 use jormungandr_lib::interfaces::InitialUTxO;
@@ -79,10 +80,13 @@ impl RegistrationResult {
     }
 
     pub fn assert_qr_equals_to_sk(&self) {
-        let qr_reader = QrReader::new(PinReadMode::ReadFromFileName);
-        let bech32_key = qr_reader
-            .read_qr_as_bech32(self.qr_code.clone())
-            .expect("Unable to read qr code");
+        let bech32_key = Secret::from_file(
+            &self.qr_code,
+            PinReadMode::FromFileName(self.qr_code.to_path_buf()),
+        )
+        .expect("unable to read qr code")
+        .to_bech32()
+        .expect("unable to export key as bech32");
 
         assert_eq!(
             self.voting_sk, bech32_key,

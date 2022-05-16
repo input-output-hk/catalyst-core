@@ -1,9 +1,11 @@
-use crate::cli::args::interactive::CliController;
+use super::CliController;
 use bech32::ToBase32;
 use catalyst_toolbox::kedqr::decode;
 use catalyst_toolbox::kedqr::KeyQrCode;
 use catalyst_toolbox::kedqr::KeyQrCodeError;
 use chain_impl_mockchain::block::BlockDate;
+use iapyx::ControllerBuilderError;
+use iapyx::ControllerError;
 use jcli_lib::key::read_bech32;
 use jormungandr_automation::jormungandr::RestError;
 use jormungandr_lib::crypto::hash::Hash;
@@ -314,32 +316,24 @@ impl BatchOfVotes {
 #[allow(clippy::large_enum_variant)]
 #[derive(Error, Debug)]
 pub enum IapyxCommandError {
-    #[error("{0}")]
-    GeneralError(String),
     #[error(transparent)]
-    ControllerError(#[from] crate::controller::ControllerError),
+    ControllerError(#[from] ControllerError),
     #[error(transparent)]
     Inner(#[from] thor::cli::Error),
     #[error(transparent)]
     CannotParseChoicesString(#[from] serde_json::Error),
-    #[error("no valid until defined")]
-    NoValidUntilDefined,
-    #[error("wallet not recovered or generated")]
-    WalletNotRecovered,
     #[error("wrong choice: {0}")]
     WrongChoice(String),
     #[error("cannot find proposal: {0}")]
     CannotFindProposal(String),
     #[error(transparent)]
-    ControllerBuilder(#[from] crate::controller::ControllerBuilderError),
+    ControllerBuilder(#[from] ControllerBuilderError),
     #[error(transparent)]
     Hash(#[from] chain_crypto::hash::Error),
     #[error(transparent)]
     Image(#[from] image::ImageError),
     #[error(transparent)]
-    Controller(#[from] crate::cli::args::interactive::Error),
-    #[error("there is no default alias defined in config nor provided as argument")]
-    AliasNotDefined,
+    Controller(#[from] super::Error),
     #[error(transparent)]
     Bech32(#[from] bech32::Error),
     #[error(transparent)]

@@ -1,13 +1,13 @@
 mod command;
 
-use crate::Controller;
-use crate::Wallet;
 use bech32::u5;
 use bech32::FromBase32;
 use chain_impl_mockchain::block::BlockDate;
 use chain_impl_mockchain::fragment::FragmentId;
 use cocoon::Cocoon;
 pub use command::{IapyxCommand, IapyxCommandError};
+use iapyx::Controller;
+use iapyx::Wallet;
 use jormungandr_automation::jormungandr::RestError;
 use jormungandr_lib::interfaces::AccountState;
 use jormungandr_lib::interfaces::AccountVotes;
@@ -27,6 +27,7 @@ use valgrind::SettingsExtensions;
 use valgrind::ValgrindClient;
 use wallet_core::Choice;
 use wallet_core::Value;
+
 pub struct CliController {
     pub inner: ThorCliController,
     pub backend_client: ValgrindClient,
@@ -140,21 +141,6 @@ impl CliController {
         self.inner.votes_history().map_err(Into::into)
     }
 
-    pub fn vote_for(
-        &mut self,
-        vote_plan_id: String,
-        proposal_index: u32,
-        choice: u8,
-        password: &str,
-    ) -> Result<FragmentId, Error> {
-        let id = self
-            .controller(password)?
-            .vote_for(vote_plan_id, proposal_index, choice)?;
-        let template = self.inner.wallets_mut().wallet_mut()?;
-        template.pending_tx.push(id.into());
-        Ok(id)
-    }
-
     pub fn vote(
         &mut self,
         proposal: &Proposal,
@@ -194,12 +180,8 @@ pub enum Error {
     Config(#[from] thor::cli::ConfigError),
     #[error(transparent)]
     Inner(#[from] thor::cli::Error),
-    #[error("cannot connect to backend under address: {0}, due to: {1:?}")]
-    Connection(String, valgrind::Error),
     #[error("cannot serialize secret key")]
     CannotrSerializeSecretKey(#[from] bincode::ErrorKind),
-    #[error("cannot read secret key")]
-    CannotReadSecretKey,
     #[error(transparent)]
     Bincode(#[from] Box<bincode::ErrorKind>),
     #[error("cannot read/write secret key")]
@@ -209,9 +191,9 @@ pub enum Error {
     #[error(transparent)]
     Backend(#[from] RestError),
     #[error(transparent)]
-    Controller(#[from] crate::controller::ControllerError),
+    Controller(#[from] iapyx::ControllerError),
     #[error(transparent)]
-    Wallet(#[from] crate::wallet::Error),
+    Wallet(#[from] iapyx::WalletError),
     #[error(transparent)]
     Read(#[from] chain_core::property::ReadError),
 }

@@ -1,5 +1,6 @@
-use crate::qr::PinReadMode;
-use crate::qr::QrReader;
+use crate::utils::qr::read_qrs;
+use crate::utils::qr::PinReadError;
+use crate::utils::qr::PinReadModeSettings;
 use crate::Wallet;
 use bech32::FromBase32;
 use chain_impl_mockchain::{block::BlockDate, fragment::FragmentId};
@@ -27,7 +28,7 @@ impl MultiController {
     pub fn recover_from_qrs<P: AsRef<Path>>(
         wallet_backend_address: &str,
         qrs: &[P],
-        pin_mode: PinReadMode,
+        pin_mode: PinReadModeSettings,
         backend_settings: RestSettings,
     ) -> Result<Self, MultiControllerError> {
         let mut backend =
@@ -35,9 +36,7 @@ impl MultiController {
         let settings = backend.settings()?.into_wallet_settings();
 
         backend.enable_logs();
-        let pin_reader = QrReader::new(pin_mode);
-        let secrets = pin_reader.read_qrs(qrs, false);
-        let wallets = secrets
+        let wallets = read_qrs(qrs, pin_mode, true)
             .into_iter()
             .map(|secret| Wallet::recover(secret.leak_secret().as_ref()).unwrap())
             .collect();
@@ -209,7 +208,7 @@ pub enum MultiControllerError {
     #[error("controller error")]
     Controller(#[from] crate::ControllerError),
     #[error("pin read error")]
-    PinRead(#[from] crate::qr::PinReadError),
+    PinRead(#[from] PinReadError),
     #[error("wallet time error")]
     WalletTime(#[from] wallet::time::Error),
 }

@@ -61,7 +61,7 @@ pub enum Error {
     #[error("controller error")]
     Controller(#[from] crate::ControllerError),
     #[error("pin read error")]
-    PinRead(#[from] crate::qr::PinReadError),
+    PinRead(#[from] crate::utils::qr::PinReadError),
     #[error("wallet time error")]
     WalletTime(#[from] wallet::time::Error),
 }

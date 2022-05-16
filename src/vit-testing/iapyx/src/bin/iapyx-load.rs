@@ -1,4 +1,6 @@
-use iapyx::cli::args::load::IapyxLoadCommand;
+mod load;
+
+use load::IapyxLoadCommand;
 use structopt::StructOpt;
 
 pub fn main() {

@@ -2,14 +2,14 @@ version: 2.1
 executors:
   rust-stable:
     docker:
-      - image: 'cimg/rust:1.58.1-node'
+      - image: 'cimg/rust:1.60.0-node'
     working_directory: /home/circleci/build
     resource_class: xlarge
 jobs:
   build_all_targets:
     description: Builds all test features
     docker:
-      - image: 'cimg/rust:1.58.1-node'
+      - image: 'cimg/rust:1.60.0-node'
     parameters:
       mode:
         type: string
@@ -38,7 +38,7 @@ jobs:
   vitup_test:
     description: Steps for the vitup unit test jobs
     docker:
-      - image: 'cimg/rust:1.58.1-node'
+      - image: 'cimg/rust:1.60.0-node'
     parameters:
       mode:
         type: string

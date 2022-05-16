@@ -2,7 +2,7 @@ name: Nix
 on:
   push:
     branches:
-      - master
+      - main
       - catalyst-fund*
   pull_request:
 

@@ -4,25 +4,11 @@ use structopt::StructOpt;
 
 pub fn main() {
     std::env::set_var("RUST_BACKTRACE", "full");
-
     VotingToolsCommand::from_args().exec()
 }
 
 #[derive(StructOpt, Debug)]
-pub enum VotingToolsCommand {
-    Genesis(self::Genesis),
-}
-
-impl VotingToolsCommand {
-    pub fn exec(&self) {
-        match self {
-            Self::Genesis(genesis) => genesis.exec(),
-        }
-    }
-}
-
-#[derive(StructOpt, Debug)]
-pub struct Genesis {
+pub struct VotingToolsCommand {
     #[structopt(long = "mainnet")]
     pub mainnet: bool,
 
@@ -48,7 +34,7 @@ pub struct Genesis {
     pub slot_no: Option<u64>,
 }
 
-impl Genesis {
+impl VotingToolsCommand {
     pub fn exec(&self) {
         println!("Params: {:?}", self);
         println!("slepping 5 sec..");

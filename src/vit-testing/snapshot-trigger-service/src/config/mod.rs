@@ -26,7 +26,6 @@ impl Configuration {
         let output_folder = Path::new(&self.result_dir).join(format!("{}", job_id));
 
         let mut command = self.voting_tools.command()?;
-        command.arg("genesis");
         match self.voting_tools.network {
             NetworkType::Mainnet => command.arg("--mainnet"),
             NetworkType::Testnet(magic) => command.arg("--testnet-magic").arg(magic.to_string()),

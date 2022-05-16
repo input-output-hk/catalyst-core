@@ -25,7 +25,7 @@ Pin would be set globally for all 30 addresses
 
 ##### below threshold 
 
-Amount of wallets wich receive less than value defined in ``static_data.voting_power`` parameter 
+Amount of wallets which receive less than value defined in ``static_data.voting_power`` parameter 
 
 Example: 
 
@@ -39,7 +39,7 @@ Pin would be set globally for all 30 addresses
 
 ##### around level 
 
-Amount of wallets wich have funds around defined level
+Amount of wallets which have funds around defined level
 
 Example: 
 ```
@@ -52,7 +52,7 @@ Example:
 
 ##### zero funds 
 
-Amount of wallets wich won't have any funds in block0
+Amount of wallets which won't have any funds in block0
 
 Example: 
 ```
@@ -94,7 +94,7 @@ Supported syntax:
 
 ##### random
 
-Some number of random allets which receive specified amount of voting power
+Some number of random wallets which receive specified amount of voting power
 
 Example: 
 
@@ -191,7 +191,7 @@ TBD, currently not used
 
 ##### blockchain
 
-Set of parameters which controls blochain related configuration.
+Set of parameters which controls blockchain related configuration.
 
 See [jormungandr docs](https://input-output-hk.github.io/jormungandr/advanced/01_the_genesis_block.html) for more information.
 
@@ -207,13 +207,13 @@ Describes how big a single block can be. Larger blocks can hold more transaction
 Optional parameter which defines start time of block0. It is useful when one want to defined voting phases that ends and starts precisely in required time. Otherwise block0_time is equal to current time when running vitup
 
 ###### tx_max_expiry_epochs
-Optional parameter which defines what is the maximum duration (expressed in epochs) of transacton timeout.
+Optional parameter which defines what is the maximum duration (expressed in epochs) of transaction timeout.
 Usually it is equal to 1.
 
 ###### consensus_leader_ids
 
 Allows to override randomly generated consensus leaders ids.
-Useful when we have our own pregenerated leaders keys for nodes.
+Useful when we have our own pre-generated leaders keys for nodes.
 
 ##### linear_fees
 
@@ -244,7 +244,7 @@ For vote
 ##### committees
 
 Committee is a wallet that is capable of tallying voting results.
-Thit setting allows to use predefined committe rather than generate random by vitup.
+This setting allows to use predefined committee rather than generate random by vitup.
 
 ### data
 
@@ -312,7 +312,7 @@ Controls protocol over which vitup is available for client
 ```
 {  
   "initials": {
-    "snapsthot": {
+    "snapshot": {
       tag: "daily",
       content: [
         {

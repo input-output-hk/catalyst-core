@@ -1,4 +1,5 @@
 use crate::common::{
+    clients::RawRestClient,
     data,
     startup::{db::DbBuilder, server::ServerBootstrapper},
 };
@@ -47,14 +48,17 @@ pub fn get_advisor_reviews() -> Result<(), Box<dyn std::error::Error>> {
     // non existing
     let empty_reviews = rest_client.advisor_reviews("0")?;
     assert!(empty_reviews.is_empty());
+
+    let rest_client: RawRestClient = server.rest_client_with_token(&hash).into();
+
     // malformed index
     assert_eq!(
-        rest_client.advisor_reviews_raw("a")?.status(),
+        rest_client.advisor_reviews("a")?.status(),
         StatusCode::NOT_FOUND
     );
     // overflow index
     assert_eq!(
-        rest_client.fund_raw("3147483647999")?.status(),
+        rest_client.fund("3147483647999")?.status(),
         StatusCode::NOT_FOUND
     );
 

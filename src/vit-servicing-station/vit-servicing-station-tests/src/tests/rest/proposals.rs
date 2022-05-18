@@ -1,7 +1,9 @@
 use crate::common::{
+    clients::RawRestClient,
     data,
     startup::{db::DbBuilder, quick_start, server::ServerBootstrapper},
 };
+
 use assert_fs::TempDir;
 use reqwest::StatusCode;
 
@@ -41,21 +43,15 @@ pub fn get_proposal_by_id() -> Result<(), Box<dyn std::error::Error>> {
 
     let actual_proposal =
         rest_client.proposal(&expected_proposal.proposal.internal_id.to_string())?;
-    assert_eq!(actual_proposal, expected_proposal);
-
+    assert_eq!(actual_proposal, expected_proposal.proposal);
+    let rest_client: RawRestClient = rest_client.into();
     // non existing
-    assert_eq!(
-        rest_client.proposal_raw("2")?.status(),
-        StatusCode::NOT_FOUND
-    );
+    assert_eq!(rest_client.proposal("2")?.status(), StatusCode::NOT_FOUND);
     // malformed index
-    assert_eq!(
-        rest_client.proposal_raw("a")?.status(),
-        StatusCode::NOT_FOUND
-    );
+    assert_eq!(rest_client.proposal("a")?.status(), StatusCode::NOT_FOUND);
     // overflow index
     assert_eq!(
-        rest_client.proposal_raw("3147483647")?.status(),
+        rest_client.proposal("3147483647")?.status(),
         StatusCode::NOT_FOUND
     );
 

@@ -1,4 +1,5 @@
 use crate::common::{
+    clients::RawRestClient,
     data,
     startup::{db::DbBuilder, server::ServerBootstrapper},
 };
@@ -44,12 +45,7 @@ pub fn non_existing_block0() {
         .start(&temp_dir)
         .unwrap();
 
-    assert_eq!(
-        server
-            .rest_client_with_token(&hash)
-            .genesis_raw()
-            .unwrap()
-            .status(),
-        StatusCode::NO_CONTENT
-    );
+    let rest_raw: RawRestClient = server.rest_client_with_token(&hash).into();
+
+    assert_eq!(rest_raw.genesis().unwrap().status(), StatusCode::NO_CONTENT);
 }

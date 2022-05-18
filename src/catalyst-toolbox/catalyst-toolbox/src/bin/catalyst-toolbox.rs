@@ -1,11 +1,18 @@
 use std::error::Error;
 
+use color_eyre::Report;
 use structopt::StructOpt as _;
 
 pub mod cli;
 
-fn main() {
-    cli::Cli::from_args().exec().unwrap_or_else(report_error)
+fn main() -> Result<(), Report> {
+    env_logger::init();
+    color_eyre::install()?;
+    let result = cli::Cli::from_args().exec();
+    if let Err(e) = result {
+        report_error(e);
+    }
+    Ok(())
 }
 
 fn report_error(error: Box<dyn Error>) {
@@ -15,5 +22,4 @@ fn report_error(error: Box<dyn Error>) {
         eprintln!("  |-> {}", sub_error);
         source = sub_error.source();
     }
-    std::process::exit(1)
 }

@@ -16,6 +16,7 @@ bench = false
 [dependencies]
 assert_fs = "1"
 bech32 = "0.8.1"
+color-eyre = "0.6"
 csv = "1.1"
 wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
@@ -25,6 +26,7 @@ chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch 
 chain-storage = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+env_logger = "0.9"
 time = { version = "0.3", features = ["formatting", "parsing", "macros"] }
 itertools = "0.10"
 jcli = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
@@ -33,6 +35,7 @@ jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jorm
 jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr.git",  branch = "master" }
 thor = { git = "https://github.com/input-output-hk/jormungandr.git",  branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
+rayon = "1.5"
 rust_decimal = "1.16"
 rust_decimal_macros = "1"
 futures = "0.3"
@@ -41,6 +44,7 @@ once_cell = "1.8"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 rand = "0.8.3"
 rand_chacha = "0.3"
+governor = { version = "0.4", features = ["std", "jitter"], default-features = false}
 regex = "1.5"
 serde = "1.0"
 serde_json = "1.0"

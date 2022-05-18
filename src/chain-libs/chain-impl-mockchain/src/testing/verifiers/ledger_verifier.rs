@@ -15,6 +15,10 @@ use chain_addr::Address;
 use chain_crypto::{Ed25519, PublicKey};
 use std::fmt;
 
+#[cfg(feature = "evm")]
+use crate::certificate::EvmMapping;
+#[cfg(feature = "evm")]
+use crate::ledger::evm::Ledger as EvmLedger;
 #[derive(Clone)]
 pub struct Info {
     info: Option<String>,
@@ -188,6 +192,52 @@ impl LedgerStateVerifier {
 
     pub fn votes(&self) -> VotesVerifier {
         VotesVerifier::new(self.ledger.active_vote_plans())
+    }
+
+    #[cfg(feature = "evm")]
+    pub fn evm(&self) -> EvmVerifier {
+        EvmVerifier::new(self.ledger.evm.clone(), self.info.clone())
+    }
+}
+
+#[cfg(feature = "evm")]
+pub struct EvmVerifier {
+    evm_ledger: EvmLedger,
+    info: Info,
+}
+
+#[cfg(feature = "evm")]
+impl EvmVerifier {
+    pub fn new(evm_ledger: EvmLedger, info: Info) -> Self {
+        Self { evm_ledger, info }
+    }
+
+    pub fn is_mapped_to_evm(&self, evm_mapping: &EvmMapping) -> &Self {
+        let stats = [
+            "jormungandr account: ",
+            &evm_mapping.account_id().to_string(),
+            ", evm account: ",
+            &evm_mapping.evm_address().to_string(),
+        ]
+        .concat();
+        assert!(
+            self.evm_ledger.stats().contains(&stats),
+            "Mapping {} not found{}",
+            stats,
+            self.info
+        );
+        self
+    }
+
+    pub fn is_not_mapped_to_evm(&self, wallet: &Wallet) -> &Self {
+        let stats = ["jormungandr account: ", &wallet.public_key().to_string()].concat();
+        assert!(
+            !self.evm_ledger.stats().contains(&stats),
+            "Found some mapping for {} {}",
+            stats,
+            self.info
+        );
+        self
     }
 }
 

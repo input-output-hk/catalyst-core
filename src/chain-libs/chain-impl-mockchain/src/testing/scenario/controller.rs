@@ -1,3 +1,5 @@
+#[cfg(feature = "evm")]
+use crate::certificate::EvmMapping;
 use crate::{
     certificate::{
         DecryptedPrivateTally, ExternalProposalId, MintToken, Proposal, UpdateProposal, UpdateVote,
@@ -361,6 +363,19 @@ impl Controller {
         let fragment = self
             .fragment_factory
             .mint_token(test_ledger.date(), owner, mint_token);
+        test_ledger.apply_fragment(&fragment, test_ledger.date())
+    }
+
+    #[cfg(feature = "evm")]
+    pub fn evm_mapping(
+        &self,
+        owner: &Wallet,
+        evm_mapping: EvmMapping,
+        test_ledger: &mut TestLedger,
+    ) -> Result<(), LedgerError> {
+        let fragment = self
+            .fragment_factory
+            .evm_mapping(test_ledger.date(), owner, evm_mapping);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 }

@@ -104,7 +104,7 @@ impl ConfigBuilder {
             consensus_version: ConsensusVersion::Bft,
             transaction_max_expiry_epochs: None,
             #[cfg(feature = "evm")]
-            evm_params: chain_evm::Config::Istanbul,
+            evm_params: chain_evm::Config::default(),
         }
     }
 

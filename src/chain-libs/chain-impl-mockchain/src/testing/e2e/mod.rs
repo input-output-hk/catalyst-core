@@ -1,3 +1,5 @@
+#[cfg(feature = "evm")]
+pub mod evm_mapping;
 pub mod fees;
 pub mod management_threshold;
 pub mod mint_token;

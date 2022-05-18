@@ -3,6 +3,7 @@ use chain_core::property::Fragment as _;
 use chain_crypto::{Ed25519Extended, SecretKey};
 use chain_impl_mockchain::{
     account::{self, LedgerError, SpendingCounter},
+    accounting::account::SpendingCounterIncreasing,
     block::{Block, BlockDate, HeaderId},
     certificate::{self, VoteCast, VotePlan, VotePlanId},
     chaineval::ConsensusEvalContext,
@@ -463,7 +464,10 @@ impl FragmentReplayer {
                         value: utxo.value,
                     };
                     wallet
-                        .set_state(utxo.value.into(), Default::default())
+                        .set_state(
+                            utxo.value.into(),
+                            SpendingCounterIncreasing::default().get_valid_counters(),
+                        )
                         .expect("cannot update wallet state");
                     wallets.insert(utxo.address.clone(), wallet);
                     if committee_members.contains(&utxo.address) {

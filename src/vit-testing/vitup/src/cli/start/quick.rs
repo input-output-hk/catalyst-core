@@ -1,4 +1,3 @@
-use crate::builders::{default_next_vote_date, default_snapshot_date};
 pub use crate::builders::{VitBackendSettingsBuilder, LEADER_1, LEADER_2, LEADER_3, WALLET_NODE};
 use crate::config::ConfigBuilder;
 use crate::config::{
@@ -196,14 +195,8 @@ impl QuickStartCommandArgs {
 
         let config = config_builder
             .vote_timing(vote_timing)
-            .next_vote_timestamp_from_string_or_default(
-                self.next_vote_timestamp,
-                default_snapshot_date(),
-            )
-            .snapshot_timestamp_from_string_or_default(
-                self.snapshot_timestamp,
-                default_next_vote_date(),
-            )
+            .next_vote_timestamp_from_string_if_some(self.next_vote_timestamp)
+            .snapshot_timestamp_from_string_if_some(self.snapshot_timestamp)
             .slot_duration_in_seconds(self.slot_duration)
             .proposals_count(self.proposals)
             .voting_power(self.voting_power)

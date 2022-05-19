@@ -1,8 +1,7 @@
 pub use crate::builders::ReviewGenerator;
 pub use crate::builders::{
-    convert_to_blockchain_date, convert_to_human_date, default_next_snapshot_date,
-    default_next_vote_date, default_snapshot_date, generate_qr_and_hashes, VitVotePlanDefBuilder,
-    WalletExtension,
+    convert_to_blockchain_date, convert_to_human_date, generate_qr_and_hashes,
+    VitVotePlanDefBuilder, WalletExtension,
 };
 use crate::config::date_format;
 use crate::config::Block0Initials;
@@ -91,19 +90,18 @@ impl ConfigBuilder {
     }
 
     pub fn next_vote_timestamp(mut self, next_vote_start_time: OffsetDateTime) -> Self {
-        self.config.data.next_vote_start_time = next_vote_start_time;
+        self.config.data.dates.next_vote_start_time = next_vote_start_time;
         self
     }
 
-    pub fn next_vote_timestamp_from_string_or_default(
+    pub fn next_vote_timestamp_from_string_if_some(
         self,
         next_vote_timestamp: Option<String>,
-        default: OffsetDateTime,
     ) -> Self {
         if let Some(next_vote_timestamp) = next_vote_timestamp {
             self.next_vote_timestamp_from_string(next_vote_timestamp)
         } else {
-            self.next_vote_timestamp(default)
+            self
         }
     }
 
@@ -113,20 +111,19 @@ impl ConfigBuilder {
         )
     }
 
-    pub fn snapshot_timestamp_from_string_or_default(
+    pub fn snapshot_timestamp_from_string_if_some(
         self,
         snapshot_timestamp: Option<String>,
-        default: OffsetDateTime,
     ) -> Self {
         if let Some(snapshot_timestamp) = snapshot_timestamp {
             self.snapshot_timestamp_from_string(snapshot_timestamp)
         } else {
-            self.snapshot_timestamp(default)
+            self
         }
     }
 
     pub fn snapshot_timestamp(mut self, snapshot_time: OffsetDateTime) -> Self {
-        self.config.data.snapshot_time = snapshot_time;
+        self.config.data.dates.snapshot_time = snapshot_time;
         self
     }
 

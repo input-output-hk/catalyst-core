@@ -1,4 +1,3 @@
-use crate::builders::convert_to_human_date;
 use crate::builders::utils::DeploymentTree;
 use crate::config::Config;
 use crate::mode::standard::DbGenerator;
@@ -177,9 +176,6 @@ impl IdeascaleValidateCommand {
         )?;
 
         let input_parameters = Config::default();
-        let (vote_start_timestamp, tally_start_timestamp, tally_end_timestamp) =
-            convert_to_human_date(&input_parameters);
-
         let mut parameters = ValidVotePlanParameters::new(
             (0..proposals_count)
                 .collect::<Vec<usize>>()
@@ -187,22 +183,13 @@ impl IdeascaleValidateCommand {
                 .map(|chunk| self.vote_plan_def(chunk.len()))
                 .collect(),
             "test".to_string(),
+            input_parameters.data.dates.as_valid_date(&input_parameters),
         );
         parameters
             .set_voting_power_threshold((input_parameters.data.voting_power * 1_000_000) as i64);
         parameters.set_challenges_count(challenges_count);
         parameters.set_reviews_count(reviews_count);
-        parameters.set_voting_start(vote_start_timestamp.unix_timestamp());
-        parameters.set_voting_tally_start(tally_start_timestamp.unix_timestamp());
-        parameters.set_voting_tally_end(tally_end_timestamp.unix_timestamp());
         parameters.set_vote_options(VoteOptions::parse_coma_separated_value("yes,no"));
-        parameters
-            .set_next_fund_start_time(input_parameters.data.next_vote_start_time.unix_timestamp());
-        parameters
-            .set_registration_snapshot_time(input_parameters.data.snapshot_time.unix_timestamp());
-        parameters.set_next_registration_snapshot_time(
-            input_parameters.data.next_snapshot_time.unix_timestamp(),
-        );
         parameters.set_fund_id(input_parameters.data.fund_id);
         parameters.calculate_challenges_total_funds = false;
 

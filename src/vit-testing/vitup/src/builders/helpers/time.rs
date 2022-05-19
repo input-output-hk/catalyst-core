@@ -1,5 +1,5 @@
 use crate::config::{Config, VoteBlockchainTime, VoteTime};
-use time::{ext::NumericalDuration, OffsetDateTime};
+use time::OffsetDateTime;
 
 pub fn convert_to_blockchain_date(config: &Config) -> VoteBlockchainTime {
     match config.vote_plan.vote_time {
@@ -56,18 +56,6 @@ pub fn convert_to_human_date(config: &Config) -> (OffsetDateTime, OffsetDateTime
             tally_end_timestamp,
         ),
     }
-}
-
-pub fn default_snapshot_date() -> OffsetDateTime {
-    OffsetDateTime::now_utc() - 3.hours()
-}
-
-pub fn default_next_vote_date() -> OffsetDateTime {
-    OffsetDateTime::now_utc() + 30.days()
-}
-
-pub fn default_next_snapshot_date() -> OffsetDateTime {
-    OffsetDateTime::now_utc() + 29.days()
 }
 
 /*

@@ -102,7 +102,7 @@ impl Config {
 
         println!(
             "refresh timestamp:\t(registration_snapshot_time):\t\t\t{}",
-            self.data.snapshot_time
+            self.data.dates.snapshot_time
         );
 
         println!(
@@ -119,11 +119,11 @@ impl Config {
         );
         println!(
             "next refresh timestamp:\t(next registration_snapshot_time):\t\t{}",
-            self.data.next_snapshot_time
+            self.data.dates.next_snapshot_time
         );
         println!(
             "next vote start time:\t(next_fund_start_time):\t\t\t\t{}",
-            self.data.next_vote_start_time
+            self.data.dates.next_vote_start_time
         );
     }
 }

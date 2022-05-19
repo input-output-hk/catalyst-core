@@ -75,7 +75,7 @@ jobs:
           command: |
             git clone https://github.com/input-output-hk/vit-servicing-station.git
             cd vit-servicing-station
-            git checkout master
+            git checkout multiple_funds_test
       - run:
           name: install vit-station-service
           command: |

@@ -13,9 +13,8 @@ use chain_impl_mockchain::tokens::identifier::TokenIdentifier;
 use chain_impl_mockchain::tokens::minting_policy::MintingPolicy;
 use chain_impl_mockchain::value::Value;
 pub use helpers::{
-    convert_to_blockchain_date, convert_to_human_date, default_next_snapshot_date,
-    default_next_vote_date, default_snapshot_date, generate_qr_and_hashes, VitVotePlanDefBuilder,
-    WalletExtension,
+    convert_to_blockchain_date, convert_to_human_date, generate_qr_and_hashes,
+    VitVotePlanDefBuilder, WalletExtension,
 };
 use hersir::builder::Blockchain;
 use hersir::builder::Node;

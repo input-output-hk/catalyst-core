@@ -1,20 +1,21 @@
+use std::time::Instant;
+
 use super::Error;
 use crate::stats::live::Harvester;
 use crate::stats::live::Settings;
 use jortestkit::console::ProgressBarMode;
 use jortestkit::load::ProgressBar;
 use jortestkit::prelude::append;
-use stopwatch::Stopwatch;
 
 pub fn start(harvester: Harvester, settings: Settings, title: &str) -> Result<(), Error> {
     let mut progress_bar = ProgressBar::new(1);
 
     println!("{}", title);
     jortestkit::load::use_as_monitor_progress_bar(&settings.monitor(), title, &mut progress_bar);
-    let sw = Stopwatch::start_new();
+    let start = Instant::now();
 
     loop {
-        if settings.duration > sw.elapsed().as_secs() {
+        if settings.duration > start.elapsed().as_secs() {
             break;
         }
 

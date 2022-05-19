@@ -102,7 +102,6 @@ impl VotesPrintout {
             verbose,
         } = self;
 
-        stderrlog::new().verbosity(verbose).init().unwrap();
         let reader = std::fs::File::open(block0_path)?;
         let block0 = Block::deserialize(&mut Codec::new(reader)).unwrap();
 

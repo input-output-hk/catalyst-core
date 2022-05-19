@@ -89,7 +89,6 @@ impl ReplayCli {
             output_format,
             verbose,
         } = self;
-        stderrlog::new().verbosity(verbose).init().unwrap();
 
         let block0 = if let Some(path) = block0_path {
             read_block0(path)?

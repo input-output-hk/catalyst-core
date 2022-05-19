@@ -14,6 +14,8 @@ use std::path::PathBuf;
 use reqwest::Url;
 use structopt::StructOpt;
 
+use super::set_verbosity;
+
 #[allow(clippy::large_enum_variant)]
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -89,6 +91,8 @@ impl ReplayCli {
             output_format,
             verbose,
         } = self;
+
+        set_verbosity(verbose);
 
         let block0 = if let Some(path) = block0_path {
             read_block0(path)?

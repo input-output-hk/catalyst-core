@@ -1,4 +1,4 @@
-use super::tally::Error;
+use super::{set_verbosity, tally::Error};
 use catalyst_toolbox::recovery::tally::{
     deconstruct_account_transaction, ValidatedFragment, ValidationError, VoteFragmentFilter,
 };

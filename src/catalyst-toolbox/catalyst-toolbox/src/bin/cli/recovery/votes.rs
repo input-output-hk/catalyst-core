@@ -102,6 +102,19 @@ impl VotesPrintout {
             verbose,
         } = self;
 
+        if verbose > 0 {
+            std::env::set_var(
+                "RUST_LOG",
+                match verbose {
+                    0 => unreachable!(),
+                    1 => "warn",
+                    2 => "info",
+                    3 => "debug",
+                    _ => "trace",
+                },
+            )
+        }
+
         let reader = std::fs::File::open(block0_path)?;
         let block0 = Block::deserialize(&mut Codec::new(reader)).unwrap();
 

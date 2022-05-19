@@ -37,16 +37,27 @@ impl From<VotePlanDef> for SingleVotePlanParameters {
     }
 }
 
+#[derive(Debug, Default)]
+pub struct ValidVotePlanDates {
+    pub voting_start: i64,
+    pub voting_tally_start: i64,
+    pub voting_tally_end: i64,
+    pub next_fund_start_time: i64,
+    pub registration_snapshot_time: i64,
+    pub next_registration_snapshot_time: i64,
+    pub insight_sharing_start: i64,
+    pub proposal_submission_start: i64,
+    pub refine_proposals_start: i64,
+    pub finalize_proposals_start: i64,
+    pub proposal_assessment_start: i64,
+    pub assessment_qa_start: i64,
+}
+
 pub struct ValidVotePlanParameters {
     pub fund_name: String,
     pub vote_plans: Vec<SingleVotePlanParameters>,
+    pub dates: ValidVotePlanDates,
     pub voting_power_threshold: Option<i64>,
-    pub voting_start: Option<i64>,
-    pub voting_tally_start: Option<i64>,
-    pub voting_tally_end: Option<i64>,
-    pub next_fund_start_time: Option<i64>,
-    pub registration_snapshot_time: Option<i64>,
-    pub next_registration_snapshot_time: Option<i64>,
     pub vote_options: Option<VoteOptions>,
     pub challenges_count: usize,
     pub reviews_count: usize,
@@ -55,22 +66,17 @@ pub struct ValidVotePlanParameters {
 }
 
 impl ValidVotePlanParameters {
-    pub fn from_single(vote_plan: VotePlanDef) -> Self {
+    pub fn from_single(vote_plan: VotePlanDef, dates: ValidVotePlanDates) -> Self {
         let alias = vote_plan.alias();
-        Self::new(vec![vote_plan], alias)
+        Self::new(vec![vote_plan], alias, dates)
     }
 
-    pub fn new(vote_plans: Vec<VotePlanDef>, fund_name: String) -> Self {
+    pub fn new(vote_plans: Vec<VotePlanDef>, fund_name: String, dates: ValidVotePlanDates) -> Self {
         Self {
             vote_plans: vote_plans.into_iter().map(Into::into).collect(),
             fund_name,
             voting_power_threshold: Some(8000),
-            voting_start: None,
-            voting_tally_start: None,
-            voting_tally_end: None,
-            next_fund_start_time: None,
-            registration_snapshot_time: None,
-            next_registration_snapshot_time: None,
+            dates,
             vote_options: Some(VoteOptions::parse_coma_separated_value("blank,yes,no")),
             challenges_count: 4,
             reviews_count: 1,
@@ -92,28 +98,8 @@ impl ValidVotePlanParameters {
         vote_plan.vote_encryption_key = Some(vote_encryption_key);
     }
 
-    pub fn set_voting_start(&mut self, voting_start: i64) {
-        self.voting_start = Some(voting_start);
-    }
-
-    pub fn set_voting_tally_start(&mut self, voting_tally_start: i64) {
-        self.voting_tally_start = Some(voting_tally_start);
-    }
-
-    pub fn set_voting_tally_end(&mut self, voting_tally_end: i64) {
-        self.voting_tally_end = Some(voting_tally_end);
-    }
-
-    pub fn set_next_fund_start_time(&mut self, next_fund_start_time: i64) {
-        self.next_fund_start_time = Some(next_fund_start_time);
-    }
-
-    pub fn set_registration_snapshot_time(&mut self, registration_snapshot_time: i64) {
-        self.registration_snapshot_time = Some(registration_snapshot_time);
-    }
-
-    pub fn set_next_registration_snapshot_time(&mut self, next_registration_snapshot_time: i64) {
-        self.next_registration_snapshot_time = Some(next_registration_snapshot_time);
+    pub fn set_voting_dates(&mut self, dates: ValidVotePlanDates) {
+        self.dates = dates;
     }
 
     pub fn set_challenges_count(&mut self, challenges_count: usize) {
@@ -154,19 +140,7 @@ impl ValidVotePlanGenerator {
         let mut generator = ArbitraryGenerator::new();
 
         let threshold = self.parameters.voting_power_threshold.unwrap();
-        let voting_start = self.parameters.voting_start.unwrap();
-        let voting_tally_start = self.parameters.voting_tally_start.unwrap();
-        let voting_tally_end = self.parameters.voting_tally_end.unwrap();
-        let next_fund_start_time = self.parameters.next_fund_start_time.unwrap();
-        let registration_snapshot_time = self
-            .parameters
-            .registration_snapshot_time
-            .unwrap_or(voting_start);
-        let next_registration_snapshot_time = self
-            .parameters
-            .next_registration_snapshot_time
-            .unwrap_or(voting_tally_end);
-
+        let dates = &self.parameters.dates;
         let fund_template = template_generator.next_fund();
         let fund_id = self.parameters.fund_id.unwrap_or(fund_template.id);
 
@@ -185,9 +159,9 @@ impl ValidVotePlanGenerator {
                 Voteplan {
                     id: generator.id(),
                     chain_voteplan_id: vote_plan.to_id().to_string(),
-                    chain_vote_start_time: voting_start,
-                    chain_vote_end_time: voting_tally_start,
-                    chain_committee_end_time: voting_tally_end,
+                    chain_vote_start_time: dates.voting_start,
+                    chain_vote_end_time: dates.voting_tally_start,
+                    chain_committee_end_time: dates.voting_tally_end,
                     chain_voteplan_payload: payload_type.to_string(),
                     chain_vote_encryption_key: single_vote_plan
                         .vote_encryption_key
@@ -221,24 +195,24 @@ impl ValidVotePlanGenerator {
             fund_name: self.parameters.fund_name.clone(),
             fund_goal: fund_template.goal,
             voting_power_threshold: threshold,
-            fund_start_time: voting_start,
-            fund_end_time: voting_tally_start,
-            next_fund_start_time,
-            registration_snapshot_time,
-            next_registration_snapshot_time,
+            fund_start_time: dates.voting_start,
+            fund_end_time: dates.voting_tally_start,
+            next_fund_start_time: dates.next_fund_start_time,
+            registration_snapshot_time: dates.registration_snapshot_time,
+            next_registration_snapshot_time: dates.next_registration_snapshot_time,
             chain_vote_plans: vote_plans.clone(),
             challenges,
             stage_dates: FundStageDates {
-                insight_sharing_start: voting_start,
-                proposal_submission_start: voting_start,
-                refine_proposals_start: voting_start,
-                finalize_proposals_start: voting_start,
-                proposal_assessment_start: voting_start,
-                assessment_qa_start: voting_start,
-                snapshot_start: voting_start,
-                voting_start,
-                voting_end: voting_start,
-                tallying_end: voting_start,
+                insight_sharing_start: dates.insight_sharing_start,
+                proposal_submission_start: dates.proposal_submission_start,
+                refine_proposals_start: dates.refine_proposals_start,
+                finalize_proposals_start: dates.finalize_proposals_start,
+                proposal_assessment_start: dates.proposal_assessment_start,
+                assessment_qa_start: dates.assessment_qa_start,
+                snapshot_start: dates.registration_snapshot_time,
+                voting_start: dates.voting_start,
+                voting_end: dates.voting_tally_start,
+                tallying_end: dates.voting_tally_end,
             },
         };
 

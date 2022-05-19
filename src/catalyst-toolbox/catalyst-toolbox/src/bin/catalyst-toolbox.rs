@@ -5,6 +5,7 @@ use structopt::StructOpt as _;
 pub mod cli;
 
 fn main() {
+    env_logger::init();
     cli::Cli::from_args().exec().unwrap_or_else(report_error)
 }
 

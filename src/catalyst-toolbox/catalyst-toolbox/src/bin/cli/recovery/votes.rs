@@ -1,4 +1,4 @@
-use super::tally::Error;
+use super::{set_verbosity, tally::Error};
 use catalyst_toolbox::recovery::tally::{
     deconstruct_account_transaction, ValidatedFragment, ValidationError, VoteFragmentFilter,
 };
@@ -102,7 +102,8 @@ impl VotesPrintout {
             verbose,
         } = self;
 
-        stderrlog::new().verbosity(verbose).init().unwrap();
+        set_verbosity(verbose);
+
         let reader = std::fs::File::open(block0_path)?;
         let block0 = Block::deserialize(&mut Codec::new(reader)).unwrap();
 

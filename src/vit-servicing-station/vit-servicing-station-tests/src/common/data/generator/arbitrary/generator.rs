@@ -1,5 +1,4 @@
-use crate::common::data::{ValidVotePlanDates, ValidVotePlanParameters};
-
+use crate::common::data::{CurrentFund, ValidVotePlanParameters};
 use chain_impl_mockchain::testing::scenario::template::ProposalDefBuilder;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDefBuilder;
@@ -7,7 +6,7 @@ use fake::faker::name::en::Name;
 use fake::Fake;
 use rand::{rngs::OsRng, RngCore};
 use std::{collections::HashMap, iter};
-use time::{macros::format_description, Duration, OffsetDateTime};
+use time::{Duration, OffsetDateTime};
 use vit_servicing_station_lib::{db::models::api_tokens::ApiTokenData, v0::api_token::ApiToken};
 
 #[derive(Clone)]
@@ -110,35 +109,6 @@ impl ArbitraryGenerator {
     }
 
     pub fn valid_vote_plan_parameters(&mut self) -> ValidVotePlanParameters {
-        let dates = ValidVotePlanDates {
-            voting_start: date_to_unix("2015-09-05 23:56:04 00"),
-            voting_tally_start: date_to_unix("2015-09-05 23:56:04 00"),
-            voting_tally_end: date_to_unix("2015-09-05 23:56:04 00"),
-            next_fund_start_time: date_to_unix("2015-09-12 23:56:04 00"),
-            registration_snapshot_time: date_to_unix("2015-09-03 20:00:00 00"),
-            assessment_qa_start: date_to_unix("2015-09-02 20:00:00 00"),
-            finalize_proposals_start: date_to_unix("2015-09-02 21:00:00 00"),
-            insight_sharing_start: date_to_unix("2015-09-02 22:00:00 00"),
-            next_registration_snapshot_time: date_to_unix("2015-09-02 12:00:00 00"),
-            proposal_assessment_start: date_to_unix("2015-09-02 13:00:00 00"),
-            proposal_submission_start: date_to_unix("2015-09-02 14:00:00 00"),
-            refine_proposals_start: date_to_unix("2015-09-02 15:00:00 00"),
-        };
-
-        let mut parameters = ValidVotePlanParameters::new(
-            self.vote_plan_def_collection(),
-            "fund_x".to_string(),
-            dates,
-        );
-        parameters.set_voting_power_threshold(8_000);
-        parameters
+        CurrentFund::new(self.vote_plan_def_collection(), Default::default()).into()
     }
-}
-
-fn date_to_unix(date: &str) -> i64 {
-    let format = format_description!("[year]-[month]-[day] [hour]:[minute]:[second] [offset_hour]");
-
-    OffsetDateTime::parse(date, format)
-        .unwrap()
-        .unix_timestamp()
 }

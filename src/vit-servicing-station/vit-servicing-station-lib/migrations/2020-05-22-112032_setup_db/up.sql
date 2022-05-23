@@ -107,6 +107,15 @@ create table community_advisors_reviews (
   ranking INTEGER NOT NULL
 );
 
+create table goals
+(
+    id INTEGER NOT NULL
+        primary key autoincrement,
+    goal_name VARCHAR NOT NULL,
+    fund_id INTEGER NOT NULL,
+    FOREIGN KEY(fund_id) REFERENCES funds(id)
+);
+
 CREATE VIEW full_proposals_info
 AS
 SELECT

@@ -3,6 +3,8 @@ use diesel::query_dsl::RunQueryDsl;
 use diesel::{Insertable, SqliteConnection};
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
+use vit_servicing_station_lib::db::models::goals::InsertGoal;
+use vit_servicing_station_lib::db::schema::goals;
 use vit_servicing_station_lib::db::{
     models::{
         api_tokens::ApiTokenData,
@@ -176,6 +178,13 @@ impl<'a> DbInserter<'a> {
                 );
                 diesel::insert_or_ignore_into(challenges::table)
                     .values(values)
+                    .execute(self.connection)
+                    .map_err(DbInserterError::DieselError)?;
+            }
+
+            for goal in &fund.goals {
+                diesel::insert_or_ignore_into(goals::table)
+                    .values(InsertGoal::from(goal))
                     .execute(self.connection)
                     .map_err(DbInserterError::DieselError)?;
             }

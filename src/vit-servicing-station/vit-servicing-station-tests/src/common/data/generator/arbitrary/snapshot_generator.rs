@@ -4,6 +4,7 @@ use crate::common::data::{Snapshot, ValidVotingTemplateGenerator};
 use std::iter;
 use time::{Duration, OffsetDateTime};
 use vit_servicing_station_lib::db::models::funds::FundStageDates;
+use vit_servicing_station_lib::db::models::goals::Goal;
 use vit_servicing_station_lib::db::models::{
     api_tokens::ApiTokenData,
     challenges::Challenge,
@@ -91,6 +92,11 @@ impl ArbitrarySnapshotGenerator {
                 voting_end: dates.voting_end.unix_timestamp(),
                 tallying_end: dates.tallying_end.unix_timestamp(),
             },
+            goals: vec![Goal {
+                id: 1,
+                goal_name: "goal1".into(),
+                fund_id: id.abs(),
+            }],
         }
     }
 
@@ -221,6 +227,18 @@ impl ArbitrarySnapshotGenerator {
             .collect()
     }
 
+    pub fn goals(&mut self, funds: &[Fund]) -> Vec<Goal> {
+        funds
+            .iter()
+            .enumerate()
+            .map(|(i, f)| Goal {
+                id: i as i32,
+                goal_name: format!("goal{i}"),
+                fund_id: f.id,
+            })
+            .collect()
+    }
+
     pub fn voteplan_with_fund_id(&mut self, fund_id: i32) -> Voteplan {
         let id = self.id_generator.next_u32() as i32;
         let dates = self.voteplan_date_times();
@@ -287,6 +305,23 @@ impl ArbitrarySnapshotGenerator {
         }
     }
 
+    pub fn goals_with_fund_id(&mut self, fund_id: i32) -> Vec<Goal> {
+        let id = (self.id_generator.next_u32() % (i32::MAX as u32)) as i32;
+
+        vec![
+            Goal {
+                fund_id,
+                id,
+                goal_name: "goal1".into(),
+            },
+            Goal {
+                fund_id,
+                id,
+                goal_name: "goal2".into(),
+            },
+        ]
+    }
+
     pub fn review_with_proposal_id(&mut self, proposal_id: i32) -> AdvisorReview {
         let id = self.id_generator.next_u32() as i32;
         let review = (self.template_generator).next_review();
@@ -310,9 +345,12 @@ impl ArbitrarySnapshotGenerator {
         let challenges = self.challenges(&funds);
         let proposals = self.proposals(&funds);
         let reviews = self.advisor_reviews(&proposals);
+        let goals = self.goals(&funds);
         let tokens = self.id_generator.tokens();
 
-        Snapshot::new(funds, proposals, challenges, tokens, voteplans, reviews)
+        Snapshot::new(
+            funds, proposals, challenges, tokens, voteplans, reviews, goals,
+        )
     }
 }
 

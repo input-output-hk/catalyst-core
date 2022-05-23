@@ -1,5 +1,5 @@
 use super::dates::FundDates;
-use vit_servicing_station_lib::db::models::funds::Fund;
+use vit_servicing_station_lib::db::models::{funds::Fund, goals::Goal};
 
 #[derive(Debug, Clone)]
 pub struct FundInfo {
@@ -8,6 +8,7 @@ pub struct FundInfo {
     pub fund_id: i32,
     pub voting_power_threshold: i64,
     pub dates: FundDates,
+    pub goals: Vec<Goal>,
 }
 
 impl From<FundDates> for FundInfo {
@@ -35,6 +36,7 @@ impl Into<Fund> for FundInfo {
             chain_vote_plans: vec![],
             challenges: vec![],
             stage_dates: self.dates.into(),
+            goals: self.goals,
         }
     }
 }
@@ -47,6 +49,11 @@ impl Default for FundInfo {
             fund_goal: "".to_string(),
             voting_power_threshold: 500,
             dates: Default::default(),
+            goals: vec![Goal {
+                id: 1,
+                goal_name: "goal1".to_string(),
+                fund_id: 1,
+            }],
         }
     }
 }

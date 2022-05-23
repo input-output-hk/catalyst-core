@@ -143,9 +143,11 @@ pub mod test {
 
         fund2.challenges = vec![];
         fund2.chain_vote_plans = vec![];
+        fund2.goals = vec![];
 
         fund3.challenges = vec![];
         fund3.chain_vote_plans = vec![];
+        fund3.goals = vec![];
 
         funds_testing::populate_db_with_fund(&fund1, pool);
         funds_testing::populate_db_with_fund(&fund2, pool);

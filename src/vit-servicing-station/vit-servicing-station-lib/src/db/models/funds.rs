@@ -1,5 +1,5 @@
 use crate::db::{
-    models::{challenges::Challenge, voteplans::Voteplan},
+    models::{challenges::Challenge, goals::Goal, voteplans::Voteplan},
     schema::funds,
     Db,
 };
@@ -41,6 +41,8 @@ pub struct Fund {
     pub challenges: Vec<Challenge>,
     #[serde(alias = "stageDates", flatten)]
     pub stage_dates: FundStageDates,
+    #[serde(default = "Vec::new")]
+    pub goals: Vec<Goal>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -182,6 +184,7 @@ impl Queryable<funds::SqlType, Db> for Fund {
                 voting_end: row.17,
                 tallying_end: row.18,
             },
+            goals: vec![],
         }
     }
 }
@@ -248,9 +251,10 @@ pub mod test {
         models::{
             challenges::test as challenges_testing,
             funds::{Fund, FundStageDates},
+            goals::{Goal, InsertGoal},
             voteplans::test as voteplans_testing,
         },
-        schema::funds,
+        schema::{funds, goals},
         DbConnectionPool,
     };
 
@@ -287,6 +291,11 @@ pub mod test {
                 voting_end: OffsetDateTime::now_utc().unix_timestamp(),
                 tallying_end: OffsetDateTime::now_utc().unix_timestamp(),
             },
+            goals: vec![Goal {
+                id: 1,
+                goal_name: "goal1".into(),
+                fund_id,
+            }],
         }
     }
 
@@ -310,6 +319,16 @@ pub mod test {
 
         for challenge in &fund.challenges {
             challenges_testing::populate_db_with_challenge(challenge, pool);
+        }
+
+        {
+            let connection = pool.get().unwrap();
+            for goal in &fund.goals {
+                diesel::insert_into(goals::table)
+                    .values(InsertGoal::from(goal))
+                    .execute(&connection)
+                    .unwrap();
+            }
         }
     }
 }

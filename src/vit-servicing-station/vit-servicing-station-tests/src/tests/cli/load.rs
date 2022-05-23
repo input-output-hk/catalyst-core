@@ -47,6 +47,14 @@ pub fn load_data_test() {
         .advisor_reviews(snapshot.advisor_reviews(), reviews.path())
         .unwrap();
 
+    let goals = temp_dir.child("goals.csv");
+    csv_converter
+        .goals(
+            snapshot.goals().iter().map(From::from).collect(),
+            goals.path(),
+        )
+        .unwrap();
+
     let vit_cli: VitCliCommand = Default::default();
     vit_cli
         .db()
@@ -66,6 +74,7 @@ pub fn load_data_test() {
         .voteplans(voteplans.path())
         .challenges(challenges.path())
         .advisor_reviews(reviews.path())
+        .goals(goals.path())
         .build()
         .assert()
         .success();

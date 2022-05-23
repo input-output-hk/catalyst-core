@@ -2,44 +2,55 @@ use crate::db::{
     models::{
         challenges::Challenge,
         funds::{Fund, FundStageDates},
+        goals::Goal,
         voteplans::Voteplan,
     },
     schema::{
-        challenges::dsl as challenges_dsl, funds, funds::dsl as fund_dsl,
+        challenges::dsl as challenges_dsl, funds, funds::dsl as fund_dsl, goals::dsl as goals_dsl,
         voteplans::dsl as voteplans_dsl,
     },
     DbConnection, DbConnectionPool,
 };
 use crate::v0::errors::HandleError;
-use diesel::{ExpressionMethods, Insertable, QueryDsl, QueryResult, RunQueryDsl};
+use diesel::{
+    r2d2::{ConnectionManager, PooledConnection},
+    ExpressionMethods, Insertable, QueryDsl, QueryResult, RunQueryDsl, SqliteConnection,
+};
 use serde::{Deserialize, Serialize};
+
+fn join_fund(
+    mut fund: Fund,
+    db_conn: &PooledConnection<ConnectionManager<SqliteConnection>>,
+) -> Result<Fund, HandleError> {
+    let id = fund.id;
+
+    fund.chain_vote_plans = voteplans_dsl::voteplans
+        .filter(voteplans_dsl::fund_id.eq(id))
+        .load::<Voteplan>(db_conn)
+        .map_err(|_e| HandleError::NotFound("Error loading voteplans".to_string()))?;
+
+    fund.challenges = challenges_dsl::challenges
+        .filter(challenges_dsl::fund_id.eq(id))
+        .load::<Challenge>(db_conn)
+        .map_err(|_e| HandleError::NotFound("Error loading challenges".to_string()))?;
+
+    fund.goals = goals_dsl::goals
+        .filter(goals_dsl::fund_id.eq(id))
+        .load::<Goal>(db_conn)
+        .map_err(|_e| HandleError::NotFound("Error loading goals".to_string()))?;
+
+    Ok(fund)
+}
 
 pub async fn query_fund_by_id(id: i32, pool: &DbConnectionPool) -> Result<Fund, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     tokio::task::spawn_blocking(move || {
-        let query_results = (
-            diesel::QueryDsl::filter(fund_dsl::funds, fund_dsl::id.eq(id))
-                .first::<Fund>(&db_conn)
-                .map_err(|_e| HandleError::NotFound("Error loading fund".to_string())),
-            diesel::QueryDsl::filter(voteplans_dsl::voteplans, voteplans_dsl::fund_id.eq(id))
-                .load::<Voteplan>(&db_conn)
-                .map_err(|_e| HandleError::NotFound("Error loading voteplans".to_string())),
-            diesel::QueryDsl::filter(challenges_dsl::challenges, challenges_dsl::fund_id.eq(id))
-                .load::<Challenge>(&db_conn)
-                .map_err(|_e| HandleError::NotFound("Error loading challenges".to_string())),
-        );
-        match query_results {
-            (Ok(mut fund), Ok(mut voteplans), Ok(mut challenges)) => {
-                fund.chain_vote_plans.append(&mut voteplans);
-                fund.challenges.append(&mut challenges);
-                Ok(fund)
-            }
-            // Any other combination is not valid
-            _ => Err(HandleError::NotFound(format!(
-                "Error loading fund with id {}",
-                id
-            ))),
-        }
+        let fund = fund_dsl::funds
+            .filter(fund_dsl::id.eq(id))
+            .first::<Fund>(&db_conn)
+            .map_err(|_e| HandleError::NotFound("fund".to_string()))?;
+
+        join_fund(fund, &db_conn)
     })
     .await
     .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
@@ -75,24 +86,13 @@ pub async fn query_current_fund(pool: &DbConnectionPool) -> Result<FundWithNext,
             .map_err(|_e| HandleError::NotFound("fund".to_string()))?;
 
         let mut funds = funds.into_iter();
-        let mut current = funds
+        let current = funds
             .next()
             .ok_or_else(|| HandleError::NotFound("current found not found".to_string()))?;
 
         let next = funds.next();
 
-        let voteplans = voteplans_dsl::voteplans
-            .filter(voteplans_dsl::fund_id.eq(current.id))
-            .load::<Voteplan>(&db_conn)
-            .map_err(|_e| HandleError::NotFound("Error loading voteplans".to_string()))?;
-
-        let challenges = challenges_dsl::challenges
-            .filter(challenges_dsl::fund_id.eq(current.id))
-            .load::<Challenge>(&db_conn)
-            .map_err(|_e| HandleError::NotFound("Error loading challenges".to_string()))?;
-
-        current.chain_vote_plans = voteplans;
-        current.challenges = challenges;
+        let current = join_fund(current, &db_conn)?;
 
         Ok(FundWithNext {
             fund: current,

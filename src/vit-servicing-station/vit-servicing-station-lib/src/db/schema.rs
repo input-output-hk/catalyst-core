@@ -60,6 +60,14 @@ table! {
 }
 
 table! {
+    goals (id) {
+        id -> Integer,
+        goal_name -> Text,
+        fund_id -> Integer,
+    }
+}
+
+table! {
     proposal_community_choice_challenge (proposal_id) {
         proposal_id -> Text,
         proposal_brief -> Nullable<Text>,
@@ -113,11 +121,14 @@ table! {
     }
 }
 
+joinable!(goals -> funds (fund_id));
+
 allow_tables_to_appear_in_same_query!(
     api_tokens,
     challenges,
     community_advisors_reviews,
     funds,
+    goals,
     proposal_community_choice_challenge,
     proposal_simple_challenge,
     proposals,

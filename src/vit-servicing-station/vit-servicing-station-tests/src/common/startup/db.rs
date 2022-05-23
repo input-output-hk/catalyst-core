@@ -136,6 +136,7 @@ impl DbBuilder {
         if let Some(challenges) = &self.challenges {
             DbInserter::new(connection).insert_challenges(challenges)?;
         }
+
         Ok(())
     }
 

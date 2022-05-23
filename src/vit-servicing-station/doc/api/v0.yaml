@@ -326,6 +326,11 @@ components:
           items:
             $ref: "#/components/schemas/Challenge"
           description: A list of campaign challenges structuring the proposals.
+        goals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Goal"
+          description: The list of campaign goals for this fund.
         insight_sharing_start:
           type: string
           format: date-time
@@ -750,3 +755,14 @@ components:
             tallying_end:
               type: string
               format: date-time
+
+    Goal:
+      properties:
+        id:
+          type: integer
+          format: int32
+        goal_name:
+          type: string
+        fund_id:
+          type: integer
+          format: int32

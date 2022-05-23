@@ -183,6 +183,8 @@ impl ValidVotePlanGenerator {
         .take(self.parameters.current_fund.reviews_count)
         .collect();
 
+        let goals = fund.goals.clone();
+
         let mut funds = vec![fund];
         let next_funds: Vec<Fund> = self
             .parameters
@@ -200,6 +202,7 @@ impl ValidVotePlanGenerator {
             generator.tokens(),
             vote_plans,
             reviews,
+            goals,
         )
     }
 }

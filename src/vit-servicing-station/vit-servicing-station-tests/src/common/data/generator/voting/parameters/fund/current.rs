@@ -55,6 +55,7 @@ impl CurrentFund {
             chain_vote_plans: vote_plans,
             challenges,
             stage_dates: self.info.dates.clone().into(),
+            goals: self.info.goals.clone(),
         }
     }
 }

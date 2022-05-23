@@ -14,13 +14,17 @@ use super::{HttpClient, HttpResponse};
 
 pub struct RateLimitClient<T: HttpClient> {
     inner: T,
-    limiter: RateLimiter<NotKeyed, InMemoryState, DefaultClock>,
+    limiter: Option<RateLimiter<NotKeyed, InMemoryState, DefaultClock>>,
 }
 
 impl<T: HttpClient> RateLimitClient<T> {
     pub fn new(inner: T, request_interval_ms: u64) -> Self {
-        let quota = Quota::with_period(Duration::from_millis(request_interval_ms)).unwrap();
-        let limiter = RateLimiter::direct(quota);
+        let limiter = if request_interval_ms == 0 {
+            None
+        } else {
+            let quota = Quota::with_period(Duration::from_millis(request_interval_ms)).unwrap();
+            Some(RateLimiter::direct(quota))
+        };
         Self { inner, limiter }
     }
 }
@@ -30,10 +34,12 @@ impl<T: HttpClient> HttpClient for RateLimitClient<T> {
     where
         S: for<'a> Deserialize<'a>,
     {
-        while let Err(e) = self.limiter.check() {
-            let time = e.wait_time_from(Instant::now());
-            debug!("waiting for {time:?}");
-            std::thread::sleep(time);
+        if let Some(limiter) = self.limiter {
+            while let Err(e) = limiter.check() {
+                let time = e.wait_time_from(Instant::now());
+                debug!("waiting for rate limit: {time:?}");
+                std::thread::sleep(time);
+            }
         }
         self.inner.get(path)
     }

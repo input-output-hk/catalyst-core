@@ -43,6 +43,10 @@ pub struct Fund {
     pub stage_dates: FundStageDates,
     #[serde(default = "Vec::new")]
     pub goals: Vec<Goal>,
+    #[serde(alias = "resultsUrl")]
+    pub results_url: String,
+    #[serde(alias = "surveyUrl")]
+    pub survey_url: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -157,6 +161,10 @@ impl Queryable<funds::SqlType, Db> for Fund {
         i64,
         // tallying_end
         i64,
+        // results_url
+        String,
+        // survey_url
+        String,
     );
 
     fn build(row: Self::Row) -> Self {
@@ -185,6 +193,8 @@ impl Queryable<funds::SqlType, Db> for Fund {
                 tallying_end: row.18,
             },
             goals: vec![],
+            results_url: row.19,
+            survey_url: row.20,
         }
     }
 }
@@ -213,6 +223,8 @@ impl Insertable<funds::table> for Fund {
         diesel::dsl::Eq<funds::voting_start, i64>,
         diesel::dsl::Eq<funds::voting_end, i64>,
         diesel::dsl::Eq<funds::tallying_end, i64>,
+        diesel::dsl::Eq<funds::results_url, String>,
+        diesel::dsl::Eq<funds::survey_url, String>,
     );
 
     fn values(self) -> Self::Values {
@@ -241,6 +253,8 @@ impl Insertable<funds::table> for Fund {
             funds::voting_start.eq(self.stage_dates.voting_start),
             funds::voting_end.eq(self.stage_dates.voting_end),
             funds::tallying_end.eq(self.stage_dates.tallying_end),
+            funds::results_url.eq(self.results_url),
+            funds::survey_url.eq(self.survey_url),
         )
     }
 }
@@ -296,6 +310,8 @@ pub mod test {
                 goal_name: "goal1".into(),
                 fund_id,
             }],
+            results_url: format!("http://localhost/fund/{FUND_ID}/results/"),
+            survey_url: format!("http://localhost/fund/{FUND_ID}/survey/"),
         }
     }
 

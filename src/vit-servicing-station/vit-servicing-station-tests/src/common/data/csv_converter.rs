@@ -40,6 +40,8 @@ impl CsvConverter {
             "voting_start",
             "voting_end",
             "tallying_end",
+            "results_url",
+            "survey_url",
         ];
         let content: Vec<Vec<String>> = funds.iter().map(convert_fund).collect();
         self.build_file(headers, content, path)
@@ -227,26 +229,49 @@ fn convert_proposal(proposal: &FullProposalInfo) -> Vec<String> {
 }
 
 fn convert_fund(fund: &Fund) -> Vec<String> {
+    // destructure the object to get a compile-time exhaustivity check, even if we already have
+    // tests for this, it's easier to keep it up-to-date
+    let Fund {
+        id,
+        fund_name,
+        fund_goal,
+        voting_power_threshold,
+        fund_start_time,
+        fund_end_time,
+        next_fund_start_time,
+        registration_snapshot_time,
+        next_registration_snapshot_time,
+        chain_vote_plans: _,
+        challenges: _,
+        stage_dates,
+        goals: _,
+        results_url,
+        survey_url,
+    } = fund;
+
+    // TODO: can we leverage serde to build these vectors?
     vec![
-        fund.id.to_string(),
-        fund.fund_name.to_string(),
-        fund.voting_power_threshold.to_string(),
-        fund.fund_goal.to_string(),
-        unix_timestamp_to_rfc3339(fund.fund_start_time),
-        unix_timestamp_to_rfc3339(fund.fund_end_time),
-        unix_timestamp_to_rfc3339(fund.next_fund_start_time),
-        unix_timestamp_to_rfc3339(fund.registration_snapshot_time),
-        unix_timestamp_to_rfc3339(fund.next_registration_snapshot_time),
-        unix_timestamp_to_rfc3339(fund.stage_dates.insight_sharing_start),
-        unix_timestamp_to_rfc3339(fund.stage_dates.proposal_submission_start),
-        unix_timestamp_to_rfc3339(fund.stage_dates.refine_proposals_start),
-        unix_timestamp_to_rfc3339(fund.stage_dates.finalize_proposals_start),
-        unix_timestamp_to_rfc3339(fund.stage_dates.proposal_assessment_start),
-        unix_timestamp_to_rfc3339(fund.stage_dates.assessment_qa_start),
-        unix_timestamp_to_rfc3339(fund.stage_dates.snapshot_start),
-        unix_timestamp_to_rfc3339(fund.stage_dates.voting_start),
-        unix_timestamp_to_rfc3339(fund.stage_dates.voting_end),
-        unix_timestamp_to_rfc3339(fund.stage_dates.tallying_end),
+        id.to_string(),
+        fund_name.to_string(),
+        voting_power_threshold.to_string(),
+        fund_goal.to_string(),
+        unix_timestamp_to_rfc3339(*fund_start_time),
+        unix_timestamp_to_rfc3339(*fund_end_time),
+        unix_timestamp_to_rfc3339(*next_fund_start_time),
+        unix_timestamp_to_rfc3339(*registration_snapshot_time),
+        unix_timestamp_to_rfc3339(*next_registration_snapshot_time),
+        unix_timestamp_to_rfc3339(stage_dates.insight_sharing_start),
+        unix_timestamp_to_rfc3339(stage_dates.proposal_submission_start),
+        unix_timestamp_to_rfc3339(stage_dates.refine_proposals_start),
+        unix_timestamp_to_rfc3339(stage_dates.finalize_proposals_start),
+        unix_timestamp_to_rfc3339(stage_dates.proposal_assessment_start),
+        unix_timestamp_to_rfc3339(stage_dates.assessment_qa_start),
+        unix_timestamp_to_rfc3339(stage_dates.snapshot_start),
+        unix_timestamp_to_rfc3339(stage_dates.voting_start),
+        unix_timestamp_to_rfc3339(stage_dates.voting_end),
+        unix_timestamp_to_rfc3339(stage_dates.tallying_end),
+        results_url.to_string(),
+        survey_url.to_string(),
     ]
 }
 

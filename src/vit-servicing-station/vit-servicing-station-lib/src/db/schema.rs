@@ -56,6 +56,8 @@ table! {
         voting_start -> BigInt,
         voting_end -> BigInt,
         tallying_end -> BigInt,
+        results_url -> Text,
+        survey_url -> Text,
     }
 }
 

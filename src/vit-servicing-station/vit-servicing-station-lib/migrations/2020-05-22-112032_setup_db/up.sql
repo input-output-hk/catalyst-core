@@ -19,7 +19,9 @@ create table funds
     snapshot_start BIGINT NOT NULL,
     voting_start BIGINT NOT NULL,
     voting_end BIGINT NOT NULL,
-    tallying_end BIGINT NOT NULL
+    tallying_end BIGINT NOT NULL,
+    results_url VARCHAR NOT NULL,
+    survey_url VARCHAR NOT NULL
 );
 
 create table proposals

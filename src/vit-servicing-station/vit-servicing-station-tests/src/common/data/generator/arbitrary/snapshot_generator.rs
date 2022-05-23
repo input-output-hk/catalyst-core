@@ -64,12 +64,12 @@ impl ArbitrarySnapshotGenerator {
     }
 
     fn gen_single_fund(&mut self) -> Fund {
-        let id = self.id_generator.id();
+        let id = self.id_generator.id().abs();
         let dates = self.fund_date_times();
         let fund = ValidVotingTemplateGenerator::next_fund(&mut self.template_generator);
 
         Fund {
-            id: id.abs(),
+            id,
             fund_name: format!("Fund{}", id),
             fund_goal: fund.goal,
             fund_start_time: dates.start.unix_timestamp(),
@@ -97,6 +97,8 @@ impl ArbitrarySnapshotGenerator {
                 goal_name: "goal1".into(),
                 fund_id: id.abs(),
             }],
+            results_url: format!("http://localhost/fund/{id}/results/"),
+            survey_url: format!("http://localhost/fund/{id}/survey/"),
         }
     }
 

@@ -56,6 +56,8 @@ impl CurrentFund {
             challenges,
             stage_dates: self.info.dates.clone().into(),
             goals: self.info.goals.clone(),
+            results_url: self.info.results_url.clone(),
+            survey_url: self.info.survey_url.clone(),
         }
     }
 }

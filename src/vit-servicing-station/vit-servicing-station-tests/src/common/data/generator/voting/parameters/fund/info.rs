@@ -9,6 +9,8 @@ pub struct FundInfo {
     pub voting_power_threshold: i64,
     pub dates: FundDates,
     pub goals: Vec<Goal>,
+    pub results_url: String,
+    pub survey_url: String,
 }
 
 impl From<FundDates> for FundInfo {
@@ -37,6 +39,8 @@ impl Into<Fund> for FundInfo {
             challenges: vec![],
             stage_dates: self.dates.into(),
             goals: self.goals,
+            results_url: self.results_url,
+            survey_url: self.survey_url,
         }
     }
 }
@@ -54,6 +58,8 @@ impl Default for FundInfo {
                 goal_name: "goal1".to_string(),
                 fund_id: 1,
             }],
+            results_url: "http://localhost/fund/1/results/".to_string(),
+            survey_url: "http://localhost/fund/1/survey/".to_string(),
         }
     }
 }

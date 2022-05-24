@@ -14,6 +14,10 @@ tags:
     description: Information on challenges, structuring proposals within a fund.
   - name: proposal
     description: Information on funding proposals.
+  - name: reviews
+    description: Information on reviews.
+  - name: snapshot
+    description: Continuous snapshot related information.
 
 servers:
   - url: "http://localhost"
@@ -59,7 +63,7 @@ paths:
         "404":
           description: The requested fund was not found
 
-  /api/v0/funds/:
+  /api/v0/funds:
     get:
       operationId: getFunds
       summary: Get list of the fund id
@@ -84,6 +88,7 @@ paths:
 
   /api/v0/proposals:
     post:
+      operationId: getProposalsByChainInfo
       summary: Get proposal by id
       tags: [ proposal ]
       description: |
@@ -213,6 +218,11 @@ paths:
         Get voting power by voting key
       parameters:
         - in: path
+          name: tag
+          schema:
+            type: string
+          required: true
+        - in: path
           name: voting_key
           schema:
             type: string
@@ -227,7 +237,7 @@ paths:
         "400":
           description: Not found
 
-  /api/v0/snapshot/:
+  /api/v0/snapshot:
     get:
       operationId: getSnapshotTags
       summary: Get list of available versions
@@ -246,9 +256,20 @@ paths:
       tags: [snapshot]
       description: |
         Replace the snapshot data for the given tag
+      parameters:
+        - in: path
+          name: tag
+          schema:
+            type: string
+          required: true
       requestBody:
         description: list of VoterHIR entries in json format
         required: true
+        content:
+          application/json:
+            schema:
+              type: array
+
       responses:
         "200":
           description: Success
@@ -690,7 +711,8 @@ components:
 
     ProposalVoteplanIdAndIndex:
       properties:
-        voteplan_id: String
+        voteplan_id: 
+          type: string
         indexes:
           type: array
           items:
@@ -715,7 +737,7 @@ components:
           type: integer
           format: u64
         voting_group:
-          type: String
+          type: string
 
     NextFundInfo:
       properties:

@@ -13,8 +13,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Validate with Spectral
-        uses: stoplightio/spectral-action@v0.8.1
+      - name: Check that the OpenAPI file is valid
+        uses: morigs/lint-api-docs-action@v1
         with:
-          file_glob: doc/api/*.yaml
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          files-glob: ./doc/api/*.yaml
+          ruleset-file: ./.spectral.yaml
+          fail-severity: warn

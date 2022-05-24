@@ -1,24 +1,13 @@
+use color_eyre::{
+    eyre::{bail, eyre},
+    Report,
+};
 use serde::{Deserialize, Serialize};
 
 use std::collections::HashMap;
 use time::{format_description::FormatItem, macros::format_description, OffsetDateTime};
 
-use thiserror::Error;
-
 pub const DATETIME_FMT: &[FormatItem] = format_description!("[year]-[month]-[day] [hour]:[minute]");
-
-#[allow(clippy::large_enum_variant)]
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("could not build {object_name:?}, missing field {field_name:?}")]
-    MissingFieldOnBuilderError {
-        object_name: String,
-        field_name: String,
-    },
-
-    #[error("CreateMessage should contain at least one ContentSettings entry")]
-    EmptyContentSettingsError,
-}
 
 pub type MultiLanguageContent = HashMap<String, String>;
 
@@ -123,13 +112,12 @@ impl ContentSettingsBuilder {
         self
     }
 
-    pub fn build(self) -> Result<ContentSettings, Error> {
+    pub fn build(self) -> Result<ContentSettings, Report> {
+        let content = self.content.ok_or_else(|| eyre!("missing field content"))?;
+
         Ok(ContentSettings {
             send_date: self.send_date,
-            content: self.content.ok_or(Error::MissingFieldOnBuilderError {
-                object_name: "ContentSettings".to_string(),
-                field_name: "content".to_string(),
-            })?,
+            content,
             ignore_user_timezones: self.ignore_user_timezones,
             timezone: self.timezone,
             campaign: self.campaign,
@@ -167,19 +155,19 @@ impl CreateMessageBuilder {
         self
     }
 
-    pub fn build(self) -> Result<CreateMessage, Error> {
+    pub fn build(self) -> Result<CreateMessage, Report> {
         if self.notifications.is_empty() {
-            return Err(Error::EmptyContentSettingsError);
+            bail!("empty content settings");
         }
+
+        let auth = self.auth.ok_or_else(|| eyre!("missing field auth"))?;
+        let application = self
+            .application
+            .ok_or_else(|| eyre!("missing field application"))?;
+
         Ok(CreateMessage {
-            auth: self.auth.ok_or(Error::MissingFieldOnBuilderError {
-                object_name: "CreateMessage".to_string(),
-                field_name: "auth".to_string(),
-            })?,
-            application: self.application.ok_or(Error::MissingFieldOnBuilderError {
-                object_name: "CreateMessage".to_string(),
-                field_name: "application".to_string(),
-            })?,
+            auth,
+            application,
             notifications: self.notifications,
         })
     }

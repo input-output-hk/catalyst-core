@@ -1,18 +1,9 @@
 use crate::community_advisors::models::AdvisorReviewRow;
 use crate::utils;
+use color_eyre::Report;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 
 use std::path::Path;
-
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error(transparent)]
-    CouldNotReadCsv(#[from] csv::Error),
-
-    #[error("Couldn't parse advisor review tag for question: {0}")]
-    CouldntParseTag(String),
-}
-
 impl AdvisorReviewRow {
     fn as_advisor_review(&self) -> AdvisorReview {
         AdvisorReview {
@@ -30,7 +21,7 @@ impl AdvisorReviewRow {
     }
 }
 
-pub fn read_vca_reviews_aggregated_file(filepath: &Path) -> Result<Vec<AdvisorReview>, Error> {
+pub fn read_vca_reviews_aggregated_file(filepath: &Path) -> Result<Vec<AdvisorReview>, Report> {
     Ok(
         utils::csv::load_data_from_csv::<AdvisorReviewRow, b','>(filepath)?
             .into_iter()

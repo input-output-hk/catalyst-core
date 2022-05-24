@@ -213,28 +213,48 @@ impl EvmVerifier {
     }
 
     pub fn is_mapped_to_evm(&self, evm_mapping: &EvmMapping) -> &Self {
-        let stats = [
+        let mapping_info = [
             "jormungandr account: ",
             &evm_mapping.account_id().to_string(),
             ", evm account: ",
             &evm_mapping.evm_address().to_string(),
         ]
         .concat();
+
         assert!(
-            self.evm_ledger.stats().contains(&stats),
-            "Mapping {} not found{}",
-            stats,
+            self.evm_ledger
+                .address_mapping
+                .evm_address(evm_mapping.account_id())
+                .is_some(),
+            "Mapping: {} not found {}. Current mappings: {}",
+            mapping_info,
+            self.evm_ledger.stats(),
+            self.info
+        );
+
+        assert_eq!(
+            self.evm_ledger
+                .address_mapping
+                .evm_address(evm_mapping.account_id())
+                .unwrap(),
+            *evm_mapping.evm_address(),
+            "Mapping for {} already existing. Current mappings: {} {}",
+            evm_mapping.account_id(),
+            self.evm_ledger.stats(),
             self.info
         );
         self
     }
 
     pub fn is_not_mapped_to_evm(&self, wallet: &Wallet) -> &Self {
-        let stats = ["jormungandr account: ", &wallet.public_key().to_string()].concat();
         assert!(
-            !self.evm_ledger.stats().contains(&stats),
-            "Found some mapping for {} {}",
-            stats,
+            self.evm_ledger
+                .address_mapping
+                .evm_address(&wallet.public_key().into())
+                .is_none(),
+            "Found some mapping for: {} Current mappings: {} {}",
+            wallet.public_key(),
+            self.evm_ledger.stats(),
             self.info
         );
         self

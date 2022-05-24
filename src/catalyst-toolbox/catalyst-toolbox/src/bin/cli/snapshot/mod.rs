@@ -1,15 +1,12 @@
 use catalyst_toolbox::snapshot::{RawSnapshot, Snapshot};
 use chain_addr::Discrimination;
-use jcli_lib::utils::{
-    output_file::{Error as OutputFileError, OutputFile},
-    output_format::{Error as OutputFormatError, OutputFormat},
-};
+use color_eyre::Report;
+use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 use jormungandr_lib::interfaces::Value;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use structopt::StructOpt;
-use thiserror::Error;
 
 /// Process raw registrations into blockchain initials
 #[derive(StructOpt)]
@@ -33,20 +30,8 @@ pub struct SnapshotCmd {
     output_format: OutputFormat,
 }
 
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-    #[error(transparent)]
-    Json(#[from] serde_json::Error),
-    #[error(transparent)]
-    OutputFile(#[from] OutputFileError),
-    #[error(transparent)]
-    OutputFormat(#[from] OutputFormatError),
-}
-
 impl SnapshotCmd {
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         let raw_snapshot: RawSnapshot = serde_json::from_reader(File::open(&self.snapshot)?)?;
         let initials = Snapshot::from_raw_snapshot(raw_snapshot, self.threshold)
             .to_block0_initials(self.discrimination);

@@ -3,6 +3,7 @@ use chain_core::{packer::Codec, property::DeserializeFromSlice};
 use chain_impl_mockchain::{
     block::Block, chaintypes::HeaderId, fragment::Fragment, transaction::InputEnum,
 };
+use color_eyre::{eyre::bail, Report};
 use jormungandr_lib::interfaces::{AccountIdentifier, Address};
 
 use serde::Serialize;
@@ -10,21 +11,6 @@ use serde::Serialize;
 use std::{collections::HashMap, path::Path};
 
 const MAIN_TAG: &str = "HEAD";
-
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    #[error(transparent)]
-    Storage(#[from] chain_storage::Error),
-
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-
-    #[error(transparent)]
-    Csv(#[from] csv::Error),
-
-    #[error("Only accounts inputs are supported not Utxos")]
-    UnhandledInput,
-}
 
 #[derive(Serialize)]
 struct Vote {
@@ -36,7 +22,10 @@ struct Vote {
     raw_fragment: String,
 }
 
-pub fn generate_archive_files(jormungandr_database: &Path, output_dir: &Path) -> Result<(), Error> {
+pub fn generate_archive_files(
+    jormungandr_database: &Path,
+    output_dir: &Path,
+) -> Result<(), Report> {
     let db = chain_storage::BlockStore::file(
         jormungandr_database,
         HeaderId::zero_hash()
@@ -67,7 +56,7 @@ pub fn generate_archive_files(jormungandr_database: &Path, output_dir: &Path) ->
                     AccountIdentifier::from(account_id)
                         .into_address(Discrimination::Production, "ca")
                 } else {
-                    return Err(Error::UnhandledInput);
+                    bail!("unhandled input")
                 };
                 let certificate = tx.as_slice().payload().into_payload();
 

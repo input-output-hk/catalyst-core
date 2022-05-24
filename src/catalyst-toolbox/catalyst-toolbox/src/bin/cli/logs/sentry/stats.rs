@@ -1,7 +1,7 @@
-use super::Error;
 use catalyst_toolbox::logs::sentry::{
     RawLog, RegexMatch, SentryLogsStatChecker, SentryLogsStatsExecutor, Stat,
 };
+use color_eyre::Report;
 use jcli_lib::utils::io::open_file_read;
 
 use regex::Regex;
@@ -77,7 +77,7 @@ impl Stats {
         SentryLogsStatsExecutor::new(checkers)
     }
 
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         let mut checker = self.build_checkers();
         let logs_reader = open_file_read(&Some(self.file))?;
         let logs: Vec<RawLog> = serde_json::from_reader(logs_reader)?;

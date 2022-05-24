@@ -1,12 +1,13 @@
 mod explorer;
 
 use assert_fs::{fixture::PathChild, TempDir};
+use color_eyre::eyre::bail;
+use color_eyre::Report;
 use explorer::{transaction_by_id, TransactionById};
 use graphql_client::{GraphQLQuery, Response};
 use jormungandr_automation::jormungandr::{
-    Block0ConfigurationBuilder, ExplorerError, JormungandrError, JormungandrParams,
-    JormungandrProcess, NodeConfigBuilder, RestError, Starter, StartupError,
-    StartupVerificationMode,
+    Block0ConfigurationBuilder, ExplorerError, JormungandrParams, JormungandrProcess,
+    NodeConfigBuilder, Starter, StartupVerificationMode,
 };
 use jormungandr_lib::interfaces::{Log, LogEntry, LogOutput, VotePlanStatus};
 use std::path::PathBuf;
@@ -22,34 +23,12 @@ pub struct CheckNode {
     inner: JormungandrProcess,
 }
 
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error("Error while reading results from file")]
-    Io(#[from] std::io::Error),
-    #[error(transparent)]
-    Json(#[from] serde_json::Error),
-    #[error(transparent)]
-    Rest(#[from] RestError),
-    #[error(transparent)]
-    Explorer(#[from] ExplorerError),
-    #[error(transparent)]
-    NodeStartup(#[from] StartupError),
-    #[error(transparent)]
-    ErrorInLogs(#[from] JormungandrError),
-    #[error("The transaction with id {0} was not found in the main chain.")]
-    TransactionNotOnChain(String),
-    #[error(
-        "The results of the election are not as expected (expected: {expected}, found: {actual})"
-    )]
-    ResultsDoNotMatch { expected: String, actual: String },
-}
-
 impl CheckNode {
     pub fn spawn(
         storage: PathBuf,
         genesis_block_hash: String,
         jormungandr_bin: Option<PathBuf>,
-    ) -> Result<Self, Error> {
+    ) -> Result<Self, Report> {
         // FIXME: we are using test tools which are not always keen to keep
         // stdout clean of unwanted output.
         // This guard redirects stdout to null untils it's dropped
@@ -90,12 +69,12 @@ impl CheckNode {
         Ok(Self { inner })
     }
 
-    pub fn active_vote_plans(&self) -> Result<Vec<VotePlanStatus>, Error> {
+    pub fn active_vote_plans(&self) -> Result<Vec<VotePlanStatus>, Report> {
         Ok(self.inner.rest().vote_plan_statuses()?)
     }
 
     /// Check that all transactions are present on the main chain of the node
-    pub fn check_transactions_on_chain(&self, transactions: Vec<String>) -> Result<(), Error> {
+    pub fn check_transactions_on_chain(&self, transactions: Vec<String>) -> Result<(), Report> {
         let tip = self.inner.rest().tip()?.to_string();
         let explorer = self.inner.explorer();
         let explorer = explorer.client();
@@ -116,10 +95,10 @@ impl CheckNode {
                     .flat_map(|block| block.branches)
                     .map(|branch| branch.id);
                 if !branch_ids.any(|branch| branch == tip) {
-                    return Err(Error::TransactionNotOnChain(id));
+                    bail!("transaction not on chain: {id}")
                 }
             } else {
-                return Err(Error::TransactionNotOnChain(id));
+                bail!("transaction not on chain: {id}")
             }
         }
         Ok(())

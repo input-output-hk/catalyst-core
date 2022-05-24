@@ -1,6 +1,6 @@
 use catalyst_toolbox::stats::snapshot::read_initials;
 use catalyst_toolbox::stats::voters::calculate_wallet_distribution_from_initials;
-use catalyst_toolbox::stats::Error;
+use color_eyre::Report;
 use jormungandr_lib::interfaces::Initial;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -23,7 +23,7 @@ pub enum Command {
 }
 
 impl SnapshotCommand {
-    pub fn exec(&self) -> Result<(), Error> {
+    pub fn exec(&self) -> Result<(), Report> {
         let initials: Vec<Initial> = read_initials(&jortestkit::file::read_file(&self.snapshot)?)?;
 
         match self.command {

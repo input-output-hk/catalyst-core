@@ -2,6 +2,7 @@ use catalyst_toolbox::{
     stats::archive::{load_from_csv, load_from_folder, ArchiveStats},
     utils::csv::dump_to_csv_or_print,
 };
+use color_eyre::Report;
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::path::PathBuf;
@@ -26,7 +27,7 @@ pub struct ArchiveCommand {
 }
 
 impl ArchiveCommand {
-    pub fn exec(self) -> Result<(), catalyst_toolbox::stats::Error> {
+    pub fn exec(self) -> Result<(), Report> {
         let archiver: ArchiveStats = {
             if let Some(csv) = &self.csv {
                 load_from_csv(&csv)?.into()
@@ -85,10 +86,7 @@ pub struct BatchSizeByCaster {
 }
 
 impl BatchSizeByCaster {
-    pub fn exec(
-        &self,
-        archiver: ArchiveStats,
-    ) -> Result<BTreeMap<String, usize>, catalyst_toolbox::stats::Error> {
+    pub fn exec(&self, archiver: ArchiveStats) -> Result<BTreeMap<String, usize>, Report> {
         Ok(archiver.max_batch_size_per_caster(self.slots_in_epoch)?)
     }
 }

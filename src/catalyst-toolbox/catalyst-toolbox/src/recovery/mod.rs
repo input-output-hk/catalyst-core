@@ -1,4 +1,4 @@
 mod replay;
 pub mod tally;
 
-pub use replay::{Error as ReplayError, Replay};
+pub use replay::Replay;

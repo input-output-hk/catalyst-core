@@ -1,6 +1,7 @@
 use crate::recovery::tally::recover_ledger_from_logs;
 use chain_core::property::Fragment;
 use chain_impl_mockchain::block::Block;
+use color_eyre::{eyre::Context, Report};
 pub use jcli_lib::utils::{
     output_file::{Error as OutputFileError, OutputFile},
     output_format::{Error as OutputFormatError, OutputFormat},
@@ -36,9 +37,9 @@ impl Replay {
         }
     }
 
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         let fragments = load_persistent_fragments_logs_from_folder_path(&self.logs_path)
-            .map_err(Error::PersistenLogsLoading)?;
+            .context("persistent logs loading")?;
 
         let (ledger, failed) = recover_ledger_from_logs(&self.block0, fragments)?;
         if !failed.is_empty() {
@@ -57,26 +58,4 @@ impl Replay {
         out_writer.write_all(content.as_bytes())?;
         Ok(())
     }
-}
-
-#[allow(clippy::large_enum_variant)]
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-
-    #[error(transparent)]
-    Serialization(#[from] serde_json::Error),
-
-    #[error(transparent)]
-    Recovery(#[from] crate::recovery::tally::Error),
-
-    #[error(transparent)]
-    OutputFile(#[from] OutputFileError),
-
-    #[error(transparent)]
-    OutputFormat(#[from] OutputFormatError),
-
-    #[error("Could not load persistent logs from path")]
-    PersistenLogsLoading(#[source] std::io::Error),
 }

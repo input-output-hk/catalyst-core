@@ -2,6 +2,7 @@ use crate::stats::distribution::Stats;
 use chain_addr::{Discrimination, Kind};
 use chain_crypto::Ed25519;
 use chain_impl_mockchain::vote::CommitteeId;
+use color_eyre::Report;
 use jormungandr_automation::testing::block0::get_block;
 use jormungandr_lib::interfaces::Address;
 use jormungandr_lib::interfaces::Initial;
@@ -11,7 +12,7 @@ pub fn calculate_wallet_distribution<S: Into<String>>(
     block0: S,
     threshold: u64,
     support_lovelace: bool,
-) -> Result<Stats, crate::stats::Error> {
+) -> Result<Stats, Report> {
     let block0 = block0.into();
     let genesis = get_block(block0)?;
 
@@ -51,7 +52,7 @@ pub fn calculate_wallet_distribution_from_initials(
     blacklist: Vec<Address>,
     threshold: u64,
     support_lovelace: bool,
-) -> Result<Stats, crate::stats::Error> {
+) -> Result<Stats, Report> {
     let mut utxos = vec![];
     for initial in initials.into_iter() {
         if let Initial::Fund(initial_utxos) = initial {
@@ -69,7 +70,7 @@ pub fn calculate_wallet_distribution_from_initials_utxo(
     blacklist: Vec<Address>,
     threshold: u64,
     support_lovelace: bool,
-) -> Result<Stats, crate::stats::Error> {
+) -> Result<Stats, Report> {
     let mut stats = Stats::new(threshold);
 
     for x in initials {

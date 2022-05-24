@@ -1,21 +1,8 @@
 mod download;
 mod stats;
 
-use catalyst_toolbox::logs::sentry::Error as SentryLogError;
-
+use color_eyre::Report;
 use structopt::StructOpt;
-
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error(transparent)]
-    SentryLog(#[from] SentryLogError),
-
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-
-    #[error(transparent)]
-    Json(#[from] serde_json::Error),
-}
 
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -27,7 +14,7 @@ pub enum SentryLogs {
 }
 
 impl SentryLogs {
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         match self {
             SentryLogs::Download(download) => download.exec(),
             SentryLogs::Stats(stats) => stats.exec(),

@@ -23,18 +23,22 @@ pub async fn filter(
 
     let all_funds = warp::path::end()
         .and(warp::get())
-        .and(with_context.clone())
+        .and(with_context)
         .and_then(get_all_funds)
         .boxed();
 
-    let put_fund = warp::path::end()
+    // fund_by_id need to be checked first otherwise requests are swallowed by the fund::any
+    root.and(fund_by_id.or(fund).or(all_funds)).boxed()
+}
+
+pub fn admin_filter(
+    context: SharedContext,
+) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+    let with_context = warp::any().map(move || context.clone());
+
+    warp::path::end()
         .and(warp::put())
         .and(warp::body::json())
         .and(with_context)
         .and_then(put_fund)
-        .boxed();
-
-    // fund_by_id need to be checked first otherwise requests are swallowed by the fund::any
-    root.and(fund_by_id.or(fund).or(all_funds).or(put_fund))
-        .boxed()
 }

@@ -30,18 +30,14 @@ pub fn filter(
 }
 
 pub fn update_filter(
-    root: BoxedFilter<()>,
     context: UpdateHandle,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
     let ctx = Arc::new(Mutex::new(context));
     let with_context = warp::any().map(move || Arc::clone(&ctx));
 
-    let put = warp::path!(String)
+    warp::path!(String)
         .and(warp::put())
         .and(warp::body::json())
         .and(with_context)
         .and_then(put_tag)
-        .boxed();
-
-    root.and(put).boxed()
 }

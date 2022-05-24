@@ -80,7 +80,7 @@ mod test {
 
         let snapshot_root = warp::path!("snapshot" / ..).boxed();
         let filter = snapshot_service::filter(snapshot_root.clone(), shared_context.clone());
-        let put_filter = snapshot_service::update_filter(snapshot_root, update_handler);
+        let put_filter = snapshot_root.and(snapshot_service::update_filter(update_handler));
 
         assert_eq!(
             warp::test::request()

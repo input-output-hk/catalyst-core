@@ -14,6 +14,13 @@ impl RestPathBuilder {
         }
     }
 
+    pub fn admin(self) -> Self {
+        Self {
+            address: self.address,
+            root: self.root + "admin/",
+        }
+    }
+
     pub fn proposals(&self) -> String {
         self.path("proposals")
     }

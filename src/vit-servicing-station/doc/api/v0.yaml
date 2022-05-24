@@ -58,23 +58,6 @@ paths:
                 $ref: "#/components/schemas/Fund"
         "404":
           description: The requested fund was not found
-    put:
-      operationId: putFund
-      summary: Update or create fund
-      tags: [fund]
-      description: |
-        Update or replace the fund in the db with the one provided.
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          required: true
-      responses:
-        "200":
-          description: Valid response
-        "400":
-          description: The input is malformed.
 
   /api/v0/funds/:
     get:
@@ -256,7 +239,7 @@ paths:
         "200":
           description: Success
 
-  /api/v0/snapshot/{tag}:
+  /api/v0/admin/snapshot/{tag}:
     put:
       operationId: updateSnapshot
       summary: Replace the snapshot data for the given tag
@@ -269,6 +252,26 @@ paths:
       responses:
         "200":
           description: Success
+
+  /api/v0/admin/fund:
+    put:
+      operationId: putFund
+      summary: Update or create fund
+      tags: [fund]
+      description: |
+        Update or replace the fund in the db with the one provided.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        "200":
+          description: Valid response
+        "400":
+          description: The input is malformed.
+
 
 components:
   schemas:

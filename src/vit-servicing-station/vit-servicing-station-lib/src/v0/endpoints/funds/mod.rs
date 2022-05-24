@@ -2,4 +2,4 @@ mod handlers;
 mod logic;
 mod routes;
 
-pub use routes::filter;
+pub use routes::{admin_filter, filter};

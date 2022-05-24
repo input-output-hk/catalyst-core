@@ -45,7 +45,17 @@ pub async fn filter(
 
     let snapshot_root = warp::path!("snapshot" / ..);
     let snapshot_rx_filter = snapshot_service::filter(snapshot_root.boxed(), snapshot_rx.clone());
-    let snapshot_tx_filter = snapshot_service::update_filter(snapshot_root.boxed(), snapshot_tx);
+
+    let admin_filter = {
+        let base = warp::path!("admin" / ..);
+
+        let snapshot_tx_filter =
+            warp::path!("snapshot" / ..).and(snapshot_service::update_filter(snapshot_tx).boxed());
+
+        let fund_filter = warp::path!("fund" / ..).and(funds::admin_filter(context.clone()));
+
+        base.and(snapshot_tx_filter.or(fund_filter))
+    };
 
     let api_token_filter = if enable_api_tokens {
         api_token::api_token_filter(context).await.boxed()
@@ -62,7 +72,7 @@ pub async fn filter(
                 .or(challenges_filter)
                 .or(reviews_filter)
                 .or(snapshot_rx_filter)
-                .or(snapshot_tx_filter),
+                .or(admin_filter),
         ),
     )
     .boxed()

@@ -1491,7 +1491,7 @@ impl Ledger {
     }
 
     #[cfg(feature = "evm")]
-    pub fn evm_jormungandr_mapped_address(
+    pub fn jormungandr_mapped_address(
         &self,
         evm_id: &chain_evm::Address,
     ) -> crate::account::Identifier {
@@ -1499,7 +1499,7 @@ impl Ledger {
     }
 
     #[cfg(feature = "evm")]
-    pub fn evm_evm_mapped_address(
+    pub fn evm_mapped_address(
         &self,
         jor_id: &crate::account::Identifier,
     ) -> Option<chain_evm::Address> {

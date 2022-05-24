@@ -87,6 +87,6 @@ pub struct BatchSizeByCaster {
 
 impl BatchSizeByCaster {
     pub fn exec(&self, archiver: ArchiveStats) -> Result<BTreeMap<String, usize>, Report> {
-        Ok(archiver.max_batch_size_per_caster(self.slots_in_epoch)?)
+        archiver.max_batch_size_per_caster(self.slots_in_epoch)
     }
 }

@@ -65,8 +65,6 @@ impl VotersRewards {
             votes_count_path,
             vote_threshold,
         } = self;
-        std::fs::read("doesnt_exist")?;
-
         let block = common.input.load_block()?;
         let block0 = Block0Configuration::from_block(&block)?;
 

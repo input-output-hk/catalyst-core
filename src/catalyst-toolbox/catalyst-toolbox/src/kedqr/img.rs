@@ -10,21 +10,9 @@ use std::fmt;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
-use thiserror::Error;
 
 pub struct KeyQrCode {
     inner: QrCode,
-}
-
-
-#[derive(Error, Debug)]
-pub enum QrDecodeError {
-    #[error("couldn't decode QR code")]
-    DecodeError(#[from] quircs::DecodeError),
-    #[error("couldn't extract QR code")]
-    ExtractError(#[from] quircs::ExtractError),
-    #[error("QR code payload is not valid uf8")]
-    NonUtf8Payload,
 }
 
 impl KeyQrCode {
@@ -67,14 +55,11 @@ impl KeyQrCode {
 
         codes
             .map(|code| -> Result<_, Report> {
-                let decoded = code
-                    .map_err(QrDecodeError::ExtractError)
-                    .and_then(|c| c.decode().map_err(QrDecodeError::DecodeError))?;
+                let decoded = code?.decode()?;
 
                 // TODO: I actually don't know if this can fail
-                let h = std::str::from_utf8(&decoded.payload)
-                    .map_err(|_| QrDecodeError::NonUtf8Payload)?;
-                payload::decode(h, password).map_err(Into::into)
+                let h = std::str::from_utf8(&decoded.payload)?;
+                payload::decode(h, password)
             })
             .collect()
     }

@@ -1,11 +1,10 @@
 use super::loader::ArchiverRecord;
-use chain_impl_mockchain::block::BlockDateParseError;
 use chain_time::TimeEra;
+use color_eyre::Report;
 use itertools::Itertools;
 use jormungandr_lib::interfaces::BlockDate;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
-use thiserror::Error;
 
 pub struct ArchiveStats {
     records: Vec<ArchiverRecord>,
@@ -59,7 +58,7 @@ impl ArchiveStats {
     pub fn max_batch_size_per_caster(
         &self,
         slots_in_epoch: u32,
-    ) -> Result<BTreeMap<String, usize>, ArchiveCalculatorError> {
+    ) -> Result<BTreeMap<String, usize>, Report> {
         let time_era = self.records[0].time.time_era(slots_in_epoch);
 
         Ok(self
@@ -96,14 +95,3 @@ fn are_equal_or_adjacent(left: &BlockDate, right: &BlockDate, time_era: &TimeEra
     left == right || left.clone().shift_slot(1, time_era) == *right
 }
 
-#[derive(Debug, Error)]
-pub enum ArchiveCalculatorError {
-    #[error("general error")]
-    General(#[from] std::io::Error),
-    #[error("cannot calculate distribution: cannot calculate max element result is empty")]
-    EmptyResult,
-    #[error("csv error")]
-    Csv(#[from] csv::Error),
-    #[error("block date error")]
-    BlockDateParse(#[from] BlockDateParseError),
-}

@@ -1,3 +1,4 @@
+use color_eyre::Report;
 use jormungandr_automation::jormungandr::JormungandrRest;
 use jormungandr_lib::interfaces::FragmentLog;
 use serde_json;
@@ -20,7 +21,7 @@ impl Harvester {
         }
     }
 
-    pub fn harvest(&self) -> Result<Snapshot, super::Error> {
+    pub fn harvest(&self) -> Result<Snapshot, Report> {
         let mut votes_count: usize = 0;
 
         for vote_status in self.rest.vote_plan_statuses()? {
@@ -41,7 +42,7 @@ impl Harvester {
         })
     }
 
-    pub fn fragment_logs(&self) -> Result<Vec<FragmentLog>, super::Error> {
+    pub fn fragment_logs(&self) -> Result<Vec<FragmentLog>, Report> {
         let client = reqwest::blocking::Client::builder()
             .timeout(self.timeout)
             .build()?;

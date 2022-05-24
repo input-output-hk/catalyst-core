@@ -1,13 +1,13 @@
 use std::time::Instant;
 
-use super::Error;
 use crate::stats::live::Harvester;
 use crate::stats::live::Settings;
+use color_eyre::Report;
 use jortestkit::console::ProgressBarMode;
 use jortestkit::load::ProgressBar;
 use jortestkit::prelude::append;
 
-pub fn start(harvester: Harvester, settings: Settings, title: &str) -> Result<(), Error> {
+pub fn start(harvester: Harvester, settings: Settings, title: &str) -> Result<(), Report> {
     let mut progress_bar = ProgressBar::new(1);
 
     println!("{}", title);

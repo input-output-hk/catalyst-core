@@ -1,6 +1,6 @@
 use crate::logs::compare::LogCmpFields;
-use crate::recovery::tally::ValidationError;
 
+use color_eyre::Report;
 use regex::Regex;
 use reqwest::{blocking::Client, Method, Url};
 
@@ -11,24 +11,6 @@ const REGISTERED_MESSAGE: &str = "User registered with public_key";
 const MALFORMED_QR_MESSAGE: &str = "malformed encryption or decryption payload";
 
 pub type RawLog = serde_json::Value;
-
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    #[error(transparent)]
-    RequestError(#[from] reqwest::Error),
-
-    #[error("Unable to parse log from: '{0}'")]
-    LogParseError(String),
-
-    #[error("Not a vote cast transaction: {fragment_id}")]
-    NotVoteCastTransaction { fragment_id: String },
-
-    #[error(transparent)]
-    UrlParseError(#[from] url::ParseError),
-
-    #[error(transparent)]
-    ValidationError(#[from] ValidationError),
-}
 
 pub struct SentryLogClient {
     client: Client,
@@ -46,33 +28,33 @@ impl SentryLogClient {
         }
     }
 
-    pub fn get_raw_logs(&self) -> Result<String, Error> {
-        self.client
+    pub fn get_raw_logs(&self) -> Result<String, Report> {
+        Ok(self
+            .client
             .request(Method::GET, self.api_url.clone())
             .bearer_auth(&self.auth_token)
             .send()?
             .bytes()
-            .map(|b| std::str::from_utf8(&b).unwrap().to_string())
-            .map_err(Error::RequestError)
+            .map(|b| std::str::from_utf8(&b).unwrap().to_string())?)
     }
 
-    pub fn get_json_logs(&self) -> Result<Vec<RawLog>, Error> {
-        self.client
+    pub fn get_json_logs(&self) -> Result<Vec<RawLog>, Report> {
+        Ok(self
+            .client
             .request(Method::GET, self.api_url.clone())
             .bearer_auth(&self.auth_token)
             .send()?
-            .json()
-            .map_err(Error::RequestError)
+            .json()?)
     }
 
-    pub fn get_json_logs_chunks(&self, chunk: usize) -> Result<Vec<RawLog>, Error> {
+    pub fn get_json_logs_chunks(&self, chunk: usize) -> Result<Vec<RawLog>, Report> {
         let api_url = self.api_url.join(&format!("?&cursor=0:{}:0", chunk))?;
-        self.client
+        Ok(self
+            .client
             .request(Method::GET, api_url)
             .bearer_auth(&self.auth_token)
             .send()?
-            .json()
-            .map_err(Error::RequestError)
+            .json()?)
     }
 }
 
@@ -286,7 +268,7 @@ impl From<SentryFragmentLog> for LogCmpFields {
 }
 
 impl FromStr for SentryFragmentLog {
-    type Err = Error;
+    type Err = Report;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let parsed = sscanf::scanf!(
@@ -320,7 +302,7 @@ impl FromStr for SentryFragmentLog {
                     fragment_id,
                 },
             )
-            .ok_or_else(|| Error::LogParseError(s.to_string()))
+            .ok_or_else(|| color_eyre::eyre::eyre!("log parse error: {s}"))
     }
 }
 

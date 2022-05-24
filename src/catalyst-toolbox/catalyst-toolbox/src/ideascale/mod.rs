@@ -5,6 +5,8 @@ use crate::ideascale::models::de::{clean_str, Challenge, Fund, Funnel, Proposal,
 
 use std::collections::{HashMap, HashSet};
 
+use color_eyre::eyre::bail;
+use color_eyre::Report;
 use regex::Regex;
 
 pub use crate::ideascale::fetch::{Scores, Sponsors};
@@ -13,24 +15,6 @@ pub use crate::ideascale::models::custom_fields::CustomFieldTags;
 // Id of funnel that do have rewards and should not count when importing funnels. It is static and
 // should not change
 const PROCESS_IMPROVEMENTS_ID: u32 = 7666;
-
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error(transparent)]
-    Fetch(#[from] fetch::Error),
-
-    #[error(transparent)]
-    Join(#[from] tokio::task::JoinError),
-
-    #[error(transparent)]
-    Serde(#[from] serde_json::Error),
-
-    #[error(transparent)]
-    Regex(#[from] regex::Error),
-
-    #[error("invalid token")]
-    InvalidToken,
-}
 
 #[derive(Debug)]
 pub struct IdeaScaleData {
@@ -46,11 +30,10 @@ pub async fn fetch_all(
     stages_filters: &[&str],
     excluded_proposals: &HashSet<u32>,
     api_token: String,
-) -> Result<IdeaScaleData, Error> {
+) -> Result<IdeaScaleData, Report> {
     if !fetch::is_token_valid(api_token.clone()).await? {
-        return Err(Error::InvalidToken);
+        bail!("invalid token");
     }
-
     let funnels_task = tokio::spawn(fetch::get_funnels_data_for_fund(api_token.clone()));
     let funds_task = tokio::spawn(fetch::get_funds_data(api_token.clone()));
     let funnels = funnels_task

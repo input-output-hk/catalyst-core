@@ -1,8 +1,8 @@
 mod img;
 mod payload;
 
-pub use img::{KeyQrCode, KeyQrCodeError};
-pub use payload::{decode, generate, Error as KeyQrCodePayloadError};
+pub use img::KeyQrCode;
+pub use payload::{decode, generate};
 use std::path::PathBuf;
 use std::str::FromStr;
 use thiserror::Error;
@@ -12,16 +12,6 @@ pub const PIN_LENGTH: usize = 4;
 #[derive(Debug, PartialEq)]
 pub struct QrPin {
     pub password: [u8; 4],
-}
-
-#[derive(Error, Debug)]
-pub enum Error {
-    #[error(transparent)]
-    BadPin(#[from] BadPinError),
-    #[error(transparent)]
-    KeyQrCodeHash(#[from] KeyQrCodePayloadError),
-    #[error(transparent)]
-    KeyQrCode(#[from] KeyQrCodeError),
 }
 
 #[derive(Error, Debug)]

@@ -1,38 +1,21 @@
 use super::payload;
-use chain_crypto::{Ed25519Extended, SecretKey, SecretKeyError};
-use image::{DynamicImage, ImageBuffer, ImageError, Luma};
+use chain_crypto::{Ed25519Extended, SecretKey};
+use color_eyre::Report;
+use image::{DynamicImage, ImageBuffer, Luma};
 use qrcode::{
     render::{svg, unicode},
     EcLevel, QrCode,
 };
 use std::fmt;
 use std::fs::File;
-use std::io::{self, prelude::*};
+use std::io::prelude::*;
 use std::path::Path;
-use symmetric_cipher::Error as SymmetricCipherError;
 use thiserror::Error;
 
 pub struct KeyQrCode {
     inner: QrCode,
 }
 
-#[derive(Error, Debug)]
-pub enum KeyQrCodeError {
-    #[error("encryption-decryption protocol error")]
-    SymmetricCipher(#[from] SymmetricCipherError),
-    #[error("io error")]
-    Io(#[from] io::Error),
-    #[error("invalid secret key")]
-    SecretKey(#[from] SecretKeyError),
-    #[error("couldn't decode QR code")]
-    QrDecodeError(#[from] QrDecodeError),
-    #[error("failed to decode hex")]
-    HexDecodeError(#[from] hex::FromHexError),
-    #[error("failed to decode hex")]
-    QrCodeHashError(#[from] super::payload::Error),
-    #[error(transparent)]
-    Image(#[from] ImageError),
-}
 
 #[derive(Error, Debug)]
 pub enum QrDecodeError {
@@ -52,7 +35,7 @@ impl KeyQrCode {
         KeyQrCode { inner }
     }
 
-    pub fn write_svg(&self, path: impl AsRef<Path>) -> Result<(), KeyQrCodeError> {
+    pub fn write_svg(&self, path: impl AsRef<Path>) -> Result<(), Report> {
         let mut out = File::create(path)?;
         let svg_file = self
             .inner
@@ -75,7 +58,7 @@ impl KeyQrCode {
     pub fn decode(
         img: DynamicImage,
         password: &[u8],
-    ) -> Result<Vec<SecretKey<Ed25519Extended>>, KeyQrCodeError> {
+    ) -> Result<Vec<SecretKey<Ed25519Extended>>, Report> {
         let mut decoder = quircs::Quirc::default();
 
         let img = img.into_luma8();
@@ -83,7 +66,7 @@ impl KeyQrCode {
         let codes = decoder.identify(img.width() as usize, img.height() as usize, &img);
 
         codes
-            .map(|code| -> Result<_, KeyQrCodeError> {
+            .map(|code| -> Result<_, Report> {
                 let decoded = code
                     .map_err(QrDecodeError::ExtractError)
                     .and_then(|c| c.decode().map_err(QrDecodeError::DecodeError))?;

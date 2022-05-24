@@ -6,6 +6,7 @@ use chain_core::property::Deserialize;
 use chain_crypto::{Ed25519Extended, SecretKey};
 use chain_impl_mockchain::block::Block;
 use chain_ser::packer::Codec;
+use color_eyre::Report;
 use jormungandr_lib::interfaces::{Block0Configuration, Initial};
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
@@ -33,7 +34,7 @@ pub struct InfoForQrCodeCmd {
 }
 
 impl InfoForQrCodeCmd {
-    pub fn exec(self) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn exec(self) -> Result<(), Report> {
         let secret_key: SecretKey<Ed25519Extended> = {
             match self.opts {
                 QrCodeOpts::Payload => secret_from_payload(&self.input, self.pin)?,

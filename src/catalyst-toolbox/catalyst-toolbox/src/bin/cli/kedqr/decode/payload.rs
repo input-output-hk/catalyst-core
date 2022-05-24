@@ -1,8 +1,8 @@
 use bech32::{ToBase32, Variant};
 use catalyst_toolbox::kedqr::{decode, QrPin};
 use chain_crypto::{AsymmetricKey, Ed25519Extended, SecretKey};
+use color_eyre::Report;
 use std::{
-    error::Error,
     fs::{File, OpenOptions},
     io::{BufRead, BufReader, Write},
     path::{Path, PathBuf},
@@ -12,7 +12,7 @@ pub fn decode_payload(
     input: PathBuf,
     output: Option<PathBuf>,
     pin: QrPin,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<(), Report> {
     // generate qrcode with key and parsed pin
     let secret = secret_from_payload(input, pin)?;
     let hrp = Ed25519Extended::SECRET_BECH32_HRP;
@@ -35,7 +35,7 @@ pub fn decode_payload(
 pub fn secret_from_payload(
     input: impl AsRef<Path>,
     pin: QrPin,
-) -> Result<SecretKey<Ed25519Extended>, catalyst_toolbox::kedqr::KeyQrCodePayloadError> {
+) -> Result<SecretKey<Ed25519Extended>, Report> {
     let input = OpenOptions::new()
         .create(false)
         .read(true)

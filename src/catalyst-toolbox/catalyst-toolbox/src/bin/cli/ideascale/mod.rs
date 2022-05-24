@@ -1,7 +1,7 @@
 use catalyst_toolbox::ideascale::{
-    build_challenges, build_fund, build_proposals, fetch_all, CustomFieldTags,
-    Error as IdeascaleError, Scores, Sponsors,
+    build_challenges, build_fund, build_proposals, fetch_all, CustomFieldTags, Scores, Sponsors,
 };
+use color_eyre::Report;
 use jcli_lib::utils::io as io_utils;
 use jormungandr_lib::interfaces::VotePrivacy;
 use std::collections::HashSet;
@@ -11,21 +11,6 @@ use structopt::StructOpt;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::path::{Path, PathBuf};
-
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error(transparent)]
-    Ideascale(#[from] IdeascaleError),
-
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-
-    #[error(transparent)]
-    Csv(#[from] csv::Error),
-
-    #[error(transparent)]
-    Serde(#[from] serde_json::Error),
-}
 
 #[derive(Debug, StructOpt)]
 pub enum Ideascale {
@@ -89,7 +74,7 @@ pub struct Import {
 }
 
 impl Ideascale {
-    pub fn exec(&self) -> Result<(), Error> {
+    pub fn exec(&self) -> Result<(), Report> {
         match self {
             Ideascale::Import(import) => import.exec(),
         }
@@ -97,7 +82,7 @@ impl Ideascale {
 }
 
 impl Import {
-    fn exec(&self) -> Result<(), Error> {
+    fn exec(&self) -> Result<(), Report> {
         let Import {
             fund,
             fund_goal,
@@ -182,21 +167,22 @@ impl Import {
     }
 }
 
-fn dump_content_to_file(content: impl Serialize, file_path: &Path) -> Result<(), Error> {
+fn dump_content_to_file(content: impl Serialize, file_path: &Path) -> Result<(), Report> {
     let writer = jcli_lib::utils::io::open_file_write(&Some(file_path))?;
-    serde_json::to_writer_pretty(writer, &content).map_err(Error::Serde)
+    serde_json::to_writer_pretty(writer, &content)?;
+    Ok(())
 }
 
-fn read_json_from_file<T: DeserializeOwned>(file_path: &Path) -> Result<T, Error> {
+fn read_json_from_file<T: DeserializeOwned>(file_path: &Path) -> Result<T, Report> {
     let reader = io_utils::open_file_read(&Some(file_path))?;
-    serde_json::from_reader(reader).map_err(Error::Serde)
+    Ok(serde_json::from_reader(reader)?)
 }
 
 fn parse_from_csv(s: &str) -> Filters {
     s.split(';').map(|x| x.to_string()).collect()
 }
 
-fn read_scores_file(path: &Option<PathBuf>) -> Result<Scores, Error> {
+fn read_scores_file(path: &Option<PathBuf>) -> Result<Scores, Report> {
     let mut scores = Scores::new();
     if let Some(path) = path {
         let mut reader = csv::Reader::from_path(path)?;
@@ -218,7 +204,7 @@ fn read_scores_file(path: &Option<PathBuf>) -> Result<Scores, Error> {
     Ok(scores)
 }
 
-fn read_sponsors_file(path: &Option<PathBuf>) -> Result<Sponsors, Error> {
+fn read_sponsors_file(path: &Option<PathBuf>) -> Result<Sponsors, Report> {
     let mut sponsors = Sponsors::new();
 
     if let Some(path) = path {

@@ -1490,6 +1490,22 @@ impl Ledger {
         self.settings.evm_environment.block_gas_limit
     }
 
+    #[cfg(feature = "evm")]
+    pub fn evm_jormungandr_mapped_address(
+        &self,
+        evm_id: &chain_evm::Address,
+    ) -> crate::account::Identifier {
+        self.evm.address_mapping.jor_address(evm_id)
+    }
+
+    #[cfg(feature = "evm")]
+    pub fn evm_evm_mapped_address(
+        &self,
+        jor_id: &crate::account::Identifier,
+    ) -> Option<chain_evm::Address> {
+        self.evm.address_mapping.evm_address(jor_id)
+    }
+
     pub fn utxo_out(
         &self,
         fragment_id: FragmentId,

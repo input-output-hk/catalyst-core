@@ -32,7 +32,7 @@ error: unused `imhamt::Hamt` in tuple element 0 that must be used
   --> testing/ui/fail/ignored_must_use.rs:19:5
    |
 19 |     map.replace(&1, 2).unwrap();
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
    = note: `Hamt`s are not modified in place, instead modified copies are returned`
 

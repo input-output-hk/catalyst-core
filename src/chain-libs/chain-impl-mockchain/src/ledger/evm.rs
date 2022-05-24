@@ -69,11 +69,15 @@ impl AddressMapping {
         }
     }
 
-    fn jor_address(&self, evm_id: &EvmAddress) -> JorAddress {
+    pub fn jor_address(&self, evm_id: &EvmAddress) -> JorAddress {
         match self.evm_to_jor.lookup(evm_id).cloned() {
             Some(jor_address) => jor_address,
             None => transform_evm_to_jor(evm_id),
         }
+    }
+
+    pub fn evm_address(&self, jor_id: &JorAddress) -> Option<EvmAddress> {
+        self.jor_to_evm.lookup(jor_id).cloned()
     }
 
     fn del_accounts(&mut self, jor_id: &JorAddress) {

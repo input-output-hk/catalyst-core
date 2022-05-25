@@ -1,6 +1,7 @@
 mod tally;
 mod votes;
 
+use color_eyre::Report;
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
@@ -11,7 +12,7 @@ pub enum Recover {
 }
 
 impl Recover {
-    pub fn exec(self) -> Result<(), tally::Error> {
+    pub fn exec(self) -> Result<(), Report> {
         match self {
             Recover::Tally(cmd) => cmd.exec(),
             Recover::VotesPrintout(cmd) => cmd.exec(),

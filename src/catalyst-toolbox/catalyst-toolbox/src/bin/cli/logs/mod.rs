@@ -1,16 +1,8 @@
 mod compare;
 mod sentry;
 
+use color_eyre::Report;
 use structopt::StructOpt;
-
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error(transparent)]
-    SentryError(#[from] sentry::Error),
-
-    #[error(transparent)]
-    CompareError(#[from] compare::Error),
-}
 
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -22,7 +14,7 @@ pub enum Logs {
 }
 
 impl Logs {
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         match self {
             Logs::Sentry(sentry_logs) => sentry_logs.exec()?,
             Logs::Compare(compare) => compare.exec()?,

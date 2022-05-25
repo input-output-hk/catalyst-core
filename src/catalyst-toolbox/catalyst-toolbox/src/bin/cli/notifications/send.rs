@@ -7,8 +7,8 @@ use catalyst_toolbox::notifications::{
         Request, RequestData,
     },
     send::send_create_message,
-    Error,
 };
+use color_eyre::Report;
 use jcli_lib::utils::io;
 
 use reqwest::Url;
@@ -82,7 +82,7 @@ pub enum SendNotification {
 }
 
 impl Args {
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         let url = self.api_params.api_url.join("createMessage").unwrap();
         let message = self.build_create_message()?;
         let request = Request::new(RequestData::CreateMessageRequest(message));
@@ -92,7 +92,7 @@ impl Args {
         Ok(())
     }
 
-    pub fn build_create_message(&self) -> Result<CreateMessage, Error> {
+    pub fn build_create_message(&self) -> Result<CreateMessage, Report> {
         let content: ContentType = serde_json::from_str(&self.content_path.get_content()?)?;
         let mut content_builder = ContentSettingsBuilder::new()
             .with_timezone(self.timezone.clone())
@@ -115,7 +115,7 @@ impl Args {
 }
 
 impl Json {
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         let url = self.api_url.join("createMessage").unwrap();
         let message_data: RequestData = serde_json::from_str(&self.json_path.get_content()?)?;
         let request: Request = Request::new(message_data);
@@ -127,7 +127,7 @@ impl Json {
 }
 
 impl SendNotification {
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         match self {
             SendNotification::FromArgs(args) => args.exec(),
             SendNotification::FromJson(json) => json.exec(),
@@ -136,8 +136,8 @@ impl SendNotification {
 }
 
 impl Content {
-    pub fn get_content(&self) -> Result<String, Error> {
-        let mut reader = io::open_file_read(&self.content_path).map_err(Error::FileError)?;
+    pub fn get_content(&self) -> Result<String, Report> {
+        let mut reader = io::open_file_read(&self.content_path)?;
         let mut result = String::new();
         reader.read_to_string(&mut result)?;
         Ok(result)

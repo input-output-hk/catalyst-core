@@ -3,9 +3,9 @@ mod payload;
 
 use crate::cli::kedqr::QrCodeOpts;
 use catalyst_toolbox::kedqr::QrPin;
+use color_eyre::Report;
 pub use img::generate_qr;
 pub use payload::generate_payload;
-use std::error::Error;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -28,7 +28,7 @@ pub struct EncodeQrCodeCmd {
 }
 
 impl EncodeQrCodeCmd {
-    pub fn exec(self) -> Result<(), Box<dyn Error>> {
+    pub fn exec(self) -> Result<(), Report> {
         match self.opts {
             QrCodeOpts::Payload => generate_payload(self.input, self.output, self.pin),
             QrCodeOpts::Img => generate_qr(self.input, self.output, self.pin),

@@ -1,12 +1,11 @@
 use crate::cli::kedqr::decode::secret_from_payload;
 use crate::cli::kedqr::decode::secret_from_qr;
 use crate::cli::kedqr::QrCodeOpts;
-use catalyst_toolbox::kedqr::BadPinError;
-use catalyst_toolbox::kedqr::Error as KedQrError;
 use catalyst_toolbox::kedqr::PinReadMode;
+use color_eyre::eyre::Context;
+use color_eyre::Report;
 use std::path::PathBuf;
 use structopt::StructOpt;
-use thiserror::Error;
 
 #[derive(StructOpt, Debug)]
 pub struct VerifyQrCodeCmd {
@@ -29,20 +28,8 @@ pub struct VerifyQrCodeCmd {
     opts: QrCodeOpts,
 }
 
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("Failed to decode qr code '{qr_code:?}' from '{index}', due to: '{inner}'")]
-    VerificationFailed {
-        qr_code: PathBuf,
-        index: usize,
-        inner: Box<dyn std::error::Error>,
-    },
-    #[error(transparent)]
-    BadPin(#[from] BadPinError),
-}
-
 impl VerifyQrCodeCmd {
-    pub fn exec(&self) -> Result<(), Error> {
+    pub fn exec(&self) -> Result<(), Report> {
         let qr_codes: Vec<PathBuf> = {
             if let Some(file) = &self.file {
                 vec![file.to_path_buf()]
@@ -68,19 +55,15 @@ impl VerifyQrCodeCmd {
             .into_qr_pin()?;
 
             let result = match self.opts {
-                QrCodeOpts::Payload => {
-                    secret_from_payload(qr_code, pin).map_err(KedQrError::KeyQrCodeHash)
-                }
-                QrCodeOpts::Img => secret_from_qr(qr_code, pin).map_err(KedQrError::KeyQrCode),
+                QrCodeOpts::Payload => secret_from_payload(qr_code, pin),
+                QrCodeOpts::Img => secret_from_qr(qr_code, pin),
             };
 
             if let Err(err) = result {
                 if self.stop_at_fail {
-                    return Err(Error::VerificationFailed {
-                        qr_code: qr_code.to_path_buf(),
-                        index: idx + 1,
-                        inner: Box::new(err),
-                    });
+                    let qr_path = qr_code.to_path_buf().to_string_lossy().to_string();
+                    let index = idx + 1;
+                    return Err(err).context(format!("qr_code: {qr_path}, index: {index}"));
                 } else {
                     failed_count += 1;
                 }

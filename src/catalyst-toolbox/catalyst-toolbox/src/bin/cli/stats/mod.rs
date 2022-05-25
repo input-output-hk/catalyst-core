@@ -4,6 +4,7 @@ mod snapshot;
 mod voters;
 
 use archive::ArchiveCommand;
+use color_eyre::Report;
 use live::LiveStatsCommand;
 use snapshot::SnapshotCommand;
 use structopt::StructOpt;
@@ -18,7 +19,7 @@ pub enum Stats {
 }
 
 impl Stats {
-    pub fn exec(self) -> Result<(), catalyst_toolbox::stats::Error> {
+    pub fn exec(self) -> Result<(), Report> {
         match self {
             Self::Voters(voters) => voters.exec(),
             Self::Live(live) => live.exec(),

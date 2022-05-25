@@ -1,13 +1,11 @@
-use catalyst_toolbox::recovery::{Replay, ReplayError};
-use chain_core::{
-    packer::Codec,
-    property::{Deserialize, ReadError},
-};
+use catalyst_toolbox::recovery::Replay;
+use chain_core::{packer::Codec, property::Deserialize};
 use chain_impl_mockchain::block::Block;
-use jcli_lib::utils::{
-    output_file::{Error as OutputFileError, OutputFile},
-    output_format::{Error as OutputFormatError, OutputFormat},
+use color_eyre::{
+    eyre::{bail, Context},
+    Report,
 };
+use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 
 use std::path::PathBuf;
 
@@ -15,34 +13,6 @@ use reqwest::Url;
 use structopt::StructOpt;
 
 use super::set_verbosity;
-
-#[allow(clippy::large_enum_variant)]
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error(transparent)]
-    Replay(#[from] ReplayError),
-
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-
-    #[error(transparent)]
-    Request(#[from] reqwest::Error),
-
-    #[error(transparent)]
-    Serialization(#[from] serde_json::Error),
-
-    #[error(transparent)]
-    OutputFile(#[from] OutputFileError),
-
-    #[error(transparent)]
-    OutputFormat(#[from] OutputFormatError),
-
-    #[error("Block0 should be provided either from a path (block0-path) or an url (block0-url)")]
-    Block0Unavailable,
-
-    #[error("Could not load block0")]
-    Block0Loading(#[source] ReadError),
-}
 
 /// Recover the tally from fragment log files and the initial preloaded block0 binary file.
 #[derive(StructOpt)]
@@ -71,18 +41,18 @@ pub struct ReplayCli {
     verbose: usize,
 }
 
-fn read_block0(path: PathBuf) -> Result<Block, Error> {
+fn read_block0(path: PathBuf) -> Result<Block, Report> {
     let reader = std::fs::File::open(path)?;
-    Block::deserialize(&mut Codec::new(reader)).map_err(Error::Block0Loading)
+    Block::deserialize(&mut Codec::new(reader)).context("block0 loading")
 }
 
-fn load_block0_from_url(url: Url) -> Result<Block, Error> {
+fn load_block0_from_url(url: Url) -> Result<Block, Report> {
     let block0_body = reqwest::blocking::get(url)?.bytes()?;
-    Block::deserialize(&mut Codec::new(&block0_body[..])).map_err(Error::Block0Loading)
+    Block::deserialize(&mut Codec::new(&block0_body[..])).context("block0 loading")
 }
 
 impl ReplayCli {
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         let Self {
             block0_path,
             block0_url,
@@ -99,7 +69,7 @@ impl ReplayCli {
         } else if let Some(url) = block0_url {
             load_block0_from_url(url)?
         } else {
-            return Err(Error::Block0Unavailable);
+            bail!("block0 unavailable");
         };
 
         let replay = Replay::new(block0, logs_path, output, output_format);

@@ -3,7 +3,7 @@ mod encode;
 mod info;
 mod verify;
 
-use std::error::Error;
+use color_eyre::Report;
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
@@ -20,7 +20,7 @@ pub enum QrCodeCmd {
 }
 
 impl QrCodeCmd {
-    pub fn exec(self) -> Result<(), Box<dyn Error>> {
+    pub fn exec(self) -> Result<(), Report> {
         match self {
             Self::Encode(encode) => encode.exec()?,
             Self::Decode(decode) => decode.exec()?,

@@ -1,4 +1,5 @@
 use catalyst_toolbox::stats::voters::calculate_wallet_distribution;
+use color_eyre::Report;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
@@ -20,7 +21,7 @@ pub enum Command {
 }
 
 impl InitialVotersCommand {
-    pub fn exec(&self) -> Result<(), catalyst_toolbox::stats::Error> {
+    pub fn exec(&self) -> Result<(), Report> {
         match self.command {
             Command::Count => {
                 calculate_wallet_distribution(&self.block0, self.threshold, self.support_lovelace)?

@@ -1,4 +1,5 @@
 use catalyst_toolbox::stats::live::{start, Harvester, Settings};
+use color_eyre::Report;
 use jortestkit::console::ProgressBarMode;
 use jortestkit::prelude::parse_progress_bar_mode_from_str;
 use std::path::PathBuf;
@@ -25,7 +26,7 @@ pub struct LiveStatsCommand {
 }
 
 impl LiveStatsCommand {
-    pub fn exec(&self) -> Result<(), catalyst_toolbox::stats::Error> {
+    pub fn exec(&self) -> Result<(), Report> {
         let settings = Settings {
             endpoint: self.endpoint.clone(),
             progress: self.console,

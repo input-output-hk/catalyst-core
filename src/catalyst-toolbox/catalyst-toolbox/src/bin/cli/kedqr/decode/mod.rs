@@ -3,9 +3,9 @@ mod payload;
 
 use crate::cli::kedqr::QrCodeOpts;
 use catalyst_toolbox::kedqr::QrPin;
+use color_eyre::Report;
 pub use img::{save_secret_from_qr, secret_from_qr};
 pub use payload::{decode_payload, secret_from_payload};
-use std::error::Error;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -28,7 +28,7 @@ pub struct DecodeQrCodeCmd {
 }
 
 impl DecodeQrCodeCmd {
-    pub fn exec(self) -> Result<(), Box<dyn Error>> {
+    pub fn exec(self) -> Result<(), Report> {
         match self.opts {
             QrCodeOpts::Payload => decode_payload(self.input, self.output, self.pin),
             QrCodeOpts::Img => save_secret_from_qr(self.input, self.output, self.pin),

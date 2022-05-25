@@ -8,11 +8,7 @@ use std::{
     path::PathBuf,
 };
 
-pub fn generate_qr(
-    input: PathBuf,
-    output: Option<PathBuf>,
-    pin: QrPin,
-) -> Result<(), Report> {
+pub fn generate_qr(input: PathBuf, output: Option<PathBuf>, pin: QrPin) -> Result<(), Report> {
     // open input key and parse it
     let key_file = OpenOptions::new()
         .create(false)

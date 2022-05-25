@@ -10,11 +10,7 @@ use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
-pub fn save_secret_from_qr(
-    qr: PathBuf,
-    output: Option<PathBuf>,
-    pin: QrPin,
-) -> Result<(), Report> {
+pub fn save_secret_from_qr(qr: PathBuf, output: Option<PathBuf>, pin: QrPin) -> Result<(), Report> {
     let sk = secret_from_qr(&qr, pin)?;
     let hrp = Ed25519Extended::SECRET_BECH32_HRP;
     let secret_key = bech32::encode(hrp, sk.leak_secret().to_base32(), Variant::Bech32)?;

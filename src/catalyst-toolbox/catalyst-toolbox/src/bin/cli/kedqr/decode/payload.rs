@@ -8,11 +8,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-pub fn decode_payload(
-    input: PathBuf,
-    output: Option<PathBuf>,
-    pin: QrPin,
-) -> Result<(), Report> {
+pub fn decode_payload(input: PathBuf, output: Option<PathBuf>, pin: QrPin) -> Result<(), Report> {
     // generate qrcode with key and parsed pin
     let secret = secret_from_payload(input, pin)?;
     let hrp = Ed25519Extended::SECRET_BECH32_HRP;

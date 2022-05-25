@@ -1,5 +1,5 @@
-use color_eyre::Report;
 use color_eyre::eyre::bail;
+use color_eyre::Report;
 use structopt::StructOpt;
 
 use catalyst_toolbox::vote_check::CheckNode;

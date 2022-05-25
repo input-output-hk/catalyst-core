@@ -4,21 +4,14 @@ use chain_core::{
     property::{Deserialize, ReadError, Serialize, WriteError},
 };
 #[cfg(feature = "evm")]
+pub use chain_evm::Config;
+#[cfg(feature = "evm")]
 use chain_evm::{
-    ethereum_types::{H256, U256},
+    ethereum_types::H256,
     machine::{AccessList, Address},
     rlp::{decode, Decodable, DecoderError, Encodable, Rlp, RlpStream},
     state::ByteCode,
 };
-use typed_bytes::ByteBuilder;
-
-use crate::{
-    certificate::CertificateSlice,
-    transaction::{Payload, PayloadAuthData, PayloadData},
-};
-
-#[cfg(feature = "evm")]
-pub use chain_evm::Config;
 
 /// Variants of supported EVM transactions
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -177,40 +170,6 @@ impl Encodable for EvmTransaction {
     }
 }
 
-impl EvmTransaction {
-    /// Serialize the contract into a `ByteBuilder`.
-    pub fn serialize_in(&self, _bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
-        #[cfg(feature = "evm")]
-        {
-            let bytes = self.rlp_bytes();
-            _bb.u64(bytes.len() as u64).bytes(&bytes)
-        }
-        #[cfg(not(feature = "evm"))]
-        {
-            _bb
-        }
-    }
-}
-
-#[cfg(feature = "evm")]
-/// Serializes H160 types as fixed bytes.
-pub fn serialize_address<T>(bb: ByteBuilder<T>, caller: &Address) -> ByteBuilder<T> {
-    bb.bytes(caller.as_fixed_bytes())
-}
-
-#[cfg(feature = "evm")]
-/// Serializes U256 types as fixed bytes.
-pub fn serialize_u256<T>(bb: ByteBuilder<T>, value: &U256) -> ByteBuilder<T> {
-    let mut value_bytes = [0u8; 32];
-    value.to_big_endian(&mut value_bytes);
-    bb.bytes(&value_bytes)
-}
-
-#[cfg(feature = "evm")]
-pub fn read_u256(codec: &mut Codec<&[u8]>) -> Result<U256, ReadError> {
-    Ok(U256::from(codec.get_slice(32)?))
-}
-
 impl Serialize for EvmTransaction {
     fn serialize<W: std::io::Write>(&self, _codec: &mut Codec<W>) -> Result<(), WriteError> {
         #[cfg(feature = "evm")]
@@ -241,29 +200,6 @@ impl Deserialize for EvmTransaction {
             std::io::ErrorKind::Unsupported,
             "evm transactions are not supported in this build",
         )))
-    }
-}
-
-impl Payload for EvmTransaction {
-    const HAS_DATA: bool = true;
-    const HAS_AUTH: bool = false;
-    type Auth = ();
-
-    fn payload_data(&self) -> crate::transaction::PayloadData<Self> {
-        PayloadData(
-            self.serialize_in(ByteBuilder::new())
-                .finalize_as_vec()
-                .into(),
-            std::marker::PhantomData,
-        )
-    }
-    fn payload_auth_data(_auth: &Self::Auth) -> crate::transaction::PayloadAuthData<Self> {
-        PayloadAuthData(Vec::new().into(), std::marker::PhantomData)
-    }
-    fn payload_to_certificate_slice(
-        _p: crate::transaction::PayloadSlice<'_, Self>,
-    ) -> Option<CertificateSlice<'_>> {
-        None
     }
 }
 

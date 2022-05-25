@@ -40,7 +40,7 @@ pub enum Fragment {
     VoteCast(Transaction<certificate::VoteCast>),
     VoteTally(Transaction<certificate::VoteTally>),
     MintToken(Transaction<certificate::MintToken>),
-    Evm(Transaction<EvmTransaction>),
+    Evm(EvmTransaction),
     EvmMapping(Transaction<certificate::EvmMapping>),
 }
 
@@ -184,7 +184,7 @@ impl Deserialize for Fragment {
             Some(FragmentTag::MintToken) => {
                 Transaction::deserialize(&mut codec).map(Fragment::MintToken)
             }
-            Some(FragmentTag::Evm) => Transaction::deserialize(&mut codec).map(Fragment::Evm),
+            Some(FragmentTag::Evm) => EvmTransaction::deserialize(&mut codec).map(Fragment::Evm),
             Some(FragmentTag::EvmMapping) => {
                 Transaction::deserialize(&mut codec).map(Fragment::EvmMapping)
             }

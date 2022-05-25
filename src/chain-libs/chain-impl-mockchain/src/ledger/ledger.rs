@@ -533,11 +533,10 @@ impl Ledger {
                 Fragment::Evm(_tx) => {
                     #[cfg(feature = "evm")]
                     {
-                        let tx = _tx.as_slice().payload().into_payload();
                         (ledger.accounts, ledger.evm) = evm::Ledger::run_transaction(
                             ledger.evm,
                             ledger.accounts,
-                            tx,
+                            _tx.clone(),
                             ledger.settings.evm_config,
                         )?;
                     }
@@ -1087,11 +1086,10 @@ impl Ledger {
             Fragment::Evm(_tx) => {
                 #[cfg(feature = "evm")]
                 {
-                    let tx = _tx.as_slice().payload().into_payload();
                     (new_ledger.accounts, new_ledger.evm) = evm::Ledger::run_transaction(
                         new_ledger.evm,
                         new_ledger.accounts,
-                        tx,
+                        _tx.clone(),
                         new_ledger.settings.evm_config,
                     )?;
                 }

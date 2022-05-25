@@ -1,12 +1,13 @@
-use color_eyre::{Report, eyre::bail};
 use reqwest::{blocking::Client, StatusCode, Url};
 
-use crate::notifications::{requests::Request, responses::create_message::CreateMessageResponse};
+use crate::notifications::{
+    requests::Request, responses::create_message::CreateMessageResponse, Error,
+};
 
 pub fn send_create_message(
     url: Url,
     notification: &Request,
-) -> Result<CreateMessageResponse, Report> {
+) -> Result<CreateMessageResponse, Error> {
     let client = Client::new();
     let response = client
         .post(url)
@@ -15,12 +16,14 @@ pub fn send_create_message(
     match response.status() {
         StatusCode::OK => {}
         StatusCode::BAD_REQUEST => {
-            let request = serde_json::to_string_pretty(&notification)?;
-            bail!("bad request: {request:?}")
+            return Err(Error::BadDataSent {
+                request: serde_json::to_string_pretty(&notification)?,
+            })
         }
         _ => {
-            let response = response.text()?;
-            bail!("unsuccessful request: {response}");
+            return Err(Error::UnsuccessfulRequest {
+                response: response.text()?,
+            })
         }
     };
     let response_message = response.json()?;

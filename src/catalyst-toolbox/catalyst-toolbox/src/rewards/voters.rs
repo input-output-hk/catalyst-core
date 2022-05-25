@@ -2,21 +2,27 @@ use crate::snapshot::{registration::MainnetRewardAddress, Snapshot};
 use chain_addr::{Discrimination, Kind};
 use chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier;
 use chain_impl_mockchain::vote::CommitteeId;
-use color_eyre::{eyre::ContextCompat, Report};
 use jormungandr_lib::crypto::account::Identifier;
 use rust_decimal::Decimal;
 use std::collections::{BTreeMap, HashMap, HashSet};
+use thiserror::Error;
 
 use jormungandr_lib::interfaces::{Address, Block0Configuration, Initial};
 
 pub const ADA_TO_LOVELACE_FACTOR: u64 = 1_000_000;
 pub type Rewards = Decimal;
 
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error("Value overflowed its maximum value")]
+    Overflow,
+}
+
 fn calculate_active_stake<'address>(
     committee_keys: &HashSet<Address>,
     block0: &'address Block0Configuration,
     active_addresses: &ActiveAddresses,
-) -> Result<(u64, HashMap<&'address Address, u64>), Report> {
+) -> Result<(u64, HashMap<&'address Address, u64>), Error> {
     let mut total_stake: u64 = 0;
     let mut stake_per_voter: HashMap<&'address Address, u64> = HashMap::new();
 
@@ -34,7 +40,7 @@ fn calculate_active_stake<'address>(
                         && active_addresses.contains(&destination.address)
                     {
                         let value: u64 = destination.value.into();
-                        total_stake = total_stake.checked_add(value).context("overflow")?;
+                        total_stake = total_stake.checked_add(value).ok_or(Error::Overflow)?;
                         let entry = stake_per_voter.entry(&destination.address).or_default();
                         *entry += value;
                     }
@@ -145,7 +151,7 @@ pub fn calc_voter_rewards(
     block0: &Block0Configuration,
     snapshot: Snapshot,
     total_rewards: Rewards,
-) -> Result<BTreeMap<MainnetRewardAddress, Rewards>, Report> {
+) -> Result<BTreeMap<MainnetRewardAddress, Rewards>, Error> {
     let active_addresses = active_addresses(vote_count, block0, vote_threshold, &snapshot);
 
     let committee_keys: HashSet<Address> = block0

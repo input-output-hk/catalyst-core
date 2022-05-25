@@ -1,12 +1,11 @@
 mod img;
 mod payload;
 
-use color_eyre::eyre::{bail, eyre};
-use color_eyre::Report;
-pub use img::KeyQrCode;
-pub use payload::{decode, generate};
+pub use img::{KeyQrCode, KeyQrCodeError};
+pub use payload::{decode, generate, Error as KeyQrCodePayloadError};
 use std::path::PathBuf;
 use std::str::FromStr;
+use thiserror::Error;
 
 pub const PIN_LENGTH: usize = 4;
 
@@ -15,18 +14,37 @@ pub struct QrPin {
     pub password: [u8; 4],
 }
 
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error(transparent)]
+    BadPin(#[from] BadPinError),
+    #[error(transparent)]
+    KeyQrCodeHash(#[from] KeyQrCodePayloadError),
+    #[error(transparent)]
+    KeyQrCode(#[from] KeyQrCodeError),
+}
+
+#[derive(Error, Debug)]
+pub enum BadPinError {
+    #[error("The PIN must consist of {PIN_LENGTH} digits, found {0}")]
+    InvalidLength(usize),
+    #[error("Invalid digit {0}")]
+    InvalidDigit(char),
+    #[error("cannot detect file name from path {0:?} in order to read qr pin from it")]
+    UnableToDetectFileName(PathBuf),
+}
+
 impl FromStr for QrPin {
-    type Err = Report;
+    type Err = BadPinError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.chars().count() != PIN_LENGTH {
-            let len = s.len();
-            bail!("invalid length: {len}");
+            return Err(BadPinError::InvalidLength(s.len()));
         }
 
         let mut pwd = [0u8; 4];
         for (i, digit) in s.chars().enumerate() {
-            pwd[i] = digit.to_digit(10).ok_or(eyre!("invalid digit"))? as u8;
+            pwd[i] = digit.to_digit(10).ok_or(BadPinError::InvalidDigit(digit))? as u8;
         }
         Ok(QrPin { password: pwd })
     }
@@ -40,13 +58,13 @@ pub enum PinReadMode {
 
 /// supported format is *1234.png
 impl PinReadMode {
-    pub fn into_qr_pin(&self) -> Result<QrPin, Report> {
+    pub fn into_qr_pin(&self) -> Result<QrPin, BadPinError> {
         match self {
             PinReadMode::Global(ref global) => QrPin::from_str(global),
             PinReadMode::FromFileName(qr) => {
                 let file_name = qr
                     .file_stem()
-                    .ok_or_else(|| eyre!("unable to detext filename: {}", qr.to_string_lossy()))?;
+                    .ok_or_else(|| BadPinError::UnableToDetectFileName(qr.to_path_buf()))?;
                 QrPin::from_str(
                     &file_name
                         .to_str()

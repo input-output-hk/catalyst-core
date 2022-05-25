@@ -16,6 +16,7 @@ pub struct Archive {
 
 impl Archive {
     pub fn exec(self) -> Result<(), Report> {
-        generate_archive_files(&self.jormungandr_database, &self.output_dir)
+        generate_archive_files(&self.jormungandr_database, &self.output_dir)?;
+        Ok(())
     }
 }

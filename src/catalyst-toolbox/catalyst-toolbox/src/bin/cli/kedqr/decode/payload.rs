@@ -54,5 +54,5 @@ pub fn secret_from_payload(
     // use parsed pin from args
     let pwd = pin.password;
     // generate qrcode with key and parsed pin
-    decode(payload_str, &pwd)
+    Ok(decode(payload_str, &pwd)?)
 }

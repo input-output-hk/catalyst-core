@@ -1,11 +1,11 @@
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
-use color_eyre::Report;
 use std::process::Command;
 use std::{
     path::{Path, PathBuf},
     str::FromStr,
 };
+use thiserror::Error;
 
 /// Wrapper over proposers rewards scripts. It uses script from ../scripts/python/proposers_rewards.py location.
 /// NOTE: by default struct uses python3 as script executable
@@ -23,6 +23,12 @@ pub struct ProposerRewardsCommand {
     active_voteplan_path: Option<String>,
     challenges_path: Option<String>,
     vit_station_url: Option<String>,
+}
+
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
 }
 
 impl Default for ProposerRewardsCommand {
@@ -97,7 +103,7 @@ impl ProposerRewardsCommand {
         self
     }
 
-    pub fn cmd(self, temp_dir: &TempDir) -> Result<Command, Report> {
+    pub fn cmd(self, temp_dir: &TempDir) -> Result<Command, Error> {
         let script_content = include_str!("../scripts/python/proposers_rewards.py");
         let script_file = temp_dir.child("proposers_rewards.py");
 

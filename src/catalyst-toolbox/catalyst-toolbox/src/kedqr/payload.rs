@@ -1,6 +1,19 @@
-use chain_crypto::{Ed25519Extended, SecretKey};
-use color_eyre::Report;
-use symmetric_cipher::{decrypt, encrypt};
+use chain_crypto::{Ed25519Extended, SecretKey, SecretKeyError};
+use std::io;
+use symmetric_cipher::{decrypt, encrypt, Error as SymmetricCipherError};
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("encryption-decryption protocol error")]
+    SymmetricCipher(#[from] SymmetricCipherError),
+    #[error("io error")]
+    Io(#[from] io::Error),
+    #[error("invalid secret key")]
+    SecretKey(#[from] SecretKeyError),
+    #[error("failed to decode hex")]
+    HexDecode(#[from] hex::FromHexError),
+}
 
 pub fn generate(key: SecretKey<Ed25519Extended>, password: &[u8]) -> String {
     let secret = key.leak_secret();
@@ -16,7 +29,7 @@ pub fn generate(key: SecretKey<Ed25519Extended>, password: &[u8]) -> String {
 pub fn decode<S: Into<String>>(
     payload: S,
     password: &[u8],
-) -> Result<SecretKey<Ed25519Extended>, Report> {
+) -> Result<SecretKey<Ed25519Extended>, Error> {
     let encrypted_bytes = hex::decode(payload.into())?;
     let key = decrypt(password, &encrypted_bytes)?;
     Ok(SecretKey::from_binary(&key)?)

@@ -1,5 +1,6 @@
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 #[derive(Clone, Debug)]
 pub struct NotificationsVerifier {
@@ -11,25 +12,27 @@ impl NotificationsVerifier {
         Self { auth: auth.into() }
     }
 
-    pub fn get_message_details<S: Into<String>>(&self, message_id: S) -> MessageDetailsResponse {
+    pub fn get_message_details<S: Into<String>>(
+        &self,
+        message_id: S,
+    ) -> Result<MessageDetailsResponse, NotificationsVerifierError> {
         let request = NotificationsRequest::new(&self.auth, &message_id.into());
         println!("{:?}", request);
         let client = reqwest::blocking::Client::new();
         let response = client
             .post("https://cp.pushwoosh.com/json/1.3/getMessageDetails")
             .json(&request)
-            .send()
-            .unwrap();
+            .send()?;
 
         assert_eq!(response.status(), StatusCode::OK, "post was unsuccesful");
-        let text = response.text().unwrap();
+        let text = response.text()?;
         println!("{:#?}", &text);
-        serde_json::from_str(&text).unwrap()
+        serde_json::from_str(&text).map_err(Into::into)
     }
 
     pub fn verify_message_done_with_text<S: Into<String>>(&self, message_id: S, text: S) {
         let message_id = message_id.into();
-        let response = self.get_message_details(&message_id);
+        let response = self.get_message_details(&message_id).unwrap();
         assert_eq!(response.status_code(), 200);
         assert!(response.has_response());
 
@@ -38,6 +41,14 @@ impl NotificationsVerifier {
         assert_eq!(message.code, message_id);
         assert_eq!(message.content.default.as_ref().unwrap(), &text.into());
     }
+}
+
+#[derive(Error, Debug)]
+pub enum NotificationsVerifierError {
+    #[error("serizalization error")]
+    SerdeError(#[from] serde_json::Error),
+    #[error("send error")]
+    ReqwestError(#[from] reqwest::Error),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

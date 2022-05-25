@@ -1,9 +1,8 @@
-use color_eyre::eyre::bail;
-use color_eyre::Report;
 use csv;
 use jormungandr_lib::interfaces::BlockDate;
 use serde::Deserialize;
 use std::{ffi::OsStr, fmt, path::Path};
+use thiserror::Error;
 
 #[derive(Debug, Deserialize)]
 pub struct ArchiverRecord {
@@ -43,7 +42,9 @@ where
     deserializer.deserialize_f64(VoteOptionsDeserializer())
 }
 
-pub fn load_from_csv<P: AsRef<Path>>(csv_path: P) -> Result<Vec<ArchiverRecord>, Report> {
+pub fn load_from_csv<P: AsRef<Path>>(
+    csv_path: P,
+) -> Result<Vec<ArchiverRecord>, ArchiveReaderError> {
     let csv_path = csv_path.as_ref();
 
     let mut reader = csv::ReaderBuilder::new()
@@ -60,13 +61,15 @@ pub fn load_from_csv<P: AsRef<Path>>(csv_path: P) -> Result<Vec<ArchiverRecord>,
             Ok(data) => {
                 results.push(data);
             }
-            Err(e) => bail!("bad csv: {e}"),
+            Err(e) => return Err(ArchiveReaderError::Csv(e)),
         }
     }
     Ok(results)
 }
 
-pub fn load_from_folder<P: AsRef<Path>>(folder_path: P) -> Result<Vec<ArchiverRecord>, Report> {
+pub fn load_from_folder<P: AsRef<Path>>(
+    folder_path: P,
+) -> Result<Vec<ArchiverRecord>, ArchiveReaderError> {
     let mut records = Vec::new();
 
     for entry in std::fs::read_dir(folder_path)? {
@@ -79,4 +82,12 @@ pub fn load_from_folder<P: AsRef<Path>>(folder_path: P) -> Result<Vec<ArchiverRe
         }
     }
     Ok(records)
+}
+
+#[derive(Debug, Error)]
+pub enum ArchiveReaderError {
+    #[error("general error")]
+    General(#[from] std::io::Error),
+    #[error("csv error")]
+    Csv(#[from] csv::Error),
 }

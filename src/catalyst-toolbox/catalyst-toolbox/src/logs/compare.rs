@@ -1,11 +1,9 @@
-use crate::logs::sentry::SentryFragmentLog;
+use crate::logs::sentry::{Error, SentryFragmentLog};
 use crate::recovery::tally::{deconstruct_account_transaction, ValidationError};
 
 use chain_core::property::Fragment as _;
 use chain_impl_mockchain::fragment::Fragment;
 use chain_impl_mockchain::vote::Payload;
-use color_eyre::eyre::bail;
-use color_eyre::Report;
 use jormungandr_lib::interfaces::PersistentFragmentLog;
 
 use std::collections::HashSet;
@@ -21,7 +19,7 @@ pub struct LogCmpFields {
 
 pub fn persistent_fragment_log_to_log_cmp_fields(
     fragment: &PersistentFragmentLog,
-) -> Result<LogCmpFields, Report> {
+) -> Result<LogCmpFields, Error> {
     if let Fragment::VoteCast(ref transaction) = fragment.fragment.clone() {
         let (vote_cast, identifier, choice) = deconstruct_account_transaction(
             &transaction.as_slice(),
@@ -41,7 +39,9 @@ pub fn persistent_fragment_log_to_log_cmp_fields(
             voteplan_id: vote_cast.vote_plan().to_string(),
         })
     } else {
-        bail!("not vote cast transaction: {}", fragment.fragment.id())
+        Err(Error::NotVoteCastTransaction {
+            fragment_id: fragment.fragment.id().to_string(),
+        })
     }
 }
 
@@ -51,7 +51,7 @@ pub struct LogCmpStats {
     pub duplicated_sentry_logs: usize,
     pub duplicated_fragment_logs: usize,
     pub fragment_ids_differ: HashSet<String>,
-    pub unhandled_fragment_logs: Vec<(Fragment, Report)>,
+    pub unhandled_fragment_logs: Vec<(Fragment, Error)>,
 }
 
 pub fn compare_logs(
@@ -62,7 +62,7 @@ pub fn compare_logs(
     let fragment_logs_size = fragment_logs.len();
     let sentry_cmp: Vec<LogCmpFields> = sentry_logs.iter().cloned().map(Into::into).collect();
 
-    let (fragments_cmp, unhandled_fragment_logs): (Vec<LogCmpFields>, Vec<(Fragment, Report)>) =
+    let (fragments_cmp, unhandled_fragment_logs): (Vec<LogCmpFields>, Vec<(Fragment, Error)>) =
         fragment_logs.iter().fold(
             (Vec::new(), Vec::new()),
             |(mut success, mut errored), log| {

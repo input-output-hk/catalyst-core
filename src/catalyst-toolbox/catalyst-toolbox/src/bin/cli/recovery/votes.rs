@@ -18,6 +18,8 @@ use std::iter::IntoIterator;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
+use super::set_verbosity;
+
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub struct VotesPrintout {
@@ -102,7 +104,8 @@ impl VotesPrintout {
             verbose,
         } = self;
 
-        stderrlog::new().verbosity(verbose).init().unwrap();
+        set_verbosity(verbose);
+
         let reader = std::fs::File::open(block0_path)?;
         let block0 = Block::deserialize(&mut Codec::new(reader)).unwrap();
 

@@ -19,3 +19,18 @@ impl Recover {
         }
     }
 }
+
+fn set_verbosity(verbosity: usize) {
+    if verbosity > 0 {
+        std::env::set_var(
+            "RUST_LOG",
+            match verbosity {
+                0 => unreachable!(),
+                1 => "warn",
+                2 => "info",
+                3 => "debug",
+                _ => "trace",
+            },
+        )
+    }
+}

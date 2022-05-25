@@ -12,6 +12,8 @@ use std::path::PathBuf;
 use reqwest::Url;
 use structopt::StructOpt;
 
+use super::set_verbosity;
+
 /// Recover the tally from fragment log files and the initial preloaded block0 binary file.
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab")]
@@ -59,7 +61,8 @@ impl ReplayCli {
             output_format,
             verbose,
         } = self;
-        stderrlog::new().verbosity(verbose).init().unwrap();
+
+        set_verbosity(verbose);
 
         let block0 = if let Some(path) = block0_path {
             read_block0(path)?

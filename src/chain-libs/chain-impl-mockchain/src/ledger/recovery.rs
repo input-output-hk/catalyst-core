@@ -184,9 +184,7 @@ fn pack_evm_state<W: std::io::Write>(
     codec.put_be_u32(evm_state.code.len().try_into().unwrap())?;
     codec.put_bytes(&evm_state.code)?;
 
-    let mut bytes = [0; 32];
-    evm_state.nonce.to_big_endian(&mut bytes);
-    codec.put_bytes(&bytes)?;
+    codec.put_be_u64(evm_state.nonce)?;
 
     codec.put_be_u32(evm_state.storage.size().try_into().unwrap())?;
     for (key, value) in evm_state.storage.iter() {
@@ -206,8 +204,7 @@ fn unpack_evm_state<R: std::io::BufRead>(
     let code_size = codec.get_be_u32()? as usize;
     let code = codec.get_bytes(code_size)?.into();
 
-    let nonce_bytes = codec.get_bytes(32)?;
-    let nonce = chain_evm::ethereum_types::U256::from_big_endian(&nonce_bytes);
+    let nonce = codec.get_be_u64()?;
 
     let storage_size = codec.get_be_u32()? as usize;
     let mut storage = chain_evm::state::Trie::<Key, Value>::new();

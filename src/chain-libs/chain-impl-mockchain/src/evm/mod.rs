@@ -13,55 +13,37 @@ use chain_evm::{
     state::ByteCode,
 };
 
+/// Variants of supported EVM action types
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum EvmActionType {
+    #[cfg(feature = "evm")]
+    Create { init_code: ByteCode },
+    #[cfg(feature = "evm")]
+    Create2 { init_code: ByteCode, salt: H256 },
+    #[cfg(feature = "evm")]
+    Call { address: Address, data: ByteCode },
+}
+
 /// Variants of supported EVM transactions
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum EvmTransaction {
+pub struct EvmTransaction {
     #[cfg(feature = "evm")]
-    Create {
-        caller: Address,
-        value: u64,
-        init_code: ByteCode,
-        gas_limit: u64,
-        access_list: AccessList,
-    },
+    pub caller: Address,
     #[cfg(feature = "evm")]
-    Create2 {
-        caller: Address,
-        value: u64,
-        init_code: ByteCode,
-        salt: H256,
-        gas_limit: u64,
-        access_list: AccessList,
-    },
+    pub value: u64,
     #[cfg(feature = "evm")]
-    Call {
-        caller: Address,
-        address: Address,
-        value: u64,
-        data: ByteCode,
-        gas_limit: u64,
-        access_list: AccessList,
-    },
+    pub nonce: u64,
+    #[cfg(feature = "evm")]
+    pub gas_limit: u64,
+    #[cfg(feature = "evm")]
+    pub access_list: AccessList,
+    pub action_type: EvmActionType,
 }
 
 #[cfg(feature = "evm")]
-impl Default for EvmTransaction {
-    fn default() -> Self {
-        Self::Call {
-            caller: Default::default(),
-            address: Default::default(),
-            value: Default::default(),
-            data: Default::default(),
-            gas_limit: Default::default(),
-            access_list: Default::default(),
-        }
-    }
-}
-
-#[cfg(feature = "evm")]
-impl From<&EvmTransaction> for u8 {
-    fn from(other: &EvmTransaction) -> Self {
-        use EvmTransaction::*;
+impl From<&EvmActionType> for u8 {
+    fn from(other: &EvmActionType) -> Self {
+        use EvmActionType::*;
         match other {
             Create { .. } => 0,
             Create2 { .. } => 1,
@@ -73,40 +55,44 @@ impl From<&EvmTransaction> for u8 {
 #[cfg(feature = "evm")]
 impl Decodable for EvmTransaction {
     fn decode(rlp: &Rlp<'_>) -> Result<Self, DecoderError> {
-        fn decode_tx_create(rlp: &Rlp<'_>) -> Result<EvmTransaction, DecoderError> {
-            Ok(EvmTransaction::Create {
-                caller: rlp.val_at(1)?,
-                value: rlp.val_at(2)?,
-                init_code: rlp.list_at(3)?.into_boxed_slice(),
-                gas_limit: rlp.val_at(4)?,
-                access_list: rlp.list_at(5)?,
-            })
-        }
-        fn decode_tx_create2(rlp: &Rlp<'_>) -> Result<EvmTransaction, DecoderError> {
-            Ok(EvmTransaction::Create2 {
-                caller: rlp.val_at(1)?,
-                value: rlp.val_at(2)?,
-                init_code: rlp.list_at(3)?.into_boxed_slice(),
-                salt: rlp.val_at(4)?,
-                gas_limit: rlp.val_at(5)?,
-                access_list: rlp.list_at(6)?,
-            })
-        }
-        fn decode_tx_call(rlp: &Rlp<'_>) -> Result<EvmTransaction, DecoderError> {
-            Ok(EvmTransaction::Call {
-                caller: rlp.val_at(1)?,
-                address: rlp.val_at(2)?,
-                value: rlp.val_at(3)?,
-                data: rlp.list_at(4)?.into_boxed_slice(),
-                gas_limit: rlp.val_at(5)?,
-                access_list: rlp.list_at(6)?,
-            })
-        }
-
+        let caller = rlp.val_at(1)?;
+        let value = rlp.val_at(2)?;
+        let nonce = rlp.val_at(3)?;
+        let gas_limit = rlp.val_at(4)?;
+        let access_list = rlp.list_at(5)?;
         match rlp.val_at(0)? {
-            0u8 => decode_tx_create(rlp),
-            1u8 => decode_tx_create2(rlp),
-            2u8 => decode_tx_call(rlp),
+            0u8 => Ok(EvmTransaction {
+                caller,
+                value,
+                nonce,
+                gas_limit,
+                access_list,
+                action_type: EvmActionType::Create {
+                    init_code: rlp.list_at(6)?.into_boxed_slice(),
+                },
+            }),
+            1u8 => Ok(EvmTransaction {
+                caller,
+                value,
+                nonce,
+                gas_limit,
+                access_list,
+                action_type: EvmActionType::Create2 {
+                    init_code: rlp.list_at(6)?.into_boxed_slice(),
+                    salt: rlp.val_at(7)?,
+                },
+            }),
+            2u8 => Ok(EvmTransaction {
+                caller,
+                value,
+                nonce,
+                gas_limit,
+                access_list,
+                action_type: EvmActionType::Call {
+                    address: rlp.val_at(6)?,
+                    data: rlp.list_at(7)?.into_boxed_slice(),
+                },
+            }),
             _ => Err(DecoderError::Custom("invalid evm transaction")),
         }
     }
@@ -115,56 +101,38 @@ impl Decodable for EvmTransaction {
 #[cfg(feature = "evm")]
 impl Encodable for EvmTransaction {
     fn rlp_append(&self, s: &mut RlpStream) {
-        use EvmTransaction::*;
-        match self {
-            Create {
-                caller,
-                value,
-                init_code,
-                gas_limit,
-                access_list,
-            } => {
-                s.begin_list(6);
-                s.append(&u8::from(self));
-                s.append(caller);
-                s.append(value);
-                s.append_list(init_code);
-                s.append(gas_limit);
-                s.append_list(access_list);
-            }
-            Create2 {
-                caller,
-                value,
-                init_code,
-                salt,
-                gas_limit,
-                access_list,
-            } => {
+        match &self.action_type {
+            EvmActionType::Create { init_code } => {
                 s.begin_list(7);
-                s.append(&u8::from(self));
-                s.append(caller);
-                s.append(value);
+                s.append(&u8::from(&self.action_type));
+                s.append(&self.caller);
+                s.append(&self.value);
+                s.append(&self.nonce);
+                s.append(&self.gas_limit);
+                s.append_list(&self.access_list);
+                s.append_list(init_code);
+            }
+            EvmActionType::Create2 { init_code, salt } => {
+                s.begin_list(8);
+                s.append(&u8::from(&self.action_type));
+                s.append(&self.caller);
+                s.append(&self.value);
+                s.append(&self.nonce);
+                s.append(&self.gas_limit);
+                s.append_list(&self.access_list);
                 s.append_list(init_code);
                 s.append(salt);
-                s.append(gas_limit);
-                s.append_list(access_list);
             }
-            Call {
-                caller,
-                address,
-                value,
-                data,
-                gas_limit,
-                access_list,
-            } => {
-                s.begin_list(7);
-                s.append(&u8::from(self));
-                s.append(caller);
+            EvmActionType::Call { address, data } => {
+                s.begin_list(8);
+                s.append(&u8::from(&self.action_type));
+                s.append(&self.caller);
+                s.append(&self.value);
+                s.append(&self.nonce);
+                s.append(&self.gas_limit);
+                s.append_list(&self.access_list);
                 s.append(address);
-                s.append(value);
                 s.append_list(data);
-                s.append(gas_limit);
-                s.append_list(access_list);
             }
         }
     }
@@ -212,10 +180,30 @@ mod test {
     };
     use quickcheck::Arbitrary;
 
+    impl Arbitrary for EvmActionType {
+        fn arbitrary<G: quickcheck::Gen>(g: &mut G) -> Self {
+            match u8::arbitrary(g) % 3 {
+                0 => Self::Create {
+                    init_code: Box::new([Arbitrary::arbitrary(g); 32]),
+                },
+                1 => Self::Create2 {
+                    init_code: Box::new([Arbitrary::arbitrary(g); 32]),
+                    salt: [u8::arbitrary(g); H256::len_bytes()].into(),
+                },
+                2 => Self::Call {
+                    address: [u8::arbitrary(g); H160::len_bytes()].into(),
+                    data: Box::new([Arbitrary::arbitrary(g); 32]),
+                },
+                _ => unreachable!(),
+            }
+        }
+    }
+
     impl Arbitrary for EvmTransaction {
         fn arbitrary<G: quickcheck::Gen>(g: &mut G) -> Self {
             let caller = [u8::arbitrary(g); H160::len_bytes()].into();
             let value = u64::arbitrary(g);
+            let nonce = u64::arbitrary(g);
             let gas_limit = Arbitrary::arbitrary(g);
             let access_list: AccessList = match u8::arbitrary(g) % 2 {
                 0 => vec![],
@@ -243,31 +231,13 @@ mod test {
                     },
                 ],
             };
-            match u8::arbitrary(g) % 3 {
-                0 => Self::Create {
-                    caller,
-                    value,
-                    init_code: Box::new([Arbitrary::arbitrary(g); 32]),
-                    gas_limit,
-                    access_list,
-                },
-                1 => Self::Create2 {
-                    caller,
-                    value,
-                    init_code: Box::new([Arbitrary::arbitrary(g); 32]),
-                    salt: [u8::arbitrary(g); H256::len_bytes()].into(),
-                    gas_limit,
-                    access_list,
-                },
-                2 => Self::Call {
-                    caller,
-                    address: [u8::arbitrary(g); H160::len_bytes()].into(),
-                    value,
-                    data: Box::new([Arbitrary::arbitrary(g); 32]),
-                    gas_limit,
-                    access_list,
-                },
-                _ => unreachable!(),
+            Self {
+                caller,
+                value,
+                nonce,
+                gas_limit,
+                access_list,
+                action_type: Arbitrary::arbitrary(g),
             }
         }
     }

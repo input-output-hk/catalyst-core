@@ -1,8 +1,8 @@
 pub mod config;
 mod content;
 
-use crate::key::Hash;
 use crate::legacy;
+use crate::{evm::EvmTransaction, key::Hash};
 use chain_core::{
     packer::Codec,
     property::{self, Deserialize, DeserializeFromSlice, ReadError, Serialize, WriteError},
@@ -14,7 +14,6 @@ pub use content::{BlockContentHash, BlockContentSize, Contents, ContentsBuilder}
 
 use crate::{
     certificate,
-    evm::EvmTransaction,
     transaction::{NoExtra, Transaction},
 };
 

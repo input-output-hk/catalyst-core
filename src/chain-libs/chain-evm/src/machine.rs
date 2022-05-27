@@ -415,14 +415,14 @@ impl<'a, State: EvmState> Backend for VirtualMachine<'a, State> {
             .known_account(&address)
             .map(|account| Basic {
                 balance: account.balance.into(),
-                nonce: account.state.nonce,
+                nonce: account.state.nonce.into(),
             })
             .unwrap_or_else(|| {
                 self.state
                     .account(&address)
                     .map(|account| Basic {
                         balance: account.balance.into(),
-                        nonce: account.state.nonce,
+                        nonce: account.state.nonce.into(),
                     })
                     .unwrap_or_default()
             })
@@ -592,7 +592,7 @@ impl<'a, State: EvmState> StackState<'a> for VirtualMachine<'a, State> {
     }
 
     fn inc_nonce(&mut self, address: H160) {
-        self.substate.account_mut(address, self.state).state.nonce += U256::one();
+        self.substate.account_mut(address, self.state).state.nonce += 1;
     }
 
     fn set_storage(&mut self, address: H160, key: H256, value: H256) {

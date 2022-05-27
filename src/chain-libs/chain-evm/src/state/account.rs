@@ -4,8 +4,6 @@ use crate::{
 };
 use ethereum_types::U256;
 
-pub type Nonce = U256;
-
 /// Ethereum account balance which uses the least 64 significant bits of the `U256` type.
 #[derive(Clone, Copy, Default, Debug, PartialEq, Eq, PartialOrd)]
 pub struct Balance(u64);
@@ -79,7 +77,7 @@ pub struct AccountState {
     /// EVM bytecode of this account.
     pub code: ByteCode,
     /// Account nonce. A number of value transfers from this account.
-    pub nonce: Nonce,
+    pub nonce: u64,
 }
 
 impl Account {
@@ -90,7 +88,7 @@ impl Account {
 
 impl AccountState {
     pub fn is_empty(&self) -> bool {
-        self.nonce.is_zero() && self.code.is_empty() && self.storage.is_empty()
+        self.nonce == 0 && self.code.is_empty() && self.storage.is_empty()
     }
 }
 
@@ -129,7 +127,7 @@ mod test {
             Self {
                 storage: Storage::new(),
                 code: Box::new([Arbitrary::arbitrary(g); 32]),
-                nonce: u64::arbitrary(g).into(),
+                nonce: u64::arbitrary(g),
             }
         }
     }

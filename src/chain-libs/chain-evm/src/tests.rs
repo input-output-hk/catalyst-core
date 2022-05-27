@@ -20,7 +20,7 @@ impl TryFrom<AccountState> for Account {
                 .try_into()
                 .map_err(|_| "can not convert balance")?,
             state: crate::state::AccountState {
-                nonce: val.nonce,
+                nonce: val.nonce.as_u64(),
                 storage: val.storage.into_iter().collect(),
                 code: val.code.into(),
             },

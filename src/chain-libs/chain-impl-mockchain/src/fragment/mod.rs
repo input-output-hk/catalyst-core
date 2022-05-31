@@ -89,6 +89,7 @@ impl FragmentTag {
             12 => Some(FragmentTag::VoteTally),
             13 => Some(FragmentTag::MintToken),
             14 => Some(FragmentTag::Evm),
+            15 => Some(FragmentTag::EvmMapping),
             _ => None,
         }
     }

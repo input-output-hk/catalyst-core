@@ -66,6 +66,7 @@ impl ValidVotePlanGenerator {
         let challenges: Vec<Challenge> = std::iter::from_fn(|| {
             let challenge_data = template_generator.next_challenge();
             Some(Challenge {
+                internal_id: challenge_data.internal_id,
                 id: challenge_data.id.parse().unwrap(),
                 challenge_type: challenge_data.challenge_type,
                 title: challenge_data.title,

@@ -7,14 +7,17 @@ use crate::{
     },
     v0::errors::HandleError,
 };
-use diesel::{ExpressionMethods, Insertable, QueryResult, RunQueryDsl};
+use diesel::{ExpressionMethods, Insertable, QueryDsl, QueryResult, RunQueryDsl};
 
 pub async fn query_all_challenges(pool: &DbConnectionPool) -> Result<Vec<Challenge>, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     tokio::task::spawn_blocking(move || {
-        challenges_dsl::challenges
-            .load::<Challenge>(&db_conn)
-            .map_err(|_| HandleError::InternalError("Error retrieving challenges".to_string()))
+        diesel::QueryDsl::order_by(
+            challenges_dsl::challenges,
+            challenges::dsl::internal_id.asc(),
+        )
+        .load::<Challenge>(&db_conn)
+        .map_err(|_| HandleError::InternalError("Error retrieving challenges".to_string()))
     })
     .await
     .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
@@ -44,6 +47,7 @@ pub async fn query_challenges_by_fund_id(
             challenges_dsl::challenges,
             challenges_dsl::fund_id.eq(fund_id),
         )
+        .order_by(challenges::dsl::internal_id.asc())
         .load::<Challenge>(&db_conn)
         .map_err(|_e| HandleError::NotFound("Error loading challenges for fund id".to_string()))
     })
@@ -69,16 +73,10 @@ pub async fn query_challenge_proposals_by_id(
 }
 
 pub fn batch_insert_challenges(
-    challenges_slice: &[Challenge],
+    challenges: &[<Challenge as Insertable<challenges::table>>::Values],
     db_conn: &DbConnection,
 ) -> QueryResult<usize> {
     diesel::insert_into(challenges::table)
-        .values(
-            challenges_slice
-                .iter()
-                .cloned()
-                .map(|challenge| challenge.values())
-                .collect::<Vec<_>>(),
-        )
+        .values(challenges)
         .execute(db_conn)
 }

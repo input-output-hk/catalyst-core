@@ -10,6 +10,9 @@ pub struct ChallengeHighlights {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Challenge {
+    #[serde(alias = "internalId")]
+    // this is used only to retain the original insert order
+    pub internal_id: i32,
     pub id: i32,
     #[serde(alias = "challengeType")]
     pub challenge_type: ChallengeType,
@@ -28,38 +31,41 @@ pub struct Challenge {
 
 impl Queryable<challenges::SqlType, Db> for Challenge {
     type Row = (
-        // 0 -> id
+        // 0 -> internal_id
         i32,
-        // 1 -> challenge_type
-        String,
-        // 1 -> title
-        String,
-        // 2 -> description
-        String,
-        // 3 -> rewards_total
-        i64,
-        // 4 -> proposers_rewards
-        i64,
-        // 5 -> fund_id
+        // 1 -> id
         i32,
-        // 6 -> fund_url
+        // 2 -> challenge_type
         String,
-        // 7 -> challenge_highlights
+        // 3 -> title
+        String,
+        // 4 -> description
+        String,
+        // 5 -> rewards_total
+        i64,
+        // 6 -> proposers_rewards
+        i64,
+        // 7 -> fund_id
+        i32,
+        // 8 -> fund_url
+        String,
+        // 9 -> challenge_highlights
         Option<String>,
     );
 
     fn build(row: Self::Row) -> Self {
         Challenge {
-            id: row.0,
-            challenge_type: row.1.parse().unwrap(),
-            title: row.2,
-            description: row.3,
-            rewards_total: row.4,
-            proposers_rewards: row.5,
-            fund_id: row.6,
-            challenge_url: row.7,
+            internal_id: row.0,
+            id: row.1,
+            challenge_type: row.2.parse().unwrap(),
+            title: row.3,
+            description: row.4,
+            rewards_total: row.5,
+            proposers_rewards: row.6,
+            fund_id: row.7,
+            challenge_url: row.8,
             // It should be ensured that the content is valid json
-            highlights: row.8.and_then(|v| serde_json::from_str(&v).ok()),
+            highlights: row.9.and_then(|v| serde_json::from_str(&v).ok()),
         }
     }
 }
@@ -104,6 +110,7 @@ pub mod test {
         const CHALLENGE_ID: i32 = 9001;
         const REWARDS_TOTAL: i64 = 100500;
         Challenge {
+            internal_id: 1,
             id: CHALLENGE_ID,
             challenge_type: ChallengeType::CommunityChoice,
             title: "challenge title".to_string(),

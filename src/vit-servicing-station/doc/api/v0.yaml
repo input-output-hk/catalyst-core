@@ -152,7 +152,7 @@ paths:
       summary: Get all available challenges
       tags: [challenge]
       description: |
-        Lists all available challenges.
+        Lists all available challenges following insertion order.
       responses:
         "200":
           description: Valid response

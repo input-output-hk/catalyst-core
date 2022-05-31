@@ -37,8 +37,7 @@ pub fn get_funds_by_id() -> Result<(), Box<dyn std::error::Error>> {
     let rest_client = server.rest_client_with_token(&hash);
 
     let actual_fund = rest_client.fund(&expected_fund.id.to_string())?;
-
-    expected_fund.challenges.sort_by_key(|c| c.id);
+    expected_fund.challenges.sort_by_key(|c| c.internal_id);
     assert_eq!(expected_fund, actual_fund);
 
     let rest_client: RawRestClient = server.rest_client_with_token(&hash).into();

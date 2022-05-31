@@ -8,6 +8,7 @@ table! {
 
 table! {
     challenges (id) {
+        internal_id -> Integer,
         id -> Integer,
         challenge_type -> Text,
         title -> Text,

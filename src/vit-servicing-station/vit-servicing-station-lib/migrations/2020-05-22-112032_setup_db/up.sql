@@ -84,8 +84,9 @@ create table api_tokens
 
 create table challenges
 (
-    id INTEGER NOT NULL
+    internal_id INTEGER NOT NULL
         primary key autoincrement,
+    id INTEGER NOT NULL UNIQUE,
     challenge_type VARCHAR NOT NULL,
     title VARCHAR NOT NULL,
     description VARCHAR NOT NULL,

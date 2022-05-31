@@ -2,7 +2,6 @@ use crate::db_utils::{backup_db_file, restore_db_file};
 use crate::{db_utils::db_file_exists, task::ExecTask};
 use csv::Trim;
 use serde::de::DeserializeOwned;
-use std::collections::HashMap;
 use std::convert::TryInto;
 use std::io;
 use std::path::{Path, PathBuf};
@@ -14,7 +13,7 @@ use vit_servicing_station_lib::db::models::proposals::{
 };
 use vit_servicing_station_lib::db::{
     load_db_connection_pool,
-    models::{challenges::Challenge, funds::Fund, proposals::Proposal, voteplans::Voteplan},
+    models::{funds::Fund, proposals::Proposal, voteplans::Voteplan},
 };
 
 #[derive(Error, Debug)]
@@ -107,11 +106,8 @@ impl CsvDataCmd {
         let funds = CsvDataCmd::load_from_csv::<Fund>(funds_path)?;
 
         let mut voteplans = CsvDataCmd::load_from_csv::<Voteplan>(voteplans_path)?;
-        let mut challenges: HashMap<i32, Challenge> =
-            CsvDataCmd::load_from_csv::<Challenge>(challenges_path)?
-                .into_iter()
-                .map(|c| (c.id, c))
-                .collect();
+        let mut challenges =
+            CsvDataCmd::load_from_csv::<super::models::Challenge>(challenges_path)?;
         let csv_proposals = CsvDataCmd::load_from_csv::<super::models::Proposal>(proposals_path)?;
         let reviews = CsvDataCmd::load_from_csv::<super::models::AdvisorReview>(reviews_path)?
             .into_iter()
@@ -125,7 +121,8 @@ impl CsvDataCmd {
 
         for proposal in csv_proposals {
             let challenge_type = challenges
-                .get(&proposal.challenge_id)
+                .iter()
+                .find(|c| proposal.challenge_id == c.id)
                 .ok_or_else(|| {
                     std::io::Error::new(
                         std::io::ErrorKind::InvalidData,
@@ -181,7 +178,7 @@ impl CsvDataCmd {
         }
 
         // apply fund id to challenges
-        for challenge in challenges.values_mut() {
+        for challenge in challenges.iter_mut() {
             challenge.fund_id = fund.id;
         }
 
@@ -212,7 +209,10 @@ impl CsvDataCmd {
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
         vit_servicing_station_lib::db::queries::challenges::batch_insert_challenges(
-            &challenges.values().cloned().collect::<Vec<Challenge>>(),
+            &challenges
+                .into_iter()
+                .map(|c| c.into_db_challenge_values())
+                .collect::<Vec<_>>(),
             &db_conn,
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;

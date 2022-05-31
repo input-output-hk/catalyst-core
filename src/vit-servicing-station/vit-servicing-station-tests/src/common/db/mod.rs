@@ -166,22 +166,6 @@ impl<'a> DbInserter<'a> {
                     .map_err(DbInserterError::DieselError)?;
             }
 
-            for challenge in &fund.challenges {
-                let values = (
-                    challenges::id.eq(challenge.id),
-                    challenges::challenge_type.eq(challenge.challenge_type.to_string()),
-                    challenges::title.eq(challenge.title.clone()),
-                    challenges::description.eq(challenge.description.clone()),
-                    challenges::rewards_total.eq(challenge.rewards_total),
-                    challenges::fund_id.eq(challenge.fund_id),
-                    challenges::challenge_url.eq(challenge.challenge_url.clone()),
-                );
-                diesel::insert_or_ignore_into(challenges::table)
-                    .values(values)
-                    .execute(self.connection)
-                    .map_err(DbInserterError::DieselError)?;
-            }
-
             for goal in &fund.goals {
                 diesel::insert_or_ignore_into(goals::table)
                     .values(InsertGoal::from(goal))

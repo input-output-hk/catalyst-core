@@ -107,12 +107,16 @@ pub struct QuickStartCommandArgs {
     pub mode: Mode,
 
     /// endopint in format: 127.0.0.1:80
-    #[structopt(long = "endpoint", default_value = "0.0.0.0:80")]
+    #[structopt(long = "endpoint", default_value = "0.0.0.0:8080")]
     pub endpoint: String,
 
     /// switch to private voting type
     #[structopt(long = "private")]
     pub private: bool,
+
+    /// use https mode for backend
+    #[structopt(long = "https")]
+    pub https: bool,
 
     /// switch to private voting type
     #[structopt(long = "version", default_value = "2.0")]
@@ -163,6 +167,10 @@ impl QuickStartCommandArgs {
 
         if let Some(snapshot) = self.snapshot {
             config_builder = config_builder.extend_block0_initials(read_initials(snapshot)?);
+        }
+
+        if self.https {
+            config_builder = config_builder.use_https();
         }
 
         let vote_timestamps = vec![

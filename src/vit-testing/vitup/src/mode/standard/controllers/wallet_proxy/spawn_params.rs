@@ -40,5 +40,6 @@ impl WalletProxySpawnParams {
         if let Some(address) = self.base_address {
             settings.proxy_address = address;
         }
+        settings.protocol = self.protocol.clone();
     }
 }

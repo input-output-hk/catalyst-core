@@ -37,6 +37,7 @@ curl --location --request GET 'http://{mock_address}/api/health'
 
 ```
 curl --location --request POST 'http://{mock_address}/api/control/command/fund/id/{new_fund_id}'
+```
 
 ##### Add new fund
 

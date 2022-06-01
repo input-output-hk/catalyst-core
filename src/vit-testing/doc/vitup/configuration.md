@@ -250,23 +250,17 @@ This setting allows to use predefined committee rather than generate random by v
 
 Section describes static data used for voting. Mostly defines parameters for [servicing station](https://github.com/input-output-hk/vit-servicing-station)
 
+
+#### current fund
+
+Current fund related settings:
+
+
 ##### options
 
 Defines options available for voters. Should be expressed as coma-separated values. For example:
 
 `options: "yes,no"`
-
-##### snapshot_time
-
-Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines snapshot datetime.
-
-##### next_vote_start_time
-
-Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines what is the date of next voting. This data will be shown to users after current voting will ends.
-
-##### next_snapshot_time
-
-Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines snapshot datetime. This data will be shown to users after current voting will ends.
 
 ##### proposals
 
@@ -292,6 +286,94 @@ Name of fund
 
 Id of the fund. This parameter also controls behavior of catalyst voting app. If it's changed between two funds, voting app will refresh it state.
 
+##### dates
+
+###### proposal_submission_start
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines proposal submission start datetime. 
+
+###### insight_sharing_start
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines proposal insight sharing start datetime. 
+
+###### refine_proposals_start
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines proposal refinement start datetime. 
+
+###### finalize_proposals_start
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines proposal finalization start datetime. 
+
+###### proposal_assessment_start
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines proposal assessment start datetime. 
+
+###### assessment_qa_start
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines proposal assessment qa start datetime. 
+
+###### snapshot_time
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines snapshot datetime.
+
+###### next_vote_start_time
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines what is the date of next voting. This data will be shown to users after current voting will ends.
+
+###### next_snapshot_time
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines next snapshot datetime. This data will be shown to users after current voting will ends.
+
+#### next funds
+
+Limited subset of settings comparing to `current_fund` section for next funds
+
+##### fund_name
+
+Name of fund
+
+##### fund_id
+
+Id of the fund. This parameter also controls behavior of catalyst voting app. If it's changed between two funds, voting app will refresh it state.
+
+##### dates
+
+###### proposal_submission_start
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines proposal submission start datetime. 
+
+###### insight_sharing_start
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines proposal insight sharing start datetime. 
+
+###### refine_proposals_start
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines proposal refinement start datetime. 
+
+###### finalize_proposals_start
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines proposal finalization start datetime. 
+
+###### proposal_assessment_start
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines proposal assessment start datetime. 
+
+###### assessment_qa_start
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines proposal assessment qa start datetime. 
+
+###### snapshot_time
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines snapshot datetime. 
+
+###### next_vote_start_time
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines what is the date of next voting. This data will be shown to users after current voting will ends.
+
+###### next_snapshot_time
+
+Data in [rfc3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) format. Defines next snapshot datetime. 
+
 ### service
 
 Service related settings
@@ -310,76 +392,105 @@ Controls protocol over which vitup is available for client
 ### Full Example:
 
 ```
-{  
-  "initials": {
-    "snapshot": {
-      tag: "daily",
-      content: [
-        {
-          "count": 2,
-          "funds": "1234"
-        },
-        {
-          "name": "alice",
-        }
-        {
-          "name": "bob",
-          "funds": 10001
-        }
+{
+   "initials":{
+      "snapshot":{
+         "tag":"daily",
+         "content":[
+            {
+               "count":2,
+               "level":1234
+            },
+            {
+               "name":"alice"
+            },
+            {
+               "name":"bob",
+               "funds":10001
+            }
+         ]
+      },
+      "block0":[
+         {
+            "above_threshold":10,
+            "pin":"1234"
+         },
+         {
+            "name":"alice",
+            "pin":"1234",
+            "funds":10000
+         },
+         {
+            "name":"bob",
+            "pin":"1234",
+            "funds":10000
+         },
+         {
+            "zero_funds":10,
+            "pin":"1234"
+         }
       ]
-    }
-    "block0":  [
-      {
-        "above_threshold": 10,
-        "pin": "1234"
+   },
+   "vote_plan":{
+      "vote_time":{
+         "vote_start":0,
+         "tally_start":134,
+         "tally_end":234,
+         "slots_per_epoch":3600
       },
-      {
-        "name": "alice",
-        "pin": "1234",
-        "funds": 10000
-      },
-      {
-        "name": "bob",
-        "pin": "1234",
-        "funds": 10000
-      },
-      {
-        "zero_funds": 10,
-        "pin": "1234"
+      "private":true
+   },
+   "blockchain":{
+      "slot_duration":4,
+      "block_content_max_size":20971520,
+      "linear_fees":{
+         "constant":0,
+         "coefficient":0,
+         "certificate":0
       }
-    ]
-  },
-  "vote_plan": {
-        "vote_time": {
-            "vote_start": 13,
-            "tally_start": 98,
-            "tally_end": 140,
-            "slots_per_epoch": 3600
-        },
-        "private": true
-  },
-  "blockchain": {
-    "slot_duration": 4,
-    "block_content_max_size": 20971520,
-    "block0_time": "2022-01-19T05:00:00Z",
-    "linear_fees": {
-       "constant": 0,
-       "coefficient": 0,
-       "certificate": 0
-    }
-  },
-  "data": {
-    "options": "yes,no",
-    "snapshot_time": "2022-01-06T11:00:00Z",
-    "next_snapshot_time": "2022-04-07T11:00:00Z",
-    "next_vote_start_time": "2022-04-11T11:00:00Z",
-    "proposals": 936,
-    "challenges": 25,
-    "reviews": 5190,    
-    "voting_power": 450,
-    "fund_name": "Fund7",
-    "fund_id": 6
-  },
-  "version":"3.6"
+   },
+   "data":{
+      "current_fund":{
+         "options":"yes,no",
+         "proposals":1134,
+         "challenges":23,
+         "reviews":7045,
+         "voting_power":450,
+         "fund_name":"Fund9",
+         "fund_id":9,
+         "dates":{
+            "insight_sharing_start":"2022-05-01T12:00:00Z",
+            "proposal_submission_start":"2022-05-02T12:00:00Z",
+            "refine_proposals_start":"2022-05-03T12:00:00Z",
+            "finalize_proposals_start":"2022-05-04T12:00:00Z",
+            "proposal_assessment_start":"2022-05-04T12:00:00Z",
+            "assessment_qa_start":"2022-05-05T12:00:00Z",
+            "snapshot_time":"2022-05-07T12:00:00Z",
+            "next_snapshot_time":"2023-05-07T12:00:00Z",
+            "next_vote_start_time":"2022-07-14T12:00:00Z"
+         }
+      },
+      "next_funds":[
+         {
+            "fund_name":"Fund10",
+            "fund_id":10,
+            "dates":{
+               "insight_sharing_start":"2023-05-01T12:00:00Z",
+               "proposal_submission_start":"2023-05-02T12:00:00Z",
+               "refine_proposals_start":"2023-05-03T12:00:00Z",
+               "finalize_proposals_start":"2023-05-04T12:00:00Z",
+               "proposal_assessment_start":"2023-05-04T12:00:00Z",
+               "assessment_qa_start":"2023-05-05T12:00:00Z",
+               "snapshot_time":"2023-05-07T12:00:00Z",
+               "voting_start":"2023-07-14T12:00:00Z",
+               "voting_tally_end":"2023-07-14T12:00:00Z",
+               "voting_tally_start":"2023-07-14T12:00:00Z",
+               "next_snapshot_time":"2023-07-07T12:00:00Z",
+               "next_vote_start_time":"2023-07-14T12:00:00Z"
+            }
+         }
+      ]
+   },
+   "version":"3.8"
 }
 ```

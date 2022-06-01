@@ -8,6 +8,7 @@ use vitup::config::VoteBlockchainTime;
 use vitup::config::{Block0Initial, Block0Initials, ConfigBuilder};
 use vitup::testing::spawn_network;
 use vitup::testing::vitup_setup;
+
 const PIN: &str = "1234";
 const ALICE: &str = "alice";
 

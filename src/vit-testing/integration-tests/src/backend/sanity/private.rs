@@ -82,7 +82,7 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
     let mut david = iapyx_from_qr(&david_qr_code, "1234", &wallet_proxy).unwrap();
 
     let fund1_vote_plan = controller
-        .defined_vote_plan(&config.data.fund_name)
+        .defined_vote_plan(&config.data.current_fund.fund_info.fund_name)
         .unwrap();
 
     // start voting
@@ -121,7 +121,7 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
             .settings()
             .vote_plans
             .iter()
-            .find(|(key, _)| key.alias == config.data.fund_name)
+            .find(|(key, _)| key.alias == config.data.current_fund.fund_info.fund_name)
             .map(|(_, vote_plan)| vote_plan)
             .unwrap()
         {

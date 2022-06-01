@@ -58,16 +58,16 @@ impl ValgrindClient {
         add_api_segment_if_not_exists(&mut proxy_address);
         add_api_segment_if_not_exists(&mut node_address);
 
-        let mut backend = Self {
+        let mut client = Self {
             node_client: WalletNodeRestClient::new(node_address, node_rest_settings.clone()),
             vit_client: VitRestClient::new(vit_address),
             proxy_client: ProxyClient::new(proxy_address.to_string()),
         };
 
         if node_rest_settings.enable_debug {
-            backend.enable_logs();
+            client.enable_logs();
         }
-        backend
+        client
     }
 
     pub fn new(address: String, settings: ValgrindSettings) -> Result<Self, Error> {
@@ -82,6 +82,10 @@ impl ValgrindClient {
 
     pub fn node_client(&self) -> WalletNodeRestClient {
         self.node_client.clone()
+    }
+
+    pub fn vit_client(&self) -> VitRestClient {
+        self.vit_client.clone()
     }
 
     pub fn send_fragment(&self, transaction: Vec<u8>) -> Result<FragmentId, Error> {

@@ -26,7 +26,7 @@ pub fn private_vote_test_scenario(
     batch_size: usize,
 ) {
     let testing_directory = TempDir::new().unwrap().into_persistent();
-
+    let fund_name = config.data.current_fund.fund_info.fund_name.clone();
     let wallet_count = config.initials.block0.count();
 
     let (mut controller, vit_parameters, network_params) =
@@ -77,9 +77,7 @@ pub fn private_vote_test_scenario(
     vote_timing.wait_for_tally_start(leader_1.rest());
 
     let mut committee = controller.wallet("committee_1").unwrap();
-    let vote_plan = controller
-        .defined_vote_plan(&config.data.fund_name)
-        .unwrap();
+    let vote_plan = controller.defined_vote_plan(&fund_name).unwrap();
 
     let target_date = BlockDate::new(vote_timing.tally_end, vote_timing.slots_per_epoch / 2);
     time::wait_for_date(target_date, leader_1.rest());
@@ -95,7 +93,7 @@ pub fn private_vote_test_scenario(
             .settings()
             .vote_plans
             .iter()
-            .find(|(key, _)| key.alias == config.data.fund_name.clone())
+            .find(|(key, _)| key.alias == fund_name)
             .map(|(_, vote_plan)| vote_plan)
             .unwrap()
         {

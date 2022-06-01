@@ -62,7 +62,6 @@ pub fn vitup_setup(
         config.service.version.clone(),
         testing_directory,
     );
-
     Ok((controller, vit_parameters, network_spawn_params))
 }
 

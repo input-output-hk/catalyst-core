@@ -55,7 +55,7 @@ impl VitStationRestClient {
         Self {
             api_token: None,
             path_builder: RestPathBuilder::new(address),
-            logger: RestClientLogger { enabled: false },
+            logger: RestClientLogger { enabled: true },
             client: Client::new(),
         }
     }

@@ -1,6 +1,5 @@
 use crate::config::initials::Role;
 use chain_crypto::PublicKeyFromStrError;
-use chain_impl_mockchain::value::Value;
 use hersir::builder::Wallet as WalletSettings;
 use jormungandr_lib::crypto::account::Identifier;
 use serde::{Deserialize, Serialize};
@@ -50,10 +49,22 @@ impl Initials {
                         .map(|(_, y)| y.clone())
                         .ok_or_else(|| Error::CannotFindAlias(name.to_string()))?;
                     voter_hirs.push(VoterHIR {
-                        voting_power: funds
-                            .map(Value)
-                            .unwrap_or_else(|| *wallet.template().value())
-                            .into(),
+                        voting_power: (*funds).into(),
+                        voting_key: Wallet::from(wallet).account_id(),
+                        voting_group: role.to_string(),
+                    });
+                }
+                Initial::WalletAutoFunds { name, role } => {
+                    let wallet = defined_wallets
+                        .iter()
+                        .cloned()
+                        .find(|(x, _)| {
+                            *x.to_lowercase() == format!("wallet_{}", name).to_lowercase()
+                        })
+                        .map(|(_, y)| y.clone())
+                        .ok_or_else(|| Error::CannotFindAlias(name.to_string()))?;
+                    voter_hirs.push(VoterHIR {
+                        voting_power: (*wallet.template().value()).into(),
                         voting_key: Wallet::from(wallet).account_id(),
                         voting_group: role.to_string(),
                     });
@@ -80,9 +91,14 @@ pub enum Initial {
         #[serde(default)]
         role: Role,
     },
+    WalletAutoFunds {
+        name: String,
+        #[serde(default)]
+        role: Role,
+    },
     Wallet {
         name: String,
-        funds: Option<u64>,
+        funds: u64,
         #[serde(default)]
         role: Role,
     },

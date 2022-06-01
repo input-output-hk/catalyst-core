@@ -6,12 +6,14 @@ type VitStationSettings = vit_servicing_station_lib::server::settings::ServiceSe
 use hersir::config::SessionSettings;
 use std::collections::HashMap;
 use std::net::SocketAddr;
+use valgrind::Protocol;
 
 #[derive(Clone, Debug)]
 pub struct WalletProxySettings {
     pub proxy_address: SocketAddr,
     pub vit_station_address: SocketAddr,
     pub node_backend_address: Option<SocketAddr>,
+    pub protocol: Protocol,
 }
 
 impl WalletProxySettings {
@@ -28,7 +30,7 @@ impl WalletProxySettings {
     }
 
     pub fn address(&self) -> String {
-        format!("http://{}", self.base_address())
+        format!("{}://{}", self.protocol.schema(), self.base_address())
     }
 
     pub fn vit_address(&self) -> String {
@@ -57,6 +59,7 @@ impl PrepareWalletProxySettings for WalletProxySettings {
             proxy_address: "127.0.0.1:8080".parse().unwrap(),
             vit_station_address: vit_station_settings.address,
             node_backend_address: None,
+            protocol: Default::default(),
         }
     }
 }

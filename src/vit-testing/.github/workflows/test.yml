@@ -106,8 +106,8 @@ jobs:
 
       - name: Build the tagged Docker image
         run: |
-            cd /home/runner/work/vit-testing/vit-testing/vitup/docker/disruption/
-            docker build . --file Dockerfile --tag disruption
+            cd /home/runner/work/vit-testing/vit-testing/vitup/docker/mock/
+            docker build . --file Dockerfile --tag mock
        
   build_local_mock:
     name: Build local mock
@@ -124,8 +124,8 @@ jobs:
         
       - name: Build the tagged Docker image
         run: |
-            cd /home/runner/work/vit-testing/vit-testing/vitup/docker/local/
-            docker build . --file Dockerfile --tag local
+            cd /home/runner/work/vit-testing/vit-testing/vitup/docker/demo/
+            docker build . --file Dockerfile --tag demo
   lints:
     name: Lints
     needs: [cache_info, update_deps]

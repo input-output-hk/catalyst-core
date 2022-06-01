@@ -83,6 +83,8 @@ pub enum Error {
     #[error(transparent)]
     Data(#[from] crate::mode::standard::DataError),
     #[error(transparent)]
+    Main(#[from] crate::mode::standard::VitControllerError),
+    #[error(transparent)]
     WalletProxyController(#[from] WalletProxyControllerError),
     #[error("Cannot find snapshot file in: {0}")]
     CannotFindSnapshotFile(PathBuf),

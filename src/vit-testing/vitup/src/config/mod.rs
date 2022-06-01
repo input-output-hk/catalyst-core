@@ -92,7 +92,7 @@ impl Config {
         let (vote_start_timestamp, tally_start_timestamp, tally_end_timestamp) =
             convert_to_human_date(self);
 
-        println!("Fund id: {}", self.data.fund_id);
+        println!("Fund id: {}", self.data.current_fund.fund_info.fund_id);
         println!(
             "block0 date:\t\t(block0_date):\t\t\t\t\t{}",
             jormungandr_lib::time::SystemTime::from_secs_since_epoch(
@@ -102,7 +102,7 @@ impl Config {
 
         println!(
             "refresh timestamp:\t(registration_snapshot_time):\t\t\t{}",
-            self.data.dates.snapshot_time
+            self.data.current_fund.dates.snapshot_time
         );
 
         println!(
@@ -119,11 +119,11 @@ impl Config {
         );
         println!(
             "next refresh timestamp:\t(next registration_snapshot_time):\t\t{}",
-            self.data.dates.next_snapshot_time
+            self.data.current_fund.dates.next_snapshot_time
         );
         println!(
             "next vote start time:\t(next_fund_start_time):\t\t\t\t{}",
-            self.data.dates.next_vote_start_time
+            self.data.current_fund.dates.next_vote_start_time
         );
     }
 }

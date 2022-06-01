@@ -65,22 +65,22 @@ impl ConfigBuilder {
     }
 
     pub fn proposals_count(mut self, proposals_count: u32) -> Self {
-        self.config.data.proposals = proposals_count;
+        self.config.data.current_fund.proposals = proposals_count;
         self
     }
 
     pub fn challenges_count(mut self, challenges_count: usize) -> Self {
-        self.config.data.challenges = challenges_count;
+        self.config.data.current_fund.challenges = challenges_count;
         self
     }
 
     pub fn reviews_count(mut self, reviews_count: usize) -> Self {
-        self.config.data.reviews = reviews_count;
+        self.config.data.current_fund.reviews = reviews_count;
         self
     }
 
     pub fn voting_power(mut self, voting_power: u64) -> Self {
-        self.config.data.voting_power = voting_power;
+        self.config.data.current_fund.voting_power = voting_power;
         self
     }
 
@@ -90,7 +90,7 @@ impl ConfigBuilder {
     }
 
     pub fn next_vote_timestamp(mut self, next_vote_start_time: OffsetDateTime) -> Self {
-        self.config.data.dates.next_vote_start_time = next_vote_start_time;
+        self.config.data.current_fund.dates.next_vote_start_time = next_vote_start_time;
         self
     }
 
@@ -123,7 +123,7 @@ impl ConfigBuilder {
     }
 
     pub fn snapshot_timestamp(mut self, snapshot_time: OffsetDateTime) -> Self {
-        self.config.data.dates.snapshot_time = snapshot_time;
+        self.config.data.current_fund.dates.snapshot_time = snapshot_time;
         self
     }
 
@@ -132,12 +132,17 @@ impl ConfigBuilder {
     }
 
     pub fn fund_id(mut self, id: i32) -> Self {
-        self.config.data.fund_id = id;
+        self.config.data.current_fund.fund_info.fund_id = id;
         self
     }
 
     pub fn private(mut self, private: bool) -> Self {
         self.config.vote_plan.private = private;
+        self
+    }
+
+    pub fn use_https(mut self) -> Self {
+        self.config.service.https = true;
         self
     }
 

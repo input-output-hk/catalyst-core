@@ -19,7 +19,9 @@ create table funds
     snapshot_start BIGINT NOT NULL,
     voting_start BIGINT NOT NULL,
     voting_end BIGINT NOT NULL,
-    tallying_end BIGINT NOT NULL
+    tallying_end BIGINT NOT NULL,
+    results_url VARCHAR NOT NULL,
+    survey_url VARCHAR NOT NULL
 );
 
 create table proposals
@@ -105,6 +107,15 @@ create table community_advisors_reviews (
   auditability_rating_given INTEGER NOT NULL,
   auditability_note VARCHAR NOT NULL,
   ranking INTEGER NOT NULL
+);
+
+create table goals
+(
+    id INTEGER NOT NULL
+        primary key autoincrement,
+    goal_name VARCHAR NOT NULL,
+    fund_id INTEGER NOT NULL,
+    FOREIGN KEY(fund_id) REFERENCES funds(id)
 );
 
 CREATE VIEW full_proposals_info

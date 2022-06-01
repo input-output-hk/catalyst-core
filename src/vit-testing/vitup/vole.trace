@@ -1,0 +1,2 @@
+[2mMay 25 12:41:27.688[0m [34mDEBUG[0m warp::filter::service: rejected: Rejection(MethodNotAllowed)
+[2mMay 25 12:41:48.802[0m [34mDEBUG[0m warp::filter::service: rejected: Rejection(NotFound)

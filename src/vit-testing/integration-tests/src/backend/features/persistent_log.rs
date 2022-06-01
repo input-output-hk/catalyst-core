@@ -74,7 +74,7 @@ pub fn persistent_log_contains_all_sent_votes() {
 
     let mut committee = controller.wallet("committee_1").unwrap();
     let vote_plan = controller
-        .defined_vote_plan(&config.data.fund_name)
+        .defined_vote_plan(&config.data.current_fund.fund_info.fund_name)
         .unwrap();
 
     let fragment_sender = FragmentSender::from(&controller.settings().block0);

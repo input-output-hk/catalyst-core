@@ -12,6 +12,11 @@ async fn main() {
     let v0 = {
         let root = warp::path!("v0" / ..);
 
+        let snapshot = warp::path!("snapshot" / ..).and(reverse_proxy_filter(
+            "".to_string(),
+            server_stub.http_vit_address(),
+        ));
+
         let proposals = warp::path!("proposals" / ..).and(reverse_proxy_filter(
             "".to_string(),
             server_stub.http_vit_address(),
@@ -68,6 +73,7 @@ async fn main() {
 
         root.and(
             proposals
+                .or(snapshot)
                 .or(challenges)
                 .or(fund)
                 .or(account)

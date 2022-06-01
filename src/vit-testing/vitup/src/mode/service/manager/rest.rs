@@ -48,26 +48,36 @@ pub async fn start_rest_server(context: ControlContextLock) {
 
         root.and(get.or(list)).boxed()
     };
-    let control = {
+    let commands = {
         let root = warp::path!("control" / "command" / ..).boxed();
 
-        let start_default = warp::path!("default")
-            .and(with_context.clone())
-            .and(warp::post())
-            .and_then(start_default_handler);
-        let start_custom = warp::path!("custom")
-            .and(warp::path::end())
-            .and(with_context.clone())
-            .and(warp::post())
-            .and(warp::body::json())
-            .and_then(start_handler);
+        let start = {
+            let root = warp::path!("start" / ..).boxed();
 
-        let start = warp::path!("start" / ..).and(start_default.or(start_custom));
+            let start_default = warp::path!("default")
+                .and(with_context.clone())
+                .and(warp::post())
+                .and_then(start_default_handler);
+
+            let start_custom = warp::path::end()
+                .and(with_context.clone())
+                .and(warp::post())
+                .and(warp::body::json())
+                .and_then(start_handler);
+
+            root.and(start_default.or(start_custom)).boxed()
+        };
 
         let stop = warp::path!("stop")
             .and(warp::post())
             .and(with_context.clone())
             .and_then(stop_handler)
+            .boxed();
+
+        let status = warp::path!("status")
+            .and(warp::get())
+            .and(with_context.clone())
+            .and_then(status_handler)
             .boxed();
 
         let api_token_filter = if is_token_enabled {
@@ -81,19 +91,12 @@ pub async fn start_rest_server(context: ControlContextLock) {
             warp::any().boxed()
         };
 
-        root.and(api_token_filter).and(start.or(stop)).boxed()
+        root.and(api_token_filter)
+            .and(start.or(stop).or(status))
+            .boxed()
     };
 
-    let status = warp::path!("status")
-        .and(warp::get())
-        .and(with_context.clone())
-        .and_then(status_handler)
-        .boxed();
-
-    let api = root
-        .and(files.or(control).or(status))
-        .recover(report_invalid)
-        .boxed();
+    let api = root.and(files.or(commands)).recover(report_invalid).boxed();
 
     let server = warp::serve(api);
     let (_, server_fut) = server.bind_with_graceful_shutdown(([0, 0, 0, 0], 3030), stopper_rx);

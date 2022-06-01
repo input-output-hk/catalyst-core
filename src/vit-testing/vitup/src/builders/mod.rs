@@ -2,7 +2,7 @@ mod helpers;
 mod reviews;
 pub mod utils;
 
-use crate::builders::helpers::build_servicing_station_parameters;
+pub use crate::builders::helpers::{build_current_fund, build_servicing_station_parameters};
 use crate::builders::utils::DeploymentTree;
 use crate::config::Config;
 use crate::mode::standard::{VitController, VitControllerBuilder};
@@ -197,7 +197,7 @@ impl VitBackendSettingsBuilder {
                     .external_templates(token_id.clone().into()),
             );
             templates = self.config.initials.block0.templates(
-                self.config.data.voting_power,
+                self.config.data.current_fund.voting_power,
                 blockchain.discrimination(),
                 token_id.clone().into(),
             );
@@ -212,6 +212,7 @@ impl VitBackendSettingsBuilder {
             .options(
                 self.config
                     .data
+                    .current_fund
                     .options
                     .0
                     .len()
@@ -219,10 +220,17 @@ impl VitBackendSettingsBuilder {
                     .map_err(|_| Error::TooManyOptions)?,
             )
             .split_by(255)
-            .fund_name(self.config.data.fund_name.to_string())
+            .fund_name(
+                self.config
+                    .data
+                    .current_fund
+                    .fund_info
+                    .fund_name
+                    .to_string(),
+            )
             .committee(self.committee_wallet.clone())
             .private(self.config.vote_plan.private)
-            .proposals_count(self.config.data.proposals as usize)
+            .proposals_count(self.config.data.current_fund.proposals as usize)
             .voting_token(token_id.clone().into())
             .build()
             .into_iter()

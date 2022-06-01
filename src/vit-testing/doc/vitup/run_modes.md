@@ -16,7 +16,7 @@ In order to take out the burden of providing entire configuration vitup has two 
 There are 4 run modes available in vitup:
 - `interactive` - where user can push some fragments or query status of nodes 
 - `endless` - [Default] just simple run until stopped by user
-- `service` - additional manager service will be published at `0.0.0.0:3030` and allow to control (stop/start/reset) and provides resources over http (qr codes or secret keys)
+- `service` - additional manager service will be published at `0.0.0.0:3030` and allow to control (stop/start) and provides resources over http (qr codes or secret keys)
 - `mock` - lightweight version of backend with does not spawn any jormungandr or vit-servicing-station services. Mock is also capable of controlling more backend aspect than normal deployment (cut off the connections, rejects all fragments.
 
 
@@ -65,7 +65,7 @@ Available commands:
 #### check environment status
 
 - Request Type: GET
-- Endpoint : http://{env_endpoint}:3030/status
+- Endpoint : http://{env_endpoint}:3030/api/control/command/status
 - Response Example:
 ```
 Running
@@ -76,7 +76,7 @@ Running
 Default parameters:
 
 - Request Type: POST
-- Endpoint : http://{env_endpoint}:3030/api/status
+- Endpoint : http://{env_endpoint}:3030/api/control/command/start
 - Response Example:
 ```
 start event received
@@ -162,7 +162,7 @@ stop event received
 
 #### list files
 
-User can list or view files available for current voting. to list all available files `/api/controlfiles/list` endpoint can be utilized. Then relative path can be provided in `/api/control/files/get/..` endpoint. For example:
+User can list or view files available for current voting. to list all available files `/api/control/files/list` endpoint can be utilized. Then relative path can be provided in `/api/control/files/get/..` endpoint. For example:
 `http://{env_endpoint}:3030/api/control/files/get/qr-codes/zero_funds_12_0000.png`
 
 

@@ -66,16 +66,22 @@ impl Configuration {
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
 pub struct VotingToolsParams {
+    /// binary name
     pub bin: Option<String>,
-    /// in some ocasion we need to run voting-tools via some dependency management
+    /// in some occasion we need to run voting-tools via some dependency management
     #[serde(rename = "nix-branch")]
     pub nix_branch: Option<String>,
+    /// network type
     pub network: NetworkType,
+    /// db name
     pub db: String,
     #[serde(rename = "db-user")]
+    /// db user
     pub db_user: String,
+    /// db host
     #[serde(rename = "db-host")]
     pub db_host: String,
+    /// voting power scale. If 1 then voting power will be expressed in Lovelace
     pub scale: u32,
 }
 

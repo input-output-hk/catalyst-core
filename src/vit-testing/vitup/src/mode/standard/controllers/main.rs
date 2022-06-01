@@ -68,6 +68,8 @@ impl VitControllerBuilder {
 pub enum Error {
     #[error(transparent)]
     Controller(#[from] ControllerError),
+    #[error("cannot bootstrap vit station server. health checkpoint is rejecting request")]
+    CannotBootstrap,
 }
 
 #[derive(Clone)]
@@ -172,13 +174,17 @@ impl VitController {
 
         println!("Starting vit-servicing-station: {:?}", command);
 
-        Ok(VitStationController {
+        let controller = VitStationController {
             alias: alias.into(),
             rest_client: RestClient::from(settings),
             process: command.spawn().unwrap(),
             settings: settings.clone(),
             status: Arc::new(Mutex::new(Status::Running)),
-        })
+        };
+
+        wait_for_bootstrap(&controller)?;
+
+        Ok(controller)
     }
 
     //TODO: move to wallet builder
@@ -251,4 +257,16 @@ impl VitController {
     pub fn spawn_wallet_proxy(&self, alias: &str) -> Result<WalletProxyController> {
         self.spawn_wallet_proxy_custom(&mut WalletProxySpawnParams::new(alias))
     }
+}
+
+fn wait_for_bootstrap(controller: &VitStationController) -> std::result::Result<(), Error> {
+    std::thread::sleep(std::time::Duration::from_secs(5));
+
+    for _ in 0..5 {
+        if controller.check_running() {
+            return Ok(());
+        }
+        std::thread::sleep(std::time::Duration::from_secs(1));
+    }
+    Err(Error::CannotBootstrap)
 }

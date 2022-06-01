@@ -57,10 +57,10 @@ pub enum Error {
     Hyper(#[from] hyper::Error),
     #[error(transparent)]
     Rusls(#[from] rustls::Error),
-
+    #[error(transparent)]
+    Crypto(#[from] chain_crypto::hash::Error),
     #[error("invalid tls certificate")]
     InvalidCertificate,
-
     #[error("invalid tls key")]
     InvalidKey,
 }
@@ -1112,6 +1112,16 @@ pub struct GetMessageStatusesQuery {
     fragment_ids: String,
 }
 
+impl GetMessageStatusesQuery {
+    pub fn as_fragment_ids(&self) -> Result<Vec<FragmentId>, Error> {
+        let ids = self.fragment_ids.split(',');
+        ids.into_iter()
+            .map(FragmentId::from_str)
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(Into::into)
+    }
+}
+
 pub async fn get_fragment_statuses(
     query: GetMessageStatusesQuery,
     context: ContextLock,
@@ -1130,18 +1140,17 @@ pub async fn get_fragment_statuses(
         return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
 
-    let ids = query.fragment_ids.split(',');
-    let ids = ids
-        .into_iter()
-        .map(FragmentId::from_str)
-        .collect::<Result<Vec<_>, _>>()
-        .unwrap();
+    let ids = query.as_fragment_ids();
+    if let Err(err) = ids {
+        return Err(warp::reject::custom(err));
+    }
+
     Ok(HandlerResult(Ok(context
         .lock()
         .unwrap()
         .state()
         .ledger()
-        .statuses(ids))))
+        .statuses(ids.unwrap()))))
 }
 
 pub async fn post_fragments(
@@ -1498,17 +1507,19 @@ pub async fn get_account(
         return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
 
-    let mut context_lock = context.lock().unwrap();
-    let state = context_lock.state_mut();
+    {
+        let mut context_lock = context.lock().unwrap();
+        let state = context_lock.state_mut();
 
-    if state.block_account_endpoint() != 0 {
-        state.decrement_block_account_endpoint();
-        let code = state.error_code;
-        context_lock.log(&format!(
-            "block account endpoint mode is on. Rejecting with error code: {}",
-            code
-        ));
-        return Err(warp::reject::custom(ForcedErrorCode { code }));
+        if state.block_account_endpoint() != 0 {
+            state.decrement_block_account_endpoint();
+            let code = state.error_code;
+            context_lock.log(&format!(
+                "block account endpoint mode is on. Rejecting with error code: {}",
+                code
+            ));
+            return Err(warp::reject::custom(ForcedErrorCode { code }));
+        }
     }
 
     let account_state: jormungandr_lib::interfaces::AccountState = context

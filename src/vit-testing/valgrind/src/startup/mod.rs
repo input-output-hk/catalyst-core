@@ -98,6 +98,15 @@ impl Default for Protocol {
     }
 }
 
+impl Protocol {
+    pub fn schema(&self) -> String {
+        match self {
+            Self::Http => "http".to_string(),
+            Self::Https { .. } => "https".to_string(),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Certs {
     pub key_path: PathBuf,

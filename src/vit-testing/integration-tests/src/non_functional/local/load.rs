@@ -62,7 +62,7 @@ pub fn load_test_public_100_000_votes() {
 
     let mut committee = controller.wallet("committee").unwrap();
     let vote_plan = controller
-        .defined_vote_plan(&config.data.fund_name)
+        .defined_vote_plan(&config.data.current_fund.fund_info.fund_name)
         .unwrap();
 
     let fragment_sender = FragmentSender::from(&controller.settings().block0);

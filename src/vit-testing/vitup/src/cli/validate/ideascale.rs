@@ -1,3 +1,4 @@
+use crate::builders::build_current_fund;
 use crate::builders::utils::DeploymentTree;
 use crate::config::Config;
 use crate::mode::standard::DbGenerator;
@@ -12,7 +13,6 @@ use std::path::Path;
 use std::path::PathBuf;
 use structopt::StructOpt;
 use thiserror::Error;
-use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 use vit_servicing_station_tests::common::data::{
@@ -175,23 +175,20 @@ impl IdeascaleValidateCommand {
             reviews_path,
         )?;
 
-        let input_parameters = Config::default();
-        let mut parameters = ValidVotePlanParameters::new(
-            (0..proposals_count)
-                .collect::<Vec<usize>>()
-                .chunks(255)
-                .map(|chunk| self.vote_plan_def(chunk.len()))
-                .collect(),
-            "test".to_string(),
-            input_parameters.data.dates.as_valid_date(&input_parameters),
-        );
-        parameters
-            .set_voting_power_threshold((input_parameters.data.voting_power * 1_000_000) as i64);
-        parameters.set_challenges_count(challenges_count);
-        parameters.set_reviews_count(reviews_count);
-        parameters.set_vote_options(VoteOptions::parse_coma_separated_value("yes,no"));
-        parameters.set_fund_id(input_parameters.data.fund_id);
-        parameters.calculate_challenges_total_funds = false;
+        let mut input_parameters = Config::default();
+
+        input_parameters.data.current_fund.challenges = challenges_count;
+        input_parameters.data.current_fund.reviews = reviews_count;
+        input_parameters.data.current_fund.proposals = proposals_count as u32;
+
+        let vote_plans = (0..proposals_count)
+            .collect::<Vec<usize>>()
+            .chunks(255)
+            .map(|chunk| self.vote_plan_def(chunk.len()))
+            .collect();
+
+        let parameters =
+            ValidVotePlanParameters::from(build_current_fund(&input_parameters, vote_plans));
 
         DbGenerator::new(parameters, self.output.clone())
             .build(&deployment_tree.database_path(), &mut template_generator)?;

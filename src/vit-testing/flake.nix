@@ -24,7 +24,7 @@
   inputs.rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
   inputs.naersk.url = "github:nix-community/naersk";
   inputs.naersk.inputs.nixpkgs.follows = "nixpkgs";
-  inputs.voting-tools_.url = "github:input-output-hk/voting-tools?rev=e0fc39e0d0920f5a8bdff5b5bbf31e41a1e2b896";
+  inputs.voting-tools_.url = "github:input-output-hk/voting-tools?rev=98a46754f822689b136ea8ae9049af535309bf87";
   inputs.vit-kedqr.url = "github:input-output-hk/vit-kedqr";
   inputs.vit-servicing-station.url = "github:input-output-hk/vit-servicing-station/master";
   inputs.jormungandr_.url = "github:input-output-hk/jormungandr/master";

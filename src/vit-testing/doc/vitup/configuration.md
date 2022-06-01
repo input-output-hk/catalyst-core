@@ -1,6 +1,6 @@
 ## Configuration
 
-This section describe configuration file which can be passed as argument for or in some cases send to already running environments in order to restart them with new settings
+This section describe configuration file which can be passed as argument when starting vitup or in some cases send to already running environments in order to restart them with new settings
 
 ### Initials
 

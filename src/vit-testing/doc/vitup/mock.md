@@ -1,7 +1,7 @@
 
 ## Mock
 
-For developer convience an in-memory backend is available. Idea is the same as above but env is more lightweight and does not spawn jormungandr or vit-servicing-station.
+For developer convenience an in-memory backend is available. Idea is the same as above but env is more lightweight and does not spawn jormungandr or vit-servicing-station.
 Mock is also capable of controlling more backend aspect than normal deployment (cut off the connections, rejects all fragments.
 
 ### Configuration
@@ -139,7 +139,7 @@ curl --location --request POST 'http://{mock_address}/api/control/command/availa
 
 ##### Make account endpoint unavailable
 
-Mock will reject n calls to account endpoint and as a result voting app won't recieve voting power for some time.
+Mock will reject n calls to account endpoint and as a result voting app won't receive voting power for some time.
 This endpoint assume that one who changes block-account endpoint knows what is the frequency of calls from client
 and ultimately can be translated to some time of unavailability.
 

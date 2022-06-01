@@ -11,63 +11,68 @@ pub struct BurstCountIapyxLoadCommand {
     /// Prints nodes related data, like stats,fragments etc.
     #[structopt(short = "t", long = "threads", default_value = "3")]
     pub threads: usize,
-    /// address in format:
+    /// Address in format:
     /// 127.0.0.1:8000
     #[structopt(short = "a", long = "address", default_value = "127.0.0.1:8000")]
     pub address: String,
 
-    /// amount of delay [miliseconds] between requests
+    /// Amount of delay [miliseconds] between requests
     #[structopt(short = "d", long = "delay", default_value = "10000")]
     pub delay: u64,
 
-    /// amount of delay [miliseconds] between requests
+    /// Number of votes sent in single batch
     #[structopt(short = "b", long = "batch-size", default_value = "100")]
     pub batch_size: usize,
 
-    /// how many requests per thread should be sent
+    /// How many requests per thread should be sent
     #[structopt(short = "n", long = "bursts-count")]
     pub count: u32,
 
+    /// Qr codes source folder
     #[structopt(short = "q", long = "qr-codes-folder")]
     pub qr_codes_folder: Option<PathBuf>,
 
+    /// Secrets source folder
     #[structopt(short = "s", long = "secrets-folder")]
     pub secrets_folder: Option<PathBuf>,
 
+    /// Global pin for all qr codes
     #[structopt(long = "global-pin", default_value = "1234")]
     pub global_pin: String,
 
+    /// Read pin from filename of each qr code
     #[structopt(long = "read-from-filename")]
     pub read_pin_from_filename: bool,
 
-    /// use https for sending fragments
+    /// Use https for sending fragments
     #[structopt(short = "h", long = "https")]
     pub use_https: bool,
 
-    /// use https for sending fragments
+    /// Print additional information
     #[structopt(long = "debug")]
     pub debug: bool,
 
-    /// update all accounts state before sending any vote
+    /// Update all accounts state before sending any vote
     #[structopt(long = "reuse-accounts-early")]
     pub reuse_accounts_early: bool,
 
-    /// update account state just before sending vote
+    /// Update account state just before sending vote
     #[structopt(long = "reuse-accounts-lazy")]
     pub reuse_accounts_lazy: bool,
 
+    /// How frequent (in seconds) to print status
     #[structopt(long = "status-pace", default_value = "1")]
     pub status_pace: u64,
 
-    // measure
+    /// Pass criteria
     #[structopt(short = "c", long = "criterion")]
     pub criterion: Option<u8>,
 
-    // use v1 endpoint for bursts
+    /// Use v1 endpoint for sending votes
     #[structopt(long = "v1")]
     pub use_v1: bool,
 
-    // show progress
+    /// Show progress. Available are (Monitor,Standard,None)
     #[structopt(
         long = "progress-bar-mode",
         default_value = "Monitor",

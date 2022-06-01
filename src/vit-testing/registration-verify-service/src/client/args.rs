@@ -94,18 +94,23 @@ impl StatusCommand {
 
 #[derive(StructOpt, Debug)]
 pub struct NewJobCommand {
+    /// path to qr code
     #[structopt(long = "qr")]
     qr: PathBuf,
 
+    /// pin
     #[structopt(long = "pin")]
     pin: String,
 
+    /// expected funds (needed for assertion)
     #[structopt(long = "expected-funds")]
     funds: u64,
 
+    /// snapshot threshold
     #[structopt(long = "threshold")]
     threshold: u64,
 
+    /// snapshot slot number
     #[structopt(long = "slot-no")]
     slot_no: Option<u64>,
 }

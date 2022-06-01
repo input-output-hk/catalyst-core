@@ -6,7 +6,7 @@ use thiserror::Error;
 
 #[derive(StructOpt, Debug)]
 pub struct TriggerServiceCliCommand {
-    /// token, which is necessary to perform admin operations
+    /// access token, which is necessary to perform client operations
     #[structopt(short, long, env = "SNAPSHOT_TOKEN")]
     token: Option<String>,
 
@@ -33,9 +33,9 @@ impl TriggerServiceCliCommand {
 pub enum Command {
     /// check if snapshot service is up
     Health,
-    /// start advanced backend from scratch
+    /// retrieve files from snapshot (snapshot outcome etc.)
     Files(FilesCommand),
-    // start mock env
+    /// job related commands
     Job(JobCommand),
 }
 

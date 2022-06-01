@@ -4,13 +4,14 @@ use crate::request::Request;
 use structopt::StructOpt;
 use thiserror::Error;
 
+/// registration-cli
 #[derive(StructOpt, Debug)]
 pub struct RegistrationServiceCliCommand {
-    /// token, which is necessary to perform admin operations
+    /// access token
     #[structopt(short, long, env = "REGISTRATION_TOKEN")]
     token: Option<String>,
 
-    /// snapshot endpoint
+    /// registration service endpoint
     #[structopt(short, long, env = "REGISTRATION_ENDPOINT")]
     endpoint: String,
 
@@ -31,11 +32,11 @@ impl RegistrationServiceCliCommand {
 
 #[derive(StructOpt, Debug)]
 pub enum Command {
-    /// check if snapshot service is up
+    /// check if registration service is up
     Health,
-    /// start advanced backend from scratch
+    /// download jobs artifacts
     Files(FilesCommand),
-    // start mock env
+    /// jobs related operations
     Job(JobCommand),
 }
 
@@ -96,19 +97,20 @@ impl StatusCommand {
 
 #[derive(StructOpt, Debug)]
 pub struct NewJobCommand {
+    /// payment.skey file
     #[structopt(long = "payment-skey")]
     payment_skey: String,
-
+    /// payment.vkey file
     #[structopt(long = "payment-vkey")]
     payment_vkey: String,
-
+    /// stake.skey file
     #[structopt(long = "stake-skey")]
     stake_skey: String,
-
+    /// stake.vkey file
     #[structopt(long = "stake-vkey")]
     stake_vkey: String,
-
-    #[structopt(long = "stake-vkey")]
+    /// vote.skey file
+    #[structopt(long = "vote-vkey")]
     vote_skey: Option<String>,
 }
 

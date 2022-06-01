@@ -31,8 +31,11 @@ pub enum IapyxLoadCommandError {
 
 #[derive(StructOpt, Debug)]
 pub enum IapyxLoadCommand {
+    /// Load which targets blockchain calls only
     NodeOnly(NodeOnlyLoadCommand),
+    /// Load which targets static data only
     StaticOnly(StaticOnlyLoadCommand),
+    /// Load with simulate real user case (both blockchain and static data in some relation)
     Simulation(ArtificialLoadCommand),
 }
 
@@ -48,6 +51,7 @@ impl IapyxLoadCommand {
 
 #[derive(StructOpt, Debug)]
 pub struct ArtificialLoadCommand {
+    /// Path to configuration file
     #[structopt(short = "c", long = "config")]
     config: PathBuf,
 }
@@ -62,6 +66,7 @@ impl ArtificialLoadCommand {
 
 #[derive(StructOpt, Debug)]
 pub struct StaticOnlyLoadCommand {
+    /// Path to configuration file
     #[structopt(short = "c", long = "config")]
     config: PathBuf,
 }
@@ -76,7 +81,9 @@ impl StaticOnlyLoadCommand {
 
 #[derive(StructOpt, Debug)]
 pub enum NodeOnlyLoadCommand {
+    /// Bursts mode. Sends votes in batches and then wait x seconds
     Burst(BurstIapyxLoadCommand),
+    /// Constant load. Sends votes with x votes per second speed.
     Const(ConstIapyxLoadCommand),
 }
 

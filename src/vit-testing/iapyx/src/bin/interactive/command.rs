@@ -17,28 +17,40 @@ use thiserror::Error;
 use thor::cli::{Alias, Connection};
 use valgrind::{Proposal, ProposalExtension};
 use wallet_core::Choice;
+
+///
+///
+/// Command line wallet for testing Catalyst
+///
 #[derive(StructOpt, Debug)]
 pub enum IapyxCommand {
-    /// connect to backend
+    /// Sets node rest API address. Verifies connection on set.
     Connect(Connect),
-    /// get Address
+    /// Gets address of wallet in bech32 format
     Address,
-    /// printout proposals
+    /// Prints proposals available to vote on
     Proposals(Proposals),
-    /// Prints wallet status
+    /// Prints wallet status (balance/spending counters/tokens)
     Status,
-    /// clear transaction
+    /// Clears pending transactions to confirm. In case if expiration occurred
     ClearTx,
-    /// confirms transaction
+    /// Confirms successful transaction
     ConfirmTx,
-    /// Prints wallets, nodes which can be used. Draw topology
+    /// Pulls wallet data from the catalyst backend
     Refresh,
+    /// Prints entire fragment logs from the node
     Logs,
+    /// Prints information about voting funds
     Funds,
+    /// Prints pending or already sent fragments statuses
     Statuses,
+    /// Sends votes to backend
     Vote(Vote),
+    /// Prints history of votes
     Votes(Votes),
+    /// Prints pending transactions (not confirmed)
     PendingTransactions,
+    /// Allows to manage wallets: add/remove/select operations
     Wallets(Wallets),
 }
 
@@ -115,10 +127,13 @@ impl IapyxCommand {
 
 #[derive(StructOpt, Debug)]
 pub struct Votes {
+    /// Id of input vote plan
     #[structopt(long = "vote-plan-id")]
     pub vote_plan_id: Option<String>,
+    /// Index of vote plan
     #[structopt(long = "vote-plan-index", conflicts_with = "vote-plan-id")]
     pub vote_plan_index: Option<usize>,
+    /// Print title, otherwise only id would be print out
     #[structopt(long = "print-title")]
     pub print_proposal_title: bool,
 }
@@ -201,7 +216,9 @@ impl Votes {
 
 #[derive(StructOpt, Debug)]
 pub enum Vote {
+    /// Send single vote
     Single(SingleVote),
+    /// Send batch of votes
     Batch(BatchOfVotes),
 }
 
@@ -216,22 +233,19 @@ impl Vote {
 
 #[derive(StructOpt, Debug)]
 pub struct SingleVote {
-    /// choice
+    /// Choice, usually 'yes' or 'no'
     #[structopt(short = "c", long = "choice")]
     pub choice: String,
-    /// chain proposal id
+    /// Proposal id of target proposal. It can be obtained from `iapyx proposals` command
     #[structopt(short = "i", long = "id")]
     pub proposal_id: String,
-
-    // transaction expiry fixed  time
+    /// Transaction expiry fixed time
     #[structopt(long = "valid-until-fixed")]
     pub valid_until_fixed: Option<BlockDate>,
-
-    // transaction expiry shifted time
+    /// Transaction expiry shifted time
     #[structopt(long = "valid-until-shift", conflicts_with = "valid-until-fixed")]
     pub valid_until_shift: Option<BlockDate>,
-
-    // pin
+    /// Pin
     #[structopt(long, short)]
     pub pin: String,
 }
@@ -262,19 +276,16 @@ impl SingleVote {
 
 #[derive(StructOpt, Debug)]
 pub struct BatchOfVotes {
-    /// choice
+    /// Choice, usually 'yes' or 'no'
     #[structopt(short = "c", long = "choices")]
     pub choices: String,
-
-    // transaction expiry time
+    /// Transaction expiry time
     #[structopt(long)]
     pub valid_until_fixed: Option<BlockDate>,
-
-    // transaction expiry time
+    /// Transaction expiry time
     #[structopt(long, conflicts_with = "valid-until-fixed")]
     pub valid_until_shift: Option<BlockDate>,
-
-    // pin
+    /// Pin
     #[structopt(long, short)]
     pub pin: String,
 }
@@ -354,14 +365,13 @@ pub enum IapyxCommandError {
 
 #[derive(StructOpt, Debug)]
 pub struct Connect {
+    /// Backend address. For example `https://catalyst.io/api`
     #[structopt(name = "ADDRESS")]
     pub address: String,
-
-    /// uses https for sending fragments
+    /// Uses https for sending fragments
     #[structopt(short = "s", long = "https")]
     pub use_https: bool,
-
-    /// uses https for sending fragments
+    /// Printing additional information
     #[structopt(short = "d", long = "enable-debug")]
     pub enable_debug: bool,
 }
@@ -380,11 +390,10 @@ impl Connect {
 
 #[derive(StructOpt, Debug)]
 pub struct Proposals {
-    /// show only ids
+    /// Show only ids
     #[structopt(short = "i")]
     pub only_ids: bool,
-
-    /// show only ids
+    /// Limit output entries
     #[structopt(short, long)]
     pub limit: Option<usize>,
 }
@@ -417,58 +426,69 @@ impl Proposals {
 }
 #[derive(StructOpt, Debug)]
 pub enum Wallets {
-    /// recover wallet funds from mnemonic
+    /// Recover wallet funds from mnemonic
     Use {
         #[structopt(name = "ALIAS")]
         alias: Alias,
     },
-    /// recover wallet funds from qr code
+    /// Recover wallet funds from qr code
     Import {
         #[structopt(short, long)]
         alias: Alias,
 
-        #[structopt(subcommand)] // Note that we mark a field as a subcommand
+        #[structopt(subcommand)]
         cmd: WalletAddSubcommand,
     },
+    /// Delete wallet with alias
     Delete {
         #[structopt(name = "ALIAS")]
         alias: Alias,
     },
+    /// List already imported wallets
     List,
 }
 
 #[derive(StructOpt, Debug)]
 pub enum WalletAddSubcommand {
-    /// recover wallet funds from mnemonic
+    /// Recover wallet funds from mnemonic
     Secret {
+        /// Path to secret file
         #[structopt(name = "SECRET")]
         secret: PathBuf,
 
-        #[structopt(short, long)]
-        password: String,
-
-        #[structopt(short, long)]
-        testing: bool,
-    },
-    /// recover wallet funds from qr code
-    QR {
-        #[structopt(name = "QR")]
-        qr: PathBuf,
-
+        /// Pin to protect you wallet.
         #[structopt(short, long)]
         pin: String,
 
+        /// If true testing discrimination is used, otherwise production
+        #[structopt(short, long)]
+        testing: bool,
+    },
+    /// Recover wallet funds from qr code
+    QR {
+        /// Path to qr file
+        #[structopt(name = "QR")]
+        qr: PathBuf,
+
+        /// Pin to protect you wallet.
+        #[structopt(short, long)]
+        pin: String,
+
+        /// If true testing discrimination is used, otherwise production
         #[structopt(short, long)]
         testing: bool,
     },
     /// recover wallet funds from hash
     Hash {
+        /// Path to file with payload
         #[structopt(name = "Hash")]
         hash: PathBuf,
 
+        /// Pin to protect you wallet.
         #[structopt(short, long)]
         pin: String,
 
+        /// If true testing discrimination is used, otherwise production
         #[structopt(short, long)]
         testing: bool,
     },
@@ -483,13 +503,13 @@ impl WalletAddSubcommand {
         match self {
             Self::Secret {
                 secret,
-                password,
+                pin,
                 testing,
             } => {
                 let (_, data, _) = read_bech32(Some(&secret))?;
                 controller
                     .wallets_mut()
-                    .add_wallet(alias, testing, data, &password)?
+                    .add_wallet(alias, testing, data, &pin)?
             }
             Self::QR { qr, pin, testing } => {
                 let img = image::open(qr)?;

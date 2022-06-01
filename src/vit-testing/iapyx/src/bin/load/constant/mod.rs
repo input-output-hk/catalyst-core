@@ -8,7 +8,9 @@ use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
 pub enum ConstIapyxLoadCommand {
+    /// Duration based load. Defines how much time load should run
     Duration(ConstDurationIapyxLoadCommand),
+    /// Requests count based load. Defines how many requests load should sent in total
     Count(ConstantCountIapyxLoadCommand),
 }
 

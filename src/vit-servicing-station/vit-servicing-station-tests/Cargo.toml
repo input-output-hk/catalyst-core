@@ -33,9 +33,11 @@ jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 chain-addr      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 chain-crypto    = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
+voting-hir = { git = "https://github.com/input-output-hk/catalyst-toolbox", branch = "main", features = ["serde"] }
 fake = { version = "2.2", features=['http']}
 pretty_assertions = "0.6"
 dyn-clone = "1.0.4"
+itertools = "0.10.3"
 
 [dependencies.reqwest]
 version = "0.11"
@@ -49,4 +51,7 @@ libsqlite3-sys =  { version = "0.9.3", features = ["bundled"] }
 
 [features]
 test-api = []
+# feature for excluding performance tests from standard cargo test run
 non-functional = []
+# sub category of non-functional tests
+soak = []

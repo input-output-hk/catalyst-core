@@ -9,7 +9,19 @@ create table funds
     voting_power_threshold BIGINT NOT NULL,
     fund_start_time BIGINT NOT NULL,
     fund_end_time BIGINT NOT NULL,
-    next_fund_start_time BIGINT NOT NULL
+    next_fund_start_time BIGINT NOT NULL,
+    insight_sharing_start BIGINT NOT NULL,
+    proposal_submission_start BIGINT NOT NULL,
+    refine_proposals_start BIGINT NOT NULL,
+    finalize_proposals_start BIGINT NOT NULL,
+    proposal_assessment_start BIGINT NOT NULL,
+    assessment_qa_start BIGINT NOT NULL,
+    snapshot_start BIGINT NOT NULL,
+    voting_start BIGINT NOT NULL,
+    voting_end BIGINT NOT NULL,
+    tallying_end BIGINT NOT NULL,
+    results_url VARCHAR NOT NULL,
+    survey_url VARCHAR NOT NULL
 );
 
 create table proposals
@@ -72,8 +84,9 @@ create table api_tokens
 
 create table challenges
 (
-    id INTEGER NOT NULL
+    internal_id INTEGER NOT NULL
         primary key autoincrement,
+    id INTEGER NOT NULL UNIQUE,
     challenge_type VARCHAR NOT NULL,
     title VARCHAR NOT NULL,
     description VARCHAR NOT NULL,
@@ -95,6 +108,15 @@ create table community_advisors_reviews (
   auditability_rating_given INTEGER NOT NULL,
   auditability_note VARCHAR NOT NULL,
   ranking INTEGER NOT NULL
+);
+
+create table goals
+(
+    id INTEGER NOT NULL
+        primary key autoincrement,
+    goal_name VARCHAR NOT NULL,
+    fund_id INTEGER NOT NULL,
+    FOREIGN KEY(fund_id) REFERENCES funds(id)
 );
 
 CREATE VIEW full_proposals_info

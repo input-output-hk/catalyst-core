@@ -14,9 +14,9 @@ const TLS_PRIVATE_KEY_FILE: &str = "TLS_PK_FILE";
 const CORS_ALLOWED_ORIGINS: &str = "CORS_ALLOWED_ORIGINS";
 const VIT_SERVICE_VERSION_ENV_VARIABLE: &str = "SERVICE_VERSION";
 
-const ADDRESS_DEFAULT: &str = "0.0.0.0:3030";
-const DB_URL_DEFAULT: &str = "./db/database.sqlite3";
-const BLOCK0_PATH_DEFAULT: &str = "./resources/v0/block0.bin";
+pub(crate) const ADDRESS_DEFAULT: &str = "0.0.0.0:3030";
+pub(crate) const DB_URL_DEFAULT: &str = "./db/database.sqlite3";
+pub(crate) const BLOCK0_PATH_DEFAULT: &str = "./resources/v0/block0.bin";
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt)]
 #[serde(deny_unknown_fields)]

@@ -122,8 +122,8 @@ mod test {
         proposal_builder.options(2);
         proposal_builder.action_off_chain();
         vote_plan_builder.with_proposal(&mut proposal_builder);
-        vote_plan_parameters.vote_plans = vec![vote_plan_builder.build().into()];
-        vote_plan_parameters.challenges_count = 1;
+        vote_plan_parameters.current_fund.vote_plans = vec![vote_plan_builder.build().into()];
+        vote_plan_parameters.current_fund.challenges_count = 1;
 
         let mut template = ArbitraryValidVotePlanConfig::default().challenge(
             ChallengeConfig::default()

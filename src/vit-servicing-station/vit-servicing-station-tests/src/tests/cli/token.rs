@@ -1,5 +1,8 @@
-use crate::common::cli::{VitCli, VitCliCommand};
-use crate::common::startup::quick_start;
+use crate::common::{
+    cli::{VitCli, VitCliCommand},
+    clients::RawRestClient,
+    startup::quick_start,
+};
 use assert_cmd::assert::OutputAssertExt;
 use assert_fs::{fixture::PathChild, TempDir};
 use hyper::StatusCode;
@@ -66,14 +69,9 @@ pub fn add_generated_token_to_db() -> Result<(), Box<dyn Error>> {
         .success();
 
     let first_token = tokens.get(0).unwrap();
+    let raw: RawRestClient = server.rest_client_with_token(first_token).into();
 
-    assert_eq!(
-        server
-            .rest_client_with_token(first_token)
-            .health_raw()?
-            .status(),
-        StatusCode::OK
-    );
+    assert_eq!(raw.health()?.status(), StatusCode::OK);
     Ok(())
 }
 

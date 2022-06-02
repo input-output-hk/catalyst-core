@@ -3,6 +3,7 @@ use std::path::Path;
 use thiserror::Error;
 use time::format_description::well_known::Rfc3339;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
+use vit_servicing_station_lib::db::models::goals::InsertGoal;
 use vit_servicing_station_lib::db::models::proposals::{FullProposalInfo, ProposalChallengeInfo};
 use vit_servicing_station_lib::{
     db::models::{challenges::Challenge, funds::Fund, voteplans::Voteplan},
@@ -29,6 +30,18 @@ impl CsvConverter {
             "next_fund_start_time",
             "registration_snapshot_time",
             "next_registration_snapshot_time",
+            "insight_sharing_start",
+            "proposal_submission_start",
+            "refine_proposals_start",
+            "finalize_proposals_start",
+            "proposal_assessment_start",
+            "assessment_qa_start",
+            "snapshot_start",
+            "voting_start",
+            "voting_end",
+            "tallying_end",
+            "results_url",
+            "survey_url",
         ];
         let content: Vec<Vec<String>> = funds.iter().map(convert_fund).collect();
         self.build_file(headers, content, path)
@@ -138,6 +151,13 @@ impl CsvConverter {
         self.build_file(headers, content, path)
     }
 
+    pub fn goals<P: AsRef<Path>>(&self, goals: Vec<InsertGoal>, path: P) -> Result<(), Error> {
+        let headers = vec!["goal_name", "fund_id"];
+
+        let content: Vec<Vec<String>> = goals.iter().map(convert_goals).collect();
+        self.build_file(headers, content, path)
+    }
+
     fn build_file<P: AsRef<Path>>(
         &self,
         headers: Vec<&str>,
@@ -209,16 +229,49 @@ fn convert_proposal(proposal: &FullProposalInfo) -> Vec<String> {
 }
 
 fn convert_fund(fund: &Fund) -> Vec<String> {
+    // destructure the object to get a compile-time exhaustivity check, even if we already have
+    // tests for this, it's easier to keep it up-to-date
+    let Fund {
+        id,
+        fund_name,
+        fund_goal,
+        voting_power_threshold,
+        fund_start_time,
+        fund_end_time,
+        next_fund_start_time,
+        registration_snapshot_time,
+        next_registration_snapshot_time,
+        chain_vote_plans: _,
+        challenges: _,
+        stage_dates,
+        goals: _,
+        results_url,
+        survey_url,
+    } = fund;
+
+    // TODO: can we leverage serde to build these vectors?
     vec![
-        fund.id.to_string(),
-        fund.fund_name.to_string(),
-        fund.voting_power_threshold.to_string(),
-        fund.fund_goal.to_string(),
-        unix_timestamp_to_rfc3339(fund.fund_start_time),
-        unix_timestamp_to_rfc3339(fund.fund_end_time),
-        unix_timestamp_to_rfc3339(fund.next_fund_start_time),
-        unix_timestamp_to_rfc3339(fund.registration_snapshot_time),
-        unix_timestamp_to_rfc3339(fund.next_registration_snapshot_time),
+        id.to_string(),
+        fund_name.to_string(),
+        voting_power_threshold.to_string(),
+        fund_goal.to_string(),
+        unix_timestamp_to_rfc3339(*fund_start_time),
+        unix_timestamp_to_rfc3339(*fund_end_time),
+        unix_timestamp_to_rfc3339(*next_fund_start_time),
+        unix_timestamp_to_rfc3339(*registration_snapshot_time),
+        unix_timestamp_to_rfc3339(*next_registration_snapshot_time),
+        unix_timestamp_to_rfc3339(stage_dates.insight_sharing_start),
+        unix_timestamp_to_rfc3339(stage_dates.proposal_submission_start),
+        unix_timestamp_to_rfc3339(stage_dates.refine_proposals_start),
+        unix_timestamp_to_rfc3339(stage_dates.finalize_proposals_start),
+        unix_timestamp_to_rfc3339(stage_dates.proposal_assessment_start),
+        unix_timestamp_to_rfc3339(stage_dates.assessment_qa_start),
+        unix_timestamp_to_rfc3339(stage_dates.snapshot_start),
+        unix_timestamp_to_rfc3339(stage_dates.voting_start),
+        unix_timestamp_to_rfc3339(stage_dates.voting_end),
+        unix_timestamp_to_rfc3339(stage_dates.tallying_end),
+        results_url.to_string(),
+        survey_url.to_string(),
     ]
 }
 
@@ -262,6 +315,11 @@ fn convert_advisor_review(review: &AdvisorReview) -> Vec<String> {
         (review.ranking as u8 == 0).to_string(),
         (review.ranking as u8 == 1).to_string(),
     ]
+}
+
+fn convert_goals(goal: &InsertGoal) -> Vec<String> {
+    let InsertGoal { goal_name, fund_id } = goal;
+    vec![goal_name.to_string(), fund_id.to_string()]
 }
 
 fn unix_timestamp_to_rfc3339(timestamp: i64) -> String {

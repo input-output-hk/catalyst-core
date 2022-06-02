@@ -1,5 +1,5 @@
 use crate::common::{
-    clients::RestClient,
+    clients::RawRestClient,
     data::ArbitrarySnapshotGenerator,
     startup::{
         db::DbBuilder,
@@ -23,15 +23,15 @@ pub fn cors_illegal_domain() -> Result<(), Box<dyn std::error::Error>> {
     let mut rest_client = server.rest_client_with_token(&snapshot.token_hash());
     rest_client.set_origin("http://other_domain.com");
 
-    assert_request_failed_due_to_cors(&rest_client)?;
+    assert_request_failed_due_to_cors(&rest_client.into())?;
     Ok(())
 }
 
 fn assert_request_failed_due_to_cors(
-    rest_client: &RestClient,
+    rest_client: &RawRestClient,
 ) -> Result<(), Box<dyn std::error::Error>> {
     assert_eq!(
-        rest_client.funds_raw()?.text()?,
+        rest_client.funds()?.text()?,
         "CORS request forbidden: origin not allowed"
     );
     Ok(())
@@ -67,7 +67,7 @@ pub fn cors_ip_versus_domain() -> Result<(), Box<dyn std::error::Error>> {
     let mut rest_client = server.rest_client_with_token(&snapshot.token_hash());
     rest_client.set_origin("http://localhost");
 
-    assert_request_failed_due_to_cors(&rest_client)?;
+    assert_request_failed_due_to_cors(&rest_client.into())?;
 
     Ok(())
 }
@@ -99,10 +99,11 @@ pub fn cors_single_domain() -> Result<(), Box<dyn std::error::Error>> {
         .with_allowed_origins("http://domain.com")
         .start(&temp_dir)?;
 
-    let mut rest_client = server.rest_client_with_token(&snapshot.token_hash());
+    let mut rest_client: RawRestClient =
+        server.rest_client_with_token(&snapshot.token_hash()).into();
     rest_client.set_origin("http://domain.com");
 
-    assert!(rest_client.funds_raw()?.status().is_success());
+    assert!(rest_client.funds()?.status().is_success());
 
     Ok(())
 }
@@ -118,10 +119,11 @@ pub fn cors_https() -> Result<(), Box<dyn std::error::Error>> {
         .with_allowed_origins("https://domain.com")
         .start(&temp_dir)?;
 
-    let mut rest_client = server.rest_client_with_token(&snapshot.token_hash());
+    let mut rest_client: RawRestClient =
+        server.rest_client_with_token(&snapshot.token_hash()).into();
     rest_client.set_origin("https://domain.com");
 
-    assert!(rest_client.funds_raw()?.status().is_success());
+    assert!(rest_client.funds()?.status().is_success());
 
     Ok(())
 }
@@ -137,12 +139,13 @@ pub fn cors_multi_domain() -> Result<(), Box<dyn std::error::Error>> {
         .with_allowed_origins("http://domain.com;http://other_domain.com")
         .start(&temp_dir)?;
 
-    let mut rest_client = server.rest_client_with_token(&snapshot.token_hash());
+    let mut rest_client: RawRestClient =
+        server.rest_client_with_token(&snapshot.token_hash()).into();
     rest_client.set_origin("http://other_domain.com");
-    assert!(rest_client.funds_raw()?.status().is_success());
+    assert!(rest_client.funds()?.status().is_success());
 
     rest_client.set_origin("http://domain.com");
-    assert!(rest_client.funds_raw()?.status().is_success());
+    assert!(rest_client.funds()?.status().is_success());
 
     assert!(!server.logger().any_error());
 

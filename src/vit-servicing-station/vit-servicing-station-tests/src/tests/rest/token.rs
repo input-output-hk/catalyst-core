@@ -1,4 +1,5 @@
 use crate::common::{
+    clients::RawRestClient,
     data,
     startup::{db::DbBuilder, server::ServerBootstrapper},
 };
@@ -18,28 +19,20 @@ pub fn token_validation() -> Result<(), Box<dyn std::error::Error>> {
         .start(&temp_dir)
         .unwrap();
 
-    let response = server.rest_client_with_token(&hash).health_raw()?;
-    assert_eq!(response.status(), StatusCode::OK);
-
     let invalid_token = data::token_hash();
-    let rest_client = server.rest_client_with_token(&invalid_token);
-    assert_eq!(rest_client.health_raw()?.status(), StatusCode::UNAUTHORIZED);
+
+    let rest_client: RawRestClient = server.rest_client_with_token(&hash).into();
+    assert_eq!(rest_client.health()?.status(), StatusCode::OK);
+
+    let rest_client: RawRestClient = server.rest_client_with_token(&invalid_token).into();
+    assert_eq!(rest_client.health()?.status(), StatusCode::UNAUTHORIZED);
+    assert_eq!(rest_client.fund("1")?.status(), StatusCode::UNAUTHORIZED);
+    assert_eq!(rest_client.funds()?.status(), StatusCode::UNAUTHORIZED);
     assert_eq!(
-        rest_client.fund_raw("1")?.status(),
+        rest_client.proposal("1")?.status(),
         StatusCode::UNAUTHORIZED
     );
-    assert_eq!(rest_client.funds_raw()?.status(), StatusCode::UNAUTHORIZED);
-    assert_eq!(
-        rest_client.proposal_raw("1")?.status(),
-        StatusCode::UNAUTHORIZED
-    );
-    assert_eq!(
-        rest_client.proposals_raw()?.status(),
-        StatusCode::UNAUTHORIZED
-    );
-    assert_eq!(
-        rest_client.genesis_raw()?.status(),
-        StatusCode::UNAUTHORIZED
-    );
+    assert_eq!(rest_client.proposals()?.status(), StatusCode::UNAUTHORIZED);
+    assert_eq!(rest_client.genesis()?.status(), StatusCode::UNAUTHORIZED);
     Ok(())
 }

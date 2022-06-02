@@ -188,7 +188,8 @@ impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
 
     fn next_challenge(&mut self) -> ChallengeTemplate {
         let challenge = ChallengeTemplate {
-            id: self.next_challenge_id().to_string(),
+            internal_id: self.next_challenge_id(),
+            id: self.generator.id().to_string(),
             challenge_type: self.challenge_type(),
             title: CatchPhase().fake::<String>(),
             description: Buzzword().fake::<String>(),

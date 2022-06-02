@@ -50,6 +50,7 @@ pub struct ProposalTemplate {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ChallengeTemplate {
+    pub internal_id: i32,
     pub id: String,
     pub challenge_type: ChallengeType,
     pub title: String,

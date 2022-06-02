@@ -16,6 +16,7 @@ rand = "0.7.3"
 r2d2 = "0.8"
 structopt = "0.3.14"
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "1"
 tempfile = "3.1.0"
 thiserror = "1.0"
 vit-servicing-station-lib = { path = "../vit-servicing-station-lib" }

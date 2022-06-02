@@ -1,4 +1,4 @@
-use crate::common::data::ValidVotePlanParameters;
+use crate::common::data::{CurrentFund, ValidVotePlanParameters};
 use chain_impl_mockchain::testing::scenario::template::ProposalDefBuilder;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDefBuilder;
@@ -6,7 +6,7 @@ use fake::faker::name::en::Name;
 use fake::Fake;
 use rand::{rngs::OsRng, RngCore};
 use std::{collections::HashMap, iter};
-use time::{macros::format_description, Duration, OffsetDateTime};
+use time::{Duration, OffsetDateTime};
 use vit_servicing_station_lib::{db::models::api_tokens::ApiTokenData, v0::api_token::ApiToken};
 
 #[derive(Clone)]
@@ -109,36 +109,6 @@ impl ArbitraryGenerator {
     }
 
     pub fn valid_vote_plan_parameters(&mut self) -> ValidVotePlanParameters {
-        let format =
-            format_description!("[year]-[month]-[day] [hour]:[minute]:[second] [offset_hour]");
-        let mut parameters =
-            ValidVotePlanParameters::new(self.vote_plan_def_collection(), "fund_x".to_string());
-        parameters.set_voting_power_threshold(8_000);
-        parameters.set_voting_start(
-            OffsetDateTime::parse("2015-09-05 23:56:04 00", format)
-                .unwrap()
-                .unix_timestamp(),
-        );
-        parameters.set_voting_tally_start(
-            OffsetDateTime::parse("2015-09-05 23:56:04 00", format)
-                .unwrap()
-                .unix_timestamp(),
-        );
-        parameters.set_voting_tally_end(
-            OffsetDateTime::parse("2015-09-05 23:56:04 00", format)
-                .unwrap()
-                .unix_timestamp(),
-        );
-        parameters.set_next_fund_start_time(
-            OffsetDateTime::parse("2015-09-12 23:56:04 00", format)
-                .unwrap()
-                .unix_timestamp(),
-        );
-        parameters.set_registration_snapshot_time(
-            OffsetDateTime::parse("2015-09-03 20:00:00 00", format)
-                .unwrap()
-                .unix_timestamp(),
-        );
-        parameters
+        CurrentFund::new(self.vote_plan_def_collection(), Default::default()).into()
     }
 }

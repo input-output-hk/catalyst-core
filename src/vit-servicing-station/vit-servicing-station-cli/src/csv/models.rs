@@ -1,10 +1,33 @@
+use diesel::{ExpressionMethods, Insertable};
 use serde::Deserialize;
 use std::convert::TryInto;
+use vit_servicing_station_lib::db::models::challenges::{
+    Challenge as DbChallenge, ChallengeHighlights,
+};
 use vit_servicing_station_lib::db::models::community_advisors_reviews::{self, ReviewRanking};
 use vit_servicing_station_lib::db::models::proposals::{
     self, community_choice, simple, Category, ChallengeType, ProposalChallengeInfo, Proposer,
 };
 use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
+use vit_servicing_station_lib::db::schema::challenges;
+
+#[derive(Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct Challenge {
+    pub id: i32,
+    #[serde(alias = "challengeType")]
+    pub challenge_type: ChallengeType,
+    pub title: String,
+    pub description: String,
+    #[serde(alias = "rewardsTotal")]
+    pub rewards_total: i64,
+    #[serde(alias = "proposersRewards")]
+    pub proposers_rewards: i64,
+    #[serde(alias = "fundId")]
+    pub fund_id: i32,
+    #[serde(alias = "challengeUrl")]
+    pub challenge_url: String,
+    pub highlights: Option<ChallengeHighlights>,
+}
 
 #[derive(Deserialize, PartialEq, Eq, Debug, Clone)]
 pub struct Proposal {
@@ -102,6 +125,25 @@ fn default_fund_id() -> i32 {
 
 fn default_challenge_id() -> i32 {
     -1
+}
+
+impl Challenge {
+    pub fn into_db_challenge_values(
+        self,
+    ) -> <DbChallenge as Insertable<challenges::table>>::Values {
+        (
+            challenges::id.eq(self.id),
+            challenges::challenge_type.eq(self.challenge_type.to_string()),
+            challenges::title.eq(self.title),
+            challenges::description.eq(self.description),
+            challenges::rewards_total.eq(self.rewards_total),
+            challenges::proposers_rewards.eq(self.proposers_rewards),
+            challenges::fund_id.eq(self.fund_id),
+            challenges::challenge_url.eq(self.challenge_url),
+            // This should always be a valid json
+            challenges::highlights.eq(serde_json::to_string(&self.highlights).ok()),
+        )
+    }
 }
 
 impl Proposal {

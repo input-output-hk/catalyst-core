@@ -3,6 +3,8 @@ use crate::common::data::ArbitraryValidVotingTemplateGenerator;
 use crate::common::data::{Snapshot, ValidVotingTemplateGenerator};
 use std::iter;
 use time::{Duration, OffsetDateTime};
+use vit_servicing_station_lib::db::models::funds::FundStageDates;
+use vit_servicing_station_lib::db::models::goals::Goal;
 use vit_servicing_station_lib::db::models::{
     api_tokens::ApiTokenData,
     challenges::Challenge,
@@ -20,6 +22,16 @@ struct FundDateTimes {
     next: OffsetDateTime,
     snapshot: OffsetDateTime,
     next_snapshot: OffsetDateTime,
+    insight_sharing_start: OffsetDateTime,
+    proposal_submission_start: OffsetDateTime,
+    refine_proposals_start: OffsetDateTime,
+    finalize_proposals_start: OffsetDateTime,
+    proposal_assessment_start: OffsetDateTime,
+    assessment_qa_start: OffsetDateTime,
+    snapshot_start: OffsetDateTime,
+    voting_start: OffsetDateTime,
+    voting_end: OffsetDateTime,
+    tallying_end: OffsetDateTime,
 }
 
 struct VoteplanDateTimes {
@@ -52,12 +64,12 @@ impl ArbitrarySnapshotGenerator {
     }
 
     fn gen_single_fund(&mut self) -> Fund {
-        let id = self.id_generator.id();
+        let id = self.id_generator.id().abs();
         let dates = self.fund_date_times();
         let fund = ValidVotingTemplateGenerator::next_fund(&mut self.template_generator);
 
         Fund {
-            id: id.abs(),
+            id,
             fund_name: format!("Fund{}", id),
             fund_goal: fund.goal,
             fund_start_time: dates.start.unix_timestamp(),
@@ -68,6 +80,25 @@ impl ArbitrarySnapshotGenerator {
             next_registration_snapshot_time: dates.next_snapshot.unix_timestamp(),
             chain_vote_plans: vec![self.voteplan_with_fund_id(id.abs())],
             challenges: self.challenges_with_fund_id(id.abs()),
+            stage_dates: FundStageDates {
+                insight_sharing_start: dates.insight_sharing_start.unix_timestamp(),
+                proposal_submission_start: dates.proposal_submission_start.unix_timestamp(),
+                refine_proposals_start: dates.refine_proposals_start.unix_timestamp(),
+                finalize_proposals_start: dates.finalize_proposals_start.unix_timestamp(),
+                proposal_assessment_start: dates.proposal_assessment_start.unix_timestamp(),
+                assessment_qa_start: dates.assessment_qa_start.unix_timestamp(),
+                snapshot_start: dates.snapshot_start.unix_timestamp(),
+                voting_start: dates.voting_start.unix_timestamp(),
+                voting_end: dates.voting_end.unix_timestamp(),
+                tallying_end: dates.tallying_end.unix_timestamp(),
+            },
+            goals: vec![Goal {
+                id: 1,
+                goal_name: "goal1".into(),
+                fund_id: id.abs(),
+            }],
+            results_url: format!("http://localhost/fund/{id}/results/"),
+            survey_url: format!("http://localhost/fund/{id}/survey/"),
         }
     }
 
@@ -128,12 +159,33 @@ impl ArbitrarySnapshotGenerator {
         let snapshot = rand_datetime_in_range(start, end);
         let next_snapshot = rand_datetime_in_range(end, end + Duration::days(30));
 
+        let insight_sharing_start = rand_datetime_in_range(start, end);
+        let proposal_submission_start = rand_datetime_in_range(insight_sharing_start, end);
+        let refine_proposals_start = rand_datetime_in_range(proposal_submission_start, end);
+        let finalize_proposals_start = rand_datetime_in_range(refine_proposals_start, end);
+        let proposal_assessment_start = rand_datetime_in_range(finalize_proposals_start, end);
+        let assessment_qa_start = rand_datetime_in_range(finalize_proposals_start, end);
+        let snapshot_start = rand_datetime_in_range(assessment_qa_start, end);
+        let voting_start = rand_datetime_in_range(snapshot_start, end);
+        let voting_end = rand_datetime_in_range(voting_start, end);
+        let tallying_end = rand_datetime_in_range(voting_end, end);
+
         FundDateTimes {
             start,
             end,
             next,
             snapshot,
             next_snapshot,
+            insight_sharing_start,
+            proposal_submission_start,
+            refine_proposals_start,
+            finalize_proposals_start,
+            proposal_assessment_start,
+            assessment_qa_start,
+            snapshot_start,
+            voting_start,
+            voting_end,
+            tallying_end,
         }
     }
 
@@ -177,6 +229,18 @@ impl ArbitrarySnapshotGenerator {
             .collect()
     }
 
+    pub fn goals(&mut self, funds: &[Fund]) -> Vec<Goal> {
+        funds
+            .iter()
+            .enumerate()
+            .map(|(i, f)| Goal {
+                id: i as i32,
+                goal_name: format!("goal{i}"),
+                fund_id: f.id,
+            })
+            .collect()
+    }
+
     pub fn voteplan_with_fund_id(&mut self, fund_id: i32) -> Voteplan {
         let id = self.id_generator.next_u32() as i32;
         let dates = self.voteplan_date_times();
@@ -202,6 +266,7 @@ impl ArbitrarySnapshotGenerator {
 
         vec![
             Challenge {
+                internal_id: first_challenge.internal_id,
                 id: simple_id.abs(),
                 challenge_type: ChallengeType::Simple,
                 title: first_challenge.title,
@@ -213,6 +278,7 @@ impl ArbitrarySnapshotGenerator {
                 highlights: self.template_generator.gen_highlights(),
             },
             Challenge {
+                internal_id: second_challenge.internal_id,
                 id: community_choice_id.abs(),
                 challenge_type: ChallengeType::CommunityChoice,
                 title: second_challenge.title,
@@ -231,6 +297,7 @@ impl ArbitrarySnapshotGenerator {
         let challenge = self.template_generator.next_challenge();
 
         Challenge {
+            internal_id: challenge.internal_id,
             id: id.abs(),
             challenge_type: ChallengeType::CommunityChoice,
             title: challenge.title,
@@ -241,6 +308,23 @@ impl ArbitrarySnapshotGenerator {
             challenge_url: self.template_generator.gen_http_address(),
             highlights: challenge.highlight,
         }
+    }
+
+    pub fn goals_with_fund_id(&mut self, fund_id: i32) -> Vec<Goal> {
+        let id = (self.id_generator.next_u32() % (i32::MAX as u32)) as i32;
+
+        vec![
+            Goal {
+                fund_id,
+                id,
+                goal_name: "goal1".into(),
+            },
+            Goal {
+                fund_id,
+                id,
+                goal_name: "goal2".into(),
+            },
+        ]
     }
 
     pub fn review_with_proposal_id(&mut self, proposal_id: i32) -> AdvisorReview {
@@ -266,9 +350,12 @@ impl ArbitrarySnapshotGenerator {
         let challenges = self.challenges(&funds);
         let proposals = self.proposals(&funds);
         let reviews = self.advisor_reviews(&proposals);
+        let goals = self.goals(&funds);
         let tokens = self.id_generator.tokens();
 
-        Snapshot::new(funds, proposals, challenges, tokens, voteplans, reviews)
+        Snapshot::new(
+            funds, proposals, challenges, tokens, voteplans, reviews, goals,
+        )
     }
 }
 

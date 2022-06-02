@@ -1,140 +1,15 @@
+use super::parameters::SingleVotePlanParameters;
 use crate::common::data::generator::{ArbitraryGenerator, Snapshot, ValidVotingTemplateGenerator};
+use crate::common::data::ValidVotePlanParameters;
 use chain_impl_mockchain::certificate::VotePlan;
-use chain_impl_mockchain::testing::scenario::template::ProposalDef;
-use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::db::models::{
     challenges::Challenge,
     funds::Fund,
     proposals::{Category, Proposal, Proposer},
-    vote_options::VoteOptions,
     voteplans::Voteplan,
 };
-
-pub struct SingleVotePlanParameters {
-    vote_plan: VotePlanDef,
-    vote_encryption_key: Option<String>,
-}
-
-impl SingleVotePlanParameters {
-    pub fn proposals(&self) -> Vec<ProposalDef> {
-        self.vote_plan.proposals()
-    }
-
-    pub fn alias(&self) -> String {
-        self.vote_plan.alias()
-    }
-}
-
-impl From<VotePlanDef> for SingleVotePlanParameters {
-    fn from(vote_plan: VotePlanDef) -> Self {
-        Self {
-            vote_plan,
-            vote_encryption_key: None,
-        }
-    }
-}
-
-pub struct ValidVotePlanParameters {
-    pub fund_name: String,
-    pub vote_plans: Vec<SingleVotePlanParameters>,
-    pub voting_power_threshold: Option<i64>,
-    pub voting_start: Option<i64>,
-    pub voting_tally_start: Option<i64>,
-    pub voting_tally_end: Option<i64>,
-    pub next_fund_start_time: Option<i64>,
-    pub registration_snapshot_time: Option<i64>,
-    pub next_registration_snapshot_time: Option<i64>,
-    pub vote_options: Option<VoteOptions>,
-    pub challenges_count: usize,
-    pub reviews_count: usize,
-    pub fund_id: Option<i32>,
-    pub calculate_challenges_total_funds: bool,
-}
-
-impl ValidVotePlanParameters {
-    pub fn from_single(vote_plan: VotePlanDef) -> Self {
-        let alias = vote_plan.alias();
-        Self::new(vec![vote_plan], alias)
-    }
-
-    pub fn new(vote_plans: Vec<VotePlanDef>, fund_name: String) -> Self {
-        Self {
-            vote_plans: vote_plans.into_iter().map(Into::into).collect(),
-            fund_name,
-            voting_power_threshold: Some(8000),
-            voting_start: None,
-            voting_tally_start: None,
-            voting_tally_end: None,
-            next_fund_start_time: None,
-            registration_snapshot_time: None,
-            next_registration_snapshot_time: None,
-            vote_options: Some(VoteOptions::parse_coma_separated_value("blank,yes,no")),
-            challenges_count: 4,
-            reviews_count: 1,
-            fund_id: Some(1),
-            calculate_challenges_total_funds: false,
-        }
-    }
-
-    pub fn set_voting_power_threshold(&mut self, voting_power_threshold: i64) {
-        self.voting_power_threshold = Some(voting_power_threshold);
-    }
-
-    pub fn set_vote_encryption_key(&mut self, vote_encryption_key: String, alias: &str) {
-        let vote_plan = self
-            .vote_plans
-            .iter_mut()
-            .find(|x| x.alias() == alias)
-            .unwrap();
-        vote_plan.vote_encryption_key = Some(vote_encryption_key);
-    }
-
-    pub fn set_voting_start(&mut self, voting_start: i64) {
-        self.voting_start = Some(voting_start);
-    }
-
-    pub fn set_voting_tally_start(&mut self, voting_tally_start: i64) {
-        self.voting_tally_start = Some(voting_tally_start);
-    }
-
-    pub fn set_voting_tally_end(&mut self, voting_tally_end: i64) {
-        self.voting_tally_end = Some(voting_tally_end);
-    }
-
-    pub fn set_next_fund_start_time(&mut self, next_fund_start_time: i64) {
-        self.next_fund_start_time = Some(next_fund_start_time);
-    }
-
-    pub fn set_registration_snapshot_time(&mut self, registration_snapshot_time: i64) {
-        self.registration_snapshot_time = Some(registration_snapshot_time);
-    }
-
-    pub fn set_next_registration_snapshot_time(&mut self, next_registration_snapshot_time: i64) {
-        self.next_registration_snapshot_time = Some(next_registration_snapshot_time);
-    }
-
-    pub fn set_challenges_count(&mut self, challenges_count: usize) {
-        self.challenges_count = challenges_count;
-    }
-
-    pub fn set_reviews_count(&mut self, reviews_count: usize) {
-        self.reviews_count = reviews_count;
-    }
-
-    pub fn set_vote_options(&mut self, vote_options: VoteOptions) {
-        self.vote_options = Some(vote_options);
-    }
-
-    pub fn set_fund_id(&mut self, fund_id: i32) {
-        self.fund_id = Some(fund_id);
-    }
-
-    pub fn set_calculate_challenges_total_funds(&mut self, calculate_challenges_total_funds: bool) {
-        self.calculate_challenges_total_funds = calculate_challenges_total_funds;
-    }
-}
 
 pub struct ValidVotePlanGenerator {
     parameters: ValidVotePlanParameters,
@@ -146,31 +21,18 @@ impl ValidVotePlanGenerator {
     }
 
     fn convert_to_vote_plan(single_vote_plan: &SingleVotePlanParameters) -> VotePlan {
-        single_vote_plan.vote_plan.clone().into()
+        single_vote_plan.vote_plan().into()
     }
 
     pub fn build(&mut self, template_generator: &mut dyn ValidVotingTemplateGenerator) -> Snapshot {
         let mut generator = ArbitraryGenerator::new();
 
-        let threshold = self.parameters.voting_power_threshold.unwrap();
-        let voting_start = self.parameters.voting_start.unwrap();
-        let voting_tally_start = self.parameters.voting_tally_start.unwrap();
-        let voting_tally_end = self.parameters.voting_tally_end.unwrap();
-        let next_fund_start_time = self.parameters.next_fund_start_time.unwrap();
-        let registration_snapshot_time = self
-            .parameters
-            .registration_snapshot_time
-            .unwrap_or(voting_start);
-        let next_registration_snapshot_time = self
-            .parameters
-            .next_registration_snapshot_time
-            .unwrap_or(voting_tally_end);
-
         let fund_template = template_generator.next_fund();
-        let fund_id = self.parameters.fund_id.unwrap_or(fund_template.id);
+        self.parameters.current_fund.info.fund_goal = fund_template.goal;
 
         let vote_plans: Vec<Voteplan> = self
             .parameters
+            .current_fund
             .vote_plans
             .iter()
             .map(|single_vote_plan| {
@@ -184,55 +46,50 @@ impl ValidVotePlanGenerator {
                 Voteplan {
                     id: generator.id(),
                     chain_voteplan_id: vote_plan.to_id().to_string(),
-                    chain_vote_start_time: voting_start,
-                    chain_vote_end_time: voting_tally_start,
-                    chain_committee_end_time: voting_tally_end,
+                    chain_vote_start_time: self.parameters.current_fund.info.dates.voting_start,
+                    chain_vote_end_time: self.parameters.current_fund.info.dates.voting_tally_start,
+                    chain_committee_end_time: self
+                        .parameters
+                        .current_fund
+                        .info
+                        .dates
+                        .voting_tally_end,
                     chain_voteplan_payload: payload_type.to_string(),
                     chain_vote_encryption_key: single_vote_plan
-                        .vote_encryption_key
-                        .clone()
+                        .vote_encryption_key()
                         .unwrap_or_else(|| "".to_string()),
-                    fund_id,
+                    fund_id: self.parameters.current_fund.info.fund_id,
                 }
             })
             .collect();
 
-        let count = self.parameters.challenges_count;
         let challenges: Vec<Challenge> = std::iter::from_fn(|| {
             let challenge_data = template_generator.next_challenge();
             Some(Challenge {
+                internal_id: challenge_data.internal_id,
                 id: challenge_data.id.parse().unwrap(),
                 challenge_type: challenge_data.challenge_type,
                 title: challenge_data.title,
                 description: challenge_data.description,
                 rewards_total: challenge_data.rewards_total.parse().unwrap(),
                 proposers_rewards: challenge_data.proposers_rewards.parse().unwrap(),
-                fund_id,
+                fund_id: self.parameters.current_fund.info.fund_id,
                 challenge_url: challenge_data.challenge_url,
                 highlights: challenge_data.highlight,
             })
         })
-        .take(count)
+        .take(self.parameters.current_fund.challenges_count)
         .collect();
 
-        let mut fund = Fund {
-            id: fund_id,
-            fund_name: self.parameters.fund_name.clone(),
-            fund_goal: fund_template.goal,
-            voting_power_threshold: threshold,
-            fund_start_time: voting_start,
-            fund_end_time: voting_tally_start,
-            next_fund_start_time,
-            registration_snapshot_time,
-            next_registration_snapshot_time,
-            chain_vote_plans: vote_plans.clone(),
-            challenges,
-        };
+        let mut fund = self
+            .parameters
+            .current_fund
+            .to_fund(vote_plans.clone(), challenges);
 
         let mut proposals = vec![];
 
         for (index, vote_plan) in vote_plans.iter().enumerate() {
-            for (index, proposal) in self.parameters.vote_plans[index]
+            for (index, proposal) in self.parameters.current_fund.vote_plans[index]
                 .proposals()
                 .iter()
                 .enumerate()
@@ -250,9 +107,12 @@ impl ValidVotePlanGenerator {
                         )
                     });
                 let proposal_funds = proposal_template.proposal_funds.parse().unwrap();
-                let chain_vote_options = proposal_template.chain_vote_options.clone();
 
-                if self.parameters.calculate_challenges_total_funds {
+                if self
+                    .parameters
+                    .current_fund
+                    .calculate_challenges_total_funds
+                {
                     challenge.rewards_total += proposal_funds;
                 }
 
@@ -281,11 +141,7 @@ impl ValidVotePlanGenerator {
                     },
                     chain_proposal_id: proposal.id().to_string().as_bytes().to_vec(),
                     chain_proposal_index: index as i64,
-                    chain_vote_options: self
-                        .parameters
-                        .vote_options
-                        .clone()
-                        .unwrap_or(chain_vote_options),
+                    chain_vote_options: self.parameters.current_fund.vote_options.clone(),
                     chain_voteplan_id: vote_plan.chain_voteplan_id.clone(),
                     chain_vote_start_time: vote_plan.chain_vote_start_time,
                     chain_vote_end_time: vote_plan.chain_vote_end_time,
@@ -325,16 +181,29 @@ impl ValidVotePlanGenerator {
                 ranking: review_data.ranking,
             })
         })
-        .take(self.parameters.reviews_count)
+        .take(self.parameters.current_fund.reviews_count)
         .collect();
 
+        let goals = fund.goals.clone();
+
+        let mut funds = vec![fund];
+        let next_funds: Vec<Fund> = self
+            .parameters
+            .next_funds
+            .iter()
+            .cloned()
+            .map(Into::into)
+            .collect();
+        funds.extend(next_funds);
+
         Snapshot::new(
-            vec![fund],
+            funds,
             proposals,
             challenges,
             generator.tokens(),
             vote_plans,
             reviews,
+            goals,
         )
     }
 }

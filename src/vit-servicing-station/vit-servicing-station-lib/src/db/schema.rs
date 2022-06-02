@@ -8,6 +8,7 @@ table! {
 
 table! {
     challenges (id) {
+        internal_id -> Integer,
         id -> Integer,
         challenge_type -> Text,
         title -> Text,
@@ -46,6 +47,26 @@ table! {
         fund_start_time -> BigInt,
         fund_end_time -> BigInt,
         next_fund_start_time -> BigInt,
+        insight_sharing_start -> BigInt,
+        proposal_submission_start -> BigInt,
+        refine_proposals_start -> BigInt,
+        finalize_proposals_start -> BigInt,
+        proposal_assessment_start -> BigInt,
+        assessment_qa_start -> BigInt,
+        snapshot_start -> BigInt,
+        voting_start -> BigInt,
+        voting_end -> BigInt,
+        tallying_end -> BigInt,
+        results_url -> Text,
+        survey_url -> Text,
+    }
+}
+
+table! {
+    goals (id) {
+        id -> Integer,
+        goal_name -> Text,
+        fund_id -> Integer,
     }
 }
 
@@ -103,11 +124,14 @@ table! {
     }
 }
 
+joinable!(goals -> funds (fund_id));
+
 allow_tables_to_appear_in_same_query!(
     api_tokens,
     challenges,
     community_advisors_reviews,
     funds,
+    goals,
     proposal_community_choice_challenge,
     proposal_simple_challenge,
     proposals,

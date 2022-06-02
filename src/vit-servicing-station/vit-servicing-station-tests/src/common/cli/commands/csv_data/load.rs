@@ -39,6 +39,11 @@ impl LoadCsvCommand {
         self
     }
 
+    pub fn goals<P: AsRef<Path>>(mut self, goals: P) -> Self {
+        self.command.arg("--goals").arg(goals.as_ref());
+        self
+    }
+
     pub fn build(self) -> Command {
         self.command
     }

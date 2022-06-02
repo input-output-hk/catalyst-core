@@ -6,6 +6,7 @@ mod health;
 pub mod proposals;
 pub mod search;
 pub mod service_version;
+mod snapshot;
 
 use crate::v0::context::SharedContext;
 
@@ -16,6 +17,8 @@ use warp::{Filter, Rejection, Reply};
 pub async fn filter(
     root: BoxedFilter<()>,
     context: SharedContext,
+    snapshot_rx: snapshot_service::SharedContext,
+    snapshot_tx: snapshot_service::UpdateHandle,
     enable_api_tokens: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     // mount health endpoint
@@ -44,6 +47,20 @@ pub async fn filter(
     let search_root = warp::path!("search" / ..);
     let search_filter = search::filter(search_root.boxed(), context.clone()).await;
 
+    let snapshot_root = warp::path!("snapshot" / ..);
+    let snapshot_rx_filter = snapshot_service::filter(snapshot_root.boxed(), snapshot_rx.clone());
+
+    let admin_filter = {
+        let base = warp::path!("admin" / ..);
+
+        let snapshot_tx_filter =
+            warp::path!("snapshot" / ..).and(snapshot_service::update_filter(snapshot_tx).boxed());
+
+        let fund_filter = warp::path!("fund" / ..).and(funds::admin_filter(context.clone()));
+
+        base.and(snapshot_tx_filter.or(fund_filter))
+    };
+
     let api_token_filter = if enable_api_tokens {
         api_token::api_token_filter(context).await.boxed()
     } else {
@@ -58,7 +75,9 @@ pub async fn filter(
                 .or(funds_filter)
                 .or(challenges_filter)
                 .or(reviews_filter)
-                .or(search_filter),
+                .or(search_filter)
+                .or(snapshot_rx_filter)
+                .or(admin_filter),
         ),
     )
     .boxed()

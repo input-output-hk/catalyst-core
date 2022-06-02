@@ -3,6 +3,8 @@ use diesel::query_dsl::RunQueryDsl;
 use diesel::{Insertable, SqliteConnection};
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
+use vit_servicing_station_lib::db::models::goals::InsertGoal;
+use vit_servicing_station_lib::db::schema::goals;
 use vit_servicing_station_lib::db::{
     models::{
         api_tokens::ApiTokenData,
@@ -139,17 +141,7 @@ impl<'a> DbInserter<'a> {
 
     pub fn insert_funds(&self, funds: &[Fund]) -> Result<(), DbInserterError> {
         for fund in funds {
-            let values = (
-                funds::id.eq(fund.id),
-                funds::fund_name.eq(fund.fund_name.clone()),
-                funds::fund_goal.eq(fund.fund_goal.clone()),
-                funds::voting_power_threshold.eq(fund.voting_power_threshold),
-                funds::fund_start_time.eq(fund.fund_start_time),
-                funds::fund_end_time.eq(fund.fund_end_time),
-                funds::next_fund_start_time.eq(fund.next_fund_start_time),
-                funds::registration_snapshot_time.eq(fund.registration_snapshot_time),
-                funds::next_registration_snapshot_time.eq(fund.next_registration_snapshot_time),
-            );
+            let values = fund.clone().values();
 
             diesel::insert_into(funds::table)
                 .values(values)
@@ -174,18 +166,9 @@ impl<'a> DbInserter<'a> {
                     .map_err(DbInserterError::DieselError)?;
             }
 
-            for challenge in &fund.challenges {
-                let values = (
-                    challenges::id.eq(challenge.id),
-                    challenges::challenge_type.eq(challenge.challenge_type.to_string()),
-                    challenges::title.eq(challenge.title.clone()),
-                    challenges::description.eq(challenge.description.clone()),
-                    challenges::rewards_total.eq(challenge.rewards_total),
-                    challenges::fund_id.eq(challenge.fund_id),
-                    challenges::challenge_url.eq(challenge.challenge_url.clone()),
-                );
-                diesel::insert_or_ignore_into(challenges::table)
-                    .values(values)
+            for goal in &fund.goals {
+                diesel::insert_or_ignore_into(goals::table)
+                    .values(InsertGoal::from(goal))
                     .execute(self.connection)
                     .map_err(DbInserterError::DieselError)?;
             }

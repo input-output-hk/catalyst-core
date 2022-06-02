@@ -497,7 +497,7 @@ dependencies = [
 [[package]]
 name = "cardano-legacy-address"
 version = "0.1.1"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6e033ed9cce4857a94817c25e99a4b67a601fef1"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
  "cbor_event",
  "cryptoxide 0.4.2",
@@ -621,7 +621,7 @@ dependencies = [
 [[package]]
 name = "chain-addr"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6e033ed9cce4857a94817c25e99a4b67a601fef1"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
  "bech32 0.8.1",
  "chain-core",
@@ -635,7 +635,7 @@ dependencies = [
 [[package]]
 name = "chain-core"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6e033ed9cce4857a94817c25e99a4b67a601fef1"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
  "chain-ser",
 ]
@@ -643,7 +643,7 @@ dependencies = [
 [[package]]
 name = "chain-crypto"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6e033ed9cce4857a94817c25e99a4b67a601fef1"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
  "bech32 0.8.1",
  "cryptoxide 0.4.2",
@@ -665,7 +665,7 @@ dependencies = [
 [[package]]
 name = "chain-evm"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6e033ed9cce4857a94817c25e99a4b67a601fef1"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
  "aurora-bn",
  "base64 0.13.0",
@@ -694,7 +694,7 @@ dependencies = [
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6e033ed9cce4857a94817c25e99a4b67a601fef1"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
  "cardano-legacy-address",
  "chain-addr",
@@ -734,7 +734,7 @@ dependencies = [
 [[package]]
 name = "chain-ser"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6e033ed9cce4857a94817c25e99a4b67a601fef1"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
  "thiserror",
 ]
@@ -755,7 +755,7 @@ dependencies = [
 [[package]]
 name = "chain-time"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6e033ed9cce4857a94817c25e99a4b67a601fef1"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
  "chain-core",
  "chain-ser",
@@ -767,7 +767,7 @@ dependencies = [
 [[package]]
 name = "chain-vote"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6e033ed9cce4857a94817c25e99a4b67a601fef1"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
  "cfg-if 1.0.0",
  "chain-core",
@@ -2583,7 +2583,7 @@ dependencies = [
 [[package]]
 name = "imhamt"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6e033ed9cce4857a94817c25e99a4b67a601fef1"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
  "proptest",
  "rustc_version",
@@ -2933,7 +2933,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#69132bda6b489e395f53954e148b915fc5977e34"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#450e4eb85ecfa2af9303269d2f8b31d9cbbd922b"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -5410,7 +5410,7 @@ checksum = "f2dd574626839106c320a323308629dcb1acfc96e32a8cba364ddc61ac23ee83"
 [[package]]
 name = "snapshot-service"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#b7b52dd510c81297c22aaf14ea72219858602b3a"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#e4f7858b01b9d37b7df183acdc383b227d718100"
 dependencies = [
  "jormungandr-lib",
  "notify",
@@ -5471,7 +5471,7 @@ dependencies = [
 [[package]]
 name = "sparse-array"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6e033ed9cce4857a94817c25e99a4b67a601fef1"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 
 [[package]]
 name = "spin"
@@ -6361,7 +6361,7 @@ dependencies = [
 [[package]]
 name = "typed-bytes"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#6e033ed9cce4857a94817c25e99a4b67a601fef1"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 
 [[package]]
 name = "typenum"
@@ -6557,7 +6557,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#b7b52dd510c81297c22aaf14ea72219858602b3a"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#e4f7858b01b9d37b7df183acdc383b227d718100"
 dependencies = [
  "async-trait",
  "base64 0.12.3",
@@ -6589,7 +6589,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#b7b52dd510c81297c22aaf14ea72219858602b3a"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#e4f7858b01b9d37b7df183acdc383b227d718100"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -6708,7 +6708,7 @@ checksum = "6a02e4885ed3bc0f2de90ea6dd45ebcbb66dacffe03547fadbb0eeae2770887d"
 [[package]]
 name = "voting-hir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=main#eaf0c3b0409ae237d0dcffd5e82ddadd52f344a1"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=main#00c2beb337fc730d0c9567055bef4c591ead78b0"
 dependencies = [
  "jormungandr-lib",
  "serde",

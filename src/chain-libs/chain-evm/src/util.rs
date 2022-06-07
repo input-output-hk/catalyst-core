@@ -1,5 +1,5 @@
 use crate::{
-    transaction::{EthereumSignedTransaction, EthereumTransaction},
+    transaction::{EthereumSignedTransaction, EthereumUnsignedTransaction},
     Address,
 };
 use ethereum_types::H256;
@@ -42,7 +42,7 @@ impl Secret {
     }
     pub fn sign(
         &self,
-        tx: EthereumTransaction,
+        tx: EthereumUnsignedTransaction,
     ) -> Result<EthereumSignedTransaction, secp256k1::Error> {
         tx.sign(&self.secret_hash())
     }
@@ -74,8 +74,11 @@ pub fn sign_data_hash(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ethereum::LegacyTransactionMessage;
-    use ethereum_types::U256;
+    use ethereum::{
+        AccessListItem, EIP1559Transaction, EIP2930Transaction, LegacyTransaction,
+        LegacyTransactionMessage, TransactionAction, TransactionSignature, TransactionV2,
+    };
+    use ethereum_types::{H160, U256};
     use secp256k1::PublicKey;
     use std::str::FromStr;
 
@@ -83,10 +86,164 @@ mod tests {
     const TEST_CHAIN_ID: u64 = 1;
 
     #[test]
+    fn can_decode_raw_transaction() {
+        let bytes = hex::decode("f901e48080831000008080b90196608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055507fc68045c3c562488255b55aa2c4c7849de001859ff0d8a36a75c2d5ed80100fb660405180806020018281038252600d8152602001807f48656c6c6f2c20776f726c64210000000000000000000000000000000000000081525060200191505060405180910390a160cf806100c76000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c80638da5cb5b14602d575b600080fd5b60336075565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff168156fea265627a7a72315820fae816ad954005c42bea7bc7cb5b19f7fd5d3a250715ca2023275c9ca7ce644064736f6c634300050f003278a04cab43609092a99cf095d458b61b47189d1bbab64baed10a0fd7b7d2de2eb960a011ab1bcda76dfed5e733219beb83789f9887b2a7b2e61759c7c90f7d40403201").unwrap();
+
+        assert!(EthereumSignedTransaction::from_bytes(bytes.as_slice()).is_ok());
+    }
+
+    #[test]
+    fn legacy_transaction() {
+        let tx = EthereumSignedTransaction(TransactionV2::Legacy(LegacyTransaction {
+			nonce: 12_u64.into(),
+			gas_price: 20_000_000_000_u64.into(),
+			gas_limit: 21000_u64.into(),
+			action: TransactionAction::Call(
+				H160::from_slice(hex::decode("727fc6a68321b754475c668a6abfb6e9e71c169a").unwrap().as_slice()),
+			),
+			value: (10_u128 * 1_000_000_000_u128 * 1_000_000_000_u128).into(),
+			input: hex::decode("a9059cbb000000000213ed0f886efd100b67c7e4ec0a85a7d20dc971600000000000000000000015af1d78b58c4000").unwrap(),
+			signature: TransactionSignature::new(38, H256::from_slice(hex::decode("be67e0a07db67da8d446f76add590e54b6e92cb6b8f9835aeb67540579a27717").unwrap().as_slice()),  H256::from_slice(hex::decode("2d690516512020171c1ec870f6ff45398cc8609250326be89915fb538e7bd718").unwrap().as_slice())).unwrap(),
+		}));
+
+        assert_eq!(
+            rlp::decode::<EthereumSignedTransaction>(&rlp::encode(&tx)).unwrap(),
+            tx,
+        );
+    }
+
+    #[test]
+    fn eip2930_transaction() {
+        let tx =
+            EthereumSignedTransaction(TransactionV2::EIP2930(EIP2930Transaction {
+                chain_id: 5,
+                nonce: 7_u64.into(),
+                gas_price: 30_000_000_000_u64.into(),
+                gas_limit: 5_748_100_u64.into(),
+                action: TransactionAction::Call(H160::from_slice(
+                    hex::decode("811a752c8cd697e3cb27279c330ed1ada745a8d7")
+                        .unwrap()
+                        .as_slice(),
+                )),
+                value: (2_u128 * 1_000_000_000_u128 * 1_000_000_000_u128).into(),
+                input: hex::decode("6ebaf477f83e051589c1188bcc6ddccd").unwrap(),
+                access_list: vec![
+                    AccessListItem {
+                        address: H160::from_slice(
+                            hex::decode("de0b295669a9fd93d5f28d9ec85e40f4cb697bae")
+                                .unwrap()
+                                .as_slice(),
+                        ),
+                        storage_keys: vec![
+                        H256::from_slice(hex::decode(
+                            "0000000000000000000000000000000000000000000000000000000000000003",
+                        ).unwrap().as_slice()),
+                        H256::from_slice(hex::decode(
+                            "0000000000000000000000000000000000000000000000000000000000000007",
+                        )
+                        .unwrap().as_slice()),
+                    ],
+                    },
+                    AccessListItem {
+                        address: H160::from_slice(
+                            hex::decode("bb9bc244d798123fde783fcc1c72d3bb8c189413")
+                                .unwrap()
+                                .as_slice(),
+                        ),
+                        storage_keys: vec![],
+                    },
+                ],
+                odd_y_parity: false,
+                r: H256::from_slice(
+                    hex::decode("36b241b061a36a32ab7fe86c7aa9eb592dd59018cd0443adc0903590c16b02b0")
+                        .unwrap()
+                        .as_slice(),
+                ),
+                s: H256::from_slice(
+                    hex::decode("5edcc541b4741c5cc6dd347c5ed9577ef293a62787b4510465fadbfe39ee4094")
+                        .unwrap()
+                        .as_slice(),
+                ),
+            }));
+
+        assert_eq!(
+            rlp::decode::<EthereumSignedTransaction>(&rlp::encode(&tx)).unwrap(),
+            tx,
+        );
+    }
+
+    #[test]
+    fn eip1559_transaction() {
+        let tx = EthereumSignedTransaction(TransactionV2::EIP1559(EIP1559Transaction {
+            chain_id: 5,
+            nonce: 7_u64.into(),
+            max_priority_fee_per_gas: 10_000_000_000_u64.into(),
+            max_fee_per_gas: 30_000_000_000_u64.into(),
+            gas_limit: 5_748_100_u64.into(),
+            action: TransactionAction::Call(H160::from_slice(
+                hex::decode("811a752c8cd697e3cb27279c330ed1ada745a8d7")
+                    .unwrap()
+                    .as_slice(),
+            )),
+            value: (2_u128 * 1_000_000_000_u128 * 1_000_000_000_u128).into(),
+            input: hex::decode("6ebaf477f83e051589c1188bcc6ddccd").unwrap(),
+            access_list: vec![
+                AccessListItem {
+                    address: H160::from_slice(
+                        hex::decode("de0b295669a9fd93d5f28d9ec85e40f4cb697bae")
+                            .unwrap()
+                            .as_slice(),
+                    ),
+                    storage_keys: vec![
+                        H256::from_slice(
+                            hex::decode(
+                                "0000000000000000000000000000000000000000000000000000000000000003",
+                            )
+                            .unwrap()
+                            .as_slice(),
+                        ),
+                        H256::from_slice(
+                            hex::decode(
+                                "0000000000000000000000000000000000000000000000000000000000000007",
+                            )
+                            .unwrap()
+                            .as_slice(),
+                        ),
+                    ],
+                },
+                AccessListItem {
+                    address: H160::from_slice(
+                        hex::decode("bb9bc244d798123fde783fcc1c72d3bb8c189413")
+                            .unwrap()
+                            .as_slice(),
+                    ),
+                    storage_keys: vec![],
+                },
+            ],
+            odd_y_parity: false,
+            r: H256::from_slice(
+                hex::decode("36b241b061a36a32ab7fe86c7aa9eb592dd59018cd0443adc0903590c16b02b0")
+                    .unwrap()
+                    .as_slice(),
+            ),
+            s: H256::from_slice(
+                hex::decode("5edcc541b4741c5cc6dd347c5ed9577ef293a62787b4510465fadbfe39ee4094")
+                    .unwrap()
+                    .as_slice(),
+            ),
+        }));
+
+        assert_eq!(
+            rlp::decode::<EthereumSignedTransaction>(&rlp::encode(&tx)).unwrap(),
+            tx,
+        );
+    }
+
+    #[test]
     fn test_transaction_signature_is_recoverable() {
         let keypair = generate_keypair();
         let unsigned_tx =
-            crate::transaction::EthereumTransaction::Legacy(LegacyTransactionMessage {
+            crate::transaction::EthereumUnsignedTransaction::Legacy(LegacyTransactionMessage {
                 nonce: U256::zero(),
                 gas_price: U256::zero(),
                 gas_limit: U256::zero(),
@@ -109,7 +266,7 @@ mod tests {
     fn test_legacy_transaction_signature() {
         // This test takes values found at https://eips.ethereum.org/EIPS/eip-155#example
         let unsigned_tx =
-            crate::transaction::EthereumTransaction::Legacy(LegacyTransactionMessage {
+            crate::transaction::EthereumUnsignedTransaction::Legacy(LegacyTransactionMessage {
                 nonce: U256::from(9_u64),
                 gas_price: U256::from(20_u64 * 10_u64.pow(9)),
                 gas_limit: U256::from(21_000_u64),
@@ -120,12 +277,6 @@ mod tests {
                 input: Vec::new(),
                 chain_id: Some(TEST_CHAIN_ID),
             });
-
-        // test signing data
-        assert_eq!(
-            hex::encode(unsigned_tx.to_bytes().as_slice()),
-            "ec098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a764000080018080"
-        );
 
         // test signing hash
         let tx_hash = unsigned_tx.hash();

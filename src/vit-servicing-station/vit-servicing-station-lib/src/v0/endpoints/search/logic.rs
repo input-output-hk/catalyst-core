@@ -99,6 +99,22 @@ mod test {
             .await
             .as_json();
 
+        // db sets these fields
+        let challenge_1 = Challenge {
+            internal_id: 1,
+            ..challenge_1
+        };
+
+        let challenge_2 = Challenge {
+            internal_id: 2,
+            ..challenge_2
+        };
+
+        let challenge_3 = Challenge {
+            internal_id: 3,
+            ..challenge_3
+        };
+
         let output = vec![challenge_1, challenge_2, challenge_3];
         assert_eq!(challenges, output);
 

@@ -17,22 +17,28 @@ table! {
         proposer_url -> Text,
         proposer_relevant_experience -> Text,
         chain_proposal_id -> Binary,
-        chain_proposal_index -> BigInt,
         chain_vote_options -> Text,
-        chain_voteplan_id -> Text,
+        challenge_id -> Integer,
+
+        reviews_count -> Integer,
+
         chain_vote_start_time -> BigInt,
         chain_vote_end_time -> BigInt,
         chain_committee_end_time -> BigInt,
         chain_voteplan_payload -> Text,
         chain_vote_encryption_key -> Text,
         fund_id -> Integer,
-        challenge_id -> Integer,
-        reviews_count -> Integer,
+
         challenge_type -> Text,
         proposal_solution -> Nullable<Text>,
         proposal_brief -> Nullable<Text>,
         proposal_importance -> Nullable<Text>,
         proposal_goal -> Nullable<Text>,
         proposal_metrics -> Nullable<Text>,
+
+        chain_proposal_index -> BigInt,
+        chain_voteplan_id -> Text,
+
+        group_id -> Text,
     }
 }

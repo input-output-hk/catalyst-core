@@ -1,10 +1,12 @@
 use diesel::expression_methods::ExpressionMethods;
 use diesel::query_dsl::RunQueryDsl;
-use diesel::{Insertable, SqliteConnection};
+use diesel::{Insertable, QueryDsl, SqliteConnection};
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::goals::InsertGoal;
+use vit_servicing_station_lib::db::models::groups::Group;
 use vit_servicing_station_lib::db::schema::goals;
+use vit_servicing_station_lib::db::schema::{groups, proposals_voteplans};
 use vit_servicing_station_lib::db::{
     models::{
         api_tokens::ApiTokenData,
@@ -51,6 +53,7 @@ impl<'a> DbInserter<'a> {
 
     pub fn insert_proposals(&self, proposals: &[FullProposalInfo]) -> Result<(), DbInserterError> {
         for proposal in proposals {
+            let proposal_id = proposal.proposal.proposal_id.clone();
             let values = (
                 proposals::id.eq(proposal.proposal.internal_id),
                 proposals::proposal_id.eq(proposal.proposal.proposal_id.clone()),
@@ -75,19 +78,36 @@ impl<'a> DbInserter<'a> {
                     .proposer_relevant_experience
                     .clone()),
                 proposals::chain_proposal_id.eq(proposal.proposal.chain_proposal_id.clone()),
-                proposals::chain_proposal_index.eq(proposal.proposal.chain_proposal_index),
                 proposals::chain_vote_options
                     .eq(proposal.proposal.chain_vote_options.as_csv_string()),
-                proposals::chain_voteplan_id.eq(proposal.proposal.chain_voteplan_id.clone()),
                 proposals::challenge_id.eq(proposal.proposal.challenge_id),
             );
-            diesel::insert_into(proposals::table)
+            diesel::insert_or_ignore_into(proposals::table)
                 .values(values)
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
 
+            let values = (
+                proposals_voteplans::proposal_id.eq(proposal_id),
+                proposals_voteplans::chain_proposal_index
+                    .eq(proposal.voteplan.chain_proposal_index),
+                proposals_voteplans::chain_voteplan_id
+                    .eq(proposal.voteplan.chain_voteplan_id.clone()),
+            );
+            diesel::insert_into(proposals_voteplans::table)
+                .values(values)
+                .execute(self.connection)
+                .map_err(DbInserterError::DieselError)?;
+
+            let token_id = groups::table
+                .filter(groups::fund_id.eq(proposal.proposal.fund_id))
+                .filter(groups::group_id.eq(&proposal.group_id))
+                .select(groups::token_identifier)
+                .first::<String>(self.connection)
+                .map_err(DbInserterError::DieselError)?;
+
             let voteplan_values = (
-                voteplans::chain_voteplan_id.eq(proposal.proposal.chain_voteplan_id.clone()),
+                voteplans::chain_voteplan_id.eq(proposal.voteplan.chain_voteplan_id.clone()),
                 voteplans::chain_vote_start_time.eq(proposal.proposal.chain_vote_start_time),
                 voteplans::chain_vote_end_time.eq(proposal.proposal.chain_vote_end_time),
                 voteplans::chain_committee_end_time.eq(proposal.proposal.chain_committee_end_time),
@@ -96,6 +116,7 @@ impl<'a> DbInserter<'a> {
                 voteplans::chain_vote_encryption_key
                     .eq(proposal.proposal.chain_vote_encryption_key.clone()),
                 voteplans::fund_id.eq(proposal.proposal.fund_id),
+                voteplans::token_identifier.eq(token_id),
             );
 
             diesel::insert_or_ignore_into(voteplans::table)
@@ -111,7 +132,7 @@ impl<'a> DbInserter<'a> {
                         proposal_simple_challenge::proposal_solution
                             .eq(data.proposal_solution.clone()),
                     );
-                    diesel::insert_into(proposal_simple_challenge::table)
+                    diesel::insert_or_ignore_into(proposal_simple_challenge::table)
                         .values(simple_values)
                         .execute(self.connection)
                         .map_err(DbInserterError::DieselError)?;
@@ -129,7 +150,7 @@ impl<'a> DbInserter<'a> {
                         proposal_community_choice_challenge::proposal_metrics
                             .eq(data.proposal_metrics.clone()),
                     );
-                    diesel::insert_into(proposal_community_choice_challenge::table)
+                    diesel::insert_or_ignore_into(proposal_community_choice_challenge::table)
                         .values(community_values)
                         .execute(self.connection)
                         .map_err(DbInserterError::DieselError)?;
@@ -159,6 +180,7 @@ impl<'a> DbInserter<'a> {
                     voteplans::chain_vote_encryption_key
                         .eq(voteplan.chain_vote_encryption_key.clone()),
                     voteplans::fund_id.eq(voteplan.fund_id),
+                    voteplans::token_identifier.eq(voteplan.token_identifier.clone()),
                 );
                 diesel::insert_or_ignore_into(voteplans::table)
                     .values(values)
@@ -190,6 +212,16 @@ impl<'a> DbInserter<'a> {
         for review in reviews {
             diesel::insert_or_ignore_into(community_advisors_reviews::table)
                 .values(review.clone().values())
+                .execute(self.connection)
+                .map_err(DbInserterError::DieselError)?;
+        }
+        Ok(())
+    }
+
+    pub fn insert_groups(&self, groups: &[Group]) -> Result<(), DbInserterError> {
+        for group in groups {
+            diesel::insert_or_ignore_into(groups::table)
+                .values(group.clone().values())
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
         }

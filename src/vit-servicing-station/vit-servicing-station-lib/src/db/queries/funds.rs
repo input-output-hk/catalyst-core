@@ -3,11 +3,12 @@ use crate::db::{
         challenges::Challenge,
         funds::{Fund, FundStageDates},
         goals::Goal,
+        groups::Group,
         voteplans::Voteplan,
     },
     schema::{
         challenges::dsl as challenges_dsl, funds, funds::dsl as fund_dsl, goals::dsl as goals_dsl,
-        voteplans::dsl as voteplans_dsl,
+        groups::dsl as groups_dsl, voteplans::dsl as voteplans_dsl,
     },
     DbConnection, DbConnectionPool,
 };
@@ -38,6 +39,13 @@ fn join_fund(
         .filter(goals_dsl::fund_id.eq(id))
         .load::<Goal>(db_conn)
         .map_err(|_e| HandleError::NotFound("Error loading goals".to_string()))?;
+
+    fund.groups = groups_dsl::groups
+        .filter(groups_dsl::fund_id.eq(id))
+        .load::<Group>(db_conn)
+        .map_err(|_e| HandleError::NotFound("Error loading groups".to_string()))?
+        .into_iter()
+        .collect();
 
     Ok(fund)
 }

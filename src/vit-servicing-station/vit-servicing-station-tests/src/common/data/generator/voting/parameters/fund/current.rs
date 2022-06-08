@@ -58,6 +58,7 @@ impl CurrentFund {
             goals: self.info.goals.clone(),
             results_url: self.info.results_url.clone(),
             survey_url: self.info.survey_url.clone(),
+            groups: self.info.groups.iter().cloned().collect(),
         }
     }
 }

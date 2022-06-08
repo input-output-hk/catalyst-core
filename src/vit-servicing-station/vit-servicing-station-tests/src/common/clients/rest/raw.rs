@@ -35,8 +35,8 @@ impl RestClient {
             .map_err(Error::RequestError)
     }
 
-    pub fn proposals(&self) -> Result<Response, Error> {
-        self.get(&self.path_builder.proposals())
+    pub fn proposals(&self, group: &str) -> Result<Response, Error> {
+        self.get(&self.path_builder.proposals_with_group(group))
             .map_err(Error::RequestError)
     }
 
@@ -55,8 +55,8 @@ impl RestClient {
             .map_err(Error::RequestError)
     }
 
-    pub fn proposal(&self, id: &str) -> Result<Response, Error> {
-        self.get(&self.path_builder().proposal(id))
+    pub fn proposal(&self, id: &str, group: &str) -> Result<Response, Error> {
+        self.get(&self.path_builder().proposal(id, group))
             .map_err(Error::RequestError)
     }
 

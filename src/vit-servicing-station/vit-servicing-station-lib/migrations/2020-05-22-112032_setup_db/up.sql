@@ -28,7 +28,7 @@ create table proposals
 (
     id INTEGER NOT NULL
         primary key autoincrement,
-    proposal_id VARCHAR NOT NULL,
+    proposal_id VARCHAR NOT NULL UNIQUE,
     proposal_category VARCHAR NOT NULL,
     proposal_title VARCHAR NOT NULL,
     proposal_summary VARCHAR NOT NULL,
@@ -42,10 +42,16 @@ create table proposals
     proposer_url VARCHAR NOT NULL,
     proposer_relevant_experience VARCHAR NOT NULL,
     chain_proposal_id BLOB NOT NULL,
-    chain_proposal_index BIGINT NOT NULL,
     chain_vote_options VARCHAR NOT NULL,
-    chain_voteplan_id VARCHAR NOT NULL,
     challenge_id INTEGER NOT NULL
+);
+
+create table proposals_voteplans (
+    proposal_id VARCHAR NOT NULL,
+    chain_voteplan_id VARCHAR NOT NULL,
+    chain_proposal_index BIGINT NOT NULL,
+    FOREIGN KEY (proposal_id)
+        REFERENCES proposals (proposal_id)
 );
 
 create table proposal_simple_challenge (
@@ -72,7 +78,8 @@ create table voteplans
     chain_committee_end_time BIGINT NOT NULL,
     chain_voteplan_payload VARCHAR NOT NULL,
     chain_vote_encryption_key VARCHAR NOT NULL,
-    fund_id INTEGER NOT NULL
+    fund_id INTEGER NOT NULL,
+    token_identifier VARCHAR NOT NULL
 );
 
 create table api_tokens
@@ -119,27 +126,39 @@ create table goals
     FOREIGN KEY(fund_id) REFERENCES funds(id)
 );
 
+create table groups (
+    fund_id INTEGER NOT NULL,
+    token_identifier VARCHAR NOT NULL,
+    group_id VARCHAR NOT NULL,
+    PRIMARY KEY(token_identifier, fund_id)
+);
+
 CREATE VIEW full_proposals_info
 AS
 SELECT
     proposals.*,
     ifnull(reviews_count, 0) as reviews_count,
-    proposal_simple_challenge.proposal_solution,
-    proposal_community_choice_challenge.proposal_brief,
-    proposal_community_choice_challenge.proposal_importance,
-    proposal_community_choice_challenge.proposal_goal,
-    proposal_community_choice_challenge.proposal_metrics,
     voteplans.chain_vote_start_time,
     voteplans.chain_vote_end_time,
     voteplans.chain_committee_end_time,
     voteplans.chain_voteplan_payload,
     voteplans.chain_vote_encryption_key,
     voteplans.fund_id,
-    challenges.challenge_type
+    challenges.challenge_type,
+    proposal_simple_challenge.proposal_solution,
+    proposal_community_choice_challenge.proposal_brief,
+    proposal_community_choice_challenge.proposal_importance,
+    proposal_community_choice_challenge.proposal_goal,
+    proposal_community_choice_challenge.proposal_metrics,
+    proposals_voteplans.chain_proposal_index,
+    proposals_voteplans.chain_voteplan_id,
+    groups.group_id
 FROM
     proposals
-        INNER JOIN voteplans ON proposals.chain_voteplan_id = voteplans.chain_voteplan_id
+        INNER JOIN proposals_voteplans ON proposals.proposal_id = proposals_voteplans.proposal_id
+        INNER JOIN voteplans ON proposals_voteplans.chain_voteplan_id = voteplans.chain_voteplan_id
         INNER JOIN challenges on challenges.id = proposals.challenge_id
+        INNER JOIN groups on voteplans.token_identifier = groups.token_identifier
         LEFT JOIN proposal_simple_challenge
             on proposals.proposal_id = proposal_simple_challenge.proposal_id
             and challenges.challenge_type = 'simple'

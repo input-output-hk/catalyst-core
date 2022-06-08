@@ -5,7 +5,7 @@ use assert_fs::assert::PathAssert;
 use assert_fs::{fixture::PathChild, TempDir};
 use jortestkit::prelude::file_exists_and_not_empty;
 #[test]
-pub fn genereate_empty_db() {
+pub fn generate_empty_db() {
     let temp_dir = TempDir::new().unwrap();
     let db_file = temp_dir.child("db.sqlite");
     let vit_cli: VitCliCommand = Default::default();

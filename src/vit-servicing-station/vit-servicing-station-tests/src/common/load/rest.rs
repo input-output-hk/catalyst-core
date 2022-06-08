@@ -37,20 +37,22 @@ impl RequestGenerator for VitRestRequestGenerator {
                 .map_err(|e| RequestFailure::General(format!("Health: {}", e))),
             1 => self
                 .rest_client
-                .proposals()
+                .proposals(&self.snapshot_randomizer.random_group_id())
                 .map(|_| Request {
                     ids: vec![Option::None],
                     duration: Duration::ZERO,
                 })
                 .map_err(|e| RequestFailure::General(format!("Proposals: {}", e))),
-            2 => self
-                .rest_client
-                .proposal(&self.snapshot_randomizer.random_proposal_id().to_string())
-                .map(|_| Request {
-                    ids: vec![Option::None],
-                    duration: Duration::ZERO,
-                })
-                .map_err(|e| RequestFailure::General(format!("Proposals by id: {}", e))),
+            2 => {
+                let (id, group) = self.snapshot_randomizer.random_proposal_id();
+                self.rest_client
+                    .proposal(&id.to_string(), &group)
+                    .map(|_| Request {
+                        ids: vec![Option::None],
+                        duration: Duration::ZERO,
+                    })
+                    .map_err(|e| RequestFailure::General(format!("Proposals by id: {}", e)))
+            }
             3 => self
                 .rest_client
                 .fund(&self.snapshot_randomizer.random_fund_id().to_string())

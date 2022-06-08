@@ -29,10 +29,13 @@ pub fn token_validation() -> Result<(), Box<dyn std::error::Error>> {
     assert_eq!(rest_client.fund("1")?.status(), StatusCode::UNAUTHORIZED);
     assert_eq!(rest_client.funds()?.status(), StatusCode::UNAUTHORIZED);
     assert_eq!(
-        rest_client.proposal("1")?.status(),
+        rest_client.proposal("1", "group1")?.status(),
         StatusCode::UNAUTHORIZED
     );
-    assert_eq!(rest_client.proposals()?.status(), StatusCode::UNAUTHORIZED);
+    assert_eq!(
+        rest_client.proposals("group1")?.status(),
+        StatusCode::UNAUTHORIZED
+    );
     assert_eq!(rest_client.genesis()?.status(), StatusCode::UNAUTHORIZED);
     Ok(())
 }

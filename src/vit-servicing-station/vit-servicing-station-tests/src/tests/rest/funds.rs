@@ -28,6 +28,7 @@ pub fn get_funds_by_id() -> Result<(), Box<dyn std::error::Error>> {
         .with_token(token)
         .with_funds(vec![expected_fund.clone()])
         .with_challenges(expected_fund.challenges.clone())
+        .with_groups(expected_fund.groups.iter().cloned().collect())
         .build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
@@ -36,8 +37,12 @@ pub fn get_funds_by_id() -> Result<(), Box<dyn std::error::Error>> {
 
     let rest_client = server.rest_client_with_token(&hash);
 
-    let actual_fund = rest_client.fund(&expected_fund.id.to_string())?;
+    let mut actual_fund = rest_client.fund(&expected_fund.id.to_string())?;
+
+    actual_fund.chain_vote_plans.sort_by_key(|c| c.id);
     expected_fund.challenges.sort_by_key(|c| c.internal_id);
+    expected_fund.chain_vote_plans.sort_by_key(|c| c.id);
+
     assert_eq!(expected_fund, actual_fund);
 
     let rest_client: RawRestClient = server.rest_client_with_token(&hash).into();

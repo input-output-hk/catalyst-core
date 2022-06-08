@@ -26,6 +26,14 @@ pub fn load_data_test() {
         )
         .unwrap();
 
+    let proposals_voteplans = temp_dir.child("proposals_voteplans.csv");
+    csv_converter
+        .proposals_voteplans(
+            snapshot.proposals().into_iter().take(1).collect(),
+            proposals_voteplans.path(),
+        )
+        .unwrap();
+
     let voteplans = temp_dir.child("voteplans.csv");
     csv_converter
         .voteplans(
@@ -55,6 +63,11 @@ pub fn load_data_test() {
         )
         .unwrap();
 
+    let groups = temp_dir.child("groups.csv");
+    csv_converter
+        .groups(snapshot.groups(), groups.path())
+        .unwrap();
+
     let vit_cli: VitCliCommand = Default::default();
     vit_cli
         .db()
@@ -75,6 +88,8 @@ pub fn load_data_test() {
         .challenges(challenges.path())
         .advisor_reviews(reviews.path())
         .goals(goals.path())
+        .proposals_voteplans(proposals_voteplans.path())
+        .groups(groups.path())
         .build()
         .assert()
         .success();

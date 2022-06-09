@@ -122,10 +122,6 @@ jobs:
         toolchain: [stable]
         cross: [false]
         include:
-          # Windows
-          - config: {os: windows-latest, target: x86_64-pc-windows-gnu}
-            toolchain: stable-x86_64-pc-windows-gnu
-            cross: false
           - config: {os: windows-latest, target: x86_64-pc-windows-msvc}
             toolchain: stable-x86_64-pc-windows-msvc
             cross: false

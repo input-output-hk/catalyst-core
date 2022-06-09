@@ -1,12 +1,13 @@
 pub mod registration;
+pub mod voting_group;
 
 use registration::{Delegations, MainnetRewardAddress, VotingRegistration};
+use voting_group::VotingGroupAssigner;
 
-use chain_addr::{Discrimination, Kind};
-use jormungandr_lib::crypto::account::Identifier;
-use jormungandr_lib::interfaces::{Address, InitialUTxO, Value};
+use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
 use serde::Deserialize;
 use std::{borrow::Borrow, collections::BTreeMap, iter::Iterator, num::NonZeroU64};
+use voting_hir::VoterHIR;
 
 pub const CATALYST_VOTING_PURPOSE_TAG: u64 = 0;
 
@@ -100,18 +101,13 @@ impl Snapshot {
         self.stake_threshold
     }
 
-    /// Produces a list of initial UTxOs.
-    /// Whether this can be directly converted into an entry in the blockchain
-    /// genesis block may depend on further limitations imposed by the blockchain deployment and that
-    /// are ignored at this level (e.g. maximum number of outputs in a single fragment)
-    pub fn to_block0_initials(&self, discrimination: Discrimination) -> Vec<InitialUTxO> {
+    pub fn to_voter_hir(&self, voting_group_assigner: &impl VotingGroupAssigner) -> Vec<VoterHIR> {
         self.inner
             .iter()
-            .map(|(vk, contribs)| {
-                let value: Value = contribs.iter().map(|c| c.value).sum::<u64>().into();
-                let address: Address =
-                    chain_addr::Address(discrimination, Kind::Account(vk.to_inner().into())).into();
-                InitialUTxO { address, value }
+            .map(|(voting_key, contribs)| VoterHIR {
+                voting_key: voting_key.clone(),
+                voting_power: contribs.iter().map(|c| c.value).sum::<u64>().into(),
+                voting_group: voting_group_assigner.assign(voting_key),
             })
             .collect::<Vec<_>>()
     }
@@ -134,8 +130,25 @@ impl Snapshot {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chain_addr::{Discrimination, Kind};
+    use jormungandr_lib::interfaces::{Address, InitialUTxO};
     use proptest::prelude::*;
     use test_strategy::proptest;
+
+    impl Snapshot {
+        pub fn to_block0_initials(&self, discrimination: Discrimination) -> Vec<InitialUTxO> {
+            self.inner
+                .iter()
+                .map(|(vk, contribs)| {
+                    let value: Value = contribs.iter().map(|c| c.value).sum::<u64>().into();
+                    let address: Address =
+                        chain_addr::Address(discrimination, Kind::Account(vk.to_inner().into()))
+                            .into();
+                    InitialUTxO { address, value }
+                })
+                .collect::<Vec<_>>()
+        }
+    }
 
     impl Arbitrary for RawSnapshot {
         type Parameters = ();
@@ -175,9 +188,9 @@ mod tests {
     fn test_voting_power_all_distributed(reg: VotingRegistration) {
         let snapshot = Snapshot::from_raw_snapshot(vec![reg.clone()].into(), 0.into());
         let total_stake = snapshot
-            .to_block0_initials(Discrimination::Test)
+            .to_voter_hir(&|_vk: &Identifier| String::new())
             .into_iter()
-            .map(|utxo| u64::from(utxo.value))
+            .map(|hir| u64::from(hir.voting_power))
             .sum::<u64>();
         assert_eq!(total_stake, u64::from(reg.voting_power))
     }

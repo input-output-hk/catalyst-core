@@ -175,10 +175,9 @@ dependencies = [
 [[package]]
 name = "cardano-legacy-address"
 version = "0.1.1"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ef798477aba3794c7b4b171f0926884bc0327563"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
  "cbor_event",
- "chain-ser",
  "cryptoxide",
  "ed25519-bip32",
 ]
@@ -200,7 +199,7 @@ checksum = "081e3f0755c1f380c2d010481b6fa2e02973586d5f2b24eebb7a2a1d98b143d8"
 dependencies = [
  "camino",
  "cargo-platform",
- "semver",
+ "semver 0.11.0",
  "semver-parser",
  "serde",
  "serde_json",
@@ -233,7 +232,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chain-addr"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ef798477aba3794c7b4b171f0926884bc0327563"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
  "bech32 0.8.1",
  "chain-core",
@@ -244,7 +243,7 @@ dependencies = [
 [[package]]
 name = "chain-core"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ef798477aba3794c7b4b171f0926884bc0327563"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
  "chain-ser",
 ]
@@ -252,7 +251,7 @@ dependencies = [
 [[package]]
 name = "chain-crypto"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ef798477aba3794c7b4b171f0926884bc0327563"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
  "bech32 0.8.1",
  "cryptoxide",
@@ -270,7 +269,7 @@ dependencies = [
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ef798477aba3794c7b4b171f0926884bc0327563"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
  "cardano-legacy-address",
  "chain-addr",
@@ -304,7 +303,7 @@ dependencies = [
 [[package]]
 name = "chain-ser"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ef798477aba3794c7b4b171f0926884bc0327563"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
  "thiserror",
 ]
@@ -312,7 +311,7 @@ dependencies = [
 [[package]]
 name = "chain-time"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ef798477aba3794c7b4b171f0926884bc0327563"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
  "chain-core",
  "chain-ser",
@@ -321,9 +320,9 @@ dependencies = [
 [[package]]
 name = "chain-vote"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ef798477aba3794c7b4b171f0926884bc0327563"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "chain-core",
  "chain-crypto",
  "const_format",
@@ -655,8 +654,9 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 [[package]]
 name = "imhamt"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ef798477aba3794c7b4b171f0926884bc0327563"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 dependencies = [
+ "rustc_version",
  "thiserror",
 ]
 
@@ -1013,6 +1013,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
 
 [[package]]
+name = "rustc_version"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bfa0f585226d2e68097d4f95d113b15b83a82e819ab25717ec0590d9584ef366"
+dependencies = [
+ "semver 1.0.9",
+]
+
+[[package]]
 name = "rustversion"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1045,6 +1054,12 @@ dependencies = [
  "semver-parser",
  "serde",
 ]
+
+[[package]]
+name = "semver"
+version = "1.0.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8cb243bdfdb5936c8dc3c45762a19d12ab4550cdc753bc247637d4ec35a040fd"
 
 [[package]]
 name = "semver-parser"
@@ -1119,7 +1134,7 @@ checksum = "c19772be3c4dd2ceaacf03cb41d5885f2a02c4d8804884918e3a258480803335"
 [[package]]
 name = "sparse-array"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ef798477aba3794c7b4b171f0926884bc0327563"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 
 [[package]]
 name = "static_assertions"
@@ -1254,7 +1269,7 @@ dependencies = [
 [[package]]
 name = "typed-bytes"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ef798477aba3794c7b4b171f0926884bc0327563"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#1b01f0dbf9282102f394727b4f8637fe4ce1728e"
 
 [[package]]
 name = "typenum"

@@ -1,5 +1,5 @@
 use crate::machine::test::TestEvmState;
-use crate::machine::{transact_call, VirtualMachine};
+use crate::machine::{execute_transact_call, VirtualMachine};
 use crate::{state::Account, Config};
 use ethereum_types::{H160, U256};
 use evm_test_suite::{AccountState, BlockHeader, CallTransaction, NetworkType};
@@ -133,7 +133,7 @@ impl evm_test_suite::TestEvmState for TestEvmLedger {
             tx.gas_limit.as_u64(),
             true,
         );
-        transact_call(vm, tx.to, tx.value, tx.data.into(), Vec::new())
+        execute_transact_call(vm, tx.to, tx.value, tx.data.into(), Vec::new())
             .map_err(|e| format!("can not run transaction, err: {}", e))?;
 
         Ok(self)

@@ -15,6 +15,7 @@ use crate::chaineval::HeaderContentEvalContext;
 use crate::chaintypes::{ChainLength, ConsensusType, HeaderId};
 use crate::config::{self, ConfigParam};
 use crate::date::{BlockDate, Epoch};
+use crate::evm::EvmTransaction;
 use crate::fee::{FeeAlgorithm, LinearFee};
 use crate::fragment::{BlockContentHash, BlockContentSize, Contents, Fragment, FragmentId};
 use crate::rewards;
@@ -1479,17 +1480,27 @@ impl Ledger {
     }
 
     #[cfg(feature = "evm")]
-    pub fn evm_gas_price(&self) -> u64 {
+    pub fn estimate_evm_transaction(&self, tx: EvmTransaction) -> Result<u64, Error> {
+        Ok(evm::Ledger::estimate_transaction(
+            self.evm.clone(),
+            self.accounts.clone(),
+            tx,
+            self.settings.evm_config,
+        )?)
+    }
+
+    #[cfg(feature = "evm")]
+    pub fn get_evm_gas_price(&self) -> u64 {
         self.settings.evm_environment.gas_price
     }
 
     #[cfg(feature = "evm")]
-    pub fn evm_block_gas_limit(&self) -> u64 {
+    pub fn get_evm_block_gas_limit(&self) -> u64 {
         self.settings.evm_environment.block_gas_limit
     }
 
     #[cfg(feature = "evm")]
-    pub fn jormungandr_mapped_address(
+    pub fn get_jormungandr_mapped_address(
         &self,
         evm_id: &chain_evm::Address,
     ) -> crate::account::Identifier {
@@ -1497,7 +1508,7 @@ impl Ledger {
     }
 
     #[cfg(feature = "evm")]
-    pub fn evm_mapped_address(
+    pub fn get_evm_mapped_address(
         &self,
         jor_id: &crate::account::Identifier,
     ) -> Option<chain_evm::Address> {

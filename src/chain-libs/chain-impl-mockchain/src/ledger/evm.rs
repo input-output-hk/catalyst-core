@@ -8,11 +8,14 @@ use crate::value::Value;
 use crate::{account::Identifier as JorAddress, accounting::account::AccountState as JorAccount};
 use chain_core::packer::Codec;
 use chain_core::property::DeserializeFromSlice;
-use chain_evm::machine::{generate_address_create, generate_address_create2};
+use chain_evm::machine::{
+    estimate_transact_call, estimate_transact_create, estimate_transact_create2,
+    generate_address_create, generate_address_create2,
+};
 use chain_evm::{
     machine::{
-        transact_call, transact_create, transact_create2, BlockHash, BlockNumber, BlockTimestamp,
-        Environment, EvmState, ExitError, Log, VirtualMachine,
+        execute_transact_call, execute_transact_create, execute_transact_create2, BlockHash,
+        BlockNumber, BlockTimestamp, Environment, EvmState, ExitError, Log, VirtualMachine,
     },
     state::{Account as EvmAccount, LogsState},
     Address as EvmAddress,
@@ -130,12 +133,12 @@ impl Default for Ledger {
     }
 }
 
-struct EvmStateImpl<'a> {
+struct EvmStateImpl {
     accounts: account::Ledger,
-    evm: &'a mut Ledger,
+    evm: Ledger,
 }
 
-impl<'a> EvmState for EvmStateImpl<'a> {
+impl EvmState for EvmStateImpl {
     fn environment(&self) -> &Environment {
         &self.evm.environment
     }
@@ -216,28 +219,25 @@ impl Ledger {
 
     #[allow(dead_code)]
     fn generate_contract_address(
-        mut evm: Ledger,
+        evm: Ledger,
         accounts: account::Ledger,
         contract: EvmTransaction,
         config: chain_evm::Config,
     ) -> Result<(EvmAddress, account::Ledger, Ledger), Error> {
         let config = config.into();
-        let mut vm_state = EvmStateImpl {
-            accounts,
-            evm: &mut evm,
-        };
+        let mut vm_state = EvmStateImpl { accounts, evm };
         let caller = contract.caller;
         let gas_limit = contract.gas_limit;
         match contract.action_type {
             EvmActionType::Create { init_code: _ } => {
                 let vm = VirtualMachine::new(&mut vm_state, &config, caller, gas_limit, true);
                 let address = generate_address_create(vm, caller);
-                Ok((address, vm_state.accounts, evm))
+                Ok((address, vm_state.accounts, vm_state.evm))
             }
             EvmActionType::Create2 { init_code, salt } => {
                 let vm = VirtualMachine::new(&mut vm_state, &config, caller, gas_limit, true);
                 let address = generate_address_create2(vm, caller, init_code, salt);
-                Ok((address, vm_state.accounts, evm))
+                Ok((address, vm_state.accounts, vm_state.evm))
             }
             _ => Err(Error::NotAContractType),
         }
@@ -257,8 +257,55 @@ impl Ledger {
         Ok((accounts, evm))
     }
 
+    pub fn estimate_transaction(
+        evm: Ledger,
+        accounts: account::Ledger,
+        transaction: EvmTransaction,
+        config: chain_evm::Config,
+    ) -> Result<u64, Error> {
+        let config = config.into();
+        let mut vm_state = EvmStateImpl { accounts, evm };
+
+        let value = transaction.value;
+        let caller = transaction.caller;
+        let gas_limit = transaction.gas_limit;
+        let access_list = transaction.access_list;
+
+        match transaction.action_type {
+            EvmActionType::Create { init_code } => {
+                let vm = VirtualMachine::new(&mut vm_state, &config, caller, gas_limit, true);
+                Ok(estimate_transact_create(
+                    vm,
+                    value.into(),
+                    init_code,
+                    access_list,
+                )?)
+            }
+            EvmActionType::Create2 { init_code, salt } => {
+                let vm = VirtualMachine::new(&mut vm_state, &config, caller, gas_limit, true);
+                Ok(estimate_transact_create2(
+                    vm,
+                    value.into(),
+                    init_code,
+                    salt,
+                    access_list,
+                )?)
+            }
+            EvmActionType::Call { address, data } => {
+                let vm = VirtualMachine::new(&mut vm_state, &config, caller, gas_limit, true);
+                Ok(estimate_transact_call(
+                    vm,
+                    address,
+                    value.into(),
+                    data,
+                    access_list,
+                )?)
+            }
+        }
+    }
+
     pub fn run_transaction(
-        mut evm: Ledger,
+        evm: Ledger,
         accounts: account::Ledger,
         transaction: EvmTransaction,
         config: chain_evm::Config,
@@ -266,10 +313,7 @@ impl Ledger {
         Self::validate_transaction_nonce(&evm, &accounts, &transaction)?;
 
         let config = config.into();
-        let mut vm_state = EvmStateImpl {
-            accounts,
-            evm: &mut evm,
-        };
+        let mut vm_state = EvmStateImpl { accounts, evm };
         let value = transaction.value;
         let caller = transaction.caller;
         let gas_limit = transaction.gas_limit;
@@ -277,18 +321,19 @@ impl Ledger {
         match transaction.action_type {
             EvmActionType::Create { init_code } => {
                 let vm = VirtualMachine::new(&mut vm_state, &config, caller, gas_limit, true);
-                transact_create(vm, value.into(), init_code, access_list)?;
+                execute_transact_create(vm, value.into(), init_code, access_list)?;
             }
             EvmActionType::Create2 { init_code, salt } => {
                 let vm = VirtualMachine::new(&mut vm_state, &config, caller, gas_limit, true);
-                transact_create2(vm, value.into(), init_code, salt, access_list)?;
+                execute_transact_create2(vm, value.into(), init_code, salt, access_list)?;
             }
             EvmActionType::Call { address, data } => {
                 let vm = VirtualMachine::new(&mut vm_state, &config, caller, gas_limit, true);
-                let _byte_code_msg = transact_call(vm, address, value.into(), data, access_list)?;
+                let _byte_code_msg =
+                    execute_transact_call(vm, address, value.into(), data, access_list)?;
             }
         }
-        Ok((vm_state.accounts, evm))
+        Ok((vm_state.accounts, vm_state.evm))
     }
 }
 
@@ -457,6 +502,69 @@ mod test {
 
         evm.update_block_timestamp(block2_data, slots_per_epoch, slot_duration);
         assert_eq!(evm.environment.block_timestamp, 80.into());
+    }
+
+    #[test]
+    fn estimate_transaction_test() {
+        execute(chain_evm::Config::Frontier);
+        execute(chain_evm::Config::Istanbul);
+        execute(chain_evm::Config::Berlin);
+        execute(chain_evm::Config::London);
+
+        fn execute(config: chain_evm::Config) {
+            let evm_address1 = EvmAddress::from_low_u64_be(0);
+            let evm_address2 = EvmAddress::from_low_u64_be(1);
+            let account_id = JorAddress::from(<PublicKey<Ed25519>>::from_binary(&[0; 32]).unwrap());
+            let value1 = Value(u64::MAX);
+            let value2 = Value(1);
+
+            let mut evm = Ledger::new();
+            let mut accounts = account::Ledger::new()
+                .add_account(account_id.clone(), value1, ())
+                .unwrap();
+            (accounts, evm.address_mapping) = evm
+                .address_mapping
+                .map_accounts(account_id.clone(), evm_address1, accounts)
+                .unwrap();
+
+            // setup gas price
+            evm.environment.gas_price = 1.into();
+
+            let transaction = EvmTransaction {
+                caller: evm_address1,
+                value: value2.0,
+                nonce: 0,
+                gas_limit: u64::max_value(),
+                access_list: Vec::new(),
+                action_type: EvmActionType::Call {
+                    address: evm_address2,
+                    data: Vec::new().into(),
+                },
+            };
+
+            let estimated_gas = Ledger::estimate_transaction(
+                evm.clone(),
+                accounts.clone(),
+                transaction.clone(),
+                config,
+            )
+            .unwrap();
+
+            (accounts, _) = Ledger::run_transaction(evm, accounts, transaction, config).unwrap();
+
+            assert_eq!(
+                accounts.get_state(&account_id),
+                Ok(&JorAccount::new_evm(
+                    AccountState {
+                        storage: Default::default(),
+                        nonce: 1,
+                        code: Vec::new().into()
+                    },
+                    value1.sub(Value(value2.0 + estimated_gas)).unwrap(),
+                    ()
+                ))
+            );
+        }
     }
 
     #[test]

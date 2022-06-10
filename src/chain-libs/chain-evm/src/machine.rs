@@ -299,6 +299,32 @@ where
     }
 }
 
+fn estimate_transaction<State: EvmState, F, T>(
+    vm: VirtualMachine<State>,
+    f: F,
+) -> Result<u64, Error>
+where
+    for<'config> F: FnOnce(
+        &mut StackExecutor<'config, '_, VirtualMachine<'config, State>, Precompiles>,
+    ) -> (ExitReason, T),
+{
+    let precompiles = Precompiles::new();
+    let config = vm.config;
+
+    let mut executor = StackExecutor::new_with_precompiles(vm, config, &precompiles);
+
+    let (exit_reason, _) = f(&mut executor);
+    match exit_reason {
+        ExitReason::Succeed(_) => {
+            let used_gas = executor.used_gas();
+            Ok(used_gas)
+        }
+        ExitReason::Revert(err) => Err(Error::TransactionRevertError(err)),
+        ExitReason::Error(err) => Err(Error::TransactionError(err)),
+        ExitReason::Fatal(err) => Err(Error::TransactionFatalError(err)),
+    }
+}
+
 // Convenience function to convert AccessList types into
 // arguments used by the EVM transactions.
 fn convert_access_list_to_tuples_vec(access_list: AccessList) -> Vec<(Address, Vec<Key>)> {
@@ -315,7 +341,7 @@ fn convert_access_list_to_tuples_vec(access_list: AccessList) -> Vec<(Address, V
 }
 
 /// Execute a CREATE transaction
-pub fn transact_create<State: EvmState>(
+pub fn execute_transact_create<State: EvmState>(
     vm: VirtualMachine<State>,
     value: U256,
     init_code: ByteCode,
@@ -329,8 +355,23 @@ pub fn transact_create<State: EvmState>(
     })
 }
 
+/// Estimate a CREATE transaction
+pub fn estimate_transact_create<State: EvmState>(
+    vm: VirtualMachine<State>,
+    value: U256,
+    init_code: ByteCode,
+    access_list: AccessList,
+) -> Result<u64, Error> {
+    let caller = vm.origin;
+    let gas_limit = vm.gas_limit;
+    let access_list = convert_access_list_to_tuples_vec(access_list);
+    estimate_transaction(vm, |executor| {
+        executor.transact_create(caller, value, init_code.into(), gas_limit, access_list)
+    })
+}
+
 /// Execute a CREATE2 transaction
-pub fn transact_create2<State: EvmState>(
+pub fn execute_transact_create2<State: EvmState>(
     vm: VirtualMachine<State>,
     value: U256,
     init_code: ByteCode,
@@ -352,8 +393,31 @@ pub fn transact_create2<State: EvmState>(
     })
 }
 
+/// Estimate a CREATE2 transaction
+pub fn estimate_transact_create2<State: EvmState>(
+    vm: VirtualMachine<State>,
+    value: U256,
+    init_code: ByteCode,
+    salt: H256,
+    access_list: AccessList,
+) -> Result<u64, Error> {
+    let caller = vm.origin;
+    let gas_limit = vm.gas_limit;
+    let access_list = convert_access_list_to_tuples_vec(access_list);
+    estimate_transaction(vm, |executor| {
+        executor.transact_create2(
+            caller,
+            value,
+            init_code.into(),
+            salt,
+            gas_limit,
+            access_list,
+        )
+    })
+}
+
 /// Execute a CALL transaction
-pub fn transact_call<State: EvmState>(
+pub fn execute_transact_call<State: EvmState>(
     vm: VirtualMachine<State>,
     address: Address,
     value: U256,
@@ -364,6 +428,22 @@ pub fn transact_call<State: EvmState>(
     let gas_limit = vm.gas_limit;
     let access_list = convert_access_list_to_tuples_vec(access_list);
     execute_transaction(vm, |executor| {
+        executor.transact_call(caller, address, value, data.into(), gas_limit, access_list)
+    })
+}
+
+/// Estimate a CALL transaction
+pub fn estimate_transact_call<State: EvmState>(
+    vm: VirtualMachine<State>,
+    address: Address,
+    value: U256,
+    data: ByteCode,
+    access_list: AccessList,
+) -> Result<u64, Error> {
+    let caller = vm.origin;
+    let gas_limit = vm.gas_limit;
+    let access_list = convert_access_list_to_tuples_vec(access_list);
+    estimate_transaction(vm, |executor| {
         executor.transact_call(caller, address, value, data.into(), gas_limit, access_list)
     })
 }

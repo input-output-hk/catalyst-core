@@ -20,8 +20,8 @@ pub fn generate_keypair() -> KeyPair {
 pub struct Secret(SecretKey);
 
 impl Secret {
-    pub fn from_hash(data: &H256) -> Result<Self, secp256k1::Error> {
-        Ok(Self(SecretKey::from_slice(data.as_fixed_bytes())?))
+    pub fn from_hash(data: &H256) -> Self {
+        Self(SecretKey::from_slice(data.as_fixed_bytes()).unwrap())
     }
 
     pub fn from_slice(data: &[u8]) -> Result<Self, secp256k1::Error> {

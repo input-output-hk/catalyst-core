@@ -32,6 +32,7 @@ fn join_fund(
 
     fund.challenges = challenges_dsl::challenges
         .filter(challenges_dsl::fund_id.eq(id))
+        .order_by(challenges_dsl::internal_id.asc())
         .load::<Challenge>(db_conn)
         .map_err(|_e| HandleError::NotFound("Error loading challenges".to_string()))?;
 

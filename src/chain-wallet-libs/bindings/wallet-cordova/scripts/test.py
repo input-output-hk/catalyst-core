@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import subprocess
 
@@ -15,6 +15,9 @@ from build_jni import copy_libs as copy_jni_libs
 from copy_jni_definitions import run as copy_jni_definitions
 from build_ios import run as build_ios
 from directories import repository_directory, plugin_directory, tests_directory
+
+sys.path.append(str(repository_directory / "test-vectors"))
+from rebuild_genesis_data import run as rebuild_genesis_data
 
 
 def sed(original: str, replacement: str, file: Path):
@@ -86,7 +89,7 @@ def install_main_plugin(
     app_dir: Path, reinstall=True, android=False, ios=False, cargo_build=True
 ):
     if reinstall:
-        subprocess.check_call(
+        subprocess.call(
             ["cordova", "plugin", "rm", "wallet-cordova-plugin"], cwd=app_dir
         )
 
@@ -105,12 +108,17 @@ def install_main_plugin(
     )
 
 
-def install_test_plugin(app_dir: Path, reinstall=True):
+def install_test_plugin(app_dir: Path, reinstall=True, regen_vectors=True):
     subprocess.check_call(["npm", "install"], cwd=tests_directory)
+
+    if regen_vectors:
+        # make sure the genesis is up-to-date
+        rebuild_genesis_data()
+
     subprocess.check_call(["npm", "run", "build"], cwd=tests_directory)
 
     if reinstall:
-        subprocess.check_call(
+        subprocess.call(
             ["cordova", "plugin", "rm", "wallet-cordova-plugin-tests"], cwd=app_dir
         )
 
@@ -133,6 +141,14 @@ if __name__ == "__main__":
 
     parser.add_argument("--cargo-build", dest="cargo_build", action="store_true")
     parser.add_argument("--no-cargo-build", dest="cargo_build", action="store_false")
+
+    parser.add_argument(
+        "--regen-test-vectors", dest="regen_test_vectors", action="store_true"
+    )
+    parser.add_argument(
+        "--no-regen-test-vectors", dest="regen_test_vectors", action="store_false"
+    )
+
     parser.set_defaults(feature=True)
 
     args = parser.parse_args()
@@ -156,13 +172,17 @@ if __name__ == "__main__":
             ios=ios,
             cargo_build=args.cargo_build,
         )
-        install_test_plugin(app_dir, reinstall=False)
+        install_test_plugin(
+            app_dir, reinstall=False, regen_vectors=args.regen_test_vectors
+        )
 
     if args.command == "reload-plugin":
         install_main_plugin(app_dir, reinstall=True, android=android, ios=ios)
 
     if args.command == "reload-tests":
-        install_test_plugin(app_dir, reinstall=True)
+        install_test_plugin(
+            app_dir, reinstall=True, regen_vectors=args.regen_test_vectors
+        )
 
     if ios:
         subprocess.check_call(

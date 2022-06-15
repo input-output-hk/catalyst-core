@@ -27,7 +27,6 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
 - (void)WALLET_IMPORT_KEYS:(CDVInvokedUrlCommand*)command
 {
     NSData* account_key = [command.arguments objectAtIndex:0];
-    NSData* utxo_keys = [command.arguments objectAtIndex:1];
 
     if ([account_key isEqual:[NSNull null]]) {
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
@@ -36,28 +35,11 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
         return;
     }
 
-    if ([utxo_keys isEqual:[NSNull null]]) {
-        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
-                                                          messageAsString:@"missing argument"];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-        return;
-    }
-
-    if (utxo_keys.length % 64 != 0) {
-        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
-                                                          messageAsString:@"invalid argument"];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-        return;
-    }
-
     [self.commandDelegate runInBackground:^{
         CDVPluginResult* pluginResult = nil;
         WalletPtr wallet_ptr = nil;
 
-        ErrorPtr result = iohk_jormungandr_wallet_import_keys(account_key.bytes,
-            utxo_keys.bytes,
-            utxo_keys.length / 64,
-            &wallet_ptr);
+        ErrorPtr result = iohk_jormungandr_wallet_import_keys(account_key.bytes, &wallet_ptr);
 
         if (result != nil) {
             pluginResult = jormungandr_error_to_plugin_result(result);

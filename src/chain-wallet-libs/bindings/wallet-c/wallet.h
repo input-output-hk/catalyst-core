@@ -503,8 +503,6 @@ ErrorPtr iohk_jormungandr_wallet_id(WalletPtr wallet,
  *
  */
 ErrorPtr iohk_jormungandr_wallet_import_keys(const uint8_t *account_key,
-                                             const uint8_t *utxo_keys,
-                                             uintptr_t utxo_keys_len,
                                              WalletPtr *wallet_out);
 
 /**

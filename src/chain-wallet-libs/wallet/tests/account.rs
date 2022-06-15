@@ -9,20 +9,21 @@ use chain_impl_mockchain::{
     value::Value,
     vote::{Choice, Payload},
 };
-use wallet::{RecoveryBuilder, MAX_LANES};
+use wallet::MAX_LANES;
 
 const BLOCK0: &[u8] = include_bytes!("../../test-vectors/block0");
 const ACCOUNT_KEY: &str = include_str!("../../test-vectors/free_keys/key1.prv");
-const MNEMONICS: &str =
-    "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone";
 
 #[test]
 fn update_state_overrides_old() {
-    let wallet = RecoveryBuilder::new()
-        .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS)
-        .expect("valid mnemonics");
-
-    let mut account = wallet.build_wallet().expect("recover account");
+    let mut account = wallet::Wallet::new_from_key(
+        SecretKey::from_binary(
+            hex::decode(String::from(ACCOUNT_KEY).trim())
+                .unwrap()
+                .as_ref(),
+        )
+        .unwrap(),
+    );
 
     assert_eq!(account.confirmed_value(), Value::zero());
 
@@ -40,17 +41,14 @@ fn update_state_overrides_old() {
 
 #[test]
 fn cast_vote() {
-    let mut account = wallet::RecoveryBuilder::new()
-        .account_secret_key(
-            SecretKey::from_binary(
-                hex::decode(String::from(ACCOUNT_KEY).trim())
-                    .unwrap()
-                    .as_ref(),
-            )
-            .unwrap(),
+    let mut account = wallet::Wallet::new_from_key(
+        SecretKey::from_binary(
+            hex::decode(String::from(ACCOUNT_KEY).trim())
+                .unwrap()
+                .as_ref(),
         )
-        .build_wallet()
-        .expect("recover account");
+        .unwrap(),
+    );
 
     let mut state = State::new(BLOCK0);
     let settings = state.settings().expect("valid initial settings");

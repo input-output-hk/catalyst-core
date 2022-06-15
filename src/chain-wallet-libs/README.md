@@ -40,7 +40,6 @@ This includes bindings for Android Kotlin already packaged in a AAR package.
 | -------- | :-------: |
 | android  |     ✓     |
 | ios      |     ✓     |
-| electron |     ✓     |
 
 ### iOS
 
@@ -91,6 +90,9 @@ You can find the main rust libraries at the top level of this repository. These
 are the core elements and offer prime support for all the different `bindings`
 implemented in the `bindings` directory.
 
+For the Cordova plugin, check out the [readme in the plugin's
+directory](bindings/wallet-cordova/README.md).
+
 ## Code formatting
 
 In order to avoid long lasting discussions and arguments about how code should
@@ -104,9 +106,9 @@ when manipulating raw pointers.
 
 ## Documentation
 
-- [Getting Started](doc/getting_started.md)
 - [Wallet Cryptography and Encoding](doc/CRYPTO.md)
 - [Enhanced Mnemonic Encoding (EME)](doc/EME.md)
+- [Cordova plugin](bindings/wallet-cordova/README.md)
 
 [rust-lang]: https://www.rust-lang.org/
 [Jörmungandr]: https://input-output-hk.github.io/jormungandr

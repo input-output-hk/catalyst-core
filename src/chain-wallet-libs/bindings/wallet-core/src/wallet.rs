@@ -46,17 +46,8 @@ impl Wallet {
     ///
     /// TODO
     ///
-    pub fn recover_free_keys<'a, U: Iterator<Item = &'a [u8; 64]>>(
-        account_key: &[u8],
-        _keys: U,
-    ) -> Result<Self, Error> {
-        let builder = wallet::RecoveryBuilder::new();
-
-        let builder = builder.account_secret_key(SecretKey::from_binary(account_key).unwrap());
-
-        let account = builder
-            .build_wallet()
-            .expect("build the account cannot fail as expected");
+    pub fn recover_free_keys(account_key: &[u8]) -> Result<Self, Error> {
+        let account = wallet::Wallet::new_from_key(SecretKey::from_binary(account_key).unwrap());
 
         Ok(Wallet { account })
     }

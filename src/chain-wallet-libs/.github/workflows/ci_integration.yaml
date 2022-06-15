@@ -292,6 +292,7 @@ jobs:
             --directory test_app \
             --platform android \
             --no-cargo-build \
+            --no-regen-test-vectors \
             -- full
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}

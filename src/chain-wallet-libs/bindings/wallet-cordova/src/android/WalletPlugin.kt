@@ -93,13 +93,10 @@ class WalletPlugin
     @Throws(JSONException::class)
     private fun walletImportKeys(args: CordovaArgs, callbackContext: CallbackContext) {
         val accountKey = args.getArrayBuffer(0).toUByteArray().toList()
-        val utxoKeys = args.getArrayBuffer(1).toUByteArray()
-
-        val mappedKeys = utxoKeys.chunked(64).map { SecretKeyEd25519Extended(it) }
 
         try {
             val walletId = nextWalletId.incrementAndGet()
-            wallets[walletId] = Wallet(SecretKeyEd25519Extended(accountKey), mappedKeys)
+            wallets[walletId] = Wallet(SecretKeyEd25519Extended(accountKey))
             callbackContext.success(walletId.toString())
         } catch (e: Exception) {
             callbackContext.error(e.message)

@@ -83,16 +83,8 @@ impl Wallet {
     /// The `keys` parameter should be a concatenation of Ed25519Extended
     /// private keys that will be used to retrieve the associated UTxOs.
     /// Pass an empty buffer when this functionality is not needed.
-    pub fn import_keys(account: &[u8], keys: &[u8]) -> Result<Wallet, JsValue> {
-        if keys.len() % 64 != 0 {
-            return Err(JsValue::from_str("invalid keys array length"));
-        }
-
-        let keys: &[[u8; 64]] = unsafe {
-            std::slice::from_raw_parts(keys.as_ptr().cast::<[u8; 64]>(), keys.len() / 64)
-        };
-
-        wallet_core::Wallet::recover_free_keys(account, keys.iter())
+    pub fn import_keys(account: &[u8]) -> Result<Wallet, JsValue> {
+        wallet_core::Wallet::recover_free_keys(account)
             .map_err(|e| JsValue::from(e.to_string()))
             .map(Wallet)
     }

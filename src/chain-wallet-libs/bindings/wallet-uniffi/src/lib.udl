@@ -24,8 +24,7 @@ enum WalletError {
 interface Wallet {
     [Throws=WalletError]
     constructor(
-        SecretKeyEd25519Extended account_key,
-        sequence<SecretKeyEd25519Extended> utxo_keys
+        SecretKeyEd25519Extended account_key
     );
 
     [Throws=WalletError]

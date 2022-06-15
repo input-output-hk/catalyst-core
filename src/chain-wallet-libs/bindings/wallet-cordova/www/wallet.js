@@ -105,17 +105,15 @@ var plugin = {
     },
 
     /**
-     * @param {Uint8Array} accountKeys a 64bytes array representing an Ed25519Extended private key
-     * @param {Uint8Array} utxoKeys a contiguous array of Ed25519Extended private keys (64 bytes each)
+     * @param {Uint8Array} accountKey a 64bytes array representing an Ed25519Extended private key
      * @param {pointerCallback} successCallback on success returns a pointer to a Wallet object
      * @param {errorCallback} errorCallback if the input arrays are malformed
      */
-    walletImportKeys: function (accountKeys, utxoKeys, successCallback, errorCallback) {
-        argscheck.checkArgs('**ff', 'walletImportKeys', arguments);
-        checkUint8Array({ name: 'accountKeys', testee: accountKeys, optLength: ED25519_EXTENDED_LENGTH });
-        checkUint8Array({ name: 'utxoKeys', testee: utxoKeys });
+    walletImportKeys: function (accountKey, successCallback, errorCallback) {
+        argscheck.checkArgs('*ff', 'walletImportKeys', arguments);
+        checkUint8Array({ name: 'accountKey', testee: accountKey, optLength: ED25519_EXTENDED_LENGTH });
 
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_IMPORT_KEYS_TAG, [accountKeys.buffer, utxoKeys.buffer]);
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_IMPORT_KEYS_TAG, [accountKey.buffer]);
     },
 
     /**

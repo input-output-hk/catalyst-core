@@ -61,22 +61,13 @@ pub const NONCES_SIZE: usize = 8 * 4;
 ///
 /// * the `wallet_out` is null pointer
 ///
-pub unsafe fn wallet_import_keys(
-    account_key: *const u8,
-    utxo_keys: *const [u8; 64],
-    utxo_keys_len: usize,
-    wallet_out: *mut WalletPtr,
-) -> Result {
+pub unsafe fn wallet_import_keys(account_key: *const u8, wallet_out: *mut WalletPtr) -> Result {
     let wallet_out = non_null_mut!(wallet_out);
-    let utxo_keys: &[u8; 64] = non_null!(utxo_keys);
-
     let account_key: &u8 = non_null!(account_key);
+
     let account_key: &[u8] = std::slice::from_raw_parts(account_key as *const u8, 64);
 
-    let utxo_keys: &[[u8; 64]] =
-        std::slice::from_raw_parts(utxo_keys.as_ptr() as *const [u8; 64], utxo_keys_len);
-
-    let result = Wallet::recover_free_keys(account_key, utxo_keys.iter());
+    let result = Wallet::recover_free_keys(account_key);
 
     match result {
         Ok(wallet) => {
@@ -241,8 +232,12 @@ pub struct SpendingCounters {
 ///
 /// * this function may fail if the wallet pointer is null;
 ///
-pub fn wallet_set_state(wallet: WalletPtr, value: u64, nonces: SpendingCounters) -> Result {
-    let wallet = if let Some(wallet) = unsafe { wallet.as_mut() } {
+/// # Safety
+///
+/// The wallet argument must be a pointer previously returned by this library. The data field in
+/// nonces must be not null and point to an array of `len` size.
+pub unsafe fn wallet_set_state(wallet: WalletPtr, value: u64, nonces: SpendingCounters) -> Result {
+    let wallet = if let Some(wallet) = wallet.as_mut() {
         wallet
     } else {
         return Error::invalid_input("wallet").with(NulPtr).into();
@@ -250,7 +245,7 @@ pub fn wallet_set_state(wallet: WalletPtr, value: u64, nonces: SpendingCounters)
 
     let value = Value(value);
 
-    let nonces = unsafe { std::slice::from_raw_parts_mut(nonces.data, nonces.len) }.to_vec();
+    let nonces = std::slice::from_raw_parts_mut(nonces.data, nonces.len).to_vec();
 
     match wallet.set_state(value, nonces) {
         Ok(_) => Result::success(),
@@ -370,36 +365,52 @@ pub unsafe fn symmetric_cipher_decrypt(
 }
 
 /// delete the pointer and free the allocated memory
-pub fn wallet_delete_error(error: ErrorPtr) {
+///
+/// # Safety
+///
+/// The point must have been previously returned by this library
+pub unsafe fn wallet_delete_error(error: ErrorPtr) {
     if !error.is_null() {
-        let boxed = unsafe { Box::from_raw(error) };
+        let boxed = Box::from_raw(error);
 
         std::mem::drop(boxed);
     }
 }
 
 /// delete the pointer and free the allocated memory
-pub fn wallet_delete_settings(settings: SettingsPtr) {
+///
+/// # Safety
+///
+/// The point must have been previously returned by this library
+pub unsafe fn wallet_delete_settings(settings: SettingsPtr) {
     if !settings.is_null() {
-        let boxed = unsafe { Box::from_raw(settings) };
+        let boxed = Box::from_raw(settings);
 
         std::mem::drop(boxed);
     }
 }
 
 /// delete the pointer, zero all the keys and free the allocated memory
-pub fn wallet_delete_wallet(wallet: WalletPtr) {
+///
+/// # Safety
+///
+/// The pointer must have been previously returned by this library
+pub unsafe fn wallet_delete_wallet(wallet: WalletPtr) {
     if !wallet.is_null() {
-        let boxed = unsafe { Box::from_raw(wallet) };
+        let boxed = Box::from_raw(wallet);
 
         std::mem::drop(boxed);
     }
 }
 
 /// delete the pointer
-pub fn wallet_delete_proposal(proposal: ProposalPtr) {
+///
+/// # Safety
+///
+/// The pointer must have been previously returned by this library
+pub unsafe fn wallet_delete_proposal(proposal: ProposalPtr) {
     if !proposal.is_null() {
-        let boxed = unsafe { Box::from_raw(proposal) };
+        let boxed = Box::from_raw(proposal);
 
         std::mem::drop(boxed);
     }
@@ -411,7 +422,6 @@ pub fn wallet_delete_proposal(proposal: ProposalPtr) {
 ///
 /// This function is safe as long as the structure returned by this library is not modified.
 /// This function should only be called with a structure returned by this library.
-///
 pub unsafe fn spending_counters_delete(spending_counters: SpendingCounters) {
     let SpendingCounters { data, len } = spending_counters;
     if !data.is_null() {

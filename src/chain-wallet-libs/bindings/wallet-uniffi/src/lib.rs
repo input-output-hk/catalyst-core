@@ -151,20 +151,9 @@ pub fn symmetric_cipher_decrypt(
 }
 
 impl Wallet {
-    pub fn new(
-        account_key: Arc<SecretKeyEd25519Extended>,
-        utxo_keys: Vec<Arc<SecretKeyEd25519Extended>>,
-    ) -> Result<Self, WalletError> {
-        let utxo_keys: Vec<_> = utxo_keys
-            .iter()
-            .map(|k| <[u8; 64]>::try_from(k.0.clone().leak_secret().as_ref()).unwrap())
-            .collect();
-
-        let inner = InnerWallet::recover_free_keys(
-            account_key.0.clone().leak_secret().as_ref(),
-            utxo_keys.iter(),
-        )
-        .map_err(WalletError::CoreError)?;
+    pub fn new(account_key: Arc<SecretKeyEd25519Extended>) -> Result<Self, WalletError> {
+        let inner = InnerWallet::recover_free_keys(account_key.0.clone().leak_secret().as_ref())
+            .map_err(WalletError::CoreError)?;
 
         Ok(Self(Mutex::new(inner)))
     }

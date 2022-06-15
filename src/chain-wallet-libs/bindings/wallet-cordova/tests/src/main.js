@@ -53,8 +53,7 @@ const maxExpirationDate = promisifyP(primitives.maxExpirationDate);
 
 async function walletFromFile() {
     const accountKey = hexStringToBytes(keys.account.private_key);
-    const utxoKeys = keys.utxo_keys.map(utxo => utxo.private_key).reduce((accum, current) => accum + current);
-    return await importKeys(accountKey, hexStringToBytes(utxoKeys));
+    return await importKeys(accountKey);
 }
 
 const tests = [
@@ -134,17 +133,9 @@ const tests = [
     ['decrypts keys correctly', async function () {
         const decryptedKeys = await symmetricCipherDecrypt(PASSWORD, hexStringToBytes(ENCRYPTED_WALLET));
         const account = decryptedKeys.slice(0 * 64, 1 * 64);
-        const key1 = decryptedKeys.slice(1 * 64, 2 * 64);
-        const key2 = decryptedKeys.slice(2 * 64, 3 * 64);
 
         if (!uint8ArrayEquals(hexStringToBytes(keys.account.private_key), new Uint8Array(account))) {
             throw Error('wrong expected account');
-        }
-        if (!uint8ArrayEquals(hexStringToBytes(keys.utxo_keys[0].private_key), new Uint8Array(key1))) {
-            throw Error('wrong expected key1');
-        }
-        if (!uint8ArrayEquals(hexStringToBytes(keys.utxo_keys[1].private_key), new Uint8Array(key2))) {
-            throw Error('wrong expected key2');
         }
     }],
     ['decrypt QR', async function () {

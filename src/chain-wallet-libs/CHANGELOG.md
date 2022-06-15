@@ -8,7 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - *breaking change*: wallet_spending_counter replaced by wallet_spending_counters
 - *breaking change*: wallet_set_state now takes an array of spending counters 
-- *breaking change* wallet_vote now takes a lane as an argument
+- *breaking change*: wallet_vote now takes a lane as an argument
+- *breaking change*: wallet_import_keys now takes a single argument with the
+  account key.
 
 ## [0.8.0-alpha1]
 

@@ -70,16 +70,9 @@ pub type EncryptingVoteKeyPtr = *mut EncryptingVoteKey;
 #[no_mangle]
 pub unsafe extern "C" fn iohk_jormungandr_wallet_import_keys(
     account_key: *const u8,
-    utxo_keys: *const u8,
-    utxo_keys_len: usize,
     wallet_out: *mut WalletPtr,
 ) -> ErrorPtr {
-    let r = wallet_import_keys(
-        account_key,
-        utxo_keys as *const [u8; 64],
-        utxo_keys_len,
-        wallet_out as *mut *mut WalletRust,
-    );
+    let r = wallet_import_keys(account_key, wallet_out as *mut *mut WalletRust);
 
     r.into_c_api() as ErrorPtr
 }
@@ -526,7 +519,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_delete_buffer(ptr: *mut u8, len
 /// in or you may see unexpected behaviors
 ///
 #[no_mangle]
-pub extern "C" fn iohk_jormungandr_wallet_delete_error(error: ErrorPtr) {
+pub unsafe extern "C" fn iohk_jormungandr_wallet_delete_error(error: ErrorPtr) {
     wallet_delete_error(error as *mut ErrorRust)
 }
 
@@ -539,7 +532,7 @@ pub extern "C" fn iohk_jormungandr_wallet_delete_error(error: ErrorPtr) {
 /// in or you may see unexpected behaviors
 ///
 #[no_mangle]
-pub extern "C" fn iohk_jormungandr_wallet_delete_settings(settings: SettingsPtr) {
+pub unsafe extern "C" fn iohk_jormungandr_wallet_delete_settings(settings: SettingsPtr) {
     wallet_delete_settings(settings as *mut SettingsRust)
 }
 
@@ -552,7 +545,7 @@ pub extern "C" fn iohk_jormungandr_wallet_delete_settings(settings: SettingsPtr)
 /// in or you may see unexpected behaviors
 ///
 #[no_mangle]
-pub extern "C" fn iohk_jormungandr_wallet_delete_wallet(wallet: WalletPtr) {
+pub unsafe extern "C" fn iohk_jormungandr_wallet_delete_wallet(wallet: WalletPtr) {
     wallet_delete_wallet(wallet as *mut WalletRust)
 }
 
@@ -565,7 +558,7 @@ pub extern "C" fn iohk_jormungandr_wallet_delete_wallet(wallet: WalletPtr) {
 /// in or you may see unexpected behaviors
 ///
 #[no_mangle]
-pub extern "C" fn iohk_jormungandr_wallet_delete_proposal(proposal: ProposalPtr) {
+pub unsafe extern "C" fn iohk_jormungandr_wallet_delete_proposal(proposal: ProposalPtr) {
     wallet_delete_proposal(proposal as *mut ProposalRust)
 }
 

@@ -61,6 +61,7 @@ gag = "1"
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 env_logger = "0.9"
 voting-hir = { path = "../voting-hir", features = ["serde"] }
+fraction = "0.10"
 
 [dev-dependencies]
 rand_chacha = "0.3"
@@ -71,6 +72,7 @@ chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch
 proptest = { git = "https://github.com/input-output-hk/proptest", branch = "master" }
 test-strategy = "0.2"
 serde_test = "1"
+voting-hir =  { path = "../voting-hir", features = ["serde", "proptest"] }
 
 [build-dependencies]
 versionisator = "1.0.3"

@@ -2,6 +2,9 @@
 use ::serde::{Deserialize, Serialize};
 use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
 
+#[cfg(feature = "proptest")]
+pub mod proptest;
+
 pub type VotingGroup = String;
 
 /// Define High Level Intermediate Representation (HIR) for voting

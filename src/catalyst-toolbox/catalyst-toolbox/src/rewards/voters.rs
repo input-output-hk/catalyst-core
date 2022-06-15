@@ -186,6 +186,7 @@ mod tests {
     use chain_impl_mockchain::chaintypes::ConsensusVersion;
     use chain_impl_mockchain::fee::LinearFee;
     use chain_impl_mockchain::tokens::{identifier::TokenIdentifier, name::TokenName};
+    use fraction::Fraction;
     use jormungandr_lib::crypto::account::Identifier;
     use jormungandr_lib::interfaces::BlockchainConfiguration;
     use jormungandr_lib::interfaces::{Destination, Initial, InitialToken, InitialUTxO};
@@ -338,7 +339,13 @@ mod tests {
             total_stake += i;
         }
 
-        let snapshot = Snapshot::from_raw_snapshot(raw_snapshot.into(), 0.into());
+        let snapshot = Snapshot::from_raw_snapshot(
+            raw_snapshot.into(),
+            0.into(),
+            Fraction::from(1u64),
+            &|_vk: &Identifier| String::new(),
+        )
+        .unwrap();
 
         let initial = snapshot.to_block0_initials(Discrimination::Test);
         let block0 = blockchain_configuration(initial);

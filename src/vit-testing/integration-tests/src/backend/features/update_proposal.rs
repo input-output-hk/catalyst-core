@@ -17,7 +17,8 @@ use std::str::FromStr;
 use thor::BlockDateGenerator;
 use thor::FragmentSender;
 use thor::Wallet;
-use valgrind::Proposal;
+
+use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::VoteBlockchainTime;
 use vitup::config::{Block0Initial, Block0Initials, ConfigBuilder};
@@ -40,19 +41,20 @@ pub fn increase_max_block_content_size_during_voting() {
         slots_per_epoch: 30,
     };
 
+    let role = Default::default();
     let config = ConfigBuilder::default()
         .block0_initials(Block0Initials(vec![
             Block0Initial::Wallet {
                 name: ALICE.to_string(),
                 funds: 10_000,
                 pin: PIN.to_string(),
-                role: Default::default(),
+                role,
             },
             Block0Initial::Wallet {
                 name: COMMITTEE.to_string(),
                 funds: 10_000,
                 pin: PIN.to_string(),
-                role: Default::default(),
+                role,
             },
         ]))
         .vote_timing(vote_timing.into())
@@ -159,8 +161,8 @@ pub fn increase_max_block_content_size_during_voting() {
     );
 
     //send batch of votes just to be sure everything is ok
-    let proposals = alice.proposals().unwrap();
-    let votes_data: Vec<(&Proposal, Choice)> = proposals
+    let proposals = alice.proposals(&role.to_string()).unwrap();
+    let votes_data: Vec<(&FullProposalInfo, Choice)> = proposals
         .iter()
         .take(batch_size)
         .map(|proposal| (proposal, Choice::new(0)))

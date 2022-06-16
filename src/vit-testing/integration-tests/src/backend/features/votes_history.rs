@@ -7,7 +7,8 @@ use jormungandr_lib::interfaces::AccountVotes;
 use jormungandr_lib::interfaces::FragmentStatus;
 use std::collections::HashMap;
 use std::str::FromStr;
-use valgrind::Proposal;
+
+use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::v0::endpoints::proposals::ProposalVoteplanIdAndIndexes;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::VoteBlockchainTime;
@@ -28,12 +29,13 @@ pub fn votes_history_reflects_casted_votes() {
         slots_per_epoch: 30,
     };
 
+    let role = Default::default();
     let config = ConfigBuilder::default()
         .block0_initials(Block0Initials(vec![Block0Initial::Wallet {
             name: ALICE.to_string(),
             funds: 10_000,
             pin: PIN.to_string(),
-            role: Default::default(),
+            role,
         }]))
         .vote_timing(vote_timing.into())
         .slot_duration_in_seconds(2)
@@ -57,8 +59,8 @@ pub fn votes_history_reflects_casted_votes() {
     let secret = testing_directory.path().join("wallet_alice");
     let mut alice = iapyx_from_secret_key(secret, &wallet_proxy).unwrap();
 
-    let proposals = alice.proposals().unwrap();
-    let votes_data: Vec<(&Proposal, Choice)> = proposals
+    let proposals = alice.proposals(&role.to_string()).unwrap();
+    let votes_data: Vec<(&FullProposalInfo, Choice)> = proposals
         .iter()
         .take(batch_size)
         .map(|proposal| (proposal, Choice::new(0)))
@@ -88,9 +90,9 @@ pub fn votes_history_reflects_casted_votes() {
             .collect();
 
         for (proposal, _choice) in votes_data.iter() {
-            let hash = Hash::from_str(&proposal.chain_voteplan_id).unwrap();
+            let hash = Hash::from_str(&proposal.voteplan.chain_voteplan_id).unwrap();
             if let Some(registry) = votes_registry.get_mut(&hash) {
-                registry.push(proposal.chain_proposal_index)
+                registry.push(proposal.voteplan.chain_proposal_index)
             }
         }
 
@@ -145,7 +147,7 @@ pub fn votes_history_reflects_casted_votes() {
         proposals_used_in_voting,
         votes_data
             .iter()
-            .map(|(x, _)| x.internal_id)
+            .map(|(x, _)| x.proposal.internal_id)
             .collect::<Vec<i32>>()
     );
 }

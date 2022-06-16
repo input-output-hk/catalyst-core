@@ -34,6 +34,7 @@ impl NodeLoad {
                     self.config.batch_size,
                     self.config.use_v1,
                     self.config.reuse_accounts_lazy,
+                    &self.config.voting_group,
                 )?,
                 VoteStatusProvider::new(backend, self.config.debug)?,
                 self.config.config,
@@ -41,7 +42,11 @@ impl NodeLoad {
             )
         } else {
             jortestkit::load::start_sync(
-                WalletRequestGen::new(multicontroller, self.config.reuse_accounts_lazy)?,
+                WalletRequestGen::new(
+                    multicontroller,
+                    self.config.reuse_accounts_lazy,
+                    &self.config.voting_group,
+                )?,
                 self.config.config,
                 measurement_name,
             )

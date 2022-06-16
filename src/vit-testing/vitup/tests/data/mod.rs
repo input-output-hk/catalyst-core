@@ -2,7 +2,8 @@ mod private;
 mod public;
 
 use std::collections::LinkedList;
-use valgrind::{Challenge, Fund, Proposal, ValgrindClient};
+use valgrind::{Challenge, Fund, ValgrindClient};
+use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_tests::common::data::ChallengeTemplate;
 use vit_servicing_station_tests::common::data::FundTemplate;
 use vit_servicing_station_tests::common::data::ProposalTemplate;
@@ -101,7 +102,10 @@ pub fn reviews_eq(expected_list: LinkedList<ReviewTemplate>, backend_client: Val
     }
 }
 
-pub fn proposals_eq(expected_list: LinkedList<ProposalTemplate>, actual_list: Vec<Proposal>) {
+pub fn proposals_eq(
+    expected_list: LinkedList<ProposalTemplate>,
+    actual_list: Vec<FullProposalInfo>,
+) {
     if expected_list.len() != actual_list.len() {
         panic!("proposals count invalid");
     }
@@ -109,56 +113,60 @@ pub fn proposals_eq(expected_list: LinkedList<ProposalTemplate>, actual_list: Ve
     for (expected, actual) in expected_list.iter().zip(actual_list.iter()) {
         assert_eq!(
             expected.internal_id,
-            actual.internal_id.to_string(),
+            actual.proposal.internal_id.to_string(),
             "internal id"
         );
         assert_eq!(
-            expected.category_name, actual.proposal_category.category_name,
+            expected.category_name, actual.proposal.proposal_category.category_name,
             "category name"
         );
         assert_eq!(
-            expected.proposal_title, actual.proposal_title,
+            expected.proposal_title, actual.proposal.proposal_title,
             "proposal title"
         );
         assert_eq!(
-            expected.proposal_summary, actual.proposal_summary,
+            expected.proposal_summary, actual.proposal.proposal_summary,
             "proposal summary"
         );
         assert_eq!(
             expected.proposal_funds,
-            actual.proposal_funds.to_string(),
+            actual.proposal.proposal_funds.to_string(),
             "proposal funds"
         );
-        assert_eq!(expected.proposal_url, actual.proposal_url, "proposal url");
+        assert_eq!(
+            expected.proposal_url, actual.proposal.proposal_url,
+            "proposal url"
+        );
         assert_eq!(
             expected.proposal_impact_score,
-            actual.proposal_impact_score.to_string(),
+            actual.proposal.proposal_impact_score.to_string(),
             "proposal impact score"
         );
         assert_eq!(
-            expected.proposer_name, actual.proposer.proposer_name,
+            expected.proposer_name, actual.proposal.proposer.proposer_name,
             "proposer name"
         );
         assert_eq!(
-            expected.proposer_url, actual.proposer.proposer_url,
+            expected.proposer_url, actual.proposal.proposer.proposer_url,
             "proposer url"
         );
         assert_eq!(
-            expected.proposer_relevant_experience, actual.proposer.proposer_relevant_experience,
+            expected.proposer_relevant_experience,
+            actual.proposal.proposer.proposer_relevant_experience,
             "proposer relevant experience"
         );
         assert_eq!(
             expected.chain_vote_options.as_csv_string(),
-            actual.chain_vote_options.as_csv_string(),
+            actual.proposal.chain_vote_options.as_csv_string(),
             "chain vote options"
         );
         assert_eq!(
-            expected.chain_vote_type, actual.chain_voteplan_payload,
+            expected.chain_vote_type, actual.proposal.chain_voteplan_payload,
             "chain vote type"
         );
         assert_eq!(
             expected.challenge_id.as_ref().unwrap(),
-            &actual.challenge_id.to_string(),
+            &actual.proposal.challenge_id.to_string(),
             "challenge id"
         );
     }

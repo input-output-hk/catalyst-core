@@ -22,6 +22,7 @@ pub struct Config {
     pub global_pin: String,
     pub qr_codes_folder: Option<PathBuf>,
     pub secrets_folder: Option<PathBuf>,
+    pub voting_group: String,
 }
 
 impl Config {

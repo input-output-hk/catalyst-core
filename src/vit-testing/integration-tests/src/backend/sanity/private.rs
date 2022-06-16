@@ -27,25 +27,26 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
     };
 
     let testing_directory = TempDir::new().unwrap().into_persistent();
+    let role = Default::default();
     let config = ConfigBuilder::default()
         .block0_initials(Block0Initials(vec![
             Block0Initial::Wallet {
                 name: "david".to_string(),
                 funds: 10_000,
                 pin: "1234".to_string(),
-                role: Default::default(),
+                role,
             },
             Block0Initial::Wallet {
                 name: "edgar".to_string(),
                 funds: 10_000,
                 pin: "1234".to_string(),
-                role: Default::default(),
+                role,
             },
             Block0Initial::Wallet {
                 name: "filip".to_string(),
                 funds: 10_000,
                 pin: "1234".to_string(),
-                role: Default::default(),
+                role,
             },
         ]))
         .slot_duration_in_seconds(2)
@@ -78,12 +79,11 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
     let edgar_qr_code = Path::new(&qr_codes_folder).join("wallet_edgar_1234.png");
     let filip_qr_code = Path::new(&qr_codes_folder).join("wallet_filip_1234.png");
 
+    let voteplan_alias = format!("{}-{}", config.data.current_fund.fund_info.fund_name, role);
+
     // start mainnet wallets
     let mut david = iapyx_from_qr(&david_qr_code, "1234", &wallet_proxy).unwrap();
-
-    let fund1_vote_plan = controller
-        .defined_vote_plan(&config.data.current_fund.fund_info.fund_name)
-        .unwrap();
+    let fund1_vote_plan = controller.defined_vote_plan(&voteplan_alias).unwrap();
 
     // start voting
     david
@@ -121,7 +121,7 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
             .settings()
             .vote_plans
             .iter()
-            .find(|(key, _)| key.alias == config.data.current_fund.fund_info.fund_name)
+            .find(|(key, _)| key.alias == voteplan_alias)
             .map(|(_, vote_plan)| vote_plan)
             .unwrap()
         {

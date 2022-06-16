@@ -15,7 +15,8 @@ use thiserror::Error;
 use thor::BlockDateGenerator;
 use thor::DiscriminationExtension;
 use valgrind::ProposalExtension;
-use valgrind::{Fund, Proposal, ValgrindClient};
+use valgrind::{Fund, ValgrindClient};
+use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use wallet::{AccountId, Settings};
 use wallet_core::{Choice, Value};
 
@@ -132,8 +133,8 @@ impl Controller {
         self.backend.account_state(self.id()).map_err(Into::into)
     }
 
-    pub fn proposals(&self) -> Result<Vec<Proposal>, ControllerError> {
-        self.backend.proposals().map_err(Into::into)
+    pub fn proposals(&self, group: &str) -> Result<Vec<FullProposalInfo>, ControllerError> {
+        self.backend.proposals(group).map_err(Into::into)
     }
 
     pub fn funds(&self) -> Result<Fund, ControllerError> {
@@ -146,20 +147,34 @@ impl Controller {
 
     pub fn vote_for(
         &mut self,
-        vote_plan_id: String,
+        voteplan_id: String,
         proposal_index: u32,
         choice: u8,
     ) -> Result<FragmentId, ControllerError> {
-        let proposals = self.get_proposals()?;
+        let funds = self.funds()?;
+
+        let voteplan = funds
+            .chain_vote_plans
+            .iter()
+            .find(|vp| voteplan_id == vp.chain_voteplan_id)
+            .unwrap();
+
+        let group = funds
+            .groups
+            .iter()
+            .find(|g| g.token_identifier == voteplan.token_identifier)
+            .unwrap();
+
+        let proposals = self.get_proposals(&group.group_id)?;
 
         let proposal = proposals
             .iter()
             .find(|x| {
-                x.chain_voteplan_id == vote_plan_id
-                    && x.chain_proposal_index == proposal_index as i64
+                x.voteplan.chain_voteplan_id == voteplan_id
+                    && x.voteplan.chain_proposal_index == proposal_index as i64
             })
             .ok_or(ControllerError::CannotFindProposal {
-                vote_plan_name: vote_plan_id.to_string(),
+                vote_plan_name: voteplan_id.to_string(),
                 proposal_index,
             })?;
 
@@ -168,7 +183,7 @@ impl Controller {
 
     pub fn vote(
         &mut self,
-        proposal: &Proposal,
+        proposal: &FullProposalInfo,
         choice: Choice,
     ) -> Result<FragmentId, ControllerError> {
         let transaction = self.wallet.vote(
@@ -182,7 +197,7 @@ impl Controller {
 
     pub fn votes_batch(
         &mut self,
-        votes_data: Vec<(&Proposal, Choice)>,
+        votes_data: Vec<(&FullProposalInfo, Choice)>,
     ) -> Result<Vec<FragmentId>, ControllerError> {
         let account_state = self.backend.account_state(self.wallet.id())?;
         let mut counters = account_state.counters();
@@ -213,14 +228,8 @@ impl Controller {
             .map_err(Into::into)
     }
 
-    pub fn get_proposals(&mut self) -> Result<Vec<Proposal>, ControllerError> {
-        Ok(self
-            .backend
-            .proposals()?
-            .iter()
-            .cloned()
-            .map(Into::into)
-            .collect())
+    pub fn get_proposals(&mut self, group: &str) -> Result<Vec<FullProposalInfo>, ControllerError> {
+        Ok(self.backend.proposals(group)?.to_vec())
     }
 
     pub fn fragment_logs(&self) -> Result<HashMap<FragmentId, FragmentLog>, ControllerError> {

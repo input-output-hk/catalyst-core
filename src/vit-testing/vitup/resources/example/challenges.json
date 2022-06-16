@@ -7,7 +7,8 @@
 		"id": "1",
 		"proposers_rewards": "0",
 		"rewards_total": "400000",
-		"title": "Fund6 Challenge Setting"
+		"title": "Fund6 Challenge Setting",
+                "internal_id": 1
 	},
 	{
 		"challenge_type": "simple",
@@ -17,7 +18,8 @@
 		"id": "2",
 		"proposers_rewards": "200000",
 		"rewards_total": "200000",
-		"title": "Dapps & Integrations"
+		"title": "Dapps & Integrations",
+                "internal_id": 2
 	},
 	{
 		"challenge_type": "simple",
@@ -27,7 +29,9 @@
 		"id": "3",
 		"proposers_rewards": "400000",
 		"rewards_total": "400000",
-		"title": "Developer Ecosystem"
+		"title": "Developer Ecosystem",
+                "internal_id": 3
+
 	},
 	{
 		"challenge_type": "simple",
@@ -37,7 +41,9 @@
 		"id": "4",
 		"proposers_rewards": "50000",
 		"rewards_total": "50000",
-		"title": "Distributed Decision Making"
+		"title": "Distributed Decision Making",
+                "internal_id": 4
+
 	},
 	{
 		"challenge_type": "simple",
@@ -47,7 +53,9 @@
 		"id": "5",
 		"proposers_rewards": "50000",
 		"rewards_total": "50000",
-		"title": "Proposer Outreach"
+		"title": "Proposer Outreach",
+                "internal_id": 5
+
 	},
 	{
 		"challenge_type": "simple",
@@ -57,7 +65,9 @@
 		"id": "6",
 		"proposers_rewards": "50000",
 		"rewards_total": "50000",
-		"title": "Catalyst Value Onboarding"
+		"title": "Catalyst Value Onboarding",
+                "internal_id": 6
+
 	},
 	{
 		"challenge_type": "simple",
@@ -67,6 +77,8 @@
 		"id": "7",
 		"proposers_rewards": "50000",
 		"rewards_total": "50000",
-		"title": "Local Community Centers"
+		"title": "Local Community Centers",
+                "internal_id": 7
+
 	}
 ]

@@ -324,7 +324,7 @@ pub enum RestError {
     },
     #[error("could not deserialize response")]
     CannotDeserialize(#[from] serde_json::Error),
-    #[error("could not send reqeuest")]
+    #[error("could not send request")]
     RequestError(#[from] reqwest::Error),
     #[error("server is not up")]
     ServerIsNotUp,

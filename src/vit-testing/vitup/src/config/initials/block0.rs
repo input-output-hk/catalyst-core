@@ -175,19 +175,22 @@ impl Initials {
         Self(templates)
     }
 
-    pub fn external_templates(&self, voting_token: TokenIdentifier) -> Vec<ExternalWalletTemplate> {
+    pub fn external_templates(
+        &self,
+        roles: impl Fn(&Role) -> TokenIdentifier,
+    ) -> Vec<ExternalWalletTemplate> {
         let mut templates = Vec::new();
         for (index, initial) in self.0.iter().enumerate() {
             if let Initial::External {
                 funds,
                 address,
-                role: _,
+                role,
             } = initial
             {
                 let funds = *funds as u64;
 
                 let mut tokens = HashMap::new();
-                tokens.insert(voting_token.clone(), funds);
+                tokens.insert(roles(role), funds);
 
                 templates.push(ExternalWalletTemplate::new(
                     format!("wallet_{}", index + 1),
@@ -204,7 +207,7 @@ impl Initials {
         &self,
         threshold: u64,
         discrimination: Discrimination,
-        voting_token: TokenIdentifier,
+        roles: impl Fn(&Role) -> TokenIdentifier,
     ) -> HashMap<WalletTemplate, String> {
         let mut rand = rand::thread_rng();
         let mut above_threshold_index = 0;
@@ -217,7 +220,7 @@ impl Initials {
                 Initial::AboveThreshold {
                     above_threshold,
                     pin,
-                    role: _,
+                    role,
                 } => {
                     for _ in 0..*above_threshold {
                         above_threshold_index += 1;
@@ -228,7 +231,7 @@ impl Initials {
                         templates.insert(
                             WalletTemplateBuilder::new(&wallet_alias)
                                 .with(value)
-                                .with_token(voting_token.clone(), value)
+                                .with_token(roles(role), value)
                                 .discrimination(discrimination)
                                 .build(),
                             pin.to_string(),
@@ -238,7 +241,7 @@ impl Initials {
                 Initial::BelowThreshold {
                     below_threshold,
                     pin,
-                    role: _,
+                    role,
                 } => {
                     for _ in 0..*below_threshold {
                         below_threshold_index += 1;
@@ -249,7 +252,7 @@ impl Initials {
                         templates.insert(
                             WalletTemplateBuilder::new(&wallet_alias)
                                 .with(value)
-                                .with_token(voting_token.clone(), value)
+                                .with_token(roles(role), value)
                                 .discrimination(discrimination)
                                 .build(),
                             pin.to_string(),
@@ -260,14 +263,14 @@ impl Initials {
                     name,
                     funds,
                     pin,
-                    role: _,
+                    role,
                 } => {
                     let wallet_alias = format!("wallet_{}", name);
                     templates.insert(
                         WalletTemplateBuilder::new(&wallet_alias)
                             .with(*funds as u64)
                             .discrimination(discrimination)
-                            .with_token(voting_token.clone(), (*funds) as u64)
+                            .with_token(roles(role), (*funds) as u64)
                             .build(),
                         pin.to_string(),
                     );
@@ -276,7 +279,7 @@ impl Initials {
                     level,
                     count,
                     pin,
-                    role: _,
+                    role,
                 } => {
                     for _ in 0..*count {
                         around_level_index += 1;
@@ -287,7 +290,7 @@ impl Initials {
                             WalletTemplateBuilder::new(&wallet_alias)
                                 .with(value)
                                 .discrimination(discrimination)
-                                .with_token(voting_token.clone(), value)
+                                .with_token(roles(role), value)
                                 .build(),
                             pin.to_string(),
                         );

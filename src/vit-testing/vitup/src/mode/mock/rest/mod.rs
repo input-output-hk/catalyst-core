@@ -339,7 +339,7 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
                 .with(warp::reply::with::headers(default_headers.clone()))
                 .boxed();
 
-            let proposals = warp::path::end()
+            let proposals = warp::path!(String)
                 .and(warp::get())
                 .and(with_context.clone())
                 .and_then(get_all_proposals)
@@ -1295,7 +1295,10 @@ pub async fn get_review_by_id(id: i32, context: ContextLock) -> Result<impl Repl
     Ok(HandlerResult(Ok(reviews)))
 }
 
-pub async fn get_all_proposals(context: ContextLock) -> Result<impl Reply, Rejection> {
+pub async fn get_all_proposals(
+    voting_group: String,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
     context.lock().unwrap().log("get_all_proposals");
 
     if !context.lock().unwrap().available() {
@@ -1313,9 +1316,9 @@ pub async fn get_all_proposals(context: ContextLock) -> Result<impl Reply, Rejec
         .state()
         .vit()
         .proposals()
-        .iter()
-        .map(|x| x.proposal.clone())
-        .collect::<Vec<Proposal>>())))
+        .into_iter()
+        .filter(|p| p.group_id == voting_group)
+        .collect::<Vec<_>>())))
 }
 
 pub async fn get_proposal_by_idx(
@@ -1345,8 +1348,8 @@ pub async fn get_proposal_by_idx(
         .iter()
         .filter(|x| {
             request.iter().any(|item| {
-                x.proposal.chain_voteplan_id == item.vote_plan_id
-                    && item.indexes.contains(&x.proposal.chain_proposal_index)
+                x.voteplan.chain_voteplan_id == item.vote_plan_id
+                    && item.indexes.contains(&x.voteplan.chain_proposal_index)
             })
         })
         .map(|x| x.proposal.clone())

@@ -158,6 +158,7 @@ pub fn build_load_config(
         read_pin_from_filename: true,
         use_https: false,
         debug: false,
+        voting_group: "direct".to_string(),
     }
 }
 
@@ -192,5 +193,6 @@ pub fn build_load_config_count(
         read_pin_from_filename: true,
         use_https: false,
         debug: false,
+        voting_group: "direct".to_string(),
     }
 }

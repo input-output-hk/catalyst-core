@@ -25,25 +25,26 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
         slots_per_epoch: 30,
     };
     let testing_directory = TempDir::new().unwrap().into_persistent();
+    let role = Default::default();
     let config = ConfigBuilder::default()
         .block0_initials(Block0Initials(vec![
             Block0Initial::Wallet {
                 name: "david".to_string(),
                 funds: 10_000,
                 pin: PIN.to_string(),
-                role: Default::default(),
+                role,
             },
             Block0Initial::Wallet {
                 name: "edgar".to_string(),
                 funds: 10_000,
                 pin: PIN.to_string(),
-                role: Default::default(),
+                role,
             },
             Block0Initial::Wallet {
                 name: "filip".to_string(),
                 funds: 10_000,
                 pin: PIN.to_string(),
-                role: Default::default(),
+                role,
             },
         ]))
         .slot_duration_in_seconds(2)
@@ -80,8 +81,18 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
     // start mainnet wallets
     let mut david = iapyx_from_qr(&david_qr_code, PIN, &wallet_proxy).unwrap();
 
-    let fund1_vote_plan = &controller.defined_vote_plans()[0];
-    let fund2_vote_plan = &controller.defined_vote_plans()[1];
+    // FIXME: this is a bit brittle, it may be better to parametrize the roles to tokens map in the
+    // vitup config, and then filter here by the token identifier
+    let vote_plans = controller
+        .defined_vote_plans()
+        .iter()
+        .cloned()
+        .filter(|vp| vp.alias().ends_with(&role.to_string()))
+        .collect::<Vec<_>>();
+
+    let fund1_vote_plan = &vote_plans[0];
+    let fund2_vote_plan = &vote_plans[1];
+
     let settings = wallet_node.rest().settings().unwrap();
 
     // start voting

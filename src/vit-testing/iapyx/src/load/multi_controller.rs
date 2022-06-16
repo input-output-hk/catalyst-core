@@ -8,10 +8,10 @@ use jcli_lib::key::read_bech32;
 pub use jormungandr_automation::jormungandr::RestSettings;
 use std::path::Path;
 use thiserror::Error;
-use valgrind::Proposal;
 use valgrind::ProposalExtension;
 use valgrind::SettingsExtensions;
 use valgrind::ValgrindClient;
+use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use wallet::Settings;
 use wallet_core::{Choice, Value};
 
@@ -72,8 +72,8 @@ impl MultiController {
         })
     }
 
-    pub fn proposals(&self) -> Result<Vec<Proposal>, MultiControllerError> {
-        self.backend.proposals().map_err(Into::into)
+    pub fn proposals(&self, group: &str) -> Result<Vec<FullProposalInfo>, MultiControllerError> {
+        self.backend.proposals(group).map_err(Into::into)
     }
 
     pub(crate) fn backend(&self) -> &ValgrindClient {
@@ -110,7 +110,7 @@ impl MultiController {
     pub fn vote(
         &mut self,
         wallet_index: usize,
-        proposal: &Proposal,
+        proposal: &FullProposalInfo,
         choice: Choice,
         valid_until: BlockDate,
     ) -> Result<FragmentId, MultiControllerError> {
@@ -130,7 +130,7 @@ impl MultiController {
         &mut self,
         wallet_index: usize,
         use_v1: bool,
-        votes_data: Vec<(&Proposal, Choice)>,
+        votes_data: Vec<(&FullProposalInfo, Choice)>,
         valid_until: &BlockDate,
     ) -> Result<Vec<FragmentId>, MultiControllerError> {
         let wallet = self.wallets.get_mut(wallet_index).unwrap();

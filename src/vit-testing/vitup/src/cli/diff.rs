@@ -58,14 +58,15 @@ impl DiffCommand {
         let local_funds_content = serde_json::to_string_pretty(&local_funds)?;
         let remote_funds_content = serde_json::to_string_pretty(&remote_funds)?;
 
-        let mut local_proposals = server.rest_client().proposals()?;
-        let mut remote_proposals = remote_client.proposals()?;
+        let group = "group";
+        let mut local_proposals = server.rest_client().proposals(group)?;
+        let mut remote_proposals = remote_client.proposals(group)?;
 
         let local_proposals_content = serde_json::to_string_pretty(
-            &local_proposals.sort_by(|a, b| b.internal_id.cmp(&a.internal_id)),
+            &local_proposals.sort_by(|a, b| b.proposal.internal_id.cmp(&a.proposal.internal_id)),
         )?;
         let remote_proposals_content = serde_json::to_string_pretty(
-            &remote_proposals.sort_by(|a, b| b.internal_id.cmp(&a.internal_id)),
+            &remote_proposals.sort_by(|a, b| b.proposal.internal_id.cmp(&a.proposal.internal_id)),
         )?;
 
         let address = server.settings().address;

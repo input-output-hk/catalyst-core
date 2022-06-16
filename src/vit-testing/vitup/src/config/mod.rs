@@ -16,7 +16,7 @@ pub use blockchain::Blockchain;
 pub use builder::ConfigBuilder;
 pub use certs::CertificatesBuilder;
 pub use initials::{
-    Block0Initial, Block0Initials, Initials, SnapshotError, SnapshotInitial, SnapshotInitials,
+    Block0Initial, Block0Initials, Initials, Role, SnapshotError, SnapshotInitial, SnapshotInitials,
 };
 pub use migrations::{Error as MigrationError, MigrationFilesBuilder};
 pub use service::Service;

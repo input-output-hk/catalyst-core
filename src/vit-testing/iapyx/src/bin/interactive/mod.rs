@@ -22,9 +22,9 @@ use thor::cli::Connection;
 use thor::cli::WalletController;
 use thor::BlockDateGenerator;
 use valgrind::Fund;
-use valgrind::Proposal;
 use valgrind::SettingsExtensions;
 use valgrind::ValgrindClient;
+use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use wallet_core::Choice;
 use wallet_core::Value;
 
@@ -115,8 +115,8 @@ impl CliController {
         })
     }
 
-    pub fn proposals(&self) -> Result<Vec<Proposal>, Error> {
-        self.backend_client.proposals().map_err(Into::into)
+    pub fn proposals(&self, group: &str) -> Result<Vec<FullProposalInfo>, Error> {
+        self.backend_client.proposals(group).map_err(Into::into)
     }
 
     pub fn funds(&self) -> Result<Fund, Error> {
@@ -143,7 +143,7 @@ impl CliController {
 
     pub fn vote(
         &mut self,
-        proposal: &Proposal,
+        proposal: &FullProposalInfo,
         choice: Choice,
         password: &str,
     ) -> Result<FragmentId, Error> {
@@ -155,7 +155,7 @@ impl CliController {
 
     pub fn votes_batch(
         &mut self,
-        votes_data: Vec<(&Proposal, Choice)>,
+        votes_data: Vec<(&FullProposalInfo, Choice)>,
         password: &str,
     ) -> Result<Vec<FragmentId>, Error> {
         let ids = self.controller(password)?.votes_batch(votes_data)?;

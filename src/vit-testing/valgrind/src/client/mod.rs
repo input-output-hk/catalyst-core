@@ -15,6 +15,7 @@ use jormungandr_lib::interfaces::SettingsDto;
 use jormungandr_lib::interfaces::VotePlanId;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, VotePlanStatus};
 use std::collections::HashMap;
+use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
 pub use node::{RestError as NodeRestError, WalletNodeRestClient};
 pub use proxy::{Error as ProxyClientError, ProxyClient};
@@ -23,7 +24,6 @@ use url::Url;
 use vit_servicing_station_lib::db::models::challenges::Challenge;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::funds::Fund;
-use vit_servicing_station_lib::db::models::proposals::Proposal;
 use vit_servicing_station_tests::common::clients::RestClient as VitRestClient;
 pub use vit_station::{RestError as VitStationRestError, VitStationRestClient};
 use wallet::AccountId;
@@ -142,14 +142,8 @@ impl ValgrindClient {
             .map_err(Into::into)
     }
 
-    pub fn proposals(&self) -> Result<Vec<Proposal>, Error> {
-        Ok(self
-            .vit_client
-            .proposals()?
-            .iter()
-            .cloned()
-            .map(Into::into)
-            .collect())
+    pub fn proposals(&self, group: &str) -> Result<Vec<FullProposalInfo>, Error> {
+        Ok(self.vit_client.proposals(group)?.to_vec())
     }
 
     pub fn funds(&self) -> Result<Fund, Error> {

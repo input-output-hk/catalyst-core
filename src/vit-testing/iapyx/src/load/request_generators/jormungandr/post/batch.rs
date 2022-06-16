@@ -7,8 +7,8 @@ use rand::RngCore;
 use rand_core::OsRng;
 use std::time::Instant;
 use thor::BlockDateGenerator;
-use valgrind::Proposal;
 use valgrind::SettingsExtensions;
+use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use wallet::Settings;
 use wallet_core::Choice;
 
@@ -16,7 +16,7 @@ pub struct BatchWalletRequestGen {
     rand: OsRng,
     batch_size: usize,
     multi_controller: MultiController,
-    proposals: Vec<Proposal>,
+    proposals: Vec<FullProposalInfo>,
     options: Vec<u8>,
     use_v1: bool,
     wallet_index: usize,
@@ -32,12 +32,14 @@ impl BatchWalletRequestGen {
         batch_size: usize,
         use_v1: bool,
         update_account_before_vote: bool,
+        voting_group: &str,
     ) -> Result<Self, MultiControllerError> {
-        let proposals = multi_controller.proposals()?;
+        let proposals = multi_controller.proposals(voting_group)?;
         let vote_plans = multi_controller.backend().vote_plan_statuses()?;
         let settings = multi_controller.backend().settings()?;
 
         let options = proposals[0]
+            .proposal
             .chain_vote_options
             .0
             .values()
@@ -105,8 +107,8 @@ impl BatchWalletRequestGen {
                     self.proposals
                         .iter()
                         .find(|x| {
-                            x.chain_voteplan_id == item.id().to_string()
-                                && (x.chain_proposal_index % u8::MAX as i64) == i as i64
+                            x.voteplan.chain_voteplan_id == item.id().to_string()
+                                && (x.voteplan.chain_proposal_index % u8::MAX as i64) == i as i64
                         })
                         .unwrap()
                         .clone(),

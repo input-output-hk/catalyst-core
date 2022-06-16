@@ -16,7 +16,7 @@ pub struct Initials {
     pub block0: Block0Initials,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
 pub enum Role {
     Representative,
     Voter,

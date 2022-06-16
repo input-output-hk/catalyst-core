@@ -7,7 +7,8 @@ use jormungandr_automation::testing::NamedProcess;
 use std::net::SocketAddr;
 use std::process::Child;
 use std::sync::{Arc, Mutex};
-use vit_servicing_station_lib::db::models::proposals::Proposal;
+use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
+
 pub type VitStationSettings = vit_servicing_station_lib::server::settings::ServiceSettings;
 
 //TODO: encapsulate fields
@@ -46,8 +47,8 @@ impl VitStationController {
         self.settings.address
     }
 
-    pub fn proposals(&self) -> Result<Vec<Proposal>> {
-        Ok(self.rest_client.proposals()?)
+    pub fn proposals(&self, group: &str) -> Result<Vec<FullProposalInfo>> {
+        Ok(self.rest_client.proposals(group)?)
     }
 
     pub fn as_named_process(&self) -> NamedProcess {

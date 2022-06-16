@@ -8,15 +8,15 @@ use rand::seq::SliceRandom;
 use rand_core::OsRng;
 use std::time::Instant;
 use thor::BlockDateGenerator;
-use valgrind::Proposal;
 use valgrind::SettingsExtensions;
+use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use wallet::Settings;
 use wallet_core::Choice;
 
 pub struct WalletRequestGen {
     rand: OsRng,
     multi_controller: MultiController,
-    proposals: Vec<Proposal>,
+    proposals: Vec<FullProposalInfo>,
     options: Vec<u8>,
     wallet_index: usize,
     update_account_before_vote: bool,
@@ -29,11 +29,13 @@ impl WalletRequestGen {
     pub fn new(
         multi_controller: MultiController,
         update_account_before_vote: bool,
+        group: &str,
     ) -> Result<Self, super::RequestGenError> {
-        let proposals = multi_controller.proposals()?;
+        let proposals = multi_controller.proposals(group)?;
         let vote_plans = multi_controller.backend().vote_plan_statuses()?;
         let settings = multi_controller.backend().settings()?;
         let options = proposals[0]
+            .proposal
             .chain_vote_options
             .0
             .values()

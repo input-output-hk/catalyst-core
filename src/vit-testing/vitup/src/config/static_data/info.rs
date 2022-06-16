@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::config::Role;
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct FundInfo {
     #[serde(default = "default_goals")]
@@ -10,6 +12,7 @@ pub struct FundInfo {
     pub survey_url: String,
     pub fund_name: String,
     pub fund_id: i32,
+    pub groups: Vec<String>,
 }
 
 impl From<i32> for FundInfo {
@@ -20,6 +23,7 @@ impl From<i32> for FundInfo {
             goals: default_goals(),
             fund_id,
             fund_name: format!("Fund{}", fund_id),
+            groups: default_groups(),
         }
     }
 }
@@ -38,4 +42,8 @@ fn default_goals() -> Vec<String> {
         "second Goal".to_string(),
         "third Goal".to_string(),
     ]
+}
+
+fn default_groups() -> Vec<String> {
+    vec![Role::Representative.to_string(), Role::Voter.to_string()]
 }

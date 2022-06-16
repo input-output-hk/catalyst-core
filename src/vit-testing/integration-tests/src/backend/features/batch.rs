@@ -23,12 +23,13 @@ pub fn transactions_are_send_between_nodes_with_correct_order() {
         slots_per_epoch: 60,
     };
 
+    let role = Default::default();
     let config = ConfigBuilder::default()
         .block0_initials(Block0Initials(vec![Block0Initial::Wallet {
             name: ALICE.to_string(),
             funds: 10_000,
             pin: PIN.to_string(),
-            role: Default::default(),
+            role,
         }]))
         .vote_timing(vote_timing.into())
         .slot_duration_in_seconds(2)
@@ -52,7 +53,7 @@ pub fn transactions_are_send_between_nodes_with_correct_order() {
     let secret = testing_directory.path().join("wallet_alice");
     let mut alice = iapyx_from_secret_key(secret, &wallet_proxy).unwrap();
 
-    let proposals = alice.proposals().unwrap();
+    let proposals = alice.proposals(&role.to_string()).unwrap();
     let votes_data = proposals
         .iter()
         .take(batch_size)

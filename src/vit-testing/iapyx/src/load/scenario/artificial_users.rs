@@ -34,6 +34,7 @@ impl ArtificialUserLoad {
             self.config.vote.batch_size,
             self.config.vote.use_https,
             self.config.vote.reuse_accounts_lazy,
+            &self.config.vote.voting_group,
         )?;
         let account = AccountRequestGen::new(
             self.config.vote.build_multi_controller()?.into(),

@@ -11,7 +11,7 @@ use jortestkit::measurement::Status;
 use serde_json;
 use thor::FragmentSender;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
-use vitup::config::{ConfigBuilder, VoteBlockchainTime};
+use vitup::config::{ConfigBuilder, Role, VoteBlockchainTime};
 use vitup::testing::{spawn_network, vitup_setup};
 
 #[test]
@@ -73,9 +73,13 @@ pub fn persistent_log_contains_all_sent_votes() {
     vote_timing.wait_for_tally_start(nodes.get(0).unwrap().rest());
 
     let mut committee = controller.wallet("committee_1").unwrap();
-    let vote_plan = controller
-        .defined_vote_plan(&config.data.current_fund.fund_info.fund_name)
-        .unwrap();
+
+    let voteplan_alias = format!(
+        "{}-{}",
+        config.data.current_fund.fund_info.fund_name,
+        Role::Voter.to_string()
+    );
+    let vote_plan = controller.defined_vote_plan(&voteplan_alias).unwrap();
 
     let fragment_sender = FragmentSender::from(&controller.settings().block0);
 

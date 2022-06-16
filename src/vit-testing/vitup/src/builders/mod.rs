@@ -4,7 +4,7 @@ pub mod utils;
 
 pub use crate::builders::helpers::{build_current_fund, build_servicing_station_parameters};
 use crate::builders::utils::DeploymentTree;
-use crate::config::Config;
+use crate::config::{Config, Role};
 use crate::mode::standard::{VitController, VitControllerBuilder};
 use assert_fs::fixture::ChildPath;
 use chain_impl_mockchain::chaintypes::ConsensusVersion;
@@ -178,28 +178,44 @@ impl VitBackendSettingsBuilder {
         std::fs::create_dir_all(&root)?;
         let policy = MintingPolicy::new();
 
-        let token_id: TokenIdentifier = TokenIdentifier {
-            policy_hash: policy.hash(),
-            token_name: TestGen::token_name(),
+        let token_list = vec![
+            (
+                Role::Voter,
+                TokenIdentifier {
+                    policy_hash: policy.hash(),
+                    token_name: TestGen::token_name(),
+                },
+            ),
+            (
+                Role::Representative,
+                TokenIdentifier {
+                    policy_hash: policy.hash(),
+                    token_name: TestGen::token_name(),
+                },
+            ),
+        ];
+
+        let tokens_map = |role: &Role| {
+            token_list
+                .iter()
+                .find(|(a, _)| a == role)
+                .map(|(_, b)| b.clone().into())
+                .unwrap()
         };
 
         let mut file = std::fs::File::create(root.join("voting_token.txt"))?;
-        writeln!(file, "{:?}", token_id)?;
+        writeln!(file, "{:?}", token_list)?;
 
         println!("building initials..");
 
         let mut templates = HashMap::new();
         if self.config.initials.block0.any() {
-            blockchain = blockchain.with_external_wallets(
-                self.config
-                    .initials
-                    .block0
-                    .external_templates(token_id.clone().into()),
-            );
+            blockchain = blockchain
+                .with_external_wallets(self.config.initials.block0.external_templates(tokens_map));
             templates = self.config.initials.block0.templates(
                 self.config.data.current_fund.voting_power,
                 blockchain.discrimination(),
-                token_id.clone().into(),
+                tokens_map,
             );
             for (wallet, _) in templates.iter().filter(|(x, _)| *x.value() > Value::zero()) {
                 blockchain = blockchain.with_wallet(wallet.clone());
@@ -231,7 +247,7 @@ impl VitBackendSettingsBuilder {
             .committee(self.committee_wallet.clone())
             .private(self.config.vote_plan.private)
             .proposals_count(self.config.data.current_fund.proposals as usize)
-            .voting_token(token_id.clone().into())
+            .voting_tokens(token_list.into_iter().map(|(a, b)| (a, b.into())).collect())
             .build()
             .into_iter()
         {

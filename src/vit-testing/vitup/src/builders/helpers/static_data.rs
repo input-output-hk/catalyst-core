@@ -1,10 +1,12 @@
+use std::collections::BTreeSet;
+
 use super::time;
 use crate::config::Config;
 use chain_crypto::bech32::Bech32;
-use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
+use chain_impl_mockchain::{certificate::VotePlan, testing::scenario::template::VotePlanDef};
 use chain_vote::ElectionPublicKey;
 use hersir::builder::{Settings, VotePlanSettings};
-use vit_servicing_station_lib::db::models::goals::Goal;
+use vit_servicing_station_lib::db::models::{goals::Goal, groups::Group};
 use vit_servicing_station_tests::common::data::{
     CurrentFund, FundDates, FundInfo, ValidVotePlanParameters,
 };
@@ -14,6 +16,24 @@ pub fn build_current_fund(config: &Config, vote_plans: Vec<VotePlanDef>) -> Curr
 
     let (vote_start_timestamp, tally_start_timestamp, tally_end_timestamp) =
         time::convert_to_human_date(config);
+
+    let tokens = vote_plans
+        .iter()
+        .map(|vp| VotePlan::from(vp.clone()).voting_token().clone())
+        .collect::<BTreeSet<_>>();
+
+    let groups = template
+        .fund_info
+        .groups
+        .iter()
+        .cloned()
+        .zip(tokens.into_iter())
+        .map(|(group_id, token_identifier)| Group {
+            fund_id: template.fund_info.fund_id,
+            token_identifier: token_identifier.to_string(),
+            group_id,
+        })
+        .collect();
 
     let info = FundInfo {
         fund_name: template.fund_info.fund_name.clone(),
@@ -48,6 +68,7 @@ pub fn build_current_fund(config: &Config, vote_plans: Vec<VotePlanDef>) -> Curr
             voting_tally_end: tally_end_timestamp.unix_timestamp(),
             voting_tally_start: tally_start_timestamp.unix_timestamp(),
         },
+        groups,
     };
 
     let mut current_fund = CurrentFund::new(vote_plans, info);
@@ -107,6 +128,7 @@ pub fn build_next_funds(config: &Config) -> Vec<FundInfo> {
                 voting_tally_end: template.dates.voting_tally_end.unix_timestamp(),
                 voting_tally_start: template.dates.voting_tally_start.unix_timestamp(),
             },
+            groups: Default::default(),
         })
         .collect()
 }

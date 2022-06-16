@@ -79,6 +79,9 @@ pub struct BurstCountIapyxLoadCommand {
         parse(from_str = parse_progress_bar_mode_from_str)
     )]
     progress_bar_mode: ProgressBarMode,
+
+    #[structopt(default_value = "direct", long)]
+    pub voting_group: String,
 }
 
 impl BurstCountIapyxLoadCommand {
@@ -114,6 +117,7 @@ impl BurstCountIapyxLoadCommand {
             read_pin_from_filename: self.read_pin_from_filename,
             use_https: self.use_https,
             debug: self.debug,
+            voting_group: self.voting_group.clone(),
         }
     }
 }

@@ -15,7 +15,8 @@ use std::str::FromStr;
 use structopt::StructOpt;
 use thiserror::Error;
 use thor::cli::{Alias, Connection};
-use valgrind::{Proposal, ProposalExtension};
+use valgrind::ProposalExtension;
+use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use wallet_core::Choice;
 
 ///
@@ -136,6 +137,8 @@ pub struct Votes {
     /// Print title, otherwise only id would be print out
     #[structopt(long = "print-title")]
     pub print_proposal_title: bool,
+    #[structopt(default_value = "direct", long)]
+    pub voting_group: String,
 }
 
 impl Votes {
@@ -157,7 +160,7 @@ impl Votes {
                 let vote_plan_id_hash = Hash::from_str(&vote_plan_id)?;
                 if self.print_proposal_title {
                     let history = model.vote_plan_history(vote_plan_id_hash)?;
-                    let proposals = model.proposals()?;
+                    let proposals = model.proposals(&self.voting_group)?;
 
                     if let Some(history) = history {
                         let history: Vec<String> = history
@@ -166,12 +169,12 @@ impl Votes {
                                 proposals
                                     .iter()
                                     .find(|y| {
-                                        y.chain_proposal_index as u8 == *x
-                                            && y.chain_voteplan_id == vote_plan_id
+                                        y.voteplan.chain_proposal_index as u8 == *x
+                                            && y.voteplan.chain_voteplan_id == vote_plan_id
                                     })
                                     .unwrap()
                             })
-                            .map(|p| p.proposal_title.clone())
+                            .map(|p| p.proposal.proposal_title.clone())
                             .collect();
                         println!("{:#?}", history);
                     } else {
@@ -184,7 +187,7 @@ impl Votes {
             None => {
                 if self.print_proposal_title {
                     let history = model.votes_history()?;
-                    let proposals = model.proposals()?;
+                    let proposals = model.proposals(&self.voting_group)?;
 
                     if let Some(history) = history {
                         let history: Vec<String> = history
@@ -193,12 +196,13 @@ impl Votes {
                                 proposals
                                     .iter()
                                     .find(|y| {
-                                        x.votes.contains(&(y.chain_proposal_index as u8))
-                                            && y.chain_voteplan_id == x.vote_plan_id.to_string()
+                                        x.votes.contains(&(y.voteplan.chain_proposal_index as u8))
+                                            && y.voteplan.chain_voteplan_id
+                                                == x.vote_plan_id.to_string()
                                     })
                                     .unwrap()
                             })
-                            .map(|p| p.proposal_title.clone())
+                            .map(|p| p.proposal.proposal_title.clone())
                             .collect();
                         println!("{:#?}", history)
                     } else {
@@ -248,11 +252,13 @@ pub struct SingleVote {
     /// Pin
     #[structopt(long, short)]
     pub pin: String,
+    #[structopt(default_value = "direct", long)]
+    pub voting_group: String,
 }
 
 impl SingleVote {
     pub fn exec(self, mut model: CliController) -> Result<(), IapyxCommandError> {
-        let proposals = model.proposals()?;
+        let proposals = model.proposals(&self.voting_group)?;
         /*   let block_date_generator = expiry::from_block_or_shift(
             self.valid_until_fixed,
             self.valid_until_shift,
@@ -264,6 +270,7 @@ impl SingleVote {
             .find(|x| x.chain_proposal_id_as_str() == self.proposal_id)
             .ok_or_else(|| IapyxCommandError::CannotFindProposal(self.proposal_id.clone()))?;
         let choice = proposal
+            .proposal
             .chain_vote_options
             .0
             .get(&self.choice)
@@ -288,12 +295,16 @@ pub struct BatchOfVotes {
     /// Pin
     #[structopt(long, short)]
     pub pin: String,
+    #[structopt(default_value = "direct", long)]
+    pub voting_group: String,
 }
 
 impl BatchOfVotes {
     pub fn exec(self, mut model: CliController) -> Result<(), IapyxCommandError> {
-        let choices = self
-            .zip_into_batch_input_data(serde_json::from_str(&self.choices)?, model.proposals()?)?;
+        let choices = self.zip_into_batch_input_data(
+            serde_json::from_str(&self.choices)?,
+            model.proposals(&self.voting_group)?,
+        )?;
         model.votes_batch(choices.iter().map(|(p, c)| (p, *c)).collect(), &self.pin)?;
         model.save_config()?;
         Ok(())
@@ -302,8 +313,8 @@ impl BatchOfVotes {
     fn zip_into_batch_input_data(
         &self,
         choices: HashMap<String, String>,
-        proposals: Vec<Proposal>,
-    ) -> Result<Vec<(Proposal, Choice)>, IapyxCommandError> {
+        proposals: Vec<FullProposalInfo>,
+    ) -> Result<Vec<(FullProposalInfo, Choice)>, IapyxCommandError> {
         let mut result = Vec::new();
 
         for (proposal_id, choice) in choices {
@@ -313,6 +324,7 @@ impl BatchOfVotes {
                 .ok_or_else(|| IapyxCommandError::CannotFindProposal(proposal_id.clone()))?;
 
             let choice = proposal
+                .proposal
                 .chain_vote_options
                 .0
                 .get(&choice)
@@ -396,11 +408,13 @@ pub struct Proposals {
     /// Limit output entries
     #[structopt(short, long)]
     pub limit: Option<usize>,
+    #[structopt(default_value = "direct", long)]
+    pub voting_group: String,
 }
 impl Proposals {
     pub fn exec(self, model: CliController) -> Result<(), IapyxCommandError> {
         print_delim();
-        for (id, proposal) in model.proposals()?.iter().enumerate() {
+        for (id, proposal) in model.proposals(&self.voting_group)?.iter().enumerate() {
             if let Some(limit) = self.limit {
                 if id >= limit {
                     break;
@@ -414,10 +428,10 @@ impl Proposals {
                     "{}. {} [{}] {}",
                     (id + 1),
                     proposal.chain_proposal_id_as_str(),
-                    proposal.proposal_title,
-                    proposal.proposal_summary
+                    proposal.proposal.proposal_title,
+                    proposal.proposal.proposal_summary
                 );
-                println!("{:#?}", proposal.chain_vote_options.0);
+                println!("{:#?}", proposal.proposal.chain_vote_options.0);
             }
         }
         print_delim();

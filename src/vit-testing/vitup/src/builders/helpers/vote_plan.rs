@@ -1,4 +1,4 @@
-use crate::config::VoteBlockchainTime;
+use crate::config::{Role, VoteBlockchainTime};
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chain_impl_mockchain::testing::scenario::template::{ProposalDefBuilder, VotePlanDefBuilder};
 use chain_impl_mockchain::testing::TestGen;
@@ -16,7 +16,7 @@ pub struct VitVotePlanDefBuilder {
     proposals_count: usize,
     options: u8,
     private: bool,
-    voting_token: TokenIdentifier,
+    voting_tokens: Vec<(Role, TokenIdentifier)>,
 }
 
 impl Default for VitVotePlanDefBuilder {
@@ -29,7 +29,7 @@ impl Default for VitVotePlanDefBuilder {
             committee_wallet: "undefined".to_string(),
             options: 0,
             private: false,
-            voting_token: TestGen::token_id().into(),
+            voting_tokens: vec![(Default::default(), TestGen::token_id().into())],
         }
     }
 }
@@ -71,7 +71,12 @@ impl VitVotePlanDefBuilder {
     }
 
     pub fn voting_token(mut self, voting_token: TokenIdentifier) -> Self {
-        self.voting_token = voting_token;
+        self.voting_tokens = vec![(Default::default(), voting_token)];
+        self
+    }
+
+    pub fn voting_tokens(mut self, voting_tokens: Vec<(Role, TokenIdentifier)>) -> Self {
+        self.voting_tokens = voting_tokens;
         self
     }
 
@@ -91,7 +96,7 @@ impl VitVotePlanDefBuilder {
         .chunks(self.split_by)
         .into_iter()
         .enumerate()
-        .map(|(index, x)| {
+        .flat_map(|(index, proposal_builders)| {
             let vote_plan_name = {
                 if index == 0 {
                     self.fund_name.to_string()
@@ -100,24 +105,31 @@ impl VitVotePlanDefBuilder {
                 }
             };
 
-            let mut vote_plan_builder = VotePlanDefBuilder::new(&vote_plan_name);
-            vote_plan_builder
-                .voting_token(self.voting_token.clone().into())
-                .owner(&self.committee_wallet)
-                .vote_phases(
-                    self.vote_phases.vote_start,
-                    self.vote_phases.tally_start,
-                    self.vote_phases.tally_end,
-                );
+            self.voting_tokens
+                .iter()
+                .zip(std::iter::repeat(vote_plan_name))
+                .map(|((role, voting_token), vote_plan_name)| {
+                    let vote_plan_name = format!("{vote_plan_name}-{role}");
+                    let mut vote_plan_builder = VotePlanDefBuilder::new(&vote_plan_name);
 
-            if self.private {
-                vote_plan_builder.payload_type(PayloadType::Private);
-            }
+                    vote_plan_builder
+                        .voting_token(voting_token.clone().into())
+                        .owner(&self.committee_wallet)
+                        .vote_phases(
+                            self.vote_phases.vote_start,
+                            self.vote_phases.tally_start,
+                            self.vote_phases.tally_end,
+                        );
 
-            x.to_vec().iter_mut().for_each(|proposal| {
-                vote_plan_builder.with_proposal(proposal);
-            });
-            vote_plan_builder.build()
+                    if self.private {
+                        vote_plan_builder.payload_type(PayloadType::Private);
+                    }
+
+                    proposal_builders.to_vec().iter_mut().for_each(|proposal| {
+                        vote_plan_builder.with_proposal(proposal);
+                    });
+                    vote_plan_builder.build()
+                })
         })
         .collect()
     }

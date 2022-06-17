@@ -1,5 +1,6 @@
 use catalyst_toolbox::stats::distribution::Stats;
 use catalyst_toolbox::stats::voters::calculate_active_wallet_distribution;
+use color_eyre::Report;
 use std::ops::Range;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -26,7 +27,7 @@ pub enum Command {
 }
 
 impl ActiveVotersCommand {
-    pub fn exec(&self) -> Result<(), catalyst_toolbox::stats::Error> {
+    pub fn exec(&self) -> Result<(), Report> {
         match self.command {
             Command::Count => calculate_active_wallet_distribution(
                 Stats::new(self.threshold),

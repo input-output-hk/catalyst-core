@@ -13,7 +13,6 @@ use std::path::Path;
 fn blacklist_addresses(genesis: &Block0Configuration) -> Vec<Address> {
     let discrimination = genesis.blockchain_configuration.discrimination;
 
-    #[allow(clippy::needless_collect)]
     genesis
         .blockchain_configuration
         .committees
@@ -40,12 +39,13 @@ fn vote_counts_as_addresses(
     votes_count: VoteCount,
     genesis: &Block0Configuration,
 ) -> Vec<(InitialUTxO, u32)> {
-    votes_count
+    genesis
+        .initial
         .iter()
-        .filter_map(|(address, votes_count)| {
-            for initials in &genesis.initial {
-                if let Initial::Fund(funds) = initials {
-                    if let Some(utxo) = funds.iter().find(|utxo| {
+        .filter_map(|initials| {
+            if let Initial::Fund(funds) = initials {
+                for utxo in funds {
+                    if let Some((_, votes_count)) = votes_count.iter().find(|(address, _)| {
                         account_hex_to_address(
                             address.to_string(),
                             genesis.blockchain_configuration.discrimination,

@@ -5,7 +5,7 @@ fn levels(threshold: u64) -> Vec<Range<u64>> {
     vec![
         (0..450),
         (450..threshold),
-        (500..1_000),
+        (threshold..1_000),
         (1_000..2_000),
         (2_000..5_000),
         (5_000..10_000),
@@ -98,7 +98,9 @@ impl Stats {
 }
 
 fn format_big_number(n: u64) -> String {
-    if n % 1_000_000_000 == 0 {
+    if n == 0 {
+        n.to_string()
+    } else if n % 1_000_000_000 == 0 {
         format!("{} MLD", n / 1_000_000)
     } else if n % 1_00000 == 0 {
         format!("{} M", n / 1_000_000)

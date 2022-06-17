@@ -1,4 +1,5 @@
 pub mod advisor_reviews;
+pub mod challenges;
 pub mod cors;
 pub mod funds;
 pub mod genesis;

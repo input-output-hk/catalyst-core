@@ -8,6 +8,8 @@ use std::collections::HashSet;
 
 use structopt::StructOpt;
 
+use catalyst_toolbox::http::default_http_client;
+
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::path::{Path, PathBuf};
@@ -98,6 +100,8 @@ impl Import {
             stages_filters,
         } = self;
 
+        let client = default_http_client(api_token);
+
         let tags: CustomFieldTags = if let Some(tags_path) = tags {
             read_json_from_file(tags_path)?
         } else {
@@ -110,20 +114,15 @@ impl Import {
             Default::default()
         };
 
-        let runtime = tokio::runtime::Builder::new_multi_thread()
-            .enable_io()
-            .enable_time()
-            .build()?;
-
         let scores = read_scores_file(scores)?;
         let sponsors = read_sponsors_file(sponsors)?;
-        let idescale_data = runtime.block_on(fetch_all(
+        let idescale_data = fetch_all(
             *fund,
             &stage_label.to_lowercase(),
             &stages_filters.iter().map(AsRef::as_ref).collect::<Vec<_>>(),
             &excluded_proposals,
-            api_token.clone(),
-        ))?;
+            &client,
+        )?;
 
         let funds = build_fund(*fund as i32, fund_goal.clone(), *threshold);
         let challenges = build_challenges(*fund as i32, &idescale_data, sponsors);

@@ -33,6 +33,7 @@ jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jorm
 jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr.git",  branch = "master" }
 thor = { git = "https://github.com/input-output-hk/jormungandr.git",  branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
+rayon = "1.5"
 rust_decimal = "1.16"
 rust_decimal_macros = "1"
 futures = "0.3"
@@ -41,6 +42,7 @@ once_cell = "1.8"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 rand = "0.8.3"
 rand_chacha = "0.3"
+governor = { version = "0.4", features = ["std", "jitter"], default-features = false}
 regex = "1.5"
 serde = "1.0"
 serde_json = "1.0"

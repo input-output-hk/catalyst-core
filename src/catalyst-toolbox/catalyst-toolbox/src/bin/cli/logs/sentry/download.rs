@@ -1,5 +1,5 @@
-use super::Error;
 use catalyst_toolbox::logs::sentry::{LazySentryLogs, RawLog, SentryLogClient};
+use color_eyre::Report;
 use jcli_lib::utils::io::open_file_write;
 
 use std::path::PathBuf;
@@ -65,7 +65,7 @@ impl FromStr for Mode {
 }
 
 impl Download {
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         let Self {
             url,
             token,
@@ -132,7 +132,7 @@ fn request_sentry_logs_and_dump_to_file(
     dates: DateFilter,
     out: PathBuf,
     chunk_size: usize,
-) -> Result<(), Error> {
+) -> Result<(), Report> {
     let client = SentryLogClient::new(url, token);
 
     println!("Starting downloading...");
@@ -159,7 +159,7 @@ fn request_sentry_logs_and_dump_to_file(
     Ok(())
 }
 
-fn dump_logs_to_json(logs: &[RawLog], out: PathBuf) -> Result<(), Error> {
+fn dump_logs_to_json(logs: &[RawLog], out: PathBuf) -> Result<(), Report> {
     let file = open_file_write(&Some(out))?;
     serde_json::to_writer_pretty(file, logs)?;
     Ok(())

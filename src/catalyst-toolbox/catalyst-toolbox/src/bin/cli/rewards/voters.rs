@@ -1,11 +1,13 @@
-use super::Error;
 use catalyst_toolbox::rewards::voters::{calc_voter_rewards, Rewards, VoteCount};
-use catalyst_toolbox::snapshot::{registration::MainnetRewardAddress, Snapshot};
+use catalyst_toolbox::snapshot::{
+    registration::MainnetRewardAddress, voting_group::VotingGroupAssigner, Snapshot,
+};
 use catalyst_toolbox::utils::assert_are_close;
 
+use color_eyre::Report;
+use fraction::Fraction;
 use jcli_lib::jcli_lib::block::Common;
-use jormungandr_lib::interfaces::Block0Configuration;
-
+use jormungandr_lib::{crypto::account::Identifier, interfaces::Block0Configuration};
 use structopt::StructOpt;
 
 use std::collections::BTreeMap;
@@ -30,6 +32,10 @@ pub struct VotersRewards {
     #[structopt(long)]
     registration_threshold: u64,
 
+    /// Voting power cap for each account
+    #[structopt(short, long)]
+    voting_power_cap: Fraction,
+
     #[structopt(long)]
     votes_count_path: PathBuf,
 
@@ -41,21 +47,22 @@ pub struct VotersRewards {
 fn write_rewards_results(
     common: Common,
     rewards: &BTreeMap<MainnetRewardAddress, Rewards>,
-) -> Result<(), Error> {
+) -> Result<(), Report> {
     let writer = common.open_output()?;
     let header = ["Address", "Reward for the voter (lovelace)"];
     let mut csv_writer = csv::Writer::from_writer(writer);
-    csv_writer.write_record(&header).map_err(Error::Csv)?;
+    csv_writer.write_record(&header)?;
 
     for (address, rewards) in rewards.iter() {
         let record = [address.to_string(), rewards.trunc().to_string()];
-        csv_writer.write_record(&record).map_err(Error::Csv)?;
+        csv_writer.write_record(&record)?;
     }
+
     Ok(())
 }
 
 impl VotersRewards {
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         let VotersRewards {
             common,
             total_rewards,
@@ -63,10 +70,10 @@ impl VotersRewards {
             registration_threshold,
             votes_count_path,
             vote_threshold,
+            voting_power_cap,
         } = self;
         let block = common.input.load_block()?;
-        let block0 = Block0Configuration::from_block(&block)
-            .map_err(jcli_lib::jcli_lib::block::Error::BuildingGenesisFromBlock0Failed)?;
+        let block0 = Block0Configuration::from_block(&block)?;
 
         let vote_count: VoteCount = serde_json::from_reader(jcli_lib::utils::io::open_file_read(
             &Some(votes_count_path),
@@ -75,7 +82,9 @@ impl VotersRewards {
         let snapshot = Snapshot::from_raw_snapshot(
             serde_json::from_reader(jcli_lib::utils::io::open_file_read(&Some(snapshot_path))?)?,
             registration_threshold.into(),
-        );
+            voting_power_cap,
+            &DummyAssigner,
+        )?;
 
         let results = calc_voter_rewards(
             vote_count,
@@ -90,5 +99,12 @@ impl VotersRewards {
 
         write_rewards_results(common, &results)?;
         Ok(())
+    }
+}
+
+struct DummyAssigner;
+impl VotingGroupAssigner for DummyAssigner {
+    fn assign(&self, _vk: &Identifier) -> String {
+        unimplemented!()
     }
 }

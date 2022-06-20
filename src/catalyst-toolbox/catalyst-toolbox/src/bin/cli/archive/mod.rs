@@ -1,5 +1,6 @@
-use catalyst_toolbox::archive::{generate_archive_files, Error};
+use catalyst_toolbox::archive::generate_archive_files;
 
+use color_eyre::Report;
 use structopt::StructOpt;
 
 use std::path::PathBuf;
@@ -14,7 +15,8 @@ pub struct Archive {
 }
 
 impl Archive {
-    pub fn exec(self) -> Result<(), Error> {
-        generate_archive_files(&self.jormungandr_database, &self.output_dir)
+    pub fn exec(self) -> Result<(), Report> {
+        generate_archive_files(&self.jormungandr_database, &self.output_dir)?;
+        Ok(())
     }
 }

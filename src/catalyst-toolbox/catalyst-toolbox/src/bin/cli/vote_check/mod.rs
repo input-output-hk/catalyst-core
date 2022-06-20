@@ -1,6 +1,8 @@
+use color_eyre::eyre::bail;
+use color_eyre::Report;
 use structopt::StructOpt;
 
-use catalyst_toolbox::vote_check::{CheckNode, Error};
+use catalyst_toolbox::vote_check::CheckNode;
 
 use jormungandr_lib::interfaces::VotePlanStatus;
 
@@ -39,7 +41,7 @@ impl VoteCheck {
     ///  * Check that the transactions containing your votes were indeed included in a block
     ///    in the main chain
     ///
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         let node = CheckNode::spawn(
             self.blockchain.clone(),
             self.genesis_block_hash.clone(),
@@ -52,15 +54,14 @@ impl VoteCheck {
 
         for vote_plan in expected_results {
             if !actual_results.contains(&vote_plan) {
-                return Err(Error::ResultsDoNotMatch {
-                    // no reason for failure when serializing to json a struct without a map
-                    expected: serde_json::to_string_pretty(&vote_plan).unwrap(),
-                    actual: actual_results
-                        .iter()
-                        .find(|act| act.id == vote_plan.id)
-                        .map(|act| serde_json::to_string_pretty(act).unwrap())
-                        .unwrap_or_default(),
-                });
+                let expected = serde_json::to_string_pretty(&vote_plan).unwrap();
+                let actual = actual_results
+                    .iter()
+                    .find(|act| act.id == vote_plan.id)
+                    .map(|act| serde_json::to_string_pretty(act).unwrap())
+                    .unwrap_or_default();
+
+                bail!("results do not match, expected: {expected:?}, actual: {actual:?}");
             }
         }
 

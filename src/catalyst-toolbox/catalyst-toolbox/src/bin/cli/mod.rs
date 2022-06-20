@@ -10,7 +10,7 @@ mod snapshot;
 mod stats;
 mod vote_check;
 
-use std::error::Error;
+use color_eyre::Report;
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
@@ -58,7 +58,7 @@ pub enum CatalystCommand {
 }
 
 impl Cli {
-    pub fn exec(self) -> Result<(), Box<dyn Error>> {
+    pub fn exec(self) -> Result<(), Report> {
         use std::io::Write as _;
         if self.full_version {
             Ok(writeln!(std::io::stdout(), "{}", env!("FULL_VERSION"))?)
@@ -74,7 +74,7 @@ impl Cli {
 }
 
 impl CatalystCommand {
-    pub fn exec(self) -> Result<(), Box<dyn Error>> {
+    pub fn exec(self) -> Result<(), Report> {
         use self::CatalystCommand::*;
         match self {
             Rewards(rewards) => rewards.exec()?,

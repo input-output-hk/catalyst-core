@@ -1,8 +1,9 @@
-use super::Error;
 use catalyst_toolbox::community_advisors::models::VeteranRankingRow;
 use catalyst_toolbox::rewards::veterans::{self, VcaRewards, VeteranAdvisorIncentive};
 use catalyst_toolbox::rewards::Rewards;
 use catalyst_toolbox::utils::csv;
+use color_eyre::eyre::bail;
+use color_eyre::Report;
 use rust_decimal::Decimal;
 use serde::Serialize;
 use std::path::PathBuf;
@@ -64,7 +65,7 @@ pub struct VeteransRewards {
 }
 
 impl VeteransRewards {
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         let Self {
             from,
             to,
@@ -80,29 +81,23 @@ impl VeteransRewards {
         let reviews: Vec<VeteranRankingRow> = csv::load_data_from_csv::<_, b','>(&from)?;
 
         if rewards_agreement_rate_cutoffs.len() != rewards_agreement_rate_modifiers.len() {
-            return Err(Error::InvalidInput(
+            bail!(
                 "Expected same number of rewards_agreement_rate_cutoffs and rewards_agreement_rate_modifiers"
-                    .to_string(),
-            ));
+            );
         }
 
         if reputation_agreement_rate_cutoffs.len() != reputation_agreement_rate_modifiers.len() {
-            return Err(Error::InvalidInput(
+            bail!(
                 "Expected same number of reputation_agreement_rate_cutoffs and reputation_agreement_rate_modifiers"
-                    .to_string(),
-            ));
+            );
         }
 
         if !is_descending(&rewards_agreement_rate_cutoffs) {
-            return Err(Error::InvalidInput(
-                "Expected rewards_agreement_rate_cutoffs to be descending".to_string(),
-            ));
+            bail!("Expected rewards_agreement_rate_cutoffs to be descending");
         }
 
         if !is_descending(&reputation_agreement_rate_cutoffs) {
-            return Err(Error::InvalidInput(
-                "Expected rewards_agreement_rate_cutoffs to be descending".to_string(),
-            ));
+            bail!("Expected rewards_agreement_rate_cutoffs to be descending");
         }
 
         let results = veterans::calculate_veteran_advisors_incentives(

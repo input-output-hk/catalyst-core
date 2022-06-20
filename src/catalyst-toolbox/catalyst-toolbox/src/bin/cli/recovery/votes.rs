@@ -1,4 +1,3 @@
-use super::tally::Error;
 use catalyst_toolbox::recovery::tally::{
     deconstruct_account_transaction, ValidatedFragment, ValidationError, VoteFragmentFilter,
 };
@@ -9,6 +8,7 @@ use chain_core::{
 use chain_impl_mockchain::{
     account::SpendingCounter, block::Block, fragment::Fragment, vote::Payload,
 };
+use color_eyre::Report;
 use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 use jormungandr_lib::interfaces::load_persistent_fragments_logs_from_folder_path;
 use serde::Serialize;
@@ -17,6 +17,8 @@ use std::io::Write;
 use std::iter::IntoIterator;
 use std::path::PathBuf;
 use structopt::StructOpt;
+
+use super::set_verbosity;
 
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -93,7 +95,7 @@ struct RecoveredVotes {
 }
 
 impl VotesPrintout {
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         let VotesPrintout {
             block0_path,
             logs_path,
@@ -102,7 +104,8 @@ impl VotesPrintout {
             verbose,
         } = self;
 
-        stderrlog::new().verbosity(verbose).init().unwrap();
+        set_verbosity(verbose);
+
         let reader = std::fs::File::open(block0_path)?;
         let block0 = Block::deserialize(&mut Codec::new(reader)).unwrap();
 

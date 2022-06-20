@@ -2,33 +2,8 @@ mod community_advisors;
 mod veterans;
 mod voters;
 
+use color_eyre::Report;
 use structopt::StructOpt;
-use thiserror::Error;
-
-#[allow(clippy::large_enum_variant)]
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("error while writing to csv")]
-    Csv(#[from] csv::Error),
-
-    #[error("requested funds cannot be parsed: {0}")]
-    InvalidRequestedFunds(String),
-
-    #[error(transparent)]
-    Other(#[from] jcli_lib::jcli_lib::block::Error),
-
-    #[error("{0}")]
-    InvalidInput(String),
-
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-
-    #[error(transparent)]
-    Json(#[from] serde_json::Error),
-
-    #[error(transparent)]
-    Rewards(#[from] catalyst_toolbox::rewards::voters::Error),
-}
 
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -44,7 +19,7 @@ pub enum Rewards {
 }
 
 impl Rewards {
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         match self {
             Rewards::Voters(cmd) => cmd.exec(),
             Rewards::CommunityAdvisors(cmd) => cmd.exec(),

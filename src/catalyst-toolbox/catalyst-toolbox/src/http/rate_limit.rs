@@ -34,7 +34,7 @@ impl<T: HttpClient> HttpClient for RateLimitClient<T> {
     where
         S: for<'a> Deserialize<'a>,
     {
-        if let Some(limiter) = self.limiter {
+        if let Some(limiter) = &self.limiter {
             while let Err(e) = limiter.check() {
                 let time = e.wait_time_from(Instant::now());
                 debug!("waiting for rate limit: {time:?}");

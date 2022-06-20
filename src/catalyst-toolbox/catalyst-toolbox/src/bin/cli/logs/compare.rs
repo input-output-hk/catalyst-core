@@ -1,7 +1,7 @@
 use catalyst_toolbox::logs::compare::{compare_logs, LogCmpStats};
-use catalyst_toolbox::logs::sentry;
 use catalyst_toolbox::logs::sentry::{RawLog, SentryFragmentLog};
 use chain_core::property::Fragment;
+use color_eyre::Report;
 use jcli_lib::utils::io;
 use jormungandr_lib::interfaces::{
     load_persistent_fragments_logs_from_folder_path, PersistentFragmentLog,
@@ -9,24 +9,6 @@ use jormungandr_lib::interfaces::{
 use serde::de::DeserializeOwned;
 use std::path::PathBuf;
 use structopt::StructOpt;
-
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error("api-token parameter must be provided if sentry-url is set")]
-    MissingTokenParameter,
-
-    #[error(transparent)]
-    SentryLogs(#[from] sentry::Error),
-
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-
-    #[error("error deserializing logs from: {path}")]
-    Deserialize {
-        path: PathBuf,
-        source: serde_json::Error,
-    },
-}
 
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -39,7 +21,7 @@ pub struct Compare {
 }
 
 impl Compare {
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         let Self {
             sentry_logs,
             permanent_logs,
@@ -95,9 +77,9 @@ impl Compare {
     }
 }
 
-pub fn load_logs_from_file<L: DeserializeOwned>(path: PathBuf) -> Result<Vec<L>, Error> {
-    let reader = io::open_file_read(&Some(path.clone()))?;
-    serde_json::from_reader(reader).map_err(|e| Error::Deserialize { path, source: e })
+pub fn load_logs_from_file<L: DeserializeOwned>(path: PathBuf) -> Result<Vec<L>, Report> {
+    let reader = io::open_file_read(&Some(path))?;
+    Ok(serde_json::from_reader(reader)?)
 }
 
 pub fn print_results(results: &LogCmpStats) {

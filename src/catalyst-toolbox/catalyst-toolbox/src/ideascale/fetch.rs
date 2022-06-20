@@ -30,5 +30,5 @@ pub fn get_proposals_data(
 }
 
 pub fn get_funnels_data_for_fund(client: &impl HttpClient) -> Result<Vec<Funnel>, Report> {
-    Ok(client.get("funnels")?.json()?)
+    client.get("funnels")?.json()
 }

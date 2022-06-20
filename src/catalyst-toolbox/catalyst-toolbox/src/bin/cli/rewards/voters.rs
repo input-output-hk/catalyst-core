@@ -2,8 +2,10 @@ use catalyst_toolbox::rewards::voters::{calc_voter_rewards, Rewards, VoteCount};
 use catalyst_toolbox::snapshot::{registration::MainnetRewardAddress, Snapshot};
 use catalyst_toolbox::utils::assert_are_close;
 
-use color_eyre::Report;
-use jcli_lib::jcli_lib::block::Common;
+use color_eyre::{Report, Result};
+use jcli_lib::block::{load_block, open_block_file};
+use jcli_lib::jcli_lib::block::{open_output, Common};
+use jcli_lib::utils::io::open_file_read;
 use jormungandr_lib::interfaces::Block0Configuration;
 
 use structopt::StructOpt;
@@ -39,10 +41,10 @@ pub struct VotersRewards {
 }
 
 fn write_rewards_results(
-    common: Common,
+    common: &Option<PathBuf>,
     rewards: &BTreeMap<MainnetRewardAddress, Rewards>,
 ) -> Result<(), Report> {
-    let writer = common.open_output()?;
+    let writer = open_output(common)?;
     let header = ["Address", "Reward for the voter (lovelace)"];
     let mut csv_writer = csv::Writer::from_writer(writer);
     csv_writer.write_record(&header)?;
@@ -65,30 +67,48 @@ impl VotersRewards {
             votes_count_path,
             vote_threshold,
         } = self;
-        let block = common.input.load_block()?;
-        let block0 = Block0Configuration::from_block(&block)?;
 
-        let vote_count: VoteCount = serde_json::from_reader(jcli_lib::utils::io::open_file_read(
-            &Some(votes_count_path),
-        )?)?;
-
-        let snapshot = Snapshot::from_raw_snapshot(
-            serde_json::from_reader(jcli_lib::utils::io::open_file_read(&Some(snapshot_path))?)?,
-            registration_threshold.into(),
-        );
-
-        let results = calc_voter_rewards(
-            vote_count,
+        voter_rewards(
+            common.output_file,
+            votes_count_path,
+            snapshot_path,
+            registration_threshold,
             vote_threshold,
-            &block0,
-            snapshot,
-            Rewards::from(total_rewards),
-        )?;
-
-        let actual_rewards = results.values().sum::<Rewards>();
-        assert_are_close(actual_rewards, Rewards::from(total_rewards));
-
-        write_rewards_results(common, &results)?;
-        Ok(())
+            total_rewards,
+        )
     }
+}
+
+pub fn voter_rewards(
+    block_file: Option<PathBuf>,
+    votes_count_path: PathBuf,
+    snapshot_path: PathBuf,
+    registration_threshold: u64,
+    vote_threshold: u64,
+    total_rewards: u64,
+) -> Result<()> {
+    let block = open_block_file(&block_file)?;
+    let block = load_block(block)?;
+
+    let block0 = Block0Configuration::from_block(&block)?;
+
+    let vote_count: VoteCount = serde_json::from_reader(open_file_read(&Some(votes_count_path))?)?;
+    let snapshot = Snapshot::from_raw_snapshot(
+        serde_json::from_reader(open_file_read(&Some(snapshot_path))?)?,
+        registration_threshold.into(),
+    );
+
+    let results = calc_voter_rewards(
+        vote_count,
+        vote_threshold,
+        &block0,
+        snapshot,
+        Rewards::from(total_rewards),
+    )?;
+
+    let actual_rewards = results.values().sum::<Rewards>();
+    assert_are_close(actual_rewards, Rewards::from(total_rewards));
+
+    write_rewards_results(&block_file, &results)?;
+    Ok(())
 }

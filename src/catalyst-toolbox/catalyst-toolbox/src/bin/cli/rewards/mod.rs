@@ -1,6 +1,9 @@
 mod community_advisors;
+mod full;
 mod veterans;
 mod voters;
+
+use std::path::PathBuf;
 
 use color_eyre::Report;
 use structopt::StructOpt;
@@ -16,6 +19,9 @@ pub enum Rewards {
 
     /// Calculate rewards for veteran community advisors
     Veterans(veterans::VeteransRewards),
+
+    /// Calculate full rewards based on a config file
+    Full { path: PathBuf },
 }
 
 impl Rewards {
@@ -24,6 +30,7 @@ impl Rewards {
             Rewards::Voters(cmd) => cmd.exec(),
             Rewards::CommunityAdvisors(cmd) => cmd.exec(),
             Rewards::Veterans(cmd) => cmd.exec(),
+            Rewards::Full { path } => full::full_rewards(&path),
         }
     }
 }

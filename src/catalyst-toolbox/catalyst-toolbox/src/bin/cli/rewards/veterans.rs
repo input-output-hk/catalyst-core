@@ -78,47 +78,74 @@ impl VeteransRewards {
             reputation_agreement_rate_cutoffs,
             reputation_agreement_rate_modifiers,
         } = self;
-        let reviews: Vec<VeteranRankingRow> = csv::load_data_from_csv::<_, b','>(&from)?;
 
-        if rewards_agreement_rate_cutoffs.len() != rewards_agreement_rate_modifiers.len() {
-            bail!(
+        vca_rewards(
+            from,
+            to,
+            rewards_agreement_rate_cutoffs,
+            rewards_agreement_rate_modifiers,
+            reputation_agreement_rate_cutoffs,
+            reputation_agreement_rate_modifiers,
+            total_rewards,
+            min_rankings,
+            max_rankings_reputation,
+            max_rankings_rewards,
+        )
+    }
+}
+
+pub fn vca_rewards(
+    reviews_csv: PathBuf,
+    output: PathBuf,
+    rewards_agreement_rate_cutoffs: Vec<Decimal>,
+    rewards_agreement_rate_modifiers: Vec<Decimal>,
+    reputation_agreement_rate_cutoffs: Vec<Decimal>,
+    reputation_agreement_rate_modifiers: Vec<Decimal>,
+    total_rewards: Decimal,
+    min_rankings: usize,
+    max_rankings_reputation: usize,
+    max_rankings_rewards: usize,
+) -> Result<(), Report> {
+    let reviews: Vec<VeteranRankingRow> = csv::load_data_from_csv::<_, b','>(&reviews_csv)?;
+
+    if rewards_agreement_rate_cutoffs.len() != rewards_agreement_rate_modifiers.len() {
+        bail!(
                 "Expected same number of rewards_agreement_rate_cutoffs and rewards_agreement_rate_modifiers"
             );
-        }
+    }
 
-        if reputation_agreement_rate_cutoffs.len() != reputation_agreement_rate_modifiers.len() {
-            bail!(
+    if reputation_agreement_rate_cutoffs.len() != reputation_agreement_rate_modifiers.len() {
+        bail!(
                 "Expected same number of reputation_agreement_rate_cutoffs and reputation_agreement_rate_modifiers"
             );
-        }
-
-        if !is_descending(&rewards_agreement_rate_cutoffs) {
-            bail!("Expected rewards_agreement_rate_cutoffs to be descending");
-        }
-
-        if !is_descending(&reputation_agreement_rate_cutoffs) {
-            bail!("Expected rewards_agreement_rate_cutoffs to be descending");
-        }
-
-        let results = veterans::calculate_veteran_advisors_incentives(
-            &reviews,
-            total_rewards,
-            min_rankings..=max_rankings_rewards,
-            min_rankings..=max_rankings_reputation,
-            rewards_agreement_rate_cutoffs
-                .into_iter()
-                .zip(rewards_agreement_rate_modifiers.into_iter())
-                .collect(),
-            reputation_agreement_rate_cutoffs
-                .into_iter()
-                .zip(reputation_agreement_rate_modifiers.into_iter())
-                .collect(),
-        );
-
-        csv::dump_data_to_csv(rewards_to_csv_data(results).iter(), &to).unwrap();
-
-        Ok(())
     }
+
+    if !is_descending(&rewards_agreement_rate_cutoffs) {
+        bail!("Expected rewards_agreement_rate_cutoffs to be descending");
+    }
+
+    if !is_descending(&reputation_agreement_rate_cutoffs) {
+        bail!("Expected rewards_agreement_rate_cutoffs to be descending");
+    }
+
+    let results = veterans::calculate_veteran_advisors_incentives(
+        &reviews,
+        total_rewards,
+        min_rankings..=max_rankings_rewards,
+        min_rankings..=max_rankings_reputation,
+        rewards_agreement_rate_cutoffs
+            .into_iter()
+            .zip(rewards_agreement_rate_modifiers.into_iter())
+            .collect(),
+        reputation_agreement_rate_cutoffs
+            .into_iter()
+            .zip(reputation_agreement_rate_modifiers.into_iter())
+            .collect(),
+    );
+
+    csv::dump_data_to_csv(rewards_to_csv_data(results).iter(), &output).unwrap();
+
+    Ok(())
 }
 
 fn rewards_to_csv_data(rewards: VcaRewards) -> Vec<impl Serialize> {

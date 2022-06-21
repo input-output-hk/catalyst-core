@@ -1,7 +1,7 @@
 use chain_crypto::digest::DigestOf;
 use color_eyre::eyre::bail;
 use color_eyre::Report;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
@@ -18,8 +18,8 @@ use catalyst_toolbox::community_advisors::models::{
 use catalyst_toolbox::utils::csv::dump_data_to_csv;
 use structopt::StructOpt;
 
-#[derive(StructOpt)]
-struct FundSettingOpt {
+#[derive(Debug, Deserialize, StructOpt)]
+pub struct FundSettingOpt {
     /// % ratio, range in [0, 100]
     #[structopt(long = "rewards-ratio")]
     proposal_ratio: u8,
@@ -31,8 +31,8 @@ struct FundSettingOpt {
     total: Funds,
 }
 
-#[derive(StructOpt)]
-struct ProposalRewardsSlotsOpt {
+#[derive(Debug, Deserialize, StructOpt)]
+pub struct ProposalRewardsSlotsOpt {
     /// excellent reviews amount of rewards tickets
     #[structopt(long)]
     excellent_slots: u64,
@@ -47,7 +47,7 @@ struct ProposalRewardsSlotsOpt {
     max_good_reviews: u64,
 }
 
-#[derive(StructOpt)]
+#[derive(Debug, Deserialize, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub struct CommunityAdvisors {
     #[structopt(long = "assessments")]
@@ -85,55 +85,74 @@ impl CommunityAdvisors {
             proposal_bonus_output,
         } = self;
 
-        if fund_settings.bonus_ratio + fund_settings.proposal_ratio != 100 {
-            bail!("Wrong ratios: bonus + proposal ratios should be 100");
-        }
-
-        let proposal_reviews = read_proposal_reviews(&assessments_path)?;
-        let approved_proposals = read_approved_proposals(&approved_proposals_path)?;
-
-        let approved_set = approved_proposals.keys().cloned().collect::<BTreeSet<_>>();
-        let proposal_reviews_set = proposal_reviews.keys().cloned().collect::<BTreeSet<_>>();
-        let diff = approved_set
-            .difference(&proposal_reviews_set)
-            .collect::<BTreeSet<_>>();
-
-        if !diff.is_empty() {
-            println!(
-                "WARNING!, {} proposals without reviews: {:?}",
-                diff.len(),
-                diff,
-            );
-        }
-        let (good_slots, excellent_slots) =
-            (rewards_slots.good_slots, rewards_slots.excellent_slots);
-
-        let rewards = calculate_ca_rewards(
-            proposal_reviews,
-            approved_proposals,
-            &fund_settings.into(),
-            &rewards_slots.into(),
-            Seed::from(DigestOf::digest(&seed)),
-        );
-
-        let csv_data = rewards_to_csv_data(&rewards.rewards);
-        dump_data_to_csv(csv_data.iter(), &output)?;
-
-        println!(
-            "Reward for (full) good review {}",
-            rewards.base_ticket_reward * Rewards::from(good_slots)
-        );
-        println!(
-            "Reward for (full) excellent review {}",
-            rewards.base_ticket_reward * Rewards::from(excellent_slots)
-        );
-        if let Some(file) = proposal_bonus_output {
-            let csv_data = bonus_to_csv_data(rewards.bonus_rewards);
-            dump_data_to_csv(csv_data.iter(), &file)?;
-        }
-
-        Ok(())
+        ca_rewards(
+            assessments_path,
+            approved_proposals_path,
+            fund_settings,
+            rewards_slots,
+            output,
+            seed,
+            proposal_bonus_output,
+        )
     }
+}
+
+pub fn ca_rewards(
+    assessments_path: PathBuf,
+    approved_proposals_path: PathBuf,
+    fund_settings: FundSettingOpt,
+    rewards_slots: ProposalRewardsSlotsOpt,
+    output: PathBuf,
+    seed: String,
+    proposal_bonus_output: Option<PathBuf>,
+) -> Result<(), Report> {
+    if fund_settings.bonus_ratio + fund_settings.proposal_ratio != 100 {
+        bail!("Wrong ratios: bonus + proposal ratios should be 100");
+    }
+
+    let proposal_reviews = read_proposal_reviews(&assessments_path)?;
+    let approved_proposals = read_approved_proposals(&approved_proposals_path)?;
+
+    let approved_set = approved_proposals.keys().cloned().collect::<BTreeSet<_>>();
+    let proposal_reviews_set = proposal_reviews.keys().cloned().collect::<BTreeSet<_>>();
+    let diff = approved_set
+        .difference(&proposal_reviews_set)
+        .collect::<BTreeSet<_>>();
+
+    if !diff.is_empty() {
+        println!(
+            "WARNING!, {} proposals without reviews: {:?}",
+            diff.len(),
+            diff,
+        );
+    }
+    let (good_slots, excellent_slots) = (rewards_slots.good_slots, rewards_slots.excellent_slots);
+
+    let rewards = calculate_ca_rewards(
+        proposal_reviews,
+        approved_proposals,
+        &fund_settings.into(),
+        &rewards_slots.into(),
+        Seed::from(DigestOf::digest(&seed)),
+    );
+
+    let csv_data = rewards_to_csv_data(&rewards.rewards);
+    dump_data_to_csv(csv_data.iter(), &output)?;
+
+    println!(
+        "Reward for (full) good review {}",
+        rewards.base_ticket_reward * Rewards::from(good_slots)
+    );
+    println!(
+        "Reward for (full) excellent review {}",
+        rewards.base_ticket_reward * Rewards::from(excellent_slots)
+    );
+    if let Some(file) = proposal_bonus_output {
+        let csv_data = bonus_to_csv_data(rewards.bonus_rewards);
+        dump_data_to_csv(csv_data.iter(), &file)?;
+    }
+
+    Ok(())
 }
 
 fn read_proposal_reviews(path: &Path) -> Result<ProposalsReviews, Report> {

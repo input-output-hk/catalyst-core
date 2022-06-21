@@ -1,18 +1,14 @@
 use catalyst_toolbox::kedqr::{KeyQrCode, QrPin};
 use chain_crypto::bech32::Bech32;
 use chain_crypto::{Ed25519Extended, SecretKey};
+use color_eyre::Report;
 use std::{
-    error::Error,
     fs::OpenOptions,
     io::{BufRead, BufReader},
     path::PathBuf,
 };
 
-pub fn generate_qr(
-    input: PathBuf,
-    output: Option<PathBuf>,
-    pin: QrPin,
-) -> Result<(), Box<dyn Error>> {
+pub fn generate_qr(input: PathBuf, output: Option<PathBuf>, pin: QrPin) -> Result<(), Report> {
     // open input key and parse it
     let key_file = OpenOptions::new()
         .create(false)

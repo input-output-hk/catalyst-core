@@ -2,20 +2,16 @@ use catalyst_toolbox::kedqr::generate;
 use catalyst_toolbox::kedqr::QrPin;
 use chain_crypto::bech32::Bech32;
 use chain_crypto::{Ed25519Extended, SecretKey};
+use color_eyre::Report;
 use std::fs::File;
 use std::io::Write;
 use std::{
-    error::Error,
     fs::OpenOptions,
     io::{BufRead, BufReader},
     path::PathBuf,
 };
 
-pub fn generate_hash(
-    input: PathBuf,
-    output: Option<PathBuf>,
-    pin: QrPin,
-) -> Result<(), Box<dyn Error>> {
+pub fn generate_payload(input: PathBuf, output: Option<PathBuf>, pin: QrPin) -> Result<(), Report> {
     // open input key and parse it
     let key_file = OpenOptions::new()
         .create(false)

@@ -1,18 +1,8 @@
 mod api_params;
 mod send;
 
+use color_eyre::Report;
 use structopt::StructOpt;
-use thiserror::Error;
-
-#[allow(clippy::large_enum_variant)]
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("error reading file, source: {0}")]
-    FileError(#[from] std::io::Error),
-
-    #[error(transparent)]
-    NotificationError(#[from] catalyst_toolbox::notifications::Error),
-}
 
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -21,7 +11,7 @@ pub enum PushNotifications {
 }
 
 impl PushNotifications {
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         use self::PushNotifications::*;
         match self {
             Send(cmd) => cmd.exec()?,

@@ -1,10 +1,11 @@
-mod hash;
 mod img;
+mod payload;
 
+use crate::cli::kedqr::QrCodeOpts;
 use catalyst_toolbox::kedqr::QrPin;
-pub use hash::generate_hash;
+use color_eyre::Report;
 pub use img::generate_qr;
-use std::error::Error;
+pub use payload::generate_payload;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -27,17 +28,10 @@ pub struct EncodeQrCodeCmd {
 }
 
 impl EncodeQrCodeCmd {
-    pub fn exec(self) -> Result<(), Box<dyn Error>> {
+    pub fn exec(self) -> Result<(), Report> {
         match self.opts {
-            QrCodeOpts::Hash => generate_hash(self.input, self.output, self.pin),
+            QrCodeOpts::Payload => generate_payload(self.input, self.output, self.pin),
             QrCodeOpts::Img => generate_qr(self.input, self.output, self.pin),
         }
     }
-}
-
-#[derive(Debug, PartialEq, StructOpt)]
-#[structopt(rename_all = "kebab-case")]
-pub enum QrCodeOpts {
-    Img,
-    Hash,
 }

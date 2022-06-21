@@ -7,9 +7,10 @@ mod notifications;
 mod recovery;
 mod rewards;
 mod snapshot;
+mod stats;
 mod vote_check;
 
-use std::error::Error;
+use color_eyre::Report;
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
@@ -50,12 +51,14 @@ pub enum CatalystCommand {
     Archive(archive::Archive),
     /// Validate catalyst elections
     VoteCheck(vote_check::VoteCheck),
+    /// Prints voting statistics
+    Stats(stats::Stats),
     /// Process raw registrations to produce initial blockchain setup
     Snapshot(snapshot::SnapshotCmd),
 }
 
 impl Cli {
-    pub fn exec(self) -> Result<(), Box<dyn Error>> {
+    pub fn exec(self) -> Result<(), Report> {
         use std::io::Write as _;
         if self.full_version {
             Ok(writeln!(std::io::stdout(), "{}", env!("FULL_VERSION"))?)
@@ -71,7 +74,7 @@ impl Cli {
 }
 
 impl CatalystCommand {
-    pub fn exec(self) -> Result<(), Box<dyn Error>> {
+    pub fn exec(self) -> Result<(), Report> {
         use self::CatalystCommand::*;
         match self {
             Rewards(rewards) => rewards.exec()?,
@@ -83,6 +86,7 @@ impl CatalystCommand {
             Reviews(reviews) => reviews.exec()?,
             Archive(archive) => archive.exec()?,
             VoteCheck(vote_check) => vote_check.exec()?,
+            Stats(stats) => stats.exec()?,
             Snapshot(snapshot) => snapshot.exec()?,
         };
         Ok(())

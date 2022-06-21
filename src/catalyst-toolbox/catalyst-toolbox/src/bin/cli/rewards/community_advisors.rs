@@ -1,10 +1,11 @@
 use chain_crypto::digest::DigestOf;
+use color_eyre::eyre::bail;
+use color_eyre::Report;
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use super::Error;
 use catalyst_toolbox::rewards::community_advisors::{
     calculate_ca_rewards, ApprovedProposals, CommunityAdvisor, FundSetting, Funds,
     ProposalRewardSlots, ProposalsReviews, Rewards, Seed,
@@ -73,7 +74,7 @@ pub struct CommunityAdvisors {
 }
 
 impl CommunityAdvisors {
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         let Self {
             assessments_path,
             approved_proposals_path,
@@ -85,9 +86,7 @@ impl CommunityAdvisors {
         } = self;
 
         if fund_settings.bonus_ratio + fund_settings.proposal_ratio != 100 {
-            return Err(Error::InvalidInput(
-                "Wrong ratios: bonus + proposal ratios should be 100".to_string(),
-            ));
+            bail!("Wrong ratios: bonus + proposal ratios should be 100");
         }
 
         let proposal_reviews = read_proposal_reviews(&assessments_path)?;
@@ -118,7 +117,7 @@ impl CommunityAdvisors {
         );
 
         let csv_data = rewards_to_csv_data(&rewards.rewards);
-        dump_data_to_csv(&csv_data, &output)?;
+        dump_data_to_csv(csv_data.iter(), &output)?;
 
         println!(
             "Reward for (full) good review {}",
@@ -130,14 +129,14 @@ impl CommunityAdvisors {
         );
         if let Some(file) = proposal_bonus_output {
             let csv_data = bonus_to_csv_data(rewards.bonus_rewards);
-            dump_data_to_csv(&csv_data, &file)?;
+            dump_data_to_csv(csv_data.iter(), &file)?;
         }
 
         Ok(())
     }
 }
 
-fn read_proposal_reviews(path: &Path) -> Result<ProposalsReviews, Error> {
+fn read_proposal_reviews(path: &Path) -> Result<ProposalsReviews, Report> {
     let reviews: Vec<AdvisorReviewRow> = utils::csv::load_data_from_csv::<_, b','>(path)?;
     let mut proposal_reviews = ProposalsReviews::new();
 
@@ -151,10 +150,10 @@ fn read_proposal_reviews(path: &Path) -> Result<ProposalsReviews, Error> {
     Ok(proposal_reviews)
 }
 
-fn read_approved_proposals(path: &Path) -> Result<ApprovedProposals, Error> {
+fn read_approved_proposals(path: &Path) -> Result<ApprovedProposals, Report> {
     let approved_proposals: Vec<ApprovedProposalRow> =
         utils::csv::load_data_from_csv::<_, b','>(path)?;
-    approved_proposals
+    let proposals = approved_proposals
         .into_iter()
         .filter_map(|proposal| match proposal.status {
             ProposalStatus::Approved => Some(
@@ -163,8 +162,8 @@ fn read_approved_proposals(path: &Path) -> Result<ApprovedProposals, Error> {
             ),
             ProposalStatus::NotApproved => None,
         })
-        .collect::<Result<_, _>>()
-        .map_err(|e| Error::InvalidRequestedFunds(e.to_string())) // ParseFixedError does not implement std::Error
+        .collect::<Result<_, _>>()?;
+    Ok(proposals)
 }
 
 impl From<FundSettingOpt> for FundSetting {

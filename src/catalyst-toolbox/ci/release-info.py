@@ -46,10 +46,12 @@ elif event_name == 'schedule':
 else:
     raise ValueError('unexpected event name ' + event_name)
 
-version = read_version('./Cargo.toml', ref)
+
+cargo_toml = './catalyst-toolbox/Cargo.toml'
+version = read_version(cargo_toml, ref)
 release_flags = ''
 if release_type == 'tagged':
-    read_version('./Cargo.toml', ref)
+    read_version(cargo_toml, ref)
     tag = 'v' + version
 elif release_type == 'nightly':
     version = re.sub(

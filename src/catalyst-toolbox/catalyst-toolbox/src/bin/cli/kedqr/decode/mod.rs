@@ -1,11 +1,11 @@
-mod hash;
 mod img;
+mod payload;
 
-use crate::cli::kedqr::encode::QrCodeOpts;
+use crate::cli::kedqr::QrCodeOpts;
 use catalyst_toolbox::kedqr::QrPin;
-pub use hash::decode_hash;
-pub use img::secret_from_qr;
-use std::error::Error;
+use color_eyre::Report;
+pub use img::{save_secret_from_qr, secret_from_qr};
+pub use payload::{decode_payload, secret_from_payload};
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -13,7 +13,7 @@ use structopt::StructOpt;
 #[derive(Debug, PartialEq, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub struct DecodeQrCodeCmd {
-    /// Path to file containing img or hash.
+    /// Path to file containing img or payload.
     #[structopt(short, long, parse(from_os_str))]
     input: PathBuf,
     /// Path to file to save secret output, if not provided console output will be attempted.
@@ -28,10 +28,10 @@ pub struct DecodeQrCodeCmd {
 }
 
 impl DecodeQrCodeCmd {
-    pub fn exec(self) -> Result<(), Box<dyn Error>> {
+    pub fn exec(self) -> Result<(), Report> {
         match self.opts {
-            QrCodeOpts::Hash => decode_hash(self.input, self.output, self.pin),
-            QrCodeOpts::Img => secret_from_qr(self.input, self.output, self.pin),
+            QrCodeOpts::Payload => decode_payload(self.input, self.output, self.pin),
+            QrCodeOpts::Img => save_secret_from_qr(self.input, self.output, self.pin),
         }
     }
 }

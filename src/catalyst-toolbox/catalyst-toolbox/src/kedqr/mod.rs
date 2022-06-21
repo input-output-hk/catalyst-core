@@ -1,8 +1,9 @@
-mod hash;
 mod img;
+mod payload;
 
-pub use hash::{decode, generate};
 pub use img::{KeyQrCode, KeyQrCodeError};
+pub use payload::{decode, generate, Error as KeyQrCodePayloadError};
+use std::path::PathBuf;
 use std::str::FromStr;
 use thiserror::Error;
 
@@ -14,12 +15,23 @@ pub struct QrPin {
 }
 
 #[derive(Error, Debug)]
+pub enum Error {
+    #[error(transparent)]
+    BadPin(#[from] BadPinError),
+    #[error(transparent)]
+    KeyQrCodeHash(#[from] KeyQrCodePayloadError),
+    #[error(transparent)]
+    KeyQrCode(#[from] KeyQrCodeError),
+}
 
+#[derive(Error, Debug)]
 pub enum BadPinError {
     #[error("The PIN must consist of {PIN_LENGTH} digits, found {0}")]
     InvalidLength(usize),
     #[error("Invalid digit {0}")]
     InvalidDigit(char),
+    #[error("cannot detect file name from path {0:?} in order to read qr pin from it")]
+    UnableToDetectFileName(PathBuf),
 }
 
 impl FromStr for QrPin {
@@ -35,6 +47,38 @@ impl FromStr for QrPin {
             pwd[i] = digit.to_digit(10).ok_or(BadPinError::InvalidDigit(digit))? as u8;
         }
         Ok(QrPin { password: pwd })
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum PinReadMode {
+    Global(String),
+    FromFileName(PathBuf),
+}
+
+/// supported format is *1234.png
+impl PinReadMode {
+    pub fn into_qr_pin(&self) -> Result<QrPin, BadPinError> {
+        match self {
+            PinReadMode::Global(ref global) => QrPin::from_str(global),
+            PinReadMode::FromFileName(qr) => {
+                let file_name = qr
+                    .file_stem()
+                    .ok_or_else(|| BadPinError::UnableToDetectFileName(qr.to_path_buf()))?;
+                QrPin::from_str(
+                    &file_name
+                        .to_str()
+                        .unwrap()
+                        .chars()
+                        .rev()
+                        .take(4)
+                        .collect::<Vec<char>>()
+                        .iter()
+                        .rev()
+                        .collect::<String>(),
+                )
+            }
+        }
     }
 }
 

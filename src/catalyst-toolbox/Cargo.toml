@@ -3,3 +3,10 @@ members = [
     "catalyst-toolbox",
     "voting-hir"
 ]
+
+[patch."https://github.com/input-output-hk/jormungandr"]
+jormungandr = { path = "../jormungandr/jormungandr/" }
+jormungandr-lib = { path = "../jormungandr/jormungandr-lib/" }
+jormungandr-integration-tests = { path = "../jormungandr/testing/jormungandr-integration-tests/" }
+jormungandr-automation = { path = "../jormungandr/testing/jormungandr-automation/" }
+jcli = { path = "../jormungandr/jcli/" }

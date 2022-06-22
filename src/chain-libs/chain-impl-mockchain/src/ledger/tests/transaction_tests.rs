@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use crate::{
-    accounting::account::LedgerError::NonExistent,
+    accounting::account::{LedgerError::NonExistent, SpendingCounter},
     date::BlockDate,
     ledger::{
         self,
@@ -129,12 +129,15 @@ pub fn duplicated_account_transaction() {
 
     match result {
         Err(err) => panic!("first transaction should be succesful but {}", err),
-        Ok(_) => {
-            assert_err_match!(
-                ledger::Error::Account(crate::account::LedgerError::SpendingCredentialInvalid),
-                test_ledger.apply_transaction(fragment2, BlockDate::first())
-            );
-        }
+        Ok(_) => match test_ledger.apply_transaction(fragment2, BlockDate::first()) {
+            Err(ledger::Error::Account(
+                crate::account::LedgerError::SpendingCredentialInvalid { expected, actual },
+            )) => {
+                assert_eq!(expected, SpendingCounter::zero().increment());
+                assert_eq!(actual, SpendingCounter::zero());
+            }
+            _ => panic!("duplicated transaction should fail spending counter validation"),
+        },
     }
 }
 

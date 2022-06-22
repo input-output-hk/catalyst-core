@@ -53,7 +53,10 @@ impl SpendingCounterIncreasing {
         let actual_counter = self.nexts[counter.lane()];
 
         if actual_counter != counter {
-            Err(LedgerError::SpendingCredentialInvalid)
+            Err(LedgerError::SpendingCredentialInvalid {
+                expected: actual_counter,
+                actual: counter,
+            })
         } else {
             self.nexts[counter.lane()] = actual_counter.increment();
             Ok(())

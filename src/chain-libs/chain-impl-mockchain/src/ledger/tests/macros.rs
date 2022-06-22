@@ -29,6 +29,7 @@ macro_rules! assert_err {
 //
 // succeed if Expression's value a Err(E) where E match the ExpectedErrorPattern,
 // otherwise panic!() with some diagnostic
+#[allow(unused_macros)]
 macro_rules! assert_err_match {
     ($left: pat, $right: expr) => {
         match &($right) {

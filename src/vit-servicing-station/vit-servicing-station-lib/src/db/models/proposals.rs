@@ -462,7 +462,7 @@ pub mod test {
         key: i32,
         conn: &PooledConnection<ConnectionManager<DbConnection>>,
     ) -> (FullProposalInfo, Challenge) {
-        let mut proposal = get_test_proposal(format!("key"));
+        let mut proposal = get_test_proposal(format!("{key}"));
         proposal.proposal.internal_id = key;
         proposal.proposal.proposal_id = key.to_string();
         proposal.proposal.proposal_title = format!("proposal number {key}");

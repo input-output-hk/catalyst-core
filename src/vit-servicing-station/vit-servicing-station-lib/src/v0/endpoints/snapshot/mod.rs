@@ -26,8 +26,7 @@ mod test {
         }
 
         let result_voting_power: Vec<serde_json::Value> =
-            serde_json::from_str(dbg!(&String::from_utf8(result.body().to_vec()).unwrap()))
-                .unwrap();
+            serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
 
         Ok(result_voting_power
             .into_iter()

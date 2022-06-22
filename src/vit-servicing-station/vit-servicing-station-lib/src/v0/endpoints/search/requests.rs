@@ -61,7 +61,7 @@ mod tests {
 
     #[test]
     fn response_serializes_as_vec() {
-        let response = SearchResponse::Proposal(vec![get_test_proposal()]);
+        let response = SearchResponse::Proposal(vec![get_test_proposal("asdf")]);
         let s = to_string(&response).unwrap();
         assert!(s.starts_with('['));
         assert!(s.ends_with(']'));

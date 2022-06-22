@@ -4,6 +4,7 @@ use thiserror::Error;
 use time::format_description::well_known::Rfc3339;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::goals::InsertGoal;
+use vit_servicing_station_lib::db::models::groups::Group;
 use vit_servicing_station_lib::db::models::proposals::{FullProposalInfo, ProposalChallengeInfo};
 use vit_servicing_station_lib::{
     db::models::{challenges::Challenge, funds::Fund, voteplans::Voteplan},
@@ -61,6 +62,7 @@ impl CsvConverter {
             "chain_voteplan_payload",
             "chain_vote_encryption_key",
             "fund_id",
+            "token_identifier",
         ];
         let content: Vec<Vec<String>> = voteplans.iter().map(convert_voteplan).collect();
         self.build_file(headers, content, path)
@@ -87,12 +89,10 @@ impl CsvConverter {
             "proposer_url",
             "proposer_relevant_experience",
             "chain_proposal_id",
-            "chain_proposal_index",
             "chain_vote_options",
             "chain_vote_type",
             "chain_vote_action",
             "id",
-            "chain_voteplan_id",
             "chain_vote_start_time",
             "chain_vote_end_time",
             "chain_committe",
@@ -105,6 +105,21 @@ impl CsvConverter {
         ];
 
         let content: Vec<Vec<String>> = proposals.iter().map(convert_proposal).collect();
+        self.build_file(headers, content, path)
+    }
+
+    pub fn proposals_voteplans<P: AsRef<Path>>(
+        &self,
+        proposals: Vec<FullProposalInfo>,
+        path: P,
+    ) -> Result<(), Error> {
+        let headers = vec!["proposal_id", "chain_proposal_index", "chain_voteplan_id"];
+
+        let content: Vec<Vec<String>> = proposals
+            .iter()
+            .map(convert_proposal_to_voteplan_proposal)
+            .collect();
+
         self.build_file(headers, content, path)
     }
 
@@ -155,6 +170,12 @@ impl CsvConverter {
         let headers = vec!["goal_name", "fund_id"];
 
         let content: Vec<Vec<String>> = goals.iter().map(convert_goals).collect();
+        self.build_file(headers, content, path)
+    }
+    pub fn groups<P: AsRef<Path>>(&self, groups: Vec<Group>, path: P) -> Result<(), Error> {
+        let headers = vec!["fund_id", "group_id", "token_identifier"];
+
+        let content: Vec<Vec<String>> = groups.iter().map(convert_group).collect();
         self.build_file(headers, content, path)
     }
 
@@ -210,12 +231,10 @@ fn convert_proposal(proposal: &FullProposalInfo) -> Vec<String> {
         std::str::from_utf8(&proposal.chain_proposal_id)
             .unwrap()
             .to_string(),
-        proposal.chain_proposal_index.to_string(),
         proposal.chain_vote_options.as_csv_string(),
         proposal.chain_voteplan_payload.to_string(),
         "off_chain".to_string(),
         proposal.proposal_id.to_string(),
-        proposal.chain_voteplan_id.to_string(),
         unix_timestamp_to_rfc3339(proposal.chain_vote_start_time),
         unix_timestamp_to_rfc3339(proposal.chain_vote_end_time),
         unix_timestamp_to_rfc3339(proposal.chain_committee_end_time),
@@ -225,6 +244,14 @@ fn convert_proposal(proposal: &FullProposalInfo) -> Vec<String> {
         importance,
         goal,
         metrics,
+    ]
+}
+
+fn convert_proposal_to_voteplan_proposal(pinfo: &FullProposalInfo) -> Vec<String> {
+    vec![
+        pinfo.proposal.internal_id.to_string(),
+        pinfo.voteplan.chain_proposal_index.to_string(),
+        pinfo.voteplan.chain_voteplan_id.to_string(),
     ]
 }
 
@@ -247,6 +274,7 @@ fn convert_fund(fund: &Fund) -> Vec<String> {
         goals: _,
         results_url,
         survey_url,
+        groups: _,
     } = fund;
 
     // TODO: can we leverage serde to build these vectors?
@@ -285,6 +313,7 @@ fn convert_voteplan(voteplan: &Voteplan) -> Vec<String> {
         voteplan.chain_voteplan_payload.to_string(),
         voteplan.chain_vote_encryption_key.to_string(),
         voteplan.fund_id.to_string(),
+        voteplan.token_identifier.to_string(),
     ]
 }
 
@@ -326,4 +355,12 @@ fn unix_timestamp_to_rfc3339(timestamp: i64) -> String {
     unix_timestamp_to_datetime(timestamp)
         .format(&Rfc3339)
         .unwrap()
+}
+
+fn convert_group(group: &Group) -> Vec<String> {
+    vec![
+        group.fund_id.to_string(),
+        group.group_id.to_string(),
+        group.token_identifier.to_string(),
+    ]
 }

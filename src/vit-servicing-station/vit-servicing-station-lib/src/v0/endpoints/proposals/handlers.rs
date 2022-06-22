@@ -3,12 +3,23 @@ use crate::v0::endpoints::proposals::requests::ProposalsByVoteplanIdAndIndex;
 use crate::v0::{context::SharedContext, result::HandlerResult};
 use warp::{Rejection, Reply};
 
-pub async fn get_proposal(id: i32, context: SharedContext) -> Result<impl Reply, Rejection> {
-    Ok(HandlerResult(logic::get_proposal(id, context).await))
+pub async fn get_proposal(
+    id: i32,
+    voting_group: String,
+    context: SharedContext,
+) -> Result<impl Reply, Rejection> {
+    Ok(HandlerResult(
+        logic::get_proposal(id, voting_group, context).await,
+    ))
 }
 
-pub async fn get_all_proposals(context: SharedContext) -> Result<impl Reply, Rejection> {
-    Ok(HandlerResult(logic::get_all_proposals(context).await))
+pub async fn get_all_proposals(
+    voting_group: String,
+    context: SharedContext,
+) -> Result<impl Reply, Rejection> {
+    Ok(HandlerResult(
+        logic::get_all_proposals(voting_group, context).await,
+    ))
 }
 
 pub async fn get_proposals_by_voteplan_id_and_index(
@@ -45,7 +56,7 @@ pub mod test {
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
         db_testing::initialize_db_with_migration(&pool.get().unwrap());
-        let mut proposal: FullProposalInfo = proposals_testing::get_test_proposal();
+        let mut proposal: FullProposalInfo = proposals_testing::get_test_proposal("group1");
         proposals_testing::populate_db_with_proposal(&proposal, pool);
         let challenge: Challenge =
             challenges_testing::get_test_challenge_with_fund_id(proposal.proposal.fund_id);
@@ -57,14 +68,14 @@ pub mod test {
         reviews_testing::populate_db_with_advisor_review(&review, pool);
         proposal.proposal.reviews_count = 1;
         // build filter
-        let filter = warp::path!(i32)
+        let filter = warp::path!(i32 / String)
             .and(warp::get())
             .and(with_context)
             .and_then(get_proposal);
 
         let result = warp::test::request()
             .method("GET")
-            .path("/1")
+            .path("/1/group1")
             .reply(&filter)
             .await;
         assert_eq!(result.status(), warp::http::StatusCode::OK);
@@ -84,18 +95,23 @@ pub mod test {
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
         db_testing::initialize_db_with_migration(&pool.get().unwrap());
-        let proposal: FullProposalInfo = proposals_testing::get_test_proposal();
+        let proposal: FullProposalInfo = proposals_testing::get_test_proposal("group1");
         proposals_testing::populate_db_with_proposal(&proposal, pool);
         let challenge: Challenge =
             challenges_testing::get_test_challenge_with_fund_id(proposal.proposal.fund_id);
         challenges_testing::populate_db_with_challenge(&challenge, pool);
         // build filter
         let filter = warp::any()
+            .and(warp::path!(String))
             .and(warp::get())
             .and(with_context)
             .and_then(get_all_proposals);
 
-        let result = warp::test::request().method("GET").reply(&filter).await;
+        let result = warp::test::request()
+            .method("GET")
+            .path("/group1")
+            .reply(&filter)
+            .await;
         assert_eq!(result.status(), warp::http::StatusCode::OK);
         let result_proposals: Vec<FullProposalInfo> =
             serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
@@ -112,11 +128,12 @@ pub mod test {
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
         db_testing::initialize_db_with_migration(&pool.get().unwrap());
-        let proposal: FullProposalInfo = proposals_testing::get_test_proposal();
+        let proposal: FullProposalInfo = proposals_testing::get_test_proposal("group1");
         proposals_testing::populate_db_with_proposal(&proposal, pool);
         let challenge: Challenge =
             challenges_testing::get_test_challenge_with_fund_id(proposal.proposal.fund_id);
         challenges_testing::populate_db_with_challenge(&challenge, pool);
+
         // build filter
         let filter = warp::any()
             .and(warp::post())
@@ -125,8 +142,8 @@ pub mod test {
             .and_then(get_proposals_by_voteplan_id_and_index);
 
         let request = ProposalVoteplanIdAndIndexes {
-            vote_plan_id: proposal.proposal.chain_voteplan_id.clone(),
-            indexes: vec![proposal.proposal.chain_proposal_index],
+            vote_plan_id: proposal.voteplan.chain_voteplan_id.clone(),
+            indexes: vec![proposal.voteplan.chain_proposal_index],
         };
 
         let result = warp::test::request()

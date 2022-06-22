@@ -1,5 +1,6 @@
 use super::vote_options;
 use crate::db::models::vote_options::VoteOptions;
+use crate::db::schema::proposals_voteplans;
 use crate::db::{schema::proposals, views_schema::full_proposals_info, Db};
 use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
@@ -87,12 +88,8 @@ pub struct Proposal {
     #[serde(serialize_with = "crate::utils::serde::serialize_bin_as_str")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_string_as_bytes")]
     pub chain_proposal_id: Vec<u8>,
-    #[serde(alias = "chainProposalIndex")]
-    pub chain_proposal_index: i64,
     #[serde(alias = "chainVoteOptions")]
     pub chain_vote_options: VoteOptions,
-    #[serde(alias = "chainVoteplanId")]
-    pub chain_voteplan_id: String,
     #[serde(alias = "chainVoteStartTime", default = "Default::default")]
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
@@ -139,6 +136,26 @@ pub struct FullProposalInfo {
     pub challenge_info: ProposalChallengeInfo,
     #[serde(alias = "challengeType")]
     pub challenge_type: ChallengeType,
+    #[serde(flatten)]
+    pub voteplan: ProposalVotePlanCommon,
+    #[serde(alias = "groupId")]
+    pub group_id: String,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
+pub struct ProposalVotePlanCommon {
+    #[serde(alias = "chainVoteplanId")]
+    pub chain_voteplan_id: String,
+    #[serde(alias = "chainProposalIndex")]
+    pub chain_proposal_index: i64,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
+pub struct ProposalVotePlan {
+    #[serde(alias = "proposalId")]
+    pub proposal_id: String,
+    #[serde(flatten)]
+    common: ProposalVotePlanCommon,
 }
 
 impl Serialize for ProposalChallengeInfo {
@@ -165,11 +182,11 @@ impl<'de> Deserialize<'de> for ProposalChallengeInfo {
 }
 
 type FullProposalsInfoRow = (
-    // 0 ->id
+    // 0 -> id
     i32,
     // 1 -> proposal_id
     String,
-    // 2-> category_name
+    // 2 -> proposal_category
     String,
     // 3 -> proposal_title
     String,
@@ -181,7 +198,7 @@ type FullProposalsInfoRow = (
     i64,
     // 7 -> proposal_url
     String,
-    // 8 -> proposal_files_url,
+    // 8 -> proposal_files_url
     String,
     // 9 -> proposal_impact_score
     i64,
@@ -195,15 +212,15 @@ type FullProposalsInfoRow = (
     String,
     // 14 -> chain_proposal_id
     Vec<u8>,
-    // 15 -> chain_proposal_index
-    i64,
-    // 16 -> chain_vote_options
+    // 15 -> chain_vote_options
     String,
-    // 17 -> chain_voteplan_id
-    String,
-    // 18 -> chain_vote_starttime
+    // 16 -> challenge_id
+    i32,
+    // 17 -> reviews_count
+    i32,
+    // 18 -> chain_vote_start_time
     i64,
-    // 19 -> chain_vote_endtime
+    // 19 -> chain_vote_end_time
     i64,
     // 20 -> chain_committee_end_time
     i64,
@@ -213,22 +230,24 @@ type FullProposalsInfoRow = (
     String,
     // 23 -> fund_id
     i32,
-    // 24 -> challenge_id
-    i32,
-    // 25 -> reviews_count
-    i32,
-    // 26 -> challenge_type
+    // 24 -> challenge_type
     String,
-    // 27 -> proposal_solution
+    // 25 -> proposal_solution
     Option<String>,
-    // 28 -> proposal_brief
+    // 26 -> proposal_brief
     Option<String>,
-    // 29 -> proposal_importance
+    // 27 -> proposal_importance
     Option<String>,
-    // 30 -> proposal_goal
+    // 28 -> proposal_goal
     Option<String>,
-    // 31 -> proposal_metrics
+    // 29 -> proposal_metrics
     Option<String>,
+    // 30 -> chain_proposal_index
+    i64,
+    // 31 -> chain_voteplan_id
+    String,
+    // 32 -> group_id
+    String,
 );
 
 impl Queryable<full_proposals_info::SqlType, Db> for Proposal {
@@ -257,17 +276,29 @@ impl Queryable<full_proposals_info::SqlType, Db> for Proposal {
                 proposer_relevant_experience: row.13,
             },
             chain_proposal_id: row.14,
-            chain_proposal_index: row.15,
-            chain_vote_options: vote_options::VoteOptions::parse_coma_separated_value(&row.16),
-            chain_voteplan_id: row.17,
+            chain_vote_options: vote_options::VoteOptions::parse_coma_separated_value(&row.15),
             chain_vote_start_time: row.18,
             chain_vote_end_time: row.19,
             chain_committee_end_time: row.20,
             chain_voteplan_payload: row.21,
             chain_vote_encryption_key: row.22,
             fund_id: row.23,
-            challenge_id: row.24,
-            reviews_count: row.25,
+            challenge_id: row.16,
+            reviews_count: row.17,
+        }
+    }
+}
+
+impl Queryable<full_proposals_info::SqlType, Db> for ProposalVotePlan {
+    type Row = FullProposalsInfoRow;
+
+    fn build(row: Self::Row) -> Self {
+        ProposalVotePlan {
+            proposal_id: row.1,
+            common: ProposalVotePlanCommon {
+                chain_proposal_index: row.30,
+                chain_voteplan_id: row.31,
+            },
         }
     }
 }
@@ -276,26 +307,36 @@ impl Queryable<full_proposals_info::SqlType, Db> for FullProposalInfo {
     type Row = FullProposalsInfoRow;
 
     fn build(row: Self::Row) -> Self {
-        let challenge_type = row.26.parse().unwrap();
+        let challenge_type = row.24.parse().unwrap();
         // It should be safe to unwrap this values here if DB is sanitized and hence tables have data
         // relative to the challenge type.
         let challenge_info = match challenge_type {
             ChallengeType::Simple => ProposalChallengeInfo::Simple(simple::ChallengeInfo {
-                proposal_solution: row.27.clone().unwrap(),
+                proposal_solution: row.25.clone().unwrap(),
             }),
             ChallengeType::CommunityChoice => {
                 ProposalChallengeInfo::CommunityChoice(community_choice::ChallengeInfo {
-                    proposal_brief: row.28.clone().unwrap(),
-                    proposal_importance: row.29.clone().unwrap(),
-                    proposal_goal: row.30.clone().unwrap(),
-                    proposal_metrics: row.31.clone().unwrap(),
+                    proposal_brief: row.26.clone().unwrap(),
+                    proposal_importance: row.27.clone().unwrap(),
+                    proposal_goal: row.28.clone().unwrap(),
+                    proposal_metrics: row.29.clone().unwrap(),
                 })
             }
         };
+
+        let voteplan = ProposalVotePlanCommon {
+            chain_proposal_index: row.30,
+            chain_voteplan_id: row.31.clone(),
+        };
+
+        let group_id = row.32.clone();
+
         FullProposalInfo {
             proposal: Proposal::build(row),
             challenge_info,
             challenge_type,
+            voteplan,
+            group_id,
         }
     }
 }
@@ -319,9 +360,7 @@ impl Insertable<proposals::table> for Proposal {
         diesel::dsl::Eq<proposals::proposer_url, String>,
         diesel::dsl::Eq<proposals::proposer_relevant_experience, String>,
         diesel::dsl::Eq<proposals::chain_proposal_id, Vec<u8>>,
-        diesel::dsl::Eq<proposals::chain_proposal_index, i64>,
         diesel::dsl::Eq<proposals::chain_vote_options, String>,
-        diesel::dsl::Eq<proposals::chain_voteplan_id, String>,
         diesel::dsl::Eq<proposals::challenge_id, i32>,
     );
 
@@ -341,10 +380,24 @@ impl Insertable<proposals::table> for Proposal {
             proposals::proposer_url.eq(self.proposer.proposer_url),
             proposals::proposer_relevant_experience.eq(self.proposer.proposer_relevant_experience),
             proposals::chain_proposal_id.eq(self.chain_proposal_id),
-            proposals::chain_proposal_index.eq(self.chain_proposal_index),
             proposals::chain_vote_options.eq(self.chain_vote_options.as_csv_string()),
-            proposals::chain_voteplan_id.eq(self.chain_voteplan_id),
             proposals::challenge_id.eq(self.challenge_id),
+        )
+    }
+}
+
+impl Insertable<proposals_voteplans::table> for ProposalVotePlan {
+    type Values = (
+        diesel::dsl::Eq<proposals_voteplans::proposal_id, String>,
+        diesel::dsl::Eq<proposals_voteplans::chain_proposal_index, i64>,
+        diesel::dsl::Eq<proposals_voteplans::chain_voteplan_id, String>,
+    );
+
+    fn values(self) -> Self::Values {
+        (
+            proposals_voteplans::proposal_id.eq(self.proposal_id),
+            proposals_voteplans::chain_proposal_index.eq(self.common.chain_proposal_index),
+            proposals_voteplans::chain_voteplan_id.eq(self.common.chain_voteplan_id),
         )
     }
 }
@@ -385,6 +438,7 @@ impl From<ProposalChallengeInfo> for SerdeProposalChallengeInfo {
 pub mod test {
     use super::*;
     use crate::db::{
+        models::groups::Group,
         models::{
             challenges::{
                 test::{get_test_challenge_with_fund_id, populate_db_with_challenge_conn},
@@ -393,7 +447,8 @@ pub mod test {
             vote_options::VoteOptions,
         },
         schema::{
-            proposal_community_choice_challenge, proposal_simple_challenge, proposals, voteplans,
+            groups, proposal_community_choice_challenge, proposal_simple_challenge, proposals,
+            proposals_voteplans, voteplans,
         },
         DbConnection, DbConnectionPool,
     };
@@ -407,11 +462,11 @@ pub mod test {
         key: i32,
         conn: &PooledConnection<ConnectionManager<DbConnection>>,
     ) -> (FullProposalInfo, Challenge) {
-        let mut proposal = get_test_proposal();
+        let mut proposal = get_test_proposal("asdf");
         proposal.proposal.internal_id = key;
         proposal.proposal.proposal_id = key.to_string();
         proposal.proposal.proposal_title = format!("proposal number {key}");
-        proposal.proposal.chain_voteplan_id = format!("voteplan_id_{key}");
+        // proposal.proposal.chain_voteplan_id = format!("voteplan_id_{key}");
 
         let mut challenge = get_test_challenge_with_fund_id(proposal.proposal.fund_id);
         challenge.title = format!("challenge {key}");
@@ -424,12 +479,13 @@ pub mod test {
         (proposal, challenge)
     }
 
-    pub fn get_test_proposal() -> FullProposalInfo {
+    pub fn get_test_proposal(group_id: impl Into<String>) -> FullProposalInfo {
         const CHALLENGE_ID: i32 = 9001;
 
+        let internal_id = 1;
         FullProposalInfo {
             proposal: Proposal {
-                internal_id: 1,
+                internal_id,
                 proposal_id: "1".to_string(),
                 proposal_category: Category {
                     category_id: "".to_string(),
@@ -451,9 +507,7 @@ pub mod test {
                     proposer_relevant_experience: "ilumination".to_string(),
                 },
                 chain_proposal_id: b"foobar".to_vec(),
-                chain_proposal_index: 0,
                 chain_vote_options: VoteOptions::parse_coma_separated_value("b,a,r"),
-                chain_voteplan_id: "voteplain_id".to_string(),
                 chain_vote_start_time: OffsetDateTime::now_utc().unix_timestamp(),
                 chain_vote_end_time: OffsetDateTime::now_utc().unix_timestamp(),
                 chain_committee_end_time: OffsetDateTime::now_utc().unix_timestamp(),
@@ -473,6 +527,11 @@ pub mod test {
                 },
             ),
             challenge_type: ChallengeType::CommunityChoice,
+            voteplan: ProposalVotePlanCommon {
+                chain_proposal_index: 0,
+                chain_voteplan_id: "voteplain_id".to_string(),
+            },
+            group_id: group_id.into(),
         }
     }
 
@@ -486,6 +545,7 @@ pub mod test {
         connection: &PooledConnection<ConnectionManager<DbConnection>>,
     ) {
         let proposal = &full_proposal.proposal;
+        let proposal_id = proposal.proposal_id.clone();
         // insert the proposal information
         let values = (
             proposals::proposal_id.eq(proposal.proposal_id.clone()),
@@ -503,9 +563,7 @@ pub mod test {
             proposals::proposer_relevant_experience
                 .eq(proposal.proposer.proposer_relevant_experience.clone()),
             proposals::chain_proposal_id.eq(proposal.chain_proposal_id.clone()),
-            proposals::chain_proposal_index.eq(proposal.chain_proposal_index),
             proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),
-            proposals::chain_voteplan_id.eq(proposal.chain_voteplan_id.clone()),
             proposals::challenge_id.eq(proposal.challenge_id),
         );
 
@@ -514,19 +572,47 @@ pub mod test {
             .execute(connection)
             .unwrap();
 
+        let token_identifier = format!("{}-token", full_proposal.group_id);
+
         // insert the related fund voteplan information
         let voteplan_values = (
-            voteplans::chain_voteplan_id.eq(proposal.chain_voteplan_id.clone()),
+            voteplans::chain_voteplan_id.eq(full_proposal.voteplan.chain_voteplan_id.clone()),
             voteplans::chain_vote_start_time.eq(proposal.chain_vote_start_time),
             voteplans::chain_vote_end_time.eq(proposal.chain_vote_end_time),
             voteplans::chain_committee_end_time.eq(proposal.chain_committee_end_time),
             voteplans::chain_voteplan_payload.eq(proposal.chain_voteplan_payload.clone()),
             voteplans::chain_vote_encryption_key.eq(proposal.chain_vote_encryption_key.clone()),
             voteplans::fund_id.eq(proposal.fund_id),
+            voteplans::token_identifier.eq(&token_identifier),
         );
 
         diesel::insert_into(voteplans::table)
             .values(voteplan_values)
+            .execute(connection)
+            .unwrap();
+
+        diesel::insert_into(groups::table)
+            .values(
+                Group {
+                    fund_id: proposal.fund_id,
+                    group_id: full_proposal.group_id.clone(),
+                    token_identifier,
+                }
+                .values(),
+            )
+            .execute(connection)
+            .unwrap();
+
+        let proposal_voteplan_values = (
+            proposals_voteplans::proposal_id.eq(proposal_id),
+            proposals_voteplans::chain_voteplan_id
+                .eq(full_proposal.voteplan.chain_voteplan_id.clone()),
+            proposals_voteplans::chain_proposal_index
+                .eq(full_proposal.voteplan.chain_proposal_index),
+        );
+
+        diesel::insert_into(proposals_voteplans::table)
+            .values(proposal_voteplan_values)
             .execute(connection)
             .unwrap();
 

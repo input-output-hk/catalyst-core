@@ -31,10 +31,19 @@ impl SnapshotRandomizer {
         self.random.next_u32() as usize
     }
 
-    pub fn random_proposal_id(&mut self) -> i32 {
+    pub fn random_proposal_id(&mut self) -> (i32, String) {
         let proposals = self.snapshot.proposals();
         let random_idx = self.random_usize() % proposals.len();
-        proposals.get(random_idx).unwrap().proposal.internal_id
+        let pinfo = proposals.get(random_idx).unwrap();
+
+        (pinfo.proposal.internal_id, pinfo.group_id.clone())
+    }
+
+    pub fn random_group_id(&mut self) -> String {
+        let groups = self.snapshot.groups();
+        let random_idx = self.random_usize() % groups.len();
+
+        groups[random_idx].group_id.clone()
     }
 
     pub fn random_fund_id(&mut self) -> i32 {

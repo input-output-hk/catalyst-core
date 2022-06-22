@@ -27,7 +27,12 @@ pub async fn filter(
 
     // mount chain-data endpoint
     let chain_data_root = warp::path!("proposals" / ..);
-    let chain_data_filter = proposals::filter(chain_data_root.boxed(), context.clone()).await;
+    let chain_data_filter =
+        proposals::proposals_filter(chain_data_root.boxed(), context.clone()).await;
+
+    // mount single proposal endpoint
+    let proposal_filter =
+        proposals::proposal_filter((warp::path!("proposal" / ..)).boxed(), context.clone()).await;
 
     // mount funds endpoint
     let funds_root = warp::path!("fund" / ..);
@@ -72,6 +77,7 @@ pub async fn filter(
             health_filter
                 .or(genesis_filter)
                 .or(chain_data_filter)
+                .or(proposal_filter)
                 .or(funds_filter)
                 .or(challenges_filter)
                 .or(reviews_filter)

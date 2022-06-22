@@ -25,6 +25,8 @@ pub struct Voteplan {
     pub chain_vote_encryption_key: String,
     #[serde(alias = "fundId")]
     pub fund_id: i32,
+    #[serde(alias = "tokenId")]
+    pub token_identifier: String,
 }
 
 // This warning is disabled here. Values is only referenced as a type here. It should be ok not to
@@ -39,6 +41,7 @@ impl Insertable<voteplans::table> for Voteplan {
         diesel::dsl::Eq<voteplans::chain_voteplan_payload, String>,
         diesel::dsl::Eq<voteplans::chain_vote_encryption_key, String>,
         diesel::dsl::Eq<voteplans::fund_id, i32>,
+        diesel::dsl::Eq<voteplans::token_identifier, String>,
     );
 
     fn values(self) -> Self::Values {
@@ -50,6 +53,7 @@ impl Insertable<voteplans::table> for Voteplan {
             voteplans::chain_voteplan_payload.eq(self.chain_voteplan_payload),
             voteplans::chain_vote_encryption_key.eq(self.chain_vote_encryption_key),
             voteplans::fund_id.eq(self.fund_id),
+            voteplans::token_identifier.eq(self.token_identifier),
         )
     }
 }
@@ -70,6 +74,7 @@ pub mod test {
             chain_voteplan_payload: "foopayload".to_string(),
             chain_vote_encryption_key: "enckey".to_string(),
             fund_id,
+            token_identifier: "token_id".to_string(),
         }
     }
 
@@ -83,6 +88,7 @@ pub mod test {
             voteplans::chain_voteplan_payload.eq(voteplan.chain_voteplan_payload.clone()),
             voteplans::chain_vote_encryption_key.eq(voteplan.chain_vote_encryption_key.clone()),
             voteplans::fund_id.eq(voteplan.fund_id),
+            voteplans::token_identifier.eq(voteplan.token_identifier.clone()),
         );
         diesel::insert_into(voteplans::table)
             .values(values)

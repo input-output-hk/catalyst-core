@@ -1,5 +1,5 @@
 use super::dates::FundDates;
-use vit_servicing_station_lib::db::models::{funds::Fund, goals::Goal};
+use vit_servicing_station_lib::db::models::{funds::Fund, goals::Goal, groups::Group};
 
 #[derive(Debug, Clone)]
 pub struct FundInfo {
@@ -11,6 +11,7 @@ pub struct FundInfo {
     pub goals: Vec<Goal>,
     pub results_url: String,
     pub survey_url: String,
+    pub groups: Vec<Group>,
 }
 
 impl From<FundDates> for FundInfo {
@@ -41,6 +42,7 @@ impl Into<Fund> for FundInfo {
             goals: self.goals,
             results_url: self.results_url,
             survey_url: self.survey_url,
+            groups: self.groups.into_iter().collect(),
         }
     }
 }
@@ -60,6 +62,18 @@ impl Default for FundInfo {
             }],
             results_url: "http://localhost/fund/1/results/".to_string(),
             survey_url: "http://localhost/fund/1/survey/".to_string(),
+            groups: vec![
+                Group {
+                    fund_id: 1,
+                    token_identifier: "00000000000000000000000000000000000000000000000000000000.0000000000000000000000000000000000000000000000000000000000000000".to_string(),
+                    group_id: "dreps".to_string(),
+                },
+                Group {
+                    fund_id: 1,
+                    token_identifier: "00000000000000000000000000000000000000000000000000000001.0000000000000000000000000000000000000000000000000000000000000000".to_string(),
+                    group_id: "direct".to_string(),
+                },
+            ],
         }
     }
 }

@@ -3,6 +3,7 @@ pub mod challenges;
 pub mod community_advisors_reviews;
 pub mod funds;
 pub mod goals;
+pub mod groups;
 pub mod proposals;
 pub mod vote_options;
 pub mod voteplans;

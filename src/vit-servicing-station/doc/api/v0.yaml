@@ -88,8 +88,8 @@ paths:
 
   /api/v0/proposals:
     post:
+      summary: Get proposals by chain id
       operationId: getProposalsByChainInfo
-      summary: Get proposal by id
       tags: [ proposal ]
       description: |
         Retrieves queried proposals.
@@ -99,7 +99,7 @@ paths:
         content:
           application/json:
             schema:
-                $ref: '#/components/schemas/ProposalsByVoteplanIdAndIndexQuery'
+              $ref: '#/components/schemas/ProposalsByVoteplanIdAndIndexQuery'
       responses:
         "200":
           description: Valid response
@@ -108,12 +108,20 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProposalWithChallengeInfo"
 
+  /api/v0/proposals/{voter_group_id}:
     get:
       operationId: getAllProposals
       summary: Get all available proposals
       tags: [proposal]
       description: |
         Lists all available proposals.
+      parameters:
+        - in: path
+          name: voter_group_id
+          description: Get proposals only for the specified vote group.
+          schema:
+            type: string
+          required: true
       responses:
         "200":
           description: Valid response
@@ -123,18 +131,23 @@ paths:
                 items:
                   $ref: "#/components/schemas/ProposalWithChallengeInfo"
 
-  /api/v0/proposals/{id}:
+  /api/v0/proposal/{id}/{voter_group_id}:
     get:
       operationId: getProposal
-      summary: Get proposal by id
+      summary: Get proposal by id filtered by group
       tags: [proposal]
       description: |
-        Retrieves information on the identified proposal.
+        Retrieves information on the identified proposal if it belongs to the provided group.
       parameters:
         - in: path
           name: id
           schema:
             type: integer
+          required: true
+        - in: path
+          name: voter_group_id
+          schema:
+            type: string
           required: true
       responses:
         "200":
@@ -369,6 +382,10 @@ components:
           items:
             $ref: "#/components/schemas/VotePlan"
           description: Vote plans registered for voting in this fund campaign.
+        groups:
+          type: array
+          items:
+            $ref: "#/components/schemas/VoterGroup"
         challenges:
           type: array
           items:
@@ -440,6 +457,11 @@ components:
           type: integer
           format: int32
           description: The fund ID this vote plan belongs to.
+        voting_token:
+          type: string
+          pattern: '[0-9a-f]{56}(\.[0-9a-f]{1,64})?'
+          description: |
+            The identifier of voting power token used withing this plan.
 
     Proposal:
       properties:
@@ -492,16 +514,9 @@ components:
         chain_proposal_id:
           type: string
           description: Identifier of the proposal on the blockchain.
-        chain_proposal_index:
-          type: integer
-          format: int64
-          description: Index of the proposal in the vote plan.
         chain_vote_options:
           description: Map of named vote options to choice indices.
           type: object
-        chain_voteplan_id:
-          type: string
-          description: Identifier of the vote plan this proposal belongs to.
         chain_vote_start_time:
           type: string
           format: date-time
@@ -518,6 +533,13 @@ components:
           type: string
           description: |
             Whether the voting is done using the public or the privacy-preserving protocol.
+        chain_voteplan_id:
+          type: string
+          description: Identifier of the vote plan a proposal belongs to.
+        chain_proposal_index:
+          type: integer
+          format: int64
+          description: Index of a proposal in the vote plan.
 
     ChallengeType:
       type: string
@@ -575,9 +597,7 @@ components:
               "proposer_relevant_experience": "Cryptography student, website development, blockchain technologist.",
             },
           "chain_proposal_id": "4af0e6b3452cd4ee822b2ec1859fd57b5512f85c14875f408081aa9b796dfc6e",
-          "chain_proposal_index": 0,
           "chain_vote_options": { "blank": 0, "yes": 1, "no": 2 },
-          "chain_voteplan_id": "b1eeb620baf1445672f6c9422481aff0f6babaf775760d187a7703027e098166",
           "chain_vote_start_time": "2021-02-10T14:40:27+00:00",
           "chain_vote_end_time": "2021-02-11T10:10:27+00:00",
           "chain_committee_end_time": "2021-02-11T11:40:27+00:00",
@@ -855,3 +875,15 @@ components:
         fund_id:
           type: integer
           format: int32
+
+    VoterGroup:
+      properties:
+        id: 
+          type: string
+          description: Unique identifier of this voter group
+        voting_token:
+          type: string
+          pattern: '[0-9a-f]{56}(\.[0-9a-f]{1,64})?'
+          description: |
+            The identifier of voting power token used withing this group. All vote plans within a
+            group are guaranteed to use the same token.

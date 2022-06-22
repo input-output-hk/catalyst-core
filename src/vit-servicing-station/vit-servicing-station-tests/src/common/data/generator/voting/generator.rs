@@ -1,9 +1,13 @@
+use std::collections::HashMap;
+
 use super::parameters::SingleVotePlanParameters;
+use super::ProposalTemplate;
 use crate::common::data::generator::{ArbitraryGenerator, Snapshot, ValidVotingTemplateGenerator};
 use crate::common::data::ValidVotePlanParameters;
-use chain_impl_mockchain::certificate::VotePlan;
+use chain_impl_mockchain::certificate::{ExternalProposalId, VotePlan};
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
+use vit_servicing_station_lib::db::models::proposals::ProposalVotePlanCommon;
 use vit_servicing_station_lib::db::models::{
     challenges::Challenge,
     funds::Fund,
@@ -29,6 +33,8 @@ impl ValidVotePlanGenerator {
 
         let fund_template = template_generator.next_fund();
         self.parameters.current_fund.info.fund_goal = fund_template.goal;
+
+        let groups = self.parameters.current_fund.info.groups.clone();
 
         let vote_plans: Vec<Voteplan> = self
             .parameters
@@ -59,6 +65,7 @@ impl ValidVotePlanGenerator {
                         .vote_encryption_key()
                         .unwrap_or_else(|| "".to_string()),
                     fund_id: self.parameters.current_fund.info.fund_id,
+                    token_identifier: vote_plan.voting_token().to_string(),
                 }
             })
             .collect();
@@ -88,13 +95,24 @@ impl ValidVotePlanGenerator {
 
         let mut proposals = vec![];
 
+        let mut mirrored_templates = HashMap::<ExternalProposalId, ProposalTemplate>::new();
+
         for (index, vote_plan) in vote_plans.iter().enumerate() {
+            let group = groups
+                .iter()
+                .find(|g| g.token_identifier == vote_plan.token_identifier)
+                .unwrap();
+
             for (index, proposal) in self.parameters.current_fund.vote_plans[index]
                 .proposals()
                 .iter()
                 .enumerate()
             {
-                let proposal_template = template_generator.next_proposal();
+                let proposal_template = mirrored_templates
+                    .entry(proposal.id())
+                    .or_insert_with(|| template_generator.next_proposal())
+                    .clone();
+
                 let challenge_idx: i32 = proposal_template.challenge_id.unwrap().parse().unwrap();
                 let mut challenge = fund
                     .challenges
@@ -116,8 +134,10 @@ impl ValidVotePlanGenerator {
                     challenge.rewards_total += proposal_funds;
                 }
 
+                let proposal_internal_id = proposal_template.internal_id.parse().unwrap();
+
                 let proposal = Proposal {
-                    internal_id: proposal_template.internal_id.parse().unwrap(),
+                    internal_id: proposal_internal_id,
                     proposal_id: proposal_template.proposal_id.to_string(),
                     proposal_category: Category {
                         category_id: "".to_string(),
@@ -140,9 +160,7 @@ impl ValidVotePlanGenerator {
                             .proposer_relevant_experience,
                     },
                     chain_proposal_id: proposal.id().to_string().as_bytes().to_vec(),
-                    chain_proposal_index: index as i64,
                     chain_vote_options: self.parameters.current_fund.vote_options.clone(),
-                    chain_voteplan_id: vote_plan.chain_voteplan_id.clone(),
                     chain_vote_start_time: vote_plan.chain_vote_start_time,
                     chain_vote_end_time: vote_plan.chain_vote_end_time,
                     chain_committee_end_time: vote_plan.chain_committee_end_time,
@@ -156,6 +174,11 @@ impl ValidVotePlanGenerator {
                     proposal,
                     challenge_info: proposal_template.proposal_challenge_info,
                     challenge_type: challenge.challenge_type.clone(),
+                    voteplan: ProposalVotePlanCommon {
+                        chain_voteplan_id: vote_plan.chain_voteplan_id.clone(),
+                        chain_proposal_index: index as i64,
+                    },
+                    group_id: group.group_id.clone(),
                 });
             }
         }
@@ -204,6 +227,7 @@ impl ValidVotePlanGenerator {
             vote_plans,
             reviews,
             goals,
+            groups,
         )
     }
 }

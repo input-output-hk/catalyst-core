@@ -5,6 +5,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
 use thiserror::Error;
+use vit_servicing_station_lib::db::models::groups::Group;
 use vit_servicing_station_lib::db::models::{
     api_tokens::ApiTokenData, challenges::Challenge, funds::Fund,
 };
@@ -26,6 +27,7 @@ pub struct DbBuilder {
     funds: Option<Vec<Fund>>,
     challenges: Option<Vec<Challenge>>,
     advisor_reviews: Option<Vec<AdvisorReview>>,
+    groups: Option<Vec<Group>>,
 }
 
 impl DbBuilder {
@@ -37,6 +39,7 @@ impl DbBuilder {
             funds: None,
             challenges: None,
             advisor_reviews: None,
+            groups: None,
         }
     }
 
@@ -61,6 +64,7 @@ impl DbBuilder {
     }
 
     pub fn with_snapshot(&mut self, snapshot: &Snapshot) -> &mut Self {
+        self.with_groups(snapshot.groups());
         self.with_proposals(snapshot.proposals());
         self.with_tokens(snapshot.tokens().values().cloned().collect());
         self.with_funds(snapshot.funds());
@@ -76,6 +80,11 @@ impl DbBuilder {
 
     pub fn with_advisor_reviews(&mut self, reviews: Vec<AdvisorReview>) -> &mut Self {
         self.advisor_reviews = Some(reviews);
+        self
+    }
+
+    pub fn with_groups(&mut self, groups: Vec<Group>) -> &mut Self {
+        self.groups = Some(groups);
         self
     }
 
@@ -147,6 +156,13 @@ impl DbBuilder {
         Ok(())
     }
 
+    fn try_insert_groups(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+        if let Some(groups) = &self.groups {
+            DbInserter::new(connection).insert_groups(groups)?;
+        }
+        Ok(())
+    }
+
     pub fn build(&self, temp_dir: &TempDir) -> Result<PathBuf, DbBuilderError> {
         self.build_into_path(temp_dir.child(VIT_STATION_DB).path())
     }
@@ -160,6 +176,7 @@ impl DbBuilder {
         self.try_do_migration(&connection)?;
         self.try_insert_tokens(&connection)?;
         self.try_insert_funds(&connection)?;
+        self.try_insert_groups(&connection)?;
         self.try_insert_proposals(&connection)?;
         self.try_insert_challenges(&connection)?;
         self.try_insert_reviews(&connection)?;

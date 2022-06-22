@@ -1,5 +1,5 @@
 use crate::common::{
-    data,
+    data::{self, ArbitrarySnapshotGenerator},
     paths::BLOCK0_BIN,
     startup::{
         db::DbBuilder,
@@ -93,9 +93,15 @@ pub fn db_url_and_block0_replaced() -> Result<(), Box<dyn std::error::Error>> {
 
     let (_, token) = data::token();
 
+    let mut gen = ArbitrarySnapshotGenerator::default();
+    let funds = gen.funds();
+    let proposals = gen.proposals(&funds);
+    let groups = gen.groups(&funds);
+
     let db_path = DbBuilder::new()
         .with_token(token)
-        .with_proposals(data::proposals())
+        .with_groups(groups)
+        .with_proposals(proposals)
         .build(&temp_dir)?;
 
     let mut command_builder: BootstrapCommandBuilder = Default::default();

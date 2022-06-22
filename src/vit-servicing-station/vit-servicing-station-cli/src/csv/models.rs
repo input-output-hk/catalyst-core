@@ -69,12 +69,8 @@ pub struct Proposal {
         deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_string_as_bytes"
     )]
     pub chain_proposal_id: Vec<u8>,
-    #[serde(alias = "chainProposalIndex")]
-    pub chain_proposal_index: i64,
     #[serde(alias = "chainVoteOptions")]
     pub chain_vote_options: String,
-    #[serde(alias = "chainVoteplanId")]
-    pub chain_voteplan_id: String,
     #[serde(alias = "chainVoteStartTime", default = "Default::default")]
     #[serde(
         serialize_with = "vit_servicing_station_lib::utils::serde::serialize_unix_timestamp_as_rfc3339"
@@ -174,9 +170,7 @@ impl Proposal {
                 proposer_relevant_experience: self.proposer_relevant_experience,
             },
             chain_proposal_id: self.chain_proposal_id,
-            chain_proposal_index: self.chain_proposal_index,
             chain_vote_options: VoteOptions::parse_coma_separated_value(&self.chain_vote_options),
-            chain_voteplan_id: self.chain_voteplan_id,
             chain_vote_start_time: self.chain_vote_start_time,
             chain_vote_end_time: self.chain_vote_end_time,
             chain_committee_end_time: self.chain_committee_end_time,

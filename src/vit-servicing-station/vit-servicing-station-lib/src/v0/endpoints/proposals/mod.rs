@@ -4,4 +4,4 @@ mod requests;
 mod routes;
 
 pub use requests::{ProposalVoteplanIdAndIndexes, ProposalsByVoteplanIdAndIndex};
-pub use routes::filter;
+pub use routes::{proposal_filter, proposals_filter};

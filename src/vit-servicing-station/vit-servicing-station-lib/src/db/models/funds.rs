@@ -1,3 +1,6 @@
+use std::collections::BTreeSet;
+
+use super::groups::Group;
 use crate::db::{
     models::{challenges::Challenge, goals::Goal, voteplans::Voteplan},
     schema::funds,
@@ -47,6 +50,8 @@ pub struct Fund {
     pub results_url: String,
     #[serde(alias = "surveyUrl")]
     pub survey_url: String,
+    #[serde(default = "BTreeSet::new")]
+    pub groups: BTreeSet<Group>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -101,6 +106,7 @@ struct FundWithLegacyFields {
     next_registration_snapshot_time: i64,
     chain_vote_plans: Vec<Voteplan>,
     challenges: Vec<Challenge>,
+    groups: BTreeSet<Group>,
 }
 
 impl From<Fund> for FundWithLegacyFields {
@@ -117,6 +123,7 @@ impl From<Fund> for FundWithLegacyFields {
             next_registration_snapshot_time: fund.next_registration_snapshot_time,
             chain_vote_plans: fund.chain_vote_plans,
             challenges: fund.challenges,
+            groups: fund.groups,
         }
     }
 }
@@ -195,6 +202,7 @@ impl Queryable<funds::SqlType, Db> for Fund {
             goals: vec![],
             results_url: row.19,
             survey_url: row.20,
+            groups: Default::default(),
         }
     }
 }
@@ -266,9 +274,10 @@ pub mod test {
             challenges::test as challenges_testing,
             funds::{Fund, FundStageDates},
             goals::{Goal, InsertGoal},
+            groups::Group,
             voteplans::test as voteplans_testing,
         },
-        schema::{funds, goals},
+        schema::{funds, goals, groups},
         DbConnectionPool,
     };
 
@@ -312,19 +321,30 @@ pub mod test {
             }],
             results_url: format!("http://localhost/fund/{FUND_ID}/results/"),
             survey_url: format!("http://localhost/fund/{FUND_ID}/survey/"),
+            groups: IntoIterator::into_iter([
+                Group {
+                    fund_id,
+                    token_identifier: "token1".into(),
+                    group_id: "group1".into(),
+                },
+                Group {
+                    fund_id,
+                    token_identifier: "token2".into(),
+                    group_id: "group2".into(),
+                },
+            ])
+            .collect(),
         }
     }
 
     pub fn populate_db_with_fund(fund: &Fund, pool: &DbConnectionPool) {
-        let values = fund.clone().values();
-
         // Warning! mind this scope: r2d2 pooled connection behaviour depend of the scope. Looks like
         // if the connection is not out of scope, when giving the reference to the next function
         // call below it creates a wrong connection (where there are not tables even if they were loaded).
         {
             let connection = pool.get().unwrap();
             diesel::insert_into(funds::table)
-                .values(values)
+                .values(fund.clone().values())
                 .execute(&connection)
                 .unwrap();
         }
@@ -345,6 +365,18 @@ pub mod test {
                     .execute(&connection)
                     .unwrap();
             }
+
+            // TODO: call batch_insert_groups?
+            diesel::insert_into(groups::table)
+                .values(
+                    fund.groups
+                        .clone()
+                        .into_iter()
+                        .map(|g| g.values())
+                        .collect::<Vec<_>>(),
+                )
+                .execute(&*connection)
+                .unwrap();
         }
     }
 }

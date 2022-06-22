@@ -1,15 +1,13 @@
-use std::{
-    fs::File,
-    path::{Path, PathBuf},
-};
+use std::{fs::File, path::Path};
 
 use color_eyre::Result;
+use config::*;
 use log::info;
-use rust_decimal::Decimal;
-use serde::Deserialize;
 use serde_json::from_reader;
 
-use super::community_advisors::{FundSettingOpt, ProposalRewardsSlotsOpt};
+mod config;
+mod proposers;
+mod python;
 
 pub(super) fn full_rewards(path: &Path) -> Result<()> {
     let config = from_reader(File::open(path)?)?;
@@ -23,11 +21,16 @@ pub(super) fn full_rewards(path: &Path) -> Result<()> {
                 assessments_path,
                 proposal_bonus_output,
                 approved_proposals_path,
+                proposer_script_path,
+                active_voteplans,
+                challenges,
+                proposals_path,
             },
         outputs:
             Outputs {
                 veterans_rewards_output,
                 ca_rewards_output,
+                proposer_rewards_output,
             },
         params:
             Params {
@@ -44,12 +47,14 @@ pub(super) fn full_rewards(path: &Path) -> Result<()> {
                 rewards_slots,
                 fund_settings,
                 ca_seed,
+                proposer_stake_threshold,
+                proposer_approval_threshold,
             },
     } = config;
 
     info!("calculating voter rewards");
     super::voters::voter_rewards(
-        Some(block_file),
+        &block_file,
         vote_count_path,
         snapshot_path,
         registration_threshold,
@@ -82,46 +87,17 @@ pub(super) fn full_rewards(path: &Path) -> Result<()> {
         proposal_bonus_output,
     )?;
 
+    info!("calculating proposer rewards");
+    proposers::proposers_rewards(
+        &proposer_script_path,
+        &block_file,
+        &proposer_rewards_output,
+        proposer_stake_threshold,
+        proposer_approval_threshold,
+        &proposals_path,
+        &active_voteplans,
+        &challenges,
+    )?;
+
     Ok(())
-}
-
-#[derive(Debug, Deserialize)]
-struct Config {
-    inputs: Inputs,
-    outputs: Outputs,
-    params: Params,
-}
-
-#[derive(Debug, Deserialize)]
-struct Inputs {
-    block_file: PathBuf,
-    snapshot_path: PathBuf,
-    vote_count_path: PathBuf,
-    reviews_csv: PathBuf,
-    assessments_path: PathBuf, // is assessments the same as reviews?
-    proposal_bonus_output: Option<PathBuf>,
-    approved_proposals_path: PathBuf,
-}
-
-#[derive(Debug, Deserialize)]
-struct Outputs {
-    veterans_rewards_output: PathBuf,
-    ca_rewards_output: PathBuf,
-}
-
-#[derive(Debug, Deserialize)]
-struct Params {
-    registration_threshold: u64,
-    vote_threshold: u64,
-    total_rewards: u64,
-    rewards_agreement_rate_cutoffs: Vec<Decimal>,
-    rewards_agreement_rate_modifiers: Vec<Decimal>,
-    reputation_agreement_rate_cutoffs: Vec<Decimal>,
-    reputation_agreement_rate_modifiers: Vec<Decimal>,
-    min_rankings: usize,
-    max_rankings_reputation: usize,
-    max_rankings_rewards: usize,
-    rewards_slots: ProposalRewardsSlotsOpt,
-    fund_settings: FundSettingOpt,
-    ca_seed: String,
 }

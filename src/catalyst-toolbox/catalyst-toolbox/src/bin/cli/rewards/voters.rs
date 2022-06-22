@@ -2,6 +2,7 @@ use catalyst_toolbox::rewards::voters::{calc_voter_rewards, Rewards, VoteCount};
 use catalyst_toolbox::snapshot::{registration::MainnetRewardAddress, Snapshot};
 use catalyst_toolbox::utils::assert_are_close;
 
+use color_eyre::eyre::eyre;
 use color_eyre::{Report, Result};
 use jcli_lib::block::{load_block, open_block_file};
 use jcli_lib::jcli_lib::block::{open_output, Common};
@@ -11,7 +12,7 @@ use jormungandr_lib::interfaces::Block0Configuration;
 use structopt::StructOpt;
 
 use std::collections::BTreeMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -69,7 +70,10 @@ impl VotersRewards {
         } = self;
 
         voter_rewards(
-            common.output_file,
+            common
+                .output_file
+                .as_deref()
+                .ok_or(eyre!("missing block file"))?,
             votes_count_path,
             snapshot_path,
             registration_threshold,
@@ -80,14 +84,14 @@ impl VotersRewards {
 }
 
 pub fn voter_rewards(
-    block_file: Option<PathBuf>,
+    block_file: &Path,
     votes_count_path: PathBuf,
     snapshot_path: PathBuf,
     registration_threshold: u64,
     vote_threshold: u64,
     total_rewards: u64,
 ) -> Result<()> {
-    let block = open_block_file(&block_file)?;
+    let block = open_block_file(&Some(block_file.to_path_buf()))?;
     let block = load_block(block)?;
 
     let block0 = Block0Configuration::from_block(&block)?;
@@ -109,6 +113,6 @@ pub fn voter_rewards(
     let actual_rewards = results.values().sum::<Rewards>();
     assert_are_close(actual_rewards, Rewards::from(total_rewards));
 
-    write_rewards_results(&block_file, &results)?;
+    write_rewards_results(&Some(block_file.to_path_buf()), &results)?;
     Ok(())
 }

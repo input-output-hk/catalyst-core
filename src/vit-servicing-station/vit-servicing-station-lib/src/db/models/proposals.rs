@@ -462,11 +462,11 @@ pub mod test {
         key: i32,
         conn: &PooledConnection<ConnectionManager<DbConnection>>,
     ) -> (FullProposalInfo, Challenge) {
-        let mut proposal = get_test_proposal("asdf");
+        let mut proposal = get_test_proposal(format!("key"));
         proposal.proposal.internal_id = key;
         proposal.proposal.proposal_id = key.to_string();
         proposal.proposal.proposal_title = format!("proposal number {key}");
-        // proposal.proposal.chain_voteplan_id = format!("voteplan_id_{key}");
+        proposal.voteplan.chain_voteplan_id = format!("voteplan_id_{key}");
 
         let mut challenge = get_test_challenge_with_fund_id(proposal.proposal.fund_id);
         challenge.title = format!("challenge {key}");

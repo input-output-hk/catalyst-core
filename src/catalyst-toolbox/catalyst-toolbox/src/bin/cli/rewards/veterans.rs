@@ -94,6 +94,7 @@ impl VeteransRewards {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn vca_rewards(
     reviews_csv: PathBuf,
     output: PathBuf,

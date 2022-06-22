@@ -4,6 +4,7 @@ use color_eyre::Result;
 
 use super::python::exec_python_script;
 
+#[allow(clippy::too_many_arguments)]
 pub(super) fn proposers_rewards(
     proposer_reward_script: &Path,
     block0: &Path,

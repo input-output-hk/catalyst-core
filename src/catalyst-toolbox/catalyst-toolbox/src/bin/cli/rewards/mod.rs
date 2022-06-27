@@ -1,4 +1,5 @@
 mod community_advisors;
+mod proposers;
 mod veterans;
 mod voters;
 
@@ -16,6 +17,9 @@ pub enum Rewards {
 
     /// Calculate rewards for veteran community advisors
     Veterans(veterans::VeteransRewards),
+
+    /// Calculate rewards for propsers
+    Proposers(proposers::ProposerRewards),
 }
 
 impl Rewards {
@@ -24,6 +28,7 @@ impl Rewards {
             Rewards::Voters(cmd) => cmd.exec(),
             Rewards::CommunityAdvisors(cmd) => cmd.exec(),
             Rewards::Veterans(cmd) => cmd.exec(),
+            Rewards::Proposers(proposers) => proposers::rewards(&proposers),
         }
     }
 }

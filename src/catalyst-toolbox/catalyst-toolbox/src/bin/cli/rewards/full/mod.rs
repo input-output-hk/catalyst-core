@@ -36,21 +36,10 @@ pub(super) fn full_rewards(path: &Path) -> Result<()> {
             },
         params:
             Params {
-                registration_threshold,
-                vote_threshold,
-                total_rewards,
-                rewards_agreement_rate_cutoffs,
-                rewards_agreement_rate_modifiers,
-                reputation_agreement_rate_cutoffs,
-                reputation_agreement_rate_modifiers,
-                min_rankings,
-                max_rankings_reputation,
-                max_rankings_rewards,
-                rewards_slots,
-                fund_settings,
-                ca_seed,
-                proposer_stake_threshold,
-                proposer_approval_threshold,
+                voter_params,
+                proposer_params,
+                ca_params,
+                vca_params,
             },
     } = config;
 
@@ -60,46 +49,48 @@ pub(super) fn full_rewards(path: &Path) -> Result<()> {
         &voter_rewards_output,
         &vote_count_path,
         &snapshot_path,
-        registration_threshold,
-        vote_threshold,
-        total_rewards,
+        voter_params.registration_threshold,
+        voter_params.vote_threshold,
+        voter_params.total_rewards,
     )?;
 
     info!("calculating vca rewards");
     super::veterans::vca_rewards(
         reviews_csv,
         veterans_rewards_output,
-        rewards_agreement_rate_cutoffs,
-        rewards_agreement_rate_modifiers,
-        reputation_agreement_rate_cutoffs,
-        reputation_agreement_rate_modifiers,
-        total_rewards.into(),
-        min_rankings,
-        max_rankings_reputation,
-        max_rankings_rewards,
+        vca_params.rewards_agreement_rate_cutoffs,
+        vca_params.rewards_agreement_rate_modifiers,
+        vca_params.reputation_agreement_rate_cutoffs,
+        vca_params.reputation_agreement_rate_modifiers,
+        vca_params.total_rewards.into(),
+        vca_params.min_rankings,
+        vca_params.max_rankings_reputation,
+        vca_params.max_rankings_rewards,
     )?;
 
     info!("calculating ca rewards");
     super::community_advisors::ca_rewards(
         assessments_path,
         approved_proposals_path,
-        fund_settings,
-        rewards_slots,
+        ca_params.fund_settings,
+        ca_params.rewards_slots,
         ca_rewards_output,
-        ca_seed,
+        ca_params.seed,
         proposal_bonus_output,
     )?;
 
     info!("calculating proposer rewards");
     proposers::proposers_rewards(
         &proposer_script_path,
+        &csv_merger_script_path,
         &block_file,
         &proposer_rewards_output,
-        proposer_stake_threshold,
-        proposer_approval_threshold,
+        proposer_params.stake_threshold,
+        proposer_params.approval_threshold,
         &proposals_path,
-        &active_voteplans,
         &challenges,
+        &active_voteplans,
+        &proposer_params.pattern,
     )?;
 
     Ok(())

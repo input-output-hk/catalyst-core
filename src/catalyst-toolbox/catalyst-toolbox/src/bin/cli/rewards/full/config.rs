@@ -28,14 +28,6 @@ pub(super) struct Inputs {
     pub(super) proposals_path: PathBuf,
 }
 
-/// A set of files required to calculate proposer rewards. There is one set per proposal, which are
-/// then later merged with csv_merger.py
-pub(super) struct ProposalFiles {
-    
-}
-
-
-
 #[derive(Debug, Deserialize)]
 pub(super) struct Outputs {
     pub(super) voter_rewards_output: PathBuf,
@@ -46,8 +38,36 @@ pub(super) struct Outputs {
 
 #[derive(Debug, Deserialize)]
 pub(super) struct Params {
-    pub(super) registration_threshold: u64,
+    pub(super) voter_params: VoterParams,
+    pub(super) proposer_params: ProposerParams,
+    pub(super) ca_params: CaParams,
+    pub(super) vca_params: VcaParams,
+}
+
+#[derive(Debug, Deserialize)]
+pub(super) struct VoterParams {
+    pub(super) total_rewards: u64,
     pub(super) vote_threshold: u64,
+    pub(super) registration_threshold: u64,
+}
+
+#[derive(Debug, Deserialize)]
+pub(super) struct ProposerParams {
+    pub(super) total_rewards: u64,
+    pub(super) stake_threshold: f64,
+    pub(super) approval_threshold: f64,
+    pub(super) pattern: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub(super) struct CaParams {
+    pub(super) rewards_slots: ProposalRewardsSlotsOpt,
+    pub(super) fund_settings: FundSettingOpt,
+    pub(super) seed: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub(super) struct VcaParams {
     pub(super) total_rewards: u64,
     pub(super) rewards_agreement_rate_cutoffs: Vec<Decimal>,
     pub(super) rewards_agreement_rate_modifiers: Vec<Decimal>,
@@ -56,9 +76,4 @@ pub(super) struct Params {
     pub(super) min_rankings: usize,
     pub(super) max_rankings_reputation: usize,
     pub(super) max_rankings_rewards: usize,
-    pub(super) rewards_slots: ProposalRewardsSlotsOpt,
-    pub(super) fund_settings: FundSettingOpt,
-    pub(super) ca_seed: String,
-    pub(super) proposer_stake_threshold: f64,
-    pub(super) proposer_approval_threshold: f64,
 }

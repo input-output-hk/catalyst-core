@@ -1,13 +1,8 @@
-use crate::snapshot::{registration::MainnetRewardAddress, Snapshot};
-use chain_addr::{Discrimination, Kind};
-use chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier;
-use chain_impl_mockchain::vote::CommitteeId;
+use crate::snapshot::{registration::MainnetRewardAddress, SnapshotInfo};
 use jormungandr_lib::crypto::account::Identifier;
 use rust_decimal::Decimal;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use thiserror::Error;
-
-use jormungandr_lib::interfaces::{Address, Block0Configuration, Initial};
 
 pub const ADA_TO_LOVELACE_FACTOR: u64 = 1_000_000;
 pub type Rewards = Decimal;
@@ -16,121 +11,58 @@ pub type Rewards = Decimal;
 pub enum Error {
     #[error("Value overflowed its maximum value")]
     Overflow,
+    #[error("Multiple snapshot entries per voter are not supported")]
+    MultipleEntries,
+    #[error("Unknown voter group {0}")]
+    UnknownVoterGroup(String),
 }
 
-fn calculate_active_stake<'address>(
-    committee_keys: &HashSet<Address>,
-    block0: &'address Block0Configuration,
-    active_addresses: &ActiveAddresses,
-) -> Result<(u64, HashMap<&'address Address, u64>), Error> {
-    let mut total_stake: u64 = 0;
-    let mut stake_per_voter: HashMap<&'address Address, u64> = HashMap::new();
-
-    for fund in &block0.initial {
-        match fund {
-            Initial::Fund(_) => {}
-            Initial::Cert(_) => {}
-            Initial::LegacyFund(_) => {}
-            Initial::Token(token) => {
-                for destination in &token.to {
-                    // Exclude committee addresses (managed by IOG) and
-                    // non active voters from total active stake for the purpose of calculating
-                    // voter rewards
-                    if !committee_keys.contains(&destination.address)
-                        && active_addresses.contains(&destination.address)
-                    {
-                        let value: u64 = destination.value.into();
-                        total_stake = total_stake.checked_add(value).ok_or(Error::Overflow)?;
-                        let entry = stake_per_voter.entry(&destination.address).or_default();
-                        *entry += value;
-                    }
-                }
-            }
-        }
-    }
-    Ok((total_stake, stake_per_voter))
-}
-
-fn calculate_reward<'address>(
+fn calculate_reward(
     total_stake: u64,
-    stake_per_voter: &HashMap<&'address Address, u64>,
-    active_addresses: &ActiveAddresses,
+    stake_per_voter: HashMap<Identifier, u64>,
     total_rewards: Rewards,
-) -> HashMap<&'address Address, Rewards> {
+) -> HashMap<Identifier, Rewards> {
     stake_per_voter
-        .iter()
+        .into_iter()
         .map(|(k, v)| {
-            let reward = if active_addresses.contains(k) {
-                Rewards::from(*v) / Rewards::from(total_stake) * total_rewards
-            } else {
-                Rewards::ZERO
-            };
-            (*k, reward)
+            (
+                k,
+                (Rewards::from(v) / Rewards::from(total_stake) * total_rewards),
+            )
         })
         .collect()
 }
 
 pub type VoteCount = HashMap<String, u64>;
-pub type ActiveAddresses = HashSet<Address>;
 
-fn active_addresses(
+fn filter_active_addresses(
     vote_count: VoteCount,
-    block0: &Block0Configuration,
     threshold: u64,
-    snapshot: &Snapshot,
-) -> ActiveAddresses {
-    let discrimination = block0.blockchain_configuration.discrimination;
-    snapshot
-        .voting_keys()
-        // Add all keys from snapshot so that they are accounted for
-        // even if they didn't vote and the threshold is 0.
-        // Active accounts are overwritten with the correct count.
-        .map(|key| (key.to_hex(), 0))
-        .chain(vote_count.into_iter())
-        .filter_map(|(account_hex, count)| {
-            if count >= threshold {
-                Some(
-                    account_hex_to_address(account_hex, discrimination)
-                        .expect("Valid hex encoded UnspecifiedAccountIdentifier"),
-                )
-            } else {
-                None
-            }
+    snapshot_info: Vec<SnapshotInfo>,
+) -> Vec<SnapshotInfo> {
+    snapshot_info
+        .into_iter()
+        .filter(|v| {
+            let addr = v.hir.voting_key.to_hex();
+            vote_count.get(&addr).copied().unwrap_or_default() >= threshold
         })
         .collect()
 }
 
-fn account_hex_to_address(
-    account_hex: String,
-    discrimination: Discrimination,
-) -> Result<Address, hex::FromHexError> {
-    let mut buffer = [0u8; 32];
-    hex::decode_to_slice(account_hex, &mut buffer)?;
-    let identifier: UnspecifiedAccountIdentifier = UnspecifiedAccountIdentifier::from(buffer);
-    Ok(Address::from(chain_addr::Address(
-        discrimination,
-        Kind::Account(
-            identifier
-                .to_single_account()
-                .expect("Only single accounts are supported")
-                .into(),
-        ),
-    )))
-}
-
 fn rewards_to_mainnet_addresses(
-    rewards: HashMap<&'_ Address, Rewards>,
-    snapshot: Snapshot,
+    rewards: HashMap<Identifier, Rewards>,
+    voters: Vec<SnapshotInfo>,
 ) -> BTreeMap<MainnetRewardAddress, Rewards> {
     let mut res = BTreeMap::new();
+    let snapshot_info_by_key = voters
+        .into_iter()
+        .map(|v| (v.hir.voting_key.clone(), v))
+        .collect::<HashMap<_, _>>();
     for (addr, reward) in rewards {
-        let contributions = snapshot.contributions_for_voting_key::<Identifier>(
-            addr.1
-                .public_key()
-                .expect("non account address")
-                .clone()
-                .into(),
-        );
+        let contributions = snapshot_info_by_key
+            .get(&addr)
+            .map(|v| v.contributions.clone())
+            .unwrap_or_default();
         let total_value = contributions
             .iter()
             .map(|c| Rewards::from(c.value))
@@ -148,33 +80,29 @@ fn rewards_to_mainnet_addresses(
 pub fn calc_voter_rewards(
     vote_count: VoteCount,
     vote_threshold: u64,
-    block0: &Block0Configuration,
-    snapshot: Snapshot,
+    voters: Vec<SnapshotInfo>,
     total_rewards: Rewards,
 ) -> Result<BTreeMap<MainnetRewardAddress, Rewards>, Error> {
-    let active_addresses = active_addresses(vote_count, block0, vote_threshold, &snapshot);
-
-    let committee_keys: HashSet<Address> = block0
-        .blockchain_configuration
-        .committees
+    let unique_voters = voters
         .iter()
-        .cloned()
-        .map(|id| {
-            let id = CommitteeId::from(id);
-            let pk = id.public_key();
+        .map(|s| s.hir.voting_key.clone())
+        .collect::<HashSet<_>>();
+    if unique_voters.len() != voters.len() {
+        return Err(Error::MultipleEntries);
+    }
+    let active_addresses = filter_active_addresses(vote_count, vote_threshold, voters);
 
-            chain_addr::Address(Discrimination::Production, Kind::Account(pk)).into()
-        })
-        .collect();
-    let (total_active_stake, stake_per_voter) =
-        calculate_active_stake(&committee_keys, block0, &active_addresses)?;
-    let rewards = calculate_reward(
-        total_active_stake,
-        &stake_per_voter,
-        &active_addresses,
-        total_rewards,
-    );
-    Ok(rewards_to_mainnet_addresses(rewards, snapshot))
+    let mut total_active_stake = 0u64;
+    let mut stake_per_voter = HashMap::new();
+    // iterative as Iterator::sum() panic on overflows
+    for voter in &active_addresses {
+        total_active_stake = total_active_stake
+            .checked_add(voter.hir.voting_power.into())
+            .ok_or(Error::Overflow)?;
+        stake_per_voter.insert(voter.hir.voting_key.clone(), voter.hir.voting_power.into());
+    }
+    let rewards = calculate_reward(total_active_stake, stake_per_voter, total_rewards);
+    Ok(rewards_to_mainnet_addresses(rewards, active_addresses))
 }
 
 #[cfg(test)]
@@ -183,41 +111,9 @@ mod tests {
     use crate::snapshot::registration::*;
     use crate::snapshot::*;
     use crate::utils::assert_are_close;
-    use chain_impl_mockchain::chaintypes::ConsensusVersion;
-    use chain_impl_mockchain::fee::LinearFee;
-    use chain_impl_mockchain::tokens::{identifier::TokenIdentifier, name::TokenName};
     use fraction::Fraction;
     use jormungandr_lib::crypto::account::Identifier;
-    use jormungandr_lib::interfaces::BlockchainConfiguration;
-    use jormungandr_lib::interfaces::{Destination, Initial, InitialToken, InitialUTxO};
-    use std::convert::TryFrom;
     use test_strategy::proptest;
-
-    fn blockchain_configuration(initial_funds: Vec<InitialUTxO>) -> Block0Configuration {
-        Block0Configuration {
-            blockchain_configuration: BlockchainConfiguration::new(
-                Discrimination::Test,
-                ConsensusVersion::Bft,
-                LinearFee::new(1, 1, 1),
-            ),
-            // Temporarily create dummy until we update the snapshot
-            initial: vec![Initial::Token(InitialToken {
-                token_id: TokenIdentifier {
-                    policy_hash: [0; 28].into(),
-                    token_name: TokenName::try_from(Vec::new()).unwrap(),
-                }
-                .into(),
-                policy: Default::default(),
-                to: initial_funds
-                    .into_iter()
-                    .map(|utxo| Destination {
-                        address: utxo.address,
-                        value: utxo.value,
-                    })
-                    .collect(),
-            })],
-        }
-    }
 
     #[proptest]
     fn test_all_active(snapshot: Snapshot) {
@@ -227,9 +123,8 @@ mod tests {
             .map(|key| (key.to_hex(), 1))
             .collect::<VoteCount>();
         let n_voters = votes_count.len();
-        let initial = snapshot.to_block0_initials(Discrimination::Test);
-        let block0 = blockchain_configuration(initial);
-        let rewards = calc_voter_rewards(votes_count, 1, &block0, snapshot, Rewards::ONE).unwrap();
+        let voters = snapshot.to_full_snapshot_info();
+        let rewards = calc_voter_rewards(votes_count, 1, voters, Rewards::ONE).unwrap();
         if n_voters > 0 {
             assert_are_close(rewards.values().sum::<Rewards>(), Rewards::ONE)
         } else {
@@ -240,9 +135,8 @@ mod tests {
     #[proptest]
     fn test_all_inactive(snapshot: Snapshot) {
         let votes_count = VoteCount::new();
-        let initial = snapshot.to_block0_initials(Discrimination::Test);
-        let block0 = blockchain_configuration(initial);
-        let rewards = calc_voter_rewards(votes_count, 1, &block0, snapshot, Rewards::ONE).unwrap();
+        let voters = snapshot.to_full_snapshot_info();
+        let rewards = calc_voter_rewards(votes_count, 1, voters, Rewards::ONE).unwrap();
         assert_eq!(rewards.len(), 0);
     }
 
@@ -256,33 +150,18 @@ mod tests {
             .map(|(i, key)| (key.to_hex(), (i % 2 == 0) as u64))
             .collect::<VoteCount>();
         let n_voters = votes_count.iter().filter(|(_, votes)| **votes > 0).count();
-        let initial = snapshot.to_block0_initials(Discrimination::Test);
-        let initial_active = initial
-            .iter()
-            .cloned()
+        let voters = snapshot.to_full_snapshot_info();
+        let voters_active = voters
+            .clone()
+            .into_iter()
             .enumerate()
             .filter(|(i, _utxo)| i % 2 == 0)
             .map(|(_, utxo)| utxo)
             .collect::<Vec<_>>();
 
-        let block0 = blockchain_configuration(initial);
-        let block0_active = blockchain_configuration(initial_active);
-        let mut rewards = calc_voter_rewards(
-            votes_count.clone(),
-            1,
-            &block0,
-            snapshot.clone(),
-            Rewards::ONE,
-        )
-        .unwrap();
-        let rewards_no_inactive = calc_voter_rewards(
-            votes_count,
-            1,
-            &block0_active,
-            snapshot.clone(),
-            Rewards::ONE,
-        )
-        .unwrap();
+        let mut rewards = calc_voter_rewards(votes_count.clone(), 1, voters, Rewards::ONE).unwrap();
+        let rewards_no_inactive =
+            calc_voter_rewards(votes_count, 1, voters_active, Rewards::ONE).unwrap();
         // Rewards should ignore inactive voters
         assert_eq!(rewards, rewards_no_inactive);
         if n_voters > 0 {
@@ -347,17 +226,50 @@ mod tests {
         )
         .unwrap();
 
-        let initial = snapshot.to_block0_initials(Discrimination::Test);
-        let block0 = blockchain_configuration(initial);
+        let voters = snapshot.to_full_snapshot_info();
 
-        let rewards =
-            calc_voter_rewards(VoteCount::new(), 0, &block0, snapshot, Rewards::ONE).unwrap();
+        let rewards = calc_voter_rewards(VoteCount::new(), 0, voters, Rewards::ONE).unwrap();
         assert_eq!(rewards.values().sum::<Rewards>(), Rewards::ONE);
         for (addr, reward) in rewards {
             assert_eq!(
                 reward,
                 addr.parse::<Rewards>().unwrap() / Rewards::from(total_stake)
             );
+        }
+    }
+
+    #[test]
+    fn test_rewards_cap() {
+        let mut raw_snapshot = Vec::new();
+
+        for i in 1..10u64 {
+            let voting_pub_key = Identifier::from_hex(&hex::encode([i as u8; 32])).unwrap();
+            let stake_public_key = i.to_string();
+            let reward_address = i.to_string();
+            let delegations = Delegations::New(vec![(voting_pub_key.clone(), 1)]);
+            raw_snapshot.push(VotingRegistration {
+                stake_public_key,
+                voting_power: i.into(),
+                reward_address,
+                delegations,
+                voting_purpose: 0,
+            });
+        }
+
+        let snapshot = Snapshot::from_raw_snapshot(
+            raw_snapshot.into(),
+            0.into(),
+            Fraction::new(1u64, 9u64),
+            &|_vk: &Identifier| String::new(),
+        )
+        .unwrap();
+
+        let voters = snapshot.to_full_snapshot_info();
+
+        let rewards = calc_voter_rewards(VoteCount::new(), 0, voters, Rewards::ONE).unwrap();
+        assert_are_close(rewards.values().sum::<Rewards>(), Rewards::ONE);
+        for (_, reward) in rewards {
+            assert_eq!(reward, Rewards::ONE / Rewards::from(9));
         }
     }
 }

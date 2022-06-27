@@ -20,7 +20,7 @@ pub struct SnapshotCmd {
     snapshot: PathBuf,
     /// Registrations voting power threshold for eligibility
     #[structopt(short, long)]
-    threshold: Value,
+    min_stake_threshold: Value,
 
     /// Voter group to assign direct voters to.
     /// If empty, defaults to "voter"
@@ -59,7 +59,7 @@ impl SnapshotCmd {
         let assigner = RepsVotersAssigner::new(direct_voter, representative, self.reps_db_api_url)?;
         let initials = Snapshot::from_raw_snapshot(
             raw_snapshot,
-            self.threshold,
+            self.min_stake_threshold,
             self.voting_power_cap,
             &assigner,
         )?

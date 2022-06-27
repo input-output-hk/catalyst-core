@@ -7,7 +7,7 @@ use voting_group::VotingGroupAssigner;
 
 use fraction::Fraction;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::{borrow::Borrow, collections::BTreeMap, iter::Iterator, num::NonZeroU64};
 use thiserror::Error;
 use voting_hir::VoterHIR;
@@ -32,23 +32,27 @@ pub enum Error {
 }
 
 /// Contribution to a voting key for some registration
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct KeyContribution {
     pub reward_address: MainnetRewardAddress,
     pub value: u64,
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct VoterEntry {
-    contributions: Vec<KeyContribution>,
-    hir: VoterHIR,
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct SnapshotInfo {
+    /// The values in the contributions are the original values in the registration transactions and
+    /// thus retain the original proportions.
+    /// However, it's possible that the sum of those values is greater than the voting power assigned in the
+    /// VoterHIR, due to voting power caps or additional transformations.
+    pub contributions: Vec<KeyContribution>,
+    pub hir: VoterHIR,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Snapshot {
     // a raw public key is preferred so that we don't have to worry about discrimination when deserializing from
     // a CIP-36 compatible encoding
-    inner: BTreeMap<Identifier, VoterEntry>,
+    inner: BTreeMap<Identifier, SnapshotInfo>,
     stake_threshold: Value,
 }
 
@@ -114,7 +118,7 @@ impl Snapshot {
             });
         let entries = raw_contribs
             .into_iter()
-            .map(|(k, contributions)| VoterEntry {
+            .map(|(k, contributions)| SnapshotInfo {
                 hir: VoterHIR {
                     voting_group: voting_group_assigner.assign(&k),
                     voting_key: k,
@@ -123,6 +127,7 @@ impl Snapshot {
                 contributions,
             })
             .collect();
+        dbg!(&entries);
         Ok(Self {
             inner: Self::apply_voting_power_cap(entries, cap)?
                 .into_iter()
@@ -133,9 +138,9 @@ impl Snapshot {
     }
 
     fn apply_voting_power_cap(
-        voters: Vec<VoterEntry>,
+        voters: Vec<SnapshotInfo>,
         cap: Fraction,
-    ) -> Result<Vec<VoterEntry>, Error> {
+    ) -> Result<Vec<SnapshotInfo>, Error> {
         Ok(influence_cap::cap_voting_influence(voters, cap)?
             .into_iter()
             .collect())
@@ -150,6 +155,10 @@ impl Snapshot {
             .values()
             .map(|entry| entry.hir.clone())
             .collect::<Vec<_>>()
+    }
+
+    pub fn to_full_snapshot_info(&self) -> Vec<SnapshotInfo> {
+        self.inner.values().cloned().collect()
     }
 
     pub fn voting_keys(&self) -> impl Iterator<Item = &Identifier> {

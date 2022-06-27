@@ -1,13 +1,9 @@
 use catalyst_toolbox::rewards::voters::{calc_voter_rewards, Rewards, VoteCount};
-use catalyst_toolbox::snapshot::{
-    registration::MainnetRewardAddress, voting_group::VotingGroupAssigner, Snapshot,
-};
+use catalyst_toolbox::snapshot::{registration::MainnetRewardAddress, SnapshotInfo};
 use catalyst_toolbox::utils::assert_are_close;
 
 use color_eyre::Report;
-use fraction::Fraction;
 use jcli_lib::jcli_lib::block::Common;
-use jormungandr_lib::{crypto::account::Identifier, interfaces::Block0Configuration};
 use structopt::StructOpt;
 
 use std::collections::BTreeMap;
@@ -22,19 +18,9 @@ pub struct VotersRewards {
     #[structopt(long)]
     total_rewards: u64,
 
-    /// Path to raw snapshot
+    /// Path to a json encoded list of `SnapshotInfo`
     #[structopt(long)]
-    snapshot_path: PathBuf,
-
-    /// Stake threshold to be able to participate in a Catalyst sidechain
-    /// Registrations with less than the threshold associated to the stake address
-    /// will be ignored
-    #[structopt(long)]
-    registration_threshold: u64,
-
-    /// Voting power cap for each account
-    #[structopt(short, long)]
-    voting_power_cap: Fraction,
+    snapshot_info_path: PathBuf,
 
     #[structopt(long)]
     votes_count_path: PathBuf,
@@ -66,30 +52,22 @@ impl VotersRewards {
         let VotersRewards {
             common,
             total_rewards,
-            snapshot_path,
-            registration_threshold,
+            snapshot_info_path,
             votes_count_path,
             vote_threshold,
-            voting_power_cap,
         } = self;
-        let block = common.input.load_block()?;
-        let block0 = Block0Configuration::from_block(&block)?;
 
         let vote_count: VoteCount = serde_json::from_reader(jcli_lib::utils::io::open_file_read(
             &Some(votes_count_path),
         )?)?;
 
-        let snapshot = Snapshot::from_raw_snapshot(
-            serde_json::from_reader(jcli_lib::utils::io::open_file_read(&Some(snapshot_path))?)?,
-            registration_threshold.into(),
-            voting_power_cap,
-            &DummyAssigner,
+        let snapshot: Vec<SnapshotInfo> = serde_json::from_reader(
+            jcli_lib::utils::io::open_file_read(&Some(snapshot_info_path))?,
         )?;
 
         let results = calc_voter_rewards(
             vote_count,
             vote_threshold,
-            &block0,
             snapshot,
             Rewards::from(total_rewards),
         )?;
@@ -99,12 +77,5 @@ impl VotersRewards {
 
         write_rewards_results(common, &results)?;
         Ok(())
-    }
-}
-
-struct DummyAssigner;
-impl VotingGroupAssigner for DummyAssigner {
-    fn assign(&self, _vk: &Identifier) -> String {
-        unimplemented!()
     }
 }

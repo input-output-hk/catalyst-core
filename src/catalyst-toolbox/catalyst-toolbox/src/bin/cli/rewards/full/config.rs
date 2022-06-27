@@ -22,13 +22,23 @@ pub(super) struct Inputs {
     pub(super) proposal_bonus_output: Option<PathBuf>,
     pub(super) approved_proposals_path: PathBuf,
     pub(super) proposer_script_path: PathBuf,
+    pub(super) csv_merger_script_path: PathBuf,
     pub(super) active_voteplans: PathBuf,
     pub(super) challenges: PathBuf,
     pub(super) proposals_path: PathBuf,
 }
 
+/// A set of files required to calculate proposer rewards. There is one set per proposal, which are
+/// then later merged with csv_merger.py
+pub(super) struct ProposalFiles {
+    
+}
+
+
+
 #[derive(Debug, Deserialize)]
 pub(super) struct Outputs {
+    pub(super) voter_rewards_output: PathBuf,
     pub(super) veterans_rewards_output: PathBuf,
     pub(super) ca_rewards_output: PathBuf,
     pub(super) proposer_rewards_output: PathBuf,

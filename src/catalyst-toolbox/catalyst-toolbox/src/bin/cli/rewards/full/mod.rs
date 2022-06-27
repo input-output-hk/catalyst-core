@@ -22,12 +22,14 @@ pub(super) fn full_rewards(path: &Path) -> Result<()> {
                 proposal_bonus_output,
                 approved_proposals_path,
                 proposer_script_path,
+                csv_merger_script_path,
                 active_voteplans,
                 challenges,
                 proposals_path,
             },
         outputs:
             Outputs {
+                voter_rewards_output,
                 veterans_rewards_output,
                 ca_rewards_output,
                 proposer_rewards_output,
@@ -55,8 +57,9 @@ pub(super) fn full_rewards(path: &Path) -> Result<()> {
     info!("calculating voter rewards");
     super::voters::voter_rewards(
         &block_file,
-        vote_count_path,
-        snapshot_path,
+        &voter_rewards_output,
+        &vote_count_path,
+        &snapshot_path,
         registration_threshold,
         vote_threshold,
         total_rewards,

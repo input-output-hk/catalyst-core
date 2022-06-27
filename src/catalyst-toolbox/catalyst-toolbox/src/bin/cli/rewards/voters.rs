@@ -71,11 +71,16 @@ impl VotersRewards {
 
         voter_rewards(
             common
-                .output_file
+                .input
+                .input_file
                 .as_deref()
                 .ok_or(eyre!("missing block file"))?,
-            votes_count_path,
-            snapshot_path,
+            common
+                .output_file
+                .as_deref()
+                .ok_or(eyre!("missing output file"))?,
+            &votes_count_path,
+            &snapshot_path,
             registration_threshold,
             vote_threshold,
             total_rewards,
@@ -85,8 +90,9 @@ impl VotersRewards {
 
 pub fn voter_rewards(
     block_file: &Path,
-    votes_count_path: PathBuf,
-    snapshot_path: PathBuf,
+    output: &Path,
+    votes_count_path: &Path,
+    snapshot_path: &Path,
     registration_threshold: u64,
     vote_threshold: u64,
     total_rewards: u64,
@@ -113,6 +119,6 @@ pub fn voter_rewards(
     let actual_rewards = results.values().sum::<Rewards>();
     assert_are_close(actual_rewards, Rewards::from(total_rewards));
 
-    write_rewards_results(&Some(block_file.to_path_buf()), &results)?;
+    write_rewards_results(&Some(output.to_path_buf()), &results)?;
     Ok(())
 }

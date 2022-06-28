@@ -10,3 +10,6 @@ pub mod db;
 pub mod server;
 pub mod utils;
 pub mod v0;
+
+#[cfg(test)]
+mod testing;

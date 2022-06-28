@@ -438,17 +438,48 @@ impl From<ProposalChallengeInfo> for SerdeProposalChallengeInfo {
 pub mod test {
     use super::*;
     use crate::db::{
-        models::{groups::Group, vote_options::VoteOptions},
+        models::groups::Group,
+        models::{
+            challenges::{
+                test::{get_test_challenge_with_fund_id, populate_db_with_challenge_conn},
+                Challenge,
+            },
+            vote_options::VoteOptions,
+        },
         schema::{
             groups, proposal_community_choice_challenge, proposal_simple_challenge, proposals,
             proposals_voteplans, voteplans,
         },
-        DbConnectionPool,
+        DbConnection, DbConnectionPool,
     };
-    use diesel::{ExpressionMethods, RunQueryDsl};
+    use diesel::{
+        r2d2::{ConnectionManager, PooledConnection},
+        ExpressionMethods, RunQueryDsl,
+    };
     use time::OffsetDateTime;
 
-    pub fn get_test_proposal(group_id: String) -> FullProposalInfo {
+    pub fn add_test_proposal_and_challenge(
+        key: i32,
+        conn: &PooledConnection<ConnectionManager<DbConnection>>,
+    ) -> (FullProposalInfo, Challenge) {
+        let mut proposal = get_test_proposal(format!("{key}"));
+        proposal.proposal.internal_id = key;
+        proposal.proposal.proposal_id = key.to_string();
+        proposal.proposal.proposal_title = format!("proposal number {key}");
+        proposal.voteplan.chain_voteplan_id = format!("voteplan_id_{key}");
+
+        let mut challenge = get_test_challenge_with_fund_id(proposal.proposal.fund_id);
+        challenge.title = format!("challenge {key}");
+        challenge.description = format!("challenge description {key}");
+        challenge.id = key;
+
+        populate_db_with_proposal_conn(&proposal, conn);
+        populate_db_with_challenge_conn(&challenge, conn);
+
+        (proposal, challenge)
+    }
+
+    pub fn get_test_proposal(group_id: impl Into<String>) -> FullProposalInfo {
         const CHALLENGE_ID: i32 = 9001;
 
         let internal_id = 1;
@@ -500,12 +531,19 @@ pub mod test {
                 chain_proposal_index: 0,
                 chain_voteplan_id: "voteplain_id".to_string(),
             },
-            group_id,
+            group_id: group_id.into(),
         }
     }
 
     pub fn populate_db_with_proposal(full_proposal: &FullProposalInfo, pool: &DbConnectionPool) {
         let connection = pool.get().unwrap();
+        populate_db_with_proposal_conn(full_proposal, &connection);
+    }
+
+    pub fn populate_db_with_proposal_conn(
+        full_proposal: &FullProposalInfo,
+        connection: &PooledConnection<ConnectionManager<DbConnection>>,
+    ) {
         let proposal = &full_proposal.proposal;
         let proposal_id = proposal.proposal_id.clone();
         // insert the proposal information
@@ -531,7 +569,7 @@ pub mod test {
 
         diesel::insert_into(proposals::table)
             .values(values)
-            .execute(&connection)
+            .execute(connection)
             .unwrap();
 
         let token_identifier = format!("{}-token", full_proposal.group_id);
@@ -550,7 +588,7 @@ pub mod test {
 
         diesel::insert_into(voteplans::table)
             .values(voteplan_values)
-            .execute(&connection)
+            .execute(connection)
             .unwrap();
 
         diesel::insert_into(groups::table)
@@ -562,7 +600,7 @@ pub mod test {
                 }
                 .values(),
             )
-            .execute(&connection)
+            .execute(connection)
             .unwrap();
 
         let proposal_voteplan_values = (
@@ -575,7 +613,7 @@ pub mod test {
 
         diesel::insert_into(proposals_voteplans::table)
             .values(proposal_voteplan_values)
-            .execute(&connection)
+            .execute(connection)
             .unwrap();
 
         match &full_proposal.challenge_info {
@@ -586,7 +624,7 @@ pub mod test {
                 );
                 diesel::insert_into(proposal_simple_challenge::table)
                     .values(simple_values)
-                    .execute(&connection)
+                    .execute(connection)
                     .unwrap();
             }
             ProposalChallengeInfo::CommunityChoice(data) => {
@@ -604,7 +642,7 @@ pub mod test {
                 );
                 diesel::insert_into(proposal_community_choice_challenge::table)
                     .values(community_values)
-                    .execute(&connection)
+                    .execute(connection)
                     .unwrap();
             }
         };

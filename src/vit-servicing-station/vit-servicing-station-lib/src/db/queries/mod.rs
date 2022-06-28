@@ -4,4 +4,5 @@ pub mod community_advisors_reviews;
 pub mod funds;
 pub mod goals;
 pub mod proposals;
+pub mod search;
 pub mod voteplans;

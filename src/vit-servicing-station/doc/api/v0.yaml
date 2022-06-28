@@ -221,6 +221,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AdvisorReviews"
+  /api/v0/search:
+    post:
+      summary: Search various resources with various constraints
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchQuery"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                 oneOf:
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/Challenge"
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/ProposalWithChallengeInfo"
+        "400":
+          description: Invalid combination of table/column (e.g. using funds column on challenges table)
+
 
   /api/v0/snapshot/{tag}/{voting_key}:
     get:
@@ -738,6 +762,46 @@ components:
           items:
               type: integer
               format: i64
+    SearchQuery:
+      properties:
+        table:
+          $ref: "#/components/schemas/SearchConstraint"
+        filter:
+          type: array
+          items: 
+            $ref: "#/components/schemas/SearchConstraint"
+        order-by:
+          type: array
+          items: 
+            $ref: "#/components/schemas/SearchOrderBy"
+      required: [table]
+
+    
+    SearchConstraint:
+      properties:
+        column:
+          $ref: "#/components/schemas/SearchColumn"
+        search: 
+          type: string
+          description: Text which must be present in the given column (case insensitive)
+      required: [column, search]
+
+    SearchOrderBy:
+      properties:
+        column:
+          $ref: "#/components/schemas/SearchColumn"
+        descending: 
+          type: boolean
+          default: false
+      required: [column]
+
+    SearchTable:
+      type: string
+      enum: [challenges, proposals]
+    
+    SearchColumn:
+      type: string
+      enum: [title, type, desc, author, funds]
 
     VotingPowers:
       type: array

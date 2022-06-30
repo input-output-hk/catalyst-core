@@ -3,6 +3,7 @@ mod proposers;
 mod veterans;
 mod voters;
 
+use catalyst_toolbox::http::default_http_client;
 use color_eyre::Report;
 use structopt::StructOpt;
 
@@ -28,7 +29,7 @@ impl Rewards {
             Rewards::Voters(cmd) => cmd.exec(),
             Rewards::CommunityAdvisors(cmd) => cmd.exec(),
             Rewards::Veterans(cmd) => cmd.exec(),
-            Rewards::Proposers(proposers) => proposers::rewards(&proposers),
+            Rewards::Proposers(proposers) => proposers::rewards(&proposers, &default_http_client(None)),
         }
     }
 }

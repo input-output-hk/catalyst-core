@@ -100,7 +100,7 @@ impl Import {
             stages_filters,
         } = self;
 
-        let client = default_http_client(api_token);
+        let client = default_http_client(Some(api_token));
 
         let tags: CustomFieldTags = if let Some(tags_path) = tags {
             read_json_from_file(tags_path)?

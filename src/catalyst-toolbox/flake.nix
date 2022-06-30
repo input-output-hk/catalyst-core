@@ -62,7 +62,7 @@
           pkgs.buildEnv {
             name = _rust.name;
             inherit (_rust) meta;
-            buildInputs = [pkgs.makeWrapper];
+            buildInputs = [pkgs.makeWrapper pkgs.openssl];
             paths = [_rust];
             pathsToLink = ["/" "/bin"];
             # XXX: This is needed because cargo and clippy commands need to

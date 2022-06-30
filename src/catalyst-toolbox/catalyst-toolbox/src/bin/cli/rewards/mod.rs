@@ -29,7 +29,9 @@ impl Rewards {
             Rewards::Voters(cmd) => cmd.exec(),
             Rewards::CommunityAdvisors(cmd) => cmd.exec(),
             Rewards::Veterans(cmd) => cmd.exec(),
-            Rewards::Proposers(proposers) => proposers::rewards(&proposers, &default_http_client(None)),
+            Rewards::Proposers(proposers) => {
+                proposers::rewards(&proposers, &default_http_client(None))
+            }
         }
     }
 }

@@ -505,7 +505,7 @@ dependencies = [
  "symmetric-cipher",
  "test-strategy 0.2.0",
  "thiserror",
- "thor 0.1.0 (git+https://github.com/input-output-hk/jormungandr.git?branch=master)",
+ "thor",
  "time 0.3.9",
  "tokio",
  "url",
@@ -2155,6 +2155,7 @@ dependencies = [
 [[package]]
 name = "hersir"
 version = "0.1.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#cb78387fdbee2c5fd87a4afb697f24a6acb0abad"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2179,7 +2180,7 @@ dependencies = [
  "serde_yaml",
  "structopt",
  "thiserror",
- "thor 0.1.0",
+ "thor",
  "yaml-rust",
 ]
 
@@ -2508,6 +2509,7 @@ checksum = "1aab8fc367588b89dcee83ab0fd66b72b50b72fa1904d7095045ace2b0c81c35"
 [[package]]
 name = "jcli"
 version = "0.13.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#cb78387fdbee2c5fd87a4afb697f24a6acb0abad"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2550,6 +2552,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-automation"
 version = "0.13.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#cb78387fdbee2c5fd87a4afb697f24a6acb0abad"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -2613,6 +2616,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-integration-tests"
 version = "0.13.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#cb78387fdbee2c5fd87a4afb697f24a6acb0abad"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -2653,7 +2657,7 @@ dependencies = [
  "serde_yaml",
  "tempfile",
  "thiserror",
- "thor 0.1.0",
+ "thor",
  "tokio",
  "tonic",
  "tracing",
@@ -2664,6 +2668,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#cb78387fdbee2c5fd87a4afb697f24a6acb0abad"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2875,6 +2880,7 @@ dependencies = [
 [[package]]
 name = "loki"
 version = "0.1.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#cb78387fdbee2c5fd87a4afb697f24a6acb0abad"
 dependencies = [
  "chain-addr",
  "chain-core",
@@ -2891,7 +2897,7 @@ dependencies = [
  "serde_yaml",
  "structopt",
  "thiserror",
- "thor 0.1.0",
+ "thor",
  "tokio",
  "warp",
 ]
@@ -3017,6 +3023,7 @@ dependencies = [
 [[package]]
 name = "mjolnir"
 version = "0.1.0"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#cb78387fdbee2c5fd87a4afb697f24a6acb0abad"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -3035,7 +3042,7 @@ dependencies = [
  "rand_core 0.6.3",
  "structopt",
  "thiserror",
- "thor 0.1.0",
+ "thor",
  "tokio",
  "versionisator",
 ]
@@ -3393,9 +3400,9 @@ dependencies = [
 
 [[package]]
 name = "os_info"
-version = "3.2.0"
+version = "3.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "023df84d545ef479cf67fd2f4459a613585c9db4852c2fad12ab70587859d340"
+checksum = "0eca3ecae1481e12c3d9379ec541b238a16f0b75c9a409942daa8ec20dbfdb62"
 dependencies = [
  "log",
  "winapi",
@@ -4537,9 +4544,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.79"
+version = "1.0.82"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e8d9fa5c3b304765ce1fd9c4c8a3de2c8db365a5b91be52f186efc675681d95"
+checksum = "82c2c1fdcd807d1098552c5b9a36e425e42e9fbd7c6a37a8425f390f781f7fa7"
 dependencies = [
  "itoa 1.0.1",
  "ryu",
@@ -5092,37 +5099,7 @@ dependencies = [
 [[package]]
 name = "thor"
 version = "0.1.0"
-dependencies = [
- "assert_fs",
- "bech32 0.8.1",
- "bincode",
- "chain-addr",
- "chain-core",
- "chain-crypto",
- "chain-impl-mockchain",
- "chain-vote",
- "cocoon",
- "custom_debug",
- "dirs",
- "hex",
- "jcli",
- "jormungandr-automation",
- "jormungandr-lib",
- "jortestkit",
- "rand 0.8.5",
- "rand_chacha 0.3.1",
- "rand_core 0.6.3",
- "serde",
- "serde_yaml",
- "structopt",
- "thiserror",
- "time 0.3.9",
-]
-
-[[package]]
-name = "thor"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a5ce1309f5465706a9d1ec3c87e5951ad1844c31"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#cb78387fdbee2c5fd87a4afb697f24a6acb0abad"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",

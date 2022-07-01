@@ -4,7 +4,7 @@ use std::{
     path::Path,
 };
 
-use catalyst_toolbox::http::HttpClient;
+use crate::http::HttpClient;
 use chain_impl_mockchain::value::Value;
 use color_eyre::{
     eyre::{bail, eyre},
@@ -21,12 +21,12 @@ use log::{info, warn};
 use regex::Regex;
 use vit_servicing_station_lib::db::models::{challenges::Challenge, proposals::Proposal};
 
-pub use types::ProposerRewards;
+pub use types::{OutputFormat, ProposerRewards};
 use util::*;
 
 use self::{
     output::build_path_for_challenge,
-    types::{Calculation, NotFundedReason, OutputFormat},
+    types::{Calculation, NotFundedReason},
 };
 
 mod output;

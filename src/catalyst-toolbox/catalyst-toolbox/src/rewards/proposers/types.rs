@@ -39,25 +39,40 @@ pub enum NotFundedReason {
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub struct ProposerRewards {
+    #[structopt(long = "output-file")]
     pub output: PathBuf,
+
+    #[structopt(long = "block0-path")]
     pub block0: PathBuf,
 
-    pub proposals: Option<PathBuf>,
-    pub excluded_proposals: Option<PathBuf>,
-    pub active_voteplans: Option<PathBuf>,
-    pub challenges: Option<PathBuf>,
-    pub committee_keys: Option<PathBuf>,
-
     #[structopt(default_value = "0.01")]
+    #[structopt(long)]
     pub total_stake_threshold: f64,
 
     #[structopt(default_value = "1.15")]
+    #[structopt(long)]
     pub approval_threshold: f64,
-
+    
+    #[structopt(default_value = "csv")]
+    #[structopt(long)]
     pub output_format: OutputFormat,
+
+
+    #[structopt(long = "proposals-path")]
+    pub proposals: Option<PathBuf>,
+    #[structopt(long = "excluded-proposals-path")]
+    pub excluded_proposals: Option<PathBuf>,
+    #[structopt(long = "active-voteplan-path")]
+    pub active_voteplans: Option<PathBuf>,
+    #[structopt(long = "challenges-path")]
+    pub challenges: Option<PathBuf>,
+
 
     #[structopt(default_value = "https://servicing-station.vit.iohk.io")]
     pub vit_station_url: String,
+
+    #[structopt(long = "committee-keys-path")]
+    pub committee_keys: Option<PathBuf>,
 }
 
 #[derive(Debug, Serialize)]

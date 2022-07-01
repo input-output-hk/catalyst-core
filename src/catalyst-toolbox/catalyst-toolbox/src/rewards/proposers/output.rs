@@ -43,7 +43,7 @@ mod tests {
     fn test_build_path() {
         let path = "/some/path.ext";
         let challenge = "challenge";
-        let built_path = build_path_for_challenge(path.into(), challenge_name);
+        let built_path = build_path_for_challenge(Path::new(path), challenge);
         assert_eq!(built_path, PathBuf::from("/some/path_challenge.ext"));
     }
 }

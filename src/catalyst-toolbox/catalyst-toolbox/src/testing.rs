@@ -11,18 +11,17 @@ use thiserror::Error;
 /// NOTE: by default struct uses python3 as script executable
 #[derive(Debug)]
 pub struct ProposerRewardsCommand {
-    python_exec: PathBuf,
-    output_file: PathBuf,
-    block0_path: PathBuf,
-    total_stake_threshold: f64,
-    approval_threshold: f64,
-    output_format: String,
-    committee_keys_path: Option<String>,
-    proposals_path: Option<String>,
-    excluded_proposals_path: Option<String>,
-    active_voteplan_path: Option<String>,
-    challenges_path: Option<String>,
-    vit_station_url: Option<String>,
+    pub output_file: PathBuf,
+    pub block0_path: PathBuf,
+    pub total_stake_threshold: f64,
+    pub approval_threshold: f64,
+    pub output_format: OutputForma,
+    pub committee_keys_path: Option<PathBuf>,
+    pub proposals_path: Option<PathBuf>,
+    pub excluded_proposals_path: Option<PathBuf>,
+    pub active_voteplan_path: Option<PathBuf>,
+    pub challenges_path: Option<PathBuf>,
+    pub vit_station_url: Option<String>,
 }
 
 #[derive(Debug, Error)]
@@ -34,7 +33,6 @@ pub enum Error {
 impl Default for ProposerRewardsCommand {
     fn default() -> Self {
         Self {
-            python_exec: PathBuf::from_str("python3").unwrap(),
             output_file: PathBuf::from_str("./output").unwrap(),
             block0_path: PathBuf::from_str("./block0.bin").unwrap(),
             total_stake_threshold: 0.01,

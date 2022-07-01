@@ -1,9 +1,8 @@
 mod community_advisors;
-mod proposers;
 mod veterans;
 mod voters;
 
-use catalyst_toolbox::http::default_http_client;
+use catalyst_toolbox::{http::default_http_client, rewards::proposers};
 use color_eyre::Report;
 use structopt::StructOpt;
 

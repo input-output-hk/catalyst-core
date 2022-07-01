@@ -1,4 +1,4 @@
-use catalyst_toolbox::http::HttpClient;
+use crate::http::HttpClient;
 use color_eyre::eyre::Result;
 use std::{fs::File, path::Path};
 

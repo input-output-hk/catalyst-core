@@ -33,6 +33,56 @@ mod output;
 mod types;
 mod util;
 
+pub struct ProposerRewardsInputs {
+    pub block0_config: Block0Configuration,
+    pub proposals: HashMap<Hash, Proposal>,
+    pub voteplans: HashMap<Hash, VoteProposalStatus>,
+    pub challenges: HashMap<i32, Challenge>,
+    pub excluded_proposals: HashSet<String>,
+    pub committee_keys: Vec<Address>,
+    pub total_stake_threshold: f64,
+    pub approval_threshold: f64,
+}
+
+pub fn proposer_rewards(
+    ProposerRewardsInputs {
+        block0_config,
+        proposals,
+        voteplans,
+        challenges,
+        excluded_proposals,
+        committee_keys,
+        total_stake_threshold,
+        approval_threshold,
+    }: ProposerRewardsInputs,
+) -> Result<Vec<(Challenge, Vec<Calculation>)>> {
+    sanity_check_data(&proposals, &voteplans)?;
+
+    let proposals = filter_excluded_proposals(&proposals, &excluded_proposals);
+
+    let Value(total_stake) = calculate_total_stake_from_block0(&block0_config, &committee_keys);
+    let total_stake_approval_threshold = total_stake_threshold + total_stake as f64;
+
+    let mut result = Vec::with_capacity(challenges.len());
+
+    for (id, challenge) in challenges {
+        let (challenge_proposals, challenge_voteplan_proposals) =
+            filter_data_by_challenge(id, &proposals, &voteplans);
+
+        let calculations = calculate_results(
+            &challenge_proposals,
+            &challenge_voteplan_proposals,
+            challenge.rewards_total,
+            approval_threshold,
+            total_stake_approval_threshold,
+        )?;
+
+        result.push((challenge, calculations));
+    }
+
+    Ok(result)
+}
+
 pub fn rewards(
     ProposerRewards {
         output,
@@ -57,45 +107,34 @@ pub fn rewards(
         challenges.as_deref(),
     )?;
 
-    sanity_check_data(&proposals, &voteplans)?;
+    let block0_config = serde_yaml::from_reader(File::open(block0)?)?;
 
     let excluded_proposals = match excluded_proposals {
         Some(path) => serde_json::from_reader(File::open(path)?)?,
-        None => HashSet::<String>::new(),
+        None => HashSet::new(),
     };
-
-    let proposals = filter_excluded_proposals(&proposals, &excluded_proposals);
-
-    let block0_config = serde_yaml::from_reader(File::open(block0)?)?;
     let committee_keys = match committee_keys {
         Some(path) => serde_json::from_reader(File::open(path)?)?,
         None => vec![],
     };
 
-    let Value(total_stake) = calculate_total_stake_from_block0(&block0_config, &committee_keys);
-    let total_stake_approval_threshold = *total_stake_threshold + total_stake as f64;
+    let results = proposer_rewards(ProposerRewardsInputs {
+        block0_config,
+        proposals,
+        voteplans,
+        challenges,
+        excluded_proposals,
+        committee_keys,
+        total_stake_threshold: *total_stake_threshold,
+        approval_threshold: *approval_threshold,
+    })?;
 
-    let re = Regex::new(r#"(?u)[^-\w.]"#)?;
-
-    for (id, challenge) in challenges {
-        let (challenge_proposals, challenge_voteplan_proposals) =
-            filter_data_by_challenge(id, &proposals, &voteplans);
-
-        let results = calculate_results(
-            &challenge_proposals,
-            &challenge_voteplan_proposals,
-            challenge.rewards_total,
-            *approval_threshold,
-            total_stake_approval_threshold,
-        )?;
-
-        let challenge_name = challenge.title.replace(' ', "_").replace(':', "_");
-        let challenge_name = re.replace(&challenge_name, "");
-        let output_path = build_path_for_challenge(output, &challenge_name);
+    for (challenge, calculations) in results {
+        let output_path = build_path_for_challenge(&output, &challenge.title);
 
         match output_format {
-            OutputFormat::Json => output::write_json(&output_path, &results)?,
-            OutputFormat::Csv => output::write_csv(&output_path, &results)?,
+            OutputFormat::Json => output::write_json(&output_path, &calculations)?,
+            OutputFormat::Csv => output::write_csv(&output_path, &calculations)?,
         };
     }
 

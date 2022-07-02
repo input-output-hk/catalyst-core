@@ -109,3 +109,4 @@ impl FromStr for OutputFormat {
         }
     }
 }
+

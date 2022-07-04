@@ -1,10 +1,5 @@
-use std::{
-    collections::{HashMap, HashSet},
-    fs::File,
-    path::Path,
-};
+use std::collections::{HashMap, HashSet};
 
-use crate::http::HttpClient;
 use chain_impl_mockchain::value::Value;
 use color_eyre::{
     eyre::{bail, eyre},
@@ -13,25 +8,15 @@ use color_eyre::{
 use itertools::Itertools;
 use jormungandr_lib::{
     crypto::hash::Hash,
-    interfaces::{
-        Address, Block0Configuration, Initial, Tally, VotePlanStatus, VoteProposalStatus,
-    },
+    interfaces::{Address, Block0Configuration, Initial, Tally, VoteProposalStatus},
 };
-use log::{info, warn};
-use regex::Regex;
 use vit_servicing_station_lib::db::models::{challenges::Challenge, proposals::Proposal};
 
-pub use types::{OutputFormat, ProposerRewards};
-use util::*;
+pub use types::{Calculation, OutputFormat, ProposerRewards};
 
-use self::{
-    output::build_path_for_challenge,
-    types::{Calculation, NotFundedReason},
-};
+use self::types::NotFundedReason;
 
-mod output;
 mod types;
-mod util;
 
 pub struct ProposerRewardsInputs {
     pub block0_config: Block0Configuration,
@@ -83,65 +68,7 @@ pub fn proposer_rewards(
     Ok(result)
 }
 
-pub fn rewards(
-    ProposerRewards {
-        output,
-        block0,
-        proposals,
-        excluded_proposals,
-        active_voteplans,
-        challenges,
-        committee_keys,
-        total_stake_threshold,
-        approval_threshold,
-        output_format,
-        vit_station_url,
-    }: &ProposerRewards,
-    http: &impl HttpClient,
-) -> Result<()> {
-    let (proposals, voteplans, challenges) = get_data(
-        http,
-        vit_station_url,
-        proposals.as_deref(),
-        active_voteplans.as_deref(),
-        challenges.as_deref(),
-    )?;
-
-    let block0_config = serde_yaml::from_reader(File::open(block0)?)?;
-
-    let excluded_proposals = match excluded_proposals {
-        Some(path) => serde_json::from_reader(File::open(path)?)?,
-        None => HashSet::new(),
-    };
-    let committee_keys = match committee_keys {
-        Some(path) => serde_json::from_reader(File::open(path)?)?,
-        None => vec![],
-    };
-
-    let results = proposer_rewards(ProposerRewardsInputs {
-        block0_config,
-        proposals,
-        voteplans,
-        challenges,
-        excluded_proposals,
-        committee_keys,
-        total_stake_threshold: *total_stake_threshold,
-        approval_threshold: *approval_threshold,
-    })?;
-
-    for (challenge, calculations) in results {
-        let output_path = build_path_for_challenge(&output, &challenge.title);
-
-        match output_format {
-            OutputFormat::Json => output::write_json(&output_path, &calculations)?,
-            OutputFormat::Csv => output::write_csv(&output_path, &calculations)?,
-        };
-    }
-
-    Ok(())
-}
-
-fn calculate_results(
+pub fn calculate_results(
     proposals: &HashMap<Hash, Proposal>,
     voteplans: &HashMap<Hash, VoteProposalStatus>,
     fund: i64,
@@ -281,78 +208,6 @@ fn filter_data_by_challenge(
         .collect();
 
     (proposals, voteplans)
-}
-
-type VitSSData = (Vec<Proposal>, Vec<VotePlanStatus>, Vec<Challenge>);
-type CleanedVitSSData = (
-    HashMap<Hash, Proposal>,
-    HashMap<Hash, VoteProposalStatus>,
-    HashMap<i32, Challenge>,
-);
-
-fn get_data(
-    http: &impl HttpClient,
-    vit_station_url: &str,
-    proposals: Option<&Path>,
-    active_voteplans: Option<&Path>,
-    challenges: Option<&Path>,
-) -> Result<CleanedVitSSData> {
-    let data = match (proposals, active_voteplans, challenges) {
-        (Some(p), Some(vp), Some(c)) => {
-            info!("loading data from files");
-            get_data_from_files(p, vp, c)?
-        }
-        (None, None, None) => {
-            info!("loading data from network: {vit_station_url}");
-            get_data_from_network(http, vit_station_url)?
-        }
-        _else => {
-            warn!("warning: not all of --proposals, --active-voteplans and --challenges were set, falling back to network");
-            info!("loading data from network: {vit_station_url}");
-            get_data_from_network(http, vit_station_url)?
-        }
-    };
-
-    let (proposals, voteplans, challenges) = data;
-
-    let proposals_map: HashMap<_, _> = proposals
-        .into_iter()
-        .map(|prop| {
-            let id = String::from_utf8(prop.chain_proposal_id.clone()).unwrap();
-            let hash = Hash::from_hex(&id)?;
-            Ok((hash, prop))
-        })
-        .collect::<Result<_>>()?;
-
-    let voteplan_proposals = voteplans
-        .into_iter()
-        .flat_map(|plan| plan.proposals)
-        .map(|prop| (prop.proposal_id, prop))
-        .collect();
-
-    let challenge_map = challenges.into_iter().map(|c| (c.id, c)).collect();
-
-    Ok((proposals_map, voteplan_proposals, challenge_map))
-}
-
-fn get_data_from_network(http: &impl HttpClient, vit_station_url: &str) -> Result<VitSSData> {
-    let proposals = json_from_network(http, format!("{vit_station_url}/api/v0/proposals"))?;
-    let voteplans = json_from_network(http, format!("{vit_station_url}/api/v0/vote/active/plans"))?;
-    let challenges = json_from_network(http, format!("{vit_station_url}/api/v0/challenges"))?;
-
-    Ok((proposals, voteplans, challenges))
-}
-
-fn get_data_from_files(
-    proposals: &Path,
-    active_voteplans: &Path,
-    challenges: &Path,
-) -> Result<VitSSData> {
-    let proposals = json_from_file(proposals)?;
-    let voteplans = json_from_file(active_voteplans)?;
-    let challenges = json_from_file(challenges)?;
-
-    Ok((proposals, voteplans, challenges))
 }
 
 fn sanity_check_data(

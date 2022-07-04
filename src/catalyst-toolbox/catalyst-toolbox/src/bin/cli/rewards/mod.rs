@@ -1,8 +1,9 @@
 mod community_advisors;
+mod proposers;
 mod veterans;
 mod voters;
 
-use catalyst_toolbox::{http::default_http_client, rewards::proposers};
+use catalyst_toolbox::{http::default_http_client, rewards::proposers as proposers_lib};
 use color_eyre::Report;
 use structopt::StructOpt;
 
@@ -19,7 +20,7 @@ pub enum Rewards {
     Veterans(veterans::VeteransRewards),
 
     /// Calculate rewards for propsers
-    Proposers(proposers::ProposerRewards),
+    Proposers(proposers_lib::ProposerRewards),
 }
 
 impl Rewards {

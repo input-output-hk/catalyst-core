@@ -1,7 +1,7 @@
 pub mod community_advisors;
+pub mod proposers;
 pub mod veterans;
 pub mod voters;
-pub mod proposers;
 
 use rust_decimal::Decimal;
 pub type Funds = Decimal;

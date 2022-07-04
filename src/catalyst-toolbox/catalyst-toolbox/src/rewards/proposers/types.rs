@@ -52,11 +52,10 @@ pub struct ProposerRewards {
     #[structopt(default_value = "1.15")]
     #[structopt(long)]
     pub approval_threshold: f64,
-    
+
     #[structopt(default_value = "csv")]
     #[structopt(long)]
     pub output_format: OutputFormat,
-
 
     #[structopt(long = "proposals-path")]
     pub proposals: Option<PathBuf>,
@@ -66,7 +65,6 @@ pub struct ProposerRewards {
     pub active_voteplans: Option<PathBuf>,
     #[structopt(long = "challenges-path")]
     pub challenges: Option<PathBuf>,
-
 
     #[structopt(default_value = "https://servicing-station.vit.iohk.io")]
     pub vit_station_url: String,
@@ -109,4 +107,3 @@ impl FromStr for OutputFormat {
         }
     }
 }
-

@@ -17,6 +17,7 @@ pub use util::build_path_for_challenge;
 
 use self::types::NotFundedReason;
 
+pub mod io;
 mod types;
 mod util;
 

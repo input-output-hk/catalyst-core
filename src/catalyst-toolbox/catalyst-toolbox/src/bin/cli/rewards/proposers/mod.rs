@@ -1,24 +1,14 @@
-use std::{
-    borrow::Cow,
-    collections::HashSet,
-    fs::File,
-    io::BufWriter,
-    path::{Path, PathBuf},
-};
+use std::{collections::HashSet, fs::File};
 
 use catalyst_toolbox::{
     http::HttpClient,
     rewards::proposers::{
-        proposer_rewards, Calculation, OutputFormat, ProposerRewards, ProposerRewardsInputs, build_path_for_challenge,
+        build_path_for_challenge,
+        io::{load_data, write_csv, write_json},
+        proposer_rewards, OutputFormat, ProposerRewards, ProposerRewardsInputs,
     },
 };
 use color_eyre::eyre::Result;
-use once_cell::sync::Lazy;
-use regex::Regex;
-
-use self::util::load_data;
-
-mod util;
 
 pub fn rewards(
     ProposerRewards {
@@ -74,23 +64,6 @@ pub fn rewards(
             OutputFormat::Csv => write_csv(&output_path, &calculations)?,
         };
     }
-
-    Ok(())
-}
-
-pub fn write_json(path: &Path, results: &[Calculation]) -> Result<()> {
-    let writer = BufWriter::new(File::options().write(true).open(path)?);
-    serde_json::to_writer(writer, &results)?;
-
-    Ok(())
-}
-
-pub fn write_csv(path: &Path, results: &[Calculation]) -> Result<()> {
-    let mut writer = csv::Writer::from_path(path)?;
-    for record in results {
-        writer.serialize(record)?;
-    }
-    writer.flush()?;
 
     Ok(())
 }

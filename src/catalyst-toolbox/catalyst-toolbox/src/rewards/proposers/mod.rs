@@ -13,10 +13,12 @@ use jormungandr_lib::{
 use vit_servicing_station_lib::db::models::{challenges::Challenge, proposals::Proposal};
 
 pub use types::{Calculation, OutputFormat, ProposerRewards};
+pub use util::build_path_for_challenge;
 
 use self::types::NotFundedReason;
 
 mod types;
+mod util;
 
 pub struct ProposerRewardsInputs {
     pub block0_config: Block0Configuration,

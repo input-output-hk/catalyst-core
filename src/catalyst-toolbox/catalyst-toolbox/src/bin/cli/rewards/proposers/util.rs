@@ -80,6 +80,7 @@ pub fn json_from_network<T: for<'a> Deserialize<'a>>(
 ) -> Result<T> {
     http.get(url.as_ref())?.json()
 }
+
 fn get_data_from_files(
     proposals: &Path,
     active_voteplans: &Path,

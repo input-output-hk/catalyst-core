@@ -151,7 +151,7 @@ pub unsafe fn settings_fees(settings: *const Settings, linear_fee_out: *mut Line
     // In practice, it may be UB and I don't think it's worth the hassle, so we
     // just create a new one fully initialized and use ptr::write
 
-    let fees = settings.fees;
+    let fees = settings.fees.clone();
 
     let fees = LinearFee {
         constant: fees.constant,

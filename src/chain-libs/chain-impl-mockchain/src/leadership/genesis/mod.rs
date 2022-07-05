@@ -6,7 +6,6 @@ use crate::{
     date::{BlockDate, Epoch},
     header::{Header, HeaderDesc, Proof},
     leadership::{Error, ErrorKind, Verification},
-    ledger::Ledger,
     setting::ActiveSlotsCoeff,
     stake::{PercentStake, PoolsState, Stake, StakeDistribution},
 };
@@ -53,13 +52,19 @@ enum VrfError {
 }
 
 impl LeadershipData {
-    pub fn new(epoch: Epoch, ledger: &Ledger) -> Self {
+    pub fn new(
+        epoch: Epoch,
+        distribution: StakeDistribution,
+        nodes: PoolsState,
+        epoch_nonce: PraosNonce,
+        active_slots_coeff: ActiveSlotsCoeff,
+    ) -> Self {
         LeadershipData {
-            epoch_nonce: ledger.settings.consensus_nonce.clone(),
-            nodes: ledger.delegation.clone(),
-            distribution: ledger.get_stake_distribution(),
+            epoch_nonce,
+            nodes,
+            distribution,
             epoch,
-            active_slots_coeff: ledger.settings.active_slots_coeff,
+            active_slots_coeff,
         }
     }
 
@@ -273,7 +278,13 @@ mod tests {
     type Pools = HashMap<PoolId, (SecretKey<RistrettoGroup2HashDh>, u64, Stake)>;
 
     fn make_leadership_with_pools(ledger: &Ledger, pools: &Pools) -> LeadershipData {
-        let mut selection = LeadershipData::new(0, ledger);
+        let mut selection = LeadershipData::new(
+            0,
+            ledger.get_stake_distribution(),
+            ledger.delegation.clone(),
+            ledger.settings.consensus_nonce.clone(),
+            ledger.settings.active_slots_coeff,
+        );
 
         for (pool_id, (_, _, value)) in pools {
             update_stake_pool_total_value(&mut selection, pool_id, *value);
@@ -519,7 +530,13 @@ mod tests {
             .delegation()
             .register_stake_pool(stake_pool.info())
             .expect("cannot register stake pool");
-        let mut selection = LeadershipData::new(selection_epoch, &ledger);
+        let mut selection = LeadershipData::new(
+            selection_epoch,
+            ledger.get_stake_distribution(),
+            ledger.delegation.clone(),
+            ledger.settings.consensus_nonce,
+            ledger.settings.active_slots_coeff,
+        );
         update_stake_pool_total_value(
             &mut selection,
             &stake_pool.id(),
@@ -544,7 +561,13 @@ mod tests {
             .delegation()
             .register_stake_pool(stake_pool.info())
             .expect("cannot register stake pool");
-        let selection = LeadershipData::new(date.epoch, &ledger);
+        let selection = LeadershipData::new(
+            date.epoch,
+            ledger.get_stake_distribution(),
+            ledger.delegation.clone(),
+            ledger.settings.consensus_nonce,
+            ledger.settings.active_slots_coeff,
+        );
 
         assert!(selection
             .leader(&stake_pool.id(), stake_pool.vrf().private_key(), date)
@@ -564,7 +587,13 @@ mod tests {
             .delegation()
             .register_stake_pool(stake_pool.info())
             .expect("cannot register stake pool");
-        let mut selection = LeadershipData::new(date.epoch, &ledger);
+        let mut selection = LeadershipData::new(
+            date.epoch,
+            ledger.get_stake_distribution(),
+            ledger.delegation.clone(),
+            ledger.settings.consensus_nonce,
+            ledger.settings.active_slots_coeff,
+        );
         update_stake_pool_total_value(&mut selection, &stake_pool.id(), Stake::zero());
 
         assert!(selection
@@ -591,7 +620,13 @@ mod tests {
             .delegation()
             .register_stake_pool(stake_pool.info())
             .expect("cannot register stake pool");
-        let selection = LeadershipData::new(0, &ledger);
+        let selection = LeadershipData::new(
+            0,
+            ledger.get_stake_distribution(),
+            ledger.delegation.clone(),
+            ledger.settings.consensus_nonce.clone(),
+            ledger.settings.active_slots_coeff,
+        );
 
         let block = GenesisPraosBlockBuilder::new()
             .with_date(date)
@@ -618,7 +653,13 @@ mod tests {
             .delegation()
             .register_stake_pool(stake_pool.info())
             .expect("cannot register stake pool");
-        let selection = LeadershipData::new(date.epoch, &ledger);
+        let selection = LeadershipData::new(
+            date.epoch,
+            ledger.get_stake_distribution(),
+            ledger.delegation.clone(),
+            ledger.settings.consensus_nonce.clone(),
+            ledger.settings.active_slots_coeff,
+        );
         let rng = rand_core::OsRng;
         let sk = &SecretKey::generate(rng);
         let header = HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &Contents::empty())
@@ -645,7 +686,13 @@ mod tests {
             .delegation()
             .register_stake_pool(stake_pool.info())
             .expect("cannot register stake pool");
-        let selection = LeadershipData::new(date.epoch, &ledger);
+        let selection = LeadershipData::new(
+            date.epoch,
+            ledger.get_stake_distribution(),
+            ledger.delegation.clone(),
+            ledger.settings.consensus_nonce.clone(),
+            ledger.settings.active_slots_coeff,
+        );
 
         let block = GenesisPraosBlockBuilder::new()
             .with_date(date)
@@ -668,7 +715,13 @@ mod tests {
             .delegation()
             .register_stake_pool(stake_pool.info())
             .expect("cannot register stake pool");
-        let mut selection = LeadershipData::new(date.epoch, &ledger);
+        let mut selection = LeadershipData::new(
+            date.epoch,
+            ledger.get_stake_distribution(),
+            ledger.delegation.clone(),
+            ledger.settings.consensus_nonce.clone(),
+            ledger.settings.active_slots_coeff,
+        );
         update_stake_pool_total_value(&mut selection, &stake_pool.id(), Stake::zero());
 
         let block = GenesisPraosBlockBuilder::new()
@@ -689,7 +742,13 @@ mod tests {
         let ledger = testledger.ledger;
 
         let stake_pool = StakePoolBuilder::new().build();
-        let selection = LeadershipData::new(date.epoch, &ledger);
+        let selection = LeadershipData::new(
+            date.epoch,
+            ledger.get_stake_distribution(),
+            ledger.delegation.clone(),
+            ledger.settings.consensus_nonce.clone(),
+            ledger.settings.active_slots_coeff,
+        );
 
         let block = GenesisPraosBlockBuilder::new()
             .with_date(date)
@@ -716,7 +775,13 @@ mod tests {
             .delegation()
             .register_stake_pool(stake_pool.info())
             .expect("cannot register stake pool");
-        let selection = LeadershipData::new(date.epoch, &ledger);
+        let selection = LeadershipData::new(
+            date.epoch,
+            ledger.get_stake_distribution(),
+            ledger.delegation.clone(),
+            ledger.settings.consensus_nonce.clone(),
+            ledger.settings.active_slots_coeff,
+        );
         let rng = rand_core::OsRng;
         let sk = &SecretKey::generate(rng);
         let header = HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &Contents::empty())

@@ -171,7 +171,6 @@ fn tally_benchmark(
     });
 
     let alice = controller.wallet(ALICE).unwrap();
-    let parameters = ledger.parameters.clone();
 
     // benchmark producing decryption
     let vote_plans = ledger.ledger.active_vote_plans();
@@ -258,7 +257,7 @@ fn tally_benchmark(
         b.iter(|| {
             ledger
                 .ledger
-                .apply_fragment(&parameters, &fragment, ledger.date())
+                .apply_fragment(&fragment, ledger.date())
                 .unwrap();
         })
     });

@@ -17,16 +17,16 @@ use crate::config::{self, ConfigParam};
 use crate::date::{BlockDate, Epoch};
 use crate::evm::EvmTransaction;
 use crate::fee::{FeeAlgorithm, LinearFee};
-use crate::fragment::{BlockContentHash, BlockContentSize, Contents, Fragment, FragmentId};
+use crate::fragment::{BlockContentHash, Contents, Fragment, FragmentId};
 use crate::rewards;
-use crate::setting::ActiveSlotsCoeffError;
+use crate::setting::{ActiveSlotsCoeffError, Settings};
 use crate::stake::{PercentStake, PoolError, PoolStakeInformation, PoolsState, StakeDistribution};
 use crate::tokens::identifier::TokenIdentifier;
 use crate::tokens::minting_policy::MintingPolicyViolation;
 use crate::transaction::*;
 use crate::treasury::Treasury;
 use crate::value::*;
-use crate::vote::{CommitteeId, VotePlanLedger, VotePlanLedgerError, VotePlanStatus};
+use crate::vote::{VotePlanLedger, VotePlanLedgerError, VotePlanStatus};
 use crate::{account, certificate, legacy, multisig, setting, stake, update, utxo};
 use crate::{
     certificate::{
@@ -51,28 +51,6 @@ pub struct LedgerStaticParameters {
     pub block0_start_time: config::Block0Date,
     pub discrimination: Discrimination,
     pub kes_update_speed: u32,
-}
-
-// parameters to validate ledger
-#[derive(Debug, Clone)]
-pub struct LedgerParameters {
-    /// Fees expected for transactions and certificates
-    pub fees: LinearFee,
-    /// Tax cut of the treasury which is applied straight after the reward pot
-    /// is fully known
-    pub treasury_tax: rewards::TaxType,
-    /// Reward contribution parameters for this epoch
-    pub reward_params: rewards::Parameters,
-    /// the block content's max size in bytes
-    pub block_content_max_size: BlockContentSize,
-    /// the epoch stability parameter, the depth, number of blocks, to which
-    /// we consider the blockchain to be stable and prevent rollback beyond
-    /// that depth.
-    pub epoch_stability_depth: u32,
-    /// Where the fees get transfered to during the rewards
-    pub fees_goes_to: setting::FeesGoesTo,
-    /// List of committee members
-    pub committees: Arc<[CommitteeId]>,
 }
 
 /// Overall ledger structure.
@@ -107,7 +85,6 @@ pub struct Ledger {
 #[derive(Debug, Clone)]
 pub struct ApplyBlockLedger {
     ledger: Ledger,
-    ledger_params: LedgerParameters,
     block_date: BlockDate,
 }
 
@@ -337,12 +314,6 @@ pub enum Error {
     EvmError(#[from] evm::Error),
 }
 
-impl LedgerParameters {
-    pub fn treasury_tax(&self) -> rewards::TaxType {
-        self.treasury_tax
-    }
-}
-
 impl Ledger {
     pub(crate) fn empty(
         settings: setting::Settings,
@@ -464,8 +435,6 @@ impl Ledger {
             Ledger::empty(settings, static_params, era, pots)
         };
 
-        let params = ledger.get_ledger_parameters();
-
         for content in content_iter {
             let fragment_id = content.hash();
             match content {
@@ -516,7 +485,6 @@ impl Ledger {
                         &tx,
                         cur_date,
                         tx.payload().into_payload(),
-                        &params,
                         tx.payload_auth().into_payload_auth(),
                     )?;
                 }
@@ -605,10 +573,9 @@ impl Ledger {
     ///
     /// * Reset the leaders log
     /// * Distribute the contribution (rewards + fees) to pools and their delegatees
-    pub fn distribute_rewards<'a>(
-        &'a self,
+    pub fn distribute_rewards(
+        &self,
         distribution: &StakeDistribution,
-        ledger_params: &LedgerParameters,
         rewards_info_params: RewardsInfoParameters,
     ) -> Result<(Self, EpochRewardsInfo), Error> {
         let mut new_ledger = self.clone();
@@ -631,7 +598,7 @@ impl Ledger {
 
         let expected_epoch_reward = rewards::rewards_contribution_calculation(
             epoch,
-            &ledger_params.reward_params,
+            &self.settings.reward_params(),
             &system_info,
         );
 
@@ -648,7 +615,7 @@ impl Ledger {
 
         // Move fees in the rewarding pots for distribution or depending on settings
         // to the treasury directly
-        match ledger_params.fees_goes_to {
+        match self.settings.fees_goes_to {
             setting::FeesGoesTo::Rewards => {
                 total_reward = (total_reward + new_ledger.pots.siphon_fees()).unwrap();
             }
@@ -660,7 +627,7 @@ impl Ledger {
 
         // Take treasury cut
         total_reward = {
-            let treasury_distr = rewards::tax_cut(total_reward, &ledger_params.treasury_tax)?;
+            let treasury_distr = rewards::tax_cut(total_reward, &self.settings.treasury_params())?;
             new_ledger.pots.treasury_add(treasury_distr.taxed)?;
             treasury_distr.after_tax
         };
@@ -671,7 +638,7 @@ impl Ledger {
 
         if total_reward > Value::zero() {
             // pool capping only exists if there's enough participants
-            let pool_capper = match ledger_params.reward_params.pool_participation_capping {
+            let pool_capper = match self.settings.reward_params().pool_participation_capping {
                 None => None,
                 Some((threshold, expected_nb_pools)) => {
                     let nb_participants = leaders_log.nb_participants();
@@ -856,7 +823,6 @@ impl Ledger {
         new_ledger.settings = settings;
 
         Ok(ApplyBlockLedger {
-            ledger_params: new_ledger.get_ledger_parameters(),
             ledger: new_ledger,
             block_date,
         })
@@ -865,16 +831,15 @@ impl Ledger {
     /// Try to apply messages to a State, and return the new State if successful
     pub fn apply_block(
         &self,
-        ledger_params: LedgerParameters,
         contents: &Contents,
         metadata: &HeaderContentEvalContext,
     ) -> Result<Self, Error> {
         let (content_hash, content_size) = contents.compute_hash_size();
 
-        if content_size > ledger_params.block_content_max_size {
+        if content_size > self.settings.block_content_max_size {
             return Err(Error::InvalidContentSize {
                 actual: content_size,
-                max: ledger_params.block_content_max_size,
+                max: self.settings.block_content_max_size,
             });
         }
 
@@ -903,12 +868,7 @@ impl Ledger {
     /// this does not _advance_ the state to the new _state_ but apply a simple fragment
     /// of block to the current context.
     ///
-    pub fn apply_fragment(
-        &self,
-        ledger_params: &LedgerParameters,
-        content: &Fragment,
-        block_date: BlockDate,
-    ) -> Result<Self, Error> {
+    pub fn apply_fragment(&self, content: &Fragment, block_date: BlockDate) -> Result<Self, Error> {
         let mut new_ledger = self.clone();
 
         let fragment_id = content.hash();
@@ -918,7 +878,7 @@ impl Ledger {
             Fragment::Transaction(tx) => {
                 let tx = tx.as_slice();
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date)?;
                 new_ledger = new_ledger_;
             }
             Fragment::OwnerStakeDelegation(tx) => {
@@ -926,7 +886,7 @@ impl Ledger {
                 // this is a lightweight check, do this early to avoid doing any unnecessary computation
                 check::valid_stake_owner_delegation_transaction(&tx)?;
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date)?;
 
                 // we've just verified that this is a valid transaction (i.e. contains 1 input and 1 witness)
                 let (account_id, witness) = match tx.inputs().iter().next().unwrap().to_enum() {
@@ -968,13 +928,13 @@ impl Ledger {
                 }
 
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date)?;
                 new_ledger = new_ledger_.apply_stake_delegation(&payload)?;
             }
             Fragment::PoolRegistration(tx) => {
                 let tx = tx.as_slice();
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date)?;
                 new_ledger = new_ledger_.apply_pool_registration_signcheck(
                     &tx.payload().into_payload(),
                     &tx.transaction_binding_auth_data(),
@@ -985,7 +945,7 @@ impl Ledger {
                 let tx = tx.as_slice();
 
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date)?;
                 new_ledger = new_ledger_.apply_pool_retirement(
                     &tx.payload().into_payload(),
                     &tx.transaction_binding_auth_data(),
@@ -996,7 +956,7 @@ impl Ledger {
                 let tx = tx.as_slice();
 
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date)?;
                 new_ledger = new_ledger_.apply_pool_update(
                     &tx.payload().into_payload(),
                     &tx.transaction_binding_auth_data(),
@@ -1006,7 +966,7 @@ impl Ledger {
             Fragment::UpdateProposal(tx) => {
                 let tx = tx.as_slice();
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date)?;
                 new_ledger = new_ledger_.apply_update_proposal(
                     fragment_id,
                     tx.payload().into_payload(),
@@ -1018,7 +978,7 @@ impl Ledger {
             Fragment::UpdateVote(tx) => {
                 let tx = tx.as_slice();
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date)?;
                 new_ledger = new_ledger_.apply_update_vote(
                     &tx.payload().into_payload(),
                     &tx.transaction_binding_auth_data(),
@@ -1028,12 +988,11 @@ impl Ledger {
             Fragment::VotePlan(tx) => {
                 let tx = tx.as_slice();
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date)?;
                 new_ledger = new_ledger_.apply_vote_plan(
                     &tx,
                     block_date,
                     tx.payload().into_payload(),
-                    ledger_params,
                     tx.payload_auth().into_payload_auth(),
                 )?;
             }
@@ -1042,7 +1001,7 @@ impl Ledger {
                 // this is a lightweight check, do this early to avoid doing any unnecessary computation
                 check::valid_vote_cast(&tx)?;
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date)?;
 
                 // we've just verified that this is a valid transaction (i.e. contains 1 input and 1 witness)
                 let account_id = match tx
@@ -1068,7 +1027,7 @@ impl Ledger {
                 let tx = tx.as_slice();
 
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date)?;
 
                 new_ledger = new_ledger_.apply_vote_tally(
                     &tx.payload().into_payload(),
@@ -1080,7 +1039,7 @@ impl Ledger {
                 let tx = tx.as_slice();
 
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date)?;
 
                 new_ledger = new_ledger_.mint_token(tx.payload().into_payload())?;
             }
@@ -1103,12 +1062,8 @@ impl Ledger {
                 #[cfg(feature = "evm")]
                 {
                     let tx = _tx.as_slice();
-                    (new_ledger, _) = new_ledger.apply_transaction(
-                        &fragment_id,
-                        &tx,
-                        block_date,
-                        ledger_params,
-                    )?;
+                    (new_ledger, _) =
+                        new_ledger.apply_transaction(&fragment_id, &tx, block_date)?;
 
                     new_ledger = new_ledger.apply_map_accounts(
                         &tx.payload().into_payload(),
@@ -1131,7 +1086,6 @@ impl Ledger {
         fragment_id: &FragmentId,
         tx: &TransactionSlice<'a, Extra>,
         cur_date: BlockDate,
-        dyn_params: &LedgerParameters,
     ) -> Result<(Self, Value), Error>
     where
         Extra: Payload,
@@ -1139,7 +1093,7 @@ impl Ledger {
     {
         check::valid_transaction_ios_number(tx)?;
         check::valid_transaction_date(&self.settings, tx.valid_until(), cur_date)?;
-        let fee = calculate_fee(tx, dyn_params);
+        let fee = calculate_fee(tx, &self.settings.linear_fees);
         tx.verify_strictly_balanced(fee)?;
         self = self.apply_tx_inputs(tx)?;
         self = self.apply_tx_outputs(*fragment_id, tx.outputs())?;
@@ -1185,12 +1139,11 @@ impl Ledger {
         Ok(self)
     }
 
-    pub fn apply_vote_plan<'a>(
+    pub fn apply_vote_plan(
         mut self,
-        tx: &TransactionSlice<'a, VotePlan>,
+        tx: &TransactionSlice<VotePlan>,
         cur_date: BlockDate,
         vote_plan: VotePlan,
-        dyn_params: &LedgerParameters,
         sig: certificate::VotePlanProof,
     ) -> Result<Self, Error> {
         if sig.verify(&tx.transaction_binding_auth_data()) == Verification::Failed {
@@ -1214,7 +1167,7 @@ impl Ledger {
                 }
             }
         }
-        committee.extend(dyn_params.committees.iter());
+        committee.extend(self.settings.committees.iter());
 
         if !committee.contains(&sig.id) {
             return Err(Error::VotePlanProofInvalidCommittee);
@@ -1458,21 +1411,6 @@ impl Ledger {
 
     pub fn token_distribution(&self) -> TokenDistribution<()> {
         TokenDistribution::new(&self.token_totals, &self.accounts)
-    }
-
-    pub fn get_ledger_parameters(&self) -> LedgerParameters {
-        LedgerParameters {
-            fees: self.settings.linear_fees,
-            treasury_tax: self
-                .settings
-                .treasury_params
-                .unwrap_or_else(rewards::TaxType::zero),
-            reward_params: self.settings.to_reward_params(),
-            block_content_max_size: self.settings.block_content_max_size,
-            epoch_stability_depth: self.settings.epoch_stability_depth,
-            fees_goes_to: self.settings.fees_goes_to,
-            committees: self.settings.committees.clone(),
-        }
     }
 
     pub fn consensus_version(&self) -> ConsensusType {
@@ -1782,9 +1720,7 @@ impl ApplyBlockLedger {
     }
 
     pub fn apply_fragment(&self, fragment: &Fragment) -> Result<Self, Error> {
-        let ledger = self
-            .ledger
-            .apply_fragment(&self.ledger_params, fragment, self.block_date)?;
+        let ledger = self.ledger.apply_fragment(fragment, self.block_date)?;
         Ok(ApplyBlockLedger {
             ledger,
             ..self.clone()
@@ -1822,6 +1758,10 @@ impl ApplyBlockLedger {
 
         new_ledger
     }
+
+    pub fn settings(&self) -> &Settings {
+        &self.ledger.settings
+    }
 }
 
 fn apply_old_declaration(
@@ -1842,11 +1782,8 @@ fn apply_old_declaration(
     Ok(utxos)
 }
 
-fn calculate_fee<'a, Extra: Payload>(
-    tx: &TransactionSlice<'a, Extra>,
-    dyn_params: &LedgerParameters,
-) -> Value {
-    dyn_params.fees.calculate_tx(tx)
+fn calculate_fee<'a, Extra: Payload>(tx: &TransactionSlice<'a, Extra>, fees: &LinearFee) -> Value {
+    fees.calculate_tx(tx)
 }
 
 pub enum MatchingIdentifierWitness<'a> {
@@ -1944,7 +1881,7 @@ mod tests {
         key::Hash,
         multisig,
         //reward::RewardParams,
-        setting::{FeesGoesTo, Settings},
+        setting::Settings,
         testing::{
             address::ArbitraryAddressDataValueVec,
             builders::{
@@ -1970,21 +1907,6 @@ mod tests {
                 block0_start_time: Arbitrary::arbitrary(g),
                 discrimination: Arbitrary::arbitrary(g),
                 kes_update_speed: Arbitrary::arbitrary(g),
-            }
-        }
-    }
-
-    impl Arbitrary for LedgerParameters {
-        fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            let committees: Vec<CommitteeId> = Arbitrary::arbitrary(g);
-            LedgerParameters {
-                fees: Arbitrary::arbitrary(g),
-                treasury_tax: Arbitrary::arbitrary(g),
-                reward_params: Arbitrary::arbitrary(g),
-                block_content_max_size: Arbitrary::arbitrary(g),
-                epoch_stability_depth: Arbitrary::arbitrary(g),
-                fees_goes_to: Arbitrary::arbitrary(g),
-                committees: committees.into(),
             }
         }
     }
@@ -2037,7 +1959,7 @@ mod tests {
         let contents = Contents::empty();
         context.content_hash = contents.compute_hash();
 
-        let result = ledger.apply_block(ledger.get_ledger_parameters(), &contents, &context);
+        let result = ledger.apply_block(&contents, &context);
         match (result, should_succeed) {
             (Ok(_), true) => TestResult::passed(),
             (Ok(_), false) => TestResult::error("should pass"),
@@ -2404,35 +2326,23 @@ mod tests {
 
     #[derive(Clone, Debug)]
     pub struct InternalApplyTransactionTestParams {
-        pub dyn_params: LedgerParameters,
         pub static_params: LedgerStaticParameters,
         pub transaction_id: Hash,
     }
 
     impl InternalApplyTransactionTestParams {
         pub fn new() -> Self {
-            InternalApplyTransactionTestParams::new_with_fee(LinearFee::new(0, 0, 0))
+            InternalApplyTransactionTestParams::new_with_fee()
         }
 
-        pub fn new_with_fee(fees: LinearFee) -> Self {
+        pub fn new_with_fee() -> Self {
             let static_params = LedgerStaticParameters {
                 block0_initial_hash: TestGen::hash(),
                 block0_start_time: config::Block0Date(0),
                 discrimination: Discrimination::Test,
                 kes_update_speed: 100,
             };
-
-            let dyn_params = LedgerParameters {
-                fees,
-                treasury_tax: rewards::TaxType::zero(),
-                reward_params: rewards::Parameters::zero(),
-                block_content_max_size: 10_240,
-                epoch_stability_depth: 1000,
-                fees_goes_to: FeesGoesTo::Rewards,
-                committees: Arc::new([]),
-            };
             InternalApplyTransactionTestParams {
-                dyn_params,
                 static_params,
                 transaction_id: TestGen::hash(),
             }

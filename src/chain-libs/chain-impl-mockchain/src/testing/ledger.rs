@@ -12,8 +12,8 @@ use crate::{
     key::BftLeaderId,
     leadership::genesis::LeadershipData,
     ledger::{
-        check::CHECK_TX_MAXIMUM_INPUTS, Error, LeadersParticipationRecord, Ledger,
-        LedgerParameters, Pots, RewardsInfoParameters,
+        check::CHECK_TX_MAXIMUM_INPUTS, Error, LeadersParticipationRecord, Ledger, Pots,
+        RewardsInfoParameters,
     },
     milli::Milli,
     rewards::{Ratio, TaxType},
@@ -496,16 +496,12 @@ impl LedgerBuilder {
         fragments.extend_from_slice(&self.certs);
 
         let faucets = self.faucets;
-        Ledger::new(block0_hash, &fragments).map(|ledger| {
-            let parameters = ledger.get_ledger_parameters();
-            TestLedger {
-                cfg,
-                faucets,
-                ledger,
-                block0_hash,
-                utxodb,
-                parameters,
-            }
+        Ledger::new(block0_hash, &fragments).map(|ledger| TestLedger {
+            cfg,
+            faucets,
+            ledger,
+            block0_hash,
+            utxodb,
         })
     }
 }
@@ -515,7 +511,6 @@ pub struct TestLedger {
     pub cfg: ConfigParams,
     pub faucets: Vec<AddressDataValue>,
     pub ledger: Ledger,
-    pub parameters: LedgerParameters,
     pub utxodb: UtxoDb,
 }
 
@@ -524,12 +519,11 @@ impl TestLedger {
         let fragment_id = fragment.hash();
         match fragment {
             Fragment::Transaction(tx) => {
-                match self.ledger.clone().apply_transaction(
-                    &fragment_id,
-                    &tx.as_slice(),
-                    date,
-                    &self.parameters,
-                ) {
+                match self
+                    .ledger
+                    .clone()
+                    .apply_transaction(&fragment_id, &tx.as_slice(), date)
+                {
                     Err(err) => Err(err),
                     Ok((ledger, _)) => {
                         // TODO more bookkeeping for accounts and utxos
@@ -543,20 +537,16 @@ impl TestLedger {
     }
 
     pub fn apply_fragment(&mut self, fragment: &Fragment, date: BlockDate) -> Result<(), Error> {
-        self.ledger = self
-            .ledger
-            .clone()
-            .apply_fragment(&self.parameters, fragment, date)?;
+        self.ledger = self.ledger.clone().apply_fragment(fragment, date)?;
         Ok(())
     }
 
     pub fn apply_block(&mut self, block: Block) -> Result<(), Error> {
         let header_meta = block.header().get_content_eval_context();
-        self.ledger = self.ledger.clone().apply_block(
-            self.ledger.get_ledger_parameters(),
-            block.contents(),
-            &header_meta,
-        )?;
+        self.ledger = self
+            .ledger
+            .clone()
+            .apply_block(block.contents(), &header_meta)?;
         Ok(())
     }
 
@@ -596,7 +586,7 @@ impl TestLedger {
     }
 
     pub fn fee(&self) -> LinearFee {
-        self.parameters.fees
+        self.ledger.settings.linear_fees.clone()
     }
 
     pub fn chain_length(&self) -> ChainLength {
@@ -641,7 +631,6 @@ impl TestLedger {
     pub fn distribute_rewards(&mut self) -> Result<(), Error> {
         match self.ledger.distribute_rewards(
             &self.ledger.get_stake_distribution(),
-            &self.ledger.get_ledger_parameters(),
             RewardsInfoParameters::default(),
         ) {
             Err(err) => Err(err),
@@ -731,7 +720,13 @@ impl TestLedger {
         stake_pools: Vec<StakePool>,
         fragments: Vec<Fragment>,
     ) -> Result<bool, Error> {
-        let selection = LeadershipData::new(self.date().epoch, &self.ledger);
+        let selection = LeadershipData::new(
+            self.date().epoch,
+            self.ledger.get_stake_distribution(),
+            self.ledger.delegation.clone(),
+            self.ledger.settings.consensus_nonce.clone(),
+            self.ledger.settings.active_slots_coeff,
+        );
         for stake_pool in stake_pools {
             if selection
                 .leader(

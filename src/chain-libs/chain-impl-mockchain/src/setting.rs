@@ -5,6 +5,7 @@
 use crate::config::EvmEnvSettings;
 use crate::fragment::{config::ConfigParams, BlockContentSize};
 use crate::milli::Milli;
+use crate::rewards::TaxType;
 use crate::update;
 use crate::{
     chaineval::PraosNonce,
@@ -36,8 +37,8 @@ pub struct Settings {
     /// it expires at the start of epoch 'epoch_p +
     /// proposal_expiration + 1'. FIXME: make updateable.
     pub proposal_expiration: u32,
-    pub reward_params: Option<RewardParams>,
-    pub treasury_params: Option<rewards::TaxType>,
+    reward_params: Option<RewardParams>,
+    treasury_params: Option<rewards::TaxType>,
     pub fees_goes_to: FeesGoesTo,
     pub rewards_limit: rewards::Limit,
     pub pool_participation_capping: Option<(NonZeroU32, NonZeroU32)>,
@@ -141,10 +142,6 @@ impl Settings {
         }
     }
 
-    pub fn linear_fees(&self) -> LinearFee {
-        self.linear_fees
-    }
-
     pub fn try_apply(&self, changes: &ConfigParams) -> Result<Self, update::Error> {
         let mut new_state = self.clone();
         let mut per_certificate_fees = None;
@@ -199,7 +196,7 @@ impl Settings {
                         .into();
                 }
                 ConfigParam::LinearFee(d) => {
-                    new_state.linear_fees = *d;
+                    new_state.linear_fees = d.clone();
                 }
                 ConfigParam::ProposalExpiration(d) => {
                     new_state.proposal_expiration = *d;
@@ -270,7 +267,7 @@ impl Settings {
         Ok(new_state)
     }
 
-    pub fn to_config_params(&self) -> ConfigParams {
+    pub fn config_params(&self) -> ConfigParams {
         let mut params = ConfigParams::new();
 
         params.push(ConfigParam::ConsensusVersion(self.consensus_version));
@@ -286,7 +283,7 @@ impl Settings {
         for bft_leader in self.bft_leaders.iter() {
             params.push(ConfigParam::AddBftLeader(bft_leader.clone()));
         }
-        params.push(ConfigParam::LinearFee(self.linear_fees));
+        params.push(ConfigParam::LinearFee(self.linear_fees.clone()));
         params.push(ConfigParam::ProposalExpiration(self.proposal_expiration));
         params.push(ConfigParam::TransactionMaxExpiryEpochs(
             self.transaction_max_expiry_epochs,
@@ -310,7 +307,11 @@ impl Settings {
         params
     }
 
-    pub fn to_reward_params(&self) -> rewards::Parameters {
+    pub fn treasury_params(&self) -> TaxType {
+        self.treasury_params.unwrap_or_else(rewards::TaxType::zero)
+    }
+
+    pub fn reward_params(&self) -> rewards::Parameters {
         let reward_drawing_limit_max = self.rewards_limit.clone();
         let pool_participation_capping = self.pool_participation_capping;
 

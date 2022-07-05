@@ -197,7 +197,7 @@ impl<'a> Iterator for LedgerIterator<'a> {
             },
             IterState::Accounts(iter) => match iter.next() {
                 None => {
-                    self.state = IterState::ConfigParams(self.ledger.settings.to_config_params().0);
+                    self.state = IterState::ConfigParams(self.ledger.settings.config_params().0);
                     self.next()
                 }
                 Some(x) => Some(Entry::Account(x)),

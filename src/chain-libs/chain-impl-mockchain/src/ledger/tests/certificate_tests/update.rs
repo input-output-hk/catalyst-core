@@ -59,7 +59,7 @@ pub fn ledger_adopt_settings_from_update_proposal(
         .unwrap();
 
     // assert
-    let actual_params = testledger.ledger.settings.to_config_params();
+    let actual_params = testledger.ledger.settings.config_params();
     let expected_params = update_proposal_data.proposal_settings();
 
     let mut all_settings_equal = true;

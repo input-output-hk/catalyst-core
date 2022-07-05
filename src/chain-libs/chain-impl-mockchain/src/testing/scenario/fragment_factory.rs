@@ -191,13 +191,14 @@ impl FragmentFactory {
         signer: &Wallet,
         update_proposal: UpdateProposal,
     ) -> Fragment {
-        TestTxCertBuilder::new(self.block0_hash, self.fee).make_transaction_different_signers(
-            valid_until,
-            owner,
-            vec![signer],
-            &update_proposal.into(),
-            self.witness_mode,
-        )
+        TestTxCertBuilder::new(self.block0_hash, self.fee.clone())
+            .make_transaction_different_signers(
+                valid_until,
+                owner,
+                vec![signer],
+                &update_proposal.into(),
+                self.witness_mode,
+            )
     }
 
     pub fn update_vote(
@@ -207,13 +208,14 @@ impl FragmentFactory {
         signer: &Wallet,
         update_vote: UpdateVote,
     ) -> Fragment {
-        TestTxCertBuilder::new(self.block0_hash, self.fee).make_transaction_different_signers(
-            valid_until,
-            owner,
-            vec![signer],
-            &update_vote.into(),
-            self.witness_mode,
-        )
+        TestTxCertBuilder::new(self.block0_hash, self.fee.clone())
+            .make_transaction_different_signers(
+                valid_until,
+                owner,
+                vec![signer],
+                &update_vote.into(),
+                self.witness_mode,
+            )
     }
 
     pub fn mint_token(
@@ -231,7 +233,7 @@ impl FragmentFactory {
         wallets: impl IntoIterator<Item = &'a Wallet>,
         certificate: &Certificate,
     ) -> Fragment {
-        TestTxCertBuilder::new(self.block0_hash, self.fee).make_transaction(
+        TestTxCertBuilder::new(self.block0_hash, self.fee.clone()).make_transaction(
             valid_until,
             wallets,
             certificate,

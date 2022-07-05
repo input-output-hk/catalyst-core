@@ -4,7 +4,7 @@ use crate::{
     chaintypes::ConsensusType,
     date::Epoch,
     key::BftLeaderId,
-    ledger::{Ledger, LedgerParameters},
+    ledger::Ledger,
     stake::StakeDistribution,
 };
 use chain_crypto::{Ed25519, RistrettoGroup2HashDh, SecretKey, SumEd25519_12};
@@ -94,8 +94,6 @@ pub struct Leadership {
     era: TimeEra,
     // Consensus specific metadata required for verifying/evaluating leaders
     inner: LeadershipConsensus,
-    // Ledger evaluation parameters fixed for a given epoch
-    ledger_parameters: LedgerParameters,
 }
 
 impl LeadershipConsensus {
@@ -152,18 +150,23 @@ impl LeadershipConsensus {
 impl Leadership {
     pub fn new(epoch: Epoch, ledger: &Ledger) -> Self {
         let inner = match ledger.settings.consensus_version {
-            ConsensusType::Bft => {
-                LeadershipConsensus::Bft(bft::LeadershipData::new(ledger).unwrap())
-            }
+            ConsensusType::Bft => LeadershipConsensus::Bft(
+                bft::LeadershipData::new(ledger.settings.bft_leaders.clone()).unwrap(),
+            ),
             ConsensusType::GenesisPraos => {
-                LeadershipConsensus::GenesisPraos(genesis::LeadershipData::new(epoch, ledger))
+                LeadershipConsensus::GenesisPraos(genesis::LeadershipData::new(
+                    epoch,
+                    ledger.get_stake_distribution(),
+                    ledger.delegation.clone(),
+                    ledger.settings.consensus_nonce.clone(),
+                    ledger.settings.active_slots_coeff,
+                ))
             }
         };
         Leadership {
             epoch,
             era: ledger.era.clone(),
             inner,
-            ledger_parameters: ledger.get_ledger_parameters(),
         }
     }
 
@@ -202,12 +205,6 @@ impl Leadership {
     /// get the consensus associated with the `Leadership`
     pub fn consensus(&self) -> &LeadershipConsensus {
         &self.inner
-    }
-
-    /// access the ledger parameter for the current leadership
-    #[inline]
-    pub fn ledger_parameters(&self) -> &LedgerParameters {
-        &self.ledger_parameters
     }
 
     /// Verify whether this header has been produced by a leader that fits with the leadership
@@ -345,7 +342,8 @@ mod tests {
     fn consensus_verify_version_for_bft() {
         let ledger = TestGen::ledger();
 
-        let data = bft::LeadershipData::new(&ledger).expect("Couldn't build leadership data");
+        let data = bft::LeadershipData::new(ledger.settings.bft_leaders)
+            .expect("Couldn't build leadership data");
 
         let bft_leadership_consensus = LeadershipConsensus::Bft(data);
 
@@ -364,8 +362,8 @@ mod tests {
     fn consensus_leader_for_bft() {
         let leader_key = AddressData::generate_key_pair::<Ed25519>();
         let (_, ledger) = generate_ledger_with_bft_leaders(vec![leader_key.public_key().clone()]);
-        let leadership_data =
-            bft::LeadershipData::new(&ledger).expect("leaders ids collection is empty");
+        let leadership_data = bft::LeadershipData::new(ledger.settings.bft_leaders)
+            .expect("leaders ids collection is empty");
         let bft_leadership_consensus = LeadershipConsensus::Bft(leadership_data);
         let header = generate_header_for_leader(leader_key.private_key().clone(), 0);
         assert!(bft_leadership_consensus.verify_leader(&header).success());
@@ -378,8 +376,8 @@ mod tests {
             TestGen::secret_keys().take(leaders_count).collect();
         let (leaders, ledger) =
             generate_ledger_with_bft_leaders(leaders_keys.iter().map(|x| x.to_public()).collect());
-        let leadership_data =
-            bft::LeadershipData::new(&ledger).expect("leaders ids collection is empty");
+        let leadership_data = bft::LeadershipData::new(ledger.settings.bft_leaders)
+            .expect("leaders ids collection is empty");
         let bft_leadership_consensus = LeadershipConsensus::Bft(leadership_data);
 
         for leader_index in 0..leaders_count {
@@ -406,8 +404,8 @@ mod tests {
         let (_, ledger) =
             generate_ledger_with_bft_leaders(leaders_keys.iter().map(|x| x.to_public()).collect());
 
-        let leadership_data =
-            bft::LeadershipData::new(&ledger).expect("leaders ids collection is empty");
+        let leadership_data = bft::LeadershipData::new(ledger.settings.bft_leaders)
+            .expect("leaders ids collection is empty");
         let bft_leadership_consensus = LeadershipConsensus::Bft(leadership_data);
 
         for leader in leaders_keys.iter().take(leaders_count - 1).cloned() {
@@ -426,8 +424,8 @@ mod tests {
     fn is_leader_empty() {
         let ledger = TestGen::ledger();
 
-        let leadership_data =
-            bft::LeadershipData::new(&ledger).expect("leaders ids collection is empty");
+        let leadership_data = bft::LeadershipData::new(ledger.settings.bft_leaders)
+            .expect("leaders ids collection is empty");
         let bft_leadership_consensus = LeadershipConsensus::Bft(leadership_data);
 
         let leader = Leader {
@@ -448,7 +446,13 @@ mod tests {
     fn consensus_verify_version_for_praos() {
         let ledger = TestGen::ledger();
 
-        let data = genesis::LeadershipData::new(0, &ledger);
+        let data = genesis::LeadershipData::new(
+            0,
+            ledger.get_stake_distribution(),
+            ledger.delegation.clone(),
+            ledger.settings.consensus_nonce,
+            ledger.settings.active_slots_coeff,
+        );
 
         let gen_leadership_consensus = LeadershipConsensus::GenesisPraos(data);
 

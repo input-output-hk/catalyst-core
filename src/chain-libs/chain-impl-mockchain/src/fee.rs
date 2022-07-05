@@ -5,7 +5,7 @@ use std::num::NonZeroU64;
 
 /// Linear fee using the basic affine formula
 /// `COEFFICIENT * bytes(COUNT(tx.inputs) + COUNT(tx.outputs)) + CONSTANT + CERTIFICATE*COUNT(certificates)`.
-#[derive(PartialEq, Eq, PartialOrd, Debug, Clone, Copy)]
+#[derive(PartialEq, Eq, PartialOrd, Debug, Clone)]
 pub struct LinearFee {
     pub constant: u64,
     pub coefficient: u64,

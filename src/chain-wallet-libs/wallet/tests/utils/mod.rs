@@ -49,13 +49,10 @@ impl State {
     where
         F: IntoIterator<Item = &'a Fragment>,
     {
-        let ledger_params = self.ledger.get_ledger_parameters();
         let block_date = self.ledger.date();
         let mut new_ledger = self.ledger.clone();
         for fragment in fragments {
-            new_ledger = self
-                .ledger
-                .apply_fragment(&ledger_params, fragment, block_date)?;
+            new_ledger = self.ledger.apply_fragment(fragment, block_date)?;
         }
 
         self.ledger = new_ledger;

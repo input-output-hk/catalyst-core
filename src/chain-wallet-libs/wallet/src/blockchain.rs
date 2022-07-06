@@ -27,7 +27,7 @@ impl Settings {
         let ledger = Ledger::new(header_id, block.contents().iter())?;
 
         let static_parameters = ledger.get_static_parameters().clone();
-        let parameters = ledger.get_ledger_parameters();
+        let parameters = ledger.settings();
 
         // TODO: I think there is a bug in Ledger::new(), as it doesn't set the slot_duration in
         // the Settings.
@@ -75,7 +75,7 @@ impl Settings {
         }
 
         Ok(Self {
-            fees: parameters.fees,
+            fees: parameters.linear_fees.clone(),
             discrimination: static_parameters.discrimination,
             block0_initial_hash: static_parameters.block0_initial_hash,
             block0_date: static_parameters.block0_start_time,

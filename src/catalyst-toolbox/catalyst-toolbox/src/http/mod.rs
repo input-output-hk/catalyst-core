@@ -1,12 +1,14 @@
 use std::marker::PhantomData;
 
-use ::reqwest::{blocking::Response, StatusCode};
+use ::reqwest::StatusCode;
 use color_eyre::eyre::Result;
 use log::warn;
 use serde::Deserialize;
 
 use self::{rate_limit::RateLimitClient, reqwest::ReqwestClient};
 
+#[cfg(test)]
+pub mod mock;
 mod rate_limit;
 mod reqwest;
 
@@ -44,15 +46,16 @@ pub trait HttpClient: Send + Sync + 'static {
 /// A value returned from a HTTP method
 pub struct HttpResponse<T: for<'a> Deserialize<'a>> {
     _marker: PhantomData<T>,
-    inner: Response,
+    body: String,
+    status: StatusCode,
 }
 
 impl<T: for<'a> Deserialize<'a>> HttpResponse<T> {
     pub fn json(self) -> Result<T> {
-        Ok(self.inner.json()?)
+        Ok(serde_json::from_str(&self.body)?)
     }
 
     pub fn status(&self) -> StatusCode {
-        self.inner.status()
+        self.status
     }
 }

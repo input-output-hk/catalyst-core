@@ -42,10 +42,13 @@ impl HttpClient for ReqwestClient {
         T: for<'a> Deserialize<'a>,
     {
         let url = self.base_url.join(path.as_ref())?;
+        let response = self.client.get(url).send()?;
+        let status = response.status();
 
         Ok(HttpResponse {
             _marker: std::marker::PhantomData,
-            inner: self.client.get(url).send()?,
+            status,
+            body: response.text()?,
         })
     }
 }

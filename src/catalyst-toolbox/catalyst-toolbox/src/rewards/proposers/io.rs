@@ -111,3 +111,92 @@ fn get_data_from_files(
 
     Ok((proposals, voteplans, challenges))
 }
+
+#[cfg(test)]
+mod tests {
+    use std::fs::read_to_string;
+
+    use super::*;
+    use assert_fs::TempDir;
+    use reqwest::StatusCode;
+
+    use crate::{
+        http::mock::{Method, MockClient, Spec},
+        rewards::proposers::Calculation,
+    };
+
+    #[test]
+    fn write_csv_adds_header() {
+        let header = [
+            "internal_id",
+            "proposal_id",
+            "proposal",
+            "overall_score",
+            "yes",
+            "no",
+            "result",
+            "meets_approval_threshold",
+            "requested_dollars",
+            "status",
+            "fund_depletion",
+            "not_funded_reason",
+            "link_to_ideascale",
+        ];
+        let calculations = [Calculation::default()];
+
+        let dir = TempDir::new().unwrap();
+        let file = dir.join("file.csv");
+
+        File::create(&file).unwrap();
+        write_csv(&file, &calculations).unwrap();
+
+        let contents = read_to_string(&file).unwrap();
+        let first_line = contents.lines().next().unwrap();
+        assert_eq!(first_line, header.join(","));
+    }
+
+    #[test]
+    fn can_read_data_from_file() {
+        let dir = TempDir::new().unwrap();
+        let proposals_file = dir.join("proposals");
+        let voteplans_file = dir.join("voteplans");
+        let challenges_file = dir.join("challenges");
+
+        let empty = "[]";
+        std::fs::write(&proposals_file, empty).unwrap();
+        std::fs::write(&voteplans_file, empty).unwrap();
+        std::fs::write(&challenges_file, empty).unwrap();
+
+        let (proposals, voteplans, challenges) =
+            get_data_from_files(&proposals_file, &voteplans_file, &challenges_file).unwrap();
+
+        assert_eq!(proposals, vec![]);
+        assert_eq!(voteplans, vec![]);
+        assert_eq!(challenges, vec![]);
+    }
+
+    #[test]
+    fn can_read_data_from_network() {
+        let mock_client = MockClient::new(|spec| match spec {
+            Spec {
+                method: Method::Get,
+                path: "/api/v0/proposals",
+            } => ("[]".to_string(), StatusCode::OK),
+            Spec {
+                method: Method::Get,
+                path: "/api/v0/vote/active/plans",
+            } => ("[]".to_string(), StatusCode::OK),
+            Spec {
+                method: Method::Get,
+                path: "/api/v0/challenges",
+            } => ("[]".to_string(), StatusCode::OK),
+            _ => ("not found".to_string(), StatusCode::NOT_FOUND),
+        });
+
+        let (proposals, voteplans, challenges) = get_data_from_network(&mock_client, "").unwrap();
+
+        assert_eq!(proposals, vec![]);
+        assert_eq!(voteplans, vec![]);
+        assert_eq!(challenges, vec![]);
+    }
+}

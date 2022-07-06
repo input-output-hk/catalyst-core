@@ -90,6 +90,27 @@ pub struct Calculation {
     pub link_to_ideascale: String,
 }
 
+#[cfg(test)]
+impl Default for Calculation {
+    fn default() -> Self {
+        Self {
+            internal_id: Default::default(),
+            proposal_id: <[u8; 32]>::default().into(),
+            proposal: Default::default(),
+            overall_score: Default::default(),
+            yes: Default::default(),
+            no: Default::default(),
+            result: Default::default(),
+            meets_approval_threshold: YesNo::Yes,
+            requested_dollars: Default::default(),
+            status: FundedStatus::NotFunded,
+            fund_depletion: Default::default(),
+            not_funded_reason: None,
+            link_to_ideascale: Default::default(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub enum OutputFormat {
     Json,

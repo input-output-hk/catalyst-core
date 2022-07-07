@@ -82,6 +82,7 @@ pub fn calculate_results(
     threshold: f64,
     total_stake_threshold: f64,
 ) -> Result<Vec<Calculation>> {
+    debug!("calculating. threshold: {threshold}, total_stake_threshold: {total_stake_threshold}");
     let success_results = calculate_vote_difference_and_threshold_success(
         proposals,
         voteplans,
@@ -102,7 +103,6 @@ pub fn calculate_results(
         let (total_result, threshold_success) = success_results[proposal_id];
         let (yes, no) = extract_yes_no_votes(proposal, voteplan)?;
 
-        debug!("");
         let funded = threshold_success && depletion > 0 && depletion >= proposal.proposal_funds;
 
         let not_funded_reason = match (funded, threshold_success) {
@@ -110,6 +110,7 @@ pub fn calculate_results(
             (false, true) => Some(NotFundedReason::OverBudget),
             (false, false) => Some(NotFundedReason::ApprovalThreshold),
         };
+        debug!("not funded reason: {not_funded_reason:?}");
 
         if funded {
             depletion -= proposal.proposal_funds;
@@ -173,11 +174,13 @@ fn calculate_approval_threshold(
 
     let total = yes + no;
     let diff = yes as i64 - no as i64;
+    debug!("total: {total}, diff: {diff}");
 
     let pass_total_threshold = total as f64 >= total_stake_threshold;
     let pass_relative_threshold = (yes as f64 / no as f64) >= threshold;
     let success = pass_total_threshold && pass_relative_threshold;
 
+    debug!("total_stake_threshold: {total_stake_threshold}, threshold: {threshold}");
     debug!("success: {success}, total_threshold: {pass_total_threshold}, relative_threshold: {pass_relative_threshold}");
 
     Ok((diff, success))

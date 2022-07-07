@@ -81,7 +81,7 @@ pub struct Calculation {
     pub overall_score: i64,
     pub yes: u64,
     pub no: u64,
-    pub result: u64,
+    pub result: i64,
     pub meets_approval_threshold: YesNo,
     pub requested_dollars: i64,
     pub status: FundedStatus,

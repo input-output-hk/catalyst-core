@@ -8,14 +8,17 @@ use color_eyre::{
 use itertools::Itertools;
 use jormungandr_lib::{
     crypto::hash::Hash,
-    interfaces::{Address, Block0Configuration, Initial, Tally, VoteProposalStatus, VotePlanStatus},
+    interfaces::{
+        Address, Block0Configuration, Initial, Tally, VotePlanStatus, VoteProposalStatus,
+    },
 };
+use log::debug;
 use vit_servicing_station_lib::db::models::{challenges::Challenge, proposals::Proposal};
 
 pub use types::*;
 pub use util::build_path_for_challenge;
 
-use self::{types::NotFundedReason, io::vecs_to_maps};
+use self::{io::vecs_to_maps, types::NotFundedReason};
 
 pub mod io;
 mod types;
@@ -93,11 +96,13 @@ pub fn calculate_results(
     let mut depletion = fund;
 
     for proposal_id in sorted_ids {
+        debug!("calculating proposal_id: {proposal_id}");
         let proposal = &proposals[proposal_id];
         let voteplan = &voteplans[proposal_id];
         let (total_result, threshold_success) = success_results[proposal_id];
         let (yes, no) = extract_yes_no_votes(proposal, voteplan)?;
 
+        debug!("");
         let funded = threshold_success && depletion > 0 && depletion >= proposal.proposal_funds;
 
         let not_funded_reason = match (funded, threshold_success) {
@@ -135,7 +140,7 @@ fn calculate_vote_difference_and_threshold_success(
     voteplans: &HashMap<Hash, VoteProposalStatus>,
     threshold: f64,
     total_stake_threshold: f64,
-) -> Result<HashMap<Hash, (u64, bool)>> {
+) -> Result<HashMap<Hash, (i64, bool)>> {
     let result = proposals
         .iter()
         .map(|(id, prop)| {
@@ -155,17 +160,25 @@ fn calculate_vote_difference_and_threshold_success(
 fn calculate_approval_threshold(
     proposal: &Proposal,
     voteplan: &VoteProposalStatus,
-    approval_threshold: f64,
+    threshold: f64,
     total_stake_threshold: f64,
-) -> Result<(u64, bool)> {
+) -> Result<(i64, bool)> {
+    debug!(
+        "calculating approval threshold for proposal_id: {}",
+        &proposal.proposal_id
+    );
+
     let (yes, no) = extract_yes_no_votes(proposal, voteplan)?;
+    debug!("yes votes: {yes}, no votes: {no}");
 
     let total = yes + no;
-    let diff = yes - no;
+    let diff = yes as i64 - no as i64;
 
     let pass_total_threshold = total as f64 >= total_stake_threshold;
-    let pass_relative_threshold = (yes as f64 / no as f64) >= approval_threshold;
+    let pass_relative_threshold = (yes as f64 / no as f64) >= threshold;
     let success = pass_total_threshold && pass_relative_threshold;
+
+    debug!("success: {success}, total_threshold: {pass_total_threshold}, relative_threshold: {pass_relative_threshold}");
 
     Ok((diff, success))
 }

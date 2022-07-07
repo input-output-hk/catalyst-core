@@ -12,7 +12,7 @@ use jormungandr_lib::{
 };
 use vit_servicing_station_lib::db::models::{challenges::Challenge, proposals::Proposal};
 
-pub use types::{Calculation, OutputFormat, ProposerRewards};
+pub use types::*;
 pub use util::build_path_for_challenge;
 
 use self::{types::NotFundedReason, io::vecs_to_maps};

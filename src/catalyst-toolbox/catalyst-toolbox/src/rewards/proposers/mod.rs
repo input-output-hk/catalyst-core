@@ -8,14 +8,14 @@ use color_eyre::{
 use itertools::Itertools;
 use jormungandr_lib::{
     crypto::hash::Hash,
-    interfaces::{Address, Block0Configuration, Initial, Tally, VoteProposalStatus},
+    interfaces::{Address, Block0Configuration, Initial, Tally, VoteProposalStatus, VotePlanStatus},
 };
 use vit_servicing_station_lib::db::models::{challenges::Challenge, proposals::Proposal};
 
 pub use types::{Calculation, OutputFormat, ProposerRewards};
 pub use util::build_path_for_challenge;
 
-use self::types::NotFundedReason;
+use self::{types::NotFundedReason, io::vecs_to_maps};
 
 pub mod io;
 mod types;
@@ -23,9 +23,9 @@ mod util;
 
 pub struct ProposerRewardsInputs {
     pub block0_config: Block0Configuration,
-    pub proposals: HashMap<Hash, Proposal>,
-    pub voteplans: HashMap<Hash, VoteProposalStatus>,
-    pub challenges: HashMap<i32, Challenge>,
+    pub proposals: Vec<Proposal>,
+    pub voteplans: Vec<VotePlanStatus>,
+    pub challenges: Vec<Challenge>,
     pub excluded_proposals: HashSet<String>,
     pub committee_keys: Vec<Address>,
     pub total_stake_threshold: f64,
@@ -44,6 +44,7 @@ pub fn proposer_rewards(
         approval_threshold,
     }: ProposerRewardsInputs,
 ) -> Result<Vec<(Challenge, Vec<Calculation>)>> {
+    let (proposals, voteplans, challenges) = vecs_to_maps(proposals, voteplans, challenges)?;
     sanity_check_data(&proposals, &voteplans)?;
 
     let proposals = filter_excluded_proposals(&proposals, &excluded_proposals);

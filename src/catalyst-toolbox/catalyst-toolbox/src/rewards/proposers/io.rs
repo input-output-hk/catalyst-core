@@ -42,7 +42,7 @@ pub fn load_data(
     proposals: Option<&Path>,
     active_voteplans: Option<&Path>,
     challenges: Option<&Path>,
-) -> Result<CleanedVitSSData> {
+) -> Result<VitSSData> {
     let data = match (proposals, active_voteplans, challenges) {
         (Some(p), Some(vp), Some(c)) => {
             info!("loading data from files");
@@ -59,8 +59,14 @@ pub fn load_data(
         }
     };
 
-    let (proposals, voteplans, challenges) = data;
+    Ok(data)
+}
 
+pub fn vecs_to_maps(
+    proposals: Vec<Proposal>,
+    voteplans: Vec<VotePlanStatus>,
+    challenges: Vec<Challenge>,
+) -> Result<CleanedVitSSData> {
     let proposals_map: HashMap<_, _> = proposals
         .into_iter()
         .map(|prop| {

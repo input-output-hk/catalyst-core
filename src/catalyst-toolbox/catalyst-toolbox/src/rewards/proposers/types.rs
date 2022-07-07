@@ -1,5 +1,5 @@
 use jormungandr_lib::crypto::hash::Hash;
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 use std::{path::PathBuf, str::FromStr};
 use structopt::StructOpt;
 
@@ -7,7 +7,7 @@ use color_eyre::{eyre::eyre, Report};
 
 macro_rules! bool_enum {
     ($enum_name:ident, $true_case:ident, $false_case:ident) => {
-        #[derive(Debug, Serialize)]
+        #[derive(Debug, Serialize, Deserialize)]
         #[serde(rename_all = "UPPERCASE")]
         pub enum $enum_name {
             $true_case,
@@ -28,7 +28,7 @@ macro_rules! bool_enum {
 bool_enum!(YesNo, Yes, No);
 bool_enum!(FundedStatus, Funded, NotFunded);
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum NotFundedReason {
     #[serde(rename = "Not Funded - Over Budget")]
     OverBudget,
@@ -73,7 +73,7 @@ pub struct ProposerRewards {
     pub committee_keys: Option<PathBuf>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Calculation {
     pub internal_id: String,
     pub proposal_id: Hash,

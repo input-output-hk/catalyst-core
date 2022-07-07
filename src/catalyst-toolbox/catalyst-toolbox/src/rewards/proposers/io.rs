@@ -10,7 +10,7 @@ use vit_servicing_station_lib::db::models::{challenges::Challenge, proposals::Pr
 
 use serde::Deserialize;
 
-use super::Calculation;
+use super::{build_path_for_challenge, Calculation, OutputFormat};
 
 type VitSSData = (Vec<Proposal>, Vec<VotePlanStatus>, Vec<Challenge>);
 type CleanedVitSSData = (
@@ -19,14 +19,31 @@ type CleanedVitSSData = (
     HashMap<i32, Challenge>,
 );
 
-pub fn write_json(path: &Path, results: &[Calculation]) -> Result<()> {
+pub fn write_results(
+    path: &Path,
+    format: OutputFormat,
+    results: impl IntoIterator<Item = (Challenge, Vec<Calculation>)>,
+) -> Result<()> {
+    for (challenge, calculations) in results {
+        let output_path = build_path_for_challenge(path, &challenge.title);
+
+        match format {
+            OutputFormat::Json => write_json(&output_path, &calculations)?,
+            OutputFormat::Csv => write_csv(&output_path, &calculations)?,
+        };
+    }
+
+    Ok(())
+}
+
+fn write_json(path: &Path, results: &[Calculation]) -> Result<()> {
     let writer = BufWriter::new(File::options().write(true).open(path)?);
     serde_json::to_writer(writer, &results)?;
 
     Ok(())
 }
 
-pub fn write_csv(path: &Path, results: &[Calculation]) -> Result<()> {
+fn write_csv(path: &Path, results: &[Calculation]) -> Result<()> {
     let mut writer = csv::Writer::from_path(path)?;
     for record in results {
         writer.serialize(record)?;

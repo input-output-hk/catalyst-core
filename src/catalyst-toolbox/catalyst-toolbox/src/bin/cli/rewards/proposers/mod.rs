@@ -3,9 +3,8 @@ use std::{collections::HashSet, fs::File};
 use catalyst_toolbox::{
     http::HttpClient,
     rewards::proposers::{
-        build_path_for_challenge,
-        io::{load_data, write_csv, write_json},
-        proposer_rewards, OutputFormat, ProposerRewards, ProposerRewardsInputs,
+        io::{load_data, write_results},
+        proposer_rewards, ProposerRewards, ProposerRewardsInputs,
     },
 };
 use color_eyre::eyre::Result;
@@ -56,14 +55,7 @@ pub fn rewards(
         approval_threshold: *approval_threshold,
     })?;
 
-    for (challenge, calculations) in results {
-        let output_path = build_path_for_challenge(output, &challenge.title);
-
-        match output_format {
-            OutputFormat::Json => write_json(&output_path, &calculations)?,
-            OutputFormat::Csv => write_csv(&output_path, &calculations)?,
-        };
-    }
+    write_results(output, *output_format, results)?;
 
     Ok(())
 }

@@ -53,7 +53,7 @@ pub fn proposer_rewards(
     let proposals = filter_excluded_proposals(&proposals, &excluded_proposals);
 
     let Value(total_stake) = calculate_total_stake_from_block0(&block0_config, &committee_keys);
-    let total_stake_approval_threshold = total_stake_threshold + total_stake as f64;
+    let total_stake_approval_threshold = total_stake_threshold * total_stake as f64;
 
     let mut result = Vec::with_capacity(challenges.len());
 

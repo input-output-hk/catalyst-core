@@ -748,6 +748,14 @@ impl TestLedger {
     pub fn pots(&self) -> Pots {
         self.ledger.pots.clone()
     }
+
+    #[cfg(feature = "evm")]
+    pub fn get_evm_mapped_address(
+        &self,
+        jor_id: &crate::account::Identifier,
+    ) -> Option<chain_evm::Address> {
+        self.ledger.evm.address_mapping.evm_address(jor_id)
+    }
 }
 
 impl From<TestLedger> for Ledger {

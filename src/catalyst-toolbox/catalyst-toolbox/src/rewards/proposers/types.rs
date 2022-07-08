@@ -1,5 +1,5 @@
 use jormungandr_lib::crypto::hash::Hash;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::{path::PathBuf, str::FromStr};
 use structopt::StructOpt;
 

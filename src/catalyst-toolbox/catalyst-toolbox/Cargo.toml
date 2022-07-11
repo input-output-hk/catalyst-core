@@ -33,6 +33,7 @@ jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jorm
 jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr.git",  branch = "master" }
 thor = { git = "https://github.com/input-output-hk/jormungandr.git",  branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
+rayon = "1.5"
 rust_decimal = "1.16"
 rust_decimal_macros = "1"
 futures = "0.3"
@@ -41,6 +42,7 @@ once_cell = "1.8"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 rand = "0.8.3"
 rand_chacha = "0.3"
+governor = { version = "0.4", features = ["std", "jitter"], default-features = false}
 regex = "1.5"
 serde = "1.0"
 serde_json = "1.0"
@@ -56,11 +58,12 @@ image = "0.23.12"
 qrcode = "0.12"
 quircs = "0.10.0"
 symmetric-cipher = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
-graphql_client = "0.10"
+graphql_client = { version = "0.10" }
 gag = "1"
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 env_logger = "0.9"
 voting-hir = { path = "../voting-hir", features = ["serde"] }
+fraction = "0.10"
 
 [dev-dependencies]
 rand_chacha = "0.3"
@@ -71,6 +74,7 @@ chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch
 proptest = { git = "https://github.com/input-output-hk/proptest", branch = "master" }
 test-strategy = "0.2"
 serde_test = "1"
+voting-hir =  { path = "../voting-hir", features = ["serde", "proptest"] }
 
 [build-dependencies]
 versionisator = "1.0.3"

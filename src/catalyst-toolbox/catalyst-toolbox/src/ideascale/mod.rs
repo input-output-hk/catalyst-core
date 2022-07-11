@@ -1,10 +1,13 @@
 mod fetch;
 mod models;
 
+use crate::http::HttpClient;
 use crate::ideascale::models::de::{clean_str, Challenge, Fund, Funnel, Proposal, Stage};
 
 use std::collections::{HashMap, HashSet};
 
+use color_eyre::Report;
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use regex::Regex;
 
 pub use crate::ideascale::fetch::{Scores, Sponsors};
@@ -17,9 +20,6 @@ const PROCESS_IMPROVEMENTS_ID: u32 = 7666;
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
-    Fetch(#[from] fetch::Error),
-
-    #[error(transparent)]
     Join(#[from] tokio::task::JoinError),
 
     #[error(transparent)]
@@ -30,6 +30,9 @@ pub enum Error {
 
     #[error("invalid token")]
     InvalidToken,
+
+    #[error(transparent)]
+    Other(#[from] Report),
 }
 
 #[derive(Debug)]
@@ -40,26 +43,22 @@ pub struct IdeaScaleData {
     pub proposals: Vec<Proposal>,
 }
 
-pub async fn fetch_all(
+pub fn fetch_all(
     fund: usize,
     stage_label: &str,
     stages_filters: &[&str],
     excluded_proposals: &HashSet<u32>,
-    api_token: String,
+    client: &impl HttpClient,
 ) -> Result<IdeaScaleData, Error> {
-    if !fetch::is_token_valid(api_token.clone()).await? {
+    if !fetch::is_token_valid(client)? {
         return Err(Error::InvalidToken);
     }
 
-    let funnels_task = tokio::spawn(fetch::get_funnels_data_for_fund(api_token.clone()));
-    let funds_task = tokio::spawn(fetch::get_funds_data(api_token.clone()));
-    let funnels = funnels_task
-        .await??
+    let funnels = fetch::get_funnels_data_for_fund(client)?
         .into_iter()
         .map(|f| (f.id, f))
         .collect();
-
-    let funds = funds_task.await??;
+    let funds = fetch::get_funds_data(client)?;
 
     let challenges: Vec<Challenge> = funds
         .iter()
@@ -68,14 +67,13 @@ pub async fn fetch_all(
         .filter(|c| c.rewards > 0.into())
         .collect();
 
-    let proposals_tasks: Vec<_> = challenges
-        .iter()
-        .map(|c| tokio::spawn(fetch::get_proposals_data(c.id, api_token.clone())))
+    let proposals: Vec<_> = challenges
+        .par_iter()
+        .map(|c| (fetch::get_proposals_data(client, c.id)))
         .collect();
 
     let matches = regex::Regex::new(&stages_filters.join("|"))?;
-    let mut proposals: Vec<Proposal> = futures::future::try_join_all(proposals_tasks)
-        .await?
+    let mut proposals: Vec<Proposal> = proposals
         .into_iter()
         // forcefully unwrap to pop errors directly
         // TODO: Handle error better here
@@ -87,7 +85,7 @@ pub async fn fetch_all(
 
     proposals.sort_by_key(|p| p.proposal_id);
 
-    let mut stages: Vec<_> = fetch::get_stages(api_token.clone()).await?;
+    let mut stages: Vec<_> = fetch::get_stages(client)?;
     stages.retain(|stage| filter_stages(stage, stage_label, &funnels));
 
     Ok(IdeaScaleData {

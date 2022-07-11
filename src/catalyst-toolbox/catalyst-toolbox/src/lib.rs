@@ -12,5 +12,4 @@ pub mod utils;
 pub mod vca_reviews;
 pub mod vote_check;
 
-#[cfg(feature = "test-api")]
-pub mod testing;
+pub mod http;

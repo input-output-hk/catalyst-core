@@ -397,7 +397,7 @@ pub fn recover_ledger_from_logs(
                 }
 
                 ledger
-                    .apply_fragment(&ledger.get_ledger_parameters(), &replayed, current_date)
+                    .apply_fragment(&replayed, current_date)
                     .map(|ledger| (ledger, replayed))
                     .map_err(|e| (Error::from(e), original.fragment))
             });

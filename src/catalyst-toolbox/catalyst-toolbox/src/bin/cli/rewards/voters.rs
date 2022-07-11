@@ -1,5 +1,5 @@
 use catalyst_toolbox::rewards::voters::{calc_voter_rewards, Rewards, VoteCount};
-use catalyst_toolbox::snapshot::{registration::MainnetRewardAddress, Snapshot};
+use catalyst_toolbox::snapshot::{registration::MainnetRewardAddress, SnapshotInfo};
 use catalyst_toolbox::utils::assert_are_close;
 
 use color_eyre::eyre::eyre;
@@ -9,6 +9,8 @@ use jcli_lib::jcli_lib::block::{open_output, Common};
 use jcli_lib::utils::io::open_file_read;
 use jormungandr_lib::interfaces::Block0Configuration;
 
+use color_eyre::Report;
+use jcli_lib::jcli_lib::block::Common;
 use structopt::StructOpt;
 
 use std::collections::BTreeMap;
@@ -23,15 +25,9 @@ pub struct VotersRewards {
     #[structopt(long)]
     total_rewards: u64,
 
-    /// Path to raw snapshot
+    /// Path to a json encoded list of `SnapshotInfo`
     #[structopt(long)]
-    snapshot_path: PathBuf,
-
-    /// Stake threshold to be able to participate in a Catalyst sidechain
-    /// Registrations with less than the threshold associated to the stake address
-    /// will be ignored
-    #[structopt(long)]
-    registration_threshold: u64,
+    snapshot_info_path: PathBuf,
 
     #[structopt(long)]
     votes_count_path: PathBuf,
@@ -63,8 +59,7 @@ impl VotersRewards {
         let VotersRewards {
             common,
             total_rewards,
-            snapshot_path,
-            registration_threshold,
+            snapshot_info_path,
             votes_count_path,
             vote_threshold,
         } = self;

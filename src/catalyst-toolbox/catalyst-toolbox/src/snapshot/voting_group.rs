@@ -71,7 +71,7 @@ impl VotingGroupAssigner for RepsVotersAssigner {
     }
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "test-api"))]
 impl<F> VotingGroupAssigner for F
 where
     F: Fn(&Identifier) -> VotingGroup,

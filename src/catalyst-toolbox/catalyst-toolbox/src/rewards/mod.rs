@@ -1,4 +1,5 @@
 pub mod community_advisors;
+pub mod proposers;
 pub mod veterans;
 pub mod voters;
 

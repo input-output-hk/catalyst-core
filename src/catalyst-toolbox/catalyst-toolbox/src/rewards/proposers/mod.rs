@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use chain_impl_mockchain::value::Value;
 use color_eyre::{
-    eyre::{bail, eyre, Context},
+    eyre::{bail, eyre},
     Help, Result,
 };
 use itertools::Itertools;

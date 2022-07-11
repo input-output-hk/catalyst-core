@@ -2,8 +2,8 @@ use std::collections::{HashMap, HashSet};
 
 use chain_impl_mockchain::value::Value;
 use color_eyre::{
-    eyre::{bail, eyre},
-    Result,
+    eyre::{bail, eyre, Context},
+    Help, Result,
 };
 use itertools::Itertools;
 use jormungandr_lib::{
@@ -188,16 +188,19 @@ fn calculate_approval_threshold(
 
 /// returns (yes, no)
 fn extract_yes_no_votes(proposal: &Proposal, voteplan: &VoteProposalStatus) -> Result<(u64, u64)> {
+    const YES: &str = "yes";
+    const NO: &str = "no";
+
     let yes_index = proposal
         .chain_vote_options
         .0
-        .get("yes")
-        .ok_or(eyre!("missing `yes` field"))?;
+        .get(YES)
+        .ok_or(eyre!("missing `{YES}` field"))?;
     let no_index = proposal
         .chain_vote_options
         .0
-        .get("no")
-        .ok_or(eyre!("missing `no` field"))?;
+        .get(NO)
+        .ok_or(eyre!("missing `{NO}` field"))?;
 
     let tally = match &voteplan.tally {
         Tally::Public { result } => result,
@@ -247,12 +250,22 @@ fn sanity_check_data(
     Ok(())
 }
 
+const INVALID_CHAIN_ID_UTF8_MSG: &str = "chain_proposal_id's serde impls encode strings as `Vec<u8>`, panicking if non-UTF-8 is detected, so it should be safe to assume `chain_proposal_id` contains valid UTF-8 (probably a base16 string)";
+
 fn filter_excluded_proposals(
     proposals: &HashMap<Hash, Proposal>,
     excluded_proposals: &HashSet<String>,
 ) -> HashMap<Hash, Proposal> {
     let predicate = |prop: &Proposal| {
-        let chain_proposal_id = String::from_utf8(prop.chain_proposal_id.clone()).unwrap();
+        let chain_proposal_id = String::from_utf8(prop.chain_proposal_id.clone())
+            .map_err(|_| {
+                eyre!(
+                    "chain_proposal_id contained invalid UTF8 bytes, internal_id: {}",
+                    prop.internal_id
+                )
+                .with_note(|| INVALID_CHAIN_ID_UTF8_MSG)
+            })
+            .unwrap();
 
         !excluded_proposals.contains(&prop.proposal_id)
             && !excluded_proposals.contains(&chain_proposal_id)

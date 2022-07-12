@@ -1,13 +1,15 @@
 use std::{fs::File, path::Path};
 
+use catalyst_toolbox::{
+    http::HttpClient,
+    rewards::proposers::{OutputFormat, ProposerRewards},
+};
 use color_eyre::Result;
 use config::*;
 use log::info;
 use serde_json::from_reader;
 
 mod config;
-mod proposers;
-mod python;
 
 pub(super) fn full_rewards(path: &Path) -> Result<()> {
     let config = from_reader(File::open(path)?)?;
@@ -21,11 +23,11 @@ pub(super) fn full_rewards(path: &Path) -> Result<()> {
                 assessments_path,
                 proposal_bonus_output,
                 approved_proposals_path,
-                proposer_script_path,
-                csv_merger_script_path,
                 active_voteplans,
                 challenges,
                 proposals_path,
+                committee_keys,
+                excluded_proposals,
             },
         outputs:
             Outputs {
@@ -45,11 +47,9 @@ pub(super) fn full_rewards(path: &Path) -> Result<()> {
 
     info!("calculating voter rewards");
     super::voters::voter_rewards(
-        &block_file,
         &voter_rewards_output,
         &vote_count_path,
         &snapshot_path,
-        voter_params.registration_threshold,
         voter_params.vote_threshold,
         voter_params.total_rewards,
     )?;
@@ -80,18 +80,33 @@ pub(super) fn full_rewards(path: &Path) -> Result<()> {
     )?;
 
     info!("calculating proposer rewards");
-    proposers::proposers_rewards(
-        &proposer_script_path,
-        &csv_merger_script_path,
-        &block_file,
-        &proposer_rewards_output,
-        proposer_params.stake_threshold,
-        proposer_params.approval_threshold,
-        &proposals_path,
-        &challenges,
-        &active_voteplans,
-        &proposer_params.pattern,
+    super::proposers::rewards(
+        &ProposerRewards {
+            output: proposer_rewards_output,
+            block0: block_file,
+            total_stake_threshold: proposer_params.stake_threshold,
+            approval_threshold: proposer_params.approval_threshold,
+            proposals: Some(proposals_path),
+            active_voteplans: Some(active_voteplans),
+            challenges: Some(challenges),
+            committee_keys: Some(committee_keys),
+            excluded_proposals,
+            output_format: OutputFormat::Csv,
+            vit_station_url: "not used".into(),
+        },
+        &PanickingHttpClient,
     )?;
 
     Ok(())
+}
+
+struct PanickingHttpClient;
+
+impl HttpClient for PanickingHttpClient {
+    fn get<T>(&self, _path: &str) -> Result<catalyst_toolbox::http::HttpResponse<T>>
+    where
+        T: for<'a> serde::Deserialize<'a>,
+    {
+        unimplemented!("this implementation always panics");
+    }
 }

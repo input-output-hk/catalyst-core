@@ -4,13 +4,9 @@ use catalyst_toolbox::utils::assert_are_close;
 
 use color_eyre::eyre::eyre;
 use color_eyre::{Report, Result};
-use jcli_lib::block::{load_block, open_block_file};
-use jcli_lib::jcli_lib::block::{open_output, Common};
-use jcli_lib::utils::io::open_file_read;
-use jormungandr_lib::interfaces::Block0Configuration;
-
-use color_eyre::Report;
+use jcli_lib::block::open_output;
 use jcli_lib::jcli_lib::block::Common;
+
 use structopt::StructOpt;
 
 use std::collections::BTreeMap;
@@ -66,17 +62,11 @@ impl VotersRewards {
 
         voter_rewards(
             common
-                .input
-                .input_file
-                .as_deref()
-                .ok_or(eyre!("missing block file"))?,
-            common
                 .output_file
                 .as_deref()
                 .ok_or(eyre!("missing output file"))?,
             &votes_count_path,
-            &snapshot_path,
-            registration_threshold,
+            &snapshot_info_path,
             vote_threshold,
             total_rewards,
         )
@@ -84,29 +74,22 @@ impl VotersRewards {
 }
 
 pub fn voter_rewards(
-    block_file: &Path,
     output: &Path,
     votes_count_path: &Path,
     snapshot_path: &Path,
-    registration_threshold: u64,
     vote_threshold: u64,
     total_rewards: u64,
 ) -> Result<()> {
-    let block = open_block_file(&Some(block_file.to_path_buf()))?;
-    let block = load_block(block)?;
+    let vote_count: VoteCount = serde_json::from_reader(jcli_lib::utils::io::open_file_read(
+        &Some(votes_count_path),
+    )?)?;
 
-    let block0 = Block0Configuration::from_block(&block)?;
-
-    let vote_count: VoteCount = serde_json::from_reader(open_file_read(&Some(votes_count_path))?)?;
-    let snapshot = Snapshot::from_raw_snapshot(
-        serde_json::from_reader(open_file_read(&Some(snapshot_path))?)?,
-        registration_threshold.into(),
-    );
+    let snapshot: Vec<SnapshotInfo> =
+        serde_json::from_reader(jcli_lib::utils::io::open_file_read(&Some(snapshot_path))?)?;
 
     let results = calc_voter_rewards(
         vote_count,
         vote_threshold,
-        &block0,
         snapshot,
         Rewards::from(total_rewards),
     )?;

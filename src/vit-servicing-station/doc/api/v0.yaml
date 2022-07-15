@@ -245,6 +245,25 @@ paths:
         "400":
           description: Invalid combination of table/column (e.g. using funds column on challenges table)
 
+  /api/v0/search_count:
+    post:
+      summary: Search various resources with various constraints and returns count of the result set
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchCountQuery"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: i32
+                description: Count of the result set
+        "400":
+          description: Invalid combination of table/column (e.g. using funds column on challenges table)
 
   /api/v0/snapshot/{tag}/{voting_key}:
     get:
@@ -762,7 +781,30 @@ components:
           items:
               type: integer
               format: i64
+
     SearchQuery:
+      properties:
+        table:
+          $ref: "#/components/schemas/SearchConstraint"
+        filter:
+          type: array
+          items: 
+            $ref: "#/components/schemas/SearchConstraint"
+        order-by:
+          type: array
+          items: 
+            $ref: "#/components/schemas/SearchOrderBy"
+        limit:
+          type: integer
+          format: i32
+          description: Sets the limit clause of the search query.
+        offset:
+          type: integer
+          format: i32
+          description: Sets the offset clause of the search query.
+      required: [table]
+
+    SearchCountQuery:
       properties:
         table:
           $ref: "#/components/schemas/SearchConstraint"
@@ -776,7 +818,6 @@ components:
             $ref: "#/components/schemas/SearchOrderBy"
       required: [table]
 
-    
     SearchConstraint:
       properties:
         column:

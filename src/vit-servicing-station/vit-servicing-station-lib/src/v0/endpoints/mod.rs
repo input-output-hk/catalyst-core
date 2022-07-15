@@ -50,7 +50,11 @@ pub async fn filter(
     let reviews_filter = advisor_reviews::filter(reviews_root.boxed(), context.clone()).await;
 
     let search_root = warp::path!("search" / ..);
-    let search_filter = search::filter(search_root.boxed(), context.clone()).await;
+    let search_filter = search::search_filter(search_root.boxed(), context.clone()).await;
+
+    let search_count_root = warp::path!("search_count" / ..);
+    let search_count_filter =
+        search::search_count_filter(search_count_root.boxed(), context.clone()).await;
 
     let snapshot_root = warp::path!("snapshot" / ..);
     let snapshot_rx_filter = snapshot_service::filter(snapshot_root.boxed(), snapshot_rx.clone());
@@ -82,6 +86,7 @@ pub async fn filter(
                 .or(challenges_filter)
                 .or(reviews_filter)
                 .or(search_filter)
+                .or(search_count_filter)
                 .or(snapshot_rx_filter)
                 .or(admin_filter),
         ),

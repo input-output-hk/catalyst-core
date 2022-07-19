@@ -4,14 +4,16 @@ use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDefBuilder;
 use fake::faker::name::en::Name;
 use fake::Fake;
-use rand::{rngs::OsRng, RngCore};
+use rand::prelude::StdRng;
+use rand::RngCore;
+use rand::SeedableRng;
 use std::{collections::HashMap, iter};
 use time::{Duration, OffsetDateTime};
 use vit_servicing_station_lib::{db::models::api_tokens::ApiTokenData, v0::api_token::ApiToken};
 
 #[derive(Clone)]
 pub struct ArbitraryGenerator {
-    id_generator: OsRng,
+    id_generator: StdRng,
 }
 
 impl Default for ArbitraryGenerator {
@@ -23,7 +25,7 @@ impl Default for ArbitraryGenerator {
 impl ArbitraryGenerator {
     pub fn new() -> Self {
         Self {
-            id_generator: OsRng,
+            id_generator: StdRng::seed_from_u64(0),
         }
     }
 

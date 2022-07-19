@@ -7,8 +7,8 @@ use crate::db::models::{challenges::Challenge, proposals::FullProposalInfo};
 pub struct SearchQuery {
     #[serde(flatten)]
     pub query: SearchCountQuery,
-    pub limit: Option<i64>,
-    pub offset: Option<i64>,
+    pub limit: Option<u64>,
+    pub offset: Option<u64>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

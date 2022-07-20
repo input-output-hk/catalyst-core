@@ -79,7 +79,7 @@ pub fn fetch_all(
         // TODO: Handle error better here
         .flat_map(Result::unwrap)
         // filter out non approved or staged proposals
-        .filter(|p| p.approved && filter_proposal_by_stage_type(&p.stage_type, &matches))
+        .filter(|p| p.approved.as_bool() && filter_proposal_by_stage_type(&p.stage_type, &matches))
         .filter(|p| !excluded_proposals.contains(&p.proposal_id))
         .collect();
 

@@ -4,7 +4,10 @@ mod ada_rewards;
 pub use ada_rewards::AdaRewards;
 
 mod clean_string;
-pub use clean_string::{CleanString, clean_str};
+pub use clean_string::{clean_str, CleanString};
+
+mod approval;
+pub use approval::Approval;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Challenge {
@@ -68,8 +71,8 @@ pub struct Proposal {
     #[serde(alias = "campaignId")]
     pub challenge_id: u32,
 
-    #[serde(alias = "flag", deserialize_with = "deserialize_approved")]
-    pub approved: bool,
+    #[serde(alias = "flag")]
+    pub approved: Approval,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -95,17 +98,11 @@ pub struct Stage {
     pub assessment_id: u32,
 }
 
-
-fn deserialize_approved<'de, D: Deserializer<'de>>(deserializer: D) -> Result<bool, D::Error> {
-    let approved = String::deserialize(deserializer)?;
-    Ok(matches!(approved.as_str(), "approved"))
-}
 impl Funnel {
     pub fn is_community(&self) -> bool {
-        self.title.as_ref().contains("Community Setting")
+        self.title.0.contains("Community Setting")
     }
 }
-
 
 fn deserialize_clean_challenge_title<'de, D: Deserializer<'de>>(
     deserializer: D,
@@ -120,4 +117,3 @@ fn deserialize_clean_challenge_title<'de, D: Deserializer<'de>>(
     }
     Ok(rewards_str)
 }
-

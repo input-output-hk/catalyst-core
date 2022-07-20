@@ -8,7 +8,7 @@ use serde::{
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CleanString(String);
+pub struct CleanString(pub String);
 
 impl<'de> Deserialize<'de> for CleanString {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>

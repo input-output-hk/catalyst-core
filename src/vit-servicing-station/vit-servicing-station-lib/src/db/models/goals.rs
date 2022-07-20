@@ -1,3 +1,6 @@
+#![allow(clippy::extra_unused_lifetimes)] // derive(Insertable) has a bug, so this is needed for
+                                          // clippy to pass
+
 use crate::db::schema::goals;
 use diesel::{Insertable, Queryable};
 use serde::{Deserialize, Serialize};

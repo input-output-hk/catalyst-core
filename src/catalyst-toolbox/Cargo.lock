@@ -508,6 +508,7 @@ dependencies = [
  "thor",
  "time 0.3.11",
  "tokio",
+ "unarray",
  "url",
  "versionisator",
  "vit-servicing-station-lib",
@@ -717,7 +718,7 @@ name = "chain-vote"
 version = "0.1.0"
 source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#a8ac1f74eb596e27f9383f3a13e4da3fc16d8d43"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "chain-core",
  "chain-crypto",
  "const_format",
@@ -5666,6 +5667,12 @@ dependencies = [
  "hex",
  "static_assertions",
 ]
+
+[[package]]
+name = "unarray"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "634233a4d474fb493db992470f77c312dd7cf9c967a4a3125ff76d511535e210"
 
 [[package]]
 name = "unicase"

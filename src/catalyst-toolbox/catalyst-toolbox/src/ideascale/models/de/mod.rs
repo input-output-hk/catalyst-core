@@ -1,9 +1,10 @@
-use serde::de::Error;
 use serde::{Deserialize, Deserializer};
-use std::fmt::{Display, Formatter};
 
-#[derive(Debug, Deserialize, Clone, Ord, PartialOrd, Eq, PartialEq)]
-pub struct AdaRewards(#[serde(deserialize_with = "deserialize_rewards")] u64);
+mod ada_rewards;
+pub use ada_rewards::AdaRewards;
+
+mod clean_string;
+pub use clean_string::{CleanString, clean_str};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Challenge {
@@ -94,62 +95,17 @@ pub struct Stage {
     pub assessment_id: u32,
 }
 
-#[derive(Debug, Deserialize, Clone)]
-pub struct CleanString(#[serde(deserialize_with = "deserialize_clean_string")] String);
 
+fn deserialize_approved<'de, D: Deserializer<'de>>(deserializer: D) -> Result<bool, D::Error> {
+    let approved = String::deserialize(deserializer)?;
+    Ok(matches!(approved.as_str(), "approved"))
+}
 impl Funnel {
     pub fn is_community(&self) -> bool {
         self.title.as_ref().contains("Community Setting")
     }
 }
 
-impl From<u64> for AdaRewards {
-    fn from(v: u64) -> Self {
-        Self(v)
-    }
-}
-
-impl ToString for CleanString {
-    fn to_string(&self) -> String {
-        self.0.clone()
-    }
-}
-
-impl AsRef<str> for CleanString {
-    fn as_ref(&self) -> &str {
-        &self.0
-    }
-}
-
-impl From<AdaRewards> for u64 {
-    fn from(rewards: AdaRewards) -> Self {
-        rewards.0
-    }
-}
-
-impl Display for AdaRewards {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-fn deserialize_approved<'de, D: Deserializer<'de>>(deserializer: D) -> Result<bool, D::Error> {
-    let approved = String::deserialize(deserializer)?;
-    Ok(matches!(approved.as_str(), "approved"))
-}
-
-pub fn clean_str(s: &str) -> String {
-    let mut result = s.to_string();
-    result.retain(|c| !matches!(c, '*' | '-' | '/'));
-    result
-}
-
-fn deserialize_clean_string<'de, D: Deserializer<'de>>(
-    deserializer: D,
-) -> Result<String, D::Error> {
-    let rewards_str = String::deserialize(deserializer)?;
-    Ok(clean_str(&rewards_str))
-}
 
 fn deserialize_clean_challenge_title<'de, D: Deserializer<'de>>(
     deserializer: D,
@@ -165,24 +121,3 @@ fn deserialize_clean_challenge_title<'de, D: Deserializer<'de>>(
     Ok(rewards_str)
 }
 
-fn deserialize_rewards<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u64, D::Error> {
-    let rewards_str = String::deserialize(deserializer)?;
-
-    // input is not standarized, hack an early return if it is just 0 ada
-    if rewards_str.starts_with("0 ada") {
-        return Ok(0);
-    }
-    sscanf::scanf!(rewards_str.trim_end(), "${} in {}", String, String)
-        // trim all . or , in between numbers
-        .map(|(mut amount, _currency)| {
-            amount.retain(|c: char| c.is_numeric() && !(matches!(c, '.') || matches!(c, ',')));
-            amount
-        })
-        .and_then(|s| s.parse().ok())
-        .ok_or_else(|| {
-            D::Error::custom(&format!(
-                "Unable to read malformed value: '{}'",
-                rewards_str
-            ))
-        })
-}

@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+xx 35f62b501c8f4be5ccc1ca95c85692680d9c5bb51cf31931292962bf805e8142 # shrinks to input = _AnyStringDeserializesToCleanStringArgs { s: "" }
+xx 6628679236d41598dac84340f0b668e82989e373457f91e51dbd077d870494a6 # shrinks to input = _AnyStringDeserializesToCleanStringArgs { s: "\"" }

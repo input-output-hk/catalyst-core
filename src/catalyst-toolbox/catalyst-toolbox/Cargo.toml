@@ -64,6 +64,7 @@ vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-serv
 env_logger = "0.9"
 voting-hir = { path = "../voting-hir", features = ["serde"] }
 fraction = "0.10"
+unarray = "0.1"
 
 [dev-dependencies]
 rand_chacha = "0.3"

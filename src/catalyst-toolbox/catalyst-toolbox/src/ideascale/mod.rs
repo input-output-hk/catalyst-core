@@ -139,7 +139,7 @@ pub fn build_challenges(
                     id: i.to_string(),
                     rewards_total: c.rewards.to_string(),
                     proposers_rewards: c.rewards.to_string(),
-                    title: c.title.clone(),
+                    title: c.title.as_str().to_string(),
                     highlight: sponsors.get(&c.challenge_url).map(|sponsor| {
                         models::se::Highlight {
                             sponsor: sponsor.clone(),

@@ -1,4 +1,4 @@
-use serde::{Deserialize, Deserializer};
+use serde::Deserialize;
 
 mod ada_rewards;
 pub use ada_rewards::AdaRewards;
@@ -9,11 +9,14 @@ pub use clean_string::{clean_str, CleanString};
 mod approval;
 pub use approval::Approval;
 
+mod challenge_title;
+pub use challenge_title::ChallengeTitle;
+
 #[derive(Debug, Deserialize, Clone)]
 pub struct Challenge {
     pub id: u32,
-    #[serde(alias = "name", deserialize_with = "deserialize_clean_challenge_title")]
-    pub title: String,
+    #[serde(alias = "name")]
+    pub title: ChallengeTitle,
     #[serde(alias = "tagline")]
     pub rewards: AdaRewards,
     pub description: CleanString,
@@ -102,18 +105,4 @@ impl Funnel {
     pub fn is_community(&self) -> bool {
         self.title.0.contains("Community Setting")
     }
-}
-
-fn deserialize_clean_challenge_title<'de, D: Deserializer<'de>>(
-    deserializer: D,
-) -> Result<String, D::Error> {
-    let mut rewards_str = String::deserialize(deserializer)?;
-    // Remove leading `FX: `
-    if rewards_str.starts_with('F') {
-        if let Some(first_space) = rewards_str.find(' ') {
-            let (_, content) = rewards_str.split_at(first_space + 1);
-            rewards_str = content.to_string();
-        }
-    }
-    Ok(rewards_str)
 }

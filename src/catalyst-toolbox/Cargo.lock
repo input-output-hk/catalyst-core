@@ -508,7 +508,6 @@ dependencies = [
  "thor",
  "time 0.3.11",
  "tokio",
- "unarray",
  "url",
  "versionisator",
  "vit-servicing-station-lib",
@@ -5667,12 +5666,6 @@ dependencies = [
  "hex",
  "static_assertions",
 ]
-
-[[package]]
-name = "unarray"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "634233a4d474fb493db992470f77c312dd7cf9c967a4a3125ff76d511535e210"
 
 [[package]]
 name = "unicase"

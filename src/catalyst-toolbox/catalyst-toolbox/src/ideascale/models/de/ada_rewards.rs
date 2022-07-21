@@ -46,7 +46,7 @@ impl<'a> Visitor<'a> for V {
         }
 
         let bad_pattern = || E::custom("didn't match `$N in ada` pattern");
-        let bad_u64 = |e: ParseIntError| E::custom("unvalid u64: {e}");
+        let bad_u64 = |e: ParseIntError| E::custom(format!("unvalid u64: {e}"));
 
         // ignore the first capture, since this is the whole string
         let capture = REGEX.captures_iter(v).next().ok_or_else(bad_pattern)?;

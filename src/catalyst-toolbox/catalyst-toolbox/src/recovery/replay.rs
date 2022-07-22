@@ -8,7 +8,7 @@ pub use jcli_lib::utils::{
 use jormungandr_lib::interfaces::{
     load_persistent_fragments_logs_from_folder_path, VotePlanStatus,
 };
-use log::warn;
+use tracing::warn;
 use std::io::Write;
 use std::path::PathBuf;
 

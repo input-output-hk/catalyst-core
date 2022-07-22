@@ -7,11 +7,12 @@ use governor::{
 };
 
 use color_eyre::Report;
-use log::debug;
+use tracing::debug;
 use serde::Deserialize;
 
 use super::{HttpClient, HttpResponse};
 
+#[derive(Debug)]
 pub struct RateLimitClient<T: HttpClient> {
     inner: T,
     limiter: Option<RateLimiter<NotKeyed, InMemoryState, DefaultClock>>,

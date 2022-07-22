@@ -9,6 +9,7 @@ pub type Scores = HashMap<u32, f32>;
 pub type Sponsors = HashMap<String, String>;
 
 pub fn get_funds_data(client: &impl HttpClient) -> Result<Vec<Fund>, Report> {
+    info!("getting funds");
     client.get("campaigns/groups")?.json()
 }
 
@@ -25,10 +26,12 @@ pub fn get_proposals_data(
     client: &impl HttpClient,
     challenge_id: u32,
 ) -> Result<Vec<Proposal>, Report> {
+    info!("getting proposal data");
     let path = &format!("campaigns/{}/ideas/0/100000", challenge_id);
     client.get(path)?.json()
 }
 
 pub fn get_funnels_data_for_fund(client: &impl HttpClient) -> Result<Vec<Funnel>, Report> {
+    info!("getting funnels");
     client.get("funnels")?.json()
 }

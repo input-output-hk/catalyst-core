@@ -81,7 +81,7 @@ fn group_by_voter<I: IntoIterator<Item = (Fragment, Option<SpendingCounter>)>>(
                         .or_insert_with(Vec::new)
                         .push(vote_cast);
                 }
-                Err(e) => log::error!("Invalid transaction: {}", e),
+                Err(e) => tracing::error!("Invalid transaction: {}", e),
             }
         }
     }

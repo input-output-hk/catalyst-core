@@ -23,6 +23,7 @@ pub fn get_funds_by_id() -> Result<(), Box<dyn std::error::Error>> {
     use pretty_assertions::assert_eq;
     let temp_dir = TempDir::new().unwrap().into_persistent();
     let mut expected_fund = data::funds().first().unwrap().clone();
+    println!("{:#?}", &expected_fund.challenges);
     let (hash, token) = data::token();
 
     let db_path = DbBuilder::new()
@@ -67,7 +68,7 @@ fn normalize(fund: &mut Fund) {
     let mut id = 0;
     #[allow(clippy::explicit_counter_loop)]
     for challenge in &mut fund.challenges {
-        challenge.internal_id = id;
-        id += 1;
+        // challenge.internal_id = id;
+        // id += 1;
     }
 }

@@ -45,7 +45,7 @@ fn account_from_slice<P>(
     }
 }
 
-impl<'a> VoteRoundGenerator {
+impl VoteRoundGenerator {
     pub fn new(blockchain: TestBlockchain) -> Self {
         let TestBlockchain {
             config,

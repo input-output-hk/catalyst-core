@@ -1,4 +1,8 @@
+use crate::snapshot::{registration::MainnetRewardAddress, SnapshotInfo};
 use jormungandr_lib::crypto::{account::Identifier, hash::Hash};
+use chain_addr::{Discrimination, Kind};
+use chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier;
+use jormungandr_lib::{crypto::account::Identifier, interfaces::Address};
 use rust_decimal::Decimal;
 use snapshot_lib::{registration::MainnetRewardAddress, SnapshotInfo};
 use std::collections::{BTreeMap, HashMap, HashSet};

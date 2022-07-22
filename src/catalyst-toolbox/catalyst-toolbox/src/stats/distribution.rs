@@ -1,8 +1,13 @@
 use core::ops::Range;
 use std::collections::HashMap;
+use thiserror::Error;
 
-fn levels(threshold: u64) -> Vec<Range<u64>> {
-    vec![
+fn levels(threshold: u64) -> Result<Vec<Range<u64>>, Error> {
+    if !(450..=1_000).contains(&threshold) {
+        return Err(Error::InvalidThreshold(threshold));
+    }
+
+    Ok(vec![
         (0..450),
         (450..threshold),
         (threshold..1_000),
@@ -20,7 +25,7 @@ fn levels(threshold: u64) -> Vec<Range<u64>> {
         (10_000_000..25_000_000),
         (25_000_000..50_000_000),
         (50_000_000..32_000_000_000),
-    ]
+    ])
 }
 
 #[derive(Default)]
@@ -34,8 +39,8 @@ pub struct Stats {
 }
 
 impl Stats {
-    pub fn new(threshold: u64) -> Self {
-        Self::new_with_levels(levels(threshold))
+    pub fn new(threshold: u64) -> Result<Self, Error> {
+        Ok(Self::new_with_levels(levels(threshold)?))
     }
 
     pub fn new_with_levels(levels: Vec<Range<u64>>) -> Self {
@@ -109,4 +114,11 @@ fn format_big_number(n: u64) -> String {
     } else {
         n.to_string()
     }
+}
+
+#[allow(clippy::large_enum_variant)]
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("invalid threshold for distribution levels ({0}). It should be more than 450 and less that 1000")]
+    InvalidThreshold(u64),
 }

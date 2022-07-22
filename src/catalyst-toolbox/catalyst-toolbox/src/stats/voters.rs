@@ -1,13 +1,13 @@
-use crate::rewards::voters::{account_hex_to_address, VoteCount};
+use crate::rewards::voters::VoteCount;
 use crate::stats::distribution::Stats;
 use chain_addr::{Discrimination, Kind};
 use chain_crypto::Ed25519;
 use chain_impl_mockchain::vote::CommitteeId;
 use jormungandr_automation::testing::block0::get_block;
-use jormungandr_lib::interfaces::Address;
-use jormungandr_lib::interfaces::Block0Configuration;
-use jormungandr_lib::interfaces::Initial;
-use jormungandr_lib::interfaces::InitialUTxO;
+use jormungandr_lib::{
+    crypto::account::Identifier,
+    interfaces::{Address, Block0Configuration, Initial, InitialUTxO},
+};
 use std::path::Path;
 
 fn blacklist_addresses(genesis: &Block0Configuration) -> Vec<Address> {
@@ -35,7 +35,7 @@ fn blacklist_addresses(genesis: &Block0Configuration) -> Vec<Address> {
         .collect()
 }
 
-fn vote_counts_as_addresses(
+fn vote_counts_as_utxo(
     votes_count: VoteCount,
     genesis: &Block0Configuration,
 ) -> Vec<(InitialUTxO, u32)> {
@@ -45,21 +45,24 @@ fn vote_counts_as_addresses(
         .filter_map(|initials| {
             if let Initial::Fund(funds) = initials {
                 for utxo in funds {
-                    if let Some((_, votes_count)) = votes_count.iter().find(|(address, _)| {
-                        account_hex_to_address(
-                            address.to_string(),
-                            genesis.blockchain_configuration.discrimination,
-                        )
-                        .unwrap()
-                            == utxo.address
-                    }) {
-                        return Some((utxo.clone(), *votes_count as u32));
+                    if let Some(vote_count) = votes_count.get(&addr_to_hex(&utxo.address)) {
+                        return Some((utxo.clone(), *vote_count as u32));
                     }
                 }
             }
             None
         })
         .collect()
+}
+
+pub fn addr_to_hex(address: &Address) -> String {
+    match &address.1 .1 {
+        Kind::Account(pk) => {
+            let id: Identifier = pk.clone().into();
+            id.to_hex()
+        }
+        _ => unimplemented!(),
+    }
 }
 
 pub fn calculate_active_wallet_distribution<S: Into<String>, P: AsRef<Path>>(
@@ -77,7 +80,7 @@ pub fn calculate_active_wallet_distribution<S: Into<String>, P: AsRef<Path>>(
     )?)?;
 
     let blacklist = blacklist_addresses(&genesis);
-    let initials = vote_counts_as_addresses(vote_count, &genesis);
+    let initials = vote_counts_as_utxo(vote_count, &genesis);
 
     calculate_wallet_distribution_from_initials_utxo(
         stats,

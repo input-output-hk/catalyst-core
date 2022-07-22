@@ -26,14 +26,14 @@ impl InitialVotersCommand {
         match self.command {
             Command::Count => calculate_wallet_distribution(
                 &self.block0,
-                Stats::new(self.threshold),
+                Stats::new(self.threshold)?,
                 self.support_lovelace,
                 |stats, value, _| stats.add(value),
             )?
             .print_count_per_level(),
             Command::Ada => calculate_wallet_distribution(
                 &self.block0,
-                Stats::new(self.threshold),
+                Stats::new(self.threshold)?,
                 self.support_lovelace,
                 |stats, value, _| stats.add(value),
             )?

@@ -29,7 +29,7 @@ impl SnapshotCommand {
 
         match self.command {
             Command::Count => calculate_wallet_distribution_from_initials(
-                Stats::new(self.threshold),
+                Stats::new(self.threshold)?,
                 initials,
                 vec![],
                 self.support_lovelace,
@@ -37,7 +37,7 @@ impl SnapshotCommand {
             )?
             .print_count_per_level(),
             Command::Ada => calculate_wallet_distribution_from_initials(
-                Stats::new(self.threshold),
+                Stats::new(self.threshold)?,
                 initials,
                 vec![],
                 self.support_lovelace,

@@ -58,9 +58,7 @@ impl DbBuilder {
         self
     }
 
-    pub fn with_challenges(&mut self, mut challenges: Vec<Challenge>) -> &mut Self {
-        // we sort here because the database assigns `internal_id`s in ascending order
-        challenges.sort_by_key(|c| c.internal_id);  
+    pub fn with_challenges(&mut self, challenges: Vec<Challenge>) -> &mut Self {
         self.challenges = Some(challenges);
         self
     }

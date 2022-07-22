@@ -1,3 +1,5 @@
+use std::convert::TryInto;
+
 use crate::{
     db::{schema, DbConnection, DbConnectionPool},
     v0::{
@@ -187,11 +189,11 @@ fn search(
             let mut query = build_challenges_query(filter, order_by)?;
 
             if let Some(limit) = limit {
-                query = query.limit(limit)
+                query = query.limit(map_limit(limit)?);
             }
 
             if let Some(offset) = offset {
-                query = query.offset(offset)
+                query = query.offset(map_offset(offset)?);
             }
 
             let vec = query
@@ -203,11 +205,11 @@ fn search(
             let mut query = build_proposals_query(filter, order_by)?;
 
             if let Some(limit) = limit {
-                query = query.limit(limit)
+                query = query.limit(map_limit(limit)?);
             }
 
             if let Some(offset) = offset {
-                query = query.offset(offset)
+                query = query.offset(map_offset(offset)?);
             }
 
             let vec = query
@@ -216,6 +218,18 @@ fn search(
             Ok(SearchResponse::Proposal(vec))
         }
     }
+}
+
+fn map_limit(limit: u64) -> Result<i64, HandleError> {
+    limit
+        .try_into()
+        .map_err(|_| HandleError::BadRequest(format!("limit must be less than: {}", i64::MAX)))
+}
+
+fn map_offset(offset: u64) -> Result<i64, HandleError> {
+    offset
+        .try_into()
+        .map_err(|_| HandleError::BadRequest(format!("offset must be less than: {}", i64::MAX)))
 }
 
 fn search_count(

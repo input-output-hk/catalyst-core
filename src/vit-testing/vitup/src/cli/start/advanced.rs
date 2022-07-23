@@ -1,10 +1,11 @@
 use crate::config::mode::{parse_mode_from_str, Mode};
 use crate::config::read_config;
+use crate::config::read_voter_hirs;
 use crate::mode::spawn::{spawn_network, NetworkSpawnParams};
 use crate::{error::Error, Result};
+use chain_addr::Discrimination;
 use hersir::config::SessionSettings;
 use jormungandr_automation::jormungandr::LogLevel;
-use jormungandr_automation::testing::block0::read_initials;
 use std::path::PathBuf;
 use std::str::FromStr;
 use structopt::StructOpt;
@@ -115,7 +116,7 @@ impl AdvancedStartCommandArgs {
             config
                 .initials
                 .block0
-                .extend_from_external(read_initials(snapshot)?);
+                .extend_from_external(read_voter_hirs(snapshot)?, Discrimination::Production);
         }
 
         let mut template_generator = ExternalValidVotingTemplateGenerator::new(

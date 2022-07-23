@@ -1,9 +1,9 @@
-use std::collections::BTreeSet;
-
 use super::time;
-use crate::config::Config;
+use crate::config::{Config, Role};
 use chain_crypto::bech32::Bech32;
-use chain_impl_mockchain::{certificate::VotePlan, testing::scenario::template::VotePlanDef};
+use chain_impl_mockchain::{
+    testing::scenario::template::VotePlanDef, tokens::identifier::TokenIdentifier,
+};
 use chain_vote::ElectionPublicKey;
 use hersir::builder::{Settings, VotePlanSettings};
 use vit_servicing_station_lib::db::models::{goals::Goal, groups::Group};
@@ -11,27 +11,23 @@ use vit_servicing_station_tests::common::data::{
     CurrentFund, FundDates, FundInfo, ValidVotePlanParameters,
 };
 
-pub fn build_current_fund(config: &Config, vote_plans: Vec<VotePlanDef>) -> CurrentFund {
+pub fn build_current_fund(
+    config: &Config,
+    vote_plans: Vec<VotePlanDef>,
+    token_list: Vec<(Role, TokenIdentifier)>,
+) -> CurrentFund {
     let template = &config.data.current_fund;
 
     let (vote_start_timestamp, tally_start_timestamp, tally_end_timestamp) =
         time::convert_to_human_date(config);
 
-    let tokens = vote_plans
-        .iter()
-        .map(|vp| VotePlan::from(vp.clone()).voting_token().clone())
-        .collect::<BTreeSet<_>>();
-
-    let groups = template
-        .fund_info
-        .groups
+    let groups = token_list
         .iter()
         .cloned()
-        .zip(tokens.into_iter())
-        .map(|(group_id, token_identifier)| Group {
+        .map(|(role, token_identifier)| Group {
             fund_id: template.fund_info.fund_id,
             token_identifier: token_identifier.to_string(),
-            group_id,
+            group_id: role.to_string(),
         })
         .collect();
 
@@ -135,10 +131,12 @@ pub fn build_next_funds(config: &Config) -> Vec<FundInfo> {
 
 pub fn build_servicing_station_parameters(
     config: &Config,
+    token_list: Vec<(Role, TokenIdentifier)>,
     vote_plans: Vec<VotePlanDef>,
     settings: &Settings,
 ) -> ValidVotePlanParameters {
-    let mut parameters = ValidVotePlanParameters::from(build_current_fund(config, vote_plans));
+    let mut parameters =
+        ValidVotePlanParameters::from(build_current_fund(config, vote_plans, token_list));
     parameters.next_funds = build_next_funds(config);
 
     if config.vote_plan.private {

@@ -39,8 +39,7 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     println!("Snapshot: {:?}", snapshot_result);
 
     let entry = snapshot_result
-        .by_address(&result.address().unwrap().into())
-        .unwrap()
+        .by_identifier(&result.identifier().unwrap())
         .unwrap();
 
     let vote_timing = VoteBlockchainTime {
@@ -58,11 +57,10 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
         .voting_power(1)
         .block0_initials(Block0Initials::new_from_external(
             snapshot_result.initials().to_vec(),
+            chain_addr::Discrimination::Production,
         ))
         .private(false)
         .build();
-
-    println!("{:?}", testing_directory.path().to_path_buf());
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
     let (mut controller, vit_parameters, network_params) =
@@ -112,6 +110,14 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     vote_timing.wait_for_tally_end(leader_1.rest());
 
     let vote_plans = leader_1.rest().vote_plan_statuses().unwrap();
-    vote_plans.assert_proposal_tally(fund1_vote_plan.id(), 0, vec![u64::from(entry.value), 0]);
-    vote_plans.assert_proposal_tally(fund2_vote_plan.id(), 0, vec![u64::from(entry.value), 0]);
+    vote_plans.assert_proposal_tally(
+        fund1_vote_plan.id(),
+        0,
+        vec![u64::from(entry.voting_power), 0],
+    );
+    vote_plans.assert_proposal_tally(
+        fund2_vote_plan.id(),
+        0,
+        vec![u64::from(entry.voting_power), 0],
+    );
 }

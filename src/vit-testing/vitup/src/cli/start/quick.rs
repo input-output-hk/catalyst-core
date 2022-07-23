@@ -1,4 +1,5 @@
 pub use crate::builders::{VitBackendSettingsBuilder, LEADER_1, LEADER_2, LEADER_3, WALLET_NODE};
+use crate::config::read_voter_hirs;
 use crate::config::ConfigBuilder;
 use crate::config::{
     mode::{parse_mode_from_str, Mode},
@@ -6,10 +7,10 @@ use crate::config::{
 };
 use crate::mode::spawn::{spawn_network, NetworkSpawnParams};
 use crate::{error::Error, Result};
+use chain_addr::Discrimination;
 use hersir::config::SessionSettings;
 use hersir::utils::print_intro;
 use jormungandr_automation::jormungandr::LogLevel;
-use jormungandr_automation::testing::block0::read_initials;
 use jortestkit::prelude::read_file;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -166,7 +167,8 @@ impl QuickStartCommandArgs {
         }
 
         if let Some(snapshot) = self.snapshot {
-            config_builder = config_builder.extend_block0_initials(read_initials(snapshot)?);
+            config_builder = config_builder
+                .extend_block0_initials(read_voter_hirs(snapshot)?, Discrimination::Production);
         }
 
         if self.https {

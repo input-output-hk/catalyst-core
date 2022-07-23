@@ -1,8 +1,8 @@
 use crate::common::registration::do_registration;
 use crate::common::snapshot::do_snapshot;
 use crate::common::snapshot::wait_for_db_sync;
+use crate::common::snapshot::VoterHIRAsserts;
 use assert_fs::TempDir;
-use jormungandr_automation::testing::asserts::InitialsAssert;
 use snapshot_trigger_service::config::JobParameters;
 const GRACE_PERIOD_FOR_SNAPSHOT: u64 = 300;
 //SR001
@@ -15,7 +15,7 @@ pub fn multiple_registration() {
     first_registartion.assert_status_is_finished();
     first_registartion.assert_qr_equals_to_sk();
 
-    let overriden_entry = first_registartion.snapshot_entry().unwrap();
+    let (overridden_identifier, _) = first_registartion.snapshot_entry().unwrap();
 
     println!("Waiting 10 mins before running next registration");
     std::thread::sleep(std::time::Duration::from_secs(5 * 60));
@@ -25,7 +25,7 @@ pub fn multiple_registration() {
     second_registartion.assert_status_is_finished();
     second_registartion.assert_qr_equals_to_sk();
 
-    let correct_entry = second_registartion.snapshot_entry().unwrap();
+    let (identifier, value) = second_registartion.snapshot_entry().unwrap();
 
     let job_param = JobParameters {
         slot_no: Some(second_registartion.slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
@@ -34,10 +34,10 @@ pub fn multiple_registration() {
 
     wait_for_db_sync();
     let snapshot_result = do_snapshot(job_param).unwrap();
-    let initials = snapshot_result.initials();
+    let snapshot_entries = snapshot_result.initials();
 
-    initials.assert_contains(correct_entry);
-    initials.assert_not_contain(overriden_entry);
+    snapshot_entries.assert_contains_voting_key_and_value(&identifier, value);
+    snapshot_entries.assert_not_contain_voting_key(&overridden_identifier);
 }
 
 //SR002
@@ -49,7 +49,7 @@ pub fn wallet_has_less_than_threshold() {
     registartion.assert_status_is_finished();
     registartion.assert_qr_equals_to_sk();
 
-    let too_low_funds_entry = registartion.snapshot_entry().unwrap();
+    let (too_low_funds_entry, _) = registartion.snapshot_entry().unwrap();
 
     let job_param = JobParameters {
         slot_no: Some(registartion.slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
@@ -60,7 +60,7 @@ pub fn wallet_has_less_than_threshold() {
     let snapshot_result = do_snapshot(job_param).unwrap();
     snapshot_result
         .initials()
-        .assert_not_contain(too_low_funds_entry);
+        .assert_not_contain_voting_key(&too_low_funds_entry);
 }
 
 //SR005
@@ -72,7 +72,7 @@ pub fn wallet_with_funds_equals_to_threshold_should_be_elligible_to_vote() {
     registartion.assert_status_is_finished();
     registartion.assert_qr_equals_to_sk();
 
-    let correct_entry = registartion.snapshot_entry().unwrap();
+    let (id, _) = registartion.snapshot_entry().unwrap();
     registartion.print_snapshot_entry().unwrap();
 
     let job_param = JobParameters {
@@ -82,7 +82,9 @@ pub fn wallet_with_funds_equals_to_threshold_should_be_elligible_to_vote() {
 
     wait_for_db_sync();
     let snapshot_result = do_snapshot(job_param).unwrap();
-    snapshot_result.initials().assert_contains(correct_entry);
+    snapshot_result
+        .initials()
+        .assert_not_contain_voting_key(&id);
 }
 
 //SR004
@@ -94,7 +96,7 @@ pub fn registration_after_snapshot_is_not_taken_into_account() {
     registartion.assert_status_is_finished();
     registartion.assert_qr_equals_to_sk();
 
-    let too_late_entry = registartion.snapshot_entry().unwrap();
+    let (too_late_id, _) = registartion.snapshot_entry().unwrap();
 
     let job_param = JobParameters {
         slot_no: Some(registartion.slot_no().unwrap() - 1),
@@ -105,5 +107,5 @@ pub fn registration_after_snapshot_is_not_taken_into_account() {
     let snapshot_result = do_snapshot(job_param).unwrap();
     let initials = snapshot_result.initials();
 
-    initials.assert_not_contain(too_late_entry);
+    initials.assert_not_contain_voting_key(&too_late_id);
 }

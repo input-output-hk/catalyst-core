@@ -68,7 +68,7 @@ impl PerfDataCommandArgs {
         let mut config = read_config(&self.config)?;
 
         if let Some(ref snapshot) = self.snapshot {
-            config.extend_from_initials_file(snapshot)?;
+            config.extend_from_initials_file(snapshot, chain_addr::Discrimination::Production)?;
         }
 
         if !self.output_directory.exists() {

@@ -8,14 +8,12 @@ use crate::job::info::RegistrationInfo;
 use crate::job::info::SnapshotInfo;
 use crate::request::{Request, Source};
 use catalyst_toolbox::kedqr::PinReadMode;
-use chain_addr::Address;
-use chain_addr::AddressReadable;
-use chain_addr::{Discrimination, Kind};
 use chain_crypto::Ed25519;
 use iapyx::utils::qr::PinReadError;
 use iapyx::utils::qr::Secret;
 use iapyx::utils::qr::SecretFromQrCode;
 pub use info::JobOutputInfo;
+use jormungandr_lib::crypto::account::Identifier;
 use snapshot_trigger_service::client::do_snapshot;
 use snapshot_trigger_service::client::get_snapshot_from_history_by_id;
 use snapshot_trigger_service::config::JobParameters;
@@ -98,15 +96,15 @@ impl Default for RegistrationVerifyJob {
 }
 
 impl RegistrationVerifyJob {
-    fn extract_address_from_request(
+    fn extract_identifier_from_request(
         &self,
         checks: &mut Checks,
         request: &Request,
-    ) -> Option<Address> {
+    ) -> Option<Identifier> {
         match &request.source {
             Source::PublicKeyBytes(content) => {
                 match chain_crypto::PublicKey::from_binary(content) {
-                    Ok(public_key) => Some(self.extract_address_from_public_key(
+                    Ok(public_key) => Some(self.extract_identifier_from_public_key(
                         public_key,
                         checks,
                         "successfully parsed public key",
@@ -119,7 +117,7 @@ impl RegistrationVerifyJob {
             }
             Source::Qr { pin, content } => {
                 match Secret::from_bytes(content.clone(), PinReadMode::Global(pin.clone())) {
-                    Ok(secret_key) => Some(self.extract_address_from_public_key(
+                    Ok(secret_key) => Some(self.extract_identifier_from_public_key(
                         secret_key.to_public(),
                         checks,
                         "succesfully read qr code",
@@ -133,19 +131,14 @@ impl RegistrationVerifyJob {
         }
     }
 
-    fn extract_address_from_public_key(
+    fn extract_identifier_from_public_key(
         &self,
         key: chain_crypto::PublicKey<Ed25519>,
         checks: &mut Checks,
         comment: &str,
-    ) -> Address {
-        let address = chain_addr::Address(Discrimination::Production, Kind::Account(key));
-        checks.push(Assert::Passed(format!(
-            "{}: '{}'",
-            comment,
-            AddressReadable::from_address("ca", &address)
-        )));
-        address
+    ) -> Identifier {
+        checks.push(Assert::Passed(comment.to_string()));
+        key.into()
     }
 
     pub fn start(&self, request: Request, context: ContextLock) -> Result<JobOutputInfo, Error> {
@@ -170,8 +163,8 @@ impl RegistrationVerifyJob {
             .state_mut()
             .update_running_step(Step::BuildingAddress);
 
-        let address = match self.extract_address_from_request(&mut checks, &request) {
-            Some(address) => address,
+        let identifier = match self.extract_identifier_from_request(&mut checks, &request) {
+            Some(identifier) => identifier,
             None => {
                 return Ok(JobOutputInfo {
                     checks,
@@ -204,14 +197,12 @@ impl RegistrationVerifyJob {
 
                 get_snapshot_from_history_by_id(
                     job_id,
+                    &request.tag.clone().unwrap_or_else(|| "".to_string()),
                     self.snapshot_token.to_string(),
                     self.snapshot_address.to_string(),
                 )?
             }
         };
-
-        let entry = snapshot_result.by_address(&address)?;
-        let address_readable = AddressReadable::from_address("ca", &address);
 
         context
             .lock()
@@ -219,30 +210,30 @@ impl RegistrationVerifyJob {
             .state_mut()
             .update_running_step(Step::VerifyingRegistration);
 
-        match entry {
+        match snapshot_result.by_identifier(&identifier) {
             Some(entry) => {
                 checks.push(Assert::Passed(format!(
                     "wallet found in snapshot ('{}') with funds: '{}'",
-                    address_readable, entry.value
+                    entry.voting_key, entry.voting_power
                 )));
                 checks.push(Assert::Passed(format!(
                     "wallat is eligible for voting (has more than threshold '{}') with funds: '{}'",
-                    request.threshold, entry.value
+                    request.threshold, entry.voting_power
                 )));
                 checks.push(Assert::from_eq(
-                    entry.value,
+                    entry.voting_power,
                     request.expected_funds.into(),
                     format!("correct wallet funds '{}'", request.expected_funds),
                     format!(
                         "incorrect wallet funds '{}' != '{}'",
-                        entry.value, request.expected_funds
+                        entry.voting_power, request.expected_funds
                     ),
                 ));
             }
             None => {
                 checks.push(Assert::Failed(format!(
                     "wallet not found in snapshot '{}' or has less than theshold: '{}'",
-                    address_readable, request.threshold
+                    identifier, request.threshold
                 )));
             }
         }

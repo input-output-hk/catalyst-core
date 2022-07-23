@@ -58,7 +58,7 @@ impl ExternalDataCommandArgs {
         let mut config = read_config(&self.config)?;
 
         if let Some(snapshot) = self.snapshot {
-            config.extend_from_initials_file(snapshot)?;
+            config.extend_from_initials_file(snapshot, chain_addr::Discrimination::Production)?;
         }
 
         if self.skip_qr_generation {

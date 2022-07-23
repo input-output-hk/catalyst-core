@@ -35,7 +35,7 @@ impl SnapshotRestClient {
     }
 
     fn path<S: Into<String>>(&self, path: S) -> String {
-        format!("{}/{}", self.address, path.into())
+        format!("{}/{}", self.address, path.into().replace('\"', ""))
     }
 
     fn get<S: Into<String>>(&self, local_path: S) -> Result<String, Error> {
@@ -68,13 +68,21 @@ impl SnapshotRestClient {
     pub fn download_snapshot<S: Into<String>, P: AsRef<Path>>(
         &self,
         id: S,
+        tag: S,
         output: P,
     ) -> Result<(), Error> {
-        self.download(format!("{}/snapshot.json", id.into()), output)
+        self.download(
+            format!("{}/{}_snapshot.json", id.into(), tag.into()),
+            output,
+        )
     }
 
-    pub fn get_snapshot<S: Into<String>>(&self, id: S) -> Result<String, Error> {
-        self.get(format!("api/job/files/get/{}/snapshot.json", id.into()))
+    pub fn get_snapshot<S: Into<String>>(&self, id: S, tag: S) -> Result<String, Error> {
+        self.get(format!(
+            "api/job/files/get/{}/{}_snapshot.json",
+            id.into().replace("'\"'", ""),
+            tag.into()
+        ))
     }
 
     pub fn download_job_status<S: Into<String>, P: AsRef<Path>>(
@@ -95,7 +103,10 @@ impl SnapshotRestClient {
         sub_location: S,
         output: P,
     ) -> Result<(), Error> {
-        let content = self.get(format!("api/job/files/get/{}", sub_location.into()))?;
+        let content = self.get(format!(
+            "api/job/files/get/{}",
+            sub_location.into().replace("'\"'", "")
+        ))?;
         let mut file = std::fs::File::create(&output)?;
         file.write_all(content.as_bytes())?;
         Ok(())
@@ -141,10 +152,8 @@ impl SnapshotRestClient {
     }
 
     pub fn is_up(&self) -> bool {
-        if let Ok(path) = self.get("api/health") {
-            if let Ok(response) = reqwest::blocking::get(&path) {
-                return response.status() == reqwest::StatusCode::OK;
-            }
+        if let Ok(response) = reqwest::blocking::get(&self.path("api/health")) {
+            return response.status() == reqwest::StatusCode::OK;
         }
         false
     }

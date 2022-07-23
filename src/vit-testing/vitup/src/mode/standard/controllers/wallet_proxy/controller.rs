@@ -1,4 +1,4 @@
-use jormungandr_automation::jormungandr::{JormungandrRest, NodeAlias, Status};
+use jormungandr_automation::jormungandr::{NodeAlias, Status};
 use jormungandr_automation::testing::NamedProcess;
 use std::process::Child;
 use std::sync::{Arc, Mutex};
@@ -70,10 +70,6 @@ impl WalletProxyController {
 
     pub fn address(&self) -> String {
         self.settings.address()
-    }
-
-    pub fn rest(&self) -> JormungandrRest {
-        JormungandrRest::new(self.address())
     }
 
     pub fn as_named_process(&self) -> NamedProcess {

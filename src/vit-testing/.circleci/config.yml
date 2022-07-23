@@ -88,7 +88,7 @@ jobs:
       - run:
           name: install valgrind
           command: |
-            cargo install --path valgrind --locked                  
+            cargo install --path valgrind --locked
       - run:
           name: Run tests
           no_output_timeout: 60m
@@ -180,6 +180,14 @@ commands:
           name: install proxy
           command: |
             cargo install --path valgrind --locked
+      - run:
+          name: install snapshot-trigger-service
+          command: |
+            cargo install --path snapshot-trigger-service --locked    
+      - run:
+          name: install mainnet mocks
+          command: |
+            cargo install --path mainnet-tools --locked --bins
       - run:
           name: Run Integration tests
           no_output_timeout: 60m

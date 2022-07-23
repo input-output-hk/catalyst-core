@@ -14,6 +14,8 @@ structopt = "0.3"
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch= "master" }
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "test_api_for_snapshot", features=["test-api"]}
+voting-hir = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "test_api_for_snapshot" }
 futures = "0.3.8"
 assert_fs = "1.0"
 serde = { version = "1", features = ["derive"] }
@@ -23,6 +25,7 @@ tokio = { version = "1.2", features = ["macros","rt","process"] }
 serde_json = "1.0"
 serde_yaml = "0.8"
 signals-handler = { path = "../signals-handler" }
+mainnet-tools = { path = "../mainnet-tools"}
 
 [dependencies.reqwest]
 version = "0.10.10"

@@ -187,8 +187,11 @@ impl IdeascaleValidateCommand {
             .map(|chunk| self.vote_plan_def(chunk.len()))
             .collect();
 
-        let parameters =
-            ValidVotePlanParameters::from(build_current_fund(&input_parameters, vote_plans));
+        let parameters = ValidVotePlanParameters::from(build_current_fund(
+            &input_parameters,
+            vote_plans,
+            vec![],
+        ));
 
         DbGenerator::new(parameters, self.output.clone())
             .build(&deployment_tree.database_path(), &mut template_generator)?;

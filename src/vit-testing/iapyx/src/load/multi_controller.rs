@@ -211,4 +211,6 @@ pub enum MultiControllerError {
     PinRead(#[from] PinReadError),
     #[error("wallet time error")]
     WalletTime(#[from] wallet::time::Error),
+    #[error("not enough proposals")]
+    NotEnoughProposals,
 }

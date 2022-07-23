@@ -12,25 +12,25 @@ pub mod mode;
 
 use crate::config::builder::convert_to_human_date;
 use crate::config::vote_time::FORMAT;
+use crate::Result;
 pub use blockchain::Blockchain;
 pub use builder::ConfigBuilder;
 pub use certs::CertificatesBuilder;
+use chain_addr::Discrimination;
 pub use initials::{
     Block0Initial, Block0Initials, Initials, Role, SnapshotError, SnapshotInitial, SnapshotInitials,
 };
 pub use migrations::{Error as MigrationError, MigrationFilesBuilder};
+use serde::{Deserialize, Serialize};
 pub use service::Service;
 pub use static_data::StaticData;
+use std::path::Path;
+use std::time::Duration;
 use time::format_description::{self, FormatItem};
 use valgrind::Protocol;
 pub use vote_plan::VotePlan;
 pub use vote_time::{VoteBlockchainTime, VoteTime, FORMAT as VOTE_TIME_FORMAT};
-
-use crate::Result;
-use jormungandr_automation::testing::block0::read_initials;
-use serde::{Deserialize, Serialize};
-use std::path::Path;
-use std::time::Duration;
+use voting_hir::VoterHIR;
 
 #[derive(Clone, Debug, Deserialize, Serialize, Default)]
 pub struct Config {
@@ -55,7 +55,11 @@ impl Config {
         }
     }
 
-    pub fn extend_from_initials_file<P: AsRef<Path>>(&mut self, snapshot: P) -> Result<()> {
+    pub fn extend_from_initials_file<P: AsRef<Path>>(
+        &mut self,
+        snapshot: P,
+        discrimination: Discrimination,
+    ) -> Result<()> {
         let snapshot = snapshot.as_ref();
         if !snapshot.exists() {
             return Err(crate::error::Error::CannotFindSnapshotFile(
@@ -64,7 +68,7 @@ impl Config {
         }
         self.initials
             .block0
-            .extend_from_external(read_initials(snapshot)?);
+            .extend_from_external(read_voter_hirs(snapshot)?, discrimination);
         Ok(())
     }
 
@@ -140,4 +144,16 @@ pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Config> {
 
 pub fn date_format() -> Vec<FormatItem<'static>> {
     format_description::parse(FORMAT).unwrap()
+}
+
+pub fn read_voter_hirs<P: AsRef<Path>>(snapshot: P) -> Result<Vec<VoterHIR>> {
+    let snapshot = snapshot.as_ref();
+    if !snapshot.exists() {
+        return Err(crate::error::Error::CannotFindSnapshotFile(
+            snapshot.to_path_buf(),
+        ));
+    }
+
+    let contents = std::fs::read_to_string(&snapshot)?;
+    serde_json::from_str(&contents).map_err(Into::into)
 }

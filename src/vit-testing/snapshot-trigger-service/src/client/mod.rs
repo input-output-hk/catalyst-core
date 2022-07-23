@@ -4,13 +4,10 @@ pub mod rest;
 use crate::client::rest::SnapshotRestClient;
 use crate::config::JobParameters;
 use crate::State;
-use chain_addr::Address;
-use chain_addr::AddressReadable;
-use jormungandr_lib::interfaces::Initial;
-use jormungandr_lib::interfaces::InitialUTxO;
+use jormungandr_lib::crypto::account::Identifier;
 use jortestkit::prelude::WaitBuilder;
-use std::str::FromStr;
 use thiserror::Error;
+use voting_hir::VoterHIR;
 
 pub fn do_snapshot<S: Into<String>, P: Into<String>>(
     job_params: JobParameters,
@@ -21,7 +18,7 @@ pub fn do_snapshot<S: Into<String>, P: Into<String>>(
         SnapshotRestClient::new_with_token(snapshot_token.into(), snapshot_address.into());
 
     println!("Snapshot params: {:?}", job_params);
-    let snapshot_job_id = snapshot_client.job_new(job_params).unwrap();
+    let snapshot_job_id = snapshot_client.job_new(job_params.clone()).unwrap();
     let wait = WaitBuilder::new().tries(10).sleep_between_tries(10).build();
 
     println!("waiting for snapshot job");
@@ -29,7 +26,10 @@ pub fn do_snapshot<S: Into<String>, P: Into<String>>(
         snapshot_client.wait_for_job_finish(snapshot_job_id.clone(), wait)?;
 
     println!("Snapshot done: {:?}", snapshot_jobs_status);
-    let snapshot = snapshot_client.get_snapshot(snapshot_job_id)?;
+    let snapshot = snapshot_client.get_snapshot(
+        snapshot_job_id,
+        job_params.tag.unwrap_or_else(|| "".to_string()),
+    )?;
 
     Ok(SnapshotResult {
         status: snapshot_jobs_status,
@@ -39,6 +39,7 @@ pub fn do_snapshot<S: Into<String>, P: Into<String>>(
 
 pub fn get_snapshot_by_id<Q: Into<String>, S: Into<String>, P: Into<String>>(
     job_id: Q,
+    tag: Q,
     snapshot_token: S,
     snapshot_address: P,
 ) -> Result<SnapshotResult, Error> {
@@ -46,7 +47,7 @@ pub fn get_snapshot_by_id<Q: Into<String>, S: Into<String>, P: Into<String>>(
         SnapshotRestClient::new_with_token(snapshot_token.into(), snapshot_address.into());
     let job_id = job_id.into();
 
-    let snapshot = snapshot_client.get_snapshot(job_id.clone())?;
+    let snapshot = snapshot_client.get_snapshot(job_id.clone(), tag.into())?;
     let status = snapshot_client.job_status(job_id)?;
 
     Ok(SnapshotResult {
@@ -57,6 +58,7 @@ pub fn get_snapshot_by_id<Q: Into<String>, S: Into<String>, P: Into<String>>(
 
 pub fn get_snapshot_from_history_by_id<Q: Into<String>, S: Into<String>, P: Into<String>>(
     job_id: Q,
+    tag: Q,
     snapshot_token: S,
     snapshot_address: P,
 ) -> Result<SnapshotResult, Error> {
@@ -64,7 +66,7 @@ pub fn get_snapshot_from_history_by_id<Q: Into<String>, S: Into<String>, P: Into
         SnapshotRestClient::new_with_token(snapshot_token.into(), snapshot_address.into());
     let job_id = job_id.into();
 
-    let snapshot = snapshot_client.get_snapshot(job_id.clone())?;
+    let snapshot = snapshot_client.get_snapshot(job_id.clone(), tag.into())?;
     let status = snapshot_client.get_status(job_id)?;
 
     Ok(SnapshotResult {
@@ -73,17 +75,15 @@ pub fn get_snapshot_from_history_by_id<Q: Into<String>, S: Into<String>, P: Into
     })
 }
 
-pub fn read_initials<S: Into<String>>(snapshot: S) -> Result<Vec<Initial>, Error> {
+pub fn read_initials<S: Into<String>>(snapshot: S) -> Result<Vec<VoterHIR>, Error> {
     let snapshot = snapshot.into();
-    let value: serde_json::Value = serde_json::from_str(&snapshot)?;
-    let initial = serde_json::to_string(&value["initial"])?;
-    serde_json::from_str(&initial).map_err(|_| Error::CannotParseSnapshotContent(snapshot.clone()))
+    serde_json::from_str(&snapshot).map_err(|_| Error::CannotParseSnapshotContent(snapshot.clone()))
 }
 
 #[derive(Debug)]
 pub struct SnapshotResult {
     status: State,
-    snapshot: Vec<Initial>,
+    snapshot: Vec<VoterHIR>,
 }
 
 impl SnapshotResult {
@@ -95,33 +95,15 @@ impl SnapshotResult {
         self.status.clone()
     }
 
-    pub fn initials(&self) -> &Vec<Initial> {
+    pub fn initials(&self) -> &Vec<VoterHIR> {
         &self.snapshot
     }
 
-    pub fn by_address_str(&self, address: &str) -> Result<Option<InitialUTxO>, Error> {
-        let address_readable = AddressReadable::from_str(address)?;
-        for initial in self.initials() {
-            if let Initial::Fund(utxos) = initial {
-                return Ok(utxos.iter().cloned().find(|x| {
-                    let address: chain_addr::Address = x.address.clone().into();
-                    address_readable.to_address() == address
-                }));
-            }
-        }
-        Ok(None)
-    }
-
-    pub fn by_address(&self, expected_address: &Address) -> Result<Option<InitialUTxO>, Error> {
-        for initial in self.initials() {
-            if let Initial::Fund(utxos) = initial {
-                return Ok(utxos.iter().cloned().find(|x| {
-                    let address: chain_addr::Address = x.address.clone().into();
-                    *expected_address == address
-                }));
-            }
-        }
-        Ok(None)
+    pub fn by_identifier(&self, identifier: &Identifier) -> Option<VoterHIR> {
+        self.initials()
+            .iter()
+            .cloned()
+            .find(|x| x.voting_key == *identifier)
     }
 }
 
@@ -137,4 +119,6 @@ pub enum Error {
     ChainError(#[from] chain_addr::Error),
     #[error("serialization error")]
     SerdeError(#[from] serde_json::Error),
+    #[error(transparent)]
+    Config(#[from] crate::config::Error),
 }

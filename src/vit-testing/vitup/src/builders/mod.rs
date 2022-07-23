@@ -24,10 +24,12 @@ use hersir::config::SessionSettings;
 pub use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::interfaces::NumberOfSlotsPerEpoch;
 use jormungandr_lib::interfaces::SlotDuration;
+use jormungandr_lib::interfaces::TokenIdentifier as TokenIdentifierLib;
 pub use reviews::ReviewGenerator;
 use std::collections::HashMap;
 use std::io::Write;
 use std::path::Path;
+use std::str::FromStr;
 use thiserror::Error;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 
@@ -122,6 +124,21 @@ impl VitBackendSettingsBuilder {
         generate_qr_and_hashes(wallets, initials, &self.config, &folder).map_err(Into::into)
     }
 
+    fn write_token<P: AsRef<Path>>(
+        &self,
+        path: P,
+        token_list: &[(Role, TokenIdentifier)],
+    ) -> Result<(), Error> {
+        let token_list: Vec<(Role, TokenIdentifierLib)> = token_list
+            .iter()
+            .cloned()
+            .map(|(r, t)| (r, t.into()))
+            .collect();
+        let mut file = std::fs::File::create(&path)?;
+        file.write_all(serde_json::to_string(&token_list)?.as_bytes())
+            .map_err(Into::into)
+    }
+
     pub fn build(self) -> Result<(VitController, ValidVotePlanParameters), Error> {
         let mut builder = VitControllerBuilder::new();
 
@@ -145,7 +162,7 @@ impl VitBackendSettingsBuilder {
         println!("building blockchain parameters..");
 
         blockchain = blockchain
-            .with_linear_fee(self.config.blockchain.linear_fees)
+            .with_linear_fee(self.config.blockchain.linear_fees.clone())
             .with_tx_max_expiry_epochs(self.config.blockchain.tx_max_expiry_epochs)
             .with_discrimination(chain_addr::Discrimination::Production)
             .with_block_content_max_size(self.config.blockchain.block_content_max_size.into())
@@ -177,23 +194,23 @@ impl VitBackendSettingsBuilder {
         let root = self.session_settings.root.path().to_path_buf();
         std::fs::create_dir_all(&root)?;
         let policy = MintingPolicy::new();
-
-        let token_list = vec![
-            (
-                Role::Voter,
-                TokenIdentifier {
-                    policy_hash: policy.hash(),
-                    token_name: TestGen::token_name(),
-                },
-            ),
-            (
-                Role::Representative,
-                TokenIdentifier {
-                    policy_hash: policy.hash(),
-                    token_name: TestGen::token_name(),
-                },
-            ),
-        ];
+        let token_list: Vec<(Role, TokenIdentifier)> = self
+            .config
+            .data
+            .current_fund
+            .fund_info
+            .groups
+            .iter()
+            .map(|role| {
+                (
+                    Role::from_str(role).unwrap(),
+                    TokenIdentifier {
+                        policy_hash: policy.hash(),
+                        token_name: TestGen::token_name(),
+                    },
+                )
+            })
+            .collect();
 
         let tokens_map = |role: &Role| {
             token_list
@@ -203,8 +220,7 @@ impl VitBackendSettingsBuilder {
                 .unwrap()
         };
 
-        let mut file = std::fs::File::create(root.join("voting_token.txt"))?;
-        writeln!(file, "{:?}", token_list)?;
+        self.write_token(root.join("voting_token.txt"), &token_list)?;
 
         println!("building initials..");
 
@@ -221,7 +237,7 @@ impl VitBackendSettingsBuilder {
                 blockchain = blockchain.with_wallet(wallet.clone());
             }
         }
-        println!("building voteplan..");
+        println!("building direct voteplan..");
 
         for vote_plan_def in VitVotePlanDefBuilder::default()
             .vote_phases(vote_blockchain_time)
@@ -247,7 +263,13 @@ impl VitBackendSettingsBuilder {
             .committee(self.committee_wallet.clone())
             .private(self.config.vote_plan.private)
             .proposals_count(self.config.data.current_fund.proposals as usize)
-            .voting_tokens(token_list.into_iter().map(|(a, b)| (a, b.into())).collect())
+            .voting_tokens(
+                token_list
+                    .iter()
+                    .cloned()
+                    .map(|(a, b)| (a, b.into()))
+                    .collect(),
+            )
             .build()
             .into_iter()
         {
@@ -278,6 +300,7 @@ impl VitBackendSettingsBuilder {
 
         let parameters = build_servicing_station_parameters(
             &self.config,
+            token_list,
             controller.defined_vote_plans(),
             &controller.settings(),
         );
@@ -295,4 +318,6 @@ pub enum Error {
     Controller(#[from] crate::mode::standard::VitControllerError),
     #[error("too many vote options provided, only 128 are supported")]
     TooManyOptions,
+    #[error(transparent)]
+    Json(#[from] serde_json::Error),
 }

@@ -116,7 +116,7 @@ pub fn increase_max_block_content_size_during_voting() {
     let wallet_settings = wallet_proxy.client().settings().unwrap();
     let fragment_sender = FragmentSender::new(
         Hash::from_str(&wallet_settings.block0_hash).unwrap(),
-        wallet_settings.fees,
+        wallet_settings.fees.clone(),
         BlockDateGenerator::rolling(
             &wallet_settings,
             BlockDate {

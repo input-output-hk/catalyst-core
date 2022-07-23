@@ -1,5 +1,6 @@
 mod private;
 mod public;
+mod representative;
 
 use std::collections::LinkedList;
 use valgrind::{Challenge, Fund, ValgrindClient};
@@ -104,11 +105,15 @@ pub fn reviews_eq(expected_list: LinkedList<ReviewTemplate>, backend_client: Val
 
 pub fn proposals_eq(
     expected_list: LinkedList<ProposalTemplate>,
-    actual_list: Vec<FullProposalInfo>,
+    mut actual_list: Vec<FullProposalInfo>,
 ) {
     if expected_list.len() != actual_list.len() {
         panic!("proposals count invalid");
     }
+
+    let mut expected_list: Vec<_> = expected_list.iter().cloned().collect();
+    expected_list.sort_by_key(|p| p.proposal_id.clone());
+    actual_list.sort_by_key(|p| p.proposal.proposal_id.clone());
 
     for (expected, actual) in expected_list.iter().zip(actual_list.iter()) {
         assert_eq!(

@@ -7,6 +7,4 @@ pub struct VotePlan {
     pub vote_time: VoteTime,
     #[serde(default)]
     pub private: bool,
-    #[serde(default)]
-    pub representatives_vote_plan: bool,
 }

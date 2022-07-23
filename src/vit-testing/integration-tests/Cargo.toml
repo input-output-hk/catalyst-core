@@ -22,14 +22,18 @@ chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", bran
 vitup = { path = "../vitup"} 
 iapyx = { path = "../iapyx"} 
 valgrind = { path = "../valgrind"} 
+mainnet-tools = { path = "../mainnet-tools"} 
 snapshot-trigger-service = { path = "../snapshot-trigger-service" }
 registration-service = { path = "../registration-service" }
 rand_chacha = "0.2"
 tokio = { version = "1.1", features = ["macros","rt","rt-multi-thread"] }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
-catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "main", features=["test-api"]}
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "test_api_for_snapshot", features=["test-api"]}
+voting-hir = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "test_api_for_snapshot"}
 thiserror = "1.0"
+netstat2 = "0.9"
 rand = "0.8"
+lazy_static = "1"
 libmath = "0.2.1"
 cfg-if = "1.0.0"
 assert_fs = "1.0"
@@ -38,6 +42,7 @@ chrono = "0.4.19"
 serde_json = "1.0.53"
 serde = "1.0.53"
 csv = "1.1"
+fraction = "0.10"
 
 [features]
 load-tests = []

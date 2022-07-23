@@ -53,11 +53,8 @@ impl LedgerState {
     pub fn message(&mut self, fragment: Fragment) -> FragmentId {
         self.received_fragments.push(fragment.clone());
         let fragment_id = fragment.id();
-        let parameters = self.ledger.get_ledger_parameters();
         let date = self.current_blockchain_age();
-        let result = self
-            .ledger
-            .apply_fragment(&parameters, &fragment, date.into());
+        let result = self.ledger.apply_fragment(&fragment, date.into());
         let mut fragment_log = FragmentLog::new(fragment.id(), FragmentOrigin::Rest);
         self.set_fragment_status(&mut fragment_log, self.fragment_strategy, result);
         if !(matches!(self.fragment_strategy, FragmentRecieveStrategy::Forget)) {
@@ -239,7 +236,7 @@ impl LedgerState {
     }
 
     pub fn settings(&self) -> SettingsDto {
-        let params = self.ledger.get_ledger_parameters();
+        let params = self.ledger.settings();
         let slot_duration: u8 = self
             .block0_configuration
             .blockchain_configuration
@@ -278,9 +275,9 @@ impl LedgerState {
                 .blockchain_configuration
                 .slots_per_epoch
                 .into(),
-            treasury_tax: params.treasury_tax,
-            reward_params: params.reward_params,
-            tx_max_expiry_epochs: self.ledger.settings().transaction_max_expiry_epochs,
+            treasury_tax: params.treasury_params(),
+            reward_params: params.reward_params(),
+            tx_max_expiry_epochs: params.transaction_max_expiry_epochs,
         }
     }
 
@@ -304,6 +301,7 @@ impl LedgerState {
         self.block0_configuration
             .blockchain_configuration
             .linear_fees
+            .clone()
     }
 }
 

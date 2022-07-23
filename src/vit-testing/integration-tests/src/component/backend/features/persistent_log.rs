@@ -77,7 +77,7 @@ pub fn persistent_log_contains_all_sent_votes() {
     let voteplan_alias = format!(
         "{}-{}",
         config.data.current_fund.fund_info.fund_name,
-        Role::Voter.to_string()
+        Role::Voter
     );
     let vote_plan = controller.defined_vote_plan(&voteplan_alias).unwrap();
 

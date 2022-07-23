@@ -45,5 +45,5 @@ fn default_goals() -> Vec<String> {
 }
 
 fn default_groups() -> Vec<String> {
-    vec![Role::Representative.to_string(), Role::Voter.to_string()]
+    vec![Role::Voter.to_string(), Role::Representative.to_string()]
 }

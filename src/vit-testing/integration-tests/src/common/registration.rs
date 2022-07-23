@@ -1,11 +1,10 @@
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
 use catalyst_toolbox::kedqr::PinReadMode;
-use chain_addr::Discrimination;
 use iapyx::utils::qr::{Secret, SecretFromQrCode};
 use jormungandr_automation::jcli::JCli;
-use jormungandr_lib::interfaces::Address;
-use jormungandr_lib::interfaces::InitialUTxO;
+use jormungandr_lib::crypto::account::Identifier;
+use jormungandr_lib::interfaces::Value;
 use jortestkit::prelude::WaitBuilder;
 use math::round;
 use registration_service::{
@@ -116,31 +115,26 @@ impl RegistrationResult {
         chars.iter().rev().collect()
     }
 
-    pub fn snapshot_entry(&self) -> Result<InitialUTxO, Error> {
-        Ok(InitialUTxO {
-            address: self.address()?,
-            value: self.funds_in_ada()?.into(),
-        })
+    pub fn snapshot_entry(&self) -> Result<(Identifier, Value), Error> {
+        Ok((self.identifier()?, self.funds_in_ada()?.into()))
     }
 
     pub fn print_snapshot_entry(&self) -> Result<(), Error> {
         println!(
-            "[address: {}, funds:{}",
-            self.address_as_str(),
+            "[identifier: {}, funds:{}",
+            self.identifier_as_str(),
             self.funds_in_ada()?
         );
         Ok(())
     }
 
-    pub fn address_as_str(&self) -> String {
+    pub fn identifier_as_str(&self) -> String {
         let jcli = JCli::new(PathBuf::from_str("jcli").expect("jcli not found on env"));
-        let public_key = jcli.key().convert_to_public_string(&self.voting_sk);
-        jcli.address()
-            .account(public_key, None, Discrimination::Production)
+        jcli.key().convert_to_public_string(&self.voting_sk)
     }
 
-    pub fn address(&self) -> Result<Address, Error> {
-        Ok(Address::from_str(&self.address_as_str())?)
+    pub fn identifier(&self) -> Result<Identifier, Error> {
+        Ok(Identifier::from_str(&self.identifier_as_str())?)
     }
 
     pub fn slot_no(&self) -> Result<u64, Error> {
@@ -176,4 +170,6 @@ pub enum Error {
     CannotGetAddressFromRegistrationResult(#[from] chain_addr::Error),
     #[error("cannot get slot no from registration result")]
     CannotGetSlotNoFromRegistrationResult,
+    #[error(transparent)]
+    Bech32(#[from] chain_crypto::bech32::Error),
 }

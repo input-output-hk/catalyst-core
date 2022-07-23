@@ -35,7 +35,7 @@ impl VitInteractiveCommandExec {
     }
 }
 
-impl<'a> InteractiveCommandExec for VitInteractiveCommandExec {
+impl InteractiveCommandExec for VitInteractiveCommandExec {
     fn parse_and_exec(
         &mut self,
         tokens: Vec<String>,

@@ -4,8 +4,9 @@ members = [
   "vitup",
   "valgrind",
   "integration-tests",
+  "mainnet-tools",
   "registration-service",
   "registration-verify-service",
   "snapshot-trigger-service",
-  "signals-handler",
+  "signals-handler"  
 ]

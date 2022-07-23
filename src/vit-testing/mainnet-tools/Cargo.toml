@@ -1,0 +1,26 @@
+[package]
+name = "mainnet-tools"
+version = "0.1.0"
+authors = ["dkijania <dariusz.kijania@iohk.io>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+hex = "0.4"
+bech32 = "0.8.1"
+structopt = "0.3"
+thiserror = "1.0"
+futures = "0.3.8"
+serde_json = "1.0"
+signals-handler = { path = "../signals-handler" }
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1.2", features = ["macros","rt","process"] }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "test_api_for_snapshot", features = [ "test-api" ]}
+chain-addr           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
+chain-crypto         = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
+tempdir = "0.3.7"
+thor = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+rand = "0.8"
+assert_fs = "1.0"

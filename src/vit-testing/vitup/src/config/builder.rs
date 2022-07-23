@@ -6,11 +6,12 @@ pub use crate::builders::{
 use crate::config::date_format;
 use crate::config::Block0Initials;
 use crate::config::{Config, Initials, VoteTime};
+use chain_addr::Discrimination;
 use chain_impl_mockchain::fee::LinearFee;
 use jormungandr_lib::interfaces::CommitteeIdDef;
 use jormungandr_lib::interfaces::ConsensusLeaderId;
-pub use jormungandr_lib::interfaces::Initial;
 use time::OffsetDateTime;
+use voting_hir::VoterHIR;
 
 #[derive(Default)]
 pub struct ConfigBuilder {
@@ -45,8 +46,15 @@ impl ConfigBuilder {
         self.block0_initials(Block0Initials::new_above_threshold(initials_count, pin))
     }
 
-    pub fn extend_block0_initials(mut self, initials: Vec<Initial>) -> Self {
-        self.config.initials.block0.extend_from_external(initials);
+    pub fn extend_block0_initials(
+        mut self,
+        initials: Vec<VoterHIR>,
+        discrimination: Discrimination,
+    ) -> Self {
+        self.config
+            .initials
+            .block0
+            .extend_from_external(initials, discrimination);
         self
     }
 

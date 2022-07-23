@@ -30,7 +30,7 @@ pub struct Wallet {
 impl Wallet {
     pub fn recover(secret_key: &[u8]) -> Result<Self, Error> {
         Ok(Self {
-            inner: Inner::recover_free_keys(secret_key, [].iter())
+            inner: Inner::recover_free_keys(secret_key)
                 .map_err(|e| Error::CannotRecover(e.to_string()))?,
             pending_txs: Vec::new(),
         })
@@ -38,7 +38,7 @@ impl Wallet {
 
     pub fn recover_from_utxo(secret_key: &[u8; 64]) -> Result<Self, Error> {
         Ok(Self {
-            inner: Inner::recover_free_keys(secret_key, [*secret_key].iter())
+            inner: Inner::recover_free_keys(secret_key)
                 .map_err(|e| Error::CannotRecover(e.to_string()))?,
             pending_txs: Vec::new(),
         })

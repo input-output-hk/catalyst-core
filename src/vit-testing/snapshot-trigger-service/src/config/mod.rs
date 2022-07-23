@@ -1,6 +1,9 @@
 mod job;
 
+use assert_fs::fixture::PathChild;
+use assert_fs::TempDir;
 pub use job::JobParameters;
+use mainnet_tools::voting_tools::VotingToolsMock;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::path::PathBuf;
@@ -64,6 +67,55 @@ impl Configuration {
     }
 }
 
+#[derive(Default, Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
+pub struct ConfigurationBuilder {
+    configuration: Configuration,
+}
+
+impl ConfigurationBuilder {
+    pub fn with_port(mut self, port: u16) -> Self {
+        self.configuration.port = port;
+        self
+    }
+
+    pub fn with_result_dir<P: AsRef<Path>>(mut self, path: P) -> Self {
+        self.configuration.result_dir = path.as_ref().to_path_buf();
+        self
+    }
+
+    pub fn with_tmp_result_dir(self, tmp: &TempDir) -> Self {
+        self.with_result_dir(tmp.child("snapshot_result").path())
+    }
+
+    pub fn with_voting_tools_params(mut self, voting_tools: VotingToolsParams) -> Self {
+        self.configuration.voting_tools = voting_tools;
+        self
+    }
+
+    pub fn build(self) -> Configuration {
+        self.configuration
+    }
+}
+
+impl Default for Configuration {
+    fn default() -> Self {
+        Self {
+            port: 7070,
+            voting_tools: VotingToolsParams {
+                bin: None,
+                nix_branch: None,
+                network: NetworkType::Mainnet,
+                db: "".to_string(),
+                db_user: "".to_string(),
+                db_host: "".to_string(),
+                scale: 1_000_000,
+            },
+            result_dir: Path::new(".").to_path_buf(),
+            token: None,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
 pub struct VotingToolsParams {
     /// binary name
@@ -83,6 +135,22 @@ pub struct VotingToolsParams {
     pub db_host: String,
     /// voting power scale. If 1 then voting power will be expressed in Lovelace
     pub scale: u32,
+}
+
+impl From<VotingToolsMock> for VotingToolsParams {
+    fn from(voting_tools_mock: VotingToolsMock) -> Self {
+        let config = mainnet_tools::db_sync::Settings::default();
+
+        Self {
+            bin: Some(voting_tools_mock.path().to_str().unwrap().to_string()),
+            nix_branch: None,
+            network: NetworkType::Mainnet,
+            db: config.db_name,
+            db_user: config.db_user,
+            db_host: config.db_host,
+            scale: 1_000_000,
+        }
+    }
 }
 
 impl VotingToolsParams {
@@ -111,6 +179,13 @@ pub enum NetworkType {
 pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Configuration, Error> {
     let contents = std::fs::read_to_string(&config)?;
     serde_json::from_str(&contents).map_err(Into::into)
+}
+
+pub fn write_config<P: AsRef<Path>>(config: Configuration, path: P) -> Result<(), Error> {
+    use std::io::Write;
+    let mut file = std::fs::File::create(&path)?;
+    file.write_all(serde_json::to_string_pretty(&config)?.as_bytes())
+        .map_err(Into::into)
 }
 
 #[derive(Debug, Error)]

@@ -70,8 +70,8 @@ impl VitVotePlanDefBuilder {
         self
     }
 
-    pub fn voting_token(mut self, voting_token: TokenIdentifier) -> Self {
-        self.voting_tokens = vec![(Default::default(), voting_token)];
+    pub fn voting_token(mut self, role: Role, voting_token: TokenIdentifier) -> Self {
+        self.voting_tokens = vec![(role, voting_token)];
         self
     }
 
@@ -124,7 +124,6 @@ impl VitVotePlanDefBuilder {
                     if self.private {
                         vote_plan_builder.payload_type(PayloadType::Private);
                     }
-
                     proposal_builders.to_vec().iter_mut().for_each(|proposal| {
                         vote_plan_builder.with_proposal(proposal);
                     });

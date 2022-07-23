@@ -5,6 +5,7 @@ use jormungandr_automation::testing::VoteCastCounter;
 use jortestkit::load::{Id, Request, RequestFailure, RequestGenerator};
 use rand::RngCore;
 use rand_core::OsRng;
+use std::collections::HashSet;
 use std::time::Instant;
 use thor::BlockDateGenerator;
 use valgrind::SettingsExtensions;
@@ -35,6 +36,13 @@ impl BatchWalletRequestGen {
         voting_group: &str,
     ) -> Result<Self, MultiControllerError> {
         let proposals = multi_controller.proposals(voting_group)?;
+        let voting_groups_vote_plans_ids: HashSet<String> = proposals
+            .iter()
+            .map(|p| p.voteplan.chain_voteplan_id.to_string())
+            .collect();
+
+        println!("direct vote plans: {:?}", voting_groups_vote_plans_ids);
+
         let vote_plans = multi_controller.backend().vote_plan_statuses()?;
         let settings = multi_controller.backend().settings()?;
 
@@ -50,6 +58,7 @@ impl BatchWalletRequestGen {
             multi_controller.wallet_count(),
             vote_plans
                 .iter()
+                .filter(|v| voting_groups_vote_plans_ids.contains(&v.id.to_string()))
                 .map(|v| (v.id.into(), v.proposals.len() as u8))
                 .collect(),
         );
@@ -101,20 +110,22 @@ impl BatchWalletRequestGen {
 
         let mut proposals = Vec::new();
 
-        counter.iter().for_each(|item| {
+        for item in counter.iter() {
             for i in item.range() {
-                proposals.push(
-                    self.proposals
-                        .iter()
-                        .find(|x| {
-                            x.voteplan.chain_voteplan_id == item.id().to_string()
-                                && (x.voteplan.chain_proposal_index % u8::MAX as i64) == i as i64
-                        })
-                        .unwrap()
-                        .clone(),
-                );
+                match self.proposals.iter().find(|x| {
+                    x.voteplan.chain_voteplan_id == item.id().to_string()
+                        && (x.voteplan.chain_proposal_index % u8::MAX as i64) == i as i64
+                }) {
+                    Some(proposal) => {
+                        println!("vote on: {}/{}", proposal.voteplan.chain_voteplan_id, i);
+                        proposals.push(proposal.clone());
+                    }
+                    None => {
+                        return Err(MultiControllerError::NotEnoughProposals);
+                    }
+                }
             }
-        });
+        }
 
         let choices: Vec<Choice> =
             std::iter::from_fn(|| Some(self.next_usize() % self.options.len()))

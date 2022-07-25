@@ -15,12 +15,12 @@
   inputs.naersk.inputs.nixpkgs.follows = "nixpkgs";
 
   nixConfig.extra-substituters = [
+    "https://iog.cachix.org"
     "https://hydra.iohk.io"
-    "https://vit.cachix.org"
   ];
   nixConfig.extra-trusted-public-keys = [
+    "iog.cachix.org-1:nYO0M9xTk/s5t1Bs9asZ/Sww/1Kt/hRhkLP0Hhv/ctY="
     "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
-    "vit.cachix.org-1:tuLYwbnzbxLzQHHN0fvZI2EMpVm/+R7AKUGqukc6eh8="
   ];
 
   outputs = {

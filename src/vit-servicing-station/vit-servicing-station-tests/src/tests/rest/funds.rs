@@ -59,7 +59,6 @@ pub fn get_funds_by_id() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-// set the internal id of each challenge consistently
 fn normalize(fund: &mut Fund) {
     fund.challenges.sort_by_key(|fund| fund.id);
     fund.chain_vote_plans.sort_by_key(|c| c.id);

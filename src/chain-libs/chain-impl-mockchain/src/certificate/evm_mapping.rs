@@ -8,13 +8,18 @@ use chain_core::{
     property::{DeserializeFromSlice, ReadError, Serialize, WriteError},
 };
 #[cfg(feature = "evm")]
-use chain_evm::Address;
+use chain_evm::{
+    crypto::{
+        secp256k1::{Error, Message, RecoverableSignature, RecoveryId},
+        sha3::{Digest, Keccak256},
+    },
+    Address,
+};
 use typed_bytes::{ByteArray, ByteBuilder};
 
 use super::CertificateSlice;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-
 pub struct EvmMapping {
     #[cfg(feature = "evm")]
     pub account_id: Identifier,
@@ -23,6 +28,24 @@ pub struct EvmMapping {
 }
 
 impl EvmMapping {
+    #[cfg(feature = "evm")]
+    fn message_for_hash(&self) -> String {
+        let msg = format!("{}{}", self.account_id, self.evm_address);
+        format!("\x19Ethereum Signed Message:\n{}{:?}", msg.len(), msg)
+    }
+
+    #[cfg(feature = "evm")]
+    pub fn sign(self, secret: &chain_evm::util::Secret) -> Result<EvmMappingSigned, Error> {
+        let msg = self.message_for_hash();
+        let (recid, signature_data) =
+            chain_evm::util::sign_data(msg.as_bytes(), secret)?.serialize_compact();
+        Ok(EvmMappingSigned {
+            evm_mapping: self,
+            signature_data,
+            recid: (recid.to_i32() % 2) as u8,
+        })
+    }
+
     #[cfg(feature = "evm")]
     pub fn new(evm_address: Address, account_id: Identifier) -> Self {
         Self {
@@ -124,6 +147,28 @@ impl DeserializeFromSlice for EvmMapping {
             std::io::ErrorKind::Unsupported,
             "evm transactions are not supported in this build",
         )))
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EvmMappingSigned {
+    pub evm_mapping: EvmMapping,
+    pub signature_data: [u8; 64],
+    pub recid: u8,
+}
+
+impl EvmMappingSigned {
+    #[cfg(feature = "evm")]
+    pub fn recover(&self) -> Result<Address, Error> {
+        let msg_for_hash = self.evm_mapping.message_for_hash();
+        let recid = RecoveryId::from_i32(self.recid as i32)?;
+        let signature = RecoverableSignature::from_compact(&self.signature_data, recid)?;
+        let msg = Message::from_slice(msg_for_hash.as_bytes())?;
+        let pubkey = signature.recover(&msg)?;
+        let pubkey_bytes = pubkey.serialize_uncompressed();
+        Ok(Address::from_slice(
+            &Keccak256::digest(&pubkey_bytes[1..]).as_slice()[12..],
+        ))
     }
 }
 

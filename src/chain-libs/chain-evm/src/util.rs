@@ -60,6 +60,14 @@ pub fn generate_account_secret() -> Secret {
     Secret::from(&keypair)
 }
 
+/// Sign raw data bytes with a secret key.
+pub fn sign_data(data: &[u8], secret: &Secret) -> Result<RecoverableSignature, secp256k1::Error> {
+    let s = Secp256k1::new();
+    let h = Message::from_slice(data)?;
+    let secret = secret.seckey();
+    Ok(s.sign_ecdsa_recoverable(&h, secret))
+}
+
 /// Sign a given hash of data with a secret key.
 pub fn sign_data_hash(
     tx_hash: &H256,

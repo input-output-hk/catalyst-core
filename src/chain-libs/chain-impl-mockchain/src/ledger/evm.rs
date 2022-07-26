@@ -17,7 +17,7 @@ use chain_evm::{
         execute_transact_call, execute_transact_create, execute_transact_create2, BlockHash,
         BlockNumber, BlockTimestamp, Environment, EvmState, ExitError, Log, VirtualMachine,
     },
-    state::{Account as EvmAccount, LogsState},
+    state::{Account as EvmAccount, ByteCode, LogsState},
     Address as EvmAddress,
 };
 use imhamt::Hamt;
@@ -255,6 +255,45 @@ impl Ledger {
         )?;
 
         Ok((accounts, evm))
+    }
+
+    pub fn call_evm_transaction(
+        evm: Ledger,
+        accounts: account::Ledger,
+        transaction: EvmTransaction,
+        config: chain_evm::Config,
+    ) -> Result<ByteCode, Error> {
+        let config = config.into();
+        let mut vm_state = EvmStateImpl { accounts, evm };
+
+        let value = transaction.value;
+        let caller = transaction.caller;
+        let gas_limit = transaction.gas_limit;
+        let access_list = transaction.access_list;
+
+        match transaction.action_type {
+            EvmActionType::Create { init_code } => {
+                let vm = VirtualMachine::new(&mut vm_state, &config, caller, gas_limit, true);
+                Ok(
+                    execute_transact_create(vm, value.into(), init_code, access_list)?
+                        .into_boxed_slice(),
+                )
+            }
+            EvmActionType::Create2 { init_code, salt } => {
+                let vm = VirtualMachine::new(&mut vm_state, &config, caller, gas_limit, true);
+                Ok(
+                    execute_transact_create2(vm, value.into(), init_code, salt, access_list)?
+                        .into_boxed_slice(),
+                )
+            }
+            EvmActionType::Call { address, data } => {
+                let vm = VirtualMachine::new(&mut vm_state, &config, caller, gas_limit, true);
+                Ok(
+                    execute_transact_call(vm, address, value.into(), data, access_list)?
+                        .into_boxed_slice(),
+                )
+            }
+        }
     }
 
     pub fn estimate_transaction(

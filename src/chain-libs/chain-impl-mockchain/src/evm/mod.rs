@@ -4,7 +4,7 @@ use chain_core::{
     property::{Deserialize, ReadError, Serialize, WriteError},
 };
 #[cfg(feature = "evm")]
-pub use chain_evm::Config;
+pub use chain_evm::{crypto, signature, util, Config};
 #[cfg(feature = "evm")]
 use chain_evm::{
     ethereum::{TransactionAction, TransactionV2},

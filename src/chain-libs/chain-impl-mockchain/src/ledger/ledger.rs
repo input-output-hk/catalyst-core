@@ -15,6 +15,7 @@ use crate::chaineval::HeaderContentEvalContext;
 use crate::chaintypes::{ChainLength, ConsensusType, HeaderId};
 use crate::config::{self, ConfigParam};
 use crate::date::{BlockDate, Epoch};
+#[cfg(feature = "evm")]
 use crate::evm::EvmTransaction;
 use crate::fee::{FeeAlgorithm, LinearFee};
 use crate::fragment::{BlockContentHash, Contents, Fragment, FragmentId};
@@ -37,6 +38,8 @@ use crate::{
 };
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::Verification;
+#[cfg(feature = "evm")]
+use chain_evm::state::ByteCode;
 use chain_time::{Epoch as TimeEpoch, SlotDuration, TimeEra, TimeFrame, Timeline};
 use std::collections::HashSet;
 use std::mem::swap;
@@ -1415,6 +1418,16 @@ impl Ledger {
 
     pub fn consensus_version(&self) -> ConsensusType {
         self.settings.consensus_version
+    }
+
+    #[cfg(feature = "evm")]
+    pub fn call_evm_transaction(&self, tx: EvmTransaction) -> Result<ByteCode, Error> {
+        Ok(evm::Ledger::call_evm_transaction(
+            self.evm.clone(),
+            self.accounts.clone(),
+            tx,
+            self.settings.evm_config,
+        )?)
     }
 
     #[cfg(feature = "evm")]

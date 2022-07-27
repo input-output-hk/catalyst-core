@@ -1,10 +1,15 @@
-use catalyst_toolbox::ideascale::{
-    build_challenges, build_fund, build_proposals, fetch_all, CustomFieldTags, Scores, Sponsors,
+use catalyst_toolbox::{
+    community_advisors::models::{ReviewRanking, VeteranRankingRow},
+    ideascale::{
+        build_challenges, build_fund, build_proposals, fetch_all, CustomFieldTags, Scores, Sponsors,
+    },
+    utils::csv::{dump_data_to_csv, load_data_from_csv},
 };
 use color_eyre::Report;
+use itertools::Itertools;
 use jcli_lib::utils::io as io_utils;
 use jormungandr_lib::interfaces::VotePrivacy;
-use std::collections::HashSet;
+use std::{collections::HashSet, ffi::OsStr};
 
 use structopt::StructOpt;
 
@@ -17,6 +22,7 @@ use std::path::{Path, PathBuf};
 #[derive(Debug, StructOpt)]
 pub enum Ideascale {
     Import(Import),
+    Filter(Filter),
 }
 
 // We need this type because structopt uses Vec<String> as a special type, so it is not compatible
@@ -75,10 +81,21 @@ pub struct Import {
     stages_filters: Filters,
 }
 
+#[derive(Debug, StructOpt)]
+#[structopt(rename_all = "kebab")]
+pub struct Filter {
+    #[structopt(long)]
+    input: PathBuf,
+
+    #[structopt(long)]
+    output: Option<PathBuf>,
+}
+
 impl Ideascale {
     pub fn exec(&self) -> Result<(), Report> {
         match self {
             Ideascale::Import(import) => import.exec(),
+            Ideascale::Filter(filter) => filter.exec(),
         }
     }
 }
@@ -166,6 +183,71 @@ impl Import {
     }
 }
 
+impl Filter {
+    fn output_file(input: &Path, output: Option<&Path>) -> PathBuf {
+        if let Some(output) = output {
+            output.to_path_buf()
+        } else {
+            let name = input.file_name().and_then(OsStr::to_str).unwrap_or("");
+            let name = format!("{name}.output");
+            let temp = input.with_file_name(name);
+            println!("no output specified, writing to {}", temp.to_string_lossy());
+            temp
+        }
+    }
+
+    fn filter_rows(rows: &[VeteranRankingRow]) -> Vec<VeteranRankingRow> {
+        let groups = rows
+            .iter()
+            .group_by(|row| (&row.assessor, &row.proposal_id));
+        groups
+            .into_iter()
+            .flat_map(|(_, group)| {
+                let group = group.collect_vec();
+                let excellent = group
+                    .iter()
+                    .filter(|row| row.score() == ReviewRanking::Excellent)
+                    .count();
+                let good = group
+                    .iter()
+                    .filter(|row| row.score() == ReviewRanking::Good)
+                    .count();
+                let filtered = group
+                    .iter()
+                    .filter(|row| row.score() == ReviewRanking::FilteredOut)
+                    .count();
+
+                use std::cmp::max;
+                let max_count = max(excellent, max(good, filtered));
+
+                let include_excellent = excellent == max_count;
+                let include_good = good == max_count;
+                let include_filtered = filtered == max_count;
+
+                group.into_iter().filter(move |row| match row.score() {
+                    ReviewRanking::Excellent => include_excellent,
+                    ReviewRanking::Good => include_good,
+                    ReviewRanking::FilteredOut => include_filtered,
+                    ReviewRanking::NA => true, // if unknown, ignore
+                })
+            })
+            .cloned()
+            .collect()
+    }
+
+    fn exec(&self) -> Result<(), Report> {
+        let Self { input, output } = self;
+        let output = Self::output_file(input, output.as_deref());
+
+        let rows = load_data_from_csv::<_, b','>(input)?;
+        let rows = Self::filter_rows(&rows);
+
+        dump_data_to_csv(&rows, &output)?;
+
+        Ok(())
+    }
+}
+
 fn dump_content_to_file(content: impl Serialize, file_path: &Path) -> Result<(), Report> {
     let writer = jcli_lib::utils::io::open_file_write(&Some(file_path))?;
     serde_json::to_writer_pretty(writer, &content)?;
@@ -222,4 +304,37 @@ fn read_sponsors_file(path: &Option<PathBuf>) -> Result<Sponsors, Report> {
         }
     }
     Ok(sponsors)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn correctly_formats_output_file_for_filter() {
+        let input = PathBuf::from("/foo/bar/file.txt");
+        let output = PathBuf::from("/baz/qux/output.txt");
+
+        let result = Filter::output_file(&input, Some(&output));
+        assert_eq!(result, output);
+
+        let result = Filter::output_file(&input, None);
+        assert_eq!(result, PathBuf::from("/foo/bar/file.txt.output"));
+    }
+
+    #[test]
+    fn filters_rows_correctly() {
+        use ReviewRanking::*;
+
+        let pid = String::from("pid");
+        let assessor = String::from("assessor");
+        let first = VeteranRankingRow::new(pid.clone(), assessor.clone(), "1".into(), Excellent);
+        let second = VeteranRankingRow::new(pid.clone(), assessor.clone(), "2".into(), Excellent);
+        let third = VeteranRankingRow::new(pid.clone(), assessor.clone(), "3".into(), Good);
+
+        let rows = vec![first.clone(), second.clone(), third];
+        let expected_rows = vec![first, second];
+
+        assert_eq!(Filter::filter_rows(&rows), expected_rows);
+    }
 }

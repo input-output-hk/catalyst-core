@@ -1,5 +1,5 @@
 use crate::utils::serde::deserialize_truthy_falsy;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use vit_servicing_station_lib::db::models::community_advisors_reviews::ReviewRanking as VitReviewRanking;
 
 /// (Proposal Id, Assessor Id), an assessor cannot assess the same proposal more than once
@@ -37,7 +37,7 @@ pub struct AdvisorReviewRow {
     filtered_out: bool,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct VeteranRankingRow {
     pub proposal_id: String,
     #[serde(alias = "Assessor")]
@@ -82,6 +82,26 @@ impl ReviewRanking {
 }
 
 impl VeteranRankingRow {
+    pub fn new(
+        proposal_id: String,
+        assessor: String,
+        vca: VeteranAdvisorId,
+        ranking: ReviewRanking,
+    ) -> Self {
+        let excellent = ranking == ReviewRanking::Excellent;
+        let good = ranking == ReviewRanking::Good;
+        let filtered_out = ranking == ReviewRanking::FilteredOut;
+
+        Self {
+            proposal_id,
+            assessor,
+            vca,
+            excellent,
+            good,
+            filtered_out,
+        }
+    }
+
     pub fn score(&self) -> ReviewRanking {
         ranking_mux(self.excellent, self.good, self.filtered_out)
     }

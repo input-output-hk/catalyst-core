@@ -63,7 +63,7 @@ impl SnapshotCmd {
             self.voting_power_cap,
             &assigner,
         )?
-        .to_voter_hir();
+        .to_full_snapshot_info();
         let mut out_writer = self.output.open()?;
         let content = self
             .output_format

@@ -52,7 +52,7 @@ impl Visitor<'_> for V {
     where
         E: serde::de::Error,
     {
-        match v.to_lowercase() {
+        match v.to_lowercase().as_ref() {
             "approved" => Ok(Approval::Approved),
             _ => Ok(Approval::NotApproved),
         }

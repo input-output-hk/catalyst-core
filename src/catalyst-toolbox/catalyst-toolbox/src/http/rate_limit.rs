@@ -7,8 +7,8 @@ use governor::{
 };
 
 use color_eyre::Report;
-use tracing::debug;
 use serde::Deserialize;
+use tracing::debug;
 
 use super::{HttpClient, HttpResponse};
 

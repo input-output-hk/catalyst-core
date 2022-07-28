@@ -8,9 +8,9 @@ pub use jcli_lib::utils::{
 use jormungandr_lib::interfaces::{
     load_persistent_fragments_logs_from_folder_path, VotePlanStatus,
 };
-use tracing::warn;
 use std::io::Write;
 use std::path::PathBuf;
+use tracing::warn;
 
 /// Recover the tally from fragment log files and the initial preloaded block0 binary file.
 pub struct Replay {

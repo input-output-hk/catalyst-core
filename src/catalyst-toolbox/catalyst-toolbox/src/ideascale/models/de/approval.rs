@@ -45,14 +45,14 @@ impl Visitor<'_> for V {
     type Value = Approval;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str("a string representing an approval status (with ths string \"approved\" meaning `Approved`, and all other strings being `NotApproved`)")
+        formatter.write_str("a case-insensitive string representing an approval status (with this string \"approved\" meaning `Approved`, and all other strings being `NotApproved`)")
     }
 
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
     where
         E: serde::de::Error,
     {
-        match v {
+        match v.to_lowercase() {
             "approved" => Ok(Approval::Approved),
             _ => Ok(Approval::NotApproved),
         }

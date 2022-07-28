@@ -7,6 +7,9 @@ use serde::{
     Deserialize, Deserializer,
 };
 
+/// A newtype wrapper around `String`
+///
+/// When deserialized, the following characters are removed: `-`, `*`, `/`
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CleanString(pub String);
 

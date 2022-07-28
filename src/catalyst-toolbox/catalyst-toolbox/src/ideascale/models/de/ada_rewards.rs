@@ -102,24 +102,3 @@ mod tests {
         assert!(parse("$123.0 in ada").is_err());
     }
 }
-
-// fn deserialize_rewards<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u64, D::Error> {
-//     let rewards_str = String::deserialize(deserializer)?;
-//
-//     if rewards_str.starts_with("0 ada") {
-//         return Ok(0);
-//     }
-//     sscanf::scanf!(rewards_str.trim_end(), "${} in {}", String, String)
-//         // trim all . or , in between numbers
-//         .map(|(mut amount, _currency)| {
-//             amount.retain(|c: char| c.is_numeric() && !(matches!(c, '.') || matches!(c, ',')));
-//             amount
-//         })
-//         .and_then(|s| s.parse().ok())
-//         .ok_or_else(|| {
-//             D::Error::custom(&format!(
-//                 "Unable to read malformed value: '{}'",
-//                 rewards_str
-//             ))
-//         })
-// }

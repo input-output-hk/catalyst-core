@@ -10,7 +10,7 @@ use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
 use serde::{Deserialize, Serialize};
 use std::{borrow::Borrow, collections::BTreeMap, iter::Iterator, num::NonZeroU64};
 use thiserror::Error;
-use voting_hir::VoterHIR;
+pub use voting_hir::VoterHIR;
 
 pub const CATALYST_VOTING_PURPOSE_TAG: u64 = 0;
 
@@ -127,7 +127,6 @@ impl Snapshot {
                 contributions,
             })
             .collect();
-        dbg!(&entries);
         Ok(Self {
             inner: Self::apply_voting_power_cap(entries, cap)?
                 .into_iter()

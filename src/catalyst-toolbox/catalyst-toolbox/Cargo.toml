@@ -75,6 +75,7 @@ proptest = { git = "https://github.com/input-output-hk/proptest", branch = "mast
 test-strategy = "0.2"
 serde_test = "1"
 voting-hir =  { path = "../voting-hir", features = ["serde", "proptest"] }
+vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 
 [build-dependencies]
 versionisator = "1.0.3"

@@ -1,15 +1,15 @@
 use std::sync::Arc;
 
-use crate::{SharedContext, UpdateHandle};
+use crate::{SharedContext, UpdateHandle, VoterInfo};
+use catalyst_toolbox::snapshot::SnapshotInfo;
 use jormungandr_lib::crypto::account::Identifier;
 use serde_json::json;
 use tokio::sync::Mutex;
-use voting_hir::VoterHIR;
 use warp::http::StatusCode;
 use warp::{Rejection, Reply};
 
 #[tracing::instrument(skip(context))]
-pub async fn get_voting_power(
+pub async fn get_voters_info(
     tag: String,
     voting_key: String,
     context: SharedContext,
@@ -24,13 +24,13 @@ pub async fn get_voting_power(
         .into_response());
     };
 
-    match tokio::task::spawn_blocking(move || context.get_voting_power(&tag, &key))
+    match tokio::task::spawn_blocking(move || context.get_voters_info(&tag, &key))
         .await
         .unwrap()
     {
         Ok(Some(entries)) => {
-            let results: Vec<_> = entries.into_iter().map(|(voting_group, voting_power)| {
-            json!({"voting_power": voting_power, "voting_group": voting_group})
+            let results: Vec<_> = entries.into_iter().map(|VoterInfo{group: voting_group, voting_power,delegations_power, delegations_count}| {
+            json!({"voting_power": voting_power, "voting_group": voting_group, "delegations_power": delegations_power, "delegations_count": delegations_count})
         }).collect();
             Ok(warp::reply::json(&results).into_response())
         }
@@ -57,7 +57,7 @@ pub async fn get_tags(context: SharedContext) -> Result<impl Reply, Rejection> {
 #[tracing::instrument(skip(context))]
 pub async fn put_tag(
     tag: String,
-    snapshot: Vec<VoterHIR>,
+    snapshot: Vec<SnapshotInfo>,
     context: Arc<Mutex<UpdateHandle>>,
 ) -> Result<impl Reply, Rejection> {
     let mut handle = context.lock().await;

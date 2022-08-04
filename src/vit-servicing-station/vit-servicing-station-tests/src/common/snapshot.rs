@@ -1,12 +1,12 @@
+use catalyst_toolbox::snapshot::{SnapshotInfo, VoterHIR};
 use chain_impl_mockchain::testing::TestGen;
 use itertools::Itertools;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
-use voting_hir::VoterHIR;
 #[derive(Debug, Clone)]
 pub struct Snapshot {
     pub tag: String,
-    pub content: Vec<VoterHIR>,
+    pub content: Vec<SnapshotInfo>,
 }
 
 impl Default for Snapshot {
@@ -62,10 +62,13 @@ impl SnapshotBuilder {
         Snapshot {
             tag: self.tag.clone(),
             content: std::iter::from_fn(|| {
-                Some(VoterHIR {
-                    voting_key: TestGen::identifier().into(),
-                    voting_group: self.groups[rng.gen_range(0, self.groups.len())].to_string(),
-                    voting_power: rng.gen_range(1u64, 1_000u64).into(),
+                Some(SnapshotInfo {
+                    contributions: vec![],
+                    hir: VoterHIR {
+                        voting_key: TestGen::identifier().into(),
+                        voting_group: self.groups[rng.gen_range(0, self.groups.len())].to_string(),
+                        voting_power: rng.gen_range(1u64, 1_000u64).into(),
+                    },
                 })
             })
             .take(count)
@@ -112,7 +115,7 @@ impl SnapshotUpdater {
                 self.snapshot
                     .content
                     .iter()
-                    .map(|x| x.voting_group.clone())
+                    .map(|x| x.hir.voting_group.clone())
                     .unique()
                     .collect(),
             )
@@ -127,9 +130,9 @@ impl SnapshotUpdater {
     pub fn update_voting_power(mut self) -> Self {
         let mut rng = rand::rngs::OsRng;
         for entry in self.snapshot.content.iter_mut() {
-            let mut voting_power: u64 = entry.voting_power.into();
+            let mut voting_power: u64 = entry.hir.voting_power.into();
             voting_power += rng.gen_range(1u64, 1_000u64);
-            entry.voting_power = voting_power.into();
+            entry.hir.voting_power = voting_power.into();
         }
         self
     }

@@ -1,12 +1,12 @@
 mod handlers;
 mod routes;
 
-pub use routes::{filter, update_filter};
-
+use catalyst_toolbox::snapshot::{KeyContribution, SnapshotInfo, VoterHIR};
+use chain_ser::packer::Codec;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
+pub use routes::{filter, update_filter};
 use sled::{IVec, Transactional};
 use std::mem::size_of;
-use voting_hir::VoterHIR;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -21,7 +21,15 @@ pub enum Error {
 }
 
 pub type Tag = String;
-type Group = String;
+pub type Group = String;
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct VoterInfo {
+    group: Group,
+    voting_power: Value,
+    delegations_power: u64,
+    delegations_count: u64,
+}
 
 #[repr(transparent)]
 struct TagId(u32);
@@ -66,11 +74,11 @@ impl SharedContext {
     }
 
     #[tracing::instrument(skip(self))]
-    pub fn get_voting_power(
+    pub fn get_voters_info(
         &self,
         tag: &str,
         id: &Identifier,
-    ) -> Result<Option<Vec<(Group, Value)>>, Error> {
+    ) -> Result<Option<Vec<VoterInfo>>, Error> {
         let tag = if let Some(tag) = self.tags.get(tag)? {
             tag
         } else {
@@ -89,7 +97,7 @@ impl SharedContext {
             key
         };
 
-        let mut result: Vec<(Group, Value)> = vec![];
+        let mut result = vec![];
 
         for entries in self.entries.range(key_prefix..) {
             let (k, v) = entries?;
@@ -102,9 +110,17 @@ impl SharedContext {
             let group = String::from_utf8(k[key_prefix.len()..].to_vec())
                 .map_err(|_| Error::InternalError)?;
 
-            let voting_power = Value::from(u64::from_be_bytes(v.as_ref().try_into().unwrap()));
+            let mut codec = Codec::<&[u8]>::new(v.as_ref());
+            let voting_power = codec.get_be_u64().unwrap().into();
+            let delegations_power = codec.get_be_u64().unwrap();
+            let delegations_count = codec.get_be_u64().unwrap();
 
-            result.push((group, voting_power));
+            result.push(VoterInfo {
+                group,
+                voting_power,
+                delegations_power,
+                delegations_count,
+            });
         }
 
         Ok(Some(result))
@@ -154,7 +170,7 @@ impl UpdateHandle {
     pub async fn update(
         &mut self,
         tag: &str,
-        snapshot: impl IntoIterator<Item = VoterHIR>,
+        snapshot: impl IntoIterator<Item = SnapshotInfo>,
     ) -> Result<(), Error> {
         let mut batch = sled::Batch::default();
 
@@ -194,7 +210,18 @@ impl UpdateHandle {
                 voting_key,
                 voting_group,
                 voting_power,
-            } = entry;
+            } = entry.hir;
+            let delegations_count = entry.contributions.len();
+            let delegations_power = entry
+                .contributions
+                .iter()
+                .map(
+                    |KeyContribution {
+                         reward_address: _,
+                         value,
+                     }| value,
+                )
+                .sum();
 
             let voting_key_bytes = voting_key.as_ref().as_ref();
 
@@ -209,7 +236,12 @@ impl UpdateHandle {
             key.extend(voting_key_bytes);
             key.extend(voting_group.as_bytes());
 
-            batch.insert(key, &u64::from(voting_power).to_be_bytes());
+            let mut codec = Codec::new(Vec::new());
+            codec.put_be_u64(voting_power.into()).unwrap();
+            codec.put_be_u64(delegations_power).unwrap();
+            codec.put_be_u64(delegations_count as u64).unwrap();
+
+            batch.insert(key, codec.into_inner().as_slice());
         }
 
         {
@@ -255,6 +287,8 @@ pub fn new_context() -> Result<(SharedContext, UpdateHandle), Error> {
 
 #[cfg(test)]
 mod tests {
+    use catalyst_toolbox::snapshot::KeyContribution;
+
     use super::*;
 
     #[tokio::test]
@@ -279,32 +313,73 @@ mod tests {
         const TAG2: &str = "tag2";
 
         let key_0_values = [
-            (GROUP1.to_string(), Value::from(1)),
-            (GROUP2.to_string(), Value::from(2)),
+            VoterInfo {
+                group: GROUP1.to_string(),
+                voting_power: Value::from(1),
+                delegations_power: 0,
+                delegations_count: 0,
+            },
+            VoterInfo {
+                group: GROUP2.to_string(),
+                voting_power: Value::from(2),
+                delegations_power: 0,
+                delegations_count: 0,
+            },
         ];
 
         let content_a = std::iter::repeat(keys[0].clone())
             .take(key_0_values.len())
             .zip(key_0_values.iter().cloned())
-            .map(|(voting_key, (voting_group, voting_power))| VoterHIR {
-                voting_key,
-                voting_group,
-                voting_power,
-            })
+            .map(
+                |(
+                    voting_key,
+                    VoterInfo {
+                        group: voting_group,
+                        voting_power,
+                        delegations_power: _,
+                        delegations_count: _,
+                    },
+                )| SnapshotInfo {
+                    contributions: vec![],
+                    hir: VoterHIR {
+                        voting_key,
+                        voting_group,
+                        voting_power,
+                    },
+                },
+            )
             .collect::<Vec<_>>();
 
         tx.update(TAG1, content_a.clone()).await.unwrap();
 
-        let key_1_values = [(GROUP1.to_string(), Value::from(3))];
+        let key_1_values = [VoterInfo {
+            group: GROUP1.to_string(),
+            voting_power: Value::from(3),
+            delegations_power: 0,
+            delegations_count: 0,
+        }];
 
         let content_b = std::iter::repeat(keys[1].clone())
             .take(key_1_values.len())
             .zip(key_1_values.iter().cloned())
-            .map(|(voting_key, (voting_group, voting_power))| VoterHIR {
-                voting_key,
-                voting_group,
-                voting_power,
-            })
+            .map(
+                |(
+                    voting_key,
+                    VoterInfo {
+                        group: voting_group,
+                        voting_power,
+                        delegations_power: _,
+                        delegations_count: _,
+                    },
+                )| SnapshotInfo {
+                    contributions: vec![],
+                    hir: VoterHIR {
+                        voting_key,
+                        voting_group,
+                        voting_power,
+                    },
+                },
+            )
             .collect::<Vec<_>>();
 
         tx.update(TAG2, [content_a, content_b].concat())
@@ -313,18 +388,18 @@ mod tests {
 
         assert_eq!(
             &key_0_values[..],
-            &rx.get_voting_power(TAG1, &keys[0]).unwrap().unwrap()[..],
+            &rx.get_voters_info(TAG1, &keys[0]).unwrap().unwrap()[..],
         );
 
         assert!(&rx
-            .get_voting_power(TAG1, &keys[1])
+            .get_voters_info(TAG1, &keys[1])
             .unwrap()
             .unwrap()
             .is_empty(),);
 
         assert_eq!(
             &key_1_values[..],
-            &rx.get_voting_power(TAG2, &keys[1]).unwrap().unwrap()[..],
+            &rx.get_voters_info(TAG2, &keys[1]).unwrap().unwrap()[..],
         );
     }
 
@@ -341,15 +416,21 @@ mod tests {
         .unwrap();
 
         let inputs = [
-            VoterHIR {
-                voting_key: voting_key.clone(),
-                voting_group: "GROUP1".into(),
-                voting_power: 1.into(),
+            SnapshotInfo {
+                contributions: vec![],
+                hir: VoterHIR {
+                    voting_key: voting_key.clone(),
+                    voting_group: "GROUP1".into(),
+                    voting_power: 1.into(),
+                },
             },
-            VoterHIR {
-                voting_key: voting_key.clone(),
-                voting_group: "GROUP2".into(),
-                voting_power: 1.into(),
+            SnapshotInfo {
+                contributions: vec![],
+                hir: VoterHIR {
+                    voting_key: voting_key.clone(),
+                    voting_group: "GROUP2".into(),
+                    voting_power: 1.into(),
+                },
             },
         ];
 
@@ -357,32 +438,74 @@ mod tests {
         tx.update(TAG2, inputs.clone()).await.unwrap();
 
         assert_eq!(
-            rx.get_voting_power(TAG1, &voting_key).unwrap().unwrap(),
+            rx.get_voters_info(TAG1, &voting_key).unwrap().unwrap(),
             inputs
                 .iter()
                 .cloned()
-                .map(|hir| (hir.voting_group, hir.voting_power))
+                .map(|snapshot| VoterInfo {
+                    group: snapshot.hir.voting_group,
+                    voting_power: snapshot.hir.voting_power,
+                    delegations_power: snapshot
+                        .contributions
+                        .iter()
+                        .map(
+                            |KeyContribution {
+                                 reward_address: _,
+                                 value,
+                             }| value
+                        )
+                        .sum(),
+                    delegations_count: snapshot.contributions.len() as u64
+                })
                 .collect::<Vec<_>>()
         );
 
         tx.update(TAG1, inputs[0..1].to_vec()).await.unwrap();
 
         assert_eq!(
-            rx.get_voting_power(TAG1, &voting_key).unwrap().unwrap(),
+            rx.get_voters_info(TAG1, &voting_key).unwrap().unwrap(),
             inputs[0..1]
                 .iter()
                 .cloned()
-                .map(|hir| (hir.voting_group, hir.voting_power))
+                .map(|snapshot| VoterInfo {
+                    group: snapshot.hir.voting_group,
+                    voting_power: snapshot.hir.voting_power,
+                    delegations_power: snapshot
+                        .contributions
+                        .iter()
+                        .map(
+                            |KeyContribution {
+                                 reward_address: _,
+                                 value,
+                             }| value
+                        )
+                        .sum(),
+                    delegations_count: snapshot.contributions.len() as u64
+                })
                 .collect::<Vec<_>>()
         );
 
         // asserting that TAG2 is untouched, just in case
         assert_eq!(
-            rx.get_voting_power(TAG2, &voting_key).unwrap().unwrap(),
+            rx.get_voters_info(TAG2, &voting_key).unwrap().unwrap(),
             inputs
                 .iter()
                 .cloned()
-                .map(|hir| (hir.voting_group, hir.voting_power))
+                .map(|snapshot| VoterInfo {
+                    group: snapshot.hir.voting_group,
+                    voting_power: snapshot.hir.voting_power,
+                    delegations_power: snapshot
+                        .contributions
+                        .iter()
+                        .map(
+                            |KeyContribution {
+                                 reward_address: _,
+                                 value,
+                             }| value
+                        )
+                        .sum(),
+                    delegations_count: snapshot.contributions.len() as u64
+                })
                 .collect::<Vec<_>>()
         );
     }

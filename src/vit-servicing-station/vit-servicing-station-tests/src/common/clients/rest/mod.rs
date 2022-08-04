@@ -116,8 +116,12 @@ impl RestClient {
         serde_json::from_str(&content).map_err(Error::CannotDeserialize)
     }
 
-    pub fn voting_power(&self, tag: &str, key: &str) -> Result<Vec<VotingPower>, Error> {
-        let response = self.raw.voting_power(tag, key)?;
+    pub fn voting_power_and_delegations(
+        &self,
+        tag: &str,
+        key: &str,
+    ) -> Result<Vec<VotingPower>, Error> {
+        let response = self.raw.voting_power_and_delegations(tag, key)?;
         self.verify_status_code(&response)?;
         let content = response.text()?;
         self.raw.log_text(&content);

@@ -289,7 +289,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/VotingPowers"
+                $ref: "#/components/schemas/VotingsInfo"
         "400":
           description: Not found
 
@@ -844,25 +844,32 @@ components:
       type: string
       enum: [title, type, desc, author, funds]
 
-    VotingPowers:
+    VotingsInfo:
       type: array
       items:
-        $ref: "#/components/schemas/VotingPower"
+        $ref: "#/components/schemas/VotingInfo"
       example:
         [
           {
             "voting_power": 1000,
             "voting_group": "representative",
+            "delegations": 2,
           },
         ]
 
-    VotingPower:
+    VotingInfo:
       properties:
         voting_power:
           type: integer
           format: u64
         voting_group:
           type: string
+        delegations_power:
+          type: integer
+          format: u64
+        delegations_count:
+          type: integer
+          format: u64
 
     NextFundInfo:
       properties:

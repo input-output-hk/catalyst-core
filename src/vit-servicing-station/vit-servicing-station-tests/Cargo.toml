@@ -33,7 +33,7 @@ jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 chain-addr      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 chain-crypto    = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
-voting-hir = { git = "https://github.com/input-output-hk/catalyst-toolbox", branch = "main", features = ["serde"] }
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox", branch = "feature/npg-1953_update_voter_hir" }
 fake = { version = "2.2", features=['http']}
 pretty_assertions = "0.6"
 dyn-clone = "1.0.4"

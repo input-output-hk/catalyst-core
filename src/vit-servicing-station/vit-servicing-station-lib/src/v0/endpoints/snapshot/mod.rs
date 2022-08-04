@@ -1,16 +1,16 @@
 #[cfg(test)]
 mod test {
+    use catalyst_toolbox::snapshot::{KeyContribution, SnapshotInfo, VoterHIR};
     use jormungandr_lib::crypto::account::Identifier;
     use tracing::Level;
-    use voting_hir::VoterHIR;
     use warp::hyper::StatusCode;
     use warp::{Filter, Reply};
 
-    async fn get_voting_power<F>(
+    async fn get_voters_info<F>(
         tag: &str,
         voting_key: &str,
         filter: &F,
-    ) -> Result<Vec<(u64, String)>, StatusCode>
+    ) -> Result<Vec<(u64, u64, u64, String)>, StatusCode>
     where
         F: Filter + 'static,
         F::Extract: Reply + Send,
@@ -33,6 +33,8 @@ mod test {
             .map(|v| {
                 (
                     v["voting_power"].as_u64().unwrap(),
+                    v["delegations_count"].as_u64().unwrap(),
+                    v["delegations_power"].as_u64().unwrap(),
                     v["voting_group"].as_str().unwrap().to_string(),
                 )
             })
@@ -55,23 +57,44 @@ mod test {
         ];
 
         let content_a = serde_json::to_string(&[
-            VoterHIR {
-                voting_key: Identifier::from_hex(keys[0]).unwrap(),
-                voting_group: GROUP1.to_string(),
-                voting_power: 1.into(),
+            SnapshotInfo {
+                contributions: vec![
+                    KeyContribution {
+                        reward_address: "address_1".to_string(),
+                        value: 2,
+                    },
+                    KeyContribution {
+                        reward_address: "address_2".to_string(),
+                        value: 2,
+                    },
+                ],
+                hir: VoterHIR {
+                    voting_key: Identifier::from_hex(keys[0]).unwrap(),
+                    voting_group: GROUP1.to_string(),
+                    voting_power: 1.into(),
+                },
             },
-            VoterHIR {
-                voting_key: Identifier::from_hex(keys[0]).unwrap(),
-                voting_group: GROUP2.to_string(),
-                voting_power: 2.into(),
+            SnapshotInfo {
+                contributions: vec![KeyContribution {
+                    reward_address: "address_3".to_string(),
+                    value: 3,
+                }],
+                hir: VoterHIR {
+                    voting_key: Identifier::from_hex(keys[0]).unwrap(),
+                    voting_group: GROUP2.to_string(),
+                    voting_power: 2.into(),
+                },
             },
         ])
         .unwrap();
 
-        let content_b = serde_json::to_string(&[VoterHIR {
-            voting_key: Identifier::from_hex(keys[0]).unwrap(),
-            voting_group: GROUP1.to_string(),
-            voting_power: 2.into(),
+        let content_b = serde_json::to_string(&[SnapshotInfo {
+            contributions: vec![],
+            hir: VoterHIR {
+                voting_key: Identifier::from_hex(keys[0]).unwrap(),
+                voting_group: GROUP1.to_string(),
+                voting_power: 2.into(),
+            },
         }])
         .unwrap();
 
@@ -104,16 +127,19 @@ mod test {
         );
 
         assert_eq!(
-            get_voting_power("tag_a", keys[0], &filter).await.unwrap(),
-            vec![(1u64, GROUP1.to_string()), (2u64, GROUP2.to_string())]
+            get_voters_info("tag_a", keys[0], &filter).await.unwrap(),
+            vec![
+                (1u64, 2u64, 4u64, GROUP1.to_string()),
+                (2u64, 1u64, 3u64, GROUP2.to_string())
+            ]
         );
 
         assert_eq!(
-            get_voting_power("tag_b", keys[0], &filter).await.unwrap(),
-            vec![(2u64, GROUP1.to_string())]
+            get_voters_info("tag_b", keys[0], &filter).await.unwrap(),
+            vec![(2u64, 0u64, 0u64, GROUP1.to_string())]
         );
 
-        assert!(get_voting_power("tag_c", keys[0], &filter).await.is_err());
+        assert!(get_voters_info("tag_c", keys[0], &filter).await.is_err());
 
         let result = warp::test::request().path("/snapshot").reply(&filter).await;
 

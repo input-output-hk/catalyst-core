@@ -50,9 +50,13 @@ impl RestClient {
             .map_err(Error::RequestError)
     }
 
-    pub fn voting_power(&self, tag: &str, key: &str) -> Result<Response, Error> {
-        self.get(&self.path_builder.snapshot_voting_power(tag, key))
-            .map_err(Error::RequestError)
+    pub fn voting_power_and_delegations(&self, tag: &str, key: &str) -> Result<Response, Error> {
+        self.get(
+            &self
+                .path_builder
+                .snapshot_voting_power_and_delegations(tag, key),
+        )
+        .map_err(Error::RequestError)
     }
 
     pub fn proposal(&self, id: &str, group: &str) -> Result<Response, Error> {

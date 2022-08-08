@@ -3,6 +3,7 @@ mod explorer;
 use assert_fs::{fixture::PathChild, TempDir};
 use explorer::{transaction_by_id, TransactionById};
 use graphql_client::{GraphQLQuery, Response};
+use jormungandr_automation::jormungandr::explorer::configuration::ExplorerParams;
 use jormungandr_automation::jormungandr::{
     Block0ConfigurationBuilder, ExplorerError, JormungandrError, JormungandrParams,
     JormungandrProcess, NodeConfigBuilder, RestError, Starter, StartupError,
@@ -97,7 +98,7 @@ impl CheckNode {
     /// Check that all transactions are present on the main chain of the node
     pub fn check_transactions_on_chain(&self, transactions: Vec<String>) -> Result<(), Error> {
         let tip = self.inner.rest().tip()?.to_string();
-        let explorer = self.inner.explorer();
+        let explorer = self.inner.explorer(ExplorerParams::default());
         let explorer = explorer.client();
 
         for id in transactions {

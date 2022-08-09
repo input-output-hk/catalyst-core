@@ -12,7 +12,7 @@ license = "MIT OR Apache-2.0"
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 serde = { version = "1", features = ["derive"], optional = true }
 proptest = { git = "https://github.com/input-output-hk/proptest.git", branch = "master", optional = true }
-hex = { version = "0.4", optional = true }
+hex = { version = "0.4" }
 thiserror = "1.0"
 fraction = "0.10"
 reqwest = { version = "0.11", features = ["blocking", "json"] }

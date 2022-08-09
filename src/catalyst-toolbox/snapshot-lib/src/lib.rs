@@ -177,8 +177,8 @@ impl Snapshot {
     }
 }
 
-#[cfg(test)]
-mod tests {
+#[cfg(any(test, feature = "proptest"))]
+pub mod tests {
     use super::*;
     use chain_addr::{Discrimination, Kind};
     use jormungandr_lib::interfaces::{Address, InitialUTxO};

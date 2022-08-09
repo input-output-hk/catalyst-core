@@ -1,4 +1,3 @@
-#[cfg(feature = "serde")]
 use ::serde::{Deserialize, Serialize};
 use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
 
@@ -13,11 +12,10 @@ pub type VotingGroup = String;
 ///
 /// You can roughly read this as
 /// "voting_key will participate in this voting round with role voting_group and will have voting_power influence"
-#[derive(Debug, Clone, PartialEq, Hash, Eq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Hash, Eq)]
 pub struct VoterHIR {
     // Keep hex encoding as in CIP-36
-    #[cfg_attr(feature = "serde", serde(with = "serde"))]
+    #[serde(with = "serde")]
     pub voting_key: Identifier,
     /// Voting group this key belongs to.
     /// If this key belong to multiple voting groups, multiple records for the same
@@ -27,7 +25,6 @@ pub struct VoterHIR {
     pub voting_power: Value,
 }
 
-#[cfg(feature = "serde")]
 mod serde {
     use super::*;
     use ::serde::{de::Error, Deserializer, Serializer};

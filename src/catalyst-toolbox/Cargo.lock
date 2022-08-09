@@ -495,7 +495,7 @@ dependencies = [
  "log",
  "once_cell",
  "predicates 1.0.8",
- "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest?branch=master)",
+ "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest.git?branch=master)",
  "qrcode",
  "quircs",
  "rand 0.8.5",
@@ -3959,7 +3959,7 @@ dependencies = [
 [[package]]
 name = "proptest"
 version = "1.0.0"
-source = "git+https://github.com/input-output-hk/proptest?branch=master#38044d47b2e8eeab62408294aa9e78e393f13d6b"
+source = "git+https://github.com/input-output-hk/proptest.git?branch=master#38044d47b2e8eeab62408294aa9e78e393f13d6b"
 dependencies = [
  "bit-set",
  "bitflags",
@@ -4895,7 +4895,7 @@ dependencies = [
  "graphql_client",
  "hex",
  "jormungandr-lib",
- "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest?branch=master)",
+ "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest.git?branch=master)",
  "reqwest",
  "rust_decimal",
  "rust_decimal_macros",

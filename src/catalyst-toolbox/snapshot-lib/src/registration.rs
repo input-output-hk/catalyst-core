@@ -136,7 +136,7 @@ mod deser {
     }
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "proptest"))]
 mod tests {
     use super::deser::IdentifierDef;
     use super::*;

@@ -62,7 +62,7 @@ graphql_client = { version = "0.10" }
 gag = "1"
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 env_logger = "0.9"
-snapshot-lib = { path = "../snapshot-lib", features = ["serde"] }
+snapshot-lib = { path = "../snapshot-lib" }
 fraction = "0.10"
 
 [dev-dependencies]
@@ -74,7 +74,7 @@ chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch
 proptest = { git = "https://github.com/input-output-hk/proptest", branch = "master" }
 test-strategy = "0.2"
 serde_test = "1"
-snapshot-lib =  { path = "../snapshot-lib", features = ["serde", "proptest"] }
+snapshot-lib =  { path = "../snapshot-lib", features = ["proptest"] }
 vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 
 [build-dependencies]

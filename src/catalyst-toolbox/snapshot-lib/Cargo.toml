@@ -10,8 +10,11 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-serde = { version = "1", features = ["derive"], optional = true }
+serde = { version = "1", features = ["derive"] }
 proptest = { git = "https://github.com/input-output-hk/proptest.git", branch = "master", optional = true }
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", optional = true }
+test-strategy = { version = "0.2", optional = true }
+serde_test = { version = "1", optional = true }
 hex = { version = "0.4" }
 thiserror = "1.0"
 fraction = "0.10"
@@ -27,7 +30,9 @@ serde_test = "1"
 test-strategy = "0.2"
 serde_json = "1.0"
 serde_yaml = "0.8.17"
+proptest = { git = "https://github.com/input-output-hk/proptest.git", branch = "master" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 
 [features]
-proptest = ["dep:proptest"]
+proptest = ["dep:proptest", "dep:chain-addr", "dep:test-strategy", "dep:serde_test"]
+test-api = []

@@ -1,16 +1,17 @@
-mod influence_cap;
-pub mod registration;
-pub mod voting_group;
-
-use registration::{Delegations, MainnetRewardAddress, VotingRegistration};
-use voting_group::VotingGroupAssigner;
-
 use fraction::Fraction;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
+use registration::{Delegations, MainnetRewardAddress, VotingRegistration};
 use serde::{Deserialize, Serialize};
 use std::{borrow::Borrow, collections::BTreeMap, iter::Iterator, num::NonZeroU64};
 use thiserror::Error;
-pub use voting_hir::VoterHIR;
+pub use voter_hir::VoterHIR;
+pub use voter_hir::VotingGroup;
+use voting_group::VotingGroupAssigner;
+
+mod influence_cap;
+pub mod registration;
+mod voter_hir;
+pub mod voting_group;
 
 pub const CATALYST_VOTING_PURPOSE_TAG: u64 = 0;
 

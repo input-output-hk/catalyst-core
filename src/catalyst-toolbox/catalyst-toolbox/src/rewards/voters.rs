@@ -1,6 +1,6 @@
-use crate::snapshot::{registration::MainnetRewardAddress, SnapshotInfo};
 use jormungandr_lib::crypto::{account::Identifier, hash::Hash};
 use rust_decimal::Decimal;
+use snapshot_lib::{registration::MainnetRewardAddress, SnapshotInfo};
 use std::collections::{BTreeMap, HashMap, HashSet};
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
@@ -167,11 +167,11 @@ pub fn calc_voter_rewards(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::snapshot::registration::*;
-    use crate::snapshot::*;
     use crate::utils::assert_are_close;
     use fraction::Fraction;
     use jormungandr_lib::crypto::account::Identifier;
+    use snapshot_lib::registration::{Delegations, VotingRegistration};
+    use snapshot_lib::Snapshot;
     use test_strategy::proptest;
 
     #[proptest]

@@ -1,10 +1,10 @@
 use catalyst_toolbox::rewards::voters::{calc_voter_rewards, Rewards, Threshold, VoteCount};
-use catalyst_toolbox::snapshot::{registration::MainnetRewardAddress, SnapshotInfo};
 use catalyst_toolbox::utils::assert_are_close;
 use jormungandr_lib::{
     crypto::{account::Identifier, hash::Hash},
     interfaces::AccountVotes,
 };
+use snapshot_lib::{registration::MainnetRewardAddress, SnapshotInfo};
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
 use color_eyre::{eyre::eyre, Report};

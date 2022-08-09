@@ -1,8 +1,8 @@
+use crate::VotingGroup;
 use graphql_client::GraphQLQuery;
 use jormungandr_lib::crypto::account::Identifier;
 use std::collections::HashSet;
 use thiserror::Error;
-use voting_hir::VotingGroup;
 
 pub trait VotingGroupAssigner {
     fn assign(&self, vk: &Identifier) -> VotingGroup;
@@ -22,8 +22,8 @@ pub enum Error {
 
 #[derive(GraphQLQuery)]
 #[graphql(
-    query_path = "resources/repsdb/all_representatives.graphql",
-    schema_path = "resources/repsdb/schema.graphql",
+    query_path = "../resources/repsdb/all_representatives.graphql",
+    schema_path = "../resources/repsdb/schema.graphql",
     response_derives = "Debug"
 )]
 pub struct AllReps;
@@ -71,7 +71,7 @@ impl VotingGroupAssigner for RepsVotersAssigner {
     }
 }
 
-#[cfg(any(test, feature = "test-api"))]
+#[cfg(any(test, feature = "test-api", feature = "proptest"))]
 impl<F> VotingGroupAssigner for F
 where
     F: Fn(&Identifier) -> VotingGroup,

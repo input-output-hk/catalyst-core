@@ -1,16 +1,17 @@
-mod influence_cap;
-pub mod registration;
-pub mod voting_group;
-
-use registration::{Delegations, MainnetRewardAddress, VotingRegistration};
-use voting_group::VotingGroupAssigner;
-
 use fraction::Fraction;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
+use registration::{Delegations, MainnetRewardAddress, VotingRegistration};
 use serde::{Deserialize, Serialize};
 use std::{borrow::Borrow, collections::BTreeMap, iter::Iterator, num::NonZeroU64};
 use thiserror::Error;
-pub use voting_hir::VoterHIR;
+pub use voter_hir::VoterHIR;
+pub use voter_hir::VotingGroup;
+use voting_group::VotingGroupAssigner;
+
+mod influence_cap;
+pub mod registration;
+mod voter_hir;
+pub mod voting_group;
 
 pub const CATALYST_VOTING_PURPOSE_TAG: u64 = 0;
 
@@ -176,12 +177,13 @@ impl Snapshot {
     }
 }
 
-#[cfg(test)]
-mod tests {
+#[cfg(any(test, feature = "proptest"))]
+pub mod tests {
     use super::*;
     use chain_addr::{Discrimination, Kind};
     use jormungandr_lib::interfaces::{Address, InitialUTxO};
     use proptest::prelude::*;
+    #[cfg(test)]
     use test_strategy::proptest;
 
     struct DummyAssigner;
@@ -216,6 +218,7 @@ mod tests {
         }
     }
 
+    #[cfg(test)]
     #[proptest]
     fn test_threshold(raw: RawSnapshot, stake_threshold: u64, additional_reg: VotingRegistration) {
         let mut add = raw.clone();
@@ -259,6 +262,7 @@ mod tests {
     }
 
     // Test all voting power is distributed among delegated keys
+    #[cfg(test)]
     #[proptest]
     fn test_voting_power_all_distributed(reg: VotingRegistration) {
         let snapshot = Snapshot::from_raw_snapshot(
@@ -276,6 +280,7 @@ mod tests {
         assert_eq!(total_stake, u64::from(reg.voting_power))
     }
 
+    #[cfg(test)]
     #[proptest]
     fn test_non_catalyst_regs_are_ignored(mut reg: VotingRegistration) {
         reg.voting_purpose = 1;
@@ -297,6 +302,7 @@ mod tests {
         )
     }
 
+    #[cfg(test)]
     #[test]
     fn test_distribution() {
         let mut raw_snapshot = Vec::new();
@@ -339,6 +345,7 @@ mod tests {
         assert_eq!(vp_2 - vp_1, n / 2); // last key get the remainder during distribution
     }
 
+    #[cfg(test)]
     #[test]
     fn test_parsing() {
         let raw: RawSnapshot = serde_json::from_str(

@@ -1,5 +1,5 @@
 [workspace]
 members = [
     "catalyst-toolbox",
-    "voting-hir"
+    "snapshot-lib"
 ]

@@ -145,7 +145,9 @@ mod tests {
     use proptest::collection::vec;
     use proptest::prelude::*;
     use serde::{Serialize, Serializer};
+    #[cfg(test)]
     use serde_test::{assert_de_tokens, Configure, Token};
+    #[cfg(test)]
     use test_strategy::proptest;
 
     impl Arbitrary for Delegations {
@@ -210,6 +212,7 @@ mod tests {
         }
     }
 
+    #[cfg(test)]
     #[test]
     fn parse_example() {
         assert_de_tokens(
@@ -276,6 +279,7 @@ mod tests {
         }
     }
 
+    #[cfg(test)]
     #[proptest]
     fn serde_json(d: Delegations) {
         assert_eq!(
@@ -284,6 +288,7 @@ mod tests {
         )
     }
 
+    #[cfg(test)]
     #[proptest]
     fn serde_yaml(d: Delegations) {
         assert_eq!(
@@ -292,16 +297,19 @@ mod tests {
         )
     }
 
+    #[cfg(test)]
     #[test]
     fn test_empty_delegations_are_rejected() {
         assert!(serde_json::from_str::<Delegations>(r#"[]"#,).is_err());
     }
 
+    #[cfg(test)]
     #[test]
     fn test_u64_weight_is_rejected() {
         assert!(serde_json::from_str::<Delegations>(r#"[["0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663", 4294967296]]"#,).is_err());
     }
 
+    #[cfg(test)]
     #[test]
     fn test_legacy_delegation_is_ok() {
         assert!(serde_json::from_str::<Delegations>(
@@ -310,6 +318,7 @@ mod tests {
         .is_ok());
     }
 
+    #[cfg(test)]
     #[test]
     fn test_u32_weight_is_ok() {
         serde_json::from_str::<Delegations>(

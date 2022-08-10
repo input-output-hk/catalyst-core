@@ -1,11 +1,11 @@
 mod handlers;
 mod routes;
 
-use catalyst_toolbox::snapshot::{KeyContribution, SnapshotInfo, VoterHIR};
 use chain_ser::packer::Codec;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
 pub use routes::{filter, update_filter};
 use sled::{IVec, Transactional};
+use snapshot_lib::{KeyContribution, SnapshotInfo, VoterHIR};
 use std::mem::size_of;
 
 #[derive(thiserror::Error, Debug)]
@@ -287,7 +287,7 @@ pub fn new_context() -> Result<(SharedContext, UpdateHandle), Error> {
 
 #[cfg(test)]
 mod tests {
-    use catalyst_toolbox::snapshot::KeyContribution;
+    use snapshot_lib::KeyContribution;
 
     use super::*;
 

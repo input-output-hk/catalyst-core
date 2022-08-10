@@ -1,8 +1,8 @@
-use catalyst_toolbox::snapshot::{SnapshotInfo, VoterHIR};
 use chain_impl_mockchain::testing::TestGen;
 use itertools::Itertools;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
+use snapshot_lib::{SnapshotInfo, VoterHIR};
 #[derive(Debug, Clone)]
 pub struct Snapshot {
     pub tag: String,

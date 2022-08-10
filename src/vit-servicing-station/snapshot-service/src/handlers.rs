@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
 use crate::{SharedContext, UpdateHandle, VoterInfo};
-use catalyst_toolbox::snapshot::SnapshotInfo;
 use jormungandr_lib::crypto::account::Identifier;
 use serde_json::json;
+use snapshot_lib::SnapshotInfo;
 use tokio::sync::Mutex;
 use warp::http::StatusCode;
 use warp::{Rejection, Reply};

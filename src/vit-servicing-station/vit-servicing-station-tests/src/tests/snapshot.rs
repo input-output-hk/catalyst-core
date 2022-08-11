@@ -22,7 +22,7 @@ pub fn import_new_snapshot() {
     );
 
     for (idx, entry) in snapshot.content.iter().enumerate() {
-        let voting_power = VotingPower::from(entry.hir.clone());
+        let voting_power = VotingPower::from(entry.clone());
         assert_eq!(
             vec![voting_power],
             rest_client
@@ -85,7 +85,7 @@ pub fn replace_snapshot_with_tag() {
         );
     }
     for (idx, entry) in second_snapshot.content.iter().enumerate() {
-        let voting_power = VotingPower::from(entry.hir.clone());
+        let voting_power = VotingPower::from(entry.clone());
         assert_eq!(
             vec![voting_power],
             rest_client
@@ -114,7 +114,8 @@ pub fn import_snapshots_with_different_tags() {
     rest_client.put_snapshot(&second_snapshot).unwrap();
 
     for (idx, entry) in first_snapshot.content.iter().enumerate() {
-        let voting_power = VotingPower::from(entry.hir.clone());
+        let voting_power = VotingPower::from(entry.clone());
+
         assert_eq!(
             vec![voting_power.clone()],
             rest_client
@@ -168,7 +169,7 @@ pub fn import_big_snapshot() {
 
     rest_client.put_snapshot(&snapshot).unwrap();
     let entry = snapshot.content[0].clone();
-    let voting_power = VotingPower::from(entry.hir.clone());
+    let voting_power = VotingPower::from(entry.clone());
     assert_eq!(
         vec![voting_power],
         rest_client

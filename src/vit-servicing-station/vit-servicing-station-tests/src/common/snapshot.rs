@@ -100,14 +100,14 @@ impl SnapshotBuilder {
 }
 
 #[derive(Deserialize, Serialize, Debug, PartialEq, Eq, Clone)]
-pub struct VotingPower {
+pub struct VoterInfo {
     pub voting_power: u64,
     pub voting_group: String,
     pub delegations_power: u64,
     pub delegations_count: u64,
 }
 
-impl From<SnapshotInfo> for VotingPower {
+impl From<SnapshotInfo> for VoterInfo {
     fn from(snapshot_info: SnapshotInfo) -> Self {
         let delegations_power: u64 = snapshot_info
             .contributions

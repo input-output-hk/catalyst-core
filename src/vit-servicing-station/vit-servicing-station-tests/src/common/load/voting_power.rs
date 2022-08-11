@@ -31,7 +31,7 @@ impl RequestGenerator for VotingPowerRequestGenerator {
         let mut rng = rand::rngs::OsRng;
         let content = &self.snapshot.content;
         self.rest_client
-            .voting_power_and_delegations(
+            .voter_info(
                 &self.snapshot.tag,
                 &content[rng.gen_range(0, content.len())]
                     .hir

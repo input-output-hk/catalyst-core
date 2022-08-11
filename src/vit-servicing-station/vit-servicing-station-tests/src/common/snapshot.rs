@@ -66,14 +66,6 @@ impl SnapshotBuilder {
             }
         };
 
-        let contributions_count = {
-            if self.contributions_count == 0 {
-                rng.gen_range(0usize, 1_000usize)
-            } else {
-                self.contributions_count
-            }
-        };
-
         Snapshot {
             tag: self.tag.clone(),
             content: std::iter::from_fn(|| {
@@ -84,7 +76,7 @@ impl SnapshotBuilder {
                             value: rng.gen_range(1u64, 1_000u64),
                         })
                     })
-                    .take(contributions_count)
+                    .take(self.contributions_count)
                     .collect(),
                     hir: VoterHIR {
                         voting_key: TestGen::identifier().into(),

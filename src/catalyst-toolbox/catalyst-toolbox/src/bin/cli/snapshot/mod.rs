@@ -1,8 +1,8 @@
-use catalyst_toolbox::snapshot::{voting_group::RepsVotersAssigner, RawSnapshot, Snapshot};
 use color_eyre::Report;
 use fraction::Fraction;
 use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 use jormungandr_lib::interfaces::Value;
+use snapshot_lib::{voting_group::RepsVotersAssigner, RawSnapshot, Snapshot};
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
@@ -63,7 +63,7 @@ impl SnapshotCmd {
             self.voting_power_cap,
             &assigner,
         )?
-        .to_voter_hir();
+        .to_full_snapshot_info();
         let mut out_writer = self.output.open()?;
         let content = self
             .output_format

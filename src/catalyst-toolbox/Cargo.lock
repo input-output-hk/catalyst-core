@@ -80,6 +80,15 @@ dependencies = [
 
 [[package]]
 name = "ansi_term"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee49baf6cb617b853aa8d93bf420db2383fab46d314482ca2803b40d5fde979b"
+dependencies = [
+ "winapi",
+]
+
+[[package]]
+name = "ansi_term"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d52a9bb7ec0cf484c551830a7ce27bd20d67eac647e1befb56b0be4ee39a55d2"
@@ -436,7 +445,7 @@ dependencies = [
 [[package]]
 name = "cardano-legacy-address"
 version = "0.1.1"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#a8ac1f74eb596e27f9383f3a13e4da3fc16d8d43"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "cbor_event",
  "cryptoxide 0.4.2",
@@ -469,6 +478,7 @@ dependencies = [
  "chain-vote",
  "color-eyre",
  "csv",
+ "env_logger 0.9.0",
  "fraction",
  "futures",
  "gag",
@@ -498,6 +508,7 @@ dependencies = [
  "serde_json",
  "serde_test",
  "serde_yaml",
+ "snapshot-lib",
  "sscanf",
  "structopt",
  "symmetric-cipher",
@@ -511,7 +522,7 @@ dependencies = [
  "url",
  "versionisator",
  "vit-servicing-station-lib",
- "voting-hir 0.1.0",
+ "vit-servicing-station-tests",
  "wallet",
 ]
 
@@ -569,7 +580,7 @@ dependencies = [
 [[package]]
 name = "chain-addr"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#a8ac1f74eb596e27f9383f3a13e4da3fc16d8d43"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "bech32 0.8.1",
  "chain-core",
@@ -583,7 +594,7 @@ dependencies = [
 [[package]]
 name = "chain-core"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#a8ac1f74eb596e27f9383f3a13e4da3fc16d8d43"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "chain-ser",
 ]
@@ -591,7 +602,7 @@ dependencies = [
 [[package]]
 name = "chain-crypto"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#a8ac1f74eb596e27f9383f3a13e4da3fc16d8d43"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "bech32 0.8.1",
  "cryptoxide 0.4.2",
@@ -613,7 +624,7 @@ dependencies = [
 [[package]]
 name = "chain-evm"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#a8ac1f74eb596e27f9383f3a13e4da3fc16d8d43"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "aurora-bn",
  "base64 0.13.0",
@@ -642,7 +653,7 @@ dependencies = [
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#a8ac1f74eb596e27f9383f3a13e4da3fc16d8d43"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "cardano-legacy-address",
  "chain-addr",
@@ -682,7 +693,7 @@ dependencies = [
 [[package]]
 name = "chain-ser"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#a8ac1f74eb596e27f9383f3a13e4da3fc16d8d43"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "thiserror",
 ]
@@ -690,7 +701,7 @@ dependencies = [
 [[package]]
 name = "chain-storage"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#a8ac1f74eb596e27f9383f3a13e4da3fc16d8d43"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "criterion",
  "data-pile",
@@ -703,7 +714,7 @@ dependencies = [
 [[package]]
 name = "chain-time"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#a8ac1f74eb596e27f9383f3a13e4da3fc16d8d43"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "chain-core",
  "chain-ser",
@@ -715,7 +726,7 @@ dependencies = [
 [[package]]
 name = "chain-vote"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#a8ac1f74eb596e27f9383f3a13e4da3fc16d8d43"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "cfg-if 1.0.0",
  "chain-core",
@@ -773,7 +784,7 @@ version = "2.34.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a0610544180c38b88101fecf2dd634b174a62eef6946f84dfc6a7127512b381c"
 dependencies = [
- "ansi_term",
+ "ansi_term 0.12.1",
  "atty",
  "bitflags",
  "strsim 0.8.0",
@@ -1094,6 +1105,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "ctor"
+version = "0.1.22"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f877be4f7c9f246b183111634f75baa039715e3f46ce860677d3b19a69fb229c"
+dependencies = [
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "ctr"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1339,6 +1360,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f"
 
 [[package]]
+name = "dyn-clone"
+version = "1.0.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9d07a982d1fb29db01e5a59b1918e03da4df7297eaeee7686ac45542fd4e59c8"
+
+[[package]]
 name = "ed25519"
 version = "1.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1399,6 +1426,19 @@ checksum = "44533bbbb3bb3c1fa17d9f2e4e38bbbaf8396ba82193c4cb1b6445d711445d36"
 dependencies = [
  "log",
  "regex",
+]
+
+[[package]]
+name = "env_logger"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b2cf0344971ee6c64c31be0d530793fba457d322dfec2810c453d0ef228f9c3"
+dependencies = [
+ "atty",
+ "humantime",
+ "log",
+ "regex",
+ "termcolor",
 ]
 
 [[package]]
@@ -1566,6 +1606,16 @@ dependencies = [
  "quote",
  "syn",
  "synstructure",
+]
+
+[[package]]
+name = "fake"
+version = "2.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4d68f517805463f3a896a9d29c1d6ff09d3579ded64a7201b4069f8f9c0d52fd"
+dependencies = [
+ "http",
+ "rand 0.8.5",
 ]
 
 [[package]]
@@ -2155,7 +2205,7 @@ dependencies = [
 [[package]]
 name = "hersir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#c27977964284c09505ef4e6fbc5403b311dbc224"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#5f51deb34dc86d5124c44d885025dcbbc5371cd1"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2378,7 +2428,7 @@ dependencies = [
 [[package]]
 name = "imhamt"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#a8ac1f74eb596e27f9383f3a13e4da3fc16d8d43"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest.git)",
  "rustc_version",
@@ -2529,7 +2579,7 @@ checksum = "112c678d4050afce233f4f2852bb2eb519230b3cf12f33585275537d7e41578d"
 [[package]]
 name = "jcli"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#c27977964284c09505ef4e6fbc5403b311dbc224"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#5f51deb34dc86d5124c44d885025dcbbc5371cd1"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2572,7 +2622,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-automation"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#c27977964284c09505ef4e6fbc5403b311dbc224"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#5f51deb34dc86d5124c44d885025dcbbc5371cd1"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -2594,6 +2644,7 @@ dependencies = [
  "graphql_client",
  "hex",
  "humantime",
+ "jcli",
  "jormungandr-lib",
  "jortestkit",
  "json",
@@ -2636,7 +2687,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-integration-tests"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#c27977964284c09505ef4e6fbc5403b311dbc224"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#5f51deb34dc86d5124c44d885025dcbbc5371cd1"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -2688,7 +2739,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#c27977964284c09505ef4e6fbc5403b311dbc224"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#5f51deb34dc86d5124c44d885025dcbbc5371cd1"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2921,7 +2972,7 @@ dependencies = [
 [[package]]
 name = "loki"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#c27977964284c09505ef4e6fbc5403b311dbc224"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#5f51deb34dc86d5124c44d885025dcbbc5371cd1"
 dependencies = [
  "chain-addr",
  "chain-core",
@@ -3084,7 +3135,7 @@ dependencies = [
 [[package]]
 name = "mjolnir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#c27977964284c09505ef4e6fbc5403b311dbc224"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#5f51deb34dc86d5124c44d885025dcbbc5371cd1"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -3504,6 +3555,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "21326818e99cfe6ce1e524c2a805c189a99b5ae555a35d19f9a284b427d86afa"
 
 [[package]]
+name = "output_vt100"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "628223faebab4e3e40667ee0b2336d34a5b960ff60ea743ddfdbcf7770bcfb66"
+dependencies = [
+ "winapi",
+]
+
+[[package]]
 name = "owo-colors"
 version = "3.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3820,6 +3880,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "pretty_assertions"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f81e1644e1b54f5a68959a29aa86cde704219254669da328ecfdf6a1f09d427"
+dependencies = [
+ "ansi_term 0.11.0",
+ "ctor",
+ "difference",
+ "output_vt100",
+]
+
+[[package]]
 name = "primitive-types"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4006,7 +4078,7 @@ version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a44883e74aa97ad63db83c4bf8ca490f02b2fc02f92575e720c8551e843c945f"
 dependencies = [
- "env_logger",
+ "env_logger 0.7.1",
  "log",
  "rand 0.7.3",
  "rand_core 0.5.1",
@@ -4195,9 +4267,9 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.5.6"
+version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d83f127d94bdbcda4c8cc2e50f6f84f4b611f69c902699ca385a39c3a75f9ff1"
+checksum = "4c4eb3267174b8c6c2f654116623910a0fef09c4753f8dd83db29c48a0df988b"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -4212,9 +4284,9 @@ checksum = "6c230d73fb8d8c1b9c0b3135c5142a8acee3a0558fb8db5cf1cb65f8d7862132"
 
 [[package]]
 name = "regex-syntax"
-version = "0.6.26"
+version = "0.6.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49b3de9ec5dc0a3417da371aab17d729997c15010e7fd24ff707773a33bddb64"
+checksum = "a3f87b73ce11b1619a3c6332f45341e0047173771e8b8b73f87bfeefb7b56244"
 
 [[package]]
 name = "remove_dir_all"
@@ -4314,11 +4386,13 @@ dependencies = [
 
 [[package]]
 name = "rpassword"
-version = "5.0.1"
+version = "6.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ffc936cf8a7ea60c58f030fd36a612a48f440610214dc54bc36431f9ea0c3efb"
+checksum = "2bf099a1888612545b683d2661a1940089f6c2e5a8e38979b2159da876bfd956"
 dependencies = [
  "libc",
+ "serde",
+ "serde_json",
  "winapi",
 ]
 
@@ -4812,9 +4886,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cc88c725d61fc6c3132893370cac4a0200e3fedf5da8331c570664b1987f5ca2"
 
 [[package]]
+name = "snapshot-lib"
+version = "0.1.0"
+dependencies = [
+ "bech32 0.8.1",
+ "chain-addr",
+ "chain-crypto",
+ "fraction",
+ "graphql_client",
+ "hex",
+ "jormungandr-lib",
+ "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest?branch=master)",
+ "reqwest",
+ "rust_decimal",
+ "rust_decimal_macros",
+ "serde",
+ "serde_json",
+ "serde_test",
+ "serde_yaml",
+ "test-strategy 0.2.0",
+ "thiserror",
+]
+
+[[package]]
 name = "snapshot-service"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#1448284748bed304b7c0e12643fcf4473ebbbfb4"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#8d431648d84fc1164c228f6638eaee02cff2d2e4"
 dependencies = [
  "jormungandr-lib",
  "notify",
@@ -4824,7 +4921,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing",
- "voting-hir 0.1.0 (git+https://github.com/input-output-hk/catalyst-toolbox?branch=main)",
+ "voting-hir",
  "warp",
 ]
 
@@ -4841,7 +4938,7 @@ dependencies = [
 [[package]]
 name = "sparse-array"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#a8ac1f74eb596e27f9383f3a13e4da3fc16d8d43"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 
 [[package]]
 name = "spin"
@@ -5175,7 +5272,7 @@ dependencies = [
 [[package]]
 name = "thor"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#c27977964284c09505ef4e6fbc5403b311dbc224"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#5f51deb34dc86d5124c44d885025dcbbc5371cd1"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",
@@ -5576,7 +5673,7 @@ version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4bc28f93baff38037f64e6f43d34cfa1605f27a49c34e8a04c5e78b0babf2596"
 dependencies = [
- "ansi_term",
+ "ansi_term 0.12.1",
  "serde",
  "serde_json",
  "sharded-slab",
@@ -5634,7 +5731,7 @@ dependencies = [
 [[package]]
 name = "typed-bytes"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#a8ac1f74eb596e27f9383f3a13e4da3fc16d8d43"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 
 [[package]]
 name = "typenum"
@@ -5793,7 +5890,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#1448284748bed304b7c0e12643fcf4473ebbbfb4"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#8d431648d84fc1164c228f6638eaee02cff2d2e4"
 dependencies = [
  "async-trait",
  "base64 0.12.3",
@@ -5818,8 +5915,48 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-subscriber",
- "voting-hir 0.1.0 (git+https://github.com/input-output-hk/catalyst-toolbox?branch=main)",
+ "voting-hir",
  "warp",
+]
+
+[[package]]
+name = "vit-servicing-station-tests"
+version = "0.3.4-dev"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#8d431648d84fc1164c228f6638eaee02cff2d2e4"
+dependencies = [
+ "assert_cmd 2.0.4",
+ "assert_fs",
+ "base64 0.12.3",
+ "cfg-if 0.1.10",
+ "chain-addr",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "diesel",
+ "diesel_migrations",
+ "dyn-clone",
+ "fake",
+ "hyper",
+ "itertools 0.10.3",
+ "jortestkit",
+ "lazy_static",
+ "libsqlite3-sys",
+ "predicates 2.1.1",
+ "pretty_assertions",
+ "quickcheck",
+ "quickcheck_macros",
+ "rand 0.7.3",
+ "rand_core 0.5.1",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "structopt",
+ "tempfile",
+ "thiserror",
+ "time 0.3.11",
+ "tokio",
+ "url",
+ "vit-servicing-station-lib",
+ "voting-hir",
 ]
 
 [[package]]
@@ -5831,17 +5968,7 @@ checksum = "6a02e4885ed3bc0f2de90ea6dd45ebcbb66dacffe03547fadbb0eeae2770887d"
 [[package]]
 name = "voting-hir"
 version = "0.1.0"
-dependencies = [
- "hex",
- "jormungandr-lib",
- "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest?branch=master)",
- "serde",
-]
-
-[[package]]
-name = "voting-hir"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-toolbox?branch=main#d260af9d865fafa386f6fedf4bf643ffc5cdca02"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox?branch=main#ea16440d54b13ef34690507f2c5d54ff86f2b013"
 dependencies = [
  "jormungandr-lib",
  "serde",

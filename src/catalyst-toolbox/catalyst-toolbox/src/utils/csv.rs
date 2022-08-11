@@ -13,7 +13,7 @@ pub fn load_data_from_csv<T: DeserializeOwned, const DELIMITER: u8>(
 }
 
 pub fn dump_data_to_csv<'a, T: 'a + Serialize>(
-    data: impl Iterator<Item = &'a T>,
+    data: impl IntoIterator<Item = &'a T>,
     file_path: &Path,
 ) -> Result<(), csv::Error> {
     let mut writer = csv::WriterBuilder::new()

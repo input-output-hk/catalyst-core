@@ -6,7 +6,6 @@ pub mod logs;
 pub mod notifications;
 pub mod recovery;
 pub mod rewards;
-pub mod snapshot;
 pub mod stats;
 pub mod utils;
 pub mod vca_reviews;

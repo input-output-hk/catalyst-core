@@ -32,10 +32,6 @@ pub struct SnapshotCmd {
     #[structopt(long)]
     representatives_group: Option<String>,
 
-    /// Url of the representative db api server
-    #[structopt(long)]
-    reps_db_api_url: reqwest::Url,
-
     /// Voting power cap for each account
     #[structopt(short, long)]
     voting_power_cap: Fraction,
@@ -56,7 +52,7 @@ impl SnapshotCmd {
         let representative = self
             .representatives_group
             .unwrap_or_else(|| DEFAULT_REPRESENTATIVE_GROUP.into());
-        let assigner = RepsVotersAssigner::new(direct_voter, representative, self.reps_db_api_url)?;
+        let assigner = RepsVotersAssigner::new(direct_voter, representative)?;
         let initials = Snapshot::from_raw_snapshot(
             raw_snapshot,
             self.min_stake_threshold,

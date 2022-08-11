@@ -48,11 +48,7 @@ fn get_all_reps(_url: impl reqwest::IntoUrl) -> Result<HashSet<Identifier>, Erro
 }
 
 impl RepsVotersAssigner {
-    pub fn new(
-        direct_voters: VotingGroup,
-        reps: VotingGroup,
-        _repsdb_url: impl reqwest::IntoUrl,
-    ) -> Result<Self, Error> {
+    pub fn new(direct_voters: VotingGroup, reps: VotingGroup) -> Result<Self, Error> {
         Ok(Self {
             direct_voters,
             reps,

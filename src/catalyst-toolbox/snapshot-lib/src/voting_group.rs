@@ -4,6 +4,9 @@ use jormungandr_lib::crypto::account::Identifier;
 use std::collections::HashSet;
 use thiserror::Error;
 
+pub const DEFAULT_DIRECT_VOTER_GROUP: &str = "direct";
+pub const DEFAULT_REPRESENTATIVE_GROUP: &str = "rep";
+
 pub trait VotingGroupAssigner {
     fn assign(&self, vk: &Identifier) -> VotingGroup;
 }

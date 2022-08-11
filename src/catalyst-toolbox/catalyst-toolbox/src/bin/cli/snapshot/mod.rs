@@ -2,14 +2,14 @@ use color_eyre::Report;
 use fraction::Fraction;
 use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 use jormungandr_lib::interfaces::Value;
-use snapshot_lib::{voting_group::RepsVotersAssigner, RawSnapshot, Snapshot};
+use snapshot_lib::{
+    voting_group::{RepsVotersAssigner, DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP},
+    RawSnapshot, Snapshot,
+};
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use structopt::StructOpt;
-
-const DEFAULT_DIRECT_VOTER_GROUP: &str = "direct";
-const DEFAULT_REPRESENTATIVE_GROUP: &str = "rep";
 
 /// Process raw registrations into blockchain initials
 #[derive(StructOpt)]

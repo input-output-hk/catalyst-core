@@ -45,8 +45,8 @@ fn vote_counts_as_utxo(
         .filter_map(|initials| {
             if let Initial::Fund(funds) = initials {
                 for utxo in funds {
-                    if let Some(vote_count) = votes_count.get(&addr_to_hex(&utxo.address)) {
-                        return Some((utxo.clone(), *vote_count as u32));
+                    if let Some(hash_set) = votes_count.get(&addr_to_id(&utxo.address)) {
+                        return Some((utxo.clone(), hash_set.len() as u32));
                     }
                 }
             }
@@ -55,12 +55,9 @@ fn vote_counts_as_utxo(
         .collect()
 }
 
-pub fn addr_to_hex(address: &Address) -> String {
+pub fn addr_to_id(address: &Address) -> Identifier {
     match &address.1 .1 {
-        Kind::Account(pk) => {
-            let id: Identifier = pk.clone().into();
-            id.to_hex()
-        }
+        Kind::Account(pk) => pk.clone().into(),
         _ => unimplemented!(),
     }
 }

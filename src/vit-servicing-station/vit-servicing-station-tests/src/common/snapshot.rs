@@ -68,7 +68,7 @@ impl SnapshotBuilder {
 
         let contributions_count = {
             if self.contributions_count == 0 {
-                rng.gen_range(1usize, 1_000usize)
+                rng.gen_range(0usize, 1_000usize)
             } else {
                 self.contributions_count
             }

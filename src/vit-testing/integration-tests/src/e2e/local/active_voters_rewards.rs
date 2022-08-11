@@ -39,13 +39,16 @@ pub fn voters_with_at_least_one_vote() {
 
     alice_wallet
         .send_direct_voting_registration()
-        .to(&mut mainnet_network);
+        .to(&mut mainnet_network)
+        .unwrap();
     bob_wallet
         .send_direct_voting_registration()
-        .to(&mut mainnet_network);
+        .to(&mut mainnet_network)
+        .unwrap();
     clarice_wallet
         .send_direct_voting_registration()
-        .to(&mut mainnet_network);
+        .to(&mut mainnet_network)
+        .unwrap();
 
     let voting_tools =
         VotingToolsMock::default().connect_to_db_sync(&db_sync_instance, &testing_directory);

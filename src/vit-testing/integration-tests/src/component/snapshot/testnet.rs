@@ -1,18 +1,19 @@
-use crate::common::registration::do_registration;
+use crate::common::registration::{do_registration, RegistrationResultAsserts};
 use crate::common::snapshot::do_snapshot;
 use crate::common::snapshot::wait_for_db_sync;
 use crate::common::snapshot::VoterHIRAsserts;
 use assert_fs::TempDir;
 use snapshot_trigger_service::config::JobParameters;
 const GRACE_PERIOD_FOR_SNAPSHOT: u64 = 300;
+
 //SR001
 //SR003
 #[test]
 pub fn multiple_registration() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
 
-    let first_registartion = do_registration(&temp_dir);
-    first_registartion.assert_status_is_finished();
+    let first_registartion = do_registration(&temp_dir).as_legacy_registration().unwrap();
+    first_registartion.status().assert_is_finished();
     first_registartion.assert_qr_equals_to_sk();
 
     let (overridden_identifier, _) = first_registartion.snapshot_entry().unwrap();
@@ -21,14 +22,14 @@ pub fn multiple_registration() {
     std::thread::sleep(std::time::Duration::from_secs(5 * 60));
     println!("Wait finished.");
 
-    let second_registartion = do_registration(&temp_dir);
-    second_registartion.assert_status_is_finished();
-    second_registartion.assert_qr_equals_to_sk();
+    let second_registration = do_registration(&temp_dir).as_legacy_registration().unwrap();
+    second_registration.status().assert_is_finished();
+    second_registration.assert_qr_equals_to_sk();
 
-    let (identifier, value) = second_registartion.snapshot_entry().unwrap();
+    let (identifier, value) = second_registration.snapshot_entry().unwrap();
 
     let job_param = JobParameters {
-        slot_no: Some(second_registartion.slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
+        slot_no: Some(second_registration.status().slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
         tag: None,
     };
 
@@ -45,14 +46,14 @@ pub fn multiple_registration() {
 pub fn wallet_has_less_than_threshold() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
 
-    let registartion = do_registration(&temp_dir);
-    registartion.assert_status_is_finished();
-    registartion.assert_qr_equals_to_sk();
+    let registration = do_registration(&temp_dir).as_legacy_registration().unwrap();
+    registration.status().assert_is_finished();
+    registration.assert_qr_equals_to_sk();
 
-    let (too_low_funds_entry, _) = registartion.snapshot_entry().unwrap();
+    let (too_low_funds_entry, _) = registration.snapshot_entry().unwrap();
 
     let job_param = JobParameters {
-        slot_no: Some(registartion.slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
+        slot_no: Some(registration.status().slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
         tag: None,
     };
 
@@ -68,15 +69,15 @@ pub fn wallet_has_less_than_threshold() {
 pub fn wallet_with_funds_equals_to_threshold_should_be_elligible_to_vote() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
 
-    let registartion = do_registration(&temp_dir);
-    registartion.assert_status_is_finished();
-    registartion.assert_qr_equals_to_sk();
+    let registration = do_registration(&temp_dir).as_legacy_registration().unwrap();
+    registration.status().assert_is_finished();
+    registration.assert_qr_equals_to_sk();
 
-    let (id, _) = registartion.snapshot_entry().unwrap();
-    registartion.print_snapshot_entry().unwrap();
+    let (id, _) = registration.snapshot_entry().unwrap();
+    registration.print_snapshot_entry().unwrap();
 
     let job_param = JobParameters {
-        slot_no: Some(registartion.slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
+        slot_no: Some(registration.status().slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
         tag: None,
     };
 
@@ -92,14 +93,14 @@ pub fn wallet_with_funds_equals_to_threshold_should_be_elligible_to_vote() {
 pub fn registration_after_snapshot_is_not_taken_into_account() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
 
-    let registartion = do_registration(&temp_dir);
-    registartion.assert_status_is_finished();
-    registartion.assert_qr_equals_to_sk();
+    let registration = do_registration(&temp_dir).as_legacy_registration().unwrap();
+    registration.status().assert_is_finished();
+    registration.assert_qr_equals_to_sk();
 
-    let (too_late_id, _) = registartion.snapshot_entry().unwrap();
+    let (too_late_id, _) = registration.snapshot_entry().unwrap();
 
     let job_param = JobParameters {
-        slot_no: Some(registartion.slot_no().unwrap() - 1),
+        slot_no: Some(registration.status().slot_no().unwrap() - 1),
         tag: None,
     };
 

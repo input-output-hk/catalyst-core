@@ -166,7 +166,9 @@ pub async fn network_tip_handler(context: ContextLock) -> Result<impl Reply, Rej
         .lock()
         .map_err(|_e| Error::Poison)
         .map_err(warp::reject::custom)?;
-    Ok(context_lock.cardano_cli_executor().tip()).map(|r| warp::reply::json(&r))
+
+    let network = context_lock.config().network;
+    Ok(context_lock.cardano_cli_executor().query().tip(network)).map(|r| warp::reply::json(&r))
 }
 
 pub async fn query_utxo_handler(
@@ -177,7 +179,12 @@ pub async fn query_utxo_handler(
         .lock()
         .map_err(|_e| Error::Poison)
         .map_err(warp::reject::custom)?;
-    Ok(context_lock.cardano_cli_executor().query_utxo(address)).map(|r| warp::reply::json(&r))
+    let network = context_lock.config().network;
+    Ok(context_lock
+        .cardano_cli_executor()
+        .query()
+        .utxo(address, network))
+    .map(|r| warp::reply::json(&r.unwrap().get_total_funds()))
 }
 
 pub async fn submit_transaction_handler(
@@ -188,9 +195,11 @@ pub async fn submit_transaction_handler(
         .lock()
         .map_err(|_e| Error::Poison)
         .map_err(warp::reject::custom)?;
+    let working_dir = context_lock.config().result_dir.clone();
     context_lock
         .cardano_cli_executor()
-        .transaction_submit(bytes.to_vec())?;
+        .transaction()
+        .submit_from_bytes(bytes.to_vec(), &working_dir)?;
     Ok(warp::reply())
 }
 

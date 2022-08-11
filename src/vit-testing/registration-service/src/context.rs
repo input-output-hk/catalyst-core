@@ -1,9 +1,10 @@
 pub type ContextLock = Arc<Mutex<Context>>;
-use crate::cardano::CardanoCliExecutor;
+use crate::cardano::cli::CardanoCli;
 use crate::config::Configuration;
-use crate::job::{Error as JobError, JobOutputInfo};
+use crate::job::JobOutputInfo;
 use crate::request::Request;
 use crate::rest::ServerStopper;
+use crate::Error as JobError;
 use chrono::{NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -41,8 +42,8 @@ impl Context {
         &self.server_stopper
     }
 
-    pub fn cardano_cli_executor(&self) -> CardanoCliExecutor {
-        CardanoCliExecutor::new(self.config.clone())
+    pub fn cardano_cli_executor(&self) -> CardanoCli {
+        CardanoCli::new(self.config.cardano_cli.clone())
     }
 
     pub fn new_run(&mut self, request: Request) -> Result<Uuid, Error> {
@@ -187,6 +188,19 @@ pub enum State {
     },
 }
 
+impl State {
+    pub fn assert_is_finished(&self) {
+        matches!(self, State::Finished { .. });
+    }
+
+    pub fn slot_no(&self) -> Result<u64, Error> {
+        match self {
+            State::Finished { info, .. } => Ok(info.slot_no),
+            _ => Err(Error::CannotGetSlotNoFromRegistrationResult),
+        }
+    }
+}
+
 use thiserror::Error;
 
 #[derive(Debug, Error, Deserialize, Serialize)]
@@ -201,6 +215,8 @@ pub enum Error {
     JobNotFound,
     #[error("no job was run yet")]
     NoJobRun,
+    #[error("cannot get slot no from registration state")]
+    CannotGetSlotNoFromRegistrationResult,
 }
 
 impl fmt::Display for State {

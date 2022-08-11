@@ -32,7 +32,9 @@ catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.
 voting-hir = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "test_api_for_snapshot"}
 thiserror = "1.0"
 netstat2 = "0.9"
+image = "0.23.9"
 rand = "0.8"
+hex = "0.4.3"
 lazy_static = "1"
 libmath = "0.2.1"
 cfg-if = "1.0.0"

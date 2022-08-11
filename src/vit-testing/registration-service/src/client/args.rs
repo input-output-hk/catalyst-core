@@ -112,6 +112,18 @@ pub struct NewJobCommand {
     /// vote.skey file
     #[structopt(long = "vote-vkey")]
     vote_skey: Option<String>,
+
+    /// delegation
+    #[structopt(long = "delegation-1")]
+    delegation_1: Option<String>,
+
+    /// delegation
+    #[structopt(long = "delegation-2")]
+    delegation_2: Option<String>,
+
+    /// delegation
+    #[structopt(long = "delegation-3")]
+    delegation_3: Option<String>,
 }
 
 impl NewJobCommand {
@@ -121,7 +133,10 @@ impl NewJobCommand {
             payment_vkey: self.payment_vkey,
             stake_skey: self.stake_skey,
             stake_vkey: self.stake_vkey,
-            vote_skey: self.vote_skey,
+            legacy_skey: self.vote_skey,
+            delegation_1: self.delegation_1,
+            delegation_2: self.delegation_2,
+            delegation_3: self.delegation_3,
         };
         rest.job_new(request).map_err(Into::into)
     }

@@ -1,3 +1,4 @@
+extern crate core;
 cfg_if::cfg_if! {
     if #[cfg(test)] {
         pub mod common;

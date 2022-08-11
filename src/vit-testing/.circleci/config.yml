@@ -183,7 +183,11 @@ commands:
       - run:
           name: install snapshot-trigger-service
           command: |
-            cargo install --path snapshot-trigger-service --locked    
+            cargo install --path snapshot-trigger-service --locked
+      - run:
+          name: install registration-service
+          command: |
+            cargo install --path registration-service --locked
       - run:
           name: install mainnet mocks
           command: |

@@ -43,12 +43,7 @@ impl RegistrationServiceCommand {
                     job_result_dir.push(job_id.to_string());
                     std::fs::create_dir_all(job_result_dir.clone())?;
 
-                    let job = VoteRegistrationJobBuilder::new()
-                        .with_jcli(&configuration.jcli)
-                        .with_cardano_cli(&configuration.cardano_cli)
-                        .with_voter_registration(&configuration.voter_registration)
-                        .with_network(configuration.network)
-                        .with_kedqr(&configuration.vit_kedqr)
+                    let job = VoteRegistrationJobBuilder::new(configuration.clone())
                         .with_working_dir(&job_result_dir)
                         .build();
 
@@ -81,7 +76,7 @@ pub enum Error {
     #[error(transparent)]
     Service(#[from] crate::service::Error),
     #[error(transparent)]
-    Job(#[from] crate::job::Error),
+    Job(#[from] crate::Error),
     #[error("cannot acquire lock on context")]
     Poison,
 }

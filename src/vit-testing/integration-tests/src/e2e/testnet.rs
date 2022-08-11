@@ -1,5 +1,5 @@
 use crate::common::iapyx_from_qr;
-use crate::common::registration::do_registration;
+use crate::common::registration::{do_registration, RegistrationResultAsserts};
 use crate::common::snapshot::do_snapshot;
 use crate::common::snapshot::wait_for_db_sync;
 use crate::Vote;
@@ -7,6 +7,7 @@ use assert_fs::TempDir;
 use chain_impl_mockchain::header::BlockDate;
 use jormungandr_automation::testing::asserts::VotePlanStatusAssert;
 use jormungandr_automation::testing::time;
+use registration_service::utils::PinProvider;
 use snapshot_trigger_service::config::JobParameters;
 use thor::FragmentSender;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
@@ -21,15 +22,15 @@ const GRACE_PERIOD_FOR_SNAPSHOT: u64 = 300;
 #[test]
 pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
-    let result = do_registration(&temp_dir);
+    let result = do_registration(&temp_dir).as_legacy_registration().unwrap();
 
-    result.assert_status_is_finished();
+    result.status().assert_is_finished();
     result.assert_qr_equals_to_sk();
 
     println!("Registraton Result: {:?}", result);
 
     let job_param = JobParameters {
-        slot_no: Some(result.slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
+        slot_no: Some(result.status().slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
         tag: None,
     };
 
@@ -78,7 +79,7 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     let mut committee = controller.wallet("committee_1").unwrap();
 
     // start wallets
-    let mut alice = iapyx_from_qr(&result.qr_code(), &result.pin(), &wallet_proxy).unwrap();
+    let mut alice = iapyx_from_qr(&result.qr_code, &result.qr_code.pin(), &wallet_proxy).unwrap();
 
     let fund1_vote_plan = &controller.defined_vote_plans()[0];
     let fund2_vote_plan = &controller.defined_vote_plans()[1];

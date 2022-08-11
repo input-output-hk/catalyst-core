@@ -1,9 +1,9 @@
-use super::content;
+use super::fake;
 use std::path::Path;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
-pub const PATH_TO_DYNAMIC_CONTENT: &str = "PATH_TO_DYNAMIC_CONTENT";
+pub const PATH_TO_DYNAMIC_CONTENT: &str = "VOTING_TOOLS_DYNAMIC_CONTENT";
 
 #[derive(StructOpt, Debug)]
 pub struct VotingToolsCommand {
@@ -45,7 +45,7 @@ impl VotingToolsCommand {
             }
             Err(_) => {
                 write_snapshot(
-                    serde_json::to_string(&content::default()).unwrap(),
+                    serde_json::to_string(&fake::default()).unwrap(),
                     &self.out_file,
                 );
             }

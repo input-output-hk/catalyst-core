@@ -106,12 +106,13 @@ impl RegistrationRestClient {
         let path = self.path("api/job/new");
         println!("Calling: {}", path);
         let request_builder = self.set_header(client.post(&path));
+        #[allow(clippy::single_char_pattern)]
         request_builder
             .json(&request)
             .send()?
             .text()
             .map_err(Into::into)
-            .map(|text| text.replace("'\"'", ""))
+            .map(|text| text.replace("\"", ""))
     }
 
     pub fn job_status<S: Into<String>>(
@@ -141,10 +142,8 @@ impl RegistrationRestClient {
     }
 
     pub fn is_up(&self) -> bool {
-        if let Ok(path) = self.get("api/health") {
-            if let Ok(response) = reqwest::blocking::get(&path) {
-                return response.status() == reqwest::StatusCode::OK;
-            }
+        if let Ok(response) = reqwest::blocking::get(&self.path("api/health")) {
+            return response.status() == reqwest::StatusCode::OK;
         }
         false
     }

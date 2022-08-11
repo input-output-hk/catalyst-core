@@ -2,7 +2,6 @@ use crate::common::snapshot::SnapshotServiceStarter;
 use crate::common::MainnetWallet;
 use assert_fs::TempDir;
 use catalyst_toolbox::snapshot::voting_group::RepsVotersAssigner;
-use catalyst_toolbox::snapshot::Delegations;
 use fraction::Fraction;
 use mainnet_tools::db_sync::DbSyncInstance;
 use mainnet_tools::network::MainnetNetwork;
@@ -41,19 +40,19 @@ pub fn cip36_mixed_delegation() {
 
     alice_voter
         .send_direct_voting_registration()
-        .to(&mut mainnet_network);
+        .to(&mut mainnet_network)
+        .unwrap();
     bob_voter
-        .send_voting_registration(Delegations::New(vec![(
-            david_representative.catalyst_public_key(),
-            1,
-        )]))
-        .to(&mut mainnet_network);
+        .send_delegated_voting_registration(vec![(david_representative.catalyst_public_key(), 1)])
+        .to(&mut mainnet_network)
+        .unwrap();
     clarice_voter
-        .send_voting_registration(Delegations::New(vec![
+        .send_delegated_voting_registration(vec![
             (david_representative.catalyst_public_key(), 1),
             (edgar_representative.catalyst_public_key(), 1),
-        ]))
-        .to(&mut mainnet_network);
+        ])
+        .to(&mut mainnet_network)
+        .unwrap();
 
     let voting_tools =
         VotingToolsMock::default().connect_to_db_sync(&db_sync_instance, &testing_directory);
@@ -128,23 +127,17 @@ pub fn voting_power_cap_for_reps() {
     mainnet_network.sync_with(&mut db_sync_instance);
 
     alice_voter
-        .send_voting_registration(Delegations::New(vec![(
-            david_representative.catalyst_public_key(),
-            1,
-        )]))
-        .to(&mut mainnet_network);
+        .send_delegated_voting_registration(vec![(david_representative.catalyst_public_key(), 1)])
+        .to(&mut mainnet_network)
+        .unwrap();
     bob_voter
-        .send_voting_registration(Delegations::New(vec![(
-            edgar_representative.catalyst_public_key(),
-            1,
-        )]))
-        .to(&mut mainnet_network);
+        .send_delegated_voting_registration(vec![(edgar_representative.catalyst_public_key(), 1)])
+        .to(&mut mainnet_network)
+        .unwrap();
     clarice_voter
-        .send_voting_registration(Delegations::New(vec![(
-            fred_representative.catalyst_public_key(),
-            1,
-        )]))
-        .to(&mut mainnet_network);
+        .send_delegated_voting_registration(vec![(fred_representative.catalyst_public_key(), 1)])
+        .to(&mut mainnet_network)
+        .unwrap();
 
     let voting_tools =
         VotingToolsMock::default().connect_to_db_sync(&db_sync_instance, &testing_directory);
@@ -195,13 +188,16 @@ pub fn voting_power_cap_for_direct() {
 
     alice_voter
         .send_direct_voting_registration()
-        .to(&mut mainnet_network);
+        .to(&mut mainnet_network)
+        .unwrap();
     bob_voter
         .send_direct_voting_registration()
-        .to(&mut mainnet_network);
+        .to(&mut mainnet_network)
+        .unwrap();
     clarice_voter
         .send_direct_voting_registration()
-        .to(&mut mainnet_network);
+        .to(&mut mainnet_network)
+        .unwrap();
 
     let voting_tools =
         VotingToolsMock::default().connect_to_db_sync(&db_sync_instance, &testing_directory);
@@ -257,16 +253,16 @@ pub fn voting_power_cap_for_mix() {
 
     alice_voter
         .send_direct_voting_registration()
-        .to(&mut mainnet_network);
+        .to(&mut mainnet_network)
+        .unwrap();
     bob_voter
         .send_direct_voting_registration()
-        .to(&mut mainnet_network);
+        .to(&mut mainnet_network)
+        .unwrap();
     clarice_voter
-        .send_voting_registration(Delegations::New(vec![(
-            david_representative.catalyst_public_key(),
-            1,
-        )]))
-        .to(&mut mainnet_network);
+        .send_delegated_voting_registration(vec![(david_representative.catalyst_public_key(), 1)])
+        .to(&mut mainnet_network)
+        .unwrap();
 
     let voting_tools =
         VotingToolsMock::default().connect_to_db_sync(&db_sync_instance, &testing_directory);

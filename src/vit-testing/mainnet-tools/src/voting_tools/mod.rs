@@ -1,5 +1,5 @@
 mod command;
-mod content;
+pub mod fake;
 
 use crate::db_sync::DbSyncInstance;
 use crate::voting_tools::command::PATH_TO_DYNAMIC_CONTENT;

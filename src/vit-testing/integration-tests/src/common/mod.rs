@@ -36,7 +36,7 @@ pub enum Error {
 }
 
 lazy_static! {
-    static ref NEXT_AVAILABLE_PORT_NUMBER: AtomicU16 = AtomicU16::new(10100);
+    static ref NEXT_AVAILABLE_PORT_NUMBER: AtomicU16 = AtomicU16::new(11000);
     static ref OCCUPIED_PORTS: HashSet<u16> = {
         let af_flags = AddressFamilyFlags::IPV4;
         let proto_flags = ProtocolFlags::TCP | ProtocolFlags::UDP;

@@ -8,11 +8,11 @@ use color_eyre::Report;
 use live::LiveStatsCommand;
 use snapshot::SnapshotCommand;
 use structopt::StructOpt;
-use voters::InitialVotersCommand;
+use voters::VotersCommand;
 
 #[derive(StructOpt, Debug)]
 pub enum Stats {
-    Voters(InitialVotersCommand),
+    Voters(VotersCommand),
     Live(LiveStatsCommand),
     Archive(ArchiveCommand),
     Snapshot(SnapshotCommand),

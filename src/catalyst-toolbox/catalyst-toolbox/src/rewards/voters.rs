@@ -1,4 +1,9 @@
-use jormungandr_lib::crypto::{account::Identifier, hash::Hash};
+use chain_addr::{Discrimination, Kind};
+use chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier;
+use jormungandr_lib::{
+    crypto::{account::Identifier, hash::Hash},
+    interfaces::Address,
+};
 use rust_decimal::Decimal;
 use snapshot_lib::{registration::MainnetRewardAddress, SnapshotInfo};
 use std::collections::{BTreeMap, HashMap, HashSet};
@@ -106,6 +111,24 @@ fn filter_active_addresses(
             }
         })
         .collect()
+}
+
+pub fn account_hex_to_address(
+    account_hex: String,
+    discrimination: Discrimination,
+) -> Result<Address, hex::FromHexError> {
+    let mut buffer = [0u8; 32];
+    hex::decode_to_slice(account_hex, &mut buffer)?;
+    let identifier: UnspecifiedAccountIdentifier = UnspecifiedAccountIdentifier::from(buffer);
+    Ok(Address::from(chain_addr::Address(
+        discrimination,
+        Kind::Account(
+            identifier
+                .to_single_account()
+                .expect("Only single accounts are supported")
+                .into(),
+        ),
+    )))
 }
 
 fn rewards_to_mainnet_addresses(

@@ -90,7 +90,6 @@ impl VotersRewards {
             entry.sort_by_key(|p| p.voteplan.chain_proposal_index);
             acc
         });
-
         let vote_count = serde_json::from_reader::<_, HashMap<Identifier, Vec<AccountVotes>>>(
             jcli_lib::utils::io::open_file_read(&Some(votes_count_path))?,
         )?

@@ -1,9 +1,9 @@
 use chain_addr::{Discrimination, Kind};
 use chain_core::property::Fragment as _;
 use chain_crypto::{Ed25519Extended, SecretKey};
-use chain_impl_mockchain::accounting::account::SpendingCounterIncreasing;
 use chain_impl_mockchain::{
     account::{self, LedgerError, SpendingCounter},
+    accounting::account::SpendingCounterIncreasing,
     block::{Block, BlockDate, HeaderId},
     certificate::{self, VoteCast, VotePlan, VotePlanId},
     chaineval::ConsensusEvalContext,
@@ -468,7 +468,7 @@ impl FragmentReplayer {
                             utxo.value.into(),
                             SpendingCounterIncreasing::default().get_valid_counters(),
                         )
-                        .unwrap();
+                        .expect("cannot update wallet state");
                     wallets.insert(utxo.address.clone(), wallet);
                     if committee_members.contains(&utxo.address) {
                         trace!("Committee account found {}", &utxo.address);

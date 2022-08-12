@@ -52,7 +52,7 @@ impl SnapshotCmd {
         let representative = self
             .representatives_group
             .unwrap_or_else(|| DEFAULT_REPRESENTATIVE_GROUP.into());
-        let assigner = RepsVotersAssigner::new(direct_voter, representative)?;
+        let assigner = RepsVotersAssigner::new(direct_voter, representative);
         let initials = Snapshot::from_raw_snapshot(
             raw_snapshot,
             self.min_stake_threshold,

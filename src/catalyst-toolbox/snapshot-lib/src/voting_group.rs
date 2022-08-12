@@ -51,12 +51,12 @@ fn get_all_reps(_url: impl reqwest::IntoUrl) -> Result<HashSet<Identifier>, Erro
 }
 
 impl RepsVotersAssigner {
-    pub fn new(direct_voters: VotingGroup, reps: VotingGroup) -> Result<Self, Error> {
-        Ok(Self {
+    pub fn new(direct_voters: VotingGroup, reps: VotingGroup) -> Self {
+        Self {
             direct_voters,
             reps,
             repsdb: HashSet::new(),
-        })
+        }
     }
 }
 

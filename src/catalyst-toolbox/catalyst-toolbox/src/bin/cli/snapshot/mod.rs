@@ -1,7 +1,7 @@
 use color_eyre::Report;
-use fraction::Fraction;
 use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 use jormungandr_lib::interfaces::Value;
+use snapshot_lib::Fraction;
 use snapshot_lib::{
     voting_group::{RepsVotersAssigner, DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP},
     RawSnapshot, Snapshot,

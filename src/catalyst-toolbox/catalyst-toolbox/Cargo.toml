@@ -63,7 +63,6 @@ gag = "1"
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 env_logger = "0.9"
 snapshot-lib = { path = "../snapshot-lib" }
-fraction = "0.10"
 
 [dev-dependencies]
 rand_chacha = "0.3"

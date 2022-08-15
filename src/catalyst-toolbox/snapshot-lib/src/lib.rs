@@ -33,13 +33,13 @@ pub enum Error {
 }
 
 /// Contribution to a voting key for some registration
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct KeyContribution {
     pub reward_address: MainnetRewardAddress,
     pub value: u64,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SnapshotInfo {
     /// The values in the contributions are the original values in the registration transactions and
     /// thus retain the original proportions.
@@ -49,7 +49,7 @@ pub struct SnapshotInfo {
     pub hir: VoterHIR,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Snapshot {
     // a raw public key is preferred so that we don't have to worry about discrimination when deserializing from
     // a CIP-36 compatible encoding

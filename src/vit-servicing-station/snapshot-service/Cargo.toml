@@ -17,3 +17,4 @@ chain-ser = { git = "https://github.com/input-output-hk/chain-libs", branch = "m
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr", branch = "master" }
 sled = "0.34.7"
 tokio = "1.18.0"
+time = "0.3"

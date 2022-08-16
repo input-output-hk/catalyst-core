@@ -479,7 +479,6 @@ dependencies = [
  "color-eyre",
  "csv",
  "env_logger 0.9.0",
- "fraction",
  "futures",
  "gag",
  "governor",
@@ -1734,6 +1733,8 @@ checksum = "6bb65943183b6b3cbf00f64c181e8178217e30194381b150e4f87ec59864c803"
 dependencies = [
  "lazy_static",
  "num 0.2.1",
+ "serde",
+ "serde_derive",
 ]
 
 [[package]]
@@ -3332,6 +3333,7 @@ dependencies = [
  "autocfg",
  "num-integer",
  "num-traits",
+ "serde",
 ]
 
 [[package]]
@@ -3353,6 +3355,7 @@ checksum = "b6b19411a9719e753aff12e5187b74d60d3dc449ec3f4dc21e3989c3f554bc95"
 dependencies = [
  "autocfg",
  "num-traits",
+ "serde",
 ]
 
 [[package]]
@@ -3406,6 +3409,7 @@ dependencies = [
  "num-bigint 0.2.6",
  "num-integer",
  "num-traits",
+ "serde",
 ]
 
 [[package]]

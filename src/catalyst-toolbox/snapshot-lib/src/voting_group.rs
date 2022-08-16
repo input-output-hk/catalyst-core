@@ -4,6 +4,9 @@ use jormungandr_lib::crypto::account::Identifier;
 use std::collections::HashSet;
 use thiserror::Error;
 
+pub const DEFAULT_DIRECT_VOTER_GROUP: &str = "direct";
+pub const DEFAULT_REPRESENTATIVE_GROUP: &str = "rep";
+
 pub trait VotingGroupAssigner {
     fn assign(&self, vk: &Identifier) -> VotingGroup;
 }
@@ -48,16 +51,12 @@ fn get_all_reps(_url: impl reqwest::IntoUrl) -> Result<HashSet<Identifier>, Erro
 }
 
 impl RepsVotersAssigner {
-    pub fn new(
-        direct_voters: VotingGroup,
-        reps: VotingGroup,
-        _repsdb_url: impl reqwest::IntoUrl,
-    ) -> Result<Self, Error> {
-        Ok(Self {
+    pub fn new(direct_voters: VotingGroup, reps: VotingGroup) -> Self {
+        Self {
             direct_voters,
             reps,
             repsdb: HashSet::new(),
-        })
+        }
     }
 }
 

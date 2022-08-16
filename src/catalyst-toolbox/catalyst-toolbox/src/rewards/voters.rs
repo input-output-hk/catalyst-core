@@ -191,9 +191,9 @@ pub fn calc_voter_rewards(
 mod tests {
     use super::*;
     use crate::utils::assert_are_close;
-    use fraction::Fraction;
     use jormungandr_lib::crypto::account::Identifier;
     use snapshot_lib::registration::{Delegations, VotingRegistration};
+    use snapshot_lib::Fraction;
     use snapshot_lib::Snapshot;
     use test_strategy::proptest;
 

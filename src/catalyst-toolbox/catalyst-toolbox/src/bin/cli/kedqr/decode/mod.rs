@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 /// QCode CLI toolkit
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, PartialEq, Eq, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub struct DecodeQrCodeCmd {
     /// Path to file containing img or payload.

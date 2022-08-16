@@ -17,7 +17,7 @@ test-strategy = { version = "0.2", optional = true }
 serde_test = { version = "1", optional = true }
 hex = { version = "0.4" }
 thiserror = "1.0"
-fraction = "0.10"
+fraction = { version = "0.10", features = ["with-serde-support"] }
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 bech32 = "0.8.1"
 graphql_client = { version = "0.10" }

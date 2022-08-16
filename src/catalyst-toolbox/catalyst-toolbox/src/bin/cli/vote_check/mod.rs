@@ -12,7 +12,7 @@ use std::path::PathBuf;
 /// Verify that your votes were correctly tallied.
 ///
 /// Requires Jormungandr to be installed in the system
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, PartialEq, Eq, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub struct VoteCheck {
     /// Path to folder containing the full blockchain history saved in Jormungandr

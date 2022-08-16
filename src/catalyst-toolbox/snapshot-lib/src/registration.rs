@@ -9,7 +9,7 @@ pub type MainnetStakeAddress = String;
 /// which is a generalization of CIP-15, allowing to distribute
 /// voting power among multiple keys in a single transaction and
 /// to tag the purpose of the vote.
-#[derive(Deserialize, Clone, Debug, PartialEq)]
+#[derive(Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct VotingRegistration {
     pub stake_public_key: MainnetStakeAddress,
     pub voting_power: Value,
@@ -35,7 +35,7 @@ impl VotingRegistration {
 /// To allow backward compatibility and avoid requiring existing users to
 /// re-register we still consider valid old CIP-15 registrations, with the
 /// simple correspondence between the two described in CIP-36.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Delegations {
     /// Tuples of (voting key, weight)
     New(Vec<(Identifier, u32)>),

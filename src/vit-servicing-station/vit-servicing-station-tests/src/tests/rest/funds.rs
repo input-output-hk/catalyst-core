@@ -5,6 +5,7 @@ use crate::common::{
 };
 use assert_fs::TempDir;
 use reqwest::StatusCode;
+use vit_servicing_station_lib::db::models::funds::Fund;
 
 #[test]
 pub fn get_funds_list_is_not_empty() -> Result<(), Box<dyn std::error::Error>> {
@@ -22,6 +23,7 @@ pub fn get_funds_by_id() -> Result<(), Box<dyn std::error::Error>> {
     use pretty_assertions::assert_eq;
     let temp_dir = TempDir::new().unwrap().into_persistent();
     let mut expected_fund = data::funds().first().unwrap().clone();
+    normalize(&mut expected_fund);
     let (hash, token) = data::token();
 
     let db_path = DbBuilder::new()
@@ -39,9 +41,7 @@ pub fn get_funds_by_id() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut actual_fund = rest_client.fund(&expected_fund.id.to_string())?;
 
-    actual_fund.chain_vote_plans.sort_by_key(|c| c.id);
-    expected_fund.challenges.sort_by_key(|c| c.internal_id);
-    expected_fund.chain_vote_plans.sort_by_key(|c| c.id);
+    normalize(&mut actual_fund);
 
     assert_eq!(expected_fund, actual_fund);
 
@@ -57,4 +57,10 @@ pub fn get_funds_by_id() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     Ok(())
+}
+
+fn normalize(fund: &mut Fund) {
+    fund.challenges.sort_by_key(|fund| fund.id);
+    fund.chain_vote_plans.sort_by_key(|c| c.id);
+    fund.challenges.sort_by_key(|c| c.internal_id);
 }

@@ -1,6 +1,6 @@
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::interfaces::Value;
-use serde::{de::Error, Deserialize};
+use serde::{de::Error, Deserialize, Serialize};
 
 pub type MainnetRewardAddress = String;
 pub type MainnetStakeAddress = String;
@@ -9,7 +9,7 @@ pub type MainnetStakeAddress = String;
 /// which is a generalization of CIP-15, allowing to distribute
 /// voting power among multiple keys in a single transaction and
 /// to tag the purpose of the vote.
-#[derive(Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct VotingRegistration {
     pub stake_public_key: MainnetStakeAddress,
     pub voting_power: Value,

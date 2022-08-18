@@ -15,7 +15,7 @@ pub mod voting_group;
 
 pub const CATALYST_VOTING_PURPOSE_TAG: u64 = 0;
 
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct RawSnapshot(Vec<VotingRegistration>);
 
 impl From<Vec<VotingRegistration>> for RawSnapshot {

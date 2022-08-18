@@ -1,70 +1,15 @@
+use super::{Threshold, VoteCount};
 use chain_addr::{Discrimination, Kind};
 use chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier;
-use jormungandr_lib::{
-    crypto::{account::Identifier, hash::Hash},
-    interfaces::Address,
-};
+use jormungandr_lib::crypto::account::Identifier;
+use jormungandr_lib::interfaces::Address;
 use rust_decimal::Decimal;
 use snapshot_lib::{registration::MainnetRewardAddress, SnapshotInfo};
 use std::collections::{BTreeMap, HashMap, HashSet};
 use thiserror::Error;
-use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
 pub const ADA_TO_LOVELACE_FACTOR: u64 = 1_000_000;
 pub type Rewards = Decimal;
-
-pub struct Threshold {
-    total: usize,
-    per_challenge: HashMap<i32, usize>,
-    proposals_per_challenge: HashMap<i32, HashSet<Hash>>,
-}
-
-impl Threshold {
-    pub fn new(
-        total_threshold: usize,
-        per_challenge: HashMap<i32, usize>,
-        proposals: Vec<FullProposalInfo>,
-    ) -> Result<Self, Error> {
-        let proposals = proposals
-            .into_iter()
-            .map(|p| {
-                <[u8; 32]>::try_from(p.proposal.chain_proposal_id)
-                    .map_err(Error::InvalidHash)
-                    .map(|hash| (p.proposal.challenge_id, Hash::from(hash)))
-            })
-            .collect::<Result<Vec<_>, Error>>()?;
-        Ok(Self {
-            total: total_threshold,
-            per_challenge,
-            proposals_per_challenge: proposals.into_iter().fold(
-                HashMap::new(),
-                |mut acc, (challenge_id, hash)| {
-                    acc.entry(challenge_id).or_default().insert(hash);
-                    acc
-                },
-            ),
-        })
-    }
-
-    fn filter(&self, votes: &HashSet<Hash>) -> bool {
-        if votes.len() < self.total {
-            return false;
-        }
-
-        for (challenge, threshold) in &self.per_challenge {
-            let votes_in_challengs = self
-                .proposals_per_challenge
-                .get(challenge)
-                .map(|props| votes.intersection(props).count())
-                .unwrap_or_default();
-            if votes_in_challengs < *threshold {
-                return false;
-            }
-        }
-
-        true
-    }
-}
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -93,8 +38,6 @@ fn calculate_reward(
         })
         .collect()
 }
-
-pub type VoteCount = HashMap<Identifier, HashSet<Hash>>;
 
 fn filter_active_addresses(
     vote_count: VoteCount,
@@ -191,7 +134,7 @@ pub fn calc_voter_rewards(
 mod tests {
     use super::*;
     use crate::utils::assert_are_close;
-    use jormungandr_lib::crypto::account::Identifier;
+    use jormungandr_lib::crypto::{account::Identifier, hash::Hash};
     use snapshot_lib::registration::{Delegations, VotingRegistration};
     use snapshot_lib::Fraction;
     use snapshot_lib::Snapshot;

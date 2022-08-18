@@ -1,6 +1,5 @@
 use catalyst_toolbox::rewards::voters::calc_voter_rewards;
 use catalyst_toolbox::rewards::{Rewards, Threshold};
-use catalyst_toolbox::utils::assert_are_close;
 use color_eyre::Report;
 use jcli_lib::jcli_lib::block::Common;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::AccountVotes};
@@ -13,10 +12,11 @@ use std::path::PathBuf;
 
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
-pub struct VotersRewards {
+pub struct DrepsRewards {
     #[structopt(flatten)]
     common: Common,
-    /// Reward (in LOVELACE) to be distributed
+    /// Reward (in dollars) to be distributed proportionally to delegated stake with respect to total stake.
+    /// The total amount will only be awarded if dreps control all of the stake.
     #[structopt(long)]
     total_rewards: u64,
 
@@ -24,16 +24,15 @@ pub struct VotersRewards {
     #[structopt(long)]
     snapshot_info_path: PathBuf,
 
-    /// Path to a json-encoded list of VotePlanStatusFull to consider for voters
-    /// participation in the election.
-    /// This can be retrived from the v1/vote/active/plans/full endpoint exposed
+    /// Path to a json-encoded list of proposal every user has voted for.
+    /// This can be retrived from the v1/account-votes-all endpoint exposed
     /// by a Jormungandr node.
     #[structopt(long)]
     votes_count_path: PathBuf,
 
     /// Number of global votes required to be able to receive voter rewards
     #[structopt(long, default_value)]
-    vote_threshold: usize,
+    vote_threshold: u64,
 
     /// Path to a json-encoded map from challenge id to an optional required threshold
     /// per-challenge in order to receive rewards.
@@ -63,9 +62,9 @@ fn write_rewards_results(
     Ok(())
 }
 
-impl VotersRewards {
+impl DrepsRewards {
     pub fn exec(self) -> Result<(), Report> {
-        let VotersRewards {
+        let DrepsRewards {
             common,
             total_rewards,
             snapshot_info_path,
@@ -100,12 +99,15 @@ impl VotersRewards {
         let results = calc_voter_rewards(
             vote_count,
             snapshot,
-            Threshold::new(vote_threshold, additional_thresholds, proposals)?,
+            Threshold::new(
+                vote_threshold
+                    .try_into()
+                    .expect("vote threshold is too big"),
+                additional_thresholds,
+                proposals,
+            )?,
             Rewards::from(total_rewards),
         )?;
-
-        let actual_rewards = results.values().sum::<Rewards>();
-        assert_are_close(actual_rewards, Rewards::from(total_rewards));
 
         write_rewards_results(common, &results)?;
         Ok(())

@@ -1,4 +1,4 @@
-use crate::rewards::voters::VoteCount;
+use crate::rewards::VoteCount;
 use crate::stats::distribution::Stats;
 use chain_addr::{Discrimination, Kind};
 use chain_crypto::Ed25519;

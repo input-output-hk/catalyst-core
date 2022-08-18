@@ -508,7 +508,7 @@ dependencies = [
  "serde_json",
  "serde_test",
  "serde_yaml",
- "snapshot-lib",
+ "snapshot-lib 0.1.0",
  "sscanf",
  "structopt",
  "symmetric-cipher",
@@ -4912,19 +4912,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "snapshot-lib"
+version = "0.1.0"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox?branch=main#5748d638ab1f0cc3ba40eb7953caa2ae0e9fab78"
+dependencies = [
+ "bech32 0.8.1",
+ "chain-crypto",
+ "fraction",
+ "graphql_client",
+ "hex",
+ "jormungandr-lib",
+ "reqwest",
+ "rust_decimal",
+ "rust_decimal_macros",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "snapshot-service"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#8d431648d84fc1164c228f6638eaee02cff2d2e4"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#f2ed338fd091b3bb4f8a3fb9c92186b15854c265"
 dependencies = [
+ "chain-ser",
  "jormungandr-lib",
  "notify",
  "serde",
  "serde_json",
  "sled",
+ "snapshot-lib 0.1.0 (git+https://github.com/input-output-hk/catalyst-toolbox?branch=main)",
  "thiserror",
  "tokio",
  "tracing",
- "voting-hir",
  "warp",
 ]
 
@@ -5893,7 +5912,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#8d431648d84fc1164c228f6638eaee02cff2d2e4"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#f2ed338fd091b3bb4f8a3fb9c92186b15854c265"
 dependencies = [
  "async-trait",
  "base64 0.12.3",
@@ -5918,14 +5937,13 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-subscriber",
- "voting-hir",
  "warp",
 ]
 
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#8d431648d84fc1164c228f6638eaee02cff2d2e4"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#f2ed338fd091b3bb4f8a3fb9c92186b15854c265"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -5952,6 +5970,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "snapshot-lib 0.1.0 (git+https://github.com/input-output-hk/catalyst-toolbox?branch=main)",
  "structopt",
  "tempfile",
  "thiserror",
@@ -5959,7 +5978,6 @@ dependencies = [
  "tokio",
  "url",
  "vit-servicing-station-lib",
- "voting-hir",
 ]
 
 [[package]]
@@ -5967,15 +5985,6 @@ name = "void"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a02e4885ed3bc0f2de90ea6dd45ebcbb66dacffe03547fadbb0eeae2770887d"
-
-[[package]]
-name = "voting-hir"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-toolbox?branch=main#ea16440d54b13ef34690507f2c5d54ff86f2b013"
-dependencies = [
- "jormungandr-lib",
- "serde",
-]
 
 [[package]]
 name = "wait-timeout"

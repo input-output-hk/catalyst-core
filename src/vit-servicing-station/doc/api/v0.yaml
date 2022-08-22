@@ -289,7 +289,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/VotingsInfo"
+                $ref: "#/components/schemas/VotingPower"
         "400":
           description: Not found
 
@@ -319,12 +319,10 @@ paths:
             type: string
           required: true
       requestBody:
-        description: list of VoterHIR entries in json format
-        required: true
         content:
           application/json:
             schema:
-              type: array
+              $ref: "#/components/schemas/SnapshotInfoUpdate"
 
       responses:
         "200":
@@ -844,18 +842,15 @@ components:
       type: string
       enum: [title, type, desc, author, funds]
 
-    VotingsInfo:
-      type: array
-      items:
-        $ref: "#/components/schemas/VotingInfo"
-      example:
-        [
-          {
-            "voting_power": 1000,
-            "voting_group": "representative",
-            "delegations": 2,
-          },
-        ]
+    VotingPower:
+      properties:
+        voting_info:
+          type: array
+          items:
+            $ref: "#/components/schemas/VotingInfo"
+        last_update:
+          type: string
+          format: date-time
 
     VotingInfo:
       properties:
@@ -870,6 +865,15 @@ components:
         delegations_count:
           type: integer
           format: u64
+      example:
+        [
+          {
+            "voting_power": 1000,
+            "voting_group": "representative",
+            "delegations_power": 400,
+            "delegations_count": 200,
+          },
+        ]
 
     NextFundInfo:
       properties:
@@ -935,3 +939,14 @@ components:
           description: |
             The identifier of voting power token used withing this group. All vote plans within a
             group are guaranteed to use the same token.
+
+    SnapshotInfoUpdate:
+      properties:
+        snapshot:
+          type: array
+          description: list of VoterHIR entries in json format
+          required: true
+        last_update:
+          type: string
+          format: date-time
+          description: Date and time for the latest update to this snapshot information.

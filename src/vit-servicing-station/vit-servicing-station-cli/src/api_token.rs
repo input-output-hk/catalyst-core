@@ -36,7 +36,7 @@ pub enum Error {
     Io(#[from] std::io::Error),
 }
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, PartialEq, Eq, StructOpt)]
 pub enum ApiTokenCmd {
     /// Add provided tokens to database. If --tokens is not provided the binary will read them from the `stdin`
     Add {

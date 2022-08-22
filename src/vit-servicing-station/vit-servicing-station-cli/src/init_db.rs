@@ -14,7 +14,7 @@ pub enum Error {
     DbConnectionError(#[from] r2d2::Error),
 }
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, PartialEq, Eq, StructOpt)]
 pub enum Db {
     /// Initialize a DB with the proper migrations, DB file is created if not exists.
     Init {

@@ -1,16 +1,16 @@
-use chain_crypto::digest::DigestOf;
-use color_eyre::eyre::bail;
-use color_eyre::Report;
-use serde::Serialize;
-use std::collections::{BTreeMap, BTreeSet};
-use std::path::{Path, PathBuf};
-use std::str::FromStr;
-
 use catalyst_toolbox::rewards::community_advisors::{
     calculate_ca_rewards, ApprovedProposals, CommunityAdvisor, FundSetting, Funds,
     ProposalRewardSlots, ProposalsReviews, Rewards, Seed,
 };
 use catalyst_toolbox::utils;
+use chain_crypto::digest::DigestOf;
+use color_eyre::eyre::{bail, eyre};
+use color_eyre::Report;
+use rust_decimal::prelude::ToPrimitive;
+use serde::Serialize;
+use std::collections::{BTreeMap, BTreeSet};
+use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 use catalyst_toolbox::community_advisors::models::{
     AdvisorReviewRow, ApprovedProposalRow, ProposalStatus,
@@ -26,9 +26,9 @@ struct FundSettingOpt {
     /// % ratio, range in [0, 100]
     #[structopt(long = "bonus-ratio")]
     bonus_ratio: u8,
-    /// total amount of funds to be rewarded
+    /// total amount of funds to be rewarded (integer value)
     #[structopt(long = "funds")]
-    total: Funds,
+    total: u64,
 }
 
 #[derive(StructOpt)]
@@ -171,7 +171,7 @@ impl From<FundSettingOpt> for FundSetting {
         Self {
             proposal_ratio: settings.proposal_ratio,
             bonus_ratio: settings.bonus_ratio,
-            total: settings.total,
+            total: Rewards::from(settings.total),
         }
     }
 }
@@ -187,34 +187,42 @@ impl From<ProposalRewardsSlotsOpt> for ProposalRewardSlots {
     }
 }
 
-fn rewards_to_csv_data(rewards: &BTreeMap<CommunityAdvisor, Rewards>) -> Vec<impl Serialize> {
+fn rewards_to_csv_data(
+    rewards: &BTreeMap<CommunityAdvisor, Rewards>,
+) -> Result<Vec<impl Serialize>, Report> {
     #[derive(Serialize)]
     struct Entry {
         id: String,
-        rewards: Rewards,
+        rewards: u64,
     }
 
     rewards
         .iter()
-        .map(|(id, rewards)| Entry {
-            id: id.clone(),
-            rewards: *rewards,
+        .map(|(id, rewards)| {
+            Ok(Entry {
+                id: id.clone(),
+                rewards: rewards.to_u64().ok_or_else(|| eyre!("Rewards overflow"))?,
+            })
         })
         .collect()
 }
 
-fn bonus_to_csv_data(rewards: BTreeMap<String, Rewards>) -> Vec<impl Serialize> {
+fn bonus_to_csv_data(rewards: BTreeMap<String, Rewards>) -> Result<Vec<impl Serialize>, Report> {
     #[derive(Serialize)]
     struct Entry {
         proposal_id: String,
-        bonus_rewards: Rewards,
+        bonus_rewards: u64,
     }
 
     rewards
         .into_iter()
-        .map(|(proposal_id, bonus_rewards)| Entry {
-            proposal_id,
-            bonus_rewards,
+        .map(|(proposal_id, bonus_rewards)| {
+            Ok(Entry {
+                proposal_id,
+                bonus_rewards: bonus_rewards
+                    .to_u64()
+                    .ok_or_else(|| eyre!("Rewards overflow"))?,
+            })
         })
         .collect()
 }

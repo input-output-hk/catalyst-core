@@ -61,7 +61,6 @@ graphql_client = { version = "0.10" }
 gag = "1"
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 snapshot-lib = { path = "../snapshot-lib" }
-env_logger = "0.9"
 fraction = "0.10"
 tracing = "0.1"
 tracing-subscriber = "0.3"

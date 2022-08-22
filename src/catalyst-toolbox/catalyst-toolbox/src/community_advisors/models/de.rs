@@ -37,7 +37,7 @@ pub struct AdvisorReviewRow {
     filtered_out: bool,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 pub struct VeteranRankingRow {
     pub proposal_id: String,
     #[serde(alias = "Assessor")]

@@ -6,10 +6,10 @@ pub type MainnetRewardAddress = String;
 pub type MainnetStakeAddress = String;
 
 /// The voting registration/delegation format as introduced in CIP-36,
-/// which is a generalizatin of CIP-15, allowing to distribute
+/// which is a generalization of CIP-15, allowing to distribute
 /// voting power among multiple keys in a single transaction and
 /// to tag the purpose of the vote.
-#[derive(Deserialize, Clone, Debug, PartialEq)]
+#[derive(Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct VotingRegistration {
     pub stake_public_key: MainnetStakeAddress,
     pub voting_power: Value,
@@ -22,10 +22,20 @@ pub struct VotingRegistration {
     pub voting_purpose: u64,
 }
 
+impl VotingRegistration {
+    pub fn is_legacy(&self) -> bool {
+        matches!(self.delegations, Delegations::Legacy(_))
+    }
+
+    pub fn is_new(&self) -> bool {
+        !self.is_legacy()
+    }
+}
+
 /// To allow backward compatibility and avoid requiring existing users to
 /// re-register we still consider valid old CIP-15 registrations, with the
 /// simple correspondence between the two described in CIP-36.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Delegations {
     /// Tuples of (voting key, weight)
     New(Vec<(Identifier, u32)>),

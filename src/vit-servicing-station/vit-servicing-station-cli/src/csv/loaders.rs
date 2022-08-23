@@ -26,7 +26,7 @@ pub enum Error {
     InvalidFundData(String),
 }
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, PartialEq, Eq, StructOpt)]
 pub enum CsvDataCmd {
     /// Load Funds, Voteplans and Proposals information into a SQLite3 ready file DB.
     Load {

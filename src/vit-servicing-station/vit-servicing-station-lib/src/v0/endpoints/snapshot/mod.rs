@@ -38,7 +38,7 @@ mod test {
                     u64::from(v.voting_power),
                     v.delegations_count,
                     v.delegations_power,
-                    v.voting_group.clone(),
+                    v.voting_group,
                 )
             })
             .collect::<Vec<_>>())

@@ -53,7 +53,6 @@
             extensions = [
               "rust-src"
               "rust-analysis"
-              "rls-preview"
               "rustfmt-preview"
               "clippy-preview"
             ];

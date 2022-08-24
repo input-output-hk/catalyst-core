@@ -14,3 +14,6 @@ pub mod vote_check;
 pub mod http;
 #[cfg(feature = "test-api")]
 pub mod testing;
+
+#[macro_use]
+extern crate tracing;

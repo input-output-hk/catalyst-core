@@ -478,7 +478,7 @@ dependencies = [
  "chain-vote",
  "color-eyre",
  "csv",
- "env_logger 0.9.0",
+ "fraction",
  "futures",
  "gag",
  "governor",
@@ -491,7 +491,6 @@ dependencies = [
  "jormungandr-integration-tests",
  "jormungandr-lib",
  "jortestkit",
- "log",
  "once_cell",
  "predicates 1.0.8",
  "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest?branch=master)",
@@ -517,6 +516,8 @@ dependencies = [
  "thor",
  "time 0.3.11",
  "tokio",
+ "tracing",
+ "tracing-subscriber",
  "url",
  "versionisator",
  "vit-servicing-station-lib",
@@ -1424,19 +1425,6 @@ checksum = "44533bbbb3bb3c1fa17d9f2e4e38bbbaf8396ba82193c4cb1b6445d711445d36"
 dependencies = [
  "log",
  "regex",
-]
-
-[[package]]
-name = "env_logger"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b2cf0344971ee6c64c31be0d530793fba457d322dfec2810c453d0ef228f9c3"
-dependencies = [
- "atty",
- "humantime",
- "log",
- "regex",
- "termcolor",
 ]
 
 [[package]]
@@ -4081,7 +4069,7 @@ version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a44883e74aa97ad63db83c4bf8ca490f02b2fc02f92575e720c8551e843c945f"
 dependencies = [
- "env_logger 0.7.1",
+ "env_logger",
  "log",
  "rand 0.7.3",
  "rand_core 0.5.1",

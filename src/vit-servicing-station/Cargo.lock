@@ -466,7 +466,7 @@ name = "chain-vote"
 version = "0.1.0"
 source = "git+https://github.com/input-output-hk/chain-libs?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if 0.1.10",
  "chain-core",
  "chain-crypto",
  "const_format",
@@ -1208,6 +1208,8 @@ checksum = "6bb65943183b6b3cbf00f64c181e8178217e30194381b150e4f87ec59864c803"
 dependencies = [
  "lazy_static",
  "num 0.2.1",
+ "serde",
+ "serde_derive",
 ]
 
 [[package]]
@@ -1798,7 +1800,7 @@ checksum = "6c8af84674fe1f223a982c933a0ee1086ac4d4052aa0fb8060c12c6ad838e754"
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr?branch=master#5f51deb34dc86d5124c44d885025dcbbc5371cd1"
+source = "git+https://github.com/input-output-hk/jormungandr?branch=master#b20022ea89c9eb781a025616ebddf1eee01a5950"
 dependencies = [
  "base64 0.13.0",
  "bech32",
@@ -2232,6 +2234,7 @@ dependencies = [
  "autocfg",
  "num-integer",
  "num-traits",
+ "serde",
 ]
 
 [[package]]
@@ -2253,6 +2256,7 @@ checksum = "b6b19411a9719e753aff12e5187b74d60d3dc449ec3f4dc21e3989c3f554bc95"
 dependencies = [
  "autocfg",
  "num-traits",
+ "serde",
 ]
 
 [[package]]
@@ -2295,6 +2299,7 @@ dependencies = [
  "num-bigint 0.2.6",
  "num-integer",
  "num-traits",
+ "serde",
 ]
 
 [[package]]
@@ -3434,7 +3439,7 @@ checksum = "2fd0db749597d91ff862fd1d55ea87f7855a744a8425a64695b6fca237d1dad1"
 [[package]]
 name = "snapshot-lib"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-toolbox?branch=main#5748d638ab1f0cc3ba40eb7953caa2ae0e9fab78"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox?branch=nix-direnv-files#621c3324f5435c673a8ea3bfdb9faf6e93d3d604"
 dependencies = [
  "bech32",
  "chain-crypto",

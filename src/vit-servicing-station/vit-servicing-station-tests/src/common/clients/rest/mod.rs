@@ -3,7 +3,7 @@ mod path;
 mod raw;
 
 use crate::common::clients::rest::path::RestPathBuilder;
-use crate::common::snapshot::{Snapshot, VotingPower};
+use crate::common::snapshot::{Snapshot, VoterInfo};
 use hyper::StatusCode;
 use logger::RestClientLogger;
 pub use raw::RestClient as RawRestClient;
@@ -116,12 +116,8 @@ impl RestClient {
         serde_json::from_str(&content).map_err(Error::CannotDeserialize)
     }
 
-    pub fn voting_power_and_delegations(
-        &self,
-        tag: &str,
-        key: &str,
-    ) -> Result<Vec<VotingPower>, Error> {
-        let response = self.raw.voting_power_and_delegations(tag, key)?;
+    pub fn voter_info(&self, tag: &str, key: &str) -> Result<Vec<VoterInfo>, Error> {
+        let response = self.raw.voter_info(tag, key)?;
         self.verify_status_code(&response)?;
         let content = response.text()?;
         self.raw.log_text(&content);

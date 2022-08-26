@@ -1,6 +1,6 @@
 use crate::common::{
     clients::RawRestClient,
-    snapshot::{Snapshot, SnapshotBuilder, SnapshotUpdater, VotingPower},
+    snapshot::{Snapshot, SnapshotBuilder, SnapshotUpdater, VoterInfo},
     startup::quick_start,
 };
 use assert_fs::TempDir;
@@ -22,11 +22,11 @@ pub fn import_new_snapshot() {
     );
 
     for (idx, entry) in snapshot.content.iter().enumerate() {
-        let voting_power = VotingPower::from(entry.hir.clone());
+        let voter_info = VoterInfo::from(entry.clone());
         assert_eq!(
-            vec![voting_power],
+            vec![voter_info],
             rest_client
-                .voting_power_and_delegations(&snapshot.tag, &entry.hir.voting_key.to_hex())
+                .voter_info(&snapshot.tag, &entry.hir.voting_key.to_hex())
                 .unwrap(),
             "wrong data for entry idx: {}",
             idx
@@ -53,7 +53,7 @@ pub fn reimport_with_empty_snapshot() {
     for (idx, entry) in snapshot.content.iter().enumerate() {
         assert!(
             rest_client
-                .voting_power_and_delegations(&snapshot.tag, &entry.hir.voting_key.to_hex())
+                .voter_info(&snapshot.tag, &entry.hir.voting_key.to_hex())
                 .unwrap()
                 .is_empty(),
             "expected empty data for entry idx: {}",
@@ -77,7 +77,7 @@ pub fn replace_snapshot_with_tag() {
     for (idx, entry) in first_snapshot.content.iter().enumerate() {
         assert!(
             rest_client
-                .voting_power_and_delegations(&first_snapshot.tag, &entry.hir.voting_key.to_hex())
+                .voter_info(&first_snapshot.tag, &entry.hir.voting_key.to_hex())
                 .unwrap()
                 .is_empty(),
             "expected empty data for entry idx: {}",
@@ -85,11 +85,11 @@ pub fn replace_snapshot_with_tag() {
         );
     }
     for (idx, entry) in second_snapshot.content.iter().enumerate() {
-        let voting_power = VotingPower::from(entry.hir.clone());
+        let voter_info = VoterInfo::from(entry.clone());
         assert_eq!(
-            vec![voting_power],
+            vec![voter_info],
             rest_client
-                .voting_power_and_delegations(&second_snapshot.tag, &entry.hir.voting_key.to_hex())
+                .voter_info(&second_snapshot.tag, &entry.hir.voting_key.to_hex())
                 .unwrap(),
             "expected non-empty data for entry idx: {}",
             idx
@@ -114,19 +114,20 @@ pub fn import_snapshots_with_different_tags() {
     rest_client.put_snapshot(&second_snapshot).unwrap();
 
     for (idx, entry) in first_snapshot.content.iter().enumerate() {
-        let voting_power = VotingPower::from(entry.hir.clone());
+        let voter_info = VoterInfo::from(entry.clone());
+
         assert_eq!(
-            vec![voting_power.clone()],
+            vec![voter_info.clone()],
             rest_client
-                .voting_power_and_delegations(&first_snapshot.tag, &entry.hir.voting_key.to_hex())
+                .voter_info(&first_snapshot.tag, &entry.hir.voting_key.to_hex())
                 .unwrap(),
             "wrong data for entry idx: {}",
             idx
         );
         assert_eq!(
-            vec![voting_power],
+            vec![voter_info],
             rest_client
-                .voting_power_and_delegations(&second_snapshot.tag, &entry.hir.voting_key.to_hex())
+                .voter_info(&second_snapshot.tag, &entry.hir.voting_key.to_hex())
                 .unwrap(),
             "wrong data for entry idx: {}",
             idx
@@ -168,11 +169,11 @@ pub fn import_big_snapshot() {
 
     rest_client.put_snapshot(&snapshot).unwrap();
     let entry = snapshot.content[0].clone();
-    let voting_power = VotingPower::from(entry.hir.clone());
+    let voter_info = VoterInfo::from(entry.clone());
     assert_eq!(
-        vec![voting_power],
+        vec![voter_info],
         rest_client
-            .voting_power_and_delegations(&snapshot.tag, &entry.hir.voting_key.to_hex())
+            .voter_info(&snapshot.tag, &entry.hir.voting_key.to_hex())
             .unwrap(),
         "wrong data for entry idx"
     );

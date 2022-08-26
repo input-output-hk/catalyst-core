@@ -2,7 +2,7 @@ use chain_impl_mockchain::testing::TestGen;
 use itertools::Itertools;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
-use snapshot_lib::{SnapshotInfo, VoterHIR};
+use snapshot_lib::{KeyContribution, SnapshotInfo, VoterHIR};
 #[derive(Debug, Clone)]
 pub struct Snapshot {
     pub tag: String,
@@ -19,7 +19,8 @@ impl Default for Snapshot {
 pub struct SnapshotBuilder {
     tag: String,
     groups: Vec<String>,
-    count: usize,
+    voters_count: usize,
+    contributions_count: usize,
 }
 
 impl Default for SnapshotBuilder {
@@ -27,7 +28,8 @@ impl Default for SnapshotBuilder {
         Self {
             tag: "daily".to_string(),
             groups: vec!["direct".to_string(), "dreps".to_string()],
-            count: 3,
+            voters_count: 3,
+            contributions_count: 5,
         }
     }
 }
@@ -38,8 +40,13 @@ impl SnapshotBuilder {
         self
     }
 
-    pub fn with_entries_count(mut self, count: usize) -> Self {
-        self.count = count;
+    pub fn with_entries_count(mut self, voters_count: usize) -> Self {
+        self.voters_count = voters_count;
+        self
+    }
+
+    pub fn with_contributions_count(mut self, contributions_count: usize) -> Self {
+        self.contributions_count = contributions_count;
         self
     }
 
@@ -51,11 +58,11 @@ impl SnapshotBuilder {
     pub fn build(self) -> Snapshot {
         let mut rng = rand::rngs::OsRng;
 
-        let count = {
-            if self.count == 0 {
+        let voters_count = {
+            if self.voters_count == 0 {
                 rng.gen_range(1usize, 1_000usize)
             } else {
-                self.count
+                self.voters_count
             }
         };
 
@@ -63,7 +70,14 @@ impl SnapshotBuilder {
             tag: self.tag.clone(),
             content: std::iter::from_fn(|| {
                 Some(SnapshotInfo {
-                    contributions: vec![],
+                    contributions: std::iter::from_fn(|| {
+                        Some(KeyContribution {
+                            reward_address: format!("address_{:?}", rng.gen_range(1u64, 1_000u64)),
+                            value: rng.gen_range(1u64, 1_000u64),
+                        })
+                    })
+                    .take(self.contributions_count)
+                    .collect(),
                     hir: VoterHIR {
                         voting_key: TestGen::identifier().into(),
                         voting_group: self.groups[rng.gen_range(0, self.groups.len())].to_string(),
@@ -71,23 +85,37 @@ impl SnapshotBuilder {
                     },
                 })
             })
-            .take(count)
+            .take(voters_count)
             .collect(),
         }
     }
 }
 
 #[derive(Deserialize, Serialize, Debug, PartialEq, Eq, Clone)]
-pub struct VotingPower {
+pub struct VoterInfo {
     pub voting_power: u64,
     pub voting_group: String,
+    pub delegations_power: u64,
+    pub delegations_count: u64,
 }
 
-impl From<VoterHIR> for VotingPower {
-    fn from(voter_hir: VoterHIR) -> Self {
+impl From<SnapshotInfo> for VoterInfo {
+    fn from(snapshot_info: SnapshotInfo) -> Self {
+        let delegations_power: u64 = snapshot_info
+            .contributions
+            .iter()
+            .map(
+                |KeyContribution {
+                     reward_address: _,
+                     value,
+                 }| value,
+            )
+            .sum();
         Self {
-            voting_power: voter_hir.voting_power.into(),
-            voting_group: voter_hir.voting_group,
+            voting_power: snapshot_info.hir.voting_power.into(),
+            voting_group: snapshot_info.hir.voting_group,
+            delegations_power,
+            delegations_count: snapshot_info.contributions.len() as u64,
         }
     }
 }

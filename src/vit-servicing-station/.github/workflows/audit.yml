@@ -1,7 +1,7 @@
 name: Security audit
 on:
   push:
-    paths: 
+    paths:
       - Cargo.lock
 jobs:
   security_audit:
@@ -25,6 +25,6 @@ jobs:
           restore-keys: |
             cargo-index-
 
-      - uses: actions-rs/audit-check@v1
+      - uses: actions-rs/audit-check@v1.2.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

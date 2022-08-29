@@ -2,11 +2,15 @@ mod handlers;
 mod routes;
 
 use chain_ser::packer::Codec;
+pub use handlers::{RawSnapshotInput, SnapshotInfoInput};
 use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
 pub use routes::{filter, update_filter};
 use serde::{Deserialize, Serialize};
 use sled::{IVec, Transactional};
-use snapshot_lib::{KeyContribution, SnapshotInfo, VoterHIR};
+use snapshot_lib::{
+    voting_group::{RepsVotersAssigner, DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP},
+    Fraction, KeyContribution, RawSnapshot, Snapshot, SnapshotInfo, VoterHIR,
+};
 use std::mem::size_of;
 
 #[derive(thiserror::Error, Debug)]
@@ -16,6 +20,9 @@ pub enum Error {
 
     #[error(transparent)]
     DbTxError(#[from] sled::transaction::TransactionError),
+
+    #[error(transparent)]
+    SnapshotError(#[from] snapshot_lib::Error),
 
     #[error("internal error")]
     InternalError,
@@ -208,8 +215,35 @@ impl UpdateHandle {
         })
     }
 
+    #[allow(clippy::too_many_arguments)]
+    pub async fn update_from_raw_snapshot(
+        &mut self,
+        tag: &str,
+        snapshot: RawSnapshot,
+        update_timestamp: u64,
+        min_stake_threshold: Value,
+        voting_power_cap: Fraction,
+        direct_voters_group: Option<String>,
+        representatives_group: Option<String>,
+    ) -> Result<(), Error> {
+        let direct_voter = direct_voters_group.unwrap_or_else(|| DEFAULT_DIRECT_VOTER_GROUP.into());
+        let representative =
+            representatives_group.unwrap_or_else(|| DEFAULT_REPRESENTATIVE_GROUP.into());
+        let assigner = RepsVotersAssigner::new(direct_voter, representative);
+        let snapshot = Snapshot::from_raw_snapshot(
+            snapshot,
+            min_stake_threshold,
+            voting_power_cap,
+            &assigner,
+        )?
+        .to_full_snapshot_info();
+
+        self.update_from_shanpshot_info(tag, snapshot, update_timestamp)
+            .await
+    }
+
     #[tracing::instrument(skip(self, snapshot))]
-    pub async fn update(
+    pub async fn update_from_shanpshot_info(
         &mut self,
         tag: &str,
         snapshot: impl IntoIterator<Item = SnapshotInfo>,
@@ -334,13 +368,6 @@ pub fn new_context() -> Result<(SharedContext, UpdateHandle), Error> {
     Ok((SharedContext::new(db.clone())?, UpdateHandle::new(db)?))
 }
 
-/// Snapshot information update with timestamp.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct SnapshotInfoUpdate {
-    pub snapshot: Vec<SnapshotInfo>,
-    pub update_timestamp: i64,
-}
-
 #[cfg(test)]
 mod tests {
     use snapshot_lib::KeyContribution;
@@ -409,7 +436,7 @@ mod tests {
             )
             .collect::<Vec<_>>();
 
-        tx.update(TAG1, content_a.clone(), UPDATE_TIME1)
+        tx.update_from_shanpshot_info(TAG1, content_a.clone(), UPDATE_TIME1)
             .await
             .unwrap();
 
@@ -443,7 +470,7 @@ mod tests {
             )
             .collect::<Vec<_>>();
 
-        tx.update(TAG2, [content_a, content_b].concat(), UPDATE_TIME2)
+        tx.update_from_shanpshot_info(TAG2, [content_a, content_b].concat(), UPDATE_TIME2)
             .await
             .unwrap();
 
@@ -504,8 +531,12 @@ mod tests {
             },
         ];
 
-        tx.update(TAG1, inputs.clone(), UPDATE_TIME1).await.unwrap();
-        tx.update(TAG2, inputs.clone(), UPDATE_TIME1).await.unwrap();
+        tx.update_from_shanpshot_info(TAG1, inputs.clone(), UPDATE_TIME1)
+            .await
+            .unwrap();
+        tx.update_from_shanpshot_info(TAG2, inputs.clone(), UPDATE_TIME1)
+            .await
+            .unwrap();
 
         assert_eq!(
             rx.get_voters_info(TAG1, &voting_key)
@@ -533,7 +564,7 @@ mod tests {
                 .collect::<Vec<_>>()
         );
 
-        tx.update(TAG1, inputs[0..1].to_vec(), UPDATE_TIME1)
+        tx.update_from_shanpshot_info(TAG1, inputs[0..1].to_vec(), UPDATE_TIME1)
             .await
             .unwrap();
 

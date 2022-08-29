@@ -305,9 +305,9 @@ paths:
         "200":
           description: Success
 
-  /api/v0/admin/snapshot/{tag}:
+  /api/v0/admin/snapshot/snapshot_info/{tag}:
     put:
-      operationId: updateSnapshot
+      operationId: updateSnapshotFromSnapshotInfo
       summary: Replace the snapshot data for the given tag
       tags: [snapshot]
       description: |
@@ -323,7 +323,28 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/SnapshotInfoUpdate"
+      responses:
+        "200":
+          description: Success
 
+  /api/v0/admin/snapshot/raw_snapshot/{tag}:
+    put:
+      operationId: updateSnapshotFromRawSnapshot
+      summary: Replace the snapshot data for the given tag
+      tags: [snapshot]
+      description: |
+        Replace the snapshot data for the given tag
+      parameters:
+        - in: path
+          name: tag
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RawSnapshotUpdate"
       responses:
         "200":
           description: Success
@@ -335,12 +356,6 @@ paths:
       tags: [fund]
       description: |
         Update or replace the fund in the db with the one provided.
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          required: true
       responses:
         "200":
           description: Valid response
@@ -944,9 +959,36 @@ components:
       properties:
         snapshot:
           type: array
-          description: list of VoterHIR entries in json format
+          description: list of SnapshotInfo entries in json format
           required: true
-        last_update:
+        update_timestamp:
+          type: string
+          format: date-time
+          description: Date and time for the latest update to this snapshot information.
+
+    RawSnapshotUpdate:
+      properties:
+        snapshot:
+          type: object
+          description: RawSnapshot in json format
+          required: true
+        min_stake_threshold:
+          type: integer
+          description: Registrations voting power threshold for eligibility
+          required: true
+        voting_power_cap:
+          type: string
+          description: Voting power cap for each account
+          required: true
+        direct_voters_group:
+          type: string
+          description: Voter group to assign direct voters to. If empty, defaults to "voter"
+          required: false
+        representatives_group:
+          type: string
+          description: Voter group to assign representatives to. If empty, defaults to "rep"
+          required: false  
+        update_timestamp:
           type: string
           format: date-time
           description: Date and time for the latest update to this snapshot information.

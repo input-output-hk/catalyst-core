@@ -18,7 +18,7 @@ pub fn update_snapshot_during_the_load_quick() {
         .with_entries_count(10_000)
         .build();
 
-    rest_client.put_snapshot(&snapshot).unwrap();
+    rest_client.put_snapshot_info(&snapshot).unwrap();
 
     let request = VotingPowerRequestGenerator::new(snapshot.clone(), rest_client.clone());
     let config = ConfigurationBuilder::duration(Duration::from_secs(40))
@@ -41,7 +41,7 @@ pub fn update_snapshot_during_the_load_quick() {
         .add_new_arbitrary_voters()
         .build();
 
-    rest_client.put_snapshot(&new_snapshot).unwrap();
+    rest_client.put_snapshot_info(&new_snapshot).unwrap();
 
     let stats = load_run.wait_for_finish();
     assert!((stats.calculate_passrate() as u32) > 95);

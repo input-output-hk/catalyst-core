@@ -1,9 +1,10 @@
 use crate::common::{
     clients::RawRestClient,
-    snapshot::{Snapshot, SnapshotBuilder, SnapshotUpdater, VoterInfo},
+    snapshot::{Snapshot, SnapshotBuilder, SnapshotUpdater, VotingPower},
     startup::quick_start,
 };
 use assert_fs::TempDir;
+use snapshot_service::SnapshotInfoInput;
 
 #[test]
 pub fn import_new_snapshot() {
@@ -13,7 +14,7 @@ pub fn import_new_snapshot() {
 
     let snapshot = Snapshot::default();
 
-    rest_client.put_snapshot(&snapshot).unwrap();
+    rest_client.put_snapshot_info(&snapshot).unwrap();
 
     assert_eq!(
         vec![snapshot.tag.to_string()],
@@ -21,13 +22,14 @@ pub fn import_new_snapshot() {
         "expected tags vs tags taken from REST API"
     );
 
-    for (idx, entry) in snapshot.content.iter().enumerate() {
-        let voter_info = VoterInfo::from(entry.clone());
+    for (idx, entry) in snapshot.content.snapshot.iter().enumerate() {
+        let voting_power = VotingPower::from(entry.clone());
+        let voter_info = rest_client
+            .voter_info(&snapshot.tag, &entry.hir.voting_key.to_hex())
+            .unwrap();
         assert_eq!(
-            vec![voter_info],
-            rest_client
-                .voter_info(&snapshot.tag, &entry.hir.voting_key.to_hex())
-                .unwrap(),
+            vec![voting_power],
+            voter_info.voter_info,
             "wrong data for entry idx: {}",
             idx
         );
@@ -42,20 +44,23 @@ pub fn reimport_with_empty_snapshot() {
 
     let snapshot = Snapshot::default();
 
-    rest_client.put_snapshot(&snapshot).unwrap();
+    rest_client.put_snapshot_info(&snapshot).unwrap();
 
     let empty_snapshot = Snapshot {
         tag: snapshot.tag.clone(),
-        content: Vec::new(),
+        content: SnapshotInfoInput {
+            snapshot: Vec::new(),
+            update_timestamp: 0,
+        },
     };
 
-    rest_client.put_snapshot(&empty_snapshot).unwrap();
-    for (idx, entry) in snapshot.content.iter().enumerate() {
+    rest_client.put_snapshot_info(&empty_snapshot).unwrap();
+    for (idx, entry) in snapshot.content.snapshot.iter().enumerate() {
+        let voter_info = rest_client
+            .voter_info(&snapshot.tag, &entry.hir.voting_key.to_hex())
+            .unwrap();
         assert!(
-            rest_client
-                .voter_info(&snapshot.tag, &entry.hir.voting_key.to_hex())
-                .unwrap()
-                .is_empty(),
+            voter_info.voter_info.is_empty(),
             "expected empty data for entry idx: {}",
             idx
         );
@@ -69,28 +74,29 @@ pub fn replace_snapshot_with_tag() {
 
     let first_snapshot = Snapshot::default();
 
-    rest_client.put_snapshot(&first_snapshot).unwrap();
+    rest_client.put_snapshot_info(&first_snapshot).unwrap();
 
     let second_snapshot = Snapshot::default();
 
-    rest_client.put_snapshot(&second_snapshot).unwrap();
-    for (idx, entry) in first_snapshot.content.iter().enumerate() {
+    rest_client.put_snapshot_info(&second_snapshot).unwrap();
+    for (idx, entry) in first_snapshot.content.snapshot.iter().enumerate() {
+        let voter_info = rest_client
+            .voter_info(&first_snapshot.tag, &entry.hir.voting_key.to_hex())
+            .unwrap();
         assert!(
-            rest_client
-                .voter_info(&first_snapshot.tag, &entry.hir.voting_key.to_hex())
-                .unwrap()
-                .is_empty(),
+            voter_info.voter_info.is_empty(),
             "expected empty data for entry idx: {}",
             idx
         );
     }
-    for (idx, entry) in second_snapshot.content.iter().enumerate() {
-        let voter_info = VoterInfo::from(entry.clone());
+    for (idx, entry) in second_snapshot.content.snapshot.iter().enumerate() {
+        let voting_power = VotingPower::from(entry.clone());
+        let voter_info = rest_client
+            .voter_info(&second_snapshot.tag, &entry.hir.voting_key.to_hex())
+            .unwrap();
         assert_eq!(
-            vec![voter_info],
-            rest_client
-                .voter_info(&second_snapshot.tag, &entry.hir.voting_key.to_hex())
-                .unwrap(),
+            vec![voting_power],
+            voter_info.voter_info,
             "expected non-empty data for entry idx: {}",
             idx
         );
@@ -105,30 +111,31 @@ pub fn import_snapshots_with_different_tags() {
 
     let first_snapshot = Snapshot::default();
 
-    rest_client.put_snapshot(&first_snapshot).unwrap();
+    rest_client.put_snapshot_info(&first_snapshot).unwrap();
 
     let second_snapshot = SnapshotUpdater::from(first_snapshot.clone())
         .with_tag("fund9")
         .build();
 
-    rest_client.put_snapshot(&second_snapshot).unwrap();
+    rest_client.put_snapshot_info(&second_snapshot).unwrap();
 
-    for (idx, entry) in first_snapshot.content.iter().enumerate() {
-        let voter_info = VoterInfo::from(entry.clone());
-
+    for (idx, entry) in first_snapshot.content.snapshot.iter().enumerate() {
+        let voting_power = VotingPower::from(entry.clone());
+        let voter_info = rest_client
+            .voter_info(&first_snapshot.tag, &entry.hir.voting_key.to_hex())
+            .unwrap();
         assert_eq!(
-            vec![voter_info.clone()],
-            rest_client
-                .voter_info(&first_snapshot.tag, &entry.hir.voting_key.to_hex())
-                .unwrap(),
+            vec![voting_power.clone()],
+            voter_info.voter_info,
             "wrong data for entry idx: {}",
             idx
         );
+        let voter_info = rest_client
+            .voter_info(&second_snapshot.tag, &entry.hir.voting_key.to_hex())
+            .unwrap();
         assert_eq!(
-            vec![voter_info],
-            rest_client
-                .voter_info(&second_snapshot.tag, &entry.hir.voting_key.to_hex())
-                .unwrap(),
+            vec![voting_power],
+            voter_info.voter_info,
             "wrong data for entry idx: {}",
             idx
         );
@@ -145,7 +152,7 @@ pub fn import_malformed_snapshot() {
     let mut content = serde_json::to_string(&snapshot.content).unwrap();
     content.pop();
     assert!(rest_client
-        .put_snapshot(&snapshot.tag, content)
+        .put_snapshot_info(&snapshot.tag, content)
         .unwrap()
         .status()
         .is_client_error());
@@ -167,14 +174,15 @@ pub fn import_big_snapshot() {
         ])
         .build();
 
-    rest_client.put_snapshot(&snapshot).unwrap();
-    let entry = snapshot.content[0].clone();
-    let voter_info = VoterInfo::from(entry.clone());
+    rest_client.put_snapshot_info(&snapshot).unwrap();
+    let entry = snapshot.content.snapshot[0].clone();
+    let voting_power = VotingPower::from(entry.clone());
+    let voter_info = rest_client
+        .voter_info(&snapshot.tag, &entry.hir.voting_key.to_hex())
+        .unwrap();
     assert_eq!(
-        vec![voter_info],
-        rest_client
-            .voter_info(&snapshot.tag, &entry.hir.voting_key.to_hex())
-            .unwrap(),
+        vec![voting_power],
+        voter_info.voter_info,
         "wrong data for entry idx"
     );
 }

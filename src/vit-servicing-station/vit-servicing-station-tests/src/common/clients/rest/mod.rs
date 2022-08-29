@@ -79,9 +79,9 @@ impl RestClient {
         self.raw.path_builder()
     }
 
-    pub fn put_snapshot(&self, snapshot: &Snapshot) -> Result<(), Error> {
+    pub fn put_snapshot_info(&self, snapshot: &Snapshot) -> Result<(), Error> {
         let content = serde_json::to_string(&snapshot.content)?;
-        self.verify_status_code(&self.raw.put_snapshot(&snapshot.tag, content)?)
+        self.verify_status_code(&self.raw.put_snapshot_info(&snapshot.tag, content)?)
     }
 
     pub fn proposal(&self, id: &str, group: &str) -> Result<FullProposalInfo, Error> {
@@ -116,7 +116,7 @@ impl RestClient {
         serde_json::from_str(&content).map_err(Error::CannotDeserialize)
     }
 
-    pub fn voter_info(&self, tag: &str, key: &str) -> Result<Vec<VoterInfo>, Error> {
+    pub fn voter_info(&self, tag: &str, key: &str) -> Result<VoterInfo, Error> {
         let response = self.raw.voter_info(tag, key)?;
         self.verify_status_code(&response)?;
         let content = response.text()?;

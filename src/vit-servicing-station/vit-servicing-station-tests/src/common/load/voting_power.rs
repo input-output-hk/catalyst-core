@@ -33,7 +33,7 @@ impl RequestGenerator for VotingPowerRequestGenerator {
         self.rest_client
             .voter_info(
                 &self.snapshot.tag,
-                &content[rng.gen_range(0, content.len())]
+                &content.snapshot[rng.gen_range(0, content.snapshot.len())]
                     .hir
                     .voting_key
                     .to_hex(),

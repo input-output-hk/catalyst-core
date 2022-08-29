@@ -43,4 +43,3 @@ tempfile = "3"
 rand = "0.8"
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr", branch = "master" }
 snapshot-lib = { git = "https://github.com/input-output-hk/catalyst-toolbox", branch = "main" }
-

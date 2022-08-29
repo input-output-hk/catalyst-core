@@ -1,2 +1,0 @@
-cargo:rustc-env=TYPENUM_BUILD_CONSTS=/home/cameron/work/voting_tools_rs/tmp/target/debug/build/typenum-e85d902fc94ce6c9/out/consts.rs
-cargo:rustc-env=TYPENUM_BUILD_OP=/home/cameron/work/voting_tools_rs/tmp/target/debug/build/typenum-e85d902fc94ce6c9/out/op.rs

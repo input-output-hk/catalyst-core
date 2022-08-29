@@ -1,35 +1,24 @@
-use microtype::microtype;
 use serde::Deserialize;
 
-use crate::cli::NetworkId;
+use crate::model::{DbHost, DbName, DbPass, DbUser, SlotNo, TestnetMagic};
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
-    pub network_id: NetworkId,
+    pub testnet_magic: Option<TestnetMagic>,
     pub scale: u64,
-    pub db: u64,
+    pub db: DbConfig,
+    pub slot_no: Option<SlotNo>,
 }
 
-#[derive(Debug, Deserialize)]
+/// Information required for a database connection
+#[derive(Debug, Clone, Deserialize)]
 pub struct DbConfig {
+    /// The name of the database
     pub name: DbName,
+    /// The user to connect with
     pub user: DbUser,
+    /// The hostname to connect to
     pub host: DbHost,
+    /// The corresponding password for this user
     pub password: DbPass,
-}
-
-microtype! {
-    #[derive(Debug, PartialEq)]
-    #[string]
-    pub String {
-        DbName,
-        DbUser,
-        DbHost,
-    }
-
-    #[secret]
-    #[string]
-    pub String {
-        DbPass,
-    }
 }

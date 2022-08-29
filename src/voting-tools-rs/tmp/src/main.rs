@@ -1,78 +1,26 @@
+use cardano_serialization_lib::address::Address;
+use cardano_serialization_lib::address::NetworkInfo;
+use cardano_serialization_lib::address::{RewardAddress, StakeCredential};
+use cardano_serialization_lib::chain_crypto;
+use cardano_serialization_lib::chain_crypto::Blake2b256;
+use cardano_serialization_lib::crypto::Ed25519KeyHash;
+use cardano_serialization_lib::crypto::Ed25519Signature;
+use cardano_serialization_lib::crypto::PublicKey;
+use cardano_serialization_lib::metadata::GeneralTransactionMetadata;
+use cardano_serialization_lib::metadata::MetadataMap;
+use cardano_serialization_lib::metadata::TransactionMetadatum;
+use cardano_serialization_lib::utils::to_bytes;
+use cardano_serialization_lib::utils::BigNum;
+use cardano_serialization_lib::utils::Int;
+use chain_core::property::FromStr;
+use compare::{natural, Compare};
+use hex;
 use postgres::{Client, Error, NoTls};
+use rust_decimal::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use cardano_serialization_lib::metadata::MetadataMap;
-use cardano_serialization_lib::chain_crypto::Blake2b256;
+use std::cmp::Ordering::{Equal, Greater, Less};
 use std::collections::HashMap;
-use cardano_serialization_lib::address::NetworkInfo;
-use cardano_serialization_lib::utils::BigNum;
-use cardano_serialization_lib::address::Address;
-use cardano_serialization_lib::utils::Int;
-use cardano_serialization_lib::crypto::Ed25519Signature;
-use cardano_serialization_lib::chain_crypto;
-use cardano_serialization_lib::address::{RewardAddress, StakeCredential};
-use cardano_serialization_lib::crypto::Ed25519KeyHash;
-use cardano_serialization_lib::crypto::PublicKey;
-use cardano_serialization_lib::utils::to_bytes;
-use chain_core::property::FromStr;
-use hex;
-use rust_decimal::prelude::*;
-use compare::{Compare, natural};
-use std::cmp::Ordering::{Less, Equal, Greater};
-use cardano_serialization_lib::metadata::TransactionMetadatum;
-use cardano_serialization_lib::metadata::GeneralTransactionMetadata;
-
-
-#[derive(Serialize, Deserialize)]
-#[serde(untagged)]
-#[derive(Clone)]
-enum Delegations {
-    Legacy(String),
-    Delegated(Vec<(String, u32)>),
-}
-
-#[derive(Serialize, Deserialize)]
-#[derive(Clone)]
-struct RegoMetadata {
-    #[serde(rename = "1")]
-    delegations: Delegations,
-    #[serde(rename = "2")]
-    stake_vkey: String,
-    #[serde(rename = "3")]
-    rewards_addr: String,
-    #[serde(rename = "4")]
-    slot: u64,
-    #[serde(rename = "5")]
-    #[serde(default = "catalystPurpose")]
-    purpose: u64,
-}
-
-fn catalystPurpose() -> u64 {
-    return 0;
-}
-
-#[derive(Serialize, Deserialize)]
-#[derive(Clone)]
-struct RegoSignature {
-    #[serde(rename = "1")]
-    signature: String,
-}
-
-#[derive(Clone)]
-struct Rego {
-    tx_id: i64,
-    metadata: RegoMetadata,
-    signature: RegoSignature,
-}
-
-#[derive(Serialize, Deserialize)]
-struct Output {
-    delegations: Delegations,
-    rewards_address: String,
-    stake_public_key: String,
-    voting_power: u64,
-    voting_purpose: u64,
-}
 
 // fn main() -> Result<(), Error> {
 //     // Connect to db-sync database
@@ -163,7 +111,7 @@ fn get_stake_address(stake_vkey_hex: &String, network_id: u8) -> Option<String> 
         let cred = StakeCredential::from_keyhash(&pub_key.hash());
         let cred_bytes = to_bytes(&cred);
         let cred_bytes_hex = hex::encode(&cred_bytes);
-        let stake_addr : Address = RewardAddress::new(network_id, &cred).to_address();
+        let stake_addr: Address = RewardAddress::new(network_id, &cred).to_address();
         let stake_addr_bytes = stake_addr.to_bytes();
         let stake_addr_bytes_hex = hex::encode(&stake_addr_bytes);
         Some(stake_addr_bytes_hex)
@@ -197,8 +145,8 @@ fn query_vote_registrations(
                 let rego = Rego {
                     // txHash = row.get(0); <- We don't actually use this
                     tx_id: row.get(1),
-                    metadata: metadata,
-                    signature: signature,
+                    metadata,
+                    signature,
                 };
 
                 regos.push(rego);
@@ -210,13 +158,14 @@ fn query_vote_registrations(
     Ok(regos)
 }
 
-
-
 fn filter_valid_registrations(regos: Vec<Rego>, network_id: u8) -> Vec<Rego> {
     let mut regos_valid = Vec::new();
 
     for rego in regos {
-        if mk_meta(&rego) { regos_valid.push(rego) } else { }
+        if mk_meta(&rego) {
+            regos_valid.push(rego)
+        } else {
+        }
     }
 
     regos_valid
@@ -225,34 +174,57 @@ fn filter_valid_registrations(regos: Vec<Rego>, network_id: u8) -> Vec<Rego> {
 fn mk_meta(rego: &Rego) -> bool {
     // Remove initial '0x' from string
     let stake_vkey_hex_only = rego.metadata.stake_vkey.clone().split_off(2);
-    if stake_vkey_hex_only.len() == 128 { false } else {
+    if stake_vkey_hex_only.len() == 128 {
+        false
+    } else {
         let pub_key = PublicKey::from_bytes(&hex::decode(&stake_vkey_hex_only).unwrap()).unwrap();
 
         // Get rewards address
-        let rewards_addr : Address = Address::from_bytes(hex::decode(&rego.metadata.rewards_addr.clone().split_off(2)).unwrap()).unwrap();
-        let m_rewards_stake_addr : Option<RewardAddress> = RewardAddress::from_address(&rewards_addr);
+        let rewards_addr: Address = Address::from_bytes(
+            hex::decode(&rego.metadata.rewards_addr.clone().split_off(2)).unwrap(),
+        )
+        .unwrap();
+        let m_rewards_stake_addr: Option<RewardAddress> =
+            RewardAddress::from_address(&rewards_addr);
 
         match m_rewards_stake_addr {
-            None => { false }
+            None => false,
             Some(rewards_stake_addr) => {
-                let mut meta_whole : GeneralTransactionMetadata = GeneralTransactionMetadata::new();
+                let mut meta_whole: GeneralTransactionMetadata = GeneralTransactionMetadata::new();
 
                 // Translate registration to Cardano metadata type so we can serialize it correctly
-                let mut meta_map : MetadataMap = MetadataMap::new();
+                let mut meta_map: MetadataMap = MetadataMap::new();
                 let delegations = match rego.metadata.delegations.clone() {
-                    Delegations::Delegated(ds) => TransactionMetadatum::new_text("foo".to_string()).unwrap(),
+                    Delegations::Delegated(ds) => {
+                        TransactionMetadatum::new_text("foo".to_string()).unwrap()
+                    }
                     Delegations::Legacy(k) => {
                         let bytes = hex::decode(k.clone().split_off(2)).unwrap();
                         TransactionMetadatum::new_bytes(bytes).unwrap()
                     }
                 };
-                meta_map.insert(&TransactionMetadatum::new_int(&Int::new_i32(1)), &delegations);
-                meta_map.insert(&TransactionMetadatum::new_int(&Int::new_i32(2)), &TransactionMetadatum::new_bytes(pub_key.as_bytes()).unwrap());
-                meta_map.insert(&TransactionMetadatum::new_int(&Int::new_i32(3)), &TransactionMetadatum::new_bytes(rewards_addr.to_bytes()).unwrap());
-                meta_map.insert(&TransactionMetadatum::new_int(&Int::new_i32(4)), &TransactionMetadatum::new_int(&Int::new(&BigNum::from(rego.metadata.slot))));
+                meta_map.insert(
+                    &TransactionMetadatum::new_int(&Int::new_i32(1)),
+                    &delegations,
+                );
+                meta_map.insert(
+                    &TransactionMetadatum::new_int(&Int::new_i32(2)),
+                    &TransactionMetadatum::new_bytes(pub_key.as_bytes()).unwrap(),
+                );
+                meta_map.insert(
+                    &TransactionMetadatum::new_int(&Int::new_i32(3)),
+                    &TransactionMetadatum::new_bytes(rewards_addr.to_bytes()).unwrap(),
+                );
+                meta_map.insert(
+                    &TransactionMetadatum::new_int(&Int::new_i32(4)),
+                    &TransactionMetadatum::new_int(&Int::new(&BigNum::from(rego.metadata.slot))),
+                );
 
                 let mut meta = GeneralTransactionMetadata::new();
-                meta.insert(&BigNum::from(61284 as u32), &TransactionMetadatum::new_map(&meta_map));
+                meta.insert(
+                    &BigNum::from(61284 as u32),
+                    &TransactionMetadatum::new_map(&meta_map),
+                );
 
                 let meta_bytes = meta.to_bytes();
                 let meta_bytes_hex = hex::encode(&meta_bytes);
@@ -261,7 +233,7 @@ fn mk_meta(rego: &Rego) -> bool {
                 // Get signature from rego
                 let sig_str = rego.signature.signature.clone().split_off(2);
                 match Ed25519Signature::from_hex(&sig_str) {
-                    Err(e) => { false },
+                    Err(e) => false,
                     Ok(sig) => {
                         if pub_key.verify(meta_bytes_hash.as_hash_bytes(), &sig) {
                             true
@@ -286,17 +258,25 @@ fn filter_latest_registrations(regos: Vec<Rego>) -> Vec<Rego> {
     // lowest txid.
     let mut latest_regos = Vec::new();
     for (_, stake_regos) in m {
-        let latest = stake_regos.iter().fold(stake_regos[0].clone(), |acc, rego| {
-            let cmp = natural();
-            match cmp.compare(&rego.metadata.slot, &acc.metadata.slot) {
-                // If the slot number is less, it's not a newer registration.
-                Less => acc,
-                // If the slot number is greater, it's a newer registration.
-                Greater => rego.clone(),
-                // If the slot number is equal, choose the one with the lower tx id.
-                Equal => if rego.tx_id < acc.tx_id { rego.clone() } else { acc },
-            }
-        });
+        let latest = stake_regos
+            .iter()
+            .fold(stake_regos[0].clone(), |acc, rego| {
+                let cmp = natural();
+                match cmp.compare(&rego.metadata.slot, &acc.metadata.slot) {
+                    // If the slot number is less, it's not a newer registration.
+                    Less => acc,
+                    // If the slot number is greater, it's a newer registration.
+                    Greater => rego.clone(),
+                    // If the slot number is equal, choose the one with the lower tx id.
+                    Equal => {
+                        if rego.tx_id < acc.tx_id {
+                            rego.clone()
+                        } else {
+                            acc
+                        }
+                    }
+                }
+            });
         latest_regos.push(latest.clone())
     }
     latest_regos

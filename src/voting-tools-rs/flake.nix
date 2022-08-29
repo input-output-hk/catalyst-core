@@ -98,9 +98,6 @@
                 postgresql
               ];
 
-              buildInputs = with pkgs; [
-                /* postgresql-libpq */
-              ];
             };
 
 

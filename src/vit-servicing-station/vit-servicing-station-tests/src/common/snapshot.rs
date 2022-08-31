@@ -4,6 +4,8 @@ use rand::Rng;
 use serde::{Deserialize, Serialize};
 use snapshot_lib::{KeyContribution, SnapshotInfo, VoterHIR};
 use snapshot_service::SnapshotInfoInput;
+use time::OffsetDateTime;
+
 #[derive(Debug, Clone)]
 pub struct Snapshot {
     pub tag: String,
@@ -22,6 +24,7 @@ pub struct SnapshotBuilder {
     groups: Vec<String>,
     voters_count: usize,
     contributions_count: usize,
+    update_timestamp: u64,
 }
 
 impl Default for SnapshotBuilder {
@@ -31,6 +34,7 @@ impl Default for SnapshotBuilder {
             groups: vec!["direct".to_string(), "dreps".to_string()],
             voters_count: 3,
             contributions_count: 5,
+            update_timestamp: OffsetDateTime::now_utc().unix_timestamp() as u64,
         }
     }
 }
@@ -53,6 +57,11 @@ impl SnapshotBuilder {
 
     pub fn with_groups<S: Into<String>>(mut self, groups: Vec<S>) -> Self {
         self.groups = groups.into_iter().map(Into::into).collect();
+        self
+    }
+
+    pub fn with_timestamp(mut self, timestamp: u64) -> Self {
+        self.update_timestamp = timestamp;
         self
     }
 
@@ -93,7 +102,7 @@ impl SnapshotBuilder {
                 })
                 .take(voters_count)
                 .collect(),
-                update_timestamp: 0,
+                update_timestamp: self.update_timestamp,
             },
         }
     }

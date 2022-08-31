@@ -33,6 +33,11 @@ pub fn import_new_snapshot() {
             "wrong data for entry idx: {}",
             idx
         );
+        assert_eq!(
+            snapshot.content.update_timestamp, voter_info.last_updated,
+            "wrong timestamp for entry idx: {}",
+            idx
+        );
     }
 }
 
@@ -64,6 +69,11 @@ pub fn reimport_with_empty_snapshot() {
             "expected empty data for entry idx: {}",
             idx
         );
+        assert_eq!(
+            empty_snapshot.content.update_timestamp, voter_info.last_updated,
+            "wrong timestamp for entry idx: {}",
+            idx
+        );
     }
 }
 #[test]
@@ -76,7 +86,9 @@ pub fn replace_snapshot_with_tag() {
 
     rest_client.put_snapshot_info(&first_snapshot).unwrap();
 
-    let second_snapshot = Snapshot::default();
+    let second_snapshot = SnapshotBuilder::default()
+        .with_timestamp(first_snapshot.content.update_timestamp + 1)
+        .build();
 
     rest_client.put_snapshot_info(&second_snapshot).unwrap();
     for (idx, entry) in first_snapshot.content.snapshot.iter().enumerate() {
@@ -86,6 +98,11 @@ pub fn replace_snapshot_with_tag() {
         assert!(
             voter_info.voter_info.is_empty(),
             "expected empty data for entry idx: {}",
+            idx
+        );
+        assert_eq!(
+            second_snapshot.content.update_timestamp, voter_info.last_updated,
+            "wrong timestamp for entry idx: {}",
             idx
         );
     }
@@ -98,6 +115,11 @@ pub fn replace_snapshot_with_tag() {
             vec![voting_power],
             voter_info.voter_info,
             "expected non-empty data for entry idx: {}",
+            idx
+        );
+        assert_eq!(
+            second_snapshot.content.update_timestamp, voter_info.last_updated,
+            "wrong timestamp for entry idx: {}",
             idx
         );
     }
@@ -130,6 +152,12 @@ pub fn import_snapshots_with_different_tags() {
             "wrong data for entry idx: {}",
             idx
         );
+        assert_eq!(
+            first_snapshot.content.update_timestamp, voter_info.last_updated,
+            "wrong timestamp for entry idx: {}",
+            idx
+        );
+
         let voter_info = rest_client
             .voter_info(&second_snapshot.tag, &entry.hir.voting_key.to_hex())
             .unwrap();
@@ -137,6 +165,11 @@ pub fn import_snapshots_with_different_tags() {
             vec![voting_power],
             voter_info.voter_info,
             "wrong data for entry idx: {}",
+            idx
+        );
+        assert_eq!(
+            second_snapshot.content.update_timestamp, voter_info.last_updated,
+            "wrong timestamp for entry idx: {}",
             idx
         );
     }
@@ -184,5 +217,9 @@ pub fn import_big_snapshot() {
         vec![voting_power],
         voter_info.voter_info,
         "wrong data for entry idx"
+    );
+    assert_eq!(
+        snapshot.content.update_timestamp, voter_info.last_updated,
+        "wrong timestamp for entry idx"
     );
 }

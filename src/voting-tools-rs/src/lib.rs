@@ -2,12 +2,14 @@
 //!
 //! Original Haskell repository is <https://github.com/input-output-hk/voting-tools>
 
-#![deny(missing_docs)]
-#![warn(clippy::pedantic)]
+// #![deny(missing_docs)]
+// #![warn(clippy::pedantic)]
 #![allow(clippy::module_name_repetitions)]
 
 #[macro_use]
 extern crate tracing;
+#[macro_use]
+extern crate diesel;
 
 mod cli;
 mod config;

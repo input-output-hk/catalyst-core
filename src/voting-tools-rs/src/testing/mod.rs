@@ -1,7 +1,6 @@
 //! These tests run a local instance using the Rust implementation, and compare that with the
 //! Haskell implementation running on https://snapshot-trigger-service-testnet.gov.iog.io
 
-use tokio::runtime::Runtime;
 use tracing_test::traced_test;
 
 use self::local::{get_db_config, get_haskell, get_rust};
@@ -11,6 +10,7 @@ mod network;
 
 #[test]
 #[traced_test]
+#[ignore]
 fn haskell_rust_compare() {
     let cases = [
         // None,

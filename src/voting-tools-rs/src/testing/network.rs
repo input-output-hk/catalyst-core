@@ -2,10 +2,9 @@ use std::time::Duration;
 
 use reqwest::{
     blocking::Client,
-    header::{HeaderMap, HeaderName, HeaderValue, CONTENT_TYPE},
+    header::{HeaderName, HeaderValue, CONTENT_TYPE},
 };
 use serde::Serialize;
-use serde_json::json;
 
 use crate::model::{Output, SlotNo};
 

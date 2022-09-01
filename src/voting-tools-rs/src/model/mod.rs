@@ -10,7 +10,7 @@ pub enum Delegations {
     Delegated(Vec<(String, u32)>),
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct RegoMetadata {
     #[serde(rename = "1")]
     pub delegations: Delegations,
@@ -34,13 +34,13 @@ pub struct Output {
     pub voting_purpose: VotingPurpose,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct RegoSignature {
     #[serde(rename = "1")]
     pub signature: Signature,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Rego {
     pub tx_id: TxId,
     pub metadata: RegoMetadata,

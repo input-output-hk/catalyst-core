@@ -4,8 +4,7 @@ use clap::Parser;
 use color_eyre::Result;
 use voting_tools_rs::{run, Args, DbConfig};
 
-#[tokio::main]
-async fn main() -> Result<()> {
+fn main() -> Result<()> {
     color_eyre::install()?;
     tracing_subscriber::fmt().init();
 
@@ -25,7 +24,7 @@ async fn main() -> Result<()> {
         host: db_host,
         password: db_pass,
     };
-    let results = run(db_config, slot_no, testnet_magic).await?;
+    let results = run(db_config, slot_no, testnet_magic)?;
 
     let file = File::options().write(true).open(out_file)?;
     let writer = BufWriter::new(file);

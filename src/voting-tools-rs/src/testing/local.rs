@@ -1,16 +1,14 @@
 use std::{fs::read_to_string, process::Command};
 
+use crate::{
+    model::{Output, SlotNo},
+    run, DbConfig,
+};
 use color_eyre::{
     eyre::{eyre, Context},
     Result,
 };
 use tempdir::TempDir;
-use tokio::runtime::Runtime;
-
-use crate::{
-    model::{Output, SlotNo},
-    run, DbConfig,
-};
 
 pub fn get_db_config() -> Result<DbConfig> {
     let root = env!("CARGO_MANIFEST_DIR");
@@ -55,6 +53,5 @@ pub fn get_haskell(
 }
 
 pub fn get_rust(db_config: &DbConfig, slot_no: Option<SlotNo>) -> Result<Vec<Output>> {
-    let runtime = Runtime::new()?;
-    runtime.block_on(run(db_config.clone(), slot_no, None))
+    todo!()
 }

@@ -10,55 +10,54 @@ use cardano_serialization_lib::utils::{BigNum, Int};
 use cardano_serialization_lib::{address::StakeCredential, crypto::PublicKey};
 use color_eyre::eyre::Result;
 use color_eyre::eyre::{bail, eyre};
-use microtype::Microtype;
 
 use crate::config::DbConfig;
-use crate::db::Db;
-use crate::model::{network_info, Delegations, Output, Rego, SlotNo, StakeVKey, TestnetMagic};
+use crate::model::{Delegations, Output, Rego, SlotNo, StakeVKey, TestnetMagic};
 
-/// Calculate voter registration info
+/// Calculate voter registration info by connecting to a db-sync instance
 #[instrument]
-pub async fn run(
+pub fn run(
     db: DbConfig,
     slot_no: Option<SlotNo>,
     testnet_magic: Option<TestnetMagic>,
 ) -> Result<Vec<Output>> {
-    let network_info = network_info(testnet_magic);
-    let db = Db::connect(db).await?;
-
-    let regos = db.vote_registrations(slot_no).await?;
-
-    let regos = regos.into_iter().filter(|r| r.is_valid().is_ok());
-    let regos = filter_latest_registrations(regos);
-
-    let mut rego_voting_power = Vec::with_capacity(regos.len());
-    let table = db.create_snapshot_table(slot_no).await?;
-
-    for rego in regos {
-        let stake_address = get_stake_address(&rego.metadata.stake_vkey, &network_info);
-        match stake_address {
-            Err(_) => {}
-            Ok(stk) => {
-                let voting_power = db.stake_value(table, &stk).await?;
-                rego_voting_power.push((rego, voting_power));
-            }
-        }
-    }
-
-    let mut output = Vec::with_capacity(rego_voting_power.len());
-
-    for (rego, voting_power) in rego_voting_power {
-        let entry = Output {
-            delegations: rego.metadata.delegations.clone(),
-            rewards_address: rego.metadata.rewards_addr.clone(),
-            stake_public_key: rego.metadata.stake_vkey.clone().convert(),
-            voting_power: voting_power.into(),
-            voting_purpose: rego.metadata.purpose,
-        };
-        output.push(entry);
-    }
-
-    Ok(output)
+    todo!()
+    // let network_info = network_info(testnet_magic);
+    // let db = Db::connect(db).await?;
+    //
+    // let regos = db.vote_registrations(slot_no)?;
+    //
+    // let regos = regos.into_iter().filter(|r| r.is_valid().is_ok());
+    // let regos = filter_latest_registrations(regos);
+    //
+    // let mut rego_voting_power = Vec::with_capacity(regos.len());
+    // let table = db.create_snapshot_table(slot_no).await?;
+    //
+    // for rego in regos {
+    //     let stake_address = get_stake_address(&rego.metadata.stake_vkey, &network_info);
+    //     match stake_address {
+    //         Err(_) => {}
+    //         Ok(stk) => {
+    //             let voting_power = db.stake_value(table, &stk).await?;
+    //             rego_voting_power.push((rego, voting_power));
+    //         }
+    //     }
+    // }
+    //
+    // let mut output = Vec::with_capacity(rego_voting_power.len());
+    //
+    // for (rego, voting_power) in rego_voting_power {
+    //     let entry = Output {
+    //         delegations: rego.metadata.delegations.clone(),
+    //         rewards_address: rego.metadata.rewards_addr.clone(),
+    //         stake_public_key: rego.metadata.stake_vkey.clone().convert(),
+    //         voting_power: voting_power.into(),
+    //         voting_purpose: rego.metadata.purpose,
+    //     };
+    //     output.push(entry);
+    // }
+    //
+    // Ok(output)
 }
 
 fn filter_latest_registrations(regos: impl IntoIterator<Item = Rego>) -> Vec<Rego> {

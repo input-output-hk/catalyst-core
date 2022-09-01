@@ -4,15 +4,27 @@ use serde_json::from_value;
 use crate::{db::Db, model::Rego, model::SlotNo};
 
 const SQL_BASE: &str = "
-WITH meta_table AS (select tx_id, json AS metadata from tx_metadata where key = '61284') , sig_table AS (select tx_id, json AS signature from tx_metadata where key = '61285') SELECT tx.hash,tx_id,metadata,signature FROM meta_table INNER JOIN tx ON tx.id = meta_table.tx_id INNER JOIN sig_table USING(tx_id)
+WITH meta_table AS (
+        select tx_id, json AS metadata from tx_metadata where key = '61284'
+    ),
+    sig_table AS (
+        select tx_id, json AS signature from tx_metadata where key = '61285'
+    )
+SELECT tx.hash, tx_id, metadata, signature
+FROM meta_table
+    INNER JOIN tx ON tx.id = meta_table.tx_id
+    INNER JOIN sig_table USING (tx_id)
 ";
 
+// `block.slot_no $1` is invalid SQL ??  
+// It should be a relationship like: `block.slot_no >= $1`
 const SOME_SLOT_NO: &str = "
- INNER JOIN block ON block.id = tx.block_id WHERE block.slot_no $1 ORDER BY metadata -> '4' ASC;
+    INNER JOIN block ON block.id = tx.block_id
+WHERE block.slot_no $1 ORDER BY metadata -> '4' ASC;
 ";
 
 const NO_SLOT_NO: &str = "
- ORDER BY metadata -> '4' ASC;
+ORDER BY metadata -> '4' ASC;
 ";
 
 impl Db {

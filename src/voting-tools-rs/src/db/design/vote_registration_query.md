@@ -14,7 +14,7 @@ FROM meta_table
          INNER JOIN tx ON tx.id = meta_table.tx_id
          INNER JOIN sig_table USING (tx_id)
          INNER JOIN block ON block.id = tx.block_id
-WHERE block.slot_no >= 0
+WHERE block.slot_no <= ???
 ORDER BY metadata -> '4' ASC
 ```
 
@@ -95,14 +95,18 @@ ORDER BY metadata -> '4' ASC
     0xEE64FBD806CAAB4EFC1FFDD46E56D121B3356D2BEC7FFAA89C126BC005BF97BB,3016397,"{\"1\": \"0xc681f72c2952be387988504a2e4ae0bbe3b13c4aff17a8bc65a926145d8f3760\", \"2\": \"0x8c9d924397918f7f4ecfb22fab2aea45ce28f26d687680800886492da6ad2e53\", \"3\": \"0xe063ea8c5404f9ed9ae80d95b5544857b2011e3f26b63ddc3be1abd42d\", \"4\": 50239868}","{\"1\": \"0x384b75ce44ecdf824a78e31dc11eb1419807b961db924c752a569b274269117ac1b42407cc46b277dcc960c33074690a1de69774c8a734d7c55c80179a4c6d0d\"}"
     0x4E746AA0F0E2D16EF580D957F564E1B02F6AEB596C0D0546CC5F551415C28475,3016678,"{\"1\": \"0x2ebf9eb57b750032ee284c4afb1bd7a57e59a13fea29b5a7370a620e58d0fa23\", \"2\": \"0x8c9d924397918f7f4ecfb22fab2aea45ce28f26d687680800886492da6ad2e53\", \"3\": \"0xe063ea8c5404f9ed9ae80d95b5544857b2011e3f26b63ddc3be1abd42d\", \"4\": 50240410}","{\"1\": \"0x703cc1008a6bd53021494422da95650e962528e6d7dd0bdb3db6f63c701821517537df369ffd2bd1189e292403e328c2f6c54f0cea3ced1348ec981da1f3f602\"}"
 
-4. Optionally, Only include records which occurred after a specified `block.slot_no`.
+4. Optionally, Only include records which occurred BEFORE or EQUAL to a specified `block.slot_no`.
 
     ```sql
         INNER JOIN block ON block.id = tx.block_id
-    WHERE block.slot_no >= 0
+    WHERE block.slot_no <= ???
     ```
 
-    This only filters the records.  The result set is otherwise unchanged.
+    This only filters the records. The result set is otherwise unchanged. The
+    filter is used to lock the maximum point of time for the snapshot purpose,
+    so that later transactions do not interfere with the snapshot.
+
+    Filtering this way makes the snapshot process repeatable.
 
 5. Order all the results by the `4` field in the json `metadata` column.  This is what the `metadata -> '4'` means.  The `4` field of the json `metadata` is defined to be an every increasing ***nonce*** value.  So, this makes sure the highest valued ***nonce*** for the same `staking key` (json field 2) will occur last.
 

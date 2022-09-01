@@ -58,6 +58,19 @@ impl RepsVotersAssigner {
             repsdb: HashSet::new(),
         }
     }
+
+    #[cfg(feature = "test-api")]
+    pub fn new_from_repsdb(
+        direct_voters: VotingGroup,
+        reps: VotingGroup,
+        repsdb: HashSet<Identifier>,
+    ) -> Result<Self, Error> {
+        Ok(Self {
+            direct_voters,
+            reps,
+            repsdb,
+        })
+    }
 }
 
 impl VotingGroupAssigner for RepsVotersAssigner {

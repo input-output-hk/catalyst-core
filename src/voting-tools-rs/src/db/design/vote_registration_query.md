@@ -136,22 +136,88 @@ This query gathers all of the registration transactions in the DB, adds the hash
 WITH meta_table AS (select tx_id, json AS metadata from tx_metadata where key = '61284'),
      sig_table AS (select tx_id, json AS signature from tx_metadata where key = '61285')
 SELECT DISTINCT ON (metadata->'2') * FROM (
-SELECT tx.hash, tx_id, metadata, signature, block.slot_no AS block_slot_no
-FROM meta_table
-         INNER JOIN tx ON tx.id = meta_table.tx_id
-         INNER JOIN sig_table USING (tx_id)
-         INNER JOIN block ON block.id = tx.block_id
-WHERE metadata ? '1' AND metadata ? '2' AND metadata ? '3' AND metadata ? '4' AND
-      signature ? '1' AND
-      block.slot_no > 0 AND block.slot_no <= 62510369
-ORDER BY metadata->'2', metadata->'4' DESC, tx_id ASC) as all_registrations;
+    SELECT * FROM (
+        SELECT  tx.hash, tx_id, metadata, signature,
+                block.slot_no AS block_slot_no,
+                (
+                    CASE WHEN (metadata->>'5')~E'^\\d+$' THEN
+                        CAST ((metadata->>'5') AS INTEGER)
+                    WHEN metadata->>'5' IS NULL THEN
+                        0
+                    ELSE
+                        -1
+                    END
+                ) AS purpose
+        FROM meta_table
+                 INNER JOIN tx ON tx.id = meta_table.tx_id
+                 INNER JOIN sig_table USING (tx_id)
+                 INNER JOIN block ON block.id = tx.block_id
+        WHERE metadata ? '1' AND metadata ? '2' AND metadata ? '3' AND metadata ? '4' AND
+              signature ? '1' AND
+              block.slot_no > 0 AND block.slot_no <= 62510369
+        ORDER BY metadata -> '2', metadata -> '4' DESC, tx_id ASC
+    ) as all_registrations WHERE purpose = 0
+) as purpose_registrations;
 ```
 
 This query:
 
-1. can get registrations on any period, defined between two block numbers, inclusively.
+1. Can get registrations on any period, defined between two block numbers, inclusively:
+
+   ```sql
+   block.slot_no > 0 AND block.slot_no <= 62510369
+   ```
+
+   must be parameterized in the query above.
 2. It also filters out ONLY the latest registration for each stake key, as per the original iterative logic. (Eliminates the need to do it in code iteratively).
-3. Ensures that the metadata and signature have the minimum number of required fields, which filters badly formed transactions from the results.
+
+    ```sql
+    SELECT DISTINCT ON (metadata->'2') * FROM (
+        --- ...
+        ORDER BY metadata -> '2', metadata -> '4' DESC, tx_id ASC
+    ```
+
+    Is the part of the query which filters that, and does NOT need parameterization.
+
+3. Ensures that the metadata and signature have the minimum number of required
+   fields, which pre-filters some badly formed transactions from the results:
+
+    ```sql
+    WHERE metadata ? '1' AND metadata ? '2' AND metadata ? '3' AND metadata ? '4' AND
+          signature ? '1' AND
+    ```
+
+    Is the part of the query which does that, and does not need to be parameterized.
+
+4. Adds a new column called `purpose` which is the voting purpose of the
+   registration in alignment with CIP-36. The query is then filtered on the
+   `purpose`, so that ONLY registrations for the required purpose are found.
+   This properly does not exclude multiple registrations for multiple purposes.
+
+    ```sql
+    (
+        CASE WHEN (metadata->>'5')~E'^\\d+$' THEN
+            CAST ((metadata->>'5') AS INTEGER)
+        WHEN metadata->>'5' IS NULL THEN
+            0
+        ELSE
+            -1
+        END
+    ) AS purpose
+    ```
+
+    This SQL creates the purpose column. IF the `5` field is present in the
+    metadata, AND its a properly formed integer, it becomes the purpose (as an
+    integer). If it is NOT present, it is defaulted to purpose 0 (Cip-15->36
+    upgrade). Otherwise the purpose is set to -1 to indicate the registration
+    record is invalid and should be ignored.
+
+    ```sql
+    WHERE purpose = 0
+    ```
+
+    This SQL determines which purpose the registration records are returned for,
+    and needs to be parameterized.
 
 This query is now so fast that it should not require to be divided into multiple queries bounded by `block.slot_no` and should be implemented straight until performance of it proves to be an issue.
 
@@ -163,3 +229,40 @@ This query is now so fast that it should not require to be divided into multiple
 If the answer to 1 is NO and 2 is YES then the query above can be further optimized.
 
 If the answer to 1 is YES, then regardless of the answer to 2, the query will need to return all registrations, and check the signature of each, in order and only pick the FIRST which validates.  The transaction can still return the data in the correct priority order which will greatly simplify that process.
+
+## Notes on processing if registration validation is needed
+
+If the registrations are needed to be validated, such that the LATEST valid registration is the one used, then the following changes will need to be made:
+
+1. Remove `SELECT DISTINCT ON (metadata->'2') * FROM (` from the optimized query.
+2. This will result in ALL registrations being returned, BUT they will be already grouped by stake key, and in proper order.
+3. Iterate the results, and run `is_valid` on the registration record.
+4. If it is valid:
+   1. save it as a valid registration
+   2. skip all following records (if any) with the same stake key.
+   3. Repeat for each new stake key encountered in the unfiltered results.
+5. If it is invalid, discard and try the next record.
+
+## CIP-15/CIP-36
+
+* [CIP-15](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0015#registration-metadata-format)
+* [CIP-36](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0036#example)
+
+All new registrations should be in CIP-36 form, however many will still be in CIP-15 form.  In order to simplify processing, when the registrations are read from the database, and validated, they should be converted to CIP-36 form by the following method:
+
+* If Field `1` of key `61284` is a single string of the form
+  `"0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663"`
+  it should be converted to an array of the form
+  `[["0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663",1]]`
+
+    This transformations turns the original registration into a single registration with a weight of 1.  Further processing can then assume the field is a proper CIP-36 formed delegation.
+
+* If Field `1` of key `61284` is an array of the form `[["0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663", 1], ["0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee", 3]]` it is a proper CIP-31 voting key delegation with the individual keys and weights defined and should be used as is.
+
+* Any other structure of field `1` of key `61284` is an error and the registration should be ignored.
+
+* The optimized query above will properly filter registrations to their purpose,
+  and should be parameterized accordingly. The `purpose` field in the result
+  data set can be used in the code to prevent the need to repeat this logic, however once the registrations are filtered there may be no further need for the `purpose`.
+
+* IF multiple purposes were supported at the same time, then the query above would need to be executed once for each unique `purpose`.

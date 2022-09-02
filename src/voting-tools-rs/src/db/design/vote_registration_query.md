@@ -117,6 +117,47 @@ ORDER BY metadata -> '4' ASC
     Note:
     * `ASC` on the ORDER BY is redundant but useful for clarity.
 
+6. Post process this data to only have the latest stake key registration.
+
+    ```text
+    For each unique stake key:
+        Keep only the registration record with:
+            The Highest Block Slot Number AND
+            Lowest Transaction ID.
+    ```
+
 ## Summary
 
-This query gathers all of the registration transactions in the DB, adds the hash from the transaction they are from to the result set, and then orders them by their `nonce` value.
+This query gathers all of the registration transactions in the DB, adds the hash from the transaction they are from to the result set, and then orders them by their `nonce` value.  Post processing then further reduces the result set to the latest registration transaction for each stake key.
+
+## Optimized Version of the Query
+
+```sql
+WITH meta_table AS (select tx_id, json AS metadata from tx_metadata where key = '61284'),
+     sig_table AS (select tx_id, json AS signature from tx_metadata where key = '61285')
+SELECT DISTINCT ON (metadata->'2') * FROM (
+SELECT tx.hash, tx_id, metadata, signature, block.slot_no AS block_slot_no
+FROM meta_table
+         INNER JOIN tx ON tx.id = meta_table.tx_id
+         INNER JOIN sig_table USING (tx_id)
+         INNER JOIN block ON block.id = tx.block_id
+WHERE metadata ? '1' AND metadata ? '2' AND metadata ? '3' AND metadata ? '4' AND
+      signature ? '1' AND
+      block.slot_no > 0 AND block.slot_no <= 62510369
+ORDER BY metadata->'2', metadata->'4' DESC, tx_id ASC) as all_registrations;
+```
+
+This query:
+
+1. can get registrations on any period, defined between two block numbers, inclusively.
+2. It also filters out ONLY the latest registration for each stake key, as per the original iterative logic. (Eliminates the need to do it in code iteratively).
+3. Ensures that the metadata and signature have the minimum number of required fields, which filters badly formed transactions from the results.
+
+## Outstanding Questions
+
+1. Is the Vote Snapshot tool supposed to verify the Signature?
+2. Does the Haskell node will only allow transactions that are properly signed?
+
+If the answer to 1 is NO and 2 is YES then the query above can be further optimized.
+
+If the answer to 1 is YES, then regardless of the answer to 2, the query will need to return all registrations, and check the signature of each, in order and only pick the FIRST which validates.  The transaction can still return the data in the correct priority order which will greatly simplify that process.

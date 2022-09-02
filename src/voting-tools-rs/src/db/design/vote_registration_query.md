@@ -153,6 +153,8 @@ This query:
 2. It also filters out ONLY the latest registration for each stake key, as per the original iterative logic. (Eliminates the need to do it in code iteratively).
 3. Ensures that the metadata and signature have the minimum number of required fields, which filters badly formed transactions from the results.
 
+This query is now so fast that it should not require to be divided into multiple queries bounded by `block.slot_no` and should be implemented straight until performance of it proves to be an issue.
+
 ## Outstanding Questions
 
 1. Is the Vote Snapshot tool supposed to verify the Signature?

@@ -188,3 +188,32 @@ cexplorer.public> ANALYZE utxo_snapshot
 This query creates a temp table called `utxo_snapshot`  which is a copy of the `tx_out` table entries which do not have matching entries in the `tx_in` table, and adds the matching stake address from the original transaction to each row.
 
 The simplified query does exactly the same thing, but it is simpler only because it does not consider the block slot number and produces its result from ALL data in the `tx_out` and `tx_in` tables.
+
+## Suggested Optimized Query
+
+```sql
+WITH
+    tx_out_snapshot AS (
+        SELECT tx_out.*, stake_address.hash_raw AS stake_credential FROM tx_out
+            INNER JOIN tx ON tx_out.tx_id = tx.id
+            INNER JOIN block ON tx.block_id = block.id
+            INNER JOIN stake_address ON stake_address.id = tx_out.stake_address_id
+        WHERE block.slot_no <= 62510369),
+    tx_in_snapshot AS (
+        SELECT tx_in.* FROM tx_in
+              INNER JOIN tx ON tx_in.tx_in_id = tx.id
+              INNER JOIN block ON tx.block_id = block.id
+        WHERE block.slot_no <= 62510369)
+SELECT tx_out_snapshot.* FROM tx_out_snapshot
+    LEFT OUTER JOIN tx_in_snapshot ON
+        tx_out_snapshot.tx_id = tx_in_snapshot.tx_out_id AND
+        tx_out_snapshot.index = tx_in_snapshot.tx_out_index
+    WHERE tx_in_snapshot.tx_in_id IS NULL;
+```
+
+This query is effectively the above queries combined.  It is a tiny bit more efficient.
+We should NOT use this query to get all the results at once, but should stream results back from this query in a cursor.
+
+Note: It is NOT possible to divide this query by block ranges,  it is ONLY possible to specify the last block,  that is because any block prior to this could be needed to check for an Unspent Transaction.
+
+I can only think of ways currently to try and make this faster at the cost of significant memory in the snapshot tool.  I don;t think this effort is currently justified.

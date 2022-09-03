@@ -106,7 +106,7 @@ pub fn db_url_and_block0_replaced() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut command_builder: BootstrapCommandBuilder = Default::default();
     command_builder
-        .block0_path(db_path.to_str().unwrap())
+        .block0_path(Some(db_path.to_str().unwrap().to_owned()))
         .db_url(BLOCK0_BIN)
         .build()
         .assert()

@@ -2,6 +2,7 @@ pub mod api_token;
 pub mod context;
 pub mod endpoints;
 pub mod errors;
+pub mod genesis_block;
 pub mod result;
 
 use warp::{Filter, Rejection, Reply};

@@ -49,8 +49,12 @@ pub struct ServiceSettings {
     pub db_url: String,
 
     /// block0 static file path
-    #[structopt(long, default_value = BLOCK0_PATH_DEFAULT)]
-    pub block0_path: String,
+    #[structopt(long)]
+    pub block0_path: Option<String>,
+
+    /// archive block0 static file path
+    #[structopt(long)]
+    pub block0_paths: Option<PathBuf>,
 
     /// Enable API Tokens feature
     #[serde(default)]
@@ -161,8 +165,12 @@ impl ServiceSettings {
             return_settings.db_url = other_settings.db_url.clone();
         }
 
-        if other_settings.block0_path != BLOCK0_PATH_DEFAULT {
+        if other_settings.block0_path.is_some() {
             return_settings.block0_path = other_settings.block0_path.clone();
+        }
+
+        if other_settings.block0_paths.is_some() {
+            return_settings.block0_paths = other_settings.block0_paths.clone();
         }
 
         if other_settings.log.log_level.is_some() {
@@ -400,7 +408,7 @@ mod test {
             config.address,
             SocketAddr::from_str("127.0.0.1:3030").unwrap()
         );
-        assert_eq!(config.block0_path, "./test/bin.test");
+        assert_eq!(config.block0_path, Some("./test/bin.test".to_string()));
         assert!(config.enable_api_tokens);
         assert_eq!(
             config.log.log_output_path.unwrap(),

@@ -55,7 +55,7 @@ pub fn out_settings_file_from_cmdline() {
     let mut command_builder: BootstrapCommandBuilder = Default::default();
     command_builder
         .db_url(&settings.db_url)
-        .block0_path(&settings.block0_path)
+        .block0_path(settings.block0_path.clone())
         .address(settings.address.to_string())
         .out_settings_file(out_settings_file.path())
         .build()

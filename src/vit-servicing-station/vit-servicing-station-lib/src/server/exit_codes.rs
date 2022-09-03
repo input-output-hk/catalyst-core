@@ -5,6 +5,7 @@ pub enum ApplicationExitCode {
     DbConnectionError,
     ServiceVersionError,
     SnapshotWatcherError,
+    EmptyBlock0FolderError,
 }
 
 impl ApplicationExitCode {
@@ -18,6 +19,7 @@ impl ApplicationExitCode {
             12 => Some(Self::DbConnectionError),
             13 => Some(Self::ServiceVersionError),
             14 => Some(Self::SnapshotWatcherError),
+            15 => Some(Self::EmptyBlock0FolderError),
             _ => None,
         }
     }

@@ -123,3 +123,7 @@ This enables the command to be piped from another command, for example:
 ```bash
 ./vit-servicing-station-cli api-token generate --size 10 --n 10 | ./vit-servicing-station-cli api-token add --db-url ../../db/vit_station_new.db
 ```
+
+## Integration tests
+
+See [`integration tests`](./doc/testing.md) 

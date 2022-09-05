@@ -84,6 +84,13 @@ impl ArbitraryValidVotingTemplateGenerator {
         )
     }
 
+    pub fn gen_challenge_url(&mut self) -> String {
+        format!(
+            "https://cardano.ideascale.com/c/campaigns/{}/",
+            self.generator.next_u64() % 100_000 + 10_000
+        )
+    }
+
     pub fn gen_highlights(&mut self) -> Option<ChallengeHighlights> {
         match self.generator.next_u32() % 2 {
             0 => None,

@@ -39,7 +39,7 @@ pub async fn query_proposal_by_id(
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     tokio::task::spawn_blocking(move || {
         full_proposals_info
-            .filter(full_proposal_dsl::id.eq(id))
+            .filter(full_proposal_dsl::proposal_id.eq(id.to_string()))
             .filter(full_proposal_dsl::group_id.eq(voting_group))
             .first::<FullProposalInfo>(&db_conn)
             .map_err(|_e| HandleError::NotFound(format!("proposal with id {}", id)))

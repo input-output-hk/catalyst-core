@@ -4215,6 +4215,7 @@ dependencies = [
  "tempfile",
  "thiserror",
  "time 0.3.13",
+ "url",
  "vit-servicing-station-lib",
 ]
 

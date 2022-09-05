@@ -139,6 +139,18 @@ table! {
     }
 }
 
+table! {
+    votes (fragment_id) {
+        fragment_id -> Text,
+        caster -> Text,
+        proposal -> Integer,
+        voteplan_id -> Text,
+        time -> Float,
+        choice -> Nullable<SmallInt>,
+        raw_fragment -> Text,
+    }
+}
+
 joinable!(goals -> funds (fund_id));
 
 allow_tables_to_appear_in_same_query!(

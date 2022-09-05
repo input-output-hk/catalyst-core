@@ -155,7 +155,7 @@ pub struct ProposalVotePlan {
     #[serde(alias = "proposalId")]
     pub proposal_id: String,
     #[serde(flatten)]
-    common: ProposalVotePlanCommon,
+    pub common: ProposalVotePlanCommon,
 }
 
 impl Serialize for ProposalChallengeInfo {

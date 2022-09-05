@@ -7,6 +7,7 @@ pub mod proposals;
 pub mod search;
 pub mod service_version;
 mod snapshot;
+mod votes;
 
 use crate::v0::context::SharedContext;
 
@@ -49,6 +50,9 @@ pub async fn filter(
     let reviews_root = warp::path!("reviews" / ..);
     let reviews_filter = advisor_reviews::filter(reviews_root.boxed(), context.clone()).await;
 
+    let votes_root = warp::path!("votes" / ..);
+    let votes_filter = votes::filter(votes_root.boxed(), context.clone()).await;
+
     let search_root = warp::path!("search" / ..);
     let search_filter = search::search_filter(search_root.boxed(), context.clone()).await;
 
@@ -85,6 +89,7 @@ pub async fn filter(
                 .or(funds_filter)
                 .or(challenges_filter)
                 .or(reviews_filter)
+                .or(votes_filter)
                 .or(search_filter)
                 .or(search_count_filter)
                 .or(snapshot_rx_filter)

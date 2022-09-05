@@ -133,6 +133,18 @@ create table groups (
     PRIMARY KEY(token_identifier, fund_id)
 );
 
+
+create table votes (
+    "fragment_id" TEXT,
+    "caster" TEXT,
+    "proposal" INTEGER,
+    "voteplan_id" TEXT,
+    "time" REAL,
+    "choice" TEXT,
+    "raw_fragment" TEXT,
+    PRIMARY KEY("fragment_id")
+);
+
 CREATE VIEW full_proposals_info
 AS
 SELECT

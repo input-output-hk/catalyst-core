@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct ChallengeHighlights {
+    #[serde(default)]
     pub sponsor: String,
 }
 

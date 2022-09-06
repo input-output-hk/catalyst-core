@@ -8,7 +8,8 @@
 
 use diesel_derive_enum::DbEnum;
 
-#[derive(Debug, Clone, Copy, DbEnum)]
+
+#[derive(Debug, Clone, Copy, DbEnum, SqlType)]
 pub enum Rewardtype {
     Leader,
     Member,
@@ -17,7 +18,7 @@ pub enum Rewardtype {
     Refund,
 }
 
-#[derive(Debug, Clone, Copy, DbEnum)]
+#[derive(Debug, Clone, Copy, DbEnum, SqlType)]
 pub enum Scriptpurposetype {
     Spend,
     Mint,
@@ -25,7 +26,7 @@ pub enum Scriptpurposetype {
     Reward,
 }
 
-#[derive(Debug, Clone, Copy, DbEnum)]
+#[derive(Debug, Clone, Copy, DbEnum, SqlType)]
 pub enum Scripttype {
     Multisig,
     Timelock,
@@ -33,8 +34,10 @@ pub enum Scripttype {
     PlutusV2,
 }
 
-#[derive(Debug, Clone, Copy, DbEnum)]
+#[derive(Debug, Clone, Copy, DbEnum, SqlType)]
 pub enum Syncstatetype {
     Lagging,
     Following,
 }
+
+

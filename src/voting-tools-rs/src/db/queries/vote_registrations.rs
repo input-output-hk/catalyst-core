@@ -23,33 +23,34 @@ type Row = (i64, Option<Value>, BigDecimal);
 
 impl Db {
     pub fn vote_registrations(&self, slot_no: Option<SlotNo>) -> Result<Vec<Rego>> {
-        use diesel::ExpressionMethods;
-        use schema::*;
+        // use diesel::ExpressionMethods;
+        // use schema::*;
+        //
+        // let slot_no = match slot_no.map(|s| s.0.try_into()) {
+        //     None => i64::MAX,
+        //     Some(Ok(i)) => i,
+        //     Some(Err(e)) => bail!(e),
+        // };
+        //
+        // let result: Vec<Row> = self.exec(move |conn| {
+        //     let slot_no_predicate = block::slot_no.le(slot_no);
+        //     let metadata_key_predicate = tx_metadata::key
+        //         .eq(&*METADATA_KEY)
+        //         .or(tx_metadata::key.eq(&*SIGNATURE_KEY));
+        //
+        //     let select = (tx_metadata::tx_id, tx_metadata::json, tx_metadata::key);
+        //
+        //     tx::table
+        //         .inner_join(tx_metadata::table.on(tx::id.eq(tx_metadata::tx_id)))
+        //         .inner_join(block::table.on(block::id.eq(tx::block_id)))
+        //         .filter(slot_no_predicate)
+        //         .filter(metadata_key_predicate)
+        //         .select(select)
+        //         .load(conn)
+        // })?;
 
-        let slot_no = match slot_no.map(|s| s.0.try_into()) {
-            None => i64::MAX,
-            Some(Ok(i)) => i,
-            Some(Err(e)) => bail!(e),
-        };
-
-        let result: Vec<Row> = self.exec(move |conn| {
-            let slot_no_predicate = block::slot_no.le(slot_no);
-            let metadata_key_predicate = tx_metadata::key
-                .eq(&*METADATA_KEY)
-                .or(tx_metadata::key.eq(&*SIGNATURE_KEY));
-
-            let select = (tx_metadata::tx_id, tx_metadata::json, tx_metadata::key);
-
-            tx::table
-                .inner_join(tx_metadata::table.on(tx::id.eq(tx_metadata::tx_id)))
-                .inner_join(block::table.on(block::id.eq(tx::block_id)))
-                .filter(slot_no_predicate)
-                .filter(metadata_key_predicate)
-                .select(select)
-                .load(conn)
-        })?;
-
-        process(result)
+        // process(result)
+        todo!()
     }
 }
 

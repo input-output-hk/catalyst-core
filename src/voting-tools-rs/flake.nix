@@ -115,7 +115,7 @@
               ++ (with pkgs; [
                 pkg-config
                 postgresql
-                diesel-cli
+                diesel-cli 
               ]);
           };
 

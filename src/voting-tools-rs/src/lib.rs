@@ -3,7 +3,7 @@
 //! Original Haskell repository is <https://github.com/input-output-hk/voting-tools>
 
 // #![deny(missing_docs)]
-// #![warn(clippy::pedantic)]
+#![warn(clippy::pedantic)]
 #![allow(clippy::module_name_repetitions)]
 
 #[macro_use]
@@ -20,7 +20,7 @@ mod model;
 pub use exports::*;
 mod exports {
     pub use crate::cli::Args;
-    pub use crate::config::DbConfig;
+    pub use crate::db::{Conn, Db, DbConfig};
     pub use crate::logic::run;
 }
 

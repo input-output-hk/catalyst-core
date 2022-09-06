@@ -31,3 +31,5 @@ fn haskell_rust_compare() {
         assert_eq!(rust, haskell);
     }
 }
+
+

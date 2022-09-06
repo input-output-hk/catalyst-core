@@ -11,7 +11,7 @@ use cardano_serialization_lib::{address::StakeCredential, crypto::PublicKey};
 use color_eyre::eyre::Result;
 use color_eyre::eyre::{bail, eyre};
 
-use crate::config::DbConfig;
+use crate::DbConfig;
 use crate::model::{Delegations, Output, Rego, SlotNo, StakeVKey, TestnetMagic};
 
 /// Calculate voter registration info by connecting to a db-sync instance

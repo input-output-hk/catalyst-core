@@ -98,3 +98,9 @@ pub fn network_info(testnet_magic: Option<TestnetMagic>) -> NetworkInfo {
         Some(TestnetMagic(magic)) => NetworkInfo::new(NetworkInfo::testnet().network_id(), magic),
     }
 }
+
+impl SlotNo {
+    pub fn into_i64(self) -> color_eyre::eyre::Result<i64> {
+        Ok(self.0.try_into()?)
+    }
+}

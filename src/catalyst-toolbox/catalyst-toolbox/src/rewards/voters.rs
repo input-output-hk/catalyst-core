@@ -140,8 +140,10 @@ mod tests {
     use snapshot_lib::Snapshot;
     use test_strategy::proptest;
 
+    const DEFAULT_TEST_THRESHOLD:usize = 1;
+
     #[proptest]
-    fn test_all_active(snapshot: Snapshot) {
+    fn test_all_active_voters(snapshot: Snapshot) {
         let votes_count = snapshot
             .voting_keys()
             .into_iter()
@@ -164,7 +166,7 @@ mod tests {
         let rewards = calc_voter_rewards(
             votes_count,
             voters,
-            Threshold::new(1, HashMap::new(), Vec::new()).unwrap(),
+            Threshold::new(DEFAULT_TEST_THRESHOLD, HashMap::new(), Vec::new()).unwrap(),
             Rewards::ONE,
         )
         .unwrap();
@@ -176,7 +178,7 @@ mod tests {
     }
 
     #[proptest]
-    fn test_all_inactive(snapshot: Snapshot) {
+    fn test_all_inactive_voters(snapshot: Snapshot) {
         let votes_count = VoteCount::new();
 
         /*let votes_count = snapshot
@@ -189,7 +191,7 @@ mod tests {
         let rewards = calc_voter_rewards(
             votes_count,
             voters,
-            Threshold::new(1, HashMap::new(), Vec::new()).unwrap(),
+            Threshold::new(DEFAULT_TEST_THRESHOLD, HashMap::new(), Vec::new()).unwrap(),
             Rewards::ONE,
         )
         .unwrap();
@@ -197,7 +199,7 @@ mod tests {
     }
 
     #[proptest]
-    fn test_small(snapshot: Snapshot) {
+    fn test_active_and_inactive_voters(snapshot: Snapshot) {
         let voting_keys = snapshot.voting_keys().collect::<Vec<_>>();
 
         let votes_count = voting_keys
@@ -253,12 +255,12 @@ mod tests {
             assert_eq!(all_rewards.len(), 0);
         }
 
-        let (active, inactive): (Vec<_>, Vec<_>) = voting_keys
+        let (active_voters_keys, inactive_voters_keys): (Vec<_>, Vec<_>) = voting_keys
             .into_iter()
             .enumerate()
             .partition(|(i, _vk)| i % 2 == 0);
 
-        let active_reward_addresses = active
+        let active_reward_addresses = active_voters_keys
             .into_iter()
             .flat_map(|(_, vk)| {
                 snapshot
@@ -273,8 +275,8 @@ mod tests {
             .all(|addr| all_rewards.remove(addr).unwrap() > Rewards::ZERO));
 
         // partial test: does not check that rewards for addresses that delegated to both
-        // active and inactive voters only come from active ones
-        for (_, voting_key) in inactive {
+        // active and inactive voters only come from active ones -> how to implement this?
+        for (_, voting_key) in inactive_voters_keys {
             for contrib in snapshot.contributions_for_voting_key(voting_key.clone()) {
                 assert!(all_rewards.get(&contrib.reward_address).is_none());
             }
@@ -284,13 +286,15 @@ mod tests {
     #[test]
     fn test_mapping() {
         let mut raw_snapshot = Vec::new();
-        let voting_pub_key = Identifier::from_hex(&hex::encode([0; 32])).unwrap();
+        let voting_public_key = Identifier::from_hex(&hex::encode([0; 32])).unwrap();
 
         let mut total_stake = 0u64;
+
         for i in 1..10u64 {
             let stake_public_key = i.to_string();
             let reward_address = i.to_string();
-            let delegations = Delegations::New(vec![(voting_pub_key.clone(), 1)]);
+
+            let delegations = Delegations::New(vec![(voting_public_key.clone(), 1)]);
             raw_snapshot.push(VotingRegistration {
                 stake_public_key,
                 voting_power: i.into(),
@@ -305,7 +309,7 @@ mod tests {
             raw_snapshot.into(),
             0.into(),
             Fraction::from(1u64),
-            &|_vk: &Identifier| String::new(),
+            &|_voting_key: &Identifier| String::new(),
         )
         .unwrap();
 
@@ -318,7 +322,9 @@ mod tests {
             Rewards::ONE,
         )
         .unwrap();
+
         assert_eq!(rewards.values().sum::<Rewards>(), Rewards::ONE);
+
         for (addr, reward) in rewards {
             assert_eq!(
                 reward,

@@ -147,7 +147,19 @@ mod tests {
             .into_iter()
             .map(|key| (key.clone(), HashSet::from([Hash::from([0u8; 32])])))
             .collect::<VoteCount>();
-        let n_voters = votes_count.len();
+
+        println!("START");
+
+        println!("Snapshot: {:?}", snapshot);
+
+        for vote in &votes_count {
+            println!("vote: {:?} {:?}", vote.0, vote.1);
+        }
+
+        let number_of_voters = votes_count.len();
+
+        println!("Number of voters: {:?}", number_of_voters);
+
         let voters = snapshot.to_full_snapshot_info();
         let rewards = calc_voter_rewards(
             votes_count,
@@ -156,7 +168,7 @@ mod tests {
             Rewards::ONE,
         )
         .unwrap();
-        if n_voters > 0 {
+        if number_of_voters > 0 { // number of voters always 0 ???
             assert_are_close(rewards.values().sum::<Rewards>(), Rewards::ONE)
         } else {
             assert_eq!(rewards.len(), 0);
@@ -166,6 +178,13 @@ mod tests {
     #[proptest]
     fn test_all_inactive(snapshot: Snapshot) {
         let votes_count = VoteCount::new();
+
+        /*let votes_count = snapshot
+            .voting_keys()
+            .into_iter()
+            .map(|key| (key.clone(), HashSet::from([Hash::from([0u8; 32])])))
+            .collect::<VoteCount>();*/
+
         let voters = snapshot.to_full_snapshot_info();
         let rewards = calc_voter_rewards(
             votes_count,
@@ -187,7 +206,7 @@ mod tests {
             .map(|(i, &key)| {
                 (
                     key.to_owned(),
-                    if i % 2 == 0 {
+                    if i % 2 == 0 { // generating a random set of half active & half inactive votes
                         HashSet::from([Hash::from([0u8; 32])])
                     } else {
                         HashSet::new()
@@ -195,12 +214,15 @@ mod tests {
                 )
             })
             .collect::<VoteCount>();
-        let n_voters = votes_count
+
+        let number_of_active_voters = votes_count
             .iter()
             .filter(|(_, votes)| !votes.is_empty())
             .count();
+
         let voters = snapshot.to_full_snapshot_info();
-        let voters_active = voters
+
+        let active_voters = voters
             .clone()
             .into_iter()
             .enumerate()
@@ -208,26 +230,27 @@ mod tests {
             .map(|(_, utxo)| utxo)
             .collect::<Vec<_>>();
 
-        let mut rewards = calc_voter_rewards(
+        let mut all_rewards = calc_voter_rewards(
             votes_count.clone(),
             voters,
             Threshold::new(1, HashMap::new(), Vec::new()).unwrap(),
             Rewards::ONE,
         )
         .unwrap();
+
         let rewards_no_inactive = calc_voter_rewards(
             votes_count,
-            voters_active,
+            active_voters,
             Threshold::new(1, HashMap::new(), Vec::new()).unwrap(),
             Rewards::ONE,
         )
         .unwrap();
         // Rewards should ignore inactive voters
-        assert_eq!(rewards, rewards_no_inactive);
-        if n_voters > 0 {
-            assert_are_close(rewards.values().sum::<Rewards>(), Rewards::ONE);
+        assert_eq!(all_rewards, rewards_no_inactive);
+        if number_of_active_voters > 0 {
+            assert_are_close(all_rewards.values().sum::<Rewards>(), Rewards::ONE);
         } else {
-            assert_eq!(rewards.len(), 0);
+            assert_eq!(all_rewards.len(), 0);
         }
 
         let (active, inactive): (Vec<_>, Vec<_>) = voting_keys
@@ -247,13 +270,13 @@ mod tests {
 
         assert!(active_reward_addresses
             .iter()
-            .all(|addr| rewards.remove(addr).unwrap() > Rewards::ZERO));
+            .all(|addr| all_rewards.remove(addr).unwrap() > Rewards::ZERO));
 
         // partial test: does not check that rewards for addresses that delegated to both
         // active and inactive voters only come from active ones
-        for (_, vk) in inactive {
-            for contrib in snapshot.contributions_for_voting_key(vk.clone()) {
-                assert!(rewards.get(&contrib.reward_address).is_none());
+        for (_, voting_key) in inactive {
+            for contrib in snapshot.contributions_for_voting_key(voting_key.clone()) {
+                assert!(all_rewards.get(&contrib.reward_address).is_none());
             }
         }
     }

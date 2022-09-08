@@ -3,6 +3,7 @@ use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
 use registration::{Delegations, MainnetRewardAddress, VotingRegistration};
 use serde::{Deserialize, Serialize};
 use std::{borrow::Borrow, collections::BTreeMap, iter::Iterator, num::NonZeroU64};
+use proptest::prelude::Arbitrary;
 use thiserror::Error;
 pub use voter_hir::VoterHIR;
 pub use voter_hir::VotingGroup;
@@ -241,6 +242,7 @@ pub mod tests {
             additional_reg.voting_power < stake_threshold.into()
         );
     }
+
 
     impl Arbitrary for Snapshot {
         type Parameters = ();

@@ -221,6 +221,14 @@ This query:
 
 This query is now so fast that it should not require to be divided into multiple queries bounded by `block.slot_no` and should be implemented straight until performance of it proves to be an issue.
 
+*Note: In the query `CASE WHEN (metadata->>'5')~E'^\\d+$' THEN` is matching the
+5th metadata field with the regex, which checks if its numeric. The `~` in that
+line is a
+[***regex match***](https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE)
+comparison operator, and the `E'^\\d+$'` is the regex, the leading `E` on the
+string constant is a postgresql extension known as an
+[***Escape String***](https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-BACKSLASH-TABLE)*
+
 ## Outstanding Questions
 
 1. Is the Vote Snapshot tool supposed to verify the Signature?

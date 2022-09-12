@@ -10,6 +10,8 @@ info:
 tags:
   - name: fund
     description: Information on treasury fund campaigns.
+  - name: user
+    description: Information about the user
   - name: challenge
     description: Information on challenges, structuring proposals within a fund.
   - name: proposal
@@ -89,6 +91,32 @@ paths:
                       description: Identifier of the fund campaign.
         "404":
           description: The requested fund was not found
+
+  /api/v0/user/{id}:
+    description: Manages Cardano user information by the provided user id
+    get:
+      operationId: getUserById
+      tags:
+        - user
+      description: Retrieves user info
+      summary: get user info by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          deprecated: false
+          schema:
+            type: string
+          description: user's id
+      responses:
+        "200":
+          description: user's info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+        "404":
+          description: The requested user was not found
 
   /api/v0/proposals:
     post:
@@ -1065,3 +1093,35 @@ components:
           type: string
           format: date-time
           description: Date and time for the latest update to this snapshot information.
+    UserInfo:
+      type: object
+      description: User info
+      required:
+        - is_voter
+        - delegators
+        - voting_groups
+      properties:
+        is_voter:
+          type: boolean
+          description: Is this user an active voter (representative) or delegator
+        dreps:
+          type: array
+          description: List of delegated representatives for the current user
+          items:
+            description: Hex encoded representative's address id
+            type: string
+            pattern: '[0-9a-f]{64}'
+        voting_groups:
+          description: List of the assigned voting groups
+          type: array
+          items: 
+            description: Voting group id (the same as voting token id)
+            type: string
+            pattern: '[0-9a-f]{56}.[0-9a-f]+'
+      example: 
+        {
+          is_voter: true,
+          delegators: ["f5285eeead8b5885a1420800de14b0d1960db1a990a6c2f7b517125bedc000db", "7ef044ba437057d6d944ace679b7f811335639a689064cd969dffc8b55a7cc19"],
+          voting_groups: ["00000000000000000000000000000000000000000000000000000000.6c1e8abc"]
+        }
+          

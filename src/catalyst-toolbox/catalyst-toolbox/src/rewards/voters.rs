@@ -136,31 +136,30 @@ mod tests {
     use crate::utils::assert_are_close;
     use jormungandr_lib::crypto::{account::Identifier, hash::Hash};
     use snapshot_lib::registration::{Delegations, VotingRegistration};
-    use snapshot_lib::Fraction;
+    use snapshot_lib::{Fraction, RawSnapshot};
     use snapshot_lib::Snapshot;
     use test_strategy::proptest;
 
     const DEFAULT_TEST_THRESHOLD:usize = 1;
+    const DEFAULT_SNAPSHOT_THRESHOLD:u64 = 1;
 
     #[proptest]
-    fn test_all_active_voters(snapshot: Snapshot) {
+    fn test_all_active_voters(raw_snapshot: RawSnapshot) { // get rawSnapshot and convert to snapshot with defined threshold
+
+        let snapshot = Snapshot::from_raw_snapshot(
+            raw_snapshot,
+            DEFAULT_SNAPSHOT_THRESHOLD.into(),
+            Fraction::from(1),
+            &|_vk: &Identifier| String::new()
+        ).unwrap();
+
         let votes_count = snapshot
             .voting_keys()
             .into_iter()
             .map(|key| (key.clone(), HashSet::from([Hash::from([0u8; 32])])))
             .collect::<VoteCount>();
 
-        println!("START");
-
-        println!("Snapshot: {:?}", snapshot);
-
-        for vote in &votes_count {
-            println!("vote: {:?} {:?}", vote.0, vote.1);
-        }
-
         let number_of_voters = votes_count.len();
-
-        println!("Number of voters: {:?}", number_of_voters);
 
         let voters = snapshot.to_full_snapshot_info();
         let rewards = calc_voter_rewards(
@@ -178,7 +177,7 @@ mod tests {
     }
 
     #[proptest]
-    fn test_all_inactive_voters(snapshot: Snapshot) {
+    fn test_all_inactive_voters(snapshot: Snapshot) { // get rawSnapshot and convert to snapshot with defined threshold
         let votes_count = VoteCount::new();
 
         /*let votes_count = snapshot
@@ -243,7 +242,7 @@ mod tests {
         let rewards_no_inactive = calc_voter_rewards(
             votes_count,
             active_voters,
-            Threshold::new(1, HashMap::new(), Vec::new()).unwrap(),
+            Threshold::new(DEFAULT_TEST_THRESHOLD, HashMap::new(), Vec::new()).unwrap(),
             Rewards::ONE,
         )
         .unwrap();
@@ -318,17 +317,17 @@ mod tests {
         let rewards = calc_voter_rewards(
             VoteCount::new(),
             voters,
-            Threshold::new(0, HashMap::new(), Vec::new()).unwrap(),
+            Threshold::new(DEFAULT_TEST_THRESHOLD, HashMap::new(), Vec::new()).unwrap(),
             Rewards::ONE,
         )
         .unwrap();
 
         assert_eq!(rewards.values().sum::<Rewards>(), Rewards::ONE);
 
-        for (addr, reward) in rewards {
+        for (mainnet_addresses, reward) in rewards {
             assert_eq!(
                 reward,
-                addr.parse::<Rewards>().unwrap() / Rewards::from(total_stake)
+                mainnet_addresses.parse::<Rewards>().unwrap() / Rewards::from(total_stake)
             );
         }
     }
@@ -338,10 +337,10 @@ mod tests {
         let mut raw_snapshot = Vec::new();
 
         for i in 1..10u64 {
-            let voting_pub_key = Identifier::from_hex(&hex::encode([i as u8; 32])).unwrap();
+            let voting_public_key = Identifier::from_hex(&hex::encode([i as u8; 32])).unwrap();
             let stake_public_key = i.to_string();
             let reward_address = i.to_string();
-            let delegations = Delegations::New(vec![(voting_pub_key.clone(), 1)]);
+            let delegations = Delegations::New(vec![(voting_public_key.clone(), 1)]);
             raw_snapshot.push(VotingRegistration {
                 stake_public_key,
                 voting_power: i.into(),
@@ -364,7 +363,7 @@ mod tests {
         let rewards = calc_voter_rewards(
             VoteCount::new(),
             voters,
-            Threshold::new(0, HashMap::new(), Vec::new()).unwrap(),
+            Threshold::new(DEFAULT_TEST_THRESHOLD, HashMap::new(), Vec::new()).unwrap(),
             Rewards::ONE,
         )
         .unwrap();
@@ -430,7 +429,7 @@ mod tests {
         let rewards = calc_voter_rewards(
             votes_count,
             voters.clone(),
-            Threshold::new(1, per_challenge_threshold.clone(), proposals.clone()).unwrap(),
+            Threshold::new(DEFAULT_TEST_THRESHOLD, per_challenge_threshold.clone(), proposals.clone()).unwrap(),
             Rewards::ONE,
         )
         .unwrap();
@@ -438,7 +437,7 @@ mod tests {
         let rewards_only_active = calc_voter_rewards(
             only_active,
             voters,
-            Threshold::new(1, per_challenge_threshold, proposals).unwrap(),
+            Threshold::new(DEFAULT_TEST_THRESHOLD, per_challenge_threshold, proposals).unwrap(),
             Rewards::ONE,
         )
         .unwrap();

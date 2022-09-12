@@ -144,7 +144,7 @@ mod tests {
     const DEFAULT_SNAPSHOT_THRESHOLD:u64 = 1;
 
     #[proptest]
-    fn test_all_active_voters(raw_snapshot: RawSnapshot) { // get rawSnapshot and convert to snapshot with defined threshold
+    fn test_all_active_voters(raw_snapshot: RawSnapshot) {
 
         let snapshot = Snapshot::from_raw_snapshot(
             raw_snapshot,
@@ -177,14 +177,16 @@ mod tests {
     }
 
     #[proptest]
-    fn test_all_inactive_voters(snapshot: Snapshot) { // get rawSnapshot and convert to snapshot with defined threshold
-        let votes_count = VoteCount::new();
+    fn test_all_inactive_voters(raw_snapshot: RawSnapshot) {
 
-        /*let votes_count = snapshot
-            .voting_keys()
-            .into_iter()
-            .map(|key| (key.clone(), HashSet::from([Hash::from([0u8; 32])])))
-            .collect::<VoteCount>();*/
+        let snapshot = Snapshot::from_raw_snapshot(
+            raw_snapshot,
+            DEFAULT_SNAPSHOT_THRESHOLD.into(),
+            Fraction::from(1),
+            &|_vk: &Identifier| String::new()
+        ).unwrap();
+
+        let votes_count = VoteCount::new();
 
         let voters = snapshot.to_full_snapshot_info();
         let rewards = calc_voter_rewards(
@@ -198,7 +200,15 @@ mod tests {
     }
 
     #[proptest]
-    fn test_active_and_inactive_voters(snapshot: Snapshot) {
+    fn test_active_and_inactive_voters(raw_snapshot: RawSnapshot) {
+
+        let snapshot = Snapshot::from_raw_snapshot(
+            raw_snapshot,
+            DEFAULT_SNAPSHOT_THRESHOLD.into(),
+            Fraction::from(1),
+            &|_vk: &Identifier| String::new()
+        ).unwrap();
+
         let voting_keys = snapshot.voting_keys().collect::<Vec<_>>();
 
         let votes_count = voting_keys
@@ -317,7 +327,7 @@ mod tests {
         let rewards = calc_voter_rewards(
             VoteCount::new(),
             voters,
-            Threshold::new(DEFAULT_TEST_THRESHOLD, HashMap::new(), Vec::new()).unwrap(),
+            Threshold::new(0, HashMap::new(), Vec::new()).unwrap(),
             Rewards::ONE,
         )
         .unwrap();
@@ -363,7 +373,7 @@ mod tests {
         let rewards = calc_voter_rewards(
             VoteCount::new(),
             voters,
-            Threshold::new(DEFAULT_TEST_THRESHOLD, HashMap::new(), Vec::new()).unwrap(),
+            Threshold::new(0, HashMap::new(), Vec::new()).unwrap(),
             Rewards::ONE,
         )
         .unwrap();
@@ -374,7 +384,15 @@ mod tests {
     }
 
     #[proptest]
-    fn test_per_category_threshold(snapshot: Snapshot) {
+    fn test_per_category_threshold(raw_snapshot: RawSnapshot) {
+
+        let snapshot = Snapshot::from_raw_snapshot(
+            raw_snapshot,
+            DEFAULT_SNAPSHOT_THRESHOLD.into(),
+            Fraction::from(1),
+            &|_vk: &Identifier| String::new()
+        ).unwrap();
+
         use vit_servicing_station_tests::common::data::ArbitrarySnapshotGenerator;
 
         let voters = snapshot.to_full_snapshot_info();

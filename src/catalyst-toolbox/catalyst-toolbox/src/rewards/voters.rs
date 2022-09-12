@@ -136,22 +136,22 @@ mod tests {
     use crate::utils::assert_are_close;
     use jormungandr_lib::crypto::{account::Identifier, hash::Hash};
     use snapshot_lib::registration::{Delegations, VotingRegistration};
-    use snapshot_lib::{Fraction, RawSnapshot};
     use snapshot_lib::Snapshot;
+    use snapshot_lib::{Fraction, RawSnapshot};
     use test_strategy::proptest;
 
-    const DEFAULT_TEST_THRESHOLD:usize = 1;
-    const DEFAULT_SNAPSHOT_THRESHOLD:u64 = 1;
+    const DEFAULT_TEST_THRESHOLD: usize = 1;
+    const DEFAULT_SNAPSHOT_THRESHOLD: u64 = 1;
 
     #[proptest]
     fn test_all_active_voters(raw_snapshot: RawSnapshot) {
-
         let snapshot = Snapshot::from_raw_snapshot(
             raw_snapshot,
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
             Fraction::from(1),
-            &|_vk: &Identifier| String::new()
-        ).unwrap();
+            &|_vk: &Identifier| String::new(),
+        )
+        .unwrap();
 
         let votes_count = snapshot
             .voting_keys()
@@ -169,7 +169,8 @@ mod tests {
             Rewards::ONE,
         )
         .unwrap();
-        if number_of_voters > 0 { // number of voters always 0 ???
+        if number_of_voters > 0 {
+            // number of voters always 0 ???
             assert_are_close(rewards.values().sum::<Rewards>(), Rewards::ONE)
         } else {
             assert_eq!(rewards.len(), 0);
@@ -178,13 +179,13 @@ mod tests {
 
     #[proptest]
     fn test_all_inactive_voters(raw_snapshot: RawSnapshot) {
-
         let snapshot = Snapshot::from_raw_snapshot(
             raw_snapshot,
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
             Fraction::from(1),
-            &|_vk: &Identifier| String::new()
-        ).unwrap();
+            &|_vk: &Identifier| String::new(),
+        )
+        .unwrap();
 
         let votes_count = VoteCount::new();
 
@@ -201,13 +202,13 @@ mod tests {
 
     #[proptest]
     fn test_active_and_inactive_voters(raw_snapshot: RawSnapshot) {
-
         let snapshot = Snapshot::from_raw_snapshot(
             raw_snapshot,
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
             Fraction::from(1),
-            &|_vk: &Identifier| String::new()
-        ).unwrap();
+            &|_vk: &Identifier| String::new(),
+        )
+        .unwrap();
 
         let voting_keys = snapshot.voting_keys().collect::<Vec<_>>();
 
@@ -217,7 +218,8 @@ mod tests {
             .map(|(i, &key)| {
                 (
                     key.to_owned(),
-                    if i % 2 == 0 { // generating a random set of half active & half inactive votes
+                    if i % 2 == 0 {
+                        // generating a random set of half active & half inactive votes
                         HashSet::from([Hash::from([0u8; 32])])
                     } else {
                         HashSet::new()
@@ -385,13 +387,13 @@ mod tests {
 
     #[proptest]
     fn test_per_category_threshold(raw_snapshot: RawSnapshot) {
-
         let snapshot = Snapshot::from_raw_snapshot(
             raw_snapshot,
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
             Fraction::from(1),
-            &|_vk: &Identifier| String::new()
-        ).unwrap();
+            &|_vk: &Identifier| String::new(),
+        )
+        .unwrap();
 
         use vit_servicing_station_tests::common::data::ArbitrarySnapshotGenerator;
 
@@ -447,7 +449,12 @@ mod tests {
         let rewards = calc_voter_rewards(
             votes_count,
             voters.clone(),
-            Threshold::new(DEFAULT_TEST_THRESHOLD, per_challenge_threshold.clone(), proposals.clone()).unwrap(),
+            Threshold::new(
+                DEFAULT_TEST_THRESHOLD,
+                per_challenge_threshold.clone(),
+                proposals.clone(),
+            )
+            .unwrap(),
             Rewards::ONE,
         )
         .unwrap();

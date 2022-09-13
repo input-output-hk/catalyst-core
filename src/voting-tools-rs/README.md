@@ -22,7 +22,7 @@ Database tests perform predefined queries against a test database. If the result
 Once you have this database set up, create a file at `<project_root>/test_db.json`, which contains credentials to connect to this database, for example:
 ```json
 {
-  "host": localhost,
+  "host": "localhost",
   "name": "database_name",
   "user": "username",
   "password": "password"

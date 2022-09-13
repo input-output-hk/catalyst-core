@@ -170,7 +170,6 @@ mod tests {
         )
         .unwrap();
         if number_of_voters > 0 {
-            // number of voters always 0 ???
             assert_are_close(rewards.values().sum::<Rewards>(), Rewards::ONE)
         } else {
             assert_eq!(rewards.len(), 0);
@@ -285,8 +284,6 @@ mod tests {
             .iter()
             .all(|addr| all_rewards.remove(addr).unwrap() > Rewards::ZERO));
 
-        // partial test: does not check that rewards for addresses that delegated to both
-        // active and inactive voters only come from active ones -> how to implement this?
         for (_, voting_key) in inactive_voters_keys {
             for contrib in snapshot.contributions_for_voting_key(voting_key.clone()) {
                 assert!(all_rewards.get(&contrib.reward_address).is_none());

@@ -1,40 +1,45 @@
+use std::collections::HashMap;
+
 use bigdecimal::BigDecimal;
-use color_eyre::Result;
+use color_eyre::{Report, Result};
 use diesel::{BoolExpressionMethods, JoinOnDsl, NullableExpressionMethods, QueryDsl, RunQueryDsl};
 
 use crate::db::inner::DbQuery;
-use crate::{db::Db, model::SlotNo};
+use crate::db::Db;
 use diesel::sql_types::Text;
 use diesel::ExpressionMethods;
 
 sql_function! (fn decode(string: Text, format: Text) -> Bytea);
 
 impl Db {
+    /// Query the stake values
+    ///
+    /// This query is detailed in <../design/stake_value_processing.md>
     #[instrument]
-    pub async fn stake_value(&self, stake_address_hex: String) -> Result<BigDecimal> {
-        let query = query(stake_address_hex);
-
-        let rows: Vec<BigDecimal> = self.exec(move |conn| query.load(conn)).await?;
-
-        Ok(rows.iter().sum())
-    }
-
-    #[instrument]
-    pub fn stake_values(
+    pub fn stake_values<'a>(
         &self,
-        slot_no: Option<SlotNo>,
-        stake_addrs: &[String],
-    ) -> Result<Vec<(String, BigDecimal)>> {
-        todo!()
-        // stake_addrs
-        //     .iter()
-        //     .map(|s| -> Result<(String, BigDecimal)> { Ok((s.to_string(), self.stake_value(s)?)) })
-        //     .collect()
+        stake_addrs: &'a [String],
+    ) -> Result<HashMap<&'a str, BigDecimal>> {
+        let rows = stake_addrs.iter().map(|addr| {
+            let result = self.exec(|conn| query(addr).load(conn))?;
+            Ok::<_, Report>((addr.as_str(), result))
+        });
+
+        let mut result = HashMap::with_capacity(rows.len());
+
+        for row in rows {
+            let (addr, values) = row?;
+            let sum: BigDecimal = values.iter().sum();
+            *result.entry(addr).or_insert_with(|| BigDecimal::from(0)) += sum;
+        }
+
+        Ok(result)
     }
 }
 
-fn query(stake_addr: String) -> impl DbQuery<'static, BigDecimal> {
+fn query(stake_addr: &str) -> impl DbQuery<'_, BigDecimal> {
     use crate::db::schema::{stake_address, tx_in, tx_out};
+
     let outer_join = tx_in::table.on(tx_out::tx_id
         .eq(tx_in::tx_out_id)
         .and(tx_out::index.eq(tx_in::tx_out_index)));
@@ -42,11 +47,12 @@ fn query(stake_addr: String) -> impl DbQuery<'static, BigDecimal> {
     let inner_join =
         stake_address::table.on(stake_address::id.nullable().eq(tx_out::stake_address_id));
 
-    let join = tx_out::table
+    let table = tx_out::table
         .left_outer_join(outer_join)
         .inner_join(inner_join)
         .filter(tx_in::tx_in_id.is_null());
 
-    join.select(tx_out::value)
+    table
+        .select(tx_out::value)
         .filter(stake_address::hash_raw.eq(decode(stake_addr, "hex")))
 }

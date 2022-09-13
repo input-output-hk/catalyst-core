@@ -1,4 +1,4 @@
-use crate::model::*;
+use crate::model::{DbHost, DbName, DbPass, DbUser};
 
 mod queries;
 pub mod types;
@@ -6,6 +6,7 @@ pub mod types;
 // We need to allow this because custom type imports aren't always used in all tables
 #[allow(unused_imports)]
 mod schema;
+mod utils;
 
 pub use inner::{Conn, Db};
 use serde::Deserialize;
@@ -20,7 +21,7 @@ pub struct DbConfig {
     /// The hostname to connect to
     pub host: DbHost,
     /// The corresponding password for this user
-    pub password: DbPass,
+    pub password: Option<DbPass>,
 }
 
 /// Inner module to hide database internals from database code
@@ -41,6 +42,7 @@ mod inner {
         result::QueryResult,
         PgConnection,
     };
+    use microtype::secrecy::Zeroize;
 
     /// Type alias for the connection type provided to diesel code
     pub type Conn = PooledConnection<ConnectionManager<PgConnection>>;
@@ -50,7 +52,11 @@ mod inner {
 
     impl Db {
         /// Connect to the database with the provided credentials
-        pub async fn connect(
+        ///
+        /// # Errors
+        ///
+        /// Returns an error if connecting to the database fails
+        pub fn connect(
             DbConfig {
                 name,
                 user,
@@ -59,28 +65,25 @@ mod inner {
             }: DbConfig,
         ) -> Result<Self> {
             use microtype::secrecy::ExposeSecret;
+            let mut password = password
+                .map(|p| format!(":{}", p.expose_secret()))
+                .unwrap_or_default();
 
-            let url = format!(
-                "postgres://{user}:{password}@{host}/{name}?readOnly=true",
-                password = password.expose_secret()
-            );
+            let url = format!("postgres://{user}{password}@{host}/{name}",);
             let manager = ConnectionManager::new(&url);
             let pool = Pool::new(manager)?;
 
+            password.zeroize();
             Ok(Db(pool))
         }
 
         /// Execute a query against the database
-        ///
-        /// All queries must go through this function, to force them to go through tokio's
-        /// `spawn_blocking` mechanism, to prevent them from blocking the executor
-        pub(super) async fn exec<T, F>(&self, f: F) -> Result<T>
+        pub(super) fn exec<T, F>(&self, f: F) -> Result<T>
         where
-            T: Send + 'static,
-            F: Send + 'static + FnOnce(&mut Conn) -> QueryResult<T>,
+            F: FnOnce(&mut Conn) -> QueryResult<T>,
         {
             let mut conn = self.0.get()?;
-            let result = tokio::task::spawn_blocking(move || f(&mut conn)).await??;
+            let result = f(&mut conn)?;
             Ok(result)
         }
     }
@@ -92,12 +95,15 @@ mod inner {
     }
 
     /// Types which can be easily used as an ergonomic "query object"
-    pub(super) trait DbQuery<'a, T>: LoadQuery<'a, Conn, T> + QueryFragment<Pg> {
+    pub(super) trait DbQuery<'a, T>
+    where
+        Self: LoadQuery<'a, Conn, T> + QueryFragment<Pg> + Send + 'a,
+    {
         fn sql_string(&self) -> String {
             let debug = diesel::debug_query(self);
             format!("{debug}")
         }
     }
 
-    impl<'a, T, S> DbQuery<'a, T> for S where S: LoadQuery<'a, Conn, T> + QueryFragment<Pg> {}
+    impl<'a, T, S> DbQuery<'a, T> for S where S: LoadQuery<'a, Conn, T> + QueryFragment<Pg> + Send + 'a {}
 }

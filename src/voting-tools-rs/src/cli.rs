@@ -26,18 +26,25 @@ pub struct Args {
     #[clap(long, default_value = "/run/postgresql")]
     pub db_host: DbHost,
 
-    /// Host for the cardano-db-sync database connection
-    #[clap(long, default_value = "/run/postgresql")]
-    pub db_pass: DbPass,
-
-    /// Slot to view the state of, defaults to tip of chain. Queries registrations placed before or
-    /// equal to this slot number
+    /// Password for the cardano-db-sync database connection
     #[clap(long)]
-    pub slot_no: Option<SlotNo>,
+    pub db_pass: Option<DbPass>,
+
+    /// Lower bound for slot number to be included in queries
+    #[clap(long)]
+    pub min_slot_no: Option<SlotNo>,
+
+    /// Upper bound for slot number to be included in queries
+    #[clap(long)]
+    pub max_slot_no: Option<SlotNo>,
 
     /// File to output the signed transaction to
     #[clap(long, short = 'o')]
     pub out_file: PathBuf,
+
+    /// Whether to pretty-print the json
+    #[clap(long, short = 'p')]
+    pub pretty: bool,
 }
 
 #[cfg(test)]
@@ -58,10 +65,13 @@ mod tests {
             "localhost",
             "--db-pass",
             "super secret password",
-            "--slot-no",
+            "--min-slot-no",
+            "123",
+            "--max-slot-no",
             "234",
             "-o",
             "some/path",
+            "-p",
         ]);
 
         assert_eq!(
@@ -71,9 +81,11 @@ mod tests {
                 db: "db_name".into(),
                 db_user: "db_user".into(),
                 db_host: "localhost".into(),
-                db_pass: DbPass::new("super secret password".to_string()),
-                slot_no: Some(234.into()),
-                out_file: "some/path".into()
+                db_pass: Some(DbPass::new("super secret password".to_string())),
+                min_slot_no: Some(123.into()),
+                max_slot_no: Some(234.into()),
+                out_file: "some/path".into(),
+                pretty: true,
             }
         );
     }
@@ -84,5 +96,6 @@ mod tests {
 
         assert_eq!(args.out_file, PathBuf::from("some/path"));
         assert_eq!(args.testnet_magic, None);
+        assert_eq!(args.pretty, false);
     }
 }

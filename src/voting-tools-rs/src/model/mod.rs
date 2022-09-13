@@ -1,3 +1,4 @@
+use bigdecimal::BigDecimal;
 use cardano_serialization_lib::address::NetworkInfo;
 use microtype::microtype;
 use serde::{Deserialize, Serialize};
@@ -30,7 +31,7 @@ pub struct Output {
     pub delegations: Delegations,
     pub rewards_address: RewardsAddr,
     pub stake_public_key: StakePubKey,
-    pub voting_power: VotingPower,
+    pub voting_power: BigDecimal,
     pub voting_purpose: VotingPurpose,
 }
 
@@ -41,7 +42,7 @@ pub struct RegoSignature {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Rego {
+pub struct Reg {
     pub tx_id: TxId,
     pub metadata: RegoMetadata,
     pub signature: RegoSignature,
@@ -74,7 +75,6 @@ microtype! {
     pub u64 {
         #[cfg_attr(test, derive(test_strategy::Arbitrary))]
         SlotNo,
-        VotingPower,
         VotingPurpose,
         TxId,
     }

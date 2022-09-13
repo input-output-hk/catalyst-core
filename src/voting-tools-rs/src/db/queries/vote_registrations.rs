@@ -1,165 +1,150 @@
-use std::collections::{HashMap, HashSet};
+use crate::{db::inner::DbQuery, Db};
 
-use crate::diesel::BoolExpressionMethods;
+use crate::db::schema::{block, tx, tx_metadata};
+use crate::model::{Reg, SlotNo};
 use bigdecimal::{BigDecimal, FromPrimitive};
-use color_eyre::{
-    eyre::{bail, ensure, eyre},
-    Result,
+use color_eyre::eyre::Result;
+use diesel::RunQueryDsl;
+use diesel::{
+    BoolExpressionMethods, ExpressionMethods, JoinOnDsl, PgAnyJsonExpressionMethods,
+    PgJsonbExpressionMethods, QueryDsl,
 };
-use diesel::{JoinOnDsl, QueryDsl, RunQueryDsl};
 use once_cell::sync::Lazy;
-use serde_json::{from_value, Value};
-
-use crate::{
-    db::{schema, Db},
-    model::Rego,
-    model::SlotNo,
-};
+use serde_json::Value;
 
 static METADATA_KEY: Lazy<BigDecimal> = Lazy::new(|| BigDecimal::from_isize(61284).unwrap());
 static SIGNATURE_KEY: Lazy<BigDecimal> = Lazy::new(|| BigDecimal::from_isize(61285).unwrap());
 
-type Row = (i64, Option<Value>, BigDecimal);
+type Row = (i64, Option<Value>, Option<Value>, Option<i64>);
 
 impl Db {
-    pub fn vote_registrations(&self, slot_no: Option<SlotNo>) -> Result<Vec<Rego>> {
-        // use diesel::ExpressionMethods;
-        // use schema::*;
-        //
-        // let slot_no = match slot_no.map(|s| s.0.try_into()) {
-        //     None => i64::MAX,
-        //     Some(Ok(i)) => i,
-        //     Some(Err(e)) => bail!(e),
-        // };
-        //
-        // let result: Vec<Row> = self.exec(move |conn| {
-        //     let slot_no_predicate = block::slot_no.le(slot_no);
-        //     let metadata_key_predicate = tx_metadata::key
-        //         .eq(&*METADATA_KEY)
-        //         .or(tx_metadata::key.eq(&*SIGNATURE_KEY));
-        //
-        //     let select = (tx_metadata::tx_id, tx_metadata::json, tx_metadata::key);
-        //
-        //     tx::table
-        //         .inner_join(tx_metadata::table.on(tx::id.eq(tx_metadata::tx_id)))
-        //         .inner_join(block::table.on(block::id.eq(tx::block_id)))
-        //         .filter(slot_no_predicate)
-        //         .filter(metadata_key_predicate)
-        //         .select(select)
-        //         .load(conn)
-        // })?;
+    /// This query is detailed in ``design/vote_registration_query.md``
+    ///
+    /// 'lower' is an optional inclusive lower bound. If `None`, `0` is used instead.
+    /// 'upper' is an optional inclusive upper bound. If `None`, `i64::MAX` is used instead.
+    ///
+    /// Returns an error if either `lower` or `upper` is greater than `i64::MAX`
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if either of `lower` or `upper` doesn't fit in an `i64`
+    pub fn vote_registrations(
+        &self,
+        lower: Option<SlotNo>,
+        upper: Option<SlotNo>,
+    ) -> Result<Vec<Reg>> {
+        let lower = lower.unwrap_or(SlotNo(0)).into_i64()?;
+        let upper = upper.unwrap_or(SlotNo(i64::MAX as u64)).into_i64()?;
+        let q = query(lower, upper);
 
-        // process(result)
-        todo!()
+        let results = self.exec(move |conn| q.load(conn))?;
+        let results = process(results);
+
+        Ok(results)
     }
 }
 
-/// The database query returns
-fn process(rows: Vec<Row>) -> Result<Vec<Rego>> {
-    let (metadatas, signatures): (Vec<_>, _) =
-        rows.into_iter().partition(|row| row.2 == *METADATA_KEY);
+/// This query doesn't exactly match the query in the doc. In particular, some filtering of invalid
+/// JSONs isn't performed, since it breaks something (not sure what, just get no rows back). For
+/// now, we'll just do the filtering in Rust
+fn query(lower: i64, upper: i64) -> impl DbQuery<'static, Row> {
+    let (meta_table, sig_table) = alias!(tx_metadata as meta_table, tx_metadata as sig_table);
 
-    assert!(signatures.iter().all(|r| r.2 == *SIGNATURE_KEY));
+    let metadata = meta_table.field(tx_metadata::json);
+    let signature = sig_table.field(tx_metadata::json);
 
-    let metadatas = make_hashmap(metadatas);
-    let mut signatures = make_hashmap(signatures);
+    let tables = meta_table
+        .inner_join(tx::table.on(tx::id.eq(meta_table.field(tx_metadata::tx_id))))
+        .inner_join(
+            sig_table.on(sig_table
+                .field(tx_metadata::tx_id)
+                .eq(meta_table.field(tx_metadata::tx_id))),
+        )
+        .inner_join(block::table.on(block::id.eq(tx::block_id)));
 
-    ensure!(
-        metadatas.keys().collect::<HashSet<_>>() == signatures.keys().collect::<HashSet<_>>(),
-        "metadatas and signatures had different keys"
+    let selection = (
+        meta_table.field(tx_metadata::tx_id),
+        metadata,
+        signature,
+        block::slot_no,
     );
 
-    let mut regos = Vec::with_capacity(metadatas.keys().count());
+    let signature_keys_predicate = signature.has_all_keys(["1"].as_slice());
+    let block_number_predicate = block::slot_no.ge(lower).and(block::slot_no.le(upper));
 
-    for (tx_id, metadata) in metadatas {
-        // This unwrap is fine because we asserted above that the key sets are equal
-        // If we want to parallelize, consider swapping this out for `dashmap`, which is threadsafe
-        let signature = signatures.remove(&tx_id).unwrap();
-        if let Ok(rego) = build_rego(tx_id, metadata, signature) {
-            regos.push(rego);
-        }
-    }
+    let metadata_2 = metadata.retrieve_as_object("2");
 
-    Ok(regos)
+    tables
+        .filter(meta_table.field(tx_metadata::key).eq(&*METADATA_KEY))
+        .filter(sig_table.field(tx_metadata::key).eq(&*SIGNATURE_KEY))
+        .filter(signature_keys_predicate)
+        .filter(block_number_predicate)
+        .select(selection)
+        .distinct_on(metadata_2)
 }
 
-/// Attempt to build a registration. Extracted into a function to allow for `?` operator while
-/// not short-circuiting
-fn build_rego(tx_id: i64, metadata: Option<Value>, signature: Option<Value>) -> Result<Rego> {
-    let tx_id = u64::try_from(tx_id)?.into();
-    let metadata = metadata.ok_or(eyre!("metadata is missing"))?;
-    let signature = signature.ok_or(eyre!("signature is missing"))?;
+fn process(rows: Vec<Row>) -> Vec<Reg> {
+    rows.into_iter()
+        .filter_map(|(tx_id, metadata, signature, _)| {
+            let tx_id = u64::try_from(tx_id).ok()?.into();
+            let metadata = serde_json::from_value(metadata?).ok()?;
+            let signature = serde_json::from_value(signature?).ok()?;
 
-    let rego = Rego {
-        tx_id,
-        metadata: from_value(metadata)?,
-        signature: from_value(signature)?,
-    };
-
-    Ok(rego)
-}
-
-/// Collect into a hashmap by id, discarding the key
-fn make_hashmap(v: Vec<Row>) -> HashMap<i64, Option<Value>> {
-    v.into_iter().map(|(id, json, _key)| (id, json)).collect()
+            Some(Reg {
+                tx_id,
+                metadata,
+                signature,
+            })
+        })
+        .collect()
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{Delegations, RegoMetadata, RegoSignature};
-    use serde_json::json;
+    use serde_json::{from_value, json};
 
     use super::*;
 
-    fn dummy_metadata() -> Value {
+    fn good_meta() -> serde_json::Value {
         json!({
             "1": "legacy",
             "2": "stakevkey",
             "3": "rewardsaddr",
-            "4": 4,
+            "4": 123,
         })
     }
 
-    fn dummy_signature() -> Value {
-        json!({ "1": "signature" })
+    fn good_sig() -> serde_json::Value {
+        json!({
+            "1": "sig",
+        })
     }
 
     #[test]
-    fn process_rows_happy_path() {
-        let rows = vec![
-            (1, Some(dummy_metadata()), METADATA_KEY.clone()),
-            (1, Some(dummy_signature()), SIGNATURE_KEY.clone()),
-        ];
+    fn process_happy_path() {
+        let rows = vec![(1, Some(good_meta()), Some(good_sig()), None)];
+        let regs = vec![Reg {
+            tx_id: 1.into(),
+            metadata: from_value(good_meta()).unwrap(),
+            signature: from_value(good_sig()).unwrap(),
+        }];
 
-        let regos = process(rows).unwrap();
-
-        assert_eq!(
-            regos,
-            vec![Rego {
-                tx_id: 1.into(),
-                signature: RegoSignature {
-                    signature: "signature".into(),
-                },
-                metadata: RegoMetadata {
-                    delegations: Delegations::Legacy("legacy".into()),
-                    stake_vkey: "stakevkey".into(),
-                    rewards_addr: "rewardsaddr".into(),
-                    slot: 4.into(),
-                    purpose: 0.into(),
-                }
-            }]
-        )
+        assert_eq!(process(rows), regs);
     }
 
     #[test]
-    fn ignores_bad_or_missing_json() {
-        let rows = vec![
-            (1, Some(json!("bad json")), METADATA_KEY.clone()),
-            (1, None, SIGNATURE_KEY.clone()),
-        ];
+    fn filters_bad_rows() {
+        fn check(row: Row) {
+            assert!(process(vec![row]).is_empty());
+        }
 
-        let regos = process(rows).unwrap();
+        // bad sig
+        check((1, Some(good_meta()), Some(json!("random json")), None));
 
-        assert!(regos.is_empty());
+        // bad meta
+        check((1, Some(json!("random json")), Some(good_sig()), None));
+
+        // none
+        check((1, None, None, None));
     }
 }

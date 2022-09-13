@@ -2,6 +2,7 @@ use std::{fs::File, io::BufWriter};
 
 use clap::Parser;
 use color_eyre::Result;
+use tracing::debug;
 use voting_tools_rs::{voting_power, Args, Db, DbConfig};
 
 fn main() -> Result<()> {
@@ -31,11 +32,10 @@ fn main() -> Result<()> {
     let db = Db::connect(db_config)?;
     let outputs = voting_power(&db, min_slot_no, max_slot_no, testnet_magic)?;
 
+    debug!("calculated {} outputs", outputs.len());
+
     let file = File::options().write(true).create(true).open(out_file)?;
     let writer = BufWriter::new(file);
-
-    println!("{outputs:#?}");
-    println!("{}", outputs.len());
 
     match pretty {
         true => serde_json::to_writer_pretty(writer, &outputs),

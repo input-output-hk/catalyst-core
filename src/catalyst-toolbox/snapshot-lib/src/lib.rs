@@ -1,5 +1,6 @@
 pub use fraction::Fraction;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
+use proptest::prelude::Arbitrary;
 use registration::{Delegations, MainnetRewardAddress, VotingRegistration};
 use serde::{Deserialize, Serialize};
 use std::{borrow::Borrow, collections::BTreeMap, iter::Iterator, num::NonZeroU64};

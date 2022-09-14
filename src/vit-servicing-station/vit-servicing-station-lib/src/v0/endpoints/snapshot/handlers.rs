@@ -1,11 +1,10 @@
-use std::sync::Arc;
-
-use crate::{SharedContext, UpdateHandle, VoterInfo};
+use super::{SharedContext, UpdateHandle, VoterInfo};
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::interfaces::Value;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use snapshot_lib::{Fraction, RawSnapshot, SnapshotInfo};
+use std::sync::Arc;
 use time::OffsetDateTime;
 use tokio::sync::Mutex;
 use warp::http::StatusCode;
@@ -106,7 +105,7 @@ pub async fn put_raw_snapshot(
         )
         .await
     {
-        Err(crate::Error::InternalError) => Ok(warp::reply::with_status(
+        Err(super::Error::InternalError) => Ok(warp::reply::with_status(
             "Consistency error",
             StatusCode::INTERNAL_SERVER_ERROR,
         )
@@ -131,7 +130,7 @@ pub async fn put_snapshot_info(
         .update_from_shanpshot_info(&tag, input.snapshot, input.update_timestamp)
         .await
     {
-        Err(crate::Error::InternalError) => Ok(warp::reply::with_status(
+        Err(super::Error::InternalError) => Ok(warp::reply::with_status(
             "Consistency error",
             StatusCode::INTERNAL_SERVER_ERROR,
         )

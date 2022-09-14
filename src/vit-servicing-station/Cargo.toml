@@ -4,5 +4,4 @@ members = [
   "vit-servicing-station-lib",
   "vit-servicing-station-server",
   "vit-servicing-station-tests",
-  "snapshot-service"
 ]

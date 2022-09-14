@@ -4,7 +4,7 @@ use crate::common::{
     startup::quick_start,
 };
 use assert_fs::TempDir;
-use snapshot_service::SnapshotInfoInput;
+use vit_servicing_station_lib::v0::endpoints::snapshot::SnapshotInfoInput;
 
 #[test]
 pub fn import_new_snapshot() {

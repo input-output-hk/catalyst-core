@@ -11,8 +11,8 @@ const V0_REQUEST_TRACE_NAME: &str = "v0_request";
 
 pub async fn filter(
     ctx: context::SharedContext,
-    snapshot_rx: snapshot_service::SharedContext,
-    snapshot_tx: snapshot_service::UpdateHandle,
+    snapshot_rx: endpoints::snapshot::SharedContext,
+    snapshot_tx: endpoints::snapshot::UpdateHandle,
     enable_api_tokens: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let api_root = warp::path!("api" / ..);

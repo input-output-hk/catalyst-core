@@ -7,7 +7,7 @@ use tracing::{error, info};
 use tracing_appender::non_blocking::WorkerGuard;
 use vit_servicing_station_lib::{
     db, server, server::exit_codes::ApplicationExitCode, server::settings as server_settings,
-    server::settings::ServiceSettings, v0,
+    server::settings::ServiceSettings, v0, v0::endpoints::snapshot,
 };
 
 fn check_and_build_proper_path(path: &Path) -> std::io::Result<()> {
@@ -136,7 +136,7 @@ async fn main() {
 
     let context = v0::context::new_shared_context(db_pool, paths, &settings.service_version);
 
-    let (snapshot_rx, snapshot_tx) = match snapshot_service::new_context() {
+    let (snapshot_rx, snapshot_tx) = match snapshot::new_context() {
         Ok(ctx) => ctx,
         Err(e) => {
             error!("Failed to setup snapshot watcher service {}", e);

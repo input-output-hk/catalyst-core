@@ -3455,24 +3455,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "snapshot-service"
-version = "0.1.0"
-dependencies = [
- "chain-ser",
- "jormungandr-lib",
- "notify",
- "serde",
- "serde_json",
- "sled",
- "snapshot-lib",
- "thiserror",
- "time 0.3.13",
- "tokio",
- "tracing",
- "warp",
-]
-
-[[package]]
 name = "socket2"
 version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4225,6 +4207,7 @@ version = "0.3.4-dev"
 dependencies = [
  "async-trait",
  "base64 0.12.3",
+ "chain-ser",
  "diesel",
  "diesel_migrations",
  "dotenv",
@@ -4239,8 +4222,8 @@ dependencies = [
  "serde",
  "serde_json",
  "simplelog",
+ "sled",
  "snapshot-lib",
- "snapshot-service",
  "structopt",
  "strum 0.21.0",
  "strum_macros 0.21.1",
@@ -4259,7 +4242,6 @@ name = "vit-servicing-station-server"
 version = "0.3.4-dev"
 dependencies = [
  "log",
- "snapshot-service",
  "structopt",
  "tokio",
  "tracing",
@@ -4299,7 +4281,6 @@ dependencies = [
  "serde",
  "serde_json",
  "snapshot-lib",
- "snapshot-service",
  "structopt",
  "tempfile",
  "thiserror",

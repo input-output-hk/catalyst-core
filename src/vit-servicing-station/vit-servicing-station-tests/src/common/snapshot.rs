@@ -3,8 +3,8 @@ use itertools::Itertools;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use snapshot_lib::{KeyContribution, SnapshotInfo, VoterHIR};
-use snapshot_service::SnapshotInfoInput;
 use time::OffsetDateTime;
+use vit_servicing_station_lib::v0::endpoints::snapshot::SnapshotInfoInput;
 
 #[derive(Debug, Clone)]
 pub struct Snapshot {

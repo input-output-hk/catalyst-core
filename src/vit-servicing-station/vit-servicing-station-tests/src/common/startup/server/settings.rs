@@ -35,7 +35,7 @@ impl ServerSettingsBuilder {
     }
 
     pub fn with_block0_path<S: Into<String>>(&mut self, block0_path: S) -> &mut Self {
-        self.settings.block0_path = block0_path.into();
+        self.settings.block0_path = Some(block0_path.into());
         self
     }
 

@@ -6,7 +6,8 @@ mod health;
 pub mod proposals;
 pub mod search;
 pub mod service_version;
-mod snapshot;
+pub mod snapshot;
+mod votes;
 
 use crate::v0::context::SharedContext;
 
@@ -17,8 +18,8 @@ use warp::{Filter, Rejection, Reply};
 pub async fn filter(
     root: BoxedFilter<()>,
     context: SharedContext,
-    snapshot_rx: snapshot_service::SharedContext,
-    snapshot_tx: snapshot_service::UpdateHandle,
+    snapshot_rx: snapshot::SharedContext,
+    snapshot_tx: snapshot::UpdateHandle,
     enable_api_tokens: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     // mount health endpoint
@@ -49,6 +50,9 @@ pub async fn filter(
     let reviews_root = warp::path!("reviews" / ..);
     let reviews_filter = advisor_reviews::filter(reviews_root.boxed(), context.clone()).await;
 
+    let votes_root = warp::path!("votes" / ..);
+    let votes_filter = votes::filter(votes_root.boxed(), context.clone()).await;
+
     let search_root = warp::path!("search" / ..);
     let search_filter = search::search_filter(search_root.boxed(), context.clone()).await;
 
@@ -57,13 +61,13 @@ pub async fn filter(
         search::search_count_filter(search_count_root.boxed(), context.clone()).await;
 
     let snapshot_root = warp::path!("snapshot" / ..);
-    let snapshot_rx_filter = snapshot_service::filter(snapshot_root.boxed(), snapshot_rx.clone());
+    let snapshot_rx_filter = snapshot::filter(snapshot_root.boxed(), snapshot_rx.clone());
 
     let admin_filter = {
         let base = warp::path!("admin" / ..);
 
         let snapshot_tx_filter =
-            warp::path!("snapshot" / ..).and(snapshot_service::update_filter(snapshot_tx).boxed());
+            warp::path!("snapshot" / ..).and(snapshot::update_filter(snapshot_tx).boxed());
 
         let fund_filter = warp::path!("fund" / ..).and(funds::admin_filter(context.clone()));
 
@@ -85,6 +89,7 @@ pub async fn filter(
                 .or(funds_filter)
                 .or(challenges_filter)
                 .or(reviews_filter)
+                .or(votes_filter)
                 .or(search_filter)
                 .or(search_count_filter)
                 .or(snapshot_rx_filter)

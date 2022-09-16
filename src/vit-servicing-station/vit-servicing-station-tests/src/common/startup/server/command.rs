@@ -9,6 +9,7 @@ pub struct BootstrapCommandBuilder {
     address: Option<String>,
     allowed_origins: Option<String>,
     block0_path: Option<String>,
+    block0_paths: Option<String>,
     cert_file: Option<PathBuf>,
     db_url: Option<String>,
     enable_api_tokens: bool,
@@ -34,6 +35,7 @@ impl BootstrapCommandBuilder {
             address: None,
             allowed_origins: None,
             block0_path: None,
+            block0_paths: None,
             cert_file: None,
             db_url: None,
             enable_api_tokens: false,
@@ -57,8 +59,13 @@ impl BootstrapCommandBuilder {
         self
     }
 
-    pub fn block0_path<S: Into<String>>(&mut self, block0_path: S) -> &mut Self {
-        self.block0_path = Some(block0_path.into());
+    pub fn block0_path(&mut self, block0_path: Option<String>) -> &mut Self {
+        self.block0_path = block0_path;
+        self
+    }
+
+    pub fn block0_paths(&mut self, block0_paths: Option<String>) -> &mut Self {
+        self.block0_paths = block0_paths;
         self
     }
 

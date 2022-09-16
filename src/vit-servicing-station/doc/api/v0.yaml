@@ -10,6 +10,8 @@ info:
 tags:
   - name: fund
     description: Information on treasury fund campaigns.
+  - name: user
+    description: Information about the user
   - name: challenge
     description: Information on challenges, structuring proposals within a fund.
   - name: proposal
@@ -18,6 +20,10 @@ tags:
     description: Information on reviews.
   - name: snapshot
     description: Continuous snapshot related information.
+  - name: vote
+    description: Historic votes related information.
+  - name: search
+    description: Search challenges and proposals information.
 
 servers:
   - url: "http://localhost"
@@ -85,6 +91,32 @@ paths:
                       description: Identifier of the fund campaign.
         "404":
           description: The requested fund was not found
+
+  /api/v0/user/{id}:
+    description: Manages Cardano user information by the provided user id
+    get:
+      operationId: getUserById
+      tags:
+        - user
+      description: Retrieves user info
+      summary: get user info by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          deprecated: false
+          schema:
+            type: string
+          description: user's id
+      responses:
+        "200":
+          description: user's info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+        "404":
+          description: The requested user was not found
 
   /api/v0/proposals:
     post:
@@ -224,6 +256,9 @@ paths:
   /api/v0/search:
     post:
       summary: Search various resources with various constraints
+      operationId: search
+      tags: [search]
+      description: Search various resources especially challenges and proposals with various constraints like contains some string etc.
       requestBody:
         content:
           application/json:
@@ -235,7 +270,7 @@ paths:
           content:
             application/json:
               schema:
-                 oneOf:
+                oneOf:
                   - type: array
                     items:
                       $ref: "#/components/schemas/Challenge"
@@ -247,7 +282,10 @@ paths:
 
   /api/v0/search_count:
     post:
-      summary: Search various resources with various constraints and returns count of the result set
+      summary: Returns count of the result set of search operation
+      description: Search various resources with various constraints and returns count of the result set
+      operationId: searchCount
+      tags: [ search ]
       requestBody:
         content:
           application/json:
@@ -305,9 +343,9 @@ paths:
         "200":
           description: Success
 
-  /api/v0/admin/snapshot/{tag}:
+  /api/v0/admin/snapshot/snapshot_info/{tag}:
     put:
-      operationId: updateSnapshot
+      operationId: updateSnapshotFromSnapshotInfo
       summary: Replace the snapshot data for the given tag
       tags: [snapshot]
       description: |
@@ -323,7 +361,28 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/SnapshotInfoUpdate"
+      responses:
+        "200":
+          description: Success
 
+  /api/v0/admin/snapshot/raw_snapshot/{tag}:
+    put:
+      operationId: updateSnapshotFromRawSnapshot
+      summary: Replace the snapshot data for the given tag
+      tags: [snapshot]
+      description: |
+        Replace the snapshot data for the given tag
+      parameters:
+        - in: path
+          name: tag
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RawSnapshotUpdate"
       responses:
         "200":
           description: Success
@@ -335,18 +394,33 @@ paths:
       tags: [fund]
       description: |
         Update or replace the fund in the db with the one provided.
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          required: true
       responses:
         "200":
           description: Valid response
         "400":
           description: The input is malformed.
 
+  /api/v0/votes:
+    post:
+      summary: Get voted by chain id
+      operationId: getVotesByChainIdAndCaster
+      tags: [ proposal ]
+      description: |
+        Retrieves queried proposals.
+      requestBody:
+        description: List of votes by voteplan id and caster (wallet)
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VotesByVoteCasterAndVoteplanId'
+      responses:
+        "200":
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VoteInfo"
 
 components:
   schemas:
@@ -772,13 +846,55 @@ components:
 
     ProposalVoteplanIdAndIndex:
       properties:
-        voteplan_id: 
+        voteplan_id:
           type: string
         indexes:
           type: array
           items:
-              type: integer
-              format: i64
+            type: integer
+            format: i64
+
+    VotesByVoteCasterAndVoteplanId:
+      properties:
+        vote_plan_id:
+          type: string
+          format: hash
+          description: Blockchain ID of the vote plan transaction.
+        caster:
+          type: string
+          format: hash
+          description: public key of caster wallet
+
+    VoteInfo:
+      properties:
+        fragment_id:
+          type: string
+          format: hash
+          description: Blockchain ID of the vote plan transaction
+        caster:
+          type: string
+          format: hash
+          description: public key of caster wallet
+        proposal:
+          type: integer
+          format: int32
+          description: proposal index within voteplan
+        voteplan_id:
+          type: string
+          format: hash
+          description: Blockchain ID of the vote plan transaction
+        time:
+          type: number
+          format: f32
+          description: block date in format epoch.slot_no
+        choice:
+          type: string
+          format: byte
+          description: vote choice (only visible for public voting)
+        raw_fragment:
+          type: string
+          format: hash
+          description: raw bytes of transaction
 
     SearchQuery:
       properties:
@@ -786,11 +902,11 @@ components:
           $ref: "#/components/schemas/SearchConstraint"
         filter:
           type: array
-          items: 
+          items:
             $ref: "#/components/schemas/SearchConstraint"
         order-by:
           type: array
-          items: 
+          items:
             $ref: "#/components/schemas/SearchOrderBy"
         limit:
           type: integer
@@ -808,11 +924,11 @@ components:
           $ref: "#/components/schemas/SearchConstraint"
         filter:
           type: array
-          items: 
+          items:
             $ref: "#/components/schemas/SearchConstraint"
         order-by:
           type: array
-          items: 
+          items:
             $ref: "#/components/schemas/SearchOrderBy"
       required: [table]
 
@@ -820,7 +936,7 @@ components:
       properties:
         column:
           $ref: "#/components/schemas/SearchColumn"
-        search: 
+        search:
           type: string
           description: Text which must be present in the given column (case insensitive)
       required: [column, search]
@@ -829,7 +945,7 @@ components:
       properties:
         column:
           $ref: "#/components/schemas/SearchColumn"
-        descending: 
+        descending:
           type: boolean
           default: false
       required: [column]
@@ -930,7 +1046,7 @@ components:
 
     VoterGroup:
       properties:
-        id: 
+        id:
           type: string
           description: Unique identifier of this voter group
         voting_token:
@@ -944,9 +1060,68 @@ components:
       properties:
         snapshot:
           type: array
-          description: list of VoterHIR entries in json format
-          required: true
-        last_update:
+          description: list of SnapshotInfo entries in json format
+          required: ["true"]
+        update_timestamp:
           type: string
           format: date-time
           description: Date and time for the latest update to this snapshot information.
+
+    RawSnapshotUpdate:
+      properties:
+        snapshot:
+          type: object
+          description: RawSnapshot in json format
+          required: ["true"]
+        min_stake_threshold:
+          type: integer
+          description: Registrations voting power threshold for eligibility
+          required: ["true"]
+        voting_power_cap:
+          type: string
+          description: Voting power cap for each account
+          required: ["true"]
+        direct_voters_group:
+          type: string
+          description: Voter group to assign direct voters to. If empty, defaults to "voter"
+          required: ["false"]
+        representatives_group:
+          type: string
+          description: Voter group to assign representatives to. If empty, defaults to "rep"
+          required: ["false"]
+        update_timestamp:
+          type: string
+          format: date-time
+          description: Date and time for the latest update to this snapshot information.
+    UserInfo:
+      type: object
+      description: User info
+      required:
+        - is_voter
+        - delegators
+        - voting_groups
+      properties:
+        is_voter:
+          type: boolean
+          description: Is this user an active voter (representative) or delegator
+        dreps:
+          type: array
+          description: List of delegated representatives for the current user
+          items:
+            description: Hex encoded representative's address id
+            type: string
+            pattern: '[0-9a-f]{64}'
+        voting_groups:
+          description: List of the assigned voting groups
+          type: array
+          items: 
+            description: Voting group id (the same as voting token id)
+            type: string
+            pattern: '[0-9a-f]{56}.[0-9a-f]+'
+      example: 
+        {
+          is_voter: true,
+          delegators: ["f5285eeead8b5885a1420800de14b0d1960db1a990a6c2f7b517125bedc000db", "7ef044ba437057d6d944ace679b7f811335639a689064cd969dffc8b55a7cc19"],
+          voting_groups: ["00000000000000000000000000000000000000000000000000000000.6c1e8abc"]
+        }
+          

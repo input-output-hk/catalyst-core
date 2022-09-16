@@ -306,7 +306,7 @@ impl ArbitrarySnapshotGenerator {
                 rewards_total: first_challenge.rewards_total.parse().unwrap(),
                 proposers_rewards: first_challenge.proposers_rewards.parse().unwrap(),
                 fund_id,
-                challenge_url: self.template_generator.gen_http_address(),
+                challenge_url: self.template_generator.gen_challenge_url(),
                 highlights: self.template_generator.gen_highlights(),
             },
             Challenge {
@@ -318,7 +318,7 @@ impl ArbitrarySnapshotGenerator {
                 rewards_total: second_challenge.rewards_total.parse().unwrap(),
                 proposers_rewards: second_challenge.proposers_rewards.parse().unwrap(),
                 fund_id,
-                challenge_url: self.template_generator.gen_http_address(),
+                challenge_url: self.template_generator.gen_challenge_url(),
                 highlights: self.template_generator.gen_highlights(),
             },
         ];

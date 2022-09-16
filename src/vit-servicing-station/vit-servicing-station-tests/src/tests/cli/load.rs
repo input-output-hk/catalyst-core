@@ -9,7 +9,7 @@ use assert_fs::{fixture::PathChild, TempDir};
 
 #[test]
 pub fn load_data_test() {
-    let temp_dir = TempDir::new().unwrap();
+    let temp_dir = TempDir::new().unwrap().into_persistent();
     let db_file = temp_dir.child("db.sqlite");
     let snapshot = ArbitrarySnapshotGenerator::default().snapshot();
 
@@ -23,14 +23,6 @@ pub fn load_data_test() {
         .proposals(
             snapshot.proposals().iter().take(1).cloned().collect(),
             proposals.path(),
-        )
-        .unwrap();
-
-    let proposals_voteplans = temp_dir.child("proposals_voteplans.csv");
-    csv_converter
-        .proposals_voteplans(
-            snapshot.proposals().into_iter().take(1).collect(),
-            proposals_voteplans.path(),
         )
         .unwrap();
 
@@ -88,7 +80,6 @@ pub fn load_data_test() {
         .challenges(challenges.path())
         .advisor_reviews(reviews.path())
         .goals(goals.path())
-        .proposals_voteplans(proposals_voteplans.path())
         .groups(groups.path())
         .build()
         .assert()

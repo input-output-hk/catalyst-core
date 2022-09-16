@@ -40,9 +40,12 @@ impl RestClient {
             .map_err(Error::RequestError)
     }
 
-    pub fn put_snapshot(&self, tag: &str, content: String) -> Result<Response, Error> {
-        self.put(&self.path_builder.clone().admin().snapshot(tag), content)
-            .map_err(Error::RequestError)
+    pub fn put_snapshot_info(&self, tag: &str, content: String) -> Result<Response, Error> {
+        self.put(
+            &self.path_builder.clone().admin().snapshot_info(tag),
+            content,
+        )
+        .map_err(Error::RequestError)
     }
 
     pub fn snapshot_tags(&self) -> Result<Response, Error> {
@@ -50,13 +53,9 @@ impl RestClient {
             .map_err(Error::RequestError)
     }
 
-    pub fn voting_power_and_delegations(&self, tag: &str, key: &str) -> Result<Response, Error> {
-        self.get(
-            &self
-                .path_builder
-                .snapshot_voting_power_and_delegations(tag, key),
-        )
-        .map_err(Error::RequestError)
+    pub fn voter_info(&self, tag: &str, key: &str) -> Result<Response, Error> {
+        self.get(&self.path_builder.snapshot_voter_info(tag, key))
+            .map_err(Error::RequestError)
     }
 
     pub fn proposal(&self, id: &str, group: &str) -> Result<Response, Error> {

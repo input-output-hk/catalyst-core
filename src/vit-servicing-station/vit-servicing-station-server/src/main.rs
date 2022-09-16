@@ -1,15 +1,16 @@
+use std::fs;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 use structopt::StructOpt;
 
 use tracing::{error, info};
 use tracing_appender::non_blocking::WorkerGuard;
 use vit_servicing_station_lib::{
     db, server, server::exit_codes::ApplicationExitCode, server::settings as server_settings,
-    server::settings::ServiceSettings, v0,
+    server::settings::ServiceSettings, v0, v0::endpoints::snapshot,
 };
 
 fn check_and_build_proper_path(path: &Path) -> std::io::Result<()> {
-    use std::fs;
     // create parent dirs if not exists
     fs::create_dir_all(path.parent().ok_or_else(|| {
         std::io::Error::new(
@@ -114,10 +115,28 @@ async fn main() {
         std::process::exit(ApplicationExitCode::DbConnectionError.into())
     });
 
-    let context =
-        v0::context::new_shared_context(db_pool, &settings.block0_path, &settings.service_version);
+    let paths: Vec<PathBuf> = if let Some(single_block0_path) = &settings.block0_path {
+        vec![PathBuf::from_str(single_block0_path).unwrap()]
+    } else {
+        fs::read_dir(settings.block0_paths.as_ref().unwrap())
+            .unwrap()
+            .filter_map(|path| {
+                let path = path.unwrap().path();
+                match path.extension() {
+                    Some(p) if p == "bin" => Some(path.to_path_buf()),
+                    _ => None,
+                }
+            })
+            .collect()
+    };
 
-    let (snapshot_rx, snapshot_tx) = match snapshot_service::new_context() {
+    if paths.is_empty() {
+        std::process::exit(ApplicationExitCode::EmptyBlock0FolderError.into());
+    }
+
+    let context = v0::context::new_shared_context(db_pool, paths, &settings.service_version);
+
+    let (snapshot_rx, snapshot_tx) = match snapshot::new_context() {
         Ok(ctx) => ctx,
         Err(e) => {
             error!("Failed to setup snapshot watcher service {}", e);

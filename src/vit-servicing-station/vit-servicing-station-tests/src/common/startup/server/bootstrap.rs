@@ -80,7 +80,7 @@ impl ServerBootstrapper {
             .db_url(&settings.db_url)
             .log_file(&logger_file)
             .enable_api_tokens(settings.enable_api_tokens)
-            .block0_path(&settings.block0_path)
+            .block0_path(settings.block0_path.clone())
             .service_version(&self.service_version);
 
         if let Some(allowed_origins) = self.allowed_origins.as_ref() {

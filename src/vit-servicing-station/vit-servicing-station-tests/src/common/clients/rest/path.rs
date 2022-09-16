@@ -37,15 +37,15 @@ impl RestPathBuilder {
         self.path("challenges")
     }
 
-    pub fn snapshot(&self, tag: &str) -> String {
-        self.path(&format!("snapshot/{}", tag))
+    pub fn snapshot_info(&self, tag: &str) -> String {
+        self.path(&format!("snapshot/snapshot_info/{}", tag))
     }
 
     pub fn snapshot_tags(&self) -> String {
         self.path("snapshot")
     }
 
-    pub fn snapshot_voting_power_and_delegations(&self, tag: &str, key: &str) -> String {
+    pub fn snapshot_voter_info(&self, tag: &str, key: &str) -> String {
         self.path(&format!("snapshot/{}/{}", tag, key))
     }
 

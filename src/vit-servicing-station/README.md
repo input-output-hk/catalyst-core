@@ -45,6 +45,7 @@ The command line flags can be retrieved using the `--help` when running the serv
 --address <address>                        Server binding address [default: 0.0.0.0:3030]
 --allowed-origins <allowed-origins>        If none provided, echos request origin [env: CORS_ALLOWED_ORIGINS=]
 --block0-path <block0-path>                block0 static file path [default: ./resources/v0/block0.bin]
+--block0-paths <block0-paths>              archive block0 static folder path. WARNING each file need to be named as 'fundX.bin' 
 --cert-file <cert-file>
     Path to server X.509 certificate chain file, must be PEM-encoded and contain at least 1 item [env:
     TLS_CERT_FILE=]
@@ -122,3 +123,7 @@ This enables the command to be piped from another command, for example:
 ```bash
 ./vit-servicing-station-cli api-token generate --size 10 --n 10 | ./vit-servicing-station-cli api-token add --db-url ../../db/vit_station_new.db
 ```
+
+## Integration tests
+
+See [`integration tests`](./doc/testing.md) 

@@ -4,8 +4,15 @@ mod queries;
 pub mod types;
 
 // We need to allow this because custom type imports aren't always used in all tables
+
 #[allow(unused_imports)]
+#[cfg(test)]
+pub mod schema;
+
+#[allow(unused_imports)]
+#[cfg(not(test))]
 mod schema;
+
 mod utils;
 
 pub use inner::{Conn, Db};
@@ -78,7 +85,7 @@ mod inner {
         }
 
         /// Execute a query against the database
-        pub(super) fn exec<T, F>(&self, f: F) -> Result<T>
+        pub(crate) fn exec<T, F>(&self, f: F) -> Result<T>
         where
             F: FnOnce(&mut Conn) -> QueryResult<T>,
         {

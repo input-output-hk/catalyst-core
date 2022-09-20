@@ -115,7 +115,8 @@
               ++ (with pkgs; [
                 pkg-config
                 postgresql
-                diesel-cli
+                diesel-cli 
+                cargo-insta  # snapshot testing lib
               ]);
           };
 

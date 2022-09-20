@@ -2,25 +2,32 @@
 //!
 //! Original Haskell repository is <https://github.com/input-output-hk/voting-tools>
 
-#![deny(missing_docs)]
+#![forbid(missing_docs)]
 #![warn(clippy::pedantic)]
-#![allow(clippy::module_name_repetitions)]
+#![allow(
+    clippy::module_name_repetitions,
+    clippy::match_bool,
+    clippy::bool_assert_comparison,
+    clippy::derive_partial_eq_without_eq
+)]
 
 #[macro_use]
 extern crate tracing;
+#[macro_use]
+extern crate diesel;
 
 mod cli;
-mod config;
 mod db;
 mod logic;
 mod model;
 
+#[cfg(test)]
+mod testing;
+
+// this export style forces us to be explicit about what is in the public API
 pub use exports::*;
 mod exports {
     pub use crate::cli::Args;
-    pub use crate::config::DbConfig;
-    pub use crate::logic::run;
+    pub use crate::db::{Conn, Db, DbConfig};
+    pub use crate::logic::voting_power;
 }
-
-#[cfg(test)]
-mod testing;

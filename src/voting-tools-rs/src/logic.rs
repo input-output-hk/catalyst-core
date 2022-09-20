@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use cardano_serialization_lib::address::{Address, NetworkInfo, RewardAddress};
 use cardano_serialization_lib::chain_crypto::Blake2b256;
 use cardano_serialization_lib::crypto::Ed25519Signature;
@@ -8,141 +6,112 @@ use cardano_serialization_lib::metadata::{
 };
 use cardano_serialization_lib::utils::{BigNum, Int};
 use cardano_serialization_lib::{address::StakeCredential, crypto::PublicKey};
-use color_eyre::eyre::Result;
 use color_eyre::eyre::{bail, eyre};
+use color_eyre::eyre::{Context, Result};
 use microtype::Microtype;
 
-use crate::config::DbConfig;
-use crate::db::Db;
-use crate::model::{network_info, Delegations, Output, Rego, SlotNo, StakeVKey, TestnetMagic};
+use crate::model::{network_info, Delegations, Output, Reg, SlotNo, StakeVKey, TestnetMagic};
+use crate::Db;
 
-/// Calculate voter registration info
+/// Calculate voting power info by querying a db-sync instance
+///
+/// Invalid registrations are silently ignored (e.g. if they contain bad/null JSON metadata, if
+/// they have invalid signatures, etc).
+///
+/// If provided, `min_slot` and `max_slot` can  be used to constrain the time period to query. If
+/// `None` they default to:
+///  - `min_slot`: `0`
+///  - `max_slot`: `i64::MAX`
+///
+/// Together they form an inclusive range (i.e. blocks with values equal to `min_slot` or `max_slot` are included)
+///
+/// # Errors
+///
+/// Returns an error if either of `lower` or `upper` doesn't fit in an `i64`
 #[instrument]
-pub async fn run(
-    db: DbConfig,
-    slot_no: Option<SlotNo>,
+pub fn voting_power(
+    db: &Db,
+    min_slot: Option<SlotNo>,
+    max_slot: Option<SlotNo>,
     testnet_magic: Option<TestnetMagic>,
 ) -> Result<Vec<Output>> {
     let network_info = network_info(testnet_magic);
-    let db = Db::connect(db).await?;
+    let regs = db.vote_registrations(min_slot, max_slot)?;
+    let stake_addrs = regs
+        .iter()
+        .filter_map(|reg| get_stake_address(&reg.metadata.stake_vkey, &network_info).ok())
+        .collect::<Vec<_>>();
 
-    let regos = db.vote_registrations(slot_no).await?;
+    let values = db.stake_values(&stake_addrs)?;
 
-    let regos = regos.into_iter().filter(|r| r.is_valid().is_ok());
-    let regos = filter_latest_registrations(regos);
-
-    let mut rego_voting_power = Vec::with_capacity(regos.len());
-    let table = db.create_snapshot_table(slot_no).await?;
-
-    for rego in regos {
-        let stake_address = get_stake_address(&rego.metadata.stake_vkey, &network_info);
-        match stake_address {
-            Err(_) => {}
-            Ok(stk) => {
-                let voting_power = db.stake_value(table, &stk).await?;
-                rego_voting_power.push((rego, voting_power));
+    let reg_voting_power = regs
+        .into_iter()
+        .filter_map(|reg| {
+            if let Err(e) = reg.check_valid() {
+                warn!("invalid reg: {e}");
+                return None;
             }
-        }
-    }
 
-    let mut output = Vec::with_capacity(rego_voting_power.len());
+            let stake_addr = get_stake_address(&reg.metadata.stake_vkey, &network_info).ok()?;
 
-    for (rego, voting_power) in rego_voting_power {
-        let entry = Output {
-            delegations: rego.metadata.delegations.clone(),
-            rewards_address: rego.metadata.rewards_addr.clone(),
-            stake_public_key: rego.metadata.stake_vkey.clone().convert(),
-            voting_power: voting_power.into(),
-            voting_purpose: rego.metadata.purpose,
-        };
-        output.push(entry);
-    }
+            let voting_power = values.get(&stake_addr as &str)?.clone();
 
-    Ok(output)
-}
+            Some(Output {
+                delegations: reg.metadata.delegations.clone(),
+                rewards_address: reg.metadata.rewards_addr.clone(),
+                stake_public_key: reg.metadata.stake_vkey.convert(),
+                voting_purpose: reg.metadata.purpose,
+                voting_power,
+            })
+        })
+        .collect();
 
-fn filter_latest_registrations(regos: impl IntoIterator<Item = Rego>) -> Vec<Rego> {
-    // Group the registrations by stake key (each stake key may have one valid registration)
-    let mut m = HashMap::new();
-    for rego in regos {
-        let stake_key = rego.metadata.stake_vkey.clone();
-        m.entry(stake_key).or_insert_with(Vec::new).push(rego);
-    }
-    // Find the regos with the highest slot number, and of those, choose the
-    // lowest txid.
-    let mut latest_regos = Vec::new();
-    for (_, stake_regos) in m {
-        let latest = stake_regos
-            .iter()
-            .fold(stake_regos[0].clone(), |acc, rego| {
-                use std::cmp::Ordering::*;
-                match &rego.metadata.slot.cmp(&acc.metadata.slot) {
-                    // If the slot number is less, it's not a newer registration.
-                    Less => acc,
-                    // If the slot number is greater, it's a newer registration.
-                    Greater => rego.clone(),
-                    // If the slot number is equal, choose the one with the lower tx id.
-                    Equal => {
-                        if rego.tx_id < acc.tx_id {
-                            rego.clone()
-                        } else {
-                            acc
-                        }
-                    }
-                }
-            });
-        latest_regos.push(latest.clone())
-    }
-    latest_regos
+    Ok(reg_voting_power)
 }
 
 #[instrument]
 pub(crate) fn get_stake_address(
     stake_vkey_hex: &StakeVKey,
-    network_info: &NetworkInfo,
+    network: &NetworkInfo,
 ) -> Result<String> {
-    // Remove initial '0x' from string
-    if !stake_vkey_hex.starts_with("0x") {
-        warn!("stake_vkey_hex doesn't start with `0x`");
-    }
-
-    let stake_vkey_hex_only = stake_vkey_hex.trim_start_matches("0x");
+    let stake_vkey_hex = stake_vkey_hex.trim_start_matches("0x");
     // TODO support stake extended keys
-    if stake_vkey_hex_only.len() == 128 {
+    if stake_vkey_hex.len() == 128 {
         // TODO: why is this bad? can we give a better error here?
         bail!("stake_vkey has length 128");
     } else {
         // Convert hex to public key
-        let hex = hex::decode(&stake_vkey_hex_only)?;
+        let hex = hex::decode(&stake_vkey_hex)?;
         let pub_key = PublicKey::from_bytes(&hex).map_err(|_| eyre!(""))?;
         let cred = StakeCredential::from_keyhash(&pub_key.hash());
-        let stake_addr: Address = RewardAddress::new(network_info.network_id(), &cred).to_address();
+        let stake_addr = RewardAddress::new(network.network_id(), &cred).to_address();
         let stake_addr_bytes = stake_addr.to_bytes();
         let stake_addr_bytes_hex = hex::encode(&stake_addr_bytes);
         Ok(stake_addr_bytes_hex)
     }
 }
 
-impl Rego {
+impl Reg {
     /// Checks if this registration is valid
     ///
     /// Returns `Result` rather than `bool` to allow structured failures
     #[instrument]
-    fn is_valid(&self) -> Result<()> {
+    fn check_valid(&self) -> Result<()> {
         let stake_vkey = self.metadata.stake_vkey.trim_start_matches("0x");
         if stake_vkey.len() == 128 {
             // TODO: why is this bad? can we give a better error here?
             bail!("stake_vkey has length 128");
         }
 
-        let hex = hex::decode(stake_vkey)?;
+        let hex = hex::decode(stake_vkey).context("failed to decode hex")?;
         let pub_key =
             // this error doesn't impl `std::err::Error`
             PublicKey::from_bytes(&hex).map_err(|e| eyre!("error decoding public key: {e}"))?;
 
         // Get rewards address
-        let rewards_addr: Address =
-            Address::from_bytes(hex::decode(&*self.metadata.rewards_addr)?).unwrap();
+        let rewards_addr = self.metadata.rewards_addr.trim_start_matches("0x");
+        let rewards_addr: Address = Address::from_bytes(hex::decode(rewards_addr)?)
+            .map_err(|_| eyre!("invalid address"))?;
 
         if RewardAddress::from_address(&rewards_addr).is_none() {
             bail!("invalid reward address");

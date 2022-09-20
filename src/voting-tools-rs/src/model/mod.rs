@@ -1,3 +1,4 @@
+use bigdecimal::BigDecimal;
 use cardano_serialization_lib::address::NetworkInfo;
 use microtype::microtype;
 use serde::{Deserialize, Serialize};
@@ -10,7 +11,7 @@ pub enum Delegations {
     Delegated(Vec<(String, u32)>),
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct RegoMetadata {
     #[serde(rename = "1")]
     pub delegations: Delegations,
@@ -30,18 +31,18 @@ pub struct Output {
     pub delegations: Delegations,
     pub rewards_address: RewardsAddr,
     pub stake_public_key: StakePubKey,
-    pub voting_power: VotingPower,
+    pub voting_power: BigDecimal,
     pub voting_purpose: VotingPurpose,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct RegoSignature {
     #[serde(rename = "1")]
     pub signature: Signature,
 }
 
-#[derive(Debug, Clone)]
-pub struct Rego {
+#[derive(Debug, Clone, PartialEq)]
+pub struct Reg {
     pub tx_id: TxId,
     pub metadata: RegoMetadata,
     pub signature: RegoSignature,
@@ -74,7 +75,6 @@ microtype! {
     pub u64 {
         #[cfg_attr(test, derive(test_strategy::Arbitrary))]
         SlotNo,
-        VotingPower,
         VotingPurpose,
         TxId,
     }
@@ -96,5 +96,11 @@ pub fn network_info(testnet_magic: Option<TestnetMagic>) -> NetworkInfo {
     match testnet_magic {
         None => NetworkInfo::mainnet(),
         Some(TestnetMagic(magic)) => NetworkInfo::new(NetworkInfo::testnet().network_id(), magic),
+    }
+}
+
+impl SlotNo {
+    pub fn into_i64(self) -> color_eyre::eyre::Result<i64> {
+        Ok(self.0.try_into()?)
     }
 }

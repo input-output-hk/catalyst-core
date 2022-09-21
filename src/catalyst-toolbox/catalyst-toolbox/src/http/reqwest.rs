@@ -10,6 +10,7 @@ use super::{HttpClient, HttpResponse};
 
 const BASE_IDEASCALE_URL: &str = "https://cardano.ideascale.com/a/rest/v1/";
 
+#[derive(Debug)]
 pub struct ReqwestClient {
     client: Client,
     base_url: Url,

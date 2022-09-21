@@ -133,7 +133,7 @@ mod tests {
         .unwrap();
         let rewards_no_inactive = calc_dreps_rewards(
             voters_active,
-            votes_count.clone(),
+            votes_count,
             String::new(),
             voting_keys.len(),
             Threshold::new(1, HashMap::new(), Vec::new()).unwrap(),

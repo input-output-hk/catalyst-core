@@ -1,5 +1,6 @@
 pub use fraction::Fraction;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
+use registration::MainnetStakeAddress;
 use registration::{Delegations, MainnetRewardAddress, VotingRegistration};
 use serde::{Deserialize, Serialize};
 use std::{borrow::Borrow, collections::BTreeMap, iter::Iterator, num::NonZeroU64};
@@ -15,7 +16,7 @@ pub mod voting_group;
 
 pub const CATALYST_VOTING_PURPOSE_TAG: u64 = 0;
 
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct RawSnapshot(Vec<VotingRegistration>);
 
 impl From<Vec<VotingRegistration>> for RawSnapshot {
@@ -35,6 +36,7 @@ pub enum Error {
 /// Contribution to a voting key for some registration
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct KeyContribution {
+    pub stake_public_key: MainnetStakeAddress,
     pub reward_address: MainnetRewardAddress,
     pub value: u64,
 }
@@ -78,12 +80,14 @@ impl Snapshot {
                     reward_address,
                     delegations,
                     voting_power,
+                    stake_public_key,
                     ..
                 } = reg;
 
                 match delegations {
                     Delegations::Legacy(vk) => {
                         acc.entry(vk).or_default().push(KeyContribution {
+                            stake_public_key,
                             reward_address,
                             value: voting_power.into(),
                         });
@@ -102,6 +106,7 @@ impl Snapshot {
                                 })
                                 .map(|(vk, value)| {
                                     acc.entry(vk).or_default().push(KeyContribution {
+                                        stake_public_key: stake_public_key.clone(),
                                         reward_address: reward_address.clone(),
                                         value: value.get(),
                                     });
@@ -110,6 +115,7 @@ impl Snapshot {
                                 .sum::<u64>()
                         });
                         acc.entry(last.0).or_default().push(KeyContribution {
+                            stake_public_key,
                             reward_address,
                             value: voting_power - others_total_vp,
                         });

@@ -26,10 +26,10 @@ use jormungandr_lib::{
     },
     time::SecondsSinceUnixEpoch,
 };
-use log::{debug, error, trace, warn};
 use std::collections::{HashMap, HashSet};
 use std::ops::{Add, Range};
 use std::time::{Duration, SystemTime};
+use tracing::{debug, error, trace, warn};
 use wallet::{Settings, TransactionBuilder, Wallet};
 
 #[allow(clippy::large_enum_variant)]

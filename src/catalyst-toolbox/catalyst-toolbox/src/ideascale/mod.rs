@@ -79,7 +79,7 @@ pub fn fetch_all(
         // TODO: Handle error better here
         .flat_map(Result::unwrap)
         // filter out non approved or staged proposals
-        .filter(|p| p.approved && filter_proposal_by_stage_type(&p.stage_type, &matches))
+        .filter(|p| p.approved.as_bool() && filter_proposal_by_stage_type(&p.stage_type, &matches))
         .filter(|p| !excluded_proposals.contains(&p.proposal_id))
         .collect();
 
@@ -139,7 +139,7 @@ pub fn build_challenges(
                     id: i.to_string(),
                     rewards_total: c.rewards.to_string(),
                     proposers_rewards: c.rewards.to_string(),
-                    title: c.title.clone(),
+                    title: c.title.as_str().to_string(),
                     highlight: sponsors.get(&c.challenge_url).map(|sponsor| {
                         models::se::Highlight {
                             sponsor: sponsor.clone(),

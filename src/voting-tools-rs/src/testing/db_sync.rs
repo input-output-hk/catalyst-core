@@ -36,6 +36,8 @@ fn default_query() {
     let db = test_db();
     let outputs = crate::voting_power(&db, None, None, None).unwrap();
 
+
+
     insta::assert_json_snapshot!(outputs);
 }
 

@@ -1,6 +1,5 @@
 ---
 source: src/testing/db_sync.rs
-assertion_line: 39
 expression: outputs
 ---
 [

@@ -37,6 +37,8 @@ serial_test = "0.9"
 tempdir = "0.3"
 tracing-test = "0.2"
 insta = { version = "1", features = ["json"] }
+postgres = "0.19"  # just to create the reference db in case it doesn't already exist
+diesel_migrations="2"
 
 [features]
 default = ["all_tests"]

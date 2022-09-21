@@ -18,7 +18,7 @@ static SIGNATURE_KEY: Lazy<BigDecimal> = Lazy::new(|| BigDecimal::from_isize(612
 type Row = (i64, Option<Value>, Option<Value>, Option<i64>);
 
 impl Db {
-    /// This query is detailed in ``design/vote_registration_query.md``
+    /// This query is detailed in ``src/db/design/vote_registration_query.md``
     ///
     /// 'lower' is an optional inclusive lower bound. If `None`, `0` is used instead.
     /// 'upper' is an optional inclusive upper bound. If `None`, `i64::MAX` is used instead.

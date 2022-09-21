@@ -31,7 +31,7 @@ jobs:
         echo "::set-output name=packages::$packages"
 
   build:
-    name: Build ${{ matrix.packages }}
+    name: Build ${{ matrix.package }} package
     needs:
       - decision
     runs-on: ubuntu-latest
@@ -53,7 +53,7 @@ jobs:
       with:
         CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
-    - name: Build ${{ matrix.package }} package
+    - name: Build package
       run: |
         path=$(nix eval --raw .#packages.x86_64-linux.${{ matrix.package }})
         hash=${path:11:32}

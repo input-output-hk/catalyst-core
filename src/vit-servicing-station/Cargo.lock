@@ -466,7 +466,7 @@ name = "chain-vote"
 version = "0.1.0"
 source = "git+https://github.com/input-output-hk/chain-libs?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "chain-core",
  "chain-crypto",
  "const_format",
@@ -1800,7 +1800,7 @@ checksum = "6c8af84674fe1f223a982c933a0ee1086ac4d4052aa0fb8060c12c6ad838e754"
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr?branch=master#b20022ea89c9eb781a025616ebddf1eee01a5950"
+source = "git+https://github.com/input-output-hk/jormungandr?branch=master#25fad503b00b0b3b8fcb15b2db058d0f8d121330"
 dependencies = [
  "base64 0.13.0",
  "bech32",
@@ -3439,7 +3439,7 @@ checksum = "2fd0db749597d91ff862fd1d55ea87f7855a744a8425a64695b6fca237d1dad1"
 [[package]]
 name = "snapshot-lib"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-toolbox?branch=main#2a659e51cb7dc0fdd68b0afb3dc11b26a3b6987d"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox?branch=main#0d43013f6eae212fc97eccab60cb97cda2d3d3fb"
 dependencies = [
  "bech32",
  "chain-crypto",

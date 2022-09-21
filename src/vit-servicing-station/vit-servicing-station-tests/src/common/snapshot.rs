@@ -88,6 +88,10 @@ impl SnapshotBuilder {
                                     rng.gen_range(1u64, 1_000u64)
                                 ),
                                 value: rng.gen_range(1u64, 1_000u64),
+                                stake_public_key: format!(
+                                    "stake_{:?}",
+                                    rng.gen_range(1u64, 1_000u64)
+                                ),
                             })
                         })
                         .take(self.contributions_count)
@@ -127,12 +131,7 @@ impl From<SnapshotInfo> for VotingPower {
         let delegations_power: u64 = snapshot_info
             .contributions
             .iter()
-            .map(
-                |KeyContribution {
-                     reward_address: _,
-                     value,
-                 }| value,
-            )
+            .map(|KeyContribution { value, .. }| value)
             .sum();
         Self {
             voting_power: snapshot_info.hir.voting_power.into(),

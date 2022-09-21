@@ -4,7 +4,7 @@ mod voter_hirs_asserts;
 
 pub use controller::SnapshotServiceController;
 pub use starter::SnapshotServiceStarter;
-pub use voter_hirs_asserts::VoterHIRAsserts;
+pub use voter_hirs_asserts::RegistrationAsserts;
 
 use snapshot_trigger_service::client::do_snapshot as do_snapshot_internal;
 use snapshot_trigger_service::client::{Error as SnapshotClientError, SnapshotResult};

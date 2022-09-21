@@ -17,7 +17,7 @@ jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "test_api_for_snapshot", features=["test-api"]}
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "main", features=["test-api"]}
 mainnet-tools = { path = "../mainnet-tools" }
 assert_fs = "1.0"
 futures = "0.3.8"

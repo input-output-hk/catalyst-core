@@ -1,6 +1,6 @@
 use crate::db_sync::DbSyncInstance;
-use catalyst_toolbox::snapshot::VotingRegistration;
 use jormungandr_lib::interfaces::BlockDate;
+use snapshot_lib::registration::VotingRegistration;
 
 pub struct MainnetNetwork<'a> {
     block_date: BlockDate,

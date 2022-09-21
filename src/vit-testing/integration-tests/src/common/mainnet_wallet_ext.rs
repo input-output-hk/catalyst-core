@@ -1,6 +1,6 @@
 use crate::common::MainnetWallet;
+use snapshot_lib::VoterHIR;
 use vitup::config::Block0Initial;
-use voting_hir::VoterHIR;
 
 pub trait MainnetWalletExtension {
     fn as_initial_entry(&self) -> Block0Initial;

@@ -119,12 +119,12 @@ pub async fn start_handler(
         context_lock.start();
         return Ok("start event received".to_owned()).map(|r| warp::reply::json(&r));
     }
-    return Ok(format!(
+    Ok(format!(
         "Wrong state to stop operation ('{}'), plase wait until state is '{}'",
         state,
         State::Idle
     ))
-    .map(|r| warp::reply::json(&r));
+    .map(|r| warp::reply::json(&r))
 }
 
 pub async fn start_default_handler(context: ControlContextLock) -> Result<impl Reply, Rejection> {
@@ -134,12 +134,12 @@ pub async fn start_default_handler(context: ControlContextLock) -> Result<impl R
         context_lock.start();
         return Ok("start event received".to_owned()).map(|r| warp::reply::json(&r));
     }
-    return Ok(format!(
+    Ok(format!(
         "Wrong state to stop operation ('{}'), plase wait until state is '{}'",
         state,
         State::Idle
     ))
-    .map(|r| warp::reply::json(&r));
+    .map(|r| warp::reply::json(&r))
 }
 
 pub async fn stop_handler(context: ControlContextLock) -> Result<impl Reply, Rejection> {
@@ -149,12 +149,12 @@ pub async fn stop_handler(context: ControlContextLock) -> Result<impl Reply, Rej
         context_lock.stop();
         return Ok("stop event received".to_owned()).map(|r| warp::reply::json(&r));
     }
-    return Ok(format!(
+    Ok(format!(
         "Wrong state to stop operation ('{}'), plase wait until state is '{}'",
         state,
         State::Running
     ))
-    .map(|r| warp::reply::json(&r));
+    .map(|r| warp::reply::json(&r))
 }
 
 pub async fn status_handler(context: ControlContextLock) -> Result<impl Reply, Rejection> {

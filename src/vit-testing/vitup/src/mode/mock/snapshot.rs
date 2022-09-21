@@ -4,9 +4,9 @@ use jormungandr_lib::crypto::account::Identifier;
 use proptest::{
     arbitrary::Arbitrary, prelude::*, strategy::BoxedStrategy, test_runner::TestRunner,
 };
+use snapshot_lib::VoterHIR;
 use std::collections::BTreeMap;
 use thor::WalletAlias;
-use voting_hir::VoterHIR;
 
 // TODO: this is a temporary impl until the snapshot service is available as a standalone
 // microservice.
@@ -105,8 +105,8 @@ impl Arbitrary for VoterSnapshot {
             String::from("nightly"),
         ];
         any_with::<(Vec<ArbitraryVoterHIR>, Vec<ArbitraryVoterHIR>)>((
-            (Default::default(), Some("direct".into())),
-            (Default::default(), Some("dreps".into())),
+            (Default::default(), Some("direct".to_string())),
+            (Default::default(), Some("dreps".to_string())),
         ))
         .prop_map(move |(dreps, voters)| {
             let mut hirs_by_tag = BTreeMap::new();
@@ -131,9 +131,9 @@ mod tests {
     #[test]
     fn test_get_voting_power() {
         let mut hirs = BTreeMap::new();
-        hirs.insert("a".into(), Vec::new());
-        hirs.insert("b".into(), Vec::new());
-        hirs.insert("c".into(), Vec::new());
+        hirs.insert("a".to_string(), Vec::new());
+        hirs.insert("b".to_string(), Vec::new());
+        hirs.insert("c".to_string(), Vec::new());
 
         let key = [0u8; 32];
         let vk = Identifier::from_hex(&hex::encode(key)).unwrap();
@@ -144,24 +144,24 @@ mod tests {
             VoterHIR {
                 voting_key: vk.clone(),
                 voting_power: 1.into(),
-                voting_group: "g".into(),
+                voting_group: "g".to_string(),
             },
             VoterHIR {
                 voting_key: vk.clone(),
                 voting_power: 1.into(),
-                voting_group: "gg".into(),
+                voting_group: "gg".to_string(),
             },
         ];
-        snapshot.update_tag("a".into(), entries.clone());
+        snapshot.update_tag("a".to_string(), entries.clone());
         assert_eq!(snapshot.get_voting_power("a", &vk), entries);
     }
 
     #[test]
     fn test_tags() {
         let mut hirs = BTreeMap::new();
-        hirs.insert("a".into(), Vec::new());
-        hirs.insert("b".into(), Vec::new());
-        hirs.insert("c".into(), Vec::new());
+        hirs.insert("a".to_string(), Vec::new());
+        hirs.insert("b".to_string(), Vec::new());
+        hirs.insert("c".to_string(), Vec::new());
         assert_eq!(
             &[String::from("a"), String::from("b"), String::from("c")],
             VoterSnapshot { hirs_by_tag: hirs }.tags().as_slice()

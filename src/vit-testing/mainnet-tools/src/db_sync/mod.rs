@@ -1,5 +1,5 @@
-use catalyst_toolbox::snapshot::VotingRegistration;
 use jormungandr_lib::interfaces::BlockDate;
+use snapshot_lib::registration::VotingRegistration;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 

@@ -23,6 +23,7 @@ pub use initials::{
 pub use migrations::{Error as MigrationError, MigrationFilesBuilder};
 use serde::{Deserialize, Serialize};
 pub use service::Service;
+use snapshot_lib::VoterHIR;
 pub use static_data::StaticData;
 use std::path::Path;
 use std::time::Duration;
@@ -30,7 +31,6 @@ use time::format_description::{self, FormatItem};
 use valgrind::Protocol;
 pub use vote_plan::VotePlan;
 pub use vote_time::{VoteBlockchainTime, VoteTime, FORMAT as VOTE_TIME_FORMAT};
-use voting_hir::VoterHIR;
 
 #[derive(Clone, Debug, Deserialize, Serialize, Default)]
 pub struct Config {

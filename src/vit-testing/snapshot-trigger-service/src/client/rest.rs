@@ -72,7 +72,7 @@ impl SnapshotRestClient {
         output: P,
     ) -> Result<(), Error> {
         self.download(
-            format!("{}/{}_snapshot.json", id.into(), tag.into()),
+            format!("{}/{}_snapshot.json", id.into().remove_quotas(), tag.into()),
             output,
         )
     }
@@ -80,7 +80,7 @@ impl SnapshotRestClient {
     pub fn get_snapshot<S: Into<String>>(&self, id: S, tag: S) -> Result<String, Error> {
         self.get(format!(
             "api/job/files/get/{}/{}_snapshot.json",
-            id.into().replace("'\"'", ""),
+            id.into().remove_quotas(),
             tag.into()
         ))
     }
@@ -94,7 +94,10 @@ impl SnapshotRestClient {
     }
 
     pub fn get_status<S: Into<String>>(&self, id: S) -> Result<State, Error> {
-        let status_string = self.get(format!("api/job/files/get/{}/status.yaml", id.into()))?;
+        let status_string = self.get(format!(
+            "api/job/files/get/{}/status.yaml",
+            id.into().remove_quotas()
+        ))?;
         Ok(serde_yaml::from_str(&status_string)?)
     }
 
@@ -122,14 +125,14 @@ impl SnapshotRestClient {
             .send()?
             .text()
             .map_err(Into::into)
-            .map(|text| text.replace("'\"'", ""))
+            .map(|text| text.remove_quotas())
     }
 
     pub fn job_status<S: Into<String>>(
         &self,
         id: S,
     ) -> Result<Result<State, crate::context::Error>, Error> {
-        let content = self.get(format!("api/job/status/{}", id.into()))?;
+        let content = self.get(format!("api/job/status/{}", id.into().remove_quotas()))?;
         serde_yaml::from_str(&content).map_err(Into::into)
     }
 
@@ -156,6 +159,17 @@ impl SnapshotRestClient {
             return response.status() == reqwest::StatusCode::OK;
         }
         false
+    }
+}
+
+pub trait StringExtension {
+    fn remove_quotas(self) -> Self;
+}
+
+impl StringExtension for String {
+    fn remove_quotas(self) -> Self {
+        #[allow(clippy::single_char_pattern)]
+        self.replace("\"", "")
     }
 }
 

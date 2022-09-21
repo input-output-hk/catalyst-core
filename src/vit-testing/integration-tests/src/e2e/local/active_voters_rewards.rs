@@ -1,15 +1,17 @@
 use crate::Vote;
+use std::collections::HashSet;
 
-use crate::common::iapyx_from_mainnet;
 use crate::common::mainnet_wallet_ext::MainnetWalletExtension;
 use crate::common::snapshot::SnapshotServiceStarter;
+use crate::common::snapshot_filter::SnapshotFilterSource;
 use crate::common::MainnetWallet;
+use crate::common::{iapyx_from_mainnet, DIRECT_VOTING_GROUP};
 use assert_fs::TempDir;
 use catalyst_toolbox::rewards::voters::calc_voter_rewards;
-use catalyst_toolbox::snapshot::snapshot_test_api::DummyAssigner;
+use catalyst_toolbox::rewards::Threshold;
 use chain_impl_mockchain::block::BlockDate;
-use fraction::Fraction;
 use jormungandr_automation::testing::time;
+use jormungandr_lib::crypto::account::Identifier;
 use mainnet_tools::db_sync::DbSyncInstance;
 use mainnet_tools::network::MainnetNetwork;
 use mainnet_tools::voting_tools::VotingToolsMock;
@@ -62,12 +64,8 @@ pub fn voters_with_at_least_one_vote() {
         .with_configuration(configuration)
         .start_on_available_port(&testing_directory)
         .unwrap()
-        .snapshot(
-            JobParameters::fund("fund9"),
-            450u64,
-            Fraction::from(1u64),
-            &DummyAssigner,
-        );
+        .snapshot(JobParameters::fund("fund9"))
+        .filter_default(&HashSet::new());
 
     let vote_timing = VoteBlockchainTime {
         vote_start: 0,
@@ -92,7 +90,7 @@ pub fn voters_with_at_least_one_vote() {
     let (mut controller, vit_parameters, network_params) =
         vitup_setup(&config, testing_directory.path().to_path_buf()).unwrap();
 
-    let (nodes, _vit_station, wallet_proxy) = spawn_network(
+    let (nodes, vit_station, wallet_proxy) = spawn_network(
         &mut controller,
         vit_parameters,
         network_params,
@@ -122,29 +120,62 @@ pub fn voters_with_at_least_one_vote() {
     };
     time::wait_for_date(target_date.into(), nodes[0].rest());
 
+    let proposals = vit_station.proposals(DIRECT_VOTING_GROUP).unwrap();
+
     let account_votes_count = nodes[0]
         .rest()
         .account_votes_all()
         .unwrap()
         .iter()
-        .map(|(a, account_votes)| {
-            (
-                a.clone(),
-                account_votes
-                    .iter()
-                    .map(|av| av.votes.clone())
-                    .fold(0u64, |sum, votes| sum + votes.len() as u64),
-            )
+        .map(|(id, account_votes)| {
+            let votes = account_votes
+                .iter()
+                .map(|av| {
+                    let vps = nodes[0].rest().vote_plan_statuses().unwrap();
+
+                    let mut proposals = HashSet::new();
+                    for vote_index in av.votes.iter() {
+                        for status in &vps {
+                            if status.id == av.vote_plan_id {
+                                proposals.insert(
+                                    status
+                                        .proposals
+                                        .iter()
+                                        .find(|p| p.index == *vote_index)
+                                        .unwrap()
+                                        .proposal_id,
+                                );
+                            }
+                        }
+                    }
+                    proposals
+                })
+                .fold(HashSet::new(), |mut acc, items| {
+                    for item in items {
+                        acc.insert(item);
+                    }
+                    acc
+                });
+
+            (Identifier::from_bech32_str(id).unwrap(), votes)
         })
         .collect();
 
-    println!("{:?}", account_votes_count);
-
     let records = calc_voter_rewards(
         account_votes_count,
-        1,
-        snapshot.to_full_snapshot_info(),
-        100u32.into(),
+        snapshot.snapshot().to_full_snapshot_info(),
+        Threshold::new(
+            1_000_000,
+            vit_station
+                .challenges()
+                .unwrap()
+                .iter()
+                .map(|x| (x.id, x.proposers_rewards as usize))
+                .collect(),
+            proposals,
+        )
+        .unwrap(),
+        1_000_000u32.into(),
     )
     .unwrap();
 

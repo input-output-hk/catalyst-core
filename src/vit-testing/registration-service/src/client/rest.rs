@@ -1,7 +1,7 @@
 use crate::context::State;
 use crate::file_lister::FolderDump;
 use crate::request::Request;
-use jortestkit::{prelude::Wait, process::WaitError};
+use jortestkit::{prelude::Wait, process::WaitError, string::rem_first};
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
@@ -75,7 +75,7 @@ impl RegistrationRestClient {
             .file_name()
             .ok_or(Error::CannotFindQrCode(id))?;
         let output_path = output_dir.as_ref().join(file_name);
-        self.download(Self::rem_first(qr_code_file_sub_url), output_path.clone())?;
+        self.download(rem_first(qr_code_file_sub_url), output_path.clone())?;
         Ok(output_path)
     }
 
@@ -119,7 +119,8 @@ impl RegistrationRestClient {
         &self,
         id: S,
     ) -> Result<Result<State, crate::context::Error>, Error> {
-        let content = self.get(format!("api/job/status/{}", id.into()))?;
+        #[allow(clippy::single_char_pattern)]
+        let content = self.get(format!("api/job/status/{}", id.into().replace("\"", "")))?;
         serde_yaml::from_str(&content).map_err(Into::into)
     }
 
@@ -146,12 +147,6 @@ impl RegistrationRestClient {
             return response.status() == reqwest::StatusCode::OK;
         }
         false
-    }
-
-    fn rem_first(value: &str) -> &str {
-        let mut chars = value.chars();
-        chars.next();
-        chars.as_str()
     }
 }
 

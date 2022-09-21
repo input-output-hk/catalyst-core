@@ -1,16 +1,15 @@
 use crate::common::mainnet_wallet_ext::MainnetWalletExtension;
 use crate::common::snapshot::SnapshotServiceStarter;
+use crate::common::snapshot_filter::SnapshotFilterSource;
 use crate::common::MainnetWallet;
 use assert_fs::TempDir;
-use catalyst_toolbox::snapshot::voting_group::RepsVotersAssigner;
-use fraction::Fraction;
 use mainnet_tools::db_sync::DbSyncInstance;
 use mainnet_tools::network::MainnetNetwork;
 use mainnet_tools::voting_tools::VotingToolsMock;
+use snapshot_lib::VoterHIR;
 use snapshot_trigger_service::config::ConfigurationBuilder;
 use snapshot_trigger_service::config::JobParameters;
 use std::collections::HashSet;
-use voting_hir::VoterHIR;
 
 const DIRECT_VOTING_GROUP: &str = "direct";
 const REP_VOTING_GROUP: &str = "rep";
@@ -62,24 +61,13 @@ pub fn mixed_registration_transactions() {
         .with_tmp_result_dir(&testing_directory)
         .build();
 
-    let assigner = RepsVotersAssigner::new_from_repsdb(
-        DIRECT_VOTING_GROUP.to_string(),
-        REP_VOTING_GROUP.to_string(),
-        reps,
-    )
-    .unwrap();
-
     let voters_hir = SnapshotServiceStarter::default()
         .with_configuration(configuration)
         .start_on_available_port(&testing_directory)
         .unwrap()
-        .snapshot(
-            JobParameters::fund("fund9"),
-            450u64,
-            Fraction::from(1u64),
-            &assigner,
-        )
-        .to_voter_hir();
+        .snapshot(JobParameters::fund("fund9"))
+        .filter_default(&reps)
+        .to_voters_hirs();
 
     assert!(voters_hir
         .iter()

@@ -2,15 +2,20 @@ mod assert;
 pub mod load;
 pub mod mainnet_wallet_ext;
 pub mod registration;
+mod reps;
 mod rewards;
 pub mod snapshot;
+pub(crate) mod snapshot_filter;
 mod static_data;
 mod vote_plan_status;
 mod wallet;
 
+pub use reps::{empty_assigner, RepsVoterAssignerSource, DIRECT_VOTING_GROUP, REP_VOTING_GROUP};
+
 pub use assert::*;
 pub use mainnet_tools::wallet::MainnetWallet;
 pub use rewards::{funded_proposals, VotesRegistry};
+pub use snapshot_filter::SnapshotFilter;
 pub use static_data::SnapshotExtensions;
 use thiserror::Error;
 pub use vote_plan_status::{CastedVote, VotePlanStatusProvider};

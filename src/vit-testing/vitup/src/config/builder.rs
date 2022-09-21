@@ -5,13 +5,14 @@ pub use crate::builders::{
 };
 use crate::config::date_format;
 use crate::config::Block0Initials;
+use crate::config::SnapshotInitials;
 use crate::config::{Config, Initials, VoteTime};
 use chain_addr::Discrimination;
 use chain_impl_mockchain::fee::LinearFee;
 use jormungandr_lib::interfaces::CommitteeIdDef;
 use jormungandr_lib::interfaces::ConsensusLeaderId;
+use snapshot_lib::VoterHIR;
 use time::OffsetDateTime;
-use voting_hir::VoterHIR;
 
 #[derive(Default)]
 pub struct ConfigBuilder {
@@ -34,6 +35,11 @@ impl ConfigBuilder {
 
     pub fn block0_initials(mut self, initials: Block0Initials) -> Self {
         self.config.initials.block0 = initials;
+        self
+    }
+
+    pub fn snapshot_initials(mut self, initials: SnapshotInitials) -> Self {
+        self.config.initials.snapshot = Some(initials);
         self
     }
 

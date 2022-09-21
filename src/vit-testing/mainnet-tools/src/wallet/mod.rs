@@ -3,12 +3,12 @@ mod sender;
 
 use crate::wallet::key::MainnetKey;
 use bech32::ToBase32;
-use catalyst_toolbox::snapshot::registration::{Delegations, VotingRegistration};
 use chain_addr::Discrimination;
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::crypto::account::SigningKey;
 use jormungandr_lib::interfaces::Address;
 use sender::RegistrationSender;
+use snapshot_lib::registration::{Delegations, VotingRegistration};
 
 pub struct MainnetWallet {
     catalyst: thor::Wallet,

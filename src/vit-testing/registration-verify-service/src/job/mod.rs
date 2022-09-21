@@ -8,8 +8,8 @@ use crate::job::info::RegistrationInfo;
 use crate::job::info::SnapshotInfo;
 use crate::request::{Request, Source};
 use catalyst_toolbox::kedqr::PinReadMode;
+use chain_addr::{AddressReadable, Discrimination};
 use chain_crypto::Ed25519;
-use iapyx::utils::qr::PinReadError;
 use iapyx::utils::qr::Secret;
 use iapyx::utils::qr::SecretFromQrCode;
 pub use info::JobOutputInfo;
@@ -120,7 +120,7 @@ impl RegistrationVerifyJob {
                     Ok(secret_key) => Some(self.extract_identifier_from_public_key(
                         secret_key.to_public(),
                         checks,
-                        "succesfully read qr code",
+                        "successfully read qr code",
                     )),
                     Err(err) => {
                         checks.push(Assert::Failed(format!("malformed qr: '{}'", err)));
@@ -204,6 +204,9 @@ impl RegistrationVerifyJob {
             }
         };
 
+        let address_readable =
+            AddressReadable::from_address("ca", &identifier.to_address(Discrimination::Production));
+
         context
             .lock()
             .unwrap()
@@ -214,10 +217,10 @@ impl RegistrationVerifyJob {
             Some(entry) => {
                 checks.push(Assert::Passed(format!(
                     "wallet found in snapshot ('{}') with funds: '{}'",
-                    entry.voting_key, entry.voting_power
+                    address_readable, entry.voting_power
                 )));
                 checks.push(Assert::Passed(format!(
-                    "wallat is eligible for voting (has more than threshold '{}') with funds: '{}'",
+                    "wallet is eligible for voting (has more than threshold '{}') with funds: '{}'",
                     request.threshold, entry.voting_power
                 )));
                 checks.push(Assert::from_eq(
@@ -232,7 +235,7 @@ impl RegistrationVerifyJob {
             }
             None => {
                 checks.push(Assert::Failed(format!(
-                    "wallet not found in snapshot '{}' or has less than theshold: '{}'",
+                    "wallet not found in snapshot '{}' or has less than threshold: '{}'",
                     identifier, request.threshold
                 )));
             }
@@ -260,8 +263,6 @@ pub enum Error {
     CannotParseCardanoCliOutput(Vec<String>),
     #[error("snapshot trigger service")]
     SnapshotTriggerService(#[from] snapshot_trigger_service::client::Error),
-    #[error("snapshot trigger service")]
-    PinReadError(#[from] PinReadError),
-    #[error("in mainnet mode snapshot is not runned on each request. Can't find job id of last snapshot job")]
+    #[error("in mainnet mode snapshot is not run on each request. Can't find job id of last snapshot job")]
     SnapshotJobIdNotDefined,
 }

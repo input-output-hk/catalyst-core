@@ -17,10 +17,11 @@ signals-handler = { path = "../signals-handler" }
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1.2", features = ["macros","rt","process"] }
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "test_api_for_snapshot", features = [ "test-api" ]}
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "main", features = [ "test-api" ]}
 chain-addr           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 chain-crypto         = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 tempdir = "0.3.7"
+snapshot-lib = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "main", features=["proptest"] }
 thor = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 rand = "0.8"
 assert_fs = "1.0"

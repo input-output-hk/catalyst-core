@@ -6,8 +6,7 @@ use crate::config::JobParameters;
 use crate::State;
 use jormungandr_lib::crypto::account::Identifier;
 use jortestkit::prelude::WaitBuilder;
-use thiserror::Error;
-use voting_hir::VoterHIR;
+use snapshot_lib::registration::{Delegations, VotingRegistration};
 
 pub fn do_snapshot<S: Into<String>, P: Into<String>>(
     job_params: JobParameters,
@@ -75,18 +74,22 @@ pub fn get_snapshot_from_history_by_id<Q: Into<String>, S: Into<String>, P: Into
     })
 }
 
-pub fn read_initials<S: Into<String>>(snapshot: S) -> Result<Vec<VoterHIR>, Error> {
+pub fn read_initials<S: Into<String>>(snapshot: S) -> Result<Vec<VotingRegistration>, Error> {
     let snapshot = snapshot.into();
-    serde_json::from_str(&snapshot).map_err(|_| Error::CannotParseSnapshotContent(snapshot.clone()))
+    serde_json::from_str(&snapshot).map_err(Into::into)
 }
 
 #[derive(Debug)]
 pub struct SnapshotResult {
     status: State,
-    snapshot: Vec<VoterHIR>,
+    snapshot: Vec<VotingRegistration>,
 }
 
 impl SnapshotResult {
+    pub fn new(status: State, snapshot: Vec<VotingRegistration>) -> Self {
+        Self { status, snapshot }
+    }
+
     pub fn assert_status_is_finished(&self) {
         matches!(self.status, State::Finished { .. });
     }
@@ -95,30 +98,48 @@ impl SnapshotResult {
         self.status.clone()
     }
 
-    pub fn initials(&self) -> &Vec<VoterHIR> {
+    pub fn registrations(&self) -> &Vec<VotingRegistration> {
         &self.snapshot
     }
 
-    pub fn by_identifier(&self, identifier: &Identifier) -> Option<VoterHIR> {
-        self.initials()
+    pub fn by_identifier(&self, identifier: &Identifier) -> Option<VotingRegistration> {
+        self.registrations()
             .iter()
             .cloned()
-            .find(|x| x.voting_key == *identifier)
+            .find(|x| match &x.delegations {
+                Delegations::Legacy(id) => id == identifier,
+                Delegations::New(_dist) => false,
+            })
+    }
+
+    pub fn by_delegation(&self, id: &Identifier) -> Result<Option<VotingRegistration>, Error> {
+        Ok(self
+            .registrations()
+            .iter()
+            .cloned()
+            .find(|reg| match &reg.delegations {
+                Delegations::Legacy(delegation) => delegation == id,
+                Delegations::New(delegations) => {
+                    delegations.iter().any(|(identifier, _)| identifier == id)
+                }
+            }))
+    }
+
+    pub fn contains_voting_key(&self, id: &Identifier) -> Result<bool, Error> {
+        Ok(self.by_delegation(id)?.is_some())
     }
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, thiserror::Error)]
 pub enum Error {
-    #[error("cannot parse file {0}")]
-    CannotParseSnapshotContent(String),
+    #[error(transparent)]
+    SerdeError(#[from] serde_json::Error),
     #[error("rest error")]
     ContextError(#[from] crate::context::Error),
     #[error("context error")]
     RestError(#[from] crate::client::rest::Error),
     #[error("rest error")]
     ChainError(#[from] chain_addr::Error),
-    #[error("serialization error")]
-    SerdeError(#[from] serde_json::Error),
     #[error(transparent)]
     Config(#[from] crate::config::Error),
 }

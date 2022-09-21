@@ -2,6 +2,7 @@ use crate::common::iapyx_from_qr;
 use crate::common::registration::{do_registration, RegistrationResultAsserts};
 use crate::common::snapshot::do_snapshot;
 use crate::common::snapshot::wait_for_db_sync;
+use crate::common::snapshot_filter::SnapshotFilterSource;
 use crate::Vote;
 use assert_fs::TempDir;
 use chain_impl_mockchain::header::BlockDate;
@@ -9,6 +10,7 @@ use jormungandr_automation::testing::asserts::VotePlanStatusAssert;
 use jormungandr_automation::testing::time;
 use registration_service::utils::PinProvider;
 use snapshot_trigger_service::config::JobParameters;
+use std::collections::HashSet;
 use thor::FragmentSender;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::Block0Initials;
@@ -23,24 +25,29 @@ const GRACE_PERIOD_FOR_SNAPSHOT: u64 = 300;
 pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
     let result = do_registration(&temp_dir).as_legacy_registration().unwrap();
+    let voting_threshold = 1;
 
     result.status().assert_is_finished();
     result.assert_qr_equals_to_sk();
 
-    println!("Registraton Result: {:?}", result);
+    println!("Registration Result: {:?}", result);
 
     let job_param = JobParameters {
         slot_no: Some(result.status().slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
         tag: None,
     };
 
+    let reps = HashSet::new();
+
     wait_for_db_sync();
-    let snapshot_result = do_snapshot(job_param).unwrap();
+    let voter_hir = do_snapshot(job_param)
+        .unwrap()
+        .filter_default(&reps)
+        .to_voters_hirs();
 
-    println!("Snapshot: {:?}", snapshot_result);
-
-    let entry = snapshot_result
-        .by_identifier(&result.identifier().unwrap())
+    let entry = voter_hir
+        .iter()
+        .find(|x| x.voting_key == result.identifier().unwrap())
         .unwrap();
 
     let vote_timing = VoteBlockchainTime {
@@ -55,9 +62,9 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
         .slot_duration_in_seconds(2)
         .vote_timing(vote_timing.into())
         .proposals_count(300)
-        .voting_power(1)
+        .voting_power(voting_threshold)
         .block0_initials(Block0Initials::new_from_external(
-            snapshot_result.initials().to_vec(),
+            voter_hir.clone(),
             chain_addr::Discrimination::Production,
         ))
         .private(false)

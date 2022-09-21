@@ -1,7 +1,6 @@
 use crate::common::snapshot::SnapshotServiceStarter;
-use crate::common::MainnetWallet;
+use crate::common::{MainnetWallet, SnapshotFilter};
 use assert_fs::TempDir;
-use catalyst_toolbox::snapshot::voting_group::RepsVotersAssigner;
 use chain_impl_mockchain::certificate::VotePlan;
 use fraction::Fraction;
 use hersir::builder::Settings;
@@ -15,6 +14,7 @@ use jormungandr_lib::interfaces::Value;
 use mainnet_tools::db_sync::DbSyncInstance;
 use mainnet_tools::network::MainnetNetwork;
 use mainnet_tools::voting_tools::VotingToolsMock;
+use snapshot_lib::voting_group::RepsVotersAssigner;
 use snapshot_trigger_service::config::ConfigurationBuilder;
 use snapshot_trigger_service::config::JobParameters;
 use std::collections::HashSet;
@@ -84,14 +84,14 @@ pub fn cip36_mixed_delegation_should_appear_in_block0() {
         .start_on_available_port(&testing_directory)
         .unwrap();
 
-    let voter_hir = snapshot_service
-        .snapshot(
-            JobParameters::fund("fund9"),
-            450u64,
-            Fraction::from(1u64),
-            &assigner,
-        )
-        .to_voter_hir();
+    let snapshot_result = snapshot_service.snapshot(JobParameters::fund("fund9"));
+    let voter_hir = SnapshotFilter::from_snapshot_result(
+        &snapshot_result,
+        450u64.into(),
+        Fraction::from(1u64),
+        &assigner,
+    )
+    .to_voters_hirs();
 
     let mut config = ConfigBuilder::default().build();
     config

@@ -1,10 +1,7 @@
-use catalyst_toolbox::snapshot::voting_group::VotingGroupAssigner;
-use catalyst_toolbox::snapshot::RawSnapshot;
-use catalyst_toolbox::snapshot::Snapshot;
-use catalyst_toolbox::snapshot::VotingRegistration;
-use fraction::Fraction;
 use jortestkit::prelude::Wait;
+use snapshot_lib::registration::VotingRegistration;
 use snapshot_trigger_service::client::rest::SnapshotRestClient;
+use snapshot_trigger_service::client::SnapshotResult;
 use snapshot_trigger_service::config::Configuration;
 use snapshot_trigger_service::config::JobParameters;
 use std::process::Child;
@@ -36,16 +33,11 @@ impl SnapshotServiceController {
         &self.configuration
     }
 
-    pub fn snapshot(
-        &self,
-        job_params: JobParameters,
-        threshold: u64,
-        fraction: Fraction,
-        voting_group_assigner: &impl VotingGroupAssigner,
-    ) -> Snapshot {
+    pub fn snapshot(&self, job_params: JobParameters) -> SnapshotResult {
         let id = self.client().job_new(job_params.clone()).unwrap();
 
-        self.client()
+        let status = self
+            .client()
             .wait_for_job_finish(&id, Wait::new(std::time::Duration::from_secs(10), 5))
             .unwrap();
 
@@ -53,16 +45,9 @@ impl SnapshotServiceController {
             .client()
             .get_snapshot(id, job_params.tag.as_ref().unwrap().to_string())
             .unwrap();
-        let raw_snapshot: Vec<VotingRegistration> =
-            serde_json::from_str(&snapshot_content).unwrap();
+        let snapshot: Vec<VotingRegistration> = serde_json::from_str(&snapshot_content).unwrap();
 
-        Snapshot::from_raw_snapshot(
-            RawSnapshot::from(raw_snapshot),
-            threshold.into(),
-            fraction,
-            voting_group_assigner,
-        )
-        .unwrap()
+        SnapshotResult::new(status, snapshot)
     }
 }
 

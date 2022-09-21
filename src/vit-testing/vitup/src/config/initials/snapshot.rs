@@ -3,8 +3,9 @@ use chain_crypto::PublicKeyFromStrError;
 use hersir::builder::Wallet as WalletSettings;
 use jormungandr_lib::crypto::account::Identifier;
 use serde::{Deserialize, Serialize};
+use snapshot_lib::VoterHIR;
+use std::str::FromStr;
 use thor::{Wallet, WalletAlias};
-use voting_hir::VoterHIR;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Initials {
@@ -22,6 +23,20 @@ impl Default for Initials {
 }
 
 impl Initials {
+    pub fn from_voters_hir(voters_hir: Vec<VoterHIR>, tag: String) -> Self {
+        Self {
+            tag,
+            content: voters_hir
+                .iter()
+                .map(|hir| Initial::External {
+                    key: hir.voting_key.to_hex(),
+                    funds: hir.voting_power.into(),
+                    role: Role::from_str(&hir.voting_group).unwrap(),
+                })
+                .collect(),
+        }
+    }
+
     pub fn as_voters_hirs(
         &self,
         defined_wallets: Vec<(&WalletAlias, &WalletSettings)>,

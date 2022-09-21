@@ -1,7 +1,7 @@
 use crate::common::registration::{do_registration, RegistrationResultAsserts};
 use crate::common::snapshot::do_snapshot;
 use crate::common::snapshot::wait_for_db_sync;
-use crate::common::snapshot::VoterHIRAsserts;
+use crate::common::snapshot::RegistrationAsserts;
 use assert_fs::TempDir;
 use snapshot_trigger_service::config::JobParameters;
 const GRACE_PERIOD_FOR_SNAPSHOT: u64 = 300;
@@ -35,13 +35,15 @@ pub fn multiple_registration() {
 
     wait_for_db_sync();
     let snapshot_result = do_snapshot(job_param).unwrap();
-    let snapshot_entries = snapshot_result.initials();
+    let snapshot_entries = snapshot_result.registrations();
 
     snapshot_entries.assert_contains_voting_key_and_value(&identifier, value);
     snapshot_entries.assert_not_contain_voting_key(&overridden_identifier);
 }
 
-//SR002
+///
+///SR002
+/// Test for catalyst-toolbox filter which should remove entry from snapshot with too low funds
 #[test]
 pub fn wallet_has_less_than_threshold() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
@@ -60,7 +62,7 @@ pub fn wallet_has_less_than_threshold() {
     wait_for_db_sync();
     let snapshot_result = do_snapshot(job_param).unwrap();
     snapshot_result
-        .initials()
+        .registrations()
         .assert_not_contain_voting_key(&too_low_funds_entry);
 }
 
@@ -84,7 +86,7 @@ pub fn wallet_with_funds_equals_to_threshold_should_be_elligible_to_vote() {
     wait_for_db_sync();
     let snapshot_result = do_snapshot(job_param).unwrap();
     snapshot_result
-        .initials()
+        .registrations()
         .assert_not_contain_voting_key(&id);
 }
 
@@ -106,7 +108,7 @@ pub fn registration_after_snapshot_is_not_taken_into_account() {
 
     wait_for_db_sync();
     let snapshot_result = do_snapshot(job_param).unwrap();
-    let initials = snapshot_result.initials();
+    let initials = snapshot_result.registrations();
 
     initials.assert_not_contain_voting_key(&too_late_id);
 }

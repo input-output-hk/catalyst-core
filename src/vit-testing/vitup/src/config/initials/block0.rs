@@ -6,12 +6,13 @@ use fake::faker::name::en::Name;
 use fake::Fake;
 use hersir::builder::wallet::template::builder::WalletTemplateBuilder;
 use hersir::builder::{ExternalWalletTemplate, WalletTemplate};
+use jormungandr_lib::interfaces::InitialUTxO;
 use jormungandr_lib::interfaces::TokenIdentifier;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
+use snapshot_lib::VoterHIR;
 use std::collections::HashMap;
 use std::str::FromStr;
-use voting_hir::VoterHIR;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Initials(pub Vec<Initial>);
@@ -77,6 +78,18 @@ impl Default for Initials {
     fn default() -> Self {
         Self(Vec::new())
     }
+}
+
+#[allow(dead_code)]
+pub fn convert_to_external_utxo(initials: Vec<InitialUTxO>) -> Vec<Initial> {
+    initials
+        .into_iter()
+        .map(|utxo| Initial::External {
+            address: utxo.address.to_string(),
+            funds: utxo.value.into(),
+            role: Default::default(),
+        })
+        .collect()
 }
 
 impl Initials {

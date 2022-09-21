@@ -1,7 +1,7 @@
 use super::Error;
 use crate::network::MainnetNetwork;
 use crate::wallet::key::MainnetKey;
-use catalyst_toolbox::snapshot::VotingRegistration;
+use snapshot_lib::registration::VotingRegistration;
 pub struct RegistrationSender {
     voting_registration: VotingRegistration,
     key: Option<MainnetKey>,

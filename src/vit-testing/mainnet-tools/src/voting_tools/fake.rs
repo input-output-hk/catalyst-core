@@ -1,6 +1,5 @@
-use catalyst_toolbox::snapshot::registration::Delegations;
-use catalyst_toolbox::snapshot::VotingRegistration;
 use jormungandr_lib::crypto::account::Identifier;
+use snapshot_lib::registration::{Delegations, VotingRegistration};
 
 pub fn default() -> Vec<VotingRegistration> {
     vec![

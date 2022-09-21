@@ -3,9 +3,9 @@ pub mod fake;
 
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
-use catalyst_toolbox::snapshot::VotingRegistration;
 use command::PATH_TO_DYNAMIC_CONTENT;
 pub use command::{Error, VoterRegistrationCommand};
+use snapshot_lib::registration::VotingRegistration;
 use std::env;
 use std::io::Write;
 use std::path::Path;

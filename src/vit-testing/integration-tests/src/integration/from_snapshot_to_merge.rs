@@ -1,11 +1,10 @@
 use crate::common::iapyx_from_mainnet;
 use crate::common::snapshot::SnapshotServiceStarter;
+use crate::common::snapshot_filter::SnapshotFilterSource;
 use crate::common::MainnetWallet;
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
-use catalyst_toolbox::snapshot::voting_group::RepsVotersAssigner;
 use chain_impl_mockchain::block::BlockDate;
-use fraction::Fraction;
 use jormungandr_automation::jcli::JCli;
 use jormungandr_lib::crypto::hash::Hash;
 use jormungandr_lib::interfaces::TallyResult;
@@ -77,26 +76,15 @@ pub fn cip36_and_voting_group_merge() {
         .with_tmp_result_dir(&testing_directory)
         .build();
 
-    let assigner = RepsVotersAssigner::new_from_repsdb(
-        DIRECT_VOTING_GROUP.to_string(),
-        REP_VOTING_GROUP.to_string(),
-        reps,
-    )
-    .unwrap();
-
     let snapshot_service = SnapshotServiceStarter::default()
         .with_configuration(configuration)
         .start_on_available_port(&testing_directory)
         .unwrap();
 
     let voter_hir = snapshot_service
-        .snapshot(
-            JobParameters::fund("fund9"),
-            450u64,
-            Fraction::from(1u64),
-            &assigner,
-        )
-        .to_voter_hir();
+        .snapshot(JobParameters::fund("fund9"))
+        .filter_default(&reps)
+        .to_voters_hirs();
 
     let vote_timing = VoteBlockchainTime {
         vote_start: 0,

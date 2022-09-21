@@ -1,18 +1,17 @@
 use crate::common::snapshot::SnapshotServiceStarter;
-use crate::common::MainnetWallet;
+use crate::common::snapshot_filter::SnapshotFilterSource;
+use crate::common::{
+    MainnetWallet, RepsVoterAssignerSource, DIRECT_VOTING_GROUP, REP_VOTING_GROUP,
+};
 use assert_fs::TempDir;
-use catalyst_toolbox::snapshot::voting_group::RepsVotersAssigner;
 use fraction::Fraction;
 use mainnet_tools::db_sync::DbSyncInstance;
 use mainnet_tools::network::MainnetNetwork;
 use mainnet_tools::voting_tools::VotingToolsMock;
+use snapshot_lib::VoterHIR;
 use snapshot_trigger_service::config::ConfigurationBuilder;
 use snapshot_trigger_service::config::JobParameters;
 use std::collections::HashSet;
-use voting_hir::VoterHIR;
-
-const DIRECT_VOTING_GROUP: &str = "direct";
-const REP_VOTING_GROUP: &str = "rep";
 
 #[test]
 pub fn cip36_mixed_delegation() {
@@ -62,24 +61,17 @@ pub fn cip36_mixed_delegation() {
         .with_tmp_result_dir(&testing_directory)
         .build();
 
-    let assigner = RepsVotersAssigner::new_from_repsdb(
-        DIRECT_VOTING_GROUP.to_string(),
-        REP_VOTING_GROUP.to_string(),
-        reps,
-    )
-    .unwrap();
-
     let voter_hir = SnapshotServiceStarter::default()
         .with_configuration(configuration)
         .start_on_available_port(&testing_directory)
         .unwrap()
-        .snapshot(
-            JobParameters::fund("fund9"),
-            450u64,
+        .snapshot(JobParameters::fund("fund9"))
+        .filter(
+            450u64.into(),
             Fraction::from(1u64),
-            &assigner,
+            &reps.into_reps_voter_assigner(),
         )
-        .to_voter_hir();
+        .to_voters_hirs();
 
     assert_eq!(voter_hir.len(), 3);
     assert!(voter_hir.contains(&VoterHIR {
@@ -147,24 +139,17 @@ pub fn voting_power_cap_for_reps() {
         .with_tmp_result_dir(&testing_directory)
         .build();
 
-    let assigner = RepsVotersAssigner::new_from_repsdb(
-        DIRECT_VOTING_GROUP.to_string(),
-        REP_VOTING_GROUP.to_string(),
-        reps,
-    )
-    .unwrap();
-
     let voter_hir = SnapshotServiceStarter::default()
         .with_configuration(configuration)
         .start_on_available_port(&testing_directory)
         .unwrap()
-        .snapshot(
-            JobParameters::fund("fund9"),
-            450u64,
+        .snapshot(JobParameters::fund("fund9"))
+        .filter(
+            450u64.into(),
             Fraction::new(1u64, reps_circle_size as u64),
-            &assigner,
+            &reps.into_reps_voter_assigner(),
         )
-        .to_voter_hir();
+        .to_voters_hirs();
 
     assert!(voter_hir.contains(&VoterHIR {
         voting_key: fred_representative.catalyst_public_key(),
@@ -207,24 +192,19 @@ pub fn voting_power_cap_for_direct() {
         .with_tmp_result_dir(&testing_directory)
         .build();
 
-    let assigner = RepsVotersAssigner::new_from_repsdb(
-        DIRECT_VOTING_GROUP.to_string(),
-        REP_VOTING_GROUP.to_string(),
-        HashSet::new(),
-    )
-    .unwrap();
+    let reps = HashSet::new();
 
     let voter_hir = SnapshotServiceStarter::default()
         .with_configuration(configuration)
         .start_on_available_port(&testing_directory)
         .unwrap()
-        .snapshot(
-            JobParameters::fund("fund9"),
-            450u64,
+        .snapshot(JobParameters::fund("fund9"))
+        .filter(
+            450u64.into(),
             Fraction::new(1u64, 3u64),
-            &assigner,
+            &reps.into_reps_voter_assigner(),
         )
-        .to_voter_hir();
+        .to_voters_hirs();
 
     assert!(voter_hir.contains(&VoterHIR {
         voting_key: clarice_voter.catalyst_public_key(),
@@ -272,26 +252,13 @@ pub fn voting_power_cap_for_mix() {
         .with_tmp_result_dir(&testing_directory)
         .build();
 
-    let assigner = RepsVotersAssigner::new_from_repsdb(
-        DIRECT_VOTING_GROUP.to_string(),
-        REP_VOTING_GROUP.to_string(),
-        reps,
-    )
-    .unwrap();
-
-    let snapshot_service = SnapshotServiceStarter::default()
+    let voter_hir = SnapshotServiceStarter::default()
         .with_configuration(configuration)
         .start_on_available_port(&testing_directory)
-        .unwrap();
-
-    let voter_hir = snapshot_service
-        .snapshot(
-            JobParameters::fund("fund9"),
-            450u64,
-            Fraction::new(1u64, 3u64),
-            &assigner,
-        )
-        .to_voter_hir();
+        .unwrap()
+        .snapshot(JobParameters::fund("fund9"))
+        .filter_default(&reps)
+        .to_voters_hirs();
 
     assert!(voter_hir.contains(&VoterHIR {
         voting_key: alice_voter.catalyst_public_key(),

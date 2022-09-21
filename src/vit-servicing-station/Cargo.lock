@@ -3439,7 +3439,7 @@ checksum = "2fd0db749597d91ff862fd1d55ea87f7855a744a8425a64695b6fca237d1dad1"
 [[package]]
 name = "snapshot-lib"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-toolbox?branch=main#0d43013f6eae212fc97eccab60cb97cda2d3d3fb"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox?branch=fix-nix-build#7c5d80c8f6660c57f0c316df02219f58a53d1d77"
 dependencies = [
  "bech32",
  "chain-crypto",

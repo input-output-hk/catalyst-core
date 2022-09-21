@@ -59,7 +59,7 @@ quircs = "0.10.0"
 symmetric-cipher = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
 graphql_client = { version = "0.10" }
 gag = "1"
-vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
+vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "fix-ci" }
 snapshot-lib = { path = "../snapshot-lib" }
 fraction = "0.10"
 tracing = "0.1"
@@ -75,7 +75,7 @@ proptest = { git = "https://github.com/input-output-hk/proptest", branch = "mast
 test-strategy = "0.2"
 serde_test = "1"
 snapshot-lib =  { path = "../snapshot-lib", features = ["proptest"] }
-vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
+vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "fix-ci" }
 
 [build-dependencies]
 versionisator = "1.0.3"

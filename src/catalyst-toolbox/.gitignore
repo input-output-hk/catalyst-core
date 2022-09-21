@@ -7,4 +7,6 @@ qr-code.svg
 
 /target
 /venv
-.pre-commit-config.yaml
+/.direnv
+/.pre-commit-config.yaml
+/result*

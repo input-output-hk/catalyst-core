@@ -85,7 +85,7 @@ mod test {
 
     #[test]
     fn test_output_csv() {
-        let resource_input = "../resources/testing/valid_assessments.csv";
+        let resource_input = "resources/testing/valid_assessments.csv";
         let tmp_file = assert_fs::NamedTempFile::new("outfile.csv").unwrap();
 
         let export = Export {

@@ -25,8 +25,8 @@ pub enum Error {
 
 #[derive(GraphQLQuery)]
 #[graphql(
-    query_path = "../resources/repsdb/all_representatives.graphql",
-    schema_path = "../resources/repsdb/schema.graphql",
+    query_path = "resources/repsdb/all_representatives.graphql",
+    schema_path = "resources/repsdb/schema.graphql",
     response_derives = "Debug"
 )]
 pub struct AllReps;

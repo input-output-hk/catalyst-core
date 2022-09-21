@@ -133,6 +133,7 @@
         packages =
           workspace
           // {
+            inherit pre-commit;
             default = workspace.vit-servicing-station-server;
           };
 

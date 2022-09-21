@@ -137,6 +137,7 @@
         packages =
           workspace
           // {
+            inherit pre-commit;
             default = workspace.catalyst-toolbox;
           };
 

@@ -7,9 +7,34 @@ on:
   pull_request:
 
 jobs:
-  build-server:
-    name: Build with Nix
+  decision:
+    name: Decide what we need to build
     runs-on: ubuntu-latest
+
+    outputs:
+      packages: ${{ steps.packages.outputs.packages }}
+
+    steps:
+    - name: Packages
+      id: packages
+      run: |
+        packages=$(nix eval .#packages.x86_64-linux --apply builtins.attrNames --json)
+        echo "PACKAGES -> $packages"
+        echo "::set-output name=packages::$packages"
+
+  build:
+    name: Build ${{ matrix.packages }}
+    needs:
+      - decision
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.decision.outputs.packages) }}
+        exclude:
+          - package: default
+
     steps:
 
     - name: Checkout
@@ -20,11 +45,17 @@ jobs:
       with:
         CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
-    - name: Flake check
-      run: nix flake check
-
-    - name: Build catalyst-toolbox
-      run: nix build -L .#catalyst-toolbox
-
-    - name: Build snapshot-lib
-      run: nix build -L .#snapshot-lib
+    - name: Build ${{ matrix.package }} package
+      run: |
+        path=$(nix eval --raw .#packages.x86_64-linux.${{ matrix.package }})
+        hash=${path:11:32}
+        url="https://iog.cachix.org/$hash.narinfo";
+        if curl --output /dev/null --silent --head --fail "$url"; then
+          echo "Nothing to build!!!"
+          echo ""
+          echo "See build log with:"
+          echo "  nix log $path"
+          echo ""
+        else
+          nix build .#packages.x86_64-linux.${{ matrix.package }} --show-trace -L
+        fi

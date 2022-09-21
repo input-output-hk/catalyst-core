@@ -11,7 +11,7 @@ jobs:
     name: Update dependencies
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - id: cargo-deps
         name: Cache cargo dependencies
@@ -57,7 +57,7 @@ jobs:
       NOTIFICATION_APP_CODE: ${{ secrets.NOTIFICATION_APP_CODE }}
       NOTIFICATION_ACCESS_TOKEN: ${{ secrets.NOTIFICATION_ACCESS_TOKEN }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Allow long paths on Windows
         if: ${{ runner.os == 'Windows' }}
@@ -115,7 +115,7 @@ jobs:
     env:
       CARGO_INCREMENTAL: 0
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -156,7 +156,7 @@ jobs:
       NOTIFICATION_ACCESS_TOKEN: ${{ secrets.NOTIFICATION_ACCESS_TOKEN }}
       
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
           
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1

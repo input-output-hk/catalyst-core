@@ -292,12 +292,7 @@ impl UpdateHandle {
             let delegations_power = entry
                 .contributions
                 .iter()
-                .map(
-                    |KeyContribution {
-                         reward_address: _,
-                         value,
-                     }| value,
-                )
+                .map(|KeyContribution { value, .. }| value)
                 .sum();
 
             let voting_key_bytes = voting_key.as_ref().as_ref();
@@ -556,12 +551,7 @@ mod test {
                     delegations_power: snapshot
                         .contributions
                         .iter()
-                        .map(
-                            |KeyContribution {
-                                 reward_address: _,
-                                 value,
-                             }| value
-                        )
+                        .map(|KeyContribution { value, .. }| value)
                         .sum(),
                     delegations_count: snapshot.contributions.len() as u64
                 })
@@ -586,12 +576,7 @@ mod test {
                     delegations_power: snapshot
                         .contributions
                         .iter()
-                        .map(
-                            |KeyContribution {
-                                 reward_address: _,
-                                 value,
-                             }| value
-                        )
+                        .map(|KeyContribution { value, .. }| value)
                         .sum(),
                     delegations_count: snapshot.contributions.len() as u64
                 })
@@ -613,12 +598,7 @@ mod test {
                     delegations_power: snapshot
                         .contributions
                         .iter()
-                        .map(
-                            |KeyContribution {
-                                 reward_address: _,
-                                 value,
-                             }| value
-                        )
+                        .map(|KeyContribution { value, .. }| value)
                         .sum(),
                     delegations_count: snapshot.contributions.len() as u64
                 })
@@ -686,10 +666,12 @@ mod test {
                         KeyContribution {
                             reward_address: "address_1".to_string(),
                             value: 2,
+                            stake_public_key: "stake_public_key_1".to_string(),
                         },
                         KeyContribution {
                             reward_address: "address_2".to_string(),
                             value: 2,
+                            stake_public_key: "stake_public_key_2".to_string(),
                         },
                     ],
                     hir: VoterHIR {
@@ -702,6 +684,7 @@ mod test {
                     contributions: vec![KeyContribution {
                         reward_address: "address_3".to_string(),
                         value: 3,
+                        stake_public_key: "stake_public_key_3".to_string(),
                     }],
                     hir: VoterHIR {
                         voting_key: Identifier::from_hex(keys[0]).unwrap(),

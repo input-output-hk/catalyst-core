@@ -507,7 +507,7 @@ dependencies = [
 [[package]]
 name = "catalyst-toolbox"
 version = "0.3.0"
-source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=main#020dd3f620c19373e08754c2ca298a6af6d376bc"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=main#93daa65b03a2ae1bf96a2380d3d41dcb5b2c2c0e"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",
@@ -2303,7 +2303,7 @@ dependencies = [
 [[package]]
 name = "hersir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#6d6b1bb9581f161ce2a99d83da8746b338c297aa"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e037228affb753ec03cfa0829e412275755b6d28"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2854,7 +2854,7 @@ checksum = "112c678d4050afce233f4f2852bb2eb519230b3cf12f33585275537d7e41578d"
 [[package]]
 name = "jcli"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#6d6b1bb9581f161ce2a99d83da8746b338c297aa"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e037228affb753ec03cfa0829e412275755b6d28"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2897,7 +2897,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-automation"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#6d6b1bb9581f161ce2a99d83da8746b338c297aa"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e037228affb753ec03cfa0829e412275755b6d28"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -2962,7 +2962,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-integration-tests"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#6d6b1bb9581f161ce2a99d83da8746b338c297aa"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e037228affb753ec03cfa0829e412275755b6d28"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -3014,7 +3014,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#6d6b1bb9581f161ce2a99d83da8746b338c297aa"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e037228affb753ec03cfa0829e412275755b6d28"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -3266,7 +3266,7 @@ dependencies = [
 [[package]]
 name = "loki"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#6d6b1bb9581f161ce2a99d83da8746b338c297aa"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e037228affb753ec03cfa0829e412275755b6d28"
 dependencies = [
  "chain-addr",
  "chain-core",
@@ -3503,7 +3503,7 @@ dependencies = [
 [[package]]
 name = "mjolnir"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#6d6b1bb9581f161ce2a99d83da8746b338c297aa"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e037228affb753ec03cfa0829e412275755b6d28"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -5543,7 +5543,7 @@ checksum = "f2dd574626839106c320a323308629dcb1acfc96e32a8cba364ddc61ac23ee83"
 [[package]]
 name = "snapshot-lib"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=main#020dd3f620c19373e08754c2ca298a6af6d376bc"
+source = "git+https://github.com/input-output-hk/catalyst-toolbox.git?branch=main#93daa65b03a2ae1bf96a2380d3d41dcb5b2c2c0e"
 dependencies = [
  "bech32 0.8.1",
  "chain-addr",
@@ -5560,25 +5560,6 @@ dependencies = [
  "serde_test",
  "test-strategy 0.2.0",
  "thiserror",
-]
-
-[[package]]
-name = "snapshot-service"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#63e800c9bb271612b378f84ea3d6eb229fed1cce"
-dependencies = [
- "chain-ser",
- "jormungandr-lib",
- "notify",
- "serde",
- "serde_json",
- "sled",
- "snapshot-lib",
- "thiserror",
- "time 0.3.9",
- "tokio 1.19.2",
- "tracing",
- "warp",
 ]
 
 [[package]]
@@ -5986,7 +5967,7 @@ dependencies = [
 [[package]]
 name = "thor"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#6d6b1bb9581f161ce2a99d83da8746b338c297aa"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#e037228affb753ec03cfa0829e412275755b6d28"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",
@@ -6734,22 +6715,25 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#63e800c9bb271612b378f84ea3d6eb229fed1cce"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#bb8c571354864b8959b0145fa65b242b689ec1f8"
 dependencies = [
  "async-trait",
  "base64 0.12.3",
+ "chain-ser",
  "diesel",
  "diesel_migrations",
  "dotenv",
  "http-zipkin",
  "itertools 0.9.0",
+ "jormungandr-lib",
  "libsqlite3-sys",
  "log",
  "notify",
  "serde",
  "serde_json",
  "simplelog",
- "snapshot-service",
+ "sled",
+ "snapshot-lib",
  "structopt",
  "strum 0.21.0",
  "strum_macros 0.21.1",
@@ -6765,7 +6749,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#63e800c9bb271612b378f84ea3d6eb229fed1cce"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#bb8c571354864b8959b0145fa65b242b689ec1f8"
 dependencies = [
  "assert_cmd 2.0.4",
  "assert_fs",
@@ -6793,7 +6777,6 @@ dependencies = [
  "serde",
  "serde_json",
  "snapshot-lib",
- "snapshot-service",
  "structopt",
  "tempfile",
  "thiserror",

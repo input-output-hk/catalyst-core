@@ -2,11 +2,11 @@
   description = "Incubator for catalyst related testing projects";
 
   nixConfig.extra-substituters = [
-    "https://vit.cachix.org"
+    "https://iog.cachix.org"
     "https://hydra.iohk.io"
   ];
   nixConfig.extra-trusted-public-keys = [
-    "vit.cachix.org-1:tuLYwbnzbxLzQHHN0fvZI2EMpVm/+R7AKUGqukc6eh8="
+    "iog.cachix.org-1:nYO0M9xTk/s5t1Bs9asZ/Sww/1Kt/hRhkLP0Hhv/ctY="
     "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
   ];
 
@@ -14,8 +14,6 @@
   inputs.flake-compat.url = "github:edolstra/flake-compat";
   inputs.flake-compat.flake = false;
   inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.gitignore.url = "github:hercules-ci/gitignore.nix";
-  inputs.gitignore.inputs.nixpkgs.follows = "nixpkgs";
   inputs.pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
   inputs.pre-commit-hooks.inputs.nixpkgs.follows = "nixpkgs";
   inputs.pre-commit-hooks.inputs.flake-utils.follows = "flake-utils";
@@ -35,7 +33,6 @@
     nixpkgs,
     flake-compat,
     flake-utils,
-    gitignore,
     pre-commit-hooks,
     rust-overlay,
     naersk,
@@ -43,7 +40,7 @@
     vit-servicing-station,
     jormungandr_,
     catalyst_toolbox_,
-    cardano-node
+    cardano-node,
   }:
     flake-utils.lib.eachSystem
     [
@@ -106,7 +103,7 @@
           unwrapped = naersk-lib.buildPackage {
             inherit (pkgCargo.package) name version;
 
-            root = gitignore.lib.gitignoreSource self;
+            root = self;
 
             cargoBuildOptions = x: x ++ cargoOptions;
             cargoTestOptions = x: x ++ cargoOptions;
@@ -168,7 +165,7 @@
         packages =
           workspace
           // {
-            inherit voting-tools;
+            inherit voting-tools pre-commit;
             default = workspace.vitup;
           };
 

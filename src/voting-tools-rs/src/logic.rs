@@ -53,16 +53,18 @@ pub fn voting_power(
             }
 
             let stake_addr = get_stake_address(&reg.metadata.stake_vkey, &network_info).ok()?;
-
             let voting_power = values.get(&stake_addr as &str)?.clone();
 
-            Some(Output {
+            let output = Output {
+                tx_id: reg.tx_id,
                 delegations: reg.metadata.delegations.clone(),
                 rewards_address: reg.metadata.rewards_addr.clone(),
                 stake_public_key: reg.metadata.stake_vkey.convert(),
                 voting_purpose: reg.metadata.purpose,
                 voting_power,
-            })
+            };
+
+            Some(output)
         })
         .collect();
 
@@ -165,3 +167,4 @@ impl Reg {
         }
     }
 }
+

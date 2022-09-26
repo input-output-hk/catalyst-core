@@ -33,6 +33,7 @@ pub struct Output {
     pub stake_public_key: StakePubKey,
     pub voting_power: BigDecimal,
     pub voting_purpose: VotingPurpose,
+    pub tx_id: TxId,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]

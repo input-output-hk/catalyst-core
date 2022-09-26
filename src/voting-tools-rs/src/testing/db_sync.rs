@@ -16,8 +16,6 @@
 //! test). It uses [`insta`][insta] as the snapshot testing library. Docs for how to use can be
 //! found in the crate docs
 //!
-//!
-//!
 //! [db download]: https://updates-cardano-testnet.s3.amazonaws.com/cardano-db-sync/index.html#13/
 //! [insta]: https://docs.rs/insta
 
@@ -37,6 +35,8 @@ fn test_db() -> Db {
 fn default_query() {
     let db = test_db();
     let outputs = crate::voting_power(&db, None, None, None).unwrap();
+
+
 
     insta::assert_json_snapshot!(outputs);
 }

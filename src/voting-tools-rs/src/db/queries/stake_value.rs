@@ -25,6 +25,8 @@ impl Db {
             Ok::<_, Report>((addr.as_str(), result))
         });
 
+        // If performance becomes an issue, we can replace this with `dashmap` and parallelize the
+        // loop with `rayon`
         let mut result = HashMap::with_capacity(rows.len());
 
         for row in rows {

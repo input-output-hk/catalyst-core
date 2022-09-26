@@ -1,5 +1,5 @@
 ---
-source: src/testing/db.rs
+source: src/testing/db_sync.rs
 expression: outputs
 ---
 [

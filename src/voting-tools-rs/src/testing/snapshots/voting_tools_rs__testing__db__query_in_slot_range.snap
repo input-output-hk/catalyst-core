@@ -1,5 +1,0 @@
----
-source: src/testing/db.rs
-expression: outputs
----
-[]

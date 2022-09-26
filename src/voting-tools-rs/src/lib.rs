@@ -1,6 +1,9 @@
 //! Rust implementation of voting tools
 //!
 //! Original Haskell repository is <https://github.com/input-output-hk/voting-tools>
+//!
+//! The queries themselves (as well as the details of the CLI) are different, but they should
+//! produce similar outputs. Malformed registrations are silently ignored.
 
 #![forbid(missing_docs)]
 #![warn(clippy::pedantic)]

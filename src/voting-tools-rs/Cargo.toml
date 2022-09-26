@@ -33,15 +33,18 @@ cardano-serialization-lib = "11.0.0"
 [dev-dependencies]
 proptest = { git = "https://github.com/input-output-hk/proptest" }
 test-strategy = "0.2"
-reqwest = { version = "0.11", features = ["rustls-tls", "blocking", "json"], default-features = false }
 serial_test = "0.9"
 tempdir = "0.3"
 tracing-test = "0.2"
 insta = { version = "1", features = ["json"] }
+postgres = "0.19"  # just to create the reference db in case it doesn't already exist
+diesel_migrations="2"
 
 [features]
-all_tests = ["db_tests"]
-db_tests = []  
+default = ["all_tests"]
+all_tests = ["reference_tests", "db_sync_tests"]
+reference_tests = []  
+db_sync_tests = []  
 
 [profile.dev.package.insta]
 opt-level = 3

@@ -1,0 +1,5 @@
+---
+source: src/testing/reference/mod.rs
+expression: simple_result
+---
+[]

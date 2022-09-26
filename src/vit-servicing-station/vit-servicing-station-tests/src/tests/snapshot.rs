@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::common::{
     clients::RawRestClient,
     snapshot::{Snapshot, SnapshotBuilder, SnapshotUpdater, VotingPower},
@@ -194,7 +196,8 @@ pub fn import_malformed_snapshot() {
 pub fn import_big_snapshot() {
     let temp_dir = TempDir::new().unwrap();
     let (server, data) = quick_start(&temp_dir).unwrap();
-    let rest_client = server.rest_client_with_token(&data.token_hash());
+    let mut rest_client = server.rest_client_with_token(&data.token_hash());
+    rest_client.set_timeout(Duration::new(600, 0));
 
     let snapshot = SnapshotBuilder::default()
         .with_tag("big")

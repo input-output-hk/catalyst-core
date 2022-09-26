@@ -37,6 +37,37 @@ table! {
 }
 
 table! {
+    snapshots (tag) {
+        tag -> Text,
+        last_updated -> BigInt,
+    }
+}
+
+table! {
+    voters (voting_key, voting_group, snapshot_tag) {
+        voting_key -> Text,
+        voting_power -> BigInt,
+        voting_group -> Text,
+        // should corresponds to the snapshot::tag,
+        snapshot_tag -> Text,
+    }
+}
+
+table! {
+    contributors (stake_public_key, voting_key, voting_group, snapshot_tag) {
+        stake_public_key -> Text,
+        reward_address -> Text,
+        value -> BigInt,
+        // should corresponds to the voters::tag,
+        voting_key -> Text,
+        // should corresponds to the voters::voting_group,
+        voting_group -> Text,
+        // should corresponds to the snapshot::tag,
+        snapshot_tag -> Text,
+    }
+}
+
+table! {
     funds (id) {
         id -> Integer,
         fund_name -> Text,

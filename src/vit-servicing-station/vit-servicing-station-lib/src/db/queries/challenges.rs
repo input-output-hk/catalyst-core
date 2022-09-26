@@ -14,7 +14,7 @@ pub async fn query_all_challenges(pool: &DbConnectionPool) -> Result<Vec<Challen
     tokio::task::spawn_blocking(move || {
         diesel::QueryDsl::order_by(
             challenges_dsl::challenges,
-            challenges::dsl::internal_id.asc(),
+            challenges_dsl::internal_id.asc(),
         )
         .load::<Challenge>(&db_conn)
         .map_err(|_| HandleError::InternalError("Error retrieving challenges".to_string()))
@@ -47,7 +47,7 @@ pub async fn query_challenges_by_fund_id(
             challenges_dsl::challenges,
             challenges_dsl::fund_id.eq(fund_id),
         )
-        .order_by(challenges::dsl::internal_id.asc())
+        .order_by(challenges_dsl::internal_id.asc())
         .load::<Challenge>(&db_conn)
         .map_err(|_e| HandleError::NotFound("Error loading challenges for fund id".to_string()))
     })

@@ -35,6 +35,7 @@ pub struct Fund {
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     pub registration_snapshot_time: i64,
+    #[serde(alias = "nextRegistrationSnapshotTime")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     pub next_registration_snapshot_time: i64,

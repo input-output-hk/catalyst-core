@@ -20,5 +20,5 @@ pub async fn get_all_funds(context: SharedContext) -> Result<Vec<i32>, HandleErr
 
 pub async fn put_fund(fund: Fund, context: SharedContext) -> Result<(), HandleError> {
     let pool = &context.read().await.db_connection_pool;
-    funds_queries::put_fund(fund, pool).await
+    funds_queries::put_fund(fund, pool)
 }

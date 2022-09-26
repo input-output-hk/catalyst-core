@@ -9,6 +9,7 @@ use logger::RestClientLogger;
 pub use raw::RestClient as RawRestClient;
 use reqwest::blocking::Response;
 use std::collections::HashMap;
+use std::time::Duration;
 use thiserror::Error;
 use url::Url;
 use vit_servicing_station_lib::db::models::challenges::Challenge;
@@ -194,6 +195,10 @@ impl RestClient {
 
     pub fn set_api_token(&mut self, token: String) {
         self.raw.set_api_token(token);
+    }
+
+    pub fn set_timeout(&mut self, timeout: Duration) {
+        self.raw.set_timeout(timeout);
     }
 
     pub fn set_origin<S: Into<String>>(&mut self, origin: S) {

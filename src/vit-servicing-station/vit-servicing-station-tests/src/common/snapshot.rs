@@ -87,11 +87,11 @@ impl SnapshotBuilder {
                                     "address_{:?}",
                                     rng.gen_range(1u64, 1_000u64)
                                 ),
-                                value: rng.gen_range(1u64, 1_000u64),
                                 stake_public_key: format!(
-                                    "stake_{:?}",
+                                    "address_{:?}",
                                     rng.gen_range(1u64, 1_000u64)
                                 ),
+                                value: rng.gen_range(1u64, 1_000u64),
                             })
                         })
                         .take(self.contributions_count)

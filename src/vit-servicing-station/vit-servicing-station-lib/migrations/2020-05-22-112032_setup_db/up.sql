@@ -145,6 +145,31 @@ create table votes (
     PRIMARY KEY("fragment_id")
 );
 
+create table snapshots (
+    tag TEXT NOT NULL primary key,
+    last_updated BIGINT NOT NULL
+);
+
+create table voters (
+    voting_key TEXT NOT NULL,
+    voting_power BIGINT NOT NULL,
+    voting_group TEXT NOT NULL,
+    snapshot_tag TEXT NOT NULL,
+    PRIMARY KEY(voting_key, voting_group, snapshot_tag)
+    FOREIGN KEY(snapshot_tag) REFERENCES snapshots(tag) ON DELETE CASCADE
+);
+
+create table contributors (
+    stake_public_key TEXT NOT NULL,
+    reward_address TEXT NOT NULL,
+    value BIGINT NOT NULL,
+    voting_key TEXT NOT NULL,
+    voting_group TEXT NOT NULL,
+    snapshot_tag TEXT NOT NULL,
+    PRIMARY KEY(stake_public_key, voting_key, voting_group, snapshot_tag),
+    FOREIGN KEY(snapshot_tag) REFERENCES snapshots(tag) ON DELETE CASCADE
+);
+
 CREATE VIEW full_proposals_info
 AS
 SELECT

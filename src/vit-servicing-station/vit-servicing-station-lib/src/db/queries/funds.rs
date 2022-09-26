@@ -137,7 +137,7 @@ pub fn insert_fund(fund: Fund, db_conn: &DbConnection) -> QueryResult<Fund> {
     funds::table.order(fund_dsl::id.desc()).first(db_conn)
 }
 
-pub async fn put_fund(fund: Fund, pool: &DbConnectionPool) -> Result<(), HandleError> {
+pub fn put_fund(fund: Fund, pool: &DbConnectionPool) -> Result<(), HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     diesel::replace_into(funds::table)
         .values(fund.values())

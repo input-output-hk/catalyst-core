@@ -11,4 +11,6 @@ DROP VIEW IF EXISTS full_proposals_info;
 DROP TABLE IF EXISTS goals;
 DROP TABLE IF EXISTS groups;
 DROP TABLE IF EXISTS votes;
-
+DROP TABLE IF EXISTS snapshots;
+DROP TABLE IF EXISTS voters;
+DROP TABLE IF EXISTS contributors;

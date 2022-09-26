@@ -1,7 +1,7 @@
-use reqwest::blocking::Response;
-
 use super::Error;
 use super::{RestClientLogger, RestPathBuilder};
+use reqwest::blocking::Response;
+use std::time::Duration;
 use url::Url;
 use vit_servicing_station_lib::v0::api_token::API_TOKEN_HEADER;
 
@@ -11,6 +11,7 @@ pub struct RestClient {
     api_token: Option<String>,
     logger: RestClientLogger,
     origin: Option<String>,
+    timeout: Option<Duration>,
 }
 
 const ORIGIN: &str = "Origin";
@@ -22,6 +23,7 @@ impl RestClient {
             path_builder: RestPathBuilder::new(url),
             logger: RestClientLogger::default(),
             origin: None,
+            timeout: None,
         }
     }
 
@@ -115,6 +117,10 @@ impl RestClient {
         self.origin = Some(origin.into());
     }
 
+    pub fn set_timeout(&mut self, timeout: Duration) {
+        self.timeout = Some(timeout);
+    }
+
     pub fn disable_log(&mut self) {
         self.logger.set_enabled(false);
     }
@@ -175,6 +181,9 @@ impl RestClient {
         }
         if let Some(origin) = &self.origin {
             res = res.header(ORIGIN, origin.to_string());
+        }
+        if let Some(timeout) = self.timeout {
+            res = res.timeout(timeout);
         }
         let response = res.send()?;
         self.logger.log_response(&response);

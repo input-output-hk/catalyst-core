@@ -1,12 +1,12 @@
-use super::{SharedContext, UpdateHandle, VoterInfo};
+use super::VoterInfo;
+use crate::v0::context::SharedContext;
+use crate::v0::result::HandlerResult;
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::interfaces::Value;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use snapshot_lib::{Fraction, RawSnapshot, SnapshotInfo};
-use std::sync::Arc;
 use time::OffsetDateTime;
-use tokio::sync::Mutex;
 use warp::http::StatusCode;
 use warp::{Rejection, Reply};
 
@@ -26,17 +26,12 @@ pub async fn get_voters_info(
         .into_response());
     };
 
-    match tokio::task::spawn_blocking(move || context.get_voters_info(&tag, &key))
-        .await
-        .unwrap()
-    {
-        Ok(Some(snapshot)) => {
+    match super::get_voters_info(&tag, &key, context).await {
+        Ok(snapshot) => {
             let voter_info: Vec<_> = snapshot.voter_info.into_iter().map(|VoterInfo{voting_group, voting_power,delegations_power, delegations_count}| {
             json!({"voting_power": voting_power, "voting_group": voting_group, "delegations_power": delegations_power, "delegations_count": delegations_count})
         }).collect();
-            if let Ok(last_update) =
-                OffsetDateTime::from_unix_timestamp(snapshot.last_updated.try_into().unwrap())
-            {
+            if let Ok(last_update) = OffsetDateTime::from_unix_timestamp(snapshot.last_updated) {
                 let results =
                     json!({"voter_info": voter_info, "last_updated": last_update.unix_timestamp()});
                 Ok(warp::reply::json(&results).into_response())
@@ -47,24 +42,13 @@ pub async fn get_voters_info(
                 )
             }
         }
-        Ok(None) => Err(warp::reject::not_found()),
-        Err(_) => Ok(
-            warp::reply::with_status("Database error", StatusCode::INTERNAL_SERVER_ERROR)
-                .into_response(),
-        ),
+        Err(err) => Ok(err.into_response()),
     }
 }
 
 #[tracing::instrument(skip(context))]
 pub async fn get_tags(context: SharedContext) -> Result<impl Reply, Rejection> {
-    match context.get_tags().map(|tags| warp::reply::json(&tags)) {
-        Ok(tags) => Ok(tags.into_response()),
-        Err(_) => Ok(warp::reply::with_status(
-            "Failed to get tags from database",
-            StatusCode::INTERNAL_SERVER_ERROR,
-        )
-        .into_response()),
-    }
+    Ok(HandlerResult(super::get_tags(context).await))
 }
 
 /// Snapshot information update with timestamp.
@@ -89,12 +73,10 @@ pub struct RawSnapshotInput {
 pub async fn put_raw_snapshot(
     tag: String,
     input: RawSnapshotInput,
-    context: Arc<Mutex<UpdateHandle>>,
+    context: SharedContext,
 ) -> Result<impl Reply, Rejection> {
-    let mut handle = context.lock().await;
-
-    match handle
-        .update_from_raw_snapshot(
+    Ok(HandlerResult(
+        super::update_from_raw_snapshot(
             &tag,
             input.snapshot,
             input.update_timestamp,
@@ -102,43 +84,20 @@ pub async fn put_raw_snapshot(
             input.voting_power_cap,
             input.direct_voters_group,
             input.representatives_group,
+            context,
         )
-        .await
-    {
-        Err(super::Error::InternalError) => Ok(warp::reply::with_status(
-            "Consistency error",
-            StatusCode::INTERNAL_SERVER_ERROR,
-        )
-        .into_response()),
-        Err(e) => Ok(
-            warp::reply::with_status(e.to_string(), StatusCode::INTERNAL_SERVER_ERROR)
-                .into_response(),
-        ),
-        Ok(_) => Ok(warp::reply().into_response()),
-    }
+        .await,
+    ))
 }
 
 #[tracing::instrument(skip(context))]
 pub async fn put_snapshot_info(
     tag: String,
     input: SnapshotInfoInput,
-    context: Arc<Mutex<UpdateHandle>>,
+    context: SharedContext,
 ) -> Result<impl Reply, Rejection> {
-    let mut handle = context.lock().await;
-
-    match handle
-        .update_from_shanpshot_info(&tag, input.snapshot, input.update_timestamp)
-        .await
-    {
-        Err(super::Error::InternalError) => Ok(warp::reply::with_status(
-            "Consistency error",
-            StatusCode::INTERNAL_SERVER_ERROR,
-        )
-        .into_response()),
-        Err(e) => Ok(
-            warp::reply::with_status(e.to_string(), StatusCode::INTERNAL_SERVER_ERROR)
-                .into_response(),
-        ),
-        Ok(_) => Ok(warp::reply().into_response()),
-    }
+    Ok(HandlerResult(
+        super::update_from_shanpshot_info(&tag, input.snapshot, input.update_timestamp, context)
+            .await,
+    ))
 }

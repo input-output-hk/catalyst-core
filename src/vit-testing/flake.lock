@@ -308,11 +308,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1663801537,
-        "narHash": "sha256-zwt0KXSCwgLKrqT16TN+JrDTiGrlXbhUs+uKtD6CnEw=",
+        "lastModified": 1663812067,
+        "narHash": "sha256-EJ/ux3UqD1Q2M+0wTfTnId48/jg4OKHkT+CY0xrHDtM=",
         "owner": "input-output-hk",
         "repo": "catalyst-toolbox",
-        "rev": "324f853c43f4f3ef7589428dbff20eaea0bf9de0",
+        "rev": "93daa65b03a2ae1bf96a2380d3d41dcb5b2c2c0e",
         "type": "github"
       },
       "original": {
@@ -904,11 +904,11 @@
         "rust-overlay": "rust-overlay_2"
       },
       "locked": {
-        "lastModified": 1663805617,
-        "narHash": "sha256-9szdQXSg2CYV+SZ5wzqbfGUPzmjFgK3VMXwIzfqxKyA=",
+        "lastModified": 1663844890,
+        "narHash": "sha256-+PYCrXzn4J1PyQ8Ss+ncnXiLML1mfILSIPKeIbOlu6U=",
         "owner": "input-output-hk",
         "repo": "jormungandr",
-        "rev": "e58b525a13d438f3fe758114f122c60387c6c267",
+        "rev": "983a37c01c8c0a5e285a6513db5a194dd7b9a275",
         "type": "github"
       },
       "original": {
@@ -1323,11 +1323,11 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1663494472,
-        "narHash": "sha256-fSowlaoXXWcAM8m9wA6u+eTJJtvruYHMA+Lb/tFi/qM=",
+        "lastModified": 1663850217,
+        "narHash": "sha256-tp9nXo1/IdN/xN9m06ryy0QUAEfoN6K56ObM/1QTAjc=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "f677051b8dc0b5e2a9348941c99eea8c4b0ff28f",
+        "rev": "ae1dc133ea5f1538d035af41e5ddbc2ebcb67b90",
         "type": "github"
       },
       "original": {
@@ -1605,11 +1605,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1663729386,
-        "narHash": "sha256-aKdxkiYUGuvgy+eKq4jubf/gZN7TBoF6huE4w0chhDE=",
+        "lastModified": 1663988502,
+        "narHash": "sha256-HwsSRFWxD9G3PxOjlIARuN/v4TnhK3ZkaVeyVCYrBBE=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "0300688a98e053712108d4e22d5bdcf9c9106d8c",
+        "rev": "6eb90123f46664ffbb550c527f656ba848718af5",
         "type": "github"
       },
       "original": {
@@ -1761,11 +1761,11 @@
         "rust-overlay": "rust-overlay_4"
       },
       "locked": {
-        "lastModified": 1663801349,
-        "narHash": "sha256-s/SPrVW9+dvA0+j+hxnl9JsffeZdr6XXDH5ICm3uCwk=",
+        "lastModified": 1663812022,
+        "narHash": "sha256-zrLZ0qm1EMy9w1Ts3N/IwyXwnBjmtX3Uogv0pU7pSkA=",
         "owner": "input-output-hk",
         "repo": "vit-servicing-station",
-        "rev": "21f09701708dcc3d7ddd1ba8694244d837fee15c",
+        "rev": "bb8c571354864b8959b0145fa65b242b689ec1f8",
         "type": "github"
       },
       "original": {

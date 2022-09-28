@@ -10,6 +10,7 @@ use crate::Result;
 use hersir::builder::SpawnParams;
 use hersir::config::SessionSettings;
 use jormungandr_automation::jormungandr::PersistenceMode;
+use jormungandr_lib::interfaces::Mempool;
 use std::path::Path;
 use std::path::PathBuf;
 use valgrind::Protocol;
@@ -90,6 +91,10 @@ impl NetworkSpawnParams {
             .persistence_mode(PersistenceMode::Persistent)
             .persistent_fragment_log(self.working_directory.clone().join("persistent_log"))
             .jormungandr(self.session_settings.jormungandr.clone())
+            .mempool(Mempool {
+                pool_max_entries: 1_000_000.into(),
+                ..Default::default()
+            })
     }
 
     pub fn proxy_params(&self) -> WalletProxySpawnParams {

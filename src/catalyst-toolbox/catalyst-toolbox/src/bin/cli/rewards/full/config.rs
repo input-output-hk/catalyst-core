@@ -18,7 +18,7 @@ pub(super) struct Inputs {
     pub(super) snapshot_path: PathBuf,
     pub(super) vote_count_path: PathBuf,
     pub(super) reviews_csv: PathBuf,
-    pub(super) assessments_path: PathBuf, 
+    pub(super) assessments_path: PathBuf,
     pub(super) proposal_bonus_output: Option<PathBuf>,
     pub(super) approved_proposals_path: PathBuf,
     pub(super) active_voteplans: PathBuf,

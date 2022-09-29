@@ -161,7 +161,7 @@ FROM
         INNER JOIN groups on voteplans.token_identifier = groups.token_identifier
         LEFT JOIN proposal_simple_challenge
             on proposals.proposal_id = proposal_simple_challenge.proposal_id
-            and challenges.challenge_type = 'simple'
+            and (challenges.challenge_type = 'simple' or challenges.challenge_type = 'native')
         LEFT JOIN proposal_community_choice_challenge
             on proposals.proposal_id = proposal_community_choice_challenge.proposal_id
             and challenges.challenge_type = 'community-choice'

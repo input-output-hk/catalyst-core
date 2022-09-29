@@ -8,7 +8,7 @@ pub mod validate;
 use self::time::TimeCommand;
 use crate::cli::generate::{CommitteeIdCommandArgs, QrCommandArgs, SnapshotCommandArgs};
 use crate::cli::start::AdvancedStartCommandArgs;
-use crate::cli::start::MockStartCommandArgs;
+use crate::cli::start::{MockFarmCommand, MockStartCommandArgs};
 use crate::Result;
 use diff::DiffCommand;
 use generate::DataCommandArgs;
@@ -53,8 +53,10 @@ pub enum StartCommand {
     Quick(QuickStartCommandArgs),
     /// start advanced backend from scratch
     Advanced(AdvancedStartCommandArgs),
-    // start mock env
+    /// start mock env
     Mock(MockStartCommandArgs),
+    /// start multiple mock environments
+    MockFarm(MockFarmCommand),
 }
 
 impl StartCommand {
@@ -63,6 +65,9 @@ impl StartCommand {
             Self::Quick(quick_start_command) => quick_start_command.exec(),
             Self::Advanced(advanced_start_command) => advanced_start_command.exec(),
             Self::Mock(mock_start_command) => mock_start_command.exec().map_err(Into::into),
+            Self::MockFarm(mock_farm_start_command) => {
+                mock_farm_start_command.exec().map_err(Into::into)
+            }
         }
     }
 }

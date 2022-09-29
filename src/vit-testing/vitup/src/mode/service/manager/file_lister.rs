@@ -1,3 +1,5 @@
+use path_slash::PathBufExt as _;
+use path_slash::PathExt as _;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::Path;
@@ -65,11 +67,9 @@ impl FolderDump {
     }
 
     pub fn push_path<P: AsRef<Path>>(&mut self, input: P) {
-        let path = input.as_ref().display().to_string().replace("'\\'", "/");
-        let path = path.replace(
-            &format!("./{}/", self.root.file_name().unwrap().to_str().unwrap()),
-            "",
-        );
+        let path = input.as_ref().to_slash().unwrap();
+        let replacer = self.root.to_slash().unwrap();
+        let path = path.replace(&format!("{}/", replacer), "");
 
         if path.contains(QR_CODES) {
             self.push_qr_code(path);
@@ -111,7 +111,7 @@ pub fn dump_json<P: AsRef<Path>>(root: P) -> Result<FolderDump, Error> {
             continue;
         }
 
-        data.push_path(entry.path());
+        data.push_path(&*entry.path().to_slash().unwrap());
     }
 
     Ok(data)

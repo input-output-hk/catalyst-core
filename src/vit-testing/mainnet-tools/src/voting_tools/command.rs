@@ -19,6 +19,9 @@ pub struct VotingToolsCommand {
     #[structopt(long = "db-user")]
     pub db_user: String,
 
+    #[structopt(long = "db-pass")]
+    pub db_pass: String,
+
     #[structopt(long = "db-host")]
     pub db_host: PathBuf,
 

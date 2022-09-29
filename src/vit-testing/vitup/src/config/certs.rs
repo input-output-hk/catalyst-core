@@ -23,9 +23,9 @@ impl Default for CertificatesBuilder {
 
 impl CertificatesBuilder {
     pub fn build<P: AsRef<Path>>(self, working_dir: P) -> Result<Certs, Error> {
-        let working_dir = working_dir.as_ref().to_path_buf();
-
-        std::fs::create_dir_all(working_dir.join("tls"))?;
+        let mut working_dir = working_dir.as_ref().to_path_buf();
+        working_dir = working_dir.join("tls");
+        std::fs::create_dir_all(&working_dir)?;
 
         let key_path = working_dir.join(SERVER_KEY);
         let mut key_file =

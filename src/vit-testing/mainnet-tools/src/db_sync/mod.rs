@@ -36,19 +36,10 @@ impl DbSyncInstance {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Settings {
     pub db_name: String,
     pub db_user: String,
     pub db_host: String,
-}
-
-impl Default for Settings {
-    fn default() -> Self {
-        Self {
-            db_name: "mock".to_string(),
-            db_user: "mock".to_string(),
-            db_host: "mock".to_string(),
-        }
-    }
+    pub db_pass: String,
 }

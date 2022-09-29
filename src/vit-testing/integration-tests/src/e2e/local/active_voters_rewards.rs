@@ -156,8 +156,7 @@ pub fn voters_with_at_least_one_vote() {
                     }
                     acc
                 });
-
-            (Identifier::from_bech32_str(id).unwrap(), votes)
+            (Identifier::from_hex(id).unwrap(), votes)
         })
         .collect();
 

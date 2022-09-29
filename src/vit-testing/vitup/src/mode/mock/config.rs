@@ -21,6 +21,13 @@ pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Configuration, Error> {
     serde_json::from_str(&contents).map_err(Into::into)
 }
 
+pub fn write_config<P: AsRef<Path>>(configuration: &Configuration, path: P) -> Result<(), Error> {
+    let content = serde_json::to_string_pretty(&configuration)?;
+    use std::io::Write;
+    let mut file = std::fs::File::create(&path)?;
+    file.write_all(content.as_bytes()).map_err(Into::into)
+}
+
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("cannot parse configuration")]

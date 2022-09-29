@@ -7,6 +7,7 @@ use mainnet_tools::voting_tools::VotingToolsMock;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::path::PathBuf;
+use std::process::Command;
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -41,6 +42,8 @@ impl Configuration {
             .arg(&self.voting_tools.db)
             .arg("--db-user")
             .arg(&self.voting_tools.db_user)
+            .arg("--db-pass")
+            .arg(&self.voting_tools.db_pass)
             .arg("--db-host")
             .arg(&self.voting_tools.db_host)
             .arg("--out-file")
@@ -52,8 +55,18 @@ impl Configuration {
             command.arg("--slot-no").arg(slot_no.to_string());
         }
 
-        println!("Running command: {:?} ", command);
+        self.print_with_password_hidden(&command);
+
         command.spawn().map_err(Into::into)
+    }
+
+    fn print_with_password_hidden(&self, command: &Command) {
+        let log_command = format!("{:?}", command);
+        let pass = format!("--db-pass {}", &self.voting_tools.db_pass);
+        println!(
+            "Running command: {} ",
+            log_command.replace(&pass, "--db-pass ***")
+        );
     }
 
     pub fn crate_snapshot_output_file_name(&self, tag: &Option<String>) -> String {
@@ -107,6 +120,7 @@ impl Default for Configuration {
                 network: NetworkType::Mainnet,
                 db: "".to_string(),
                 db_user: "".to_string(),
+                db_pass: "".to_string(),
                 db_host: "".to_string(),
                 scale: 1_000_000,
             },
@@ -130,6 +144,9 @@ pub struct VotingToolsParams {
     #[serde(rename = "db-user")]
     /// db user
     pub db_user: String,
+    #[serde(rename = "db-pass")]
+    /// db pass
+    pub db_pass: String,
     /// db host
     #[serde(rename = "db-host")]
     pub db_host: String,
@@ -148,6 +165,7 @@ impl From<VotingToolsMock> for VotingToolsParams {
             db: config.db_name,
             db_user: config.db_user,
             db_host: config.db_host,
+            db_pass: config.db_pass,
             scale: 1_000_000,
         }
     }

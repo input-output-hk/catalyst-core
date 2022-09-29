@@ -1,4 +1,4 @@
-use crate::mode::mock::{read_config, start_rest_server, Configuration, Context};
+use crate::mode::mock::{farm, read_config, start_rest_server, Configuration, Context};
 use std::sync::Mutex;
 use std::{path::PathBuf, sync::Arc};
 use structopt::StructOpt;
@@ -38,6 +38,31 @@ impl MockStartCommandArgs {
     }
 }
 
+#[derive(StructOpt, Debug)]
+#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+pub struct MockFarmCommand {
+    /// path to config file
+    #[structopt(long = "config", short = "c")]
+    pub config: PathBuf,
+}
+
+impl MockFarmCommand {
+    #[tokio::main]
+    pub async fn exec(self) -> Result<(), Error> {
+        let control_context = Arc::new(Mutex::new(farm::Context::new(
+            farm::read_config(&self.config).unwrap(),
+        )));
+        tokio::spawn(async move {
+            farm::start_rest_server(control_context.clone())
+                .await
+                .unwrap()
+        })
+        .await
+        .map(|_| ())
+        .map_err(Into::into)
+    }
+}
+
 #[derive(Debug, Error)]
 #[allow(clippy::large_enum_variant)]
 pub enum Error {
@@ -52,5 +77,7 @@ pub enum Error {
     #[error(transparent)]
     Mock(#[from] crate::mode::mock::ContextError),
     #[error(transparent)]
-    ServerError(crate::mode::mock::RestError),
+    Farm(#[from] crate::mode::mock::farm::ContextError),
+    #[error(transparent)]
+    ServerError(#[from] crate::mode::mock::RestError),
 }

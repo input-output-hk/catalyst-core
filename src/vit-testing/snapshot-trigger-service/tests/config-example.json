@@ -6,6 +6,7 @@
 		    "network": "mainnet",
 		    "db": "cexplorer",
 		    "db-user": "cexplorer",
+			"db-pass": "pass",
 		    "db-host": "/alloc",
 		    "scale": 1000000
 	},

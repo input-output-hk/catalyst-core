@@ -34,6 +34,8 @@ snapshot-lib = { git = "https://github.com/input-output-hk/catalyst-toolbox.git"
 valgrind = { path = "../valgrind" }
 poldercast = { git = "https://github.com/primetype/poldercast.git", rev = "8305f1560392a9d26673ca996e7646c8834533ef" }
 rand = "0.8"
+path-slash = "0.2.0"
+netstat2 = "0.9"
 time = { version = "0.3.7", features=["serde","serde-well-known","parsing"]} 
 fake = { version = "2.2", features=['chrono','http']}
 strum = "0.21.0"

@@ -85,17 +85,12 @@ impl ValigrindStartupCommand {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
 #[serde(untagged)]
 pub enum Protocol {
+    #[default]
     Http,
     Https(Certs),
-}
-
-impl Default for Protocol {
-    fn default() -> Self {
-        Self::Http
-    }
 }
 
 impl Protocol {

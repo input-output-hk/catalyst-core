@@ -1,6 +1,7 @@
 use super::{VitStationSettings, WalletProxySettings};
+use crate::config::Blockchain;
 use hersir::{
-    builder::{Blockchain, NodeAlias, Topology},
+    builder::{NodeAlias, Topology},
     config::SessionSettings,
 };
 use jormungandr_automation::jormungandr::get_available_port;

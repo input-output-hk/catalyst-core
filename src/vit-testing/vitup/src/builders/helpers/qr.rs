@@ -2,7 +2,7 @@ use crate::config::Config;
 use catalyst_toolbox::kedqr::{generate, KeyQrCode};
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::key::EitherEd25519SecretKey;
-use hersir::builder::WalletTemplate;
+use hersir::config::WalletTemplate;
 use image::ImageError;
 use std::collections::HashMap;
 use std::fs::File;
@@ -32,7 +32,7 @@ pub fn generate_qr_and_hashes<P: AsRef<Path>>(
         let pin = initials
             .iter()
             .find_map(|(template, pin)| {
-                if template.alias() == *alias {
+                if template.alias() == Some(alias.to_string()) {
                     Some(pin)
                 } else {
                     None

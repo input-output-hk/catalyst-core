@@ -16,11 +16,9 @@ pub use helpers::{
     convert_to_blockchain_date, convert_to_human_date, generate_qr_and_hashes,
     VitVotePlanDefBuilder, WalletExtension,
 };
-use hersir::builder::Blockchain;
 use hersir::builder::Node;
 use hersir::builder::Topology;
-use hersir::builder::WalletTemplate;
-use hersir::config::SessionSettings;
+use hersir::config::{Blockchain, CommitteeTemplate, SessionSettings, WalletTemplate};
 pub use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::interfaces::NumberOfSlotsPerEpoch;
 use jormungandr_lib::interfaces::SlotDuration;
@@ -111,13 +109,16 @@ impl VitBackendSettingsBuilder {
         let folder = deployment_tree.qr_codes_path();
         std::fs::create_dir_all(&folder)?;
 
-        let wallets: Vec<(_, _)> = controller
-            .defined_wallets()
+        let defined_wallets = controller.defined_wallets();
+        let wallets: Vec<(_, _)> = defined_wallets
             .iter()
-            .filter(|(_, x)| !x.template().alias().starts_with("committee"))
+            .filter(|(_, x)| {
+                !(x.template().alias().is_some()
+                    && x.template().alias().unwrap().starts_with("committee"))
+            })
             .map(|(alias, template)| {
                 let wallet: thor::Wallet = ((*template).clone()).into();
-                (*alias, wallet)
+                (alias, wallet)
             })
             .collect();
 
@@ -175,19 +176,16 @@ impl VitBackendSettingsBuilder {
         }
 
         if !self.config.blockchain.committees.is_empty() {
-            blockchain =
-                blockchain.with_external_committees(self.config.blockchain.committees.clone());
+            blockchain = blockchain.with_committees(self.config.blockchain.committees.clone());
         }
 
-        let committee_wallet = WalletTemplate::new_account(
-            self.committee_wallet.clone(),
-            Value(1_000_000_000),
-            blockchain.discrimination(),
-            Default::default(),
-        );
-        blockchain = blockchain
-            .with_wallet(committee_wallet)
-            .with_committee(self.committee_wallet.clone());
+        let committe = CommitteeTemplate::Generated {
+            alias: self.committee_wallet.clone(),
+            member_pk: None,
+            communication_pk: None,
+        };
+
+        builder = builder.committee(committe);
 
         println!("building voting token..");
 
@@ -223,18 +221,20 @@ impl VitBackendSettingsBuilder {
         self.write_token(root.join("voting_token.txt"), &token_list)?;
 
         println!("building initials..");
+        let mut generated_wallet_templates = HashMap::new();
 
-        let mut templates = HashMap::new();
         if self.config.initials.block0.any() {
-            blockchain = blockchain
-                .with_external_wallets(self.config.initials.block0.external_templates(tokens_map));
-            templates = self.config.initials.block0.templates(
+            builder = builder.wallets(self.config.initials.block0.external_templates(tokens_map));
+            generated_wallet_templates = self.config.initials.block0.templates(
                 self.config.data.current_fund.voting_power,
                 blockchain.discrimination(),
                 tokens_map,
             );
-            for (wallet, _) in templates.iter().filter(|(x, _)| *x.value() > Value::zero()) {
-                blockchain = blockchain.with_wallet(wallet.clone());
+            for (wallet, _) in generated_wallet_templates
+                .iter()
+                .filter(|(x, _)| *x.value() > Value::zero())
+            {
+                builder = builder.wallet(wallet.clone());
             }
         }
         println!("building direct voteplan..");
@@ -281,13 +281,12 @@ impl VitBackendSettingsBuilder {
         }
 
         builder = builder.blockchain(blockchain);
-
         println!("building controllers..");
 
         let controller = builder.build(self.session_settings.clone())?;
 
         if !self.skip_qr_generation {
-            self.dump_qrs(&controller, &templates, &root)?;
+            self.dump_qrs(&controller, &generated_wallet_templates, &root)?;
         }
 
         println!("dumping vote keys..");

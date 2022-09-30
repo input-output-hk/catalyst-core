@@ -4,7 +4,7 @@ use crate::mode::standard::{
     WalletProxySpawnParams,
 };
 use crate::Result;
-use hersir::builder::SpawnParams;
+use hersir::config::SpawnParams;
 use hersir::controller::MonitorNode;
 use hersir::controller::ProgressBarController;
 use indicatif::MultiProgress;

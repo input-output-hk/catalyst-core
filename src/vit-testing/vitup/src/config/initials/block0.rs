@@ -4,8 +4,7 @@ use chain_addr::Discrimination;
 use chain_impl_mockchain::value::Value;
 use fake::faker::name::en::Name;
 use fake::Fake;
-use hersir::builder::wallet::template::builder::WalletTemplateBuilder;
-use hersir::builder::{ExternalWalletTemplate, WalletTemplate};
+use hersir::config::{WalletTemplate, WalletTemplateBuilder};
 use jormungandr_lib::interfaces::InitialUTxO;
 use jormungandr_lib::interfaces::TokenIdentifier;
 use rand::Rng;
@@ -203,9 +202,9 @@ impl Initials {
     pub fn external_templates(
         &self,
         roles: impl Fn(&Role) -> TokenIdentifier,
-    ) -> Vec<ExternalWalletTemplate> {
+    ) -> Vec<WalletTemplate> {
         let mut templates = Vec::new();
-        for (index, initial) in self.0.iter().enumerate() {
+        for initial in self.0.iter() {
             if let Initial::External {
                 funds,
                 address,
@@ -217,10 +216,9 @@ impl Initials {
                 let mut tokens = HashMap::new();
                 tokens.insert(roles(role), funds);
 
-                templates.push(ExternalWalletTemplate::new(
-                    format!("wallet_{}", index + 1),
-                    Value(funds),
+                templates.push(WalletTemplate::new_external(
                     address.to_string(),
+                    Value(funds),
                     tokens,
                 ));
             }

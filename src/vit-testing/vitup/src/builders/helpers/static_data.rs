@@ -146,7 +146,7 @@ pub fn build_servicing_station_parameters(
                 vote_plan: _vote_plan,
             } = data
             {
-                let key: ElectionPublicKey = keys.election_public_key();
+                let key: ElectionPublicKey = keys.election_key();
                 parameters
                     .current_fund
                     .set_vote_encryption_key(key.to_bech32_str(), &alias.alias);

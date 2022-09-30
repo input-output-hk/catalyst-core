@@ -1,3 +1,6 @@
+#[cfg(test)]
+pub mod mock_context;
+
 use crate::builders::utils::SessionSettingsExtension;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::Config;

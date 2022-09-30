@@ -89,7 +89,7 @@ impl MockState {
         }
     }
 
-    pub fn defined_wallets(&self) -> Vec<(&WalletAlias, &WalletSettings)> {
+    pub fn defined_wallets(&self) -> Vec<(WalletAlias, &WalletSettings)> {
         self.controller.defined_wallets()
     }
 
@@ -123,6 +123,10 @@ impl MockState {
 
     pub fn vit(&self) -> &Snapshot {
         &self.vit_state
+    }
+
+    pub fn vit_mut(&mut self) -> &mut Snapshot {
+        &mut self.vit_state
     }
 
     pub fn voters(&self) -> &VoterSnapshot {

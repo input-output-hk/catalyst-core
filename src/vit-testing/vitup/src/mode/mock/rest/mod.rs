@@ -43,6 +43,7 @@ use warp::http::header::{HeaderMap, HeaderValue};
 use warp::hyper::service::make_service_fn;
 use warp::{reject::Reject, Filter, Rejection, Reply};
 pub mod reject;
+mod search;
 
 use reject::{report_invalid, ForcedErrorCode, GeneralException, InvalidBatch};
 
@@ -492,6 +493,12 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
             root.and(tags.or(voting_power).or(dump))
         };
 
+        let search = warp::path!("search")
+            .and(warp::post())
+            .and(warp::body::json())
+            .and(with_context.clone())
+            .and_then(search::search);
+
         root.and(
             proposals
                 .or(challenges)
@@ -504,7 +511,8 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
                 .or(fragment)
                 .or(votes)
                 .or(message)
-                .or(snapshot),
+                .or(snapshot)
+                .or(search),
         )
         .boxed()
     };

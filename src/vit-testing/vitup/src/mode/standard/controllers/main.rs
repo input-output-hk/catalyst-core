@@ -11,10 +11,10 @@ use crate::Result;
 use assert_fs::fixture::PathChild;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use hersir::builder::ControllerError;
+use hersir::config::{Blockchain, CommitteeTemplate, SpawnParams, WalletTemplate};
 use hersir::{
     builder::{
-        Blockchain, NetworkBuilder, NodeAlias, NodeSetting, Settings, SpawnParams, Topology,
-        Wallet as WalletSettings,
+        NetworkBuilder, NodeAlias, NodeSetting, Settings, Topology, Wallet as WalletSettings,
     },
     config::SessionSettings,
 };
@@ -29,14 +29,21 @@ use thor::{Wallet, WalletAlias};
 
 #[derive(Default)]
 pub struct VitControllerBuilder {
+    committees: Vec<CommitteeTemplate>,
     controller_builder: NetworkBuilder,
 }
 
 impl VitControllerBuilder {
     pub fn new() -> Self {
         Self {
+            committees: Vec::new(),
             controller_builder: NetworkBuilder::default(),
         }
+    }
+
+    pub(crate) fn committee(mut self, committee: CommitteeTemplate) -> Self {
+        self.committees.push(committee);
+        self
     }
 
     pub fn topology(mut self, topology: Topology) -> Self {
@@ -49,12 +56,23 @@ impl VitControllerBuilder {
         self
     }
 
+    pub fn wallets(mut self, wallet_templates: Vec<WalletTemplate>) -> Self {
+        self.controller_builder = self.controller_builder.wallet_templates(wallet_templates);
+        self
+    }
+
+    pub fn wallet(mut self, wallet_template: WalletTemplate) -> Self {
+        self.controller_builder = self.controller_builder.wallet_template(wallet_template);
+        self
+    }
+
     pub fn build(
         self,
         mut session_settings: SessionSettings,
     ) -> std::result::Result<VitController, Error> {
         let controller = self
             .controller_builder
+            .committees(self.committees)
             .session_settings(session_settings.clone())
             .build()?;
         Ok(VitController::new(
@@ -70,6 +88,8 @@ pub enum Error {
     Controller(#[from] ControllerError),
     #[error("cannot bootstrap vit station server. health checkpoint is rejecting request")]
     CannotBootstrap,
+    #[error("cannot get wallet with alias {alias}, either does not exist or controller does not have any control over it")]
+    CannotGetWallet { alias: String },
 }
 
 #[derive(Clone)]
@@ -98,7 +118,12 @@ impl VitController {
     }
 
     pub fn wallet(&mut self, wallet: &str) -> Result<Wallet> {
-        self.hersir_controller.wallet(wallet).map_err(Into::into)
+        self.hersir_controller
+            .controlled_wallet(wallet)
+            .ok_or(Error::CannotGetWallet {
+                alias: wallet.to_owned(),
+            })
+            .map_err(Into::into)
     }
 
     pub fn spawn_node(&mut self, spawn_params: SpawnParams) -> Result<JormungandrProcess> {
@@ -119,7 +144,7 @@ impl VitController {
         self.hersir_controller.defined_nodes().collect()
     }
 
-    pub fn defined_wallets(&self) -> Vec<(&WalletAlias, &WalletSettings)> {
+    pub fn defined_wallets(&self) -> Vec<(WalletAlias, &WalletSettings)> {
         self.hersir_controller.defined_wallets().collect()
     }
 

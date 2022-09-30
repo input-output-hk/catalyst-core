@@ -39,7 +39,7 @@ impl Initials {
 
     pub fn as_voters_hirs(
         &self,
-        defined_wallets: Vec<(&WalletAlias, &WalletSettings)>,
+        defined_wallets: Vec<(WalletAlias, &WalletSettings)>,
     ) -> Result<Vec<VoterHIR>, Error> {
         let mut voter_hirs = Vec::new();
 
@@ -65,7 +65,7 @@ impl Initials {
                         .ok_or_else(|| Error::CannotFindAlias(name.to_string()))?;
                     voter_hirs.push(VoterHIR {
                         voting_power: (*funds).into(),
-                        voting_key: Wallet::from(wallet).account_id(),
+                        voting_key: Identifier::from(wallet.identifier()),
                         voting_group: role.to_string(),
                     });
                 }

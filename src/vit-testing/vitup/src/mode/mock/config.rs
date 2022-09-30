@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use thiserror::Error;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
+#[cfg_attr(test, derive(Default))]
 pub struct Configuration {
     pub port: u16,
     pub token: Option<String>,

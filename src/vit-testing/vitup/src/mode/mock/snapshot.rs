@@ -17,7 +17,7 @@ pub struct VoterSnapshot {
 
 impl VoterSnapshot {
     pub fn from_config_or_default(
-        defined_wallets: Vec<(&WalletAlias, &WalletSettings)>,
+        defined_wallets: Vec<(WalletAlias, &WalletSettings)>,
         snapshot_config: &Option<SnapshotInitials>,
     ) -> Result<Self, SnapshotError> {
         if let Some(snapshot_config) = snapshot_config {

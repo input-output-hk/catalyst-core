@@ -24,7 +24,7 @@ pub struct SnapshotBuilder {
     groups: Vec<String>,
     voters_count: usize,
     contributions_count: usize,
-    update_timestamp: u64,
+    update_timestamp: i64,
 }
 
 impl Default for SnapshotBuilder {
@@ -34,7 +34,7 @@ impl Default for SnapshotBuilder {
             groups: vec!["direct".to_string(), "dreps".to_string()],
             voters_count: 3,
             contributions_count: 5,
-            update_timestamp: OffsetDateTime::now_utc().unix_timestamp() as u64,
+            update_timestamp: OffsetDateTime::now_utc().unix_timestamp(),
         }
     }
 }
@@ -60,7 +60,7 @@ impl SnapshotBuilder {
         self
     }
 
-    pub fn with_timestamp(mut self, timestamp: u64) -> Self {
+    pub fn with_timestamp(mut self, timestamp: i64) -> Self {
         self.update_timestamp = timestamp;
         self
     }
@@ -114,7 +114,13 @@ impl SnapshotBuilder {
 
 #[derive(Deserialize, Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct VoterInfo {
-    pub last_updated: u64,
+    #[serde(
+        deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_unix_timestamp_from_rfc3339"
+    )]
+    #[serde(
+        serialize_with = "vit_servicing_station_lib::utils::serde::serialize_unix_timestamp_as_rfc3339"
+    )]
+    pub last_updated: i64,
     pub voter_info: Vec<VotingPower>,
 }
 

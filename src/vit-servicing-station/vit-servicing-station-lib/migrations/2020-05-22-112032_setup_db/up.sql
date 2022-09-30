@@ -159,7 +159,7 @@ create table voters (
     FOREIGN KEY(snapshot_tag) REFERENCES snapshots(tag) ON DELETE CASCADE
 );
 
-create table contributors (
+create table contributions (
     stake_public_key TEXT NOT NULL,
     reward_address TEXT NOT NULL,
     value BIGINT NOT NULL,

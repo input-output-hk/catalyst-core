@@ -54,7 +54,7 @@ table! {
 }
 
 table! {
-    contributors (stake_public_key, voting_key, voting_group, snapshot_tag) {
+    contributions (stake_public_key, voting_key, voting_group, snapshot_tag) {
         stake_public_key -> Text,
         reward_address -> Text,
         value -> BigInt,

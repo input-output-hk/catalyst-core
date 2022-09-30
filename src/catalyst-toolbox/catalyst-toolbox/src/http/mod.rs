@@ -2,8 +2,8 @@ use std::marker::PhantomData;
 
 use ::reqwest::StatusCode;
 use color_eyre::eyre::Result;
-use log::warn;
 use serde::Deserialize;
+use tracing::warn;
 
 use self::{rate_limit::RateLimitClient, reqwest::ReqwestClient};
 

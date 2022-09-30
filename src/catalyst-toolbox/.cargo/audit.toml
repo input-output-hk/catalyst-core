@@ -1,0 +1,6 @@
+[advisories]
+ignore = [
+  # this is the `time` segfault
+  # `chrono` depends on `time = "0.1"`, but doesn't use the vulnerable API
+  "RUSTSEC-2020-0071"
+] 

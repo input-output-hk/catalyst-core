@@ -31,7 +31,7 @@ impl QrCodeCmd {
     }
 }
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, PartialEq, Eq, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub enum QrCodeOpts {
     Img,

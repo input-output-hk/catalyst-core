@@ -112,9 +112,9 @@ pub fn cap_voting_influence(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{voter_hir::tests::VpRange, VoterHIR};
     use proptest::{collection::vec, prelude::*};
     use test_strategy::proptest;
-    use voting_hir::{proptest::VpRange, VoterHIR};
 
     const DEFAULT_VP_STRATEGY: VpRange = VpRange::ada_distribution();
 

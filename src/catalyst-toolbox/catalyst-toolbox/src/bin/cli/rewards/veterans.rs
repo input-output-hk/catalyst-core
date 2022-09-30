@@ -2,9 +2,9 @@ use catalyst_toolbox::community_advisors::models::VeteranRankingRow;
 use catalyst_toolbox::rewards::veterans::{self, VcaRewards, VeteranAdvisorIncentive};
 use catalyst_toolbox::rewards::Rewards;
 use catalyst_toolbox::utils::csv;
-use color_eyre::eyre::bail;
+use color_eyre::eyre::{bail, eyre};
 use color_eyre::Report;
-use rust_decimal::Decimal;
+use rust_decimal::{prelude::*, Decimal};
 use serde::Serialize;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -18,9 +18,9 @@ pub struct VeteransRewards {
     /// Results file output path
     to: PathBuf,
 
-    /// Reward to be distributed
+    /// Reward to be distributed (integer value)
     #[structopt(long = "total-rewards")]
-    total_rewards: Rewards,
+    total_rewards: u64,
 
     /// Minimum number of rankings for each vca to be considered for reputation and rewards
     /// distribution
@@ -119,6 +119,34 @@ pub fn vca_rewards(
         bail!(
                 "Expected same number of reputation_agreement_rate_cutoffs and reputation_agreement_rate_modifiers"
             );
+        }
+
+        if !is_descending(&rewards_agreement_rate_cutoffs) {
+            bail!("Expected rewards_agreement_rate_cutoffs to be descending");
+        }
+
+        if !is_descending(&reputation_agreement_rate_cutoffs) {
+            bail!("Expected rewards_agreement_rate_cutoffs to be descending");
+        }
+
+        let results = veterans::calculate_veteran_advisors_incentives(
+            &reviews,
+            Rewards::from(total_rewards),
+            min_rankings..=max_rankings_rewards,
+            min_rankings..=max_rankings_reputation,
+            rewards_agreement_rate_cutoffs
+                .into_iter()
+                .zip(rewards_agreement_rate_modifiers.into_iter())
+                .collect(),
+            reputation_agreement_rate_cutoffs
+                .into_iter()
+                .zip(reputation_agreement_rate_modifiers.into_iter())
+                .collect(),
+        );
+
+        csv::dump_data_to_csv(rewards_to_csv_data(results)?.iter(), &to).unwrap();
+
+        Ok(())
     }
 
     if !is_descending(&rewards_agreement_rate_cutoffs) {
@@ -149,11 +177,11 @@ pub fn vca_rewards(
     Ok(())
 }
 
-fn rewards_to_csv_data(rewards: VcaRewards) -> Vec<impl Serialize> {
+fn rewards_to_csv_data(rewards: VcaRewards) -> Result<Vec<impl Serialize>, Report> {
     #[derive(Serialize)]
     struct Entry {
         id: String,
-        rewards: Rewards,
+        rewards: u64,
         reputation: u64,
     }
 
@@ -166,10 +194,12 @@ fn rewards_to_csv_data(rewards: VcaRewards) -> Vec<impl Serialize> {
                     rewards,
                     reputation,
                 },
-            )| Entry {
-                id,
-                rewards,
-                reputation,
+            )| {
+                Ok(Entry {
+                    id,
+                    rewards: rewards.to_u64().ok_or_else(|| eyre!("Rewards overflow"))?,
+                    reputation,
+                })
             },
         )
         .collect()

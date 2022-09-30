@@ -1,8 +1,11 @@
+use crate::VotingGroup;
 use graphql_client::GraphQLQuery;
 use jormungandr_lib::crypto::account::Identifier;
 use std::collections::HashSet;
 use thiserror::Error;
-use voting_hir::VotingGroup;
+
+pub const DEFAULT_DIRECT_VOTER_GROUP: &str = "direct";
+pub const DEFAULT_REPRESENTATIVE_GROUP: &str = "rep";
 
 pub trait VotingGroupAssigner {
     fn assign(&self, vk: &Identifier) -> VotingGroup;
@@ -48,15 +51,24 @@ fn get_all_reps(_url: impl reqwest::IntoUrl) -> Result<HashSet<Identifier>, Erro
 }
 
 impl RepsVotersAssigner {
-    pub fn new(
+    pub fn new(direct_voters: VotingGroup, reps: VotingGroup) -> Self {
+        Self {
+            direct_voters,
+            reps,
+            repsdb: HashSet::new(),
+        }
+    }
+
+    #[cfg(feature = "test-api")]
+    pub fn new_from_repsdb(
         direct_voters: VotingGroup,
         reps: VotingGroup,
-        _repsdb_url: impl reqwest::IntoUrl,
+        repsdb: HashSet<Identifier>,
     ) -> Result<Self, Error> {
         Ok(Self {
             direct_voters,
             reps,
-            repsdb: HashSet::new(),
+            repsdb,
         })
     }
 }
@@ -71,7 +83,7 @@ impl VotingGroupAssigner for RepsVotersAssigner {
     }
 }
 
-#[cfg(any(test, feature = "test-api"))]
+#[cfg(any(test, feature = "test-api", feature = "proptest"))]
 impl<F> VotingGroupAssigner for F
 where
     F: Fn(&Identifier) -> VotingGroup,

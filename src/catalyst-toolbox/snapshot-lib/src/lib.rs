@@ -1,20 +1,22 @@
-mod influence_cap;
-pub mod registration;
-pub mod voting_group;
-
-use registration::{Delegations, MainnetRewardAddress, VotingRegistration};
-use voting_group::VotingGroupAssigner;
-
-use fraction::Fraction;
+pub use fraction::Fraction;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
+use registration::MainnetStakeAddress;
+use registration::{Delegations, MainnetRewardAddress, VotingRegistration};
 use serde::{Deserialize, Serialize};
 use std::{borrow::Borrow, collections::BTreeMap, iter::Iterator, num::NonZeroU64};
 use thiserror::Error;
-use voting_hir::VoterHIR;
+pub use voter_hir::VoterHIR;
+pub use voter_hir::VotingGroup;
+use voting_group::VotingGroupAssigner;
+
+mod influence_cap;
+pub mod registration;
+mod voter_hir;
+pub mod voting_group;
 
 pub const CATALYST_VOTING_PURPOSE_TAG: u64 = 0;
 
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct RawSnapshot(Vec<VotingRegistration>);
 
 impl From<Vec<VotingRegistration>> for RawSnapshot {
@@ -32,13 +34,14 @@ pub enum Error {
 }
 
 /// Contribution to a voting key for some registration
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct KeyContribution {
+    pub stake_public_key: MainnetStakeAddress,
     pub reward_address: MainnetRewardAddress,
     pub value: u64,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SnapshotInfo {
     /// The values in the contributions are the original values in the registration transactions and
     /// thus retain the original proportions.
@@ -48,7 +51,7 @@ pub struct SnapshotInfo {
     pub hir: VoterHIR,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Snapshot {
     // a raw public key is preferred so that we don't have to worry about discrimination when deserializing from
     // a CIP-36 compatible encoding
@@ -77,12 +80,14 @@ impl Snapshot {
                     reward_address,
                     delegations,
                     voting_power,
+                    stake_public_key,
                     ..
                 } = reg;
 
                 match delegations {
                     Delegations::Legacy(vk) => {
                         acc.entry(vk).or_default().push(KeyContribution {
+                            stake_public_key,
                             reward_address,
                             value: voting_power.into(),
                         });
@@ -101,6 +106,7 @@ impl Snapshot {
                                 })
                                 .map(|(vk, value)| {
                                     acc.entry(vk).or_default().push(KeyContribution {
+                                        stake_public_key: stake_public_key.clone(),
                                         reward_address: reward_address.clone(),
                                         value: value.get(),
                                     });
@@ -109,6 +115,7 @@ impl Snapshot {
                                 .sum::<u64>()
                         });
                         acc.entry(last.0).or_default().push(KeyContribution {
+                            stake_public_key,
                             reward_address,
                             value: voting_power - others_total_vp,
                         });
@@ -127,7 +134,6 @@ impl Snapshot {
                 contributions,
             })
             .collect();
-        dbg!(&entries);
         Ok(Self {
             inner: Self::apply_voting_power_cap(entries, cap)?
                 .into_iter()
@@ -177,12 +183,13 @@ impl Snapshot {
     }
 }
 
-#[cfg(test)]
-mod tests {
+#[cfg(any(test, feature = "proptest"))]
+pub mod tests {
     use super::*;
     use chain_addr::{Discrimination, Kind};
     use jormungandr_lib::interfaces::{Address, InitialUTxO};
     use proptest::prelude::*;
+    #[cfg(test)]
     use test_strategy::proptest;
 
     struct DummyAssigner;
@@ -217,6 +224,7 @@ mod tests {
         }
     }
 
+    #[cfg(test)]
     #[proptest]
     fn test_threshold(raw: RawSnapshot, stake_threshold: u64, additional_reg: VotingRegistration) {
         let mut add = raw.clone();
@@ -260,6 +268,7 @@ mod tests {
     }
 
     // Test all voting power is distributed among delegated keys
+    #[cfg(test)]
     #[proptest]
     fn test_voting_power_all_distributed(reg: VotingRegistration) {
         let snapshot = Snapshot::from_raw_snapshot(
@@ -277,6 +286,7 @@ mod tests {
         assert_eq!(total_stake, u64::from(reg.voting_power))
     }
 
+    #[cfg(test)]
     #[proptest]
     fn test_non_catalyst_regs_are_ignored(mut reg: VotingRegistration) {
         reg.voting_purpose = 1;
@@ -298,6 +308,7 @@ mod tests {
         )
     }
 
+    #[cfg(test)]
     #[test]
     fn test_distribution() {
         let mut raw_snapshot = Vec::new();
@@ -340,6 +351,7 @@ mod tests {
         assert_eq!(vp_2 - vp_1, n / 2); // last key get the remainder during distribution
     }
 
+    #[cfg(test)]
     #[test]
     fn test_parsing() {
         let raw: RawSnapshot = serde_json::from_str(

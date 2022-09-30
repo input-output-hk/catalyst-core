@@ -11,11 +11,11 @@ jobs:
     name: Update dependencies
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - id: cargo-deps
         name: Cache cargo dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry/index
@@ -34,7 +34,7 @@ jobs:
           echo "::set-output name=head::$commit"
       - if: ${{ steps.cargo-deps.outputs.cache-hit != 'true' }}
         name: Cache cargo registry index
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cargo/registry/index
           key: cargo-index-${{ steps.ls-crates-io-index.outputs.head }}
@@ -57,7 +57,7 @@ jobs:
       NOTIFICATION_APP_CODE: ${{ secrets.NOTIFICATION_APP_CODE }}
       NOTIFICATION_ACCESS_TOKEN: ${{ secrets.NOTIFICATION_ACCESS_TOKEN }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Allow long paths on Windows
         if: ${{ runner.os == 'Windows' }}
@@ -76,7 +76,7 @@ jobs:
           }
 
       - name: Restore cargo dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry/index
@@ -115,7 +115,7 @@ jobs:
     env:
       CARGO_INCREMENTAL: 0
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -131,7 +131,7 @@ jobs:
           args: -- --check
 
       - name: Restore cargo dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry/index
@@ -156,7 +156,7 @@ jobs:
       NOTIFICATION_ACCESS_TOKEN: ${{ secrets.NOTIFICATION_ACCESS_TOKEN }}
       
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
           
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
@@ -166,13 +166,13 @@ jobs:
           override: true
 
       - name: Restore cargo registry index
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cargo/registry/index
           key: 'cargo-index-v2-${{ needs.update_deps.outputs.crates-io-index-head }}'
 
       - name: Restore dependency crates
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cargo/registry/cache
           key: 'cargo-deps-v2-${{ hashFiles(''Cargo.lock'') }}'

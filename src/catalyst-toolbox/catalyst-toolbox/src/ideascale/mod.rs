@@ -123,16 +123,20 @@ pub fn build_challenges(
         .challenges
         .iter()
         .map(|(i, c)| {
+            let is_community = funnels
+                .get(&c.funnel_id)
+                .unwrap_or_else(|| panic!("A funnel with id {} wasn't found", c.funnel_id))
+                .is_community();
+
+            let challenge_type = match is_community {
+                true => "community-choice".to_string(),
+                false => "simple".to_string(),
+            };
+
             (
                 c.id,
                 models::se::Challenge {
-                    challenge_type: funnels
-                        .get(&c.funnel_id)
-                        .unwrap_or_else(|| panic!("A funnel with id {} wasn't found", c.funnel_id))
-                        .is_community()
-                        .then(|| "community-choice")
-                        .unwrap_or("simple")
-                        .to_string(),
+                    challenge_type,
                     challenge_url: c.challenge_url.clone(),
                     description: c.description.to_string(),
                     fund_id: fund.to_string(),

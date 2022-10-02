@@ -49,10 +49,7 @@ pub fn cap_voting_influence(
     mut voters: Vec<SnapshotInfo>,
     threshold: Fraction,
 ) -> Result<Vec<SnapshotInfo>, Error> {
-    voters = voters
-        .into_iter()
-        .filter(|v| v.hir.voting_power > 0.into())
-        .collect();
+    voters.retain(|v| v.hir.voting_power > 0.into());
 
     if voters.is_empty() {
         return Ok(voters);

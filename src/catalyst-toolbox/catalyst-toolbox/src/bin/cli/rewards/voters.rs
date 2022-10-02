@@ -37,16 +37,6 @@ pub struct VotersRewards {
     /// Number of global votes required to be able to receive voter rewards
     #[structopt(long, default_value)]
     vote_threshold: u64,
-
-    /// Path to a json-encoded map from challenge id to an optional required threshold
-    /// per-challenge in order to receive rewards.
-    #[structopt(long)]
-    per_challenge_threshold: Option<PathBuf>,
-
-    /// Path to the list of proposals active in this election.
-    /// Can be obtained from /api/v0/proposals.
-    #[structopt(long)]
-    proposals: PathBuf,
 }
 
 fn write_rewards_results(
@@ -74,8 +64,6 @@ impl VotersRewards {
             snapshot_info_path,
             votes_count_path,
             vote_threshold,
-            per_challenge_threshold,
-            proposals,
         } = self;
 
         voter_rewards(

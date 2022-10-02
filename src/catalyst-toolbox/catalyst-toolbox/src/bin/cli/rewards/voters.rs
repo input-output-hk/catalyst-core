@@ -1,5 +1,5 @@
 use catalyst_toolbox::rewards::voters::calc_voter_rewards;
-use catalyst_toolbox::rewards::{Rewards, Threshold};
+use catalyst_toolbox::rewards::{Rewards, Threshold, VoteCount};
 use catalyst_toolbox::utils::assert_are_close;
 
 use color_eyre::eyre::eyre;
@@ -7,8 +7,9 @@ use color_eyre::{Report, Result};
 use jcli_lib::block::open_output;
 use jcli_lib::jcli_lib::block::Common;
 
+use snapshot_lib::registration::MainnetRewardAddress;
+use snapshot_lib::SnapshotInfo;
 use structopt::StructOpt;
-use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -35,7 +36,7 @@ pub struct VotersRewards {
 
     /// Number of global votes required to be able to receive voter rewards
     #[structopt(long, default_value)]
-    vote_threshold: usize,
+    vote_threshold: u64,
 
     /// Path to a json-encoded map from challenge id to an optional required threshold
     /// per-challenge in order to receive rewards.
@@ -77,7 +78,6 @@ impl VotersRewards {
             proposals,
         } = self;
 
-<<<<<<< HEAD
         voter_rewards(
             common
                 .output_file
@@ -88,42 +88,6 @@ impl VotersRewards {
             vote_threshold,
             total_rewards,
         )
-=======
-        let proposals = serde_json::from_reader::<_, Vec<FullProposalInfo>>(
-            jcli_lib::utils::io::open_file_read(&Some(proposals))?,
-        )?;
-
-        let vote_count = super::extract_individual_votes(
-            proposals.clone(),
-            serde_json::from_reader::<_, HashMap<Identifier, Vec<AccountVotes>>>(
-                jcli_lib::utils::io::open_file_read(&Some(votes_count_path))?,
-            )?,
-        )?;
-
-        let snapshot: Vec<SnapshotInfo> = serde_json::from_reader(
-            jcli_lib::utils::io::open_file_read(&Some(snapshot_info_path))?,
-        )?;
-
-        let additional_thresholds: HashMap<i32, usize> = if let Some(file) = per_challenge_threshold
-        {
-            serde_json::from_reader(jcli_lib::utils::io::open_file_read(&Some(file))?)?
-        } else {
-            HashMap::new()
-        };
-
-        let results = calc_voter_rewards(
-            vote_count,
-            snapshot,
-            Threshold::new(vote_threshold, additional_thresholds, proposals)?,
-            Rewards::from(total_rewards),
-        )?;
-
-        let actual_rewards = results.values().sum::<Rewards>();
-        assert_are_close(actual_rewards, Rewards::from(total_rewards));
-
-        write_rewards_results(common, &results)?;
-        Ok(())
->>>>>>> main
     }
 }
 
@@ -143,8 +107,12 @@ pub fn voter_rewards(
 
     let results = calc_voter_rewards(
         vote_count,
-        vote_threshold,
         snapshot,
+        Threshold::new(
+            vote_threshold as usize,
+            Default::default(),
+            Default::default(),
+        )?,
         Rewards::from(total_rewards),
     )?;
 

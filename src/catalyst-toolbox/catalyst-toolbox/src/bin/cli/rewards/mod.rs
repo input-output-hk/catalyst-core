@@ -1,13 +1,21 @@
 mod community_advisors;
+mod dreps;
 mod full;
 mod proposers;
 mod veterans;
 mod voters;
 
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
-use catalyst_toolbox::{http::default_http_client, rewards::proposers as proposers_lib};
-use color_eyre::Report;
+use catalyst_toolbox::{
+    http::default_http_client,
+    rewards::{proposers as proposers_lib, VoteCount},
+};
+use color_eyre::{eyre::eyre, Report};
+use jormungandr_lib::{
+    crypto::{account::Identifier, hash::Hash},
+    interfaces::AccountVotes,
+};
 use structopt::StructOpt;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 

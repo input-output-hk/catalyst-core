@@ -1,6 +1,5 @@
 use catalyst_toolbox::community_advisors::models::VeteranRankingRow;
 use catalyst_toolbox::rewards::veterans::{self, VcaRewards, VeteranAdvisorIncentive};
-use catalyst_toolbox::rewards::Rewards;
 use catalyst_toolbox::utils::csv;
 use color_eyre::eyre::{bail, eyre};
 use color_eyre::Report;
@@ -20,7 +19,7 @@ pub struct VeteransRewards {
 
     /// Reward to be distributed (integer value)
     #[structopt(long = "total-rewards")]
-    total_rewards: u64,
+    total_rewards: Decimal,
 
     /// Minimum number of rankings for each vca to be considered for reputation and rewards
     /// distribution
@@ -119,34 +118,14 @@ pub fn vca_rewards(
         bail!(
                 "Expected same number of reputation_agreement_rate_cutoffs and reputation_agreement_rate_modifiers"
             );
-        }
+    }
 
-        if !is_descending(&rewards_agreement_rate_cutoffs) {
-            bail!("Expected rewards_agreement_rate_cutoffs to be descending");
-        }
+    if !is_descending(&rewards_agreement_rate_cutoffs) {
+        bail!("Expected rewards_agreement_rate_cutoffs to be descending");
+    }
 
-        if !is_descending(&reputation_agreement_rate_cutoffs) {
-            bail!("Expected rewards_agreement_rate_cutoffs to be descending");
-        }
-
-        let results = veterans::calculate_veteran_advisors_incentives(
-            &reviews,
-            Rewards::from(total_rewards),
-            min_rankings..=max_rankings_rewards,
-            min_rankings..=max_rankings_reputation,
-            rewards_agreement_rate_cutoffs
-                .into_iter()
-                .zip(rewards_agreement_rate_modifiers.into_iter())
-                .collect(),
-            reputation_agreement_rate_cutoffs
-                .into_iter()
-                .zip(reputation_agreement_rate_modifiers.into_iter())
-                .collect(),
-        );
-
-        csv::dump_data_to_csv(rewards_to_csv_data(results)?.iter(), &to).unwrap();
-
-        Ok(())
+    if !is_descending(&reputation_agreement_rate_cutoffs) {
+        bail!("Expected rewards_agreement_rate_cutoffs to be descending");
     }
 
     if !is_descending(&rewards_agreement_rate_cutoffs) {

@@ -1,6 +1,6 @@
 pub mod community_advisors;
-pub mod proposers;
 pub mod dreps;
+pub mod proposers;
 pub mod veterans;
 pub mod voters;
 

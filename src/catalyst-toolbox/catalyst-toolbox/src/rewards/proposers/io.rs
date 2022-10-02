@@ -4,8 +4,8 @@ use jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{VotePlanStatus, VoteProposalStatus},
 };
-use log::{info, warn};
 use std::{collections::HashMap, fs::File, io::BufWriter, path::Path};
+use tracing::{info, warn};
 use vit_servicing_station_lib::db::models::{challenges::Challenge, proposals::Proposal};
 
 use serde::Deserialize;

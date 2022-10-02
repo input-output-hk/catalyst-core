@@ -1,6 +1,3 @@
-use chain_crypto::digest::DigestOf;
-use color_eyre::eyre::bail;
-use color_eyre::Report;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
@@ -15,10 +12,6 @@ use chain_crypto::digest::DigestOf;
 use color_eyre::eyre::{bail, eyre};
 use color_eyre::Report;
 use rust_decimal::prelude::ToPrimitive;
-use serde::Serialize;
-use std::collections::{BTreeMap, BTreeSet};
-use std::path::{Path, PathBuf};
-use std::str::FromStr;
 
 use catalyst_toolbox::community_advisors::models::{
     AdvisorReviewRow, ApprovedProposalRow, ProposalStatus,

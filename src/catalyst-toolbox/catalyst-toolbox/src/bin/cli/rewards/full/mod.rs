@@ -6,8 +6,8 @@ use catalyst_toolbox::{
 };
 use color_eyre::Result;
 use config::*;
-use log::info;
 use serde_json::from_reader;
+use tracing::info;
 
 mod config;
 

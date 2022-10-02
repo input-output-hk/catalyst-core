@@ -12,7 +12,7 @@ use jormungandr_lib::{
         Address, Block0Configuration, Initial, Tally, VotePlanStatus, VoteProposalStatus,
     },
 };
-use log::debug;
+use tracing::debug;
 use vit_servicing_station_lib::db::models::{challenges::Challenge, proposals::Proposal};
 
 pub use types::*;

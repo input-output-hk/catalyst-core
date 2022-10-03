@@ -1,5 +1,6 @@
 pub mod archive;
 pub mod community_advisors;
+pub mod http;
 pub mod ideascale;
 pub mod kedqr;
 pub mod logs;
@@ -10,10 +11,6 @@ pub mod stats;
 pub mod utils;
 pub mod vca_reviews;
 pub mod vote_check;
-
-pub mod http;
-#[cfg(feature = "test-api")]
-pub mod testing;
 
 #[macro_use]
 extern crate tracing;

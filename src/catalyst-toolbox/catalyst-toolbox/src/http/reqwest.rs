@@ -17,12 +17,18 @@ pub struct ReqwestClient {
 }
 
 impl ReqwestClient {
-    pub fn new(api_key: &str) -> Self {
-        let mut headers = HeaderMap::new();
-        let mut auth_value = HeaderValue::from_str(api_key).unwrap();
-        auth_value.set_sensitive(true);
-        headers.insert("api_token", auth_value);
-        let client = Client::builder().default_headers(headers).build().unwrap();
+    pub fn new(api_key: Option<&str>) -> Self {
+        let mut client = Client::builder();
+
+        if let Some(api_key) = api_key {
+            let mut headers = HeaderMap::new();
+            let mut auth_value = HeaderValue::from_str(api_key).unwrap();
+            auth_value.set_sensitive(true);
+            headers.insert("api_token", auth_value);
+            client = client.default_headers(headers);
+        };
+
+        let client = client.build().unwrap();
 
         Self {
             client,
@@ -37,10 +43,13 @@ impl HttpClient for ReqwestClient {
         T: for<'a> Deserialize<'a>,
     {
         let url = self.base_url.join(path.as_ref())?;
+        let response = self.client.get(url).send()?;
+        let status = response.status();
 
         Ok(HttpResponse {
             _marker: std::marker::PhantomData,
-            inner: self.client.get(url).send()?,
+            status,
+            body: response.text()?,
         })
     }
 }

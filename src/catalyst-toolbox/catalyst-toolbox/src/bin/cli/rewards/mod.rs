@@ -1,15 +1,21 @@
 mod community_advisors;
 mod dreps;
+mod full;
+mod proposers;
 mod veterans;
 mod voters;
 
-use catalyst_toolbox::rewards::VoteCount;
+use std::{collections::HashMap, path::PathBuf};
+
+use catalyst_toolbox::{
+    http::default_http_client,
+    rewards::{proposers as proposers_lib, VoteCount},
+};
 use color_eyre::{eyre::eyre, Report};
 use jormungandr_lib::{
     crypto::{account::Identifier, hash::Hash},
     interfaces::AccountVotes,
 };
-use std::collections::HashMap;
 use structopt::StructOpt;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
@@ -27,6 +33,12 @@ pub enum Rewards {
 
     /// Calculate rewards for veteran community advisors
     Veterans(veterans::VeteransRewards),
+
+    /// Calculate full rewards based on a config file
+    Full { path: PathBuf },
+
+    /// Calculate rewards for propsers
+    Proposers(proposers_lib::ProposerRewards),
 }
 
 impl Rewards {
@@ -36,6 +48,10 @@ impl Rewards {
             Rewards::CommunityAdvisors(cmd) => cmd.exec(),
             Rewards::Veterans(cmd) => cmd.exec(),
             Rewards::Dreps(cmd) => cmd.exec(),
+            Rewards::Full { path } => full::full_rewards(&path),
+            Rewards::Proposers(proposers) => {
+                proposers::rewards(&proposers, &default_http_client(None))
+            }
         }
     }
 }

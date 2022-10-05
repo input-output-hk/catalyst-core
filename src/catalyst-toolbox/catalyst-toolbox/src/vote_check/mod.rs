@@ -98,7 +98,7 @@ impl CheckNode {
     /// Check that all transactions are present on the main chain of the node
     pub fn check_transactions_on_chain(&self, transactions: Vec<String>) -> Result<(), Error> {
         let tip = self.inner.rest().tip()?.to_string();
-        let explorer = self.inner.explorer(ExplorerParams::default());
+        let explorer = self.inner.explorer(ExplorerParams::default())?;
         let explorer = explorer.client();
 
         for id in transactions {

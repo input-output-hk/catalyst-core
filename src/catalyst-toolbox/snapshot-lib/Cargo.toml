@@ -9,10 +9,10 @@ license = "MIT OR Apache-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
 serde = { version = "1", features = ["derive"] }
 proptest = { git = "https://github.com/input-output-hk/proptest.git", branch = "master", optional = true }
-chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", optional = true }
+chain-addr = { path = "../../chain-libs/chain-addr", optional = true }
 test-strategy = { version = "0.2", optional = true }
 serde_test = { version = "1", optional = true }
 hex = { version = "0.4" }
@@ -21,7 +21,7 @@ fraction = { version = "0.10", features = ["with-serde-support"] }
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 bech32 = "0.8.1"
 graphql_client = { version = "0.10" }
-chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-crypto = { path = "../../chain-libs/chain-crypto" }
 rust_decimal = "1.16"
 rust_decimal_macros = "1"
 
@@ -31,7 +31,7 @@ test-strategy = "0.2"
 serde_json = "1.0"
 serde_yaml = "0.8.17"
 proptest = { git = "https://github.com/input-output-hk/proptest.git", branch = "master" }
-chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-addr = { path = "../../chain-libs/chain-addr" }
 
 [features]
 proptest = ["dep:proptest", "dep:chain-addr", "dep:test-strategy", "dep:serde_test"]

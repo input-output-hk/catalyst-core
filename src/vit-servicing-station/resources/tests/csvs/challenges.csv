@@ -1,0 +1,4 @@
+id,title,description,rewards_total,fund_id,challenge_url
+1,Challenge 1,Something,9000,-1,http://example.com/challenges/1
+2,Challenge 2,Hey hey hey,100500,-1,http://example.com/challenges/2
+3,Challenge 3,Another one,420000,-1,http://example.com/challenges/3

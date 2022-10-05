@@ -1,0 +1,2 @@
+id,fund_name,fund_goal,voting_power_threshold,rewards_info,fund_start_time,fund_end_time,next_fund_start_time
+-1,Fund1,Fund the future of Cardano,8000000000,2020-08-18T14:00:00Z,2020-08-10T14:18:12Z,2020-08-16T00:00:00Z,2020-08-19T00:00:00Z

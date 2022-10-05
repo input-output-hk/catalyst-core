@@ -1,0 +1,3 @@
+id,chain_voteplan_id,chain_vote_start_time,chain_vote_end_time,chain_committee_end_time,chain_voteplan_payload,chain_vote_encryption_key,fund_id
+-1,c983969a99106853cd32f972c471a01a73a22ea20a030bb4491aecfc676e9a8c,2020-08-10T14:18:12Z,2020-08-16T00:00:00Z,2020-08-19T00:00:00Z,public,,-1
+-1,ebcb5af4bc2823fa2a66f4a364c41d44e6cf118f8f3d32fa0920ed32df4632ae,2020-08-10T14:18:12Z,2020-08-16T00:00:00Z,2020-08-19T00:00:00Z,public,,-1

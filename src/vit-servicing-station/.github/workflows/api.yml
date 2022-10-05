@@ -1,0 +1,21 @@
+name: API Check
+
+on:
+  pull_request:
+    paths:
+      - "doc/api/*.yaml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: Validate
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Check that the OpenAPI file is valid
+        uses: morigs/lint-api-docs-action@v1
+        with:
+          files-glob: ./doc/api/*.yaml
+          ruleset-file: ./.spectral.yaml
+          fail-severity: warn

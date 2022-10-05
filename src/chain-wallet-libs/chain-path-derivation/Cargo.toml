@@ -1,0 +1,14 @@
+[package]
+name = "chain-path-derivation"
+version = "0.1.0"
+authors = ["Nicolas Di Prima <nicolas@primetype.co.uk>", "Vincent Hanquez <vincent@typed.io>"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+thiserror = { version = "1.0.13", default-features = false }
+
+[dev-dependencies]
+quickcheck = "0.9"
+quickcheck_macros = "0.9"
+paste = "0.1.8"

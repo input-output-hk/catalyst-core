@@ -1,0 +1,17 @@
+[package]
+name = "jormungandrwallet"
+version = "0.7.0-pre4"
+authors = ["Nicolas Di Prima <nicolas@primetype.co.uk>", "Vincent Hanquez <vincent@typed.io>"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+
+[lib]
+crate-type = ["staticlib", "cdylib"]
+
+[dependencies]
+bip39 = { path = "../../bip39" }
+wallet = { path = "../../wallet" }
+chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+wallet-core = { path = "../wallet-core"}

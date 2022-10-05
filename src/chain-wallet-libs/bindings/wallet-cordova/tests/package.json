@@ -1,0 +1,30 @@
+{
+  "name": "wallet-cordova-plugin-tests",
+  "version": "2.0.0",
+  "description": "",
+  "cordova": {
+    "id": "wallet-cordova-plugin-tests",
+    "platforms": []
+  },
+  "keywords": [
+    "ecosystem:cordova"
+  ],
+  "author": "ecioppettini@atixlabs.com",
+  "license": "MIT OR Apache-2.0",
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/cli": "^7.11.6",
+    "@babel/core": "^7.12.3",
+    "@babel/eslint-parser": "^7.12.1",
+    "@babel/preset-env": "^7.11.5",
+    "@babel/runtime-corejs3": "^7.11.2",
+    "browserify": "^16.5.2",
+    "core-js": "^3.6.5",
+    "eslint": "^7.11.0",
+    "eslintify": "^3.1.0"
+  },
+  "scripts": {
+    "build": "babel src/main.js --out-file tests.js && browserify tests.js -o tests.js --external wallet-cordova-plugin.wallet -s tests --debug -t eslintify",
+    "lint": "eslint"
+  }
+}

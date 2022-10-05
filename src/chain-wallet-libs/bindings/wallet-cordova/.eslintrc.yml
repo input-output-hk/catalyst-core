@@ -1,0 +1,8 @@
+root: true
+extends: '@cordova/eslint-config/browser'
+ignorePatterns: ['**/pkg/*', '**/docs/*', '**/tests']
+
+# overrides:
+#   - files: [tests/**/*.js]
+#     extends: '@cordova/eslint-config/node-tests'
+

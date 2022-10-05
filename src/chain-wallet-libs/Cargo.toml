@@ -1,0 +1,18 @@
+[workspace]
+members = [
+    "bip39",
+    "chain-path-derivation",
+    "hdkeygen",
+    "wallet",
+    "symmetric-cipher",
+    "bindings/wallet-c",
+    "bindings/wallet-js",
+    "bindings/wallet-uniffi",
+]
+
+[profile.release]
+lto = "yes"
+strip = "symbols"
+
+[patch.crates-io]
+cryptoxide = { git = "https://github.com/typed-io/cryptoxide.git" }

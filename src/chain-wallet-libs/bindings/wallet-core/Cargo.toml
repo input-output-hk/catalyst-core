@@ -1,0 +1,32 @@
+[package]
+authors = ["Nicolas Di Prima <nicolas@primetype.co.uk>", "Vincent Hanquez <vincent@typed.io>"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+name = "wallet-core"
+version = "0.7.0-pre4"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["lib"]
+
+[dependencies]
+bip39 = {path = "../../bip39"}
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-path-derivation = {path = "../../chain-path-derivation"}
+chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+hdkeygen = {path = "../../hdkeygen"}
+symmetric-cipher = {path = "../../symmetric-cipher"}
+thiserror = {version = "1.0.13", default-features = false}
+wallet = {path = "../../wallet"}
+bech32 = "0.7.2"
+
+rand = { version = "0.8.3", features = ["getrandom"] }
+
+[dev-dependencies]
+rand_chacha = "0.3.0"

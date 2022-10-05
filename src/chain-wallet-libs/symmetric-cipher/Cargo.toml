@@ -1,0 +1,17 @@
+[package]
+authors = ["Nicolas Di Prima <nicolas@primetype.co.uk>", "Vincent Hanquez <vincent@typed.io>", "Enzo Cioppettini <ecioppettini@atixlabs.com"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+name = "symmetric-cipher"
+version = "0.5.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cryptoxide = "0.4.2"
+rand = "0.8.3"
+thiserror = {version = "1.0.13", default-features = false}
+zeroize = "1.5.3"
+
+[dev-dependencies]
+rand_chacha = "0.3.0"

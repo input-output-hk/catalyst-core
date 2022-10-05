@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="wallet-cordova-plugin-tests"
+    version="0.8.0-alpha1">
+    <name>Wallet cordova plugin tests</name>
+    <license>Apache 2.0 OR MIT</license>
+
+    <js-module src="tests.js" name="tests">
+    </js-module>
+</plugin>

@@ -1,0 +1,18 @@
+[package]
+name = "bip39"
+version = "0.1.0"
+authors = ["Nicolas Di Prima <nicolas@primetype.co.uk>", "Vincent Hanquez <vincent@typed.io>"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+cryptoxide = "0.4.2"
+thiserror = { version = "1.0.13", default-features = false }
+zeroize = "1.5.3"
+
+[dev-dependencies]
+quickcheck = "0.9"
+quickcheck_macros = "0.9"
+unicode-normalization = "*"
+rand = "*"
+hex = "*"

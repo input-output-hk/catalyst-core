@@ -1,0 +1,17 @@
+---
+root: true
+env:
+  es6: true
+  jasmine: true
+  amd: true
+  browser: true
+
+parserOptions:
+  ecmaVersion: 2018
+  sourceType: module
+
+extends: 'eslint:recommended'
+
+globals:
+  exports: 'writable'
+  module: 'writable'

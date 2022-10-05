@@ -1,0 +1,10 @@
+BasedOnStyle: Mozilla
+ColumnLimit: 100
+TabWidth: 4
+IndentWidth: 4
+ContinuationIndentWidth: 4
+ObjCBlockIndentWidth: 4
+AllowAllArgumentsOnNextLine: false
+AlignAfterOpenBracket: DontAlign
+IncludeBlocks: Preserve
+SortIncludes: false

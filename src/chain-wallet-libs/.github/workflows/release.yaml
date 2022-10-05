@@ -1,0 +1,426 @@
+on:
+  push:
+    tags:
+      - "v[0-9]+.*" # push events to matching releases
+
+name: Release
+
+jobs:
+  initial_release:
+    name: Create base release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@master
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Set version output
+        id: get_version
+        run: echo ::set-output name=version::``${GITHUB_REF#refs/tags/}``
+
+  release_assets:
+    name: Release assets
+    needs: initial_release
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          # Linux
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: aarch64-unknown-linux-gnu,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: arm-unknown-linux-gnueabi,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: armv7-unknown-linux-gnueabihf,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: mips64el-unknown-linux-gnuabi64,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: powerpc64le-unknown-linux-gnu,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: x86_64-unknown-linux-musl,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: false,
+              toolchain: stable,
+              target: x86_64-unknown-linux-gnu,
+            }
+          # Android
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: aarch64-linux-android,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: arm-linux-androideabi,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: armv7-linux-androideabi,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: i686-linux-android,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: x86_64-linux-android,
+            }
+          # tumbv7neon not yet supported
+          # - { os: ubuntu-latest, cross: true, toolchain: stable, target: thumbv7neon-linux-androideabi }
+          # Macos
+          - {
+              os: macos-latest,
+              cross: false,
+              toolchain: stable,
+              target: x86_64-apple-darwin,
+            }
+          # iOS
+          - {
+              os: macos-latest,
+              cross: false,
+              toolchain: stable,
+              target: aarch64-apple-ios,
+            }
+          - {
+              os: macos-latest,
+              cross: false,
+              toolchain: stable,
+              target: x86_64-apple-ios,
+            }
+          # Windows
+          - {
+              os: windows-latest,
+              cross: false,
+              toolchain: stable-x86_64-pc-windows-gnu,
+              target: x86_64-pc-windows-gnu,
+            }
+          - {
+              os: windows-latest,
+              cross: false,
+              toolchain: stable-x86_64-pc-windows-msvc,
+              target: x86_64-pc-windows-msvc,
+            }
+
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.config.toolchain }}
+          target: ${{ matrix.config.target }}
+          override: true
+          default: true
+
+      - name: Checkout code
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+
+      - name: Build library
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: ${{ matrix.config.cross }}
+          command: rustc
+          args: --release --target ${{ matrix.config.target }} -p jormungandrwallet -- -C lto
+
+      - name: prepare package
+        run: mkdir -p dist/iohk_wallet/lib && mkdir -p dist/iohk_wallet/include
+
+      - name: copy header file
+        run: cp ./bindings/wallet-c/wallet.h dist/iohk_wallet/include/wallet.h
+
+      - name: copy binary if unix
+        if: matrix.config.os != 'windows-latest'
+        run: find ./target/${{ matrix.config.target }}/release -maxdepth 1 '(' -name "libjormungandrwallet.so" -o -name "libjormungandrwallet.a" ')' -exec cp {} dist/iohk_wallet/lib \;
+      - name: copy binary if windows
+        if: matrix.config.os == 'windows-latest'
+        run: |
+          Copy-Item target\${{ matrix.config.target }}\release\jormungandrwallet.dll* -Destination dist\iohk_wallet
+          if ( "${{ matrix.config.target }}" -eq "x86_64-pc-windows-gnu" )
+          {
+            Copy-Item target\${{ matrix.config.target }}\release\libjormungandrwallet.* -Destination dist\iohk_wallet
+          }
+          else
+          {
+            Copy-Item target\${{ matrix.config.target }}\release\jormungandrwallet.lib -Destination dist\iohk_wallet
+          }
+
+      - name: Pack binaries if unix
+        if: matrix.config.os != 'windows-latest'
+        run: |
+          tar \
+            -C dist \
+            -czvf chain-wallet-libs-${{ needs.initial_release.outputs.version }}-${{matrix.config.target}}.tar.gz \
+            iohk_wallet
+
+      - name: Pack binaries if windows
+        if: matrix.config.os == 'windows-latest'
+        run: compress-archive ./dist/iohk_wallet chain-wallet-libs-${{ needs.initial_release.outputs.version }}-${{ matrix.config.target }}.zip
+
+      - name: Get file extension
+        id: get_file_extension
+        run: |
+          if [ ${{ matrix.config.os }} = "windows-latest" ]
+          then
+            echo "::set-output name=ext::zip"
+          else
+            echo "::set-output name=ext::tar.gz"
+          fi
+        shell: bash
+
+      - name: Upload binaries to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.initial_release.outputs.upload_url }}
+          asset_path: "chain-wallet-libs\
+            -${{ needs.initial_release.outputs.version }}\
+            -${{ matrix.config.target }}\
+            .${{ steps.get_file_extension.outputs.ext }}"
+          asset_name: "chain-wallet-libs\
+            -${{ needs.initial_release.outputs.version }}\
+            -${{ matrix.config.target }}"
+          asset_content_type: application/gzip
+
+  release_wasm:
+    name: Release wasm assets
+    needs: initial_release
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [nodejs, web, bundler]
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Install wasm pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: build
+        run: |
+          wasm-pack build \
+            --scope iohk-jormungandr \
+            --out-name wallet \
+            --release --target ${{ matrix.target }} \
+            bindings/wallet-js
+
+      - name: pack
+        run: wasm-pack pack bindings/wallet-js
+
+      - name: rename-tarball
+        run: |
+          find ./bindings/wallet-js/pkg \
+            -name iohk-jormungandr-wallet-js*.tgz \
+            -exec mv {} chain-wallet-libs-${{ needs.initial_release.outputs.version }}-${{ matrix.target }}.tgz \;
+
+      - name: Upload binaries to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.initial_release.outputs.upload_url }}
+          asset_path: chain-wallet-libs-${{ needs.initial_release.outputs.version }}-${{ matrix.target }}.tgz
+          asset_name: chain-wallet-libs-${{ needs.initial_release.outputs.version }}-${{ matrix.target }}
+          asset_content_type: application/gzip
+
+  build_uniffi:
+    name: Build uniffi jni shared libs for android with cross
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        config:
+          - { target: aarch64-linux-android }
+          - { target: armv7-linux-androideabi }
+          - { target: i686-linux-android }
+          - { target: x86_64-linux-android }
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+
+      - name: Build library (release)
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: rustc
+          args: --release --target ${{ matrix.config.target }} -p wallet-uniffi --features builtin-bindgen -- -C link-args=-ldl
+
+      - name: Prepare package
+        run: mkdir -p jniLibs/${{ matrix.config.target }}
+
+      - name: copy binary
+        run: cp ./target/${{ matrix.config.target }}/release/libuniffi_jormungandr_wallet.so ./jniLibs/${{ matrix.config.target }}/;
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: jniLibs
+          path: ./jniLibs
+          retention-days: 1
+
+  build_lipo_asset:
+    name: Build universal lib for cordova plugin
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          default: true
+
+      - run: rustup target add x86_64-apple-ios
+      - run: rustup target add aarch64-apple-ios
+
+      - name: Checkout code
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+
+      - name: build universal lib
+        working-directory: ./bindings/wallet-cordova/scripts
+        run: python3 ./build_ios.py
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: iosLibs
+          path: ./bindings/wallet-cordova/src/ios
+
+  package_cordova_plugin:
+    runs-on: ubuntu-latest
+    needs: [build_uniffi, build_lipo_asset, initial_release]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+
+      - name: Download jni libs
+        uses: actions/download-artifact@v1
+        with:
+          name: jniLibs
+
+      - name: make libs directory
+        run: mkdir -p bindings/wallet-cordova/src/android/libs
+
+      - name: Copy libs
+        run: cp -r jniLibs/* bindings/wallet-cordova/src/android/libs
+
+      - name: rename arm64-v8a
+        working-directory: ./bindings/wallet-cordova/src/android/libs
+        run: mv aarch64-linux-android arm64-v8a
+
+      - name: rename armv7-linux-androideabi
+        working-directory: ./bindings/wallet-cordova/src/android/libs
+        run: mv armv7-linux-androideabi armeabi-v7a
+
+      - name: rename i686-linux-android
+        working-directory: ./bindings/wallet-cordova/src/android/libs
+        run: mv i686-linux-android x86
+
+      - name: rename x86_64
+        working-directory: ./bindings/wallet-cordova/src/android/libs
+        run: mv x86_64-linux-android x86_64
+
+      - name: Install wasm pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: build wasm for electron
+        working-directory: ./bindings/wallet-cordova/scripts
+        run: python3 ./build_wasm.py
+
+      - name: Install uniffi
+        uses: actions-rs/install@v0.1
+        with:
+          crate: uniffi_bindgen
+          version: 0.16.0
+          use-tool-cache: true
+
+      - name: copy java definitions from jni
+        run: python3 ./bindings/wallet-cordova/scripts/copy_jni_definitions.py
+
+      - name: Download artifact with universal lib
+        uses: actions/download-artifact@v1
+        with:
+          name: iosLibs
+
+      - name: Copy universal lib to plugin's directory
+        run: cp -r iosLibs/* bindings/wallet-cordova/src/ios
+
+      - name: setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - name: package module
+        run: npm pack ./bindings/wallet-cordova
+
+      - name: rename-tarball
+        run: |
+          find . \
+            -name wallet-cordova-plugin*.tgz \
+            -exec mv {} chain-wallet-libs-${{ needs.initial_release.outputs.version }}-cordova.tgz \;
+
+      - name: Upload binaries to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.initial_release.outputs.upload_url }}
+          asset_path: ./chain-wallet-libs-${{ needs.initial_release.outputs.version }}-cordova.tgz
+          asset_name: chain-wallet-libs-cordova-${{ needs.initial_release.outputs.version }}
+          asset_content_type: application/gzip

@@ -12,19 +12,19 @@ tokio = { version = "1.15", features = ["macros", "time"] }
 futures      = "0.3.21"
 base64 = "0.13"
 hex = "0.4.2"
-chain-addr      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-core      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-crypto    = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-time      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-vote      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-addr      = { path = "../../../chain-libs/chain-addr" }
+chain-core      = { path = "../../../chain-libs/chain-core" }
+chain-crypto    = { path = "../../../chain-libs/chain-crypto" }
+chain-impl-mockchain = { path = "../../../chain-libs/chain-impl-mockchain" }
+chain-time      = { path = "../../../chain-libs/chain-time" }
+chain-vote      = { path = "../../../chain-libs/chain-vote" }
 jormungandr-lib = { path = "../../jormungandr-lib" }
 hersir = { path = "../hersir" }
 loki = { path = "../loki" }
 thor = { path = "../thor" }
 mjolnir = { path = "../mjolnir" }
 jormungandr-automation = { path = "../jormungandr-automation" }
-jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
+jortestkit = { path = "../../../jortestkit" }
 rand = "0.8"
 rand_core = "0.6"
 rand_chacha = "0.3"

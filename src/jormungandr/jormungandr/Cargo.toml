@@ -12,17 +12,17 @@ Midgard Serpent
 edition = "2021"
 
 [dependencies]
-chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-network = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-storage   = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-time      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-evm = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", optional = true }
-cardano-legacy-address = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-imhamt = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-addr = { path = "../../chain-libs/chain-addr" }
+chain-core = { path = "../../chain-libs/chain-core" }
+chain-crypto = { path = "../../chain-libs/chain-crypto" }
+chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain" }
+chain-network = { path = "../../chain-libs/chain-network" }
+chain-storage   = { path = "../../chain-libs/chain-storage" }
+chain-time      = { path = "../../chain-libs/chain-time" }
+chain-vote = { path = "../../chain-libs/chain-vote" }
+chain-evm = { path = "../../chain-libs/chain-evm", optional = true }
+cardano-legacy-address = { path = "../../chain-libs/cardano-legacy-address" }
+imhamt = { path = "../../chain-libs/imhamt" }
 
 arc-swap = "^1.5.0"
 async-trait = "0.1.51"
@@ -69,9 +69,9 @@ reqwest = { version = "0.11",  default-features = false, features = ["rustls-tls
 tokio = { version = "^1.15", features = ["full"] }
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
-chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
-chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
+chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain", features = [ "property-test-api" ] }
+chain-addr = { path = "../../chain-libs/chain-addr", features = [ "property-test-api" ] }
+chain-crypto = { path = "../../chain-libs/chain-crypto", features = [ "property-test-api" ] }
 criterion = { version = "0.3", features = ["html_reports", "async_tokio"] }
 
 [[bench]]

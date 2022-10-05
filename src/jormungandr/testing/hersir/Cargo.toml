@@ -10,16 +10,16 @@ edition = "2021"
 assert_fs = "1.0"
 custom_debug = "0.5"
 ctrlc = "3.2.1"
-chain-core      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-crypto      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
-chain-addr      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-vote      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-core      = { path = "../../../chain-libs/chain-core" }
+chain-crypto      = { path = "../../../chain-libs/chain-crypto", features = [ "property-test-api" ] }
+chain-addr      = { path = "../../../chain-libs/chain-addr", features = [ "property-test-api" ] }
+chain-impl-mockchain = { path = "../../../chain-libs/chain-impl-mockchain" }
+chain-vote      = { path = "../../../chain-libs/chain-vote" }
 indicatif = "0.15"
 jormungandr-automation = { path = "../jormungandr-automation" }
 jormungandr-lib = { path = "../../jormungandr-lib" }
 thor = { path = "../thor" }
-jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
+jortestkit = { path = "../../../jortestkit" }
 hex = "0.4"
 serde = "1.0"
 serde_derive = "1.0"

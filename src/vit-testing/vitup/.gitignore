@@ -1,0 +1,12 @@
+/vit_backend/**
+/data/**
+/snapshot/
+/mock/
+/perf/
+/signoff/
+/dryrun/
+/output/
+/prod/
+/validate/
+/vole.trace
+/mock_farm/

@@ -1,0 +1,16 @@
+{
+	"port": 8080,
+	"result-dir": "./data",
+	"voting-tools": {
+		"bin": "voting-tools-mock",
+		"network": {
+			"testnet": 1234231321
+		},
+		"db": "cexplorer",
+		"db-user": "cexplorer",
+		"db-pass": "pass",
+		"db-host": "/alloc",
+		"scale": 1000000
+	},
+	"token":"RBj0OfHw5jT87A"
+}

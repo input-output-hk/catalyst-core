@@ -1,0 +1,14 @@
+{
+	"port": 8080,
+	"result-dir": "./data",
+	"voting-tools": {
+		    "bin": "voting-tools",
+		    "network": "mainnet",
+		    "db": "cexplorer",
+		    "db-user": "cexplorer",
+			"db-pass": "pass",
+		    "db-host": "/alloc",
+		    "scale": 1000000
+	},
+	"token":"gdsDA_nqi8asgw"
+}

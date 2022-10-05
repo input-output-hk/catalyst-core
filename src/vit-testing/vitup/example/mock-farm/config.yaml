@@ -1,0 +1,13 @@
+{
+  "port": 7070,
+  "working_directory": "./mock_farm",
+  "mocks-port-range": {
+    "start": 8080,
+    "end": 9090
+  },
+  "protocol": {
+    "key_path": "./resources/tls/server.key",
+    "cert_path": "./resources/tls/server.crt"
+  },
+  "local": true
+}

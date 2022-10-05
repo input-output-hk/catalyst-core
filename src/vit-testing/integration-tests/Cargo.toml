@@ -1,0 +1,53 @@
+[package]
+name = "integration-tests"
+version = "0.1.0"
+authors = ["dkijania <dariusz.kijania@iohk.io>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+jormungandr-lib = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-automation = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+thor = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+hersir = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jcli = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
+vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
+jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch="master" }
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+vitup = { path = "../vitup"} 
+iapyx = { path = "../iapyx"} 
+valgrind = { path = "../valgrind"} 
+mainnet-tools = { path = "../mainnet-tools"} 
+snapshot-trigger-service = { path = "../snapshot-trigger-service" }
+registration-service = { path = "../registration-service" }
+rand_chacha = "0.2"
+tokio = { version = "1.1", features = ["macros","rt","rt-multi-thread"] }
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "main", features=["test-api"]}
+snapshot-lib = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "main", features=["test-api"]}
+thiserror = "1.0"
+netstat2 = "0.9"
+image = "0.23.9"
+rand = "0.8"
+hex = "0.4.3"
+lazy_static = "1"
+libmath = "0.2.1"
+cfg-if = "1.0.0"
+assert_fs = "1.0"
+assert_cmd = "1.0"
+chrono = "0.4.19"
+serde_json = "1.0.53"
+serde = "1.0.53"
+csv = "1.1"
+fraction = "0.10"
+
+[features]
+load-tests = []
+soak-tests = []
+# tests which requires external components deployed on testnet network
+testnet-tests = []

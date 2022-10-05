@@ -1,0 +1,219 @@
+version: 2.1
+executors:
+  rust-stable:
+    docker:
+      - image: 'cimg/rust:1.60.0-node'
+    working_directory: /home/circleci/build
+    resource_class: xlarge
+jobs:
+  build_all_targets:
+    description: Builds all test features
+    docker:
+      - image: 'cimg/rust:1.60.0-node'
+    parameters:
+      mode:
+        type: string
+        default: ''
+      cargo_behavior:
+        type: string
+        default: '--verbose'
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Print version information
+          command: rustc --version; cargo --version
+      - run:
+          name: install build reqs
+          command: |
+            sudo apt update && sudo apt upgrade -y
+            sudo apt install build-essential pkg-config libssl-dev zlib1g-dev libncurses5-dev libncursesw5-dev libreadline-dev libsqlite3-dev libgdbm-dev libdb5.3-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev libffi-dev
+      - run:
+          name: Run tests build
+          no_output_timeout: 60m
+          environment:
+            RUST_BACKTRACE: 1
+          command: cargo test --all-features --no-run --jobs 1 -- --test-threads 1
+  vitup_test:
+    description: Steps for the vitup unit test jobs
+    docker:
+      - image: 'cimg/rust:1.60.0-node'
+    parameters:
+      mode:
+        type: string
+        default: ''
+      cargo_behavior:
+        type: string
+        default: '--verbose'
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Print version information
+          command: rustc --version; cargo --version
+      - run:
+          name: install build reqs
+          command: |
+            sudo apt update && sudo apt upgrade -y
+            sudo apt install build-essential pkg-config libssl-dev zlib1g-dev libncurses5-dev libncursesw5-dev libreadline-dev libsqlite3-dev libgdbm-dev libdb5.3-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev libffi-dev
+      - run:
+          name: checkout jormungandr
+          command: |
+            git clone https://github.com/input-output-hk/jormungandr.git
+            cd jormungandr
+            git checkout master
+      - run:
+          name: install jormungandr
+          command: |
+            cd jormungandr
+            cargo install --path jormungandr --locked
+            cargo install --path jcli --locked
+      - run:
+          name: checkout vit-station-service
+          command: |
+            git clone https://github.com/input-output-hk/vit-servicing-station.git
+            cd vit-servicing-station
+            git checkout master
+      - run:
+          name: install vit-station-service
+          command: |
+            cd vit-servicing-station
+            cargo install --path vit-servicing-station-server --locked
+      - run:
+          name: install iapyx
+          command: |
+            cargo install --path iapyx --locked
+      - run:
+          name: install valgrind
+          command: |
+            cargo install --path valgrind --locked
+      - run:
+          name: Run tests
+          no_output_timeout: 60m
+          environment:
+            RUST_BACKTRACE: 1
+          command: |
+            cd vitup
+            cargo test --jobs 1 -- --test-threads=1
+  test_debug:
+    executor: rust-stable
+    environment:
+      RUSTFLAGS: '-D warnings'
+      CARGO_INCREMENTAL: 0
+    steps:
+      - test
+commands:
+  test:
+    description: Steps for the test jobs
+    parameters:
+      mode:
+        type: string
+        default: ''
+      cargo_behavior:
+        type: string
+        default: '--verbose'
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: install build reqs
+          command: |
+            sudo apt update && sudo apt upgrade -y
+            sudo apt install build-essential pkg-config libssl-dev zlib1g-dev libncurses5-dev libncursesw5-dev libreadline-dev libsqlite3-dev libgdbm-dev libdb5.3-dev libbz2-dev libexpat1-dev liblzma-dev tk-dev libffi-dev
+      - run:
+          name: install python 3.8
+          command: |
+            sudo add-apt-repository --yes ppa:deadsnakes/ppa
+            sudo apt-get update
+            sudo apt-get install python3.8
+            sudo apt-get install python3-dev
+            sudo apt-get install python3-distutils
+            wget https://bootstrap.pypa.io/get-pip.py
+            sudo python3.8 get-pip.py
+            sudo python3.8 -m pip install --upgrade pip setuptools wheel
+            sudo python3.8 -m pip install pipenv
+      - run:
+          name: install python libs
+          command: | 
+            pip install httpx
+            pip install pydantic
+            pip install typer
+            pip install pyaml
+            pip install click==8.0.4
+      - run:
+          name: Print version information
+          command: rustc --version; cargo --version
+      - run:
+          name: Print python version
+          command: python3 --version
+      - run:
+          name: checkout jormungandr
+          command: |
+            git clone https://github.com/input-output-hk/jormungandr.git
+            cd jormungandr
+            git checkout master
+      - run:
+          name: install jormungandr
+          command: |
+            cd jormungandr
+            cargo install --path jormungandr --locked
+            cargo install --path jcli --locked
+      - run:
+          name: checkout vit-station-service
+          command: |
+            git clone https://github.com/input-output-hk/vit-servicing-station.git
+            cd vit-servicing-station
+            git checkout master
+      - run:
+          name: install vit-station-service
+          command: |
+            cd vit-servicing-station
+            cargo install --path vit-servicing-station-server --locked
+      - run:
+          name: install iapyx utils
+          command: |
+            cargo install --path iapyx --locked
+      - run:
+          name: install proxy
+          command: |
+            cargo install --path valgrind --locked
+      - run:
+          name: install snapshot-trigger-service
+          command: |
+            cargo install --path snapshot-trigger-service --locked
+      - run:
+          name: install registration-service
+          command: |
+            cargo install --path registration-service --locked
+      - run:
+          name: install mainnet mocks
+          command: |
+            cargo install --path mainnet-tools --locked --bins
+      - run:
+          name: Run Integration tests
+          no_output_timeout: 60m
+          environment:
+            RUST_BACKTRACE: 1
+          command: |
+            cd integration-tests
+            cargo test --jobs 1 -- --test-threads=1
+workflows:
+  version: 2
+  test_all:
+    jobs:
+      - test_debug
+      - vitup_test
+      - build_all_targets
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - main
+    jobs:
+      - test_debug

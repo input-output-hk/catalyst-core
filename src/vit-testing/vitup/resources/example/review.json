@@ -1,0 +1,39 @@
+[
+    {
+        "id": "1",
+        "proposal_id": "339979",
+        "assessor": "tiffany_koss_65",
+        "impact_alignment_rating_given": 4,
+        "impact_alignment_note": "possimus delectus at eveniet.",
+        "feasibility_rating_given": 4,
+        "feasibility_note": "maiores.",
+        "auditability_rating_given": 3,
+        "auditability_note": "blanditiis eos deleniti est assumenda.",
+        "ranking": "Good"
+    },
+    {
+        "id": "2",
+        "proposal_id": "339986",
+        "assessor": "andrew_buckridge_6",
+        "impact_alignment_rating_given": 4,
+        "impact_alignment_note": "et harum velit assumenda.",
+        "feasibility_rating_given": 4,
+        "feasibility_note": "recusandae aut ut minima neque.",
+        "auditability_rating_given": 4,
+        "auditability_note": "unde.",
+        "ranking": "Excellent"
+    },
+    {
+        "id": "3",
+        "proposal_id": "339990",
+        "assessor": "german_bode_78",
+        "impact_alignment_rating_given": 1,
+        "impact_alignment_note": "in aut.",
+        "feasibility_rating_given": 1,
+        "feasibility_note": ".",
+        "auditability_rating_given": 1,
+        "auditability_note": "nihil reprehenderit et voluptatem vero consequatur sit dolores dolor.",
+        "ranking": "Excellent"
+    }
+]
+

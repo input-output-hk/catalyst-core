@@ -13,12 +13,12 @@ uniffi_macros = "0.16.0"
 wallet-core = { path = "../wallet-core" }
 wallet = {path = "../../wallet"}
 symmetric-cipher = {path = "../../symmetric-cipher"}
-chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-vote = { path = "../../../chain-libs/chain-vote" }
+chain-addr = { path = "../../../chain-libs/chain-addr" }
+chain-impl-mockchain = { path = "../../../chain-libs/chain-impl-mockchain" }
+chain-crypto = { path = "../../../chain-libs/chain-crypto" }
+chain-time = { path = "../../../chain-libs/chain-time" }
+chain-ser = { path = "../../../chain-libs/chain-ser" }
 thiserror = {version = "1.0", default-features = false}
 
 [build-dependencies]

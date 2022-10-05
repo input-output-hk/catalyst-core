@@ -12,14 +12,14 @@ crate-type = ["lib"]
 
 [dependencies]
 bip39 = {path = "../../bip39"}
-chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-addr = { path = "../../../chain-libs/chain-addr" }
+chain-core = { path = "../../../chain-libs/chain-core" }
+chain-crypto = { path = "../../../chain-libs/chain-crypto" }
+chain-impl-mockchain = { path = "../../../chain-libs/chain-impl-mockchain" }
 chain-path-derivation = {path = "../../chain-path-derivation"}
-chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-ser = { path = "../../../chain-libs/chain-ser" }
+chain-vote = { path = "../../../chain-libs/chain-vote" }
+chain-time = { path = "../../../chain-libs/chain-time" }
 hdkeygen = {path = "../../hdkeygen"}
 symmetric-cipher = {path = "../../symmetric-cipher"}
 thiserror = {version = "1.0.13", default-features = false}

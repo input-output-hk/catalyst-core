@@ -18,14 +18,14 @@ itertools = "0.9"
 hashlink = "0.7.0"
 zeroize = "1.5.3"
 
-chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-cardano-legacy-address = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-imhamt = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-time = { path = "../../chain-libs/chain-time" }
+chain-crypto = { path = "../../chain-libs/chain-crypto" }
+chain-addr = { path = "../../chain-libs/chain-addr" }
+chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain" }
+cardano-legacy-address = { path = "../../chain-libs/cardano-legacy-address" }
+imhamt = { path = "../../chain-libs/imhamt" }
 
 [dev-dependencies]
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
-chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-ser = { path = "../../chain-libs/chain-ser" }

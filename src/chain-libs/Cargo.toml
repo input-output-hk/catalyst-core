@@ -1,0 +1,22 @@
+[workspace]
+members = [
+    "imhamt",
+    "chain-ser",
+    "chain-core",
+    "chain-vote",
+    "chain-addr",
+    "chain-time",
+    "chain-crypto",
+    "chain-network",
+    "chain-storage",
+    "chain-impl-mockchain",
+    "chain-evm",
+    "cardano-legacy-address",
+    "sparse-array",
+    "typed-bytes",
+]
+
+[profile.bench]
+# Embed debuginfo into benchmarks for profiling. All other settings remain the
+# same and are similar to the `release` profile.
+debug = true

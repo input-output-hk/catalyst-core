@@ -1,0 +1,9 @@
+[package]
+name = "chain-core"
+version = "0.1.0"
+authors = ["dev@iohk.io"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+chain-ser = { path = "../chain-ser" }

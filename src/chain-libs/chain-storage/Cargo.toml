@@ -1,0 +1,27 @@
+[package]
+name = "chain-storage"
+version = "0.1.0"
+authors = ["dev@iohk.io"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[features]
+with-bench = ["criterion", "tempfile", "rand_core"]
+
+[dependencies]
+sled = "0.34.0"
+thiserror = "1.0"
+data-pile = "0.6.1"
+
+criterion = { version = "0.3.0", optional = true }
+rand_core = { version = "0.6", features = ["getrandom"], optional = true }
+tempfile = { version = "3.1.0", optional = true }
+
+[dev-dependencies]
+rand_core = { version = "0.6", features = ["getrandom"] }
+tempfile = "3.1.0"
+
+[[bench]]
+harness = false
+name = "storage"
+required-features = ["with-bench"]

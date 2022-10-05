@@ -1,0 +1,59 @@
+[package]
+name = "chain-crypto"
+version = "0.1.0"
+authors = ["Vincent Hanquez <vincent.hanquez@iohk.io>"]
+license = "MIT OR Apache-2.0"
+edition = "2021"
+keywords = [ "Crypto", "VRF", "Ed25519", "MMM" ]
+
+[dependencies]
+bech32 = "0.8"
+cryptoxide = "0.4"
+curve25519-dalek-ng = { version = "4.0" }
+eccoxide = { version = "0.3", optional = true }
+ed25519-dalek = "1.0"
+sha2 = "0.10"
+generic-array = "^0.14"
+rand_core = "0.6"
+rand = { version = "0.8", features = ["small_rng"], optional = true }
+rayon = "1.5"
+ed25519-bip32 = "0.4.1"
+hex = "0.4.0"
+typed-bytes = { path = "../typed-bytes" }
+
+criterion = { version = "0.3.0", optional = true }
+quickcheck = { version = "0.9", optional = true }
+proptest = { git = "https://github.com/input-output-hk/proptest.git", optional = true }
+test-strategy = { version = "0.1", optional = true }
+
+[dev-dependencies]
+quickcheck = "0.9"
+proptest = { git = "https://github.com/input-output-hk/proptest.git" }
+test-strategy = "0.1"
+rand = { version = "0.8", features = ["small_rng"] }
+smoke = "^0.2.1"
+
+[features]
+with-bench = ["criterion"]
+property-test-api = [ "quickcheck", "rand", "proptest", "test-strategy" ]
+p256k1 = ["eccoxide"]
+
+[[bench]]
+harness = false
+name = "vrf"
+required-features = ["with-bench"]
+
+[[bench]]
+harness = false
+name = "sumed25519"
+required-features = ["with-bench"]
+
+[[bench]]
+harness = false
+name = "ristretto"
+required-features = ["with-bench"]
+
+[[bench]]
+harness = false
+name = "p256k1"
+required-features = ["with-bench", "p256k1"]

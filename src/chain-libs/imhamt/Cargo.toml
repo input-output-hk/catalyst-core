@@ -1,0 +1,35 @@
+[package]
+name = "imhamt"
+version = "0.1.0"
+authors = ["Vincent Hanquez <vincent.hanquez@iohk.io>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+thiserror = "1.0"
+proptest = { git = "https://github.com/input-output-hk/proptest.git", optional = true }
+test-strategy = { version = "0.1", optional = true }
+
+[dev-dependencies]
+criterion = "0.3.0"
+proptest = { git = "https://github.com/input-output-hk/proptest.git" }
+test-strategy = "0.1"
+trybuild = "1"
+
+[target.'cfg(unix)'.dev-dependencies]
+jemalloc-ctl = "0.3"
+jemallocator = "*"
+
+[[example]]
+name = "memdump"
+path = "examples/memdump/main.rs"
+
+[[bench]]
+harness = false
+name = "imhamt"
+
+[features]
+property-test-api = ["proptest", "test-strategy"]
+
+[build-dependencies]
+rustc_version = "0.4"

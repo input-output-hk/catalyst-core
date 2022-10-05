@@ -1,0 +1,132 @@
+version: 2.1
+
+executors:
+  rust-stable:
+    docker:
+      - image: cimg/rust:1.56.1
+    working_directory: /home/circleci/build
+  rust-nightly:
+    docker:
+      - image: rustlang/rust:nightly
+    working_directory: /home/build
+
+jobs:
+  cargo_fetch:
+    executor: rust-stable
+    steps:
+      - checkout
+      - run:
+          name: Get head hash of cargo registry index
+          command: |
+            git ls-remote --heads https://github.com/rust-lang/crates.io-index.git master |
+              cut -f 1 | tee .circleci/crates.io-index.head
+      - restore_cache:
+          name: Restore cargo registry index from cache
+          keys:
+            - cargo-index-v2-{{ checksum ".circleci/crates.io-index.head" }}
+            - cargo-index-v2-
+      - run:
+          name: Generate Cargo.lock
+          command: |
+            cargo generate-lockfile
+      - run:
+          name: Update head hash of cargo registry index
+          command: |
+            cat /home/circleci/.cargo/registry/index/*/.git/FETCH_HEAD |
+              grep -F 'github.com/rust-lang/crates.io-index' |
+              cut -f 1 > .circleci/crates.io-index.head
+      - save_cache:
+          name: Save cargo registry index into cache
+          key: cargo-index-v2-{{ checksum ".circleci/crates.io-index.head" }}
+          paths:
+            - /home/circleci/.cargo/registry/index
+      - restore_cache:
+          name: Restore dependency crates from cache
+          keys:
+            - cargo-deps-v3-{{ checksum "Cargo.lock" }}
+            - cargo-deps-v3-
+      - run: cargo fetch
+      - save_cache:
+          name: Save dependency crates into cache
+          key: cargo-deps-v3-{{ checksum "Cargo.lock" }}
+          paths:
+            - /home/circleci/.cargo/registry/cache
+            - /home/circleci/.cargo/git/db
+      - persist_to_workspace:
+          root: .
+          paths:
+            - Cargo.lock
+            - .circleci/crates.io-index.head
+
+  test_debug:
+    executor: rust-stable
+    steps:
+      - test:
+          mode: --all-targets
+
+  test_release:
+    executor: rust-stable
+    steps:
+      - test:
+          mode: --release --all-targets
+
+  test_no_default_features:
+    executor: rust-stable
+    steps:
+      - test:
+          mode: --manifest-path chain-network/Cargo.toml --no-default-features
+
+commands:
+  test:
+    description: "Steps for the test jobs"
+    parameters:
+      mode:
+        type: string
+        default: ""
+      cargo_behavior:
+        type: string
+        default: --locked --offline --verbose
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          name: Restore cargo registry index from cache
+          keys:
+            - cargo-index-v2-{{ checksum ".circleci/crates.io-index.head" }}
+      - restore_cache:
+          name: Restore dependency crates from cache
+          keys:
+            - cargo-deps-v3-{{ checksum "Cargo.lock" }}
+      - run:
+          name: Print version information
+          command: rustc --version; cargo --version
+      - run:
+          name: Build with << parameters.mode >>
+          environment:
+            RUSTFLAGS: -D warnings
+            CARGO_INCREMENTAL: 0
+          command: |
+            cargo build << parameters.mode >> << parameters.cargo_behavior >>
+      - run:
+          name: Test with << parameters.mode >>
+          environment:
+            RUST_BACKTRACE: 1
+            CARGO_INCREMENTAL: 0
+          command: |
+            cargo test << parameters.mode >> << parameters.cargo_behavior >>
+
+workflows:
+  version: 2
+  test_all:
+    jobs:
+      - cargo_fetch
+      - test_debug:
+          requires:
+            - cargo_fetch
+      - test_release:
+          requires:
+            - cargo_fetch
+      - test_no_default_features:
+          requires:
+            - cargo_fetch

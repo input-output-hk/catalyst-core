@@ -1,0 +1,10 @@
+/target
+/vendor
+/result*
+/.idea/
+/.vscode/
+/.direnv/
+/.pre-commit-config.yaml
+
+/test_db.json
+/reference_db.json

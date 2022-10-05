@@ -1,0 +1,66 @@
+[package]
+name = "jormungandr-integration-tests"
+version = "0.13.0"
+authors = [ "dev@iohk.io" ]
+edition = "2021"
+
+[dependencies]
+tonic = "0.6"
+bech32 = "0.7"
+prost = "0.9"
+tokio = { version = "1.15", features = ["macros", "time"] }
+futures      = "0.3.21"
+base64 = "0.13"
+hex = "0.4.2"
+chain-addr      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-core      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-crypto    = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-time      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-vote      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+jormungandr-lib = { path = "../../jormungandr-lib" }
+hersir = { path = "../hersir" }
+loki = { path = "../loki" }
+thor = { path = "../thor" }
+mjolnir = { path = "../mjolnir" }
+jormungandr-automation = { path = "../jormungandr-automation" }
+jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
+rand = "0.8"
+rand_core = "0.6"
+rand_chacha = "0.3"
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
+serde_yaml = "0.8"
+lazy_static = "1.4"
+assert_fs = "1.0"
+predicates = "2.0"
+assert_cmd = "2.0.4"
+regex = "1.6"
+poldercast = "1.2"
+thiserror = "1.0"
+url = "2.2.0"
+yaml-rust = "0.4.4"
+indicatif = "0.15.0"
+fs_extra = "1.1.0"
+tempfile = "3"
+json = "0.12.4"
+multiaddr = { package = "parity-multiaddr", version = "0.11" }
+rstest = "0.12.0"
+tracing = "0.1"
+function_name = "0.2.0"
+
+[dependencies.reqwest]
+version = "0.11"
+default-features = false
+features = ["blocking", "json", "rustls-tls"]
+
+[features]
+testnet = []
+network = []
+non-functional = []
+soak = []
+sanity = []
+cross-version = []
+explorer-schema-gen = []
+evm = ["chain-impl-mockchain/evm"]

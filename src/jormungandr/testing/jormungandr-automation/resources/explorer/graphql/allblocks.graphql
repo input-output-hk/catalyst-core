@@ -1,0 +1,24 @@
+query AllBlocks($last: Int!) {
+  tip {
+    blocks(last: $last) {
+      edges {
+        node {
+          id
+          date {
+            epoch {
+              id
+            }
+            slot
+          }
+          previousBlock {
+            id
+          }
+          chainLength
+          totalInput
+          totalOutput
+        }
+      }
+      totalCount
+    }
+  }
+}

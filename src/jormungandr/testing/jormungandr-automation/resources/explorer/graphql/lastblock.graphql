@@ -1,0 +1,14 @@
+query LastBlock {
+  tip {
+    block {
+      id
+      chainLength
+      date {
+        epoch {
+          id
+        }
+        slot
+      }
+    }
+  }
+}

@@ -1,0 +1,98 @@
+[package]
+name = "jormungandr"
+version = "0.13.0"
+authors = [ "dev@iohk.io" ]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/input-output-hk/jormungandr"
+homepage = "https://github.com/input-output-hk/jormungandr#README.md"
+documentation = "https://github.com/input-output-hk/jormungandr#USAGE.md"
+description = """
+Midgard Serpent
+"""
+edition = "2021"
+
+[dependencies]
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-network = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-storage   = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-time      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-evm = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", optional = true }
+cardano-legacy-address = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+imhamt = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+
+arc-swap = "^1.5.0"
+async-trait = "0.1.51"
+base64 = "0.13.0"
+bech32 = "0.8"
+futures = "0.3.21"
+hex = "0.4"
+jormungandr-lib = { path = "../jormungandr-lib" }
+keynesis = "1.1"
+lazy_static = "1.4"
+linked-hash-map = "0.5"
+poldercast = "1.2"
+multiaddr = { package = "parity-multiaddr", version = "0.11" }
+rand = "0.8"
+rand_chacha = "0.3"
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0.81"
+serde_yaml = "0.8"
+structopt = "^0.3"
+time = { version = "0.3", features = ["macros"] }
+thiserror = "1.0.30"
+tracing = "0.1"
+tracing-futures = "0.2"
+tracing-gelf = { version = "0.6", optional = true }
+# TODO unpin this when cross for ARM targets is fixed: https://github.com/cross-rs/cross/pull/591
+tracing-journald = { version = "=0.2.0", optional = true }
+tracing-subscriber = { version = "0.3", features = ["fmt", "json", "time"] }
+tracing-appender = "0.2"
+tokio = { version = "^1.15", features = ["rt-multi-thread", "time", "sync", "rt", "signal", "test-util"] }
+tokio-stream = { version = "0.1.4", features = ["sync"] }
+tokio-util = { version = "0.6.0", features = ["time"] }
+tonic = "0.6"
+lru = "0.7"
+warp = { version = "0.3.2", features = ["tls"] }
+serde_with = { version = "1.12", features = ["macros"] }
+http-zipkin = "0.3.0"
+prometheus = { version = "0.13", optional = true }
+jsonrpsee-http-server = { version = "0.11.0" }
+jsonrpsee-core = { version = "0.11.0" }
+reqwest = { version = "0.11",  default-features = false, features = ["rustls-tls"] }
+
+[dev-dependencies]
+tokio = { version = "^1.15", features = ["full"] }
+quickcheck = "0.9"
+quickcheck_macros = "0.9"
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
+criterion = { version = "0.3", features = ["html_reports", "async_tokio"] }
+
+[[bench]]
+name = "rest_v0"
+harness = false
+
+
+[build-dependencies]
+versionisator = "1.0.2"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2.124"
+nix = "0.23.0"
+
+[features]
+default = ["codegen-rustfmt"]
+with-bench = []
+codegen-rustfmt = ["chain-network/codegen-rustfmt"]
+integration-test = []
+soak-test = []
+systemd = ["tracing-journald"]
+gelf = ["tracing-gelf"]
+prometheus-metrics = ["prometheus"]
+evm = [ "chain-impl-mockchain/evm", "jormungandr-lib/evm", "chain-evm" ]

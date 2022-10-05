@@ -1,0 +1,44 @@
+name: Security audit
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - Cargo.lock
+  pull_request:
+    paths:
+      - Cargo.lock
+  schedule:
+    - cron: '0 5 * * 0' # Weekly every Sunday 05:00 UTC
+
+jobs:
+  security_audit:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/jormungandr-rust-ci:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      volumes:
+        - cargo-registry-index:/usr/local/cargo/registry/index
+    steps:
+      - uses: actions/checkout@v3
+
+      - id: ls-crates-io-index
+        name: Get head commit hash of crates.io registry index
+        run: |
+          commit=$(
+            git ls-remote --heads https://github.com/rust-lang/crates.io-index.git master |
+            cut -f 1
+          )
+          echo "::set-output name=head::$commit"
+
+      - name: Cache cargo registry index
+        uses: actions/cache@v3
+        with:
+          path: /usr/local/cargo/registry/index
+          key: cargo-index-${{ steps.ls-crates-io-index.outputs.head }}
+          restore-keys: |
+            cargo-index-
+
+      - run: cargo audit

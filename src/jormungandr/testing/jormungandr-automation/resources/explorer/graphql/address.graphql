@@ -1,0 +1,5 @@
+query Address($bech32: String!){
+    address(bech32: $bech32) {
+        id #delegation{... poolInfo} not implemented yet NPG-2247
+    }
+}

@@ -11,11 +11,11 @@ uuid = { version = "0.8", features = ["serde","v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 walkdir = "2.3.1"
 structopt = "0.3"
-jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch= "master" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "main", features=["test-api"]}
-snapshot-lib = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "main" }
+jortestkit = { path = "../../jortestkit" }
+jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
+chain-addr = { path = "../../chain-libs/chain-addr" }
+catalyst-toolbox = { path = "../../catalyst-toolbox/catalyst-toolbox", features=["test-api"]}
+snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib" }
 futures = "0.3.8"
 assert_fs = "1.0"
 serde = { version = "1", features = ["derive"] }

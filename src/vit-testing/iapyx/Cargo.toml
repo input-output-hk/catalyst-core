@@ -8,16 +8,16 @@ edition = "2021"
 
 [dependencies]
 bech32 = "0.8"
-wallet-core = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master"}
-wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master"}
-hdkeygen = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master"}
-chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master"  }
-chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master"  }
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master"  }
-chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+wallet-core = { path = "../../chain-wallet-libs/bindings/wallet-core" }
+wallet = { path = "../../chain-wallet-libs/wallet" }
+hdkeygen = { path = "../../chain-wallet-libs/hdkeygen" }
+chain-crypto = { path = "../../chain-libs/chain-crypto" }
+chain-core = { path = "../../chain-libs/chain-core" }
+chain-addr = { path = "../../chain-libs/chain-addr" }
+chain-ser = { path = "../../chain-libs/chain-ser" }
+chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain" }
+chain-time = { path = "../../chain-libs/chain-time" }
+chain-vote = { path = "../../chain-libs/chain-vote" }
 hex = "0.4"
 rand = "0.8"
 dirs = "4.0"
@@ -25,14 +25,14 @@ rand_core = "0.6"
 itertools = "0.10.3"
 cryptoxide = "0.4.2"
 ed25519-bip32 = "^0.3.1"
-jcli = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-jormungandr-automation = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-thor = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-hersir = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
-catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "main", features=["test-api"]}
-snapshot-lib = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "main", features=["proptest", "test-api"]}
+jcli = { path = "../../jormungandr/jcli" }
+jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
+jormungandr-automation = { path = "../../jormungandr/testing/jormungandr-automation" }
+thor = { path = "../../jormungandr/testing/thor" }
+hersir = { path = "../../jormungandr/testing/hersir" }
+jortestkit = { path = "../../jortestkit" }
+catalyst-toolbox = { path = "../../catalyst-toolbox/catalyst-toolbox", features=["test-api"]}
+snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib", features=["proptest", "test-api"]}
 valgrind = { path = "../valgrind"}
 hyper = "0.13.6"
 thiserror = "1.0"
@@ -54,7 +54,7 @@ eccoxide = { git = "https://github.com/eugene-babichenko/eccoxide.git", branch =
 rayon = "1"
 bincode = "1.3.3"
 cocoon =  { git = "https://github.com/dkijania/cocoon.git" }
-vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
+vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib" }
 
 [dependencies.reqwest]
 version = "0.10.6"

@@ -7,18 +7,19 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jormungandr-lib = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-jormungandr-automation = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-thor = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-hersir = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-jcli = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
-vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
-jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch="master" }
-chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
+jormungandr-automation = { path = "../../jormungandr/testing/jormungandr-automation" }
+thor = { path = "../../jormungandr/testing/thor" }
+hersir = { path = "../../jormungandr/testing/hersir" }
+jcli = { path = "../../jormungandr/jcli" }
+vit-servicing-station-tests = { path = "../../vit-servicing-station/vit-servicing-station-tests" }
+vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib" }
+jortestkit = { path = "../../jortestkit" }
+chain-addr = { path = "../../chain-libs/chain-addr" }
+chain-core = { path = "../../chain-libs/chain-core"}
+chain-ser = { path = "../../chain-libs/chain-ser" }
+chain-crypto = { path = "../../chain-libs/chain-crypto" }
+chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain", features = [ "property-test-api" ] }
 vitup = { path = "../vitup"} 
 iapyx = { path = "../iapyx"} 
 valgrind = { path = "../valgrind"} 
@@ -27,9 +28,8 @@ snapshot-trigger-service = { path = "../snapshot-trigger-service" }
 registration-service = { path = "../registration-service" }
 rand_chacha = "0.2"
 tokio = { version = "1.1", features = ["macros","rt","rt-multi-thread"] }
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
-catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "main", features=["test-api"]}
-snapshot-lib = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "main", features=["test-api"]}
+catalyst-toolbox = { path = "../../catalyst-toolbox/catalyst-toolbox", features=["test-api"]}
+snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib", features=["test-api"]}
 thiserror = "1.0"
 netstat2 = "0.9"
 image = "0.23.9"

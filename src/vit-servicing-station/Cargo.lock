@@ -305,7 +305,6 @@ checksum = "6c58ec36aac5066d5ca17df51b3e70279f5670a72102f5752cb7e7c856adfc70"
 [[package]]
 name = "cardano-legacy-address"
 version = "0.1.1"
-source = "git+https://github.com/input-output-hk/chain-libs?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "cbor_event",
  "cryptoxide",
@@ -339,7 +338,6 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chain-addr"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "bech32",
  "chain-core",
@@ -353,7 +351,6 @@ dependencies = [
 [[package]]
 name = "chain-core"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "chain-ser",
 ]
@@ -361,7 +358,6 @@ dependencies = [
 [[package]]
 name = "chain-crypto"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "bech32",
  "cryptoxide",
@@ -383,7 +379,6 @@ dependencies = [
 [[package]]
 name = "chain-evm"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "aurora-bn",
  "base64 0.13.0",
@@ -412,7 +407,6 @@ dependencies = [
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "cardano-legacy-address",
  "chain-addr",
@@ -444,7 +438,6 @@ dependencies = [
 [[package]]
 name = "chain-ser"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "thiserror",
 ]
@@ -452,7 +445,6 @@ dependencies = [
 [[package]]
 name = "chain-time"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "chain-core",
  "chain-ser",
@@ -464,7 +456,6 @@ dependencies = [
 [[package]]
 name = "chain-vote"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "cfg-if 0.1.10",
  "chain-core",
@@ -1645,7 +1636,6 @@ dependencies = [
 [[package]]
 name = "imhamt"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 dependencies = [
  "proptest",
  "rustc_version",
@@ -1781,7 +1771,6 @@ checksum = "6c8af84674fe1f223a982c933a0ee1086ac4d4052aa0fb8060c12c6ad838e754"
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr?branch=master#e037228affb753ec03cfa0829e412275755b6d28"
 dependencies = [
  "base64 0.13.0",
  "bech32",
@@ -1809,7 +1798,6 @@ dependencies = [
 [[package]]
 name = "jortestkit"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jortestkit.git?branch=master#4907ed1f3f0a341158ca4e53d967c78b86cd00fa"
 dependencies = [
  "assert_fs",
  "base64 0.13.0",
@@ -3379,7 +3367,6 @@ checksum = "2fd0db749597d91ff862fd1d55ea87f7855a744a8425a64695b6fca237d1dad1"
 [[package]]
 name = "snapshot-lib"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-toolbox?branch=main#93daa65b03a2ae1bf96a2380d3d41dcb5b2c2c0e"
 dependencies = [
  "bech32",
  "chain-crypto",
@@ -3407,7 +3394,6 @@ dependencies = [
 [[package]]
 name = "sparse-array"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 
 [[package]]
 name = "spin"
@@ -3984,7 +3970,6 @@ dependencies = [
 [[package]]
 name = "typed-bytes"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs?branch=master#4876be80441bed5c2796428d6b96739526b016a2"
 
 [[package]]
 name = "typenum"

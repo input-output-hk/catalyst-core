@@ -30,6 +30,8 @@ use std::path::Path;
 use std::str::FromStr;
 use thiserror::Error;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
+use config::Block0Initial::Wallet;
+use crate::config;
 
 pub const LEADER_1: &str = "Leader1";
 pub const LEADER_2: &str = "Leader2";
@@ -140,7 +142,7 @@ impl VitBackendSettingsBuilder {
             .map_err(Into::into)
     }
 
-    pub fn build(self) -> Result<(VitController, ValidVotePlanParameters), Error> {
+    pub fn build(mut self) -> Result<(VitController, ValidVotePlanParameters), Error> {
         let mut builder = VitControllerBuilder::new();
 
         let vote_blockchain_time = convert_to_blockchain_date(&self.config);
@@ -221,6 +223,14 @@ impl VitBackendSettingsBuilder {
         self.write_token(root.join("voting_token.txt"), &token_list)?;
 
         println!("building initials..");
+
+        self.config.initials.block0.push(Wallet {
+            name: self.committee_wallet.clone(),
+            funds: 1_000_000,
+            pin: "".to_string(),
+            role: Default::default()
+        });
+
         let mut generated_wallet_templates = HashMap::new();
 
         if self.config.initials.block0.any() {
@@ -239,7 +249,7 @@ impl VitBackendSettingsBuilder {
         }
         println!("building direct voteplan..");
 
-        for vote_plan_def in VitVotePlanDefBuilder::default()
+        builder = builder.vote_plans(VitVotePlanDefBuilder::default()
             .vote_phases(vote_blockchain_time)
             .options(
                 self.config
@@ -272,13 +282,8 @@ impl VitBackendSettingsBuilder {
             )
             .build()
             .into_iter()
-        {
-            blockchain = blockchain.with_vote_plan(
-                vote_plan_def.alias(),
-                vote_plan_def.owner(),
-                chain_impl_mockchain::certificate::VotePlan::from(vote_plan_def).into(),
-            );
-        }
+            .map(Into::into)
+            .collect());
 
         builder = builder.blockchain(blockchain);
         println!("building controllers..");

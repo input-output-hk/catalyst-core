@@ -28,6 +28,66 @@ const BLOCK_QUERY_COMPLEXITY_LIMIT: u64 = 150;
 const BLOCK_QUERY_DEPTH_LIMIT: u64 = 30;
 
 #[test]
+pub fn explorer_block_incorrect_id_test() {
+    let incorrect_block_ids = vec![
+        (
+            "e1049ea45726f0b1fc473af54f706546b3331765abf89ae9e6a8333e49621641aa",
+            "invalid hash size",
+        ),
+        (
+            "e1049ea45726f0b1fc473af54f706546b3331765abf89ae9e6a8333e49621641a",
+            "invalid hex encoding",
+        ),
+        (
+            "e1049ea45726f0b1fc473af54f706546b3331765abf89ae9e6a8333e49621641",
+            "Couldn't find block in the explorer",
+        ),
+    ];
+
+    let jormungandr = Starter::new().start().unwrap();
+
+    let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
+    let explorer_process = jormungandr.explorer(params).unwrap();
+    let explorer = explorer_process.client();
+
+    for (incorrect_block_id, error_message) in incorrect_block_ids {
+        let response = explorer.block_by_id(incorrect_block_id.to_string());
+        assert!(response.as_ref().unwrap().errors.is_some());
+        assert!(response.as_ref().unwrap().data.is_none());
+        assert!(response
+            .unwrap()
+            .errors
+            .unwrap()
+            .first()
+            .unwrap()
+            .message
+            .contains(error_message));
+    }
+}
+
+#[should_panic]
+#[test] //NPG-3274
+pub fn explorer_block0_test() {
+    let jormungandr = Starter::new().start().unwrap();
+    let block0_id = jormungandr.genesis_block_hash().to_string();
+    let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
+    let explorer_process = jormungandr.explorer(params).unwrap();
+    let explorer = explorer_process.client();
+
+    let explorer_block0_response = explorer.block_by_id(block0_id).unwrap();
+
+    assert!(
+        explorer_block0_response.errors.is_none(),
+        "{:?}",
+        explorer_block0_response.errors.unwrap()
+    );
+
+    let explorer_block0 = explorer_block0_response.data.unwrap().block;
+    let block0 = jormungandr.block0_configuration().to_block();
+    ExplorerVerifier::assert_block_by_id(block0, explorer_block0).unwrap();
+}
+
+#[test]
 pub fn explorer_block_test() {
     let jcli: JCli = Default::default();
     let sender = thor::Wallet::default();
@@ -134,64 +194,4 @@ pub fn explorer_block_test() {
     let explorer_block = explorer_block_response.data.unwrap().block;
 
     ExplorerVerifier::assert_block_by_id(decoded_block, explorer_block).unwrap();
-}
-
-#[should_panic]
-#[test] //NPG-3274
-pub fn explorer_block0_test() {
-    let jormungandr = Starter::new().start().unwrap();
-    let block0_id = jormungandr.genesis_block_hash().to_string();
-    let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
-    let explorer_process = jormungandr.explorer(params).unwrap();
-    let explorer = explorer_process.client();
-
-    let explorer_block0_response = explorer.block_by_id(block0_id).unwrap();
-
-    assert!(
-        explorer_block0_response.errors.is_none(),
-        "{:?}",
-        explorer_block0_response.errors.unwrap()
-    );
-
-    let explorer_block0 = explorer_block0_response.data.unwrap().block;
-    let block0 = jormungandr.block0_configuration().to_block();
-    ExplorerVerifier::assert_block_by_id(block0, explorer_block0).unwrap();
-}
-
-#[test]
-pub fn explorer_block_incorrect_id_test() {
-    let incorrect_block_ids = vec![
-        (
-            "e1049ea45726f0b1fc473af54f706546b3331765abf89ae9e6a8333e49621641aa",
-            "invalid hash size",
-        ),
-        (
-            "e1049ea45726f0b1fc473af54f706546b3331765abf89ae9e6a8333e49621641a",
-            "invalid hex encoding",
-        ),
-        (
-            "e1049ea45726f0b1fc473af54f706546b3331765abf89ae9e6a8333e49621641",
-            "Couldn't find block in the explorer",
-        ),
-    ];
-
-    let jormungandr = Starter::new().start().unwrap();
-
-    let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
-    let explorer_process = jormungandr.explorer(params).unwrap();
-    let explorer = explorer_process.client();
-
-    for (incorrect_block_id, error_message) in incorrect_block_ids {
-        let response = explorer.block_by_id(incorrect_block_id.to_string());
-        assert!(response.as_ref().unwrap().errors.is_some());
-        assert!(response.as_ref().unwrap().data.is_none());
-        assert!(response
-            .unwrap()
-            .errors
-            .unwrap()
-            .first()
-            .unwrap()
-            .message
-            .contains(error_message));
-    }
 }

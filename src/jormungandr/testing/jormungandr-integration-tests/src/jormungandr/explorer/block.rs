@@ -122,6 +122,9 @@ pub fn explorer_block_test() {
     )
     .unwrap();
 
+    let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
+    let explorer_process = jormungandr.explorer(params).unwrap();
+
     let fragment_sender = FragmentSender::from_with_setup(
         jormungandr.block0_configuration(),
         FragmentSenderSetup::no_verify(),
@@ -179,19 +182,116 @@ pub fn explorer_block_test() {
     let reader = std::io::Cursor::new(&bytes_block);
     let decoded_block = Block::deserialize(&mut Codec::new(reader)).unwrap();
 
-    let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
-    let explorer_process = jormungandr.explorer(params).unwrap();
+    time::wait_for_epoch(3, jormungandr.rest());
+
+    assert!(explorer_process.wait_to_be_up(2, 10));
     let explorer = explorer_process.client();
 
-    let explorer_block_response = explorer.block_by_id(fragment_block_id.to_string()).unwrap();
+    let explorer_block_response = explorer.block_by_id(fragment_block_id.to_string());
 
     assert!(
-        explorer_block_response.errors.is_none(),
+        explorer_block_response.as_ref().unwrap().errors.is_none(),
         "{:?}",
-        explorer_block_response.errors.unwrap()
+        explorer_block_response.unwrap().errors.as_ref().unwrap()
     );
 
-    let explorer_block = explorer_block_response.data.unwrap().block;
+    let explorer_block = explorer_block_response.unwrap().data.unwrap().block;
 
     ExplorerVerifier::assert_block_by_id(decoded_block, explorer_block).unwrap();
+}
+
+
+#[test]
+pub fn explorer_last_block_test() {
+    let jcli: JCli = Default::default();
+    let sender = thor::Wallet::default();
+    let receiver = thor::Wallet::default();
+
+    let (jormungandr, _) = startup::start_stake_pool(
+        &[sender.clone()],
+        &[receiver.clone()],
+        ConfigurationBuilder::new()
+            .with_block0_consensus(ConsensusType::GenesisPraos)
+            .with_slots_per_epoch(20)
+            .with_block_content_max_size(100000.into())
+            .with_consensus_genesis_praos_active_slot_coeff(ActiveSlotCoefficient::MAXIMUM)
+            .with_slot_duration(3)
+            .with_linear_fees(LinearFee::new(1, 1, 1))
+            .with_mempool(Mempool {
+                pool_max_entries: 1_000_000usize.into(),
+                log_max_entries: 1_000_000usize.into(),
+                persistent_log: None,
+            })
+            .with_token(InitialToken {
+                // FIXME: this works because I know it's the VotePlanBuilder's default, but
+                // probably should me more explicit.
+                token_id: TokenIdentifier::from_str(
+                    "00000000000000000000000000000000000000000000000000000000.00000000",
+                )
+                .unwrap()
+                .into(),
+                policy: MintingPolicy::new().into(),
+                to: vec![sender.to_initial_token(1_000_000)],
+            }),
+    )
+    .unwrap();
+
+    let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
+    let explorer_process = jormungandr.explorer(params.clone()).unwrap();
+
+    let fragment_sender = FragmentSender::from_with_setup(
+        jormungandr.block0_configuration(),
+        FragmentSenderSetup::no_verify(),
+    );
+
+    let time_era = jormungandr.time_era();
+
+    let mut fragment_generator = FragmentGenerator::new(
+        sender,
+        receiver,
+        None,
+        jormungandr.to_remote(),
+        time_era.slots_per_epoch(),
+        2,
+        2,
+        2,
+        0,
+        fragment_sender,
+    );
+
+    fragment_generator.prepare(BlockDate::new(1, 0));
+
+    time::wait_for_epoch(2, jormungandr.rest());
+
+    let mem_checks: Vec<MemPoolCheck> = fragment_generator.send_all().unwrap();
+    FragmentVerifier::wait_and_verify_all_are_in_block(
+        Duration::from_secs(2),
+        mem_checks,
+        &jormungandr,
+    )
+    .unwrap();
+
+    time::wait_for_epoch(3, jormungandr.rest());
+
+    assert!(explorer_process.wait_to_be_up(2, 10));
+    let explorer = explorer_process.client();
+    let explorer_block_response = explorer.last_block();
+    let explorer_last_block = explorer_block_response.unwrap();
+
+    let encoded_block = jcli
+        .rest()
+        .v0()
+        .block()
+        .get(&explorer_last_block.block().id, jormungandr.rest_uri());
+
+    let bytes_block = hex::decode(encoded_block.trim()).unwrap();
+    let reader = std::io::Cursor::new(&bytes_block);
+    let decoded_block = Block::deserialize(&mut Codec::new(reader)).unwrap();
+
+    assert_eq!(
+        explorer_last_block.block_date(),
+        decoded_block.header().block_date().into()
+    );
+
+    ExplorerVerifier::assert_last_block(decoded_block, explorer_last_block.block()).unwrap();
 }

@@ -15,7 +15,7 @@ use jormungandr_automation::{
         explorer::{configuration::ExplorerParams, verifiers::ExplorerVerifier},
         ConfigurationBuilder, MemPoolCheck, Starter,
     },
-    testing::time,
+    testing::time::{self, wait_for_date},
 };
 use jormungandr_lib::interfaces::{
     ActiveSlotCoefficient, BlockDate, FragmentStatus, InitialToken, Mempool,
@@ -72,6 +72,8 @@ pub fn explorer_block0_test() {
     let block0_id = jormungandr.genesis_block_hash().to_string();
     let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
     let explorer_process = jormungandr.explorer(params).unwrap();
+
+    wait_for_date(BlockDate::new(0, 10), jormungandr.rest());
     let explorer = explorer_process.client();
 
     let explorer_block0_response = explorer.block_by_id(block0_id).unwrap();

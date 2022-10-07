@@ -46,7 +46,9 @@ fn verify_leadership_logs_parent_hash(jormungandr: JormungandrProcess) {
                     .v0()
                     .block()
                     .next(parent.to_string(), 1, jormungandr.rest_uri());
-            assert_eq!(actual_block, *block, "wrong parent block");
+
+            let actual_block = actual_block.first().unwrap();
+            assert_eq!(actual_block, block, "wrong parent block");
         }
     }
 }

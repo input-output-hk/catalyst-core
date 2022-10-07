@@ -149,6 +149,29 @@ impl ExplorerProcess {
     pub fn client_mut(&mut self) -> &mut Explorer {
         &mut self.client
     }
+
+    pub fn wait_to_be_up(&self, seconds_wait: u64, attempts: u64) -> bool {
+        let mut wait = Wait::new(Duration::from_secs(seconds_wait), attempts);
+        while !wait.timeout_reached() {
+            if reqwest::blocking::Client::new()
+                .head(self.configuration.explorer_listen_http_address())
+                .send()
+                .is_ok()
+            {
+                break;
+            };
+            wait.advance();
+            println!("Waiting for explorer to be up");
+        }
+
+        if wait.timeout_reached() {
+            println!("Timeout reached");
+            false
+        } else {
+            println!("Explorer is up");
+            true
+        }
+    }
 }
 
 impl Drop for ExplorerProcess {

@@ -1,3 +1,4 @@
+pub mod all_vote_plans_verifier;
 pub mod block_by_id_verifier;
 pub mod transaction_by_id_verifier;
 pub mod vote_plan_verifier;

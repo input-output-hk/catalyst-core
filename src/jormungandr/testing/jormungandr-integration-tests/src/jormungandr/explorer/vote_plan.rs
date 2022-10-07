@@ -2,9 +2,14 @@ use assert_fs::TempDir;
 use chain_addr::Discrimination;
 use chain_core::property::BlockDate as propertyBlockDate;
 use chain_impl_mockchain::{
-    block::BlockDate, certificate::VoteAction, chaintypes::ConsensusType,
-    ledger::governance::TreasuryGovernanceAction, testing::data::Wallet as chainWallet,
-    tokens::minting_policy::MintingPolicy, value::Value, vote::Choice,
+    block::BlockDate,
+    certificate::{VoteAction, VotePlan},
+    chaintypes::ConsensusType,
+    ledger::governance::TreasuryGovernanceAction,
+    testing::data::Wallet as chainWallet,
+    tokens::minting_policy::MintingPolicy,
+    value::Value,
+    vote::Choice,
 };
 use jormungandr_automation::{
     jormungandr::{
@@ -18,7 +23,7 @@ use jormungandr_automation::{
 };
 use jormungandr_lib::interfaces::{InitialToken, KesUpdateSpeed};
 use rand_core::OsRng;
-use std::collections::HashMap;
+use std::{collections::HashMap, iter};
 use thor::{
     vote_plan_cert, CommitteeDataManager, FragmentBuilder, FragmentSender, FragmentSenderSetup,
     Wallet,
@@ -679,5 +684,311 @@ pub fn explorer_vote_plan_private_flow_test() {
         vote_plan_transaction,
         vote_plan_status,
         proposal_votes.clone(),
+    );
+}
+
+#[test] //NPG-3334
+pub fn explorer_all_vote_plans_public_flow_test() {
+    let temp_dir = TempDir::new().unwrap();
+    let alice = Wallet::default();
+    let bob = Wallet::default();
+    let vote_plans_limit = 10;
+    let mut voters = vec![alice, bob];
+    let proposals = vec![VOTE_FOR_MARIO, VOTE_FOR_LUIGI, VOTE_FOR_ANTONIO];
+    let proposal_count = proposals.len();
+    let yes_choice = Choice::new(1);
+    let no_choice = Choice::new(0);
+    let mut vote_for_mario: Vec<(chainWallet, Choice)> = Vec::new();
+    let mut vote_for_luigi: Vec<(chainWallet, Choice)> = Vec::new();
+    let mut vote_for_antonio: Vec<(chainWallet, Choice)> = Vec::new();
+    let mut vote_plans_proposal_votes: HashMap<
+        String,
+        HashMap<String, Vec<(chainWallet, Choice)>>,
+    > = HashMap::new();
+    let vote_plans_count = 3;
+
+    let vote_plans: Vec<VotePlan> = iter::from_fn(|| {
+        Some(
+            VotePlanBuilder::new()
+                .proposals_count(proposal_count)
+                .vote_start(BlockDate::from_epoch_slot_id(0, 0))
+                .tally_start(BlockDate::from_epoch_slot_id(1, 0))
+                .tally_end(BlockDate::from_epoch_slot_id(1, 10))
+                .public()
+                .build(),
+        )
+    })
+    .take(vote_plans_count)
+    .collect();
+
+    let mut vote_plans_cert = Vec::new();
+
+    for vote_plan in &vote_plans {
+        let vote_plan_cert = vote_plan_cert(
+            &voters[0],
+            chain_impl_mockchain::block::BlockDate {
+                epoch: 1,
+                slot_id: 0,
+            },
+            &vote_plan,
+        )
+        .into();
+        vote_plans_cert.push(vote_plan_cert);
+    }
+
+    let config = ConfigurationBuilder::new()
+        .with_funds(
+            voters
+                .iter()
+                .map(|x| x.to_initial_fund(INITIAL_TREASURY))
+                .collect(),
+        )
+        .with_token(InitialToken {
+            token_id: vote_plans.first().unwrap().voting_token().clone().into(),
+            policy: MintingPolicy::new().into(),
+            to: vec![
+                voters[0].to_initial_token(INITIAL_FUND_PER_WALLET_1),
+                voters[1].to_initial_token(INITIAL_FUND_PER_WALLET_2),
+            ],
+        })
+        .with_committees(&[voters[0].to_committee_id()])
+        .with_slots_per_epoch(SLOTS_PER_EPOCH)
+        .with_certs(vote_plans_cert)
+        .with_treasury(INITIAL_TREASURY.into())
+        .build(&temp_dir);
+
+    let jormungandr = Starter::new()
+        .config(config)
+        .temp_dir(temp_dir)
+        .start()
+        .unwrap();
+
+    let transaction_sender = FragmentSender::new(
+        jormungandr.genesis_block_hash(),
+        jormungandr.fees(),
+        chain_impl_mockchain::block::BlockDate {
+            epoch: 3,
+            slot_id: 0,
+        }
+        .into(),
+        FragmentSenderSetup::resend_3_times(),
+    );
+
+    let params = ExplorerParams::new(
+        VOTE_PLAN_QUERY_COMPLEXITY_LIMIT,
+        VOTE_PLAN_QUERY_DEPTH_LIMIT,
+        None,
+    );
+    let explorer_process = jormungandr.explorer(params).unwrap();
+
+    let explorer = explorer_process.client();
+
+    // 1.Vote plan started
+    let query_response = explorer
+        .vote_plans(vote_plans_limit)
+        .expect("vote plan transaction not found");
+
+    assert!(
+        query_response.errors.is_none(),
+        "{:?}",
+        query_response.errors.unwrap()
+    );
+
+    let all_vote_plans_response = query_response.data.unwrap().tip.all_vote_plans;
+    let all_vote_plans = all_vote_plans_response.edges;
+    let vote_plan_statuses = jormungandr.rest().vote_plan_statuses().unwrap();
+    assert_eq!(
+        all_vote_plans_response.total_count,
+        vote_plan_statuses.len() as i64
+    );
+
+    ExplorerVerifier::assert_all_vote_plans(
+        all_vote_plans,
+        vote_plan_statuses,
+        vote_plans_proposal_votes.clone(),
+    );
+
+    assert!(vote_plans
+        .first()
+        .unwrap()
+        .can_vote(get_current_date(&mut jormungandr.rest()).into()));
+
+    //2. Voting
+    for vote_plan in &vote_plans {
+        transaction_sender
+            .send_vote_cast(
+                &mut voters[0],
+                &vote_plan,
+                VOTE_FOR_ANTONIO,
+                &no_choice,
+                &jormungandr,
+            )
+            .unwrap();
+
+        vote_for_antonio.push((chainWallet::from(voters[0].clone()), no_choice));
+
+        transaction_sender
+            .send_vote_cast(
+                &mut voters[1],
+                &vote_plan,
+                VOTE_FOR_ANTONIO,
+                &yes_choice,
+                &jormungandr,
+            )
+            .unwrap();
+
+        vote_for_antonio.push((chainWallet::from(voters[1].clone()), yes_choice));
+
+        transaction_sender
+            .send_vote_cast(
+                &mut voters[0],
+                &vote_plan,
+                VOTE_FOR_MARIO,
+                &no_choice,
+                &jormungandr,
+            )
+            .unwrap();
+
+        vote_for_mario.push((chainWallet::from(voters[0].clone()), no_choice));
+
+        transaction_sender
+            .send_vote_cast(
+                &mut voters[1],
+                &vote_plan,
+                VOTE_FOR_LUIGI,
+                &no_choice,
+                &jormungandr,
+            )
+            .unwrap();
+
+        vote_for_luigi.push((chainWallet::from(voters[1].clone()), no_choice));
+
+        let mut proposal_votes = HashMap::new();
+
+        proposal_votes.insert(
+            vote_plan
+                .proposals()
+                .to_vec()
+                .get(VOTE_FOR_MARIO as usize)
+                .unwrap()
+                .external_id()
+                .to_string(),
+            vote_for_mario.clone(),
+        );
+
+        proposal_votes.insert(
+            vote_plan
+                .proposals()
+                .to_vec()
+                .get(VOTE_FOR_ANTONIO as usize)
+                .unwrap()
+                .external_id()
+                .to_string(),
+            vote_for_antonio.clone(),
+        );
+
+        proposal_votes.insert(
+            vote_plan
+                .proposals()
+                .to_vec()
+                .get(VOTE_FOR_LUIGI as usize)
+                .unwrap()
+                .external_id()
+                .to_string(),
+            vote_for_luigi.clone(),
+        );
+
+        vote_plans_proposal_votes.insert(vote_plan.to_id().to_string(), proposal_votes);
+    }
+
+    let query_response = explorer
+        .vote_plans(vote_plans_limit)
+        .expect("vote plan transaction not found");
+
+    assert!(
+        query_response.errors.is_none(),
+        "{:?}",
+        query_response.errors.unwrap()
+    );
+
+    let all_vote_plans_response = query_response.data.unwrap().tip.all_vote_plans;
+    let all_vote_plans = all_vote_plans_response.edges;
+    let vote_plan_statuses = jormungandr.rest().vote_plan_statuses().unwrap();
+    assert_eq!(
+        all_vote_plans_response.total_count,
+        vote_plan_statuses.len() as i64
+    );
+
+    ExplorerVerifier::assert_all_vote_plans(
+        all_vote_plans,
+        vote_plan_statuses,
+        vote_plans_proposal_votes.clone(),
+    );
+
+    wait_for_date(
+        vote_plans.first().unwrap().vote_end().into(),
+        jormungandr.rest(),
+    );
+
+    //3.Start talling
+
+    for vote_plan in &vote_plans {
+        transaction_sender
+            .send_public_vote_tally(&mut voters[0], &vote_plan, &jormungandr)
+            .unwrap();
+    }
+
+    let query_response = explorer
+        .vote_plans(vote_plans_limit)
+        .expect("vote plan transaction not found");
+
+    assert!(
+        query_response.errors.is_none(),
+        "{:?}",
+        query_response.errors.unwrap()
+    );
+
+    let all_vote_plans_response = query_response.data.unwrap().tip.all_vote_plans;
+    let all_vote_plans = all_vote_plans_response.edges;
+    let vote_plan_statuses = jormungandr.rest().vote_plan_statuses().unwrap();
+    assert_eq!(
+        all_vote_plans_response.total_count,
+        vote_plan_statuses.len() as i64
+    );
+
+    ExplorerVerifier::assert_all_vote_plans(
+        all_vote_plans,
+        vote_plan_statuses,
+        vote_plans_proposal_votes.clone(),
+    );
+
+    wait_for_date(
+        vote_plans.first().unwrap().committee_end().into(),
+        jormungandr.rest(),
+    );
+
+    //4. End talling
+    let query_response = explorer
+        .vote_plans(vote_plans_limit)
+        .expect("vote plan transaction not found");
+
+    assert!(
+        query_response.errors.is_none(),
+        "{:?}",
+        query_response.errors.unwrap()
+    );
+
+    let all_vote_plans_response = query_response.data.unwrap().tip.all_vote_plans;
+    let all_vote_plans = all_vote_plans_response.edges;
+    let vote_plan_statuses = jormungandr.rest().vote_plan_statuses().unwrap();
+    assert_eq!(
+        all_vote_plans_response.total_count,
+        vote_plan_statuses.len() as i64
+    );
+
+    ExplorerVerifier::assert_all_vote_plans(
+        all_vote_plans,
+        vote_plan_statuses,
+        vote_plans_proposal_votes.clone(),
     );
 }

@@ -1,6 +1,7 @@
 use super::ExplorerVerifier;
 use crate::jormungandr::explorer::data::all_vote_plans::{
-    self,*, AllVotePlansTipAllVotePlansEdgesNodeProposalsTally::*,AllVotePlansTipAllVotePlansEdgesNodeProposalsVotesEdgesNodePayload::*,
+    self, AllVotePlansTipAllVotePlansEdgesNodeProposalsTally::*,
+    AllVotePlansTipAllVotePlansEdgesNodeProposalsVotesEdgesNodePayload::*, *,
 };
 use chain_impl_mockchain::{testing::data::Wallet, vote, vote::Choice};
 use jormungandr_lib::interfaces::{PrivateTallyState, Tally, VotePlanStatus};
@@ -74,84 +75,84 @@ impl ExplorerVerifier {
                         assert_eq!(
                             vote_proposal_status.options.end,
                             explorer_proposal.options.end as u8
-                        ); /*
-                           match &vote_proposal_status.tally {
-                               Tally::Public { result } => {
-                                   if let TallyPublicStatus(explorer_tally_status) =
-                                       explorer_proposal.tally.as_ref().unwrap()
-                                   {
-                                       assert_eq!(
-                                           result.results.len(),
-                                           explorer_tally_status.results.len()
-                                       );
-                                       let matching_results = result
-                                           .results
-                                           .iter()
-                                           .zip(explorer_tally_status.results.iter())
-                                           .filter(|&(a, b)| &a.to_string() == b)
-                                           .count();
-                                       assert_eq!(matching_results, result.results.len());
-                                       assert_eq!(
-                                           result.options.len(),
-                                           explorer_tally_status.results.len()
-                                       );
-                                       assert_eq!(
-                                           result.options.start,
-                                           explorer_tally_status.options.start as u8
-                                       );
-                                       assert_eq!(
-                                           result.options.end,
-                                           explorer_tally_status.options.end as u8
-                                       );
-                                   } else {
-                                       panic!("Wrong tally status. Expected Public")
-                                   }
-                               }
-                               Tally::Private { state } => {
-                                   assert!(explorer_proposal.tally.is_some());
-                                   if let TallyPrivateStatus(explorer_tally_status) =
-                                       explorer_proposal.tally.as_ref().unwrap()
-                                   {
-                                       match state {
-                                           PrivateTallyState::Encrypted { encrypted_tally: _ } => {
-                                               assert!(
-                                                   explorer_tally_status.results.is_none(),
-                                                   "BUG NPG-3369 fixed"
-                                               )
-                                           }
-                                           PrivateTallyState::Decrypted { result } => {
-                                               let explorer_tally_result =
-                                                   explorer_tally_status.results.as_ref().unwrap();
-                                               assert_eq!(
-                                                   result.results.len(),
-                                                   explorer_tally_result.len()
-                                               );
-                                               let matching_results = result
-                                                   .results
-                                                   .iter()
-                                                   .zip(explorer_tally_result.iter())
-                                                   .filter(|&(a, b)| &a.to_string() == b)
-                                                   .count();
-                                               assert_eq!(matching_results, result.results.len());
-                                               assert_eq!(
-                                                   result.options.len(),
-                                                   explorer_tally_result.len()
-                                               );
-                                               assert_eq!(
-                                                   result.options.start,
-                                                   explorer_tally_status.options.start as u8
-                                               );
-                                               assert_eq!(
-                                                   result.options.end,
-                                                   explorer_tally_status.options.end as u8
-                                               );
-                                           }
-                                       }
-                                   } else {
-                                       panic!("Wrong tally status. Expected Private")
-                                   }
-                               }
-                           }*/
+                        );
+                        match &vote_proposal_status.tally {
+                            Tally::Public { result } => {
+                                if let TallyPublicStatus(explorer_tally_status) =
+                                    explorer_proposal.tally.as_ref().unwrap()
+                                {
+                                    assert_eq!(
+                                        result.results.len(),
+                                        explorer_tally_status.results.len()
+                                    );
+                                    let matching_results = result
+                                        .results
+                                        .iter()
+                                        .zip(explorer_tally_status.results.iter())
+                                        .filter(|&(a, b)| &a.to_string() == b)
+                                        .count();
+                                    assert_eq!(matching_results, result.results.len());
+                                    assert_eq!(
+                                        result.options.len(),
+                                        explorer_tally_status.results.len()
+                                    );
+                                    assert_eq!(
+                                        result.options.start,
+                                        explorer_tally_status.options.start as u8
+                                    );
+                                    assert_eq!(
+                                        result.options.end,
+                                        explorer_tally_status.options.end as u8
+                                    );
+                                } else {
+                                    panic!("Wrong tally status. Expected Public")
+                                }
+                            }
+                            Tally::Private { state } => {
+                                assert!(explorer_proposal.tally.is_some());
+                                if let TallyPrivateStatus(explorer_tally_status) =
+                                    explorer_proposal.tally.as_ref().unwrap()
+                                {
+                                    match state {
+                                        PrivateTallyState::Encrypted { encrypted_tally: _ } => {
+                                            assert!(
+                                                explorer_tally_status.results.is_none(),
+                                                "BUG NPG-3369 fixed"
+                                            )
+                                        }
+                                        PrivateTallyState::Decrypted { result } => {
+                                            let explorer_tally_result =
+                                                explorer_tally_status.results.as_ref().unwrap();
+                                            assert_eq!(
+                                                result.results.len(),
+                                                explorer_tally_result.len()
+                                            );
+                                            let matching_results = result
+                                                .results
+                                                .iter()
+                                                .zip(explorer_tally_result.iter())
+                                                .filter(|&(a, b)| &a.to_string() == b)
+                                                .count();
+                                            assert_eq!(matching_results, result.results.len());
+                                            assert_eq!(
+                                                result.options.len(),
+                                                explorer_tally_result.len()
+                                            );
+                                            assert_eq!(
+                                                result.options.start,
+                                                explorer_tally_status.options.start as u8
+                                            );
+                                            assert_eq!(
+                                                result.options.end,
+                                                explorer_tally_status.options.end as u8
+                                            );
+                                        }
+                                    }
+                                } else {
+                                    panic!("Wrong tally status. Expected Private")
+                                }
+                            }
+                        }
                         assert_eq!(
                             vote_proposal_status.votes_cast,
                             explorer_proposal.votes.total_count as usize

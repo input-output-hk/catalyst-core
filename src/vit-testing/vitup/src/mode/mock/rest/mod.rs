@@ -1347,7 +1347,7 @@ pub async fn get_proposal_by_idx(
         return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
 
-    let proposals: Vec<Proposal> = context
+    let proposals: Vec<_> = context
         .lock()
         .unwrap()
         .state()
@@ -1360,7 +1360,7 @@ pub async fn get_proposal_by_idx(
                     && item.indexes.contains(&x.voteplan.chain_proposal_index)
             })
         })
-        .map(|x| x.proposal.clone())
+        .cloned()
         .collect();
 
     Ok(HandlerResult(Ok(proposals)))
@@ -1389,7 +1389,7 @@ pub async fn get_proposal(id: i32, context: ContextLock) -> Result<impl Reply, R
         .proposals()
         .iter()
         .find(|x| x.proposal.internal_id.to_string() == id.to_string())
-        .map(|x| x.proposal.clone())
+        .cloned()
         .ok_or_else(|| warp::reject::custom(GeneralException::proposal_not_found(id)))?;
 
     Ok(HandlerResult(Ok(proposal)))

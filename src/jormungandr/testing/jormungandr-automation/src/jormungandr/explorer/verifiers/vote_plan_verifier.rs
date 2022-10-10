@@ -72,6 +72,9 @@ impl ExplorerVerifier {
             );
             match &vote_proposal_status.tally {
                 Tally::Public { result } => {
+                    if explorer_proposal.tally.is_none() {
+                        continue;
+                    }
                     if let TallyPublicStatus(explorer_tally_status) =
                         explorer_proposal.tally.unwrap()
                     {

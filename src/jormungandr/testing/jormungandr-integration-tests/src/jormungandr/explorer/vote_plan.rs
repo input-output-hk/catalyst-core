@@ -113,8 +113,7 @@ pub fn explorer_vote_plan_not_existing() {
     );
 }
 
-#[should_panic]
-#[test] //NPG-3334
+#[test]
 pub fn explorer_vote_plan_public_flow_test() {
     let temp_dir = TempDir::new().unwrap();
     let alice = Wallet::default();
@@ -148,12 +147,10 @@ pub fn explorer_vote_plan_public_flow_test() {
     .into();
 
     let config = ConfigurationBuilder::new()
-        .with_funds(
-            voters
-                .iter()
-                .map(|x| x.to_initial_fund(INITIAL_TREASURY))
-                .collect(),
-        )
+        .with_funds(vec![
+            voters[0].to_initial_fund(INITIAL_FUND_PER_WALLET_1),
+            voters[1].to_initial_fund(INITIAL_FUND_PER_WALLET_2),
+        ])
         .with_token(InitialToken {
             token_id: vote_plan.voting_token().clone().into(),
             policy: MintingPolicy::new().into(),
@@ -702,8 +699,7 @@ pub fn explorer_vote_plan_private_flow_test() {
     );
 }
 
-#[should_panic]
-#[test] //NPG-3334
+#[test]
 pub fn explorer_all_vote_plans_public_flow_test() {
     let temp_dir = TempDir::new().unwrap();
     let alice = Wallet::default();
@@ -753,12 +749,10 @@ pub fn explorer_all_vote_plans_public_flow_test() {
     }
 
     let config = ConfigurationBuilder::new()
-        .with_funds(
-            voters
-                .iter()
-                .map(|x| x.to_initial_fund(INITIAL_TREASURY))
-                .collect(),
-        )
+        .with_funds(vec![
+            voters[0].to_initial_fund(INITIAL_FUND_PER_WALLET_1),
+            voters[1].to_initial_fund(INITIAL_FUND_PER_WALLET_2),
+        ])
         .with_token(InitialToken {
             token_id: vote_plans.first().unwrap().voting_token().clone().into(),
             policy: MintingPolicy::new().into(),

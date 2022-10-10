@@ -479,10 +479,22 @@ impl ExplorerTransaction {
 }
 
 impl ExplorerAddress {
+    /// Single address : A simple spending key. This doesn't have any stake in the system
     pub fn to_single_account(&self) -> Option<Identifier> {
         match self {
             ExplorerAddress::New(address) => match address.kind() {
                 chain_addr::Kind::Single(key) => Some(key.clone().into()),
+                _ => None,
+            },
+            ExplorerAddress::Old(_) => None,
+        }
+    }
+
+    /// Account address : An account key. The account is its own stake
+    pub fn to_address_account(&self) -> Option<Identifier> {
+        match self {
+            ExplorerAddress::New(address) => match address.kind() {
+                chain_addr::Kind::Account(key) => Some(key.clone().into()),
                 _ => None,
             },
             ExplorerAddress::Old(_) => None,

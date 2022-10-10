@@ -22,3 +22,7 @@ cardano-legacy-address = { path = "../../chain-libs/cardano-legacy-address" }
 [dev-dependencies]
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
+
+[profile.release]
+lto = "yes"
+strip = "symbols"

@@ -259,11 +259,13 @@ impl<'a, S: SyncNode + Send> FragmentGenerator<'a, S> {
             3 => {
                 let index = self.rand.next_u32() as usize % self.active_stake_pools.len();
                 let stake_pool = self.active_stake_pools.get(index).unwrap();
+
                 self.fragment_sender
                     .send_owner_delegation(&mut self.sender, stake_pool, &self.node)
             }
             4 => {
                 let stake_pool = StakePool::new(&self.sender);
+                self.active_stake_pools.push(stake_pool.clone());
                 self.fragment_sender.send_pool_registration(
                     &mut self.sender,
                     &stake_pool,
@@ -283,6 +285,7 @@ impl<'a, S: SyncNode + Send> FragmentGenerator<'a, S> {
             6 => {
                 let index = self.rand.next_u32() as usize % self.active_stake_pools.len();
                 let stake_pool = self.active_stake_pools.remove(index);
+
                 self.fragment_sender
                     .send_pool_retire(&mut self.sender, &stake_pool, &self.node)
             }

@@ -1,22 +1,24 @@
+use crate::builder::VotePlanKey;
 #![allow(dead_code)]
 
 use super::NodeAlias;
 use chain_addr::Discrimination;
-pub use chain_impl_mockchain::chaintypes::ConsensusVersion;
-use chain_impl_mockchain::{fee::LinearFee, milli::Milli};
+use chain_impl_mockchain::{chaintypes::ConsensusVersion, fee::LinearFee, milli::Milli};
+use jormungandr_automation::jormungandr::NodeAlias;
 use jormungandr_lib::{
     interfaces::{
         ActiveSlotCoefficient, BlockContentMaxSize, CommitteeIdDef, ConsensusLeaderId,
         ConsensusVersionDef, DiscriminationDef, KesUpdateSpeed, LinearFeeDef,
-        NumberOfSlotsPerEpoch, SlotDuration,
+        NumberOfSlotsPerEpoch, SlotDuration, VotePlan,
     },
     time::SecondsSinceUnixEpoch,
 };
 use serde::Deserialize;
+use std::collections::HashMap;
 
 #[derive(Clone, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
-pub struct Blockchain {
+pub struct BlockchainConfiguration {
     #[serde(default)]
     block0_date: SecondsSinceUnixEpoch,
     #[serde(default)]
@@ -45,7 +47,7 @@ pub struct Blockchain {
     tx_max_expiry_epochs: Option<u8>,
 }
 
-impl Blockchain {
+impl BlockchainConfiguration {
     pub fn block0_date(&self) -> SecondsSinceUnixEpoch {
         self.block0_date
     }
@@ -180,9 +182,24 @@ impl Blockchain {
         self.tx_max_expiry_epochs = tx_max_expiry_epochs;
         self
     }
+
+    pub fn vote_plans(&self) -> HashMap<VotePlanKey, VotePlan> {
+        self.vote_plans.clone()
+    }
+
+    pub fn with_vote_plan(
+        mut self,
+        alias: String,
+        owner_alias: String,
+        vote_plan_template: VotePlan,
+    ) -> Self {
+        self.vote_plans
+            .insert(VotePlanKey { alias, owner_alias }, vote_plan_template);
+        self
+    }
 }
 
-impl Default for Blockchain {
+impl Default for BlockchainConfiguration {
     fn default() -> Self {
         Self {
             block0_date: Default::default(),
@@ -207,7 +224,7 @@ impl Default for Blockchain {
 
 #[derive(Default)]
 pub struct BlockchainBuilder {
-    blockchain: Blockchain,
+    blockchain: BlockchainConfiguration,
 }
 
 impl BlockchainBuilder {
@@ -298,7 +315,19 @@ impl BlockchainBuilder {
         self
     }
 
-    pub fn build(self) -> Blockchain {
+    pub fn vote_plan(
+        mut self,
+        alias: String,
+        owner_alias: String,
+        vote_plan_template: VotePlan,
+    ) -> Self {
+        self.blockchain = self
+            .blockchain
+            .with_vote_plan(alias, owner_alias, vote_plan_template);
+        self
+    }
+
+    pub fn build(self) -> BlockchainConfiguration {
         self.blockchain
     }
 }

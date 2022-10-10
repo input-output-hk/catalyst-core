@@ -11,10 +11,7 @@ use jormungandr_lib::{
     crypto::{hash::Hash, key::KeyPair},
     interfaces::{Block0Configuration, NodeConfig},
 };
-use std::{
-    fs::File,
-    path::{Path, PathBuf},
-};
+use std::{fs::File, path::PathBuf};
 
 #[derive(Debug)]
 pub struct JormungandrBootstrapper {
@@ -61,11 +58,6 @@ impl JormungandrBootstrapper {
 
     pub fn with_secret(mut self, secret: SecretModelFactory) -> Self {
         self.secret = secret;
-        self
-    }
-
-    pub fn with_jormungandr(mut self, app: impl AsRef<Path>) -> Self {
-        self.jormungandr_app = Some(app.as_ref().to_path_buf());
         self
     }
 

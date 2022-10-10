@@ -1,3 +1,4 @@
+use crate::builder::VotePlanKey;
 #![allow(dead_code)]
 
 use chain_addr::Discrimination;
@@ -7,11 +8,12 @@ use jormungandr_lib::{
     interfaces::{
         ActiveSlotCoefficient, BlockContentMaxSize, CommitteeIdDef, ConsensusLeaderId,
         ConsensusVersionDef, DiscriminationDef, KesUpdateSpeed, LinearFeeDef,
-        NumberOfSlotsPerEpoch, SlotDuration,
+        NumberOfSlotsPerEpoch, SlotDuration, VotePlan,
     },
     time::SecondsSinceUnixEpoch,
 };
 use serde::Deserialize;
+use std::collections::HashMap;
 
 #[derive(Clone, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
@@ -177,6 +179,21 @@ impl BlockchainConfiguration {
 
     pub fn with_tx_max_expiry_epochs(mut self, tx_max_expiry_epochs: Option<u8>) -> Self {
         self.tx_max_expiry_epochs = tx_max_expiry_epochs;
+        self
+    }
+
+    pub fn vote_plans(&self) -> HashMap<VotePlanKey, VotePlan> {
+        self.vote_plans.clone()
+    }
+
+    pub fn with_vote_plan(
+        mut self,
+        alias: String,
+        owner_alias: String,
+        vote_plan_template: VotePlan,
+    ) -> Self {
+        self.vote_plans
+            .insert(VotePlanKey { alias, owner_alias }, vote_plan_template);
         self
     }
 }

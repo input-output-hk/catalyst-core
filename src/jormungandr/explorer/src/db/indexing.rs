@@ -170,28 +170,6 @@ impl ExplorerBlock {
                         offset_in_block: offset,
                         config_params: Some(config.clone()),
                     }),
-                    Fragment::UpdateProposal(tx) => {
-                        let tx = tx.as_slice();
-                        Some(ExplorerTransaction::from(
-                            &context,
-                            &fragment_id,
-                            &tx,
-                            Some(Certificate::UpdateProposal(tx.payload().into_payload())),
-                            offset,
-                            &current_block_txs,
-                        ))
-                    }
-                    Fragment::UpdateVote(tx) => {
-                        let tx = tx.as_slice();
-                        Some(ExplorerTransaction::from(
-                            &context,
-                            &fragment_id,
-                            &tx,
-                            Some(Certificate::UpdateVote(tx.payload().into_payload())),
-                            offset,
-                            &current_block_txs,
-                        ))
-                    }
                     Fragment::Transaction(tx) => {
                         let tx = tx.as_slice();
                         Some(ExplorerTransaction::from(

@@ -46,7 +46,7 @@ impl Stats {
         let tps = self.calculate_tps();
         let passrate = self.calculate_passrate();
         println!("Load scenario `{}` finished", title);
-        println!("I made a total of {:.2} requests ({} passed/ {} failed/ {} pending), the mean response time was: {:.3} seconds. tps: {:.2}. Test duration: {} s. Passrate: {} %", 
+        println!("I made a total of {:.2} requests ({} passed/ {} failed/ {} pending), the mean response time was: {:.3} seconds. tps: {:.2}. Test duration: {} s. Passrate: {} %",
             requests,
             self.total_requests_passed(),
             self.total_requests_failed(),
@@ -79,7 +79,7 @@ impl Stats {
 
         if errors.len() > 10 {
             println!("{} errors fund. Printing only 10 :", errors.len());
-            let first_10_errors: Vec<RequestFailure> = errors.iter().cloned().take(10).collect();
+            let first_10_errors: Vec<RequestFailure> = errors.iter().take(10).cloned().collect();
             self.print_errors(first_10_errors);
             return;
         }

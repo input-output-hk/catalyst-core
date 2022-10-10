@@ -4,6 +4,7 @@ pub mod utils;
 
 pub use crate::builders::helpers::{build_current_fund, build_servicing_station_parameters};
 use crate::builders::utils::DeploymentTree;
+use crate::config;
 use crate::config::{Config, Role};
 use crate::mode::standard::{VitController, VitControllerBuilder};
 use assert_fs::fixture::ChildPath;
@@ -12,6 +13,7 @@ use chain_impl_mockchain::testing::TestGen;
 use chain_impl_mockchain::tokens::identifier::TokenIdentifier;
 use chain_impl_mockchain::tokens::minting_policy::MintingPolicy;
 use chain_impl_mockchain::value::Value;
+use config::Block0Initial::Wallet;
 pub use helpers::{
     convert_to_blockchain_date, convert_to_human_date, generate_qr_and_hashes,
     VitVotePlanDefBuilder, WalletExtension,
@@ -30,8 +32,6 @@ use std::path::Path;
 use std::str::FromStr;
 use thiserror::Error;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
-use config::Block0Initial::Wallet;
-use crate::config;
 
 pub const LEADER_1: &str = "Leader1";
 pub const LEADER_2: &str = "Leader2";
@@ -228,7 +228,7 @@ impl VitBackendSettingsBuilder {
             name: self.committee_wallet.clone(),
             funds: 1_000_000,
             pin: "".to_string(),
-            role: Default::default()
+            role: Default::default(),
         });
 
         let mut generated_wallet_templates = HashMap::new();
@@ -249,41 +249,43 @@ impl VitBackendSettingsBuilder {
         }
         println!("building direct voteplan..");
 
-        builder = builder.vote_plans(VitVotePlanDefBuilder::default()
-            .vote_phases(vote_blockchain_time)
-            .options(
-                self.config
-                    .data
-                    .current_fund
-                    .options
-                    .0
-                    .len()
-                    .try_into()
-                    .map_err(|_| Error::TooManyOptions)?,
-            )
-            .split_by(255)
-            .fund_name(
-                self.config
-                    .data
-                    .current_fund
-                    .fund_info
-                    .fund_name
-                    .to_string(),
-            )
-            .committee(self.committee_wallet.clone())
-            .private(self.config.vote_plan.private)
-            .proposals_count(self.config.data.current_fund.proposals as usize)
-            .voting_tokens(
-                token_list
-                    .iter()
-                    .cloned()
-                    .map(|(a, b)| (a, b.into()))
-                    .collect(),
-            )
-            .build()
-            .into_iter()
-            .map(Into::into)
-            .collect());
+        builder = builder.vote_plans(
+            VitVotePlanDefBuilder::default()
+                .vote_phases(vote_blockchain_time)
+                .options(
+                    self.config
+                        .data
+                        .current_fund
+                        .options
+                        .0
+                        .len()
+                        .try_into()
+                        .map_err(|_| Error::TooManyOptions)?,
+                )
+                .split_by(255)
+                .fund_name(
+                    self.config
+                        .data
+                        .current_fund
+                        .fund_info
+                        .fund_name
+                        .to_string(),
+                )
+                .committee(self.committee_wallet.clone())
+                .private(self.config.vote_plan.private)
+                .proposals_count(self.config.data.current_fund.proposals as usize)
+                .voting_tokens(
+                    token_list
+                        .iter()
+                        .cloned()
+                        .map(|(a, b)| (a, b.into()))
+                        .collect(),
+                )
+                .build()
+                .into_iter()
+                .map(Into::into)
+                .collect(),
+        );
 
         builder = builder.blockchain(blockchain);
         println!("building controllers..");

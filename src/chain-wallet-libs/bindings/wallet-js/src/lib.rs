@@ -1,12 +1,14 @@
 //! JavaScript and TypeScript bindings for the Jormungandr wallet SDK.
 
+use certificates::Certificate;
+use fragment::{Fragment, FragmentId};
 use rand_chacha::rand_core::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 use std::convert::TryInto;
 use wasm_bindgen::prelude::*;
 
 mod certificates;
-mod transaction;
+mod fragment;
 mod utils;
 
 pub use utils::set_panic_hook;
@@ -50,21 +52,9 @@ impl_public_key!(Ed25519Public, chain_crypto::Ed25519);
 #[wasm_bindgen]
 pub struct Ed25519Signature(chain_crypto::Signature<Box<[u8]>, chain_crypto::Ed25519>);
 
-/// Identifier of a block fragment, such as a vote transaction posted on the blockchain.
-#[wasm_bindgen]
-pub struct FragmentId(wallet_core::FragmentId);
-
 /// A public key for the election protocol that is used to encrypt private ballots.
 #[wasm_bindgen]
 pub struct ElectionPublicKey(chain_vote::ElectionPublicKey);
-
-/// this is used only for giving the Array a type in the typescript generated notation
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(typescript_type = "Array<FragmentId>")]
-    pub type FragmentIds;
-}
-
 #[wasm_bindgen]
 pub struct BlockDate(chain_impl_mockchain::block::BlockDate);
 
@@ -125,40 +115,18 @@ impl Wallet {
             .map_err(|e| JsValue::from(e.to_string()))
     }
 
-    /// Cast a vote
-    ///
-    /// This function outputs a fragment containing a voting transaction.
-    ///
-    /// # Parameters
-    ///
-    /// * `settings` - ledger settings.
-    /// * `proposal` - proposal information including the range of values
-    ///   allowed in `choice`.
-    /// * `choice` - the option to vote for.
-    /// * `valid_until` - the date until this transaction can be applied
-    /// * `lane` - lane to use for the spending counter. Must be a number in the interval of [0, 7]
-    ///
-    /// # Errors
-    ///
-    /// The error is returned when `choice` does not fall withing the range of
-    /// available choices specified in `proposal`.
-    pub fn vote(
+    pub fn sign_transaction(
         &mut self,
         settings: &Settings,
-        proposal: &Proposal,
-        choice: u8,
-        valid_until: &BlockDate,
+        valid_until: BlockDate,
         lane: u8,
-    ) -> Result<Box<[u8]>, JsValue> {
-        self.0
-            .vote(
-                settings.0.clone(),
-                &proposal.0,
-                wallet_core::Choice::new(choice),
-                &valid_until.0,
-                lane,
-            )
-            .map_err(|e| JsValue::from(e.to_string()))
+        certificate: Certificate,
+    ) -> Result<Fragment, JsValue> {
+        let fragment = self
+            .0
+            .sign_transaction(&settings.0, valid_until.0, lane, certificate.0)
+            .map_err(|e| JsValue::from(e.to_string()))?;
+        Ok(Fragment(fragment))
     }
 
     /// Confirms that a transaction has been confirmed on the blockchain.
@@ -341,28 +309,6 @@ macro_rules! impl_secret_key {
             }
         }
     };
-}
-
-#[wasm_bindgen]
-impl FragmentId {
-    /// Constructs a fragment identifier from its byte array representation.
-    pub fn from_bytes(bytes: &[u8]) -> Result<FragmentId, JsValue> {
-        let array: [u8; std::mem::size_of::<wallet_core::FragmentId>()] = bytes
-            .try_into()
-            .map_err(|_| JsValue::from_str("Invalid fragment id"))?;
-
-        Ok(FragmentId(array.into()))
-    }
-
-    /// Deprecated; use `from_bytes`.
-    pub fn new_from_bytes(bytes: &[u8]) -> Result<FragmentId, JsValue> {
-        Self::from_bytes(bytes)
-    }
-
-    /// Returns a byte array representation of the fragment identifier.
-    pub fn to_bytes(&self) -> Vec<u8> {
-        self.0.as_bytes().to_vec()
-    }
 }
 
 #[wasm_bindgen]

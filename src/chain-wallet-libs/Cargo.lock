@@ -1413,7 +1413,7 @@ name = "wallet-js"
 version = "0.7.0-pre4"
 dependencies = [
  "bech32 0.7.3",
- "chain-addr",
+ "chain-core",
  "chain-crypto",
  "chain-impl-mockchain",
  "chain-vote",

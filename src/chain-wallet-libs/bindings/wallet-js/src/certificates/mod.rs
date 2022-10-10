@@ -2,6 +2,7 @@ use chain_impl_mockchain::certificate::Certificate as CertificateLib;
 use wasm_bindgen::prelude::*;
 
 pub mod vote_cast;
+pub mod vote_plan;
 
 #[wasm_bindgen]
 pub struct Certificate(pub(crate) CertificateLib);

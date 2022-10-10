@@ -60,6 +60,12 @@ impl BackwardCompatibleRest {
         self.raw.rest_settings_mut().enable_debug = true;
     }
 
+    pub(crate) fn updates(&self) -> Result<String, reqwest::Error> {
+        let response_text = self.raw().updates()?.text()?;
+        self.print_response_text(&response_text);
+        Ok(response_text)
+    }
+
     pub fn epoch_reward_history(&self, epoch: u32) -> Result<String, reqwest::Error> {
         let response_text = self.raw().epoch_reward_history(epoch)?.text()?;
         self.print_response_text(&response_text);

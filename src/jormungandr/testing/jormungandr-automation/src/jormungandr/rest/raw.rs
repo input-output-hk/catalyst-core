@@ -97,14 +97,17 @@ impl RawRest {
         self.get(&request)
     }
 
+    pub(crate) fn updates(&self) -> Result<Response, reqwest::Error> {
+        self.get("updates/active")
+    }
+
     pub fn reward_history(&self, length: u32) -> Result<Response, reqwest::Error> {
         let request = format!("rewards/history/{}", length);
         self.get(&request)
     }
 
     pub fn remaining_rewards(&self) -> Result<Response, reqwest::Error> {
-        let request = "rewards/remaining".to_string();
-        self.get(&request)
+        self.get("rewards/remaining")
     }
 
     #[cfg(feature = "evm")]

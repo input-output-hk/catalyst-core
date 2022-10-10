@@ -5,6 +5,8 @@ use rand_chacha::ChaCha20Rng;
 use std::convert::TryInto;
 use wasm_bindgen::prelude::*;
 
+mod certificates;
+mod transaction;
 mod utils;
 
 pub use utils::set_panic_hook;
@@ -20,7 +22,6 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 /// minted as UTxOs in the genesis block.
 #[wasm_bindgen]
 pub struct Wallet(wallet_core::Wallet);
-
 /// Encapsulates blockchain settings needed for some operations.
 #[wasm_bindgen]
 pub struct Settings(wallet_core::Settings);

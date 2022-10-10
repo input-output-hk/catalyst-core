@@ -99,7 +99,7 @@ impl Decodable for EthereumUnsignedTransaction {
     fn decode(rlp: &Rlp<'_>) -> Result<Self, DecoderError> {
         let slice = rlp.data()?;
 
-        let first = *slice.get(0).ok_or(DecoderError::Custom("empty slice"))?;
+        let first = *slice.first().ok_or(DecoderError::Custom("empty slice"))?;
 
         let item_count = rlp.item_count()?;
 

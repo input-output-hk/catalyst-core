@@ -16,3 +16,7 @@ quickcheck_macros = "0.9"
 unicode-normalization = "*"
 rand = "*"
 hex = "*"
+
+[profile.release]
+lto = "yes"
+strip = "symbols"

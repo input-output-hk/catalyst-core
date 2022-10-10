@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use super::NodeAlias;
 use chain_addr::Discrimination;
 pub use chain_impl_mockchain::chaintypes::ConsensusVersion;

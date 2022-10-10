@@ -41,7 +41,7 @@ pub struct Blockchain {
     #[serde(default)]
     slots_per_epoch: NumberOfSlotsPerEpoch,
     #[serde(default)]
-    tx_max_expiry_epochs: Option<u8>
+    tx_max_expiry_epochs: Option<u8>,
 }
 
 impl Blockchain {
@@ -199,7 +199,7 @@ impl Default for Blockchain {
             linear_fee: LinearFee::new(1, 1, 1),
             slot_duration: SlotDuration::new(2).unwrap(),
             slots_per_epoch: NumberOfSlotsPerEpoch::new(60).unwrap(),
-            tx_max_expiry_epochs: None
+            tx_max_expiry_epochs: None,
         }
     }
 }

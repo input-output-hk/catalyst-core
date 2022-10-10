@@ -98,7 +98,7 @@ impl fmt::Debug for Ledger<Address> {
 
 /// structure used by the iterator or the getter of the UTxO `Ledger`
 ///
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Entry<'a, OutputAddress> {
     pub fragment_id: FragmentId,
     pub output_index: u8,
@@ -107,7 +107,7 @@ pub struct Entry<'a, OutputAddress> {
 
 /// structure used by the iterator or the getter of the UTxO `Ledger`
 ///
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct EntryOwned<OutputAddress> {
     pub fragment_id: FragmentId,
     pub output_index: u8,

@@ -3,51 +3,46 @@ query AllVotePlans($first: Int!) {
     allVotePlans(first: $first) {
       edges {
         node {
-          id
-          voteStart {
-            epoch {
-              id
-            }
-            slot
-          }
-          voteEnd {
-            epoch {
-              id
-            }
-            slot
-          }
-          committeeEnd {
-            epoch {
-              id
-            }
-            slot
-          }
-          payloadType
-          proposals {
-            # proposalId
-            options {
-              start
-              end
-            }
-            votes {
-              edges {
-                node {
-                  address {
-                    id
-                  }
-                  payload {
-                    __typename
-                    ... on VotePayloadPublicStatus {
-                      choice
+        id
+        voteStart {...blockDate}
+        voteEnd {...blockDate}
+        committeeEnd {...blockDate}
+        payloadType
+        proposals {
+                    proposalId
+                    options {start end}
+                    tally {
+                        __typename
+                        ... on TallyPublicStatus {results
+                                                  options{start end}  }
+                        ... on TallyPrivateStatus {results
+                                                  options{start end}  }
                     }
-                  }
-                }
-              }
+                    votes{
+                        edges{
+                            node{
+                                address{
+                                        id
+                                        #delegation{id}
+                                    }
+                                payload{
+                                    __typename
+                                    ... on VotePayloadPublicStatus {choice}
+                                    ... on VotePayloadPrivateStatus {proof encryptedVote}
+                                }
+                        }
+                    }
+                    totalCount
             }
-          }
         }
+    }
       }
       totalCount
     }
   }
 }
+
+fragment blockDate on BlockDate{
+                            epoch{id}
+                            slot
+                        }

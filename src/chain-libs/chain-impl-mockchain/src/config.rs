@@ -120,7 +120,7 @@ pub struct EvmEnvSettings {
 }
 
 // Discriminants can NEVER be 1024 or higher
-#[derive(AsRefStr, Clone, Copy, Debug, EnumIter, EnumString, PartialEq)]
+#[derive(AsRefStr, Clone, Copy, Debug, EnumIter, EnumString, PartialEq, Eq)]
 pub enum Tag {
     #[strum(to_string = "discrimination")]
     Discrimination = 1,

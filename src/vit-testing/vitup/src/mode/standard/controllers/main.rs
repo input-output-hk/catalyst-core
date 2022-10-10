@@ -11,7 +11,9 @@ use crate::Result;
 use assert_fs::fixture::PathChild;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use hersir::builder::ControllerError;
-use hersir::config::{Blockchain, CommitteeTemplate, SpawnParams, VotePlanTemplate, WalletTemplate};
+use hersir::config::{
+    Blockchain, CommitteeTemplate, SpawnParams, VotePlanTemplate, WalletTemplate,
+};
 use hersir::{
     builder::{
         NetworkBuilder, NodeAlias, NodeSetting, Settings, Topology, Wallet as WalletSettings,

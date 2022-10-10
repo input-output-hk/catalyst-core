@@ -1,12 +1,12 @@
 use crate::config::{Role, VoteBlockchainTime};
-use chain_impl_mockchain::testing::scenario::template::{ProposalDefBuilder};
+use chain_impl_mockchain::certificate::{Proposal, Proposals, PushProposal};
+use chain_impl_mockchain::testing::scenario::template::ProposalDefBuilder;
 use chain_impl_mockchain::testing::TestGen;
+use hersir::builder::VotePlanKey;
+use hersir::config::{CommitteeTemplate, PrivateParameters, VotePlanTemplate};
 pub use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::interfaces::{BlockDate, TokenIdentifier};
 use std::iter;
-use chain_impl_mockchain::certificate::{Proposal, Proposals, PushProposal};
-use hersir::builder::VotePlanKey;
-use hersir::config::{CommitteeTemplate, PrivateParameters, VotePlanTemplate};
 
 use thor::WalletAlias;
 
@@ -113,31 +113,33 @@ impl VitVotePlanDefBuilder {
                 .map(|((role, voting_token), vote_plan_name)| {
                     let vote_plan_key = VotePlanKey {
                         alias: format!("{vote_plan_name}-{role}"),
-                        owner_alias: self.committee_wallet.to_string()
+                        owner_alias: self.committee_wallet.to_string(),
                     };
 
-                    VotePlanTemplate{
+                    VotePlanTemplate {
                         committees: vec![CommitteeTemplate::Generated {
                             alias: self.committee_wallet.to_string(),
                             member_pk: None,
-                            communication_pk: None
+                            communication_pk: None,
                         }],
-                        vote_start:  BlockDate::new(self.vote_phases.vote_start,0),
-                        vote_end:   BlockDate::new(self.vote_phases.tally_start,0),
-                        committee_end: BlockDate::new(self.vote_phases.tally_end,0),
-                        proposals: proposal_builders.into_iter().map(|pb| pb.clone().build()).fold(Proposals::new(),|mut acc, p| {
-                            let proposal: Proposal = p.into();
-                            assert_eq!(acc.push(proposal),PushProposal::Success);
-                            acc
-                        }),
+                        vote_start: BlockDate::new(self.vote_phases.vote_start, 0),
+                        vote_end: BlockDate::new(self.vote_phases.tally_start, 0),
+                        committee_end: BlockDate::new(self.vote_phases.tally_end, 0),
+                        proposals: proposal_builders
+                            .into_iter()
+                            .map(|pb| pb.clone().build())
+                            .fold(Proposals::new(), |mut acc, p| {
+                                let proposal: Proposal = p.into();
+                                assert_eq!(acc.push(proposal), PushProposal::Success);
+                                acc
+                            }),
                         committee_member_public_keys: vec![],
                         voting_token: voting_token.clone().into(),
                         vote_plan_key,
-                        private: self.private.then_some(
-                            PrivateParameters{
-                                crs: None,
-                                threshold: None
-                            })
+                        private: self.private.then_some(PrivateParameters {
+                            crs: None,
+                            threshold: None,
+                        }),
                     }
                 })
         })

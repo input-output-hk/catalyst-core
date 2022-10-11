@@ -39,6 +39,12 @@ impl ServerSettingsBuilder {
         self
     }
 
+    pub fn with_block0_folder_path(&mut self, block0_folder_path: impl AsRef<Path>) -> &mut Self {
+        self.settings.block0_paths = Some(block0_folder_path.as_ref().to_path_buf());
+        self
+    }
+
+
     pub fn with_cors(&mut self, cors: Cors) -> &mut Self {
         self.cors = Some(cors);
         self

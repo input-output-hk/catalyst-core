@@ -3,6 +3,9 @@ use std::convert::TryFrom;
 use chain_impl_mockchain::certificate::VotePlanId as VotePlanIdLib;
 use wasm_bindgen::prelude::*;
 
+// TODO add VotePlan certificate
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 #[wasm_bindgen]
 pub struct VotePlanId(pub(crate) VotePlanIdLib);
 

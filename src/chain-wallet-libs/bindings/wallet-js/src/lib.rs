@@ -1,7 +1,11 @@
 //! JavaScript and TypeScript bindings for the Jormungandr wallet SDK.
 
-use certificates::Certificate;
-use fragment::{Fragment, FragmentId};
+pub use certificates::Certificate;
+pub use certificates::{vote_cast::VoteCast, vote_plan::VotePlanId};
+use chain_core::packer::Codec;
+use chain_core::property::DeserializeFromSlice;
+use chain_impl_mockchain::block::Block;
+pub use fragment::{Fragment, FragmentId};
 pub use utils::set_panic_hook;
 use wasm_bindgen::prelude::*;
 
@@ -20,19 +24,44 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 /// minted as UTxOs in the genesis block.
 #[wasm_bindgen]
 pub struct Wallet(wallet_core::Wallet);
+
 /// Encapsulates blockchain settings needed for some operations.
 #[wasm_bindgen]
 pub struct Settings(wallet_core::Settings);
 
 #[wasm_bindgen]
-pub struct Options(wallet_core::Options);
+impl Settings {
+    pub fn new(block_bytes: &[u8]) -> Result<Settings, JsValue> {
+        let block = Block::deserialize_from_slice(&mut Codec::new(block_bytes.as_ref()))
+            .map_err(|e| JsValue::from(e.to_string()))?;
+        Ok(Self(
+            wallet_core::Settings::new(&block).map_err(|e| JsValue::from(e.to_string()))?,
+        ))
+    }
+}
 
 #[wasm_bindgen]
 pub struct BlockDate(chain_impl_mockchain::block::BlockDate);
 
 #[wasm_bindgen]
+impl BlockDate {
+    pub fn new(epoch: u32, slot_id: u32) -> BlockDate {
+        BlockDate(chain_impl_mockchain::block::BlockDate { epoch, slot_id })
+    }
+}
+
 #[derive(Clone)]
+#[wasm_bindgen]
 pub struct SpendingCounter(chain_impl_mockchain::account::SpendingCounter);
+
+#[wasm_bindgen]
+impl SpendingCounter {
+    pub fn new(lane: usize, counter: u32) -> Self {
+        Self(chain_impl_mockchain::account::SpendingCounter::new(
+            lane, counter,
+        ))
+    }
+}
 
 impl_collection!(SpendingCounters, SpendingCounter);
 

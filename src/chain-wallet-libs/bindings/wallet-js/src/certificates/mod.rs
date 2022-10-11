@@ -7,8 +7,9 @@ pub mod vote_plan;
 #[wasm_bindgen]
 pub struct Certificate(pub(crate) CertificateLib);
 
-impl From<vote_cast::VoteCast> for Certificate {
-    fn from(val: vote_cast::VoteCast) -> Self {
-        Self(CertificateLib::VoteCast(val.0))
+#[wasm_bindgen]
+impl Certificate {
+    pub fn vote_cast(vote_cast: vote_cast::VoteCast) -> Certificate {
+        Certificate(CertificateLib::VoteCast(vote_cast.0))
     }
 }

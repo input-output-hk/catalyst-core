@@ -1,21 +1,19 @@
 mod explorer;
 
-use assert_fs::{fixture::PathChild, TempDir};
+use assert_fs::TempDir;
 use explorer::{transaction_by_id, TransactionById};
 use graphql_client::{GraphQLQuery, Response};
 use jormungandr_automation::jormungandr::explorer::configuration::ExplorerParams;
 use jormungandr_automation::jormungandr::{
-    Block0ConfigurationBuilder, ExplorerError, JormungandrError, JormungandrParams,
-    JormungandrProcess, NodeConfigBuilder, RestError, Starter, StartupError,
-    StartupVerificationMode,
+    ExplorerError, JormungandrBootstrapper, JormungandrError, JormungandrProcess,
+    NodeConfigBuilder, RestError, StartupError, StartupVerificationMode,
 };
+use jormungandr_lib::crypto::hash::Hash;
 use jormungandr_lib::interfaces::{Log, LogEntry, LogOutput, VotePlanStatus};
 use std::path::PathBuf;
-use std::time::Duration;
+use std::str::FromStr;
 
 const JORMUNGANDR_APP: &str = "jormungandr";
-const JORMUNGANDR_CONFIG_FILE: &str = "node_config.yaml";
-const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 
 /// Wrapper that exposes the functionalities of the node
 /// used for this application
@@ -55,9 +53,9 @@ impl CheckNode {
         // stdout clean of unwanted output.
         // This guard redirects stdout to null untils it's dropped
         let _stdout_mute = gag::Gag::stdout().unwrap();
-
         let temp_dir = TempDir::new().unwrap();
-        let node_config = NodeConfigBuilder::new()
+
+        let node_config = NodeConfigBuilder::default()
             .with_storage(storage)
             .with_log(Log(LogEntry {
                 level: "info".to_string(),
@@ -66,27 +64,17 @@ impl CheckNode {
             }))
             .build();
 
-        let config = JormungandrParams::new(
-            node_config,
-            temp_dir.child(JORMUNGANDR_CONFIG_FILE).path(),
-            String::new(),
-            genesis_block_hash,
-            PathBuf::new(), // passive node with no secrets
-            Block0ConfigurationBuilder::new().build(),
-            false,
-        );
-
-        config.write_node_config();
-
-        let inner = Starter::new()
-            .jormungandr_app(jormungandr_bin.unwrap_or_else(|| PathBuf::from(JORMUNGANDR_APP)))
-            .verify_by(StartupVerificationMode::Log)
-            .timeout(DEFAULT_TIMEOUT)
-            .verbose(false)
-            .config(config)
-            .temp_dir(temp_dir)
+        let inner = JormungandrBootstrapper::default()
+            .with_node_config(node_config)
             .passive()
-            .start()?;
+            .with_block0_hash(Hash::from_str(&genesis_block_hash).unwrap())
+            .with_jormungandr(jormungandr_bin.unwrap_or_else(|| PathBuf::from(JORMUNGANDR_APP)))
+            .into_starter(temp_dir)
+            .unwrap()
+            .verify_by(StartupVerificationMode::Log)
+            .start()
+            .unwrap();
+
         inner.check_no_errors_in_log()?;
         Ok(Self { inner })
     }

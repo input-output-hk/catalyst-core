@@ -48,7 +48,7 @@
         };
 
         mkRust = {channel ? "stable"}: let
-          _rust = pkgs.rust-bin.${channel}.latest.default.override {
+          _rust = pkgs.rust-bin.${channel}."1.64.0".default.override {
             extensions = [
               "rust-src"
               "rust-analysis"

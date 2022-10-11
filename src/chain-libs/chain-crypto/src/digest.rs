@@ -191,8 +191,6 @@ macro_rules! define_from_instances {
 
 define_from_instances!(Blake2b256, 32, "blake2b");
 
-unsafe impl<H: DigestAlg> Send for Digest<H> {}
-
 impl<H: DigestAlg> PartialEq for Digest<H> {
     fn eq(&self, other: &Self) -> bool {
         self.0 == other.0
@@ -276,8 +274,6 @@ pub struct DigestOf<H: DigestAlg, T> {
     inner: Digest<H>,
     marker: PhantomData<T>,
 }
-
-unsafe impl<H: DigestAlg, T> Send for DigestOf<H, T> {}
 
 impl<H: DigestAlg, T> Clone for DigestOf<H, T> {
     fn clone(&self) -> Self {

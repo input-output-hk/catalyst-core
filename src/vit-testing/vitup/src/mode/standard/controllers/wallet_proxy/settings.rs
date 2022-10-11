@@ -1,5 +1,5 @@
 use super::NodeAlias;
-use crate::mode::standard::settings::PrepareWalletProxySettings;
+use crate::mode::standard::settings::{PrepareWalletProxySettings, VIT_STATION};
 
 type VitStationSettings = vit_servicing_station_lib::server::settings::ServiceSettings;
 
@@ -51,8 +51,7 @@ impl PrepareWalletProxySettings for WalletProxySettings {
         vit_stations: &HashMap<NodeAlias, VitStationSettings>,
     ) -> Self {
         let vit_station_settings = vit_stations
-            .values()
-            .next()
+            .get(VIT_STATION)
             .expect("no vit stations defined");
 
         WalletProxySettings {

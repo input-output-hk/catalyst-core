@@ -1,7 +1,8 @@
-use crate::mode::standard::{VitStationController, WalletProxyController};
+use crate::mode::standard::{ExplorerController, VitStationController, WalletProxyController};
 
 pub struct VitUserInteractionController {
     vit_stations: Vec<VitStationController>,
+    explorers: Vec<ExplorerController>,
     proxies: Vec<WalletProxyController>,
 }
 
@@ -16,6 +17,7 @@ impl VitUserInteractionController {
         Self {
             vit_stations: Vec::new(),
             proxies: Vec::new(),
+            explorers: Vec::new(),
         }
     }
 
@@ -29,6 +31,10 @@ impl VitUserInteractionController {
 
     pub fn vit_stations(&self) -> &[VitStationController] {
         &self.vit_stations
+    }
+
+    pub fn explorers(&self) -> &[ExplorerController] {
+        &self.explorers
     }
 
     pub fn proxies_mut(&mut self) -> &mut Vec<WalletProxyController> {

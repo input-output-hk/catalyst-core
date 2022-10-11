@@ -7,12 +7,15 @@ use super::{
     },
     wallet_proxy::{Error as WalletProxyError, WalletProxyController, WalletProxySpawnParams},
 };
+use crate::builders::ArchiveConfiguration;
+use crate::mode::standard::settings::{VIT_STATION, VIT_STATION_ARCHIVE};
+use crate::mode::standard::ExplorerController;
 use crate::Result;
 use assert_fs::fixture::PathChild;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use hersir::builder::ControllerError;
 use hersir::config::{
-    Blockchain, CommitteeTemplate, SpawnParams, VotePlanTemplate, WalletTemplate,
+    Blockchain, CommitteeTemplate, ExplorerTemplate, SpawnParams, VotePlanTemplate, WalletTemplate,
 };
 use hersir::{
     builder::{
@@ -33,6 +36,7 @@ use thor::{Wallet, WalletAlias};
 pub struct VitControllerBuilder {
     committees: Vec<CommitteeTemplate>,
     controller_builder: NetworkBuilder,
+    archive_conf: Option<ArchiveConfiguration>,
 }
 
 impl VitControllerBuilder {
@@ -40,7 +44,13 @@ impl VitControllerBuilder {
         Self {
             committees: Vec::new(),
             controller_builder: NetworkBuilder::default(),
+            archive_conf: None,
         }
+    }
+
+    pub(crate) fn archive_conf(mut self, archive_conf: ArchiveConfiguration) -> Self {
+        self.archive_conf = Some(archive_conf);
+        self
     }
 
     pub(crate) fn committee(mut self, committee: CommitteeTemplate) -> Self {
@@ -72,6 +82,10 @@ impl VitControllerBuilder {
         self.controller_builder = self.controller_builder.vote_plan_templates(vote_plans);
         self
     }
+    pub fn explorer(mut self, explorer: ExplorerTemplate) -> Self {
+        self.controller_builder = self.controller_builder.explorer(Some(explorer));
+        self
+    }
 
     pub fn build(
         self,
@@ -82,8 +96,9 @@ impl VitControllerBuilder {
             .committees(self.committees)
             .session_settings(session_settings.clone())
             .build()?;
+
         Ok(VitController::new(
-            VitSettings::new(&mut session_settings),
+            VitSettings::new(&mut session_settings, self.archive_conf),
             controller,
         ))
     }
@@ -95,6 +110,8 @@ pub enum Error {
     Controller(#[from] ControllerError),
     #[error("cannot bootstrap vit station server. health checkpoint is rejecting request")]
     CannotBootstrap,
+    #[error("cannot bootstrap explorer. health checkpoint is rejecting request")]
+    CannotBootstrapExplorer,
     #[error("cannot get wallet with alias {alias}, either does not exist or controller does not have any control over it")]
     CannotGetWallet { alias: String },
 }
@@ -169,6 +186,42 @@ impl VitController {
         self.hersir_controller.working_directory()
     }
 
+    pub fn spawn_vit_station_archive(&self, version: String) -> Result<VitStationController> {
+        let settings = self
+            .vit_settings
+            .vit_stations
+            .get(VIT_STATION_ARCHIVE)
+            .ok_or(VitStationControllerError::NoVitStationArchiverDefinedInSettings)?;
+
+        let mut command_builder =
+            BootstrapCommandBuilder::new(PathBuf::from("vit-servicing-station-server"));
+
+        let mut command = command_builder
+            .db_url(&settings.db_url)
+            .block0_paths(
+                settings
+                    .block0_paths
+                    .clone()
+                    .map(|p| p.to_str().unwrap().to_string()),
+            )
+            .service_version(version)
+            .build();
+
+        println!("Starting vit-servicing-station-archiver: {:?}", command);
+
+        let controller = VitStationController {
+            alias: VIT_STATION_ARCHIVE.to_string(),
+            rest_client: RestClient::from(settings),
+            process: command.spawn().unwrap(),
+            settings: settings.clone(),
+            status: Arc::new(Mutex::new(Status::Running)),
+        };
+
+        wait_for_bootstrap(&controller)?;
+
+        Ok(controller)
+    }
+
     //TODO: move to vit station builder
     pub fn spawn_vit_station(
         &self,
@@ -176,16 +229,15 @@ impl VitController {
         template_generator: &mut dyn ValidVotingTemplateGenerator,
         version: String,
     ) -> Result<VitStationController> {
-        let (alias, settings) = self
+        let settings = self
             .vit_settings
             .vit_stations
-            .iter()
-            .next()
+            .get(VIT_STATION)
             .ok_or(VitStationControllerError::NoVitStationDefinedInSettings)?;
 
         let working_directory = self.hersir_controller.working_directory().path();
 
-        let dir = working_directory.join(alias);
+        let dir = working_directory.join(VIT_STATION);
         std::fs::DirBuilder::new().recursive(true).create(&dir)?;
 
         let config_file = dir.join(VIT_CONFIG);
@@ -213,7 +265,7 @@ impl VitController {
         println!("Starting vit-servicing-station: {:?}", command);
 
         let controller = VitStationController {
-            alias: alias.into(),
+            alias: VIT_STATION.to_string(),
             rest_client: RestClient::from(settings),
             process: command.spawn().unwrap(),
             settings: settings.clone(),
@@ -223,6 +275,15 @@ impl VitController {
         wait_for_bootstrap(&controller)?;
 
         Ok(controller)
+    }
+
+    pub fn spawn_explorer(&mut self) -> Result<ExplorerController> {
+        let explorer = self.hersir_controller.spawn_explorer()?;
+        if !explorer.wait_to_be_up(1, 3) {
+            Err(Error::CannotBootstrapExplorer)?
+        } else {
+            Ok(ExplorerController::new("explorer".to_string(), explorer))
+        }
     }
 
     //TODO: move to wallet builder

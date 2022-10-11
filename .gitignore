@@ -11,3 +11,7 @@ Cargo.lock
 # Development Environments
 .vscode
 **/.idea/
+
+# Things created by nix
+.pre-commit-config.yaml
+result

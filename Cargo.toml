@@ -53,6 +53,9 @@ members = [
   "src/vit-testing/signals-handler"
 ]
 
+[workspace.dependencies]
+proptest = { git = "https://github.com/input-output-hk/proptest.git" }
+
 [patch.crates-io]
 cryptoxide = { git = "https://github.com/typed-io/cryptoxide.git" }
 

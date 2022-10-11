@@ -21,7 +21,7 @@ chain-addr           = { path = "../../chain-libs/chain-addr", features = [ "pro
 chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain", features = [ "property-test-api" ] }
 chain-time           = { path = "../../chain-libs/chain-time" }
 chain-vote           = { path = "../../chain-libs/chain-vote" }
-proptest = { git = "https://github.com/input-output-hk/proptest.git" }
+proptest = { workspace = true }
 jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
 jormungandr-automation = { path = "../../jormungandr/testing/jormungandr-automation" }
 thor = { path = "../../jormungandr/testing/thor" }

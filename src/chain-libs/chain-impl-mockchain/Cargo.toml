@@ -22,7 +22,7 @@ strum_macros = "0.23.1"
 hex = { version = "0.4.2", default-features = false, features = [ "std" ] }
 quickcheck = { version = "0.9", optional = true }
 quickcheck_macros = { version = "0.9", optional = true }
-proptest = { git = "https://github.com/input-output-hk/proptest.git", optional = true }
+proptest = { workspace = true, optional = true }
 test-strategy = { version = "0.1", optional = true }
 ed25519-bip32 = { version = "0.4.1", optional = true }
 thiserror = "1.0"
@@ -53,7 +53,7 @@ evm = ["chain-evm", "proptest/evm"]
 [dev-dependencies]
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
-proptest = { git = "https://github.com/input-output-hk/proptest.git" }
+proptest = { workspace = true }
 test-strategy = "0.1"
 chain-core = { path = "../chain-core"}
 chain-crypto = { path = "../chain-crypto", features=["property-test-api"]}

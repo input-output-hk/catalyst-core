@@ -227,12 +227,12 @@ pub fn explorer_vote_plan_public_flow_test() {
             &mut voters[0],
             &vote_plan,
             VOTE_FOR_ANTONIO,
-            &no_choice,
+            &yes_choice,
             &jormungandr,
         )
         .unwrap();
 
-    vote_for_antonio.push((chainWallet::from(voters[0].clone()), no_choice));
+    vote_for_antonio.push((chainWallet::from(voters[0].clone()), yes_choice));
 
     transaction_sender
         .send_vote_cast(

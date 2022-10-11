@@ -247,7 +247,7 @@
                 tcpdump
                 tmux
                 tree
-                utillinux
+                util-linux
                 vim
                 yq
               ]);

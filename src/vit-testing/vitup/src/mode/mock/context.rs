@@ -17,6 +17,8 @@ pub struct Context {
 }
 
 impl Context {
+
+
     pub fn new(config: Configuration, params: Option<Config>) -> Result<Self, Error> {
         Ok(Self {
             address: if config.local {
@@ -47,7 +49,7 @@ impl Context {
     }
 
     pub fn reset(&mut self, params: Config) -> Result<(), Error> {
-        self.state = MockState::new(params, self.config.clone())?;
+        *self = Self::new(self.config.clone(),Some(params))?;
         Ok(())
     }
 

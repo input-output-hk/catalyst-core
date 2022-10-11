@@ -39,7 +39,7 @@ pub struct ExplorerConfiguration {
 }
 
 impl ExplorerConfiguration {
-    pub(crate) fn explorer_listen_http_address(&self) -> String {
+    pub fn explorer_listen_http_address(&self) -> String {
         format!(
             "http://{}:{}/",
             &self.explorer_listen_address, &self.explorer_port

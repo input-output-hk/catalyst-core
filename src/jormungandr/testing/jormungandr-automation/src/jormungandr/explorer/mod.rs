@@ -28,6 +28,7 @@ use data::PoolId;
 use jortestkit::{file, process::Wait};
 use serde::Serialize;
 use std::path::{Path, PathBuf};
+use std::process::Output;
 use thiserror::Error;
 pub use wrappers::LastBlockResponse;
 
@@ -102,8 +103,6 @@ impl ExplorerProcess {
             ]);
         }
 
-        println!("starting explorer: {:?}", explorer_cmd);
-
         let process = ExplorerProcess {
             handler: Some(
                 explorer_cmd
@@ -150,13 +149,17 @@ impl ExplorerProcess {
         &mut self.client
     }
 
+    pub fn is_up(&self) -> bool {
+        reqwest::blocking::Client::new()
+            .head(self.configuration.explorer_listen_http_address())
+            .send()
+            .is_ok()
+    }
+
     pub fn wait_to_be_up(&self, seconds_wait: u64, attempts: u64) -> bool {
         let mut wait = Wait::new(Duration::from_secs(seconds_wait), attempts);
         while !wait.timeout_reached() {
-            if reqwest::blocking::Client::new()
-                .head(self.configuration.explorer_listen_http_address())
-                .send()
-                .is_ok()
+            if self.is_up()
             {
                 break;
             };
@@ -170,6 +173,19 @@ impl ExplorerProcess {
         } else {
             println!("Explorer is up");
             true
+        }
+    }
+
+    pub fn configuration(&self) -> &ExplorerConfiguration {
+        &self.configuration
+    }
+
+    pub fn shutdown(mut self) -> Option<Output> {
+        if let Some(mut handler) = self.handler.take() {
+            let _ = handler.kill();
+            Some(handler.wait_with_output().unwrap())
+        } else {
+            None
         }
     }
 }

@@ -19,7 +19,7 @@ pub fn compute_public_tally(
     let mut results = vec![0u64; proposal.options.choice_range().end as usize];
 
     for (address, vote) in proposal.votes.iter() {
-        if let Some(account_id) = address.to_address_account() {
+        if let Some(account_id) = address.to_identifier() {
             if let Some(stake) = stake.by(&account_id) {
                 match vote.as_ref() {
                     ExplorerVote::Public(choice) => {

@@ -132,9 +132,8 @@
             (pkgPath: let
               inherit pkgPath;
               pkgCargo = readTOML ./${pkgPath}/Cargo.toml;
-              pkgName = pkgCargo.package.name;
             in {
-              name = pkgName;
+              name = pkgCargo.package.name;
               value = mkPackage {inherit pkgPath pkgCargo;};
             })
             workspaceCargo.workspace.members
@@ -147,9 +146,8 @@
             (pkgPath: let
               inherit pkgPath;
               pkgCargo = readTOML ./${pkgPath}/Cargo.toml;
-              pkgName = "nightly-${pkgCargo.package.name}";
             in {
-              name = "nightly-${pkgName}";
+              name = "nightly-${pkgCargo.package.name}";
               value = mkPackage {
                 inherit pkgPath pkgCargo;
                 naersk-lib = naersk-lib-nighlty;

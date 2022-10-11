@@ -8,8 +8,8 @@ crate-type = [ "cdylib" ]
 name = "uniffi_jormungandr_wallet"
 
 [dependencies]
-uniffi = "0.16.0"
-uniffi_macros = "0.16.0"
+uniffi = "0.20"
+uniffi_macros = "0.20"
 wallet-core = { path = "../wallet-core" }
 wallet = {path = "../../wallet"}
 symmetric-cipher = {path = "../../symmetric-cipher"}

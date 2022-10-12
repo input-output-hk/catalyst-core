@@ -294,6 +294,9 @@
               openssl
               protobuf
               uniffi-bindgen
+              postgresql
+              diesel-cli
+              cargo-insta # snapshot testing lib
             ]);
           shellHook =
             pre-commit.shellHook

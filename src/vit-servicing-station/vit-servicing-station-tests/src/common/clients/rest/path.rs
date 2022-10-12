@@ -41,6 +41,10 @@ impl RestPathBuilder {
         self.path(&format!("snapshot/snapshot_info/{}", tag))
     }
 
+    pub fn raw_snapshot(&self, tag: &str) -> String {
+        self.path(&format!("snapshot/raw_snapshot/{}", tag))
+    }
+
     pub fn snapshot_tags(&self) -> String {
         self.path("snapshot")
     }

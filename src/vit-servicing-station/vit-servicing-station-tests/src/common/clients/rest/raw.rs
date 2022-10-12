@@ -50,6 +50,14 @@ impl RestClient {
         .map_err(Error::RequestError)
     }
 
+    pub fn put_raw_snapshot(&self, tag: &str, content: String) -> Result<Response, Error> {
+        self.put(
+            &self.path_builder.clone().admin().raw_snapshot(tag),
+            content,
+        )
+        .map_err(Error::RequestError)
+    }
+
     pub fn snapshot_tags(&self) -> Result<Response, Error> {
         self.get(&self.path_builder.snapshot_tags())
             .map_err(Error::RequestError)

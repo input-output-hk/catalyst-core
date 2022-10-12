@@ -31,8 +31,3 @@ name = "shvzk"
 default = ["ristretto255"]
 ristretto255 = []
 p256k1 = ["chain-crypto/p256k1"]
-
-[profile.bench]
-# Embed debuginfo into benchmarks for profiling. All other settings remain the
-# same and are similar to the `release` profile.
-debug = true

@@ -59,8 +59,3 @@ proptest = { git = "https://github.com/input-output-hk/proptest.git" }
 
 [patch.crates-io]
 cryptoxide = { git = "https://github.com/typed-io/cryptoxide.git" }
-
-[profile.bench]
-# Embed debuginfo into benchmarks for profiling. All other settings remain the
-# same and are similar to the `release` profile.
-debug = true

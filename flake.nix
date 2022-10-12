@@ -96,15 +96,25 @@
           cargoOptions =
             [
               "--package"
-              "file://$PWD/\"${pkgPath}\""
+              "${name}"
             ]
             ++ (pkgs.lib.optionals (name == "jormungandr") [
               "--features"
               "prometheus-metrics"
             ]);
+          nativeBuildInputs = with pkgs;
+            [
+              pkg-config
+              protobuf
+              rustfmt
+            ]
+            ++ (pkgs.lib.optionals (name == "voting_tools_rs") [
+              postgresql
+            ]);
         in
           naersk-lib.buildPackage {
             inherit (pkgCargo.package) name version;
+            inherit nativeBuildInputs;
 
             root = self;
 
@@ -113,12 +123,6 @@
 
             PROTOC = "${pkgs.protobuf}/bin/protoc";
             PROTOC_INCLUDE = "${pkgs.protobuf}/include";
-
-            nativeBuildInputs = with pkgs; [
-              pkg-config
-              protobuf
-              rustfmt
-            ];
 
             buildInputs = with pkgs; [
               openssl

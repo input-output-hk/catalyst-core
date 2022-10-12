@@ -37,13 +37,6 @@ bech32 = "0.7.2"
 # code size when deploying.
 console_error_panic_hook = {version = "0.1.1", optional = true}
 
-# `wee_alloc` is a tiny allocator for wasm that is only ~1K in code size
-# compared to the default allocator's ~10K. It is slower than the default
-# allocator, however.
-#
-# Unfortunately, `wee_alloc` requires nightly Rust when targeting wasm for now.
-wee_alloc = {version = "0.4.2", optional = true}
-
 # clear_on_drop is a dependency of ed25519_dalek
 # The default can't be compiled to wasm, so it's necessary to enable either the 'nightly'
 # feature or this one.
@@ -56,3 +49,7 @@ hex = "0.4.2"
 # See https://github.com/rustwasm/wasm-pack/issues/886
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = ["-O4", "--enable-mutable-globals"]
+
+[profile.release]
+lto = "yes"
+strip = "symbols"

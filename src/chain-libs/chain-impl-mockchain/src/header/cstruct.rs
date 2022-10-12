@@ -242,7 +242,7 @@ impl Header {
     }
 }
 
-#[derive(Debug, Clone, thiserror::Error, PartialEq)]
+#[derive(Debug, Clone, thiserror::Error, PartialEq, Eq)]
 pub enum HeaderError {
     #[error("invalid payload size for block header")]
     InvalidSize,

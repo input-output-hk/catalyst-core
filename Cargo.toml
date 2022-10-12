@@ -1,0 +1,60 @@
+[workspace]
+members = [
+  "src/catalyst-toolbox/catalyst-toolbox",
+  "src/catalyst-toolbox/snapshot-lib",
+  "src/chain-libs/imhamt",
+  "src/chain-libs/chain-ser",
+  "src/chain-libs/chain-core",
+  "src/chain-libs/chain-vote",
+  "src/chain-libs/chain-addr",
+  "src/chain-libs/chain-time",
+  "src/chain-libs/chain-crypto",
+  "src/chain-libs/chain-network",
+  "src/chain-libs/chain-storage",
+  "src/chain-libs/chain-impl-mockchain",
+  "src/chain-libs/chain-evm",
+  "src/chain-libs/cardano-legacy-address",
+  "src/chain-libs/sparse-array",
+  "src/chain-libs/typed-bytes",
+  "src/chain-wallet-libs/bip39",
+  "src/chain-wallet-libs/chain-path-derivation",
+  "src/chain-wallet-libs/hdkeygen",
+  "src/chain-wallet-libs/wallet",
+  "src/chain-wallet-libs/symmetric-cipher",
+  "src/chain-wallet-libs/bindings/wallet-c",
+  "src/chain-wallet-libs/bindings/wallet-js",
+  "src/chain-wallet-libs/bindings/wallet-uniffi",
+  "src/jormungandr/jormungandr-lib",
+  "src/jormungandr/jormungandr",
+  "src/jormungandr/jcli",
+  "src/jormungandr/explorer",
+  "src/jormungandr/modules/settings",
+  "src/jormungandr/modules/blockchain",
+  "src/jormungandr/testing/jormungandr-automation",
+  "src/jormungandr/testing/jormungandr-integration-tests",
+  "src/jormungandr/testing/loki",
+  "src/jormungandr/testing/mjolnir",
+  "src/jormungandr/testing/hersir",
+  "src/jormungandr/testing/thor",
+  "src/vit-servicing-station/vit-servicing-station-cli",
+  "src/vit-servicing-station/vit-servicing-station-lib",
+  "src/vit-servicing-station/vit-servicing-station-server",
+  "src/vit-servicing-station/vit-servicing-station-tests",
+  "src/vit-testing/iapyx",
+  "src/vit-testing/vitup",
+  "src/vit-testing/valgrind",
+  "src/vit-testing/integration-tests",
+  "src/vit-testing/mainnet-tools",
+  "src/vit-testing/registration-service",
+  "src/vit-testing/registration-verify-service",
+  "src/vit-testing/snapshot-trigger-service",
+  "src/vit-testing/signals-handler"
+]
+
+[patch.crates-io]
+cryptoxide = { git = "https://github.com/typed-io/cryptoxide.git" }
+
+[profile.bench]
+# Embed debuginfo into benchmarks for profiling. All other settings remain the
+# same and are similar to the `release` profile.
+debug = true

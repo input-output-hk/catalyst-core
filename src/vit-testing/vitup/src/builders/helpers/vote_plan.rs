@@ -1,11 +1,13 @@
 use crate::config::{Role, VoteBlockchainTime};
-use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
-use chain_impl_mockchain::testing::scenario::template::{ProposalDefBuilder, VotePlanDefBuilder};
+use chain_impl_mockchain::certificate::{Proposal, Proposals, PushProposal};
+use chain_impl_mockchain::testing::scenario::template::ProposalDefBuilder;
 use chain_impl_mockchain::testing::TestGen;
-use chain_impl_mockchain::vote::PayloadType;
+use hersir::builder::VotePlanKey;
+use hersir::config::{CommitteeTemplate, PrivateParameters, VotePlanTemplate};
 pub use jormungandr_lib::interfaces::Initial;
-use jormungandr_lib::interfaces::TokenIdentifier;
+use jormungandr_lib::interfaces::{BlockDate, TokenIdentifier};
 use std::iter;
+
 use thor::WalletAlias;
 
 pub struct VitVotePlanDefBuilder {
@@ -80,7 +82,7 @@ impl VitVotePlanDefBuilder {
         self
     }
 
-    pub fn build(self) -> Vec<VotePlanDef> {
+    pub fn build(self) -> Vec<VotePlanTemplate> {
         iter::from_fn(|| {
             Some(
                 ProposalDefBuilder::new(
@@ -109,25 +111,36 @@ impl VitVotePlanDefBuilder {
                 .iter()
                 .zip(std::iter::repeat(vote_plan_name))
                 .map(|((role, voting_token), vote_plan_name)| {
-                    let vote_plan_name = format!("{vote_plan_name}-{role}");
-                    let mut vote_plan_builder = VotePlanDefBuilder::new(&vote_plan_name);
+                    let vote_plan_key = VotePlanKey {
+                        alias: format!("{vote_plan_name}-{role}"),
+                        owner_alias: self.committee_wallet.to_string(),
+                    };
 
-                    vote_plan_builder
-                        .voting_token(voting_token.clone().into())
-                        .owner(&self.committee_wallet)
-                        .vote_phases(
-                            self.vote_phases.vote_start,
-                            self.vote_phases.tally_start,
-                            self.vote_phases.tally_end,
-                        );
-
-                    if self.private {
-                        vote_plan_builder.payload_type(PayloadType::Private);
+                    VotePlanTemplate {
+                        committees: vec![CommitteeTemplate::Generated {
+                            alias: self.committee_wallet.to_string(),
+                            member_pk: None,
+                            communication_pk: None,
+                        }],
+                        vote_start: BlockDate::new(self.vote_phases.vote_start, 0),
+                        vote_end: BlockDate::new(self.vote_phases.tally_start, 0),
+                        committee_end: BlockDate::new(self.vote_phases.tally_end, 0),
+                        proposals: proposal_builders
+                            .into_iter()
+                            .map(|pb| pb.clone().build())
+                            .fold(Proposals::new(), |mut acc, p| {
+                                let proposal: Proposal = p.into();
+                                assert_eq!(acc.push(proposal), PushProposal::Success);
+                                acc
+                            }),
+                        committee_member_public_keys: vec![],
+                        voting_token: voting_token.clone().into(),
+                        vote_plan_key,
+                        private: self.private.then_some(PrivateParameters {
+                            crs: None,
+                            threshold: None,
+                        }),
                     }
-                    proposal_builders.to_vec().iter_mut().for_each(|proposal| {
-                        vote_plan_builder.with_proposal(proposal);
-                    });
-                    vote_plan_builder.build()
                 })
         })
         .collect()

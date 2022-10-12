@@ -1,5 +1,5 @@
+#![allow(dead_code)]
 use super::NodeAlias;
-use crate::builder::VotePlanKey;
 use chain_addr::Discrimination;
 pub use chain_impl_mockchain::chaintypes::ConsensusVersion;
 use chain_impl_mockchain::{fee::LinearFee, milli::Milli};
@@ -7,12 +7,11 @@ use jormungandr_lib::{
     interfaces::{
         ActiveSlotCoefficient, BlockContentMaxSize, CommitteeIdDef, ConsensusLeaderId,
         ConsensusVersionDef, DiscriminationDef, KesUpdateSpeed, LinearFeeDef,
-        NumberOfSlotsPerEpoch, SlotDuration, VotePlan,
+        NumberOfSlotsPerEpoch, SlotDuration,
     },
     time::SecondsSinceUnixEpoch,
 };
 use serde::Deserialize;
-use std::collections::HashMap;
 
 #[derive(Clone, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
@@ -43,8 +42,6 @@ pub struct Blockchain {
     slots_per_epoch: NumberOfSlotsPerEpoch,
     #[serde(default)]
     tx_max_expiry_epochs: Option<u8>,
-    #[serde(default)]
-    vote_plans: HashMap<VotePlanKey, VotePlan>,
 }
 
 impl Blockchain {
@@ -182,21 +179,6 @@ impl Blockchain {
         self.tx_max_expiry_epochs = tx_max_expiry_epochs;
         self
     }
-
-    pub fn vote_plans(&self) -> HashMap<VotePlanKey, VotePlan> {
-        self.vote_plans.clone()
-    }
-
-    pub fn with_vote_plan(
-        mut self,
-        alias: String,
-        owner_alias: String,
-        vote_plan_template: VotePlan,
-    ) -> Self {
-        self.vote_plans
-            .insert(VotePlanKey { alias, owner_alias }, vote_plan_template);
-        self
-    }
 }
 
 impl Default for Blockchain {
@@ -218,7 +200,6 @@ impl Default for Blockchain {
             slot_duration: SlotDuration::new(2).unwrap(),
             slots_per_epoch: NumberOfSlotsPerEpoch::new(60).unwrap(),
             tx_max_expiry_epochs: None,
-            vote_plans: HashMap::new(),
         }
     }
 }
@@ -313,18 +294,6 @@ impl BlockchainBuilder {
         self.blockchain = self
             .blockchain
             .with_tx_max_expiry_epochs(tx_max_expiry_epochs);
-        self
-    }
-
-    pub fn vote_plan(
-        mut self,
-        alias: String,
-        owner_alias: String,
-        vote_plan_template: VotePlan,
-    ) -> Self {
-        self.blockchain = self
-            .blockchain
-            .with_vote_plan(alias, owner_alias, vote_plan_template);
         self
     }
 

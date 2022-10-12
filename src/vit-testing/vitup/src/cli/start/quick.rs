@@ -214,7 +214,7 @@ impl QuickStartCommandArgs {
             .version(self.version)
             .build();
 
-        print_intro(&session_settings, "VOTING BACKEND");
+        print_intro(&session_settings, "CATALYST BACKEND");
 
         let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
 

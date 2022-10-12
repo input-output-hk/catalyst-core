@@ -63,6 +63,6 @@ pub unsafe fn fragment_id(fragment_ptr: FragmentPtr, id_out: *mut u8) -> Result 
 ///
 pub unsafe fn fragment_delete(fragment_ptr: FragmentPtr) {
     if !fragment_ptr.is_null() {
-        let _ = Box::from_raw(fragment_ptr as FragmentPtr);
+        let _dealloc = Box::from_raw(fragment_ptr as FragmentPtr);
     }
 }

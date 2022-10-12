@@ -1,4 +1,5 @@
 #![warn(clippy::all)]
+#![allow(clippy::derive_partial_eq_without_eq)]
 
 pub mod core;
 pub mod data;

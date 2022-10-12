@@ -4,6 +4,7 @@ pub mod utils;
 
 pub use crate::builders::helpers::{build_current_fund, build_servicing_station_parameters};
 use crate::builders::utils::DeploymentTree;
+use crate::config;
 use crate::config::{Config, Role};
 use crate::mode::standard::{VitController, VitControllerBuilder};
 use assert_fs::fixture::ChildPath;
@@ -12,6 +13,7 @@ use chain_impl_mockchain::testing::TestGen;
 use chain_impl_mockchain::tokens::identifier::TokenIdentifier;
 use chain_impl_mockchain::tokens::minting_policy::MintingPolicy;
 use chain_impl_mockchain::value::Value;
+use config::Block0Initial::Wallet;
 pub use helpers::{
     convert_to_blockchain_date, convert_to_human_date, generate_qr_and_hashes,
     VitVotePlanDefBuilder, WalletExtension,
@@ -140,7 +142,7 @@ impl VitBackendSettingsBuilder {
             .map_err(Into::into)
     }
 
-    pub fn build(self) -> Result<(VitController, ValidVotePlanParameters), Error> {
+    pub fn build(mut self) -> Result<(VitController, ValidVotePlanParameters), Error> {
         let mut builder = VitControllerBuilder::new();
 
         let vote_blockchain_time = convert_to_blockchain_date(&self.config);
@@ -221,6 +223,14 @@ impl VitBackendSettingsBuilder {
         self.write_token(root.join("voting_token.txt"), &token_list)?;
 
         println!("building initials..");
+
+        self.config.initials.block0.push(Wallet {
+            name: self.committee_wallet.clone(),
+            funds: 1_000_000,
+            pin: "".to_string(),
+            role: Default::default(),
+        });
+
         let mut generated_wallet_templates = HashMap::new();
 
         if self.config.initials.block0.any() {
@@ -239,46 +249,43 @@ impl VitBackendSettingsBuilder {
         }
         println!("building direct voteplan..");
 
-        for vote_plan_def in VitVotePlanDefBuilder::default()
-            .vote_phases(vote_blockchain_time)
-            .options(
-                self.config
-                    .data
-                    .current_fund
-                    .options
-                    .0
-                    .len()
-                    .try_into()
-                    .map_err(|_| Error::TooManyOptions)?,
-            )
-            .split_by(255)
-            .fund_name(
-                self.config
-                    .data
-                    .current_fund
-                    .fund_info
-                    .fund_name
-                    .to_string(),
-            )
-            .committee(self.committee_wallet.clone())
-            .private(self.config.vote_plan.private)
-            .proposals_count(self.config.data.current_fund.proposals as usize)
-            .voting_tokens(
-                token_list
-                    .iter()
-                    .cloned()
-                    .map(|(a, b)| (a, b.into()))
-                    .collect(),
-            )
-            .build()
-            .into_iter()
-        {
-            blockchain = blockchain.with_vote_plan(
-                vote_plan_def.alias(),
-                vote_plan_def.owner(),
-                chain_impl_mockchain::certificate::VotePlan::from(vote_plan_def).into(),
-            );
-        }
+        builder = builder.vote_plans(
+            VitVotePlanDefBuilder::default()
+                .vote_phases(vote_blockchain_time)
+                .options(
+                    self.config
+                        .data
+                        .current_fund
+                        .options
+                        .0
+                        .len()
+                        .try_into()
+                        .map_err(|_| Error::TooManyOptions)?,
+                )
+                .split_by(255)
+                .fund_name(
+                    self.config
+                        .data
+                        .current_fund
+                        .fund_info
+                        .fund_name
+                        .to_string(),
+                )
+                .committee(self.committee_wallet.clone())
+                .private(self.config.vote_plan.private)
+                .proposals_count(self.config.data.current_fund.proposals as usize)
+                .voting_tokens(
+                    token_list
+                        .iter()
+                        .cloned()
+                        .map(|(a, b)| (a, b.into()))
+                        .collect(),
+                )
+                .build()
+                .into_iter()
+                .map(Into::into)
+                .collect(),
+        );
 
         builder = builder.blockchain(blockchain);
         println!("building controllers..");

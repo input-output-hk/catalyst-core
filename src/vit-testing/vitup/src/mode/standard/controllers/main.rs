@@ -11,7 +11,9 @@ use crate::Result;
 use assert_fs::fixture::PathChild;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use hersir::builder::ControllerError;
-use hersir::config::{Blockchain, CommitteeTemplate, SpawnParams, WalletTemplate};
+use hersir::config::{
+    Blockchain, CommitteeTemplate, SpawnParams, VotePlanTemplate, WalletTemplate,
+};
 use hersir::{
     builder::{
         NetworkBuilder, NodeAlias, NodeSetting, Settings, Topology, Wallet as WalletSettings,
@@ -63,6 +65,11 @@ impl VitControllerBuilder {
 
     pub fn wallet(mut self, wallet_template: WalletTemplate) -> Self {
         self.controller_builder = self.controller_builder.wallet_template(wallet_template);
+        self
+    }
+
+    pub fn vote_plans(mut self, vote_plans: Vec<VotePlanTemplate>) -> Self {
+        self.controller_builder = self.controller_builder.vote_plan_templates(vote_plans);
         self
     }
 

@@ -3,9 +3,8 @@ mod committee;
 mod spawn_params;
 mod vote_plan;
 mod wallet;
-
 pub use crate::config::{
-    blockchain::{Blockchain, BlockchainBuilder},
+    blockchain::Blockchain,
     committee::CommitteeTemplate,
     spawn_params::SpawnParams,
     wallet::{WalletTemplate, WalletTemplateBuilder},
@@ -19,7 +18,7 @@ use jormungandr_automation::jormungandr::{
 };
 use serde::Deserialize;
 use std::{collections::HashSet, path::PathBuf, str::FromStr};
-pub use vote_plan::VotePlanTemplate;
+pub use vote_plan::{PrivateParameters, VotePlanTemplate};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Config {

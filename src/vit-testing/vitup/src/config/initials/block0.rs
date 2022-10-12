@@ -98,6 +98,10 @@ impl Initials {
         }
     }
 
+    pub fn push(&mut self, initial: Initial) {
+        self.0.push(initial);
+    }
+
     pub fn any(&self) -> bool {
         !self.0.is_empty()
     }
@@ -288,9 +292,8 @@ impl Initials {
                     pin,
                     role,
                 } => {
-                    let wallet_alias = format!("wallet_{}", name);
                     templates.insert(
-                        WalletTemplateBuilder::new(&wallet_alias)
+                        WalletTemplateBuilder::new(name)
                             .with(*funds as u64)
                             .discrimination(discrimination)
                             .with_token(roles(role), (*funds) as u64)

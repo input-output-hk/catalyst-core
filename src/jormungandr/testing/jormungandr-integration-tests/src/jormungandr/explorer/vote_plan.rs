@@ -31,6 +31,8 @@ use thor::{
 
 const INITIAL_FUND_PER_WALLET_1: u64 = 1_000_000;
 const INITIAL_FUND_PER_WALLET_2: u64 = 2_000_000;
+const INITIAL_TOKEN_PER_WALLET_1: u64 = 1_000_000;
+const INITIAL_TOKEN_PER_WALLET_2: u64 = 2_000_000;
 const INITIAL_TREASURY: u64 = 1000;
 const REWARD_INCREASE: u64 = 10;
 const SLOTS_PER_EPOCH: u32 = 20;
@@ -155,8 +157,8 @@ pub fn explorer_vote_plan_public_flow_test() {
             token_id: vote_plan.voting_token().clone().into(),
             policy: MintingPolicy::new().into(),
             to: vec![
-                voters[0].to_initial_token(INITIAL_FUND_PER_WALLET_1),
-                voters[1].to_initial_token(INITIAL_FUND_PER_WALLET_2),
+                voters[0].to_initial_token(INITIAL_TOKEN_PER_WALLET_1),
+                voters[1].to_initial_token(INITIAL_TOKEN_PER_WALLET_2),
             ],
         })
         .with_committees(&[voters[0].to_committee_id()])
@@ -757,8 +759,8 @@ pub fn explorer_all_vote_plans_public_flow_test() {
             token_id: vote_plans.first().unwrap().voting_token().clone().into(),
             policy: MintingPolicy::new().into(),
             to: vec![
-                voters[0].to_initial_token(INITIAL_FUND_PER_WALLET_1),
-                voters[1].to_initial_token(INITIAL_FUND_PER_WALLET_2),
+                voters[0].to_initial_token(INITIAL_TOKEN_PER_WALLET_1),
+                voters[1].to_initial_token(INITIAL_TOKEN_PER_WALLET_2),
             ],
         })
         .with_committees(&[voters[0].to_committee_id()])

@@ -1,7 +1,10 @@
 //! JavaScript and TypeScript bindings for the Jormungandr wallet SDK.
 
 pub use certificates::Certificate;
-pub use certificates::{vote_cast::VoteCast, vote_plan::VotePlanId};
+pub use certificates::{
+    vote_cast::{Payload, VoteCast},
+    vote_plan::VotePlanId,
+};
 use chain_core::packer::Codec;
 use chain_core::property::DeserializeFromSlice;
 use chain_impl_mockchain::block::Block;

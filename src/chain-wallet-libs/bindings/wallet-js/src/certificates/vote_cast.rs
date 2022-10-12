@@ -26,8 +26,7 @@ impl Payload {
         let mut rng = rand_chacha::ChaChaRng::from_entropy();
 
         let public_key = chain_vote::ElectionPublicKey::from_bytes(public_key)
-        .ok_or_else(|| JsValue::from_str("Cannot parse public key bytes"))?;
-        panic!("here");
+            .ok_or_else(|| JsValue::from_str("Cannot parse public key bytes"))?;
 
         let vote = chain_vote::Vote::new(options, choice as usize);
         let crs = chain_vote::Crs::from_hash(vote_plan.0.as_ref());

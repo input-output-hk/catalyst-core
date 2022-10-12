@@ -15,7 +15,3 @@ zeroize = "1.5.3"
 
 [dev-dependencies]
 rand_chacha = "0.3.0"
-
-[profile.release]
-lto = "yes"
-strip = "symbols"

@@ -5,6 +5,7 @@ pub mod db;
 pub mod load;
 pub mod logger;
 pub mod paths;
+pub mod raw_snapshot;
 pub mod server;
 pub mod snapshot;
 pub mod startup;

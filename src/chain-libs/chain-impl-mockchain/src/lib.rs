@@ -1,4 +1,5 @@
 #![warn(clippy::all)]
+#![allow(clippy::derive_partial_eq_without_eq)]
 
 #[cfg(any(test, feature = "property-test-api"))]
 #[macro_use]

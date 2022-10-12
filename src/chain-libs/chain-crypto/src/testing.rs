@@ -150,7 +150,7 @@ impl<H: digest::DigestAlg + 'static> Arbitrary for digest::Digest<H> {
     }
 }
 
-impl<H: digest::DigestAlg + 'static, T: 'static> Arbitrary for digest::DigestOf<H, T> {
+impl<H: digest::DigestAlg + 'static, T: 'static + Send> Arbitrary for digest::DigestOf<H, T> {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
         let bytes: Vec<_> = std::iter::repeat_with(|| u8::arbitrary(g))
             .take(26) // actual number doesn't really matter

@@ -21,7 +21,7 @@ use wallet_core::Options;
 use wallet_core::Settings as InnerSettings;
 use wallet_core::Wallet as InnerWallet;
 
-uniffi_macros::include_scaffolding!("lib");
+include!(concat!(env!("OUT_DIR"), "/lib.uniffi.rs"));
 
 #[derive(Debug, thiserror::Error)]
 pub enum WalletError {

@@ -47,8 +47,11 @@
           overlays = [(import rust-overlay)];
         };
 
-        mkRust = {channel ? "stable"}: let
-          _rust = pkgs.rust-bin.${channel}."1.64.0".default.override {
+        mkRust = {
+          channel ? "stable",
+          version ? "latest",
+        }: let
+          _rust = pkgs.rust-bin.${channel}.${version}.default.override {
             extensions = [
               "rust-src"
               "rust-analysis"
@@ -74,7 +77,10 @@
             '';
           };
 
-        rust-stable = mkRust {channel = "stable";};
+        rust-stable = mkRust {
+          channel = "stable";
+          version = "1.64.0";
+        };
         rust-nightly = mkRust {channel = "nightly";};
 
         naersk-lib-stable = naersk.lib."${system}".override {

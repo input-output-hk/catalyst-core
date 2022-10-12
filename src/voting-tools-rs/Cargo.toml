@@ -45,9 +45,3 @@ default = ["all_tests"]
 all_tests = ["reference_tests", "db_sync_tests"]
 reference_tests = []  
 db_sync_tests = []  
-
-[profile.dev.package.insta]
-opt-level = 3
-
-[profile.dev.package.similar]
-opt-level = 3

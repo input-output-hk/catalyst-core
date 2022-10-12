@@ -50,7 +50,8 @@ members = [
   "src/vit-testing/registration-service",
   "src/vit-testing/registration-verify-service",
   "src/vit-testing/snapshot-trigger-service",
-  "src/vit-testing/signals-handler"
+  "src/vit-testing/signals-handler",
+  "src/voting-tools-rs"
 ]
 
 [workspace.dependencies]

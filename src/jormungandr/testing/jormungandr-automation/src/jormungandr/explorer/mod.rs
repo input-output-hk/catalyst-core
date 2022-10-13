@@ -13,6 +13,7 @@ use crate::testing::configuration::get_explorer_app;
 use graphql_client::{GraphQLQuery, *};
 use jormungandr_lib::{crypto::hash::Hash, interfaces::BlockDate};
 use std::{
+    fs::File,
     process::{Command, Stdio},
     str::FromStr,
     time::Duration,
@@ -105,20 +106,21 @@ impl ExplorerProcess {
             ]);
         }
 
-        let process = ExplorerProcess {
-            handler: Some(
-                explorer_cmd
-                    .stdout(Stdio::piped())
-                    .stderr(Stdio::piped())
-                    .spawn()
-                    .expect("failed to execute explorer process"),
-            ),
-            client: Explorer::new(format!(
-                "{}:{}",
-                configuration.explorer_listen_address, configuration.explorer_port
-            )),
-            configuration: configuration.clone(),
+        println!("starting explorer: {:?}", explorer_cmd);
+
+        let stdout_cfg = if let Some(logs_dir) = configuration.logs_dir.as_ref() {
+            Stdio::from(File::create(logs_dir.join("explorer.log")).expect("explorer stdout file"))
+        } else {
+            Stdio::piped()
         };
+
+        let handler = Some(
+            explorer_cmd
+                .stdout(stdout_cfg)
+                .stderr(stderr_cfg)
+                .spawn()
+                .expect("failed to execute explorer process"),
+        );
 
         let mut wait_bootstrap = Wait::new(Duration::from_secs(1), 10);
         while !wait_bootstrap.timeout_reached() {
@@ -135,7 +137,14 @@ impl ExplorerProcess {
         if wait_bootstrap.timeout_reached() {
             Err(ExplorerError::Bootstrap)
         } else {
-            Ok(process)
+            Ok(ExplorerProcess {
+                client: Explorer::new(format!(
+                    "{}:{}",
+                    configuration.explorer_listen_address, configuration.explorer_port
+                )),
+                handler,
+                configuration,
+            })
         }
     }
 
@@ -193,23 +202,9 @@ impl ExplorerProcess {
 
 impl Drop for ExplorerProcess {
     fn drop(&mut self) {
-        let output = if let Some(mut handler) = self.handler.take() {
+        if let Some(mut handler) = self.handler.take() {
             let _ = handler.kill();
-            handler.wait_with_output().unwrap()
-        } else {
-            return;
-        };
-
-        if std::thread::panicking() {
-            if let Some(logs_dir) = &self.configuration.logs_dir {
-                println!(
-                    "persisting explorer logs after panic: {}",
-                    logs_dir.display()
-                );
-
-                std::fs::write(logs_dir.join("explorer.log"), output.stdout)
-                    .unwrap_or_else(|e| eprint!("Could not write explorer logs to disk: {}", e));
-            }
+            handler.wait().unwrap();
         }
     }
 }

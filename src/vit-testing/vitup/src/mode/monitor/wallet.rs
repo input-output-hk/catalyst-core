@@ -3,6 +3,7 @@ use crate::Result;
 use hersir::controller::ProgressBarController;
 use hersir::style;
 use jormungandr_automation::jormungandr::{NodeAlias, Status};
+use valgrind::ValgrindClient;
 
 pub struct WalletProxyMonitorController {
     controller: WalletProxyController,
@@ -42,6 +43,10 @@ impl WalletProxyMonitorController {
         &self.progress_bar
     }
 
+    pub fn client(&self) -> ValgrindClient {
+        self.controller.client()
+    }
+
     pub fn shutdown(&mut self) {
         self.controller.shutdown();
     }
@@ -52,13 +57,8 @@ impl WalletProxyMonitorController {
                 .template("{spinner:.green} {wide_msg}")
                 .tick_chars(style::TICKER),
         );
-        self.progress_bar.enable_steady_tick(100);
-        self.progress_bar.set_message(&format!(
-            "{} {} ... [{}] Wallet Proxy is up",
-            *style::icons::jormungandr,
-            style::binary.apply_to(self.alias()),
-            self.controller.address(),
-        ));
+        self.progress_bar.enable_steady_tick(1000);
+        self.progress_bar.log_info("proxy is up");
     }
 
     #[allow(dead_code)]

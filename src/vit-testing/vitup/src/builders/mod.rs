@@ -36,10 +36,10 @@ use std::str::FromStr;
 use thiserror::Error;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 
-pub const LEADER_1: &str = "Leader1";
-pub const LEADER_2: &str = "Leader2";
-pub const LEADER_3: &str = "Leader3";
-pub const WALLET_NODE: &str = "Wallet_Node";
+pub const LEADER_1: &str = "leader1";
+pub const LEADER_2: &str = "leader2";
+pub const LEADER_3: &str = "leader3";
+pub const FOLLOWER: &str = "follower";
 
 #[derive(Clone)]
 pub struct VitBackendSettingsBuilder {
@@ -92,7 +92,7 @@ impl VitBackendSettingsBuilder {
             .with_trusted_peer(LEADER_2);
 
         // passive
-        let passive = Node::new(WALLET_NODE)
+        let passive = Node::new(FOLLOWER)
             .with_trusted_peer(LEADER_1)
             .with_trusted_peer(LEADER_2)
             .with_trusted_peer(LEADER_3);

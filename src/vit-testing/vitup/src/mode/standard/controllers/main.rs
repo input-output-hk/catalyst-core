@@ -336,6 +336,8 @@ impl VitController {
             .arg("--block0")
             .arg(block0_file.as_path().to_str().unwrap());
 
+        println!("proxy: {:?}", command);
+
         if let valgrind::Protocol::Https(certs) = &params.protocol {
             command
                 .arg("--cert")

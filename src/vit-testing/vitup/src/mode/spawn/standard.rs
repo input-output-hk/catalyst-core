@@ -24,13 +24,11 @@ pub fn spawn_network(
     let _wallet_proxy =
         vit_controller.spawn_wallet_proxy_custom(&mut network_spawn_params.proxy_params())?;
 
-    let mut vit_stations = vec![];
-
-    vit_stations.push(vit_controller.spawn_vit_station(
+    let mut vit_stations = vec![vit_controller.spawn_vit_station(
         vit_parameters,
         template_generator,
         network_spawn_params.version(),
-    ));
+    )];
 
     if config.additional.archive.is_some() {
         vit_stations.push(vit_controller.spawn_vit_station_archive(network_spawn_params.version()));

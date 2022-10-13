@@ -27,8 +27,10 @@ use crate::jormungandr::explorer::configuration::ExplorerConfiguration;
 use data::PoolId;
 use jortestkit::{file, process::Wait};
 use serde::Serialize;
-use std::path::{Path, PathBuf};
-use std::process::Output;
+use std::{
+    path::{Path, PathBuf},
+    process::Output,
+};
 use thiserror::Error;
 pub use wrappers::LastBlockResponse;
 
@@ -159,8 +161,7 @@ impl ExplorerProcess {
     pub fn wait_to_be_up(&self, seconds_wait: u64, attempts: u64) -> bool {
         let mut wait = Wait::new(Duration::from_secs(seconds_wait), attempts);
         while !wait.timeout_reached() {
-            if self.is_up()
-            {
+            if self.is_up() {
                 break;
             };
             wait.advance();

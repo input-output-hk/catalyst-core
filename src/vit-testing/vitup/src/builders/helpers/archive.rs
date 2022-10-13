@@ -17,7 +17,7 @@ pub fn discover_archive_input_files(url: impl Into<String>) -> Result<ArchiveCon
                 .map_err(|()| DiscoverArchiveByFileError::IncorrectFolderUrl)?,
         )
         .map_err(Into::into),
-        _ => unimplemented!("only file scheme is supported for archive location"),
+        _ => Err(Error::NotImplemented),
     }
 }
 
@@ -48,7 +48,11 @@ fn find_archive_db(
                 return false;
             }
 
-            let extension = entry.path().extension().and_then(OsStr::to_str).unwrap();
+            let extension = entry
+                .path()
+                .extension()
+                .and_then(OsStr::to_str)
+                .unwrap_or("");
             possible_db_extensions.contains(&extension.to_string())
         })
         .map(|entry| entry.path().to_path_buf());
@@ -62,7 +66,11 @@ fn find_archive_db(
                 return false;
             }
 
-            let extension = entry.path().extension().and_then(OsStr::to_str).unwrap();
+            let extension = entry
+                .path()
+                .extension()
+                .and_then(OsStr::to_str)
+                .unwrap_or("");
             possible_block0_extensions.contains(&extension.to_string())
         })
         .map(|entry| entry.path().parent().unwrap().to_path_buf());
@@ -85,6 +93,8 @@ pub enum Error {
     DiscoverArchiveByFile(#[from] DiscoverArchiveByFileError),
     #[error("parse url error")]
     Url(#[from] url::ParseError),
+    #[error("only file scheme is supported for archive location")]
+    NotImplemented,
 }
 
 #[derive(thiserror::Error, Debug)]

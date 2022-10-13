@@ -44,7 +44,6 @@ impl ServerSettingsBuilder {
         self
     }
 
-
     pub fn with_cors(&mut self, cors: Cors) -> &mut Self {
         self.cors = Some(cors);
         self

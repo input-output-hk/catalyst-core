@@ -118,18 +118,18 @@ async fn main() {
     let paths: Vec<PathBuf> = if let Some(single_block0_path) = &settings.block0_path {
         vec![PathBuf::from_str(single_block0_path).unwrap()]
     } else {
-        fs::read_dir(settings.block0_paths.as_ref().unwrap_or_else(|_|
+        fs::read_dir(settings.block0_paths.as_ref().unwrap_or_else(|| {
             std::process::exit(ApplicationExitCode::EmptyBlock0FolderError.into())
-        ))
-            .unwrap()
-            .filter_map(|path| {
-                let path = path.unwrap().path();
-                match path.extension() {
-                    Some(p) if p == "bin" => Some(path.to_path_buf()),
-                    _ => None,
-                }
-            })
-            .collect()
+        }))
+        .unwrap()
+        .filter_map(|path| {
+            let path = path.unwrap().path();
+            match path.extension() {
+                Some(p) if p == "bin" => Some(path.to_path_buf()),
+                _ => None,
+            }
+        })
+        .collect()
     };
 
     if paths.is_empty() {

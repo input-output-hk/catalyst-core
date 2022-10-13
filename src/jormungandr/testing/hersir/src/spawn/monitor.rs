@@ -51,11 +51,9 @@ pub fn spawn_network(mut config: Config, args: Args) -> Result<(), Error> {
         .map(|x| (x.rest(), x.progress_bar().clone()))
         .collect();
 
-    POOLS.spawn_handle(move || {
-        loop {
-           run_health_check(&rests_and_progress);
-           std::thread::sleep(std::time::Duration::from_secs(2));
-        }
+    POOLS.spawn_handle(move || loop {
+        run_health_check(&rests_and_progress);
+        std::thread::sleep(std::time::Duration::from_secs(2));
     });
 
     ctrlc::set_handler(move || {
@@ -101,7 +99,9 @@ pub fn run_health_check(monitors: &[(JormungandrRest, ProgressBarController)]) {
 
         progress_bar.log_info(format!(
             "tip: {}, chain length: {}, fragments: [in_block: {}, pending: {}, rejected: {}]",
-            stats.last_block_hash.unwrap_or_else(|| "genesis".to_string()),
+            stats
+                .last_block_hash
+                .unwrap_or_else(|| "genesis".to_string()),
             stats.last_block_height.unwrap_or_else(|| "0".to_string()),
             fragment_logs.values().filter(|x| x.is_in_a_block()).count(),
             fragment_logs.values().filter(|x| x.is_pending()).count(),

@@ -7,8 +7,8 @@ use crate::{
     config::{Config, SessionMode},
     error::Error,
 };
-use std::fs::File;
 pub use monitor::run_health_check;
+use std::fs::File;
 
 pub fn spawn_network(args: Args) -> Result<(), Error> {
     let config: Config = serde_yaml::from_reader(File::open(&args.config)?)?;

@@ -6,7 +6,8 @@ use crate::mode::standard::{
 };
 use crate::Result;
 use hersir::config::SpawnParams;
-use hersir::controller::MonitorNode;
+use hersir::controller::{MonitorNode, ProgressBarController};
+use indicatif::ProgressBar;
 
 pub struct MonitorController {
     inner: InnerController,
@@ -88,5 +89,11 @@ impl MonitorController {
         self.hersir_controller
             .spawn_node_custom(spawn_params)
             .map_err(Into::into)
+    }
+
+    pub fn build_progress_bar(&mut self, alias: &str, listen: String) -> ProgressBarController {
+        let pb = ProgressBar::new_spinner();
+        let pb = self.hersir_controller.add_to_progress_bar(pb);
+        ProgressBarController::new(pb, format!("{}@{}", alias, listen))
     }
 }

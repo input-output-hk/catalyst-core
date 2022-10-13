@@ -296,7 +296,7 @@ impl VitBackendSettingsBuilder {
 
         if self.config.additional.explorer {
             builder = builder.explorer(ExplorerTemplate {
-                connect_to: WALLET_NODE.to_string(),
+                connect_to: FOLLOWER.to_string(),
                 persistence_mode: PersistenceMode::InMemory,
                 address_bech32_prefix: None,
                 query_depth_limit: None,

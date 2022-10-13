@@ -35,7 +35,7 @@ impl ProxyClient {
         }
     }
 
-    pub fn health(&self) -> Result<(),Error> {
+    pub fn health(&self) -> Result<(), Error> {
         let status_code = reqwest::blocking::get(&self.path("health")).map(|r| r.status())?;
 
         if status_code != StatusCode::OK {

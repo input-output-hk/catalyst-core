@@ -1,7 +1,7 @@
 use structopt::StructOpt;
 use valgrind::{Protocol, ValigrindStartupCommand};
-use warp::Filter;
 use warp::http::StatusCode;
+use warp::Filter;
 use warp_reverse_proxy::reverse_proxy_filter;
 
 #[tokio::main]
@@ -114,7 +114,9 @@ async fn main() {
         server_stub.http_vit_address(),
     ));
 
-    let health = warp::path!("health").and(warp::get()).map(|| StatusCode::OK);
+    let health = warp::path!("health")
+        .and(warp::get())
+        .map(|| StatusCode::OK);
 
     let app = api.and(v0.or(v1).or(vit_version).or(health));
 

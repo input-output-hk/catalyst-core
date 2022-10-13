@@ -190,7 +190,7 @@ impl MonitorController {
         self.session_settings.root.path().join(alias)
     }
 
-    fn build_progress_bar(&mut self, alias: &str, listen: SocketAddr) -> ProgressBarController {
+    pub fn build_progress_bar(&mut self, alias: &str, listen: SocketAddr) -> ProgressBarController {
         let pb = ProgressBar::new_spinner();
         let pb = self.add_to_progress_bar(pb);
         ProgressBarController::new(pb, format!("{}@{}", alias, listen))
@@ -216,7 +216,9 @@ impl MonitorController {
         let progress_bar =
             self.build_progress_bar(input_params.get_alias(), jormungandr_process.rest_address());
 
-        Ok(Node::new(jormungandr_process, progress_bar))
+        let node = Node::new(jormungandr_process, progress_bar);
+        node.wait_for_bootstrap()?;
+        Ok(node)
     }
 
     pub fn spawn_legacy_node(

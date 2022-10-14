@@ -1,18 +1,16 @@
-use std::default;
-
 use chain_impl_mockchain::testing::TestGen;
-use itertools::Itertools;
+use jormungandr_lib::interfaces::Value;
 use rand::Rng;
-use serde::{Deserialize, Serialize};
-use snapshot_lib::registration::VotingRegistration;
+use snapshot_lib::registration::{Delegations, VotingRegistration};
+use snapshot_lib::Fraction;
 use snapshot_lib::{
     voting_group::{DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP},
-    KeyContribution, SnapshotInfo, VoterHIR, CATALYST_VOTING_PURPOSE_TAG,
+    CATALYST_VOTING_PURPOSE_TAG,
 };
 use time::OffsetDateTime;
 use vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RawSnapshot {
     pub tag: String,
     pub content: RawSnapshotInput,
@@ -32,7 +30,7 @@ pub struct RawSnapshotBuilder {
     voting_power_cap: Fraction,
     direct_voters_group: Option<String>,
     representatives_group: Option<String>,
-    voting_registrations_count: u32,
+    voting_registrations_count: usize,
 }
 
 impl Default for RawSnapshotBuilder {
@@ -42,45 +40,86 @@ impl Default for RawSnapshotBuilder {
             update_timestamp: OffsetDateTime::now_utc().unix_timestamp(),
             min_stake_threshold: 0.into(),
             voting_power_cap: 100.into(),
-            direct_voters_group: DEFAULT_DIRECT_VOTER_GROUP,
-            representatives_group: DEFAULT_REPRESENTATIVE_GROUP,
+            direct_voters_group: Some(DEFAULT_DIRECT_VOTER_GROUP.into()),
+            representatives_group: Some(DEFAULT_REPRESENTATIVE_GROUP.into()),
             voting_registrations_count: 2,
         }
     }
 }
 
 impl RawSnapshotBuilder {
+    pub fn with_tag<S: Into<String>>(mut self, tag: S) -> Self {
+        self.tag = tag.into();
+        self
+    }
+
+    pub fn with_voting_registrations_count(mut self, voting_registrations_count: usize) -> Self {
+        self.voting_registrations_count = voting_registrations_count;
+        self
+    }
+
+    pub fn with_timestamp(mut self, timestamp: i64) -> Self {
+        self.update_timestamp = timestamp;
+        self
+    }
+
     pub fn build(self) -> RawSnapshot {
-        let voting_pub_key_1 = Identifier::from_hex(&hex::encode([0; 32])).unwrap();
-        let voting_pub_key_2 = Identifier::from_hex(&hex::encode([1; 32])).unwrap();
+        let mut rng = rand::rngs::OsRng;
+        let mut delegation_type_count = 0;
 
         RawSnapshot {
             content: RawSnapshotInput {
                 snapshot: std::iter::from_fn(|| {
                     Some(VotingRegistration {
-                        stake_public_key:
-                            "0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee"
-                                .to_string(),
-                        voting_power: 1.into(),
-                        reward_address:
-                            "0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee"
-                                .to_string(),
-                        delegations: Delegations::New(vec![
-                            (voting_pub_key_1.clone(), 1),
-                            (voting_pub_key_2.clone(), 1),
-                        ]),
+                        stake_public_key: TestGen::public_key().to_string(),
+                        voting_power: rng.gen_range(1u64, 1_00u64).into(),
+                        reward_address: TestGen::public_key().to_string(),
+                        delegations: if delegation_type_count > self.voting_registrations_count / 2
+                        {
+                            delegation_type_count += 1;
+                            Delegations::New(vec![
+                                (TestGen::identifier().into(), 1),
+                                (TestGen::identifier().into(), 2),
+                            ])
+                        } else {
+                            delegation_type_count += 1;
+                            Delegations::Legacy(TestGen::identifier().into())
+                        },
                         voting_purpose: CATALYST_VOTING_PURPOSE_TAG,
                     })
                 })
                 .take(self.voting_registrations_count)
-                .collect(),
+                .collect::<Vec<_>>()
+                .into(),
                 update_timestamp: self.update_timestamp,
                 min_stake_threshold: self.min_stake_threshold,
                 voting_power_cap: self.voting_power_cap,
                 direct_voters_group: self.direct_voters_group,
-                representatives_group: self.direct_voters_group,
+                representatives_group: self.representatives_group,
             },
             tag: self.tag,
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct RawSnapshotUpdater {
+    raw_snapshot: RawSnapshot,
+}
+
+impl From<RawSnapshot> for RawSnapshotUpdater {
+    fn from(raw_snapshot: RawSnapshot) -> Self {
+        Self { raw_snapshot }
+    }
+}
+
+impl RawSnapshotUpdater {
+    pub fn with_tag<S: Into<String>>(mut self, tag: S) -> Self {
+        self.raw_snapshot.tag = tag.into();
+        self
+    }
+
+    pub fn build(self) -> RawSnapshot {
+        self.raw_snapshot
     }
 }

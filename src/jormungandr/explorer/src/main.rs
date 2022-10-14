@@ -59,23 +59,15 @@ enum GlobalState {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let (_guards, settings) = {
+    let (_log_guard, settings) = {
         let mut settings = Settings::load()?;
-        let (guards, log_init_messages) = settings.log_settings.take().unwrap().init_log()?;
+        let guard = settings.log_settings.take().unwrap().init_log()?;
 
         let init_span = span!(Level::TRACE, "task", kind = "init");
         let _enter = init_span.enter();
         tracing::info!("Starting explorer");
 
-        if let Some(msgs) = log_init_messages {
-            // if log settings were overriden, we will have an info
-            // message which we can unpack at this point.
-            for msg in &msgs {
-                tracing::info!("{}", msg);
-            }
-        }
-
-        (guards, settings)
+        (guard, settings)
     };
 
     let mut settings = Some(settings);

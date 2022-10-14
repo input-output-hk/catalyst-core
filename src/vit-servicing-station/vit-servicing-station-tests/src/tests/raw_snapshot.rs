@@ -3,7 +3,7 @@ use std::time::Duration;
 use crate::common::{
     clients::RawRestClient,
     raw_snapshot::{RawSnapshot, RawSnapshotBuilder, RawSnapshotUpdater},
-    snapshot::{Snapshot as testSnapshot, SnapshotBuilder, VotingPower},
+    snapshot::{SnapshotBuilder, VotingPower},
     startup::quick_start,
 };
 use assert_fs::TempDir;

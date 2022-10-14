@@ -6,7 +6,7 @@ use std::{
     path::PathBuf,
     str::FromStr,
 };
-use tracing::{level_filters::LevelFilter, subscriber::SetGlobalDefaultError};
+use tracing::level_filters::LevelFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
@@ -103,18 +103,16 @@ impl Default for LogSettings {
 
 impl LogSettings {
     pub fn init_log(self) -> Result<LogGuard, Error> {
-        // configure the registry subscriber as the global default,
-        // panics if something goes wrong.
         let nonblocking_worker_guard = match self.output {
             LogOutput::Stdout => {
                 let (non_blocking, guard) = tracing_appender::non_blocking(std::io::stdout());
-                self.init_subscriber(non_blocking);
+                self.init_subscriber(non_blocking)?;
 
                 guard
             }
             LogOutput::Stderr => {
                 let (non_blocking, guard) = tracing_appender::non_blocking(std::io::stderr());
-                self.init_subscriber(non_blocking);
+                self.init_subscriber(non_blocking)?;
 
                 guard
             }
@@ -130,7 +128,7 @@ impl LogSettings {
                     })?;
                 let (non_blocking, guard) = tracing_appender::non_blocking(file);
 
-                self.init_subscriber(non_blocking);
+                self.init_subscriber(non_blocking)?;
 
                 guard
             }
@@ -183,7 +181,8 @@ impl LogSettings {
                 )]),
             ))
             .install_batch(opentelemetry::runtime::Tokio)
-            .expect("opentelemetry pipeline installed");
+            .map_err(Error::InstallOpenTelemetryPipeLine)?;
+
         let otel_layer = tracing_opentelemetry::layer().with_tracer(otel_tracer);
 
         let subscriber = tracing_subscriber::registry()
@@ -196,7 +195,10 @@ impl LogSettings {
                     .with_level(true)
                     .with_writer(non_blocking);
 
-                subscriber.with(layer).init();
+                subscriber
+                    .with(layer)
+                    .try_init()
+                    .map_err(Error::InitSubscriber)
             }
             LogFormat::Json => {
                 let layer = tracing_subscriber::fmt::Layer::new()
@@ -204,7 +206,10 @@ impl LogSettings {
                     .with_level(true)
                     .with_writer(non_blocking);
 
-                subscriber.with(layer).init();
+                subscriber
+                    .with(layer)
+                    .try_init()
+                    .map_err(Error::InitSubscriber)
             }
         }
     }
@@ -220,6 +225,8 @@ pub enum Error {
         #[source]
         cause: io::Error,
     },
-    #[error("failed to set global subscriber")]
-    SetGlobalSubscriber(#[source] SetGlobalDefaultError),
+    #[error("failed to install opentelemetry pipeline")]
+    InstallOpenTelemetryPipeLine(#[source] opentelemetry::trace::TraceError),
+    #[error("failed to init subscriber")]
+    InitSubscriber(#[source] tracing_subscriber::util::TryInitError),
 }

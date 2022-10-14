@@ -8133,6 +8133,7 @@ dependencies = [
  "fake",
  "hyper 0.14.20",
  "itertools 0.10.5",
+ "jormungandr-lib",
  "jortestkit",
  "lazy_static",
  "libsqlite3-sys",

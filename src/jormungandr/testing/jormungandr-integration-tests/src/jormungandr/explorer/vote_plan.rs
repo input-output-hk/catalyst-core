@@ -31,6 +31,8 @@ use thor::{
 
 const INITIAL_FUND_PER_WALLET_1: u64 = 1_000_000;
 const INITIAL_FUND_PER_WALLET_2: u64 = 2_000_000;
+const INITIAL_TOKEN_PER_WALLET_1: u64 = 1_000_000;
+const INITIAL_TOKEN_PER_WALLET_2: u64 = 2_000_000;
 const INITIAL_TREASURY: u64 = 1000;
 const REWARD_INCREASE: u64 = 10;
 const SLOTS_PER_EPOCH: u32 = 20;
@@ -114,7 +116,7 @@ pub fn explorer_vote_plan_not_existing() {
 }
 
 #[should_panic]
-#[test] //NPG-3334
+#[test] // NPG-3712
 pub fn explorer_vote_plan_public_flow_test() {
     let temp_dir = TempDir::new().unwrap();
     let alice = Wallet::default();
@@ -148,18 +150,16 @@ pub fn explorer_vote_plan_public_flow_test() {
     .into();
 
     let config = ConfigurationBuilder::new()
-        .with_funds(
-            voters
-                .iter()
-                .map(|x| x.to_initial_fund(INITIAL_TREASURY))
-                .collect(),
-        )
+        .with_funds(vec![
+            voters[0].to_initial_fund(INITIAL_FUND_PER_WALLET_1),
+            voters[1].to_initial_fund(INITIAL_FUND_PER_WALLET_2),
+        ])
         .with_token(InitialToken {
             token_id: vote_plan.voting_token().clone().into(),
             policy: MintingPolicy::new().into(),
             to: vec![
-                voters[0].to_initial_token(INITIAL_FUND_PER_WALLET_1),
-                voters[1].to_initial_token(INITIAL_FUND_PER_WALLET_2),
+                voters[0].to_initial_token(INITIAL_TOKEN_PER_WALLET_1),
+                voters[1].to_initial_token(INITIAL_TOKEN_PER_WALLET_2),
             ],
         })
         .with_committees(&[voters[0].to_committee_id()])
@@ -703,7 +703,7 @@ pub fn explorer_vote_plan_private_flow_test() {
 }
 
 #[should_panic]
-#[test] //NPG-3334
+#[test] // NPG-3712
 pub fn explorer_all_vote_plans_public_flow_test() {
     let temp_dir = TempDir::new().unwrap();
     let alice = Wallet::default();
@@ -753,18 +753,16 @@ pub fn explorer_all_vote_plans_public_flow_test() {
     }
 
     let config = ConfigurationBuilder::new()
-        .with_funds(
-            voters
-                .iter()
-                .map(|x| x.to_initial_fund(INITIAL_TREASURY))
-                .collect(),
-        )
+        .with_funds(vec![
+            voters[0].to_initial_fund(INITIAL_FUND_PER_WALLET_1),
+            voters[1].to_initial_fund(INITIAL_FUND_PER_WALLET_2),
+        ])
         .with_token(InitialToken {
             token_id: vote_plans.first().unwrap().voting_token().clone().into(),
             policy: MintingPolicy::new().into(),
             to: vec![
-                voters[0].to_initial_token(INITIAL_FUND_PER_WALLET_1),
-                voters[1].to_initial_token(INITIAL_FUND_PER_WALLET_2),
+                voters[0].to_initial_token(INITIAL_TOKEN_PER_WALLET_1),
+                voters[1].to_initial_token(INITIAL_TOKEN_PER_WALLET_2),
             ],
         })
         .with_committees(&[voters[0].to_committee_id()])

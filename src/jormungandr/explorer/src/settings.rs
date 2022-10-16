@@ -7,6 +7,7 @@ use structopt::StructOpt;
 use thiserror::Error;
 use tonic::transport::Uri;
 use tracing::metadata::LevelFilter;
+use url::Url;
 
 const DEFAULT_QUERY_DEPTH_LIMIT: usize = 15;
 const DEFAULT_QUERY_COMPLEXITY_LIMIT: usize = 100;
@@ -120,6 +121,9 @@ impl Settings {
             if let Some(output) = &cfg.output {
                 settings.output = output.clone();
             }
+            if cfg.trace_collector_endpoint.is_some() {
+                settings.trace_collector_endpoint = cfg.trace_collector_endpoint.clone();
+            }
         }
 
         // If the command line specifies log arguments, they override everything
@@ -132,6 +136,9 @@ impl Settings {
         }
         if let Some(format) = cmd.log_format {
             settings.format = format;
+        }
+        if cmd.log_trace_collector_endpoint.is_some() {
+            settings.trace_collector_endpoint = cmd.log_trace_collector_endpoint.clone();
         }
 
         settings
@@ -170,6 +177,10 @@ struct CommandLine {
     /// If not configured anywhere, defaults to "stderr".
     #[structopt(long = "log-output", parse(try_from_str))]
     pub log_output: Option<LogOutput>,
+
+    /// Enable the OTLP trace data exporter and set the collector's GRPC endpoint.
+    #[structopt(long)]
+    pub log_trace_collector_endpoint: Option<Url>,
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -202,6 +213,7 @@ pub struct ConfigLogSettings {
     pub level: Option<LevelFilter>,
     pub format: Option<LogFormat>,
     pub output: Option<LogOutput>,
+    pub trace_collector_endpoint: Option<Url>,
 }
 
 mod filter_level_opt_serde {

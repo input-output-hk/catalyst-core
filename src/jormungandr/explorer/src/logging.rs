@@ -9,6 +9,7 @@ use std::{
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+use url::Url;
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
@@ -93,6 +94,7 @@ pub struct LogSettings {
     pub level: LevelFilter,
     pub format: LogFormat,
     pub output: LogOutput,
+    pub trace_collector_endpoint: Option<Url>,
 }
 
 impl Default for LogSettings {
@@ -101,6 +103,7 @@ impl Default for LogSettings {
             level: LevelFilter::TRACE,
             format: Default::default(),
             output: Default::default(),
+            trace_collector_endpoint: None,
         }
     }
 }
@@ -171,23 +174,27 @@ impl LogSettings {
         &self,
         non_blocking: tracing_appender::non_blocking::NonBlocking,
     ) -> Result<(), Error> {
-        let otel_tracer = opentelemetry_otlp::new_pipeline()
-            .tracing()
-            .with_exporter(
-                opentelemetry_otlp::new_exporter()
-                    .tonic()
-                    .with_endpoint("http://localhost:4317"),
-            )
-            .with_trace_config(opentelemetry::sdk::trace::config().with_resource(
-                opentelemetry::sdk::Resource::new(vec![opentelemetry::KeyValue::new(
-                    opentelemetry_semantic_conventions::resource::SERVICE_NAME,
-                    "explorer",
-                )]),
-            ))
-            .install_batch(opentelemetry::runtime::Tokio)
-            .map_err(Error::InstallOpenTelemetryPipeLine)?;
+        let otel_layer = if let Some(endpoint) = self.trace_collector_endpoint.as_ref() {
+            let otel_tracer = opentelemetry_otlp::new_pipeline()
+                .tracing()
+                .with_exporter(
+                    opentelemetry_otlp::new_exporter()
+                        .tonic()
+                        .with_endpoint(endpoint.as_str()),
+                )
+                .with_trace_config(opentelemetry::sdk::trace::config().with_resource(
+                    opentelemetry::sdk::Resource::new(vec![opentelemetry::KeyValue::new(
+                        opentelemetry_semantic_conventions::resource::SERVICE_NAME,
+                        "explorer",
+                    )]),
+                ))
+                .install_batch(opentelemetry::runtime::Tokio)
+                .map_err(Error::InstallOpenTelemetryPipeLine)?;
 
-        let otel_layer = tracing_opentelemetry::layer().with_tracer(otel_tracer);
+            Some(tracing_opentelemetry::layer().with_tracer(otel_tracer))
+        } else {
+            None
+        };
 
         let subscriber = tracing_subscriber::registry()
             .with(self.level)

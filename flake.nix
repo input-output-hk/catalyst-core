@@ -21,6 +21,7 @@
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
     naersk.url = "github:nix-community/naersk";
     naersk.inputs.nixpkgs.follows = "nixpkgs";
+    cardano-node.url = "github:input-output-hk/cardano-node/1.33.0";
   };
 
   outputs = {
@@ -31,6 +32,7 @@
     pre-commit-hooks,
     rust-overlay,
     naersk,
+    cardano-node,
   }:
     flake-utils.lib.eachSystem
     [
@@ -46,6 +48,8 @@
           inherit system;
           overlays = [(import rust-overlay)];
         };
+
+        inherit (cardano-node.packages.${system}) cardano-cli;
 
         mkRust = {
           channel ? "stable",
@@ -117,8 +121,8 @@
             ++ (pkgs.lib.optionals (name == "voting_tools_rs") [
               postgresql
             ]);
-        in
-          naersk-lib.buildPackage {
+
+          unwrapped = naersk-lib.buildPackage {
             inherit (pkgCargo.package) name version;
             inherit nativeBuildInputs;
 
@@ -134,6 +138,21 @@
               openssl
             ];
           };
+
+          extraBinPath = {
+            snapshot-trigger-service = with workspace; [voting-tools];
+            registration-service = with workspace; [catalyst-toolbox jcli cardano-cli voting-tools];
+            registration-verify-service = with workspace; [jcli];
+          };
+        in
+          if builtins.elem name (builtins.attrNames extraBinPath)
+          then
+            pkgs.runCommand "wrapped-${unwrapped.name}" {nativeBuildInputs = [pkgs.makeWrapper];} ''
+              mkdir -p $out/bin
+              ln -s ${unwrapped}/bin/${name} $out/bin/${name}
+              wrapProgram $out/bin/${name} --prefix PATH : ${pkgs.lib.makeBinPath extraBinPath.${name}}
+            ''
+          else unwrapped;
 
         workspace =
           builtins.listToAttrs
@@ -281,7 +300,7 @@
           // workspace-nightly
           // {
             inherit jormungandr-entrypoint pre-commit;
-            default = workspace.jormungandr;
+            default = pre-commit;
           };
 
         devShells.default = pkgs.mkShell {
@@ -304,11 +323,12 @@
               echo "=== Catalyst Core development shell ==="
               echo "Info: Git hooks can be installed using \`pre-commit install\`"
             '';
+          # TODO: is this needed for vit-testing development
+          # export PATH="${jormungandr}/bin:$PATH"
+          # export PATH="${vit-servicing-station-server}/bin:$PATH"
         };
 
         checks.pre-commit = pre-commit;
-
-        hydraJobs = packages;
 
         defaultPackage = warnToUpdateNix packages.default;
         devShell = warnToUpdateNix devShells.default;

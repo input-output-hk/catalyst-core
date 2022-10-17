@@ -22,6 +22,7 @@ members = [
   "src/chain-wallet-libs/wallet",
   "src/chain-wallet-libs/symmetric-cipher",
   "src/chain-wallet-libs/bindings/wallet-c",
+  "src/chain-wallet-libs/bindings/wallet-core",
   "src/chain-wallet-libs/bindings/wallet-js",
   "src/chain-wallet-libs/bindings/wallet-uniffi",
   "src/jormungandr/jormungandr-lib",
@@ -36,6 +37,7 @@ members = [
   "src/jormungandr/testing/mjolnir",
   "src/jormungandr/testing/hersir",
   "src/jormungandr/testing/thor",
+  "src/jortestkit",
   "src/vit-servicing-station/vit-servicing-station-cli",
   "src/vit-servicing-station/vit-servicing-station-lib",
   "src/vit-servicing-station/vit-servicing-station-server",
@@ -48,13 +50,12 @@ members = [
   "src/vit-testing/registration-service",
   "src/vit-testing/registration-verify-service",
   "src/vit-testing/snapshot-trigger-service",
-  "src/vit-testing/signals-handler"
+  "src/vit-testing/signals-handler",
+  "src/voting-tools-rs"
 ]
+
+[workspace.dependencies]
+proptest = { git = "https://github.com/input-output-hk/proptest.git" }
 
 [patch.crates-io]
 cryptoxide = { git = "https://github.com/typed-io/cryptoxide.git" }
-
-[profile.bench]
-# Embed debuginfo into benchmarks for profiling. All other settings remain the
-# same and are similar to the `release` profile.
-debug = true

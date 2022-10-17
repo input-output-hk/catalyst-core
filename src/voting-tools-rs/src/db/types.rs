@@ -8,7 +8,6 @@
 
 use diesel_derive_enum::DbEnum;
 
-
 #[derive(Debug, Clone, Copy, DbEnum, SqlType)]
 pub enum Rewardtype {
     Leader,
@@ -39,5 +38,3 @@ pub enum Syncstatetype {
     Lagging,
     Following,
 }
-
-

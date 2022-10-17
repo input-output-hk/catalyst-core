@@ -31,7 +31,7 @@ rust_decimal = { version = "1.26", features = ["serde", "db-postgres"] }
 cardano-serialization-lib = "11.0.0"
 
 [dev-dependencies]
-proptest = { git = "https://github.com/input-output-hk/proptest" }
+proptest = { workspace = true }
 test-strategy = "0.2"
 serial_test = "0.9"
 tempdir = "0.3"
@@ -45,9 +45,3 @@ default = ["all_tests"]
 all_tests = ["reference_tests", "db_sync_tests"]
 reference_tests = []  
 db_sync_tests = []  
-
-[profile.dev.package.insta]
-opt-level = 3
-
-[profile.dev.package.similar]
-opt-level = 3

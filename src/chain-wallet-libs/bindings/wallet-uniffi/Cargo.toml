@@ -26,7 +26,3 @@ uniffi_build = "0.20"
 
 [features]
 builtin-bindgen = ["uniffi_build/builtin-bindgen"]
-
-[profile.release]
-lto = "yes"
-strip = "symbols"

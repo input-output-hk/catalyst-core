@@ -46,6 +46,7 @@ use std::mem::swap;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 use thiserror::Error;
+use crate::update::UpdateState;
 
 // static parameters, effectively this is constant in the parameter of the blockchain
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -1406,6 +1407,10 @@ impl Ledger {
 
     pub fn accounts(&self) -> &account::Ledger {
         &self.accounts
+    }
+
+    pub fn updates(&self) -> &UpdateState {
+        &self.updates
     }
 
     pub fn token_totals(&self) -> &TokenTotals {

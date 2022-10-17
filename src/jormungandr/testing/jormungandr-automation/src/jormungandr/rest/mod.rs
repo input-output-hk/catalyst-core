@@ -16,7 +16,8 @@ use jormungandr_lib::{
     interfaces::{
         AccountState, AccountVotes, Address, EpochRewardsInfo, FragmentLog, FragmentStatus,
         FragmentsProcessingSummary, LeadershipLog, NodeStatsDto, PeerRecord, PeerStats,
-        SettingsDto, StakeDistributionDto, Value, VotePlanId, VotePlanStatus,
+        SettingsDto, StakeDistributionDto, UpdateProposalStateDef, Value, VotePlanId,
+        VotePlanStatus,
     },
 };
 pub use raw::RawRest;
@@ -112,6 +113,11 @@ impl JormungandrRest {
 
     pub fn epoch_reward_history(&self, epoch: u32) -> Result<EpochRewardsInfo, RestError> {
         let content = self.inner.epoch_reward_history(epoch)?;
+        serde_json::from_str(&content).map_err(RestError::CannotDeserialize)
+    }
+
+    pub fn updates(&self) -> Result<HashMap<Hash, UpdateProposalStateDef>, RestError> {
+        let content = self.inner.updates()?;
         serde_json::from_str(&content).map_err(RestError::CannotDeserialize)
     }
 

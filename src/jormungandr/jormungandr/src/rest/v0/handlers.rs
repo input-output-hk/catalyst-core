@@ -15,6 +15,14 @@ pub async fn get_account_state(
         .ok_or_else(warp::reject::not_found)
 }
 
+pub async fn get_update_proposals(context: ContextLock) -> Result<impl Reply, Rejection> {
+    let context = context.read().await;
+    logic::get_update_proposals(&context)
+        .await
+        .map_err(warp::reject::custom)
+        .map(|r| warp::reply::json(&r))
+}
+
 pub async fn get_message_logs(context: ContextLock) -> Result<impl Reply, Rejection> {
     let context = context.read().await;
     logic::get_message_logs(&context)

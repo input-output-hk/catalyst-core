@@ -4,7 +4,7 @@ mod spawn_params;
 mod vote_plan;
 mod wallet;
 pub use crate::config::{
-    blockchain::Blockchain,
+    blockchain::{Blockchain, BlockchainBuilder},
     committee::CommitteeTemplate,
     spawn_params::SpawnParams,
     wallet::{WalletTemplate, WalletTemplateBuilder},

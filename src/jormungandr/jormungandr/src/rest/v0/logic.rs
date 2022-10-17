@@ -37,11 +37,11 @@ use jormungandr_lib::{
         AccountState, EpochRewardsInfo, FragmentLog, FragmentOrigin, FragmentsProcessingSummary,
         LeadershipLog, NodeStatsDto, PeerStats, Rewards as StakePoolRewards, SettingsDto,
         StakeDistribution, StakeDistributionDto, StakePoolStats, TaxTypeSerde, TransactionOutput,
-        Value, VotePlanStatus,
+        UpdateProposalStateDef, Value, VotePlanStatus,
     },
     time::SystemTime,
 };
-use std::{net::SocketAddr, sync::Arc};
+use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 use tracing::{span, Level};
 use tracing_futures::Instrument;
 
@@ -81,6 +81,8 @@ pub enum Error {
     #[cfg(feature = "evm")]
     #[error("Can not parse address: {0}")]
     AddressParseError(String),
+    #[error("Can not parse address: {0}")]
+    FromConfigParam(#[from] jormungandr_lib::interfaces::FromConfigParamError),
 }
 
 fn parse_account_id(id_hex: &str) -> Result<Identifier, Error> {
@@ -100,6 +102,24 @@ fn parse_fragment_id(id_hex: &str) -> Result<FragmentId, Error> {
         Ok(id) => Ok(id),
         Err(e) => Err(e.into()),
     }
+}
+
+pub async fn get_update_proposals(
+    context: &Context,
+) -> Result<HashMap<jormungandr_lib::crypto::hash::Hash, UpdateProposalStateDef>, Error> {
+    let proposals = context
+        .blockchain_tip()?
+        .get_ref()
+        .await
+        .ledger()
+        .updates()
+        .proposals();
+
+    let mut proposals_def = HashMap::new();
+    for (hash, update_proposal) in proposals {
+        proposals_def.insert(hash.into(), update_proposal.try_into()?);
+    }
+    Ok(proposals_def)
 }
 
 pub async fn get_account_state(
@@ -622,4 +642,24 @@ pub async fn get_evm_address(context: &Context, jor_id_hex: &str) -> Result<Opti
                 .into(),
         )
         .map(|val| val.to_string()))
+}
+
+#[cfg(test)]
+mod tests {
+    use chain_impl_mockchain::{
+        certificate::UpdateProposal, config::ConfigParam, fragment::ConfigParams, testing::TestGen,
+    };
+    use jormungandr_lib::interfaces::UpdateProposalDef;
+
+    #[test]
+    pub fn convert_test() {
+        let new_block_context_max_size = 1000;
+        let mut change_params = ConfigParams::new();
+        change_params.push(ConfigParam::BlockContentMaxSize(new_block_context_max_size));
+
+        let update_proposal = UpdateProposal::new(change_params, TestGen::public_key().into());
+
+        let result: Result<UpdateProposalDef, _> = update_proposal.try_into();
+        assert!(result.is_ok())
+    }
 }

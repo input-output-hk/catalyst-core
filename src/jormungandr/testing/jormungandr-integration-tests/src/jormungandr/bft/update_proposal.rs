@@ -16,7 +16,7 @@ use thor::{FragmentSender, FragmentSenderSetup, FragmentVerifier};
 
 #[test]
 fn proposal_expired_after_proposal_expiration_deadline() {
-    let temp_dir = TempDir::new().unwrap();
+    let temp_dir = TempDir::new().unwrap().into_persistent();
     let mut alice = thor::Wallet::default();
     let bft_secret = create_new_key_pair::<Ed25519>();
     let wallet_initial_funds = 1_000_000;
@@ -49,6 +49,7 @@ fn proposal_expired_after_proposal_expiration_deadline() {
         change_params.into(),
         bft_secret.identifier().into_public_key().into(),
     );
+
     let check = fragment_sender
         .send_update_proposal(
             &mut alice,
@@ -73,11 +74,20 @@ fn proposal_expired_after_proposal_expiration_deadline() {
         )
         .unwrap();
 
+    let updates = jormungandr.rest().updates().unwrap();
+    let current_update = updates.get(&(*check.fragment_id()).into()).unwrap();
+    assert_eq!(current_update.proposal_date.epoch(), current_epoch);
+    assert!(current_update
+        .votes
+        .contains(&bft_secret.identifier().into()));
+
     wait_for_epoch(current_epoch + 4, jormungandr.rest());
 
     let new_settings = jormungandr.rest().settings().unwrap();
 
     assert_eq!(old_settings, new_settings);
+
+    assert!(jormungandr.rest().updates().unwrap().is_empty());
 }
 
 #[test]

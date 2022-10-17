@@ -164,9 +164,9 @@ mod tests {
         TestResult::from_bool(
             vote_plans_defs
                 .into_iter()
-                .flat_map(|v| v.proposals())
+                .flat_map(|v| v.proposals.to_vec())
                 .into_iter()
-                .map(|p| p.id())
+                .map(|p| p.external_id().clone())
                 .all(move |x| uniq.insert(x)),
         )
     }

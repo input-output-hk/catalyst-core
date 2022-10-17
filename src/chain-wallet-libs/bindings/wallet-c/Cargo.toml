@@ -15,7 +15,3 @@ chain-ser = { path = "../../../chain-libs/chain-ser" }
 chain-addr = { path = "../../../chain-libs/chain-addr" }
 chain-impl-mockchain = { path = "../../../chain-libs/chain-impl-mockchain" }
 wallet-core = { path = "../wallet-core"}
-
-[profile.release]
-lto = "yes"
-strip = "symbols"

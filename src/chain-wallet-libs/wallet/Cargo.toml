@@ -29,7 +29,3 @@ imhamt = { path = "../../chain-libs/imhamt" }
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
 chain-ser = { path = "../../chain-libs/chain-ser" }
-
-[profile.release]
-lto = "yes"
-strip = "symbols"

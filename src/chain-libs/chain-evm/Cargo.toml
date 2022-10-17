@@ -29,10 +29,10 @@ ethereum-types = { version = "0.13.1", features = ["rlp"] }
 
 [dev-dependencies]
 rand = "0.7.3"
-proptest = "1.0.0"
+proptest = { workspace = true }
 test-strategy = "0.1"
 quickcheck = "0.9"
-evm-test-suite = { git = "https://github.com/input-output-hk/evm-test-suite.git"}
+evm-test-suite = { git = "https://github.com/input-output-hk/evm-test-suite.git", branch = "main" }
 
 [features]
 property-test-api = ["quickcheck"]

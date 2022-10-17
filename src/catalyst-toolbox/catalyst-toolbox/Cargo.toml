@@ -71,7 +71,7 @@ assert_cmd = "0.10"
 predicates = "1"
 assert_fs = "1.0.0"
 chain-vote = { path = "../../chain-libs/chain-vote" }
-proptest = { git = "https://github.com/input-output-hk/proptest", branch = "master" }
+proptest = { workspace = true, branch = "master" }
 test-strategy = "0.2"
 serde_test = "1"
 snapshot-lib =  { path = "../snapshot-lib", features = ["proptest"] }

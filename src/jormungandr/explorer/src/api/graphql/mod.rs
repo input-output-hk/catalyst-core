@@ -1347,52 +1347,50 @@ impl VotePlanStatus {
             proposals,
         } = (*vote_plan).clone();
 
-        let proposals = proposals
-            .into_iter()
-            .map(|proposal| VoteProposalStatus {
-                proposal_id: ExternalProposalId::from(proposal.proposal_id.clone()),
-                options: VoteOptionRange::from(proposal.options.clone()),
-                tally: proposal.tally.clone().map_or(
-                    bootstrap_tally_status(ExplorerVoteProposal {
-                        proposal_id: proposal.proposal_id,
-                        options: proposal.options,
-                        tally: proposal.tally,
-                        votes: proposal.votes.clone(),
-                    }),
-                    |tally| to_tally_status(Some(tally)),
-                ),
-                votes: proposal
-                    .votes
-                    .iter()
-                    .map(|(key, vote)| match vote.as_ref() {
-                        ExplorerVote::Public(choice) => VoteStatus {
-                            address: key.into(),
-                            payload: VotePayloadStatus::Public(VotePayloadPublicStatus {
-                                choice: choice.as_byte().into(),
-                            }),
-                        },
-                        ExplorerVote::Private {
-                            proof,
-                            encrypted_vote,
-                        } => VoteStatus {
-                            address: key.into(),
-                            payload: VotePayloadStatus::Private(VotePayloadPrivateStatus {
-                                proof: proof.clone(),
-                                encrypted_vote: encrypted_vote.clone(),
-                            }),
-                        },
-                    })
-                    .collect(),
-            })
-            .collect();
-
         VotePlanStatus {
             id: VotePlanId::from(id),
             vote_start: BlockDate::from(vote_start),
             vote_end: BlockDate::from(vote_end),
             committee_end: BlockDate::from(committee_end),
             payload_type: PayloadType::from(payload_type),
-            proposals,
+            proposals: proposals
+                .into_iter()
+                .map(|proposal| VoteProposalStatus {
+                    proposal_id: ExternalProposalId::from(proposal.proposal_id.clone()),
+                    options: VoteOptionRange::from(proposal.options.clone()),
+                    tally: proposal.tally.clone().map_or(
+                        bootstrap_tally_status(ExplorerVoteProposal {
+                            proposal_id: proposal.proposal_id,
+                            options: proposal.options,
+                            tally: proposal.tally,
+                            votes: proposal.votes.clone(),
+                        }),
+                        |tally| to_tally_status(Some(tally)),
+                    ),
+                    votes: proposal
+                        .votes
+                        .iter()
+                        .map(|(key, vote)| match vote.as_ref() {
+                            ExplorerVote::Public(choice) => VoteStatus {
+                                address: key.into(),
+                                payload: VotePayloadStatus::Public(VotePayloadPublicStatus {
+                                    choice: choice.as_byte().into(),
+                                }),
+                            },
+                            ExplorerVote::Private {
+                                proof,
+                                encrypted_vote,
+                            } => VoteStatus {
+                                address: key.into(),
+                                payload: VotePayloadStatus::Private(VotePayloadPrivateStatus {
+                                    proof: proof.clone(),
+                                    encrypted_vote: encrypted_vote.clone(),
+                                }),
+                            },
+                        })
+                        .collect(),
+                })
+                .collect(),
         }
     }
 }

@@ -20,9 +20,10 @@ use self::{
 use crate::db::{
     indexing::{
         BlockProducer, EpochData, ExplorerAddress, ExplorerBlock, ExplorerTransaction,
-        ExplorerVote, ExplorerVotePlan, ExplorerVoteTally, StakePoolData,
+        ExplorerVote, ExplorerVotePlan, ExplorerVoteProposal, ExplorerVoteTally, StakePoolData,
     },
     persistent_sequence::PersistentSequence,
+    tally::compute_public_tally,
     ExplorerDb, Settings as ChainSettings,
 };
 use async_graphql::{
@@ -36,6 +37,7 @@ use chain_impl_mockchain::{
     certificate,
     fragment::FragmentId,
     key::BftLeaderId,
+    stake::StakeControl,
     vote::{EncryptedVote, ProofOfCorrectVote},
 };
 use std::{
@@ -1345,55 +1347,85 @@ impl VotePlanStatus {
             proposals,
         } = (*vote_plan).clone();
 
+        let proposals = proposals
+            .into_iter()
+            .map(|proposal| VoteProposalStatus {
+                proposal_id: ExternalProposalId::from(proposal.proposal_id.clone()),
+                options: VoteOptionRange::from(proposal.options.clone()),
+                tally: proposal.tally.clone().map_or(
+                    bootstrap_tally_status(ExplorerVoteProposal {
+                        proposal_id: proposal.proposal_id,
+                        options: proposal.options,
+                        tally: proposal.tally,
+                        votes: proposal.votes.clone(),
+                    }),
+                    |tally| to_tally_status(Some(tally)),
+                ),
+                votes: proposal
+                    .votes
+                    .iter()
+                    .map(|(key, vote)| match vote.as_ref() {
+                        ExplorerVote::Public(choice) => VoteStatus {
+                            address: key.into(),
+                            payload: VotePayloadStatus::Public(VotePayloadPublicStatus {
+                                choice: choice.as_byte().into(),
+                            }),
+                        },
+                        ExplorerVote::Private {
+                            proof,
+                            encrypted_vote,
+                        } => VoteStatus {
+                            address: key.into(),
+                            payload: VotePayloadStatus::Private(VotePayloadPrivateStatus {
+                                proof: proof.clone(),
+                                encrypted_vote: encrypted_vote.clone(),
+                            }),
+                        },
+                    })
+                    .collect(),
+            })
+            .collect();
+
         VotePlanStatus {
             id: VotePlanId::from(id),
             vote_start: BlockDate::from(vote_start),
             vote_end: BlockDate::from(vote_end),
             committee_end: BlockDate::from(committee_end),
             payload_type: PayloadType::from(payload_type),
-            proposals: proposals
-                .into_iter()
-                .map(|proposal| VoteProposalStatus {
-                    proposal_id: ExternalProposalId::from(proposal.proposal_id),
-                    options: VoteOptionRange::from(proposal.options),
-                    tally: proposal.tally.map(|tally| match tally {
-                        ExplorerVoteTally::Public { results, options } => {
-                            TallyStatus::Public(TallyPublicStatus {
-                                results: results.iter().map(Into::into).collect(),
-                                options: options.into(),
-                            })
-                        }
-                        ExplorerVoteTally::Private { results, options } => {
-                            TallyStatus::Private(TallyPrivateStatus {
-                                results: results.map(|res| res.iter().map(Into::into).collect()),
-                                options: options.into(),
-                            })
-                        }
-                    }),
-                    votes: proposal
-                        .votes
-                        .iter()
-                        .map(|(key, vote)| match vote.as_ref() {
-                            ExplorerVote::Public(choice) => VoteStatus {
-                                address: key.into(),
-                                payload: VotePayloadStatus::Public(VotePayloadPublicStatus {
-                                    choice: choice.as_byte().into(),
-                                }),
-                            },
-                            ExplorerVote::Private {
-                                proof,
-                                encrypted_vote,
-                            } => VoteStatus {
-                                address: key.into(),
-                                payload: VotePayloadStatus::Private(VotePayloadPrivateStatus {
-                                    proof: proof.clone(),
-                                    encrypted_vote: encrypted_vote.clone(),
-                                }),
-                            },
-                        })
-                        .collect(),
-                })
-                .collect(),
+            proposals,
+        }
+    }
+}
+
+pub fn to_tally_status(tally: Option<ExplorerVoteTally>) -> Option<TallyStatus> {
+    tally.map(|tally| match tally {
+        ExplorerVoteTally::Public { results, options } => TallyStatus::Public(TallyPublicStatus {
+            results: results.iter().map(Into::into).collect(),
+            options: options.into(),
+        }),
+        ExplorerVoteTally::Private { results, options } => {
+            TallyStatus::Private(TallyPrivateStatus {
+                results: results.map(|res| res.iter().map(Into::into).collect()),
+                options: options.into(),
+            })
+        }
+    })
+}
+
+pub fn bootstrap_tally_status(p: ExplorerVoteProposal) -> Option<TallyStatus> {
+    let s = StakeControl::default();
+    match compute_public_tally(&p, &s) {
+        ExplorerVoteTally::Public { results, options } => {
+            Some(TallyStatus::Public(TallyPublicStatus {
+                results: results.iter().map(Into::into).collect(),
+                options: options.into(),
+            }))
+        }
+        ExplorerVoteTally::Private { results, options } => {
+            Some(TallyStatus::Private(TallyPrivateStatus {
+                results: results.map(|res| res.iter().map(Into::into).collect()),
+                options: options.into(),
+            }))
         }
     }
 }

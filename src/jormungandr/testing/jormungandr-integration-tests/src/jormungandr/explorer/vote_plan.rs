@@ -115,8 +115,7 @@ pub fn explorer_vote_plan_not_existing() {
     );
 }
 
-#[should_panic]
-#[test] // NPG-3712
+#[test]
 pub fn explorer_vote_plan_public_flow_test() {
     let temp_dir = TempDir::new().unwrap();
     let alice = Wallet::default();
@@ -394,8 +393,7 @@ pub fn explorer_vote_plan_public_flow_test() {
     );
 }
 
-#[should_panic]
-#[test] //NPG-3369
+#[test]
 pub fn explorer_vote_plan_private_flow_test() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
     let yes_choice = Choice::new(1);
@@ -448,8 +446,8 @@ pub fn explorer_vote_plan_private_flow_test() {
             token_id: vote_plan.voting_token().clone().into(),
             policy: MintingPolicy::new().into(),
             to: vec![
-                voters[0].to_initial_token(INITIAL_FUND_PER_WALLET_1),
-                voters[1].to_initial_token(INITIAL_FUND_PER_WALLET_2),
+                voters[0].to_initial_token(INITIAL_TOKEN_PER_WALLET_1),
+                voters[1].to_initial_token(INITIAL_TOKEN_PER_WALLET_2),
             ],
         })
         .with_block0_consensus(ConsensusType::Bft)
@@ -702,8 +700,7 @@ pub fn explorer_vote_plan_private_flow_test() {
     );
 }
 
-#[should_panic]
-#[test] // NPG-3712
+#[test]
 pub fn explorer_all_vote_plans_public_flow_test() {
     let temp_dir = TempDir::new().unwrap();
     let alice = Wallet::default();
@@ -1016,8 +1013,7 @@ pub fn explorer_all_vote_plans_public_flow_test() {
     );
 }
 
-#[should_panic]
-#[test] //NPG-3369
+#[test]
 pub fn explorer_all_vote_plans_private_flow_test() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
     let yes_choice = Choice::new(1);

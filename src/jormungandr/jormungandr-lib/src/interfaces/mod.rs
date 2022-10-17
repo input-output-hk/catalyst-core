@@ -32,6 +32,7 @@ mod tax_type;
 mod transaction_input;
 mod transaction_output;
 mod transaction_witness;
+mod updates;
 mod utxo_info;
 mod value;
 mod vote;
@@ -48,7 +49,9 @@ pub use self::{
     },
     committee::CommitteeIdDef,
     config::*,
-    config_params::{config_params_documented_example, ConfigParam, ConfigParams},
+    config_params::{
+        config_params_documented_example, ConfigParam, ConfigParams, FromConfigParamError,
+    },
     evm_transaction::EvmTransaction,
     fragment::FragmentDef,
     fragment_log::{FragmentLog, FragmentOrigin, FragmentStatus},
@@ -78,6 +81,7 @@ pub use self::{
     transaction_input::{TransactionInput, TransactionInputType},
     transaction_output::TransactionOutput,
     transaction_witness::TransactionWitness,
+    updates::{UpdateProposalDef, UpdateProposalStateDef},
     utxo_info::{UTxOInfo, UTxOOutputInfo},
     value::{Value, ValueDef},
     vote::{

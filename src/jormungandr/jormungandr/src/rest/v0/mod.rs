@@ -230,6 +230,12 @@ pub fn filter(
         .and_then(handlers::get_diagnostic)
         .boxed();
 
+    let updates = warp::path!("updates" / "active")
+        .and(warp::get())
+        .and(with_context.clone())
+        .and_then(handlers::get_update_proposals)
+        .boxed();
+
     let votes = {
         let root = warp::path!("vote" / "active" / ..);
         let committees = warp::path!("committees")
@@ -262,6 +268,7 @@ pub fn filter(
         .or(rewards)
         .or(utxo)
         .or(diagnostic)
+        .or(updates)
         .or(votes);
 
     #[cfg(feature = "evm")]

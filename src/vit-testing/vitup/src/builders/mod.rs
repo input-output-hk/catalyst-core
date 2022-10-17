@@ -15,12 +15,16 @@ use chain_impl_mockchain::tokens::minting_policy::MintingPolicy;
 use chain_impl_mockchain::value::Value;
 use config::Block0Initial::Wallet;
 pub use helpers::{
-    convert_to_blockchain_date, convert_to_human_date, generate_qr_and_hashes,
-    VitVotePlanDefBuilder, WalletExtension,
+    convert_to_blockchain_date, convert_to_human_date, discover_archive_input_files,
+    generate_qr_and_hashes, get_configuration_from_file_url, ArchiveConfError,
+    ArchiveConfiguration, VitVotePlanDefBuilder, WalletExtension,
 };
 use hersir::builder::Node;
 use hersir::builder::Topology;
-use hersir::config::{Blockchain, CommitteeTemplate, SessionSettings, WalletTemplate};
+use hersir::config::{
+    Blockchain, CommitteeTemplate, ExplorerTemplate, SessionSettings, WalletTemplate,
+};
+use jormungandr_automation::jormungandr::PersistenceMode;
 pub use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::interfaces::NumberOfSlotsPerEpoch;
 use jormungandr_lib::interfaces::SlotDuration;
@@ -288,6 +292,23 @@ impl VitBackendSettingsBuilder {
         );
 
         builder = builder.blockchain(blockchain);
+
+        println!("building additional services..");
+
+        if self.config.additional.explorer {
+            builder = builder.explorer(ExplorerTemplate {
+                connect_to: WALLET_NODE.to_string(),
+                persistence_mode: PersistenceMode::InMemory,
+                address_bech32_prefix: None,
+                query_depth_limit: None,
+                query_complexity_limit: None,
+            });
+        }
+
+        if let Some(url) = &self.config.additional.archive {
+            builder = builder.archive_conf(discover_archive_input_files(url)?);
+        }
+
         println!("building controllers..");
 
         let controller = builder.build(self.session_settings.clone())?;
@@ -326,4 +347,6 @@ pub enum Error {
     TooManyOptions,
     #[error(transparent)]
     Json(#[from] serde_json::Error),
+    #[error(transparent)]
+    Archive(#[from] ArchiveConfError),
 }

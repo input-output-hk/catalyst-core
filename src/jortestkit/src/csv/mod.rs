@@ -40,7 +40,7 @@ impl CsvFileBuilder {
         let mut wtr = Writer::from_path(&self.file)?;
         wtr.write_record(&self.header)?;
         for line in self.content.iter() {
-            wtr.write_record(&*line)?;
+            wtr.write_record(line)?;
         }
         wtr.flush()?;
         Ok(())

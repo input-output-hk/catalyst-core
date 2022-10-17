@@ -31,6 +31,8 @@ pub enum Error {
     PortAlreadyBinded(u16),
     #[error("no vit station defined in settings")]
     NoVitStationDefinedInSettings,
+    #[error("no vit station archiver defined in settings")]
+    NoVitStationArchiverDefinedInSettings,
     #[error("fragment logs in an invalid format")]
     InvalidFragmentLogs(#[source] serde_json::Error),
     #[error("node '{alias}' failed to start after {} s", .duration.as_secs())]

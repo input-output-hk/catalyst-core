@@ -53,6 +53,8 @@ pub enum Error {
     PortAlreadyBinded(u16),
     #[error("no wallet proxy defined in settings")]
     NoWalletProxiesDefinedInSettings,
+    #[error("no explorer defined in settings")]
+    NoExplorerDefinedInSettings,
     #[error("fragment logs in an invalid format")]
     InvalidFragmentLogs(#[source] serde_json::Error),
     #[error("node stats in an invalid format")]

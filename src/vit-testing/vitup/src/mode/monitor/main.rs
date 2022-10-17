@@ -1,4 +1,5 @@
 use super::{VitStationMonitorController, WalletProxyMonitorController};
+use crate::mode::monitor::ExplorerMonitorController;
 use crate::mode::standard::{
     ValidVotePlanParameters, ValidVotingTemplateGenerator, VitController as InnerController,
     WalletProxySpawnParams,
@@ -69,6 +70,24 @@ impl MonitorController {
             self.build_progress_bar(vit_station.alias(), vit_station.address().to_string());
 
         Ok(VitStationMonitorController::new(vit_station, progress_bar))
+    }
+
+    pub fn spawn_vit_station_archiver(
+        &mut self,
+        version: String,
+    ) -> Result<VitStationMonitorController> {
+        let vit_station = self.inner.spawn_vit_station_archive(version)?;
+        let progress_bar =
+            self.build_progress_bar(vit_station.alias(), vit_station.address().to_string());
+
+        Ok(VitStationMonitorController::new(vit_station, progress_bar))
+    }
+
+    pub fn spawn_explorer(&mut self) -> Result<ExplorerMonitorController> {
+        let explorer = self.inner.spawn_explorer()?;
+        let progress_bar = self.build_progress_bar(explorer.alias(), explorer.address());
+
+        Ok(ExplorerMonitorController::new(explorer, progress_bar))
     }
 
     pub fn spawn_wallet_proxy_custom(

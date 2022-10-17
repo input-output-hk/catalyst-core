@@ -139,6 +139,10 @@ impl BootstrapCommandBuilder {
             command.arg("--block0-path").arg(block0_path);
         }
 
+        if let Some(block0_paths) = &self.block0_paths {
+            command.arg("--block0-paths").arg(block0_paths);
+        }
+
         if let Some(cert_file) = &self.cert_file {
             command.arg("--cert-file").arg(cert_file.to_str().unwrap());
         }

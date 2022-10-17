@@ -7,9 +7,11 @@ mod static_data;
 mod vote_plan;
 mod vote_time;
 
+mod additional;
 pub mod certs;
 pub mod mode;
 
+use crate::config::additional::AdditionalServices;
 use crate::config::builder::convert_to_human_date;
 use crate::config::vote_time::FORMAT;
 use crate::Result;
@@ -44,6 +46,8 @@ pub struct Config {
     pub data: StaticData,
     #[serde(default)]
     pub service: Service,
+    #[serde(default)]
+    pub additional: AdditionalServices,
 }
 
 impl Config {

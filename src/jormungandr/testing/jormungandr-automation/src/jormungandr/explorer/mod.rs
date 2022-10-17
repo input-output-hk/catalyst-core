@@ -108,10 +108,17 @@ impl ExplorerProcess {
 
         println!("starting explorer: {:?}", explorer_cmd);
 
-        let stdout_cfg = if let Some(logs_dir) = configuration.logs_dir.as_ref() {
-            Stdio::from(File::create(logs_dir.join("explorer.log")).expect("explorer stdout file"))
+        let (stdout_cfg, stderr_cfg) = if let Some(logs_dir) = configuration.logs_dir.as_ref() {
+            (
+                Stdio::from(
+                    File::create(logs_dir.join("explorer.log")).expect("explorer stdout file"),
+                ),
+                Stdio::from(
+                    File::create(logs_dir.join("explorer.err")).expect("explorer stderr file"),
+                ),
+            )
         } else {
-            Stdio::piped()
+            (Stdio::piped(), Stdio::piped())
         };
 
         let handler = Some(

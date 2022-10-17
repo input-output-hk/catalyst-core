@@ -184,6 +184,10 @@ impl Proposals {
             PushProposal::Success
         }
     }
+
+    pub fn proposals(&self) -> &Vec<Proposal> {
+        &self.proposals
+    }
 }
 
 impl VotePlan {

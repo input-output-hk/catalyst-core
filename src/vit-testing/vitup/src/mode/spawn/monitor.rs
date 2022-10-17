@@ -40,6 +40,7 @@ pub fn spawn_network(
         template_generator,
         config.service.version,
     )?;
+
     let _wallet_proxy =
         monitor_controller.spawn_wallet_proxy_custom(&mut network_spawn_params.proxy_params())?;
 

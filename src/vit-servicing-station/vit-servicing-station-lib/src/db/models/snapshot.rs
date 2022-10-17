@@ -1,3 +1,5 @@
+#![allow(clippy::extra_unused_lifetimes)]
+
 use crate::db::schema::{contributions, snapshots, voters};
 use diesel::{Insertable, Queryable};
 use serde::{Deserialize, Serialize};

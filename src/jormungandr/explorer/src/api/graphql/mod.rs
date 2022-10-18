@@ -1359,7 +1359,7 @@ impl VotePlanStatus {
                     proposal_id: ExternalProposalId::from(proposal.proposal_id.clone()),
                     options: VoteOptionRange::from(proposal.options.clone()),
                     tally: proposal.tally.clone().map_or(
-                        bootstrap_tally_status(ExplorerVoteProposal {
+                        generic_tally_status(ExplorerVoteProposal {
                             proposal_id: proposal.proposal_id,
                             options: proposal.options,
                             tally: proposal.tally,
@@ -1412,7 +1412,7 @@ pub fn to_tally_status(tally: Option<ExplorerVoteTally>) -> Option<TallyStatus> 
 }
 
 // if the tally is None, convert to generic tally result as per rest api requirements
-pub fn bootstrap_tally_status(p: ExplorerVoteProposal) -> Option<TallyStatus> {
+pub fn generic_tally_status(p: ExplorerVoteProposal) -> Option<TallyStatus> {
     let s = StakeControl::default();
     match compute_public_tally(&p, &s) {
         ExplorerVoteTally::Public { results, options } => {

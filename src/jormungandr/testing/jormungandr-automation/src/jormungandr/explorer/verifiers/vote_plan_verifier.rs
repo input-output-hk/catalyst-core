@@ -83,13 +83,7 @@ impl ExplorerVerifier {
                             .zip(explorer_tally_status.results.iter())
                             .filter(|&(a, b)| &a.to_string() == b)
                             .count();
-                        println!(
-                            "matching results {:?} results length {:?} results {:?} tally {:?}",
-                            matching_results,
-                            result.results.len(),
-                            result,
-                            explorer_tally_status
-                        );
+
                         assert_eq!(matching_results, result.results.len());
                         assert_eq!(result.options.len(), explorer_tally_status.results.len());
                         assert_eq!(

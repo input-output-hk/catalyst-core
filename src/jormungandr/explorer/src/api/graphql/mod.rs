@@ -1395,6 +1395,7 @@ impl VotePlanStatus {
     }
 }
 
+/// checks if the tally is public or private and converts result to TallyStatus type
 pub fn to_tally_status(tally: Option<ExplorerVoteTally>) -> Option<TallyStatus> {
     tally.map(|tally| match tally {
         ExplorerVoteTally::Public { results, options } => TallyStatus::Public(TallyPublicStatus {
@@ -1410,6 +1411,7 @@ pub fn to_tally_status(tally: Option<ExplorerVoteTally>) -> Option<TallyStatus> 
     })
 }
 
+// if the tally is None, convert to generic tally result as per rest api requirements
 pub fn bootstrap_tally_status(p: ExplorerVoteProposal) -> Option<TallyStatus> {
     let s = StakeControl::default();
     match compute_public_tally(&p, &s) {

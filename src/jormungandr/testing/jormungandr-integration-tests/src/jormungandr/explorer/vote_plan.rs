@@ -912,24 +912,6 @@ pub fn explorer_all_vote_plans_public_flow_test() {
         vote_plans_proposal_votes.insert(vote_plan.to_id().to_string(), proposal_votes);
     }
 
-    let query_response = explorer
-        .vote_plans(vote_plans_limit)
-        .expect("vote plan transaction not found");
-
-    assert!(
-        query_response.errors.is_none(),
-        "{:?}",
-        query_response.errors.unwrap()
-    );
-
-    let all_vote_plans_response = query_response.data.unwrap().tip.all_vote_plans;
-    let _all_vote_plans = all_vote_plans_response.edges;
-    let vote_plan_statuses = jormungandr.rest().vote_plan_statuses().unwrap();
-    assert_eq!(
-        all_vote_plans_response.total_count,
-        vote_plan_statuses.len() as i64
-    );
-
     wait_for_date(
         vote_plans.first().unwrap().vote_end().into(),
         jormungandr.rest(),
@@ -951,6 +933,30 @@ pub fn explorer_all_vote_plans_public_flow_test() {
         &jormungandr,
     )
     .unwrap();
+
+    let query_response = explorer
+        .vote_plans(vote_plans_limit)
+        .expect("vote plan transaction not found");
+
+    assert!(
+        query_response.errors.is_none(),
+        "{:?}",
+        query_response.errors.unwrap()
+    );
+
+    let all_vote_plans_response = query_response.data.unwrap().tip.all_vote_plans;
+    let all_vote_plans = all_vote_plans_response.edges;
+    let vote_plan_statuses = jormungandr.rest().vote_plan_statuses().unwrap();
+    assert_eq!(
+        all_vote_plans_response.total_count,
+        vote_plan_statuses.len() as i64
+    );
+
+    ExplorerVerifier::assert_all_vote_plans(
+        all_vote_plans,
+        vote_plan_statuses,
+        vote_plans_proposal_votes.clone(),
+    );
 
     let query_response = explorer
         .vote_plans(vote_plans_limit)

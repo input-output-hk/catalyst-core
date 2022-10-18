@@ -20,3 +20,19 @@ pub async fn get_challenge_by_id(
         proposals,
     })
 }
+
+pub async fn get_challenge_by_id_and_group_id(
+    id: i32,
+    voter_group_id: String,
+    context: SharedContext,
+) -> Result<ChallengeWithProposals, HandleError> {
+    let pool = &context.read().await.db_connection_pool;
+    let challenge = challenges_queries::query_challenge_by_id(id, pool).await?;
+    let proposals =
+        challenges_queries::query_challenge_proposals_by_id_and_group_id(id, voter_group_id, pool)
+            .await?;
+    Ok(ChallengeWithProposals {
+        challenge,
+        proposals,
+    })
+}

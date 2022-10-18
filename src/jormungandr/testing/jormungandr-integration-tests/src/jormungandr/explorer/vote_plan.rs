@@ -648,6 +648,21 @@ pub fn explorer_vote_plan_private_flow_test() {
         query_response.errors.unwrap()
     );
 
+    let vote_plan_transaction = query_response.data.unwrap().vote_plan;
+    let vote_plan_status = jormungandr
+        .rest()
+        .vote_plan_statuses()
+        .unwrap()
+        .first()
+        .unwrap()
+        .clone();
+
+    ExplorerVerifier::assert_vote_plan_by_id(
+        vote_plan_transaction,
+        vote_plan_status,
+        proposal_votes.clone(),
+    );
+
     //4. Tally end
     wait_for_date(vote_plan.committee_end().into(), jormungandr.rest());
 

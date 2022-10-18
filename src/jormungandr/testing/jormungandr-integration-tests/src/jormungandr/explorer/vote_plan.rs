@@ -310,21 +310,6 @@ pub fn explorer_vote_plan_public_flow_test() {
         query_response.errors.unwrap()
     );
 
-    let vote_plan_transaction = query_response.data.unwrap().vote_plan;
-    let vote_plan_status = jormungandr
-        .rest()
-        .vote_plan_statuses()
-        .unwrap()
-        .first()
-        .unwrap()
-        .clone();
-
-    ExplorerVerifier::assert_vote_plan_by_id(
-        vote_plan_transaction,
-        vote_plan_status,
-        proposal_votes.clone(),
-    );
-
     wait_for_date(vote_plan.vote_end().into(), jormungandr.rest());
 
     //3.Start talling
@@ -592,21 +577,6 @@ pub fn explorer_vote_plan_private_flow_test() {
         query_response.errors.unwrap()
     );
 
-    let vote_plan_transaction = query_response.data.unwrap().vote_plan;
-    let vote_plan_status = jormungandr
-        .rest()
-        .vote_plan_statuses()
-        .unwrap()
-        .first()
-        .unwrap()
-        .clone();
-
-    ExplorerVerifier::assert_vote_plan_by_id(
-        vote_plan_transaction,
-        vote_plan_status,
-        proposal_votes.clone(),
-    );
-
     //3.Tally
     wait_for_date(vote_plan.committee_start().into(), jormungandr.rest());
     let transaction_sender =
@@ -646,21 +616,6 @@ pub fn explorer_vote_plan_private_flow_test() {
         query_response.errors.is_none(),
         "{:?}",
         query_response.errors.unwrap()
-    );
-
-    let vote_plan_transaction = query_response.data.unwrap().vote_plan;
-    let vote_plan_status = jormungandr
-        .rest()
-        .vote_plan_statuses()
-        .unwrap()
-        .first()
-        .unwrap()
-        .clone();
-
-    ExplorerVerifier::assert_vote_plan_by_id(
-        vote_plan_transaction,
-        vote_plan_status,
-        proposal_votes.clone(),
     );
 
     //4. Tally end
@@ -923,17 +878,11 @@ pub fn explorer_all_vote_plans_public_flow_test() {
     );
 
     let all_vote_plans_response = query_response.data.unwrap().tip.all_vote_plans;
-    let all_vote_plans = all_vote_plans_response.edges;
+    let _all_vote_plans = all_vote_plans_response.edges;
     let vote_plan_statuses = jormungandr.rest().vote_plan_statuses().unwrap();
     assert_eq!(
         all_vote_plans_response.total_count,
         vote_plan_statuses.len() as i64
-    );
-
-    ExplorerVerifier::assert_all_vote_plans(
-        all_vote_plans,
-        vote_plan_statuses,
-        vote_plans_proposal_votes.clone(),
     );
 
     wait_for_date(

@@ -86,7 +86,13 @@ impl ExplorerVerifier {
                                         result.results.len(),
                                         explorer_tally_status.results.len()
                                     );
-
+                                    let matching_results = result
+                                        .results
+                                        .iter()
+                                        .zip(explorer_tally_status.results.iter())
+                                        .filter(|&(a, b)| &a.to_string() == b)
+                                        .count();
+                                    assert_eq!(matching_results, result.results.len());
                                     assert_eq!(
                                         result.options.len(),
                                         explorer_tally_status.results.len()

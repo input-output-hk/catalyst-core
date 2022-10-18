@@ -3,7 +3,6 @@ mod config_param;
 mod connections;
 mod error;
 mod scalars;
-
 use self::{
     config_param::{EpochStabilityDepth, LinearFee},
     connections::{

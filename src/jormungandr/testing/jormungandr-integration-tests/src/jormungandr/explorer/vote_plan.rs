@@ -300,6 +300,13 @@ pub fn explorer_vote_plan_public_flow_test() {
         vote_for_luigi,
     );
 
+    wait_for_date(vote_plan.vote_end().into(), jormungandr.rest());
+
+    //3.Start talling
+    let mempool_check = transaction_sender
+        .send_public_vote_tally(&mut voters[0], &vote_plan, &jormungandr)
+        .unwrap();
+
     let query_response = explorer
         .vote_plan(vote_plan.to_id().to_string())
         .expect("vote plan transaction not found");
@@ -310,12 +317,20 @@ pub fn explorer_vote_plan_public_flow_test() {
         query_response.errors.unwrap()
     );
 
-    wait_for_date(vote_plan.vote_end().into(), jormungandr.rest());
+    let vote_plan_transaction = query_response.data.unwrap().vote_plan;
+    let vote_plan_status = jormungandr
+        .rest()
+        .vote_plan_statuses()
+        .unwrap()
+        .first()
+        .unwrap()
+        .clone();
 
-    //3.Start talling
-    let mempool_check = transaction_sender
-        .send_public_vote_tally(&mut voters[0], &vote_plan, &jormungandr)
-        .unwrap();
+    ExplorerVerifier::assert_vote_plan_by_id(
+        vote_plan_transaction,
+        vote_plan_status,
+        proposal_votes.clone(),
+    );
 
     FragmentVerifier::wait_and_verify_is_in_block(
         Duration::from_secs(2),
@@ -567,16 +582,6 @@ pub fn explorer_vote_plan_private_flow_test() {
         vote_for_luigi,
     );
 
-    let query_response = explorer
-        .vote_plan(vote_plan.to_id().to_string())
-        .expect("vote plan transaction not found");
-
-    assert!(
-        query_response.errors.is_none(),
-        "{:?}",
-        query_response.errors.unwrap()
-    );
-
     //3.Tally
     wait_for_date(vote_plan.committee_start().into(), jormungandr.rest());
     let transaction_sender =
@@ -600,6 +605,31 @@ pub fn explorer_vote_plan_private_flow_test() {
     let mempool_check = transaction_sender
         .send_private_vote_tally(&mut voters[0], &vote_plan, decrypted_shares, &jormungandr)
         .unwrap();
+
+    let query_response = explorer
+        .vote_plan(vote_plan.to_id().to_string())
+        .expect("vote plan transaction not found");
+
+    assert!(
+        query_response.errors.is_none(),
+        "{:?}",
+        query_response.errors.unwrap()
+    );
+
+    let vote_plan_transaction = query_response.data.unwrap().vote_plan;
+    let vote_plan_status = jormungandr
+        .rest()
+        .vote_plan_statuses()
+        .unwrap()
+        .first()
+        .unwrap()
+        .clone();
+
+    ExplorerVerifier::assert_vote_plan_by_id(
+        vote_plan_transaction,
+        vote_plan_status,
+        proposal_votes.clone(),
+    );
 
     FragmentVerifier::wait_and_verify_is_in_block(
         Duration::from_secs(2),

@@ -130,7 +130,7 @@ impl UpdateState {
     pub fn proposals(&self) -> HashMap<UpdateProposalId, UpdateProposalState> {
         self.proposals
             .iter()
-            .map(|(id, state)| (id.clone(), state.clone()))
+            .map(|(id, state)| (*id, state.clone()))
             .collect()
     }
 }

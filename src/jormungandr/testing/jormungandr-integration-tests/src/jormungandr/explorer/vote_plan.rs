@@ -746,7 +746,7 @@ pub fn explorer_all_vote_plans_public_flow_test() {
                 epoch: 1,
                 slot_id: 0,
             },
-            &vote_plan,
+            vote_plan,
         )
         .into();
         vote_plans_cert.push(vote_plan_cert);
@@ -832,7 +832,7 @@ pub fn explorer_all_vote_plans_public_flow_test() {
         transaction_sender
             .send_vote_cast(
                 &mut voters[0],
-                &vote_plan,
+                vote_plan,
                 VOTE_FOR_ANTONIO,
                 &no_choice,
                 &jormungandr,
@@ -844,7 +844,7 @@ pub fn explorer_all_vote_plans_public_flow_test() {
         transaction_sender
             .send_vote_cast(
                 &mut voters[1],
-                &vote_plan,
+                vote_plan,
                 VOTE_FOR_ANTONIO,
                 &yes_choice,
                 &jormungandr,
@@ -856,7 +856,7 @@ pub fn explorer_all_vote_plans_public_flow_test() {
         transaction_sender
             .send_vote_cast(
                 &mut voters[0],
-                &vote_plan,
+                vote_plan,
                 VOTE_FOR_MARIO,
                 &no_choice,
                 &jormungandr,
@@ -868,7 +868,7 @@ pub fn explorer_all_vote_plans_public_flow_test() {
         transaction_sender
             .send_vote_cast(
                 &mut voters[1],
-                &vote_plan,
+                vote_plan,
                 VOTE_FOR_LUIGI,
                 &no_choice,
                 &jormungandr,
@@ -949,7 +949,7 @@ pub fn explorer_all_vote_plans_public_flow_test() {
     for vote_plan in &vote_plans {
         mempool_check.push(
             transaction_sender
-                .send_public_vote_tally(&mut voters[0], &vote_plan, &jormungandr)
+                .send_public_vote_tally(&mut voters[0], vote_plan, &jormungandr)
                 .unwrap(),
         );
     }
@@ -1066,7 +1066,7 @@ pub fn explorer_all_vote_plans_private_flow_test() {
                 epoch: 1,
                 slot_id: 0,
             },
-            &vote_plan,
+            vote_plan,
         )
         .into();
         vote_plans_cert.push(vote_plan_cert);
@@ -1158,15 +1158,15 @@ pub fn explorer_all_vote_plans_private_flow_test() {
 
     for vote_plan in &vote_plans {
         let first_voter_luigi_fragment =
-            fragment_builder.private_vote_cast(&voters[0], &vote_plan, VOTE_FOR_LUIGI, &yes_choice);
+            fragment_builder.private_vote_cast(&voters[0], vote_plan, VOTE_FOR_LUIGI, &yes_choice);
         //voters[0].confirm_transaction();
 
         let second_voter_luigi_fragment =
-            fragment_builder.private_vote_cast(&voters[1], &vote_plan, VOTE_FOR_LUIGI, &yes_choice);
+            fragment_builder.private_vote_cast(&voters[1], vote_plan, VOTE_FOR_LUIGI, &yes_choice);
         voters[1].confirm_transaction();
 
         let second_voter_mario_fragment =
-            fragment_builder.private_vote_cast(&voters[1], &vote_plan, VOTE_FOR_MARIO, &no_choice);
+            fragment_builder.private_vote_cast(&voters[1], vote_plan, VOTE_FOR_MARIO, &no_choice);
         voters[1].decrement_counter();
 
         transaction_sender
@@ -1274,7 +1274,7 @@ pub fn explorer_all_vote_plans_private_flow_test() {
                     transaction_sender
                         .send_private_vote_tally(
                             &mut voters[0],
-                            &vote_plan,
+                            vote_plan,
                             decrypted_shares.clone(),
                             &jormungandr,
                         )

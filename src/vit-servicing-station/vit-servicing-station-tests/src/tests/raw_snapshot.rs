@@ -214,7 +214,7 @@ pub fn import_big_raw_snapshot() {
 
     assert_against_snapshot(
         &snapshot_infos[0].clone(),
-        raw_snapshot.clone(),
+        raw_snapshot,
         &rest_client,
     );
 }
@@ -229,7 +229,7 @@ fn assert_against_snapshot(
         .voter_info(&raw_snapshot.tag, &snapshot_entry.hir.voting_key.to_hex())
         .unwrap();
     assert_eq!(
-        vec![voting_power.clone()],
+        vec![voting_power],
         voter_info.voter_info,
         "wrong data for entry: {:?}",
         snapshot_entry

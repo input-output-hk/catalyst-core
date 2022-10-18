@@ -125,16 +125,16 @@ impl VitVotePlanDefBuilder {
                         vote_start: BlockDate::new(self.vote_phases.vote_start, 0),
                         vote_end: BlockDate::new(self.vote_phases.tally_start, 0),
                         committee_end: BlockDate::new(self.vote_phases.tally_end, 0),
-                        proposals: proposal_builders
-                            .into_iter()
-                            .map(|pb| pb.clone().build())
-                            .fold(Proposals::new(), |mut acc, p| {
+                        proposals: proposal_builders.iter().map(|pb| pb.clone().build()).fold(
+                            Proposals::new(),
+                            |mut acc, p| {
                                 let proposal: Proposal = p.into();
                                 assert_eq!(acc.push(proposal), PushProposal::Success);
                                 acc
-                            }),
+                            },
+                        ),
                         committee_member_public_keys: vec![],
-                        voting_token: voting_token.clone().into(),
+                        voting_token: voting_token.clone(),
                         vote_plan_key,
                         private: self.private.then_some(PrivateParameters {
                             crs: None,

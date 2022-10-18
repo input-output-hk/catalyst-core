@@ -2,11 +2,12 @@ use chain_impl_mockchain::testing::TestGen;
 use jormungandr_lib::interfaces::Value;
 use rand::Rng;
 use snapshot_lib::registration::{Delegations, VotingRegistration};
-use snapshot_lib::Fraction;
+use snapshot_lib::{voting_group::RepsVotersAssigner, Error, Snapshot};
 use snapshot_lib::{
     voting_group::{DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP},
     CATALYST_VOTING_PURPOSE_TAG,
 };
+use snapshot_lib::{Fraction, SnapshotInfo};
 use time::OffsetDateTime;
 use vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 
@@ -19,6 +20,59 @@ pub struct RawSnapshot {
 impl Default for RawSnapshot {
     fn default() -> RawSnapshot {
         RawSnapshotBuilder::default().build()
+    }
+}
+
+impl RawSnapshot {
+    pub fn empty(tag: impl Into<String>) -> Self {
+        Self {
+            tag: tag.into(),
+            content: RawSnapshotInput {
+                snapshot: Vec::new().into(),
+                update_timestamp: 0,
+                min_stake_threshold: 0.into(),
+                voting_power_cap: 0.into(),
+                direct_voters_group: None,
+                representatives_group: None,
+            },
+        }
+    }
+}
+
+pub trait RawSnapshotExtension {
+    fn into_full_snapshot_infos(
+        self,
+        assigner: &RepsVotersAssigner,
+    ) -> Result<Vec<SnapshotInfo>, Error>;
+}
+
+impl RawSnapshotExtension for RawSnapshot {
+    fn into_full_snapshot_infos(
+        self,
+        assigner: &RepsVotersAssigner,
+    ) -> Result<Vec<SnapshotInfo>, Error> {
+        Ok(Snapshot::from_raw_snapshot(
+            self.content.snapshot,
+            self.content.min_stake_threshold,
+            self.content.voting_power_cap,
+            assigner,
+        )?
+        .to_full_snapshot_info())
+    }
+}
+
+impl From<RawSnapshot> for RepsVotersAssigner {
+    fn from(raw_snapshot: RawSnapshot) -> Self {
+        let direct_voter = raw_snapshot
+            .content
+            .direct_voters_group
+            .unwrap_or_else(|| DEFAULT_DIRECT_VOTER_GROUP.into());
+        let representative = raw_snapshot
+            .content
+            .representatives_group
+            .unwrap_or_else(|| DEFAULT_REPRESENTATIVE_GROUP.into());
+
+        RepsVotersAssigner::new(direct_voter, representative)
     }
 }
 

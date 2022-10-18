@@ -3,7 +3,7 @@ use crate::certificate::{UpdateProposal, UpdateProposalId, UpdateVote, UpdateVot
 use crate::date::BlockDate;
 use crate::setting::{ActiveSlotsCoeffError, Settings};
 use imhamt::Hamt;
-use std::collections::{hash_map::DefaultHasher,HashMap};
+use std::collections::{hash_map::DefaultHasher, HashMap};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UpdateState {
@@ -128,7 +128,10 @@ impl UpdateState {
         (self, settings)
     }
     pub fn proposals(&self) -> HashMap<UpdateProposalId, UpdateProposalState> {
-        self.proposals.iter().map(|(id,state)| (id.clone(),state.clone())).collect()
+        self.proposals
+            .iter()
+            .map(|(id, state)| (id.clone(), state.clone()))
+            .collect()
     }
 }
 

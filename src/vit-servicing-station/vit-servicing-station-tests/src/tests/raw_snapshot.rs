@@ -1,14 +1,13 @@
 use std::time::Duration;
 
 use crate::common::{
-    clients::RawRestClient,
-    raw_snapshot::{RawSnapshot, RawSnapshotBuilder, RawSnapshotUpdater},
+    clients::{RawRestClient, RestClient},
+    raw_snapshot::{RawSnapshot, RawSnapshotBuilder, RawSnapshotExtension, RawSnapshotUpdater},
     snapshot::{SnapshotBuilder, VotingPower},
     startup::quick_start,
 };
 use assert_fs::TempDir;
-use snapshot_lib::{voting_group::RepsVotersAssigner, Snapshot};
-use vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
+use snapshot_lib::SnapshotInfo;
 
 #[test]
 pub fn import_new_raw_snapshot() {
@@ -26,36 +25,15 @@ pub fn import_new_raw_snapshot() {
         "expected tags vs tags taken from REST API"
     );
 
-    let assigner = RepsVotersAssigner::new(
-        raw_snapshot.content.direct_voters_group.unwrap(),
-        raw_snapshot.content.representatives_group.unwrap(),
-    );
+    let assigner = raw_snapshot.clone().into();
 
-    let snapshot = Snapshot::from_raw_snapshot(
-        raw_snapshot.content.snapshot,
-        raw_snapshot.content.min_stake_threshold,
-        raw_snapshot.content.voting_power_cap,
-        &assigner,
-    )
-    .unwrap()
-    .to_full_snapshot_info();
+    let snapshot_infos = raw_snapshot
+        .clone()
+        .into_full_snapshot_infos(&assigner)
+        .unwrap();
 
-    for (idx, entry) in snapshot.iter().enumerate() {
-        let voting_power = VotingPower::from(entry.clone());
-        let voter_info = rest_client
-            .voter_info(&raw_snapshot.tag, &entry.hir.voting_key.to_hex())
-            .unwrap();
-        assert_eq!(
-            vec![voting_power],
-            voter_info.voter_info,
-            "wrong data for entry idx: {}",
-            idx
-        );
-        assert_eq!(
-            raw_snapshot.content.update_timestamp, voter_info.last_updated,
-            "wrong timestamp for entry idx: {}",
-            idx
-        );
+    for snapshot_info in snapshot_infos.iter() {
+        assert_against_snapshot(snapshot_info, raw_snapshot.clone(), &rest_client);
     }
 }
 
@@ -69,53 +47,29 @@ pub fn reimport_with_empty_raw_snapshot() {
 
     rest_client.put_raw_snapshot(&raw_snapshot).unwrap();
 
-    let empty_snapshot = RawSnapshot {
-        tag: raw_snapshot.tag.clone(),
-        content: RawSnapshotInput {
-            snapshot: Vec::new().into(),
-            update_timestamp: 0,
-            min_stake_threshold: 0.into(),
-            voting_power_cap: 0.into(),
-            direct_voters_group: None,
-            representatives_group: None,
-        },
-    };
+    let empty_snapshot = RawSnapshot::empty(raw_snapshot.tag.clone());
 
     rest_client.put_raw_snapshot(&empty_snapshot).unwrap();
 
-    let assigner = RepsVotersAssigner::new(
-        raw_snapshot.content.direct_voters_group.unwrap(),
-        raw_snapshot.content.representatives_group.unwrap(),
-    );
+    let assigner = raw_snapshot.clone().into();
 
-    let snapshot = Snapshot::from_raw_snapshot(
-        raw_snapshot.content.snapshot,
-        raw_snapshot.content.min_stake_threshold,
-        raw_snapshot.content.voting_power_cap,
-        &assigner,
-    )
-    .unwrap()
-    .to_full_snapshot_info();
+    let snapshot_infos = raw_snapshot
+        .clone()
+        .into_full_snapshot_infos(&assigner)
+        .unwrap();
 
-    for (idx, entry) in snapshot.iter().enumerate() {
-        let voter_info = rest_client
-            .voter_info(&raw_snapshot.tag, &entry.hir.voting_key.to_hex())
-            .unwrap();
-        assert!(
-            voter_info.voter_info.is_empty(),
-            "expected empty data for entry idx: {}",
-            idx
-        );
-        assert_eq!(
-            empty_snapshot.content.update_timestamp, voter_info.last_updated,
-            "wrong timestamp for entry idx: {}",
-            idx
+    for snapshot_info in snapshot_infos.iter() {
+        assert_is_empty_against_snapshot(
+            snapshot_info,
+            raw_snapshot.clone(),
+            empty_snapshot.content.update_timestamp,
+            &rest_client,
         );
     }
 }
 
 #[test]
-pub fn replace_raw_snapshot_with_tag() {
+pub fn replace_raw_snapshot_with_same_tag() {
     let temp_dir = TempDir::new().unwrap();
     let (server, data) = quick_start(&temp_dir).unwrap();
     let rest_client = server.rest_client_with_token(&data.token_hash());
@@ -130,68 +84,31 @@ pub fn replace_raw_snapshot_with_tag() {
 
     rest_client.put_raw_snapshot(&second_raw_snapshot).unwrap();
 
-    let assigner = RepsVotersAssigner::new(
-        first_raw_snapshot.content.direct_voters_group.unwrap(),
-        first_raw_snapshot.content.representatives_group.unwrap(),
-    );
+    let assigner = first_raw_snapshot.clone().into();
 
-    let first_snapshot = Snapshot::from_raw_snapshot(
-        first_raw_snapshot.content.snapshot,
-        first_raw_snapshot.content.min_stake_threshold,
-        first_raw_snapshot.content.voting_power_cap,
-        &assigner,
-    )
-    .unwrap()
-    .to_full_snapshot_info();
+    let first_snapshot_infos = first_raw_snapshot
+        .clone()
+        .into_full_snapshot_infos(&assigner)
+        .unwrap();
 
-    let assigner = RepsVotersAssigner::new(
-        second_raw_snapshot.content.direct_voters_group.unwrap(),
-        second_raw_snapshot.content.representatives_group.unwrap(),
-    );
+    let assigner = second_raw_snapshot.clone().into();
 
-    let second_snapshot = Snapshot::from_raw_snapshot(
-        second_raw_snapshot.content.snapshot,
-        second_raw_snapshot.content.min_stake_threshold,
-        second_raw_snapshot.content.voting_power_cap,
-        &assigner,
-    )
-    .unwrap()
-    .to_full_snapshot_info();
+    let second_snapshot_infos = second_raw_snapshot
+        .clone()
+        .into_full_snapshot_infos(&assigner)
+        .unwrap();
 
-    for (idx, entry) in first_snapshot.iter().enumerate() {
-        let voter_info = rest_client
-            .voter_info(&first_raw_snapshot.tag, &entry.hir.voting_key.to_hex())
-            .unwrap();
-        assert!(
-            voter_info.voter_info.is_empty(),
-            "expected empty data for entry idx: {}",
-            idx
-        );
-        assert_eq!(
-            second_raw_snapshot.content.update_timestamp, voter_info.last_updated,
-            "wrong timestamp for entry idx: {}",
-            idx
+    for snapshot_info in first_snapshot_infos.iter() {
+        assert_is_empty_against_snapshot(
+            snapshot_info,
+            first_raw_snapshot.clone(),
+            second_raw_snapshot.content.update_timestamp,
+            &rest_client,
         );
     }
-    for (idx, entry) in second_snapshot.iter().enumerate() {
-        let voting_power = VotingPower::from(entry.clone());
-        let voter_info = rest_client
-            .voter_info(
-                &second_raw_snapshot.tag.clone(),
-                &entry.hir.voting_key.to_hex(),
-            )
-            .unwrap();
-        assert_eq!(
-            vec![voting_power],
-            voter_info.voter_info,
-            "expected non-empty data for entry idx: {}",
-            idx
-        );
-        assert_eq!(
-            second_raw_snapshot.content.update_timestamp, voter_info.last_updated,
-            "wrong timestamp for entry idx: {}",
-            idx
-        );
+
+    for snapshot_info in second_snapshot_infos.iter() {
+        assert_against_snapshot(snapshot_info, second_raw_snapshot.clone(), &rest_client);
     }
 
     let third_snapshot = SnapshotBuilder::default()
@@ -201,19 +118,12 @@ pub fn replace_raw_snapshot_with_tag() {
 
     rest_client.put_snapshot_info(&third_snapshot).unwrap();
 
-    for (idx, entry) in second_snapshot.iter().enumerate() {
-        let voter_info = rest_client
-            .voter_info(&second_raw_snapshot.tag, &entry.hir.voting_key.to_hex())
-            .unwrap();
-        assert!(
-            voter_info.voter_info.is_empty(),
-            "expected empty data for entry idx: {}",
-            idx
-        );
-        assert_eq!(
-            third_snapshot.content.update_timestamp, voter_info.last_updated,
-            "wrong timestamp for entry idx: {}",
-            idx
+    for snapshot_info in second_snapshot_infos.iter() {
+        assert_is_empty_against_snapshot(
+            snapshot_info,
+            second_raw_snapshot.clone(),
+            third_snapshot.content.update_timestamp,
+            &rest_client,
         );
     }
 
@@ -252,51 +162,16 @@ pub fn import_raw_snapshots_with_different_tags() {
 
     rest_client.put_raw_snapshot(&second_raw_snapshot).unwrap();
 
-    let assigner = RepsVotersAssigner::new(
-        first_raw_snapshot.content.direct_voters_group.unwrap(),
-        first_raw_snapshot.content.representatives_group.unwrap(),
-    );
+    let assigner = first_raw_snapshot.clone().into();
 
-    let first_snapshot = Snapshot::from_raw_snapshot(
-        first_raw_snapshot.content.snapshot,
-        first_raw_snapshot.content.min_stake_threshold,
-        first_raw_snapshot.content.voting_power_cap,
-        &assigner,
-    )
-    .unwrap()
-    .to_full_snapshot_info();
+    let first_snapshot_infos = first_raw_snapshot
+        .clone()
+        .into_full_snapshot_infos(&assigner)
+        .unwrap();
 
-    for (idx, entry) in first_snapshot.iter().enumerate() {
-        let voting_power = VotingPower::from(entry.clone());
-        let voter_info = rest_client
-            .voter_info(&first_raw_snapshot.tag, &entry.hir.voting_key.to_hex())
-            .unwrap();
-        assert_eq!(
-            vec![voting_power.clone()],
-            voter_info.voter_info,
-            "wrong data for entry idx: {}",
-            idx
-        );
-        assert_eq!(
-            first_raw_snapshot.content.update_timestamp, voter_info.last_updated,
-            "wrong timestamp for entry idx: {}",
-            idx
-        );
-
-        let voter_info = rest_client
-            .voter_info(&second_raw_snapshot.tag, &entry.hir.voting_key.to_hex())
-            .unwrap();
-        assert_eq!(
-            vec![voting_power],
-            voter_info.voter_info,
-            "wrong data for entry idx: {}",
-            idx
-        );
-        assert_eq!(
-            second_raw_snapshot.content.update_timestamp, voter_info.last_updated,
-            "wrong timestamp for entry idx: {}",
-            idx
-        );
+    for snapshot_info in first_snapshot_infos.iter() {
+        assert_against_snapshot(snapshot_info, first_raw_snapshot.clone(), &rest_client);
+        assert_against_snapshot(snapshot_info, second_raw_snapshot.clone(), &rest_client);
     }
 }
 
@@ -330,32 +205,59 @@ pub fn import_big_raw_snapshot() {
 
     rest_client.put_raw_snapshot(&raw_snapshot).unwrap();
 
-    let assigner = RepsVotersAssigner::new(
-        raw_snapshot.content.direct_voters_group.unwrap(),
-        raw_snapshot.content.representatives_group.unwrap(),
+    let assigner = raw_snapshot.clone().into();
+
+    let snapshot_infos = raw_snapshot
+        .clone()
+        .into_full_snapshot_infos(&assigner)
+        .unwrap();
+
+    assert_against_snapshot(
+        &snapshot_infos[0].clone(),
+        raw_snapshot.clone(),
+        &rest_client,
     );
+}
 
-    let snapshot = Snapshot::from_raw_snapshot(
-        raw_snapshot.content.snapshot,
-        raw_snapshot.content.min_stake_threshold,
-        raw_snapshot.content.voting_power_cap,
-        &assigner,
-    )
-    .unwrap()
-    .to_full_snapshot_info();
-
-    let entry = snapshot[0].clone();
-    let voting_power = VotingPower::from(entry.clone());
+fn assert_against_snapshot(
+    snapshot_entry: &SnapshotInfo,
+    raw_snapshot: RawSnapshot,
+    rest_client: &RestClient,
+) {
+    let voting_power = VotingPower::from(snapshot_entry.clone());
     let voter_info = rest_client
-        .voter_info(&raw_snapshot.tag, &entry.hir.voting_key.to_hex())
+        .voter_info(&raw_snapshot.tag, &snapshot_entry.hir.voting_key.to_hex())
         .unwrap();
     assert_eq!(
-        vec![voting_power],
+        vec![voting_power.clone()],
         voter_info.voter_info,
-        "wrong data for entry idx"
+        "wrong data for entry: {:?}",
+        snapshot_entry
     );
     assert_eq!(
         raw_snapshot.content.update_timestamp, voter_info.last_updated,
-        "wrong timestamp for entry idx"
+        "wrong timestamp for entry: {:?}",
+        snapshot_entry
+    );
+}
+
+fn assert_is_empty_against_snapshot(
+    snapshot_entry: &SnapshotInfo,
+    raw_snapshot: RawSnapshot,
+    timestamp: i64,
+    rest_client: &RestClient,
+) {
+    let voter_info = rest_client
+        .voter_info(&raw_snapshot.tag, &snapshot_entry.hir.voting_key.to_hex())
+        .unwrap();
+    assert!(
+        voter_info.voter_info.is_empty(),
+        "expected empty data for entry: {:?}",
+        snapshot_entry
+    );
+    assert_eq!(
+        timestamp, voter_info.last_updated,
+        "wrong timestamp for entry: {:?}",
+        snapshot_entry
     );
 }

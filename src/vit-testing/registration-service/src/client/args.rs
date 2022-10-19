@@ -1,6 +1,7 @@
 use crate::client::rest::RegistrationRestClient;
 use crate::context::State;
 use crate::request::Request;
+use scheduler_service_lib::{FilesCommand, HealthCommand, StatusCommand};
 use structopt::StructOpt;
 use thiserror::Error;
 
@@ -43,14 +44,8 @@ pub enum Command {
 impl Command {
     pub fn exec(self, rest: RegistrationRestClient) -> Result<(), Error> {
         match self {
-            Self::Health => {
-                match rest.is_up() {
-                    true => println!("env is up"),
-                    false => println!("env is down"),
-                }
-                Ok(())
-            }
-            Self::Files(files_command) => files_command.exec(rest),
+            Self::Health => HealthCommand::exec(rest.into()).map_err(Into::into),
+            Self::Files(files_command) => files_command.exec(rest.into()).map_err(Into::into),
             Self::Job(job_command) => job_command.exec(rest),
         }
     }
@@ -72,26 +67,10 @@ impl JobCommand {
                 Ok(())
             }
             Self::Status(status_command) => {
-                println!("{:?}", status_command.exec(rest)?);
+                println!("{:?}", status_command.exec::<State>(rest.into())?);
                 Ok(())
             }
         }
-    }
-}
-
-#[derive(StructOpt, Debug)]
-pub struct StatusCommand {
-    /// job id
-    #[structopt(short, long)]
-    job_id: String,
-}
-
-impl StatusCommand {
-    pub fn exec(
-        self,
-        rest: RegistrationRestClient,
-    ) -> Result<Result<State, crate::context::Error>, Error> {
-        rest.job_status(self.job_id).map_err(Into::into)
     }
 }
 
@@ -142,22 +121,6 @@ impl NewJobCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
-pub enum FilesCommand {
-    List,
-}
-
-impl FilesCommand {
-    pub fn exec(self, rest: RegistrationRestClient) -> Result<(), Error> {
-        match self {
-            Self::List => {
-                println!("{}", serde_json::to_string_pretty(&rest.list_files()?)?);
-                Ok(())
-            }
-        }
-    }
-}
-
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("internal rest error")]
@@ -166,4 +129,6 @@ pub enum Error {
     SerdeError(#[from] serde_json::Error),
     #[error("rest error")]
     RestError(#[from] super::rest::Error),
+    #[error("rest error")]
+    CLi(#[from] scheduler_service_lib::CliError),
 }

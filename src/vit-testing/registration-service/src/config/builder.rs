@@ -11,12 +11,12 @@ pub struct ConfigurationBuilder {
 
 impl ConfigurationBuilder {
     pub fn with_port(mut self, port: u16) -> Self {
-        self.configuration.port = port;
+        self.configuration.inner.address.set_port(port);
         self
     }
 
     pub fn with_result_dir<P: AsRef<Path>>(mut self, path: P) -> Self {
-        self.configuration.result_dir = path.as_ref().to_path_buf();
+        self.configuration.inner.result_dir = path.as_ref().to_path_buf();
         self
     }
 

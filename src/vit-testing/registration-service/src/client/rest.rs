@@ -1,64 +1,32 @@
 use crate::context::State;
-use crate::file_lister::FolderDump;
 use crate::request::Request;
 use jortestkit::{prelude::Wait, process::WaitError, string::rem_first};
-use std::io::Write;
+use scheduler_service_lib::{FolderDump, SchedulerRestClient};
 use std::path::Path;
 use std::path::PathBuf;
 use thiserror::Error;
 
-pub struct RegistrationRestClient {
-    token: Option<String>,
-    address: String,
-}
+pub struct RegistrationRestClient(SchedulerRestClient);
 
 impl RegistrationRestClient {
     pub fn new_with_token(token: String, address: String) -> Self {
-        Self {
-            token: Some(token),
-            address,
-        }
+        Self(SchedulerRestClient::new_with_api_token(token, address))
     }
 
     pub fn new(address: String) -> Self {
-        Self {
-            token: None,
-            address,
-        }
+        Self(SchedulerRestClient::new_no_tokens(address))
     }
 
     pub fn token(&self) -> &Option<String> {
-        &self.token
+        self.0.api_token()
     }
 
     pub fn address(&self) -> &String {
-        &self.address
-    }
-
-    fn path<S: Into<String>>(&self, path: S) -> String {
-        format!("{}/{}", self.address, path.into())
-    }
-
-    fn get<S: Into<String>>(&self, local_path: S) -> Result<String, Error> {
-        let path = self.path(local_path);
-        println!("Calling: {}", path);
-        let client = reqwest::blocking::Client::new();
-        let request = self.set_header(client.get(&path));
-        request.send()?.text().map_err(Into::into)
-    }
-
-    fn set_header(
-        &self,
-        request_builder: reqwest::blocking::RequestBuilder,
-    ) -> reqwest::blocking::RequestBuilder {
-        if let Some(token) = &self.token {
-            return request_builder.header("API-Token", token);
-        }
-        request_builder
+        self.0.address()
     }
 
     pub fn list_files(&self) -> Result<FolderDump, Error> {
-        serde_json::from_str(&self.get("api/job/files/list")?).map_err(Into::into)
+        self.0.list_files().map_err(Into::into)
     }
 
     pub fn download_qr<S: Into<String>, P: AsRef<Path>>(
@@ -69,7 +37,7 @@ impl RegistrationRestClient {
         let folder_dump = self.list_files()?;
         let id = id.into();
         let qr_code_file_sub_url = folder_dump
-            .find_qr(id.clone())
+            .find_file_with_extension(id.clone(), "png".to_string())
             .ok_or_else(|| Error::CannotFindQrCode(id.clone()))?;
         let file_name = Path::new(&qr_code_file_sub_url)
             .file_name()
@@ -84,28 +52,23 @@ impl RegistrationRestClient {
         sub_location: S,
         output: P,
     ) -> Result<(), Error> {
-        let local_path = format!("api/job/files/get/{}", sub_location.into());
-        let path = self.path(local_path);
-        let client = reqwest::blocking::Client::new();
-        let request = self.set_header(client.get(&path));
-        let bytes = request.send()?.bytes()?;
-        let mut file = std::fs::File::create(&output)?;
-        file.write_all(&bytes)?;
-        Ok(())
+        self.0.download(sub_location, output).map_err(Into::into)
     }
 
     pub fn get_catalyst_sk<S: Into<String>>(&self, id: S) -> Result<String, Error> {
-        self.get(format!(
-            "api/job/files/get/{}/catalyst-vote.skey",
-            id.into()
-        ))
+        self.0
+            .get(format!(
+                "api/job/files/get/{}/catalyst-vote.skey",
+                id.into()
+            ))
+            .map_err(Into::into)
     }
 
     pub fn job_new(&self, request: Request) -> Result<String, Error> {
         let client = reqwest::blocking::Client::new();
-        let path = self.path("api/job/new");
+        let path = self.0.path("api/job/new");
         println!("Calling: {}", path);
-        let request_builder = self.set_header(client.post(&path));
+        let request_builder = self.0.set_header(client.post(&path));
         #[allow(clippy::single_char_pattern)]
         request_builder
             .json(&request)
@@ -119,9 +82,7 @@ impl RegistrationRestClient {
         &self,
         id: S,
     ) -> Result<Result<State, crate::context::Error>, Error> {
-        #[allow(clippy::single_char_pattern)]
-        let content = self.get(format!("api/job/status/{}", id.into().replace("\"", "")))?;
-        serde_yaml::from_str(&content).map_err(Into::into)
+        self.0.job_status(id).map_err(Into::into)
     }
 
     pub fn wait_for_job_finish<S: Into<String>>(
@@ -143,10 +104,14 @@ impl RegistrationRestClient {
     }
 
     pub fn is_up(&self) -> bool {
-        if let Ok(response) = reqwest::blocking::get(&self.path("api/health")) {
-            return response.status() == reqwest::StatusCode::OK;
-        }
-        false
+        self.0.is_up()
+    }
+}
+
+#[allow(clippy::from_over_into)]
+impl Into<SchedulerRestClient> for RegistrationRestClient {
+    fn into(self) -> SchedulerRestClient {
+        self.0
     }
 }
 
@@ -155,7 +120,7 @@ pub enum Error {
     #[error("qr code not found for job id ({0})")]
     CannotFindQrCode(String),
     #[error("internal rest error")]
-    ReqwestError(#[from] reqwest::Error),
+    Reqwest(#[from] reqwest::Error),
     #[error("json response serialization error")]
     SerdeJsonError(#[from] serde_json::Error),
     #[error("yaml response serialization error")]
@@ -166,4 +131,6 @@ pub enum Error {
     WaitError(#[from] WaitError),
     #[error("unexpected response: {0}")]
     UnexpectedResponse(String),
+    #[error(transparent)]
+    Rest(#[from] scheduler_service_lib::RestError),
 }

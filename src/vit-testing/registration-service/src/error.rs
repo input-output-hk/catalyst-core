@@ -1,3 +1,4 @@
+use scheduler_service_lib::WrappedPoisonError;
 use std::string::FromUtf8Error;
 use thiserror::Error;
 
@@ -13,4 +14,8 @@ pub enum Error {
     CardanoCli(#[from] crate::cardano::Error),
     #[error(transparent)]
     FromUtf(#[from] FromUtf8Error),
+    #[error(transparent)]
+    Scheduler(#[from] scheduler_service_lib::Error),
+    #[error(transparent)]
+    Poison(#[from] WrappedPoisonError),
 }

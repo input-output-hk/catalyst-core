@@ -1,9 +1,10 @@
 use crate::client::rest::RegistrationVerifyRestClient;
-use crate::context::State;
 use reqwest::blocking::multipart::Form;
+use scheduler_service_lib::{HealthCommand, StatusCommand};
 use std::path::PathBuf;
 use structopt::StructOpt;
 use thiserror::Error;
+use crate::context::State;
 
 #[derive(StructOpt, Debug)]
 pub struct RegistrationVerifyServiceCliCommand {
@@ -41,13 +42,7 @@ pub enum Command {
 impl Command {
     pub fn exec(self, rest: RegistrationVerifyRestClient) -> Result<(), Error> {
         match self {
-            Self::Health => {
-                match rest.is_up() {
-                    true => println!("service is up"),
-                    false => println!("service is down"),
-                }
-                Ok(())
-            }
+            Self::Health => HealthCommand::exec(rest.into()).map_err(Into::into),
             Self::Job(job_command) => job_command.exec(rest),
         }
     }
@@ -69,26 +64,10 @@ impl JobCommand {
                 Ok(())
             }
             Self::Status(status_command) => {
-                println!("{:?}", status_command.exec(rest)?);
+                println!("{:?}", status_command.exec::<State>(rest.into())?);
                 Ok(())
             }
         }
-    }
-}
-
-#[derive(StructOpt, Debug)]
-pub struct StatusCommand {
-    /// job id
-    #[structopt(short, long)]
-    job_id: String,
-}
-
-impl StatusCommand {
-    pub fn exec(
-        self,
-        rest: RegistrationVerifyRestClient,
-    ) -> Result<Result<State, crate::context::Error>, Error> {
-        rest.job_status(self.job_id).map_err(Into::into)
     }
 }
 
@@ -141,4 +120,6 @@ pub enum Error {
     RestError(#[from] super::rest::Error),
     #[error("io error")]
     IoError(#[from] std::io::Error),
+    #[error(transparent)]
+    Cli(#[from] scheduler_service_lib::CliError)
 }

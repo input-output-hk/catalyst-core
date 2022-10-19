@@ -2,7 +2,7 @@ pub mod error;
 pub mod indexing;
 pub mod multiverse;
 pub mod persistent_sequence;
-mod tally;
+pub(crate) mod tally;
 
 use self::{
     error::{BlockNotFound, ExplorerError as Error},

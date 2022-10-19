@@ -376,7 +376,7 @@ mod tests {
     use thor::FragmentBuilder;
 
     pub fn block0_configuration(initials: Vec<InitialUTxO>) -> Block0Configuration {
-        Block0ConfigurationBuilder::new()
+        Block0ConfigurationBuilder::default()
             .with_funds(vec![Initial::Fund(initials)])
             .build()
     }

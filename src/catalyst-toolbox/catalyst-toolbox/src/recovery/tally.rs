@@ -608,18 +608,18 @@ mod test {
     use assert_fs::fixture::PathChild;
     use assert_fs::TempDir;
     use chain_addr::Discrimination;
-    use chain_core::property::Block as _;
     use chain_impl_mockchain::certificate::VoteTallyPayload;
     use chain_impl_mockchain::chaintypes::ConsensusType;
     use chain_impl_mockchain::tokens::minting_policy::MintingPolicy;
     use chain_impl_mockchain::vote::Choice;
     use chain_impl_mockchain::vote::Tally;
-    use jormungandr_automation::jormungandr::ConfigurationBuilder;
+    use jormungandr_automation::jormungandr::Block0ConfigurationBuilder;
+    use jormungandr_automation::testing::block0::Block0ConfigurationExtension;
     use jormungandr_automation::testing::VotePlanBuilder;
-    use jormungandr_lib::interfaces::load_persistent_fragments_logs_from_folder_path;
     use jormungandr_lib::interfaces::InitialToken;
     use jormungandr_lib::interfaces::KesUpdateSpeed;
     use jormungandr_lib::interfaces::PersistentFragmentLog;
+    use jormungandr_lib::interfaces::{load_persistent_fragments_logs_from_folder_path, Initial};
     use jormungandr_lib::time::SecondsSinceUnixEpoch;
     use rand::rngs::OsRng;
     use thor::vote_plan_cert;
@@ -643,21 +643,23 @@ mod test {
 
         let vote_plan = VotePlanBuilder::new().proposals_count(3).public().build();
 
-        let vote_plan_cert = vote_plan_cert(
-            &alice,
-            chain_impl_mockchain::block::BlockDate {
-                epoch: 1,
-                slot_id: 0,
-            },
-            &vote_plan,
-        )
-        .into();
+        let vote_plan_cert = Initial::Cert(
+            vote_plan_cert(
+                &alice,
+                chain_impl_mockchain::block::BlockDate {
+                    epoch: 1,
+                    slot_id: 0,
+                },
+                &vote_plan,
+            )
+            .into(),
+        );
 
         let minting_policy = MintingPolicy::new();
         let token_id = vote_plan.voting_token();
 
-        let block0_configuration = ConfigurationBuilder::new()
-            .with_funds(vec![
+        let block0_configuration = Block0ConfigurationBuilder::default()
+            .with_utxos(vec![
                 alice.to_initial_fund(funds),
                 bob.to_initial_fund(funds),
                 clarice.to_initial_fund(funds),
@@ -676,18 +678,17 @@ mod test {
             .with_kes_update_speed(KesUpdateSpeed::new(43200).unwrap())
             .with_discrimination(Discrimination::Production)
             .with_committees(&[alice.to_committee_id()])
-            .with_slot_duration(slot_duration)
-            .with_slots_per_epoch(slots_per_epoch)
-            .build_block0();
+            .with_slot_duration(slot_duration.try_into().unwrap())
+            .with_slots_per_epoch(slots_per_epoch.try_into().unwrap())
+            .build();
 
         let valid_until = chain_impl_mockchain::block::BlockDate {
             epoch: 1,
             slot_id: 0,
         };
-        let block0 = block0_configuration.to_block();
 
         let fragment_builder = FragmentBuilder::new(
-            &block0.id().into(),
+            &block0_configuration.to_block_hash(),
             &block0_configuration.blockchain_configuration.linear_fees,
             valid_until,
         );
@@ -711,7 +712,7 @@ mod test {
         };
 
         let fragment_builder = FragmentBuilder::new(
-            &block0.id().into(),
+            &block0_configuration.to_block_hash(),
             &block0_configuration.blockchain_configuration.linear_fees,
             valid_until,
         );

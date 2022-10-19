@@ -15,7 +15,8 @@ use assert_fs::fixture::PathChild;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use hersir::builder::ControllerError;
 use hersir::config::{
-    Blockchain, CommitteeTemplate, ExplorerTemplate, SpawnParams, VotePlanTemplate, WalletTemplate,
+    BlockchainConfiguration, CommitteeTemplate, ExplorerTemplate, SpawnParams, VotePlanTemplate,
+    WalletTemplate,
 };
 use hersir::{
     builder::{
@@ -63,7 +64,7 @@ impl VitControllerBuilder {
         self
     }
 
-    pub fn blockchain(mut self, blockchain: Blockchain) -> Self {
+    pub fn blockchain(mut self, blockchain: BlockchainConfiguration) -> Self {
         self.controller_builder = self.controller_builder.blockchain_config(blockchain);
         self
     }

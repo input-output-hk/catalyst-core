@@ -1,4 +1,5 @@
-use crate::startup;
+use crate::startup::{create_new_leader_key, SingleNodeTestBootstrapper};
+use assert_fs::TempDir;
 use chain_core::{
     packer::Codec,
     property::{Deserialize, FromStr},
@@ -13,137 +14,82 @@ use jormungandr_automation::{
     jcli::JCli,
     jormungandr::{
         explorer::{configuration::ExplorerParams, verifiers::ExplorerVerifier},
-        ConfigurationBuilder, MemPoolCheck, Starter,
+        Block0ConfigurationBuilder, MemPoolCheck, NodeConfigBuilder,
     },
-    testing::time::{self, wait_for_date},
+    testing::{block0::Block0ConfigurationExtension, time},
 };
 use jormungandr_lib::interfaces::{
     ActiveSlotCoefficient, BlockDate, FragmentStatus, InitialToken, Mempool,
 };
 use mjolnir::generators::FragmentGenerator;
-use std::time::Duration;
-use thor::{FragmentSender, FragmentSenderSetup, FragmentVerifier};
+use std::{collections::HashMap, time::Duration};
+use thor::{
+    Block0ConfigurationBuilderExtension, FragmentSender, FragmentSenderSetup, FragmentVerifier,
+};
 
 const BLOCK_QUERY_COMPLEXITY_LIMIT: u64 = 150;
 const BLOCK_QUERY_DEPTH_LIMIT: u64 = 30;
 
 #[test]
-pub fn explorer_block_incorrect_id_test() {
-    let incorrect_block_ids = vec![
-        (
-            "e1049ea45726f0b1fc473af54f706546b3331765abf89ae9e6a8333e49621641aa",
-            "invalid hash size",
-        ),
-        (
-            "e1049ea45726f0b1fc473af54f706546b3331765abf89ae9e6a8333e49621641a",
-            "invalid hex encoding",
-        ),
-        (
-            "e1049ea45726f0b1fc473af54f706546b3331765abf89ae9e6a8333e49621641",
-            "Couldn't find block in the explorer",
-        ),
-    ];
-
-    let jormungandr = Starter::new().start().unwrap();
-
-    let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
-    let explorer_process = jormungandr.explorer(params).unwrap();
-    let explorer = explorer_process.client();
-
-    for (incorrect_block_id, error_message) in incorrect_block_ids {
-        let response = explorer.block_by_id(incorrect_block_id.to_string());
-        assert!(response.as_ref().unwrap().errors.is_some());
-        assert!(response.as_ref().unwrap().data.is_none());
-        assert!(response
-            .unwrap()
-            .errors
-            .unwrap()
-            .first()
-            .unwrap()
-            .message
-            .contains(error_message));
-    }
-}
-
-#[should_panic]
-#[test] //NPG-3274
-pub fn explorer_block0_test() {
-    let jormungandr = Starter::new().start().unwrap();
-    let block0_id = jormungandr.genesis_block_hash().to_string();
-    let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
-    let explorer_process = jormungandr.explorer(params).unwrap();
-
-    wait_for_date(BlockDate::new(0, 10), jormungandr.rest());
-    let explorer = explorer_process.client();
-
-    let explorer_block0_response = explorer.block_by_id(block0_id).unwrap();
-
-    assert!(
-        explorer_block0_response.errors.is_none(),
-        "{:?}",
-        explorer_block0_response.errors.unwrap()
-    );
-
-    let explorer_block0 = explorer_block0_response.data.unwrap().block;
-    let block0 = jormungandr.block0_configuration().to_block();
-    ExplorerVerifier::assert_block_by_id(block0, explorer_block0).unwrap();
-}
-
-#[test]
 pub fn explorer_block_test() {
+    let temp_dir = TempDir::new().unwrap();
     let jcli: JCli = Default::default();
     let sender = thor::Wallet::default();
     let receiver = thor::Wallet::default();
+    let bft_leader = create_new_leader_key();
 
-    let (jormungandr, _) = startup::start_stake_pool(
-        &[sender.clone()],
-        &[receiver.clone()],
-        ConfigurationBuilder::new()
-            .with_block0_consensus(ConsensusType::GenesisPraos)
-            .with_slots_per_epoch(20)
-            .with_block_content_max_size(100000.into())
-            .with_consensus_genesis_praos_active_slot_coeff(ActiveSlotCoefficient::MAXIMUM)
-            .with_slot_duration(3)
-            .with_linear_fees(LinearFee::new(1, 1, 1))
-            .with_mempool(Mempool {
-                pool_max_entries: 1_000_000usize.into(),
-                log_max_entries: 1_000_000usize.into(),
-                persistent_log: None,
-            })
-            .with_token(InitialToken {
-                // FIXME: this works because I know it's the VotePlanBuilder's default, but
-                // probably should me more explicit.
-                token_id: TokenIdentifier::from_str(
-                    "00000000000000000000000000000000000000000000000000000000.00000000",
-                )
-                .unwrap()
-                .into(),
-                policy: MintingPolicy::new().into(),
-                to: vec![sender.to_initial_token(1_000_000)],
-            }),
+    let jormungandr = SingleNodeTestBootstrapper::default()
+        .with_bft_secret(bft_leader.signing_key())
+        .with_block0_config(
+            Block0ConfigurationBuilder::default()
+                .with_wallets_having_some_values(vec![&sender, &receiver])
+                .with_block0_consensus(ConsensusType::Bft)
+                .with_slots_per_epoch(20.try_into().unwrap())
+                .with_block_content_max_size(100000.into())
+                .with_consensus_leaders_ids(vec![bft_leader.identifier().into()])
+                .with_consensus_genesis_praos_active_slot_coeff(ActiveSlotCoefficient::MAXIMUM)
+                .with_slot_duration(3.try_into().unwrap())
+                .with_linear_fees(LinearFee::new(1, 1, 1))
+                .with_token(InitialToken {
+                    // FIXME: this works because I know it's the VotePlanBuilder's default, but
+                    // probably should me more explicit.
+                    token_id: TokenIdentifier::from_str(
+                        "00000000000000000000000000000000000000000000000000000000.00000000",
+                    )
+                    .unwrap()
+                    .into(),
+                    policy: MintingPolicy::new().into(),
+                    to: vec![sender.to_initial_token(1_000_000)],
+                }),
+        )
+        .with_node_config(NodeConfigBuilder::default().with_mempool(Mempool {
+            pool_max_entries: 1_000_000usize.into(),
+            log_max_entries: 1_000_000usize.into(),
+            persistent_log: None,
+        }))
+        .build()
+        .start_node(temp_dir)
+        .unwrap();
+
+    let fragment_sender = FragmentSender::try_from_with_setup(
+        &jormungandr,
+        BlockDate::new(1u32, 1u32).next_epoch().into(),
+        FragmentSenderSetup::no_verify(),
     )
     .unwrap();
-
-    let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
-    let explorer_process = jormungandr.explorer(params).unwrap();
-
-    let fragment_sender = FragmentSender::from_with_setup(
-        jormungandr.block0_configuration(),
-        FragmentSenderSetup::no_verify(),
-    );
 
     let time_era = jormungandr.time_era();
 
     let mut fragment_generator = FragmentGenerator::new(
         sender,
         receiver,
-        None,
+        Some(bft_leader),
         jormungandr.to_remote(),
         time_era.slots_per_epoch(),
         2,
         2,
         2,
-        0,
+        3,
         fragment_sender,
     );
 
@@ -184,64 +130,138 @@ pub fn explorer_block_test() {
     let reader = std::io::Cursor::new(&bytes_block);
     let decoded_block = Block::deserialize(&mut Codec::new(reader)).unwrap();
 
-    time::wait_for_epoch(3, jormungandr.rest());
-
-    assert!(explorer_process.wait_to_be_up(2, 10));
+    let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
+    let explorer_process = jormungandr.explorer(params).unwrap();
     let explorer = explorer_process.client();
 
-    let explorer_block_response = explorer.block_by_id(fragment_block_id.to_string());
+    let explorer_block_response = explorer.block_by_id(fragment_block_id.to_string()).unwrap();
 
     assert!(
-        explorer_block_response.as_ref().unwrap().errors.is_none(),
+        explorer_block_response.errors.is_none(),
         "{:?}",
-        explorer_block_response.unwrap().errors.as_ref().unwrap()
+        explorer_block_response.errors.unwrap()
     );
 
-    let explorer_block = explorer_block_response.unwrap().data.unwrap().block;
+    let explorer_block = explorer_block_response.data.unwrap().block;
 
     ExplorerVerifier::assert_block_by_id(decoded_block, explorer_block).unwrap();
 }
 
+#[should_panic]
+#[test] //NPG-3274
+pub fn explorer_block0_test() {
+    let temp_dir = TempDir::new().unwrap();
+    let test_context = SingleNodeTestBootstrapper::default()
+        .as_bft_leader()
+        .build();
+    let jormungandr = test_context.start_node(temp_dir).unwrap();
+    let block0_id = test_context.block0_config().to_block_hash().to_string();
+    let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
+    let explorer_process = jormungandr.explorer(params).unwrap();
+    let explorer = explorer_process.client();
+
+    let explorer_block0_response = explorer.block_by_id(block0_id).unwrap();
+
+    assert!(
+        explorer_block0_response.errors.is_none(),
+        "{:?}",
+        explorer_block0_response.errors.unwrap()
+    );
+
+    let explorer_block0 = explorer_block0_response.data.unwrap().block;
+    let block0 = test_context.block0_config().to_block();
+    ExplorerVerifier::assert_block_by_id(block0, explorer_block0).unwrap();
+}
+
+#[test]
+pub fn explorer_block_incorrect_id_test() {
+    let temp_dir = TempDir::new().unwrap();
+    let incorrect_block_ids = vec![
+        (
+            "e1049ea45726f0b1fc473af54f706546b3331765abf89ae9e6a8333e49621641aa",
+            "invalid hash size",
+        ),
+        (
+            "e1049ea45726f0b1fc473af54f706546b3331765abf89ae9e6a8333e49621641a",
+            "invalid hex encoding",
+        ),
+        (
+            "e1049ea45726f0b1fc473af54f706546b3331765abf89ae9e6a8333e49621641",
+            "Couldn't find block in the explorer",
+        ),
+    ];
+
+    let jormungandr = SingleNodeTestBootstrapper::default()
+        .as_bft_leader()
+        .build()
+        .start_node(temp_dir)
+        .unwrap();
+
+    let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
+    let explorer_process = jormungandr.explorer(params).unwrap();
+    let explorer = explorer_process.client();
+
+    for (incorrect_block_id, error_message) in incorrect_block_ids {
+        let response = explorer.block_by_id(incorrect_block_id.to_string());
+        assert!(response.as_ref().unwrap().errors.is_some());
+        assert!(response.as_ref().unwrap().data.is_none());
+        assert!(response
+            .unwrap()
+            .errors
+            .unwrap()
+            .first()
+            .unwrap()
+            .message
+            .contains(error_message));
+    }
+}
+
 #[test]
 pub fn explorer_last_block_test() {
+    let temp_dir = TempDir::new().unwrap();
+
     let jcli: JCli = Default::default();
     let sender = thor::Wallet::default();
     let receiver = thor::Wallet::default();
+    let stake_pool = thor::StakePool::new(&sender);
 
-    let (jormungandr, _) = startup::start_stake_pool(
-        &[sender.clone()],
-        &[receiver.clone()],
-        ConfigurationBuilder::new()
-            .with_block0_consensus(ConsensusType::GenesisPraos)
-            .with_slots_per_epoch(20)
-            .with_block_content_max_size(100000.into())
-            .with_consensus_genesis_praos_active_slot_coeff(ActiveSlotCoefficient::MAXIMUM)
-            .with_slot_duration(3)
-            .with_linear_fees(LinearFee::new(1, 1, 1))
-            .with_mempool(Mempool {
-                pool_max_entries: 1_000_000usize.into(),
-                log_max_entries: 1_000_000usize.into(),
-                persistent_log: None,
-            })
-            .with_token(InitialToken {
-                // FIXME: this works because I know it's the VotePlanBuilder's default, but
-                // probably should me more explicit.
-                token_id: TokenIdentifier::from_str(
-                    "00000000000000000000000000000000000000000000000000000000.00000000",
-                )
-                .unwrap()
-                .into(),
-                policy: MintingPolicy::new().into(),
-                to: vec![sender.to_initial_token(1_000_000)],
-            }),
-    )
-    .unwrap();
+    let jormungandr = SingleNodeTestBootstrapper::default()
+        .as_genesis_praos_stake_pool(&stake_pool)
+        .with_block0_config(
+            Block0ConfigurationBuilder::default()
+                .with_wallets_having_some_values(vec![&sender, &receiver])
+                .with_block0_consensus(ConsensusType::GenesisPraos)
+                .with_slots_per_epoch(20.try_into().unwrap())
+                .with_block_content_max_size(100000.into())
+                .with_consensus_genesis_praos_active_slot_coeff(ActiveSlotCoefficient::MAXIMUM)
+                .with_slot_duration(3.try_into().unwrap())
+                .with_linear_fees(LinearFee::new(1, 1, 1))
+                .with_token(InitialToken {
+                    // FIXME: this works because I know it's the VotePlanBuilder's default, but
+                    // probably should me more explicit.
+                    token_id: TokenIdentifier::from_str(
+                        "00000000000000000000000000000000000000000000000000000000.00000000",
+                    )
+                    .unwrap()
+                    .into(),
+                    policy: MintingPolicy::new().into(),
+                    to: vec![sender.to_initial_token(1_000_000)],
+                }),
+        )
+        .with_node_config(NodeConfigBuilder::default().with_mempool(Mempool {
+            pool_max_entries: 1_000_000usize.into(),
+            log_max_entries: 1_000_000usize.into(),
+            persistent_log: None,
+        }))
+        .build()
+        .start_node(temp_dir)
+        .unwrap();
 
     let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
     let explorer_process = jormungandr.explorer(params).unwrap();
 
-    let fragment_sender = FragmentSender::from_with_setup(
-        jormungandr.block0_configuration(),
+    let fragment_sender = FragmentSender::from_settings_with_setup(
+        &jormungandr.rest().settings().unwrap(),
         FragmentSenderSetup::no_verify(),
     );
 
@@ -300,45 +320,51 @@ pub fn explorer_last_block_test() {
 #[should_panic]
 #[test] //NPG-3274
 pub fn explorer_all_blocks_test() {
+    let temp_dir = TempDir::new().unwrap();
+
     let max_blocks_number = 100;
     let jcli: JCli = Default::default();
     let sender = thor::Wallet::default();
     let receiver = thor::Wallet::default();
+    let stake_pool = thor::StakePool::new(&sender);
 
-    let (jormungandr, _) = startup::start_stake_pool(
-        &[sender.clone()],
-        &[receiver.clone()],
-        ConfigurationBuilder::new()
-            .with_block0_consensus(ConsensusType::GenesisPraos)
-            .with_slots_per_epoch(20)
-            .with_block_content_max_size(100000.into())
-            .with_consensus_genesis_praos_active_slot_coeff(ActiveSlotCoefficient::MAXIMUM)
-            .with_slot_duration(3)
-            .with_linear_fees(LinearFee::new(1, 1, 1))
-            .with_mempool(Mempool {
-                pool_max_entries: 1_000_000usize.into(),
-                log_max_entries: 1_000_000usize.into(),
-                persistent_log: None,
-            })
-            .with_token(InitialToken {
-                // FIXME: this works because I know it's the VotePlanBuilder's default, but
-                // probably should me more explicit.
-                token_id: TokenIdentifier::from_str(
-                    "00000000000000000000000000000000000000000000000000000000.00000000",
-                )
-                .unwrap()
-                .into(),
-                policy: MintingPolicy::new().into(),
-                to: vec![sender.to_initial_token(1_000_000)],
-            }),
-    )
-    .unwrap();
+    let test_context = SingleNodeTestBootstrapper::default()
+        .as_genesis_praos_stake_pool(&stake_pool)
+        .with_block0_config(
+            Block0ConfigurationBuilder::default()
+                .with_wallets_having_some_values(vec![&sender, &receiver])
+                .with_block0_consensus(ConsensusType::GenesisPraos)
+                .with_slots_per_epoch(20.try_into().unwrap())
+                .with_block_content_max_size(100000.into())
+                .with_consensus_genesis_praos_active_slot_coeff(ActiveSlotCoefficient::MAXIMUM)
+                .with_slot_duration(3.try_into().unwrap())
+                .with_linear_fees(LinearFee::new(1, 1, 1))
+                .with_token(InitialToken {
+                    // FIXME: this works because I know it's the VotePlanBuilder's default, but
+                    // probably should me more explicit.
+                    token_id: TokenIdentifier::from_str(
+                        "00000000000000000000000000000000000000000000000000000000.00000000",
+                    )
+                    .unwrap()
+                    .into(),
+                    policy: MintingPolicy::new().into(),
+                    to: vec![sender.to_initial_token(1_000_000)],
+                }),
+        )
+        .with_node_config(NodeConfigBuilder::default().with_mempool(Mempool {
+            pool_max_entries: 1_000_000usize.into(),
+            log_max_entries: 1_000_000usize.into(),
+            persistent_log: None,
+        }))
+        .build();
+
+    let jormungandr = test_context.start_node(temp_dir).unwrap();
 
     let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
     let explorer_process = jormungandr.explorer(params).unwrap();
 
-    let fragment_sender = FragmentSender::from_with_setup(
-        jormungandr.block0_configuration(),
+    let fragment_sender = FragmentSender::from_settings_with_setup(
+        &jormungandr.rest().settings().unwrap(),
         FragmentSenderSetup::no_verify(),
     );
 
@@ -385,9 +411,11 @@ pub fn explorer_all_blocks_test() {
     let explorer_blocks_data = explorer_block_response.data.unwrap();
     let explorer_blocks = explorer_blocks_data.tip.blocks.edges;
 
-    let block0_id = jormungandr.genesis_block_hash();
+    let mut block_ids = HashMap::new();
 
-    let mut block_ids = jcli.rest().v0().block().next(
+    let block0_id = test_context.block0_config.to_block_hash();
+
+    let block0_id = jcli.rest().v0().block().next(
         block0_id.to_string(),
         (max_blocks_number - 1) as u32,
         jormungandr.rest_uri(),
@@ -407,52 +435,58 @@ pub fn explorer_all_blocks_test() {
             .rest()
             .v0()
             .block()
-            .get(block_ids[n].to_string(), jormungandr.rest_uri());
+            .get(block_ids[&n].to_string(), jormungandr.rest_uri());
         let decoded_block = ExplorerVerifier::decode_block(encoded_block);
         ExplorerVerifier::assert_all_blocks(decoded_block, &explorer_block.node).unwrap();
     }
 }
 
 #[test]
-pub fn explorer_block_by_chain_lenght_test() {
+pub fn explorer_block_by_chain_length_test() {
+    let temp_dir = TempDir::new().unwrap();
+
     let jcli: JCli = Default::default();
     let sender = thor::Wallet::default();
     let receiver = thor::Wallet::default();
+    let stake_pool = thor::StakePool::new(&sender);
 
-    let (jormungandr, _) = startup::start_stake_pool(
-        &[sender.clone()],
-        &[receiver.clone()],
-        ConfigurationBuilder::new()
-            .with_block0_consensus(ConsensusType::GenesisPraos)
-            .with_slots_per_epoch(20)
-            .with_block_content_max_size(100000.into())
-            .with_consensus_genesis_praos_active_slot_coeff(ActiveSlotCoefficient::MAXIMUM)
-            .with_slot_duration(3)
-            .with_linear_fees(LinearFee::new(1, 1, 1))
-            .with_mempool(Mempool {
-                pool_max_entries: 1_000_000usize.into(),
-                log_max_entries: 1_000_000usize.into(),
-                persistent_log: None,
-            })
-            .with_token(InitialToken {
-                // FIXME: this works because I know it's the VotePlanBuilder's default, but
-                // probably should me more explicit.
-                token_id: TokenIdentifier::from_str(
-                    "00000000000000000000000000000000000000000000000000000000.00000000",
-                )
-                .unwrap()
-                .into(),
-                policy: MintingPolicy::new().into(),
-                to: vec![sender.to_initial_token(1_000_000)],
-            }),
-    )
-    .unwrap();
+    let jormungandr = SingleNodeTestBootstrapper::default()
+        .as_genesis_praos_stake_pool(&stake_pool)
+        .with_block0_config(
+            Block0ConfigurationBuilder::default()
+                .with_wallets_having_some_values(vec![&sender, &receiver])
+                .with_block0_consensus(ConsensusType::GenesisPraos)
+                .with_slots_per_epoch(20.try_into().unwrap())
+                .with_block_content_max_size(100000.into())
+                .with_consensus_genesis_praos_active_slot_coeff(ActiveSlotCoefficient::MAXIMUM)
+                .with_slot_duration(3.try_into().unwrap())
+                .with_linear_fees(LinearFee::new(1, 1, 1))
+                .with_token(InitialToken {
+                    // FIXME: this works because I know it's the VotePlanBuilder's default, but
+                    // probably should me more explicit.
+                    token_id: TokenIdentifier::from_str(
+                        "00000000000000000000000000000000000000000000000000000000.00000000",
+                    )
+                    .unwrap()
+                    .into(),
+                    policy: MintingPolicy::new().into(),
+                    to: vec![sender.to_initial_token(1_000_000)],
+                }),
+        )
+        .with_node_config(NodeConfigBuilder::default().with_mempool(Mempool {
+            pool_max_entries: 1_000_000usize.into(),
+            log_max_entries: 1_000_000usize.into(),
+            persistent_log: None,
+        }))
+        .build()
+        .start_node(temp_dir)
+        .unwrap();
 
     let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
     let explorer_process = jormungandr.explorer(params).unwrap();
 
-    let fragment_sender = FragmentSender::from_with_setup(
-        jormungandr.block0_configuration(),
+    let fragment_sender = FragmentSender::from_settings_with_setup(
+        &jormungandr.rest().settings().unwrap(),
         FragmentSenderSetup::no_verify(),
     );
 

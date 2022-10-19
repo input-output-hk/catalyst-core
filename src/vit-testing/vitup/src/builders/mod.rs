@@ -19,11 +19,10 @@ pub use helpers::{
     generate_qr_and_hashes, get_configuration_from_file_url, ArchiveConfError,
     ArchiveConfiguration, VitVotePlanDefBuilder, WalletExtension,
 };
+use hersir::builder::settings::Blockchain;
 use hersir::builder::Node;
 use hersir::builder::Topology;
-use hersir::config::{
-    Blockchain, CommitteeTemplate, ExplorerTemplate, SessionSettings, WalletTemplate,
-};
+use hersir::config::{CommitteeTemplate, ExplorerTemplate, SessionSettings, WalletTemplate};
 use jormungandr_automation::jormungandr::PersistenceMode;
 pub use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::interfaces::NumberOfSlotsPerEpoch;

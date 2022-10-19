@@ -36,12 +36,7 @@ impl Block {
             .stderr(predicates::str::contains(expected_msg));
     }
 
-    pub fn next<P: Into<String>, S: Into<String>>(
-        self,
-        block_id: P,
-        limit: u32,
-        host: S,
-    ) -> Vec<Hash> {
+    pub fn next<P: Into<String>, S: Into<String>>(self, block_id: P, limit: u32, host: S) -> Hash {
         let content = self
             .block_command
             .next(block_id, limit, host)
@@ -49,12 +44,8 @@ impl Block {
             .assert()
             .success()
             .get_output()
-            .as_multi_line();
-
-        content
-            .iter()
-            .map(|s| Hash::from_hex(s).unwrap())
-            .collect::<Vec<Hash>>()
+            .as_single_line();
+        Hash::from_hex(&content).unwrap()
     }
 
     pub fn next_expect_fail<P: Into<String>, S: Into<String>>(

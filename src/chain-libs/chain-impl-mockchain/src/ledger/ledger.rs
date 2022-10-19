@@ -26,6 +26,7 @@ use crate::tokens::identifier::TokenIdentifier;
 use crate::tokens::minting_policy::MintingPolicyViolation;
 use crate::transaction::*;
 use crate::treasury::Treasury;
+use crate::update::UpdateState;
 use crate::value::*;
 use crate::vote::{VotePlanLedger, VotePlanLedgerError, VotePlanStatus};
 use crate::{account, certificate, legacy, multisig, setting, stake, update, utxo};
@@ -46,7 +47,6 @@ use std::mem::swap;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 use thiserror::Error;
-use crate::update::UpdateState;
 
 // static parameters, effectively this is constant in the parameter of the blockchain
 #[derive(Debug, Clone, PartialEq, Eq)]

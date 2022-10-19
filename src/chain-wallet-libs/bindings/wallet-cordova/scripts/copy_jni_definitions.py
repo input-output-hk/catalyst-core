@@ -16,7 +16,7 @@ def run():
                 "-l",
                 "kotlin",
                 "src/lib.udl",
-                "--config-path",
+                "--config",
                 "uniffi.toml",
                 "-o",
                 "codegen/kotlin",

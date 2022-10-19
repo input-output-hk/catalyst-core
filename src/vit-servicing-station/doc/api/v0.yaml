@@ -387,6 +387,31 @@ paths:
         "200":
           description: Success
 
+  /api/v0/admin/proposals:
+    put:
+      operationId: putProposals
+      summary: Submit proposals
+      tags: [proposal]
+      description: |
+        Submit a new proposals data, replace an existing entries
+      requestBody:
+        content:
+          application/json:
+            schema:
+              Proposals:
+                 properties:
+                  type: array
+                  description: list of Proposals entries in json format
+                  required: true
+                  items:
+                    $ref: "#/components/schemas/Proposal"
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: The input is malformed.
+      
+
   /api/v0/admin/fund:
     put:
       operationId: putFund
@@ -1078,7 +1103,7 @@ components:
         snapshot:
           type: array
           description: list of SnapshotInfo entries in json format
-          required: ["true"]
+          required: true
         update_timestamp:
           type: string
           format: date-time
@@ -1089,23 +1114,23 @@ components:
         snapshot:
           type: object
           description: RawSnapshot in json format
-          required: ["true"]
+          required: true
         min_stake_threshold:
           type: integer
           description: Registrations voting power threshold for eligibility
-          required: ["true"]
+          required: true
         voting_power_cap:
           type: string
           description: Voting power cap for each account
-          required: ["true"]
+          required: true
         direct_voters_group:
           type: string
           description: Voter group to assign direct voters to. If empty, defaults to "voter"
-          required: ["false"]
+          required: false
         representatives_group:
           type: string
           description: Voter group to assign representatives to. If empty, defaults to "rep"
-          required: ["false"]
+          required: false
         update_timestamp:
           type: string
           format: date-time

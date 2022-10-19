@@ -83,7 +83,6 @@ impl ExplorerVerifier {
                             .zip(explorer_tally_status.results.iter())
                             .filter(|&(a, b)| &a.to_string() == b)
                             .count();
-
                         assert_eq!(matching_results, result.results.len());
                         assert_eq!(result.options.len(), explorer_tally_status.results.len());
                         assert_eq!(
@@ -97,7 +96,6 @@ impl ExplorerVerifier {
                 }
                 Tally::Private { state } => {
                     assert!(explorer_proposal.tally.is_some());
-
                     if let TallyPrivateStatus(explorer_tally_status) =
                         explorer_proposal.tally.unwrap()
                     {
@@ -127,6 +125,8 @@ impl ExplorerVerifier {
                                 );
                             }
                         }
+                    } else {
+                        panic!("Wrong tally status. Expected Private")
                     }
                 }
             }

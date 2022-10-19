@@ -149,6 +149,8 @@ impl ExplorerVerifier {
                                             );
                                         }
                                     }
+                                } else {
+                                    panic!("Wrong tally status. Expected Private")
                                 }
                             }
                         }

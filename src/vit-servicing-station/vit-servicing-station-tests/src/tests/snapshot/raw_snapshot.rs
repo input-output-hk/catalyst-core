@@ -1,13 +1,17 @@
 use std::time::Duration;
 
-use crate::common::{
-    clients::{RawRestClient, RestClient},
-    raw_snapshot::{RawSnapshot, RawSnapshotBuilder, RawSnapshotExtension, RawSnapshotUpdater},
-    snapshot::{SnapshotBuilder, VotingPower},
-    startup::quick_start,
+use crate::{
+    common::{
+        clients::RawRestClient,
+        raw_snapshot::{RawSnapshot, RawSnapshotBuilder, RawSnapshotExtension, RawSnapshotUpdater},
+        snapshot::{SnapshotBuilder, VotingPower},
+        startup::quick_start,
+    },
+    tests::snapshot::verifier::assert_raw_against_full_snapshot,
 };
 use assert_fs::TempDir;
-use snapshot_lib::SnapshotInfo;
+
+use super::verifier::assert_is_empty_raw_against_full_snapshot;
 
 #[test]
 pub fn import_new_raw_snapshot() {
@@ -33,7 +37,7 @@ pub fn import_new_raw_snapshot() {
         .unwrap();
 
     for snapshot_info in snapshot_infos.iter() {
-        assert_against_snapshot(snapshot_info, raw_snapshot.clone(), &rest_client);
+        assert_raw_against_full_snapshot(snapshot_info, raw_snapshot.clone(), &rest_client);
     }
 }
 
@@ -59,7 +63,7 @@ pub fn reimport_with_empty_raw_snapshot() {
         .unwrap();
 
     for snapshot_info in snapshot_infos.iter() {
-        assert_is_empty_against_snapshot(
+        assert_is_empty_raw_against_full_snapshot(
             snapshot_info,
             raw_snapshot.clone(),
             empty_snapshot.content.update_timestamp,
@@ -99,7 +103,7 @@ pub fn replace_raw_snapshot_with_same_tag() {
         .unwrap();
 
     for snapshot_info in first_snapshot_infos.iter() {
-        assert_is_empty_against_snapshot(
+        assert_is_empty_raw_against_full_snapshot(
             snapshot_info,
             first_raw_snapshot.clone(),
             second_raw_snapshot.content.update_timestamp,
@@ -108,7 +112,7 @@ pub fn replace_raw_snapshot_with_same_tag() {
     }
 
     for snapshot_info in second_snapshot_infos.iter() {
-        assert_against_snapshot(snapshot_info, second_raw_snapshot.clone(), &rest_client);
+        assert_raw_against_full_snapshot(snapshot_info, second_raw_snapshot.clone(), &rest_client);
     }
 
     let third_snapshot = SnapshotBuilder::default()
@@ -119,7 +123,7 @@ pub fn replace_raw_snapshot_with_same_tag() {
     rest_client.put_snapshot_info(&third_snapshot).unwrap();
 
     for snapshot_info in second_snapshot_infos.iter() {
-        assert_is_empty_against_snapshot(
+        assert_is_empty_raw_against_full_snapshot(
             snapshot_info,
             second_raw_snapshot.clone(),
             third_snapshot.content.update_timestamp,
@@ -170,8 +174,8 @@ pub fn import_raw_snapshots_with_different_tags() {
         .unwrap();
 
     for snapshot_info in first_snapshot_infos.iter() {
-        assert_against_snapshot(snapshot_info, first_raw_snapshot.clone(), &rest_client);
-        assert_against_snapshot(snapshot_info, second_raw_snapshot.clone(), &rest_client);
+        assert_raw_against_full_snapshot(snapshot_info, first_raw_snapshot.clone(), &rest_client);
+        assert_raw_against_full_snapshot(snapshot_info, second_raw_snapshot.clone(), &rest_client);
     }
 }
 
@@ -212,52 +216,5 @@ pub fn import_big_raw_snapshot() {
         .into_full_snapshot_infos(&assigner)
         .unwrap();
 
-    assert_against_snapshot(
-        &snapshot_infos[0].clone(),
-        raw_snapshot,
-        &rest_client,
-    );
-}
-
-fn assert_against_snapshot(
-    snapshot_entry: &SnapshotInfo,
-    raw_snapshot: RawSnapshot,
-    rest_client: &RestClient,
-) {
-    let voting_power = VotingPower::from(snapshot_entry.clone());
-    let voter_info = rest_client
-        .voter_info(&raw_snapshot.tag, &snapshot_entry.hir.voting_key.to_hex())
-        .unwrap();
-    assert_eq!(
-        vec![voting_power],
-        voter_info.voter_info,
-        "wrong data for entry: {:?}",
-        snapshot_entry
-    );
-    assert_eq!(
-        raw_snapshot.content.update_timestamp, voter_info.last_updated,
-        "wrong timestamp for entry: {:?}",
-        snapshot_entry
-    );
-}
-
-fn assert_is_empty_against_snapshot(
-    snapshot_entry: &SnapshotInfo,
-    raw_snapshot: RawSnapshot,
-    timestamp: i64,
-    rest_client: &RestClient,
-) {
-    let voter_info = rest_client
-        .voter_info(&raw_snapshot.tag, &snapshot_entry.hir.voting_key.to_hex())
-        .unwrap();
-    assert!(
-        voter_info.voter_info.is_empty(),
-        "expected empty data for entry: {:?}",
-        snapshot_entry
-    );
-    assert_eq!(
-        timestamp, voter_info.last_updated,
-        "wrong timestamp for entry: {:?}",
-        snapshot_entry
-    );
+    assert_raw_against_full_snapshot(&snapshot_infos[0].clone(), raw_snapshot, &rest_client);
 }

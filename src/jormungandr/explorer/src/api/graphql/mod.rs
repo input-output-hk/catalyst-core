@@ -1358,13 +1358,13 @@ impl VotePlanStatus {
                     proposal_id: ExternalProposalId::from(proposal.proposal_id.clone()),
                     options: VoteOptionRange::from(proposal.options.clone()),
                     tally: proposal.tally.clone().map_or(
-                        generic_tally_status(ExplorerVoteProposal {
+                        Some(generic_tally_status(ExplorerVoteProposal {
                             proposal_id: proposal.proposal_id,
                             options: proposal.options,
                             tally: proposal.tally,
                             votes: proposal.votes.clone(),
-                        }),
-                        |tally| to_tally_status(Some(tally)),
+                        })),
+                        |tally| Some(TallyStatus::from(tally)),
                     ),
                     votes: proposal
                         .votes
@@ -1394,9 +1394,10 @@ impl VotePlanStatus {
     }
 }
 
-/// checks if the tally is public or private and converts result to TallyStatus type
-pub fn to_tally_status(tally: Option<ExplorerVoteTally>) -> Option<TallyStatus> {
-    tally.map(|tally| match tally {
+// if the tally is None, convert to generic tally result as per rest api requirements
+pub fn generic_tally_status(p: ExplorerVoteProposal) -> TallyStatus {
+    let s = StakeControl::default();
+    match compute_public_tally(&p, &s) {
         ExplorerVoteTally::Public { results, options } => TallyStatus::Public(TallyPublicStatus {
             results: results.iter().map(Into::into).collect(),
             options: options.into(),
@@ -1407,24 +1408,24 @@ pub fn to_tally_status(tally: Option<ExplorerVoteTally>) -> Option<TallyStatus> 
                 options: options.into(),
             })
         }
-    })
+    }
 }
 
-// if the tally is None, convert to generic tally result as per rest api requirements
-pub fn generic_tally_status(p: ExplorerVoteProposal) -> Option<TallyStatus> {
-    let s = StakeControl::default();
-    match compute_public_tally(&p, &s) {
-        ExplorerVoteTally::Public { results, options } => {
-            Some(TallyStatus::Public(TallyPublicStatus {
-                results: results.iter().map(Into::into).collect(),
-                options: options.into(),
-            }))
-        }
-        ExplorerVoteTally::Private { results, options } => {
-            Some(TallyStatus::Private(TallyPrivateStatus {
-                results: results.map(|res| res.iter().map(Into::into).collect()),
-                options: options.into(),
-            }))
+impl From<ExplorerVoteTally> for TallyStatus {
+    fn from(tally: ExplorerVoteTally) -> Self {
+        match tally {
+            ExplorerVoteTally::Public { results, options } => {
+                TallyStatus::Public(TallyPublicStatus {
+                    results: results.iter().map(Into::into).collect(),
+                    options: options.into(),
+                })
+            }
+            ExplorerVoteTally::Private { results, options } => {
+                TallyStatus::Private(TallyPrivateStatus {
+                    results: results.map(|res| res.iter().map(Into::into).collect()),
+                    options: options.into(),
+                })
+            }
         }
     }
 }

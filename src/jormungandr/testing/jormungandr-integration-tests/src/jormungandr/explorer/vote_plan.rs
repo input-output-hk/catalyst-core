@@ -115,7 +115,8 @@ pub fn explorer_vote_plan_not_existing() {
     );
 }
 
-#[test]
+#[should_panic]
+#[test] // NPG-3808
 pub fn explorer_vote_plan_public_flow_test() {
     let temp_dir = TempDir::new().unwrap();
     let alice = Wallet::default();
@@ -300,13 +301,6 @@ pub fn explorer_vote_plan_public_flow_test() {
         vote_for_luigi,
     );
 
-    wait_for_date(vote_plan.vote_end().into(), jormungandr.rest());
-
-    //3.Start talling
-    let mempool_check = transaction_sender
-        .send_public_vote_tally(&mut voters[0], &vote_plan, &jormungandr)
-        .unwrap();
-
     let query_response = explorer
         .vote_plan(vote_plan.to_id().to_string())
         .expect("vote plan transaction not found");
@@ -331,6 +325,13 @@ pub fn explorer_vote_plan_public_flow_test() {
         vote_plan_status,
         proposal_votes.clone(),
     );
+
+    wait_for_date(vote_plan.vote_end().into(), jormungandr.rest());
+
+    //3.Start talling
+    let mempool_check = transaction_sender
+        .send_public_vote_tally(&mut voters[0], &vote_plan, &jormungandr)
+        .unwrap();
 
     FragmentVerifier::wait_and_verify_is_in_block(
         Duration::from_secs(2),
@@ -393,7 +394,8 @@ pub fn explorer_vote_plan_public_flow_test() {
     );
 }
 
-#[test]
+#[should_panic]
+#[test] //NPG-3808
 pub fn explorer_vote_plan_private_flow_test() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
     let yes_choice = Choice::new(1);
@@ -446,8 +448,8 @@ pub fn explorer_vote_plan_private_flow_test() {
             token_id: vote_plan.voting_token().clone().into(),
             policy: MintingPolicy::new().into(),
             to: vec![
-                voters[0].to_initial_token(INITIAL_TOKEN_PER_WALLET_1),
-                voters[1].to_initial_token(INITIAL_TOKEN_PER_WALLET_2),
+                voters[0].to_initial_token(INITIAL_FUND_PER_WALLET_1),
+                voters[1].to_initial_token(INITIAL_FUND_PER_WALLET_2),
             ],
         })
         .with_block0_consensus(ConsensusType::Bft)
@@ -582,30 +584,6 @@ pub fn explorer_vote_plan_private_flow_test() {
         vote_for_luigi,
     );
 
-    //3.Tally
-    wait_for_date(vote_plan.committee_start().into(), jormungandr.rest());
-    let transaction_sender =
-        transaction_sender.set_valid_until(chain_impl_mockchain::block::BlockDate {
-            epoch: 3,
-            slot_id: 0,
-        });
-
-    let vote_plan_statuses = jormungandr
-        .rest()
-        .vote_plan_statuses()
-        .unwrap()
-        .first()
-        .unwrap()
-        .clone();
-
-    let decrypted_shares = private_vote_committee_data_manager
-        .decrypt_tally(&vote_plan_statuses.into())
-        .unwrap();
-
-    let mempool_check = transaction_sender
-        .send_private_vote_tally(&mut voters[0], &vote_plan, decrypted_shares, &jormungandr)
-        .unwrap();
-
     let query_response = explorer
         .vote_plan(vote_plan.to_id().to_string())
         .expect("vote plan transaction not found");
@@ -630,6 +608,30 @@ pub fn explorer_vote_plan_private_flow_test() {
         vote_plan_status,
         proposal_votes.clone(),
     );
+
+    //3.Tally
+    wait_for_date(vote_plan.committee_start().into(), jormungandr.rest());
+    let transaction_sender =
+        transaction_sender.set_valid_until(chain_impl_mockchain::block::BlockDate {
+            epoch: 3,
+            slot_id: 0,
+        });
+
+    let vote_plan_statuses = jormungandr
+        .rest()
+        .vote_plan_statuses()
+        .unwrap()
+        .first()
+        .unwrap()
+        .clone();
+
+    let decrypted_shares = private_vote_committee_data_manager
+        .decrypt_tally(&vote_plan_statuses.into())
+        .unwrap();
+
+    let mempool_check = transaction_sender
+        .send_private_vote_tally(&mut voters[0], &vote_plan, decrypted_shares, &jormungandr)
+        .unwrap();
 
     FragmentVerifier::wait_and_verify_is_in_block(
         Duration::from_secs(2),
@@ -700,7 +702,8 @@ pub fn explorer_vote_plan_private_flow_test() {
     );
 }
 
-#[test]
+#[should_panic]
+#[test] // NPG-3808
 pub fn explorer_all_vote_plans_public_flow_test() {
     let temp_dir = TempDir::new().unwrap();
     let alice = Wallet::default();
@@ -912,28 +915,6 @@ pub fn explorer_all_vote_plans_public_flow_test() {
         vote_plans_proposal_votes.insert(vote_plan.to_id().to_string(), proposal_votes);
     }
 
-    wait_for_date(
-        vote_plans.first().unwrap().vote_end().into(),
-        jormungandr.rest(),
-    );
-
-    //3.Start talling
-    let mut mempool_check = Vec::new();
-    for vote_plan in &vote_plans {
-        mempool_check.push(
-            transaction_sender
-                .send_public_vote_tally(&mut voters[0], &vote_plan, &jormungandr)
-                .unwrap(),
-        );
-    }
-
-    FragmentVerifier::wait_and_verify_all_are_in_block(
-        Duration::from_secs(2),
-        mempool_check,
-        &jormungandr,
-    )
-    .unwrap();
-
     let query_response = explorer
         .vote_plans(vote_plans_limit)
         .expect("vote plan transaction not found");
@@ -957,6 +938,28 @@ pub fn explorer_all_vote_plans_public_flow_test() {
         vote_plan_statuses,
         vote_plans_proposal_votes.clone(),
     );
+
+    wait_for_date(
+        vote_plans.first().unwrap().vote_end().into(),
+        jormungandr.rest(),
+    );
+
+    //3.Start talling
+    let mut mempool_check = Vec::new();
+    for vote_plan in &vote_plans {
+        mempool_check.push(
+            transaction_sender
+                .send_public_vote_tally(&mut voters[0], &vote_plan, &jormungandr)
+                .unwrap(),
+        );
+    }
+
+    FragmentVerifier::wait_and_verify_all_are_in_block(
+        Duration::from_secs(2),
+        mempool_check,
+        &jormungandr,
+    )
+    .unwrap();
 
     let query_response = explorer
         .vote_plans(vote_plans_limit)
@@ -1013,7 +1016,8 @@ pub fn explorer_all_vote_plans_public_flow_test() {
     );
 }
 
-#[test]
+#[should_panic]
+#[test] //NPG-3808
 pub fn explorer_all_vote_plans_private_flow_test() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
     let yes_choice = Choice::new(1);

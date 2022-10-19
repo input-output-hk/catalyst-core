@@ -109,10 +109,11 @@ impl Wallet {
         lane: u8,
         payload: P,
         auth: P::Auth,
-    ) -> Result<Transaction<P>, Error> {
+        fragment_build_fn: impl FnOnce(Transaction<P>) -> Fragment,
+    ) -> Result<Fragment, Error> {
         let mut builder = wallet::TransactionBuilder::new(&settings, payload, valid_until);
 
-        let value = builder.estimate_fee_with(1, 0);
+        let value = builder.estimate_fee();
 
         let account_tx_builder = self
             .account
@@ -128,9 +129,14 @@ impl Wallet {
             .finalize_tx(auth)
             .map_err(|e| Error::wallet_transaction().with(e))?;
 
-        Ok(tx)
+        let fragment = fragment_build_fn(tx);
+        account_tx_builder.add_fragment_id(fragment.hash());
+        Ok(fragment)
     }
 
+    /// Sign a transaction
+    ///
+    /// This function outputs a fragment containing a signed transaction.
     pub fn sign_transaction(
         &mut self,
         settings: &Settings,
@@ -140,10 +146,9 @@ impl Wallet {
     ) -> Result<Fragment, Error> {
         match certificate {
             Certificate::VoteCast(p) => {
-                let tx = self.sign_transaction_impl(settings, valid_until, lane, p, ())?;
-                let fragment = Fragment::VoteCast(tx);
-                // account_tx_builder.add_fragment_id(fragment.hash());
-                Ok(fragment)
+                self.sign_transaction_impl(settings, valid_until, lane, p, (), |tx| {
+                    Fragment::VoteCast(tx)
+                })
             }
             _ => Err(Error::invalid_input("does not supported certificate type")),
         }

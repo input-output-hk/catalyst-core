@@ -1,7 +1,7 @@
 use crate::config::JobParameters;
 use crate::context::{Context, ContextLock};
-use crate::file_lister;
 use futures::FutureExt;
+use scheduler_service_lib::{dump_json,FileListerError};
 use futures::{channel::mpsc, StreamExt};
 use jortestkit::web::api_token::TokenError;
 use jortestkit::web::api_token::{APIToken, APITokenManager, API_TOKEN_HEADER};
@@ -11,7 +11,6 @@ use thiserror::Error;
 use uuid::Uuid;
 use warp::{http::StatusCode, reject::Reject, Filter, Rejection, Reply};
 
-impl Reject for file_lister::Error {}
 impl Reject for crate::context::Error {}
 
 #[allow(clippy::large_enum_variant)]
@@ -131,11 +130,11 @@ pub async fn health_handler() -> Result<impl Reply, Rejection> {
 
 pub async fn files_handler(context: ContextLock) -> Result<impl Reply, Rejection> {
     let context_lock = context.lock().unwrap();
-    Ok(file_lister::dump_json(context_lock.working_directory())?).map(|r| warp::reply::json(&r))
+    Ok(dump_json(context_lock.working_directory())?).map(|r| warp::reply::json(&r))
 }
 
 async fn report_invalid(r: Rejection) -> Result<impl Reply, Infallible> {
-    if let Some(e) = r.find::<file_lister::Error>() {
+    if let Some(e) = r.find::<FileListerError>() {
         Ok(warp::reply::with_status(
             e.to_string(),
             StatusCode::BAD_REQUEST,

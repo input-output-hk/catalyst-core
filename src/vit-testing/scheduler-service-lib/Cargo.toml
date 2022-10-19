@@ -1,0 +1,25 @@
+[package]
+name = "scheduler-service-lib"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+structopt = "0.3.26"
+serde_json = "1.0.86"
+serde = { version = "1", features = ["derive"] }
+uuid = { version = "0.8", features = ["serde","v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "1.0"
+walkdir = "2.3.1"
+warp = "0.3"
+futures = "0.3.8"
+tokio = { version = "1.2", features = ["macros","rt","process"] }
+jortestkit = { path = "../../jortestkit" }
+serde_yaml = "0.8"
+
+[dependencies.reqwest]
+version = "0.10.10"
+default-features = false
+features = ["blocking", "rustls-tls", "json"]

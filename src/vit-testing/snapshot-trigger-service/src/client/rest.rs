@@ -1,7 +1,7 @@
 use crate::config::JobParameters;
 use crate::context::State;
-use crate::file_lister::FolderDump;
 use jortestkit::{prelude::Wait, process::WaitError};
+use scheduler_service_lib::FolderDump;
 use std::io::Write;
 use std::path::Path;
 use thiserror::Error;

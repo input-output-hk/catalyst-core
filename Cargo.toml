@@ -24,7 +24,6 @@ members = [
   "src/chain-wallet-libs/bindings/wallet-c",
   "src/chain-wallet-libs/bindings/wallet-core",
   "src/chain-wallet-libs/bindings/wallet-js",
-  "src/chain-wallet-libs/bindings/wallet-uniffi",
   "src/jormungandr/jormungandr-lib",
   "src/jormungandr/jormungandr",
   "src/jormungandr/jcli",
@@ -51,6 +50,7 @@ members = [
   "src/vit-testing/registration-verify-service",
   "src/vit-testing/snapshot-trigger-service",
   "src/vit-testing/signals-handler",
+  "src/vit-testing/scheduler-service-lib",
   "src/voting-tools-rs"
 ]
 

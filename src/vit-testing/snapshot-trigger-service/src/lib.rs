@@ -2,7 +2,6 @@ mod args;
 pub mod client;
 pub mod config;
 mod context;
-pub mod file_lister;
 pub mod rest;
 pub mod service;
 

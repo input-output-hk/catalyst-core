@@ -39,7 +39,7 @@ impl SnapshotServiceStarter {
         mut self,
         temp_dir: &TempDir,
     ) -> Result<SnapshotServiceController, Error> {
-        self.configuration.port = get_available_port();
+        self.configuration.address_mut().set_port(get_available_port());
         self.start(temp_dir)
     }
 
@@ -62,7 +62,7 @@ impl SnapshotServiceStarter {
         let mut current_attempt = 1;
         loop {
             if current_attempt > attempts {
-                return Err(Error::Bootstrap(self.configuration.port));
+                return Err(Error::Bootstrap(self.configuration.address().port()));
             }
 
             if controller.client().is_up() {

@@ -34,7 +34,7 @@ jortestkit = { path = "../../jortestkit" }
 catalyst-toolbox = { path = "../../catalyst-toolbox/catalyst-toolbox", features=["test-api"]}
 snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib", features=["proptest", "test-api"]}
 valgrind = { path = "../valgrind"}
-hyper = "0.13.6"
+hyper = "0.14"
 thiserror = "1.0"
 serde_json = "1.0.53"
 serde_yaml = "0.8.23"

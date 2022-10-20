@@ -83,8 +83,8 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
 
     let filter = std::env::var("RUST_LOG").unwrap_or_else(|_| "tracing=info,warp=debug".to_owned());
     tracing_subscriber::fmt()
-        .with_env_filter(filter)
         .with_writer(non_block)
+        .with_env_filter(filter)
         .with_span_events(FmtSpan::CLOSE)
         .init();
 

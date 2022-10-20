@@ -70,7 +70,7 @@ tracing = "0.1"
 tracing-appender = "0.2"
 hyper = { version = "0.14.17", features = ["server"] }
 rustls = "0.20.4"
-rustls-pemfile = "0.2.1"
+rustls-pemfile = "1"
 tokio-rustls = "0.23.2"
 tokio-stream = { version = "0.1.8", features = ["net"] }
 

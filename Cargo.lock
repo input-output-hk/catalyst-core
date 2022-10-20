@@ -240,9 +240,9 @@ dependencies = [
 
 [[package]]
 name = "assert_cmd"
-version = "2.0.4"
+version = "2.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93ae1ddd39efd67689deb1979d80bad3bf7f2b09c6e6117c8d1f2443b5e2f83e"
+checksum = "d5c2ca00549910ec251e3bd15f87aeeb206c9456b9a77b43ff6c97c54042a472"
 dependencies = [
  "bstr",
  "doc-comment",
@@ -3668,7 +3668,7 @@ dependencies = [
 name = "jormungandr-automation"
 version = "0.13.0"
 dependencies = [
- "assert_cmd 2.0.4",
+ "assert_cmd 2.0.5",
  "assert_fs",
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -3735,7 +3735,7 @@ dependencies = [
 name = "jormungandr-integration-tests"
 version = "0.13.0"
 dependencies = [
- "assert_cmd 2.0.4",
+ "assert_cmd 2.0.5",
  "assert_fs",
  "base64 0.13.0",
  "bech32 0.7.3",
@@ -7916,7 +7916,7 @@ dependencies = [
 name = "vit-servicing-station-tests"
 version = "0.3.4-dev"
 dependencies = [
- "assert_cmd 2.0.4",
+ "assert_cmd 2.0.5",
  "assert_fs",
  "base64 0.12.3",
  "cfg-if 0.1.10",
@@ -7998,7 +7998,7 @@ dependencies = [
  "regex",
  "reqwest",
  "rustls",
- "rustls-pemfile 0.2.1",
+ "rustls-pemfile 1.0.1",
  "serde",
  "serde_json",
  "serde_yaml",

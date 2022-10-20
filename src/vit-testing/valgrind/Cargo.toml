@@ -34,7 +34,7 @@ chain-addr = { path = "../../chain-libs/chain-addr" }
 url = "2.2.2"
 
 [dependencies.reqwest]
-version = "0.10.10"
+version = "0.11"
 default-features = false
 features = ["blocking", "rustls-tls", "json"]
 

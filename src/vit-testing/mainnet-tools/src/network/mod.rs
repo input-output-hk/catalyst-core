@@ -1,6 +1,9 @@
+use std::collections::HashSet;
+use jormungandr_lib::crypto::account::Identifier;
 use crate::db_sync::DbSyncInstance;
 use jormungandr_lib::interfaces::BlockDate;
 use snapshot_lib::registration::VotingRegistration;
+use crate::wallet::MainnetWallet;
 
 pub struct MainnetNetwork<'a> {
     block_date: BlockDate,
@@ -31,3 +34,79 @@ impl<'a> MainnetNetwork<'a> {
         }
     }
 }
+
+#[derive(Default)]
+pub struct MainnetNetworkBuilder {
+    states: Vec<MainnetWalletState>,
+}
+
+impl MainnetNetworkBuilder {
+    pub fn with(mut self, state: MainnetWalletState) -> Self {
+        self.states.push(state);
+        self
+    }
+
+    pub fn build(self) -> (DbSyncInstance,HashSet<Identifier>) {
+        let mut mainnet_network = MainnetNetwork::default();
+        let mut db_sync_instance = DbSyncInstance::default();
+
+        mainnet_network.sync_with(&mut db_sync_instance);
+
+        self.states.iter().map(|x| x.registration.as_ref()).filter(|x| x.is_some()).for_each(|x| mainnet_network.accept(x.unwrap().clone()));
+
+        (db_sync_instance,self.states.iter().map(|x| x.rep.as_ref()).filter(|x| x.is_some()).map(|x|x.unwrap().clone()).collect())
+    }
+}
+
+pub trait MainnetWalletStateBuilder {
+    fn as_representative(&self) -> MainnetWalletState;
+    fn as_direct_voter(&self) -> MainnetWalletState;
+    fn as_delegator(&self,delegations: Vec<(&MainnetWallet,u8)>) -> MainnetWalletState;
+}
+
+impl MainnetWalletStateBuilder for MainnetWallet {
+    fn as_representative(&self) -> MainnetWalletState {
+        MainnetWalletState{
+            rep: Some(self.catalyst_public_key()),
+            registration: None
+        }
+    }
+
+    fn as_direct_voter(&self) -> MainnetWalletState {
+        MainnetWalletState {
+            rep: None,
+            registration: Some(self.direct_voting_registration())
+        }
+    }
+
+    fn as_delegator(&self, delegations: Vec<(&MainnetWallet,u8)>) -> MainnetWalletState {
+        MainnetWalletState {
+            rep: None,
+            registration: Some(self.delegation_voting_registration(delegations.into_iter().map(|(wallet,weight)| {
+                (wallet.catalyst_public_key(),weight as u32)
+            }).collect()))
+        }
+    }
+}
+
+
+
+
+pub struct MainnetWalletState{
+    rep: Option<Identifier>,
+    registration: Option<VotingRegistration>,
+}
+
+impl MainnetWalletState {
+
+    pub fn rep(&self) -> &Option<Identifier> {
+        &self.rep
+    }
+
+    pub fn registration(&self) -> &Option<VotingRegistration> {
+        &self.registration
+    }
+}
+
+
+

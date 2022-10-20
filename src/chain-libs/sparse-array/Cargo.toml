@@ -6,4 +6,4 @@ edition = "2021"
 
 [dev-dependencies]
 proptest = { workspace = true }
-test-strategy = "0.1"
+test-strategy = "0.2"

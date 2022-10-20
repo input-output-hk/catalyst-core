@@ -307,7 +307,7 @@ dependencies = [
  "Inflector",
  "async-graphql-parser",
  "darling 0.14.1",
- "proc-macro-crate 1.2.1",
+ "proc-macro-crate",
  "proc-macro2",
  "quote",
  "syn",
@@ -833,7 +833,7 @@ dependencies = [
  "sscanf",
  "structopt",
  "symmetric-cipher",
- "test-strategy 0.2.1",
+ "test-strategy",
  "thiserror",
  "thor",
  "time 0.3.15",
@@ -908,7 +908,7 @@ dependencies = [
  "cryptoxide 0.4.2",
  "proptest",
  "quickcheck",
- "test-strategy 0.1.2",
+ "test-strategy",
 ]
 
 [[package]]
@@ -938,7 +938,7 @@ dependencies = [
  "rayon",
  "sha2 0.10.6",
  "smoke",
- "test-strategy 0.1.2",
+ "test-strategy",
  "typed-bytes",
 ]
 
@@ -969,7 +969,7 @@ dependencies = [
  "secp256k1",
  "sha2 0.10.6",
  "sha3 0.10.6",
- "test-strategy 0.1.2",
+ "test-strategy",
  "thiserror",
  "typed-bytes",
 ]
@@ -1002,10 +1002,10 @@ dependencies = [
  "serde",
  "serde_json",
  "sparse-array",
- "strum 0.23.0",
- "strum_macros 0.23.1",
+ "strum",
+ "strum_macros",
  "tempfile",
- "test-strategy 0.1.2",
+ "test-strategy",
  "thiserror",
  "typed-bytes",
 ]
@@ -1064,7 +1064,7 @@ dependencies = [
  "chain-ser",
  "proptest",
  "quickcheck",
- "test-strategy 0.1.2",
+ "test-strategy",
 ]
 
 [[package]]
@@ -2500,26 +2500,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a06f77d526c1a601b7c4cdd98f54b5eaabffc14d5f2f0296febdc7f357c6d3ba"
 
 [[package]]
-name = "function_name"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bef632c665dc6e2b99ffa4d913f7160bd902c4d3e4cb732d81dc3d221f848512"
-dependencies = [
- "function_name-proc-macro",
-]
-
-[[package]]
-name = "function_name-proc-macro"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "569d2238870f92cff64fc810013b61edaf446ebcfba36b649b96bc5b4078328a"
-dependencies = [
- "proc-macro-crate 0.1.5",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "funty"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3300,7 +3280,7 @@ dependencies = [
  "jemallocator",
  "proptest",
  "rustc_version",
- "test-strategy 0.1.2",
+ "test-strategy",
  "thiserror",
  "trybuild",
 ]
@@ -3751,7 +3731,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "structopt",
- "strum 0.23.0",
+ "strum",
  "sysinfo 0.23.13",
  "tar",
  "tempfile",
@@ -3784,7 +3764,6 @@ dependencies = [
  "chain-time",
  "chain-vote",
  "fs_extra",
- "function_name",
  "futures",
  "hersir",
  "hex",
@@ -4501,7 +4480,7 @@ version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "424f6e86263cd5294cbd7f1e95746b95aca0e0d66bff31e5a40d6baa87b4aa99"
 dependencies = [
- "proc-macro-crate 1.2.1",
+ "proc-macro-crate",
  "proc-macro-error",
  "proc-macro2",
  "quote",
@@ -4998,7 +4977,7 @@ version = "3.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9299338969a3d2f491d65f140b00ddec470858402f888af98e8642fb5e8965cd"
 dependencies = [
- "proc-macro-crate 1.2.1",
+ "proc-macro-crate",
  "proc-macro2",
  "quote",
  "syn",
@@ -5439,15 +5418,6 @@ dependencies = [
  "impl-serde",
  "scale-info",
  "uint",
-]
-
-[[package]]
-name = "proc-macro-crate"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d6ea3c4595b96363c13943497db34af4460fb474a95c43f4446ad341b8c9785"
-dependencies = [
- "toml",
 ]
 
 [[package]]
@@ -6262,7 +6232,7 @@ version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "53f56acbd0743d29ffa08f911ab5397def774ad01bab3786804cf6ee057fb5e1"
 dependencies = [
- "proc-macro-crate 1.2.1",
+ "proc-macro-crate",
  "proc-macro2",
  "quote",
  "syn",
@@ -6770,7 +6740,7 @@ dependencies = [
  "serde_json",
  "serde_test",
  "serde_yaml",
- "test-strategy 0.2.1",
+ "test-strategy",
  "thiserror",
 ]
 
@@ -6815,7 +6785,7 @@ name = "sparse-array"
 version = "0.1.0"
 dependencies = [
  "proptest",
- "test-strategy 0.1.2",
+ "test-strategy",
 ]
 
 [[package]]
@@ -6931,38 +6901,20 @@ dependencies = [
 
 [[package]]
 name = "strum"
-version = "0.21.0"
+version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aaf86bbcfd1fa9670b7a129f64fc0c9fcbbfe4f1bc4210e9e98fe71ffc12cde2"
-
-[[package]]
-name = "strum"
-version = "0.23.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cae14b91c7d11c9a851d3fbc80a963198998c2a64eec840477fa92d8ce9b70bb"
+checksum = "063e6045c0e62079840579a7e47a355ae92f60eb74daaf156fb1e84ba164e63f"
 dependencies = [
- "strum_macros 0.23.1",
+ "strum_macros",
 ]
 
 [[package]]
 name = "strum_macros"
-version = "0.21.1"
+version = "0.24.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d06aaeeee809dbc59eb4556183dd927df67db1540de5be8d3ec0b6636358a5ec"
+checksum = "1e385be0d24f186b4ce2f9982191e7101bb737312ad61c1f2f984f34bcf85d59"
 dependencies = [
- "heck 0.3.3",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "strum_macros"
-version = "0.23.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5bb0dc7ee9c15cea6199cde9a127fa16a4c5819af85395457ad72d68edc85a38"
-dependencies = [
- "heck 0.3.3",
+ "heck 0.4.0",
  "proc-macro2",
  "quote",
  "rustversion",
@@ -7131,18 +7083,6 @@ name = "termtree"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "507e9898683b6c43a9aa55b64259b721b52ba226e0f3779137e50ad114a4c90b"
-
-[[package]]
-name = "test-strategy"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22c726321a7c108ca1de4ed2e6a362ead7193ecfbe0b326c5dff602b65a09e6a"
-dependencies = [
- "proc-macro2",
- "quote",
- "structmeta",
- "syn",
-]
 
 [[package]]
 name = "test-strategy"
@@ -8100,8 +8040,8 @@ dependencies = [
  "simplelog",
  "snapshot-lib",
  "structopt",
- "strum 0.21.0",
- "strum_macros 0.21.1",
+ "strum",
+ "strum_macros",
  "tempfile",
  "thiserror",
  "time 0.3.15",
@@ -8186,7 +8126,6 @@ dependencies = [
  "dialoguer 0.10.2",
  "diffy",
  "fake",
- "function_name",
  "futures",
  "glob",
  "hersir",
@@ -8219,8 +8158,8 @@ dependencies = [
  "serde_yaml",
  "snapshot-lib",
  "structopt",
- "strum 0.21.0",
- "strum_macros 0.23.1",
+ "strum",
+ "strum_macros",
  "tempdir",
  "thiserror",
  "thor",
@@ -8270,7 +8209,7 @@ dependencies = [
  "serde_json",
  "serial_test",
  "tempdir",
- "test-strategy 0.2.1",
+ "test-strategy",
  "tracing",
  "tracing-subscriber",
  "tracing-test",

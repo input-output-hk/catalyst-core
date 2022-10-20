@@ -8,9 +8,6 @@ use snapshot_lib::{
 
 use super::ArbitraryGenerator;
 
-const LEGACY_DELEGATION: usize = 1;
-const NEW_DELEGATION: usize = 0;
-
 #[derive(Clone)]
 pub struct ArbitraryRawSnapshotGenerator {
     id_generator: ArbitraryGenerator,
@@ -39,10 +36,9 @@ impl ArbitraryRawSnapshotGenerator {
     }
 
     pub fn delegation(&mut self) -> Delegations {
-        let delegation_type = self.id_generator.random_index(1);
-        match delegation_type {
-            LEGACY_DELEGATION => self.legacy_delegation(),
-            NEW_DELEGATION => self.new_delegation(),
+        match self.id_generator.next_u32() % 2 {
+            0 => self.legacy_delegation(),
+            1 = > self.new_delegation(),
         }
     }
 

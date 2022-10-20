@@ -82,7 +82,7 @@ pub fn cap_voting_influence(
         // value which should not exceed a threshold of T * |S| and get Y'.
         // Given Y', we need to 'spread' it among all elements, from which we get Y = ceil(Y' / len).
         let y = int_ceil(
-            calc_vp_to_remove(next_vp * set_len, tot, threshold * set_len.into()),
+            calc_vp_to_remove(next_vp * set_len, tot, threshold * set_len),
             set_len,
         );
         let prev_vp = u64::from(voters[prev].hir.voting_power);

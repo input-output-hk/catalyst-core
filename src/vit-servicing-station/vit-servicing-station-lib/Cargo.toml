@@ -33,7 +33,7 @@ chain-ser = { path = "../../chain-libs/chain-ser" }
 jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
 eccoxide = { git = "https://github.com/eugene-babichenko/eccoxide.git", branch = "fast-u64-scalar-mul", features = ["fast-u64-scalar-mul"], optional = true }
 http-zipkin = "0.3.0"
-notify = "=5.0.0-pre.11"
+notify = "5"
 
 # This solves building on windows when sqlite3lib is not installed or missing in the `$PATH`
 # as it happens with the github actions pipeline associated to this project.

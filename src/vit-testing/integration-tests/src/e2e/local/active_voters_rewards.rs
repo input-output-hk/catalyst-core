@@ -1,26 +1,23 @@
 use crate::Vote;
 use std::collections::HashSet;
 
+use crate::common::iapyx_from_mainnet;
 use crate::common::mainnet_wallet_ext::MainnetWalletExtension;
-use crate::common::snapshot::SnapshotServiceStarter;
+use crate::common::snapshot::mock;
 use crate::common::snapshot_filter::SnapshotFilterSource;
 use crate::common::MainnetWallet;
-use crate::common::{iapyx_from_mainnet, DIRECT_VOTING_GROUP};
 use assert_fs::TempDir;
 use catalyst_toolbox::rewards::voters::calc_voter_rewards;
 use catalyst_toolbox::rewards::Threshold;
 use chain_impl_mockchain::block::BlockDate;
 use jormungandr_automation::testing::time;
 use jormungandr_lib::crypto::account::Identifier;
-use mainnet_tools::db_sync::DbSyncInstance;
-use mainnet_tools::network::MainnetNetwork;
-use mainnet_tools::voting_tools::VotingToolsMock;
-use snapshot_trigger_service::config::ConfigurationBuilder;
+use mainnet_tools::network::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
 use snapshot_trigger_service::config::JobParameters;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
-use vitup::config::Role;
 use vitup::config::VoteBlockchainTime;
 use vitup::config::{Block0Initials, ConfigBuilder};
+use vitup::config::{Role, DIRECT_VOTING_GROUP};
 use vitup::testing::spawn_network;
 use vitup::testing::vitup_setup;
 
@@ -34,37 +31,13 @@ pub fn voters_with_at_least_one_vote() {
     let bob_wallet = MainnetWallet::new(stake);
     let clarice_wallet = MainnetWallet::new(stake);
 
-    let mut mainnet_network = MainnetNetwork::default();
-    let mut db_sync_instance = DbSyncInstance::default();
-
-    mainnet_network.sync_with(&mut db_sync_instance);
-
-    alice_wallet
-        .send_direct_voting_registration()
-        .to(&mut mainnet_network)
-        .unwrap();
-    bob_wallet
-        .send_direct_voting_registration()
-        .to(&mut mainnet_network)
-        .unwrap();
-    clarice_wallet
-        .send_direct_voting_registration()
-        .to(&mut mainnet_network)
-        .unwrap();
-
-    let voting_tools =
-        VotingToolsMock::default().connect_to_db_sync(&db_sync_instance, &testing_directory);
-
-    let configuration = ConfigurationBuilder::default()
-        .with_voting_tools_params(voting_tools.into())
-        .with_tmp_result_dir(&testing_directory)
+    let (db_sync, _) = MainnetNetworkBuilder::default()
+        .with(alice_wallet.as_direct_voter())
+        .with(bob_wallet.as_direct_voter())
+        .with(clarice_wallet.as_direct_voter())
         .build();
 
-    let snapshot = SnapshotServiceStarter::default()
-        .with_configuration(configuration)
-        .start_on_available_port(&testing_directory)
-        .unwrap()
-        .snapshot(JobParameters::fund("fund9"))
+    let snapshot = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
         .filter_default(&HashSet::new());
 
     let vote_timing = VoteBlockchainTime {

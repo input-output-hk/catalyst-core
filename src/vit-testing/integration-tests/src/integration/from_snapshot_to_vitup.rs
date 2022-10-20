@@ -1,5 +1,5 @@
-use crate::common::snapshot::SnapshotServiceStarter;
-use crate::common::{MainnetWallet, SnapshotFilter};
+use crate::common::snapshot::mock;
+use crate::common::{MainnetWallet, RepsVoterAssignerSource, SnapshotFilter};
 use assert_fs::TempDir;
 use chain_impl_mockchain::certificate::VotePlan;
 use fraction::Fraction;
@@ -11,18 +11,10 @@ use jormungandr_lib::interfaces::Initial::Token;
 use jormungandr_lib::interfaces::InitialToken;
 use jormungandr_lib::interfaces::InitialUTxO;
 use jormungandr_lib::interfaces::Value;
-use mainnet_tools::db_sync::DbSyncInstance;
-use mainnet_tools::network::MainnetNetwork;
-use mainnet_tools::voting_tools::VotingToolsMock;
-use snapshot_lib::voting_group::RepsVotersAssigner;
-use snapshot_trigger_service::config::ConfigurationBuilder;
+use mainnet_tools::network::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
 use snapshot_trigger_service::config::JobParameters;
-use std::collections::HashSet;
 use vitup::config::ConfigBuilder;
 use vitup::testing::vitup_setup;
-
-const DIRECT_VOTING_GROUP: &str = "direct";
-const REP_VOTING_GROUP: &str = "dreps";
 
 #[test]
 pub fn cip36_mixed_delegation_should_appear_in_block0() {
@@ -30,66 +22,28 @@ pub fn cip36_mixed_delegation_should_appear_in_block0() {
     let discrimination = chain_addr::Discrimination::Production;
     let stake = 10_000;
 
-    let alice_voter = MainnetWallet::new(stake);
-    let bob_voter = MainnetWallet::new(stake);
-    let clarice_voter = MainnetWallet::new(stake);
+    let alice = MainnetWallet::new(stake);
+    let bob = MainnetWallet::new(stake);
+    let clarice = MainnetWallet::new(stake);
 
     let david_representative = MainnetWallet::new(500);
     let edgar_representative = MainnetWallet::new(1_000);
     let fred_representative = MainnetWallet::new(8_000);
 
-    let mut reps = HashSet::new();
-    reps.insert(edgar_representative.catalyst_public_key());
-    reps.insert(david_representative.catalyst_public_key());
-    reps.insert(fred_representative.catalyst_public_key());
-
-    let mut mainnet_network = MainnetNetwork::default();
-    let mut db_sync_instance = DbSyncInstance::default();
-
-    mainnet_network.sync_with(&mut db_sync_instance);
-
-    alice_voter
-        .send_direct_voting_registration()
-        .to(&mut mainnet_network)
-        .unwrap();
-    bob_voter
-        .send_delegated_voting_registration(vec![(david_representative.catalyst_public_key(), 1)])
-        .to(&mut mainnet_network)
-        .unwrap();
-    clarice_voter
-        .send_delegated_voting_registration(vec![
-            (david_representative.catalyst_public_key(), 1),
-            (edgar_representative.catalyst_public_key(), 1),
-        ])
-        .to(&mut mainnet_network)
-        .unwrap();
-
-    let voting_tools =
-        VotingToolsMock::default().connect_to_db_sync(&db_sync_instance, &testing_directory);
-
-    let configuration = ConfigurationBuilder::default()
-        .with_voting_tools_params(voting_tools.into())
-        .with_tmp_result_dir(&testing_directory)
+    let (db_sync, reps) = MainnetNetworkBuilder::default()
+        .with(alice.as_direct_voter())
+        .with(bob.as_delegator(vec![(&david_representative, 1)]))
+        .with(clarice.as_delegator(vec![(&edgar_representative, 1), (&edgar_representative, 1)]))
         .build();
 
-    let assigner = RepsVotersAssigner::new_from_repsdb(
-        DIRECT_VOTING_GROUP.to_string(),
-        REP_VOTING_GROUP.to_string(),
-        reps,
-    )
-    .unwrap();
+    let snapshot_result =
+        mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory);
 
-    let snapshot_service = SnapshotServiceStarter::default()
-        .with_configuration(configuration)
-        .start_on_available_port(&testing_directory)
-        .unwrap();
-
-    let snapshot_result = snapshot_service.snapshot(JobParameters::fund("fund9"));
     let voter_hir = SnapshotFilter::from_snapshot_result(
         &snapshot_result,
         450u64.into(),
         Fraction::from(1u64),
-        &assigner,
+        &reps.into_reps_voter_assigner(),
     )
     .to_voters_hirs();
 
@@ -102,13 +56,13 @@ pub fn cip36_mixed_delegation_should_appear_in_block0() {
 
     controller
         .settings()
-        .assert_has_funds(alice_voter.catalyst_public_key(), stake.into());
+        .assert_has_funds(alice.catalyst_public_key(), stake.into());
     controller
         .settings()
-        .assert_has_no_entry(bob_voter.catalyst_public_key());
+        .assert_has_no_entry(bob.catalyst_public_key());
     controller
         .settings()
-        .assert_has_no_entry(clarice_voter.catalyst_public_key());
+        .assert_has_no_entry(clarice.catalyst_public_key());
 
     controller.settings().assert_has_funds(
         david_representative.catalyst_public_key(),
@@ -124,7 +78,7 @@ pub fn cip36_mixed_delegation_should_appear_in_block0() {
 
     controller
         .settings()
-        .assert_has_voting_token_for_direct_voting(alice_voter.catalyst_public_key(), stake.into());
+        .assert_has_voting_token_for_direct_voting(alice.catalyst_public_key(), stake.into());
     controller
         .settings()
         .assert_has_voting_token_for_rep_voting(

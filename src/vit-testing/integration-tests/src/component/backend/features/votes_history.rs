@@ -56,7 +56,7 @@ pub fn votes_history_reflects_casted_votes() {
     )
     .unwrap();
 
-    let secret = testing_directory.path().join("wallet_alice");
+    let secret = testing_directory.path().join("alice");
     let mut alice = iapyx_from_secret_key(secret, &wallet_proxy).unwrap();
 
     let proposals = alice.proposals(&role.to_string()).unwrap();

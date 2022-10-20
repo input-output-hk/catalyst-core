@@ -3,7 +3,7 @@
 
 @file:Suppress("NAME_SHADOWING")
 
-package com.iohk.jormungandr_wallet;
+package com.iohk.jormungandr_wallet
 
 // Common helper code.
 //
@@ -34,7 +34,9 @@ import java.util.concurrent.atomic.AtomicLong
 @Structure.FieldOrder("capacity", "len", "data")
 open class RustBuffer : Structure() {
     @JvmField var capacity: Int = 0
+
     @JvmField var len: Int = 0
+
     @JvmField var data: Pointer? = null
 
     class ByValue : RustBuffer(), Structure.ByValue
@@ -43,9 +45,9 @@ open class RustBuffer : Structure() {
     companion object {
         internal fun alloc(size: Int = 0) = rustCall() { status ->
             _UniFFILib.INSTANCE.ffi_jormungandr_wallet_9f82_rustbuffer_alloc(size, status).also {
-                if(it.data == null) {
-                   throw RuntimeException("RustBuffer.alloc() returned null data pointer (size=${size})")
-               }
+                if (it.data == null) {
+                    throw RuntimeException("RustBuffer.alloc() returned null data pointer (size=$size)")
+                }
             }
         }
 
@@ -89,10 +91,12 @@ class RustBufferByReference : ByReference(16) {
 @Structure.FieldOrder("len", "data")
 open class ForeignBytes : Structure() {
     @JvmField var len: Int = 0
+
     @JvmField var data: Pointer? = null
 
     class ByValue : ForeignBytes(), Structure.ByValue
 }
+
 // The FfiConverter interface handles converter types to and from the FFI
 //
 // All implementing objects should be public to support external types.  When a
@@ -148,11 +152,11 @@ public interface FfiConverter<KotlinType, FfiType> {
     fun liftFromRustBuffer(rbuf: RustBuffer.ByValue): KotlinType {
         val byteBuf = rbuf.asByteBuffer()!!
         try {
-           val item = read(byteBuf)
-           if (byteBuf.hasRemaining()) {
-               throw RuntimeException("junk remaining in buffer after lifting, something is very wrong!!")
-           }
-           return item
+            val item = read(byteBuf)
+            if (byteBuf.hasRemaining()) {
+                throw RuntimeException("junk remaining in buffer after lifting, something is very wrong!!")
+            }
+            return item
         } finally {
             RustBuffer.free(rbuf)
         }
@@ -160,16 +164,18 @@ public interface FfiConverter<KotlinType, FfiType> {
 }
 
 // FfiConverter that uses `RustBuffer` as the FfiType
-public interface FfiConverterRustBuffer<KotlinType>: FfiConverter<KotlinType, RustBuffer.ByValue> {
+public interface FfiConverterRustBuffer<KotlinType> : FfiConverter<KotlinType, RustBuffer.ByValue> {
     override fun lift(value: RustBuffer.ByValue) = liftFromRustBuffer(value)
     override fun lower(value: KotlinType) = lowerIntoRustBuffer(value)
 }
+
 // A handful of classes and functions to support the generated data structures.
 // This would be a good candidate for isolating in its own ffi-support lib.
 // Error runtime.
 @Structure.FieldOrder("code", "error_buf")
 internal open class RustCallStatus : Structure() {
     @JvmField var code: Int = 0
+
     @JvmField var error_buf: RustBuffer.ByValue = RustBuffer.ByValue()
 
     fun isSuccess(): Boolean {
@@ -189,7 +195,7 @@ class InternalException(message: String) : Exception(message)
 
 // Each top-level error class has a companion object that can lift the error from the call status's rust buffer
 interface CallStatusErrorHandler<E> {
-    fun lift(error_buf: RustBuffer.ByValue): E;
+    fun lift(error_buf: RustBuffer.ByValue): E
 }
 
 // Helpers for calling Rust
@@ -197,8 +203,8 @@ interface CallStatusErrorHandler<E> {
 // synchronize itself
 
 // Call a rust function that returns a Result<>.  Pass in the Error class companion that corresponds to the Err
-private inline fun <U, E: Exception> rustCallWithError(errorHandler: CallStatusErrorHandler<E>, callback: (RustCallStatus) -> U): U {
-    var status = RustCallStatus();
+private inline fun <U, E : Exception> rustCallWithError(errorHandler: CallStatusErrorHandler<E>, callback: (RustCallStatus) -> U): U {
+    var status = RustCallStatus()
     val return_value = callback(status)
     if (status.isSuccess()) {
         return return_value
@@ -219,7 +225,7 @@ private inline fun <U, E: Exception> rustCallWithError(errorHandler: CallStatusE
 }
 
 // CallStatusErrorHandler implementation for times when we don't expect a CALL_ERROR
-object NullCallStatusErrorHandler: CallStatusErrorHandler<InternalException> {
+object NullCallStatusErrorHandler : CallStatusErrorHandler<InternalException> {
     override fun lift(error_buf: RustBuffer.ByValue): InternalException {
         RustBuffer.free(error_buf)
         return InternalException("Unexpected CALL_ERROR")
@@ -228,7 +234,7 @@ object NullCallStatusErrorHandler: CallStatusErrorHandler<InternalException> {
 
 // Call a rust function that returns a plain value
 private inline fun <U> rustCall(callback: (RustCallStatus) -> U): U {
-    return rustCallWithError(NullCallStatusErrorHandler, callback);
+    return rustCallWithError(NullCallStatusErrorHandler, callback)
 }
 
 // Contains loading, initialization code,
@@ -255,109 +261,139 @@ internal interface _UniFFILib : Library {
     companion object {
         internal val INSTANCE: _UniFFILib by lazy {
             loadIndirect<_UniFFILib>(componentName = "jormungandr_wallet")
-            
         }
     }
 
-    fun ffi_jormungandr_wallet_9f82_Wallet_object_free(`ptr`: Pointer,
-    _uniffi_out_err: RustCallStatus
+    fun ffi_jormungandr_wallet_9f82_Wallet_object_free(
+        `ptr`: Pointer,
+        _uniffi_out_err: RustCallStatus
     ): Unit
 
-    fun jormungandr_wallet_9f82_Wallet_new(`accountKey`: Pointer,
-    _uniffi_out_err: RustCallStatus
+    fun jormungandr_wallet_9f82_Wallet_new(
+        `accountKey`: Pointer,
+        _uniffi_out_err: RustCallStatus
     ): Pointer
 
-    fun jormungandr_wallet_9f82_Wallet_set_state(`ptr`: Pointer,`value`: Long,`counter`: RustBuffer.ByValue,
-    _uniffi_out_err: RustCallStatus
+    fun jormungandr_wallet_9f82_Wallet_set_state(
+        `ptr`: Pointer,
+        `value`: Long,
+        `counter`: RustBuffer.ByValue,
+        _uniffi_out_err: RustCallStatus
     ): Unit
 
-    fun jormungandr_wallet_9f82_Wallet_vote(`ptr`: Pointer,`settings`: Pointer,`proposal`: RustBuffer.ByValue,`choice`: Byte,`validUntil`: RustBuffer.ByValue,`lane`: Byte,
-    _uniffi_out_err: RustCallStatus
+    fun jormungandr_wallet_9f82_Wallet_vote(
+        `ptr`: Pointer,
+        `settings`: Pointer,
+        `proposal`: RustBuffer.ByValue,
+        `choice`: Byte,
+        `validUntil`: RustBuffer.ByValue,
+        `lane`: Byte,
+        _uniffi_out_err: RustCallStatus
     ): RustBuffer.ByValue
 
-    fun jormungandr_wallet_9f82_Wallet_account_id(`ptr`: Pointer,
-    _uniffi_out_err: RustCallStatus
+    fun jormungandr_wallet_9f82_Wallet_account_id(
+        `ptr`: Pointer,
+        _uniffi_out_err: RustCallStatus
     ): RustBuffer.ByValue
 
-    fun jormungandr_wallet_9f82_Wallet_spending_counters(`ptr`: Pointer,
-    _uniffi_out_err: RustCallStatus
+    fun jormungandr_wallet_9f82_Wallet_spending_counters(
+        `ptr`: Pointer,
+        _uniffi_out_err: RustCallStatus
     ): RustBuffer.ByValue
 
-    fun jormungandr_wallet_9f82_Wallet_total_value(`ptr`: Pointer,
-    _uniffi_out_err: RustCallStatus
+    fun jormungandr_wallet_9f82_Wallet_total_value(
+        `ptr`: Pointer,
+        _uniffi_out_err: RustCallStatus
     ): Long
 
-    fun ffi_jormungandr_wallet_9f82_SecretKeyEd25519Extended_object_free(`ptr`: Pointer,
-    _uniffi_out_err: RustCallStatus
+    fun ffi_jormungandr_wallet_9f82_SecretKeyEd25519Extended_object_free(
+        `ptr`: Pointer,
+        _uniffi_out_err: RustCallStatus
     ): Unit
 
-    fun jormungandr_wallet_9f82_SecretKeyEd25519Extended_new(`raw`: RustBuffer.ByValue,
-    _uniffi_out_err: RustCallStatus
+    fun jormungandr_wallet_9f82_SecretKeyEd25519Extended_new(
+        `raw`: RustBuffer.ByValue,
+        _uniffi_out_err: RustCallStatus
     ): Pointer
 
-    fun ffi_jormungandr_wallet_9f82_Fragment_object_free(`ptr`: Pointer,
-    _uniffi_out_err: RustCallStatus
+    fun ffi_jormungandr_wallet_9f82_Fragment_object_free(
+        `ptr`: Pointer,
+        _uniffi_out_err: RustCallStatus
     ): Unit
 
-    fun jormungandr_wallet_9f82_Fragment_new(`raw`: RustBuffer.ByValue,
-    _uniffi_out_err: RustCallStatus
+    fun jormungandr_wallet_9f82_Fragment_new(
+        `raw`: RustBuffer.ByValue,
+        _uniffi_out_err: RustCallStatus
     ): Pointer
 
-    fun jormungandr_wallet_9f82_Fragment_id(`ptr`: Pointer,
-    _uniffi_out_err: RustCallStatus
+    fun jormungandr_wallet_9f82_Fragment_id(
+        `ptr`: Pointer,
+        _uniffi_out_err: RustCallStatus
     ): RustBuffer.ByValue
 
-    fun jormungandr_wallet_9f82_Fragment_serialize(`ptr`: Pointer,
-    _uniffi_out_err: RustCallStatus
+    fun jormungandr_wallet_9f82_Fragment_serialize(
+        `ptr`: Pointer,
+        _uniffi_out_err: RustCallStatus
     ): RustBuffer.ByValue
 
-    fun ffi_jormungandr_wallet_9f82_Settings_object_free(`ptr`: Pointer,
-    _uniffi_out_err: RustCallStatus
+    fun ffi_jormungandr_wallet_9f82_Settings_object_free(
+        `ptr`: Pointer,
+        _uniffi_out_err: RustCallStatus
     ): Unit
 
-    fun jormungandr_wallet_9f82_Settings_new(`settings`: RustBuffer.ByValue,
-    _uniffi_out_err: RustCallStatus
+    fun jormungandr_wallet_9f82_Settings_new(
+        `settings`: RustBuffer.ByValue,
+        _uniffi_out_err: RustCallStatus
     ): Pointer
 
-    fun jormungandr_wallet_9f82_Settings_settings_raw(`ptr`: Pointer,
-    _uniffi_out_err: RustCallStatus
+    fun jormungandr_wallet_9f82_Settings_settings_raw(
+        `ptr`: Pointer,
+        _uniffi_out_err: RustCallStatus
     ): RustBuffer.ByValue
 
-    fun jormungandr_wallet_9f82_block_date_from_system_time(`settings`: Pointer,`unixEpoch`: Long,
-    _uniffi_out_err: RustCallStatus
+    fun jormungandr_wallet_9f82_block_date_from_system_time(
+        `settings`: Pointer,
+        `unixEpoch`: Long,
+        _uniffi_out_err: RustCallStatus
     ): RustBuffer.ByValue
 
-    fun jormungandr_wallet_9f82_max_expiration_date(`settings`: Pointer,`currentTime`: Long,
-    _uniffi_out_err: RustCallStatus
+    fun jormungandr_wallet_9f82_max_expiration_date(
+        `settings`: Pointer,
+        `currentTime`: Long,
+        _uniffi_out_err: RustCallStatus
     ): RustBuffer.ByValue
 
-    fun jormungandr_wallet_9f82_symmetric_cipher_decrypt(`password`: RustBuffer.ByValue,`ciphertext`: RustBuffer.ByValue,
-    _uniffi_out_err: RustCallStatus
+    fun jormungandr_wallet_9f82_symmetric_cipher_decrypt(
+        `password`: RustBuffer.ByValue,
+        `ciphertext`: RustBuffer.ByValue,
+        _uniffi_out_err: RustCallStatus
     ): RustBuffer.ByValue
 
-    fun ffi_jormungandr_wallet_9f82_rustbuffer_alloc(`size`: Int,
-    _uniffi_out_err: RustCallStatus
+    fun ffi_jormungandr_wallet_9f82_rustbuffer_alloc(
+        `size`: Int,
+        _uniffi_out_err: RustCallStatus
     ): RustBuffer.ByValue
 
-    fun ffi_jormungandr_wallet_9f82_rustbuffer_from_bytes(`bytes`: ForeignBytes.ByValue,
-    _uniffi_out_err: RustCallStatus
+    fun ffi_jormungandr_wallet_9f82_rustbuffer_from_bytes(
+        `bytes`: ForeignBytes.ByValue,
+        _uniffi_out_err: RustCallStatus
     ): RustBuffer.ByValue
 
-    fun ffi_jormungandr_wallet_9f82_rustbuffer_free(`buf`: RustBuffer.ByValue,
-    _uniffi_out_err: RustCallStatus
+    fun ffi_jormungandr_wallet_9f82_rustbuffer_free(
+        `buf`: RustBuffer.ByValue,
+        _uniffi_out_err: RustCallStatus
     ): Unit
 
-    fun ffi_jormungandr_wallet_9f82_rustbuffer_reserve(`buf`: RustBuffer.ByValue,`additional`: Int,
-    _uniffi_out_err: RustCallStatus
+    fun ffi_jormungandr_wallet_9f82_rustbuffer_reserve(
+        `buf`: RustBuffer.ByValue,
+        `additional`: Int,
+        _uniffi_out_err: RustCallStatus
     ): RustBuffer.ByValue
-
-    
 }
 
 // Public interface members begin here.
 
-
-public object FfiConverterUByte: FfiConverter<UByte, Byte> {
+public object FfiConverterUByte : FfiConverter<UByte, Byte> {
     override fun lift(value: Byte): UByte {
         return value.toUByte()
     }
@@ -377,7 +413,7 @@ public object FfiConverterUByte: FfiConverter<UByte, Byte> {
     }
 }
 
-public object FfiConverterUInt: FfiConverter<UInt, Int> {
+public object FfiConverterUInt : FfiConverter<UInt, Int> {
     override fun lift(value: Int): UInt {
         return value.toUInt()
     }
@@ -397,7 +433,7 @@ public object FfiConverterUInt: FfiConverter<UInt, Int> {
     }
 }
 
-public object FfiConverterULong: FfiConverter<ULong, Long> {
+public object FfiConverterULong : FfiConverter<ULong, Long> {
     override fun lift(value: Long): ULong {
         return value.toULong()
     }
@@ -417,7 +453,7 @@ public object FfiConverterULong: FfiConverter<ULong, Long> {
     }
 }
 
-public object FfiConverterString: FfiConverter<String, RustBuffer.ByValue> {
+public object FfiConverterString : FfiConverter<String, RustBuffer.ByValue> {
     // Note: we don't inherit from FfiConverterRustBuffer, because we use a
     // special encoding when lowering/lifting.  We can use `RustBuffer.len` to
     // store our length and avoid writing it out to the buffer.
@@ -462,7 +498,6 @@ public object FfiConverterString: FfiConverter<String, RustBuffer.ByValue> {
         buf.put(byteArr)
     }
 }
-
 
 // Interface implemented by anything that can contain an object reference.
 //
@@ -577,12 +612,12 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
 //
 abstract class FFIObject(
     protected val pointer: Pointer
-): Disposable, AutoCloseable {
+) : Disposable, AutoCloseable {
 
     private val wasDestroyed = AtomicBoolean(false)
     private val callCounter = AtomicLong(1)
 
-    open protected fun freeRustArcPtr() {
+    protected open fun freeRustArcPtr() {
         // To be overridden in subclasses.
     }
 
@@ -613,7 +648,7 @@ abstract class FFIObject(
             if (c == Long.MAX_VALUE) {
                 throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
             }
-        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        } while (!this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the pointer being freed concurrently.
         try {
             return block(this.pointer)
@@ -627,11 +662,10 @@ abstract class FFIObject(
 }
 
 public interface FragmentInterface {
-    
+
     fun `id`(): List<UByte>
-    
+
     fun `serialize`(): List<UByte>
-    
 }
 
 class Fragment(
@@ -639,9 +673,10 @@ class Fragment(
 ) : FFIObject(pointer), FragmentInterface {
     constructor(`raw`: List<UByte>) :
         this(
-    rustCallWithError(WalletException) { _status ->
-    _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Fragment_new(FfiConverterSequenceUByte.lower(`raw`), _status)
-})
+            rustCallWithError(WalletException) { _status ->
+                _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Fragment_new(FfiConverterSequenceUByte.lower(`raw`), _status)
+            }
+        )
 
     /**
      * Disconnect the object from the underlying Rust object.
@@ -651,7 +686,7 @@ class Fragment(
      *
      * Clients **must** call this method once done with the object, or cause a memory leak.
      */
-    override protected fun freeRustArcPtr() {
+    protected override fun freeRustArcPtr() {
         rustCall() { status ->
             _UniFFILib.INSTANCE.ffi_jormungandr_wallet_9f82_Fragment_object_free(this.pointer, status)
         }
@@ -659,26 +694,23 @@ class Fragment(
 
     override fun `id`(): List<UByte> =
         callWithPointer {
-    rustCall() { _status ->
-    _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Fragment_id(it,  _status)
-}
+            rustCall() { _status ->
+                _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Fragment_id(it, _status)
+            }
         }.let {
             FfiConverterSequenceUByte.lift(it)
         }
     override fun `serialize`(): List<UByte> =
         callWithPointer {
-    rustCall() { _status ->
-    _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Fragment_serialize(it,  _status)
-}
+            rustCall() { _status ->
+                _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Fragment_serialize(it, _status)
+            }
         }.let {
             FfiConverterSequenceUByte.lift(it)
         }
-    
-
-    
 }
 
-public object FfiConverterTypeFragment: FfiConverter<Fragment, Pointer> {
+public object FfiConverterTypeFragment : FfiConverter<Fragment, Pointer> {
     override fun lower(value: Fragment): Pointer = value.callWithPointer { it }
 
     override fun lift(value: Pointer): Fragment {
@@ -700,21 +732,17 @@ public object FfiConverterTypeFragment: FfiConverter<Fragment, Pointer> {
     }
 }
 
-
-
-
-public interface SecretKeyEd25519ExtendedInterface {
-    
-}
+public interface SecretKeyEd25519ExtendedInterface
 
 class SecretKeyEd25519Extended(
     pointer: Pointer
 ) : FFIObject(pointer), SecretKeyEd25519ExtendedInterface {
     constructor(`raw`: List<UByte>) :
         this(
-    rustCallWithError(WalletException) { _status ->
-    _UniFFILib.INSTANCE.jormungandr_wallet_9f82_SecretKeyEd25519Extended_new(FfiConverterSequenceUByte.lower(`raw`), _status)
-})
+            rustCallWithError(WalletException) { _status ->
+                _UniFFILib.INSTANCE.jormungandr_wallet_9f82_SecretKeyEd25519Extended_new(FfiConverterSequenceUByte.lower(`raw`), _status)
+            }
+        )
 
     /**
      * Disconnect the object from the underlying Rust object.
@@ -724,18 +752,14 @@ class SecretKeyEd25519Extended(
      *
      * Clients **must** call this method once done with the object, or cause a memory leak.
      */
-    override protected fun freeRustArcPtr() {
+    protected override fun freeRustArcPtr() {
         rustCall() { status ->
             _UniFFILib.INSTANCE.ffi_jormungandr_wallet_9f82_SecretKeyEd25519Extended_object_free(this.pointer, status)
         }
     }
-
-    
-
-    
 }
 
-public object FfiConverterTypeSecretKeyEd25519Extended: FfiConverter<SecretKeyEd25519Extended, Pointer> {
+public object FfiConverterTypeSecretKeyEd25519Extended : FfiConverter<SecretKeyEd25519Extended, Pointer> {
     override fun lower(value: SecretKeyEd25519Extended): Pointer = value.callWithPointer { it }
 
     override fun lift(value: Pointer): SecretKeyEd25519Extended {
@@ -757,13 +781,9 @@ public object FfiConverterTypeSecretKeyEd25519Extended: FfiConverter<SecretKeyEd
     }
 }
 
-
-
-
 public interface SettingsInterface {
-    
+
     fun `settingsRaw`(): SettingsRaw
-    
 }
 
 class Settings(
@@ -771,9 +791,10 @@ class Settings(
 ) : FFIObject(pointer), SettingsInterface {
     constructor(`settings`: SettingsRaw) :
         this(
-    rustCallWithError(WalletException) { _status ->
-    _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Settings_new(FfiConverterTypeSettingsRaw.lower(`settings`), _status)
-})
+            rustCallWithError(WalletException) { _status ->
+                _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Settings_new(FfiConverterTypeSettingsRaw.lower(`settings`), _status)
+            }
+        )
 
     /**
      * Disconnect the object from the underlying Rust object.
@@ -783,7 +804,7 @@ class Settings(
      *
      * Clients **must** call this method once done with the object, or cause a memory leak.
      */
-    override protected fun freeRustArcPtr() {
+    protected override fun freeRustArcPtr() {
         rustCall() { status ->
             _UniFFILib.INSTANCE.ffi_jormungandr_wallet_9f82_Settings_object_free(this.pointer, status)
         }
@@ -791,18 +812,15 @@ class Settings(
 
     override fun `settingsRaw`(): SettingsRaw =
         callWithPointer {
-    rustCall() { _status ->
-    _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Settings_settings_raw(it,  _status)
-}
+            rustCall() { _status ->
+                _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Settings_settings_raw(it, _status)
+            }
         }.let {
             FfiConverterTypeSettingsRaw.lift(it)
         }
-    
-
-    
 }
 
-public object FfiConverterTypeSettings: FfiConverter<Settings, Pointer> {
+public object FfiConverterTypeSettings : FfiConverter<Settings, Pointer> {
     override fun lower(value: Settings): Pointer = value.callWithPointer { it }
 
     override fun lift(value: Pointer): Settings {
@@ -824,23 +842,19 @@ public object FfiConverterTypeSettings: FfiConverter<Settings, Pointer> {
     }
 }
 
-
-
-
 public interface WalletInterface {
-    
+
     @Throws(WalletException::class)
     fun `setState`(`value`: ULong, `counter`: List<UInt>)
-    
+
     @Throws(WalletException::class)
     fun `vote`(`settings`: Settings, `proposal`: Proposal, `choice`: UByte, `validUntil`: BlockDate, `lane`: UByte): List<UByte>
-    
+
     fun `accountId`(): List<UByte>
-    
+
     fun `spendingCounters`(): List<UInt>
-    
+
     fun `totalValue`(): ULong
-    
 }
 
 class Wallet(
@@ -848,9 +862,10 @@ class Wallet(
 ) : FFIObject(pointer), WalletInterface {
     constructor(`accountKey`: SecretKeyEd25519Extended) :
         this(
-    rustCallWithError(WalletException) { _status ->
-    _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Wallet_new(FfiConverterTypeSecretKeyEd25519Extended.lower(`accountKey`), _status)
-})
+            rustCallWithError(WalletException) { _status ->
+                _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Wallet_new(FfiConverterTypeSecretKeyEd25519Extended.lower(`accountKey`), _status)
+            }
+        )
 
     /**
      * Disconnect the object from the underlying Rust object.
@@ -860,59 +875,56 @@ class Wallet(
      *
      * Clients **must** call this method once done with the object, or cause a memory leak.
      */
-    override protected fun freeRustArcPtr() {
+    protected override fun freeRustArcPtr() {
         rustCall() { status ->
             _UniFFILib.INSTANCE.ffi_jormungandr_wallet_9f82_Wallet_object_free(this.pointer, status)
         }
     }
 
-    
-    @Throws(WalletException::class)override fun `setState`(`value`: ULong, `counter`: List<UInt>) =
+    @Throws(WalletException::class)
+    override fun `setState`(`value`: ULong, `counter`: List<UInt>) =
         callWithPointer {
-    rustCallWithError(WalletException) { _status ->
-    _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Wallet_set_state(it, FfiConverterULong.lower(`value`), FfiConverterSequenceUInt.lower(`counter`),  _status)
-}
+            rustCallWithError(WalletException) { _status ->
+                _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Wallet_set_state(it, FfiConverterULong.lower(`value`), FfiConverterSequenceUInt.lower(`counter`), _status)
+            }
         }
-    
-    
-    @Throws(WalletException::class)override fun `vote`(`settings`: Settings, `proposal`: Proposal, `choice`: UByte, `validUntil`: BlockDate, `lane`: UByte): List<UByte> =
+
+    @Throws(WalletException::class)
+    override fun `vote`(`settings`: Settings, `proposal`: Proposal, `choice`: UByte, `validUntil`: BlockDate, `lane`: UByte): List<UByte> =
         callWithPointer {
-    rustCallWithError(WalletException) { _status ->
-    _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Wallet_vote(it, FfiConverterTypeSettings.lower(`settings`), FfiConverterTypeProposal.lower(`proposal`), FfiConverterUByte.lower(`choice`), FfiConverterTypeBlockDate.lower(`validUntil`), FfiConverterUByte.lower(`lane`),  _status)
-}
+            rustCallWithError(WalletException) { _status ->
+                _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Wallet_vote(it, FfiConverterTypeSettings.lower(`settings`), FfiConverterTypeProposal.lower(`proposal`), FfiConverterUByte.lower(`choice`), FfiConverterTypeBlockDate.lower(`validUntil`), FfiConverterUByte.lower(`lane`), _status)
+            }
         }.let {
             FfiConverterSequenceUByte.lift(it)
         }
     override fun `accountId`(): List<UByte> =
         callWithPointer {
-    rustCall() { _status ->
-    _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Wallet_account_id(it,  _status)
-}
+            rustCall() { _status ->
+                _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Wallet_account_id(it, _status)
+            }
         }.let {
             FfiConverterSequenceUByte.lift(it)
         }
     override fun `spendingCounters`(): List<UInt> =
         callWithPointer {
-    rustCall() { _status ->
-    _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Wallet_spending_counters(it,  _status)
-}
+            rustCall() { _status ->
+                _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Wallet_spending_counters(it, _status)
+            }
         }.let {
             FfiConverterSequenceUInt.lift(it)
         }
     override fun `totalValue`(): ULong =
         callWithPointer {
-    rustCall() { _status ->
-    _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Wallet_total_value(it,  _status)
-}
+            rustCall() { _status ->
+                _UniFFILib.INSTANCE.jormungandr_wallet_9f82_Wallet_total_value(it, _status)
+            }
         }.let {
             FfiConverterULong.lift(it)
         }
-    
-
-    
 }
 
-public object FfiConverterTypeWallet: FfiConverter<Wallet, Pointer> {
+public object FfiConverterTypeWallet : FfiConverter<Wallet, Pointer> {
     override fun lower(value: Wallet): Pointer = value.callWithPointer { it }
 
     override fun lift(value: Pointer): Wallet {
@@ -934,191 +946,161 @@ public object FfiConverterTypeWallet: FfiConverter<Wallet, Pointer> {
     }
 }
 
-
-
-
-data class BlockDate (
-    var `epoch`: UInt, 
+data class BlockDate(
+    var `epoch`: UInt,
     var `slot`: UInt
-) {
-    
-}
+)
 
-public object FfiConverterTypeBlockDate: FfiConverterRustBuffer<BlockDate> {
+public object FfiConverterTypeBlockDate : FfiConverterRustBuffer<BlockDate> {
     override fun read(buf: ByteBuffer): BlockDate {
         return BlockDate(
             FfiConverterUInt.read(buf),
-            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf)
         )
     }
 
     override fun allocationSize(value: BlockDate) = (
-            FfiConverterUInt.allocationSize(value.`epoch`) +
+        FfiConverterUInt.allocationSize(value.`epoch`) +
             FfiConverterUInt.allocationSize(value.`slot`)
-    )
+        )
 
     override fun write(value: BlockDate, buf: ByteBuffer) {
-            FfiConverterUInt.write(value.`epoch`, buf)
-            FfiConverterUInt.write(value.`slot`, buf)
+        FfiConverterUInt.write(value.`epoch`, buf)
+        FfiConverterUInt.write(value.`slot`, buf)
     }
 }
 
-
-
-
-data class LinearFee (
-    var `constant`: ULong, 
-    var `coefficient`: ULong, 
-    var `certificate`: ULong, 
-    var `perCertificateFees`: PerCertificateFee, 
+data class LinearFee(
+    var `constant`: ULong,
+    var `coefficient`: ULong,
+    var `certificate`: ULong,
+    var `perCertificateFees`: PerCertificateFee,
     var `perVoteCertificateFees`: PerVoteCertificateFee
-) {
-    
-}
+)
 
-public object FfiConverterTypeLinearFee: FfiConverterRustBuffer<LinearFee> {
+public object FfiConverterTypeLinearFee : FfiConverterRustBuffer<LinearFee> {
     override fun read(buf: ByteBuffer): LinearFee {
         return LinearFee(
             FfiConverterULong.read(buf),
             FfiConverterULong.read(buf),
             FfiConverterULong.read(buf),
             FfiConverterTypePerCertificateFee.read(buf),
-            FfiConverterTypePerVoteCertificateFee.read(buf),
+            FfiConverterTypePerVoteCertificateFee.read(buf)
         )
     }
 
     override fun allocationSize(value: LinearFee) = (
-            FfiConverterULong.allocationSize(value.`constant`) +
+        FfiConverterULong.allocationSize(value.`constant`) +
             FfiConverterULong.allocationSize(value.`coefficient`) +
             FfiConverterULong.allocationSize(value.`certificate`) +
             FfiConverterTypePerCertificateFee.allocationSize(value.`perCertificateFees`) +
             FfiConverterTypePerVoteCertificateFee.allocationSize(value.`perVoteCertificateFees`)
-    )
+        )
 
     override fun write(value: LinearFee, buf: ByteBuffer) {
-            FfiConverterULong.write(value.`constant`, buf)
-            FfiConverterULong.write(value.`coefficient`, buf)
-            FfiConverterULong.write(value.`certificate`, buf)
-            FfiConverterTypePerCertificateFee.write(value.`perCertificateFees`, buf)
-            FfiConverterTypePerVoteCertificateFee.write(value.`perVoteCertificateFees`, buf)
+        FfiConverterULong.write(value.`constant`, buf)
+        FfiConverterULong.write(value.`coefficient`, buf)
+        FfiConverterULong.write(value.`certificate`, buf)
+        FfiConverterTypePerCertificateFee.write(value.`perCertificateFees`, buf)
+        FfiConverterTypePerVoteCertificateFee.write(value.`perVoteCertificateFees`, buf)
     }
 }
 
-
-
-
-data class PerCertificateFee (
-    var `certificatePoolRegistration`: ULong, 
-    var `certificateStakeDelegation`: ULong, 
+data class PerCertificateFee(
+    var `certificatePoolRegistration`: ULong,
+    var `certificateStakeDelegation`: ULong,
     var `certificateOwnerStakeDelegation`: ULong
-) {
-    
-}
+)
 
-public object FfiConverterTypePerCertificateFee: FfiConverterRustBuffer<PerCertificateFee> {
+public object FfiConverterTypePerCertificateFee : FfiConverterRustBuffer<PerCertificateFee> {
     override fun read(buf: ByteBuffer): PerCertificateFee {
         return PerCertificateFee(
             FfiConverterULong.read(buf),
             FfiConverterULong.read(buf),
-            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf)
         )
     }
 
     override fun allocationSize(value: PerCertificateFee) = (
-            FfiConverterULong.allocationSize(value.`certificatePoolRegistration`) +
+        FfiConverterULong.allocationSize(value.`certificatePoolRegistration`) +
             FfiConverterULong.allocationSize(value.`certificateStakeDelegation`) +
             FfiConverterULong.allocationSize(value.`certificateOwnerStakeDelegation`)
-    )
+        )
 
     override fun write(value: PerCertificateFee, buf: ByteBuffer) {
-            FfiConverterULong.write(value.`certificatePoolRegistration`, buf)
-            FfiConverterULong.write(value.`certificateStakeDelegation`, buf)
-            FfiConverterULong.write(value.`certificateOwnerStakeDelegation`, buf)
+        FfiConverterULong.write(value.`certificatePoolRegistration`, buf)
+        FfiConverterULong.write(value.`certificateStakeDelegation`, buf)
+        FfiConverterULong.write(value.`certificateOwnerStakeDelegation`, buf)
     }
 }
 
-
-
-
-data class PerVoteCertificateFee (
-    var `certificateVotePlan`: ULong, 
+data class PerVoteCertificateFee(
+    var `certificateVotePlan`: ULong,
     var `certificateVoteCast`: ULong
-) {
-    
-}
+)
 
-public object FfiConverterTypePerVoteCertificateFee: FfiConverterRustBuffer<PerVoteCertificateFee> {
+public object FfiConverterTypePerVoteCertificateFee : FfiConverterRustBuffer<PerVoteCertificateFee> {
     override fun read(buf: ByteBuffer): PerVoteCertificateFee {
         return PerVoteCertificateFee(
             FfiConverterULong.read(buf),
-            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf)
         )
     }
 
     override fun allocationSize(value: PerVoteCertificateFee) = (
-            FfiConverterULong.allocationSize(value.`certificateVotePlan`) +
+        FfiConverterULong.allocationSize(value.`certificateVotePlan`) +
             FfiConverterULong.allocationSize(value.`certificateVoteCast`)
-    )
+        )
 
     override fun write(value: PerVoteCertificateFee, buf: ByteBuffer) {
-            FfiConverterULong.write(value.`certificateVotePlan`, buf)
-            FfiConverterULong.write(value.`certificateVoteCast`, buf)
+        FfiConverterULong.write(value.`certificateVotePlan`, buf)
+        FfiConverterULong.write(value.`certificateVoteCast`, buf)
     }
 }
 
-
-
-
-data class Proposal (
-    var `votePlanId`: List<UByte>, 
-    var `index`: UByte, 
-    var `options`: UByte, 
+data class Proposal(
+    var `votePlanId`: List<UByte>,
+    var `index`: UByte,
+    var `options`: UByte,
     var `payloadType`: PayloadTypeConfig
-) {
-    
-}
+)
 
-public object FfiConverterTypeProposal: FfiConverterRustBuffer<Proposal> {
+public object FfiConverterTypeProposal : FfiConverterRustBuffer<Proposal> {
     override fun read(buf: ByteBuffer): Proposal {
         return Proposal(
             FfiConverterSequenceUByte.read(buf),
             FfiConverterUByte.read(buf),
             FfiConverterUByte.read(buf),
-            FfiConverterTypePayloadTypeConfig.read(buf),
+            FfiConverterTypePayloadTypeConfig.read(buf)
         )
     }
 
     override fun allocationSize(value: Proposal) = (
-            FfiConverterSequenceUByte.allocationSize(value.`votePlanId`) +
+        FfiConverterSequenceUByte.allocationSize(value.`votePlanId`) +
             FfiConverterUByte.allocationSize(value.`index`) +
             FfiConverterUByte.allocationSize(value.`options`) +
             FfiConverterTypePayloadTypeConfig.allocationSize(value.`payloadType`)
-    )
+        )
 
     override fun write(value: Proposal, buf: ByteBuffer) {
-            FfiConverterSequenceUByte.write(value.`votePlanId`, buf)
-            FfiConverterUByte.write(value.`index`, buf)
-            FfiConverterUByte.write(value.`options`, buf)
-            FfiConverterTypePayloadTypeConfig.write(value.`payloadType`, buf)
+        FfiConverterSequenceUByte.write(value.`votePlanId`, buf)
+        FfiConverterUByte.write(value.`index`, buf)
+        FfiConverterUByte.write(value.`options`, buf)
+        FfiConverterTypePayloadTypeConfig.write(value.`payloadType`, buf)
     }
 }
 
-
-
-
-data class SettingsRaw (
-    var `fees`: LinearFee, 
-    var `discrimination`: Discrimination, 
-    var `block0Hash`: List<UByte>, 
-    var `block0Date`: ULong, 
-    var `slotDuration`: UByte, 
-    var `timeEra`: TimeEra, 
+data class SettingsRaw(
+    var `fees`: LinearFee,
+    var `discrimination`: Discrimination,
+    var `block0Hash`: List<UByte>,
+    var `block0Date`: ULong,
+    var `slotDuration`: UByte,
+    var `timeEra`: TimeEra,
     var `transactionMaxExpiryEpochs`: UByte
-) {
-    
-}
+)
 
-public object FfiConverterTypeSettingsRaw: FfiConverterRustBuffer<SettingsRaw> {
+public object FfiConverterTypeSettingsRaw : FfiConverterRustBuffer<SettingsRaw> {
     override fun read(buf: ByteBuffer): SettingsRaw {
         return SettingsRaw(
             FfiConverterTypeLinearFee.read(buf),
@@ -1127,72 +1109,64 @@ public object FfiConverterTypeSettingsRaw: FfiConverterRustBuffer<SettingsRaw> {
             FfiConverterULong.read(buf),
             FfiConverterUByte.read(buf),
             FfiConverterTypeTimeEra.read(buf),
-            FfiConverterUByte.read(buf),
+            FfiConverterUByte.read(buf)
         )
     }
 
     override fun allocationSize(value: SettingsRaw) = (
-            FfiConverterTypeLinearFee.allocationSize(value.`fees`) +
+        FfiConverterTypeLinearFee.allocationSize(value.`fees`) +
             FfiConverterTypeDiscrimination.allocationSize(value.`discrimination`) +
             FfiConverterSequenceUByte.allocationSize(value.`block0Hash`) +
             FfiConverterULong.allocationSize(value.`block0Date`) +
             FfiConverterUByte.allocationSize(value.`slotDuration`) +
             FfiConverterTypeTimeEra.allocationSize(value.`timeEra`) +
             FfiConverterUByte.allocationSize(value.`transactionMaxExpiryEpochs`)
-    )
+        )
 
     override fun write(value: SettingsRaw, buf: ByteBuffer) {
-            FfiConverterTypeLinearFee.write(value.`fees`, buf)
-            FfiConverterTypeDiscrimination.write(value.`discrimination`, buf)
-            FfiConverterSequenceUByte.write(value.`block0Hash`, buf)
-            FfiConverterULong.write(value.`block0Date`, buf)
-            FfiConverterUByte.write(value.`slotDuration`, buf)
-            FfiConverterTypeTimeEra.write(value.`timeEra`, buf)
-            FfiConverterUByte.write(value.`transactionMaxExpiryEpochs`, buf)
+        FfiConverterTypeLinearFee.write(value.`fees`, buf)
+        FfiConverterTypeDiscrimination.write(value.`discrimination`, buf)
+        FfiConverterSequenceUByte.write(value.`block0Hash`, buf)
+        FfiConverterULong.write(value.`block0Date`, buf)
+        FfiConverterUByte.write(value.`slotDuration`, buf)
+        FfiConverterTypeTimeEra.write(value.`timeEra`, buf)
+        FfiConverterUByte.write(value.`transactionMaxExpiryEpochs`, buf)
     }
 }
 
-
-
-
-data class TimeEra (
-    var `epochStart`: UInt, 
-    var `slotStart`: ULong, 
+data class TimeEra(
+    var `epochStart`: UInt,
+    var `slotStart`: ULong,
     var `slotsPerEpoch`: UInt
-) {
-    
-}
+)
 
-public object FfiConverterTypeTimeEra: FfiConverterRustBuffer<TimeEra> {
+public object FfiConverterTypeTimeEra : FfiConverterRustBuffer<TimeEra> {
     override fun read(buf: ByteBuffer): TimeEra {
         return TimeEra(
             FfiConverterUInt.read(buf),
             FfiConverterULong.read(buf),
-            FfiConverterUInt.read(buf),
+            FfiConverterUInt.read(buf)
         )
     }
 
     override fun allocationSize(value: TimeEra) = (
-            FfiConverterUInt.allocationSize(value.`epochStart`) +
+        FfiConverterUInt.allocationSize(value.`epochStart`) +
             FfiConverterULong.allocationSize(value.`slotStart`) +
             FfiConverterUInt.allocationSize(value.`slotsPerEpoch`)
-    )
+        )
 
     override fun write(value: TimeEra, buf: ByteBuffer) {
-            FfiConverterUInt.write(value.`epochStart`, buf)
-            FfiConverterULong.write(value.`slotStart`, buf)
-            FfiConverterUInt.write(value.`slotsPerEpoch`, buf)
+        FfiConverterUInt.write(value.`epochStart`, buf)
+        FfiConverterULong.write(value.`slotStart`, buf)
+        FfiConverterUInt.write(value.`slotsPerEpoch`, buf)
     }
 }
 
-
-
-
 enum class Discrimination {
-    PRODUCTION,TEST;
+    PRODUCTION, TEST;
 }
 
-public object FfiConverterTypeDiscrimination: FfiConverterRustBuffer<Discrimination> {
+public object FfiConverterTypeDiscrimination : FfiConverterRustBuffer<Discrimination> {
     override fun read(buf: ByteBuffer) = try {
         Discrimination.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -1206,51 +1180,43 @@ public object FfiConverterTypeDiscrimination: FfiConverterRustBuffer<Discriminat
     }
 }
 
-
-
-
-
-
 sealed class PayloadTypeConfig {
     object Public : PayloadTypeConfig()
-    
+
     data class Private(
         val `encryptionKey`: String
-        ) : PayloadTypeConfig()
-    
-
-    
+    ) : PayloadTypeConfig()
 }
 
-public object FfiConverterTypePayloadTypeConfig : FfiConverterRustBuffer<PayloadTypeConfig>{
+public object FfiConverterTypePayloadTypeConfig : FfiConverterRustBuffer<PayloadTypeConfig> {
     override fun read(buf: ByteBuffer): PayloadTypeConfig {
-        return when(buf.getInt()) {
+        return when (buf.getInt()) {
             1 -> PayloadTypeConfig.Public
             2 -> PayloadTypeConfig.Private(
-                FfiConverterString.read(buf),
-                )
+                FfiConverterString.read(buf)
+            )
             else -> throw RuntimeException("invalid enum value, something is very wrong!!")
         }
     }
 
-    override fun allocationSize(value: PayloadTypeConfig) = when(value) {
+    override fun allocationSize(value: PayloadTypeConfig) = when (value) {
         is PayloadTypeConfig.Public -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
                 4
-            )
+                )
         }
         is PayloadTypeConfig.Private -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
-                4
-                + FfiConverterString.allocationSize(value.`encryptionKey`)
-            )
+                4 +
+                    FfiConverterString.allocationSize(value.`encryptionKey`)
+                )
         }
     }
 
     override fun write(value: PayloadTypeConfig, buf: ByteBuffer) {
-        when(value) {
+        when (value) {
             is PayloadTypeConfig.Public -> {
                 buf.putInt(1)
                 Unit
@@ -1264,25 +1230,18 @@ public object FfiConverterTypePayloadTypeConfig : FfiConverterRustBuffer<Payload
     }
 }
 
-
-
-
-
-
-
-sealed class WalletException(message: String): Exception(message) {
-        // Each variant is a nested class
-        // Flat enums carries a string error message, so no special implementation is necessary.
-        class InvalidEncryptionKey(message: String) : WalletException(message)
-        class MalformedVotePlanId(message: String) : WalletException(message)
-        class CoreException(message: String) : WalletException(message)
-        class MalformedBlock0Hash(message: String) : WalletException(message)
-        class MalformedSecretKey(message: String) : WalletException(message)
-        class TimeException(message: String) : WalletException(message)
-        class CipherException(message: String) : WalletException(message)
-        class InvalidFragment(message: String) : WalletException(message)
-        class InvalidSpendingCounters(message: String) : WalletException(message)
-        
+sealed class WalletException(message: String) : Exception(message) {
+    // Each variant is a nested class
+    // Flat enums carries a string error message, so no special implementation is necessary.
+    class InvalidEncryptionKey(message: String) : WalletException(message)
+    class MalformedVotePlanId(message: String) : WalletException(message)
+    class CoreException(message: String) : WalletException(message)
+    class MalformedBlock0Hash(message: String) : WalletException(message)
+    class MalformedSecretKey(message: String) : WalletException(message)
+    class TimeException(message: String) : WalletException(message)
+    class CipherException(message: String) : WalletException(message)
+    class InvalidFragment(message: String) : WalletException(message)
+    class InvalidSpendingCounters(message: String) : WalletException(message)
 
     companion object ErrorHandler : CallStatusErrorHandler<WalletException> {
         override fun lift(error_buf: RustBuffer.ByValue): WalletException = FfiConverterTypeWalletError.lift(error_buf)
@@ -1291,8 +1250,7 @@ sealed class WalletException(message: String): Exception(message) {
 
 public object FfiConverterTypeWalletError : FfiConverterRustBuffer<WalletException> {
     override fun read(buf: ByteBuffer): WalletException {
-        
-            return when(buf.getInt()) {
+        return when (buf.getInt()) {
             1 -> WalletException.InvalidEncryptionKey(FfiConverterString.read(buf))
             2 -> WalletException.MalformedVotePlanId(FfiConverterString.read(buf))
             3 -> WalletException.CoreException(FfiConverterString.read(buf))
@@ -1304,7 +1262,6 @@ public object FfiConverterTypeWalletError : FfiConverterRustBuffer<WalletExcepti
             9 -> WalletException.InvalidSpendingCounters(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
-        
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -1316,13 +1273,9 @@ public object FfiConverterTypeWalletError : FfiConverterRustBuffer<WalletExcepti
     override fun write(value: WalletException, buf: ByteBuffer) {
         throw RuntimeException("Writing Errors is not supported")
     }
-
 }
 
-
-
-
-public object FfiConverterSequenceUByte: FfiConverterRustBuffer<List<UByte>> {
+public object FfiConverterSequenceUByte : FfiConverterRustBuffer<List<UByte>> {
     override fun read(buf: ByteBuffer): List<UByte> {
         val len = buf.getInt()
         return List<UByte>(len) {
@@ -1344,10 +1297,7 @@ public object FfiConverterSequenceUByte: FfiConverterRustBuffer<List<UByte>> {
     }
 }
 
-
-
-
-public object FfiConverterSequenceUInt: FfiConverterRustBuffer<List<UInt>> {
+public object FfiConverterSequenceUInt : FfiConverterRustBuffer<List<UInt>> {
     override fun read(buf: ByteBuffer): List<UInt> {
         val len = buf.getInt()
         return List<UInt>(len) {
@@ -1368,35 +1318,30 @@ public object FfiConverterSequenceUInt: FfiConverterRustBuffer<List<UInt>> {
         }
     }
 }
-@Throws(WalletException::class)
 
+@Throws(WalletException::class)
 fun `blockDateFromSystemTime`(`settings`: Settings, `unixEpoch`: ULong): BlockDate {
     return FfiConverterTypeBlockDate.lift(
-    rustCallWithError(WalletException) { _status ->
-    _UniFFILib.INSTANCE.jormungandr_wallet_9f82_block_date_from_system_time(FfiConverterTypeSettings.lower(`settings`), FfiConverterULong.lower(`unixEpoch`), _status)
-})
+        rustCallWithError(WalletException) { _status ->
+            _UniFFILib.INSTANCE.jormungandr_wallet_9f82_block_date_from_system_time(FfiConverterTypeSettings.lower(`settings`), FfiConverterULong.lower(`unixEpoch`), _status)
+        }
+    )
 }
 
-
 @Throws(WalletException::class)
-
 fun `maxExpirationDate`(`settings`: Settings, `currentTime`: ULong): BlockDate {
     return FfiConverterTypeBlockDate.lift(
-    rustCallWithError(WalletException) { _status ->
-    _UniFFILib.INSTANCE.jormungandr_wallet_9f82_max_expiration_date(FfiConverterTypeSettings.lower(`settings`), FfiConverterULong.lower(`currentTime`), _status)
-})
+        rustCallWithError(WalletException) { _status ->
+            _UniFFILib.INSTANCE.jormungandr_wallet_9f82_max_expiration_date(FfiConverterTypeSettings.lower(`settings`), FfiConverterULong.lower(`currentTime`), _status)
+        }
+    )
 }
-
 
 @Throws(WalletException::class)
-
 fun `symmetricCipherDecrypt`(`password`: List<UByte>, `ciphertext`: List<UByte>): List<UByte> {
     return FfiConverterSequenceUByte.lift(
-    rustCallWithError(WalletException) { _status ->
-    _UniFFILib.INSTANCE.jormungandr_wallet_9f82_symmetric_cipher_decrypt(FfiConverterSequenceUByte.lower(`password`), FfiConverterSequenceUByte.lower(`ciphertext`), _status)
-})
+        rustCallWithError(WalletException) { _status ->
+            _UniFFILib.INSTANCE.jormungandr_wallet_9f82_symmetric_cipher_decrypt(FfiConverterSequenceUByte.lower(`password`), FfiConverterSequenceUByte.lower(`ciphertext`), _status)
+        }
+    )
 }
-
-
-
-

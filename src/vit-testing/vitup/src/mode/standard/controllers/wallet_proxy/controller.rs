@@ -26,7 +26,7 @@ impl WalletProxyController {
 
         let valgrind_settings = ValgrindSettings {
             use_https: false,
-            enable_debug: true,
+            enable_debug: false,
             certificate: None,
             ..Default::default()
         };

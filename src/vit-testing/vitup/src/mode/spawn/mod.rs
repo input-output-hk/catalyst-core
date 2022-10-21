@@ -3,7 +3,7 @@ mod monitor;
 mod service;
 mod standard;
 
-use crate::builders::{LEADER_1, LEADER_2, LEADER_3, WALLET_NODE};
+use crate::builders::{FOLLOWER, LEADER_1, LEADER_2, LEADER_3};
 use crate::config::{mode::Mode, Config};
 use crate::mode::standard::{ValidVotingTemplateGenerator, WalletProxySpawnParams};
 use crate::Result;
@@ -73,7 +73,7 @@ impl NetworkSpawnParams {
             self.leader_node(LEADER_1),
             self.leader_node(LEADER_2),
             self.leader_node(LEADER_3),
-            self.passive_node(WALLET_NODE),
+            self.passive_node(FOLLOWER),
         ]
     }
 
@@ -97,7 +97,7 @@ impl NetworkSpawnParams {
     }
 
     pub fn proxy_params(&self) -> WalletProxySpawnParams {
-        let mut params = WalletProxySpawnParams::new(WALLET_NODE);
+        let mut params = WalletProxySpawnParams::new(FOLLOWER.to_lowercase());
         params
             .with_base_address(self.endpoint.clone())
             .with_protocol(self.protocol.clone());

@@ -6,7 +6,7 @@ use structopt::StructOpt;
 #[derive(StructOpt, Debug)]
 #[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct TimeCommand {
-    /// configuration
+    /// Path to configuration file
     #[structopt(long = "config")]
     pub config: PathBuf,
 }

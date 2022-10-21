@@ -3,7 +3,7 @@ use snapshot_lib::SnapshotInfo;
 
 pub fn assert_raw_against_full_snapshot(
     snapshot_entry: &SnapshotInfo,
-    raw_snapshot: RawSnapshot,
+    raw_snapshot: &RawSnapshot,
     rest_client: &RestClient,
 ) {
     let voting_power = VotingPower::from(snapshot_entry.clone());
@@ -25,7 +25,7 @@ pub fn assert_raw_against_full_snapshot(
 
 pub fn assert_is_empty_raw_against_full_snapshot(
     snapshot_entry: &SnapshotInfo,
-    raw_snapshot: RawSnapshot,
+    raw_snapshot: &RawSnapshot,
     timestamp: i64,
     rest_client: &RestClient,
 ) {

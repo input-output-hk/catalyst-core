@@ -1,3 +1,5 @@
+use std::convert::TryInto;
+
 use chain_impl_mockchain::testing::TestGen;
 use jormungandr_lib::interfaces::Value;
 use rand::Rng;
@@ -73,6 +75,14 @@ impl From<RawSnapshot> for RepsVotersAssigner {
             .unwrap_or_else(|| DEFAULT_REPRESENTATIVE_GROUP.into());
 
         RepsVotersAssigner::new(direct_voter, representative)
+    }
+}
+
+impl TryInto<Vec<SnapshotInfo>> for RawSnapshot {
+    type Error = Error;
+    fn try_into(self) -> Result<Vec<SnapshotInfo>, Self::Error> {
+        let assigner = self.clone().into();
+        self.into_full_snapshot_infos(&assigner)
     }
 }
 

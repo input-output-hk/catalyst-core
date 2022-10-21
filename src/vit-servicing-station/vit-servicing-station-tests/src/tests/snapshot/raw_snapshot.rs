@@ -1,15 +1,16 @@
-use std::time::Duration;
+use std::{convert::TryInto, time::Duration};
 
 use crate::{
     common::{
         clients::RawRestClient,
-        raw_snapshot::{RawSnapshot, RawSnapshotBuilder, RawSnapshotExtension, RawSnapshotUpdater},
+        raw_snapshot::{RawSnapshot, RawSnapshotBuilder, RawSnapshotUpdater},
         snapshot::{SnapshotBuilder, VotingPower},
         startup::quick_start,
     },
     tests::snapshot::verifier::assert_raw_against_full_snapshot,
 };
 use assert_fs::TempDir;
+use snapshot_lib::SnapshotInfo;
 
 use super::verifier::assert_is_empty_raw_against_full_snapshot;
 
@@ -29,15 +30,10 @@ pub fn import_new_raw_snapshot() {
         "expected tags vs tags taken from REST API"
     );
 
-    let assigner = raw_snapshot.clone().into();
-
-    let snapshot_infos = raw_snapshot
-        .clone()
-        .into_full_snapshot_infos(&assigner)
-        .unwrap();
+    let snapshot_infos: Vec<SnapshotInfo> = raw_snapshot.clone().try_into().unwrap();
 
     for snapshot_info in snapshot_infos.iter() {
-        assert_raw_against_full_snapshot(snapshot_info, raw_snapshot.clone(), &rest_client);
+        assert_raw_against_full_snapshot(snapshot_info, &raw_snapshot, &rest_client);
     }
 }
 
@@ -55,17 +51,12 @@ pub fn reimport_with_empty_raw_snapshot() {
 
     rest_client.put_raw_snapshot(&empty_snapshot).unwrap();
 
-    let assigner = raw_snapshot.clone().into();
-
-    let snapshot_infos = raw_snapshot
-        .clone()
-        .into_full_snapshot_infos(&assigner)
-        .unwrap();
+    let snapshot_infos: Vec<SnapshotInfo> = raw_snapshot.clone().try_into().unwrap();
 
     for snapshot_info in snapshot_infos.iter() {
         assert_is_empty_raw_against_full_snapshot(
             snapshot_info,
-            raw_snapshot.clone(),
+            &raw_snapshot,
             empty_snapshot.content.update_timestamp,
             &rest_client,
         );
@@ -88,31 +79,21 @@ pub fn replace_raw_snapshot_with_same_tag() {
 
     rest_client.put_raw_snapshot(&second_raw_snapshot).unwrap();
 
-    let assigner = first_raw_snapshot.clone().into();
+    let first_snapshot_infos: Vec<SnapshotInfo> = first_raw_snapshot.clone().try_into().unwrap();
 
-    let first_snapshot_infos = first_raw_snapshot
-        .clone()
-        .into_full_snapshot_infos(&assigner)
-        .unwrap();
-
-    let assigner = second_raw_snapshot.clone().into();
-
-    let second_snapshot_infos = second_raw_snapshot
-        .clone()
-        .into_full_snapshot_infos(&assigner)
-        .unwrap();
+    let second_snapshot_infos: Vec<SnapshotInfo> = second_raw_snapshot.clone().try_into().unwrap();
 
     for snapshot_info in first_snapshot_infos.iter() {
         assert_is_empty_raw_against_full_snapshot(
             snapshot_info,
-            first_raw_snapshot.clone(),
+            &first_raw_snapshot,
             second_raw_snapshot.content.update_timestamp,
             &rest_client,
         );
     }
 
     for snapshot_info in second_snapshot_infos.iter() {
-        assert_raw_against_full_snapshot(snapshot_info, second_raw_snapshot.clone(), &rest_client);
+        assert_raw_against_full_snapshot(snapshot_info, &second_raw_snapshot, &rest_client);
     }
 
     let third_snapshot = SnapshotBuilder::default()
@@ -125,7 +106,7 @@ pub fn replace_raw_snapshot_with_same_tag() {
     for snapshot_info in second_snapshot_infos.iter() {
         assert_is_empty_raw_against_full_snapshot(
             snapshot_info,
-            second_raw_snapshot.clone(),
+            &second_raw_snapshot,
             third_snapshot.content.update_timestamp,
             &rest_client,
         );
@@ -166,16 +147,11 @@ pub fn import_raw_snapshots_with_different_tags() {
 
     rest_client.put_raw_snapshot(&second_raw_snapshot).unwrap();
 
-    let assigner = first_raw_snapshot.clone().into();
-
-    let first_snapshot_infos = first_raw_snapshot
-        .clone()
-        .into_full_snapshot_infos(&assigner)
-        .unwrap();
+    let first_snapshot_infos: Vec<SnapshotInfo> = first_raw_snapshot.clone().try_into().unwrap();
 
     for snapshot_info in first_snapshot_infos.iter() {
-        assert_raw_against_full_snapshot(snapshot_info, first_raw_snapshot.clone(), &rest_client);
-        assert_raw_against_full_snapshot(snapshot_info, second_raw_snapshot.clone(), &rest_client);
+        assert_raw_against_full_snapshot(snapshot_info, &first_raw_snapshot, &rest_client);
+        assert_raw_against_full_snapshot(snapshot_info, &second_raw_snapshot, &rest_client);
     }
 }
 
@@ -209,12 +185,7 @@ pub fn import_big_raw_snapshot() {
 
     rest_client.put_raw_snapshot(&raw_snapshot).unwrap();
 
-    let assigner = raw_snapshot.clone().into();
+    let snapshot_infos: Vec<SnapshotInfo> = raw_snapshot.clone().try_into().unwrap();
 
-    let snapshot_infos = raw_snapshot
-        .clone()
-        .into_full_snapshot_infos(&assigner)
-        .unwrap();
-
-    assert_raw_against_full_snapshot(&snapshot_infos[0].clone(), raw_snapshot, &rest_client);
+    assert_raw_against_full_snapshot(&snapshot_infos[0].clone(), &raw_snapshot, &rest_client);
 }

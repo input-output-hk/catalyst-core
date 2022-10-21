@@ -205,6 +205,36 @@ paths:
         "404":
           description: The requested challenge was not found
 
+  /api/v0/challenges/{id}/{voter_group_id}:
+    get:
+      operationId: getChallenge
+      summary: Get challenge by id
+      tags: [challenge]
+      description: |
+        Retrieves information on the identified challenge,
+        including the proposals submitted for it filtered by the provided voter group id.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: voter_group_id
+          description: Get proposals only for the specified vote group.
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChallengeWithProposals"
+        "404":
+          description: The requested challenge was not found
+
   /api/v0/reviews/{proposal_id}:
     get:
       operationId: getProposalReviews

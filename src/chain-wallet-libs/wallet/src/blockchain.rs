@@ -69,6 +69,8 @@ impl Settings {
                         ConfigParam::RemoveCommitteeId(_) => {}
                         ConfigParam::PerVoteCertificateFees(_) => {}
                         ConfigParam::TransactionMaxExpiryEpochs(_) => {}
+                        ConfigParam::EvmConfiguration(_) => unimplemented!(),
+                        ConfigParam::EvmEnvironment(_) => unimplemented!(),
                     }
                 }
             }

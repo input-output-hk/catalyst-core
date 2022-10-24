@@ -105,7 +105,6 @@ jobs:
 
   clippy:
     name: Clippy
-    needs: [cache_info, update_deps]
     runs-on: ubuntu-latest
     steps:
       - uses: actions-rs/toolchain@v1
@@ -119,20 +118,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Restore cargo registry index
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/registry/index
-          key: cargo-index-${{ needs.cache_info.outputs.crates-io-index-head }}
-
-      - name: Restore cargo dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry/cache
-            ~/.cargo/git/db
-          key: cargo-deps-v1-${{ needs.cache_info.outputs.cargo-lock-hash }}
-
       - name: clippy
         uses: actions-rs/cargo@v1
         with:
@@ -141,7 +126,6 @@ jobs:
 
   fmt:
     name: Fmt
-    needs: [cache_info, update_deps]
     runs-on: ubuntu-latest
     steps:
       - uses: actions-rs/toolchain@v1

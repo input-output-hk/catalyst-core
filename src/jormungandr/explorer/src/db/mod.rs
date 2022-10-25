@@ -635,6 +635,11 @@ fn apply_block_to_vote_plans(
                                         },
                                     )
                                     .unwrap();
+
+                                // update the tally every time a vote is cast
+                                let p = &mut proposals[vote_cast.proposal_index() as usize];
+                                p.tally = Some(compute_public_tally(&p, &stake));
+
                                 let vote_plan = ExplorerVotePlan {
                                     proposals,
                                     ..(**vote_plan).clone()
@@ -667,6 +672,7 @@ fn apply_block_to_vote_plans(
                                         },
                                     )
                                     .unwrap();
+
                                 let vote_plan = ExplorerVotePlan {
                                     proposals,
                                     ..(**vote_plan).clone()

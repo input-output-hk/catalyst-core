@@ -82,7 +82,7 @@ pub async fn put_snapshot_info(
     context: SharedContext,
 ) -> Result<impl Reply, Rejection> {
     Ok(HandlerResult(
-        super::update_from_shanpshot_info(tag, input.snapshot, input.update_timestamp, context)
+        super::update_from_snapshot_info(tag, input.snapshot, input.update_timestamp, context)
             .await,
     ))
 }

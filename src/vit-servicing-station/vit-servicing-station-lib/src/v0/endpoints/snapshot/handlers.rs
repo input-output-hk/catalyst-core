@@ -42,7 +42,7 @@ pub struct SnapshotInfoInput {
 }
 
 /// Raw Snapshot information update with timestamp.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RawSnapshotInput {
     pub snapshot: RawSnapshot,
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]

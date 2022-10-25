@@ -16,12 +16,6 @@ mod certificates;
 mod fragment;
 mod utils;
 
-// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
-// allocator.
-#[cfg(feature = "wee_alloc")]
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
-
 /// A Wallet gives the user control over an account address
 /// controlled by a private key. It can also be used to convert other funds
 /// minted as UTxOs in the genesis block.

@@ -113,7 +113,8 @@ impl Wallet {
     ) -> Result<Fragment, Error> {
         let mut builder = wallet::TransactionBuilder::new(&settings, payload, valid_until);
 
-        let value = builder.estimate_fee();
+        // It is needed to provide a 1 extra input as we are generating it later, but should take into account at this place.
+        let value = builder.estimate_fee_with(1, 0);
 
         let account_tx_builder = self
             .account

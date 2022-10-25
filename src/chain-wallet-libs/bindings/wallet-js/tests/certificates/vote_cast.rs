@@ -8,11 +8,8 @@ fn vote_cast_public_test() {
 
     let settings = generate_settings().unwrap();
 
-    let vote_plan = VotePlanId::from_bytes(&[
-        0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
-        26, 27, 28, 29, 30, 31, 32,
-    ])
-    .unwrap();
+    let vote_plan =
+        VotePlanId::from_bytes(core::array::from_fn::<u8, 32, _>(|i| i as u8).as_slice()).unwrap();
 
     let vote_cast = VoteCast::new(vote_plan, 8, Payload::new_public(0));
 
@@ -34,11 +31,8 @@ fn vote_cast_private_test() {
 
     let settings = generate_settings().unwrap();
 
-    let vote_plan = VotePlanId::from_bytes(&[
-        0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
-        26, 27, 28, 29, 30, 31, 32,
-    ])
-    .unwrap();
+    let vote_plan =
+        VotePlanId::from_bytes(core::array::from_fn::<u8, 32, _>(|i| i as u8).as_slice()).unwrap();
 
     let vote_cast = VoteCast::new(
         vote_plan.clone(),

@@ -11,10 +11,12 @@ use chain_vote::{
 };
 use jormungandr_lib::{crypto::account::Identifier, interfaces::CommitteeIdDef};
 use rand_core::{CryptoRng, OsRng, RngCore};
+use chain_crypto::bech32::Bech32;
 
 mod single;
 
 pub use crate::wallet::committee::single::{CommitteeCommunicationData, CommitteeMembershipData};
+use crate::wallet::committee::single::write_to;
 
 #[derive(Clone, Debug, Default)]
 pub struct CommitteeCommunicationDataManager {
@@ -161,6 +163,7 @@ impl CommitteeDataManager {
             communication.write_to(directory);
         }
         self.membership.write_to(directory);
+        write_to(self.election_key().to_bech32_str(),directory,"election_public_key.pk");
     }
 
     pub fn election_key(&self) -> ElectionPublicKey {

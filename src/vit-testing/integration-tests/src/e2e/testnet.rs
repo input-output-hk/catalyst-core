@@ -30,8 +30,6 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     result.status().assert_is_finished();
     result.assert_qr_equals_to_sk();
 
-    println!("Registration Result: {:?}", result);
-
     let job_param = JobParameters {
         slot_no: Some(result.status().slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
         tag: None,

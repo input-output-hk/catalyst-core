@@ -74,7 +74,7 @@ pub fn private_vote_multiple_vote_plans() {
             testing_directory
                 .path()
                 .join(status.id.to_string() + "_committees")
-                .join("election_public_key.sk"),
+                .join("election_public_key.pk"),
         )
         .unwrap();
         assert_eq!(

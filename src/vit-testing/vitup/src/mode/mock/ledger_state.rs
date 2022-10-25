@@ -378,6 +378,7 @@ mod tests {
     pub fn block0_configuration(initials: Vec<InitialUTxO>) -> Block0Configuration {
         Block0ConfigurationBuilder::default()
             .with_funds(vec![Initial::Fund(initials)])
+            .with_some_consensus_leader()
             .build()
     }
 

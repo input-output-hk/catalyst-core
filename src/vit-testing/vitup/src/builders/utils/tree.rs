@@ -37,7 +37,7 @@ impl DeploymentTree {
     }
 
     pub fn wallet_secret<S: Into<String>>(&self, alias: S) -> PathBuf {
-        self.root.join("wallet_".to_owned() + &alias.into())
+        self.root.join(alias.into())
     }
 
     pub fn voting_token(&self) -> PathBuf {

@@ -158,6 +158,7 @@ mod tests {
     pub fn external_proposal_ids_are_unique(proposal_count: usize) -> TestResult {
         let vote_plans_defs = VitVotePlanDefBuilder::default()
             .proposals_count(proposal_count)
+            .options(3)
             .build();
 
         let mut uniq = HashSet::new();

@@ -1,9 +1,7 @@
 use jormungandr_lib::crypto::account::Identifier;
 use snapshot_lib::voting_group::RepsVotersAssigner;
 use std::collections::HashSet;
-
-pub const DIRECT_VOTING_GROUP: &str = "direct";
-pub const REP_VOTING_GROUP: &str = "rep";
+use vitup::config::{DIRECT_VOTING_GROUP, REP_VOTING_GROUP};
 
 pub trait RepsVoterAssignerSource {
     fn into_reps_voter_assigner(self) -> RepsVotersAssigner;

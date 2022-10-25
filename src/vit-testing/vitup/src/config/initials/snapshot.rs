@@ -59,7 +59,7 @@ impl Initials {
                         .iter()
                         .cloned()
                         .find(|(x, _)| {
-                            *x.to_lowercase() == format!("wallet_{}", name).to_lowercase()
+                            *x.to_lowercase() == name.to_lowercase()
                         })
                         .map(|(_, y)| y.clone())
                         .ok_or_else(|| Error::CannotFindAlias(name.to_string()))?;
@@ -74,7 +74,7 @@ impl Initials {
                         .iter()
                         .cloned()
                         .find(|(x, _)| {
-                            *x.to_lowercase() == format!("wallet_{}", name).to_lowercase()
+                            *x.to_lowercase() == name.to_lowercase()
                         })
                         .map(|(_, y)| y.clone())
                         .ok_or_else(|| Error::CannotFindAlias(name.to_string()))?;

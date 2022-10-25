@@ -1,17 +1,10 @@
+use crate::mock::write_config;
 use assert_cmd::cargo::CommandCargoExt;
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
-use std::io::Write;
-use std::path::Path;
 use std::process::Command;
 use std::process::Stdio;
 use vitup::mode::mock::Configuration;
-
-pub fn write_config<P: AsRef<Path>>(config: &Configuration, output: P) {
-    let content = serde_json::to_string(&config).unwrap();
-    let mut file = std::fs::File::create(&output).unwrap();
-    file.write_all(content.as_bytes()).unwrap()
-}
 
 #[test]
 pub fn start_mock() {

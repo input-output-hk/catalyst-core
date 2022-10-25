@@ -19,11 +19,10 @@ pub use helpers::{
     generate_qr_and_hashes, get_configuration_from_file_url, ArchiveConfError,
     ArchiveConfiguration, VitVotePlanDefBuilder, WalletExtension,
 };
+use hersir::builder::settings::Blockchain;
 use hersir::builder::Node;
 use hersir::builder::Topology;
-use hersir::config::{
-    Blockchain, CommitteeTemplate, ExplorerTemplate, SessionSettings, WalletTemplate,
-};
+use hersir::config::{CommitteeTemplate, ExplorerTemplate, SessionSettings, WalletTemplate};
 use jormungandr_automation::jormungandr::PersistenceMode;
 pub use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::interfaces::NumberOfSlotsPerEpoch;
@@ -37,10 +36,10 @@ use std::str::FromStr;
 use thiserror::Error;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 
-pub const LEADER_1: &str = "Leader1";
-pub const LEADER_2: &str = "Leader2";
-pub const LEADER_3: &str = "Leader3";
-pub const WALLET_NODE: &str = "Wallet_Node";
+pub const LEADER_1: &str = "leader1";
+pub const LEADER_2: &str = "leader2";
+pub const LEADER_3: &str = "leader3";
+pub const FOLLOWER: &str = "follower";
 
 #[derive(Clone)]
 pub struct VitBackendSettingsBuilder {
@@ -93,7 +92,7 @@ impl VitBackendSettingsBuilder {
             .with_trusted_peer(LEADER_2);
 
         // passive
-        let passive = Node::new(WALLET_NODE)
+        let passive = Node::new(FOLLOWER)
             .with_trusted_peer(LEADER_1)
             .with_trusted_peer(LEADER_2)
             .with_trusted_peer(LEADER_3);
@@ -297,7 +296,7 @@ impl VitBackendSettingsBuilder {
 
         if self.config.additional.explorer {
             builder = builder.explorer(ExplorerTemplate {
-                connect_to: WALLET_NODE.to_string(),
+                connect_to: FOLLOWER.to_string(),
                 persistence_mode: PersistenceMode::InMemory,
                 address_bech32_prefix: None,
                 query_depth_limit: None,

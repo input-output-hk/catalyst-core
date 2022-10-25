@@ -140,8 +140,8 @@
           };
 
           extraBinPath = {
-            snapshot-trigger-service = with workspace; [voting-tools];
-            registration-service = with workspace; [catalyst-toolbox jcli cardano-cli voting-tools];
+            snapshot-trigger-service = with workspace; [voting_tools_rs];
+            registration-service = with workspace; [catalyst-toolbox jcli cardano-cli voting_tools_rs];
             registration-verify-service = with workspace; [jcli];
           };
         in

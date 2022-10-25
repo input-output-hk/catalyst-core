@@ -2,7 +2,7 @@ mod node;
 
 use crate::{
     builder::{NetworkBuilder, Settings, Topology, Wallet as WalletSetting},
-    config::{Blockchain, SessionSettings, SpawnParams},
+    config::{BlockchainConfigurationOrHash, SessionSettings, SpawnParams},
     controller::{Controller as InnerController, Error},
     style,
 };
@@ -35,8 +35,8 @@ impl MonitorControllerBuilder {
         self
     }
 
-    pub fn blockchain(mut self, blockchain: Blockchain) -> Self {
-        self.network_builder = self.network_builder.blockchain_config(blockchain);
+    pub fn blockchain(mut self, blockchain: BlockchainConfigurationOrHash) -> Self {
+        self.network_builder = self.network_builder.blockchain_config_or_hash(blockchain);
         self
     }
 
@@ -190,7 +190,7 @@ impl MonitorController {
         self.session_settings.root.path().join(alias)
     }
 
-    fn build_progress_bar(&mut self, alias: &str, listen: SocketAddr) -> ProgressBarController {
+    pub fn build_progress_bar(&mut self, alias: &str, listen: SocketAddr) -> ProgressBarController {
         let pb = ProgressBar::new_spinner();
         let pb = self.add_to_progress_bar(pb);
         ProgressBarController::new(pb, format!("{}@{}", alias, listen))
@@ -216,7 +216,9 @@ impl MonitorController {
         let progress_bar =
             self.build_progress_bar(input_params.get_alias(), jormungandr_process.rest_address());
 
-        Ok(Node::new(jormungandr_process, progress_bar))
+        let node = Node::new(jormungandr_process, progress_bar);
+        node.wait_for_bootstrap()?;
+        Ok(node)
     }
 
     pub fn spawn_legacy_node(
@@ -224,15 +226,11 @@ impl MonitorController {
         input_params: SpawnParams,
         version: &Version,
     ) -> Result<LegacyNode, Error> {
-        let (jormungandr_process, legacy_node_config) =
-            self.inner.spawn_legacy(input_params.clone(), version)?;
-        let progress_bar =
-            self.build_progress_bar(input_params.get_alias(), jormungandr_process.rest_address());
-        Ok(LegacyNode::new(
-            jormungandr_process,
-            progress_bar,
-            legacy_node_config,
-        ))
+        let input_params = input_params.version(version.clone());
+        let alias = input_params.get_alias().clone();
+        let jormungandr_process = self.inner.spawn(input_params)?;
+        let progress_bar = self.build_progress_bar(&alias, jormungandr_process.rest_address());
+        Ok(LegacyNode::new(jormungandr_process, progress_bar))
     }
 
     pub fn monitor_nodes(&mut self) {

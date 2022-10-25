@@ -79,6 +79,9 @@ pub struct LogEntry {
     pub spans: Option<Vec<RawFields>>,
 }
 
+unsafe impl Send for LogEntry {}
+unsafe impl std::marker::Sync for LogEntry {}
+
 impl fmt::Display for LogEntry {
     // Similar to tracing_subscriber format::Full (default)
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

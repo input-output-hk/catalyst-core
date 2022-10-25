@@ -181,6 +181,10 @@ impl ValgrindClient {
         self.proxy_client.enable_debug();
     }
 
+    pub fn health(&self) -> Result<(), crate::client::proxy::Error> {
+        self.proxy_client.health()
+    }
+
     pub fn are_fragments_in_blockchain(
         &self,
         _fragment_ids: Vec<FragmentId>,

@@ -3,7 +3,6 @@ mod config_param;
 mod connections;
 mod error;
 mod scalars;
-
 use self::{
     config_param::{EpochStabilityDepth, LinearFee},
     connections::{
@@ -20,9 +19,10 @@ use self::{
 use crate::db::{
     indexing::{
         BlockProducer, EpochData, ExplorerAddress, ExplorerBlock, ExplorerTransaction,
-        ExplorerVote, ExplorerVotePlan, ExplorerVoteTally, StakePoolData,
+        ExplorerVote, ExplorerVotePlan, ExplorerVoteProposal, ExplorerVoteTally, StakePoolData,
     },
     persistent_sequence::PersistentSequence,
+    tally::compute_public_tally,
     ExplorerDb, Settings as ChainSettings,
 };
 use async_graphql::{
@@ -36,6 +36,7 @@ use chain_impl_mockchain::{
     certificate,
     fragment::FragmentId,
     key::BftLeaderId,
+    stake::StakeControl,
     vote::{EncryptedVote, ProofOfCorrectVote},
 };
 use std::{
@@ -1354,22 +1355,17 @@ impl VotePlanStatus {
             proposals: proposals
                 .into_iter()
                 .map(|proposal| VoteProposalStatus {
-                    proposal_id: ExternalProposalId::from(proposal.proposal_id),
-                    options: VoteOptionRange::from(proposal.options),
-                    tally: proposal.tally.map(|tally| match tally {
-                        ExplorerVoteTally::Public { results, options } => {
-                            TallyStatus::Public(TallyPublicStatus {
-                                results: results.iter().map(Into::into).collect(),
-                                options: options.into(),
-                            })
-                        }
-                        ExplorerVoteTally::Private { results, options } => {
-                            TallyStatus::Private(TallyPrivateStatus {
-                                results: results.map(|res| res.iter().map(Into::into).collect()),
-                                options: options.into(),
-                            })
-                        }
-                    }),
+                    proposal_id: ExternalProposalId::from(proposal.proposal_id.clone()),
+                    options: VoteOptionRange::from(proposal.options.clone()),
+                    tally: proposal.tally.clone().map_or(
+                        Some(generic_tally_status(ExplorerVoteProposal {
+                            proposal_id: proposal.proposal_id,
+                            options: proposal.options,
+                            tally: proposal.tally,
+                            votes: proposal.votes.clone(),
+                        })),
+                        |tally| Some(TallyStatus::from(tally)),
+                    ),
                     votes: proposal
                         .votes
                         .iter()
@@ -1394,6 +1390,42 @@ impl VotePlanStatus {
                         .collect(),
                 })
                 .collect(),
+        }
+    }
+}
+
+// if the tally is None, convert to generic tally result as per rest api requirements
+pub fn generic_tally_status(p: ExplorerVoteProposal) -> TallyStatus {
+    let s = StakeControl::default();
+    match compute_public_tally(&p, &s) {
+        ExplorerVoteTally::Public { results, options } => TallyStatus::Public(TallyPublicStatus {
+            results: results.iter().map(Into::into).collect(),
+            options: options.into(),
+        }),
+        ExplorerVoteTally::Private { results, options } => {
+            TallyStatus::Private(TallyPrivateStatus {
+                results: results.map(|res| res.iter().map(Into::into).collect()),
+                options: options.into(),
+            })
+        }
+    }
+}
+
+impl From<ExplorerVoteTally> for TallyStatus {
+    fn from(tally: ExplorerVoteTally) -> Self {
+        match tally {
+            ExplorerVoteTally::Public { results, options } => {
+                TallyStatus::Public(TallyPublicStatus {
+                    results: results.iter().map(Into::into).collect(),
+                    options: options.into(),
+                })
+            }
+            ExplorerVoteTally::Private { results, options } => {
+                TallyStatus::Private(TallyPrivateStatus {
+                    results: results.map(|res| res.iter().map(Into::into).collect()),
+                    options: options.into(),
+                })
+            }
         }
     }
 }

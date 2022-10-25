@@ -20,17 +20,17 @@ use validate::ValidateCommand;
 
 #[derive(StructOpt, Debug)]
 pub enum VitCliCommand {
-    /// start backend
+    /// Starts catalyst backend
     Start(StartCommand),
-    /// generate fund data
+    /// Generates fund data
     Generate(GenerateCommand),
-    /// print differences between new deployment and target env
+    /// Prints differences between new deployment and target env
     Diff(DiffCommand),
-    /// validate static data
+    /// Validates static ideascale data
     Validate(ValidateCommand),
-    // import data
+    /// Import data
     Import(ImportCommand),
-    // convert time
+    /// Convert time defined in config to UTC
     Time(TimeCommand),
 }
 

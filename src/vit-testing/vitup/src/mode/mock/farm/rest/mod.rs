@@ -177,6 +177,7 @@ fn load_cert(filename: &Path) -> Result<Vec<rustls::Certificate>, Error> {
         }
         // not a pemfile
         None => Err(Error::InvalidCertificate),
+        Some(_) => Err(Error::InvalidCertificate),
     }
 }
 
@@ -188,6 +189,7 @@ fn load_private_key(filename: &Path) -> Result<rustls::PrivateKey, Error> {
         Some(rustls_pemfile::Item::RSAKey(key)) => Ok(rustls::PrivateKey(key)),
         Some(rustls_pemfile::Item::PKCS8Key(key)) => Ok(rustls::PrivateKey(key)),
         None | Some(rustls_pemfile::Item::X509Certificate(_)) => Err(Error::InvalidKey),
+        Some(_) => Err(Error::InvalidCertificate),
     }
 }
 

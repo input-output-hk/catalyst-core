@@ -7,7 +7,7 @@ use crate::{
         snapshot::{SnapshotBuilder, VotingPower},
         startup::quick_start,
     },
-    tests::snapshot::verifier::assert_raw_against_full_snapshot,
+    tests::snapshots::verifier::assert_raw_against_full_snapshot,
 };
 use assert_fs::TempDir;
 use snapshot_lib::SnapshotInfo;

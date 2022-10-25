@@ -502,7 +502,7 @@ pub async fn get_stake_pool(
 
 pub async fn get_diagnostic(context: &Context) -> Result<Diagnostic, Error> {
     let diagnostic_data = context.get_diagnostic_data()?;
-    Ok(diagnostic_data.clone())
+    Ok(*diagnostic_data)
 }
 
 pub async fn get_network_p2p_quarantined(context: &Context) -> Result<Vec<PeerInfo>, Error> {

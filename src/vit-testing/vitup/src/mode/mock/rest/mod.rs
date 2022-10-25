@@ -86,8 +86,8 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
 
     let filter = std::env::var("RUST_LOG").unwrap_or_else(|_| "tracing=info,warp=debug".to_owned());
     tracing_subscriber::fmt()
-        .with_env_filter(filter)
         .with_writer(non_block)
+        .with_env_filter(filter)
         .with_span_events(FmtSpan::CLOSE)
         .init();
 
@@ -657,6 +657,7 @@ fn load_cert(filename: &Path) -> Result<Vec<rustls::Certificate>, Error> {
         }
         // not a pemfile
         None => Err(Error::InvalidCertificate),
+        Some(_) => Err(Error::InvalidCertificate),
     }
 }
 
@@ -668,6 +669,7 @@ fn load_private_key(filename: &Path) -> Result<rustls::PrivateKey, Error> {
         Some(rustls_pemfile::Item::RSAKey(key)) => Ok(rustls::PrivateKey(key)),
         Some(rustls_pemfile::Item::PKCS8Key(key)) => Ok(rustls::PrivateKey(key)),
         None | Some(rustls_pemfile::Item::X509Certificate(_)) => Err(Error::InvalidKey),
+        Some(_) => Err(Error::InvalidCertificate),
     }
 }
 

@@ -57,7 +57,7 @@ jobs:
         with:
           command: build
           args: |
-            --manifest-path jormungandr/Cargo.toml
+            --manifest-path src/jormungandr/Cargo.toml
             --no-default-features
             --features ${{ env.JORMUNGANDR_FEATURES }}
             ${{ env.CARGO_FLAGS }}

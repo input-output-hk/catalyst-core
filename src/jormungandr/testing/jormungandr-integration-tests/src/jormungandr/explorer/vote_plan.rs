@@ -395,8 +395,7 @@ pub fn explorer_vote_plan_public_flow_test() {
     );
 }
 
-#[should_panic]
-#[test] //NPG-3808
+#[test]
 pub fn explorer_vote_plan_private_flow_test() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
     let yes_choice = Choice::new(1);
@@ -1021,8 +1020,7 @@ pub fn explorer_all_vote_plans_public_flow_test() {
     );
 }
 
-#[should_panic]
-#[test] //NPG-3808
+#[test]
 pub fn explorer_all_vote_plans_private_flow_test() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
     let yes_choice = Choice::new(1);

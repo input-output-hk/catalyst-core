@@ -13,7 +13,10 @@ use self::{
     },
     persistent_sequence::PersistentSequence,
 };
-use crate::db::tally::{compute_private_tally, compute_public_tally};
+use crate::db::{
+    indexing::ExplorerVoteTally,
+    tally::{compute_private_tally, compute_public_tally},
+};
 use chain_addr::Discrimination;
 use chain_core::property::Block as _;
 use chain_impl_mockchain::{
@@ -638,7 +641,7 @@ fn apply_block_to_vote_plans(
 
                                 // update the tally every time a vote is cast
                                 let p = &mut proposals[vote_cast.proposal_index() as usize];
-                                p.tally = Some(compute_public_tally(&p, &stake));
+                                p.tally = Some(compute_public_tally(p, stake));
 
                                 let vote_plan = ExplorerVotePlan {
                                     proposals,
@@ -672,6 +675,12 @@ fn apply_block_to_vote_plans(
                                         },
                                     )
                                     .unwrap();
+
+                                let p = &mut proposals[vote_cast.proposal_index() as usize];
+                                p.tally = Some(ExplorerVoteTally::Private {
+                                    results: None,
+                                    options: p.options.clone(),
+                                });
 
                                 let vote_plan = ExplorerVotePlan {
                                     proposals,

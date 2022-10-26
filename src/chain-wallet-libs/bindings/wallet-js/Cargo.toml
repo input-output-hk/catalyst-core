@@ -20,6 +20,7 @@ default = ["console_error_panic_hook"]
 [dependencies]
 chain-crypto = { path = "../../../chain-libs/chain-crypto" }
 chain-vote = { path = "../../../chain-libs/chain-vote" }
+chain-core = { path = "../../../chain-libs/chain-core" }
 chain-impl-mockchain = { path = "../../../chain-libs/chain-impl-mockchain" }
 getrandom = { version = "0.2.2", features = ["js"] }
 rand = "0.8.3"
@@ -43,6 +44,7 @@ clear_on_drop = {version = "0.2", features = ["no_cc"]}
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
+hex = "0.4.2"
 
 # See https://github.com/rustwasm/wasm-pack/issues/886
 [package.metadata.wasm-pack.profile.release]

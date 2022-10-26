@@ -4,7 +4,9 @@ use chain_crypto::SecretKey;
 use chain_impl_mockchain::{
     account::SpendingCounter,
     block::BlockDate,
+    certificate::Certificate,
     fragment::{Fragment, FragmentId},
+    transaction::{Payload, Transaction},
     value::Value,
     vote::Choice,
 };
@@ -98,6 +100,59 @@ impl Wallet {
                 counters.into_iter().map(SpendingCounter::from).collect(),
             )
             .map_err(|_| Error::invalid_spending_counters())
+    }
+
+    fn sign_transaction_impl<P: Payload>(
+        &mut self,
+        settings: &Settings,
+        valid_until: BlockDate,
+        lane: u8,
+        payload: P,
+        auth: P::Auth,
+        fragment_build_fn: impl FnOnce(Transaction<P>) -> Fragment,
+    ) -> Result<Fragment, Error> {
+        let mut builder = wallet::TransactionBuilder::new(&settings, payload, valid_until);
+
+        // It is needed to provide a 1 extra input as we are generating it later, but should take into account at this place.
+        let value = builder.estimate_fee_with(1, 0);
+
+        let account_tx_builder = self
+            .account
+            .new_transaction(value, lane)
+            .map_err(|_| Error::not_enough_funds())?;
+
+        let input = account_tx_builder.input();
+        let witness_builder = account_tx_builder.witness_builder();
+
+        builder.add_input(input, witness_builder);
+
+        let tx = builder
+            .finalize_tx(auth)
+            .map_err(|e| Error::wallet_transaction().with(e))?;
+
+        let fragment = fragment_build_fn(tx);
+        account_tx_builder.add_fragment_id(fragment.hash());
+        Ok(fragment)
+    }
+
+    /// Sign a transaction
+    ///
+    /// This function outputs a fragment containing a signed transaction.
+    pub fn sign_transaction(
+        &mut self,
+        settings: &Settings,
+        valid_until: BlockDate,
+        lane: u8,
+        certificate: Certificate,
+    ) -> Result<Fragment, Error> {
+        match certificate {
+            Certificate::VoteCast(p) => {
+                self.sign_transaction_impl(settings, valid_until, lane, p, (), |tx| {
+                    Fragment::VoteCast(tx)
+                })
+            }
+            _ => Err(Error::invalid_input("does not supported certificate type")),
+        }
     }
 
     /// Cast a vote

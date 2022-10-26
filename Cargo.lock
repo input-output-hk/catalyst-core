@@ -8184,12 +8184,14 @@ name = "wallet-js"
 version = "0.7.0-pre4"
 dependencies = [
  "bech32 0.7.3",
+ "chain-core",
  "chain-crypto",
  "chain-impl-mockchain",
  "chain-vote",
  "clear_on_drop",
  "console_error_panic_hook",
  "getrandom 0.2.7",
+ "hex",
  "js-sys",
  "rand 0.8.5",
  "rand_chacha 0.3.1",

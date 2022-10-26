@@ -9,7 +9,7 @@ name = "uniffi_jormungandr_wallet"
 
 [dependencies]
 uniffi = "0.21"
-uniffi_macros = "0.20"
+uniffi_macros = "0.21"
 wallet-core = { path = "../wallet-core" }
 wallet = {path = "../../wallet"}
 symmetric-cipher = {path = "../../symmetric-cipher"}
@@ -22,7 +22,7 @@ chain-ser = { path = "../../../chain-libs/chain-ser" }
 thiserror = {version = "1.0", default-features = false}
 
 [build-dependencies]
-uniffi_build = "0.20"
+uniffi_build = "0.21"
 
 [features]
 builtin-bindgen = ["uniffi_build/builtin-bindgen"]

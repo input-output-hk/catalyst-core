@@ -1418,7 +1418,10 @@ pub fn generic_tally_status(p: ExplorerVoteProposal, payload: OtherPayloadType) 
             }
         }
         OtherPayloadType::Private => TallyStatus::Private(TallyPrivateStatus {
-            results: None,
+            results: Some(vec![
+                Weight("0".to_string());
+                p.options.choice_range().end as usize
+            ]),
             options: p.options.into(),
         }),
     }

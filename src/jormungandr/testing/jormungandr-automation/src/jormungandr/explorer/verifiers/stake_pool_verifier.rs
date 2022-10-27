@@ -3,9 +3,15 @@ use crate::{
     utils::StakePool,
 };
 use chain_impl_mockchain::transaction::AccountIdentifier;
+use chain_time::TimeOffsetSeconds;
 use std::num::NonZeroU64;
+
 impl ExplorerVerifier {
-    pub fn assert_stake_pool(stake_pool: &StakePool, explorer_stake_pool: &StakePoolStakePool)
+    pub fn assert_stake_pool(
+        stake_pool: &StakePool,
+        explorer_stake_pool: &StakePoolStakePool,
+        retirement_time: core::option::Option<TimeOffsetSeconds>,
+    )
     /*-> Result<(), VerifierError>*/
     {
         assert_eq!(explorer_stake_pool.id, stake_pool.id().to_string());
@@ -119,5 +125,23 @@ impl ExplorerVerifier {
                 .unwrap(),
             stake_pool.info().rewards.fixed.0
         );
+
+        if retirement_time.is_some() {
+            assert!(explorer_stake_pool.retirement.is_some());
+            assert_eq!(
+                explorer_stake_pool.retirement.as_ref().unwrap().pool_id,
+                stake_pool.info().to_id().to_string()
+            );
+            assert_eq!(
+                u64::from(retirement_time.unwrap()),
+                explorer_stake_pool
+                    .retirement
+                    .as_ref()
+                    .unwrap()
+                    .retirement_time
+                    .parse::<u64>()
+                    .unwrap()
+            );
+        }
     }
 }

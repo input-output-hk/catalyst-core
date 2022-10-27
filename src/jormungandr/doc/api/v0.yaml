@@ -1210,11 +1210,19 @@ paths:
                 description: Stake pool details
                 type: object
                 required:
+                  - owners
                   - tax
                   - total_stake
                   - kesPublicKey
                   - vrfPublicKey
                 properties:
+                  owners:
+                    description: Array of pool owners key
+                    type: array
+                      items:
+                        description: Bech32-encoded stake pool owner key
+                        type: string
+                      minItems: 0
                   tax:
                     description: Pool reward
                     type: object
@@ -1275,6 +1283,7 @@ paths:
                 stakepool01:
                   value:
                     {
+                      'owners': ['ed25519_pk18zxle5a3s5esl29ldeg24hecuqfx5a9kunlcw58g2kz5ntngk3xqle8ezk'],
                       'tax':
                         {
                           'fixed': 5,

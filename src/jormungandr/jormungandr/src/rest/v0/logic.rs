@@ -487,6 +487,7 @@ pub async fn get_stake_pool(
             .map(|pool| pool.stake.total.into())
             .unwrap_or(0);
         StakePoolStats {
+            owners: pool.registration.owners.iter().map(|x| x.to_bech32_str()).collect(),
             kes_public_key: pool.registration.keys.kes_public_key.to_bech32_str(),
             vrf_public_key: pool.registration.keys.vrf_public_key.to_bech32_str(),
             total_stake,

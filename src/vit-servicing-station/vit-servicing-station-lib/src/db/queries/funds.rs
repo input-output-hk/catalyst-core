@@ -14,14 +14,15 @@ use crate::db::{
 };
 use crate::v0::errors::HandleError;
 use diesel::{
+    pg::upsert::excluded,
     r2d2::{ConnectionManager, PooledConnection},
-    ExpressionMethods, Insertable, QueryDsl, QueryResult, RunQueryDsl, SqliteConnection,
+    ExpressionMethods, Insertable, QueryDsl, QueryResult, RunQueryDsl,
 };
 use serde::{Deserialize, Serialize};
 
 fn join_fund(
     mut fund: Fund,
-    db_conn: &PooledConnection<ConnectionManager<SqliteConnection>>,
+    db_conn: &PooledConnection<ConnectionManager<DbConnection>>,
 ) -> Result<Fund, HandleError> {
     let id = fund.id;
 
@@ -139,8 +140,33 @@ pub fn insert_fund(fund: Fund, db_conn: &DbConnection) -> QueryResult<Fund> {
 
 pub fn put_fund(fund: Fund, pool: &DbConnectionPool) -> Result<(), HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
-    diesel::replace_into(funds::table)
+    diesel::insert_into(funds::table)
         .values(fund.values())
+        .on_conflict(funds::id)
+        .do_update()
+        .set((
+            funds::fund_name.eq(excluded(funds::fund_name)),
+            funds::fund_goal.eq(excluded(funds::fund_goal)),
+            funds::registration_snapshot_time.eq(excluded(funds::registration_snapshot_time)),
+            funds::next_registration_snapshot_time
+                .eq(excluded(funds::next_registration_snapshot_time)),
+            funds::voting_power_threshold.eq(excluded(funds::voting_power_threshold)),
+            funds::fund_start_time.eq(excluded(funds::fund_start_time)),
+            funds::fund_end_time.eq(excluded(funds::fund_end_time)),
+            funds::next_fund_start_time.eq(excluded(funds::next_fund_start_time)),
+            funds::insight_sharing_start.eq(excluded(funds::insight_sharing_start)),
+            funds::proposal_submission_start.eq(excluded(funds::proposal_submission_start)),
+            funds::refine_proposals_start.eq(excluded(funds::refine_proposals_start)),
+            funds::finalize_proposals_start.eq(excluded(funds::finalize_proposals_start)),
+            funds::proposal_assessment_start.eq(excluded(funds::proposal_assessment_start)),
+            funds::assessment_qa_start.eq(excluded(funds::assessment_qa_start)),
+            funds::snapshot_start.eq(excluded(funds::snapshot_start)),
+            funds::voting_start.eq(excluded(funds::voting_start)),
+            funds::voting_end.eq(excluded(funds::voting_end)),
+            funds::tallying_end.eq(excluded(funds::tallying_end)),
+            funds::results_url.eq(excluded(funds::results_url)),
+            funds::survey_url.eq(excluded(funds::survey_url)),
+        ))
         .execute(&db_conn)
         .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?;
 

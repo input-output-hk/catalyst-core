@@ -6,7 +6,7 @@ use crate::{
     },
     v0::errors::HandleError,
 };
-use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
+use diesel::{pg::upsert::excluded, ExpressionMethods, QueryDsl, RunQueryDsl};
 
 pub async fn query_all_snapshots(pool: &DbConnectionPool) -> Result<Vec<Snapshot>, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
@@ -37,7 +37,20 @@ pub async fn query_snapshot_by_tag(
 
 pub fn put_snapshot(snapshot: Snapshot, pool: &DbConnectionPool) -> Result<(), HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
-    diesel::replace_into(snapshots::table)
+
+    // TODO: Find a better way to do this?
+    //
+    // This is needed when moving from SQLite to Postgres
+    // because it used to be a replace_into call which
+    // is actually a delete followed by a insert in SQLite and
+    // this triggers the 'ON DELETE CASCADE' of voters and contributions
+    // tables.
+    diesel::delete(snapshots::table)
+        .filter(snapshots::tag.eq(&snapshot.tag))
+        .execute(&db_conn)
+        .map_err(|e| HandleError::InternalError(format!("Error executing request: {}", e)))?;
+
+    diesel::insert_into(snapshots::table)
         .values(snapshot)
         .execute(&db_conn)
         .map_err(|e| HandleError::InternalError(format!("Error executing request: {}", e)))?;
@@ -80,8 +93,15 @@ pub async fn query_total_voting_power_by_voting_group_and_snapshot_tag(
 }
 
 pub fn batch_put_voters(voters: &[Voter], db_conn: &DbConnection) -> Result<(), HandleError> {
-    diesel::replace_into(voters::table)
+    diesel::insert_into(voters::table)
         .values(voters)
+        .on_conflict((
+            voters::voting_key,
+            voters::voting_group,
+            voters::snapshot_tag,
+        ))
+        .do_update()
+        .set((voters::voting_power.eq(excluded(voters::voting_power)),))
         .execute(db_conn)
         .map_err(|e| HandleError::InternalError(format!("Error executing request: {}", e)))?;
     Ok(())
@@ -127,8 +147,19 @@ pub fn batch_put_contributions(
     contributions: &[Contribution],
     db_conn: &DbConnection,
 ) -> Result<(), HandleError> {
-    diesel::replace_into(contributions::table)
+    diesel::insert_into(contributions::table)
         .values(contributions)
+        .on_conflict((
+            contributions::stake_public_key,
+            contributions::voting_group,
+            contributions::voting_key,
+            contributions::snapshot_tag,
+        ))
+        .do_update()
+        .set((
+            contributions::reward_address.eq(excluded(contributions::reward_address)),
+            contributions::value.eq(excluded(contributions::value)),
+        ))
         .execute(db_conn)
         .map_err(|e| HandleError::InternalError(format!("Error executing request: {}", e)))?;
     Ok(())

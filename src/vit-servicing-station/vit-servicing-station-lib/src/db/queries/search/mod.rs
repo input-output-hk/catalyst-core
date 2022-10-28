@@ -233,16 +233,12 @@ fn map_offset(offset: u64) -> Result<i64, HandleError> {
 }
 
 fn search_count(
-    SearchCountQuery {
-        table,
-        filter,
-        order_by,
-    }: SearchCountQuery,
+    query: SearchCountQuery,
     conn: &PooledConnection<ConnectionManager<DbConnection>>,
 ) -> Result<i64, HandleError> {
-    match table {
+    match query.table {
         Table::Challenges => {
-            let query = build_challenges_query(filter, order_by)?;
+            let query = build_challenges_query(query.filter, Vec::new())?;
 
             let count = query
                 .count()
@@ -251,7 +247,7 @@ fn search_count(
             Ok(count)
         }
         Table::Proposals => {
-            let query = build_proposals_query(filter, order_by)?;
+            let query = build_proposals_query(query.filter, Vec::new())?;
 
             let count = query
                 .count()

@@ -10,7 +10,7 @@ edition = "2018"
 base64 = "0.12.1"
 cfg-if = "0.1"
 time = { version = "0.3", features = ["formatting", "parsing", "macros"] }
-diesel = { version = "1.4.4", features = ["sqlite", "r2d2"] }
+diesel = { version = "1.4.4", features = ["postgres", "r2d2"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.53"
 structopt = "0.3.14"
@@ -44,11 +44,6 @@ itertools = "0.10.3"
 version = "0.11"
 default-features = false
 features = ["blocking","native-tls"]
-
-# This solves building on windows when sqlite3lib is not installed or missing in the `$PATH`
-# as it happens with the github actions pipeline associated to this project.
-[target.'cfg(windows)'.dependencies]
-libsqlite3-sys =  { version = "0.9.3", features = ["bundled"] }
 
 [features]
 test-api = []

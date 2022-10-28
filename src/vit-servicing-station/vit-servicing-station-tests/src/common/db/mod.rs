@@ -1,6 +1,6 @@
 use diesel::expression_methods::ExpressionMethods;
 use diesel::query_dsl::RunQueryDsl;
-use diesel::{Insertable, QueryDsl, SqliteConnection};
+use diesel::{Insertable, PgConnection, QueryDsl};
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::goals::InsertGoal;
@@ -21,11 +21,11 @@ use vit_servicing_station_lib::db::{
 };
 
 pub struct DbInserter<'a> {
-    connection: &'a SqliteConnection,
+    connection: &'a PgConnection,
 }
 
 impl<'a> DbInserter<'a> {
-    pub fn new(connection: &'a SqliteConnection) -> Self {
+    pub fn new(connection: &'a PgConnection) -> Self {
         Self { connection }
     }
 
@@ -82,8 +82,9 @@ impl<'a> DbInserter<'a> {
                     .eq(proposal.proposal.chain_vote_options.as_csv_string()),
                 proposals::challenge_id.eq(proposal.proposal.challenge_id),
             );
-            diesel::insert_or_ignore_into(proposals::table)
+            diesel::insert_into(proposals::table)
                 .values(values)
+                .on_conflict_do_nothing()
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
 
@@ -119,8 +120,9 @@ impl<'a> DbInserter<'a> {
                 voteplans::token_identifier.eq(token_id),
             );
 
-            diesel::insert_or_ignore_into(voteplans::table)
+            diesel::insert_into(voteplans::table)
                 .values(voteplan_values)
+                .on_conflict_do_nothing()
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
 
@@ -132,8 +134,9 @@ impl<'a> DbInserter<'a> {
                         proposal_simple_challenge::proposal_solution
                             .eq(data.proposal_solution.clone()),
                     );
-                    diesel::insert_or_ignore_into(proposal_simple_challenge::table)
+                    diesel::insert_into(proposal_simple_challenge::table)
                         .values(simple_values)
+                        .on_conflict_do_nothing()
                         .execute(self.connection)
                         .map_err(DbInserterError::DieselError)?;
                 }
@@ -150,8 +153,9 @@ impl<'a> DbInserter<'a> {
                         proposal_community_choice_challenge::proposal_metrics
                             .eq(data.proposal_metrics.clone()),
                     );
-                    diesel::insert_or_ignore_into(proposal_community_choice_challenge::table)
+                    diesel::insert_into(proposal_community_choice_challenge::table)
                         .values(community_values)
+                        .on_conflict_do_nothing()
                         .execute(self.connection)
                         .map_err(DbInserterError::DieselError)?;
                 }
@@ -182,15 +186,17 @@ impl<'a> DbInserter<'a> {
                     voteplans::fund_id.eq(voteplan.fund_id),
                     voteplans::token_identifier.eq(voteplan.token_identifier.clone()),
                 );
-                diesel::insert_or_ignore_into(voteplans::table)
+                diesel::insert_into(voteplans::table)
                     .values(values)
+                    .on_conflict_do_nothing()
                     .execute(self.connection)
                     .map_err(DbInserterError::DieselError)?;
             }
 
             for goal in &fund.goals {
-                diesel::insert_or_ignore_into(goals::table)
+                diesel::insert_into(goals::table)
                     .values(InsertGoal::from(goal))
+                    .on_conflict_do_nothing()
                     .execute(self.connection)
                     .map_err(DbInserterError::DieselError)?;
             }
@@ -200,8 +206,9 @@ impl<'a> DbInserter<'a> {
 
     pub fn insert_challenges(&self, challenges: &[Challenge]) -> Result<(), DbInserterError> {
         for challenge in challenges {
-            diesel::insert_or_ignore_into(challenges::table)
+            diesel::insert_into(challenges::table)
                 .values(challenge.clone().values())
+                .on_conflict_do_nothing()
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
         }
@@ -210,8 +217,9 @@ impl<'a> DbInserter<'a> {
 
     pub fn insert_advisor_reviews(&self, reviews: &[AdvisorReview]) -> Result<(), DbInserterError> {
         for review in reviews {
-            diesel::insert_or_ignore_into(community_advisors_reviews::table)
+            diesel::insert_into(community_advisors_reviews::table)
                 .values(review.clone().values())
+                .on_conflict_do_nothing()
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
         }
@@ -220,8 +228,9 @@ impl<'a> DbInserter<'a> {
 
     pub fn insert_groups(&self, groups: &[Group]) -> Result<(), DbInserterError> {
         for group in groups {
-            diesel::insert_or_ignore_into(groups::table)
+            diesel::insert_into(groups::table)
                 .values(group.clone().values())
+                .on_conflict_do_nothing()
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
         }

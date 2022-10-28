@@ -100,7 +100,7 @@ impl DbBuilder {
 
     fn do_migration(
         &self,
-        connection: &SqliteConnection,
+        connection: &PgConnection,
         migration_folder: &Path,
     ) -> Result<(), DbBuilderError> {
         let stdout = io::stdout();
@@ -113,35 +113,35 @@ impl DbBuilder {
         .map_err(DbBuilderError::MigrationsError)
     }
 
-    fn try_do_migration(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+    fn try_do_migration(&self, connection: &PgConnection) -> Result<(), DbBuilderError> {
         if let Some(migrations_folder) = &self.migrations_folder {
             self.do_migration(connection, migrations_folder)?;
         }
         Ok(())
     }
 
-    fn try_insert_tokens(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+    fn try_insert_tokens(&self, connection: &PgConnection) -> Result<(), DbBuilderError> {
         if let Some(tokens) = &self.tokens {
             DbInserter::new(connection).insert_tokens(tokens)?;
         }
         Ok(())
     }
 
-    fn try_insert_funds(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+    fn try_insert_funds(&self, connection: &PgConnection) -> Result<(), DbBuilderError> {
         if let Some(funds) = &self.funds {
             DbInserter::new(connection).insert_funds(funds)?;
         }
         Ok(())
     }
 
-    fn try_insert_proposals(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+    fn try_insert_proposals(&self, connection: &PgConnection) -> Result<(), DbBuilderError> {
         if let Some(proposals) = &self.proposals {
             DbInserter::new(connection).insert_proposals(proposals)?;
         }
         Ok(())
     }
 
-    fn try_insert_challenges(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+    fn try_insert_challenges(&self, connection: &PgConnection) -> Result<(), DbBuilderError> {
         if let Some(challenges) = &self.challenges {
             DbInserter::new(connection).insert_challenges(challenges)?;
         }
@@ -149,14 +149,14 @@ impl DbBuilder {
         Ok(())
     }
 
-    fn try_insert_reviews(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+    fn try_insert_reviews(&self, connection: &PgConnection) -> Result<(), DbBuilderError> {
         if let Some(reviews) = &self.advisor_reviews {
             DbInserter::new(connection).insert_advisor_reviews(reviews)?;
         }
         Ok(())
     }
 
-    fn try_insert_groups(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+    fn try_insert_groups(&self, connection: &PgConnection) -> Result<(), DbBuilderError> {
         if let Some(groups) = &self.groups {
             DbInserter::new(connection).insert_groups(groups)?;
         }
@@ -171,7 +171,7 @@ impl DbBuilder {
         let path = path.as_ref();
         let db_path = path.to_str().ok_or(DbBuilderError::CannotExtractTempPath)?;
 
-        let connection = SqliteConnection::establish(db_path)?;
+        let connection = PgConnection::establish(db_path)?;
         self.try_do_migration(&connection)?;
         self.try_insert_tokens(&connection)?;
         self.try_insert_funds(&connection)?;

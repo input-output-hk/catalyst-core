@@ -1793,7 +1793,6 @@ dependencies = [
  "bitflags",
  "byteorder",
  "diesel_derives 1.4.1",
- "libsqlite3-sys",
  "pq-sys",
  "r2d2",
 ]
@@ -4062,17 +4061,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3db8d6ba2cec9eacc40e6e8ccc98931840301f1006e95647ceb2dd5c3aa06f7c"
 dependencies = [
  "libsecp256k1-core",
-]
-
-[[package]]
-name = "libsqlite3-sys"
-version = "0.9.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0bb2c84bff2c4d43bf6866c786098f7b6a17714b0cbda3abc6323a6b7571a045"
-dependencies = [
- "cc",
- "pkg-config",
- "vcpkg",
 ]
 
 [[package]]
@@ -7980,7 +7968,6 @@ dependencies = [
  "jormungandr-lib",
  "jortestkit",
  "lazy_static",
- "libsqlite3-sys",
  "predicates 2.1.1",
  "pretty_assertions",
  "quickcheck",

@@ -1,7 +1,6 @@
 create table funds
 (
-    id INTEGER NOT NULL
-        primary key autoincrement,
+    id SERIAL PRIMARY KEY,
     fund_name VARCHAR NOT NULL,
     fund_goal VARCHAR NOT NULL,
     registration_snapshot_time BIGINT NOT NULL,
@@ -26,8 +25,7 @@ create table funds
 
 create table proposals
 (
-    id INTEGER NOT NULL
-        primary key autoincrement,
+    id SERIAL PRIMARY KEY,
     proposal_id VARCHAR NOT NULL UNIQUE,
     proposal_category VARCHAR NOT NULL,
     proposal_title VARCHAR NOT NULL,
@@ -41,26 +39,27 @@ create table proposals
     proposer_contact VARCHAR NOT NULL,
     proposer_url VARCHAR NOT NULL,
     proposer_relevant_experience VARCHAR NOT NULL,
-    chain_proposal_id BLOB NOT NULL,
+    chain_proposal_id BYTEA NOT NULL,
     chain_vote_options VARCHAR NOT NULL,
     challenge_id INTEGER NOT NULL
 );
 
 create table proposals_voteplans (
+    id SERIAL,
     proposal_id VARCHAR NOT NULL,
     chain_voteplan_id VARCHAR NOT NULL,
     chain_proposal_index BIGINT NOT NULL,
-    FOREIGN KEY (proposal_id)
-        REFERENCES proposals (proposal_id)
+    PRIMARY KEY (id),
+    FOREIGN KEY (proposal_id) REFERENCES proposals (proposal_id)
 );
 
 create table proposal_simple_challenge (
-    proposal_id VARCHAR NOT NULL primary key,
+    proposal_id VARCHAR NOT NULL PRIMARY KEY,
     proposal_solution VARCHAR
 );
 
 create table proposal_community_choice_challenge (
-    proposal_id VARCHAR NOT NULL primary key,
+    proposal_id VARCHAR NOT NULL PRIMARY KEY,
     proposal_brief VARCHAR,
     proposal_importance VARCHAR,
     proposal_goal VARCHAR,
@@ -69,8 +68,7 @@ create table proposal_community_choice_challenge (
 
 create table voteplans
 (
-    id INTEGER NOT NULL
-        primary key autoincrement,
+    id SERIAL PRIMARY KEY,
     chain_voteplan_id VARCHAR NOT NULL
         unique,
     chain_vote_start_time BIGINT NOT NULL,
@@ -84,15 +82,14 @@ create table voteplans
 
 create table api_tokens
 (
-    token BLOB NOT NULL UNIQUE PRIMARY KEY ,
+    token BYTEA PRIMARY KEY,
     creation_time BIGINT NOT NULL,
     expire_time BIGINT NOT NULL
 );
 
 create table challenges
 (
-    internal_id INTEGER NOT NULL
-        primary key autoincrement,
+    internal_id SERIAL PRIMARY KEY,
     id INTEGER NOT NULL UNIQUE,
     challenge_type VARCHAR NOT NULL,
     title VARCHAR NOT NULL,
@@ -105,7 +102,7 @@ create table challenges
 );
 
 create table community_advisors_reviews (
-  id INTEGER NOT NULL primary key autoincrement,
+  id SERIAL PRIMARY KEY,
   proposal_id INTEGER NOT NULL,
   assessor VARCHAR NOT NULL,
   impact_alignment_rating_given INTEGER NOT NULL,
@@ -119,8 +116,7 @@ create table community_advisors_reviews (
 
 create table goals
 (
-    id INTEGER NOT NULL
-        primary key autoincrement,
+    id SERIAL PRIMARY KEY,
     goal_name VARCHAR NOT NULL,
     fund_id INTEGER NOT NULL,
     FOREIGN KEY(fund_id) REFERENCES funds(id)
@@ -128,25 +124,25 @@ create table goals
 
 create table groups (
     fund_id INTEGER NOT NULL,
-    token_identifier VARCHAR NOT NULL,
+    token_identifier VARCHAR,
     group_id VARCHAR NOT NULL,
     PRIMARY KEY(token_identifier, fund_id)
 );
 
 
 create table votes (
-    "fragment_id" TEXT,
-    "caster" TEXT,
-    "proposal" INTEGER,
-    "voteplan_id" TEXT,
-    "time" REAL,
-    "choice" TEXT,
-    "raw_fragment" TEXT,
-    PRIMARY KEY("fragment_id")
+    fragment_id TEXT,
+    caster TEXT NOT NULL,
+    proposal INTEGER NOT NULL,
+    voteplan_id TEXT NOT NULL,
+    time REAL NOT NULL,
+    choice SMALLINT,
+    raw_fragment TEXT NOT NULL,
+    PRIMARY KEY(fragment_id)
 );
 
 create table snapshots (
-    tag TEXT NOT NULL primary key,
+    tag TEXT PRIMARY KEY,
     last_updated BIGINT NOT NULL
 );
 
@@ -155,7 +151,7 @@ create table voters (
     voting_power BIGINT NOT NULL,
     voting_group TEXT NOT NULL,
     snapshot_tag TEXT NOT NULL,
-    PRIMARY KEY(voting_key, voting_group, snapshot_tag)
+    PRIMARY KEY(voting_key, voting_group, snapshot_tag),
     FOREIGN KEY(snapshot_tag) REFERENCES snapshots(tag) ON DELETE CASCADE
 );
 
@@ -170,37 +166,40 @@ create table contributions (
     FOREIGN KEY(snapshot_tag) REFERENCES snapshots(tag) ON DELETE CASCADE
 );
 
-CREATE VIEW full_proposals_info
-AS
+CREATE VIEW full_proposals_info AS
 SELECT
-    proposals.*,
-    ifnull(reviews_count, 0) as reviews_count,
-    voteplans.chain_vote_start_time,
-    voteplans.chain_vote_end_time,
-    voteplans.chain_committee_end_time,
-    voteplans.chain_voteplan_payload,
-    voteplans.chain_vote_encryption_key,
-    voteplans.fund_id,
-    challenges.challenge_type,
-    proposal_simple_challenge.proposal_solution,
-    proposal_community_choice_challenge.proposal_brief,
-    proposal_community_choice_challenge.proposal_importance,
-    proposal_community_choice_challenge.proposal_goal,
-    proposal_community_choice_challenge.proposal_metrics,
-    proposals_voteplans.chain_proposal_index,
-    proposals_voteplans.chain_voteplan_id,
-    groups.group_id
-FROM
-    proposals
-        INNER JOIN proposals_voteplans ON proposals.proposal_id = proposals_voteplans.proposal_id
-        INNER JOIN voteplans ON proposals_voteplans.chain_voteplan_id = voteplans.chain_voteplan_id
-        INNER JOIN challenges on challenges.id = proposals.challenge_id
-        INNER JOIN groups on voteplans.token_identifier = groups.token_identifier
-        LEFT JOIN proposal_simple_challenge
-            on proposals.proposal_id = proposal_simple_challenge.proposal_id
-            and challenges.challenge_type = 'simple'
-        LEFT JOIN proposal_community_choice_challenge
-            on proposals.proposal_id = proposal_community_choice_challenge.proposal_id
-            and challenges.challenge_type = 'community-choice'
-        LEFT JOIN (SELECT proposal_id as review_proposal_id, COUNT (DISTINCT assessor) as reviews_count FROM community_advisors_reviews GROUP BY proposal_id)
-            on proposals.proposal_id = review_proposal_id;
+    p.*,
+    COALESCE(reviews_count, 0) as reviews_count,
+    vp.chain_vote_start_time,
+    vp.chain_vote_end_time,
+    vp.chain_committee_end_time,
+    vp.chain_voteplan_payload,
+    vp.chain_vote_encryption_key,
+    vp.fund_id,
+    ch.challenge_type,
+    psc.proposal_solution,
+    pccc.proposal_brief,
+    pccc.proposal_importance,
+    pccc.proposal_goal,
+    pccc.proposal_metrics,
+    pvp.chain_proposal_index,
+    pvp.chain_voteplan_id,
+    gr.group_id
+FROM proposals p
+INNER JOIN proposals_voteplans pvp ON p.proposal_id = pvp.proposal_id
+INNER JOIN voteplans vp ON pvp.chain_voteplan_id = vp.chain_voteplan_id
+INNER JOIN challenges ch ON ch.id = p.challenge_id
+INNER JOIN groups gr ON vp.token_identifier = gr.token_identifier
+LEFT JOIN proposal_simple_challenge psc
+    ON p.proposal_id = psc.proposal_id
+    AND ch.challenge_type = 'simple'
+LEFT JOIN proposal_community_choice_challenge pccc
+    ON p.proposal_id = pccc.proposal_id
+    AND ch.challenge_type = 'community-choice'
+LEFT JOIN (
+        SELECT
+            proposal_id::VARCHAR AS review_proposal_id,
+            COUNT (DISTINCT assessor)::INTEGER AS reviews_count
+        FROM community_advisors_reviews
+        GROUP BY proposal_id
+    ) rev ON p.proposal_id = rev.review_proposal_id;

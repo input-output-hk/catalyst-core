@@ -116,10 +116,7 @@ impl ExplorerVerifier {
                                 {
                                     match state {
                                         PrivateTallyState::Encrypted { encrypted_tally: _ } => {
-                                            assert!(
-                                                explorer_tally_status.results.is_none(),
-                                                "BUG NPG-3369 fixed"
-                                            )
+                                            assert!(explorer_tally_status.results.is_some())
                                         }
                                         PrivateTallyState::Decrypted { result } => {
                                             let explorer_tally_result =

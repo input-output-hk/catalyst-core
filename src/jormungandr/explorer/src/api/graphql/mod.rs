@@ -37,7 +37,7 @@ use chain_impl_mockchain::{
     fragment::FragmentId,
     key::BftLeaderId,
     stake::StakeControl,
-    vote::{EncryptedVote, ProofOfCorrectVote},
+    vote::{EncryptedVote, PayloadType as OtherPayloadType, ProofOfCorrectVote},
 };
 use std::{
     convert::{TryFrom, TryInto},
@@ -1358,12 +1358,15 @@ impl VotePlanStatus {
                     proposal_id: ExternalProposalId::from(proposal.proposal_id.clone()),
                     options: VoteOptionRange::from(proposal.options.clone()),
                     tally: proposal.tally.clone().map_or(
-                        Some(generic_tally_status(ExplorerVoteProposal {
-                            proposal_id: proposal.proposal_id,
-                            options: proposal.options,
-                            tally: proposal.tally,
-                            votes: proposal.votes.clone(),
-                        })),
+                        Some(generic_tally_status(
+                            ExplorerVoteProposal {
+                                proposal_id: proposal.proposal_id,
+                                options: proposal.options,
+                                tally: proposal.tally,
+                                votes: proposal.votes.clone(),
+                            },
+                            payload_type,
+                        )),
                         |tally| Some(TallyStatus::from(tally)),
                     ),
                     votes: proposal
@@ -1395,19 +1398,32 @@ impl VotePlanStatus {
 }
 
 // if the tally is None, convert to generic tally result as per rest api requirements
-pub fn generic_tally_status(p: ExplorerVoteProposal) -> TallyStatus {
-    let s = StakeControl::default();
-    match compute_public_tally(&p, &s) {
-        ExplorerVoteTally::Public { results, options } => TallyStatus::Public(TallyPublicStatus {
-            results: results.iter().map(Into::into).collect(),
-            options: options.into(),
-        }),
-        ExplorerVoteTally::Private { results, options } => {
-            TallyStatus::Private(TallyPrivateStatus {
-                results: results.map(|res| res.iter().map(Into::into).collect()),
-                options: options.into(),
-            })
+pub fn generic_tally_status(p: ExplorerVoteProposal, payload: OtherPayloadType) -> TallyStatus {
+    match payload {
+        OtherPayloadType::Public => {
+            let s = StakeControl::default();
+            match compute_public_tally(&p, &s) {
+                ExplorerVoteTally::Public { results, options } => {
+                    TallyStatus::Public(TallyPublicStatus {
+                        results: results.iter().map(Into::into).collect(),
+                        options: options.into(),
+                    })
+                }
+                ExplorerVoteTally::Private { results, options } => {
+                    TallyStatus::Private(TallyPrivateStatus {
+                        results: results.map(|res| res.iter().map(Into::into).collect()),
+                        options: options.into(),
+                    })
+                }
+            }
         }
+        OtherPayloadType::Private => TallyStatus::Private(TallyPrivateStatus {
+            results: Some(vec![
+                Weight("0".to_string());
+                p.options.choice_range().end as usize
+            ]),
+            options: p.options.into(),
+        }),
     }
 }
 

@@ -23,20 +23,18 @@ use jormungandr_automation::{
         Block0ConfigurationBuilder, MemPoolCheck, NodeConfigBuilder,
     },
     testing::{
-        time::{self, get_current_date, wait_for_date},
+        time::{self, wait_for_date},
         VotePlanBuilder,
     },
 };
 use jormungandr_lib::interfaces::{
-    ActiveSlotCoefficient, BlockDate as libBlockDate, Initial, InitialToken, KesUpdateSpeed,
-    Mempool,
+    ActiveSlotCoefficient, BlockDate as libBlockDate, InitialToken, KesUpdateSpeed, Mempool,
 };
 use mjolnir::generators::FragmentGenerator;
-use rand_core::OsRng;
-use std::{collections::HashMap, iter, num::NonZeroU64, time::Duration};
+use std::{collections::HashMap, iter, num::NonZeroU64, str::FromStr, time::Duration};
 use thor::{
-    vote_plan_cert, Block0ConfigurationBuilderExtension, CommitteeDataManager, FragmentBuilder,
-    FragmentSender, FragmentSenderSetup, FragmentVerifier, StakePool, Wallet,
+    Block0ConfigurationBuilderExtension, BlockDateGenerator::Fixed, CommitteeDataManager,
+    FragmentBuilder, FragmentSender, FragmentSenderSetup, FragmentVerifier, StakePool, Wallet,
 };
 
 const STAKE_POOL_QUERY_COMPLEXITY_LIMIT: u64 = 100;
@@ -44,7 +42,6 @@ const STAKE_POOL_QUERY_DEPTH_LIMIT: u64 = 30;
 
 #[test]
 pub fn explorer_not_existing_stake_pool_test() {
-    let jcli: JCli = Default::default();
     let temp_dir = TempDir::new().unwrap();
     let stake_pool_owner = thor::Wallet::default();
     let stake_pool = StakePool::new(&stake_pool_owner);
@@ -98,9 +95,9 @@ pub fn explorer_not_existing_stake_pool_test() {
     );
 }
 
+//#[should_panic]
 #[test]
 pub fn explorer_stake_pool_test() {
-    let jcli: JCli = Default::default();
     let temp_dir = TempDir::new().unwrap();
     let mut faucet = thor::Wallet::default();
     let mut stake_pool_owner = thor::Wallet::default();
@@ -117,8 +114,6 @@ pub fn explorer_stake_pool_test() {
     )
     .unwrap();
 
-    let initial_stake_pool = stake_pools.get(0).unwrap();
-
     let settings = jormungandr.rest().settings().unwrap();
     let fragment_sender = FragmentSender::from(&settings);
 
@@ -129,6 +124,43 @@ pub fn explorer_stake_pool_test() {
     );
     let explorer_process = jormungandr.explorer(params).unwrap();
     let explorer = explorer_process.client();
+
+    let initial_stake_pool = stake_pools.get(0).unwrap();
+
+    let mut stake_pool_update = initial_stake_pool.clone();
+    let mut stake_pool_info = stake_pool_update.info_mut();
+    stake_pool_info.owners = vec![stake_pool_owner.public_key()];
+
+    let mem_check = fragment_sender
+        .send_pool_update(
+            &mut faucet,
+            &initial_stake_pool,
+            &stake_pool_update,
+            &jormungandr,
+        )
+        .unwrap();
+
+    FragmentVerifier::wait_and_verify_is_in_block(
+        Duration::from_secs(2),
+        mem_check.clone(),
+        &jormungandr,
+    )
+    .unwrap();
+
+    let query_response = explorer
+        .stake_pool(initial_stake_pool.id().to_string(), stake_pool_block_count)
+        .expect("Non existing stake pool");
+
+    assert!(
+        query_response.errors.is_none(),
+        "{:?}",
+        query_response.errors.unwrap()
+    );
+
+    let explorer_stake_pool = query_response.data.unwrap().stake_pool;
+
+    // ExplorerVerifier::assert_stake_pool(stake_pool_update.inner(), &explorer_stake_pool, None);
+
     let stake_pool_id = stake_pool.id().to_string();
 
     let mem_check = fragment_sender
@@ -155,48 +187,6 @@ pub fn explorer_stake_pool_test() {
     let explorer_stake_pool = query_response.data.unwrap().stake_pool;
 
     ExplorerVerifier::assert_stake_pool(stake_pool.inner(), &explorer_stake_pool, None);
-
-    let mut stake_pool_update = stake_pool.clone();
-    let mut stake_pool_info = stake_pool_update.info_mut();
-
-    stake_pool_info.reward_account = Some(AccountIdentifier::Single(TestGen::identifier()));
-    stake_pool_info.keys.kes_public_key = testing::static_secret_key::<SumEd25519_12>().to_public();
-
-    println!("OWNERS {:?}", faucet.public_key());
-    stake_pool_info.owners = vec![faucet.public_key()];
-
-    let mem_check = fragment_sender
-        .send_pool_update(
-            &mut stake_pool_owner,
-            &stake_pool,
-            &stake_pool_update,
-            &jormungandr,
-        )
-        .unwrap();
-
-    FragmentVerifier::wait_and_verify_is_in_block(
-        Duration::from_secs(2),
-        mem_check.clone(),
-        &jormungandr,
-    )
-    .unwrap();
-
-    let query_response = explorer
-        .stake_pool(stake_pool_update.id().to_string(), stake_pool_block_count)
-        .expect("Non existing stake pool");
-
-    assert!(
-        query_response.errors.is_none(),
-        "{:?}",
-        query_response.errors.unwrap()
-    );
-
-    let explorer_stake_pool = query_response.data.unwrap().stake_pool;
-
-    use std::{thread, time};
-    thread::sleep(time::Duration::from_secs(600));
-
-    //ExplorerVerifier::assert_stake_pool(stake_pool_update.inner(), &explorer_stake_pool, None);
 
     let mem_check = fragment_sender
         .send_owner_delegation(&mut stake_pool_owner, &stake_pool, &jormungandr)
@@ -277,42 +267,6 @@ pub fn explorer_stake_pool_test() {
     //PANIC
     ExplorerVerifier::assert_stake_pool(stake_pool.inner(), &explorer_stake_pool, None);
 
-    let mut stake_pool_update = stake_pool.clone();
-    let mut stake_pool_info = stake_pool_update.info_mut();
-
-    stake_pool_info.reward_account = Some(AccountIdentifier::Single(TestGen::identifier()));
-    stake_pool_info.keys.kes_public_key = testing::static_secret_key::<SumEd25519_12>().to_public();
-
-    let mem_check = fragment_sender
-        .send_pool_update(
-            &mut stake_pool_owner,
-            &stake_pool,
-            &stake_pool_update,
-            &jormungandr,
-        )
-        .unwrap();
-
-    FragmentVerifier::wait_and_verify_is_in_block(
-        Duration::from_secs(2),
-        mem_check.clone(),
-        &jormungandr,
-    )
-    .unwrap();
-
-    let query_response = explorer
-        .stake_pool(stake_pool_update.id().to_string(), stake_pool_block_count)
-        .expect("Non existing stake pool");
-
-    assert!(
-        query_response.errors.is_none(),
-        "{:?}",
-        query_response.errors.unwrap()
-    );
-
-    let explorer_stake_pool = query_response.data.unwrap().stake_pool;
-
-    //ExplorerVerifier::assert_stake_pool(stake_pool_update.inner(), &explorer_stake_pool, None);
-
     fragment_sender
         .send_pool_retire(&mut stake_pool_owner, &stake_pool, &jormungandr)
         .unwrap();
@@ -342,44 +296,23 @@ pub fn explorer_stake_pool_test() {
 #[test]
 pub fn explorer_all_stake_pool_test() {
     let temp_dir = TempDir::new().unwrap();
-    let jcli: JCli = Default::default();
-    let sender = thor::Wallet::default();
-    let receiver = thor::Wallet::default();
-    let bft_leader = create_new_leader_key();
-    let stake_pool_count = 100;
+    let mut faucet = thor::Wallet::default();
+    let mut stake_pool_owner = thor::Wallet::default();
+    let stake_pool = StakePool::new(&stake_pool_owner);
+    let mut full_delegator = thor::Wallet::default();
+    let mut split_delegator = thor::Wallet::default();
+    let stake_pool_owners: Vec<Wallet> = iter::from_fn(|| Some(thor::Wallet::default()))
+        .take(6)
+        .collect();
+    let stake_pool_count = 10;
 
-    let jormungandr = SingleNodeTestBootstrapper::default()
-        .with_bft_secret(bft_leader.signing_key())
-        .with_block0_config(
-            Block0ConfigurationBuilder::default()
-                .with_wallets_having_some_values(vec![&sender, &receiver])
-                .with_block0_consensus(ConsensusType::Bft)
-                .with_slots_per_epoch(20.try_into().unwrap())
-                .with_block_content_max_size(100000.into())
-                .with_consensus_leaders_ids(vec![bft_leader.identifier().into()])
-                .with_consensus_genesis_praos_active_slot_coeff(ActiveSlotCoefficient::MAXIMUM)
-                .with_slot_duration(3.try_into().unwrap())
-                .with_linear_fees(LinearFee::new(1, 1, 1))
-                .with_token(InitialToken {
-                    // FIXME: this works because I know it's the VotePlanBuilder's default, but
-                    // probably should me more explicit.
-                    token_id: TokenIdentifier::from_str(
-                        "00000000000000000000000000000000000000000000000000000000.00000000",
-                    )
-                    .unwrap()
-                    .into(),
-                    policy: MintingPolicy::new().into(),
-                    to: vec![sender.to_initial_token(1_000_000)],
-                }),
-        )
-        .with_node_config(NodeConfigBuilder::default().with_mempool(Mempool {
-            pool_max_entries: 1_000_000usize.into(),
-            log_max_entries: 1_000_000usize.into(),
-            persistent_log: None,
-        }))
-        .build()
-        .start_node(temp_dir)
-        .unwrap();
+    let (jormungandr, stake_pools) = startup::start_stake_pool(
+        &stake_pool_owners,
+        &[stake_pool_owners[0].clone()],
+        Block0ConfigurationBuilder::default(),
+        NodeConfigBuilder::default().with_storage(temp_dir.child("storage").to_path_buf()),
+    )
+    .unwrap();
 
     let params = ExplorerParams::new(
         STAKE_POOL_QUERY_COMPLEXITY_LIMIT,
@@ -388,42 +321,6 @@ pub fn explorer_all_stake_pool_test() {
     );
     let explorer_process = jormungandr.explorer(params).unwrap();
     let explorer = explorer_process.client();
-
-    let fragment_sender = FragmentSender::try_from_with_setup(
-        &jormungandr,
-        libBlockDate::new(1u32, 1u32).next_epoch().into(),
-        FragmentSenderSetup::no_verify(),
-    )
-    .unwrap();
-
-    let time_era = jormungandr.time_era();
-
-    let mut fragment_generator = FragmentGenerator::new(
-        sender,
-        receiver,
-        Some(bft_leader),
-        jormungandr.to_remote(),
-        time_era.slots_per_epoch(),
-        10,
-        2,
-        2,
-        2,
-        fragment_sender,
-    );
-
-    fragment_generator.prepare(libBlockDate::new(1, 0));
-
-    time::wait_for_epoch(2, jormungandr.rest());
-
-    let mem_checks: Vec<MemPoolCheck> = fragment_generator.send_all().unwrap();
-    FragmentVerifier::wait_and_verify_all_are_in_block(
-        Duration::from_secs(2),
-        mem_checks.clone(),
-        &jormungandr,
-    )
-    .unwrap();
-
-    let stake_pools = jormungandr.rest().stake_pools();
 
     let query_response = explorer
         .stake_pools(stake_pool_count)
@@ -436,6 +333,7 @@ pub fn explorer_all_stake_pool_test() {
     );
 
     let explorer_stake_pools = query_response.data.unwrap().tip.all_stake_pools;
+    let stake_pools_inner = stake_pools.iter().map(|x| x.inner().to_owned()).collect();
 
-    //ExplorerVerifier::assert_all_stake_pool(stake_pool.inner(), &explorer_stake_pool, None);
+    ExplorerVerifier::assert_all_stake_pools(stake_pools_inner, explorer_stake_pools);
 }

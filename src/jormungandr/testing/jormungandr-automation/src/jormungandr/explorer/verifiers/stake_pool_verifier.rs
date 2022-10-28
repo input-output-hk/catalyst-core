@@ -1,5 +1,8 @@
 use crate::{
-    jormungandr::explorer::{data::stake_pool::StakePoolStakePool, verifiers::ExplorerVerifier},
+    jormungandr::explorer::{
+        all_stake_pools::AllStakePoolsTipAllStakePools, data::stake_pool::StakePoolStakePool,
+        verifiers::ExplorerVerifier,
+    },
     utils::StakePool,
 };
 use chain_impl_mockchain::transaction::AccountIdentifier;
@@ -11,9 +14,7 @@ impl ExplorerVerifier {
         stake_pool: &StakePool,
         explorer_stake_pool: &StakePoolStakePool,
         retirement_time: core::option::Option<TimeOffsetSeconds>,
-    )
-    /*-> Result<(), VerifierError>*/
-    {
+    ) {
         assert_eq!(explorer_stake_pool.id, stake_pool.id().to_string());
         assert_eq!(
             explorer_stake_pool.registration.management_threshold as u8,
@@ -143,5 +144,11 @@ impl ExplorerVerifier {
                     .unwrap()
             );
         }
+    }
+
+    pub fn assert_all_stake_pools(
+        stake_pool: Vec<StakePool>,
+        explorer_stake_pools: AllStakePoolsTipAllStakePools,
+    ) {
     }
 }

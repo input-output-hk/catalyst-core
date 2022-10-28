@@ -29,3 +29,11 @@ with the following command:
 ```
 jsdoc pkg -c ../../jsdoc.json -d pkg/doc -R README.md
 ```
+
+## Tests
+
+requirements node
+
+```
+
+```

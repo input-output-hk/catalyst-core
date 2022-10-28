@@ -168,6 +168,8 @@ mod test {
         queries::api_tokens::query_token_data_by_token,
     };
 
+    const TEST_DATABASE_URL_ENV_KEY: &str = "TEST_DATABASE_URL";
+
     #[test]
     fn generate_token() {
         let size = 10;
@@ -186,8 +188,11 @@ mod test {
 
     #[test]
     fn add_token() {
+        let db_url =
+            std::env::var(TEST_DATABASE_URL_ENV_KEY).expect("Missing test database URL env var");
+
         let tokens = ApiTokenCmd::generate(10, 10);
-        let connection_pool = load_db_connection_pool("").unwrap();
+        let connection_pool = load_db_connection_pool(&db_url).unwrap();
         initialize_db_with_migration(&connection_pool.get().unwrap());
         let db_conn = connection_pool.get().unwrap();
         ApiTokenCmd::add_tokens(&tokens, &db_conn).unwrap();

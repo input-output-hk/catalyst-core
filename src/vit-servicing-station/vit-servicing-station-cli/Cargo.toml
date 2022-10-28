@@ -22,6 +22,3 @@ tempfile = "3.1.0"
 thiserror = "1.0"
 vit-servicing-station-lib = { path = "../vit-servicing-station-lib" }
 
-[dev-dependencies]
-diesel = { version = "1.4.5", features = ["sqlite", "r2d2"] }
-diesel_migrations = "1.4.0"

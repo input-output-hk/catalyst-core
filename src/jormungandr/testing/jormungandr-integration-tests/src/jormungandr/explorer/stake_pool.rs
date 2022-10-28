@@ -1,40 +1,12 @@
-use crate::startup::{self, create_new_leader_key, SingleNodeTestBootstrapper};
+use crate::startup::{self, SingleNodeTestBootstrapper};
 use assert_fs::{prelude::*, TempDir};
-use chain_addr::Discrimination;
-use chain_core::property::BlockDate as propertyBlockDate;
-use chain_crypto::{testing, PublicKey, SumEd25519_12};
-use chain_impl_mockchain::{
-    account::DelegationType,
-    block::BlockDate,
-    certificate::{VoteAction, VotePlan},
-    chaintypes::ConsensusType,
-    fee::LinearFee,
-    ledger::governance::TreasuryGovernanceAction,
-    testing::{data::Wallet as chainWallet, StakePoolBuilder, TestGen},
-    tokens::{identifier::TokenIdentifier, minting_policy::MintingPolicy},
-    transaction::AccountIdentifier,
-    value::Value,
-    vote::Choice,
+use jormungandr_automation::jormungandr::{
+    explorer::{configuration::ExplorerParams, verifiers::ExplorerVerifier},
+    Block0ConfigurationBuilder, NodeConfigBuilder,
 };
-use jormungandr_automation::{
-    jcli::JCli,
-    jormungandr::{
-        explorer::{configuration::ExplorerParams, verifiers::ExplorerVerifier},
-        Block0ConfigurationBuilder, MemPoolCheck, NodeConfigBuilder,
-    },
-    testing::{
-        time::{self, wait_for_date},
-        VotePlanBuilder,
-    },
-};
-use jormungandr_lib::interfaces::{
-    ActiveSlotCoefficient, BlockDate as libBlockDate, InitialToken, KesUpdateSpeed, Mempool,
-};
-use mjolnir::generators::FragmentGenerator;
-use std::{collections::HashMap, iter, num::NonZeroU64, str::FromStr, time::Duration};
+use std::{iter, time::Duration};
 use thor::{
-    Block0ConfigurationBuilderExtension, BlockDateGenerator::Fixed, CommitteeDataManager,
-    FragmentBuilder, FragmentSender, FragmentSenderSetup, FragmentVerifier, StakePool, Wallet,
+    Block0ConfigurationBuilderExtension, FragmentSender, FragmentVerifier, StakePool, Wallet,
 };
 
 const STAKE_POOL_QUERY_COMPLEXITY_LIMIT: u64 = 100;
@@ -66,7 +38,7 @@ pub fn explorer_not_existing_stake_pool_test() {
     let stake_pool_id = stake_pool.id().to_string();
 
     let query_response = explorer
-        .stake_pool(stake_pool_id.clone(), stake_pool_block_count)
+        .stake_pool(stake_pool_id, stake_pool_block_count)
         .expect("Non existing stake pool");
 
     assert!(
@@ -134,18 +106,14 @@ pub fn explorer_stake_pool_test() {
     let mem_check = fragment_sender
         .send_pool_update(
             &mut faucet,
-            &initial_stake_pool,
+            initial_stake_pool,
             &stake_pool_update,
             &jormungandr,
         )
         .unwrap();
 
-    FragmentVerifier::wait_and_verify_is_in_block(
-        Duration::from_secs(2),
-        mem_check.clone(),
-        &jormungandr,
-    )
-    .unwrap();
+    FragmentVerifier::wait_and_verify_is_in_block(Duration::from_secs(2), mem_check, &jormungandr)
+        .unwrap();
 
     let query_response = explorer
         .stake_pool(initial_stake_pool.id().to_string(), stake_pool_block_count)
@@ -157,7 +125,7 @@ pub fn explorer_stake_pool_test() {
         query_response.errors.unwrap()
     );
 
-    let explorer_stake_pool = query_response.data.unwrap().stake_pool;
+    let _explorer_stake_pool = query_response.data.unwrap().stake_pool;
 
     // ExplorerVerifier::assert_stake_pool(stake_pool_update.inner(), &explorer_stake_pool, None);
 
@@ -167,12 +135,8 @@ pub fn explorer_stake_pool_test() {
         .send_pool_registration(&mut stake_pool_owner, &stake_pool, &jormungandr)
         .expect("Error while sending registration certificate for stake pool owner");
 
-    FragmentVerifier::wait_and_verify_is_in_block(
-        Duration::from_secs(2),
-        mem_check.clone(),
-        &jormungandr,
-    )
-    .unwrap();
+    FragmentVerifier::wait_and_verify_is_in_block(Duration::from_secs(2), mem_check, &jormungandr)
+        .unwrap();
 
     let query_response = explorer
         .stake_pool(stake_pool_id.clone(), stake_pool_block_count)
@@ -192,12 +156,8 @@ pub fn explorer_stake_pool_test() {
         .send_owner_delegation(&mut stake_pool_owner, &stake_pool, &jormungandr)
         .unwrap();
 
-    FragmentVerifier::wait_and_verify_is_in_block(
-        Duration::from_secs(2),
-        mem_check.clone(),
-        &jormungandr,
-    )
-    .unwrap();
+    FragmentVerifier::wait_and_verify_is_in_block(Duration::from_secs(2), mem_check, &jormungandr)
+        .unwrap();
 
     let query_response = explorer
         .stake_pool(stake_pool_id.clone(), stake_pool_block_count)
@@ -217,12 +177,8 @@ pub fn explorer_stake_pool_test() {
         .send_full_delegation(&mut full_delegator, &stake_pool, &jormungandr)
         .unwrap();
 
-    FragmentVerifier::wait_and_verify_is_in_block(
-        Duration::from_secs(2),
-        mem_check.clone(),
-        &jormungandr,
-    )
-    .unwrap();
+    FragmentVerifier::wait_and_verify_is_in_block(Duration::from_secs(2), mem_check, &jormungandr)
+        .unwrap();
 
     let query_response = explorer
         .stake_pool(stake_pool_id.clone(), stake_pool_block_count)
@@ -254,7 +210,7 @@ pub fn explorer_stake_pool_test() {
     .unwrap();
 
     let query_response = explorer
-        .stake_pool(stake_pool_id.clone(), stake_pool_block_count)
+        .stake_pool(stake_pool_id, stake_pool_block_count)
         .expect("Non existing stake pool");
 
     assert!(
@@ -271,12 +227,8 @@ pub fn explorer_stake_pool_test() {
         .send_pool_retire(&mut stake_pool_owner, &stake_pool, &jormungandr)
         .unwrap();
 
-    FragmentVerifier::wait_and_verify_is_in_block(
-        Duration::from_secs(2),
-        mem_check.clone(),
-        &jormungandr,
-    )
-    .unwrap();
+    FragmentVerifier::wait_and_verify_is_in_block(Duration::from_secs(2), mem_check, &jormungandr)
+        .unwrap();
 
     let query_response = explorer
         .stake_pool(stake_pool.id().to_string(), stake_pool_block_count)
@@ -296,11 +248,11 @@ pub fn explorer_stake_pool_test() {
 #[test]
 pub fn explorer_all_stake_pool_test() {
     let temp_dir = TempDir::new().unwrap();
-    let mut faucet = thor::Wallet::default();
-    let mut stake_pool_owner = thor::Wallet::default();
-    let stake_pool = StakePool::new(&stake_pool_owner);
-    let mut full_delegator = thor::Wallet::default();
-    let mut split_delegator = thor::Wallet::default();
+    let _faucet = thor::Wallet::default();
+    let stake_pool_owner = thor::Wallet::default();
+    let _stake_pool = StakePool::new(&stake_pool_owner);
+    let _full_delegator = thor::Wallet::default();
+    let _split_delegator = thor::Wallet::default();
     let stake_pool_owners: Vec<Wallet> = iter::from_fn(|| Some(thor::Wallet::default()))
         .take(6)
         .collect();

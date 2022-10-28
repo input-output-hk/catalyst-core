@@ -35,7 +35,7 @@ impl ExplorerVerifier {
             if stake_pool
                 .info()
                 .operators
-                .contains(&Self::decode_bech32_pk(&operator))
+                .contains(&Self::decode_bech32_pk(operator))
             {
                 operators_matching += 1;
             }
@@ -51,7 +51,7 @@ impl ExplorerVerifier {
             if stake_pool
                 .info()
                 .owners
-                .contains(&Self::decode_bech32_pk(&owner))
+                .contains(&Self::decode_bech32_pk(owner))
             {
                 owners_matching += 1;
             }
@@ -147,8 +147,8 @@ impl ExplorerVerifier {
     }
 
     pub fn assert_all_stake_pools(
-        stake_pool: Vec<StakePool>,
-        explorer_stake_pools: AllStakePoolsTipAllStakePools,
+        _stake_pool: Vec<StakePool>,
+        _explorer_stake_pools: AllStakePoolsTipAllStakePools,
     ) {
     }
 }

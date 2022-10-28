@@ -76,15 +76,17 @@ pub fn batch_insert_token_data(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::db::{
-        load_db_connection_pool, migrations as db_testing, models::api_tokens::ApiTokenData,
-        DbConnectionPool,
+    use crate::{
+        db::{migrations as db_testing, models::api_tokens::ApiTokenData},
+        v0::context::test::new_default_test_shared_context,
     };
 
     #[tokio::test]
     async fn api_token_insert_and_retrieve() {
         // initialize db
-        let pool: DbConnectionPool = load_db_connection_pool("").unwrap();
+        let shared_context = new_default_test_shared_context();
+
+        let pool = &shared_context.read().await.db_connection_pool;
         db_testing::initialize_db_with_migration(&pool.get().unwrap());
 
         // checks

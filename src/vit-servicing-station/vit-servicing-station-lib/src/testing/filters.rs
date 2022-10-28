@@ -9,17 +9,17 @@ use warp::{
 
 use crate::{
     db::{migrations::initialize_db_with_migration, DbConnection},
-    v0::context::{test::new_in_memmory_db_test_shared_context, SharedContext},
+    v0::context::{test::new_default_test_shared_context, SharedContext},
 };
 
-/// Initialize an in-memory database with migrations and return a tuple containing:
+/// Initialize database with migrations and return a tuple containing:
 ///  - a context backed by that database
 ///  - a connection to the database
 pub async fn test_context() -> (
     impl Filter<Extract = (SharedContext,), Error = Infallible> + Clone,
     PooledConnection<ConnectionManager<DbConnection>>,
 ) {
-    let shared_context = new_in_memmory_db_test_shared_context();
+    let shared_context = new_default_test_shared_context();
 
     let conn = shared_context
         .read()

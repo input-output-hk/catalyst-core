@@ -27,13 +27,13 @@ pub mod test {
         models::funds::{test as funds_testing, Fund},
         queries::funds::FundWithNext,
     };
-    use crate::v0::context::test::new_in_memmory_db_test_shared_context;
+    use crate::v0::context::test::new_default_test_shared_context;
     use warp::Filter;
 
     #[tokio::test]
     async fn get_fund_handler() {
         // build context
-        let shared_context = new_in_memmory_db_test_shared_context();
+        let shared_context = new_default_test_shared_context();
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
 
@@ -70,7 +70,7 @@ pub mod test {
     #[tokio::test]
     async fn get_fund_by_id_handler() {
         // build context
-        let shared_context = new_in_memmory_db_test_shared_context();
+        let shared_context = new_default_test_shared_context();
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
 
@@ -99,7 +99,7 @@ pub mod test {
 
     #[tokio::test]
     async fn get_all_funds_handler() {
-        let shared_context = new_in_memmory_db_test_shared_context();
+        let shared_context = new_default_test_shared_context();
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
 
@@ -130,7 +130,7 @@ pub mod test {
 
     #[tokio::test]
     async fn put_fund_handler() {
-        let shared_context = new_in_memmory_db_test_shared_context();
+        let shared_context = new_default_test_shared_context();
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
 

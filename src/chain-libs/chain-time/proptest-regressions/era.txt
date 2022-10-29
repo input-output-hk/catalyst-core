@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+xx c2b117681da4bc2d8fcf64810b2e17bafa546ec607693a0936e9a01041507869 # shrinks to input = _TimeEraFromEraToSlotArgs { epoch_pos: EpochPosition { epoch: Epoch(0), slot: EpochSlotOffset(1) } }
+xx 45cbb17d32338bdbd3be86aab192f6215274d62193321790c29e3260b40531b2 # shrinks to input = _TimeEraSlotEraBijectionArgs { slot: Slot(4361628529221365495), era: TimeEra { epoch_start: Epoch(1), slot_start: Slot(0), slots_per_epoch: 0 } }

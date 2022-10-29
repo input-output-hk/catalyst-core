@@ -15,6 +15,8 @@ jobs:
         os: [ubuntu-latest]
         profile: [debug]
         toolchain: [stable]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+        totalShards: [8]
     env:
       RUSTFLAGS: -D warnings
       RUST_BACKTRACE: 1
@@ -24,24 +26,11 @@ jobs:
       - name: Set up environment variables and cargo config
         shell: bash
         run: |
-          if [ '${{ matrix.profile }}' == release ]; then
-            echo "CARGO_FLAGS=$CARGO_FLAGS --release" >> $GITHUB_ENV
-          fi
           case '${{ matrix.os }}' in
             ubuntu-latest)  features=systemd,gelf ;;
             *)              features=gelf ;;
           esac
           echo "JORMUNGANDR_FEATURES=$features" >> $GITHUB_ENV
-
-          if [ '${{ matrix.profile }}' == debug ] && [ '${{ matrix.os }}' == windows-latest ]; then
-            echo "RUSTFLAGS=$RUSTFLAGS -C link-args=/STACK:2000000" >> $GITHUB_ENV
-          fi
-
-          mkdir .cargo
-          cat > .cargo/config.toml <<EOF
-          [profile.release]
-          lto = "thin"
-          EOF
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.toolchain }}
@@ -51,49 +40,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Build jormungandr
-        uses: actions-rs/cargo@v1
-        timeout-minutes: 30
-        with:
-          command: build
-          args: |
-            --manifest-path src/jormungandr/jormungandr/Cargo.toml
-            --no-default-features
-            --features ${{ env.JORMUNGANDR_FEATURES }}
-            ${{ env.CARGO_FLAGS }}
-
-      - name: Build jcli
-        uses: actions-rs/cargo@v1
-        timeout-minutes: 30
-        with:
-          command: build
-          args: -p jcli ${{ env.CARGO_FLAGS }}
-
-      - name: Build tests
-        uses: actions-rs/cargo@v1
-        timeout-minutes: 30
-        with:
-          command: build
-          args: --tests --all-features ${{ env.CARGO_FLAGS }}
-
-      - name: Build explorer
-        uses: actions-rs/cargo@v1
-        timeout-minutes: 30
-        with:
-          command: build
-          args: -p explorer ${{ env.CARGO_FLAGS }}
-
       - name: Run tests
-        uses: actions-rs/cargo@v1
-        timeout-minutes: 90
+        uses: cachix/install-nix-action@v18
         with:
-          command: test
-          args: --tests ${{ env.CARGO_FLAGS }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # TMPDIR and TMP are used respectively on unix and windows
-          TMPDIR: ${{ runner.temp }}
-          TMP: ${{ runner.temp }}
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+      - run: nix develop --command ./ci/jormungandr_tests.sh
 
       - name: Pack logs from failed tests
         if: ${{ failure() }}

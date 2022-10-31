@@ -122,4 +122,9 @@ function vote_cast_private_test() {
   let fragment = wallet.sign_transaction(settings, block_date, 0, certificate);
 
   wallet.confirm_transaction(fragment.id());
+
+  
 }
+
+vote_cast_public_test();
+vote_cast_private_test();

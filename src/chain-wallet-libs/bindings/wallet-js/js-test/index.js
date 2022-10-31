@@ -115,6 +115,11 @@ function vote_cast_private_test() {
       175, 26, 108, 214, 151, 161, 63, 7, 174, 7, 88, 137, 16, 206, 57, 201, 39,
     ]
   );
+  
+  vote_plan = wasm_wallet.VotePlanId.from_bytes([
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+  ]);
   let vote_cast = wasm_wallet.VoteCast.new(vote_plan, 8, payload);
 
   let block_date = wasm_wallet.BlockDate.new(0, 1);
@@ -122,8 +127,6 @@ function vote_cast_private_test() {
   let fragment = wallet.sign_transaction(settings, block_date, 0, certificate);
 
   wallet.confirm_transaction(fragment.id());
-
-  
 }
 
 vote_cast_public_test();

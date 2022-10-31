@@ -1,5 +1,4 @@
-// import * as wasm_wallet from "wallet-js";
-const wasm_wallet = import("wallet-js");
+var assert = require("assert");
 
 const MAX_LANES = 8;
 
@@ -62,7 +61,7 @@ const block0 = [
   248, 62, 218, 117, 95, 225, 133, 137, 253, 55, 26, 145, 16, 11,
 ];
 
-function generate_wallet() {
+function generate_wallet(wasm_wallet) {
   let wallet = wasm_wallet.Wallet.import_keys(private_key);
 
   let spending_counters = wasm_wallet.SpendingCounters.new();
@@ -73,62 +72,78 @@ function generate_wallet() {
 
   wallet.set_state(BigInt(1000), spending_counters);
 
+  assert(wallet.total_value() === BigInt(1000))
+
   return wallet;
 }
 
-function generate_settings() {
+function generate_settings(wasm_wallet) {
   let settings = wasm_wallet.Settings.new(block0);
   return settings;
 }
 
-function vote_cast_public_test() {
-  let wallet = generate_wallet();
-  let settings = generate_settings();
+describe("vote cast certificate tests", function () {
+  it("public", async function () {
+    const wasm_wallet = await import("wallet-js");
 
-  let vote_plan = wasm_wallet.VotePlanId.from_bytes([
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-  ]);
-  let payload = wasm_wallet.Payload.new_public(0);
-  let vote_cast = wasm_wallet.VoteCast.new(vote_plan, 8, payload);
+    let wallet = generate_wallet(wasm_wallet);
+    let settings = generate_settings(wasm_wallet);
 
-  let block_date = wasm_wallet.BlockDate.new(0, 1);
-  let certificate = wasm_wallet.Certificate.vote_cast(vote_cast);
-  let fragment = wallet.sign_transaction(settings, block_date, 0, certificate);
+    let vote_plan = wasm_wallet.VotePlanId.from_bytes([
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+      21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+    ]);
+    let payload = wasm_wallet.Payload.new_public(0);
+    let vote_cast = wasm_wallet.VoteCast.new(vote_plan, 8, payload);
 
-  wallet.confirm_transaction(fragment.id());
-}
+    let block_date = wasm_wallet.BlockDate.new(0, 1);
+    let certificate = wasm_wallet.Certificate.vote_cast(vote_cast);
+    let fragment = wallet.sign_transaction(
+      settings,
+      block_date,
+      0,
+      certificate
+    );
 
-function vote_cast_private_test() {
-  let wallet = generate_wallet();
-  let settings = generate_settings();
+    wallet.confirm_transaction(fragment.id());
+  });
 
-  let vote_plan = wasm_wallet.VotePlanId.from_bytes([
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-  ]);
-  let payload = wasm_wallet.Payload.new_private(
-    vote_plan,
-    4,
-    0,
-    [
-      190, 216, 136, 135, 171, 224, 168, 79, 100, 105, 31, 224, 189, 250, 61,
-      175, 26, 108, 214, 151, 161, 63, 7, 174, 7, 88, 137, 16, 206, 57, 201, 39,
-    ]
-  );
-  
-  vote_plan = wasm_wallet.VotePlanId.from_bytes([
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-  ]);
-  let vote_cast = wasm_wallet.VoteCast.new(vote_plan, 8, payload);
+  it("private", async function () {
+    const wasm_wallet = await import("wallet-js");
 
-  let block_date = wasm_wallet.BlockDate.new(0, 1);
-  let certificate = wasm_wallet.Certificate.vote_cast(vote_cast);
-  let fragment = wallet.sign_transaction(settings, block_date, 0, certificate);
+    let wallet = generate_wallet(wasm_wallet);
+    let settings = generate_settings(wasm_wallet);
 
-  wallet.confirm_transaction(fragment.id());
-}
+    let vote_plan = wasm_wallet.VotePlanId.from_bytes([
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+      21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+    ]);
+    let payload = wasm_wallet.Payload.new_private(
+      vote_plan,
+      4,
+      0,
+      [
+        190, 216, 136, 135, 171, 224, 168, 79, 100, 105, 31, 224, 189, 250, 61,
+        175, 26, 108, 214, 151, 161, 63, 7, 174, 7, 88, 137, 16, 206, 57, 201,
+        39,
+      ]
+    );
 
-vote_cast_public_test();
-vote_cast_private_test();
+    vote_plan = wasm_wallet.VotePlanId.from_bytes([
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+      21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+    ]);
+    let vote_cast = wasm_wallet.VoteCast.new(vote_plan, 8, payload);
+
+    let block_date = wasm_wallet.BlockDate.new(0, 1);
+    let certificate = wasm_wallet.Certificate.vote_cast(vote_cast);
+    let fragment = wallet.sign_transaction(
+      settings,
+      block_date,
+      0,
+      certificate
+    );
+
+    wallet.confirm_transaction(fragment.id());
+  });
+});

@@ -1,0 +1,22 @@
+[package]
+name = "mainnet-lib"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cardano-serialization-lib = "11.1.0"
+jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
+tempdir = "0.3.7"
+snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib", features=["proptest"] }
+thor = { path = "../../jormungandr/testing/thor" }
+chain-addr           = { path = "../../chain-libs/chain-addr", features = [ "property-test-api" ] }
+chain-crypto         = { path = "../../chain-libs/chain-crypto", features = [ "property-test-api" ] }
+serde = { version = "1", features = ["derive"] }
+thiserror = "1.0"
+hex = "0.4"
+bech32 = "0.8.1"
+rand = "0.8"
+assert_fs = "1.0"
+serde_json = "1.0"

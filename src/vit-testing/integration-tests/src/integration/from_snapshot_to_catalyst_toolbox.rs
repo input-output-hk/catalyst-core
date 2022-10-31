@@ -3,7 +3,7 @@ use crate::common::snapshot_filter::SnapshotFilterSource;
 use crate::common::{MainnetWallet, RepsVoterAssignerSource};
 use assert_fs::TempDir;
 use fraction::Fraction;
-use mainnet_tools::network::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
+use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
 use snapshot_lib::VoterHIR;
 use snapshot_trigger_service::config::JobParameters;
 use vitup::config::{DIRECT_VOTING_GROUP, REP_VOTING_GROUP};
@@ -26,7 +26,7 @@ pub fn cip36_mixed_delegation() {
         .with(alice.as_direct_voter())
         .with(bob.as_delegator(vec![(&david, 1)]))
         .with(clarice.as_delegator(vec![(&david, 1), (&edgar, 1)]))
-        .build();
+        .build(&testing_directory);
 
     let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
         .filter(
@@ -73,7 +73,7 @@ pub fn voting_power_cap_for_reps() {
         .with(alice.as_delegator(vec![(&david, 1)]))
         .with(bob.as_delegator(vec![(&edgar, 1)]))
         .with(clarice.as_delegator(vec![(&fred, 1)]))
-        .build();
+        .build(&testing_directory);
 
     let reps_circle_size = reps.len();
 
@@ -104,7 +104,7 @@ pub fn voting_power_cap_for_direct() {
         .with(alice.as_direct_voter())
         .with(bob.as_direct_voter())
         .with(clarice.as_direct_voter())
-        .build();
+        .build(&testing_directory);
 
     let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
         .filter(
@@ -135,7 +135,7 @@ pub fn voting_power_cap_for_mix() {
         .with(alice.as_direct_voter())
         .with(bob.as_direct_voter())
         .with(clarice.as_delegator(vec![(&david, 1)]))
-        .build();
+        .build(&testing_directory);
 
     let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
         .filter_default(&reps)

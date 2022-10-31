@@ -1,3 +1,4 @@
+use crate::data_provider::DataProvider;
 use cardano_serialization_lib::address::{Address, NetworkInfo, RewardAddress};
 use cardano_serialization_lib::chain_crypto::Blake2b256;
 use cardano_serialization_lib::crypto::Ed25519Signature;
@@ -11,7 +12,6 @@ use color_eyre::eyre::{Context, Result};
 use microtype::Microtype;
 
 use crate::model::{network_info, Delegations, Output, Reg, SlotNo, StakeVKey, TestnetMagic};
-use crate::Db;
 
 /// Calculate voting power info by querying a db-sync instance
 ///
@@ -30,7 +30,7 @@ use crate::Db;
 /// Returns an error if either of `lower` or `upper` doesn't fit in an `i64`
 #[instrument]
 pub fn voting_power(
-    db: &Db,
+    db: &dyn DataProvider,
     min_slot: Option<SlotNo>,
     max_slot: Option<SlotNo>,
     testnet_magic: Option<TestnetMagic>,

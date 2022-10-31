@@ -20,11 +20,10 @@ extern crate tracing;
 extern crate diesel;
 
 mod cli;
+mod data_provider;
 mod db;
 mod logic;
 mod model;
-
-#[cfg(test)]
 mod testing;
 
 // this export style forces us to be explicit about what is in the public API
@@ -33,4 +32,5 @@ mod exports {
     pub use crate::cli::Args;
     pub use crate::db::{Conn, Db, DbConfig};
     pub use crate::logic::voting_power;
+    pub use crate::testing::*;
 }

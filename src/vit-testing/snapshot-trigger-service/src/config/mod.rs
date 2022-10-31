@@ -3,7 +3,6 @@ mod job;
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
 pub use job::JobParameters;
-use mainnet_tools::voting_tools::VotingToolsMock;
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::path::Path;

@@ -3,9 +3,9 @@ pub mod fake;
 
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
+use cardano_serialization_lib::metadata::GeneralTransactionMetadata;
 use command::PATH_TO_DYNAMIC_CONTENT;
 pub use command::{Error, VoterRegistrationCommand};
-use snapshot_lib::registration::VotingRegistration;
 use std::env;
 use std::io::Write;
 use std::path::Path;
@@ -25,11 +25,7 @@ impl Default for VoterRegistrationMock {
 }
 
 impl VoterRegistrationMock {
-    pub fn with_response(
-        self,
-        voting_registration: VotingRegistration,
-        temp_dir: &TempDir,
-    ) -> Self {
+    pub fn with_response(self, metadata: GeneralTransactionMetadata, temp_dir: &TempDir) -> Self {
         let metadata_file = temp_dir.child("metadata.tmp");
 
         env::set_var(
@@ -43,12 +39,8 @@ impl VoterRegistrationMock {
         );
 
         let mut file = std::fs::File::create(&metadata_file.path()).unwrap();
-        file.write_all(
-            serde_json::to_string(&voting_registration)
-                .unwrap()
-                .as_bytes(),
-        )
-        .unwrap();
+        file.write_all(serde_json::to_string(&metadata).unwrap().as_bytes())
+            .unwrap();
         self
     }
 

@@ -9,7 +9,7 @@ use jormungandr_automation::jcli::JCli;
 use jormungandr_lib::crypto::hash::Hash;
 use jormungandr_lib::interfaces::TallyResult;
 use jormungandr_lib::interfaces::{Tally, VotePlanStatus};
-use mainnet_tools::network::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
+use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
 use snapshot_trigger_service::config::JobParameters;
 use std::path::Path;
 use std::str::FromStr;
@@ -38,7 +38,7 @@ pub fn cip36_and_voting_group_merge() {
         .with(alice.as_direct_voter())
         .with(bob.as_delegator(vec![(&david, 1)]))
         .with(clarice.as_delegator(vec![(&david, 1), (&edgar, 1)]))
-        .build();
+        .build(&testing_directory);
 
     let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
         .filter_default(&reps)

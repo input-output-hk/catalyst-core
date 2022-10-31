@@ -23,7 +23,8 @@ chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain", feature
 vitup = { path = "../vitup"} 
 iapyx = { path = "../iapyx"} 
 valgrind = { path = "../valgrind"} 
-mainnet-tools = { path = "../mainnet-tools"} 
+mainnet-tools = { path = "../mainnet-tools"}
+mainnet-lib = { path = "../mainnet-lib"}
 snapshot-trigger-service = { path = "../snapshot-trigger-service" }
 registration-service = { path = "../registration-service" }
 rand_chacha = "0.2"

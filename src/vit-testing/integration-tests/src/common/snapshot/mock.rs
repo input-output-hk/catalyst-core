@@ -1,20 +1,34 @@
 use crate::common::snapshot::SnapshotServiceStarter;
 use assert_fs::TempDir;
-use mainnet_tools::db_sync::DbSyncInstance;
-use mainnet_tools::voting_tools::VotingToolsMock;
+use mainnet_lib::DbSyncInstance;
 use snapshot_trigger_service::client::SnapshotResult;
-use snapshot_trigger_service::config::{ConfigurationBuilder, JobParameters};
+use snapshot_trigger_service::config::{
+    ConfigurationBuilder, JobParameters, NetworkType, VotingToolsParams,
+};
 
 pub fn do_snapshot(
     db_sync_instance: &DbSyncInstance,
     job_parameters: JobParameters,
     testing_directory: &TempDir,
 ) -> SnapshotResult {
-    let voting_tools =
-        VotingToolsMock::default().connect_to_db_sync(db_sync_instance, testing_directory);
+    let params = VotingToolsParams {
+        bin: Some("fake_snapshot_tool".to_string()),
+        nix_branch: None,
+        network: NetworkType::Mainnet,
+        db: db_sync_instance
+            .db_path()
+            .as_os_str()
+            .to_str()
+            .unwrap()
+            .to_string(),
+        db_user: "fake".to_string(),
+        db_pass: "fake".to_string(),
+        db_host: "fake".to_string(),
+        scale: 1_000_000,
+    };
 
     let configuration = ConfigurationBuilder::default()
-        .with_voting_tools_params(voting_tools.into())
+        .with_voting_tools_params(params)
         .with_tmp_result_dir(testing_directory)
         .build();
 

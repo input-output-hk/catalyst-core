@@ -4,8 +4,8 @@ use crate::common::RepsVoterAssignerSource;
 use assert_fs::TempDir;
 use chain_addr::Discrimination;
 use fraction::Fraction;
-use mainnet_tools::network::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
-use mainnet_tools::wallet::MainnetWallet;
+use mainnet_lib::MainnetWallet;
+use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
 use snapshot_trigger_service::config::JobParameters;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::Block0Initials;
@@ -35,7 +35,7 @@ pub fn cip_36_support() {
         .with(bob.as_representative())
         .with(clarice.as_representative())
         .with(dave.as_delegator(vec![(&bob, 1u8), (&clarice, 1u8)]))
-        .build();
+        .build(&testing_directory);
 
     let snapshot_result = mock::do_snapshot(&db_sync, job_param, &testing_directory);
 

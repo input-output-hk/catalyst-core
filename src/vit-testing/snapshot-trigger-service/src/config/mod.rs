@@ -113,23 +113,6 @@ pub struct VotingToolsParams {
     pub scale: u32,
 }
 
-impl From<VotingToolsMock> for VotingToolsParams {
-    fn from(voting_tools_mock: VotingToolsMock) -> Self {
-        let config = mainnet_tools::db_sync::Settings::default();
-
-        Self {
-            bin: Some(voting_tools_mock.path().to_str().unwrap().to_string()),
-            nix_branch: None,
-            network: NetworkType::Mainnet,
-            db: config.db_name,
-            db_user: config.db_user,
-            db_host: config.db_host,
-            db_pass: config.db_pass,
-            scale: 1_000_000,
-        }
-    }
-}
-
 impl VotingToolsParams {
     pub fn command(&self) -> Result<std::process::Command, Error> {
         if let Some(bin) = &self.bin {

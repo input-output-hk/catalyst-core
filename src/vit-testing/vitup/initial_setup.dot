@@ -2,6 +2,7 @@ digraph protocol {
   subgraph nodes {
     node [ style = filled; color = lightgrey ];
 
+    "Leader1🐍[b]"
     "Wallet_Node🐍"
     "Wallet_Node🐍" -> "Leader3🐍[b]" [ label = "trusts" ; color = blue ]
     "Wallet_Node🐍" -> "Leader2🐍[b]" [ label = "trusts" ; color = blue ]
@@ -9,7 +10,6 @@ digraph protocol {
     "Leader3🐍[b]"
     "Leader3🐍[b]" -> "Leader2🐍[b]" [ label = "trusts" ; color = blue ]
     "Leader3🐍[b]" -> "Leader1🐍[b]" [ label = "trusts" ; color = blue ]
-    "Leader1🐍[b]"
     "Leader2🐍[b]"
     "Leader2🐍[b]" -> "Leader1🐍[b]" [ label = "trusts" ; color = blue ]
   }

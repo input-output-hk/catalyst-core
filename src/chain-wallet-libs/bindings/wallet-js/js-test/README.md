@@ -2,11 +2,11 @@
 
 ## Requirements
 
-Firstly you need to build a wasm package using the following commands
+Firstly you need to build a wasm package from ancestor directory using the following commands
 
 ```
 cd ..
-wasm-pack build --nodejs
+wasm-pack build --nodejs -d pkg
 ```
 
 ## Run

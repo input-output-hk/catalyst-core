@@ -31,9 +31,6 @@ jsdoc pkg -c ../../jsdoc.json -d pkg/doc -R README.md
 ```
 
 ## Tests
-
-requirements node
-
 ```
-
+wasm-pack test <target>
 ```

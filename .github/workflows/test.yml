@@ -12,9 +12,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        profile: [debug]
-        toolchain: [stable]
         shard: [1, 2, 3, 4, 5, 6, 7, 8]
         totalShards: [8]
     env:
@@ -23,20 +20,6 @@ jobs:
       CARGO_FLAGS: --verbose --locked
       CARGO_INCREMENTAL: 0
     steps: 
-      - name: Set up environment variables and cargo config
-        shell: bash
-        run: |
-          case '${{ matrix.os }}' in
-            ubuntu-latest)  features=systemd,gelf ;;
-            *)              features=gelf ;;
-          esac
-          echo "JORMUNGANDR_FEATURES=$features" >> $GITHUB_ENV
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.toolchain }}
-          override: true
-          default: true
-          components: rustfmt
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -55,44 +38,3 @@ jobs:
           path: ${{ runner.temp }}/jormungandr_*
           retention-days: 30
 
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
-          default: true
-          components: clippy
-
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --all-features --all-targets -- -D warnings
-
-  fmt:
-    name: Fmt
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          profile: minimal
-          override: true
-          default: true
-          components: rustfmt
-
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: rustfmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: -- --check

@@ -11,9 +11,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7, 8]
-        totalShards: [8]
     env:
       RUSTFLAGS: -D warnings
       RUST_BACKTRACE: 1
@@ -28,7 +25,7 @@ jobs:
         with:
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      - run: nix develop --command ./ci/jormungandr_tests.sh
+      - run: nix develop --command "./ci/jormungandr_tests.sh 1 1"
 
       - name: Pack logs from failed tests
         if: ${{ failure() }}

@@ -736,7 +736,7 @@ impl From<InternalBlockDate> for BlockDate {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Transaction {
     id: FragmentId,
     block_hashes: Vec<HeaderHash>,
@@ -765,7 +765,7 @@ impl Transaction {
         Transaction {
             id,
             block_hashes: Default::default(),
-            contents: None,
+            contents: Some(ExplorerTransaction::default()),
         }
     }
 

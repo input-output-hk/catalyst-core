@@ -10,7 +10,7 @@ use chain_impl_mockchain::{
     },
     fragment::{ConfigParams, Fragment, FragmentId},
     header::{BlockDate, ChainLength, Epoch, HeaderId as HeaderHash},
-    key::BftLeaderId,
+    key::{BftLeaderId, Hash},
     transaction::{InputEnum, TransactionSlice, Witness},
     value::Value,
     vote::{Choice, EncryptedVote, Options, PayloadType, ProofOfCorrectVote, Weight},
@@ -63,7 +63,7 @@ pub enum BlockProducer {
     BftLeader(BftLeaderId),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExplorerTransaction {
     pub id: FragmentId,
     pub inputs: Vec<ExplorerInput>,
@@ -73,14 +73,27 @@ pub struct ExplorerTransaction {
     pub config_params: Option<ConfigParams>,
 }
 
+impl Default for ExplorerTransaction {
+    fn default() -> Self {
+        Self {
+            id: Hash::zero_hash(),
+            inputs: Default::default(),
+            outputs: Default::default(),
+            certificate: Default::default(),
+            offset_in_block: Default::default(),
+            config_params: Default::default(),
+        }
+    }
+}
+
 /// Unified Input representation for utxo and account inputs as used in the graphql API
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExplorerInput {
     pub address: ExplorerAddress,
     pub value: Value,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExplorerOutput {
     pub address: ExplorerAddress,
     pub value: Value,
@@ -93,7 +106,7 @@ pub struct EpochData {
     pub total_blocks: u32,
 }
 
-#[derive(Eq, PartialEq, Clone, Hash)]
+#[derive(Eq, PartialEq, Clone, Hash, Debug)]
 pub enum ExplorerAddress {
     New(Address),
     Old(OldAddress),

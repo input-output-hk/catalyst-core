@@ -14,5 +14,4 @@ mod functional;
 
 /// Test api for internal tests as well for building mocks and varius testing utils
 /// outside the project
-#[cfg(any(test, feature = "test_api"))]
 pub mod test_api;

@@ -45,6 +45,5 @@ diesel_migrations="2"
 [features]
 default = ["all_tests"]
 all_tests = ["reference_tests", "e2e_tests"]
-test_api = []
 reference_tests = []
 e2e_tests = []

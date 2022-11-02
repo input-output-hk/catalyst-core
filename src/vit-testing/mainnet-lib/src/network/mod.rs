@@ -1,4 +1,4 @@
-use crate::db_sync::DbSyncInstance;
+use crate::db_sync::InMemoryDbSync;
 use crate::wallet::MainnetWallet;
 use assert_fs::TempDir;
 use cardano_serialization_lib::address::Address;
@@ -7,12 +7,12 @@ use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::interfaces::BlockDate;
 use std::collections::HashSet;
 
-/// Mainnet newtor mock. It holds current block date as indicator on which epoch and slot mainnet
+/// Mainnet network mock. It holds current block date as indicator on which epoch and slot mainnet
 /// network currently is. Also struct can have multiple db sync which once register can be notified
 /// on incoming transactions.
 pub struct MainnetNetwork<'a> {
     block_date: BlockDate,
-    observers: Vec<&'a mut DbSyncInstance>,
+    observers: Vec<&'a mut InMemoryDbSync>,
 }
 
 impl Default for MainnetNetwork<'_> {
@@ -33,7 +33,7 @@ impl<'a> MainnetNetwork<'a> {
     }
 
     /// register db sync instance as observer, which will be notified on each incoming transaction
-    pub fn sync_with(&mut self, observer: &'a mut DbSyncInstance) {
+    pub fn sync_with(&mut self, observer: &'a mut InMemoryDbSync) {
         self.observers.push(observer);
     }
 
@@ -64,9 +64,9 @@ impl MainnetNetworkBuilder {
     #[must_use]
     #[allow(clippy::missing_panics_doc)]
     /// Builds dbsync instance and set or representatives identifiers
-    pub fn build(self, temp_dir: &TempDir) -> (DbSyncInstance, HashSet<Identifier>) {
+    pub fn build(self, temp_dir: &TempDir) -> (InMemoryDbSync, HashSet<Identifier>) {
         let mut mainnet_network = MainnetNetwork::default();
-        let mut db_sync_instance = DbSyncInstance::new(temp_dir);
+        let mut db_sync_instance = InMemoryDbSync::new(temp_dir);
 
         mainnet_network.sync_with(&mut db_sync_instance);
 

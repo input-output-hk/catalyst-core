@@ -1,6 +1,6 @@
 use clap::Parser;
 use color_eyre::Result;
-use mainnet_lib::DbSyncInstance;
+use mainnet_lib::InMemoryDbSync;
 use std::{fs::File, io::BufWriter};
 use tracing::debug;
 use voting_tools_rs::{test_api::MockDbProvider, voting_power, Args, DbConfig};
@@ -29,7 +29,7 @@ fn main() -> Result<()> {
         password: db_pass,
     };
 
-    let db_sync_instance = DbSyncInstance::restore(&*db_config.name)?;
+    let db_sync_instance = InMemoryDbSync::restore(&*db_config.name)?;
     let db = MockDbProvider::from(db_sync_instance);
     let outputs = voting_power(&db, min_slot_no, max_slot_no, testnet_magic)?;
 

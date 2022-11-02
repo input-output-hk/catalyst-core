@@ -18,8 +18,11 @@ mod db_sync;
 mod network;
 mod wallet;
 
-pub use db_sync::DbSyncInstance;
+pub use db_sync::InMemoryDbSync;
 pub use network::{
     MainnetNetwork, MainnetNetworkBuilder, MainnetWalletState, MainnetWalletStateBuilder,
 };
-pub use wallet::MainnetWallet;
+pub use wallet::{
+    MainnetWallet, RegistrationBuilder, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
+    REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
+};

@@ -29,7 +29,8 @@ mod testing;
 // this export style forces us to be explicit about what is in the public API
 pub use exports::*;
 mod exports {
-    pub use crate::cli::Args;
+    pub use crate::cli::{Args, DryRunCommand};
+    pub use crate::data_provider::DataProvider;
     pub use crate::db::{Conn, Db, DbConfig};
     pub use crate::logic::voting_power;
     pub use crate::testing::*;

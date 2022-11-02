@@ -1,12 +1,16 @@
 mod registration;
 
-use crate::wallet::registration::RegistrationBuilder;
+pub use crate::wallet::registration::{
+    RegistrationBuilder, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
+    REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
+};
 use cardano_serialization_lib::address::{NetworkInfo, RewardAddress, StakeCredential};
 use cardano_serialization_lib::crypto::{PrivateKey, PublicKey};
 use cardano_serialization_lib::metadata::GeneralTransactionMetadata;
 use chain_addr::Discrimination;
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::interfaces::Address;
+use rand::{CryptoRng, RngCore};
 use snapshot_lib::registration::Delegations;
 
 /// Represents Cardano mainnet wallet which generate registration transaction metadata
@@ -25,7 +29,17 @@ impl MainnetWallet {
     /// Panics on key generation error
     #[must_use]
     pub fn new(stake: u64) -> Self {
-        let mut rng = rand::thread_rng();
+        let rng = rand::thread_rng();
+        Self::new_with_rng(stake, rng)
+    }
+
+    /// Creates new wallet with given ada and rng. Currently wallet is purely used for testing purposes,
+    /// therefore we treat stake as arbitrary number not connected to any blockchain state.
+    /// # Panics
+    ///
+    /// Panics on key generation error
+    #[must_use]
+    pub fn new_with_rng<T: RngCore + CryptoRng>(stake: u64, mut rng: T) -> Self {
         Self {
             catalyst: thor::Wallet::new_account(&mut rng, Discrimination::Production),
             stake_key: PrivateKey::generate_ed25519extended().unwrap(),

@@ -17,7 +17,7 @@ itertools = "0.10.5"
 color-eyre = "0.6"
 signals-handler = { path = "../signals-handler" }
 mainnet-lib = { path = "../mainnet-lib" }
-voting_tools_rs = { path = "../../voting-tools-rs",  features = [ "test_api" ]}
+voting_tools_rs = { path = "../../voting-tools-rs"}
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1.2", features = ["macros","rt","process"] }
 jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }

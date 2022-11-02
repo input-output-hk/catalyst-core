@@ -8,6 +8,26 @@ use cardano_serialization_lib::metadata::{
 use cardano_serialization_lib::utils::{BigNum, Int};
 use snapshot_lib::registration::Delegations;
 
+lazy_static::lazy_static! {
+    /// registration metadata index constant
+   pub static ref REGISTRATION_METADATA_IDX: u32 = 61284u32;
+    /// registration signature metadata index constant
+    pub static ref REGISTRATION_SIGNATURE_METADATA_IDX: u32 = 61285u32;
+    /// registration metadata constant
+   pub static ref REGISTRATION_METADATA_LABEL: TransactionMetadatumLabel = TransactionMetadatumLabel::from(*REGISTRATION_METADATA_IDX);
+    ///registration signature metadata constant
+    pub static ref REGISTRATION_METADATA_SIGNATURE_LABEL: TransactionMetadatumLabel = TransactionMetadatumLabel::from(*REGISTRATION_SIGNATURE_METADATA_IDX);
+    /// metadatum label 1 constant
+   pub static ref METADATUM_1: TransactionMetadatum = TransactionMetadatum::new_int(&Int::new_i32(1));
+    /// metadatum label 2 constant
+    pub static ref METADATUM_2: TransactionMetadatum = TransactionMetadatum::new_int(&Int::new_i32(2));
+    /// metadatum label 3 constant
+    pub  static ref METADATUM_3: TransactionMetadatum = TransactionMetadatum::new_int(&Int::new_i32(3));
+    /// metadatum label 4 constant
+    pub  static ref METADATUM_4: TransactionMetadatum = TransactionMetadatum::new_int(&Int::new_i32(4));
+}
+
+/// Responsible for building registration transaction metadata
 pub struct RegistrationBuilder<'a> {
     wallet: &'a MainnetWallet,
     delegations: Option<Delegations>,
@@ -15,6 +35,8 @@ pub struct RegistrationBuilder<'a> {
 }
 
 impl<'a> RegistrationBuilder<'a> {
+    /// Creates registration builder for given wallet
+    #[must_use]
     pub fn new(wallet: &'a MainnetWallet) -> Self {
         Self {
             wallet,
@@ -23,16 +45,26 @@ impl<'a> RegistrationBuilder<'a> {
         }
     }
 
+    /// Defines registration target (self or delegated)
+    #[must_use]
     pub fn to(mut self, delegations: Delegations) -> Self {
         self.delegations = Some(delegations);
         self
     }
 
+    /// Defines slot number for registration transaction. This will be used as nonce
+    #[must_use]
     pub fn on(mut self, slot_no: u64) -> Self {
         self.slot_no = slot_no;
         self
     }
 
+    /// Creates transaction metadata
+    ///
+    /// # Panics
+    ///
+    /// On metadata size overflow
+    #[must_use]
     pub fn build(self) -> GeneralTransactionMetadata {
         let mut meta_map: MetadataMap = MetadataMap::new();
 
@@ -40,7 +72,7 @@ impl<'a> RegistrationBuilder<'a> {
             Delegations::New(_delegations) => (),
             Delegations::Legacy(legacy) => {
                 meta_map.insert(
-                    &TransactionMetadatum::new_int(&Int::new_i32(1)),
+                    &METADATUM_1,
                     &TransactionMetadatum::new_bytes(hex::decode(legacy.to_hex()).unwrap())
                         .unwrap(),
                 );
@@ -48,22 +80,22 @@ impl<'a> RegistrationBuilder<'a> {
         };
 
         meta_map.insert(
-            &TransactionMetadatum::new_int(&Int::new_i32(2)),
+            &METADATUM_2,
             &TransactionMetadatum::new_bytes(self.wallet.stake_public_key().as_bytes()).unwrap(),
         );
         meta_map.insert(
-            &TransactionMetadatum::new_int(&Int::new_i32(3)),
+            &METADATUM_3,
             &TransactionMetadatum::new_bytes(self.wallet.reward_address().to_address().to_bytes())
                 .unwrap(),
         );
         meta_map.insert(
-            &TransactionMetadatum::new_int(&Int::new_i32(4)),
+            &METADATUM_4,
             &TransactionMetadatum::new_int(&Int::new(&BigNum::from(self.slot_no))),
         );
 
         let mut metadata = GeneralTransactionMetadata::new();
         metadata.insert(
-            &BigNum::from(61284u32),
+            &BigNum::from(*REGISTRATION_METADATA_IDX),
             &TransactionMetadatum::new_map(&meta_map),
         );
 
@@ -74,15 +106,14 @@ impl<'a> RegistrationBuilder<'a> {
         let mut meta_sign_map: MetadataMap = MetadataMap::new();
 
         meta_sign_map.insert(
-            &TransactionMetadatum::new_int(&Int::new_i32(1)),
+            &METADATUM_1,
             &TransactionMetadatum::new_bytes(signature.to_bytes()).unwrap(),
         );
 
         metadata.insert(
-            &BigNum::from(61285u32),
+            &BigNum::from(*REGISTRATION_METADATA_IDX),
             &TransactionMetadatum::new_map(&meta_sign_map),
         );
-
         metadata
     }
 }
@@ -97,54 +128,30 @@ pub trait GeneralTransactionMetadataInfo {
 
 impl GeneralTransactionMetadataInfo for GeneralTransactionMetadata {
     fn delegations(&self) -> Vec<u8> {
-        let metadata = self
-            .get(&TransactionMetadatumLabel::from(61284u32))
-            .unwrap();
+        let metadata = self.get(&REGISTRATION_METADATA_LABEL).unwrap();
         let metadata_map = metadata.as_map().unwrap();
-        let metadata = metadata_map
-            .get(&TransactionMetadatum::new_int(&Int::new_i32(1)))
-            .unwrap();
+        let metadata = metadata_map.get(&METADATUM_1).unwrap();
         metadata.as_bytes().unwrap()
     }
 
     fn stake_public_key(&self) -> PublicKey {
-        let metadata = self
-            .get(&TransactionMetadatumLabel::from(61284u32))
-            .unwrap();
+        let metadata = self.get(&REGISTRATION_METADATA_LABEL).unwrap();
         let metadata_map = metadata.as_map().unwrap();
-        PublicKey::from_bytes(
-            &metadata_map
-                .get(&TransactionMetadatum::new_int(&Int::new_i32(2)))
-                .unwrap()
-                .as_bytes()
-                .unwrap(),
-        )
-        .unwrap()
+        PublicKey::from_bytes(&metadata_map.get(&METADATUM_2).unwrap().as_bytes().unwrap()).unwrap()
     }
 
     fn reward_address(&self) -> Address {
-        let metadata = self
-            .get(&TransactionMetadatumLabel::from(61284u32))
-            .unwrap();
+        let metadata = self.get(&REGISTRATION_METADATA_LABEL).unwrap();
         let metadata_map = metadata.as_map().unwrap();
-        Address::from_bytes(
-            metadata_map
-                .get(&TransactionMetadatum::new_int(&Int::new_i32(3)))
-                .unwrap()
-                .as_bytes()
-                .unwrap(),
-        )
-        .unwrap()
+        Address::from_bytes(metadata_map.get(&METADATUM_3).unwrap().as_bytes().unwrap()).unwrap()
     }
 
     fn signature(&self) -> Ed25519Signature {
-        let signature_metadata = self
-            .get(&TransactionMetadatumLabel::from(61285u32))
-            .unwrap();
+        let signature_metadata = self.get(&REGISTRATION_METADATA_SIGNATURE_LABEL).unwrap();
         let signature_metadata_map = signature_metadata.as_map().unwrap();
         Ed25519Signature::from_bytes(
             signature_metadata_map
-                .get(&TransactionMetadatum::new_int(&Int::new_i32(1)))
+                .get(&METADATUM_1)
                 .unwrap()
                 .as_bytes()
                 .unwrap(),
@@ -153,9 +160,7 @@ impl GeneralTransactionMetadataInfo for GeneralTransactionMetadata {
     }
 
     fn registration_blake_256_hash(&self) -> Blake2b256 {
-        let metadata = self
-            .get(&TransactionMetadatumLabel::from(61284u32))
-            .unwrap();
+        let metadata = self.get(&REGISTRATION_METADATA_SIGNATURE_LABEL).unwrap();
         let meta_bytes = metadata.to_bytes();
         Blake2b256::new(&meta_bytes)
     }

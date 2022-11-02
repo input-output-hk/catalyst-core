@@ -16,7 +16,7 @@ const CARDANO_MAINNET_SLOTS_PER_EPOCH: u64 = 43200;
 /// as the only purpose of existance for this struct is to provide catalyst voting registrations
 /// Struct can be persisted and restored from json file using `serde_json`.
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DbSyncInstance {
+pub struct InMemoryDbSync {
     tx_metadata: HashMap<BlockDate, Vec<GeneralTransactionMetadata>>,
     stakes: HashMap<String, u64>,
     settings: Settings,
@@ -24,7 +24,7 @@ pub struct DbSyncInstance {
     db: PathBuf,
 }
 
-impl DbSyncInstance {
+impl InMemoryDbSync {
     /// Creates new object
     #[must_use]
     pub fn new(temp_dir: &TempDir) -> Self {
@@ -38,7 +38,7 @@ impl DbSyncInstance {
 
     /// Path to fake db = json file
     #[must_use]
-    pub fn db_path(&self) -> &PathBuf {
+    pub fn db_path(&self) -> &Path {
         &self.db
     }
 
@@ -151,8 +151,7 @@ impl BlockDateFromCardanoAbsoluteSlotNo for BlockDate {
     fn from_absolute_slot_no(absolute_slot_no: u64) -> Self {
         let epoch = absolute_slot_no / CARDANO_MAINNET_SLOTS_PER_EPOCH;
         let slot = absolute_slot_no - epoch * CARDANO_MAINNET_SLOTS_PER_EPOCH;
-        #[allow(clippy::cast_possible_truncation)]
-        BlockDate::new(epoch as u32, slot as u32)
+        BlockDate::new(u32::try_from(epoch).unwrap(), u32::try_from(slot).unwrap())
     }
 }
 

@@ -6,9 +6,10 @@ use crate::model::{
 use bigdecimal::BigDecimal;
 use cardano_serialization_lib::address::Address;
 use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey};
-use cardano_serialization_lib::metadata::{TransactionMetadatum, TransactionMetadatumLabel};
-use cardano_serialization_lib::utils::Int;
-use mainnet_lib::DbSyncInstance;
+use mainnet_lib::{
+    InMemoryDbSync, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
+    REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
+};
 use std::collections::HashMap;
 use std::str::FromStr;
 
@@ -16,7 +17,7 @@ use std::str::FromStr;
 /// In essence struct keep data in memory and provides query for voting tools logic
 #[derive(Debug)]
 pub struct MockDbProvider {
-    db_sync_instance: DbSyncInstance,
+    db_sync_instance: InMemoryDbSync,
 }
 
 impl DataProvider for MockDbProvider {
@@ -26,15 +27,13 @@ impl DataProvider for MockDbProvider {
         upper: Option<SlotNo>,
     ) -> color_eyre::Result<Vec<Reg>> {
         let lower = if let Some(lower) = lower {
-            #[allow(clippy::cast_sign_loss)]
-            Some(lower.into_i64()? as u64)
+            Some(lower.into_i64()?.try_into()?)
         } else {
             None
         };
 
         let upper = if let Some(upper) = upper {
-            #[allow(clippy::cast_sign_loss)]
-            Some(upper.into_i64()? as u64)
+            Some(upper.into_i64()?.try_into()?)
         } else {
             None
         };
@@ -51,17 +50,15 @@ impl DataProvider for MockDbProvider {
                 registrations
                     .iter()
                     .map(|r| {
-                        let metadata = r.get(&TransactionMetadatumLabel::from(61284u32)).unwrap();
+                        let metadata = r.get(&REGISTRATION_METADATA_LABEL).unwrap();
                         let metadata_map = metadata.as_map().unwrap();
 
                         let signature_metadata =
-                            r.get(&TransactionMetadatumLabel::from(61285u32)).unwrap();
+                            r.get(&REGISTRATION_METADATA_SIGNATURE_LABEL).unwrap();
                         let signature_metadata_map = signature_metadata.as_map().unwrap();
 
                         let delegations = {
-                            let metadata = metadata_map
-                                .get(&TransactionMetadatum::new_int(&Int::new_i32(1)))
-                                .unwrap();
+                            let metadata = metadata_map.get(&METADATUM_1).unwrap();
 
                             if let Ok(data) = metadata.as_bytes() {
                                 Delegations::Legacy(hex::encode(data))
@@ -73,24 +70,16 @@ impl DataProvider for MockDbProvider {
                         tx_id += 1;
 
                         let pub_key = PublicKey::from_bytes(
-                            &metadata_map
-                                .get(&TransactionMetadatum::new_int(&Int::new_i32(2)))
-                                .unwrap()
-                                .as_bytes()
-                                .unwrap(),
+                            &metadata_map.get(&METADATUM_2).unwrap().as_bytes().unwrap(),
                         )
                         .unwrap();
                         let rewards_address = Address::from_bytes(
-                            metadata_map
-                                .get(&TransactionMetadatum::new_int(&Int::new_i32(3)))
-                                .unwrap()
-                                .as_bytes()
-                                .unwrap(),
+                            metadata_map.get(&METADATUM_3).unwrap().as_bytes().unwrap(),
                         )
                         .unwrap();
                         let sig = Ed25519Signature::from_bytes(
                             signature_metadata_map
-                                .get(&TransactionMetadatum::new_int(&Int::new_i32(1)))
+                                .get(&METADATUM_1)
                                 .unwrap()
                                 .as_bytes()
                                 .unwrap(),
@@ -106,7 +95,7 @@ impl DataProvider for MockDbProvider {
                                 slot: SlotNo(
                                     u64::from_str(
                                         &metadata_map
-                                            .get(&TransactionMetadatum::new_int(&Int::new_i32(4)))
+                                            .get(&METADATUM_4)
                                             .unwrap()
                                             .as_int()
                                             .unwrap()
@@ -145,8 +134,8 @@ impl DataProvider for MockDbProvider {
     }
 }
 
-impl From<DbSyncInstance> for MockDbProvider {
-    fn from(db_sync: DbSyncInstance) -> Self {
+impl From<InMemoryDbSync> for MockDbProvider {
+    fn from(db_sync: InMemoryDbSync) -> Self {
         Self {
             db_sync_instance: db_sync,
         }

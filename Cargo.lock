@@ -7648,14 +7648,14 @@ dependencies = [
  "once_cell",
  "paste 1.0.9",
  "static_assertions",
- "uniffi_macros 0.21.0",
+ "uniffi_macros",
 ]
 
 [[package]]
 name = "uniffi_bindgen"
-version = "0.20.0"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "195251b1b0dbb221759ea4d79e3090e5c08a60fc4040c9e945b255def155ea90"
+checksum = "12cc4af3c0180c7e86c4a3acf2b6587af04ba2567b1e948993df10f421796621"
 dependencies = [
  "anyhow",
  "askama",
@@ -7670,19 +7670,8 @@ dependencies = [
  "serde",
  "serde_json",
  "toml",
- "uniffi_meta 0.20.0",
+ "uniffi_meta",
  "weedle2",
-]
-
-[[package]]
-name = "uniffi_build"
-version = "0.20.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74b65ae1c0bac70369bb0d9df6fae578b1ca130bf4cb6203e2636e2d6969dba5"
-dependencies = [
- "anyhow",
- "camino",
- "uniffi_bindgen",
 ]
 
 [[package]]
@@ -7693,25 +7682,7 @@ checksum = "510287c368a9386eb731ebe824a6fc6c82a105e20d020af1aa20519c1c1561db"
 dependencies = [
  "anyhow",
  "camino",
-]
-
-[[package]]
-name = "uniffi_macros"
-version = "0.20.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5efddfb993c5b394a75042c0d144665388af2ad3db628401ab8f4fb6f6d07e54"
-dependencies = [
- "bincode",
- "camino",
- "fs-err",
- "once_cell",
- "proc-macro2",
- "quote",
- "serde",
- "syn",
- "toml",
- "uniffi_build 0.20.0",
- "uniffi_meta 0.20.0",
+ "uniffi_bindgen",
 ]
 
 [[package]]
@@ -7729,17 +7700,8 @@ dependencies = [
  "serde",
  "syn",
  "toml",
- "uniffi_build 0.21.0",
- "uniffi_meta 0.21.0",
-]
-
-[[package]]
-name = "uniffi_meta"
-version = "0.20.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe1767e693cbd11fc22c37a4033d82eb9d891c3862e45329b4a891c1d8395df5"
-dependencies = [
- "serde",
+ "uniffi_build",
+ "uniffi_meta",
 ]
 
 [[package]]
@@ -8214,8 +8176,8 @@ dependencies = [
  "symmetric-cipher",
  "thiserror",
  "uniffi",
- "uniffi_build 0.20.0",
- "uniffi_macros 0.20.0",
+ "uniffi_build",
+ "uniffi_macros",
  "wallet",
  "wallet-core",
 ]

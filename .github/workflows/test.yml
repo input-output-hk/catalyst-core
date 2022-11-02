@@ -20,12 +20,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Debug
+        run: "ls; pwd"
+
       - name: Run tests
         uses: cachix/install-nix-action@v18
         with:
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      - run: nix develop --command $GITHUB_WORKSPACE/.github/jormungandr_tests.sh 1 1
+      - run: nix develop --command .github/jormungandr_tests.sh 1 1
 
       - name: Pack logs from failed tests
         if: ${{ failure() }}

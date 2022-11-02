@@ -67,7 +67,7 @@ pub fn explorer_not_existing_stake_pool_test() {
     );
 }
 
-//#[should_panic]
+#[should_panic] //BUG NPG-3915
 #[test]
 pub fn explorer_stake_pool_test() {
     let temp_dir = TempDir::new().unwrap();
@@ -125,9 +125,9 @@ pub fn explorer_stake_pool_test() {
         query_response.errors.unwrap()
     );
 
-    let _explorer_stake_pool = query_response.data.unwrap().stake_pool;
+    let explorer_stake_pool = query_response.data.unwrap().stake_pool;
 
-    // ExplorerVerifier::assert_stake_pool(stake_pool_update.inner(), &explorer_stake_pool, None);
+    ExplorerVerifier::assert_stake_pool(stake_pool_update.inner(), &explorer_stake_pool, None);
 
     let stake_pool_id = stake_pool.id().to_string();
 
@@ -170,7 +170,8 @@ pub fn explorer_stake_pool_test() {
     );
 
     let explorer_stake_pool = query_response.data.unwrap().stake_pool;
-    //PANIC
+
+    //FIXME add delegation check when NPG-2247 has been fixed
     ExplorerVerifier::assert_stake_pool(stake_pool.inner(), &explorer_stake_pool, None);
 
     let mem_check = fragment_sender
@@ -191,7 +192,8 @@ pub fn explorer_stake_pool_test() {
     );
 
     let explorer_stake_pool = query_response.data.unwrap().stake_pool;
-    //PANIC
+
+    //FIXME add delegation check when NPG-2247 has been fixed
     ExplorerVerifier::assert_stake_pool(stake_pool.inner(), &explorer_stake_pool, None);
 
     let mem_check = fragment_sender
@@ -220,7 +222,8 @@ pub fn explorer_stake_pool_test() {
     );
 
     let explorer_stake_pool = query_response.data.unwrap().stake_pool;
-    //PANIC
+
+    //FIXME add delegation check when NPG-2247 has been fixed
     ExplorerVerifier::assert_stake_pool(stake_pool.inner(), &explorer_stake_pool, None);
 
     fragment_sender

@@ -30,33 +30,20 @@ impl ExplorerVerifier {
             stake_pool.info().operators.len(),
             explorer_stake_pool.registration.operators.len()
         );
-        let mut operators_matching = 0;
-        for operator in &explorer_stake_pool.registration.operators {
-            if stake_pool
-                .info()
-                .operators
-                .contains(&Self::decode_bech32_pk(operator))
-            {
-                operators_matching += 1;
-            }
-        }
-        assert_eq!(stake_pool.info().operators.len(), operators_matching);
+        assert!(explorer_stake_pool.registration.operators.iter().all(|operator| stake_pool
+            .info()
+            .operators
+            .contains(&Self::decode_bech32_pk(operator))));
 
         assert_eq!(
             stake_pool.info().owners.len(),
             explorer_stake_pool.registration.owners.len()
         );
-        let mut owners_matching = 0;
-        for owner in &explorer_stake_pool.registration.owners {
-            if stake_pool
-                .info()
-                .owners
-                .contains(&Self::decode_bech32_pk(owner))
-            {
-                owners_matching += 1;
-            }
-        }
-        assert_eq!(stake_pool.info().owners.len(), owners_matching);
+
+        assert!(explorer_stake_pool.registration.owners.iter().all(|owner| stake_pool
+            .info()
+            .owners
+            .contains(&Self::decode_bech32_pk(owner))));
 
         if stake_pool.info().reward_account.is_some() {
             if let AccountIdentifier::Single(id) =
@@ -170,33 +157,21 @@ impl ExplorerVerifier {
                         stake_pool.info().operators.len(),
                         explorer_stake_pool.registration.operators.len()
                     );
-                    let mut operators_matching = 0;
-                    for operator in &explorer_stake_pool.registration.operators {
-                        if stake_pool
-                            .info()
-                            .operators
-                            .contains(&Self::decode_bech32_pk(operator))
-                        {
-                            operators_matching += 1;
-                        }
-                    }
-                    assert_eq!(stake_pool.info().operators.len(), operators_matching);
+
+                    assert!(explorer_stake_pool.registration.operators.iter().all(|operator| stake_pool
+                        .info()
+                        .operators
+                        .contains(&Self::decode_bech32_pk(operator))));
 
                     assert_eq!(
                         stake_pool.info().owners.len(),
                         explorer_stake_pool.registration.owners.len()
                     );
-                    let mut owners_matching = 0;
-                    for owner in &explorer_stake_pool.registration.owners {
-                        if stake_pool
-                            .info()
-                            .owners
-                            .contains(&Self::decode_bech32_pk(owner))
-                        {
-                            owners_matching += 1;
-                        }
-                    }
-                    assert_eq!(stake_pool.info().owners.len(), owners_matching);
+                    assert!(explorer_stake_pool.registration.owners.iter().all(|owner| stake_pool
+                        .info()
+                        .owners
+                        .contains(&Self::decode_bech32_pk(owner))));
+
 
                     if stake_pool.info().reward_account.is_some() {
                         if let AccountIdentifier::Single(id) =

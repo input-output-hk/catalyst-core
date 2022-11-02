@@ -30,20 +30,28 @@ impl ExplorerVerifier {
             stake_pool.info().operators.len(),
             explorer_stake_pool.registration.operators.len()
         );
-        assert!(explorer_stake_pool.registration.operators.iter().all(|operator| stake_pool
-            .info()
+        assert!(explorer_stake_pool
+            .registration
             .operators
-            .contains(&Self::decode_bech32_pk(operator))));
+            .iter()
+            .all(|operator| stake_pool
+                .info()
+                .operators
+                .contains(&Self::decode_bech32_pk(operator))));
 
         assert_eq!(
             stake_pool.info().owners.len(),
             explorer_stake_pool.registration.owners.len()
         );
 
-        assert!(explorer_stake_pool.registration.owners.iter().all(|owner| stake_pool
-            .info()
+        assert!(explorer_stake_pool
+            .registration
             .owners
-            .contains(&Self::decode_bech32_pk(owner))));
+            .iter()
+            .all(|owner| stake_pool
+                .info()
+                .owners
+                .contains(&Self::decode_bech32_pk(owner))));
 
         if stake_pool.info().reward_account.is_some() {
             if let AccountIdentifier::Single(id) =
@@ -158,20 +166,27 @@ impl ExplorerVerifier {
                         explorer_stake_pool.registration.operators.len()
                     );
 
-                    assert!(explorer_stake_pool.registration.operators.iter().all(|operator| stake_pool
-                        .info()
+                    assert!(explorer_stake_pool
+                        .registration
                         .operators
-                        .contains(&Self::decode_bech32_pk(operator))));
+                        .iter()
+                        .all(|operator| stake_pool
+                            .info()
+                            .operators
+                            .contains(&Self::decode_bech32_pk(operator))));
 
                     assert_eq!(
                         stake_pool.info().owners.len(),
                         explorer_stake_pool.registration.owners.len()
                     );
-                    assert!(explorer_stake_pool.registration.owners.iter().all(|owner| stake_pool
-                        .info()
+                    assert!(explorer_stake_pool
+                        .registration
                         .owners
-                        .contains(&Self::decode_bech32_pk(owner))));
-
+                        .iter()
+                        .all(|owner| stake_pool
+                            .info()
+                            .owners
+                            .contains(&Self::decode_bech32_pk(owner))));
 
                     if stake_pool.info().reward_account.is_some() {
                         if let AccountIdentifier::Single(id) =

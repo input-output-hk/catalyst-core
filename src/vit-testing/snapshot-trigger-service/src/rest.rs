@@ -4,6 +4,7 @@ use futures::FutureExt;
 use futures::{channel::mpsc, StreamExt};
 use jortestkit::web::api_token::TokenError;
 use jortestkit::web::api_token::{APIToken, APITokenManager};
+use scheduler_service_lib::dump_json;
 use scheduler_service_lib::FileListerError;
 use scheduler_service_lib::ServerStopper;
 use std::convert::Infallible;
@@ -26,6 +27,8 @@ pub enum Error {
     CannotParseToken,
     #[error("cannot find job by uuid: {0}")]
     CannotFindJobByStatus(Uuid),
+    #[error("working directory undefined")]
+    WorkingDirectoryUndefined,
 }
 
 fn job_prameters_json_body(
@@ -118,7 +121,13 @@ pub async fn health_handler() -> Result<impl Reply, Rejection> {
 
 pub async fn files_handler(context: ContextLock) -> Result<impl Reply, Rejection> {
     let context_lock = context.lock().unwrap();
-    Ok(dump_json(context_lock.working_directory())?).map(|r| warp::reply::json(&r))
+    let working_dir = if let Some(working_dir) = context_lock.working_directory() {
+        working_dir
+    } else {
+        return Err(warp::reject::custom(Error::WorkingDirectoryUndefined));
+    };
+
+    Ok(dump_json(working_dir)?).map(|r| warp::reply::json(&r))
 }
 
 async fn report_invalid(r: Rejection) -> Result<impl Reply, Infallible> {

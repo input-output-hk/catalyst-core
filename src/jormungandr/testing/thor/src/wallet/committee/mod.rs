@@ -1,4 +1,5 @@
 use assert_fs::{fixture::ChildPath, prelude::PathChild};
+use chain_crypto::bech32::Bech32;
 use chain_impl_mockchain::{
     certificate::{
         DecryptedPrivateTally, DecryptedPrivateTallyError, DecryptedPrivateTallyProposal,
@@ -11,12 +12,11 @@ use chain_vote::{
 };
 use jormungandr_lib::{crypto::account::Identifier, interfaces::CommitteeIdDef};
 use rand_core::{CryptoRng, OsRng, RngCore};
-use chain_crypto::bech32::Bech32;
 
 mod single;
 
-pub use crate::wallet::committee::single::{CommitteeCommunicationData, CommitteeMembershipData};
 use crate::wallet::committee::single::write_to;
+pub use crate::wallet::committee::single::{CommitteeCommunicationData, CommitteeMembershipData};
 
 #[derive(Clone, Debug, Default)]
 pub struct CommitteeCommunicationDataManager {
@@ -163,7 +163,11 @@ impl CommitteeDataManager {
             communication.write_to(directory);
         }
         self.membership.write_to(directory);
-        write_to(self.election_key().to_bech32_str(),directory,"election_public_key.pk");
+        write_to(
+            self.election_key().to_bech32_str(),
+            directory,
+            "election_public_key.pk",
+        );
     }
 
     pub fn election_key(&self) -> ElectionPublicKey {

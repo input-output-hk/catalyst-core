@@ -10,14 +10,14 @@ pub struct ManagerService {
 
 impl Default for ManagerService {
     fn default() -> Self {
-            // Do not create a new runtime when already running within a tokio runtime. This is
-            // pointless and will result into panic when dropping this structure.
-            let runtime = match Handle::try_current() {
-                Ok(_) => None,
-                Err(_) => Some(Runtime::new().unwrap()),
-            };
+        // Do not create a new runtime when already running within a tokio runtime. This is
+        // pointless and will result into panic when dropping this structure.
+        let runtime = match Handle::try_current() {
+            Ok(_) => None,
+            Err(_) => Some(Runtime::new().unwrap()),
+        };
 
-            Self { runtime }
+        Self { runtime }
     }
 }
 

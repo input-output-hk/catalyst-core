@@ -18,7 +18,10 @@ pub struct RemoteRegistrationServiceController {
 impl RemoteRegistrationServiceController {
     pub fn new(configuration: Configuration) -> Self {
         Self {
-            client: RegistrationRestClient::new(format!("http://127.0.0.1:{}", configuration.address().port())),
+            client: RegistrationRestClient::new(format!(
+                "http://127.0.0.1:{}",
+                configuration.address().port()
+            )),
             configuration,
         }
     }

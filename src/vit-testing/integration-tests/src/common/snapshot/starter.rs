@@ -39,7 +39,9 @@ impl SnapshotServiceStarter {
         mut self,
         temp_dir: &TempDir,
     ) -> Result<SnapshotServiceController, Error> {
-        self.configuration.address_mut().set_port(get_available_port());
+        self.configuration
+            .address_mut()
+            .set_port(get_available_port());
         self.start(temp_dir)
     }
 

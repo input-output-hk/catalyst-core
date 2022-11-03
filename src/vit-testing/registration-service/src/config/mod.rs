@@ -1,10 +1,10 @@
 mod builder;
 mod network;
 
-use std::net::SocketAddr;
 pub use builder::ConfigurationBuilder;
 pub use network::NetworkType;
 use serde::{Deserialize, Serialize};
+use std::net::SocketAddr;
 use std::path::Path;
 use std::path::PathBuf;
 use thiserror::Error;

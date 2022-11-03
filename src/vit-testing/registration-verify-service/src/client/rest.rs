@@ -36,10 +36,7 @@ impl RegistrationVerifyRestClient {
             .map(|text| text.replace("'\"'", ""))
     }
 
-    pub fn job_status<S: Into<String>>(
-        &self,
-        id: S,
-    ) -> Result<State,Error> {
+    pub fn job_status<S: Into<String>>(&self, id: S) -> Result<State, Error> {
         self.0.job_status(id).map_err(Into::into)
     }
 
@@ -51,9 +48,9 @@ impl RegistrationVerifyRestClient {
         let job_id = id.into();
         loop {
             let response = self.job_status(job_id.clone())?;
-                if let State::Finished { .. } = response {
-                    return Ok(response);
-                }
+            if let State::Finished { .. } = response {
+                return Ok(response);
+            }
 
             wait.check_timeout()?;
             wait.advance();
@@ -89,7 +86,5 @@ pub enum Error {
     #[error("unexpected response: {0}")]
     UnexpectedResponse(String),
     #[error(transparent)]
-    Scheduler(#[from] scheduler_service_lib::RestError)
-
-
+    Scheduler(#[from] scheduler_service_lib::RestError),
 }

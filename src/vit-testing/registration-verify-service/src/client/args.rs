@@ -1,10 +1,10 @@
 use crate::client::rest::RegistrationVerifyRestClient;
+use crate::context::State;
 use reqwest::blocking::multipart::Form;
 use scheduler_service_lib::{HealthCommand, StatusCommand};
 use std::path::PathBuf;
 use structopt::StructOpt;
 use thiserror::Error;
-use crate::context::State;
 
 #[derive(StructOpt, Debug)]
 pub struct RegistrationVerifyServiceCliCommand {
@@ -121,5 +121,5 @@ pub enum Error {
     #[error("io error")]
     IoError(#[from] std::io::Error),
     #[error(transparent)]
-    Cli(#[from] scheduler_service_lib::CliError)
+    Cli(#[from] scheduler_service_lib::CliError),
 }

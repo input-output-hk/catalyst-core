@@ -119,8 +119,8 @@ impl VitBackendSettingsBuilder {
             .iter()
             .filter(|(_, x)| {
                 !(x.template().alias().is_some()
-                    && x.template().alias().unwrap().starts_with("committee")
-                ) && x.template().is_generated()
+                    && x.template().alias().unwrap().starts_with("committee"))
+                    && x.template().is_generated()
             })
             .map(|(alias, template)| {
                 let wallet: thor::Wallet = ((*template).clone()).into();

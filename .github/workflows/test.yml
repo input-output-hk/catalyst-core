@@ -21,6 +21,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Debug
+        uses: cachix/install-nix-action@v18
         run: nix-shell --run 'uniffi-bindgen --version'
 
       - name: Run tests

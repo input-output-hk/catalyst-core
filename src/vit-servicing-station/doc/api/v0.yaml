@@ -208,7 +208,7 @@ paths:
   /api/v0/challenges/{id}/{voter_group_id}:
     get:
       operationId: getChallengeByIdAndVoterGroupId
-      summary: Get challenge by id
+      summary: Get challenge by id and voter group id
       tags: [challenge]
       description: |
         Retrieves information on the identified challenge,
@@ -429,7 +429,7 @@ paths:
           application/json:
             schema:
               type: array
-              description: list of Proposals entries in json format
+              description: List of Proposals entries in json format
               items:
                 $ref: "#/components/schemas/Proposal"
       responses:

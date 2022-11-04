@@ -10,7 +10,7 @@ use chain_impl_mockchain::{
     },
     fragment::{ConfigParams, Fragment, FragmentId},
     header::{BlockDate, ChainLength, Epoch, HeaderId as HeaderHash},
-    key::BftLeaderId,
+    key::{BftLeaderId, Hash},
     transaction::{InputEnum, TransactionSlice, Witness},
     value::Value,
     vote::{Choice, EncryptedVote, Options, PayloadType, ProofOfCorrectVote, Weight},
@@ -71,6 +71,19 @@ pub struct ExplorerTransaction {
     pub certificate: Option<Certificate>,
     pub offset_in_block: u32,
     pub config_params: Option<ConfigParams>,
+}
+
+impl Default for ExplorerTransaction {
+    fn default() -> Self {
+        Self {
+            id: Hash::zero_hash(),
+            inputs: Default::default(),
+            outputs: Default::default(),
+            certificate: Default::default(),
+            offset_in_block: Default::default(),
+            config_params: Default::default(),
+        }
+    }
 }
 
 /// Unified Input representation for utxo and account inputs as used in the graphql API

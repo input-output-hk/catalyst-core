@@ -4,15 +4,15 @@ mod network;
 pub use builder::ConfigurationBuilder;
 pub use network::NetworkType;
 use serde::{Deserialize, Serialize};
+use std::net::SocketAddr;
 use std::path::Path;
 use std::path::PathBuf;
 use thiserror::Error;
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
 pub struct Configuration {
-    pub port: u16,
-    #[serde(rename = "result-dir")]
-    pub result_dir: PathBuf,
+    #[serde(flatten)]
+    pub inner: scheduler_service_lib::Configuration,
     pub jcli: PathBuf,
     #[serde(rename = "cardano-cli")]
     pub cardano_cli: PathBuf,
@@ -21,20 +21,41 @@ pub struct Configuration {
     #[serde(rename = "catalyst-toolbox")]
     pub catalyst_toolbox: PathBuf,
     pub network: NetworkType,
-    pub token: Option<String>,
+}
+
+impl Configuration {
+    pub fn working_directory(&self) -> &Option<PathBuf> {
+        &self.inner.working_directory
+    }
+
+    pub fn result_directory(&self) -> &PathBuf {
+        &self.inner.result_dir
+    }
+
+    pub fn address(&self) -> SocketAddr {
+        self.inner.address
+    }
+
+    pub fn address_mut(&mut self) -> &mut SocketAddr {
+        &mut self.inner.address
+    }
 }
 
 impl Default for Configuration {
     fn default() -> Self {
         Self {
-            port: 7070,
-            result_dir: Path::new(".").to_path_buf(),
+            inner: scheduler_service_lib::Configuration {
+                result_dir: Path::new(".").to_path_buf(),
+                address: ([0, 0, 0, 0], 7070).into(),
+                api_token: None,
+                admin_token: None,
+                working_directory: None,
+            },
             network: NetworkType::Mainnet,
             cardano_cli: Path::new("cardano_cli").to_path_buf(),
             voter_registration: Path::new("voter_registration").to_path_buf(),
             jcli: Path::new("jcli").to_path_buf(),
             catalyst_toolbox: Path::new("catalyst-toolbox").to_path_buf(),
-            token: None,
         }
     }
 }

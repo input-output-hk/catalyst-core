@@ -26,7 +26,7 @@ impl VoteRegistrationJobBuilder {
             voter_registration: VoterRegistrationCli::new(config.voter_registration),
             catalyst_toolbox: CatalystToolboxCli::new(config.catalyst_toolbox),
             network: NetworkType::Mainnet,
-            working_dir: config.result_dir,
+            working_dir: config.inner.result_dir,
         }
     }
 
@@ -73,7 +73,6 @@ impl VoteRegistrationJobBuilder {
             voter_registration: self.voter_registration,
             catalyst_toolbox: self.catalyst_toolbox,
             network: self.network,
-            working_dir: self.working_dir,
         }
     }
 }

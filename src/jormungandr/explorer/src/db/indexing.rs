@@ -63,7 +63,7 @@ pub enum BlockProducer {
     BftLeader(BftLeaderId),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct ExplorerTransaction {
     pub id: FragmentId,
     pub inputs: Vec<ExplorerInput>,
@@ -87,13 +87,13 @@ impl Default for ExplorerTransaction {
 }
 
 /// Unified Input representation for utxo and account inputs as used in the graphql API
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct ExplorerInput {
     pub address: ExplorerAddress,
     pub value: Value,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct ExplorerOutput {
     pub address: ExplorerAddress,
     pub value: Value,
@@ -106,7 +106,7 @@ pub struct EpochData {
     pub total_blocks: u32,
 }
 
-#[derive(Eq, PartialEq, Clone, Hash, Debug)]
+#[derive(Eq, PartialEq, Clone, Hash)]
 pub enum ExplorerAddress {
     New(Address),
     Old(OldAddress),

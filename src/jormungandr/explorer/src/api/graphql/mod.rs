@@ -736,7 +736,7 @@ impl From<InternalBlockDate> for BlockDate {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Transaction {
     id: FragmentId,
     block_hashes: Vec<HeaderHash>,

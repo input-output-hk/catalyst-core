@@ -316,6 +316,7 @@
               postgresql
               diesel-cli
               cargo-insta # snapshot testing lib
+              ripgrep
             ]);
           shellHook =
             pre-commit.shellHook

@@ -5,6 +5,7 @@ RUST_BACKTRACE=1
 CARGO_FLAGS="--verbose --locked"
 CARGO_INCREMENTAL=0
 
+cat **/Cargo.toml | rg uniffi -C5
 cat Cargo.lock
 uniffi-bindgen --version
 which uniffi-bindgen

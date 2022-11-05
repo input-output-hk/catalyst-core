@@ -9,8 +9,6 @@ use diesel::sqlite::SqliteConnection;
 use diesel::Connection;
 
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
-// TODO: Right now this is forced as the current backend. But it should be abstracted so it works for any diesel::Backend
-type Db = diesel::sqlite::Sqlite;
 pub type DbConnection = SqliteConnection;
 
 pub type DbPoolConn = PooledConnection<ConnectionManager<DbConnection>>;

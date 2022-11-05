@@ -1,7 +1,10 @@
 use super::vote_options;
 use crate::db::models::vote_options::VoteOptions;
 use crate::db::schema::proposals_voteplans;
-use crate::db::{schema::proposals, views_schema::full_proposals_info, Db};
+use crate::db::{schema::proposals, views_schema::full_proposals_info};
+use diesel::backend::Backend;
+use diesel::sql_types::{BigInt, Binary, Integer, Text};
+use diesel::types::FromSql;
 use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 use std::convert::{TryFrom, TryInto};
@@ -250,7 +253,13 @@ type FullProposalsInfoRow = (
     String,
 );
 
-impl Queryable<full_proposals_info::SqlType, Db> for Proposal {
+impl<DB: Backend> Queryable<full_proposals_info::SqlType, DB> for Proposal
+where
+    i32: FromSql<Integer, DB>,
+    i64: FromSql<BigInt, DB>,
+    String: FromSql<Text, DB>,
+    Vec<u8>: FromSql<Binary, DB>,
+{
     type Row = FullProposalsInfoRow;
 
     fn build(row: Self::Row) -> Self {
@@ -289,7 +298,13 @@ impl Queryable<full_proposals_info::SqlType, Db> for Proposal {
     }
 }
 
-impl Queryable<full_proposals_info::SqlType, Db> for ProposalVotePlan {
+impl<DB: Backend> Queryable<full_proposals_info::SqlType, DB> for ProposalVotePlan
+where
+    i32: FromSql<Integer, DB>,
+    i64: FromSql<BigInt, DB>,
+    String: FromSql<Text, DB>,
+    Vec<u8>: FromSql<Binary, DB>,
+{
     type Row = FullProposalsInfoRow;
 
     fn build(row: Self::Row) -> Self {
@@ -303,7 +318,13 @@ impl Queryable<full_proposals_info::SqlType, Db> for ProposalVotePlan {
     }
 }
 
-impl Queryable<full_proposals_info::SqlType, Db> for FullProposalInfo {
+impl<DB: Backend> Queryable<full_proposals_info::SqlType, DB> for FullProposalInfo
+where
+    i32: FromSql<Integer, DB>,
+    i64: FromSql<BigInt, DB>,
+    String: FromSql<Text, DB>,
+    Vec<u8>: FromSql<Binary, DB>,
+{
     type Row = FullProposalsInfoRow;
 
     fn build(row: Self::Row) -> Self {

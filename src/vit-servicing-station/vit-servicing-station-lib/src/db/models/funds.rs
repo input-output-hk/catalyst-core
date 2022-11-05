@@ -4,9 +4,13 @@ use super::groups::Group;
 use crate::db::{
     models::{challenges::Challenge, goals::Goal, voteplans::Voteplan},
     schema::funds,
-    Db,
 };
-use diesel::{ExpressionMethods, Insertable, Queryable};
+use diesel::{
+    backend::Backend,
+    sql_types::{BigInt, Integer, Text},
+    types::FromSql,
+    ExpressionMethods, Insertable, Queryable,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -129,7 +133,12 @@ impl From<Fund> for FundWithLegacyFields {
     }
 }
 
-impl Queryable<funds::SqlType, Db> for Fund {
+impl<DB: Backend> Queryable<funds::SqlType, DB> for Fund
+where
+    i32: FromSql<Integer, DB>,
+    i64: FromSql<BigInt, DB>,
+    String: FromSql<Text, DB>,
+{
     type Row = (
         // 0 -> id
         i32,

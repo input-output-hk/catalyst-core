@@ -1,5 +1,8 @@
 use crate::db::models::proposals::ChallengeType;
-use crate::db::{schema::challenges, Db};
+use crate::db::schema::challenges;
+use diesel::backend::Backend;
+use diesel::sql_types::{BigInt, Integer, Text};
+use diesel::types::FromSql;
 use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 
@@ -30,7 +33,12 @@ pub struct Challenge {
     pub highlights: Option<ChallengeHighlights>,
 }
 
-impl Queryable<challenges::SqlType, Db> for Challenge {
+impl<DB: Backend> Queryable<challenges::SqlType, DB> for Challenge
+where
+    i32: FromSql<Integer, DB>,
+    i64: FromSql<BigInt, DB>,
+    String: FromSql<Text, DB>,
+{
     type Row = (
         // 0 -> internal_id
         i32,

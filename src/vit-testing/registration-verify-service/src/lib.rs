@@ -6,4 +6,3 @@ pub mod job;
 pub mod multipart;
 pub mod request;
 pub mod rest;
-pub mod service;

@@ -29,3 +29,8 @@ with the following command:
 ```
 jsdoc pkg -c ../../jsdoc.json -d pkg/doc -R README.md
 ```
+
+## Tests
+```
+wasm-pack test <target>
+```

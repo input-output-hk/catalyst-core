@@ -16,8 +16,17 @@ pub async fn filter(
 
     let challenge_by_id = warp::path!(i32)
         .and(warp::get())
-        .and(with_context)
+        .and(with_context.clone())
         .and_then(get_challenge_by_id);
 
-    root.and(challenge_by_id.or(challenges))
+    let challenge_by_id_and_group_id = warp::path!(i32 / String)
+        .and(warp::get())
+        .and(with_context)
+        .and_then(get_challenge_by_id_and_group_id);
+
+    root.and(
+        challenge_by_id_and_group_id
+            .or(challenge_by_id)
+            .or(challenges),
+    )
 }

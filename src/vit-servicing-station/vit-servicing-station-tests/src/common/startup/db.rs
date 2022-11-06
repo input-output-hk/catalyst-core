@@ -170,7 +170,6 @@ impl DbBuilder {
     pub fn build_into_path<P: AsRef<Path>>(&self, path: P) -> Result<PathBuf, DbBuilderError> {
         let path = path.as_ref();
         let db_path = path.to_str().ok_or(DbBuilderError::CannotExtractTempPath)?;
-        println!("Building db in {:?}...", db_path);
 
         let connection = SqliteConnection::establish(db_path)?;
         self.try_do_migration(&connection)?;

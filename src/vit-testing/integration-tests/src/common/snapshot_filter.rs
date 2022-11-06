@@ -87,18 +87,10 @@ impl SnapshotFilter {
 
     pub fn to_voters_hirs(&self) -> Vec<VoterHIR> {
         self.snapshot
-            .voting_keys()
-            .map(|vk| VoterHIR {
-                voting_key: vk.clone(),
-                voting_power: self
-                    .snapshot
-                    .contributions_for_voting_key(vk)
-                    .iter()
-                    .map(|c| c.value)
-                    .sum::<u64>()
-                    .into(),
-                voting_group: "direct".to_string(),
-            })
+            .to_full_snapshot_info()
+            .iter()
+            .cloned()
+            .map(|vk| vk.hir)
             .collect()
     }
 

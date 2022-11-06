@@ -20,7 +20,8 @@ pub use builder::ConfigBuilder;
 pub use certs::CertificatesBuilder;
 use chain_addr::Discrimination;
 pub use initials::{
-    Block0Initial, Block0Initials, Initials, Role, SnapshotError, SnapshotInitial, SnapshotInitials,
+    Block0Initial, Block0Initials, Initials, Role, SnapshotError, SnapshotInitial,
+    SnapshotInitials, DIRECT_VOTING_GROUP, REP_VOTING_GROUP,
 };
 pub use migrations::{Error as MigrationError, MigrationFilesBuilder};
 use serde::{Deserialize, Serialize};

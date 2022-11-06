@@ -137,7 +137,7 @@ impl fmt::Debug for CommitteeCommunicationData {
     }
 }
 
-fn write_to(key: String, directory: &ChildPath, name: &str) {
+pub fn write_to(key: String, directory: &ChildPath, name: &str) {
     let path = directory.child(name);
     let mut file = File::create(path.path()).unwrap();
     writeln!(file, "{}", key).unwrap()

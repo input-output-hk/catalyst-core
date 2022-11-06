@@ -16,7 +16,10 @@ impl SnapshotServiceController {
     pub fn new(child: Child, configuration: Configuration) -> Self {
         Self {
             child,
-            client: SnapshotRestClient::new(format!("http://127.0.0.1:{}", configuration.port)),
+            client: SnapshotRestClient::new(format!(
+                "http://127.0.0.1:{}",
+                configuration.address().port()
+            )),
             configuration,
         }
     }

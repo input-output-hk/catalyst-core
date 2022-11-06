@@ -169,6 +169,10 @@ impl VitController {
         self.hersir_controller.defined_nodes().collect()
     }
 
+    pub fn controlled_wallets(&self) -> Vec<Wallet> {
+        self.hersir_controller.controlled_wallets()
+    }
+
     pub fn defined_wallets(&self) -> Vec<(WalletAlias, &WalletSettings)> {
         self.hersir_controller.defined_wallets().collect()
     }
@@ -335,6 +339,8 @@ impl VitController {
             )
             .arg("--block0")
             .arg(block0_file.as_path().to_str().unwrap());
+
+        println!("proxy: {:?}", command);
 
         if let valgrind::Protocol::Https(certs) = &params.protocol {
             command

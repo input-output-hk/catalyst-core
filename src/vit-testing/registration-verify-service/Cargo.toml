@@ -16,6 +16,7 @@ jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
 catalyst-toolbox = { path = "../../catalyst-toolbox/catalyst-toolbox", features=["test-api"]}
 futures = "0.3.8"
 snapshot-trigger-service = { path = "../snapshot-trigger-service" }
+scheduler-service-lib = { path = "../scheduler-service-lib"}
 serde = { version = "1", features = ["derive"] }
 warp = "0.3.1"
 hex = "0.4"
@@ -30,6 +31,6 @@ serde_yaml = "0.8"
 signals-handler = { path = "../signals-handler" }
 
 [dependencies.reqwest]
-version = "0.10.10"
+version = "0.11"
 default-features = false
-features = ["blocking", "rustls-tls"]
+features = ["blocking", "rustls-tls", "multipart"]

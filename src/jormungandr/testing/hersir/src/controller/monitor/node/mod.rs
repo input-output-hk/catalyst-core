@@ -192,11 +192,6 @@ impl Node {
         self.process.grpc()
     }
 
-    pub fn log_stats(&self) {
-        self.progress_bar
-            .log_info(format!("node stats ({:?})", self.rest().stats()));
-    }
-
     pub fn log_leadership_log(&self) {
         self.progress_bar
             .log_info(format!("{:?}", self.rest().leaders_log().unwrap()));
@@ -282,11 +277,11 @@ impl Node {
                 .template("{spinner:.green} {wide_msg}")
                 .tick_chars(style::TICKER),
         );
-        self.progress_bar.enable_steady_tick(100);
+        self.progress_bar.enable_steady_tick(1000);
         self.progress_bar.set_message(&format!(
-            "{} {} ... [{}] Node is up",
+            "{} {} ... [{}] starting ...",
             *style::icons::jormungandr,
-            style::binary.apply_to(self.alias()),
+            style::binary.apply_to(self.process.alias()),
             self.process.rest_address(),
         ));
     }

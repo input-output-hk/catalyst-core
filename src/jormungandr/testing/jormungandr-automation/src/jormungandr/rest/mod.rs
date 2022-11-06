@@ -168,7 +168,6 @@ impl JormungandrRest {
 
     pub fn stats(&self) -> Result<NodeStatsDto, RestError> {
         let stats = &self.inner.stats()?;
-        println!("{:?}", stats);
         serde_json::from_str(stats).map_err(RestError::CannotDeserialize)
     }
 

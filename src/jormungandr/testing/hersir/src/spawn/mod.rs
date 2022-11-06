@@ -7,6 +7,7 @@ use crate::{
     config::{Config, SessionMode},
     error::Error,
 };
+pub use monitor::run_health_check;
 use std::fs::File;
 
 pub fn spawn_network(args: Args) -> Result<(), Error> {

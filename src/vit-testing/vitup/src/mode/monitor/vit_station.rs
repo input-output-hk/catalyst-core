@@ -3,6 +3,7 @@ use crate::Result;
 use hersir::controller::ProgressBarController;
 use hersir::style;
 use jormungandr_automation::jormungandr::{NodeAlias, Status};
+use vit_servicing_station_tests::common::clients::RestClient;
 
 pub struct VitStationMonitorController {
     controller: VitStationController,
@@ -35,6 +36,10 @@ impl VitStationMonitorController {
         }
     }
 
+    pub fn rest(&self) -> RestClient {
+        self.controller.rest_client.clone()
+    }
+
     pub fn finish_monitoring(&self) {
         self.progress_bar.finish_with_message("monitoring shutdown");
     }
@@ -53,13 +58,8 @@ impl VitStationMonitorController {
                 .template("{spinner:.green} {wide_msg}")
                 .tick_chars(style::TICKER),
         );
-        self.progress_bar.enable_steady_tick(100);
-        self.progress_bar.set_message(&format!(
-            "{} {} ... [{}] Vit station is up",
-            *style::icons::jormungandr,
-            style::binary.apply_to(self.alias()),
-            self.controller.address(),
-        ));
+        self.progress_bar.enable_steady_tick(1000);
+        self.progress_bar.log_info("vit servicing station is up");
     }
     #[allow(dead_code)]
     fn progress_bar_failure(&self) {

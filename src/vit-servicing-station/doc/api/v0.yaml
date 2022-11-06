@@ -183,7 +183,7 @@ paths:
 
   /api/v0/challenges/{id}:
     get:
-      operationId: getChallenge
+      operationId: getChallengeById
       summary: Get challenge by id
       tags: [challenge]
       description: |
@@ -194,6 +194,36 @@ paths:
           name: id
           schema:
             type: integer
+          required: true
+      responses:
+        "200":
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChallengeWithProposals"
+        "404":
+          description: The requested challenge was not found
+
+  /api/v0/challenges/{id}/{voter_group_id}:
+    get:
+      operationId: getChallengeByIdAndVoterGroupId
+      summary: Get challenge by id and voter group id
+      tags: [challenge]
+      description: |
+        Retrieves information on the identified challenge,
+        including the proposals submitted for it filtered by the provided voter group id.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: voter_group_id
+          description: Get proposals only for the specified vote group.
+          schema:
+            type: string
           required: true
       responses:
         "200":
@@ -398,13 +428,10 @@ paths:
         content:
           application/json:
             schema:
-              Proposals:
-                 properties:
-                  type: array
-                  description: list of Proposals entries in json format
-                  required: true
-                  items:
-                    $ref: "#/components/schemas/Proposal"
+              type: array
+              description: List of Proposals entries in json format
+              items:
+                $ref: "#/components/schemas/Proposal"
       responses:
         "200":
           description: Success
@@ -1103,34 +1130,35 @@ components:
         snapshot:
           type: array
           description: list of SnapshotInfo entries in json format
-          required: true
+          items:
+            description: SnapshotInfo entry in json format
+
         update_timestamp:
           type: string
           format: date-time
           description: Date and time for the latest update to this snapshot information.
 
     RawSnapshotUpdate:
+      required:
+        - snapshot
+        - min_stake_threshold
+        - voting_power_cap
       properties:
         snapshot:
           type: object
           description: RawSnapshot in json format
-          required: true
         min_stake_threshold:
           type: integer
           description: Registrations voting power threshold for eligibility
-          required: true
         voting_power_cap:
           type: string
           description: Voting power cap for each account
-          required: true
         direct_voters_group:
           type: string
           description: Voter group to assign direct voters to. If empty, defaults to "voter"
-          required: false
         representatives_group:
           type: string
           description: Voter group to assign representatives to. If empty, defaults to "rep"
-          required: false
         update_timestamp:
           type: string
           format: date-time

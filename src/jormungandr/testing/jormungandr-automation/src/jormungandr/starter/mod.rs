@@ -271,7 +271,7 @@ impl ConfiguredStarter {
             sleep: 2,
             verification_mode: StartupVerificationMode::Rest,
             on_fail: OnFail::RetryUnlimitedOnPortOccupied,
-            verbose: true,
+            verbose: false,
         }
     }
 

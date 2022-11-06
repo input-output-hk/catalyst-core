@@ -1,6 +1,5 @@
 use crate::networking::utils;
 use chain_impl_mockchain::{chaintypes::ConsensusVersion, milli::Milli, value::Value};
-use function_name::named;
 use hersir::{
     builder::{NetworkBuilder, Node, Topology},
     config::{BlockchainConfiguration, SpawnParams, WalletTemplate},
@@ -116,7 +115,6 @@ fn prepare_real_scenario(
 }
 
 #[test]
-#[named]
 pub fn real_praos_network() {
     let relay_nodes_count = 3;
     let leaders_per_relay = 11;
@@ -128,12 +126,11 @@ pub fn real_praos_network() {
         legacies_per_relay,
         ConsensusVersion::GenesisPraos,
         PersistenceMode::Persistent,
-        function_name!(),
+        "real_praos_network",
     )
 }
 
 #[test]
-#[named]
 pub fn real_bft_network() {
     let relay_nodes_count = 3;
     let leaders_per_relay = 11;
@@ -145,7 +142,7 @@ pub fn real_bft_network() {
         legacies_per_relay,
         ConsensusVersion::Bft,
         PersistenceMode::Persistent,
-        function_name!(),
+        "real_bft_network",
     )
 }
 

@@ -11,6 +11,7 @@ uuid = { version = "0.8", features = ["serde","v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 walkdir = "2.3.1"
 structopt = "0.3"
+scheduler-service-lib = { path = "../scheduler-service-lib"}
 jortestkit = { path = "../../jortestkit" }
 jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
 chain-addr = { path = "../../chain-libs/chain-addr" }
@@ -28,6 +29,6 @@ signals-handler = { path = "../signals-handler" }
 mainnet-tools = { path = "../mainnet-tools"}
 
 [dependencies.reqwest]
-version = "0.10.10"
+version = "0.11"
 default-features = false
 features = ["blocking", "rustls-tls","json"]

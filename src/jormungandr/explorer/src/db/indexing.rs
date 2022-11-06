@@ -112,7 +112,7 @@ pub enum ExplorerAddress {
     Old(OldAddress),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExplorerVotePlan {
     pub id: VotePlanId,
     pub vote_start: BlockDate,
@@ -122,7 +122,7 @@ pub struct ExplorerVotePlan {
     pub proposals: Vec<ExplorerVoteProposal>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ExplorerVote {
     Public(Choice),
     Private {
@@ -131,7 +131,7 @@ pub enum ExplorerVote {
     },
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExplorerVoteProposal {
     pub proposal_id: ExternalProposalId,
     pub options: Options,
@@ -140,7 +140,7 @@ pub struct ExplorerVoteProposal {
 }
 
 // TODO do proper vote tally
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ExplorerVoteTally {
     Public {
         results: Box<[Weight]>,

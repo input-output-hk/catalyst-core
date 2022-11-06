@@ -20,6 +20,8 @@ pub enum ExplorerError {
     BootstrapError(String),
     #[error("cannot apply block")]
     CannotApplyBlock,
+    #[error("tally decryption failure")]
+    TallyDecryptionFailure,
 }
 
 #[derive(Debug, Error, Clone)]

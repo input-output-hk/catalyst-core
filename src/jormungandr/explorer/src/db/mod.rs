@@ -135,7 +135,7 @@ impl ExplorerDb {
         let (stake_pool_data, stake_pool_blocks) =
             apply_block_to_stake_pools(StakePool::new(), StakePoolBlocks::new(), &block)?;
         let stake_control = apply_block_to_stake_control(StakeControl::new(), &block);
-        let vote_plans = apply_block_to_vote_plans(VotePlans::new(), &block, &stake_control);
+        let vote_plans = apply_block_to_vote_plans(VotePlans::new(), &block, &stake_control)?;
 
         let initial_state = State {
             transactions,
@@ -209,6 +209,8 @@ impl ExplorerDb {
 
         let stake_control = apply_block_to_stake_control(stake_control, &explorer_block);
 
+        let vote_plans = apply_block_to_vote_plans(vote_plans, &explorer_block, &stake_control)?;
+
         let state_ref = multiverse
             .insert(
                 chain_length,
@@ -222,11 +224,7 @@ impl ExplorerDb {
                     chain_lengths: apply_block_to_chain_lengths(chain_lengths, &explorer_block)?,
                     stake_pool_data,
                     stake_pool_blocks,
-                    vote_plans: apply_block_to_vote_plans(
-                        vote_plans,
-                        &explorer_block,
-                        &stake_control,
-                    ),
+                    vote_plans,
                     stake_control,
                 },
             )
@@ -604,11 +602,12 @@ fn apply_block_to_stake_pools(
     Ok((data, blocks))
 }
 
+#[tracing::instrument]
 fn apply_block_to_vote_plans(
     mut vote_plans: VotePlans,
     block: &ExplorerBlock,
     stake: &StakeControl,
-) -> VotePlans {
+) -> Result<VotePlans, Error> {
     for tx in block.transactions.values() {
         if let Some(cert) = &tx.certificate {
             vote_plans = match cert {
@@ -715,22 +714,25 @@ fn apply_block_to_vote_plans(
                                 })
                                 .collect(),
                             PayloadType::Private => {
-                                let decrypted_tally = vote_tally
-                                    .tally_decrypted()
-                                    .expect("tally type is private but no decrypted tally found");
+                                if let Some(decrypted_tally) = vote_tally.tally_decrypted() {
+                                    vote_plan
+                                        .proposals
+                                        .clone()
+                                        .into_iter()
+                                        .zip(decrypted_tally.iter())
+                                        .map(|(mut proposal, decrypted_tally)| {
+                                            proposal.tally = Some(compute_private_tally(
+                                                &proposal,
+                                                decrypted_tally,
+                                            ));
 
-                                vote_plan
-                                    .proposals
-                                    .clone()
-                                    .into_iter()
-                                    .zip(decrypted_tally.iter())
-                                    .map(|(mut proposal, decrypted_tally)| {
-                                        proposal.tally =
-                                            Some(compute_private_tally(&proposal, decrypted_tally));
-
-                                        proposal
-                                    })
-                                    .collect()
+                                            proposal
+                                        })
+                                        .collect()
+                                } else {
+                                    error!("tally type is private but no decrypted tally found");
+                                    return Err(Error::TallyDecryptionFailure);
+                                }
                             }
                         };
 
@@ -738,7 +740,8 @@ fn apply_block_to_vote_plans(
                             proposals,
                             ..(**vote_plan).clone()
                         };
-                        Ok::<_, std::convert::Infallible>(Some(Arc::new(vote_plan)))
+
+                        Ok(Some(Arc::new(vote_plan)))
                     })
                     .unwrap(),
                 _ => vote_plans,
@@ -746,7 +749,7 @@ fn apply_block_to_vote_plans(
         }
     }
 
-    vote_plans
+    Ok(vote_plans)
 }
 
 fn apply_block_to_stake_control(

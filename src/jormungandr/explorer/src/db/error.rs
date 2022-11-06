@@ -18,6 +18,8 @@ pub enum ExplorerError {
     ChainLengthBlockAlreadyExists(ChainLength),
     #[error("the explorer's database couldn't be initialized: {0}")]
     BootstrapError(String),
+    #[error("cannot apply block")]
+    CannotApplyBlock,
 }
 
 #[derive(Debug, Error, Clone)]

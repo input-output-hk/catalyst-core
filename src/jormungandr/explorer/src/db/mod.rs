@@ -37,6 +37,7 @@ use std::{
     },
 };
 use tokio::sync::{broadcast, RwLock};
+use tracing::error;
 
 #[derive(Clone)]
 pub struct Explorer {
@@ -132,7 +133,7 @@ impl ExplorerDb {
         let transactions = apply_block_to_transactions(Transactions::new(), &block)?;
         let addresses = apply_block_to_addresses(Addresses::new(), &block);
         let (stake_pool_data, stake_pool_blocks) =
-            apply_block_to_stake_pools(StakePool::new(), StakePoolBlocks::new(), &block);
+            apply_block_to_stake_pools(StakePool::new(), StakePoolBlocks::new(), &block)?;
         let stake_control = apply_block_to_stake_control(StakeControl::new(), &block);
         let vote_plans = apply_block_to_vote_plans(VotePlans::new(), &block, &stake_control);
 
@@ -204,7 +205,7 @@ impl ExplorerDb {
             },
         );
         let (stake_pool_data, stake_pool_blocks) =
-            apply_block_to_stake_pools(stake_pool_data, stake_pool_blocks, &explorer_block);
+            apply_block_to_stake_pools(stake_pool_data, stake_pool_blocks, &explorer_block)?;
 
         let stake_control = apply_block_to_stake_control(stake_control, &explorer_block);
 
@@ -535,7 +536,7 @@ fn apply_block_to_stake_pools(
     data: StakePool,
     blocks: StakePoolBlocks,
     block: &ExplorerBlock,
-) -> (StakePool, StakePoolBlocks) {
+) -> Result<(StakePool, StakePoolBlocks), Error> {
     let mut blocks = match &block.producer() {
         indexing::BlockProducer::StakePool(id) => blocks
             .update(
@@ -554,35 +555,53 @@ fn apply_block_to_stake_pools(
     for tx in block.transactions.values() {
         if let Some(cert) = &tx.certificate {
             blocks = match cert {
-                Certificate::PoolRegistration(registration) => blocks
-                    .insert(registration.to_id(), Arc::new(PersistentSequence::new()))
-                    .expect("pool was registered more than once"),
+                Certificate::PoolRegistration(registration) => {
+                    match blocks.insert(registration.to_id(), Arc::new(PersistentSequence::new())) {
+                        Ok(pool_registration) => pool_registration,
+                        Err(e) => {
+                            error!("pool was registered more than once {}", e);
+                            return Err(Error::CannotApplyBlock);
+                        }
+                    }
+                }
+
                 _ => blocks,
             };
             data = match cert {
-                Certificate::PoolRegistration(registration) => data
-                    .insert(
-                        registration.to_id(),
-                        Arc::new(StakePoolData {
-                            registration: registration.clone(),
-                            retirement: None,
-                        }),
-                    )
-                    .expect("pool was registered more than once"),
-                Certificate::PoolRetirement(retirement) => data
-                    .update::<_, Infallible>(&retirement.pool_id, |pool_data| {
+                Certificate::PoolRegistration(registration) => match data.insert(
+                    registration.to_id(),
+                    Arc::new(StakePoolData {
+                        registration: registration.clone(),
+                        retirement: None,
+                    }),
+                ) {
+                    Ok(pool_registration) => pool_registration,
+                    Err(e) => {
+                        error!("pool was registered more than once {}", e);
+                        return Err(Error::CannotApplyBlock);
+                    }
+                },
+
+                Certificate::PoolRetirement(retirement) => {
+                    match data.update::<_, Infallible>(&retirement.pool_id, |pool_data| {
                         Ok(Some(Arc::new(StakePoolData {
                             registration: pool_data.registration.clone(),
                             retirement: Some(retirement.clone()),
                         })))
-                    })
-                    .expect("pool was retired before registered"),
+                    }) {
+                        Ok(pool_retirement) => pool_retirement,
+                        Err(e) => {
+                            error!("pool was retired before registered {}", e);
+                            return Err(Error::CannotApplyBlock);
+                        }
+                    }
+                }
                 _ => data,
             };
         }
     }
 
-    (data, blocks)
+    Ok((data, blocks))
 }
 
 fn apply_block_to_vote_plans(

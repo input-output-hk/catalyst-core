@@ -35,7 +35,7 @@ pub type StakePool = Hamt<PoolId, StakePoolData>;
 
 pub type VotePlans = Hamt<VotePlanId, ExplorerVotePlan>;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct StakePoolData {
     pub registration: PoolRegistration,
     pub retirement: Option<PoolRetirement>,
@@ -43,7 +43,7 @@ pub struct StakePoolData {
 }
 
 /// Block with unified inputs the metadata needed in the queries
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExplorerBlock {
     /// The HashMap allows for easy search when querying transactions by id
     pub transactions: HashMap<FragmentId, ExplorerTransaction>,
@@ -56,14 +56,14 @@ pub struct ExplorerBlock {
     pub total_output: Value,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum BlockProducer {
     None,
     StakePool(PoolId),
     BftLeader(BftLeaderId),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExplorerTransaction {
     pub id: FragmentId,
     pub inputs: Vec<ExplorerInput>,
@@ -87,13 +87,13 @@ impl Default for ExplorerTransaction {
 }
 
 /// Unified Input representation for utxo and account inputs as used in the graphql API
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExplorerInput {
     pub address: ExplorerAddress,
     pub value: Value,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExplorerOutput {
     pub address: ExplorerAddress,
     pub value: Value,
@@ -106,7 +106,7 @@ pub struct EpochData {
     pub total_blocks: u32,
 }
 
-#[derive(Eq, PartialEq, Clone, Hash)]
+#[derive(Eq, PartialEq, Clone, Hash, Debug)]
 pub enum ExplorerAddress {
     New(Address),
     Old(OldAddress),

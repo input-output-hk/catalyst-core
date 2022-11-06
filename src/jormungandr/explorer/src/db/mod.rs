@@ -125,7 +125,7 @@ impl ExplorerDb {
                 prev_transactions: &Transactions::new(),
                 prev_blocks: &Blocks::new(),
             },
-        );
+        )?;
 
         let blocks = apply_block_to_blocks(Blocks::new(), &block)?;
         let epochs = apply_block_to_epochs(Epochs::new(), &block);
@@ -203,7 +203,7 @@ impl ExplorerDb {
                 prev_transactions: &transactions,
                 prev_blocks: &blocks,
             },
-        );
+        )?;
         let (stake_pool_data, stake_pool_blocks) =
             apply_block_to_stake_pools(stake_pool_data, stake_pool_blocks, &explorer_block)?;
 

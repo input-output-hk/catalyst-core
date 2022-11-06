@@ -1,4 +1,4 @@
-use super::persistent_sequence::PersistentSequence;
+use super::{error, persistent_sequence::PersistentSequence};
 use cardano_legacy_address::Addr as OldAddress;
 use chain_addr::{Address, Discrimination};
 use chain_core::property::{Block as _, Fragment as _};
@@ -15,6 +15,7 @@ use chain_impl_mockchain::{
     value::Value,
     vote::{Choice, EncryptedVote, Options, PayloadType, ProofOfCorrectVote, Weight},
 };
+use error::ExplorerError as Error;
 use std::{
     collections::{hash_map::DefaultHasher, HashMap},
     convert::TryInto,
@@ -152,6 +153,7 @@ pub enum ExplorerVoteTally {
     },
 }
 
+#[derive(Debug)]
 pub struct ExplorerBlockBuildingContext<'a> {
     pub discrimination: Discrimination,
     pub prev_transactions: &'a Transactions,
@@ -164,7 +166,11 @@ impl ExplorerBlock {
     /// and mapping the account inputs to addresses with the given discrimination
     /// This function relies on the given block to be validated previously, and will panic
     /// otherwise
-    pub fn resolve_from(block: &Block, context: ExplorerBlockBuildingContext) -> ExplorerBlock {
+    #[tracing::instrument]
+    pub fn resolve_from(
+        block: &Block,
+        context: ExplorerBlockBuildingContext,
+    ) -> Result<ExplorerBlock, Error> {
         let fragments = block.contents().iter();
         let id = block.id();
         let chain_length = block.chain_length();
@@ -345,21 +351,31 @@ impl ExplorerBlock {
             Proof::None => BlockProducer::None,
         };
 
-        let total_input = Value::sum(
+        let total_input = match Value::sum(
             transactions
                 .values()
                 .flat_map(|tx| tx.inputs.iter().map(|i| i.value)),
-        )
-        .expect("Couldn't compute block's total input");
+        ) {
+            Ok(total) => total,
+            Err(e) => {
+                error!("Couldn't compute block's total input {e}");
+                return Err(Error::TxCalculationFailure);
+            }
+        };
 
-        let total_output = Value::sum(
+        let total_output = match Value::sum(
             transactions
                 .values()
                 .flat_map(|tx| tx.outputs.iter().map(|o| o.value)),
-        )
-        .expect("Couldn't compute block's total output");
+        ) {
+            Ok(total) => total,
+            Err(e) => {
+                error!("Couldn't compute block's total  output {e}");
+                return Err(Error::TxCalculationFailure);
+            }
+        };
 
-        ExplorerBlock {
+        Ok(ExplorerBlock {
             id,
             transactions,
             chain_length,
@@ -368,7 +384,7 @@ impl ExplorerBlock {
             producer,
             total_input,
             total_output,
-        }
+        })
     }
 
     pub fn id(&self) -> HeaderHash {

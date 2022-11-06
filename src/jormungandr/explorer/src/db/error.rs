@@ -22,6 +22,8 @@ pub enum ExplorerError {
     CannotApplyBlock,
     #[error("tally decryption failure")]
     TallyDecryptionFailure,
+    #[error("Tx calculation failure")]
+    TxCalculationFailure,
 }
 
 #[derive(Debug, Error, Clone)]

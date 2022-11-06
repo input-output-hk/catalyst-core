@@ -531,7 +531,7 @@ fn apply_block_to_chain_lengths(
             Error::ChainLengthBlockAlreadyExists(new_block_chain_length)
         })
 }
-
+#[tracing::instrument]
 fn apply_block_to_stake_pools(
     data: StakePool,
     blocks: StakePoolBlocks,

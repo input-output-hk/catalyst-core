@@ -80,12 +80,12 @@ impl Controller {
 
     pub fn controlled_wallets(&self) -> Vec<Wallet> {
         self.settings()
-        .wallets
-        .iter()
-        .cloned()
-        .filter(|x| x.template().is_generated())
-        .map(|w| w.try_into().unwrap())
-        .collect()
+            .wallets
+            .iter()
+            .cloned()
+            .filter(|x| x.template().is_generated())
+            .map(|w| w.try_into().unwrap())
+            .collect()
     }
 
     pub fn working_directory(&self) -> &TestingDirectory {

@@ -1,8 +1,10 @@
+use crate::FileListerError;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::path::PathBuf;
 use thiserror::Error;
 use walkdir::WalkDir;
+use warp::reject::Reject;
 
 #[derive(Serialize, Deserialize)]
 pub struct FolderDump {
@@ -25,7 +27,21 @@ impl FolderDump {
         self.content
             .push(item.replace(&root_file_name, "").replace("'\\'", "/"));
     }
+
+    pub fn find_file_with_extension<S: Into<String>>(
+        &self,
+        job_id: S,
+        extension: S,
+    ) -> Option<&String> {
+        let job_id = job_id.into();
+        let extension = extension.into();
+        self.content
+            .iter()
+            .find(|x| x.contains(&job_id) && x.ends_with(&extension))
+    }
 }
+
+impl Reject for FileListerError {}
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Error)]

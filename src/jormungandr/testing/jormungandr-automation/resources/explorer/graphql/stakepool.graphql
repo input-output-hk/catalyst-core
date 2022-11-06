@@ -1,14 +1,15 @@
 query StakePool($id: PoolId!, $first: Int!){
     stakePool(id: $id) {
         id,
-        registration {
-            pool {
-                id
-            }
-        },
-        retirement {
-            poolId
-        },
+        registration {  pool {... poolInfo}
+                        startValidity
+                        managementThreshold
+                        owners
+                        operators
+                        rewards {fixed ratio {numerator denominator} maxLimit}
+                        rewardAccount {id #delegation {... poolInfo} not implemented yet NPG-2247
+                    }},
+        retirement { poolId retirementTime},
         blocks(first: $first) {
             edges {
                 node {
@@ -18,3 +19,10 @@ query StakePool($id: PoolId!, $first: Int!){
         }
     }
 }
+
+fragment poolInfo on Pool {
+        id
+        blocks(first: 1000){totalCount}
+        registration{pool{id}}
+        retirement{poolId}
+    }

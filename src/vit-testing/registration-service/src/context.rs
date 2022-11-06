@@ -1,206 +1,85 @@
 pub type ContextLock = Arc<Mutex<Context>>;
+pub type State = scheduler_service_lib::State<Request, (), JobOutputInfo>;
+
 use crate::cardano::cli::CardanoCli;
 use crate::config::Configuration;
 use crate::job::JobOutputInfo;
 use crate::request::Request;
-use crate::rest::ServerStopper;
-use crate::Error as JobError;
-use chrono::{NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::fmt;
 use std::net::SocketAddr;
-use std::path::Path;
-use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
-use uuid::Uuid;
 
 pub struct Context {
-    server_stopper: Option<ServerStopper>,
+    scheduler_context: SchedulerContext,
     config: Configuration,
-    working_dir: PathBuf,
-    address: SocketAddr,
     state: State,
 }
 
 impl Context {
-    pub fn new<P: AsRef<Path>>(config: Configuration, working_dir: P) -> Self {
+    pub fn new(config: Configuration) -> Self {
         Self {
-            server_stopper: None,
-            address: ([0, 0, 0, 0], config.port).into(),
+            scheduler_context: SchedulerContext::new(None, config.inner.clone()),
             config,
-            working_dir: working_dir.as_ref().to_path_buf(),
             state: State::Idle,
         }
     }
 
     pub fn set_server_stopper(&mut self, server_stopper: ServerStopper) {
-        self.server_stopper = Some(server_stopper)
+        self.scheduler_context
+            .set_server_stopper(Some(server_stopper));
     }
 
     pub fn server_stopper(&self) -> &Option<ServerStopper> {
-        &self.server_stopper
+        self.scheduler_context.server_stopper()
     }
 
     pub fn cardano_cli_executor(&self) -> CardanoCli {
         CardanoCli::new(self.config.cardano_cli.clone())
     }
 
-    pub fn new_run(&mut self, request: Request) -> Result<Uuid, Error> {
-        match self.state {
-            State::Idle | State::Finished { .. } | State::Failed { .. } => {
-                let id = Uuid::new_v4();
-                self.state = State::RequestToStart {
-                    job_id: id,
-                    request,
-                };
-                Ok(id)
-            }
-            _ => Err(Error::RegistrationInProgress),
-        }
-    }
-
-    pub fn run_started(&mut self) -> Result<(), Error> {
-        match &self.state {
-            State::RequestToStart { job_id, request } => {
-                self.state = State::Running {
-                    job_id: *job_id,
-                    start: Utc::now().naive_utc(),
-                    request: request.clone(),
-                };
-                Ok(())
-            }
-            _ => Err(Error::NoRequestToStart),
-        }
-    }
-
-    pub fn run_finished(&mut self, info: Result<JobOutputInfo, JobError>) -> Result<(), Error> {
-        match &self.state {
-            State::Running {
-                job_id,
-                start,
-                request,
-            } => {
-                match info {
-                    Ok(info) => {
-                        self.state = State::Finished {
-                            job_id: *job_id,
-                            start: *start,
-                            end: Utc::now().naive_utc(),
-                            request: request.clone(),
-                            info,
-                        };
-                    }
-                    Err(err) => {
-                        self.state = State::Failed {
-                            job_id: *job_id,
-                            start: *start,
-                            end: Utc::now().naive_utc(),
-                            request: request.clone(),
-                            info_msg: format!("{:?}", err),
-                        };
-                    }
-                }
-                Ok(())
-            }
-            _ => Err(Error::RegistrationNotStarted),
-        }
-    }
-
-    pub fn status_by_id(&self, id: Uuid) -> Result<State, Error> {
-        match self.state {
-            State::Idle => Err(Error::NoJobRun),
-            State::RequestToStart { .. } => Ok(self.state.clone()),
-            State::Running { job_id, .. } => {
-                if job_id == id {
-                    Ok(self.state.clone())
-                } else {
-                    Err(Error::JobNotFound)
-                }
-            }
-            State::Finished { job_id, .. } => {
-                if job_id == id {
-                    Ok(self.state.clone())
-                } else {
-                    Err(Error::JobNotFound)
-                }
-            }
-            State::Failed { job_id, .. } => {
-                if job_id == id {
-                    Ok(self.state.clone())
-                } else {
-                    Err(Error::JobNotFound)
-                }
-            }
-        }
-    }
-
     pub fn state(&self) -> &State {
         &self.state
     }
 
-    pub fn address(&self) -> &SocketAddr {
-        &self.address
+    pub fn state_mut(&mut self) -> &mut State {
+        &mut self.state
     }
 
-    pub fn working_directory(&self) -> &PathBuf {
-        &self.working_dir
+    pub fn address(&self) -> &SocketAddr {
+        &self.config.inner.address
+    }
+
+    pub fn api_token(&self) -> Option<String> {
+        self.config.inner.api_token.clone()
+    }
+
+    pub fn set_api_token(&mut self, api_token: String) {
+        self.config.inner.api_token = Some(api_token);
+    }
+
+    pub fn slot_no(&self) -> Result<u64, Error> {
+        match &self.state {
+            State::Finished { info, .. } => Ok(info
+                .as_ref()
+                .ok_or(Error::CannotGetSlotNoFromRegistrationResult)?
+                .slot_no),
+            _ => Err(Error::CannotGetSlotNoFromRegistrationResult),
+        }
     }
 
     pub fn config(&self) -> &Configuration {
         &self.config
     }
+}
 
-    pub fn api_token(&self) -> Option<String> {
-        self.config.token.clone()
-    }
-
-    pub fn set_api_token(&mut self, api_token: String) {
-        self.config.token = Some(api_token);
+impl Context {
+    pub fn into_scheduler_context(&self) -> SchedulerContext {
+        self.scheduler_context.clone()
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
-pub enum State {
-    Idle,
-    RequestToStart {
-        job_id: Uuid,
-        request: Request,
-    },
-    Running {
-        job_id: Uuid,
-        start: NaiveDateTime,
-        request: Request,
-    },
-    Finished {
-        job_id: Uuid,
-        start: NaiveDateTime,
-        end: NaiveDateTime,
-        request: Request,
-        info: JobOutputInfo,
-    },
-    Failed {
-        job_id: Uuid,
-        start: NaiveDateTime,
-        end: NaiveDateTime,
-        request: Request,
-        info_msg: String,
-    },
-}
-
-impl State {
-    pub fn assert_is_finished(&self) {
-        matches!(self, State::Finished { .. });
-    }
-
-    pub fn slot_no(&self) -> Result<u64, Error> {
-        match self {
-            State::Finished { info, .. } => Ok(info.slot_no),
-            _ => Err(Error::CannotGetSlotNoFromRegistrationResult),
-        }
-    }
-}
-
+use scheduler_service_lib::{SchedulerContext, ServerStopper};
 use thiserror::Error;
 
 #[derive(Debug, Error, Deserialize, Serialize)]
@@ -217,10 +96,4 @@ pub enum Error {
     NoJobRun,
     #[error("cannot get slot no from registration state")]
     CannotGetSlotNoFromRegistrationResult,
-}
-
-impl fmt::Display for State {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
 }

@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct StakePoolStats {
+    pub owners: Vec<String>,
     pub kes_public_key: String,
     pub vrf_public_key: String,
     pub total_stake: u64,

@@ -1,13 +1,20 @@
 //! JavaScript and TypeScript bindings for the Jormungandr wallet SDK.
 
-use rand_chacha::rand_core::SeedableRng;
-use rand_chacha::ChaCha20Rng;
-use std::convert::TryInto;
+pub use certificates::Certificate;
+pub use certificates::{
+    vote_cast::{Payload, VoteCast},
+    vote_plan::VotePlanId,
+};
+use chain_core::packer::Codec;
+use chain_core::property::DeserializeFromSlice;
+use chain_impl_mockchain::block::Block;
+pub use fragment::{Fragment, FragmentId};
+pub use utils::set_panic_hook;
 use wasm_bindgen::prelude::*;
 
+mod certificates;
+mod fragment;
 mod utils;
-
-pub use utils::set_panic_hook;
 
 /// A Wallet gives the user control over an account address
 /// controlled by a private key. It can also be used to convert other funds
@@ -19,51 +26,39 @@ pub struct Wallet(wallet_core::Wallet);
 #[wasm_bindgen]
 pub struct Settings(wallet_core::Settings);
 
-/// Information about a proposal in a vote plan deployed onto the blockchain.
 #[wasm_bindgen]
-pub struct Proposal(wallet_core::Proposal);
-
-/// Identifier for a vote plan deployed onto the blockchain.
-#[wasm_bindgen]
-pub struct VotePlanId([u8; wallet_core::VOTE_PLAN_ID_LENGTH]);
-
-#[wasm_bindgen]
-pub struct Options(wallet_core::Options);
-
-impl_secret_key!(
-    Ed25519ExtendedPrivate,
-    chain_crypto::Ed25519Extended,
-    Ed25519Public
-);
-impl_secret_key!(Ed25519Private, chain_crypto::Ed25519, Ed25519Public);
-
-impl_public_key!(Ed25519Public, chain_crypto::Ed25519);
-
-/// Signature obtained with the Ed25519 algorithm.
-#[wasm_bindgen]
-pub struct Ed25519Signature(chain_crypto::Signature<Box<[u8]>, chain_crypto::Ed25519>);
-
-/// Identifier of a block fragment, such as a vote transaction posted on the blockchain.
-#[wasm_bindgen]
-pub struct FragmentId(wallet_core::FragmentId);
-
-/// A public key for the election protocol that is used to encrypt private ballots.
-#[wasm_bindgen]
-pub struct ElectionPublicKey(chain_vote::ElectionPublicKey);
-
-/// this is used only for giving the Array a type in the typescript generated notation
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(typescript_type = "Array<FragmentId>")]
-    pub type FragmentIds;
+impl Settings {
+    pub fn new(block0_bytes: &[u8]) -> Result<Settings, JsValue> {
+        let block0 = Block::deserialize_from_slice(&mut Codec::new(block0_bytes.as_ref()))
+            .map_err(|e| JsValue::from(e.to_string()))?;
+        Ok(Self(
+            wallet_core::Settings::new(&block0).map_err(|e| JsValue::from(e.to_string()))?,
+        ))
+    }
 }
 
 #[wasm_bindgen]
 pub struct BlockDate(chain_impl_mockchain::block::BlockDate);
 
 #[wasm_bindgen]
+impl BlockDate {
+    pub fn new(epoch: u32, slot_id: u32) -> BlockDate {
+        BlockDate(chain_impl_mockchain::block::BlockDate { epoch, slot_id })
+    }
+}
+
 #[derive(Clone)]
+#[wasm_bindgen]
 pub struct SpendingCounter(chain_impl_mockchain::account::SpendingCounter);
+
+#[wasm_bindgen]
+impl SpendingCounter {
+    pub fn new(lane: usize, counter: u32) -> Self {
+        Self(chain_impl_mockchain::account::SpendingCounter::new(
+            lane, counter,
+        ))
+    }
+}
 
 impl_collection!(SpendingCounters, SpendingCounter);
 
@@ -118,40 +113,18 @@ impl Wallet {
             .map_err(|e| JsValue::from(e.to_string()))
     }
 
-    /// Cast a vote
-    ///
-    /// This function outputs a fragment containing a voting transaction.
-    ///
-    /// # Parameters
-    ///
-    /// * `settings` - ledger settings.
-    /// * `proposal` - proposal information including the range of values
-    ///   allowed in `choice`.
-    /// * `choice` - the option to vote for.
-    /// * `valid_until` - the date until this transaction can be applied
-    /// * `lane` - lane to use for the spending counter. Must be a number in the interval of [0, 7]
-    ///
-    /// # Errors
-    ///
-    /// The error is returned when `choice` does not fall withing the range of
-    /// available choices specified in `proposal`.
-    pub fn vote(
+    pub fn sign_transaction(
         &mut self,
         settings: &Settings,
-        proposal: &Proposal,
-        choice: u8,
-        valid_until: &BlockDate,
+        valid_until: BlockDate,
         lane: u8,
-    ) -> Result<Box<[u8]>, JsValue> {
-        self.0
-            .vote(
-                settings.0.clone(),
-                &proposal.0,
-                wallet_core::Choice::new(choice),
-                &valid_until.0,
-                lane,
-            )
-            .map_err(|e| JsValue::from(e.to_string()))
+        certificate: Certificate,
+    ) -> Result<Fragment, JsValue> {
+        let fragment = self
+            .0
+            .sign_transaction(&settings.0, valid_until.0, lane, certificate.0)
+            .map_err(|e| JsValue::from(e.to_string()))?;
+        Ok(Fragment(fragment))
     }
 
     /// Confirms that a transaction has been confirmed on the blockchain.
@@ -161,223 +134,4 @@ impl Wallet {
     pub fn confirm_transaction(&mut self, fragment: &FragmentId) {
         self.0.confirm_transaction(fragment.0);
     }
-}
-
-#[wasm_bindgen]
-impl Proposal {
-    /// Constructs a description of a public vote proposal from its constituent data.
-    ///
-    /// Parameters:
-    /// * `vote_plan_id`: Identifier of the vote plan.
-    /// * `index`: 0-based index of the proposal in the vote plan.
-    /// * `options`: Descriptor of vote plan options, detailing the number of choices.
-    pub fn new_public(vote_plan_id: VotePlanId, index: u8, options: Options) -> Self {
-        Proposal(wallet_core::Proposal::new(
-            vote_plan_id.0.into(),
-            index,
-            options.0,
-            wallet_core::PayloadTypeConfig::Public,
-        ))
-    }
-
-    /// Constructs a description of a private vote proposalfrom its constituent data.
-    ///
-    /// Parameters:
-    /// * `vote_plan_id`: Identifier of the vote plan.
-    /// * `index`: 0-based index of the proposal in the vote plan.
-    /// * `options`: Descriptor of vote plan options, detailing the number of choices.
-    /// * `election_key`: The public key for the vote plan used to encrypt ballots.
-    pub fn new_private(
-        vote_plan_id: VotePlanId,
-        index: u8,
-        options: Options,
-        election_key: ElectionPublicKey,
-    ) -> Self {
-        Proposal(wallet_core::Proposal::new_private(
-            vote_plan_id.0.into(),
-            index,
-            options.0,
-            election_key.0,
-        ))
-    }
-}
-
-#[wasm_bindgen]
-impl VotePlanId {
-    /// Constructs a VotePlanId value from its byte array representation.
-    pub fn from_bytes(bytes: &[u8]) -> Result<VotePlanId, JsValue> {
-        let array: [u8; wallet_core::VOTE_PLAN_ID_LENGTH] = bytes
-            .try_into()
-            .map_err(|_| JsValue::from_str("Invalid vote plan id length"))?;
-
-        Ok(VotePlanId(array))
-    }
-
-    /// Deprecated; use `from_bytes`.
-    pub fn new_from_bytes(bytes: &[u8]) -> Result<VotePlanId, JsValue> {
-        Self::from_bytes(bytes)
-    }
-}
-
-#[wasm_bindgen]
-impl Options {
-    pub fn new_length(length: u8) -> Result<Options, JsValue> {
-        wallet_core::Options::new_length(length)
-            .map_err(|e| JsValue::from(e.to_string()))
-            .map(Options)
-    }
-}
-
-#[wasm_bindgen]
-impl Ed25519Signature {
-    /// Constructs a signature object from its byte array representation.
-    pub fn from_bytes(signature: &[u8]) -> Result<Ed25519Signature, JsValue> {
-        chain_crypto::Signature::from_binary(signature)
-            .map(Self)
-            .map_err(|e| JsValue::from_str(&format!("Invalid signature {}", e)))
-    }
-
-    /// Deprecated; use `from_bytes`.
-    pub fn from_binary(signature: &[u8]) -> Result<Ed25519Signature, JsValue> {
-        Self::from_bytes(signature)
-    }
-
-    /// Returns a byte array representation of the signature.
-    pub fn to_bytes(&self) -> Box<[u8]> {
-        self.0.as_ref().into()
-    }
-}
-
-#[macro_export]
-macro_rules! impl_public_key {
-    ($name:ident, $wrapped_type:ty) => {
-        #[wasm_bindgen]
-        pub struct $name(chain_crypto::PublicKey<$wrapped_type>);
-
-        #[wasm_bindgen]
-        impl $name {
-            /// Returns a byte array representation of the public key.
-            // TODO: rename to `to_bytes` for harmonization with the rest of the API?
-            pub fn bytes(&self) -> Box<[u8]> {
-                self.0.as_ref().into()
-            }
-
-            /// Returns the key formatted as a string in Bech32 format.
-            pub fn bech32(&self) -> String {
-                use chain_crypto::bech32::Bech32 as _;
-                self.0.to_bech32_str()
-            }
-
-            /// Uses the given signature to verify the given message.
-            pub fn verify(&self, signature: &Ed25519Signature, msg: &[u8]) -> bool {
-                let verification = signature.0.verify_slice(&self.0, msg);
-                match verification {
-                    chain_crypto::Verification::Success => true,
-                    chain_crypto::Verification::Failed => false,
-                }
-            }
-        }
-    };
-}
-
-/// macro arguments:
-///     the exported name of the type
-///     the inner/mangled key type
-///     the name of the exported public key associated type
-#[macro_export]
-macro_rules! impl_secret_key {
-    ($name:ident, $wrapped_type:ty, $public:ident) => {
-        #[wasm_bindgen]
-        pub struct $name(chain_crypto::SecretKey<$wrapped_type>);
-
-        #[wasm_bindgen]
-        impl $name {
-            /// Generates the key using OS-provided entropy.
-            pub fn generate() -> $name {
-                Self(chain_crypto::SecretKey::<$wrapped_type>::generate(
-                    rand::rngs::OsRng,
-                ))
-            }
-
-            /// Generates the key from a seed value.
-            /// For the same entropy value of 32 bytes, the same key will be generated.
-            /// This seed will be fed to ChaChaRNG and allow pseudo random key generation.
-            /// Do not use if you are not sure.
-            pub fn from_seed(seed: &[u8]) -> Result<$name, JsValue> {
-                let seed: [u8; 32] = seed
-                    .try_into()
-                    .map_err(|_| JsValue::from_str("Invalid seed, expected 32 bytes"))?;
-
-                let rng = ChaCha20Rng::from_seed(seed);
-
-                Ok(Self(chain_crypto::SecretKey::<$wrapped_type>::generate(
-                    rng,
-                )))
-            }
-
-            /// Returns the public key corresponding to this secret key.
-            pub fn public(&self) -> $public {
-                $public(self.0.to_public())
-            }
-
-            /// Returns the key represented by an array of bytes.
-            /// Use with care: the secret key should not be revealed to external
-            /// observers or exposed to untrusted code.
-            // TODO: rename to leak_bytes() to emphasize the security caveats?
-            pub fn bytes(&self) -> Box<[u8]> {
-                self.0.clone().leak_secret().as_ref().into()
-            }
-
-            /// Signs the provided message with this secret key.
-            pub fn sign(&self, msg: &[u8]) -> Ed25519Signature {
-                Ed25519Signature::from_bytes(self.0.sign(&msg).as_ref()).unwrap()
-            }
-        }
-    };
-}
-
-#[wasm_bindgen]
-impl FragmentId {
-    /// Constructs a fragment identifier from its byte array representation.
-    pub fn from_bytes(bytes: &[u8]) -> Result<FragmentId, JsValue> {
-        let array: [u8; std::mem::size_of::<wallet_core::FragmentId>()] = bytes
-            .try_into()
-            .map_err(|_| JsValue::from_str("Invalid fragment id"))?;
-
-        Ok(FragmentId(array.into()))
-    }
-
-    /// Deprecated; use `from_bytes`.
-    pub fn new_from_bytes(bytes: &[u8]) -> Result<FragmentId, JsValue> {
-        Self::from_bytes(bytes)
-    }
-
-    /// Returns a byte array representation of the fragment identifier.
-    pub fn to_bytes(&self) -> Vec<u8> {
-        self.0.as_bytes().to_vec()
-    }
-}
-
-#[wasm_bindgen]
-impl ElectionPublicKey {
-    /// Constructs a key from its byte array representation.
-    pub fn from_bytes(bytes: &[u8]) -> Result<ElectionPublicKey, JsValue> {
-        chain_vote::ElectionPublicKey::from_bytes(bytes)
-            .ok_or_else(|| JsValue::from_str("invalid binary format"))
-            .map(Self)
-    }
-
-    /// Decodes the key from a string in Bech32 format.
-    pub fn from_bech32(bech32_str: &str) -> Result<ElectionPublicKey, JsValue> {
-        use chain_crypto::bech32::Bech32;
-        chain_vote::ElectionPublicKey::try_from_bech32_str(bech32_str)
-            .map_err(|e| JsValue::from_str(&format!("invalid bech32 string {}", e)))
-            .map(Self)
-    }
-}
-
-#[wasm_bindgen]
-pub fn symmetric_decrypt(password: &[u8], data: &[u8]) -> Result<Box<[u8]>, JsValue> {
-    symmetric_cipher::decrypt(password, data)
-        .map_err(|e| JsValue::from_str(&format!("decryption failed {}", e)))
 }

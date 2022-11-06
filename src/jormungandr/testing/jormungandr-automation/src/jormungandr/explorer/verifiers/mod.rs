@@ -3,6 +3,7 @@ pub mod all_vote_plans_verifier;
 pub mod block_by_id_verifier;
 pub mod blocks_by_chain_length_verifier;
 pub mod last_block_verifier;
+pub mod stake_pool_verifier;
 pub mod transaction_by_id_verifier;
 pub mod vote_plan_verifier;
 

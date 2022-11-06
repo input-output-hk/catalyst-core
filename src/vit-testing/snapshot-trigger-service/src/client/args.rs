@@ -1,6 +1,7 @@
 use crate::client::rest::SnapshotRestClient;
 use crate::config::JobParameters;
-use crate::context::State;
+use crate::ContextState;
+use scheduler_service_lib::{CliError, FilesCommand, HealthCommand};
 use structopt::StructOpt;
 use thiserror::Error;
 
@@ -42,14 +43,8 @@ pub enum Command {
 impl Command {
     pub fn exec(self, rest: SnapshotRestClient) -> Result<(), Error> {
         match self {
-            Self::Health => {
-                match rest.is_up() {
-                    true => println!("env is up"),
-                    false => println!("env is down"),
-                }
-                Ok(())
-            }
-            Self::Files(files_command) => files_command.exec(rest),
+            Self::Health => HealthCommand::exec(rest.into()).map_err(Into::into),
+            Self::Files(files_command) => files_command.exec(rest.into()).map_err(Into::into),
             Self::Job(job_command) => job_command.exec(rest),
         }
     }
@@ -86,11 +81,8 @@ pub struct StatusCommand {
 }
 
 impl StatusCommand {
-    pub fn exec(
-        self,
-        rest: SnapshotRestClient,
-    ) -> Result<Result<State, crate::context::Error>, Error> {
-        rest.job_status(self.job_id).map_err(Into::into)
+    pub fn exec(self, rest: SnapshotRestClient) -> Result<ContextState, Error> {
+        rest.get_status(self.job_id).map_err(Into::into)
     }
 }
 
@@ -114,22 +106,6 @@ impl NewJobCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
-pub enum FilesCommand {
-    List,
-}
-
-impl FilesCommand {
-    pub fn exec(self, rest: SnapshotRestClient) -> Result<(), Error> {
-        match self {
-            Self::List => {
-                println!("{}", serde_json::to_string_pretty(&rest.list_files()?)?);
-                Ok(())
-            }
-        }
-    }
-}
-
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("internal rest error")]
@@ -137,5 +113,9 @@ pub enum Error {
     #[error("response serialization error")]
     SerdeError(#[from] serde_json::Error),
     #[error("rest error")]
-    RestError(#[from] super::rest::Error),
+    Rest(#[from] super::rest::Error),
+    #[error("rest error")]
+    Context(#[from] crate::context::Error),
+    #[error(transparent)]
+    Cli(#[from] CliError),
 }

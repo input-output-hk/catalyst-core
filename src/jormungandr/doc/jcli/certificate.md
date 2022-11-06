@@ -90,18 +90,42 @@ For example your config file may look like:
 {{#include ../../jormungandr-lib/src/interfaces/CONFIG_PARAMS_DOCUMENTED_EXAMPLE.yaml}}
 ```
 
-## Building update vote certificate
+## Building vote cast certificate
 
-Builds an update proposal certificate.
+Builds a vote cast certificate.
+
+### Public vote cast
 
 ```sh
-jcli certificate new update-proposal \
-    <PROPOSAL_ID> \
-    <VOTER_ID> \
-    [<output-file>]
+jcli certificate new update-cast public \
+    --choice <choice> \
+    --proposal-index <proposal-index> \
+    --vote-plan-id <vote-plan-id> \
+    --output <output-file>
 ```
 
 Where:
-- <PROPOSAL_ID>                      - the proposal ID of the proposal, it is a corresponding update proposal fragment id
-- <VOTER_ID>                         - the voter ID, public key of the one who will sign this certificate
-- `output-file`                      - *optional*, write the output to the given file or print it to the standard output if not defined
+- <choice>                      - the number of choice within the proposal you vote for
+- <proposal-index>              - the number of proposal in the vote plan you vote for
+- <vote-plan-id>                - the vote plan identified on the blockchain
+- <output-file>                 - *optional* write the output to the given file or print it to the standard output if not defined
+
+### Private vote cast
+
+```sh
+jcli certificate new update-cast private \
+    --choice <choice> \
+    --options-size <options> \
+    --proposal-index <proposal-index> \
+    --vote-plan-id <vote-plan-id> \
+    --key-path <secret-key>
+    --output <output-file>
+```
+
+Where:
+- <choice>                      - the number of choice within the proposal you vote for
+- <options>                     - size of voting options
+- <proposal-index>              - the number of proposal in the vote plan you vote for
+- <vote-plan-id>                - the vote plan identified on the blockchain
+- <secret-key>                  - *optional* key to encrypt the vote with, if not provided read secret key from the stdit
+- <output-file>                 - *optional* write the output to the given file or print it to the standard output if not defined

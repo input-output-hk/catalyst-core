@@ -15,13 +15,13 @@ use crate::db::{
 use crate::v0::errors::HandleError;
 use diesel::{
     r2d2::{ConnectionManager, PooledConnection},
-    ExpressionMethods, Insertable, QueryDsl, QueryResult, RunQueryDsl, SqliteConnection,
+    ExpressionMethods, Insertable, QueryDsl, QueryResult, RunQueryDsl,
 };
 use serde::{Deserialize, Serialize};
 
 fn join_fund(
     mut fund: Fund,
-    db_conn: &PooledConnection<ConnectionManager<SqliteConnection>>,
+    db_conn: &PooledConnection<ConnectionManager<DbConnection>>,
 ) -> Result<Fund, HandleError> {
     let id = fund.id;
 

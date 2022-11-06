@@ -26,7 +26,7 @@ WHERE
 ";
 
 pub fn load_db_connection_pool(db_url: &str) -> Result<DbConnectionPool, Error> {
-    let manager = ConnectionManager::<SqliteConnection>::new(db_url);
+    let manager = ConnectionManager::<DbConnection>::new(db_url);
     let pool = Pool::builder().build(manager)?;
 
     // test db connection or bubble up error

@@ -11,7 +11,7 @@ chain-core = { path = "../chain-core" }
 
 quickcheck = { version = "0.9", optional = true }
 proptest = { workspace = true, optional = true }
-test-strategy = { version = "0.1", optional = true }
+test-strategy = { version = "0.2", optional = true }
 
 [features]
 property-test-api = ["quickcheck", "proptest", "test-strategy"]
@@ -19,4 +19,4 @@ property-test-api = ["quickcheck", "proptest", "test-strategy"]
 [dev-dependencies]
 quickcheck = "0.9"
 proptest = { workspace = true }
-test-strategy = "0.1"
+test-strategy = "0.2"

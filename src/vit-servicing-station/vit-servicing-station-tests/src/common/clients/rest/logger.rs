@@ -1,12 +1,6 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct RestClientLogger {
     enabled: bool,
-}
-
-impl Default for RestClientLogger {
-    fn default() -> Self {
-        Self { enabled: true }
-    }
 }
 
 impl RestClientLogger {

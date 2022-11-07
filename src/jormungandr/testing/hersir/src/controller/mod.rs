@@ -299,6 +299,7 @@ impl Controller {
 
         Ok(Starter::default()
             .config(params)
+            .alias(spawn_params.get_alias().to_string())
             .jormungandr_app_option(spawn_params.get_jormungandr())
             .verbose(spawn_params.get_verbose())
             .alias(spawn_params.get_alias().clone()))

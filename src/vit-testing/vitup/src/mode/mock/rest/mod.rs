@@ -45,7 +45,10 @@ use warp::{reject::Reject, Filter, Rejection, Reply};
 pub mod reject;
 mod search;
 
+use crate::error::Error::NoChallengeIdAndGroupFound;
 use reject::{report_invalid, ForcedErrorCode, GeneralException, InvalidBatch};
+
+impl warp::reject::Reject for crate::error::Error {}
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Error)]
@@ -83,8 +86,8 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
 
     let filter = std::env::var("RUST_LOG").unwrap_or_else(|_| "tracing=info,warp=debug".to_owned());
     tracing_subscriber::fmt()
-        .with_env_filter(filter)
         .with_writer(non_block)
+        .with_env_filter(filter)
         .with_span_events(FmtSpan::CLOSE)
         .init();
 
@@ -365,7 +368,12 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
                 .and_then(get_challenge_by_id)
                 .with(warp::reply::with::headers(default_headers.clone()));
 
-            root.and(challenge_by_id.or(challenges))
+            let challenge_by_id_and_group_id = warp::path!(i32 / String)
+                .and(warp::get())
+                .and(with_context.clone())
+                .and_then(get_challenge_by_id_and_group_id);
+
+            root.and(challenge_by_id_and_group_id.or(challenge_by_id.or(challenges)))
         };
 
         let reviews = {
@@ -649,6 +657,7 @@ fn load_cert(filename: &Path) -> Result<Vec<rustls::Certificate>, Error> {
         }
         // not a pemfile
         None => Err(Error::InvalidCertificate),
+        Some(_) => Err(Error::InvalidCertificate),
     }
 }
 
@@ -660,6 +669,7 @@ fn load_private_key(filename: &Path) -> Result<rustls::PrivateKey, Error> {
         Some(rustls_pemfile::Item::RSAKey(key)) => Ok(rustls::PrivateKey(key)),
         Some(rustls_pemfile::Item::PKCS8Key(key)) => Ok(rustls::PrivateKey(key)),
         None | Some(rustls_pemfile::Item::X509Certificate(_)) => Err(Error::InvalidKey),
+        Some(_) => Err(Error::InvalidCertificate),
     }
 }
 
@@ -1227,6 +1237,56 @@ pub async fn get_challenges(context: ContextLock) -> Result<impl Reply, Rejectio
         .state()
         .vit()
         .challenges())))
+}
+
+pub async fn get_challenge_by_id_and_group_id(
+    id: i32,
+    voter_group_id: String,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
+    let mut context_lock = context.lock().unwrap();
+    context_lock.log(format!(
+        "get_challenge_by_id_and_group_id {}/{} ...",
+        id, voter_group_id
+    ));
+
+    if !context_lock.available() {
+        let code = context_lock.state().error_code;
+        context_lock.log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
+    }
+
+    let challenge = context_lock
+        .state()
+        .vit()
+        .challenges()
+        .iter()
+        .cloned()
+        .find(|ch| ch.id == id)
+        .ok_or_else(|| HandleError::NotFound(id.to_string()))?;
+    let proposals: Vec<Proposal> = context_lock
+        .state()
+        .vit()
+        .proposals()
+        .iter()
+        .filter(|x| x.proposal.challenge_id == challenge.id && x.group_id == voter_group_id)
+        .map(|x| x.proposal.clone())
+        .collect();
+
+    if proposals.is_empty() {
+        Err(warp::reject::custom(NoChallengeIdAndGroupFound {
+            id: id.to_string(),
+            group: voter_group_id,
+        }))
+    } else {
+        Ok(HandlerResult(Ok(ChallengeWithProposals {
+            challenge,
+            proposals,
+        })))
+    }
 }
 
 pub async fn get_challenge_by_id(id: i32, context: ContextLock) -> Result<impl Reply, Rejection> {

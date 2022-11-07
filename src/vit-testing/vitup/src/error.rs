@@ -113,4 +113,6 @@ pub enum Error {
     SnapshotIntialReadError,
     #[error("no challenge id found for proposal {proposal_id}")]
     NoChallengeIdFound { proposal_id: String },
+    #[error("no challenge id: {id} and group: {group} found")]
+    NoChallengeIdAndGroupFound { id: String, group: String },
 }

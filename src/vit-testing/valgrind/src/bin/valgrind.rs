@@ -1,5 +1,6 @@
 use structopt::StructOpt;
 use valgrind::{Protocol, ValigrindStartupCommand};
+use warp::http::StatusCode;
 use warp::Filter;
 use warp_reverse_proxy::reverse_proxy_filter;
 
@@ -57,6 +58,11 @@ async fn main() {
             server_stub.http_node_address(),
         ));
 
+        let node = warp::path!("node" / "stats").and(reverse_proxy_filter(
+            "".to_string(),
+            server_stub.http_node_address(),
+        ));
+
         let explorer = warp::path!("explorer" / "graphql").and(reverse_proxy_filter(
             "".to_string(),
             server_stub.http_node_address(),
@@ -83,6 +89,7 @@ async fn main() {
                 .or(settings)
                 .or(explorer)
                 .or(vote)
+                .or(node)
                 .or(block0),
         )
     };
@@ -106,7 +113,12 @@ async fn main() {
         "".to_string(),
         server_stub.http_vit_address(),
     ));
-    let app = api.and(v0.or(v1).or(vit_version));
+
+    let health = warp::path!("health")
+        .and(warp::get())
+        .map(|| StatusCode::OK);
+
+    let app = api.and(v0.or(v1).or(vit_version).or(health));
 
     match server_stub.protocol() {
         Protocol::Https(certs) => {

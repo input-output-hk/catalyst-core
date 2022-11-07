@@ -1,7 +1,6 @@
 use super::{ALICE, BOB, LEADER_1, LEADER_2, LEADER_3, LEADER_4};
 use crate::networking::utils;
 use assert_fs::fixture::PathChild;
-use function_name::named;
 use hersir::{
     builder::{NetworkBuilder, Node, Topology},
     config::{BlockchainConfiguration, SessionSettings, SpawnParams, WalletTemplateBuilder},
@@ -29,7 +28,6 @@ pub fn last_nth_release(#[case] n: u32) {
     test_legacy_release(legacy_app, last_release.version())
 }
 
-#[named]
 fn test_legacy_release(legacy_app: PathBuf, version: Version) {
     let mut controller = NetworkBuilder::default()
         .topology(
@@ -95,7 +93,7 @@ fn test_legacy_release(legacy_app: PathBuf, version: Version) {
             &leader4 as &dyn SyncNode,
         ],
         SyncWaitParams::network_size(4, 2).into(),
-        &format!("{}_{}", function_name!(), version),
+        &format!("{}_{}", "test_legacy_release", version),
         MeasurementReportInterval::Standard,
     )
     .unwrap();
@@ -116,7 +114,6 @@ pub fn disruption_last_nth_release(#[case] n: u32) {
     test_legacy_disruption_release(legacy_app, last_release.version())
 }
 
-#[named]
 fn test_legacy_disruption_release(legacy_app: PathBuf, version: Version) {
     let mut controller = NetworkBuilder::default()
         .topology(
@@ -192,16 +189,15 @@ fn test_legacy_disruption_release(legacy_app: PathBuf, version: Version) {
             &leader4 as &dyn SyncNode,
         ],
         SyncWaitParams::network_size(4, 2).into(),
-        &format!("{}_{}", function_name!(), version),
+        &format!("{}_{}", "test_legacy_disruption_release", version),
         MeasurementReportInterval::Standard,
     )
     .unwrap();
 }
 
 #[test]
-#[named]
 pub fn newest_node_enters_legacy_network() {
-    let title = function_name!();
+    let title = "newest_node_enters_legacy_network";
     let releases = download_last_n_releases(1);
     let last_release = releases.last().unwrap();
     let session_settings = SessionSettings::default();

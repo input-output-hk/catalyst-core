@@ -71,7 +71,7 @@ impl SpawnParams {
             skip_bootstrap: None,
             trusted_peers: None,
             version: None,
-            verbose: true,
+            verbose: false,
         }
     }
 

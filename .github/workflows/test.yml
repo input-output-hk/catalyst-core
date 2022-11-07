@@ -18,7 +18,7 @@ jobs:
       CARGO_INCREMENTAL: 0
     steps: 
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Debug
         uses: cachix/install-nix-action@v18

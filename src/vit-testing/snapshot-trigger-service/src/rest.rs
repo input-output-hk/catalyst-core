@@ -4,7 +4,6 @@ use futures::FutureExt;
 use futures::{channel::mpsc, StreamExt};
 use jortestkit::web::api_token::TokenError;
 use jortestkit::web::api_token::{APIToken, APITokenManager};
-use scheduler_service_lib::dump_json;
 use scheduler_service_lib::FileListerError;
 use scheduler_service_lib::ServerStopper;
 use std::convert::Infallible;
@@ -48,18 +47,13 @@ pub async fn start_rest_server(context: ContextLock) {
     let shared_scheduler_context = Arc::new(RwLock::new(scheduler_context.clone()));
     let is_token_enabled = context.lock().unwrap().api_token().is_some();
     let address = *context.lock().unwrap().address();
-    let working_dir = context
-        .lock()
-        .unwrap()
-        .working_directory()
-        .clone()
-        .expect("no working dir defined");
+    let working_dir = context.lock().unwrap().working_directory().to_path_buf();
     let with_context = warp::any().map(move || context.clone());
 
     let root = warp::path!("api" / ..).boxed();
 
     let files =
-        scheduler_service_lib::rest::files_filter(shared_scheduler_context.clone(), working_dir);
+        scheduler_service_lib::rest::files_filter(shared_scheduler_context.clone(), working_dir.to_path_buf());
     let health = scheduler_service_lib::rest::health_filter();
 
     let job = {
@@ -110,24 +104,8 @@ pub async fn job_new_handler(
     context: ContextLock,
     params: JobParameters,
 ) -> Result<impl Reply, Rejection> {
-    let mut context_lock = context.lock().unwrap();
-    let id = context_lock.state_mut().new_run_requested(params)?;
+    let id = context.lock().unwrap().state_mut().new_run_requested(params)?;
     Ok(id).map(|r| warp::reply::json(&r))
-}
-
-pub async fn health_handler() -> Result<impl Reply, Rejection> {
-    Ok(warp::reply())
-}
-
-pub async fn files_handler(context: ContextLock) -> Result<impl Reply, Rejection> {
-    let context_lock = context.lock().unwrap();
-    let working_dir = if let Some(working_dir) = context_lock.working_directory() {
-        working_dir
-    } else {
-        return Err(warp::reject::custom(Error::WorkingDirectoryUndefined));
-    };
-
-    Ok(dump_json(working_dir)?).map(|r| warp::reply::json(&r))
 }
 
 async fn report_invalid(r: Rejection) -> Result<impl Reply, Infallible> {

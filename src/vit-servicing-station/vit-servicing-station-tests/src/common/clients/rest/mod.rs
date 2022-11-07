@@ -3,6 +3,7 @@ mod path;
 mod raw;
 
 use crate::common::clients::rest::path::RestPathBuilder;
+use crate::common::raw_snapshot::RawSnapshot;
 use crate::common::snapshot::{Snapshot, VoterInfo};
 use hyper::StatusCode;
 use logger::RestClientLogger;
@@ -83,6 +84,11 @@ impl RestClient {
     pub fn put_snapshot_info(&self, snapshot: &Snapshot) -> Result<(), Error> {
         let content = serde_json::to_string(&snapshot.content)?;
         self.verify_status_code(&self.raw.put_snapshot_info(&snapshot.tag, content)?)
+    }
+
+    pub fn put_raw_snapshot(&self, raw_snapshot: &RawSnapshot) -> Result<(), Error> {
+        let content = serde_json::to_string(&raw_snapshot.content)?;
+        self.verify_status_code(&self.raw.put_raw_snapshot(&raw_snapshot.tag, content)?)
     }
 
     pub fn proposal(&self, id: &str, group: &str) -> Result<FullProposalInfo, Error> {

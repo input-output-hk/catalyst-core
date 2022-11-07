@@ -77,15 +77,10 @@ pub fn increase_max_block_content_size_during_voting() {
     )
     .unwrap();
 
-    let mut alice = iapyx_from_secret_key(
-        testing_directory.path().join(format!("wallet_{}", ALICE)),
-        &wallet_proxy,
-    )
-    .unwrap();
+    let mut alice =
+        iapyx_from_secret_key(testing_directory.path().join(ALICE), &wallet_proxy).unwrap();
     let mut committee = Wallet::import_account(
-        testing_directory
-            .path()
-            .join(format!("wallet_{}", COMMITTEE)),
+        testing_directory.path().join(COMMITTEE),
         Some(0u32.into()),
         Discrimination::Production,
     );

@@ -5,78 +5,34 @@ use assert_fs::TempDir;
 pub use job::JobParameters;
 use mainnet_tools::voting_tools::VotingToolsMock;
 use serde::{Deserialize, Serialize};
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::path::Path;
 use std::path::PathBuf;
-use std::process::Command;
 use thiserror::Error;
-use uuid::Uuid;
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
 pub struct Configuration {
-    pub port: u16,
+    #[serde(flatten)]
+    pub inner: scheduler_service_lib::Configuration,
     #[serde(rename = "voting-tools")]
     pub voting_tools: VotingToolsParams,
-    #[serde(rename = "result-dir")]
-    pub result_dir: PathBuf,
-    pub token: Option<String>,
 }
 
 impl Configuration {
-    pub fn spawn_command(
-        &self,
-        job_id: Uuid,
-        params: JobParameters,
-    ) -> Result<std::process::Child, Error> {
-        let output_folder = Path::new(&self.result_dir).join(format!("{}", job_id));
-
-        let mut command = self.voting_tools.command()?;
-        match self.voting_tools.network {
-            NetworkType::Mainnet => command.arg("--mainnet"),
-            NetworkType::Testnet(magic) => command.arg("--testnet-magic").arg(magic.to_string()),
-        };
-
-        let output_filename = self.crate_snapshot_output_file_name(&params.tag);
-
-        command
-            .arg("--db")
-            .arg(&self.voting_tools.db)
-            .arg("--db-user")
-            .arg(&self.voting_tools.db_user)
-            .arg("--db-pass")
-            .arg(&self.voting_tools.db_pass)
-            .arg("--db-host")
-            .arg(&self.voting_tools.db_host)
-            .arg("--out-file")
-            .arg(output_folder.join(output_filename))
-            .arg("--scale")
-            .arg(self.voting_tools.scale.to_string());
-
-        if let Some(slot_no) = params.slot_no {
-            command.arg("--slot-no").arg(slot_no.to_string());
-        }
-
-        self.print_with_password_hidden(&command);
-
-        command.spawn().map_err(Into::into)
+    pub fn set_token(&mut self, token: Option<String>) {
+        self.inner.api_token = token;
     }
 
-    fn print_with_password_hidden(&self, command: &Command) {
-        let log_command = format!("{:?}", command);
-        let pass = format!("--db-pass {}", &self.voting_tools.db_pass);
-        println!(
-            "Running command: {} ",
-            log_command.replace(&pass, "--db-pass ***")
-        );
+    pub fn result_dir(&self) -> PathBuf {
+        self.inner.result_dir.clone()
     }
 
-    pub fn crate_snapshot_output_file_name(&self, tag: &Option<String>) -> String {
-        const SNAPSHOT_FILE: &str = "snapshot.json";
+    pub fn address_mut(&mut self) -> &mut SocketAddr {
+        &mut self.inner.address
+    }
 
-        if let Some(tag) = tag {
-            format!("{}_{}", tag, SNAPSHOT_FILE)
-        } else {
-            SNAPSHOT_FILE.to_string()
-        }
+    pub fn address(&self) -> &SocketAddr {
+        &self.inner.address
     }
 }
 
@@ -87,12 +43,12 @@ pub struct ConfigurationBuilder {
 
 impl ConfigurationBuilder {
     pub fn with_port(mut self, port: u16) -> Self {
-        self.configuration.port = port;
+        self.configuration.inner.address.set_port(port);
         self
     }
 
     pub fn with_result_dir<P: AsRef<Path>>(mut self, path: P) -> Self {
-        self.configuration.result_dir = path.as_ref().to_path_buf();
+        self.configuration.inner.result_dir = path.as_ref().to_path_buf();
         self
     }
 
@@ -113,7 +69,13 @@ impl ConfigurationBuilder {
 impl Default for Configuration {
     fn default() -> Self {
         Self {
-            port: 7070,
+            inner: scheduler_service_lib::Configuration {
+                result_dir: Path::new(".").to_path_buf(),
+                address: SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 7070),
+                api_token: None,
+                admin_token: None,
+                working_directory: None,
+            },
             voting_tools: VotingToolsParams {
                 bin: None,
                 nix_branch: None,
@@ -124,8 +86,6 @@ impl Default for Configuration {
                 db_host: "".to_string(),
                 scale: 1_000_000,
             },
-            result_dir: Path::new(".").to_path_buf(),
-            token: None,
         }
     }
 }

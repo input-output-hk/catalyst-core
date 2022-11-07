@@ -74,9 +74,9 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
     qr_codes_folder.push("qr-codes");
     wait_until_folder_contains_all_qrs(3, &qr_codes_folder);
 
-    let david_qr_code = Path::new(&qr_codes_folder).join("wallet_david_1234.png");
-    let edgar_qr_code = Path::new(&qr_codes_folder).join("wallet_edgar_1234.png");
-    let filip_qr_code = Path::new(&qr_codes_folder).join("wallet_filip_1234.png");
+    let david_qr_code = Path::new(&qr_codes_folder).join("david_1234.png");
+    let edgar_qr_code = Path::new(&qr_codes_folder).join("edgar_1234.png");
+    let filip_qr_code = Path::new(&qr_codes_folder).join("filip_1234.png");
 
     // start mainnet wallets
     let mut david = iapyx_from_qr(&david_qr_code, PIN, &wallet_proxy).unwrap();

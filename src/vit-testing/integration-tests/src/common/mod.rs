@@ -10,7 +10,7 @@ mod static_data;
 mod vote_plan_status;
 mod wallet;
 
-pub use reps::{empty_assigner, RepsVoterAssignerSource, DIRECT_VOTING_GROUP, REP_VOTING_GROUP};
+pub use reps::{empty_assigner, RepsVoterAssignerSource};
 
 pub use assert::*;
 pub use mainnet_tools::wallet::MainnetWallet;

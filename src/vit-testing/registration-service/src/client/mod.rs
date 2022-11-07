@@ -109,7 +109,10 @@ impl LegacyResultInfo {
 
     pub fn funds_in_lovelace(&self) -> Result<u64, Error> {
         match &self.status {
-            State::Finished { info, .. } => Ok(info.funds),
+            State::Finished { info, .. } => Ok(info
+                .as_ref()
+                .ok_or(Error::CannotGetFundsFromRegistrationResult)?
+                .funds),
             _ => Err(Error::CannotGetFundsFromRegistrationResult),
         }
     }

@@ -28,18 +28,16 @@ impl RestClient {
     }
 
     pub fn health(&self) -> Result<Response, Error> {
-        self.get(&self.path_builder.health())
-            .map_err(Error::RequestError)
+        self.get(&self.path_builder.health()).map_err(Into::into)
     }
 
     pub fn funds(&self) -> Result<Response, Error> {
-        self.get(&self.path_builder.funds())
-            .map_err(Error::RequestError)
+        self.get(&self.path_builder.funds()).map_err(Into::into)
     }
 
     pub fn proposals(&self, group: &str) -> Result<Response, Error> {
         self.get(&self.path_builder.proposals_with_group(group))
-            .map_err(Error::RequestError)
+            .map_err(Into::into)
     }
 
     pub fn put_snapshot_info(&self, tag: &str, content: String) -> Result<Response, Error> {
@@ -47,22 +45,30 @@ impl RestClient {
             &self.path_builder.clone().admin().snapshot_info(tag),
             content,
         )
-        .map_err(Error::RequestError)
+        .map_err(Into::into)
+    }
+
+    pub fn put_raw_snapshot(&self, tag: &str, content: String) -> Result<Response, Error> {
+        self.put(
+            &self.path_builder.clone().admin().raw_snapshot(tag),
+            content,
+        )
+        .map_err(Into::into)
     }
 
     pub fn snapshot_tags(&self) -> Result<Response, Error> {
         self.get(&self.path_builder.snapshot_tags())
-            .map_err(Error::RequestError)
+            .map_err(Into::into)
     }
 
     pub fn voter_info(&self, tag: &str, key: &str) -> Result<Response, Error> {
         self.get(&self.path_builder.snapshot_voter_info(tag, key))
-            .map_err(Error::RequestError)
+            .map_err(Into::into)
     }
 
     pub fn proposal(&self, id: &str, group: &str) -> Result<Response, Error> {
         self.get(&self.path_builder().proposal(id, group))
-            .map_err(Error::RequestError)
+            .map_err(Into::into)
     }
 
     pub fn proposals_by_voteplan_id_and_index(
@@ -73,32 +79,30 @@ impl RestClient {
             &self.path_builder().proposals(),
             request_as_string.to_string(),
         )
-        .map_err(Error::RequestError)
+        .map_err(Into::into)
     }
 
     pub fn fund(&self, id: &str) -> Result<Response, Error> {
-        self.get(&self.path_builder().fund(id))
-            .map_err(Error::RequestError)
+        self.get(&self.path_builder().fund(id)).map_err(Into::into)
     }
 
     pub fn challenges(&self) -> Result<Response, Error> {
         self.get(&self.path_builder().challenges())
-            .map_err(Error::RequestError)
+            .map_err(Into::into)
     }
 
     pub fn genesis(&self) -> Result<Response, Error> {
-        self.get(&self.path_builder.genesis())
-            .map_err(Error::RequestError)
+        self.get(&self.path_builder.genesis()).map_err(Into::into)
     }
 
     pub fn service_version(&self) -> Result<Response, Error> {
         self.get(&self.path_builder.service_version())
-            .map_err(Error::RequestError)
+            .map_err(Into::into)
     }
 
     pub fn advisor_reviews(&self, proposal_id: &str) -> Result<Response, Error> {
         self.get(&self.path_builder.advisor_reviews(proposal_id))
-            .map_err(Error::RequestError)
+            .map_err(Into::into)
     }
 
     pub fn client(&self) -> Result<reqwest::blocking::Client, reqwest::Error> {

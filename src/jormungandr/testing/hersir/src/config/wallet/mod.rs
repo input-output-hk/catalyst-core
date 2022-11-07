@@ -50,11 +50,11 @@ pub fn default_discrimination() -> Discrimination {
 }
 
 impl WalletTemplate {
-    pub(crate) fn is_generated(&self) -> bool {
+    pub fn is_generated(&self) -> bool {
         matches!(self, Self::Generated { .. })
     }
 
-    pub(crate) fn has_alias(&self, other_alias: &WalletAlias) -> bool {
+    pub fn has_alias(&self, other_alias: &WalletAlias) -> bool {
         if let Some(alias) = &self.alias() {
             alias == other_alias
         } else {

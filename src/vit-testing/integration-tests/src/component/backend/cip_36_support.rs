@@ -1,11 +1,12 @@
-use crate::common::snapshot::do_snapshot;
+use crate::common::snapshot::mock;
 use crate::common::snapshot_filter::SnapshotFilterSource;
 use crate::common::RepsVoterAssignerSource;
 use assert_fs::TempDir;
 use chain_addr::Discrimination;
 use fraction::Fraction;
+use mainnet_tools::network::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
+use mainnet_tools::wallet::MainnetWallet;
 use snapshot_trigger_service::config::JobParameters;
-use std::collections::HashSet;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::Block0Initials;
 use vitup::config::ConfigBuilder;
@@ -17,15 +18,26 @@ use vitup::testing::vitup_setup;
 pub fn cip_36_support() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
     let voting_threshold = 1;
-    let tag = None;
+    let tag = Some("test".to_string());
 
     let job_param = JobParameters {
         slot_no: None,
         tag: tag.clone(),
     };
 
-    let snapshot_result = do_snapshot(job_param).unwrap();
-    let reps = HashSet::new();
+    let alice = MainnetWallet::new(1_000);
+    let bob = MainnetWallet::new(1_000);
+    let clarice = MainnetWallet::new(1_000);
+    let dave = MainnetWallet::new(1_000);
+
+    let (db_sync, reps) = MainnetNetworkBuilder::default()
+        .with(alice.as_direct_voter())
+        .with(bob.as_representative())
+        .with(clarice.as_representative())
+        .with(dave.as_delegator(vec![(&bob, 1u8), (&clarice, 1u8)]))
+        .build();
+
+    let snapshot_result = mock::do_snapshot(&db_sync, job_param, &testing_directory);
 
     let snapshot_filter = snapshot_result.filter(
         voting_threshold.into(),
@@ -56,6 +68,4 @@ pub fn cip_36_support() {
         &mut template_generator,
     )
     .unwrap();
-
-    std::thread::sleep(std::time::Duration::from_secs(3600))
 }

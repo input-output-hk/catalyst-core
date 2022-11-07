@@ -9,7 +9,6 @@ pub use snapshot::{
 use std::fmt;
 use std::str::FromStr;
 use thiserror::Error;
-
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Initials {
     #[serde(default)]
@@ -17,6 +16,9 @@ pub struct Initials {
     #[serde(default)]
     pub block0: Block0Initials,
 }
+
+pub const DIRECT_VOTING_GROUP: &str = "direct";
+pub const REP_VOTING_GROUP: &str = "rep";
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
 pub enum Role {
@@ -27,8 +29,8 @@ pub enum Role {
 impl fmt::Display for Role {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Role::Representative => write!(f, "dreps"),
-            Role::Voter => write!(f, "direct"),
+            Role::Representative => write!(f, "{}", REP_VOTING_GROUP),
+            Role::Voter => write!(f, "{}", DIRECT_VOTING_GROUP),
         }
     }
 }
@@ -36,9 +38,9 @@ impl fmt::Display for Role {
 impl FromStr for Role {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.to_lowercase() == "direct" {
+        if s.to_lowercase() == DIRECT_VOTING_GROUP {
             Ok(Role::Voter)
-        } else if s.to_lowercase() == "dreps" {
+        } else if s.to_lowercase() == REP_VOTING_GROUP {
             Ok(Role::Representative)
         } else {
             Err(Error::UnknownRole(s.to_string()))

@@ -104,7 +104,27 @@ jcli certificate new vote-plan voteplan_def.json --output voteplan.certificate
 
 ## Casting votes
 
-TBA
+To generate a vote cast transaction firstly you need to generate vote-cast certificate following [this instructions](certificate.md#L93). Storing it into the 'vote-cast.certificate` now you can generate a transaction following [this intructions](transaction.md).
+Note that a valid vote cast transaction should have only one input with the corresponding account of the voter, zero outputs and 1 corresponding witness.
+
+Example (`voter.sk` contains a private key of the voter):
+```
+genesis_block_hash=$(jcli genesis hash < block0.bin)
+vote_plan_id=$(jcli rest v0 vote active plans get --output-format json|jq '.[0].id')
+voter_addr=$(jcli address account $(jcli key to-public < voter.sk))
+voter_addr_counter=$(jcli rest v0 account get "$committee_addr" --output-format json|jq .counter)
+jcli certificate new vote-cast public --choice 0 --proposal-index 0 --vote-plan-id "$vote_plan_id" --output vote-cast.certificate
+jcli transaction new --staging vote-cast.staging
+jcli transaction add-account "$committee_addr" 0 --staging vote-cast.staging
+jcli transaction add-certificate $(< vote-cast.certificate) --staging vote-cast.staging
+jcli transaction finalize --staging vote-cast.staging
+jcli transaction data-for-witness --staging vote-cast.staging > vote-cast.witness-data
+jcli transaction make-witness --genesis-block-hash "$genesis_block_hash" --type account --account-spending-counter
+"$voter_addr_counter" $(< vote-cast.witness-data) vote-cast.witness committee.sk
+jcli transaction seal --staging vote-cast.staging
+jcli transaction to-message --staging vote-cast.staging > vote-cast.fragment
+jcli rest v0 message post --file vote-cast.fragment
+```
 
 ## Tallying
 

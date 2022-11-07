@@ -1,15 +1,16 @@
-use crate::job::VoteRegistrationJobBuilder;
+use crate::job::{JobOutputInfo, VoteRegistrationJobBuilder};
+use crate::request::Request;
 use crate::{
     config::{read_config, Configuration},
     context::Context,
-    service::ManagerService,
+    start_rest_server,
 };
-use futures::future::FutureExt;
+use scheduler_service_lib::{spawn_scheduler, ManagerService, RunContext};
 use std::sync::Mutex;
-use std::sync::PoisonError;
 use std::{path::PathBuf, sync::Arc};
 use structopt::StructOpt;
 use thiserror::Error;
+use uuid::Uuid;
 
 #[derive(StructOpt, Debug)]
 pub struct RegistrationServiceCommand {
@@ -20,48 +21,44 @@ pub struct RegistrationServiceCommand {
     pub config: PathBuf,
 }
 
+impl RunContext<Request, JobOutputInfo> for Context {
+    fn run_requested(&self) -> Option<(Uuid, Request)> {
+        self.state().run_requested()
+    }
+
+    fn new_run_started(&mut self) -> Result<(), scheduler_service_lib::Error> {
+        self.state_mut().new_run_started()
+    }
+
+    fn run_finished(
+        &mut self,
+        output_info: Option<JobOutputInfo>,
+    ) -> Result<(), scheduler_service_lib::Error> {
+        self.state_mut().run_finished(output_info)
+    }
+}
+
 impl RegistrationServiceCommand {
     pub async fn exec(self) -> Result<(), Error> {
         let mut configuration: Configuration = read_config(&self.config)?;
 
         if self.token.is_some() {
-            configuration.token = self.token;
+            configuration.inner.api_token = self.token;
         }
 
-        let control_context = Arc::new(Mutex::new(Context::new(
-            configuration.clone(),
-            &configuration.result_dir,
-        )));
+        let control_context = Arc::new(Mutex::new(Context::new(configuration.clone())));
 
-        let mut manager = ManagerService::new(control_context.clone())?;
-        let handle = manager.spawn();
-
-        let request_to_start_task = async {
-            loop {
-                if let Some((job_id, request)) = manager.request_to_start()? {
-                    let mut job_result_dir = configuration.result_dir.clone();
-                    job_result_dir.push(job_id.to_string());
-                    std::fs::create_dir_all(job_result_dir.clone())?;
-
-                    let job = VoteRegistrationJobBuilder::new(configuration.clone())
-                        .with_working_dir(&job_result_dir)
-                        .build();
-
-                    control_context.lock()?.run_started()?;
-                    let output_info = job.start(request);
-                    control_context.lock()?.run_finished(output_info)?;
-                }
-                tokio::time::sleep(std::time::Duration::from_secs(5)).await;
-            }
-        }
-        .fuse();
-
-        tokio::pin!(request_to_start_task);
-
-        futures::select! {
-            result = request_to_start_task => result,
-            _ = handle.fuse() => Ok(()),
-        }
+        let mut manager = ManagerService::default();
+        let handle = manager.spawn(start_rest_server(control_context.clone()));
+        let job = VoteRegistrationJobBuilder::new(configuration.clone()).build();
+        spawn_scheduler(
+            &configuration.inner.result_dir,
+            control_context,
+            Box::new(job),
+            handle,
+        )
+        .await
+        .map_err(Into::into)
     }
 }
 
@@ -74,15 +71,9 @@ pub enum Error {
     #[error("context error")]
     Context(#[from] crate::context::Error),
     #[error(transparent)]
-    Service(#[from] crate::service::Error),
-    #[error(transparent)]
     Job(#[from] crate::Error),
-    #[error("cannot acquire lock on context")]
-    Poison,
-}
-
-impl<T> From<PoisonError<T>> for Error {
-    fn from(_err: PoisonError<T>) -> Self {
-        Self::Poison
-    }
+    #[error(transparent)]
+    Scheduler(#[from] scheduler_service_lib::Error),
+    #[error(transparent)]
+    Inner(#[from] scheduler_service_lib::CliError),
 }

@@ -1,4 +1,5 @@
 mod controller;
+pub mod mock;
 mod starter;
 mod voter_hirs_asserts;
 

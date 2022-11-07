@@ -169,6 +169,10 @@ impl VitController {
         self.hersir_controller.defined_nodes().collect()
     }
 
+    pub fn controlled_wallets(&self) -> Vec<Wallet> {
+        self.hersir_controller.controlled_wallets()
+    }
+
     pub fn defined_wallets(&self) -> Vec<(WalletAlias, &WalletSettings)> {
         self.hersir_controller.defined_wallets().collect()
     }

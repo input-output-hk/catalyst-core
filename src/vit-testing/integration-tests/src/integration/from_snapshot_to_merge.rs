@@ -1,5 +1,5 @@
 use crate::common::iapyx_from_mainnet;
-use crate::common::snapshot::SnapshotServiceStarter;
+use crate::common::snapshot::mock;
 use crate::common::snapshot_filter::SnapshotFilterSource;
 use crate::common::MainnetWallet;
 use assert_fs::fixture::PathChild;
@@ -9,24 +9,16 @@ use jormungandr_automation::jcli::JCli;
 use jormungandr_lib::crypto::hash::Hash;
 use jormungandr_lib::interfaces::TallyResult;
 use jormungandr_lib::interfaces::{Tally, VotePlanStatus};
-use mainnet_tools::db_sync::DbSyncInstance;
-use mainnet_tools::network::MainnetNetwork;
-use mainnet_tools::voting_tools::VotingToolsMock;
-use snapshot_trigger_service::config::ConfigurationBuilder;
+use mainnet_tools::network::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
 use snapshot_trigger_service::config::JobParameters;
-use std::collections::HashSet;
 use std::path::Path;
 use std::str::FromStr;
 use thor::FragmentSender;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
-use vitup::config::ConfigBuilder;
 use vitup::config::VoteBlockchainTime;
+use vitup::config::{ConfigBuilder, DIRECT_VOTING_GROUP, REP_VOTING_GROUP};
 use vitup::testing::spawn_network;
 use vitup::testing::vitup_setup;
-
-const DIRECT_VOTING_GROUP: &str = "direct";
-const REP_VOTING_GROUP: &str = "dreps";
-
 #[test]
 pub fn cip36_and_voting_group_merge() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
@@ -34,55 +26,21 @@ pub fn cip36_and_voting_group_merge() {
     let stake = 10_000;
     let yes_vote = chain_impl_mockchain::vote::Choice::new(0);
 
-    let alice_voter = MainnetWallet::new(stake);
-    let bob_voter = MainnetWallet::new(stake);
-    let clarice_voter = MainnetWallet::new(stake);
+    let alice = MainnetWallet::new(stake);
+    let bob = MainnetWallet::new(stake);
+    let clarice = MainnetWallet::new(stake);
 
-    let david_representative = MainnetWallet::new(500);
-    let edgar_representative = MainnetWallet::new(1_000);
-    let fred_representative = MainnetWallet::new(8_000);
+    let david = MainnetWallet::new(500);
+    let edgar = MainnetWallet::new(1_000);
+    let _fred = MainnetWallet::new(8_000);
 
-    let mut reps = HashSet::new();
-    reps.insert(edgar_representative.catalyst_public_key());
-    reps.insert(david_representative.catalyst_public_key());
-    reps.insert(fred_representative.catalyst_public_key());
-
-    let mut mainnet_network = MainnetNetwork::default();
-    let mut db_sync_instance = DbSyncInstance::default();
-
-    mainnet_network.sync_with(&mut db_sync_instance);
-
-    alice_voter
-        .send_direct_voting_registration()
-        .to(&mut mainnet_network)
-        .unwrap();
-    bob_voter
-        .send_delegated_voting_registration(vec![(david_representative.catalyst_public_key(), 1)])
-        .to(&mut mainnet_network)
-        .unwrap();
-    clarice_voter
-        .send_delegated_voting_registration(vec![
-            (david_representative.catalyst_public_key(), 1),
-            (edgar_representative.catalyst_public_key(), 1),
-        ])
-        .to(&mut mainnet_network)
-        .unwrap();
-
-    let voting_tools =
-        VotingToolsMock::default().connect_to_db_sync(&db_sync_instance, &testing_directory);
-
-    let configuration = ConfigurationBuilder::default()
-        .with_voting_tools_params(voting_tools.into())
-        .with_tmp_result_dir(&testing_directory)
+    let (db_sync, reps) = MainnetNetworkBuilder::default()
+        .with(alice.as_direct_voter())
+        .with(bob.as_delegator(vec![(&david, 1)]))
+        .with(clarice.as_delegator(vec![(&david, 1), (&edgar, 1)]))
         .build();
 
-    let snapshot_service = SnapshotServiceStarter::default()
-        .with_configuration(configuration)
-        .start_on_available_port(&testing_directory)
-        .unwrap();
-
-    let voter_hir = snapshot_service
-        .snapshot(JobParameters::fund("fund9"))
+    let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
         .filter_default(&reps)
         .to_voters_hirs();
 
@@ -113,9 +71,9 @@ pub fn cip36_and_voting_group_merge() {
     )
     .unwrap();
 
-    let mut alice = iapyx_from_mainnet(&alice_voter, &wallet_proxy).unwrap();
-    let mut david = iapyx_from_mainnet(&david_representative, &wallet_proxy).unwrap();
-    let mut edgar = iapyx_from_mainnet(&edgar_representative, &wallet_proxy).unwrap();
+    let mut alice = iapyx_from_mainnet(&alice, &wallet_proxy).unwrap();
+    let mut david = iapyx_from_mainnet(&david, &wallet_proxy).unwrap();
+    let mut edgar = iapyx_from_mainnet(&edgar, &wallet_proxy).unwrap();
 
     let voter_proposals = wallet_proxy
         .client()
@@ -127,12 +85,7 @@ pub fn cip36_and_voting_group_merge() {
     let representative_proposal = representative_proposals
         .iter()
         .find(|p| p.proposal.chain_proposal_id == voter_proposal.proposal.chain_proposal_id)
-        .unwrap();
-
-    assert_eq!(
-        voter_proposal.proposal.chain_proposal_id,
-        representative_proposal.proposal.chain_proposal_id
-    );
+        .expect("cannot find matching proposal between voter and representative");
 
     alice.vote(voter_proposal, yes_vote).unwrap();
 
@@ -187,7 +140,7 @@ pub fn cip36_and_voting_group_merge() {
         Tally::Public {
             result: TallyResult {
                 options: 0..2,
-                results: vec![30_000, 0]
+                results: vec![15_000, 0]
             }
         }
     );

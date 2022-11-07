@@ -60,7 +60,10 @@ impl Insertable<voteplans::table> for Voteplan {
 
 #[cfg(test)]
 pub mod test {
-    use crate::db::{models::voteplans::Voteplan, schema::voteplans, DbConnectionPool};
+    use crate::{
+        db::{models::voteplans::Voteplan, schema::voteplans, DbConnectionPool},
+        q,
+    };
     use diesel::{ExpressionMethods, RunQueryDsl};
     use time::OffsetDateTime;
 
@@ -90,9 +93,12 @@ pub mod test {
             voteplans::fund_id.eq(voteplan.fund_id),
             voteplans::token_identifier.eq(voteplan.token_identifier.clone()),
         );
-        diesel::insert_into(voteplans::table)
-            .values(values)
-            .execute(&connection)
-            .unwrap();
+        q!(
+            connection,
+            diesel::insert_into(voteplans::table)
+                .values(values)
+                .execute(&connection)
+        )
+        .unwrap();
     }
 }

@@ -7694,6 +7694,7 @@ dependencies = [
  "libsqlite3-sys",
  "log",
  "notify",
+ "r2d2",
  "rand 0.8.5",
  "serde",
  "serde_json",

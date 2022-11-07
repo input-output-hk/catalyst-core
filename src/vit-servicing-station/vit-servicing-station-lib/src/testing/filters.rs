@@ -1,6 +1,5 @@
 use std::convert::Infallible;
 
-use diesel::r2d2::{ConnectionManager, PooledConnection};
 use serde::Deserialize;
 use warp::{
     hyper::{body::Bytes, Response},
@@ -17,7 +16,7 @@ use crate::{
 ///  - a connection to the database
 pub async fn test_context() -> (
     impl Filter<Extract = (SharedContext,), Error = Infallible> + Clone,
-    PooledConnection<ConnectionManager<DbConnection>>,
+    DbConnection,
 ) {
     let shared_context = new_in_memmory_db_test_shared_context();
 

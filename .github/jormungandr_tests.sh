@@ -8,7 +8,6 @@ CARGO_INCREMENTAL=0
 du
 cat Cargo.lock
 uniffi-bindgen --version
-cargo build --all-targets --locked
 du
 cargo nextest run --no-fail-fast --partition hash:$1/$2 
 

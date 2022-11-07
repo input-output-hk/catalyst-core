@@ -22,6 +22,7 @@
     naersk.url = "github:nix-community/naersk";
     naersk.inputs.nixpkgs.follows = "nixpkgs";
     cardano-node.url = "github:input-output-hk/cardano-node/1.33.0";
+    nixpkgs-uniffi.url = "github:cameron1024/nixpkgs/update-uniffi";
   };
 
   outputs = {
@@ -33,6 +34,7 @@
     rust-overlay,
     naersk,
     cardano-node,
+    nixpkgs-uniffi,
   }:
     flake-utils.lib.eachSystem
     [
@@ -45,6 +47,10 @@
         workspaceCargo = readTOML ./Cargo.toml;
 
         pkgs = import nixpkgs {
+          inherit system;
+          overlays = [(import rust-overlay)];
+        };
+        pkgs-uniffi = import nixpkgs-uniffi {
           inherit system;
           overlays = [(import rust-overlay)];
         };
@@ -312,7 +318,7 @@
               pkg-config
               openssl
               protobuf
-              uniffi-bindgen
+              pkgs-uniffi.uniffi-bindgen
               postgresql
               diesel-cli
               cargo-insta # snapshot testing lib

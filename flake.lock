@@ -360,6 +360,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-uniffi": {
+      "locked": {
+        "lastModified": 1667817145,
+        "narHash": "sha256-HFpUFwd9FOJZ5QzTdUu5DRoRFo2Zu0xel7c9qax9HRs=",
+        "owner": "cameron1024",
+        "repo": "nixpkgs",
+        "rev": "b13fda0308fc933d914d63b56e6a10c2e226d6f6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cameron1024",
+        "ref": "update-uniffi",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-unstable": {
       "locked": {
         "lastModified": 1635295995,
@@ -423,6 +439,7 @@
         "flake-utils": "flake-utils_2",
         "naersk": "naersk",
         "nixpkgs": "nixpkgs",
+        "nixpkgs-uniffi": "nixpkgs-uniffi",
         "pre-commit-hooks": "pre-commit-hooks",
         "rust-overlay": "rust-overlay"
       }

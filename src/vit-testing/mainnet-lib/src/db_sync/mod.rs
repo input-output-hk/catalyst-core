@@ -155,10 +155,37 @@ impl BlockDateFromCardanoAbsoluteSlotNo for BlockDate {
     }
 }
 
+/// Db sync error
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
+    /// I/O related error
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    /// Serialization error
     #[error(transparent)]
     Serde(#[from] serde_json::Error),
+}
+
+#[cfg(test)]
+mod tests {
+    use mainnet_lib::InMemoryDbSync;
+    use crate::{DataProvider, InMemoryDbSync, MainnetNetworkBuilder, MainnetWallet, MainnetWalletStateBuilder};
+    use crate::test_api::MockDbProvider;
+
+    #[test]
+    fn restore_persist_bijection_direct() {
+        let alice = MainnetWallet::new(1_000);
+        let bob = MainnetWallet::new(1_000);
+        let clarice = MainnetWallet::new(1_000);
+        let dave = MainnetWallet::new(1_000);
+
+        let (db_sync, reps) = MainnetNetworkBuilder::default()
+            .with(alice.as_direct_voter())
+            .build(&testing_directory);
+
+        let before = db_sync.tx_metadata.clone();
+        db_sync.persist().unwrap();
+        let db_sync = InMemoryDbSync::restore(&db_sync.db).unwrap();
+        assert_eq!(before,db_sync.tx_metadata);
+    }
 }

@@ -3388,6 +3388,7 @@ dependencies = [
  "jortestkit",
  "lazy_static",
  "libmath",
+ "mainnet-lib",
  "mainnet-tools",
  "netstat2",
  "rand 0.8.5",

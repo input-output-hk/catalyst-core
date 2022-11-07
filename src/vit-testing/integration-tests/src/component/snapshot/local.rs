@@ -30,7 +30,7 @@ pub fn mixed_registration_transactions() {
         .with(fred.as_representative())
         .build(&testing_directory);
 
-    let voters_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
+    let voters_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory).unwrap()
         .filter_default(&reps)
         .to_voters_hirs();
 

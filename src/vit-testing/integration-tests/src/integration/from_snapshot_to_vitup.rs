@@ -37,7 +37,7 @@ pub fn cip36_mixed_delegation_should_appear_in_block0() {
         .build(&testing_directory);
 
     let snapshot_result =
-        mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory);
+        mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory).unwrap();
 
     let voter_hir = SnapshotFilter::from_snapshot_result(
         &snapshot_result,

@@ -22,43 +22,9 @@ impl Configuration {
         self.inner.api_token = token;
     }
 
-        let mut command = self.voting_tools.command()?;
-        match self.voting_tools.network {
-            NetworkType::Mainnet => command.arg("--mainnet"),
-            NetworkType::Testnet(magic) => command.arg("--testnet-magic").arg(magic.to_string()),
-        };
-
-        let output_filename = self.crate_snapshot_output_file_name(&params.tag);
-
-        command
-            .arg("--db")
-            .arg(&self.voting_tools.db)
-            .arg("--db-user")
-            .arg(&self.voting_tools.db_user)
-            .arg("--db-pass")
-            .arg(&self.voting_tools.db_pass)
-            .arg("--db-host")
-            .arg(&self.voting_tools.db_host)
-            .arg("--out-file")
-            .arg(output_folder.join(output_filename))
-            .arg("--scale")
-            .arg(self.voting_tools.scale.to_string());
-
-        if let Some(slot_no) = params.slot_no {
-            command.arg("--slot-no").arg(slot_no.to_string());
-        }
-
-        if !self.voting_tools.additional_params.is_empty() {
-            command.args(&self.voting_tools.additional_params);
-        }
-
-        self.print_with_password_hidden(&command);
-
-        command.spawn().map_err(Into::into)
-    }
-
     pub fn result_dir(&self) -> PathBuf {
         self.inner.result_dir.clone()
+    }
 
     pub fn address_mut(&mut self) -> &mut SocketAddr {
         &mut self.inner.address
@@ -107,7 +73,6 @@ impl Default for Configuration {
                 address: SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 7070),
                 api_token: None,
                 admin_token: None,
-                working_directory: None,
             },
             voting_tools: VotingToolsParams {
                 bin: None,
@@ -117,7 +82,6 @@ impl Default for Configuration {
                 db_user: "".to_string(),
                 db_pass: "".to_string(),
                 db_host: "".to_string(),
-                scale: 1_000_000,
                 additional_params: vec![],
             },
         }
@@ -144,8 +108,6 @@ pub struct VotingToolsParams {
     /// db host
     #[serde(rename = "db-host")]
     pub db_host: String,
-    /// voting power scale. If 1 then voting power will be expressed in Lovelace
-    pub scale: u32,
     /// additional parameters
     pub additional_params: Vec<String>,
 }

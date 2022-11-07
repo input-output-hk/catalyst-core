@@ -37,7 +37,7 @@ pub fn cip_36_support() {
         .with(dave.as_delegator(vec![(&bob, 1u8), (&clarice, 1u8)]))
         .build(&testing_directory);
 
-    let snapshot_result = mock::do_snapshot(&db_sync, job_param, &testing_directory);
+    let snapshot_result = mock::do_snapshot(&db_sync, job_param, &testing_directory).unwrap();
 
     let snapshot_filter = snapshot_result.filter(
         voting_threshold.into(),

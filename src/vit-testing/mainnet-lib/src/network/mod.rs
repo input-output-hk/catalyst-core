@@ -76,7 +76,6 @@ impl MainnetNetworkBuilder {
             }
             mainnet_network.accept_address(&x.stake_address, x.stake);
         });
-
         (
             db_sync_instance,
             self.states

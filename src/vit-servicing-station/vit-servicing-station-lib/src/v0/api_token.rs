@@ -105,7 +105,7 @@ mod test {
     };
     use crate::q;
     use crate::v0::api_token::{api_token_filter, ApiToken, API_TOKEN_HEADER};
-    use crate::v0::context::test::new_in_memmory_db_test_shared_context;
+    use crate::v0::context::test::new_db_test_shared_context;
     use diesel::{ExpressionMethods, RunQueryDsl};
     use time::OffsetDateTime;
 
@@ -140,7 +140,7 @@ mod test {
 
     #[tokio::test]
     async fn api_token_filter_reject() {
-        let shared_context = new_in_memmory_db_test_shared_context();
+        let shared_context = new_db_test_shared_context();
         let filter = api_token_filter(shared_context).await;
 
         assert!(warp::test::request()
@@ -152,7 +152,7 @@ mod test {
 
     #[tokio::test]
     async fn api_token_filter_accepted() {
-        let shared_context = new_in_memmory_db_test_shared_context();
+        let shared_context = new_db_test_shared_context();
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;

@@ -24,6 +24,8 @@ pub enum ExplorerError {
     TallyDecryptionFailure,
     #[error("Tx calculation failure")]
     TxCalculationFailure,
+    #[error("Explorer TX transmute failure")]
+    ExplorerTransmuteFail,
 }
 
 #[derive(Debug, Error, Clone)]

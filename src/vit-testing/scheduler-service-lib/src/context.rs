@@ -1,6 +1,6 @@
 use crate::config::Configuration;
 use crate::ServerStopper;
-use std::path::PathBuf;
+use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
@@ -34,8 +34,8 @@ impl SchedulerContext {
         self.config.api_token = api_token;
     }
 
-    pub fn working_directory(&self) -> &Option<PathBuf> {
-        &self.config.working_directory
+    pub fn working_directory(&self) -> &Path {
+        &self.config.result_dir
     }
 
     pub fn server_stopper(&self) -> &Option<ServerStopper> {

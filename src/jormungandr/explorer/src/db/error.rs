@@ -22,9 +22,9 @@ pub enum ExplorerError {
     CannotApplyBlock,
     #[error("tally decryption failure")]
     TallyDecryptionFailure,
-    #[error("Tx calculation failure")]
+    #[error("tx calculation failure")]
     TxCalculationFailure,
-    #[error("Explorer TX transmute failure")]
+    #[error("unable to transmute to explorer API representation")]
     ExplorerTransmuteFail,
 }
 

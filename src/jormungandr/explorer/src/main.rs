@@ -200,7 +200,7 @@ async fn main() -> Result<(), Error> {
         .and_then(std::convert::identity);
 
     if let Err(error) = exit_status.as_ref() {
-        tracing::error!("process finished with error: {:?}", error);
+        tracing::error!(error = %error,"process finished with error");
 
         let _ = future::join_all(remaining_services).await;
 

@@ -1,3 +1,4 @@
+use crate::error::Error::NoChallengeIdAndGroupFound;
 use crate::mode::mock::rest::reject::GeneralException;
 use crate::mode::mock::ContextLock;
 use chain_impl_mockchain::value::Value;
@@ -12,7 +13,6 @@ use vit_servicing_station_lib::v0::endpoints::snapshot::{DelegatorInfo, VoterInf
 use vit_servicing_station_lib::v0::errors::HandleError;
 use vit_servicing_station_lib::v0::result::HandlerResult;
 use warp::{Rejection, Reply};
-use crate::error::Error::NoChallengeIdAndGroupFound;
 
 pub async fn get_tags(context: ContextLock) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();
@@ -152,11 +152,18 @@ pub async fn get_challenge_by_id(id: i32, context: ContextLock) -> Result<impl R
     })))
 }
 
-pub async fn get_challenge_by_id_and_group_id(id: i32, group_id: impl Into<String>, context: ContextLock) -> Result<impl Reply, Rejection> {
+pub async fn get_challenge_by_id_and_group_id(
+    id: i32,
+    group_id: impl Into<String>,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();
     let group_id = group_id.into();
 
-    context.log(format!("get_challenge_by_id {} and group id {} ...", id, group_id));
+    context.log(format!(
+        "get_challenge_by_id {} and group id {} ...",
+        id, group_id
+    ));
 
     if let Some(error_code) = context.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));
@@ -180,10 +187,10 @@ pub async fn get_challenge_by_id_and_group_id(id: i32, group_id: impl Into<Strin
         .collect();
 
     if proposals.is_empty() {
-        return Err(warp::reject::custom(NoChallengeIdAndGroupFound{
+        return Err(warp::reject::custom(NoChallengeIdAndGroupFound {
             id: id.to_string(),
-            group: group_id
-        }))
+            group: group_id,
+        }));
     }
 
     Ok(HandlerResult(Ok(ChallengeWithProposals {
@@ -191,7 +198,6 @@ pub async fn get_challenge_by_id_and_group_id(id: i32, group_id: impl Into<Strin
         proposals,
     })))
 }
-
 
 pub async fn get_review_by_id(id: i32, context: ContextLock) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();

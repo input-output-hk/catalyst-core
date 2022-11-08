@@ -1,6 +1,5 @@
 use std::convert::Infallible;
 
-use diesel::r2d2::{ConnectionManager, PooledConnection};
 use serde::Deserialize;
 use warp::{
     hyper::{body::Bytes, Response},
@@ -9,7 +8,7 @@ use warp::{
 
 use crate::{
     db::{migrations::initialize_db_with_migration, DbConnection},
-    v0::context::{test::new_in_memmory_db_test_shared_context, SharedContext},
+    v0::context::{test::new_db_test_shared_context, SharedContext},
 };
 
 /// Initialize an in-memory database with migrations and return a tuple containing:
@@ -17,9 +16,9 @@ use crate::{
 ///  - a connection to the database
 pub async fn test_context() -> (
     impl Filter<Extract = (SharedContext,), Error = Infallible> + Clone,
-    PooledConnection<ConnectionManager<DbConnection>>,
+    DbConnection,
 ) {
-    let shared_context = new_in_memmory_db_test_shared_context();
+    let shared_context = new_db_test_shared_context();
 
     let conn = shared_context
         .read()

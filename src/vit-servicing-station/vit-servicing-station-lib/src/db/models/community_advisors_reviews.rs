@@ -81,7 +81,7 @@ impl Insertable<community_advisors_reviews::table> for AdvisorReview {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::db::DbConnectionPool;
+    use crate::{db::DbConnectionPool, q};
     use diesel::RunQueryDsl;
 
     pub fn get_test_advisor_review_with_proposal_id(proposal_id: i32) -> AdvisorReview {
@@ -101,9 +101,12 @@ pub mod test {
 
     pub fn populate_db_with_advisor_review(review: &AdvisorReview, pool: &DbConnectionPool) {
         let connection = pool.get().unwrap();
-        diesel::insert_into(community_advisors_reviews::table)
-            .values(review.clone().values())
-            .execute(&connection)
-            .unwrap();
+        q!(
+            connection,
+            diesel::insert_into(community_advisors_reviews::table)
+                .values(review.clone().values())
+                .execute(&connection)
+        )
+        .unwrap();
     }
 }

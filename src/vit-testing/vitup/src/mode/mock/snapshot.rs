@@ -1,64 +1,161 @@
 use crate::config::{SnapshotError, SnapshotInitials};
-use hersir::builder::Wallet as WalletSettings;
+use hersir::builder::Wallet;
 use jormungandr_lib::crypto::account::Identifier;
-use proptest::{
-    arbitrary::Arbitrary, prelude::*, strategy::BoxedStrategy, test_runner::TestRunner,
-};
+use proptest::{arbitrary::Arbitrary, prelude::*, strategy::BoxedStrategy};
 use snapshot_lib::VoterHIR;
 use std::collections::BTreeMap;
 use thor::WalletAlias;
+use vit_servicing_station_lib::db::models::snapshot::{Contribution, Voter};
 
-// TODO: this is a temporary impl until the snapshot service is available as a standalone
-// microservice.
 #[derive(Debug, Default)]
 pub struct VoterSnapshot {
-    hirs_by_tag: BTreeMap<String, Vec<VoterHIR>>,
+    /// key: Tag - a unique identifier of the current snapshot
+    /// value: Timestamp - for the latest update of the current snapshot
+    snapshot_tags: BTreeMap<String, i64>,
+    voters: Vec<Voter>,
+    contributions: Vec<Contribution>,
 }
 
 impl VoterSnapshot {
     pub fn from_config_or_default(
-        defined_wallets: Vec<(WalletAlias, &WalletSettings)>,
-        snapshot_config: &Option<SnapshotInitials>,
+        wallets: Vec<(WalletAlias, &Wallet)>,
+        initials: &Option<SnapshotInitials>,
     ) -> Result<Self, SnapshotError> {
-        if let Some(snapshot_config) = snapshot_config {
-            let mut snapshot = Self::default();
-            snapshot.update_tag(
-                snapshot_config.tag.clone(),
-                snapshot_config.as_voters_hirs(defined_wallets)?,
-            );
-            Ok(snapshot)
-        } else {
-            Ok(Self::dummy())
-        }
-    }
-    pub fn get_voting_power(&self, tag: &str, voting_key: &Identifier) -> Vec<VoterHIR> {
-        self.hirs_by_tag
-            .get(tag)
-            .iter()
-            .flat_map(|hirs| hirs.iter())
-            .filter(|voter| &voter.voting_key == voting_key)
-            .cloned()
-            .collect()
-    }
+        let mut voters = vec![];
+        let mut contributions = vec![];
+        let mut snapshot_tags = BTreeMap::new();
 
-    pub fn update_tag(&mut self, tag: String, voter_hirs: Vec<VoterHIR>) {
-        self.hirs_by_tag.insert(tag, voter_hirs);
+        if let Some(initials) = initials {
+            snapshot_tags.insert(initials.tag.to_string(), epoch_now());
+            let voter_hirs = initials.as_voters_hirs(wallets)?;
+
+            for voter_hir in voter_hirs {
+                voters.push(Voter {
+                    voting_key: voter_hir.voting_key.to_bech32_str(),
+                    voting_power: u64::from(voter_hir.voting_power) as i64,
+                    voting_group: voter_hir.voting_group.to_string(),
+                    snapshot_tag: initials.tag.to_string(),
+                });
+
+                contributions.push(Contribution {
+                    stake_public_key: "mock".to_string(),
+                    reward_address: "mock".to_string(),
+                    value: u64::from(voter_hir.voting_power) as i64,
+                    voting_key: voter_hir.voting_key.to_bech32_str(),
+                    voting_group: voter_hir.voting_group.to_string(),
+                    snapshot_tag: initials.tag.to_string(),
+                });
+            }
+        }
+
+        Ok(Self {
+            snapshot_tags,
+            voters,
+            contributions,
+        })
     }
 
     pub fn tags(&self) -> Vec<String> {
-        self.hirs_by_tag.keys().cloned().collect()
+        self.snapshot_tags.keys().cloned().collect()
     }
 
-    pub fn get_snapshot(&self, tag: &str) -> Vec<VoterHIR> {
-        self.hirs_by_tag.get(tag).cloned().unwrap_or_default()
+    pub fn put_snapshot_tag(&mut self, tag: String, timestamp: i64) {
+        self.snapshot_tags.insert(tag, timestamp);
     }
 
-    pub fn dummy() -> Self {
-        let mut test_runner = TestRunner::deterministic();
-        Self::arbitrary_with(())
-            .new_tree(&mut test_runner)
-            .unwrap()
-            .current()
+    pub fn snapshot_by_tag(&self, tag: impl Into<String>) -> Option<&i64> {
+        self.snapshot_tags.get(&tag.into())
+    }
+
+    pub fn contributions_by_stake_public_key_and_snapshot_tag(
+        &self,
+        stake_public_key: &str,
+        tag: &str,
+    ) -> Vec<&Contribution> {
+        self.contributions
+            .iter()
+            .filter(|v| v.stake_public_key == stake_public_key && v.snapshot_tag == tag)
+            .collect()
+    }
+
+    pub fn total_voting_power_by_voting_group_and_snapshot_tag(
+        &self,
+        voting_group: &str,
+        snapshot_tag: &str,
+    ) -> i64 {
+        self.voters
+            .iter()
+            .filter(|v| v.voting_group == voting_group && v.snapshot_tag == snapshot_tag)
+            .map(|v| v.voting_power)
+            .sum()
+    }
+
+    pub fn contributions_by_voting_key_and_voter_group_and_snapshot_tag(
+        &self,
+        voting_key: &str,
+        voting_group: &str,
+        snapshot_tag: &str,
+    ) -> Vec<&Contribution> {
+        self.contributions
+            .iter()
+            .filter(|v| {
+                v.voting_key == voting_key
+                    && v.voting_group == voting_group
+                    && v.snapshot_tag == snapshot_tag
+            })
+            .collect()
+    }
+
+    pub fn voters_by_voting_key_and_snapshot_tag(
+        &self,
+        voting_key: &str,
+        snapshot_tag: &str,
+    ) -> Vec<&Voter> {
+        self.voters
+            .iter()
+            .filter(|v| v.voting_key == voting_key && v.snapshot_tag == snapshot_tag)
+            .collect()
+    }
+
+    pub fn insert_voters(&mut self, voters: Vec<Voter>) {
+        for voter in voters {
+            if let Some(idx) = self
+                .voters
+                .iter()
+                .enumerate()
+                .find(|(_, x)| {
+                    x.voting_key == voter.voting_key
+                        && x.snapshot_tag == voter.snapshot_tag
+                        && x.voting_group == voter.voting_group
+                })
+                .map(|(idx, _)| idx)
+            {
+                let _ = std::mem::replace(&mut self.voters[idx], voter);
+            } else {
+                self.voters.push(voter)
+            }
+        }
+    }
+
+    pub fn insert_contributions(&mut self, contributions: Vec<Contribution>) {
+        for contribution in contributions {
+            if let Some(idx) = self
+                .contributions
+                .iter()
+                .enumerate()
+                .find(|(_, x)| {
+                    x.stake_public_key == contribution.stake_public_key
+                        && x.voting_key == contribution.voting_key
+                        && x.voting_group == contribution.voting_group
+                        && x.snapshot_tag == contribution.snapshot_tag
+                })
+                .map(|(idx, _)| idx)
+            {
+                let _ = std::mem::replace(&mut self.contributions[idx], contribution);
+            } else {
+                self.contributions.push(contribution)
+            }
+        }
     }
 }
 
@@ -94,6 +191,17 @@ impl Arbitrary for ArbitraryVoterHIR {
     }
 }
 
+use std::time::{SystemTime, UNIX_EPOCH};
+fn epoch_now() -> i64 {
+    let start = SystemTime::now();
+    let since_the_epoch = start
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards");
+    let ms = since_the_epoch.as_secs() * 1000 + since_the_epoch.subsec_nanos() as u64 / 1_000_000;
+
+    ms as i64
+}
+
 impl Arbitrary for VoterSnapshot {
     type Parameters = ();
     type Strategy = BoxedStrategy<Self>;
@@ -104,21 +212,44 @@ impl Arbitrary for VoterSnapshot {
             String::from("fund8"),
             String::from("nightly"),
         ];
-        any_with::<(Vec<ArbitraryVoterHIR>, Vec<ArbitraryVoterHIR>)>((
+        any_with::<(Vec<ArbitraryVoterHIR>, Vec<ArbitraryVoterHIR>, usize)>((
             (Default::default(), Some("direct".to_string())),
             (Default::default(), Some("dreps".to_string())),
+            (),
         ))
-        .prop_map(move |(dreps, voters)| {
-            let mut hirs_by_tag = BTreeMap::new();
-            let hirs = dreps
-                .into_iter()
-                .map(|x| x.0)
-                .chain(voters.into_iter().map(|x| x.0))
-                .collect::<Vec<_>>();
-            for tag in tags.clone() {
-                hirs_by_tag.insert(tag, hirs.clone());
+        .prop_map(move |(dreps, voters, random)| {
+            let mut snapshot_voters = vec![];
+
+            snapshot_voters.extend(dreps.iter().map(|drep| Voter {
+                voting_key: drep.0.voting_key.to_bech32_str(),
+                voting_power: u64::from(drep.0.voting_power) as i64,
+                voting_group: drep.0.voting_group.to_string(),
+                snapshot_tag: tags[random % tags.len()].clone(),
+            }));
+
+            snapshot_voters.extend(voters.iter().map(|voter| Voter {
+                voting_key: voter.0.voting_key.to_bech32_str(),
+                voting_power: u64::from(voter.0.voting_power) as i64,
+                voting_group: voter.0.voting_group.to_string(),
+                snapshot_tag: tags[random % tags.len()].clone(),
+            }));
+
+            let mut contributions = vec![];
+
+            contributions.extend(snapshot_voters.iter().map(|voter| Contribution {
+                stake_public_key: voter.voting_key.to_string(),
+                reward_address: voter.voting_key.to_string(),
+                value: voter.voting_power,
+                voting_key: voter.voting_key.clone(),
+                voting_group: voter.voting_group.clone(),
+                snapshot_tag: voter.snapshot_tag.clone(),
+            }));
+
+            Self {
+                snapshot_tags: tags.iter().cloned().map(|t| (t, epoch_now())).collect(),
+                voters: snapshot_voters,
+                contributions,
             }
-            Self { hirs_by_tag }
         })
         .boxed()
     }
@@ -129,42 +260,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_get_voting_power() {
-        let mut hirs = BTreeMap::new();
-        hirs.insert("a".to_string(), Vec::new());
-        hirs.insert("b".to_string(), Vec::new());
-        hirs.insert("c".to_string(), Vec::new());
-
-        let key = [0u8; 32];
-        let vk = Identifier::from_hex(&hex::encode(key)).unwrap();
-
-        let mut snapshot = VoterSnapshot { hirs_by_tag: hirs };
-        assert_eq!(snapshot.get_voting_power("a", &vk), Vec::new());
-        let entries = vec![
-            VoterHIR {
-                voting_key: vk.clone(),
-                voting_power: 1.into(),
-                voting_group: "g".to_string(),
-            },
-            VoterHIR {
-                voting_key: vk.clone(),
-                voting_power: 1.into(),
-                voting_group: "gg".to_string(),
-            },
-        ];
-        snapshot.update_tag("a".to_string(), entries.clone());
-        assert_eq!(snapshot.get_voting_power("a", &vk), entries);
-    }
-
-    #[test]
     fn test_tags() {
-        let mut hirs = BTreeMap::new();
-        hirs.insert("a".to_string(), Vec::new());
-        hirs.insert("b".to_string(), Vec::new());
-        hirs.insert("c".to_string(), Vec::new());
+        let mut voter_snapshot = VoterSnapshot::default();
+
+        voter_snapshot.put_snapshot_tag("a".to_string(), epoch_now());
+        voter_snapshot.put_snapshot_tag("b".to_string(), epoch_now());
+        voter_snapshot.put_snapshot_tag("c".to_string(), epoch_now());
         assert_eq!(
             &[String::from("a"), String::from("b"), String::from("c")],
-            VoterSnapshot { hirs_by_tag: hirs }.tags().as_slice()
+            voter_snapshot.tags().as_slice()
         );
     }
 }

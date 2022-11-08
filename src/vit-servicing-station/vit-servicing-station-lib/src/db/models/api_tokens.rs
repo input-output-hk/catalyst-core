@@ -1,5 +1,8 @@
-use crate::db::{schema::api_tokens, Db};
+use crate::db::schema::api_tokens;
 use crate::v0::api_token::ApiToken;
+use diesel::backend::Backend;
+use diesel::sql_types::{BigInt, Binary};
+use diesel::types::FromSql;
 use diesel::{ExpressionMethods, Insertable, Queryable};
 
 #[derive(Debug, Clone)]
@@ -9,7 +12,11 @@ pub struct ApiTokenData {
     pub expire_time: i64,
 }
 
-impl Queryable<api_tokens::SqlType, Db> for ApiTokenData {
+impl<DB: Backend> Queryable<api_tokens::SqlType, DB> for ApiTokenData
+where
+    i64: FromSql<BigInt, DB>,
+    Vec<u8>: FromSql<Binary, DB>,
+{
     type Row = (
         // 0 -> token
         Vec<u8>,

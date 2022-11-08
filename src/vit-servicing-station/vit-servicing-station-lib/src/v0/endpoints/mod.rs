@@ -1,5 +1,5 @@
 mod advisor_reviews;
-mod challenges;
+pub mod challenges;
 mod funds;
 mod genesis;
 mod health;

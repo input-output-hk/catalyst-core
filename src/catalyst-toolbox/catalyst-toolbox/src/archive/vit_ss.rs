@@ -2,7 +2,16 @@ use csv::Writer;
 use serde::{Deserialize, Serialize};
 use std::{fs::File, path::Path};
 use vit_servicing_station_lib::{
-    db::{self, load_db_connection_pool, queries::funds::query_fund_by_id},
+    db::{
+        self, load_db_connection_pool,
+        queries::{
+            funds::query_fund_by_id,
+            snapshot::{
+                query_contributions_by_snapshot_tag, query_snapshot_by_tag,
+                query_voters_by_snapshot_tag,
+            },
+        },
+    },
     utils::serde::{deserialize_unix_timestamp_from_rfc3339, serialize_unix_timestamp_as_rfc3339},
     v0::errors::HandleError,
 };
@@ -71,9 +80,11 @@ pub async fn generate_archive_files(
     vit_ss_database: &str,
     output_dir: &Path,
     fund_id: i32,
+    snapshot_tag: String,
 ) -> Result<(), Error> {
     let db_pool = load_db_connection_pool(vit_ss_database)?;
 
+    // fund info
     let mut fund_writer = csv_writer(output_dir, format!("fund_{}.csv", fund_id))?;
     let mut chanllenges_writer = csv_writer(output_dir, format!("challenges_{}.csv", fund_id))?;
     let mut vote_plans_writer = csv_writer(output_dir, format!("vote_plans_{}.csv", fund_id))?;
@@ -100,6 +111,23 @@ pub async fn generate_archive_files(
     vote_plans_writer.serialize(fund.chain_vote_plans)?;
     goals_writer.serialize(fund.goals)?;
     groups_writer.serialize(fund.groups)?;
+
+    // snapshot info
+    let mut snapshot_writer =
+        csv_writer(output_dir, format!("snapshot_{}.csv", snapshot_tag.clone()))?;
+    let mut voters_writer = csv_writer(output_dir, format!("voters_{}.csv", snapshot_tag.clone()))?;
+    let mut contributions_writer = csv_writer(
+        output_dir,
+        format!("contributions_{}.csv", snapshot_tag.clone()),
+    )?;
+
+    let snapshot = query_snapshot_by_tag(snapshot_tag.clone(), &db_pool).await?;
+    let voters = query_voters_by_snapshot_tag(snapshot_tag.clone(), &db_pool).await?;
+    let contributions = query_contributions_by_snapshot_tag(snapshot_tag, &db_pool).await?;
+
+    snapshot_writer.serialize(snapshot)?;
+    voters_writer.serialize(voters)?;
+    contributions_writer.serialize(contributions)?;
 
     Ok(())
 }

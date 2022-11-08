@@ -13,12 +13,20 @@ pub struct VitSS {
     output_dir: PathBuf,
     // Fund id
     fund_id: i32,
+    // Snapshot tag
+    snapshot_tag: String,
 }
 
 impl VitSS {
     pub fn exec(self) -> Result<(), Report> {
         Runtime::new()?.block_on(async move {
-            generate_archive_files(&self.vit_ss_database, &self.output_dir, self.fund_id).await
+            generate_archive_files(
+                &self.vit_ss_database,
+                &self.output_dir,
+                self.fund_id,
+                self.snapshot_tag,
+            )
+            .await
         })?;
         Ok(())
     }

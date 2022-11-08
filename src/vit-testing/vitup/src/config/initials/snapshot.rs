@@ -58,9 +58,7 @@ impl Initials {
                     let wallet = defined_wallets
                         .iter()
                         .cloned()
-                        .find(|(x, _)| {
-                            *x.to_lowercase() == name.to_lowercase()
-                        })
+                        .find(|(x, _)| *x.to_lowercase() == name.to_lowercase())
                         .map(|(_, y)| y.clone())
                         .ok_or_else(|| Error::CannotFindAlias(name.to_string()))?;
                     voter_hirs.push(VoterHIR {
@@ -73,9 +71,7 @@ impl Initials {
                     let wallet = defined_wallets
                         .iter()
                         .cloned()
-                        .find(|(x, _)| {
-                            *x.to_lowercase() == name.to_lowercase()
-                        })
+                        .find(|(x, _)| *x.to_lowercase() == name.to_lowercase())
                         .map(|(_, y)| y.clone())
                         .ok_or_else(|| Error::CannotFindAlias(name.to_string()))?;
                     voter_hirs.push(VoterHIR {

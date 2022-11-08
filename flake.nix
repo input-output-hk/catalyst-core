@@ -79,7 +79,7 @@
 
         rust-stable = mkRust {
           channel = "stable";
-          version = "1.64.0";
+          version = "1.65.0";
         };
         rust-nightly = mkRust {channel = "nightly";};
 

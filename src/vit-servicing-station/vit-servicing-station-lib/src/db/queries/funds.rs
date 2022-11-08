@@ -28,23 +28,34 @@ fn join_fund(
     fund.chain_vote_plans = voteplans_dsl::voteplans
         .filter(voteplans_dsl::fund_id.eq(id))
         .load::<Voteplan>(db_conn)
-        .map_err(|_e| HandleError::NotFound("Error loading voteplans".to_string()))?;
+        .map_err(|e| {
+            HandleError::NotFound(format!("Error loading voteplans, error: {}", e.to_string()))
+        })?;
 
     fund.challenges = challenges_dsl::challenges
         .filter(challenges_dsl::fund_id.eq(id))
         .order_by(challenges_dsl::internal_id.asc())
         .load::<Challenge>(db_conn)
-        .map_err(|_e| HandleError::NotFound("Error loading challenges".to_string()))?;
+        .map_err(|e| {
+            HandleError::NotFound(format!(
+                "Error loading challenges, error: {}",
+                e.to_string()
+            ))
+        })?;
 
     fund.goals = goals_dsl::goals
         .filter(goals_dsl::fund_id.eq(id))
         .load::<Goal>(db_conn)
-        .map_err(|_e| HandleError::NotFound("Error loading goals".to_string()))?;
+        .map_err(|e| {
+            HandleError::NotFound(format!("Error loading goals, error: {}", e.to_string()))
+        })?;
 
     fund.groups = groups_dsl::groups
         .filter(groups_dsl::fund_id.eq(id))
         .load::<Group>(db_conn)
-        .map_err(|_e| HandleError::NotFound("Error loading groups".to_string()))?
+        .map_err(|e| {
+            HandleError::NotFound(format!("Error loading groups, error: {}", e.to_string()))
+        })?
         .into_iter()
         .collect();
 

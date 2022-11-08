@@ -6,7 +6,8 @@ use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct CurrentFund {
     #[serde(
-        deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_vote_options_from_string"
+        deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_vote_options_from_string",
+        serialize_with = "vit_servicing_station_lib::utils::serde::serialize_vote_options_to_string"
     )]
     pub options: VoteOptions,
     pub proposals: u32,

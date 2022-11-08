@@ -133,6 +133,13 @@ where
     deserializer.deserialize_str(VoteOptionsDeserializer())
 }
 
+pub fn serialize_vote_options_to_string<S: Serializer>(
+    data: &VoteOptions,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    serializer.serialize_str(&data.as_csv_string())
+}
+
 pub fn deserialize_truthy_falsy<'de, D>(deserializer: D) -> Result<bool, D::Error>
 where
     D: Deserializer<'de>,

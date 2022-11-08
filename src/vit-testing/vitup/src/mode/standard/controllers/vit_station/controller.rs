@@ -4,6 +4,7 @@ use super::{RestClient, Result};
 use jormungandr_automation::jormungandr::NodeAlias;
 use jormungandr_automation::jormungandr::Status;
 use jormungandr_automation::testing::NamedProcess;
+use vit_servicing_station_tests::common::raw_snapshot::RawSnapshot;
 use std::net::SocketAddr;
 use std::process::Child;
 use std::sync::{Arc, Mutex};
@@ -54,6 +55,14 @@ impl VitStationController {
 
     pub fn challenges(&self) -> Result<Vec<Challenge>> {
         Ok(self.rest_client.challenges()?)
+    }
+
+    pub fn put_raw_snapshot(&self, raw_snapshot: &RawSnapshot) -> Result<()> {
+        Ok(self.rest_client.put_raw_snapshot(raw_snapshot)?)
+    }
+
+    pub fn snapshot_tags(&self) -> Result<Vec<String>> {
+        Ok(self.rest_client.snapshot_tags()?)
     }
 
     pub fn as_named_process(&self) -> NamedProcess {

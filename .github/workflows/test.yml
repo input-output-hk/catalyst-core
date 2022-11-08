@@ -1,0 +1,41 @@
+name: CI-Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    env:
+      RUSTFLAGS: -D warnings
+      RUST_BACKTRACE: 1
+      CARGO_FLAGS: --verbose --locked
+      CARGO_INCREMENTAL: 0
+    steps: 
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Debug
+        uses: cachix/install-nix-action@v18
+      - run: nix-shell --run 'uniffi-bindgen --version'
+
+      - name: Run tests
+        uses: cachix/install-nix-action@v18
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+      - run: nix-shell --run ".github/jormungandr_tests.sh 1 1"
+
+      - name: Pack logs from failed tests
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.os }}-${{ matrix.profile }}-${{ matrix.toolchain }}-node-logs-from-failed-tests
+          path: ${{ runner.temp }}/jormungandr_*
+          retention-days: 30
+

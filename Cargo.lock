@@ -1714,9 +1714,11 @@ version = "1.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b28135ecf6b7d446b43e27e225622a038cc4e2930a1022f51cdb97ada19b8e4d"
 dependencies = [
+ "bitflags",
  "byteorder",
  "diesel_derives 1.4.1",
  "libsqlite3-sys",
+ "pq-sys",
  "r2d2",
 ]
 
@@ -7692,6 +7694,7 @@ dependencies = [
  "libsqlite3-sys",
  "log",
  "notify",
+ "r2d2",
  "rand 0.8.5",
  "serde",
  "serde_json",

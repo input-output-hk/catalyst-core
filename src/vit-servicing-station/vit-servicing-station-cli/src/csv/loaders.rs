@@ -212,7 +212,7 @@ impl LoadCmd {
         // start db connection
         let pool = load_db_connection_pool(&self.db_url)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, format!("{}", e)))?;
-        let db_conn = pool
+        let db_conn = &pool
             .get()
             .map_err(|e| io::Error::new(io::ErrorKind::NotConnected, format!("{}", e)))?;
 
@@ -223,12 +223,12 @@ impl LoadCmd {
             funds_iter
                 .next()
                 .ok_or_else(|| Error::InvalidFundData(self.funds.to_string_lossy().to_string()))?,
-            &db_conn,
+            db_conn,
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
         for fund in funds_iter {
-            vit_servicing_station_lib::db::queries::funds::insert_fund(fund, &db_conn)
+            vit_servicing_station_lib::db::queries::funds::insert_fund(fund, db_conn)
                 .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
         }
 
@@ -264,9 +264,12 @@ impl LoadCmd {
             goal.fund_id = fund.id;
         }
 
-        let advisors = db::schema::community_advisors_reviews::dsl::community_advisors_reviews
-            .select(community_advisors_reviews_dsl::id)
-            .load::<i32>(&db_conn)?;
+        let advisors = vit_servicing_station_lib::q!(
+            db_conn,
+            db::schema::community_advisors_reviews::dsl::community_advisors_reviews
+                .select(community_advisors_reviews_dsl::id)
+                .load::<i32>(db_conn)
+        )?;
         let max_id = advisors.iter().max().unwrap_or(&0i32);
 
         for review in reviews.iter_mut() {

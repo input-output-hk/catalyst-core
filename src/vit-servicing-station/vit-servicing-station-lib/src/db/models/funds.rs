@@ -4,9 +4,13 @@ use super::groups::Group;
 use crate::db::{
     models::{challenges::Challenge, goals::Goal, voteplans::Voteplan},
     schema::funds,
-    Db,
 };
-use diesel::{ExpressionMethods, Insertable, Queryable};
+use diesel::{
+    backend::Backend,
+    sql_types::{BigInt, Integer, Text},
+    types::FromSql,
+    ExpressionMethods, Insertable, Queryable,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -129,7 +133,12 @@ impl From<Fund> for FundWithLegacyFields {
     }
 }
 
-impl Queryable<funds::SqlType, Db> for Fund {
+impl<DB: Backend> Queryable<funds::SqlType, DB> for Fund
+where
+    i32: FromSql<Integer, DB>,
+    i64: FromSql<BigInt, DB>,
+    String: FromSql<Text, DB>,
+{
     type Row = (
         // 0 -> id
         i32,
@@ -270,16 +279,19 @@ impl Insertable<funds::table> for Fund {
 
 #[cfg(test)]
 pub mod test {
-    use crate::db::{
-        models::{
-            challenges::test as challenges_testing,
-            funds::{Fund, FundStageDates},
-            goals::{Goal, InsertGoal},
-            groups::Group,
-            voteplans::test as voteplans_testing,
+    use crate::{
+        db::{
+            models::{
+                challenges::test as challenges_testing,
+                funds::{Fund, FundStageDates},
+                goals::{Goal, InsertGoal},
+                groups::Group,
+                voteplans::test as voteplans_testing,
+            },
+            schema::{funds, goals, groups},
+            DbConnectionPool,
         },
-        schema::{funds, goals, groups},
-        DbConnectionPool,
+        execute_q, q,
     };
 
     use diesel::{Insertable, RunQueryDsl};
@@ -344,10 +356,13 @@ pub mod test {
         // call below it creates a wrong connection (where there are not tables even if they were loaded).
         {
             let connection = pool.get().unwrap();
-            diesel::insert_into(funds::table)
-                .values(fund.clone().values())
-                .execute(&connection)
-                .unwrap();
+            q!(
+                connection,
+                diesel::insert_into(funds::table)
+                    .values(fund.clone().values())
+                    .execute(&connection)
+            )
+            .unwrap();
         }
 
         for voteplan in &fund.chain_vote_plans {
@@ -359,25 +374,29 @@ pub mod test {
         }
 
         {
-            let connection = pool.get().unwrap();
+            let connection = &pool.get().unwrap();
             for goal in &fund.goals {
-                diesel::insert_into(goals::table)
-                    .values(InsertGoal::from(goal))
-                    .execute(&connection)
-                    .unwrap();
+                q!(
+                    connection,
+                    diesel::insert_into(goals::table)
+                        .values(InsertGoal::from(goal))
+                        .execute(connection)
+                )
+                .unwrap();
             }
 
             // TODO: call batch_insert_groups?
-            diesel::insert_into(groups::table)
-                .values(
+            execute_q!(
+                connection,
+                diesel::insert_into(groups::table).values(
                     fund.groups
                         .clone()
                         .into_iter()
                         .map(|g| g.values())
                         .collect::<Vec<_>>(),
                 )
-                .execute(&*connection)
-                .unwrap();
+            )
+            .unwrap();
         }
     }
 }

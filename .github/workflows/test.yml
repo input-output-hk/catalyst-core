@@ -8,6 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      matrix:
+        shardNumber: [1, 2, 3, 4, 5, 6, 7, 8]
+        totalShards: [8]
     env:
       RUSTFLAGS: -D warnings
       RUST_BACKTRACE: 1
@@ -24,5 +27,5 @@ jobs:
         with:
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      - run: nix-shell --run ".github/jormungandr_tests.sh 1 1"
+      - run: nix-shell --run ".github/jormungandr_tests.sh ${{ matrix.shardNumber }} ${{ matrix.totalShards }}"
 

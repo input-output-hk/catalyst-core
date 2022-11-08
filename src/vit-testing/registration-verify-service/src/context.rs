@@ -2,111 +2,50 @@ pub type ContextLock = Arc<Mutex<Context>>;
 use crate::config::Configuration;
 use crate::job::JobOutputInfo;
 use crate::request::Request;
-use crate::rest::ServerStopper;
-use chrono::{NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::fmt;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::sync::Mutex;
-use uuid::Uuid;
 
 pub struct Context {
-    server_stopper: Option<ServerStopper>,
+    scheduler_context: SchedulerContext,
     config: Configuration,
-    address: SocketAddr,
     state: State,
+}
+
+impl RunContext<Request, JobOutputInfo> for Context {
+    fn run_requested(&self) -> Option<(Uuid, Request)> {
+        self.state.run_requested()
+    }
+
+    fn new_run_started(&mut self) -> Result<(), scheduler_service_lib::Error> {
+        self.state.new_run_started()
+    }
+
+    fn run_finished(
+        &mut self,
+        output_info: Option<JobOutputInfo>,
+    ) -> Result<(), scheduler_service_lib::Error> {
+        self.state.run_finished(output_info)
+    }
 }
 
 impl Context {
     pub fn new(config: Configuration) -> Self {
         Self {
-            server_stopper: None,
-            address: ([0, 0, 0, 0], config.port).into(),
+            scheduler_context: SchedulerContext::new(None, config.inner.clone()),
             config,
             state: State::Idle,
         }
     }
 
     pub fn set_server_stopper(&mut self, server_stopper: ServerStopper) {
-        self.server_stopper = Some(server_stopper)
+        self.scheduler_context
+            .set_server_stopper(Some(server_stopper));
     }
 
     pub fn server_stopper(&self) -> &Option<ServerStopper> {
-        &self.server_stopper
-    }
-
-    pub fn new_run(&mut self, request: Request) -> Result<Uuid, Error> {
-        match self.state {
-            State::Idle | State::Finished { .. } => {
-                let id = Uuid::new_v4();
-                self.state = State::RequestToStart {
-                    job_id: id,
-                    request,
-                };
-                Ok(id)
-            }
-            _ => Err(Error::RegistrationInProgress),
-        }
-    }
-
-    pub fn run_started(&mut self) -> Result<(), Error> {
-        match &self.state {
-            State::RequestToStart { job_id, request } => {
-                self.state = State::Running {
-                    job_id: *job_id,
-                    start: Utc::now().naive_utc(),
-                    request: request.clone(),
-                    step: Step::RunningSnapshot,
-                };
-                Ok(())
-            }
-            _ => Err(Error::NoRequestToStart),
-        }
-    }
-
-    pub fn run_finished(&mut self, info: JobOutputInfo) -> Result<(), Error> {
-        println!("{:?}", self.state);
-
-        match &self.state {
-            State::Running {
-                job_id,
-                start,
-                request,
-                step: _,
-            } => {
-                self.state = State::Finished {
-                    job_id: *job_id,
-                    start: *start,
-                    end: Utc::now().naive_utc(),
-                    request: request.clone(),
-                    info,
-                };
-                Ok(())
-            }
-            _ => Err(Error::RegistrationNotStarted),
-        }
-    }
-
-    pub fn status_by_id(&self, id: Uuid) -> Result<State, Error> {
-        match self.state {
-            State::Idle => Err(Error::NoJobRun),
-            State::RequestToStart { .. } => Ok(self.state.clone()),
-            State::Running { job_id, .. } => {
-                if job_id == id {
-                    Ok(self.state.clone())
-                } else {
-                    Err(Error::JobNotFound)
-                }
-            }
-            State::Finished { job_id, .. } => {
-                if job_id == id {
-                    Ok(self.state.clone())
-                } else {
-                    Err(Error::JobNotFound)
-                }
-            }
-        }
+        self.scheduler_context.server_stopper()
     }
 
     pub fn state(&self) -> &State {
@@ -118,7 +57,7 @@ impl Context {
     }
 
     pub fn address(&self) -> &SocketAddr {
-        &self.address
+        &self.config.inner.address
     }
 
     pub fn config(&self) -> &Configuration {
@@ -129,56 +68,18 @@ impl Context {
         &mut self.config
     }
 
-    pub fn api_token(&self) -> Option<String> {
-        self.config.client_token.clone()
-    }
-
-    pub fn set_api_token(&mut self, api_token: String) {
-        self.config.client_token = Some(api_token);
-    }
-
-    pub fn admin_token(&self) -> Option<String> {
-        self.config.admin_token.clone()
-    }
-
-    pub fn set_admin_token(&mut self, admin_token: String) {
-        self.config.admin_token = Some(admin_token);
-    }
-
     pub fn set_snapshot_job_id(&mut self, snapshot_job_id: String) {
         self.config.snapshot_job_id = Some(snapshot_job_id);
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
-pub enum State {
-    Idle,
-    RequestToStart {
-        job_id: Uuid,
-        request: Request,
-    },
-    Running {
-        job_id: Uuid,
-        start: NaiveDateTime,
-        request: Request,
-        step: Step,
-    },
-    Finished {
-        job_id: Uuid,
-        start: NaiveDateTime,
-        end: NaiveDateTime,
-        request: Request,
-        info: JobOutputInfo,
-    },
-}
-
-impl State {
-    pub fn update_running_step(&mut self, new_step: Step) {
-        if let State::Running { step, .. } = self {
-            *step = new_step;
-        }
+impl Context {
+    pub fn into_scheduler_context(&self) -> SchedulerContext {
+        self.scheduler_context.clone()
     }
 }
+
+pub type State = scheduler_service_lib::State<Request, Step, JobOutputInfo>;
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 pub enum Step {
@@ -187,7 +88,9 @@ pub enum Step {
     VerifyingRegistration,
 }
 
+use scheduler_service_lib::{RunContext, SchedulerContext, ServerStopper};
 use thiserror::Error;
+use uuid::Uuid;
 
 #[derive(Debug, Error, Deserialize, Serialize)]
 pub enum Error {
@@ -201,10 +104,4 @@ pub enum Error {
     JobNotFound,
     #[error("no job was run yet")]
     NoJobRun,
-}
-
-impl fmt::Display for State {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
 }

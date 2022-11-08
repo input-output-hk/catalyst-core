@@ -3,7 +3,7 @@ pub mod rest;
 
 use crate::client::rest::SnapshotRestClient;
 use crate::config::JobParameters;
-use crate::State;
+use crate::ContextState;
 use jormungandr_lib::crypto::account::Identifier;
 use jortestkit::prelude::WaitBuilder;
 use snapshot_lib::registration::{Delegations, VotingRegistration};
@@ -47,10 +47,10 @@ pub fn get_snapshot_by_id<Q: Into<String>, S: Into<String>, P: Into<String>>(
     let job_id = job_id.into();
 
     let snapshot = snapshot_client.get_snapshot(job_id.clone(), tag.into())?;
-    let status = snapshot_client.job_status(job_id)?;
+    let status = snapshot_client.get_status(job_id)?;
 
     Ok(SnapshotResult {
-        status: status?,
+        status,
         snapshot: read_initials(&snapshot)?,
     })
 }
@@ -81,20 +81,20 @@ pub fn read_initials<S: Into<String>>(snapshot: S) -> Result<Vec<VotingRegistrat
 
 #[derive(Debug)]
 pub struct SnapshotResult {
-    status: State,
+    status: ContextState,
     snapshot: Vec<VotingRegistration>,
 }
 
 impl SnapshotResult {
-    pub fn new(status: State, snapshot: Vec<VotingRegistration>) -> Self {
+    pub fn new(status: ContextState, snapshot: Vec<VotingRegistration>) -> Self {
         Self { status, snapshot }
     }
 
     pub fn assert_status_is_finished(&self) {
-        matches!(self.status, State::Finished { .. });
+        matches!(self.status, ContextState::Finished { .. });
     }
 
-    pub fn status(&self) -> State {
+    pub fn status(&self) -> ContextState {
         self.status.clone()
     }
 

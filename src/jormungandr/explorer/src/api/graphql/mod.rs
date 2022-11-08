@@ -765,7 +765,7 @@ impl Transaction {
         Transaction {
             id,
             block_hashes: Default::default(),
-            contents: None,
+            contents: Some(ExplorerTransaction::default()),
         }
     }
 

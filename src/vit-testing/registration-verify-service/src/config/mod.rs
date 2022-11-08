@@ -9,19 +9,16 @@ use thiserror::Error;
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
 pub struct Configuration {
-    pub port: u16,
     #[serde(rename = "snapshot-token")]
     pub snapshot_token: String,
     #[serde(rename = "snapshot-address")]
     pub snapshot_address: String,
     pub jcli: PathBuf,
-    #[serde(rename = "client-token")]
-    pub client_token: Option<String>,
-    #[serde(rename = "admin-token")]
-    pub admin_token: Option<String>,
     #[serde(rename = "initial-snapshot-job-id")]
     pub snapshot_job_id: Option<String>,
     pub network: NetworkType,
+    #[serde(flatten)]
+    pub inner: scheduler_service_lib::Configuration,
 }
 
 pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Configuration, Error> {

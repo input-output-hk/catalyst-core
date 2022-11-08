@@ -202,7 +202,7 @@ impl ExplorerBlock {
                     ) {
                         Ok(tx) => Some(tx),
                         Err(e) => {
-                            error!("unable to map update proposal fragment {}", e);
+                            error!(error = %e, "unable to map update proposal fragment");
                             return Err(Error::ExplorerTransmuteFail);
                         }
                     }
@@ -219,7 +219,7 @@ impl ExplorerBlock {
                     ) {
                         Ok(tx) => Some(tx),
                         Err(e) => {
-                            error!("unable to map update vote fragment {}", e);
+                            error!(error = %e, "unable to map update vote fragment");
                             return Err(Error::ExplorerTransmuteFail);
                         }
                     }
@@ -236,7 +236,7 @@ impl ExplorerBlock {
                     ) {
                         Ok(tx) => Some(tx),
                         Err(e) => {
-                            error!("unable to map tx fragment {}", e);
+                            error!(error = %e, "unable to map tx fragment");
                             return Err(Error::ExplorerTransmuteFail);
                         }
                     }
@@ -255,7 +255,7 @@ impl ExplorerBlock {
                     ) {
                         Ok(tx) => Some(tx),
                         Err(e) => {
-                            error!("unable to map owner stake delegation fragment {}", e);
+                            error!(error = %e, "unable to map owner stake delegation fragment");
                             return Err(Error::ExplorerTransmuteFail);
                         }
                     }
@@ -272,7 +272,7 @@ impl ExplorerBlock {
                     ) {
                         Ok(tx) => Some(tx),
                         Err(e) => {
-                            error!("unable to map stake delegation fragment {}", e);
+                            error!(error = %e, "unable to map stake delegation fragment");
                             return Err(Error::ExplorerTransmuteFail);
                         }
                     }
@@ -289,7 +289,7 @@ impl ExplorerBlock {
                     ) {
                         Ok(tx) => Some(tx),
                         Err(e) => {
-                            error!("unable to map pool registration fragment {}", e);
+                            error!(error = %e, "unable to map pool registration fragment");
                             return Err(Error::ExplorerTransmuteFail);
                         }
                     }
@@ -306,7 +306,7 @@ impl ExplorerBlock {
                     ) {
                         Ok(tx) => Some(tx),
                         Err(e) => {
-                            error!("unable to map pool retirment fragment {}", e);
+                            error!(error = %e, "unable to map pool retirment fragment");
                             return Err(Error::ExplorerTransmuteFail);
                         }
                     }
@@ -323,7 +323,7 @@ impl ExplorerBlock {
                     ) {
                         Ok(tx) => Some(tx),
                         Err(e) => {
-                            error!("unable to map pool update fragment {}", e);
+                            error!(error = %e, "unable to map pool update fragment");
                             return Err(Error::ExplorerTransmuteFail);
                         }
                     }
@@ -340,7 +340,7 @@ impl ExplorerBlock {
                     ) {
                         Ok(tx) => Some(tx),
                         Err(e) => {
-                            error!("unable to map vote plan fragment {}", e);
+                            error!(error = %e, "unable to map vote plan fragment");
                             return Err(Error::ExplorerTransmuteFail);
                         }
                     }
@@ -357,7 +357,7 @@ impl ExplorerBlock {
                     ) {
                         Ok(tx) => Some(tx),
                         Err(e) => {
-                            error!("unable to map vote cast fragment {}", e);
+                            error!(error = %e, "unable to map vote cast fragment");
                             return Err(Error::ExplorerTransmuteFail);
                         }
                     }
@@ -374,7 +374,7 @@ impl ExplorerBlock {
                     ) {
                         Ok(tx) => Some(tx),
                         Err(e) => {
-                            error!("unable to map vote fragment {}", e);
+                            error!(error = %e, "unable to map vote fragment");
                             return Err(Error::ExplorerTransmuteFail);
                         }
                     }
@@ -425,7 +425,7 @@ impl ExplorerBlock {
         ) {
             Ok(total) => total,
             Err(e) => {
-                error!("Couldn't compute block's total input {e}");
+                error!(error = %e, "Couldn't compute block's total input");
                 return Err(Error::TxCalculationFailure);
             }
         };
@@ -437,7 +437,7 @@ impl ExplorerBlock {
         ) {
             Ok(total) => total,
             Err(e) => {
-                error!("Couldn't compute block's total  output {e}");
+                error!(error = %e, "Couldn't compute block's total  output");
                 return Err(Error::TxCalculationFailure);
             }
         };
@@ -505,7 +505,7 @@ impl ExplorerTransaction {
                     let kind = match id.to_single_account() {
                         Some(id) => chain_addr::Kind::Account(id.into()),
                         None => {
-                            error!("cannot validate address {:?}", id);
+                            error!("cannot validate address");
                             return Err(Error::ExplorerTransmuteFail);
                         }
                     };
@@ -519,9 +519,8 @@ impl ExplorerTransaction {
                         match id.to_multi_account().as_ref().try_into() {
                             Ok(id) => id,
                             Err(e) => {
-                                error!(
-                                    "multisig identifier size doesn't match address kind {:? }{:?}",
-                                    id, e
+                                error!(error = %e,
+                                    "multisig identifier size doesn't match address kind "
                                 );
                                 return Err(Error::ExplorerTransmuteFail);
                             }
@@ -550,7 +549,7 @@ impl ExplorerTransaction {
                             {
                                 Some(tx) => Some(tx),
                                 None => {
-                                    error!("transaction not found for utxo input {:?}", tx);
+                                    error!(error = %tx,"transaction not found for utxo input");
                                     None
                                 }
                             }

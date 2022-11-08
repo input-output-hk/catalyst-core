@@ -557,7 +557,7 @@ fn apply_block_to_stake_pools(
                     match blocks.insert(registration.to_id(), Arc::new(PersistentSequence::new())) {
                         Ok(pool_registration) => pool_registration,
                         Err(e) => {
-                            error!("pool was registered more than once {}", e);
+                            error!(error = %e,"pool was registered more than once");
                             return Err(Error::CannotApplyBlock);
                         }
                     }
@@ -575,7 +575,7 @@ fn apply_block_to_stake_pools(
                 ) {
                     Ok(pool_registration) => pool_registration,
                     Err(e) => {
-                        error!("pool was registered more than once {}", e);
+                        error!(error = %e,"pool was registered more than once");
                         return Err(Error::CannotApplyBlock);
                     }
                 },
@@ -589,7 +589,7 @@ fn apply_block_to_stake_pools(
                     }) {
                         Ok(pool_retirement) => pool_retirement,
                         Err(e) => {
-                            error!("pool was retired before registered {}", e);
+                            error!(error = %e,"pool was retired before registered");
                             return Err(Error::CannotApplyBlock);
                         }
                     }

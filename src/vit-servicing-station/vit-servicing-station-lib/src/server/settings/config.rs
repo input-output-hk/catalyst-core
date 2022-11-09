@@ -397,7 +397,7 @@ mod test {
             "enable_api_tokens" : true,
             "log" : {
                 "log_output_path" : "./server.log",
-                "log_level" : "error"    
+                "log_level" : "error"
             },
             "service_version" : "v0.2.0"
         }

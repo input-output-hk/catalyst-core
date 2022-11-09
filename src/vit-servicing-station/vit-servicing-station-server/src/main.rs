@@ -1,10 +1,11 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use structopt::StructOpt;
 
+use structopt::StructOpt;
 use tracing::{error, info};
 use tracing_appender::non_blocking::WorkerGuard;
+use tracing_subscriber::filter::LevelFilter;
 use vit_servicing_station_lib::{
     db, server, server::exit_codes::ApplicationExitCode, server::settings as server_settings,
     server::settings::ServiceSettings, v0,
@@ -25,10 +26,22 @@ fn check_and_build_proper_path(path: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
+#[derive(Debug, thiserror::Error)]
+enum ConfigTracingError {
+    #[error("io error: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("failed to initialize tracing subscriber: {0}")]
+    InitSubscriber(#[from] tracing_subscriber::util::TryInitError),
+}
+
 fn config_tracing(
     level: server_settings::LogLevel,
     pathbuf: Option<PathBuf>,
-) -> Result<WorkerGuard, std::io::Error> {
+) -> Result<WorkerGuard, ConfigTracingError> {
+    use tracing_subscriber::prelude::*;
+
+    let subscriber = tracing_subscriber::registry().with(LevelFilter::from(level));
+
     if let Some(path) = pathbuf {
         // check path integrity
         // we try opening the file since tracing appender would just panic instead of
@@ -54,17 +67,19 @@ fn config_tracing(
         );
 
         let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
-        tracing_subscriber::fmt()
-            .with_writer(non_blocking)
-            .with_max_level(level)
-            .init();
+
+        let layer = tracing_subscriber::fmt::layer().with_writer(non_blocking);
+
+        subscriber.with(layer).try_init()?;
+
         Ok(guard)
     } else {
         let (non_blocking, guard) = tracing_appender::non_blocking(std::io::stdout());
-        tracing_subscriber::fmt()
-            .with_writer(non_blocking)
-            .with_max_level(level)
-            .init();
+
+        let layer = tracing_subscriber::fmt::layer().with_writer(non_blocking);
+
+        subscriber.with(layer).try_init()?;
+
         Ok(guard)
     }
 }

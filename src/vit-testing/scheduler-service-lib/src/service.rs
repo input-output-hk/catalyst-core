@@ -97,7 +97,7 @@ fn check_if_started<JobRequest: Clone,JobOutputInfo>(control_context: Arc<Mutex<
         .lock()
         .unwrap()
         .run_requested() {
-        Some((job_id.clone(),request.clone()))
+        Some((job_id,request))
     } else {
         None
     }

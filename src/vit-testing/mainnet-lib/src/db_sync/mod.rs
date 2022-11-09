@@ -168,18 +168,16 @@ pub enum Error {
 
 #[cfg(test)]
 mod tests {
-    use mainnet_lib::InMemoryDbSync;
-    use crate::{DataProvider, InMemoryDbSync, MainnetNetworkBuilder, MainnetWallet, MainnetWalletStateBuilder};
-    use crate::test_api::MockDbProvider;
+    use assert_fs::TempDir;
+    use crate::{InMemoryDbSync, MainnetNetworkBuilder, MainnetWallet, MainnetWalletStateBuilder};
 
     #[test]
     fn restore_persist_bijection_direct() {
-        let alice = MainnetWallet::new(1_000);
-        let bob = MainnetWallet::new(1_000);
-        let clarice = MainnetWallet::new(1_000);
-        let dave = MainnetWallet::new(1_000);
+        let testing_directory = TempDir::new().unwrap();
 
-        let (db_sync, reps) = MainnetNetworkBuilder::default()
+        let alice = MainnetWallet::new(1_000);
+
+        let (db_sync, _reps) = MainnetNetworkBuilder::default()
             .with(alice.as_direct_voter())
             .build(&testing_directory);
 

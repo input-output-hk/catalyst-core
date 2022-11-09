@@ -23,7 +23,11 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: Swatinem/rust-cache@v2
       - name:
-        run: sudo rm -rf /usr/share/dotnet
+        run: |
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          df -h
 
       - name: Run tests
         uses: cachix/install-nix-action@v18

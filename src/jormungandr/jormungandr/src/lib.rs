@@ -66,7 +66,7 @@ pub struct BootstrappedNode {
     context: Option<context::ContextLock>,
     services: Services,
     initial_peers: Vec<topology::Peer>,
-    _logger_guards: Vec<WorkerGuard>,
+    _logger_guard: Vec<WorkerGuard>,
 }
 
 const BLOCK_TASK_QUEUE_LEN: usize = 32;
@@ -382,7 +382,7 @@ fn bootstrap(initialized_node: InitializedNode) -> Result<BootstrappedNode, star
         context,
         mut services,
         cancellation_token,
-        _logger_guards,
+        _logger_guard,
     } = initialized_node;
 
     let BootstrapData {
@@ -411,7 +411,7 @@ fn bootstrap(initialized_node: InitializedNode) -> Result<BootstrappedNode, star
         context,
         services,
         initial_peers,
-        _logger_guards,
+        _logger_guard,
     })
 }
 
@@ -521,7 +521,7 @@ pub struct InitializedNode {
     pub context: Option<context::ContextLock>,
     pub services: Services,
     pub cancellation_token: CancellationToken,
-    pub _logger_guards: Vec<WorkerGuard>,
+    pub _logger_guard: Vec<WorkerGuard>,
 }
 
 #[cfg(unix)]
@@ -590,20 +590,12 @@ fn initialize_node() -> Result<InitializedNode, start_up::Error> {
     let raw_settings = RawSettings::load(command_line)?;
 
     let log_settings = raw_settings.log_settings();
-    let (_logger_guards, log_info_msgs) = log_settings.init_log()?;
+    let _logger_guard = log_settings.init_log()?;
 
     let init_span = span!(Level::TRACE, "task", kind = "init");
     let async_span = init_span.clone();
     let _enter = init_span.enter();
     tracing::info!("Starting {}", env!("FULL_VERSION"),);
-
-    if let Some(msgs) = log_info_msgs {
-        // if log settings were overriden, we will have an info
-        // message which we can unpack at this point.
-        for msg in &msgs {
-            tracing::info!("{}", msg);
-        }
-    }
 
     let diagnostic = Diagnostic::new()?;
     tracing::debug!("system settings are: {}", diagnostic);
@@ -725,7 +717,7 @@ fn initialize_node() -> Result<InitializedNode, start_up::Error> {
         context,
         services,
         cancellation_token,
-        _logger_guards,
+        _logger_guard,
     })
 }
 

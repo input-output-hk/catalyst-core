@@ -11,46 +11,39 @@ use tracing_appender::non_blocking::WorkerGuard;
 #[allow(unused_imports)]
 use tracing_subscriber::layer::SubscriberExt;
 
-pub struct LogSettings {
-    pub config: LogSettingsEntry,
-    pub msgs: LogInfoMsg,
-}
-
-/// A wrapper to return an optional string message that we
-/// have to manually log with `info!`, we need this because
-/// some code executes before the logs are initialized.
-pub type LogInfoMsg = Option<Vec<String>>;
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct LogSettingsEntry {
-    pub level: LevelFilter,
-    pub format: LogFormat,
-    pub output: LogOutput,
-}
-
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 /// Format of the logger.
 pub enum LogFormat {
-    Default,
     Plain,
     Json,
 }
 
 impl Default for LogFormat {
     fn default() -> Self {
-        LogFormat::Default
+        LogFormat::Plain
     }
 }
 
 impl Display for LogFormat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            LogFormat::Default => "default",
             LogFormat::Plain => "plain",
             LogFormat::Json => "json",
         };
         f.write_str(s)
+    }
+}
+
+impl FromStr for LogFormat {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.trim().to_lowercase().as_str() {
+            "plain" => Ok(LogFormat::Plain),
+            "json" => Ok(LogFormat::Json),
+            other => Err(format!("unknown log format '{}'", other)),
+        }
     }
 }
 
@@ -70,23 +63,14 @@ pub enum LogOutput {
     },
 }
 
-impl FromStr for LogFormat {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match &*s.trim().to_lowercase() {
-            "plain" => Ok(LogFormat::Plain),
-            "json" => Ok(LogFormat::Json),
-            "default" => Ok(LogFormat::Default),
-            other => Err(format!("unknown log format '{}'", other)),
-        }
-    }
-}
-
 impl FromStr for LogOutput {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.starts_with("@") {
+            return Ok(Self::File(PathBuf::from(&s[1..])));
+        }
+
         match s.trim().to_lowercase().as_str() {
             "stdout" => Ok(LogOutput::Stdout),
             "stderr" => Ok(LogOutput::Stderr),
@@ -97,8 +81,31 @@ impl FromStr for LogOutput {
     }
 }
 
+impl Default for LogOutput {
+    fn default() -> Self {
+        Self::Stderr
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct LogSettings {
+    pub level: LevelFilter,
+    pub format: LogFormat,
+    pub output: LogOutput,
+}
+
+impl Default for LogSettings {
+    fn default() -> Self {
+        Self {
+            level: LevelFilter::TRACE,
+            format: Default::default(),
+            output: Default::default(),
+        }
+    }
+}
+
 impl LogSettings {
-    pub fn init_log(self) -> Result<(Vec<WorkerGuard>, LogInfoMsg), Error> {
+    pub fn init_log(self) -> Result<Vec<WorkerGuard>, Error> {
         use tracing_subscriber::prelude::*;
 
         // Worker guards that need to be held on to.
@@ -106,17 +113,17 @@ impl LogSettings {
 
         // configure the registry subscriber as the global default,
         // panics if something goes wrong.
-        match self.config.output {
+        match &self.output {
             LogOutput::Stdout => {
                 let (non_blocking, guard) = tracing_appender::non_blocking(std::io::stdout());
                 guards.push(guard);
-                match self.config.format {
-                    LogFormat::Default | LogFormat::Plain => {
+                match self.format {
+                    LogFormat::Plain => {
                         let layer = tracing_subscriber::fmt::Layer::new()
                             .with_level(true)
                             .with_writer(non_blocking);
                         tracing_subscriber::registry()
-                            .with(self.config.level)
+                            .with(self.level)
                             .with(layer)
                             .init();
                     }
@@ -127,7 +134,7 @@ impl LogSettings {
                             .with_timer(tracing_subscriber::fmt::time::UtcTime::rfc_3339())
                             .with_writer(non_blocking);
                         tracing_subscriber::registry()
-                            .with(self.config.level)
+                            .with(self.level)
                             .with(layer)
                             .init();
                     }
@@ -136,13 +143,13 @@ impl LogSettings {
             LogOutput::Stderr => {
                 let (non_blocking, guard) = tracing_appender::non_blocking(std::io::stderr());
                 guards.push(guard);
-                match self.config.format {
-                    LogFormat::Default | LogFormat::Plain => {
+                match self.format {
+                    LogFormat::Plain => {
                         let layer = tracing_subscriber::fmt::Layer::new()
                             .with_level(true)
                             .with_writer(non_blocking);
                         tracing_subscriber::registry()
-                            .with(self.config.level)
+                            .with(self.level)
                             .with(layer)
                             .init();
                     }
@@ -153,7 +160,7 @@ impl LogSettings {
                             .with_timer(tracing_subscriber::fmt::time::UtcTime::rfc_3339())
                             .with_writer(non_blocking);
                         tracing_subscriber::registry()
-                            .with(self.config.level)
+                            .with(self.level)
                             .with(layer)
                             .init();
                     }
@@ -172,13 +179,13 @@ impl LogSettings {
                 let (non_blocking, guard) = tracing_appender::non_blocking(file);
                 guards.push(guard);
 
-                match self.config.format {
-                    LogFormat::Default | LogFormat::Plain => {
+                match self.format {
+                    LogFormat::Plain => {
                         let layer = tracing_subscriber::fmt::Layer::new()
                             .with_level(true)
                             .with_writer(non_blocking);
                         tracing_subscriber::registry()
-                            .with(self.config.level)
+                            .with(self.level)
                             .with(layer)
                             .init();
                     }
@@ -189,7 +196,7 @@ impl LogSettings {
                             .with_timer(tracing_subscriber::fmt::time::UtcTime::rfc_3339())
                             .with_writer(non_blocking);
                         tracing_subscriber::registry()
-                            .with(self.config.level)
+                            .with(self.level)
                             .with(layer)
                             .init();
                     }
@@ -197,7 +204,6 @@ impl LogSettings {
             }
             #[cfg(feature = "systemd")]
             LogOutput::Journald => {
-                self.config.format.require_default()?;
                 let layer = tracing_journald::layer().map_err(Error::Journald)?;
                 tracing_subscriber::registry()
                     .with(self.config.level)
@@ -217,17 +223,31 @@ impl LogSettings {
             }
         }
 
-        Ok((guards, self.msgs))
-    }
-}
+        let default_settings = Self::default();
 
-impl LogFormat {
-    #[allow(dead_code)]
-    fn require_default(&self) -> Result<(), Error> {
-        match self {
-            LogFormat::Default => Ok(()),
-            _ => Err(Error::FormatNotSupported { specified: *self }),
+        if self.output != default_settings.output {
+            tracing::info!(
+                "log output overriden from command line: {:?} replaced with {:?}",
+                default_settings.output,
+                self.output
+            );
         }
+        if self.level != default_settings.level {
+            tracing::info!(
+                "log level overriden from command line: {:?} replaced with {:?}",
+                default_settings.level,
+                self.level
+            );
+        }
+        if self.format != default_settings.format {
+            tracing::info!(
+                "log format overriden from command line: {:?} replaced with {:?}",
+                default_settings.format,
+                self.format
+            );
+        }
+
+        Ok(guards)
     }
 }
 

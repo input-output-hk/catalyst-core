@@ -98,10 +98,11 @@ pub struct CommandLine {
     #[structopt(long = "log-format", parse(try_from_str))]
     pub log_format: Option<LogFormat>,
 
-    /// Set format of the log emitted. Can be "stdout", "stderr",
-    /// "syslog" (Unix only) or "journald"
-    /// (linux with systemd only, must be enabled during compilation).
-    /// If not configured anywhere, defaults to "stderr".
+    /// Set where the log will be emitted. Can be "stdout", "stderr",
+    /// a file path preceeded by '@' (e.g. @./jormungandr.log)
+    /// or "journald" (linux with systemd only, must be enabled during compilation).
+    ///
+    /// If not configured anywhere, defaults to "stderr"
     #[structopt(long = "log-output", parse(try_from_str))]
     pub log_output: Option<LogOutput>,
 

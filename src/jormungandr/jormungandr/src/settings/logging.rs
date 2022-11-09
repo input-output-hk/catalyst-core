@@ -1,3 +1,4 @@
+use opentelemetry_otlp::WithExportConfig;
 #[cfg(feature = "gelf")]
 use std::net::SocketAddr;
 use std::{
@@ -6,10 +7,7 @@ use std::{
     path::PathBuf,
     str::FromStr,
 };
-use tracing::{level_filters::LevelFilter, subscriber::SetGlobalDefaultError};
-use tracing_appender::non_blocking::WorkerGuard;
-#[allow(unused_imports)]
-use tracing_subscriber::layer::SubscriberExt;
+use tracing::level_filters::LevelFilter;
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
@@ -87,6 +85,17 @@ impl Default for LogOutput {
     }
 }
 
+pub struct LogGuard {
+    _nonblocking_worker_guard: Option<tracing_appender::non_blocking::WorkerGuard>,
+}
+
+impl Drop for LogGuard {
+    fn drop(&mut self) {
+        tracing::trace!("Shutting down opentelemetry trace provider");
+        opentelemetry::global::shutdown_tracer_provider();
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct LogSettings {
     pub level: LevelFilter,
@@ -105,27 +114,46 @@ impl Default for LogSettings {
 }
 
 impl LogSettings {
-    pub fn init_log(self) -> Result<Vec<WorkerGuard>, Error> {
+    pub fn init_log(self) -> Result<LogGuard, Error> {
         use tracing_subscriber::prelude::*;
 
-        // Worker guards that need to be held on to.
-        let mut guards = Vec::new();
+        let otel_tracer = opentelemetry_otlp::new_pipeline()
+            .tracing()
+            .with_exporter(
+                opentelemetry_otlp::new_exporter()
+                    .tonic()
+                    .with_endpoint("http://todo"),
+            )
+            .with_trace_config(opentelemetry::sdk::trace::config().with_resource(
+                opentelemetry::sdk::Resource::new(vec![opentelemetry::KeyValue::new(
+                    opentelemetry_semantic_conventions::resource::SERVICE_NAME,
+                    "jormungandr",
+                )]),
+            ))
+            .install_batch(opentelemetry::runtime::Tokio)
+            .map_err(Error::InstallOpenTelemetryPipeLine)?;
+
+        let otel_layer = tracing_opentelemetry::layer().with_tracer(otel_tracer);
+
+        let subscriber = tracing_subscriber::registry()
+            .with(self.level)
+            .with(otel_layer);
 
         // configure the registry subscriber as the global default,
         // panics if something goes wrong.
-        match &self.output {
+        let nonblocking_worker_guard = match &self.output {
             LogOutput::Stdout => {
                 let (non_blocking, guard) = tracing_appender::non_blocking(std::io::stdout());
-                guards.push(guard);
+
                 match self.format {
                     LogFormat::Plain => {
                         let layer = tracing_subscriber::fmt::Layer::new()
                             .with_level(true)
                             .with_writer(non_blocking);
-                        tracing_subscriber::registry()
-                            .with(self.level)
+                        subscriber
                             .with(layer)
-                            .init();
+                            .try_init()
+                            .map_err(Error::InitSubscriber)?;
                     }
                     LogFormat::Json => {
                         let layer = tracing_subscriber::fmt::Layer::new()
@@ -133,25 +161,27 @@ impl LogSettings {
                             .with_level(true)
                             .with_timer(tracing_subscriber::fmt::time::UtcTime::rfc_3339())
                             .with_writer(non_blocking);
-                        tracing_subscriber::registry()
-                            .with(self.level)
+                        subscriber
                             .with(layer)
-                            .init();
+                            .try_init()
+                            .map_err(Error::InitSubscriber)?;
                     }
                 }
+
+                Some(guard)
             }
             LogOutput::Stderr => {
                 let (non_blocking, guard) = tracing_appender::non_blocking(std::io::stderr());
-                guards.push(guard);
+
                 match self.format {
                     LogFormat::Plain => {
                         let layer = tracing_subscriber::fmt::Layer::new()
                             .with_level(true)
                             .with_writer(non_blocking);
-                        tracing_subscriber::registry()
-                            .with(self.level)
+                        subscriber
                             .with(layer)
-                            .init();
+                            .try_init()
+                            .map_err(Error::InitSubscriber)?;
                     }
                     LogFormat::Json => {
                         let layer = tracing_subscriber::fmt::Layer::new()
@@ -159,12 +189,14 @@ impl LogSettings {
                             .with_level(true)
                             .with_timer(tracing_subscriber::fmt::time::UtcTime::rfc_3339())
                             .with_writer(non_blocking);
-                        tracing_subscriber::registry()
-                            .with(self.level)
+                        subscriber
                             .with(layer)
-                            .init();
+                            .try_init()
+                            .map_err(Error::InitSubscriber)?;
                     }
                 }
+
+                Some(guard)
             }
             LogOutput::File(path) => {
                 let file = fs::OpenOptions::new()
@@ -177,17 +209,16 @@ impl LogSettings {
                         cause,
                     })?;
                 let (non_blocking, guard) = tracing_appender::non_blocking(file);
-                guards.push(guard);
 
                 match self.format {
                     LogFormat::Plain => {
                         let layer = tracing_subscriber::fmt::Layer::new()
                             .with_level(true)
                             .with_writer(non_blocking);
-                        tracing_subscriber::registry()
-                            .with(self.level)
+                        subscriber
                             .with(layer)
-                            .init();
+                            .try_init()
+                            .map_err(Error::InitSubscriber)?;
                     }
                     LogFormat::Json => {
                         let layer = tracing_subscriber::fmt::Layer::new()
@@ -195,20 +226,24 @@ impl LogSettings {
                             .with_level(true)
                             .with_timer(tracing_subscriber::fmt::time::UtcTime::rfc_3339())
                             .with_writer(non_blocking);
-                        tracing_subscriber::registry()
-                            .with(self.level)
+                        subscriber
                             .with(layer)
-                            .init();
+                            .try_init()
+                            .map_err(Error::InitSubscriber)?;
                     }
                 }
+
+                Some(guard)
             }
             #[cfg(feature = "systemd")]
             LogOutput::Journald => {
                 let layer = tracing_journald::layer().map_err(Error::Journald)?;
-                tracing_subscriber::registry()
-                    .with(self.config.level)
+                subscriber
                     .with(layer)
-                    .init();
+                    .try_init()
+                    .map_err(Error::InitSubscriber)?;
+
+                None
             }
             #[cfg(feature = "gelf")]
             LogOutput::Gelf { backend, .. } => {
@@ -216,12 +251,14 @@ impl LogSettings {
                     .connect_tcp(backend)
                     .map_err(Error::Gelf)?;
                 tokio::spawn(task);
-                tracing_subscriber::registry()
-                    .with(self.config.level)
+                subscriber
                     .with(layer)
-                    .init();
+                    .try_init()
+                    .map_err(Error::InitSubscriber)?;
+
+                None
             }
-        }
+        };
 
         let default_settings = Self::default();
 
@@ -247,7 +284,9 @@ impl LogSettings {
             );
         }
 
-        Ok(guards)
+        Ok(LogGuard {
+            _nonblocking_worker_guard: nonblocking_worker_guard,
+        })
     }
 }
 
@@ -267,6 +306,8 @@ pub enum Error {
     #[cfg(feature = "gelf")]
     #[error("GELF connection failed")]
     Gelf(tracing_gelf::BuilderError),
-    #[error("failed to set global subscriber")]
-    SetGlobalSubscriberError(#[source] SetGlobalDefaultError),
+    #[error("failed to install opentelemetry pipeline")]
+    InstallOpenTelemetryPipeLine(#[source] opentelemetry::trace::TraceError),
+    #[error("failed to init subscriber")]
+    InitSubscriber(#[source] tracing_subscriber::util::TryInitError),
 }

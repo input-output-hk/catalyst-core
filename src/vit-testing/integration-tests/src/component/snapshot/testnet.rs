@@ -29,7 +29,7 @@ pub fn multiple_registration() {
     let (identifier, value) = second_registration.snapshot_entry().unwrap();
 
     let job_param = JobParameters {
-        slot_no: Some(second_registration.status().slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
+        slot_no: Some(second_registration.slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
         tag: None,
     };
 
@@ -55,7 +55,7 @@ pub fn wallet_has_less_than_threshold() {
     let (too_low_funds_entry, _) = registration.snapshot_entry().unwrap();
 
     let job_param = JobParameters {
-        slot_no: Some(registration.status().slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
+        slot_no: Some(registration.slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
         tag: None,
     };
 
@@ -79,7 +79,7 @@ pub fn wallet_with_funds_equals_to_threshold_should_be_elligible_to_vote() {
     registration.print_snapshot_entry().unwrap();
 
     let job_param = JobParameters {
-        slot_no: Some(registration.status().slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
+        slot_no: Some(registration.slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
         tag: None,
     };
 
@@ -102,7 +102,7 @@ pub fn registration_after_snapshot_is_not_taken_into_account() {
     let (too_late_id, _) = registration.snapshot_entry().unwrap();
 
     let job_param = JobParameters {
-        slot_no: Some(registration.status().slot_no().unwrap() - 1),
+        slot_no: Some(registration.slot_no().unwrap() - 1),
         tag: None,
     };
 

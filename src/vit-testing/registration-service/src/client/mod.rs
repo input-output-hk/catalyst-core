@@ -88,6 +88,15 @@ impl LegacyResultInfo {
         self.status.clone()
     }
 
+    pub fn slot_no(&self) -> Option<u64> {
+        match self.status() {
+            State::Finished {
+                info: Some(info), ..
+            } => Some(info.slot_no),
+            _ => None,
+        }
+    }
+
     pub fn print_snapshot_entry(&self) -> Result<(), Error> {
         println!(
             "[identifier: {}, funds:{}",

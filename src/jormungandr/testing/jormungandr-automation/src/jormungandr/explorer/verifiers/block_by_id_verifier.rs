@@ -1,5 +1,5 @@
 use super::{ExplorerVerifier, VerifierError};
-use crate::jormungandr::explorer::data::block_by_id::{PayloadType as expPayloadType, *, self};
+use crate::jormungandr::explorer::data::block_by_id::{self, PayloadType as expPayloadType, *};
 use chain_addr::AddressReadable;
 use chain_impl_mockchain::{
     account::DelegationType,
@@ -7,7 +7,7 @@ use chain_impl_mockchain::{
     certificate::*,
     chaintypes::ConsensusType,
     config::{ConfigParam::*, RewardParams},
-    fragment::{Fragment, ConfigParams},
+    fragment::{ConfigParams, Fragment},
     transaction::{AccountIdentifier, InputEnum, Transaction},
     vote::PayloadType,
 };
@@ -127,7 +127,8 @@ impl ExplorerVerifier {
                                         .is_some());
                                     let explorer_config_param = &explorer_transaction
                                         .initial_configuration_params
-                                        .as_ref().unwrap()
+                                        .as_ref()
+                                        .unwrap()
                                         .config_params;
                                     Self::assert_block_config_param(
                                         config_params,
@@ -394,13 +395,11 @@ impl ExplorerVerifier {
         Ok(())
     }
 
-    fn assert_block_config_param(config_params: &ConfigParams,
-        explorer_config_param: &Vec<block_by_id::configParam>){
-            assert_eq!(
-                explorer_config_param.len(),
-                config_params.iter().len()
-            );
-
+    fn assert_block_config_param(
+        config_params: &ConfigParams,
+        explorer_config_param: &Vec<block_by_id::configParam>,
+    ) {
+        assert_eq!(explorer_config_param.len(), config_params.iter().len());
 
         //for each parameter check that there is only one parameter
         //of the corrisponding type in the explorer query answer and that the parameters have the same value
@@ -489,7 +488,8 @@ impl ExplorerVerifier {
                 AddBftLeader(certificate_param) => {
                     let matching_params = explorer_config_param.iter()
                         .filter(|&config_param| matches!(config_param, configParam::AddBftLeader(explorer_param)
-                        if explorer_param.add_bft_leader.id == certificate_param.as_public_key().to_string())).count();
+                        if Self::decode_bech32_pk(&explorer_param.add_bft_leader.id).to_string() == certificate_param.as_public_key().to_string()
+                    )).count();
                     assert_eq!(matching_params, 1);
                 }
                 RemoveBftLeader(certificate_param) => {
@@ -503,12 +503,25 @@ impl ExplorerVerifier {
                         .filter(|&config_param| matches!(config_param, configParam::LinearFee(explorer_param)
                         if {explorer_param.certificate  as u64 == certificate_param.certificate &&
                             explorer_param.coefficient as u64 == certificate_param.coefficient &&
-                            explorer_param.constant as u64 == certificate_param.constant &&
-                            explorer_param.per_certificate_fees.certificate_owner_stake_delegation.unwrap() as u64 == u64::from(certificate_param.per_certificate_fees.certificate_owner_stake_delegation.unwrap()) &&
-                            explorer_param.per_certificate_fees.certificate_pool_registration.unwrap() as u64 == u64::from(certificate_param.per_certificate_fees.certificate_pool_registration.unwrap()) &&
-                            explorer_param.per_certificate_fees.certificate_stake_delegation.unwrap() as u64 == u64::from(certificate_param.per_certificate_fees.certificate_stake_delegation.unwrap()) &&
-                            explorer_param.per_vote_certificate_fees.certificate_vote_cast.unwrap() as u64 == u64::from(certificate_param.per_vote_certificate_fees.certificate_vote_cast.unwrap()) &&
-                            explorer_param.per_vote_certificate_fees.certificate_vote_plan.unwrap() as u64 == u64::from(certificate_param.per_vote_certificate_fees.certificate_vote_plan.unwrap())
+                            explorer_param.constant as u64 == certificate_param.constant && {
+                                explorer_param.per_certificate_fees.certificate_owner_stake_delegation.is_none() && certificate_param.per_certificate_fees.certificate_owner_stake_delegation.is_none() ||
+                                explorer_param.per_certificate_fees.certificate_owner_stake_delegation.unwrap() as u64 == u64::from(certificate_param.per_certificate_fees.certificate_owner_stake_delegation.unwrap())
+                            } && {
+                                explorer_param.per_certificate_fees.certificate_pool_registration.is_none() && certificate_param.per_certificate_fees.certificate_pool_registration.is_none() ||
+                                explorer_param.per_certificate_fees.certificate_pool_registration.unwrap() as u64 == u64::from(certificate_param.per_certificate_fees.certificate_pool_registration.unwrap())
+                            } &&
+                            {
+                                explorer_param.per_certificate_fees.certificate_stake_delegation.is_none() && certificate_param.per_certificate_fees.certificate_stake_delegation.is_none() ||
+                                explorer_param.per_certificate_fees.certificate_stake_delegation.unwrap() as u64 == u64::from(certificate_param.per_certificate_fees.certificate_stake_delegation.unwrap())
+
+                            }&&{
+                                explorer_param.per_vote_certificate_fees.certificate_vote_cast.is_none() && certificate_param.per_vote_certificate_fees.certificate_vote_cast.is_none() ||
+                                explorer_param.per_vote_certificate_fees.certificate_vote_cast.unwrap() as u64 == u64::from(certificate_param.per_vote_certificate_fees.certificate_vote_cast.unwrap())
+
+                            }&&{
+                                explorer_param.per_vote_certificate_fees.certificate_vote_plan.is_none() && certificate_param.per_vote_certificate_fees.certificate_vote_plan.is_none() ||
+                                explorer_param.per_vote_certificate_fees.certificate_vote_plan.unwrap_or_default() as u64 == u64::from(certificate_param.per_vote_certificate_fees.certificate_vote_plan.unwrap())
+                            }
                         })).count();
                     assert_eq!(matching_params, 1);
                 }
@@ -659,8 +672,6 @@ impl ExplorerVerifier {
                 EvmEnvironment(_) => unimplemented!(),
             }
         }
-
-
     }
 
     fn assert_block_pool_registration(

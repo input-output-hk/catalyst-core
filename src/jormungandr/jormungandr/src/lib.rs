@@ -19,7 +19,7 @@ use crate::{
 use chain_impl_mockchain::leadership::LeadershipConsensus;
 use futures::{executor::block_on, prelude::*};
 use jormungandr_lib::interfaces::NodeState;
-use settings::{start::RawSettings, CommandLine};
+use settings::{logging::LogGuard, start::RawSettings, CommandLine};
 use std::{sync::Arc, time::Duration};
 use tokio::signal;
 use tokio_util::sync::CancellationToken;
@@ -47,7 +47,6 @@ pub mod topology;
 pub mod utils;
 pub mod watch_client;
 
-use tracing_appender::non_blocking::WorkerGuard;
 use tracing_futures::Instrument;
 
 fn start() -> Result<(), start_up::Error> {
@@ -66,7 +65,7 @@ pub struct BootstrappedNode {
     context: Option<context::ContextLock>,
     services: Services,
     initial_peers: Vec<topology::Peer>,
-    _logger_guards: Vec<WorkerGuard>,
+    _logger_guard: LogGuard,
 }
 
 const BLOCK_TASK_QUEUE_LEN: usize = 32;
@@ -382,7 +381,7 @@ fn bootstrap(initialized_node: InitializedNode) -> Result<BootstrappedNode, star
         context,
         mut services,
         cancellation_token,
-        _logger_guards,
+        _logger_guard,
     } = initialized_node;
 
     let BootstrapData {
@@ -411,7 +410,7 @@ fn bootstrap(initialized_node: InitializedNode) -> Result<BootstrappedNode, star
         context,
         services,
         initial_peers,
-        _logger_guards,
+        _logger_guard,
     })
 }
 
@@ -521,7 +520,7 @@ pub struct InitializedNode {
     pub context: Option<context::ContextLock>,
     pub services: Services,
     pub cancellation_token: CancellationToken,
-    pub _logger_guards: Vec<WorkerGuard>,
+    pub _logger_guard: LogGuard,
 }
 
 #[cfg(unix)]
@@ -587,23 +586,19 @@ fn initialize_node() -> Result<InitializedNode, start_up::Error> {
         std::process::exit(0);
     }
 
+    let tokio_runtime = tokio::runtime::Runtime::new().expect("Tokio runtime created");
+
     let raw_settings = RawSettings::load(command_line)?;
 
     let log_settings = raw_settings.log_settings();
-    let (_logger_guards, log_info_msgs) = log_settings.init_log()?;
+    // For OpenTelemetry exporter to work it needs to be initialized inside a Tokio runtime
+    // which will be used by Tonic for GRPC calls
+    let _logger_guard = tokio_runtime.block_on(async { log_settings.init_log() })?;
 
     let init_span = span!(Level::TRACE, "task", kind = "init");
     let async_span = init_span.clone();
     let _enter = init_span.enter();
     tracing::info!("Starting {}", env!("FULL_VERSION"),);
-
-    if let Some(msgs) = log_info_msgs {
-        // if log settings were overriden, we will have an info
-        // message which we can unpack at this point.
-        for msg in &msgs {
-            tracing::info!("{}", msg);
-        }
-    }
 
     let diagnostic = Diagnostic::new()?;
     tracing::debug!("system settings are: {}", diagnostic);
@@ -623,7 +618,7 @@ fn initialize_node() -> Result<InitializedNode, start_up::Error> {
         return Err(network::bootstrap::Error::EmptyTrustedPeers.into());
     }
 
-    let mut services = Services::new();
+    let mut services = Services::new(tokio_runtime);
 
     let cancellation_token = CancellationToken::new();
     init_os_signal_watchers(&mut services, cancellation_token.clone());
@@ -725,7 +720,7 @@ fn initialize_node() -> Result<InitializedNode, start_up::Error> {
         context,
         services,
         cancellation_token,
-        _logger_guards,
+        _logger_guard,
     })
 }
 

@@ -1,5 +1,5 @@
 use super::{ExplorerVerifier, VerifierError};
-use crate::jormungandr::explorer::data::block_by_id::{PayloadType as expPayloadType, *};
+use crate::jormungandr::explorer::data::block_by_id::{PayloadType as expPayloadType, *, self};
 use chain_addr::AddressReadable;
 use chain_impl_mockchain::{
     account::DelegationType,
@@ -7,7 +7,7 @@ use chain_impl_mockchain::{
     certificate::*,
     chaintypes::ConsensusType,
     config::{ConfigParam::*, RewardParams},
-    fragment::Fragment,
+    fragment::{Fragment, ConfigParams},
     transaction::{AccountIdentifier, InputEnum, Transaction},
     vote::PayloadType,
 };
@@ -121,9 +121,18 @@ impl ExplorerVerifier {
                                         explorer_transaction,
                                     )
                                     .unwrap();
-                                } else if let Fragment::Initial(_config_params) = fragment {
-                                    //Not implemented because of the bug //NPG-3274
-                                    return Err(VerifierError::Unimplemented);
+                                } else if let Fragment::Initial(config_params) = fragment {
+                                    assert!(explorer_transaction
+                                        .initial_configuration_params
+                                        .is_some());
+                                    let explorer_config_param = &explorer_transaction
+                                        .initial_configuration_params
+                                        .as_ref().unwrap()
+                                        .config_params;
+                                    Self::assert_block_config_param(
+                                        config_params,
+                                        explorer_config_param,
+                                    );
                                 } else {
                                     return Err(VerifierError::InvalidCertificate {
                                         received: "Transaction".to_string(),
@@ -383,6 +392,275 @@ impl ExplorerVerifier {
             assert_eq!(matching_outputs, explorer_transaction.outputs.len());
         };
         Ok(())
+    }
+
+    fn assert_block_config_param(config_params: &ConfigParams,
+        explorer_config_param: &Vec<block_by_id::configParam>){
+            assert_eq!(
+                explorer_config_param.len(),
+                config_params.iter().len()
+            );
+
+
+        //for each parameter check that there is only one parameter
+        //of the corrisponding type in the explorer query answer and that the parameters have the same value
+        for block0_param in config_params.iter() {
+            match block0_param {
+                Block0Date(certificate_param) => {
+                    let matching_params = explorer_config_param
+                        .iter()
+                        .filter(|&config_param| {
+                            matches!(config_param, configParam::Block0Date(explorer_param)
+                        if explorer_param.block0_date as u64 == certificate_param.0)
+                        })
+                        .count();
+                    assert_eq!(matching_params, 1);
+                }
+                Discrimination(certificate_param) => {
+                    let matching_params = explorer_config_param.iter()
+                        .filter(|&config_param| matches!(config_param, configParam::Discrimination(explorer_param)
+                        if { match explorer_param.discrimination{
+                            DiscriminationEnum::PRODUCTION => {matches!(certificate_param, chain_addr::Discrimination::Production)},
+                            DiscriminationEnum::TEST => {matches!(certificate_param, chain_addr::Discrimination::Test)},
+                            DiscriminationEnum::Other(_) => false,
+                        }})).count();
+                    assert_eq!(matching_params, 1);
+                }
+                ConsensusVersion(certificate_param) => {
+                    let matching_params = explorer_config_param.iter()
+                        .filter(|&config_param| matches!(config_param, configParam::ConsensusType(explorer_param)
+                        if { match explorer_param.consensus_type{
+                            ConsensusTypeEnum::BFT => {matches!(certificate_param, ConsensusType::Bft)},
+                            ConsensusTypeEnum::GENESIS_PRAOS => {matches!(certificate_param, ConsensusType::GenesisPraos)},
+                            ConsensusTypeEnum::Other(_) => false,
+                        }})).count();
+                    assert_eq!(matching_params, 1);
+                }
+                SlotsPerEpoch(certificate_param) => {
+                    let matching_params = explorer_config_param
+                        .iter()
+                        .filter(|&config_param| {
+                            matches!(config_param, configParam::SlotsPerEpoch(explorer_param)
+                        if explorer_param.slots_per_epoch as u32 == *certificate_param)
+                        })
+                        .count();
+                    assert_eq!(matching_params, 1);
+                }
+                SlotDuration(certificate_param) => {
+                    let matching_params = explorer_config_param
+                        .iter()
+                        .filter(|&config_param| {
+                            matches!(config_param, configParam::SlotDuration(explorer_param)
+                        if explorer_param.slot_duration as u8 == *certificate_param)
+                        })
+                        .count();
+                    assert_eq!(matching_params, 1);
+                }
+                EpochStabilityDepth(certificate_param) => {
+                    let matching_params = explorer_config_param
+                        .iter()
+                        .filter(|&config_param| {
+                            matches!(config_param, configParam::EpochStabilityDepth(explorer_param)
+                        if explorer_param.epoch_stability_depth as u32 == *certificate_param)
+                        })
+                        .count();
+                    assert_eq!(matching_params, 1);
+                }
+                ConsensusGenesisPraosActiveSlotsCoeff(certificate_param) => {
+                    let matching_params = explorer_config_param
+                        .iter()
+                        .filter(|&config_param| {
+                            matches!(config_param, configParam::Milli(explorer_param)
+                        if explorer_param.milli as u64 == certificate_param.to_millis())
+                        })
+                        .count();
+                    assert_eq!(matching_params, 1);
+                }
+                BlockContentMaxSize(certificate_param) => {
+                    let matching_params = explorer_config_param
+                        .iter()
+                        .filter(|&config_param| {
+                            matches!(config_param, configParam::BlockContentMaxSize(explorer_param)
+                        if explorer_param.block_content_max_size as u32 == *certificate_param)
+                        })
+                        .count();
+                    assert_eq!(matching_params, 1);
+                }
+                AddBftLeader(certificate_param) => {
+                    let matching_params = explorer_config_param.iter()
+                        .filter(|&config_param| matches!(config_param, configParam::AddBftLeader(explorer_param)
+                        if explorer_param.add_bft_leader.id == certificate_param.as_public_key().to_string())).count();
+                    assert_eq!(matching_params, 1);
+                }
+                RemoveBftLeader(certificate_param) => {
+                    let matching_params = explorer_config_param.iter()
+                        .filter(|&config_param| matches!(config_param, configParam::RemoveBftLeader(explorer_param)
+                        if explorer_param.remove_bft_leader.id == certificate_param.as_public_key().to_string())).count();
+                    assert_eq!(matching_params, 1);
+                }
+                LinearFee(certificate_param) => {
+                    let matching_params = explorer_config_param.iter()
+                        .filter(|&config_param| matches!(config_param, configParam::LinearFee(explorer_param)
+                        if {explorer_param.certificate  as u64 == certificate_param.certificate &&
+                            explorer_param.coefficient as u64 == certificate_param.coefficient &&
+                            explorer_param.constant as u64 == certificate_param.constant &&
+                            explorer_param.per_certificate_fees.certificate_owner_stake_delegation.unwrap() as u64 == u64::from(certificate_param.per_certificate_fees.certificate_owner_stake_delegation.unwrap()) &&
+                            explorer_param.per_certificate_fees.certificate_pool_registration.unwrap() as u64 == u64::from(certificate_param.per_certificate_fees.certificate_pool_registration.unwrap()) &&
+                            explorer_param.per_certificate_fees.certificate_stake_delegation.unwrap() as u64 == u64::from(certificate_param.per_certificate_fees.certificate_stake_delegation.unwrap()) &&
+                            explorer_param.per_vote_certificate_fees.certificate_vote_cast.unwrap() as u64 == u64::from(certificate_param.per_vote_certificate_fees.certificate_vote_cast.unwrap()) &&
+                            explorer_param.per_vote_certificate_fees.certificate_vote_plan.unwrap() as u64 == u64::from(certificate_param.per_vote_certificate_fees.certificate_vote_plan.unwrap())
+                        })).count();
+                    assert_eq!(matching_params, 1);
+                }
+                ProposalExpiration(certificate_param) => {
+                    let matching_params = explorer_config_param
+                        .iter()
+                        .filter(|&config_param| {
+                            matches!(config_param, configParam::ProposalExpiration(explorer_param)
+                        if explorer_param.proposal_expiration as u32 == *certificate_param)
+                        })
+                        .count();
+                    assert_eq!(matching_params, 1);
+                }
+                KesUpdateSpeed(certificate_param) => {
+                    let matching_params = explorer_config_param
+                        .iter()
+                        .filter(|&config_param| {
+                            matches!(config_param, configParam::KesUpdateSpeed(explorer_param)
+                        if explorer_param.kes_update_speed as u32 == *certificate_param)
+                        })
+                        .count();
+                    assert_eq!(matching_params, 1);
+                }
+                TreasuryAdd(certificate_param) => {
+                    let matching_params = explorer_config_param
+                        .iter()
+                        .filter(|&config_param| {
+                            matches!(config_param, configParam::TreasuryAdd(explorer_param)
+                        if explorer_param.treasury_add == certificate_param.to_string())
+                        })
+                        .count();
+                    assert_eq!(matching_params, 1);
+                }
+                TreasuryParams(certificate_param) => {
+                    let matching_params = explorer_config_param.iter()
+                        .filter(|&config_param| matches!(config_param, configParam::TreasuryParams(explorer_param)
+                        if {explorer_param.treasury_params.fixed == certificate_param.fixed.to_string() &&
+                            explorer_param.treasury_params.ratio.numerator.parse::<u64>().unwrap() == certificate_param.ratio.numerator &&
+                            explorer_param.treasury_params.ratio.denominator.parse::<u64>().unwrap() == u64::from(certificate_param.ratio.denominator) &&
+                            explorer_param.treasury_params.max_limit.as_ref().unwrap().parse::<u64>().unwrap() == u64::from(certificate_param.max_limit.unwrap())}
+                        )).count();
+                    assert_eq!(matching_params, 1);
+                }
+                RewardPot(certificate_param) => {
+                    let matching_params = explorer_config_param
+                        .iter()
+                        .filter(|&config_param| {
+                            matches!(config_param, configParam::RewardPot(explorer_param)
+                        if explorer_param.reward_pot == certificate_param.to_string())
+                        })
+                        .count();
+                    assert_eq!(matching_params, 1);
+                }
+                RewardParams(certificate_param) => {
+                    let matching_params = explorer_config_param.iter()
+                        .filter(|&config_param| matches!(config_param, configParam::RewardParams(explorer_param)
+                        if { match &explorer_param.reward_params {
+                            ConfigParamOnRewardParamsRewardParams::LinearRewardParams(exp_linear_param) =>
+                                {matches!(certificate_param, RewardParams::Linear { constant,ratio,epoch_rate,epoch_start }
+                                    if {*constant == exp_linear_param.constant as u64 &&
+                                        ratio.numerator == exp_linear_param.ratio.numerator.parse::<u64>().unwrap() &&
+                                        u64::from(ratio.denominator) == exp_linear_param.ratio.denominator.parse::<u64>().unwrap() &&
+                                        u32::from(*epoch_rate) == exp_linear_param.epoch_rate as u32 &&
+                                        *epoch_start == exp_linear_param.epoch_start as u32}) },
+                            ConfigParamOnRewardParamsRewardParams::HalvingRewardParams(exp_halving_param) =>
+                                {matches!(certificate_param, RewardParams::Halving { constant,ratio,epoch_rate,epoch_start }
+                                    if {*constant == exp_halving_param.constant as u64 &&
+                                        ratio.numerator == exp_halving_param.ratio.numerator.parse::<u64>().unwrap() &&
+                                        u64::from(ratio.denominator) == exp_halving_param.ratio.denominator.parse::<u64>().unwrap() &&
+                                        u32::from(*epoch_rate) == exp_halving_param.epoch_rate as u32 &&
+                                        *epoch_start == exp_halving_param.epoch_start as u32}) },
+                        }})).count();
+                    assert_eq!(matching_params, 1);
+                }
+                PerCertificateFees(certificate_param) => {
+                    let matching_params = explorer_config_param.iter()
+                        .filter(|&config_param| matches!(config_param, configParam::PerCertificateFee(explorer_param)
+                        if {
+                            explorer_param.certificate_owner_stake_delegation.unwrap() as u64 == u64::from(certificate_param.certificate_owner_stake_delegation.unwrap()) &&
+                            explorer_param.certificate_pool_registration.unwrap() as u64 == u64::from(certificate_param.certificate_pool_registration.unwrap()) &&
+                            explorer_param.certificate_stake_delegation.unwrap() as u64 == u64::from(certificate_param.certificate_stake_delegation.unwrap())
+                        })).count();
+                    assert_eq!(matching_params, 1);
+                }
+                FeesInTreasury(certificate_param) => {
+                    let matching_params = explorer_config_param
+                        .iter()
+                        .filter(|&config_param| {
+                            matches!(config_param, configParam::FeesInTreasury(explorer_param)
+                        if explorer_param.fees_in_treasury == *certificate_param)
+                        })
+                        .count();
+                    assert_eq!(matching_params, 1);
+                }
+                RewardLimitNone => {
+                    let matching_params = explorer_config_param
+                        .iter()
+                        .filter(|&config_param| {
+                            matches!(config_param, configParam::RewardLimitNone(explorer_param)
+                        if !explorer_param.reward_limit_none)
+                        })
+                        .count();
+                    assert_eq!(matching_params, 1);
+                }
+                RewardLimitByAbsoluteStake(certificate_param) => {
+                    let matching_params = explorer_config_param.iter()
+                        .filter(|&config_param| matches!(config_param, configParam::RewardLimitByAbsoluteStake(explorer_param)
+                        if explorer_param.reward_limit_by_absolute_stake.numerator.parse::<u64>().unwrap() == certificate_param.numerator &&
+                            explorer_param.reward_limit_by_absolute_stake.denominator.parse::<u64>().unwrap() == u64::from(certificate_param.denominator))).count();
+                    assert_eq!(matching_params, 1);
+                }
+                PoolRewardParticipationCapping(certificate_param) => {
+                    let matching_params = explorer_config_param.iter()
+                        .filter(|&config_param| matches!(config_param, configParam::PoolRewardParticipationCapping(explorer_param)
+                        if explorer_param.max as u32 == u32::from(certificate_param.0) &&
+                            explorer_param.min as u32 == u32::from(certificate_param.1))).count();
+                    assert_eq!(matching_params, 1);
+                }
+                AddCommitteeId(certificate_param) => {
+                    let matching_params = explorer_config_param.iter()
+                        .filter(|&config_param| matches!(config_param, configParam::AddCommitteeId(explorer_param)
+                        if explorer_param.add_committee_id == certificate_param.public_key().to_string())).count();
+                    assert_eq!(matching_params, 1);
+                }
+                RemoveCommitteeId(certificate_param) => {
+                    let matching_params = explorer_config_param.iter()
+                        .filter(|&config_param| matches!(config_param, configParam::RemoveCommitteeId(explorer_param)
+                        if explorer_param.remove_committee_id == certificate_param.public_key().to_string())).count();
+                    assert_eq!(matching_params, 1);
+                }
+                PerVoteCertificateFees(certificate_param) => {
+                    let matching_params = explorer_config_param.iter()
+                        .filter(|&config_param| matches!(config_param, configParam::PerVoteCertificateFee(explorer_param)
+                        if {explorer_param.certificate_vote_cast.unwrap() as u64 == u64::from(certificate_param.certificate_vote_cast.unwrap()) &&
+                            explorer_param.certificate_vote_plan.unwrap() as u64 == u64::from(certificate_param.certificate_vote_plan.unwrap())
+                        })).count();
+                    assert_eq!(matching_params, 1);
+                }
+                TransactionMaxExpiryEpochs(certificate_param) => {
+                    let matching_params = explorer_config_param.iter()
+                        .filter(|&config_param| matches!(config_param, configParam::TransactionMaxExpiryEpochs(explorer_param)
+                        if explorer_param.transaction_max_expiry_epochs as u8 == *certificate_param)).count();
+                    assert_eq!(matching_params, 1);
+                }
+                #[cfg(feature = "evm")]
+                EvmConfiguration(_) => unimplemented!(),
+                #[cfg(feature = "evm")]
+                EvmEnvironment(_) => unimplemented!(),
+            }
+        }
+
+
     }
 
     fn assert_block_pool_registration(

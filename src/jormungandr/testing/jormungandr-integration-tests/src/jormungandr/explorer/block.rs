@@ -147,7 +147,7 @@ pub fn explorer_block_test() {
     ExplorerVerifier::assert_block_by_id(decoded_block, explorer_block).unwrap();
 }
 
-#[should_panic]
+//#[should_panic]
 #[test] //NPG-3274
 pub fn explorer_block0_test() {
     let temp_dir = TempDir::new().unwrap();

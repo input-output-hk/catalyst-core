@@ -18,6 +18,14 @@ pub enum ExplorerError {
     ChainLengthBlockAlreadyExists(ChainLength),
     #[error("the explorer's database couldn't be initialized: {0}")]
     BootstrapError(String),
+    #[error("cannot apply block")]
+    CannotApplyBlock,
+    #[error("tally decryption failure")]
+    TallyDecryptionFailure,
+    #[error("tx calculation failure")]
+    TxCalculationFailure,
+    #[error("unable to transmute to explorer API representation")]
+    ExplorerTransmuteFail,
 }
 
 #[derive(Debug, Error, Clone)]

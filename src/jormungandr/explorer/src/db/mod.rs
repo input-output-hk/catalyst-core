@@ -37,6 +37,7 @@ use std::{
     },
 };
 use tokio::sync::{broadcast, RwLock};
+use tracing::error;
 
 #[derive(Clone)]
 pub struct Explorer {
@@ -124,7 +125,7 @@ impl ExplorerDb {
                 prev_transactions: &Transactions::new(),
                 prev_blocks: &Blocks::new(),
             },
-        );
+        )?;
 
         let blocks = apply_block_to_blocks(Blocks::new(), &block)?;
         let epochs = apply_block_to_epochs(Epochs::new(), &block);
@@ -132,9 +133,9 @@ impl ExplorerDb {
         let transactions = apply_block_to_transactions(Transactions::new(), &block)?;
         let addresses = apply_block_to_addresses(Addresses::new(), &block);
         let (stake_pool_data, stake_pool_blocks) =
-            apply_block_to_stake_pools(StakePool::new(), StakePoolBlocks::new(), &block);
+            apply_block_to_stake_pools(StakePool::new(), StakePoolBlocks::new(), &block)?;
         let stake_control = apply_block_to_stake_control(StakeControl::new(), &block);
-        let vote_plans = apply_block_to_vote_plans(VotePlans::new(), &block, &stake_control);
+        let vote_plans = apply_block_to_vote_plans(VotePlans::new(), &block, &stake_control)?;
 
         let initial_state = State {
             transactions,
@@ -202,11 +203,13 @@ impl ExplorerDb {
                 prev_transactions: &transactions,
                 prev_blocks: &blocks,
             },
-        );
+        )?;
         let (stake_pool_data, stake_pool_blocks) =
-            apply_block_to_stake_pools(stake_pool_data, stake_pool_blocks, &explorer_block);
+            apply_block_to_stake_pools(stake_pool_data, stake_pool_blocks, &explorer_block)?;
 
         let stake_control = apply_block_to_stake_control(stake_control, &explorer_block);
+
+        let vote_plans = apply_block_to_vote_plans(vote_plans, &explorer_block, &stake_control)?;
 
         let state_ref = multiverse
             .insert(
@@ -221,11 +224,7 @@ impl ExplorerDb {
                     chain_lengths: apply_block_to_chain_lengths(chain_lengths, &explorer_block)?,
                     stake_pool_data,
                     stake_pool_blocks,
-                    vote_plans: apply_block_to_vote_plans(
-                        vote_plans,
-                        &explorer_block,
-                        &stake_control,
-                    ),
+                    vote_plans,
                     stake_control,
                 },
             )
@@ -530,12 +529,12 @@ fn apply_block_to_chain_lengths(
             Error::ChainLengthBlockAlreadyExists(new_block_chain_length)
         })
 }
-
+#[tracing::instrument]
 fn apply_block_to_stake_pools(
     data: StakePool,
     blocks: StakePoolBlocks,
     block: &ExplorerBlock,
-) -> (StakePool, StakePoolBlocks) {
+) -> Result<(StakePool, StakePoolBlocks), Error> {
     let mut blocks = match &block.producer() {
         indexing::BlockProducer::StakePool(id) => blocks
             .update(
@@ -554,42 +553,61 @@ fn apply_block_to_stake_pools(
     for tx in block.transactions.values() {
         if let Some(cert) = &tx.certificate {
             blocks = match cert {
-                Certificate::PoolRegistration(registration) => blocks
-                    .insert(registration.to_id(), Arc::new(PersistentSequence::new()))
-                    .expect("pool was registered more than once"),
+                Certificate::PoolRegistration(registration) => {
+                    match blocks.insert(registration.to_id(), Arc::new(PersistentSequence::new())) {
+                        Ok(pool_registration) => pool_registration,
+                        Err(e) => {
+                            error!(error = %e,"pool was registered more than once");
+                            return Err(Error::CannotApplyBlock);
+                        }
+                    }
+                }
+
                 _ => blocks,
             };
             data = match cert {
-                Certificate::PoolRegistration(registration) => data
-                    .insert(
-                        registration.to_id(),
-                        Arc::new(StakePoolData {
-                            registration: registration.clone(),
-                            retirement: None,
-                        }),
-                    )
-                    .expect("pool was registered more than once"),
-                Certificate::PoolRetirement(retirement) => data
-                    .update::<_, Infallible>(&retirement.pool_id, |pool_data| {
+                Certificate::PoolRegistration(registration) => match data.insert(
+                    registration.to_id(),
+                    Arc::new(StakePoolData {
+                        registration: registration.clone(),
+                        retirement: None,
+                    }),
+                ) {
+                    Ok(pool_registration) => pool_registration,
+                    Err(e) => {
+                        error!(error = %e,"pool was registered more than once");
+                        return Err(Error::CannotApplyBlock);
+                    }
+                },
+
+                Certificate::PoolRetirement(retirement) => {
+                    match data.update::<_, Infallible>(&retirement.pool_id, |pool_data| {
                         Ok(Some(Arc::new(StakePoolData {
                             registration: pool_data.registration.clone(),
                             retirement: Some(retirement.clone()),
                         })))
-                    })
-                    .expect("pool was retired before registered"),
+                    }) {
+                        Ok(pool_retirement) => pool_retirement,
+                        Err(e) => {
+                            error!(error = %e,"pool was retired before registered");
+                            return Err(Error::CannotApplyBlock);
+                        }
+                    }
+                }
                 _ => data,
             };
         }
     }
 
-    (data, blocks)
+    Ok((data, blocks))
 }
 
+#[tracing::instrument]
 fn apply_block_to_vote_plans(
     mut vote_plans: VotePlans,
     block: &ExplorerBlock,
     stake: &StakeControl,
-) -> VotePlans {
+) -> Result<VotePlans, Error> {
     for tx in block.transactions.values() {
         if let Some(cert) = &tx.certificate {
             vote_plans = match cert {
@@ -696,22 +714,25 @@ fn apply_block_to_vote_plans(
                                 })
                                 .collect(),
                             PayloadType::Private => {
-                                let decrypted_tally = vote_tally
-                                    .tally_decrypted()
-                                    .expect("tally type is private but no decrypted tally found");
+                                if let Some(decrypted_tally) = vote_tally.tally_decrypted() {
+                                    vote_plan
+                                        .proposals
+                                        .clone()
+                                        .into_iter()
+                                        .zip(decrypted_tally.iter())
+                                        .map(|(mut proposal, decrypted_tally)| {
+                                            proposal.tally = Some(compute_private_tally(
+                                                &proposal,
+                                                decrypted_tally,
+                                            ));
 
-                                vote_plan
-                                    .proposals
-                                    .clone()
-                                    .into_iter()
-                                    .zip(decrypted_tally.iter())
-                                    .map(|(mut proposal, decrypted_tally)| {
-                                        proposal.tally =
-                                            Some(compute_private_tally(&proposal, decrypted_tally));
-
-                                        proposal
-                                    })
-                                    .collect()
+                                            proposal
+                                        })
+                                        .collect()
+                                } else {
+                                    error!("tally type is private but no decrypted tally found");
+                                    return Err(Error::TallyDecryptionFailure);
+                                }
                             }
                         };
 
@@ -719,7 +740,8 @@ fn apply_block_to_vote_plans(
                             proposals,
                             ..(**vote_plan).clone()
                         };
-                        Ok::<_, std::convert::Infallible>(Some(Arc::new(vote_plan)))
+
+                        Ok(Some(Arc::new(vote_plan)))
                     })
                     .unwrap(),
                 _ => vote_plans,
@@ -727,7 +749,7 @@ fn apply_block_to_vote_plans(
         }
     }
 
-    vote_plans
+    Ok(vote_plans)
 }
 
 fn apply_block_to_stake_control(

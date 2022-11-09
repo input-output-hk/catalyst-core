@@ -13,9 +13,6 @@
     flake-compat.url = "github:edolstra/flake-compat";
     flake-compat.flake = false;
     flake-utils.url = "github:numtide/flake-utils";
-    pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
-    pre-commit-hooks.inputs.nixpkgs.follows = "nixpkgs";
-    pre-commit-hooks.inputs.flake-utils.follows = "flake-utils";
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.flake-utils.follows = "flake-utils";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
@@ -29,7 +26,6 @@
     nixpkgs,
     flake-compat,
     flake-utils,
-    pre-commit-hooks,
     rust-overlay,
     naersk,
     cardano-node,
@@ -37,7 +33,7 @@
     flake-utils.lib.eachSystem
     [
       flake-utils.lib.system.x86_64-linux
-      flake-utils.lib.system.aarch64-linux
+      flake-utils.lib.system.x86_64-darwin
     ]
     (
       system: let
@@ -83,7 +79,7 @@
 
         rust-stable = mkRust {
           channel = "stable";
-          version = "1.64.0";
+          version = "1.65.0";
         };
         rust-nightly = mkRust {channel = "nightly";};
 
@@ -280,27 +276,13 @@
               ]);
           };
 
-        pre-commit = pre-commit-hooks.lib.${system}.run {
-          src = self;
-          hooks = {
-            alejandra = {
-              enable = true;
-            };
-            rustfmt = {
-              enable = true;
-              entry = pkgs.lib.mkForce "${rust-nightly}/bin/cargo-fmt fmt -- --check --color always";
-            };
-          };
-        };
-
         warnToUpdateNix = pkgs.lib.warn "Consider updating to Nix > 2.7 to remove this warning!";
       in rec {
         packages =
           workspace
           // workspace-nightly
           // {
-            inherit jormungandr-entrypoint pre-commit;
-            default = pre-commit;
+            inherit jormungandr-entrypoint;
           };
 
         devShells.default = pkgs.mkShell {
@@ -317,20 +299,14 @@
               diesel-cli
               cargo-insta # snapshot testing lib
             ]);
-          shellHook =
-            pre-commit.shellHook
-            + ''
-              echo "=== Catalyst Core development shell ==="
-              echo "Info: Git hooks can be installed using \`pre-commit install\`"
-            '';
+          shellHook = ''
+            echo "=== Catalyst Core development shell ==="
+          '';
           # TODO: is this needed for vit-testing development
           # export PATH="${jormungandr}/bin:$PATH"
           # export PATH="${vit-servicing-station-server}/bin:$PATH"
         };
 
-        checks.pre-commit = pre-commit;
-
-        defaultPackage = warnToUpdateNix packages.default;
         devShell = warnToUpdateNix devShells.default;
       }
     );

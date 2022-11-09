@@ -334,7 +334,7 @@ impl fmt::Display for LogLevel {
 
 impl Default for LogLevel {
     fn default() -> Self {
-        LogLevel::Disabled
+        LogLevel::Info
     }
 }
 

@@ -3628,6 +3628,7 @@ dependencies = [
  "tracing-journald",
  "tracing-opentelemetry",
  "tracing-subscriber",
+ "url",
  "versionisator",
  "warp",
 ]

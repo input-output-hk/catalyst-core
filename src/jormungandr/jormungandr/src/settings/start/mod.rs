@@ -84,6 +84,9 @@ impl RawSettings {
             if let Some(output) = &cfg.output {
                 settings.output = output.clone();
             }
+            if cfg.trace_collector_endpoint.is_some() {
+                settings.trace_collector_endpoint = cfg.trace_collector_endpoint.clone();
+            }
         }
 
         // If the command line specifies log arguments, they override everything
@@ -96,6 +99,9 @@ impl RawSettings {
         }
         if let Some(format) = self.command_line.log_format {
             settings.format = format;
+        }
+        if self.command_line.trace_collector_endpoint.is_some() {
+            settings.trace_collector_endpoint = self.command_line.trace_collector_endpoint.clone();
         }
 
         settings

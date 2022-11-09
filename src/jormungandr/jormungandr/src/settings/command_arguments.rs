@@ -106,6 +106,10 @@ pub struct CommandLine {
     #[structopt(long = "log-output", parse(try_from_str))]
     pub log_output: Option<LogOutput>,
 
+    /// Enable the OTLP trace data exporter and set the collector's GRPC endpoint.
+    #[structopt(long = "log-trace-collector-endpoint")]
+    pub trace_collector_endpoint: Option<url::Url>,
+
     /// report all the rewards in the reward distribution history
     ///
     /// NOTE: this will slowdown the epoch transition computation and will add

@@ -60,6 +60,7 @@ pub struct ConfigLogSettings {
     pub level: Option<LevelFilter>,
     pub format: Option<LogFormat>,
     pub output: Option<LogOutput>,
+    pub trace_collector_endpoint: Option<url::Url>,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]

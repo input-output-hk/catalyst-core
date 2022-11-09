@@ -29,7 +29,7 @@ pub struct Settings(wallet_core::Settings);
 #[wasm_bindgen]
 impl Settings {
     pub fn new(block0_bytes: &[u8]) -> Result<Settings, JsValue> {
-        let block0 = Block::deserialize_from_slice(&mut Codec::new(block0_bytes.as_ref()))
+        let block0 = Block::deserialize_from_slice(&mut Codec::new(block0_bytes))
             .map_err(|e| JsValue::from(e.to_string()))?;
         Ok(Self(
             wallet_core::Settings::new(&block0).map_err(|e| JsValue::from(e.to_string()))?,

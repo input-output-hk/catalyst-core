@@ -40,35 +40,8 @@ impl Settings {
         for fragment in block.contents().iter() {
             if let Fragment::Initial(initials) = fragment {
                 for initial in initials.iter() {
-                    match initial {
-                        ConfigParam::Block0Date(_) => {}
-                        ConfigParam::Discrimination(_) => {}
-                        ConfigParam::ConsensusVersion(_) => {}
-                        ConfigParam::SlotsPerEpoch(_) => {}
-                        ConfigParam::SlotDuration(sd) => {
-                            slot_duration.replace(sd);
-                        }
-                        ConfigParam::EpochStabilityDepth(_) => {}
-                        ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(_) => {}
-                        ConfigParam::BlockContentMaxSize(_) => {}
-                        ConfigParam::AddBftLeader(_) => {}
-                        ConfigParam::RemoveBftLeader(_) => {}
-                        ConfigParam::LinearFee(_) => {}
-                        ConfigParam::ProposalExpiration(_) => {}
-                        ConfigParam::KesUpdateSpeed(_) => {}
-                        ConfigParam::TreasuryAdd(_) => {}
-                        ConfigParam::TreasuryParams(_) => {}
-                        ConfigParam::RewardPot(_) => {}
-                        ConfigParam::RewardParams(_) => {}
-                        ConfigParam::PerCertificateFees(_) => {}
-                        ConfigParam::FeesInTreasury(_) => {}
-                        ConfigParam::RewardLimitNone => {}
-                        ConfigParam::RewardLimitByAbsoluteStake(_) => {}
-                        ConfigParam::PoolRewardParticipationCapping(_) => {}
-                        ConfigParam::AddCommitteeId(_) => {}
-                        ConfigParam::RemoveCommitteeId(_) => {}
-                        ConfigParam::PerVoteCertificateFees(_) => {}
-                        ConfigParam::TransactionMaxExpiryEpochs(_) => {}
+                    if let ConfigParam::SlotDuration(sd) = initial {
+                        slot_duration.replace(sd);
                     }
                 }
             }

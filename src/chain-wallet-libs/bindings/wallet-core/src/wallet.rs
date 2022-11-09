@@ -111,7 +111,7 @@ impl Wallet {
         auth: P::Auth,
         fragment_build_fn: impl FnOnce(Transaction<P>) -> Fragment,
     ) -> Result<Fragment, Error> {
-        let mut builder = wallet::TransactionBuilder::new(&settings, payload, valid_until);
+        let mut builder = wallet::TransactionBuilder::new(settings, payload, valid_until);
 
         // It is needed to provide a 1 extra input as we are generating it later, but should take into account at this place.
         let value = builder.estimate_fee_with(1, 0);

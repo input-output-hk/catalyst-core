@@ -2,6 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
+use opentelemetry_otlp::WithExportConfig;
 use structopt::StructOpt;
 use tracing::{error, info};
 use tracing_appender::non_blocking::WorkerGuard;
@@ -26,23 +27,55 @@ fn check_and_build_proper_path(path: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
+struct LogGuard {
+    _nonblocking_worker_guard: WorkerGuard,
+}
+
+impl Drop for LogGuard {
+    fn drop(&mut self) {
+        tracing::trace!("Shutting down opentelemetry trace provider");
+        opentelemetry::global::shutdown_tracer_provider();
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 enum ConfigTracingError {
     #[error("io error: {0}")]
     Io(#[from] std::io::Error),
     #[error("failed to initialize tracing subscriber: {0}")]
     InitSubscriber(#[from] tracing_subscriber::util::TryInitError),
+    #[error("failed to install opentelemetry pipeline")]
+    InstallOpenTelemetryPipeLine(#[from] opentelemetry::trace::TraceError),
 }
 
 fn config_tracing(
     level: server_settings::LogLevel,
     pathbuf: Option<PathBuf>,
-) -> Result<WorkerGuard, ConfigTracingError> {
+) -> Result<LogGuard, ConfigTracingError> {
     use tracing_subscriber::prelude::*;
 
-    let subscriber = tracing_subscriber::registry().with(LevelFilter::from(level));
+    let otel_tracer = opentelemetry_otlp::new_pipeline()
+        .tracing()
+        .with_exporter(
+            opentelemetry_otlp::new_exporter()
+                .tonic()
+                .with_endpoint("https://todo"),
+        )
+        .with_trace_config(opentelemetry::sdk::trace::config().with_resource(
+            opentelemetry::sdk::Resource::new(vec![opentelemetry::KeyValue::new(
+                opentelemetry_semantic_conventions::resource::SERVICE_NAME,
+                "jormungandr",
+            )]),
+        ))
+        .install_batch(opentelemetry::runtime::Tokio)?;
 
-    if let Some(path) = pathbuf {
+    let otel_layer = tracing_opentelemetry::layer().with_tracer(otel_tracer);
+
+    let subscriber = tracing_subscriber::registry()
+        .with(LevelFilter::from(level))
+        .with(otel_layer);
+
+    let guard = if let Some(path) = pathbuf {
         // check path integrity
         // we try opening the file since tracing appender would just panic instead of
         // returning an error
@@ -72,7 +105,7 @@ fn config_tracing(
 
         subscriber.with(layer).try_init()?;
 
-        Ok(guard)
+        guard
     } else {
         let (non_blocking, guard) = tracing_appender::non_blocking(std::io::stdout());
 
@@ -80,8 +113,12 @@ fn config_tracing(
 
         subscriber.with(layer).try_init()?;
 
-        Ok(guard)
-    }
+        guard
+    };
+
+    Ok(LogGuard {
+        _nonblocking_worker_guard: guard,
+    })
 }
 
 #[tokio::main]

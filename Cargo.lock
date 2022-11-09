@@ -8022,12 +8022,16 @@ name = "vit-servicing-station-server"
 version = "0.3.4-dev"
 dependencies = [
  "log",
+ "opentelemetry",
+ "opentelemetry-otlp",
+ "opentelemetry-semantic-conventions",
  "structopt",
  "thiserror",
  "tokio",
  "tracing",
  "tracing-appender",
  "tracing-futures",
+ "tracing-opentelemetry",
  "tracing-subscriber",
  "vit-servicing-station-lib",
 ]

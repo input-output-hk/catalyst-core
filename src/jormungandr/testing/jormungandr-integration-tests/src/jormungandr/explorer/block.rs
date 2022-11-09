@@ -316,7 +316,7 @@ pub fn explorer_last_block_test() {
     ExplorerVerifier::assert_last_block(decoded_block, explorer_last_block.block()).unwrap();
 }
 
-#[should_panic]
+//#[should_panic]
 #[test] //NPG-3274
 pub fn explorer_all_blocks_test() {
     let temp_dir = TempDir::new().unwrap();

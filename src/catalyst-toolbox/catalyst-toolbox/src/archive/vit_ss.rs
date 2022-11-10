@@ -90,7 +90,7 @@ struct Proposal {
 fn csv_writer(output_dir: &Path, name: String) -> Result<Writer<File>, Error> {
     let mut path = output_dir.to_path_buf();
     path.push(name);
-    let file = std::fs::File::create(path).unwrap();
+    let file = std::fs::File::create(path).map_err(Error::Io);
     Ok(csv::Writer::from_writer(file))
 }
 

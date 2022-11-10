@@ -1,5 +1,5 @@
 use super::{ExplorerVerifier, VerifierError};
-use crate::jormungandr::explorer::data::all_blocks::{PayloadType as expPayloadType, *, self};
+use crate::jormungandr::explorer::data::all_blocks::{self, PayloadType as expPayloadType, *};
 use chain_addr::AddressReadable;
 use chain_impl_mockchain::{
     account::DelegationType,
@@ -7,7 +7,7 @@ use chain_impl_mockchain::{
     certificate::*,
     chaintypes::ConsensusType,
     config::{ConfigParam::*, RewardParams},
-    fragment::{Fragment, ConfigParams},
+    fragment::{ConfigParams, Fragment},
     transaction::{AccountIdentifier, InputEnum, Transaction},
     vote::PayloadType,
 };

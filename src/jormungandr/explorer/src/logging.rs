@@ -7,8 +7,7 @@ use std::{
     str::FromStr,
 };
 use tracing::level_filters::LevelFilter;
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use url::Url;
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]

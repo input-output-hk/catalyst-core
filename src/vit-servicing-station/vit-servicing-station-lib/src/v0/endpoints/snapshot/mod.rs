@@ -237,7 +237,7 @@ pub async fn update_from_snapshot_info(
 mod test {
     use super::*;
     use crate::db::migrations::initialize_db_with_migration;
-    use crate::v0::context::test::new_in_memmory_db_test_shared_context;
+    use crate::v0::context::test::new_db_test_shared_context;
     use jormungandr_lib::crypto::account::Identifier;
     use snapshot_lib::registration::{Delegations, VotingRegistration};
     use snapshot_lib::{KeyContribution, SnapshotInfo, VoterHIR};
@@ -247,7 +247,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_snapshot() {
-        let context = new_in_memmory_db_test_shared_context();
+        let context = new_db_test_shared_context();
         let db_conn = &context.read().await.db_connection_pool.get().unwrap();
         initialize_db_with_migration(db_conn);
 
@@ -528,7 +528,7 @@ mod test {
 
         const UPDATE_TIME1: i64 = 0;
 
-        let context = new_in_memmory_db_test_shared_context();
+        let context = new_db_test_shared_context();
         let db_conn = &context.read().await.db_connection_pool.get().unwrap();
         initialize_db_with_migration(db_conn);
 
@@ -754,7 +754,7 @@ mod test {
         })
         .unwrap();
 
-        let context = new_in_memmory_db_test_shared_context();
+        let context = new_db_test_shared_context();
         let db_conn = &context.read().await.db_connection_pool.get().unwrap();
         initialize_db_with_migration(db_conn);
 
@@ -891,7 +891,7 @@ mod test {
         })
         .unwrap();
 
-        let context = new_in_memmory_db_test_shared_context();
+        let context = new_db_test_shared_context();
         let db_conn = &context.read().await.db_connection_pool.get().unwrap();
         initialize_db_with_migration(db_conn);
 

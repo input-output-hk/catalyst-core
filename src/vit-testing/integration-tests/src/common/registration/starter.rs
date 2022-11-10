@@ -49,7 +49,7 @@ impl RegistrationServiceStarter {
         mut self,
         temp_dir: &TempDir,
     ) -> Result<RegistrationServiceController, Error> {
-        let mut address = self.configuration.address_mut();
+        let address = self.configuration.address_mut();
         address.set_port(get_available_port());
         self.start(temp_dir)
     }

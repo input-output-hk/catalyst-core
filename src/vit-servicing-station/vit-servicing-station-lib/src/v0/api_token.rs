@@ -103,8 +103,9 @@ mod test {
         migrations as db_testing, models::api_tokens as api_token_model,
         models::api_tokens::ApiTokenData, schema::api_tokens, DbConnectionPool,
     };
+    use crate::q;
     use crate::v0::api_token::{api_token_filter, ApiToken, API_TOKEN_HEADER};
-    use crate::v0::context::test::new_in_memmory_db_test_shared_context;
+    use crate::v0::context::test::new_db_test_shared_context;
     use diesel::{ExpressionMethods, RunQueryDsl};
     use time::OffsetDateTime;
 
@@ -128,15 +129,18 @@ mod test {
             api_tokens::dsl::creation_time.eq(token.creation_time),
             api_tokens::dsl::expire_time.eq(token.expire_time),
         );
-        diesel::insert_into(api_tokens::table)
-            .values(values)
-            .execute(&conn)
-            .unwrap();
+        q!(
+            conn,
+            diesel::insert_into(api_tokens::table)
+                .values(values)
+                .execute(&conn)
+        )
+        .unwrap();
     }
 
     #[tokio::test]
     async fn api_token_filter_reject() {
-        let shared_context = new_in_memmory_db_test_shared_context();
+        let shared_context = new_db_test_shared_context();
         let filter = api_token_filter(shared_context).await;
 
         assert!(warp::test::request()
@@ -148,7 +152,7 @@ mod test {
 
     #[tokio::test]
     async fn api_token_filter_accepted() {
-        let shared_context = new_in_memmory_db_test_shared_context();
+        let shared_context = new_db_test_shared_context();
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;

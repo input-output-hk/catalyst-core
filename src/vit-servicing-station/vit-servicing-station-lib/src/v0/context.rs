@@ -46,18 +46,41 @@ pub fn new_shared_context(
 
 #[cfg(test)]
 pub mod test {
+    use diesel::Connection;
     use rand::{distributions::Alphanumeric, thread_rng, Rng};
 
     use super::*;
     use crate::db;
 
-    pub fn new_in_memmory_db_test_shared_context() -> SharedContext {
-        let name: String = thread_rng()
+    pub fn new_db_test_shared_context() -> SharedContext {
+        let db = match std::env::var("TEST_DB") {
+            Ok(db) => db,
+            Err(std::env::VarError::NotPresent) => "sqlite".to_string(),
+            Err(e) => panic!("{}", e),
+        };
+
+        let name = thread_rng()
             .sample_iter(Alphanumeric)
+            .filter(u8::is_ascii_alphabetic)
             .take(5)
             .map(char::from)
-            .collect();
-        let db_url = format!("file:{}?mode=memory&cache=shared", name);
+            .collect::<String>()
+            .to_lowercase();
+
+        let db_url = match db.as_str() {
+            "sqlite" => {
+                format!("file:{}?mode=memory&cache=shared", name)
+            }
+            "postgres" => {
+                let db_url = "postgres://postgres:123456@localhost";
+                let conn = diesel::pg::PgConnection::establish(db_url).unwrap();
+                conn.execute(&format!("CREATE DATABASE {}", name)).unwrap();
+
+                format!("{}/{}", db_url, name)
+            }
+            _ => panic!("Unsupported database"),
+        };
+
         let pool = db::load_db_connection_pool(&db_url).unwrap();
         let block0: Vec<u8> = vec![1, 2, 3, 4, 5];
         Arc::new(RwLock::new(Context::new(

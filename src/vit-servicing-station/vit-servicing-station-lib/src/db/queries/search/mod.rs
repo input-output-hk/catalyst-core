@@ -2,6 +2,7 @@ use std::convert::TryInto;
 
 use crate::{
     db::{schema, DbConnection, DbConnectionPool},
+    q,
     v0::{
         endpoints::search::requests::{
             Column, Constraint, OrderBy, SearchCountQuery, SearchQuery, SearchResponse, Table,
@@ -10,10 +11,8 @@ use crate::{
     },
 };
 use diesel::{
-    backend::Backend,
-    expression_methods::ExpressionMethods,
-    r2d2::{ConnectionManager, PooledConnection},
-    QueryDsl, RunQueryDsl, TextExpressionMethods,
+    backend::Backend, expression_methods::ExpressionMethods, QueryDsl, RunQueryDsl,
+    TextExpressionMethods,
 };
 
 pub async fn search_db(
@@ -176,7 +175,7 @@ fn search(
         limit,
         offset,
     }: SearchQuery,
-    conn: &PooledConnection<ConnectionManager<DbConnection>>,
+    conn: &DbConnection,
 ) -> Result<SearchResponse, HandleError> {
     let SearchCountQuery {
         table,
@@ -186,35 +185,39 @@ fn search(
 
     match table {
         Table::Challenges => {
-            let mut query = build_challenges_query(filter, order_by)?;
+            let vec = q!(conn, {
+                let mut query = build_challenges_query(filter, order_by)?;
 
-            if let Some(limit) = limit {
-                query = query.limit(map_limit(limit)?);
-            }
+                if let Some(limit) = limit {
+                    query = query.limit(map_limit(limit)?);
+                }
 
-            if let Some(offset) = offset {
-                query = query.offset(map_offset(offset)?);
-            }
+                if let Some(offset) = offset {
+                    query = query.offset(map_offset(offset)?);
+                }
 
-            let vec = query
-                .load(conn)
-                .map_err(|_| HandleError::InternalError("error searching".to_string()))?;
+                query.load(conn)
+            })
+            .map_err(|_| HandleError::InternalError("error searching".to_string()))?;
+
             Ok(SearchResponse::Challenge(vec))
         }
         Table::Proposals => {
-            let mut query = build_proposals_query(filter, order_by)?;
+            let vec = q!(conn, {
+                let mut query = build_proposals_query(filter, order_by)?;
 
-            if let Some(limit) = limit {
-                query = query.limit(map_limit(limit)?);
-            }
+                if let Some(limit) = limit {
+                    query = query.limit(map_limit(limit)?);
+                }
 
-            if let Some(offset) = offset {
-                query = query.offset(map_offset(offset)?);
-            }
+                if let Some(offset) = offset {
+                    query = query.offset(map_offset(offset)?);
+                }
 
-            let vec = query
-                .load(conn)
-                .map_err(|_| HandleError::InternalError("error searching".to_string()))?;
+                query.load(conn)
+            })
+            .map_err(|_| HandleError::InternalError("error searching".to_string()))?;
+
             Ok(SearchResponse::Proposal(vec))
         }
     }
@@ -233,31 +236,29 @@ fn map_offset(offset: u64) -> Result<i64, HandleError> {
 }
 
 fn search_count(
-    SearchCountQuery {
-        table,
-        filter,
-        order_by,
-    }: SearchCountQuery,
-    conn: &PooledConnection<ConnectionManager<DbConnection>>,
+    SearchCountQuery { table, filter, .. }: SearchCountQuery,
+    conn: &DbConnection,
 ) -> Result<i64, HandleError> {
     match table {
         Table::Challenges => {
-            let query = build_challenges_query(filter, order_by)?;
+            q!(conn, {
+                let query = build_challenges_query(filter, Vec::new())?;
 
-            let count = query
-                .count()
-                .get_result(conn)
-                .map_err(|_| HandleError::InternalError("error searching".to_string()))?;
-            Ok(count)
+                query
+                    .count()
+                    .get_result(conn)
+                    .map_err(|e| HandleError::InternalError(e.to_string()))
+            })
         }
         Table::Proposals => {
-            let query = build_proposals_query(filter, order_by)?;
+            q!(conn, {
+                let query = build_proposals_query(filter, Vec::new())?;
 
-            let count = query
-                .count()
-                .get_result(conn)
-                .map_err(|_| HandleError::InternalError("error searching".to_string()))?;
-            Ok(count)
+                query
+                    .count()
+                    .get_result(conn)
+                    .map_err(|_| HandleError::InternalError("error searching".to_string()))
+            })
         }
     }
 }

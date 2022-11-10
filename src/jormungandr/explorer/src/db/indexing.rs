@@ -1,4 +1,4 @@
-use super::persistent_sequence::PersistentSequence;
+use super::{error, persistent_sequence::PersistentSequence};
 use cardano_legacy_address::Addr as OldAddress;
 use chain_addr::{Address, Discrimination};
 use chain_core::property::{Block as _, Fragment as _};
@@ -15,6 +15,7 @@ use chain_impl_mockchain::{
     value::Value,
     vote::{Choice, EncryptedVote, Options, PayloadType, ProofOfCorrectVote, Weight},
 };
+use error::ExplorerError as Error;
 use std::{
     collections::{hash_map::DefaultHasher, HashMap},
     convert::TryInto,
@@ -35,7 +36,7 @@ pub type StakePool = Hamt<PoolId, StakePoolData>;
 
 pub type VotePlans = Hamt<VotePlanId, ExplorerVotePlan>;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct StakePoolData {
     pub registration: PoolRegistration,
     pub retirement: Option<PoolRetirement>,
@@ -43,7 +44,7 @@ pub struct StakePoolData {
 }
 
 /// Block with unified inputs the metadata needed in the queries
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExplorerBlock {
     /// The HashMap allows for easy search when querying transactions by id
     pub transactions: HashMap<FragmentId, ExplorerTransaction>,
@@ -56,14 +57,14 @@ pub struct ExplorerBlock {
     pub total_output: Value,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum BlockProducer {
     None,
     StakePool(PoolId),
     BftLeader(BftLeaderId),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExplorerTransaction {
     pub id: FragmentId,
     pub inputs: Vec<ExplorerInput>,
@@ -87,13 +88,13 @@ impl Default for ExplorerTransaction {
 }
 
 /// Unified Input representation for utxo and account inputs as used in the graphql API
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExplorerInput {
     pub address: ExplorerAddress,
     pub value: Value,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExplorerOutput {
     pub address: ExplorerAddress,
     pub value: Value,
@@ -106,13 +107,13 @@ pub struct EpochData {
     pub total_blocks: u32,
 }
 
-#[derive(Eq, PartialEq, Clone, Hash)]
+#[derive(Eq, PartialEq, Clone, Hash, Debug)]
 pub enum ExplorerAddress {
     New(Address),
     Old(OldAddress),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExplorerVotePlan {
     pub id: VotePlanId,
     pub vote_start: BlockDate,
@@ -122,7 +123,7 @@ pub struct ExplorerVotePlan {
     pub proposals: Vec<ExplorerVoteProposal>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ExplorerVote {
     Public(Choice),
     Private {
@@ -131,7 +132,7 @@ pub enum ExplorerVote {
     },
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExplorerVoteProposal {
     pub proposal_id: ExternalProposalId,
     pub options: Options,
@@ -140,7 +141,7 @@ pub struct ExplorerVoteProposal {
 }
 
 // TODO do proper vote tally
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ExplorerVoteTally {
     Public {
         results: Box<[Weight]>,
@@ -152,6 +153,7 @@ pub enum ExplorerVoteTally {
     },
 }
 
+#[derive(Debug)]
 pub struct ExplorerBlockBuildingContext<'a> {
     pub discrimination: Discrimination,
     pub prev_transactions: &'a Transactions,
@@ -164,175 +166,246 @@ impl ExplorerBlock {
     /// and mapping the account inputs to addresses with the given discrimination
     /// This function relies on the given block to be validated previously, and will panic
     /// otherwise
-    pub fn resolve_from(block: &Block, context: ExplorerBlockBuildingContext) -> ExplorerBlock {
+    #[tracing::instrument]
+    pub fn resolve_from(
+        block: &Block,
+        context: ExplorerBlockBuildingContext,
+    ) -> Result<ExplorerBlock, Error> {
         let fragments = block.contents().iter();
         let id = block.id();
         let chain_length = block.chain_length();
 
-        let transactions: HashMap<FragmentId, ExplorerTransaction> = fragments.enumerate().fold(
-            HashMap::<FragmentId, ExplorerTransaction>::new(),
-            |mut current_block_txs, (offset, fragment)| {
-                let fragment_id = fragment.id();
-                let offset: u32 = offset.try_into().unwrap();
-                let metx = match fragment {
-                    Fragment::Initial(config) => Some(ExplorerTransaction {
+        let mut current_block_txs: HashMap<FragmentId, ExplorerTransaction> = HashMap::new();
+
+        for (offset, fragment) in fragments.enumerate() {
+            let fragment_id = fragment.id();
+            let offset: u32 = offset.try_into().unwrap();
+
+            let metx = match fragment {
+                Fragment::Initial(config) => Some(ExplorerTransaction {
+                    id: fragment_id,
+                    inputs: vec![],
+                    outputs: vec![],
+                    certificate: None,
+                    offset_in_block: offset,
+                    config_params: Some(config.clone()),
+                }),
+                Fragment::UpdateProposal(tx) => {
+                    let tx = tx.as_slice();
+                    match ExplorerTransaction::from(
+                        &context,
+                        &fragment_id,
+                        &tx,
+                        Some(Certificate::UpdateProposal(tx.payload().into_payload())),
+                        offset,
+                        &current_block_txs,
+                    ) {
+                        Ok(tx) => Some(tx),
+                        Err(e) => {
+                            error!(error = %e, "unable to map update proposal fragment");
+                            return Err(Error::ExplorerTransmuteFail);
+                        }
+                    }
+                }
+                Fragment::UpdateVote(tx) => {
+                    let tx = tx.as_slice();
+                    match ExplorerTransaction::from(
+                        &context,
+                        &fragment_id,
+                        &tx,
+                        Some(Certificate::UpdateVote(tx.payload().into_payload())),
+                        offset,
+                        &current_block_txs,
+                    ) {
+                        Ok(tx) => Some(tx),
+                        Err(e) => {
+                            error!(error = %e, "unable to map update vote fragment");
+                            return Err(Error::ExplorerTransmuteFail);
+                        }
+                    }
+                }
+                Fragment::Transaction(tx) => {
+                    let tx = tx.as_slice();
+                    match ExplorerTransaction::from(
+                        &context,
+                        &fragment_id,
+                        &tx,
+                        None,
+                        offset,
+                        &current_block_txs,
+                    ) {
+                        Ok(tx) => Some(tx),
+                        Err(e) => {
+                            error!(error = %e, "unable to map tx fragment");
+                            return Err(Error::ExplorerTransmuteFail);
+                        }
+                    }
+                }
+                Fragment::OwnerStakeDelegation(tx) => {
+                    let tx = tx.as_slice();
+                    match ExplorerTransaction::from(
+                        &context,
+                        &fragment_id,
+                        &tx,
+                        Some(Certificate::OwnerStakeDelegation(
+                            tx.payload().into_payload(),
+                        )),
+                        offset,
+                        &current_block_txs,
+                    ) {
+                        Ok(tx) => Some(tx),
+                        Err(e) => {
+                            error!(error = %e, "unable to map owner stake delegation fragment");
+                            return Err(Error::ExplorerTransmuteFail);
+                        }
+                    }
+                }
+                Fragment::StakeDelegation(tx) => {
+                    let tx = tx.as_slice();
+                    match ExplorerTransaction::from(
+                        &context,
+                        &fragment_id,
+                        &tx,
+                        Some(Certificate::StakeDelegation(tx.payload().into_payload())),
+                        offset,
+                        &current_block_txs,
+                    ) {
+                        Ok(tx) => Some(tx),
+                        Err(e) => {
+                            error!(error = %e, "unable to map stake delegation fragment");
+                            return Err(Error::ExplorerTransmuteFail);
+                        }
+                    }
+                }
+                Fragment::PoolRegistration(tx) => {
+                    let tx = tx.as_slice();
+                    match ExplorerTransaction::from(
+                        &context,
+                        &fragment_id,
+                        &tx,
+                        Some(Certificate::PoolRegistration(tx.payload().into_payload())),
+                        offset,
+                        &current_block_txs,
+                    ) {
+                        Ok(tx) => Some(tx),
+                        Err(e) => {
+                            error!(error = %e, "unable to map pool registration fragment");
+                            return Err(Error::ExplorerTransmuteFail);
+                        }
+                    }
+                }
+                Fragment::PoolRetirement(tx) => {
+                    let tx = tx.as_slice();
+                    match ExplorerTransaction::from(
+                        &context,
+                        &fragment_id,
+                        &tx,
+                        Some(Certificate::PoolRetirement(tx.payload().into_payload())),
+                        offset,
+                        &current_block_txs,
+                    ) {
+                        Ok(tx) => Some(tx),
+                        Err(e) => {
+                            error!(error = %e, "unable to map pool retirment fragment");
+                            return Err(Error::ExplorerTransmuteFail);
+                        }
+                    }
+                }
+                Fragment::PoolUpdate(tx) => {
+                    let tx = tx.as_slice();
+                    match ExplorerTransaction::from(
+                        &context,
+                        &fragment_id,
+                        &tx,
+                        Some(Certificate::PoolUpdate(tx.payload().into_payload())),
+                        offset,
+                        &current_block_txs,
+                    ) {
+                        Ok(tx) => Some(tx),
+                        Err(e) => {
+                            error!(error = %e, "unable to map pool update fragment");
+                            return Err(Error::ExplorerTransmuteFail);
+                        }
+                    }
+                }
+                Fragment::VotePlan(tx) => {
+                    let tx = tx.as_slice();
+                    match ExplorerTransaction::from(
+                        &context,
+                        &fragment_id,
+                        &tx,
+                        Some(Certificate::VotePlan(tx.payload().into_payload())),
+                        offset,
+                        &current_block_txs,
+                    ) {
+                        Ok(tx) => Some(tx),
+                        Err(e) => {
+                            error!(error = %e, "unable to map vote plan fragment");
+                            return Err(Error::ExplorerTransmuteFail);
+                        }
+                    }
+                }
+                Fragment::VoteCast(tx) => {
+                    let tx = tx.as_slice();
+                    match ExplorerTransaction::from(
+                        &context,
+                        &fragment_id,
+                        &tx,
+                        Some(Certificate::VoteCast(tx.payload().into_payload())),
+                        offset,
+                        &current_block_txs,
+                    ) {
+                        Ok(tx) => Some(tx),
+                        Err(e) => {
+                            error!(error = %e, "unable to map vote cast fragment");
+                            return Err(Error::ExplorerTransmuteFail);
+                        }
+                    }
+                }
+                Fragment::VoteTally(tx) => {
+                    let tx = tx.as_slice();
+                    match ExplorerTransaction::from(
+                        &context,
+                        &fragment_id,
+                        &tx,
+                        Some(Certificate::VoteTally(tx.payload().into_payload())),
+                        offset,
+                        &current_block_txs,
+                    ) {
+                        Ok(tx) => Some(tx),
+                        Err(e) => {
+                            error!(error = %e, "unable to map vote fragment");
+                            return Err(Error::ExplorerTransmuteFail);
+                        }
+                    }
+                }
+                Fragment::OldUtxoDeclaration(decl) => {
+                    let outputs = decl
+                        .addrs
+                        .iter()
+                        .map(|(old_address, value)| ExplorerOutput {
+                            address: ExplorerAddress::Old(old_address.clone()),
+                            value: *value,
+                        })
+                        .collect();
+                    Some(ExplorerTransaction {
                         id: fragment_id,
                         inputs: vec![],
-                        outputs: vec![],
+                        outputs,
                         certificate: None,
                         offset_in_block: offset,
-                        config_params: Some(config.clone()),
-                    }),
-                    Fragment::UpdateProposal(tx) => {
-                        let tx = tx.as_slice();
-                        Some(ExplorerTransaction::from(
-                            &context,
-                            &fragment_id,
-                            &tx,
-                            Some(Certificate::UpdateProposal(tx.payload().into_payload())),
-                            offset,
-                            &current_block_txs,
-                        ))
-                    }
-                    Fragment::UpdateVote(tx) => {
-                        let tx = tx.as_slice();
-                        Some(ExplorerTransaction::from(
-                            &context,
-                            &fragment_id,
-                            &tx,
-                            Some(Certificate::UpdateVote(tx.payload().into_payload())),
-                            offset,
-                            &current_block_txs,
-                        ))
-                    }
-                    Fragment::Transaction(tx) => {
-                        let tx = tx.as_slice();
-                        Some(ExplorerTransaction::from(
-                            &context,
-                            &fragment_id,
-                            &tx,
-                            None,
-                            offset,
-                            &current_block_txs,
-                        ))
-                    }
-                    Fragment::OwnerStakeDelegation(tx) => {
-                        let tx = tx.as_slice();
-                        Some(ExplorerTransaction::from(
-                            &context,
-                            &fragment_id,
-                            &tx,
-                            Some(Certificate::OwnerStakeDelegation(
-                                tx.payload().into_payload(),
-                            )),
-                            offset,
-                            &current_block_txs,
-                        ))
-                    }
-                    Fragment::StakeDelegation(tx) => {
-                        let tx = tx.as_slice();
-                        Some(ExplorerTransaction::from(
-                            &context,
-                            &fragment_id,
-                            &tx,
-                            Some(Certificate::StakeDelegation(tx.payload().into_payload())),
-                            offset,
-                            &current_block_txs,
-                        ))
-                    }
-                    Fragment::PoolRegistration(tx) => {
-                        let tx = tx.as_slice();
-                        Some(ExplorerTransaction::from(
-                            &context,
-                            &fragment_id,
-                            &tx,
-                            Some(Certificate::PoolRegistration(tx.payload().into_payload())),
-                            offset,
-                            &current_block_txs,
-                        ))
-                    }
-                    Fragment::PoolRetirement(tx) => {
-                        let tx = tx.as_slice();
-                        Some(ExplorerTransaction::from(
-                            &context,
-                            &fragment_id,
-                            &tx,
-                            Some(Certificate::PoolRetirement(tx.payload().into_payload())),
-                            offset,
-                            &current_block_txs,
-                        ))
-                    }
-                    Fragment::PoolUpdate(tx) => {
-                        let tx = tx.as_slice();
-                        Some(ExplorerTransaction::from(
-                            &context,
-                            &fragment_id,
-                            &tx,
-                            Some(Certificate::PoolUpdate(tx.payload().into_payload())),
-                            offset,
-                            &current_block_txs,
-                        ))
-                    }
-                    Fragment::VotePlan(tx) => {
-                        let tx = tx.as_slice();
-                        Some(ExplorerTransaction::from(
-                            &context,
-                            &fragment_id,
-                            &tx,
-                            Some(Certificate::VotePlan(tx.payload().into_payload())),
-                            offset,
-                            &current_block_txs,
-                        ))
-                    }
-                    Fragment::VoteCast(tx) => {
-                        let tx = tx.as_slice();
-                        Some(ExplorerTransaction::from(
-                            &context,
-                            &fragment_id,
-                            &tx,
-                            Some(Certificate::VoteCast(tx.payload().into_payload())),
-                            offset,
-                            &current_block_txs,
-                        ))
-                    }
-                    Fragment::VoteTally(tx) => {
-                        let tx = tx.as_slice();
-                        Some(ExplorerTransaction::from(
-                            &context,
-                            &fragment_id,
-                            &tx,
-                            Some(Certificate::VoteTally(tx.payload().into_payload())),
-                            offset,
-                            &current_block_txs,
-                        ))
-                    }
-                    Fragment::OldUtxoDeclaration(decl) => {
-                        let outputs = decl
-                            .addrs
-                            .iter()
-                            .map(|(old_address, value)| ExplorerOutput {
-                                address: ExplorerAddress::Old(old_address.clone()),
-                                value: *value,
-                            })
-                            .collect();
-                        Some(ExplorerTransaction {
-                            id: fragment_id,
-                            inputs: vec![],
-                            outputs,
-                            certificate: None,
-                            offset_in_block: offset,
-                            config_params: None,
-                        })
-                    }
-                    _ => None,
-                };
-
-                if let Some(etx) = metx {
-                    current_block_txs.insert(fragment_id, etx);
+                        config_params: None,
+                    })
                 }
-                current_block_txs
-            },
-        );
+                _ => None,
+            };
+
+            if let Some(etx) = metx {
+                current_block_txs.insert(fragment_id, etx);
+            }
+        }
+
+        let transactions = current_block_txs;
 
         let producer = match block.header().proof() {
             Proof::GenesisPraos(_proof) => {
@@ -345,21 +418,31 @@ impl ExplorerBlock {
             Proof::None => BlockProducer::None,
         };
 
-        let total_input = Value::sum(
+        let total_input = match Value::sum(
             transactions
                 .values()
                 .flat_map(|tx| tx.inputs.iter().map(|i| i.value)),
-        )
-        .expect("Couldn't compute block's total input");
+        ) {
+            Ok(total) => total,
+            Err(e) => {
+                error!(error = %e, "Couldn't compute block's total input");
+                return Err(Error::TxCalculationFailure);
+            }
+        };
 
-        let total_output = Value::sum(
+        let total_output = match Value::sum(
             transactions
                 .values()
                 .flat_map(|tx| tx.outputs.iter().map(|o| o.value)),
-        )
-        .expect("Couldn't compute block's total output");
+        ) {
+            Ok(total) => total,
+            Err(e) => {
+                error!(error = %e, "Couldn't compute block's total  output");
+                return Err(Error::TxCalculationFailure);
+            }
+        };
 
-        ExplorerBlock {
+        Ok(ExplorerBlock {
             id,
             transactions,
             chain_length,
@@ -368,7 +451,7 @@ impl ExplorerBlock {
             producer,
             total_input,
             total_output,
-        }
+        })
     }
 
     pub fn id(&self) -> HeaderHash {
@@ -395,8 +478,6 @@ impl ExplorerTransaction {
     /// The discrimination is needed to get addresses from account inputs.
     /// The transactions and blocks are used to resolve utxo inputs
 
-    // TODO: The signature of this got too long, using a builder may be a good idea
-    // It's called only from one place, though, so it is not that bothersome
     pub fn from<'transaction, 'context, T>(
         context: &'context ExplorerBlockBuildingContext<'context>,
         id: &FragmentId,
@@ -404,7 +485,7 @@ impl ExplorerTransaction {
         certificate: Option<Certificate>,
         offset_in_block: u32,
         transactions_in_current_block: &HashMap<FragmentId, ExplorerTransaction>,
-    ) -> ExplorerTransaction {
+    ) -> Result<ExplorerTransaction, Error> {
         let outputs = tx.outputs().iter();
         let inputs = tx.inputs().iter();
         let witnesses = tx.witnesses().iter();
@@ -416,30 +497,39 @@ impl ExplorerTransaction {
             })
             .collect();
 
-        let new_inputs = inputs
-            .map(|i| i.to_enum())
-            .zip(witnesses)
-            .filter_map(|input_with_witness| match input_with_witness {
+        let mut new_inputs = Vec::new();
+        for i in inputs.map(|i| i.to_enum()).zip(witnesses) {
+            match i {
+                (InputEnum::AccountInput(_, _), Witness::Utxo(_)) => {}
                 (InputEnum::AccountInput(id, value), Witness::Account(_, _)) => {
-                    let kind = chain_addr::Kind::Account(
-                        id.to_single_account()
-                            .expect("the input to be validated")
-                            .into(),
-                    );
+                    let kind = match id.to_single_account() {
+                        Some(id) => chain_addr::Kind::Account(id.into()),
+                        None => {
+                            error!("cannot validate address");
+                            return Err(Error::ExplorerTransmuteFail);
+                        }
+                    };
+
                     let address = ExplorerAddress::New(Address(context.discrimination, kind));
-                    Some(ExplorerInput { address, value })
+                    new_inputs.push(ExplorerInput { address, value });
                 }
+                (InputEnum::AccountInput(_, _), Witness::OldUtxo(_, _, _)) => {}
                 (InputEnum::AccountInput(id, value), Witness::Multisig(_, _)) => {
                     let kind = chain_addr::Kind::Multisig(
-                        id.to_multi_account()
-                            .as_ref()
-                            .try_into()
-                            .expect("multisig identifier size doesn't match address kind"),
+                        match id.to_multi_account().as_ref().try_into() {
+                            Ok(id) => id,
+                            Err(e) => {
+                                error!(error = %e,
+                                    "multisig identifier size doesn't match address kind "
+                                );
+                                return Err(Error::ExplorerTransmuteFail);
+                            }
+                        },
                     );
                     let address = ExplorerAddress::New(Address(context.discrimination, kind));
-                    Some(ExplorerInput { address, value })
+                    new_inputs.push(ExplorerInput { address, value });
                 }
-                (InputEnum::UtxoInput(utxo_pointer), _witness) => {
+                (InputEnum::UtxoInput(utxo_pointer), Witness::Utxo(_)) => {
                     let tx = utxo_pointer.transaction_id;
                     let index = utxo_pointer.output_index;
 
@@ -453,29 +543,40 @@ impl ExplorerTransaction {
                                 .map(|block| &block.transactions[&tx].outputs[index as usize])
                         })
                         .or_else(|| {
-                            transactions_in_current_block
+                            match transactions_in_current_block
                                 .get(&tx)
                                 .map(|fragment| &fragment.outputs[index as usize])
-                        })
-                        .expect("transaction not found for utxo input");
+                            {
+                                Some(tx) => Some(tx),
+                                None => {
+                                    error!(error = %tx,"transaction not found for utxo input");
+                                    None
+                                }
+                            }
+                        });
 
-                    Some(ExplorerInput {
-                        address: output.address.clone(),
-                        value: output.value,
-                    })
+                    match output {
+                        Some(output) => new_inputs.push(ExplorerInput {
+                            address: output.address.clone(),
+                            value: output.value,
+                        }),
+                        None => return Err(Error::ExplorerTransmuteFail),
+                    }
                 }
-                _ => None,
-            })
-            .collect();
+                (InputEnum::UtxoInput(_), Witness::Account(_, _)) => {}
+                (InputEnum::UtxoInput(_), Witness::OldUtxo(_, _, _)) => {}
+                (InputEnum::UtxoInput(_), Witness::Multisig(_, _)) => {}
+            }
+        }
 
-        ExplorerTransaction {
+        Ok(ExplorerTransaction {
             id: *id,
             inputs: new_inputs,
             outputs: new_outputs,
             certificate,
             offset_in_block,
             config_params: None,
-        }
+        })
     }
 
     pub fn id(&self) -> FragmentId {

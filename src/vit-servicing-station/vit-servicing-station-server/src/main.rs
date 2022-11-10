@@ -51,25 +51,30 @@ enum ConfigTracingError {
 fn config_tracing(
     level: server_settings::LogLevel,
     pathbuf: Option<PathBuf>,
+    trace_collector_endpoint: Option<url::Url>,
 ) -> Result<LogGuard, ConfigTracingError> {
     use tracing_subscriber::prelude::*;
 
-    let otel_tracer = opentelemetry_otlp::new_pipeline()
-        .tracing()
-        .with_exporter(
-            opentelemetry_otlp::new_exporter()
-                .tonic()
-                .with_endpoint("https://todo"),
-        )
-        .with_trace_config(opentelemetry::sdk::trace::config().with_resource(
-            opentelemetry::sdk::Resource::new(vec![opentelemetry::KeyValue::new(
-                opentelemetry_semantic_conventions::resource::SERVICE_NAME,
-                "jormungandr",
-            )]),
-        ))
-        .install_batch(opentelemetry::runtime::Tokio)?;
+    let otel_layer = if let Some(endpoint) = trace_collector_endpoint {
+        let otel_tracer = opentelemetry_otlp::new_pipeline()
+            .tracing()
+            .with_exporter(
+                opentelemetry_otlp::new_exporter()
+                    .tonic()
+                    .with_endpoint(endpoint),
+            )
+            .with_trace_config(opentelemetry::sdk::trace::config().with_resource(
+                opentelemetry::sdk::Resource::new(vec![opentelemetry::KeyValue::new(
+                    opentelemetry_semantic_conventions::resource::SERVICE_NAME,
+                    "jormungandr",
+                )]),
+            ))
+            .install_batch(opentelemetry::runtime::Tokio)?;
 
-    let otel_layer = tracing_opentelemetry::layer().with_tracer(otel_tracer);
+        Some(tracing_opentelemetry::layer().with_tracer(otel_tracer))
+    } else {
+        None
+    };
 
     let subscriber = tracing_subscriber::registry()
         .with(LevelFilter::from(level))
@@ -150,6 +155,7 @@ async fn main() {
     let _guard = config_tracing(
         settings.log.log_level.unwrap_or_default(),
         settings.log.log_output_path.clone(),
+        settings.log.trace_collector_endpoint.clone(),
     )
     .unwrap_or_else(|e| {
         error!("Error setting up logging: {}", e);

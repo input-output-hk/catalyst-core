@@ -19,4 +19,5 @@ tracing-futures = "0.2.4"
 tracing-subscriber = { version = "0.3", features=["fmt"] }
 tracing-appender = "0.2"
 tracing-opentelemetry = "0.18.0"
+url = "2"
 vit-servicing-station-lib = { path = "../vit-servicing-station-lib" }

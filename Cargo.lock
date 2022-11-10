@@ -8014,6 +8014,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "tracing-subscriber",
+ "url",
  "warp",
 ]
 
@@ -8033,6 +8034,7 @@ dependencies = [
  "tracing-futures",
  "tracing-opentelemetry",
  "tracing-subscriber",
+ "url",
  "vit-servicing-station-lib",
 ]
 

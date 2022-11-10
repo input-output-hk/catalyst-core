@@ -123,6 +123,10 @@ pub struct Log {
     /// Application logging level
     #[structopt(long)]
     pub log_level: Option<LogLevel>,
+
+    /// Enable the OTLP trace data exporter and set the collector's GRPC endpoint
+    #[structopt(long = "log-trace-collector-endpoint")]
+    pub trace_collector_endpoint: Option<url::Url>,
 }
 
 fn parse_allowed_origins(arg: &str) -> Result<AllowedOrigins, std::io::Error> {

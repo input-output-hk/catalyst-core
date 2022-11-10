@@ -38,7 +38,8 @@ jobs:
       - name: Run tests
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: "1.65"
+          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
+          components: rustfmt, clippy
       - run: |
           cargo build -p jormungandr
           cargo build -p jcli

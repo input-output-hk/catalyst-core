@@ -25,6 +25,7 @@ query BlockById($id: String!){
                             blocks{id date{...blockDate}}
                             inputs{amount address{id}}
                             outputs{amount address{id}}
+                            initialConfigurationParams { configParams {...configParam}}
                             certificate{
             __typename
             ... on StakeDelegation {account{id #delegation {... poolInfo} not implemented yet NPG-2247

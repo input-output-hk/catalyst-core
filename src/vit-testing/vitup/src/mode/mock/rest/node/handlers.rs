@@ -1,5 +1,3 @@
-use ::function_name::named;
-
 use crate::mode::mock::rest::reject::{ForcedErrorCode, GeneralException, InvalidBatch};
 use crate::mode::mock::ContextLock;
 use chain_core::property::{Deserialize, Fragment as _};
@@ -44,10 +42,9 @@ pub async fn post_message(
     Ok(HandlerResult(Ok(fragment_id)))
 }
 
-#[named]
 pub async fn get_node_stats(context: ContextLock) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();
-    context.log(function_name!());
+    context.log("get_node_stats");
 
     if let Some(error_code) = context.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));
@@ -56,11 +53,10 @@ pub async fn get_node_stats(context: ContextLock) -> Result<impl Reply, Rejectio
     Ok(HandlerResult(Ok(context.state().node_stats())))
 }
 
-#[named]
 pub async fn get_settings(context: ContextLock) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();
 
-    context.log(function_name!());
+    context.log("get_settings");
 
     if let Some(error_code) = context.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));
@@ -152,14 +148,13 @@ pub async fn get_fragment_statuses(
         .statuses(ids.unwrap()))))
 }
 
-#[named]
 pub async fn post_fragments(
     batch: FragmentsBatch,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();
 
-    context.log(function_name!());
+    context.log("post_fragments");
 
     if let Some(error_code) = context.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));
@@ -177,11 +172,10 @@ pub async fn post_fragments(
     }
 }
 
-#[named]
 pub async fn get_fragment_logs(context: ContextLock) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();
 
-    context.log(function_name!());
+    context.log("get_fragment_logs");
 
     if let Some(error_code) = context.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));
@@ -285,10 +279,9 @@ pub fn into_identifier(account_id_hex: String) -> Result<Identifier, Rejection> 
     })
 }
 
-#[named]
 pub async fn get_active_vote_plans(context: ContextLock) -> Result<impl Reply, Rejection> {
     let mut context_lock = context.lock().unwrap();
-    context_lock.log(function_name!());
+    context_lock.log("get_active_vote_plans");
 
     if let Some(error_code) = context_lock.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));

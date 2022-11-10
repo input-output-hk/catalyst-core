@@ -14,7 +14,7 @@ jobs:
     env:
       RUSTFLAGS: -D warnings
       RUST_BACKTRACE: 1
-      CARGO_FLAGS: --verbose --locked
+      CARGO_FLAGS: --verbose --locked --features systemd gelf
       CARGO_INCREMENTAL: 0
     steps: 
       - name: Checkout code

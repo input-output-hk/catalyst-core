@@ -22,18 +22,24 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: Swatinem/rust-cache@v2
-      - name:
+      - name: Free disk space
         run: |
           df -h
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
           sudo rm -rf "/usr/local/share/boost"
           df -h
+      - name: Install Nextest
+        run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+      - name: Install deps
+        run:
+          sudo apt install -y protobuf-compiler libssl-dev libpq-dev
 
       - name: Run tests
-        uses: cachix/install-nix-action@v18
-        with:
-          extra_nix_config: |
-            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      - run: nix-shell --run ".github/jormungandr_tests.sh ${{ matrix.shardNumber }} ${{ matrix.totalShards }}"
+        uses: actions-rs/toolchain@v1
+      - run: |
+          cargo build -p jormungandr
+          cargo build -p jcli
+          cargo nextest run --no-fail-fast --partition hash:${{ shardNumber }}/${{ totalShards }}
+
 

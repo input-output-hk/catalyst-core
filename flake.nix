@@ -13,9 +13,6 @@
     flake-compat.url = "github:edolstra/flake-compat";
     flake-compat.flake = false;
     flake-utils.url = "github:numtide/flake-utils";
-    pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
-    pre-commit-hooks.inputs.nixpkgs.follows = "nixpkgs";
-    pre-commit-hooks.inputs.flake-utils.follows = "flake-utils";
     rust-overlay.url = "github:oxalica/rust-overlay";
     rust-overlay.inputs.flake-utils.follows = "flake-utils";
     rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
@@ -29,7 +26,6 @@
     nixpkgs,
     flake-compat,
     flake-utils,
-    pre-commit-hooks,
     rust-overlay,
     naersk,
     cardano-node,
@@ -51,63 +47,20 @@
 
         inherit (cardano-node.packages.${system}) cardano-cli;
 
-        mkRust = {
-          channel ? "stable",
-          version ? "latest",
-        }: let
-          _rust = pkgs.rust-bin.${channel}.${version}.default.override {
-            extensions = [
-              "rust-src"
-              "rust-analysis"
-              "rls-preview"
-              "rustfmt-preview"
-              "clippy-preview"
-            ];
-          };
-        in
-          pkgs.buildEnv {
-            name = _rust.name;
-            inherit (_rust) meta;
-            buildInputs = [pkgs.makeWrapper pkgs.openssl];
-            paths = [_rust];
-            pathsToLink = ["/" "/bin"];
-            # XXX: This is needed because cargo and clippy commands need to
-            # also be aware of other binaries in order to work properly.
-            # https://github.com/cachix/pre-commit-hooks.nix/issues/126
-            postBuild = ''
-              for i in $out/bin/*; do
-                wrapProgram "$i" --prefix PATH : "$out/bin"
-              done
-            '';
-          };
+        rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
 
-        rust-stable = mkRust {
-          channel = "stable";
-          version = "1.64.0";
-        };
-        rust-nightly = mkRust {channel = "nightly";};
-
-        naersk-lib-stable = naersk.lib."${system}".override {
-          cargo = rust-stable;
-          rustc = rust-stable;
-        };
-
-        naersk-lib-nighlty = naersk.lib."${system}".override {
-          cargo = rust-nightly;
-          rustc = rust-nightly;
+        naersk' = pkgs.callPackage naersk {
+          cargo = rustToolchain;
+          rustc = rustToolchain;
         };
 
         mkPackage = {
-          naersk-lib ? naersk-lib-stable,
           pkgPath,
           pkgCargo,
         }: let
           name = pkgCargo.package.name;
           cargoOptions =
-            [
-              "--package"
-              "${name}"
-            ]
+            ["--package" "${name}"]
             ++ (pkgs.lib.optionals (name == "jormungandr") [
               "--features"
               "prometheus-metrics"
@@ -122,7 +75,7 @@
               postgresql
             ]);
 
-          unwrapped = naersk-lib.buildPackage {
+          unwrapped = naersk'.buildPackage {
             inherit (pkgCargo.package) name version;
             inherit nativeBuildInputs;
 
@@ -164,23 +117,6 @@
             in {
               name = pkgCargo.package.name;
               value = mkPackage {inherit pkgPath pkgCargo;};
-            })
-            workspaceCargo.workspace.members
-          );
-
-        workspace-nightly =
-          builtins.listToAttrs
-          (
-            builtins.map
-            (pkgPath: let
-              inherit pkgPath;
-              pkgCargo = readTOML ./${pkgPath}/Cargo.toml;
-            in {
-              name = "nightly-${pkgCargo.package.name}";
-              value = mkPackage {
-                inherit pkgPath pkgCargo;
-                naersk-lib = naersk-lib-nighlty;
-              };
             })
             workspaceCargo.workspace.members
           );
@@ -280,55 +216,27 @@
               ]);
           };
 
-        pre-commit = pre-commit-hooks.lib.${system}.run {
-          src = self;
-          hooks = {
-            alejandra = {
-              enable = true;
-            };
-            rustfmt = {
-              enable = true;
-              entry = pkgs.lib.mkForce "${rust-nightly}/bin/cargo-fmt fmt -- --check --color always";
-            };
-          };
-        };
-
         warnToUpdateNix = pkgs.lib.warn "Consider updating to Nix > 2.7 to remove this warning!";
       in rec {
-        packages =
-          workspace
-          // workspace-nightly
-          // {
-            inherit jormungandr-entrypoint pre-commit;
-            default = pre-commit;
-          };
-
+        packages = workspace;
         devShells.default = pkgs.mkShell {
           PROTOC = "${pkgs.protobuf}/bin/protoc";
           PROTOC_INCLUDE = "${pkgs.protobuf}/include";
-          buildInputs =
-            [rust-stable]
-            ++ (with pkgs; [
-              pkg-config
-              openssl
-              protobuf
-              uniffi-bindgen
-              postgresql
-              diesel-cli
-              cargo-insta # snapshot testing lib
-            ]);
-          shellHook =
-            pre-commit.shellHook
-            + ''
-              echo "=== Catalyst Core development shell ==="
-              echo "Info: Git hooks can be installed using \`pre-commit install\`"
-            '';
-          # TODO: is this needed for vit-testing development
-          # export PATH="${jormungandr}/bin:$PATH"
-          # export PATH="${vit-servicing-station-server}/bin:$PATH"
+          buildInputs = with pkgs; [
+            rustToolchain
+            pkg-config
+            openssl
+            protobuf
+            uniffi-bindgen
+            postgresql
+            diesel-cli
+            cargo-insta # snapshot testing lib
+          ];
+          shellHook = ''
+            echo "=== Catalyst Core development shell ==="
+            echo "Info: Git hooks can be installed using \`pre-commit install\`"
+          '';
         };
-
-        checks.pre-commit = pre-commit;
 
         defaultPackage = warnToUpdateNix packages.default;
         devShell = warnToUpdateNix devShells.default;

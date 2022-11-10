@@ -69,8 +69,8 @@ impl ExplorerVerifier {
             ) => {
                 if let Fragment::StakeDelegation(fragment_cert) = fragment {
                     Self::assert_transaction_address_params(
-                        &fragment_cert,
-                        &explorer_transaction,
+                        fragment_cert,
+                        explorer_transaction,
                     )
                     .unwrap();
                     Self::assert_address_stake_delegation(fragment_cert, explorer_cert)
@@ -87,8 +87,8 @@ impl ExplorerVerifier {
             ) => {
                 if let Fragment::OwnerStakeDelegation(fragment_cert) = fragment {
                     Self::assert_transaction_address_params(
-                        &fragment_cert,
-                        &explorer_transaction,
+                        fragment_cert,
+                        explorer_transaction,
                     )
                     .unwrap();
                     Self::assert_address_owner_delegation(fragment_cert, explorer_cert)
@@ -105,8 +105,8 @@ impl ExplorerVerifier {
             ) => {
                 if let Fragment::PoolRegistration(fragment_cert) = fragment {
                     Self::assert_transaction_address_params(
-                        &fragment_cert,
-                        &explorer_transaction,
+                        fragment_cert,
+                        explorer_transaction,
                     )
                     .unwrap();
                     Self::assert_address_pool_registration(fragment_cert, explorer_cert);
@@ -122,8 +122,8 @@ impl ExplorerVerifier {
             ) => {
                 if let Fragment::PoolRetirement(fragment_cert) = fragment {
                     Self::assert_transaction_address_params(
-                        &fragment_cert,
-                        &explorer_transaction,
+                        fragment_cert,
+                        explorer_transaction,
                     )
                     .unwrap();
                     Self::assert_address_pool_retirement(fragment_cert, explorer_cert);
@@ -137,8 +137,8 @@ impl ExplorerVerifier {
             TransactionsByAddressTipTransactionsByAddressEdgesNodeCertificate::PoolUpdate(explorer_cert) => {
                 if let Fragment::PoolUpdate(fragment_cert) = fragment {
                     Self::assert_transaction_address_params(
-                        &fragment_cert,
-                        &explorer_transaction,
+                        fragment_cert,
+                        explorer_transaction,
                     )
                     .unwrap();
                     Self::assert_address_pool_update(fragment_cert, explorer_cert);
@@ -152,8 +152,8 @@ impl ExplorerVerifier {
             TransactionsByAddressTipTransactionsByAddressEdgesNodeCertificate::VotePlan(explorer_cert) => {
                 if let Fragment::VotePlan(fragment_cert) = fragment {
                     Self::assert_transaction_address_params(
-                        &fragment_cert,
-                        &explorer_transaction,
+                        fragment_cert,
+                        explorer_transaction,
                     )
                     .unwrap();
                     Self::assert_address_vote_plan(fragment_cert, explorer_cert);
@@ -167,8 +167,8 @@ impl ExplorerVerifier {
             TransactionsByAddressTipTransactionsByAddressEdgesNodeCertificate::VoteCast(explorer_cert) => {
                 if let Fragment::VoteCast(fragment_cert) = fragment {
                     Self::assert_transaction_address_params(
-                        &fragment_cert,
-                        &explorer_transaction,
+                        fragment_cert,
+                        explorer_transaction,
                     )
                     .unwrap();
                     Self::assert_address_vote_cast(fragment_cert, explorer_cert);
@@ -182,8 +182,8 @@ impl ExplorerVerifier {
             TransactionsByAddressTipTransactionsByAddressEdgesNodeCertificate::VoteTally(explorer_cert) => {
                 if let Fragment::VoteTally(fragment_cert) = fragment {
                     Self::assert_transaction_address_params(
-                        &fragment_cert,
-                        &explorer_transaction,
+                        fragment_cert,
+                        explorer_transaction,
                     )
                     .unwrap();
                     Self::assert_address_vote_tally(fragment_cert, explorer_cert);
@@ -199,11 +199,11 @@ impl ExplorerVerifier {
             ) => {
                 if let Fragment::UpdateProposal(fragment_cert) = fragment {
                     Self::assert_transaction_address_params(
-                        &fragment_cert,
-                        &explorer_transaction,
+                        fragment_cert,
+                        explorer_transaction,
                     )
                     .unwrap();
-                    Self::assert_address_update_proposal(&fragment_cert, &explorer_cert);
+                    Self::assert_address_update_proposal(fragment_cert, explorer_cert);
                     Ok(())
                 } else {
                     Err(VerifierError::InvalidCertificate {
@@ -214,11 +214,11 @@ impl ExplorerVerifier {
             TransactionsByAddressTipTransactionsByAddressEdgesNodeCertificate::UpdateVote(explorer_cert) => {
                 if let Fragment::UpdateVote(fragment_cert) = fragment {
                     Self::assert_transaction_address_params(
-                        &fragment_cert,
-                        &explorer_transaction,
+                        fragment_cert,
+                        explorer_transaction,
                     )
                     .unwrap();
-                    Self::assert_address_update_vote(&fragment_cert, &explorer_cert);
+                    Self::assert_address_update_vote(fragment_cert, explorer_cert);
                     Ok(())
                 } else {
                     Err(VerifierError::InvalidCertificate {

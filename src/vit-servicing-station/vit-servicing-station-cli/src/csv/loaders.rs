@@ -277,12 +277,12 @@ impl LoadCmd {
         }
 
         vit_servicing_station_lib::db::queries::voteplans::batch_insert_voteplans(
-            &voteplans, &db_conn,
+            &voteplans, db_conn,
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
         vit_servicing_station_lib::db::queries::proposals::batch_insert_proposals(
-            &proposals, &db_conn,
+            &proposals, db_conn,
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
@@ -299,19 +299,19 @@ impl LoadCmd {
 
         vit_servicing_station_lib::db::queries::proposals::batch_insert_proposals_voteplans(
             proposals_voteplans,
-            &db_conn,
+            db_conn,
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
         vit_servicing_station_lib::db::queries::proposals::batch_insert_simple_challenge_data(
             &simple_proposals_data,
-            &db_conn,
+            db_conn,
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
         vit_servicing_station_lib::db::queries::proposals::batch_insert_community_choice_challenge_data(
             &community_proposals_data,
-            &db_conn,
+            db_conn,
         )
             .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
@@ -320,11 +320,11 @@ impl LoadCmd {
                 .into_iter()
                 .map(|c| c.into_db_challenge_values())
                 .collect::<Vec<_>>(),
-            &db_conn,
+            db_conn,
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
-        vit_servicing_station_lib::db::queries::community_advisors_reviews::batch_insert_advisor_reviews(&reviews, &db_conn)
+        vit_servicing_station_lib::db::queries::community_advisors_reviews::batch_insert_advisor_reviews(&reviews, db_conn)
             .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
         let groups = if let Some(groups_path) = &self.groups {
@@ -345,7 +345,7 @@ impl LoadCmd {
 
         vit_servicing_station_lib::db::queries::groups::batch_insert(
             &groups.into_iter().map(|c| c.values()).collect::<Vec<_>>(),
-            &db_conn,
+            db_conn,
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 

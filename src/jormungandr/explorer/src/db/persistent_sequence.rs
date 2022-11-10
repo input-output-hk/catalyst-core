@@ -3,7 +3,7 @@ use std::{collections::hash_map::DefaultHasher, sync::Arc};
 
 // Use a Hamt to store a sequence, the indexes can be used for pagination
 // XXX: Maybe there is a better data structure for this?
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct PersistentSequence<T> {
     len: u64,
     elements: Hamt<DefaultHasher, u64, Arc<T>>,

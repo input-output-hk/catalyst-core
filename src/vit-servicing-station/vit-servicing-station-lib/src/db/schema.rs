@@ -7,7 +7,7 @@ table! {
 }
 
 table! {
-    challenges (id) {
+    challenges (internal_id) {
         internal_id -> Integer,
         id -> Integer,
         challenge_type -> Text,
@@ -37,32 +37,12 @@ table! {
 }
 
 table! {
-    snapshots (tag) {
-        tag -> Text,
-        last_updated -> BigInt,
-    }
-}
-
-table! {
-    voters (voting_key, voting_group, snapshot_tag) {
-        voting_key -> Text,
-        voting_power -> BigInt,
-        voting_group -> Text,
-        // should corresponds to the snapshot::tag,
-        snapshot_tag -> Text,
-    }
-}
-
-table! {
     contributions (stake_public_key, voting_key, voting_group, snapshot_tag) {
         stake_public_key -> Text,
         reward_address -> Text,
         value -> BigInt,
-        // should corresponds to the voters::tag,
         voting_key -> Text,
-        // should corresponds to the voters::voting_group,
         voting_group -> Text,
-        // should corresponds to the snapshot::tag,
         snapshot_tag -> Text,
     }
 }
@@ -149,10 +129,18 @@ table! {
 }
 
 table! {
-    proposals_voteplans (proposal_id) {
+    proposals_voteplans (id) {
+        id -> Integer,
         proposal_id -> Text,
         chain_voteplan_id -> Text,
         chain_proposal_index -> BigInt,
+    }
+}
+
+table! {
+    snapshots (tag) {
+        tag -> Text,
+        last_updated -> BigInt,
     }
 }
 
@@ -171,6 +159,15 @@ table! {
 }
 
 table! {
+    voters (voting_key, voting_group, snapshot_tag) {
+        voting_key -> Text,
+        voting_power -> BigInt,
+        voting_group -> Text,
+        snapshot_tag -> Text,
+    }
+}
+
+table! {
     votes (fragment_id) {
         fragment_id -> Text,
         caster -> Text,
@@ -182,12 +179,15 @@ table! {
     }
 }
 
+joinable!(contributions -> snapshots (snapshot_tag));
 joinable!(goals -> funds (fund_id));
+joinable!(voters -> snapshots (snapshot_tag));
 
 allow_tables_to_appear_in_same_query!(
     api_tokens,
     challenges,
     community_advisors_reviews,
+    contributions,
     funds,
     goals,
     groups,
@@ -195,5 +195,8 @@ allow_tables_to_appear_in_same_query!(
     proposal_simple_challenge,
     proposals,
     proposals_voteplans,
+    snapshots,
     voteplans,
+    voters,
+    votes,
 );

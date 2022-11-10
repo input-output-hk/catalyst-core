@@ -1,4 +1,4 @@
-use crate::logging::{LogFormat, LogInfoMsg, LogOutput, LogSettings, LogSettingsEntry};
+use crate::logging::{LogFormat, LogOutput, LogSettings};
 use jormungandr_lib::interfaces::{Cors, Tls};
 use lazy_static::lazy_static;
 use serde::{de, de::Error as _, Deserialize, Deserializer, Serialize, Serializer};
@@ -7,15 +7,7 @@ use structopt::StructOpt;
 use thiserror::Error;
 use tonic::transport::Uri;
 use tracing::metadata::LevelFilter;
-
-const DEFAULT_FILTER_LEVEL: LevelFilter = LevelFilter::TRACE;
-const DEFAULT_LOG_FORMAT: LogFormat = LogFormat::Default;
-const DEFAULT_LOG_OUTPUT: LogOutput = LogOutput::Stderr;
-const DEFAULT_LOG_SETTINGS_ENTRY: LogSettingsEntry = LogSettingsEntry {
-    level: DEFAULT_FILTER_LEVEL,
-    format: DEFAULT_LOG_FORMAT,
-    output: DEFAULT_LOG_OUTPUT,
-};
+use url::Url;
 
 const DEFAULT_QUERY_DEPTH_LIMIT: usize = 15;
 const DEFAULT_QUERY_COMPLEXITY_LIMIT: usize = 100;
@@ -116,62 +108,40 @@ impl Settings {
 
     fn log_settings(cmd: &CommandLine, file: &Config) -> LogSettings {
         // Start with default config
-        let mut log_config = DEFAULT_LOG_SETTINGS_ENTRY;
-        let mut info_msgs: Vec<String> = Vec::new();
+        let mut settings = LogSettings::default();
 
         //  Read log settings from the config file path.
         if let Some(cfg) = file.logs.as_ref() {
             if let Some(level) = cfg.level {
-                log_config.level = level;
+                settings.level = level;
             }
             if let Some(format) = cfg.format {
-                log_config.format = format;
+                settings.format = format;
             }
             if let Some(output) = &cfg.output {
-                log_config.output = output.clone();
+                settings.output = output.clone();
+            }
+            if cfg.trace_collector_endpoint.is_some() {
+                settings.trace_collector_endpoint = cfg.trace_collector_endpoint.clone();
             }
         }
 
         // If the command line specifies log arguments, they override everything
         // else.
         if let Some(output) = &cmd.log_output {
-            if &log_config.output != output {
-                info_msgs.push(format!(
-                    "log output overriden from command line: {:?} replaced with {:?}",
-                    log_config.output, output
-                ));
-            }
-            log_config.output = output.clone();
+            settings.output = output.clone();
         }
         if let Some(level) = cmd.log_level {
-            if log_config.level != level {
-                info_msgs.push(format!(
-                    "log level overriden from command line: {:?} replaced with {:?}",
-                    log_config.level, level
-                ));
-            }
-            log_config.level = level;
+            settings.level = level;
         }
         if let Some(format) = cmd.log_format {
-            if log_config.format != format {
-                info_msgs.push(format!(
-                    "log format overriden from command line: {:?} replaced with {:?}",
-                    log_config.format, format
-                ));
-            }
-            log_config.format = format;
+            settings.format = format;
+        }
+        if cmd.log_trace_collector_endpoint.is_some() {
+            settings.trace_collector_endpoint = cmd.log_trace_collector_endpoint.clone();
         }
 
-        let log_info_msg: LogInfoMsg = if info_msgs.is_empty() {
-            None
-        } else {
-            Some(info_msgs)
-        };
-
-        LogSettings {
-            config: log_config,
-            msgs: log_info_msg,
-        }
+        settings
     }
 }
 
@@ -203,12 +173,14 @@ struct CommandLine {
     #[structopt(long = "log-format", parse(try_from_str))]
     pub log_format: Option<LogFormat>,
 
-    /// Set format of the log emitted. Can be "stdout", "stderr",
-    /// "syslog" (Unix only) or "journald"
-    /// (linux with systemd only, must be enabled during compilation).
+    /// Set format of the log emitted. Can be "stdout", "stderr" or a file path preceeded by '@' (e.g. @./explorer.log).
     /// If not configured anywhere, defaults to "stderr".
     #[structopt(long = "log-output", parse(try_from_str))]
     pub log_output: Option<LogOutput>,
+
+    /// Enable the OTLP trace data exporter and set the collector's GRPC endpoint.
+    #[structopt(long)]
+    pub log_trace_collector_endpoint: Option<Url>,
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -241,6 +213,7 @@ pub struct ConfigLogSettings {
     pub level: Option<LevelFilter>,
     pub format: Option<LogFormat>,
     pub output: Option<LogOutput>,
+    pub trace_collector_endpoint: Option<Url>,
 }
 
 mod filter_level_opt_serde {

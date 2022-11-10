@@ -1,7 +1,10 @@
 use super::vote_options;
 use crate::db::models::vote_options::VoteOptions;
 use crate::db::schema::proposals_voteplans;
-use crate::db::{schema::proposals, views_schema::full_proposals_info, Db};
+use crate::db::{schema::proposals, views_schema::full_proposals_info};
+use diesel::backend::Backend;
+use diesel::sql_types::{BigInt, Binary, Integer, Text};
+use diesel::types::FromSql;
 use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 use std::convert::{TryFrom, TryInto};
@@ -250,7 +253,13 @@ type FullProposalsInfoRow = (
     String,
 );
 
-impl Queryable<full_proposals_info::SqlType, Db> for Proposal {
+impl<DB: Backend> Queryable<full_proposals_info::SqlType, DB> for Proposal
+where
+    i32: FromSql<Integer, DB>,
+    i64: FromSql<BigInt, DB>,
+    String: FromSql<Text, DB>,
+    Vec<u8>: FromSql<Binary, DB>,
+{
     type Row = FullProposalsInfoRow;
 
     fn build(row: Self::Row) -> Self {
@@ -289,7 +298,13 @@ impl Queryable<full_proposals_info::SqlType, Db> for Proposal {
     }
 }
 
-impl Queryable<full_proposals_info::SqlType, Db> for ProposalVotePlan {
+impl<DB: Backend> Queryable<full_proposals_info::SqlType, DB> for ProposalVotePlan
+where
+    i32: FromSql<Integer, DB>,
+    i64: FromSql<BigInt, DB>,
+    String: FromSql<Text, DB>,
+    Vec<u8>: FromSql<Binary, DB>,
+{
     type Row = FullProposalsInfoRow;
 
     fn build(row: Self::Row) -> Self {
@@ -303,7 +318,13 @@ impl Queryable<full_proposals_info::SqlType, Db> for ProposalVotePlan {
     }
 }
 
-impl Queryable<full_proposals_info::SqlType, Db> for FullProposalInfo {
+impl<DB: Backend> Queryable<full_proposals_info::SqlType, DB> for FullProposalInfo
+where
+    i32: FromSql<Integer, DB>,
+    i64: FromSql<BigInt, DB>,
+    String: FromSql<Text, DB>,
+    Vec<u8>: FromSql<Binary, DB>,
+{
     type Row = FullProposalsInfoRow;
 
     fn build(row: Self::Row) -> Self {
@@ -437,30 +458,30 @@ impl From<ProposalChallengeInfo> for SerdeProposalChallengeInfo {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::db::{
-        models::groups::Group,
-        models::{
-            challenges::{
-                test::{get_test_challenge_with_fund_id, populate_db_with_challenge_conn},
-                Challenge,
+    use crate::{
+        db::{
+            models::groups::Group,
+            models::{
+                challenges::{
+                    test::{get_test_challenge_with_fund_id, populate_db_with_challenge_conn},
+                    Challenge,
+                },
+                vote_options::VoteOptions,
             },
-            vote_options::VoteOptions,
+            schema::{
+                groups, proposal_community_choice_challenge, proposal_simple_challenge, proposals,
+                proposals_voteplans, voteplans,
+            },
+            DbConnection, DbConnectionPool,
         },
-        schema::{
-            groups, proposal_community_choice_challenge, proposal_simple_challenge, proposals,
-            proposals_voteplans, voteplans,
-        },
-        DbConnection, DbConnectionPool,
+        q,
     };
-    use diesel::{
-        r2d2::{ConnectionManager, PooledConnection},
-        ExpressionMethods, RunQueryDsl,
-    };
+    use diesel::{ExpressionMethods, RunQueryDsl};
     use time::OffsetDateTime;
 
     pub fn add_test_proposal_and_challenge(
         key: i32,
-        conn: &PooledConnection<ConnectionManager<DbConnection>>,
+        conn: &DbConnection,
     ) -> (FullProposalInfo, Challenge) {
         let mut proposal = get_test_proposal(format!("{key}"));
         proposal.proposal.internal_id = key;
@@ -542,7 +563,7 @@ pub mod test {
 
     pub fn populate_db_with_proposal_conn(
         full_proposal: &FullProposalInfo,
-        connection: &PooledConnection<ConnectionManager<DbConnection>>,
+        connection: &DbConnection,
     ) {
         let proposal = &full_proposal.proposal;
         let proposal_id = proposal.proposal_id.clone();
@@ -567,10 +588,13 @@ pub mod test {
             proposals::challenge_id.eq(proposal.challenge_id),
         );
 
-        diesel::insert_into(proposals::table)
-            .values(values)
-            .execute(connection)
-            .unwrap();
+        q!(
+            connection,
+            diesel::insert_into(proposals::table)
+                .values(values)
+                .execute(connection)
+        )
+        .unwrap();
 
         let token_identifier = format!("{}-token", full_proposal.group_id);
 
@@ -586,22 +610,28 @@ pub mod test {
             voteplans::token_identifier.eq(&token_identifier),
         );
 
-        diesel::insert_into(voteplans::table)
-            .values(voteplan_values)
-            .execute(connection)
-            .unwrap();
+        q!(
+            connection,
+            diesel::insert_into(voteplans::table)
+                .values(voteplan_values)
+                .execute(connection)
+        )
+        .unwrap();
 
-        diesel::insert_into(groups::table)
-            .values(
-                Group {
-                    fund_id: proposal.fund_id,
-                    group_id: full_proposal.group_id.clone(),
-                    token_identifier,
-                }
-                .values(),
-            )
-            .execute(connection)
-            .unwrap();
+        q!(
+            connection,
+            diesel::insert_into(groups::table)
+                .values(
+                    Group {
+                        fund_id: proposal.fund_id,
+                        group_id: full_proposal.group_id.clone(),
+                        token_identifier,
+                    }
+                    .values(),
+                )
+                .execute(connection)
+        )
+        .unwrap();
 
         let proposal_voteplan_values = (
             proposals_voteplans::proposal_id.eq(proposal_id),
@@ -611,10 +641,13 @@ pub mod test {
                 .eq(full_proposal.voteplan.chain_proposal_index),
         );
 
-        diesel::insert_into(proposals_voteplans::table)
-            .values(proposal_voteplan_values)
-            .execute(connection)
-            .unwrap();
+        q!(
+            connection,
+            diesel::insert_into(proposals_voteplans::table)
+                .values(proposal_voteplan_values)
+                .execute(connection)
+        )
+        .unwrap();
 
         match &full_proposal.challenge_info {
             ProposalChallengeInfo::Simple(data) => {
@@ -622,10 +655,13 @@ pub mod test {
                     proposal_simple_challenge::proposal_id.eq(proposal.proposal_id.clone()),
                     proposal_simple_challenge::proposal_solution.eq(data.proposal_solution.clone()),
                 );
-                diesel::insert_into(proposal_simple_challenge::table)
-                    .values(simple_values)
-                    .execute(connection)
-                    .unwrap();
+                q!(
+                    connection,
+                    diesel::insert_into(proposal_simple_challenge::table)
+                        .values(simple_values)
+                        .execute(connection)
+                )
+                .unwrap();
             }
             ProposalChallengeInfo::CommunityChoice(data) => {
                 let community_values = (
@@ -640,10 +676,13 @@ pub mod test {
                     proposal_community_choice_challenge::proposal_metrics
                         .eq(data.proposal_metrics.clone()),
                 );
-                diesel::insert_into(proposal_community_choice_challenge::table)
-                    .values(community_values)
-                    .execute(connection)
-                    .unwrap();
+                q!(
+                    connection,
+                    diesel::insert_into(proposal_community_choice_challenge::table)
+                        .values(community_values)
+                        .execute(connection)
+                )
+                .unwrap();
             }
         };
     }

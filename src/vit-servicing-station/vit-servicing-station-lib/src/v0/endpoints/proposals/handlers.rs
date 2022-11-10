@@ -42,14 +42,14 @@ pub mod test {
             proposals::{test as proposals_testing, *},
         },
     };
-    use crate::v0::context::test::new_in_memmory_db_test_shared_context;
+    use crate::v0::context::test::new_db_test_shared_context;
     use crate::v0::endpoints::proposals::requests::ProposalVoteplanIdAndIndexes;
     use warp::Filter;
 
     #[tokio::test]
     async fn get_proposal_by_id_handler() {
         // build context
-        let shared_context = new_in_memmory_db_test_shared_context();
+        let shared_context = new_db_test_shared_context();
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
 
@@ -88,7 +88,7 @@ pub mod test {
     #[tokio::test]
     async fn get_all_proposals_handler() {
         // build context
-        let shared_context = new_in_memmory_db_test_shared_context();
+        let shared_context = new_db_test_shared_context();
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
 
@@ -121,7 +121,7 @@ pub mod test {
     #[tokio::test]
     async fn get_proposal_by_voteplan_id_and_index() {
         // build context
-        let shared_context = new_in_memmory_db_test_shared_context();
+        let shared_context = new_db_test_shared_context();
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
 

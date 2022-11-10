@@ -6,6 +6,7 @@ use crate::db::{
 };
 use crate::v0::api_token::ApiToken;
 use crate::v0::errors::HandleError;
+use crate::{execute_q, q};
 use diesel::query_dsl::RunQueryDsl;
 use diesel::{ExpressionMethods, Insertable, OptionalExtension, QueryDsl, QueryResult};
 use time::{Duration, OffsetDateTime};
@@ -47,30 +48,37 @@ pub fn query_token_data_by_token(
     raw_token: &[u8],
     db_conn: &DbConnection,
 ) -> Result<Option<api_token_model::ApiTokenData>, diesel::result::Error> {
-    api_tokens_dsl
-        .filter(api_tokens::token.eq(raw_token))
-        .first::<api_token_model::ApiTokenData>(db_conn)
-        .optional()
+    q!(
+        db_conn,
+        api_tokens_dsl
+            .filter(api_tokens::token.eq(raw_token))
+            .first::<api_token_model::ApiTokenData>(db_conn)
+            .optional()
+    )
 }
 
 pub fn insert_token_data(token_data: ApiTokenData, db_conn: &DbConnection) -> QueryResult<usize> {
-    diesel::insert_into(api_tokens::table)
-        .values(token_data.values())
-        .execute(db_conn)
+    q!(
+        db_conn,
+        diesel::insert_into(api_tokens::table)
+            .values(token_data.values())
+            .execute(db_conn)
+    )
 }
 
 pub fn batch_insert_token_data(
     tokens_data: &[ApiTokenData],
     db_conn: &DbConnection,
 ) -> QueryResult<usize> {
-    diesel::insert_into(api_tokens::table)
-        .values(
+    execute_q!(
+        db_conn,
+        diesel::insert_into(api_tokens::table).values(
             tokens_data
                 .iter()
                 .map(|t| t.clone().values())
                 .collect::<Vec<_>>(),
         )
-        .execute(db_conn)
+    )
 }
 
 #[cfg(test)]

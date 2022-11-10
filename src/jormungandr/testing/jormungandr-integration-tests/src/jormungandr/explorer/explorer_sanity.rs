@@ -55,7 +55,7 @@ pub fn explorer_sanity_test() {
     let jcli: JCli = Default::default();
     let faucet = thor::Wallet::default();
     let receiver = thor::Wallet::default();
-    let query_complexity_limit = 100;
+    let query_complexity_limit = 150;
     let attempts_number = 20;
 
     let config = Block0ConfigurationBuilder::default()

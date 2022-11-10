@@ -40,6 +40,6 @@ jobs:
       - run: |
           cargo build -p jormungandr
           cargo build -p jcli
-          cargo nextest run --no-fail-fast --partition hash:${{ shardNumber }}/${{ totalShards }}
+          cargo nextest run --no-fail-fast --partition hash:${{ matrix.shardNumber }}/${{ matrix.totalShards }}
 
 

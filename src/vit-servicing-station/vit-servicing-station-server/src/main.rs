@@ -7,9 +7,14 @@ use structopt::StructOpt;
 use tracing::{error, info};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::filter::LevelFilter;
+use vit_servicing_station_lib::server::exit_codes::ApplicationExitCode;
 use vit_servicing_station_lib::{
-    db, server, server::exit_codes::ApplicationExitCode, server::settings as server_settings,
-    server::settings::ServiceSettings, v0,
+    db,
+    server::{
+        self,
+        settings::{self as server_settings, ServiceSettings},
+    },
+    v0,
 };
 
 fn check_and_build_proper_path(path: &Path) -> std::io::Result<()> {
@@ -127,71 +132,83 @@ fn config_tracing(
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> ApplicationExitCode {
     // load settings from command line (defaults to env variables)
     let mut settings: ServiceSettings = ServiceSettings::from_args();
 
     // load settings from file if specified
     if let Some(settings_file) = &settings.in_settings_file {
-        let in_file_settings = server_settings::load_settings_from_file(settings_file)
-            .unwrap_or_else(|e| {
+        let in_file_settings = match server_settings::load_settings_from_file(settings_file) {
+            Ok(s) => s,
+            Err(e) => {
                 error!("Error loading settings from file {}, {}", settings_file, e);
-                std::process::exit(ApplicationExitCode::LoadSettingsError.into())
-            });
+                return ApplicationExitCode::LoadSettingsError;
+            }
+        };
+
         // merge input file settings override by cli arguments
         settings = in_file_settings.override_from(&settings);
     }
 
     // dump settings and exit if specified
     if let Some(settings_file) = &settings.out_settings_file {
-        server_settings::dump_settings_to_file(settings_file, &settings).unwrap_or_else(|e| {
+        if let Err(e) = server_settings::dump_settings_to_file(settings_file, &settings) {
             error!("Error writing settings to file {}: {}", settings_file, e);
-            std::process::exit(ApplicationExitCode::WriteSettingsError.into())
-        });
-        std::process::exit(0);
+            return ApplicationExitCode::WriteSettingsError;
+        }
+
+        return ApplicationExitCode::Success;
     }
 
     // setup logging
-    let _guard = config_tracing(
+    let _guard = match config_tracing(
         settings.log.log_level.unwrap_or_default(),
         settings.log.log_output_path.clone(),
         settings.log.trace_collector_endpoint.clone(),
-    )
-    .unwrap_or_else(|e| {
-        error!("Error setting up logging: {}", e);
-        std::process::exit(ApplicationExitCode::LoadSettingsError.into())
-    });
+    ) {
+        Ok(g) => g,
+        Err(e) => {
+            error!("Error setting up logging: {}", e);
+            return ApplicationExitCode::LoadSettingsError;
+        }
+    };
 
     // Check db file exists (should be here only for current sqlite db backend)
     if !std::path::Path::new(&settings.db_url).exists() {
         error!("DB file {} not found.", &settings.db_url);
-        std::process::exit(ApplicationExitCode::DbConnectionError.into())
+        return ApplicationExitCode::DbConnectionError;
     }
     // load db pool
-    let db_pool = db::load_db_connection_pool(&settings.db_url).unwrap_or_else(|e| {
-        error!("Error connecting to database: {}", e);
-        std::process::exit(ApplicationExitCode::DbConnectionError.into())
-    });
+    let db_pool = match db::load_db_connection_pool(&settings.db_url) {
+        Ok(d) => d,
+        Err(e) => {
+            error!("Error connecting to database: {}", e);
+            return ApplicationExitCode::DbConnectionError;
+        }
+    };
 
     let paths: Vec<PathBuf> = if let Some(single_block0_path) = &settings.block0_path {
         vec![PathBuf::from_str(single_block0_path).unwrap()]
     } else {
-        fs::read_dir(settings.block0_paths.as_ref().unwrap_or_else(|| {
-            std::process::exit(ApplicationExitCode::EmptyBlock0FolderError.into())
-        }))
-        .unwrap()
-        .filter_map(|path| {
-            let path = path.unwrap().path();
-            match path.extension() {
-                Some(p) if p == "bin" => Some(path.to_path_buf()),
-                _ => None,
-            }
-        })
-        .collect()
+        let block0_paths = match settings.block0_paths.as_ref() {
+            Some(p) => p,
+            None => return ApplicationExitCode::EmptyBlock0FolderError,
+        };
+
+        fs::read_dir(block0_paths)
+            .unwrap()
+            .filter_map(|path| {
+                let path = path.unwrap().path();
+                match path.extension() {
+                    Some(p) if p == "bin" => Some(path.to_path_buf()),
+                    _ => None,
+                }
+            })
+            .collect()
     };
 
     if paths.is_empty() {
-        std::process::exit(ApplicationExitCode::EmptyBlock0FolderError.into());
+        return ApplicationExitCode::EmptyBlock0FolderError;
     }
 
     let context = v0::context::new_shared_context(db_pool, paths, &settings.service_version);
@@ -204,5 +221,6 @@ async fn main() {
     );
 
     // run server with settings
-    server::start_server(app, Some(settings)).await
+    server::start_server(app, Some(settings)).await;
+    ApplicationExitCode::Success
 }

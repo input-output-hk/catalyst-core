@@ -316,11 +316,9 @@ pub fn explorer_last_block_test() {
     ExplorerVerifier::assert_last_block(decoded_block, explorer_last_block.block()).unwrap();
 }
 
-//#[should_panic]
-#[test] //NPG-3274
+#[test]
 pub fn explorer_all_blocks_test() {
     let temp_dir = TempDir::new().unwrap();
-
     let max_blocks_number = 100;
     let jcli: JCli = Default::default();
     let sender = thor::Wallet::default();

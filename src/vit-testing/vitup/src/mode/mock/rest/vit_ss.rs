@@ -1,6 +1,7 @@
 use crate::error::Error::NoChallengeIdAndGroupFound;
 use crate::mode::mock::rest::reject::GeneralException;
 use crate::mode::mock::ContextLock;
+use ::function_name::named;
 use chain_impl_mockchain::value::Value;
 use itertools::Itertools;
 use std::collections::HashMap;
@@ -14,22 +15,22 @@ use vit_servicing_station_lib::v0::errors::HandleError;
 use vit_servicing_station_lib::v0::result::HandlerResult;
 use warp::{Rejection, Reply};
 
-
+#[named]
 pub async fn get_tags(context: ContextLock) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();
-    context.log("get_tags");
+    context.log(function_name!());
     let entries = context.state().voters().tags();
     Ok(warp::reply::json(&entries))
 }
 
-
+#[named]
 pub async fn get_voters_info(
     tag: String,
     voting_key: String,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();
-    context.log("get_voters_info");
+    context.log(function_name!());
     let last_updated = context
         .state()
         .voters()
@@ -79,14 +80,14 @@ pub async fn get_voters_info(
     })))
 }
 
-
+#[named]
 pub async fn get_delegator_info(
     tag: String,
     stake_public_key: String,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();
-    context.log("get_delegator_info");
+    context.log(function_name!());
     let last_updated = context
         .state()
         .voters()
@@ -112,11 +113,11 @@ pub async fn get_delegator_info(
     })))
 }
 
-
+#[named]
 pub async fn get_challenges(context: ContextLock) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();
 
-    context.log("get_challenges");
+    context.log(function_name!());
 
     if let Some(error_code) = context.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));
@@ -227,14 +228,14 @@ pub async fn get_review_by_id(id: i32, context: ContextLock) -> Result<impl Repl
     Ok(HandlerResult(Ok(reviews)))
 }
 
-
+#[named]
 pub async fn get_all_proposals(
     voting_group: String,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();
 
-    context.log("get_all_proposals");
+    context.log(function_name!());
 
     if let Some(error_code) = context.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));
@@ -314,11 +315,11 @@ pub async fn get_fund_by_id(id: i32, context: ContextLock) -> Result<impl Reply,
     Ok(HandlerResult(Ok(fund.clone())))
 }
 
-
+#[named]
 pub async fn get_fund(context: ContextLock) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();
 
-    context.log("get_fund");
+    context.log(function_name!());
 
     if let Some(error_code) = context.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));
@@ -338,11 +339,11 @@ pub async fn get_fund(context: ContextLock) -> Result<impl Reply, Rejection> {
     Ok(HandlerResult(Ok(fund_with_next)))
 }
 
-
+#[named]
 pub async fn get_all_funds(context: ContextLock) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();
 
-    context.log("get_all_funds");
+    context.log(function_name!());
 
     if let Some(error_code) = context.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));

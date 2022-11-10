@@ -47,7 +47,7 @@
 
         inherit (cardano-node.packages.${system}) cardano-cli;
 
-        rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+        rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain;
 
         naersk' = pkgs.callPackage naersk {
           cargo = rustToolchain;

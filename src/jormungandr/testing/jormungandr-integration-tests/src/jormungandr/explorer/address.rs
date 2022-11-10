@@ -93,7 +93,7 @@ pub fn explorer_transactions_not_existing_address_test() {
     ExplorerVerifier::assert_transactions_address(HashMap::new(), explorer_transactions_by_address);
 }
 
-#[test]
+#[test] //NPG-4067
 pub fn explorer_transactions_address_test() {
     let jcli: JCli = Default::default();
     let mut sender = thor::Wallet::default();
@@ -105,6 +105,7 @@ pub fn explorer_transactions_address_test() {
     let temp_dir = TempDir::new().unwrap();
     let mut fragments = vec![];
     let address_bech32_prefix = sender.address().0;
+    let stake_pool = StakePool::new(&sender);
 
     let config =
         Block0ConfigurationBuilder::default().with_utxos(vec![sender.to_initial_fund(1_000_000)]);
@@ -155,8 +156,6 @@ pub fn explorer_transactions_address_test() {
         .assert_in_block_with_wait(&wait);
 
     fragments.push(&transaction_3);
-
-    let stake_pool = StakePool::new(&sender);
 
     let transaction_4 = fragment_builder.stake_pool_registration(&sender, &stake_pool);
 

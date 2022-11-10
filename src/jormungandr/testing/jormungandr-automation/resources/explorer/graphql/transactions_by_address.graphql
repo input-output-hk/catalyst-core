@@ -1,47 +1,47 @@
 query TransactionsByAddress($bech32: String!){
     tip {
         transactionsByAddress(addressBech32: $bech32) {
-                totalCount
-                edges {
-                        node {
-                            id
-                            blocks{id date{...blockDate}}
-                            inputs{amount address{id}}
-                            outputs{amount address{id}}
-                            certificate{
-                                __typename
-                                ... on StakeDelegation {account{id #delegation {... poolInfo} not implemented yet NPG-2247
-                                                        }
-                                                        pools {... poolInfo}}
-                                ... on OwnerStakeDelegation {pools {... poolInfo}}
-                                ... on PoolRegistration {pool {... poolInfo}
-                                                        startValidity
-                                                        managementThreshold
-                                                        owners
-                                                        operators
-                                                        rewards {fixed ratio {numerator denominator} maxLimit}
-                                                        rewardAccount {id #delegation {... poolInfo} not implemented yet NPG-2247
-                                                        }
-                                                        }
-                                ... on PoolRetirement {poolId retirementTime}
-                                ... on PoolUpdate {poolId startValidity}
-                                ... on VotePlan{voteStart{...blockDate}
-                                                voteEnd{...blockDate}
-                                                committeeEnd{...blockDate}
-                                                payloadType
-                                                proposals {externalId}
+            totalCount
+            edges {
+                node {
+                    id
+                    blocks{id date{...blockDate}}
+                    inputs{amount address{id}}
+                    outputs{amount address{id}}
+                    certificate{
+                        __typename
+                        ... on StakeDelegation {account{id #delegation {... poolInfo} not implemented yet NPG-2247
                                                 }
-                                ... on VoteCast {votePlan proposalIndex}
-                                ... on VoteTally {votePlan}
-                                ... on UpdateProposal {changes { configParams {...configParam}}
-                                                        proposerId{id}
-                                                    }
-                                ... on UpdateVote{proposalId voterId{id}}
-                                ... on MintToken{name}
-                                ... on EvmMapping {address}
-                            }}
-        }
-    }}
+                                                pools {... poolInfo}}
+                        ... on OwnerStakeDelegation {pools {... poolInfo}}
+                        ... on PoolRegistration {pool {... poolInfo}
+                                                startValidity
+                                                managementThreshold
+                                                owners
+                                                operators
+                                                rewards {fixed ratio {numerator denominator} maxLimit}
+                                                rewardAccount {id #delegation {... poolInfo} not implemented yet NPG-2247
+                                                }
+                                                }
+                        ... on PoolRetirement {poolId retirementTime}
+                        ... on PoolUpdate {poolId startValidity}
+                        ... on VotePlan{voteStart{...blockDate}
+                                        voteEnd{...blockDate}
+                                        committeeEnd{...blockDate}
+                                        payloadType
+                                        proposals {externalId}
+                                        }
+                        ... on VoteCast {votePlan proposalIndex}
+                        ... on VoteTally {votePlan}
+                        ... on UpdateProposal {changes { configParams {...configParam}}
+                                                proposerId{id}
+                                            }
+                        ... on UpdateVote{proposalId voterId{id}}
+                        ... on MintToken{name}
+                        ... on EvmMapping {address}
+                    }}
+                }
+        }}
 }
 
 fragment poolInfo on Pool {
@@ -50,7 +50,7 @@ fragment poolInfo on Pool {
         registration{pool{id}}
         retirement{poolId}
     }
-    
+
 fragment blockDate on BlockDate{
                             epoch{id}
                             slot

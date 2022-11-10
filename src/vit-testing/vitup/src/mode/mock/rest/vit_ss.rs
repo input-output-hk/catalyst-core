@@ -14,14 +14,12 @@ use vit_servicing_station_lib::v0::errors::HandleError;
 use vit_servicing_station_lib::v0::result::HandlerResult;
 use warp::{Rejection, Reply};
 
-
 pub async fn get_tags(context: ContextLock) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();
     context.log("get_tags");
     let entries = context.state().voters().tags();
     Ok(warp::reply::json(&entries))
 }
-
 
 pub async fn get_voters_info(
     tag: String,
@@ -79,7 +77,6 @@ pub async fn get_voters_info(
     })))
 }
 
-
 pub async fn get_delegator_info(
     tag: String,
     stake_public_key: String,
@@ -111,7 +108,6 @@ pub async fn get_delegator_info(
         last_updated: *last_updated,
     })))
 }
-
 
 pub async fn get_challenges(context: ContextLock) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();
@@ -227,7 +223,6 @@ pub async fn get_review_by_id(id: i32, context: ContextLock) -> Result<impl Repl
     Ok(HandlerResult(Ok(reviews)))
 }
 
-
 pub async fn get_all_proposals(
     voting_group: String,
     context: ContextLock,
@@ -314,7 +309,6 @@ pub async fn get_fund_by_id(id: i32, context: ContextLock) -> Result<impl Reply,
     Ok(HandlerResult(Ok(fund.clone())))
 }
 
-
 pub async fn get_fund(context: ContextLock) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();
 
@@ -337,7 +331,6 @@ pub async fn get_fund(context: ContextLock) -> Result<impl Reply, Rejection> {
 
     Ok(HandlerResult(Ok(fund_with_next)))
 }
-
 
 pub async fn get_all_funds(context: ContextLock) -> Result<impl Reply, Rejection> {
     let mut context = context.lock().unwrap();

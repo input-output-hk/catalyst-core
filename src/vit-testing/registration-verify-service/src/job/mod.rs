@@ -14,6 +14,7 @@ use iapyx::utils::qr::Secret;
 use iapyx::utils::qr::SecretFromQrCode;
 pub use info::JobOutputInfo;
 use jormungandr_lib::crypto::account::Identifier;
+use scheduler_service_lib::{JobRunner, WrappedPoisonError};
 use snapshot_trigger_service::client::do_snapshot;
 use snapshot_trigger_service::client::get_snapshot_from_history_by_id;
 use snapshot_trigger_service::config::JobParameters;
@@ -34,6 +35,11 @@ impl RegistrationVerifyJobBuilder {
 
     pub fn with_jcli<P: AsRef<Path>>(mut self, jcli: P) -> Self {
         self.job.jcli = jcli.as_ref().to_path_buf();
+        self
+    }
+
+    pub fn with_context(mut self, context: ContextLock) -> Self {
+        self.job.context = Some(context);
         self
     }
 
@@ -74,6 +80,7 @@ pub struct RegistrationVerifyJob {
     working_dir: PathBuf,
     snapshot_job_id: Option<String>,
     network: NetworkType,
+    context: Option<ContextLock>,
 }
 
 impl Default for RegistrationVerifyJobBuilder {
@@ -91,6 +98,7 @@ impl Default for RegistrationVerifyJob {
             working_dir: PathBuf::from_str(".").unwrap(),
             snapshot_job_id: None,
             network: NetworkType::Testnet,
+            context: None,
         }
     }
 }
@@ -140,8 +148,14 @@ impl RegistrationVerifyJob {
         checks.push(Assert::Passed(comment.to_string()));
         key.into()
     }
+}
 
-    pub fn start(&self, request: Request, context: ContextLock) -> Result<JobOutputInfo, Error> {
+impl JobRunner<Request, JobOutputInfo, Error> for RegistrationVerifyJob {
+    fn start(
+        &self,
+        request: Request,
+        _working_dir: PathBuf,
+    ) -> Result<Option<JobOutputInfo>, Error> {
         let jobs_params = JobParameters {
             slot_no: request.slot_no,
             tag: request.tag.clone(),
@@ -157,28 +171,32 @@ impl RegistrationVerifyJob {
 
         let mut checks: Checks = Default::default();
 
-        context
-            .lock()
-            .unwrap()
-            .state_mut()
-            .update_running_step(Step::BuildingAddress);
+        if let Some(context) = &self.context {
+            context
+                .lock()
+                .unwrap()
+                .state_mut()
+                .update_running_step(Step::BuildingAddress);
+        }
 
         let identifier = match self.extract_identifier_from_request(&mut checks, &request) {
             Some(identifier) => identifier,
             None => {
-                return Ok(JobOutputInfo {
+                return Ok(Some(JobOutputInfo {
                     checks,
                     registration,
                     snapshot,
-                });
+                }));
             }
         };
 
-        context
-            .lock()
-            .unwrap()
-            .state_mut()
-            .update_running_step(Step::RunningSnapshot);
+        if let Some(context) = &self.context {
+            context
+                .lock()
+                .unwrap()
+                .state_mut()
+                .update_running_step(Step::RunningSnapshot);
+        }
 
         let snapshot_result = match self.network {
             NetworkType::Testnet => do_snapshot(
@@ -187,10 +205,7 @@ impl RegistrationVerifyJob {
                 self.snapshot_address.to_string(),
             )?,
             NetworkType::Mainnet => {
-                let context = context.lock().unwrap();
-
-                let job_id = context
-                    .config()
+                let job_id = self
                     .snapshot_job_id
                     .as_ref()
                     .ok_or(Error::SnapshotJobIdNotDefined)?;
@@ -207,11 +222,13 @@ impl RegistrationVerifyJob {
         let address_readable =
             AddressReadable::from_address("ca", &identifier.to_address(Discrimination::Production));
 
-        context
-            .lock()
-            .unwrap()
-            .state_mut()
-            .update_running_step(Step::VerifyingRegistration);
+        if let Some(context) = &self.context {
+            context
+                .lock()
+                .unwrap()
+                .state_mut()
+                .update_running_step(Step::VerifyingRegistration);
+        }
 
         match snapshot_result.by_identifier(&identifier) {
             Some(entry) => {
@@ -241,11 +258,11 @@ impl RegistrationVerifyJob {
             }
         }
         checks.calculate_passed();
-        Ok(JobOutputInfo {
+        Ok(Some(JobOutputInfo {
             checks,
             registration,
             snapshot,
-        })
+        }))
     }
 }
 
@@ -265,4 +282,10 @@ pub enum Error {
     SnapshotTriggerService(#[from] snapshot_trigger_service::client::Error),
     #[error("in mainnet mode snapshot is not run on each request. Can't find job id of last snapshot job")]
     SnapshotJobIdNotDefined,
+    #[error("cannot read configuration")]
+    CannotReadConfiguration(#[from] crate::config::Error),
+    #[error(transparent)]
+    Scheduler(#[from] scheduler_service_lib::Error),
+    #[error(transparent)]
+    Poison(#[from] WrappedPoisonError),
 }

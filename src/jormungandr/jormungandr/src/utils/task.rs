@@ -86,11 +86,11 @@ pub enum Input<Msg> {
 
 impl Services {
     /// create a new set of services
-    pub fn new() -> Self {
+    pub fn new(runtime: tokio::runtime::Runtime) -> Self {
         Services {
             services: Vec::new(),
             finish_listener: FuturesUnordered::new(),
-            runtime: Runtime::new().unwrap(),
+            runtime,
         }
     }
 
@@ -220,12 +220,6 @@ impl Services {
                     kind = name
                 )))
         })
-    }
-}
-
-impl Default for Services {
-    fn default() -> Self {
-        Self::new()
     }
 }
 

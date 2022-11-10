@@ -49,7 +49,8 @@ impl RegistrationServiceStarter {
         mut self,
         temp_dir: &TempDir,
     ) -> Result<RegistrationServiceController, Error> {
-        self.configuration.port = get_available_port();
+        let address = self.configuration.address_mut();
+        address.set_port(get_available_port());
         self.start(temp_dir)
     }
 
@@ -78,7 +79,7 @@ impl RegistrationServiceStarter {
         let mut current_attempt = 1;
         loop {
             if current_attempt > attempts {
-                return Err(Error::Bootstrap(self.configuration.port));
+                return Err(Error::Bootstrap(self.configuration.address().port()));
             }
 
             if controller.client().is_up() {

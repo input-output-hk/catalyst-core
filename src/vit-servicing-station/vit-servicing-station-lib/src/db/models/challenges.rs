@@ -1,5 +1,8 @@
 use crate::db::models::proposals::ChallengeType;
-use crate::db::{schema::challenges, Db};
+use crate::db::schema::challenges;
+use diesel::backend::Backend;
+use diesel::sql_types::{BigInt, Integer, Text};
+use diesel::types::FromSql;
 use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 
@@ -30,7 +33,12 @@ pub struct Challenge {
     pub highlights: Option<ChallengeHighlights>,
 }
 
-impl Queryable<challenges::SqlType, Db> for Challenge {
+impl<DB: Backend> Queryable<challenges::SqlType, DB> for Challenge
+where
+    i32: FromSql<Integer, DB>,
+    i64: FromSql<BigInt, DB>,
+    String: FromSql<Text, DB>,
+{
     type Row = (
         // 0 -> internal_id
         i32,
@@ -104,11 +112,11 @@ impl Insertable<challenges::table> for Challenge {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::db::{DbConnection, DbConnectionPool};
-    use diesel::{
-        r2d2::{ConnectionManager, PooledConnection},
-        RunQueryDsl,
+    use crate::{
+        db::{DbConnection, DbConnectionPool},
+        q,
     };
+    use diesel::RunQueryDsl;
 
     pub fn get_test_challenge_with_fund_id(fund_id: i32) -> Challenge {
         const CHALLENGE_ID: i32 = 9001;
@@ -132,13 +140,13 @@ pub mod test {
         populate_db_with_challenge_conn(challenge, &connection);
     }
 
-    pub fn populate_db_with_challenge_conn(
-        challenge: &Challenge,
-        connection: &PooledConnection<ConnectionManager<DbConnection>>,
-    ) {
-        diesel::insert_into(challenges::table)
-            .values(challenge.clone().values())
-            .execute(connection)
-            .unwrap();
+    pub fn populate_db_with_challenge_conn(challenge: &Challenge, connection: &DbConnection) {
+        q!(
+            connection,
+            diesel::insert_into(challenges::table)
+                .values(challenge.clone().values())
+                .execute(connection)
+        )
+        .unwrap();
     }
 }

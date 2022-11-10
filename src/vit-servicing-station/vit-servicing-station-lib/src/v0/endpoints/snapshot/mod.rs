@@ -172,29 +172,16 @@ pub async fn update_from_raw_snapshot(
             .map_err(|e| HandleError::InternalError(e.to_string()))?
             .to_full_snapshot_info();
 
-    update_from_shanpshot_info(tag, snapshot, update_timestamp, context).await
+    update_from_snapshot_info(tag, snapshot, update_timestamp, context).await
 }
 
-#[tracing::instrument(skip(snapshot, context))]
-pub async fn update_from_shanpshot_info(
+pub fn convert_snapshot_to_contrib(
     tag: String,
     snapshot: impl IntoIterator<Item = SnapshotInfo>,
-    update_timestamp: i64,
-    context: SharedContext,
-) -> Result<(), HandleError> {
-    let pool = &context.read().await.db_connection_pool;
-
-    put_snapshot(
-        models::snapshot::Snapshot {
-            tag: tag.clone(),
-            last_updated: update_timestamp,
-        },
-        pool,
-    )?;
-
+) -> (Vec<Voter>, Vec<Contribution>) {
     let mut contributions = Vec::new();
     let mut voters = Vec::new();
-    for entry in snapshot.into_iter() {
+    for entry in snapshot {
         contributions.extend(entry.contributions.into_iter().map(|contribution| {
             Contribution {
                 stake_public_key: contribution.stake_public_key,
@@ -218,6 +205,28 @@ pub async fn update_from_shanpshot_info(
             snapshot_tag: tag.clone(),
         });
     }
+    (voters, contributions)
+}
+
+#[tracing::instrument(skip(snapshot, context))]
+pub async fn update_from_snapshot_info(
+    tag: String,
+    snapshot: impl IntoIterator<Item = SnapshotInfo>,
+    update_timestamp: i64,
+    context: SharedContext,
+) -> Result<(), HandleError> {
+    let pool = &context.read().await.db_connection_pool;
+
+    put_snapshot(
+        models::snapshot::Snapshot {
+            tag: tag.clone(),
+            last_updated: update_timestamp,
+        },
+        pool,
+    )?;
+
+    let (voters, contributions) = convert_snapshot_to_contrib(tag, snapshot);
+
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     batch_put_voters(&voters, &db_conn)?;
     batch_put_contributions(&contributions, &db_conn)?;
@@ -228,7 +237,7 @@ pub async fn update_from_shanpshot_info(
 mod test {
     use super::*;
     use crate::db::migrations::initialize_db_with_migration;
-    use crate::v0::context::test::new_in_memmory_db_test_shared_context;
+    use crate::v0::context::test::new_db_test_shared_context;
     use jormungandr_lib::crypto::account::Identifier;
     use snapshot_lib::registration::{Delegations, VotingRegistration};
     use snapshot_lib::{KeyContribution, SnapshotInfo, VoterHIR};
@@ -238,7 +247,7 @@ mod test {
 
     #[tokio::test]
     pub async fn test_snapshot() {
-        let context = new_in_memmory_db_test_shared_context();
+        let context = new_db_test_shared_context();
         let db_conn = &context.read().await.db_connection_pool.get().unwrap();
         initialize_db_with_migration(db_conn);
 
@@ -361,7 +370,7 @@ mod test {
             )
             .collect::<Vec<_>>();
 
-        update_from_shanpshot_info(
+        update_from_snapshot_info(
             TAG1.to_string(),
             content_a.clone(),
             UPDATE_TIME1,
@@ -402,7 +411,7 @@ mod test {
             )
             .collect::<Vec<_>>();
 
-        update_from_shanpshot_info(
+        update_from_snapshot_info(
             TAG2.to_string(),
             [content_a, content_b].concat(),
             UPDATE_TIME2,
@@ -519,7 +528,7 @@ mod test {
 
         const UPDATE_TIME1: i64 = 0;
 
-        let context = new_in_memmory_db_test_shared_context();
+        let context = new_db_test_shared_context();
         let db_conn = &context.read().await.db_connection_pool.get().unwrap();
         initialize_db_with_migration(db_conn);
 
@@ -547,7 +556,7 @@ mod test {
             },
         ];
 
-        update_from_shanpshot_info(
+        update_from_snapshot_info(
             TAG1.to_string(),
             inputs.clone(),
             UPDATE_TIME1,
@@ -555,7 +564,7 @@ mod test {
         )
         .await
         .unwrap();
-        update_from_shanpshot_info(
+        update_from_snapshot_info(
             TAG2.to_string(),
             inputs.clone(),
             UPDATE_TIME1,
@@ -586,7 +595,7 @@ mod test {
                 .collect::<Vec<_>>()
         );
 
-        super::update_from_shanpshot_info(
+        super::update_from_snapshot_info(
             TAG1.to_string(),
             inputs[0..1].to_vec(),
             UPDATE_TIME1,
@@ -745,7 +754,7 @@ mod test {
         })
         .unwrap();
 
-        let context = new_in_memmory_db_test_shared_context();
+        let context = new_db_test_shared_context();
         let db_conn = &context.read().await.db_connection_pool.get().unwrap();
         initialize_db_with_migration(db_conn);
 
@@ -882,7 +891,7 @@ mod test {
         })
         .unwrap();
 
-        let context = new_in_memmory_db_test_shared_context();
+        let context = new_db_test_shared_context();
         let db_conn = &context.read().await.db_connection_pool.get().unwrap();
         initialize_db_with_migration(db_conn);
 

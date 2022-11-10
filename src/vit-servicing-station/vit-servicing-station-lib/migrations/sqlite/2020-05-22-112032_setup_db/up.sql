@@ -47,6 +47,7 @@ create table proposals
 );
 
 create table proposals_voteplans (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     proposal_id VARCHAR NOT NULL,
     chain_voteplan_id VARCHAR NOT NULL,
     chain_proposal_index BIGINT NOT NULL,
@@ -135,14 +136,13 @@ create table groups (
 
 
 create table votes (
-    "fragment_id" TEXT,
-    "caster" TEXT,
-    "proposal" INTEGER,
-    "voteplan_id" TEXT,
-    "time" REAL,
-    "choice" TEXT,
-    "raw_fragment" TEXT,
-    PRIMARY KEY("fragment_id")
+    fragment_id TEXT PRIMARY KEY NOT NULL,
+    caster TEXT NOT NULL,
+    proposal INTEGER NOT NULL,
+    voteplan_id TEXT NOT NULL,
+    time REAL NOT NULL,
+    choice SMALLINT,
+    raw_fragment TEXT NOT NULL
 );
 
 create table snapshots (

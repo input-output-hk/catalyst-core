@@ -91,9 +91,6 @@ pub fn explorer_transactions_not_existing_address_test() {
     ExplorerVerifier::assert_transactions_address(HashMap::new(), explorer_transactions_by_address);
 }
 
-// BUG NPG-2869
-// TODO comment out the fields (inputs,outputs, certificate) in transaction_by_address.graphql when the bug is fixed
-// add the verifier for those fields (inputs,outputs,certificate) in explorer_verifier
 #[test]
 pub fn explorer_transactions_address_test() {
     let jcli: JCli = Default::default();

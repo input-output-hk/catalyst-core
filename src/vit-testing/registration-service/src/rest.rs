@@ -1,18 +1,16 @@
-use crate::context::{Context, ContextLock};
-use crate::file_lister;
+use crate::context::ContextLock;
 use crate::request::Request;
 use futures::FutureExt;
 use futures::{channel::mpsc, StreamExt};
 use jortestkit::web::api_token::TokenError;
-use jortestkit::web::api_token::{APIToken, APITokenManager, API_TOKEN_HEADER};
+use scheduler_service_lib::{FileListerError, ServerStopper};
 use std::convert::Infallible;
 use std::sync::Arc;
-use std::sync::PoisonError;
 use thiserror::Error;
+use tokio::sync::RwLock;
 use uuid::Uuid;
 use warp::{http::StatusCode, reject::Reject, Filter, Rejection, Reply};
 
-impl Reject for file_lister::Error {}
 impl Reject for crate::context::Error {}
 
 #[allow(clippy::large_enum_variant)]
@@ -28,25 +26,14 @@ pub enum Error {
     Token(#[from] TokenError),
     #[error(transparent)]
     Send(#[from] futures::channel::mpsc::TrySendError<()>),
-}
-
-impl<T> From<PoisonError<T>> for Error {
-    fn from(_err: PoisonError<T>) -> Self {
-        Self::Poison
-    }
+    #[error("cannot find job id: {0}")]
+    CannotFindJobByStatus(Uuid),
+    #[error("no working folder defined")]
+    NoWorkingFolder,
 }
 
 impl Reject for Error {}
 impl Reject for crate::cardano::Error {}
-
-#[derive(Clone)]
-pub struct ServerStopper(mpsc::Sender<()>);
-
-impl ServerStopper {
-    pub fn stop(&self) -> Result<(), Error> {
-        self.0.clone().try_send(()).map_err(Into::into)
-    }
-}
 
 fn job_prameters_json_body() -> impl Filter<Extract = (Request,), Error = warp::Rejection> + Clone {
     warp::body::content_length_limit(1024 * 16).and(warp::body::json())
@@ -56,43 +43,32 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
     let (stopper_tx, stopper_rx) = mpsc::channel::<()>(0);
     let stopper_rx = stopper_rx.into_future().map(|_| ());
     context
-        .lock()?
+        .lock()
+        .unwrap()
         .set_server_stopper(ServerStopper(stopper_tx));
 
-    let is_token_enabled = context.lock()?.api_token().is_some();
-    let address = *context.lock()?.address();
-    let working_dir = context.lock()?.working_directory().clone();
+    let is_token_enabled = context.lock().unwrap().api_token().is_some();
+    let address = *context.lock().unwrap().address();
+    let working_dir = context
+        .lock()
+        .unwrap()
+        .config()
+        .working_directory()
+        .clone()
+        .ok_or(Error::NoWorkingFolder)?;
+    let scheduler_context = context.lock().unwrap().into_scheduler_context();
+    let shared_scheduler_context = Arc::new(RwLock::new(scheduler_context.clone()));
     let with_context = warp::any().map(move || context.clone());
 
     let root = warp::path!("api" / ..).boxed();
 
-    let api_token_filter = if is_token_enabled {
-        warp::header::header(API_TOKEN_HEADER)
-            .and(with_context.clone())
-            .and_then(authorize_token)
-            .and(warp::any())
-            .untuple_one()
-            .boxed()
-    } else {
-        warp::any().boxed()
-    };
-
-    let files = {
-        let root = warp::path!("files" / ..).boxed();
-
-        let get = warp::path("get").and(warp::fs::dir(working_dir));
-        let list = warp::path!("list")
-            .and(warp::get())
-            .and(with_context.clone())
-            .and_then(files_handler);
-
-        root.and(get.or(list)).boxed()
-    };
-
-    let health = warp::path!("health")
-        .and(warp::get())
-        .and_then(health_handler)
-        .boxed();
+    let api_token_filter = scheduler_service_lib::rest::token_api_filter(
+        shared_scheduler_context.clone(),
+        is_token_enabled,
+    );
+    let files =
+        scheduler_service_lib::rest::files_filter(shared_scheduler_context.clone(), working_dir);
+    let health = scheduler_service_lib::rest::health_filter();
 
     let job = {
         let root = warp::path!("job" / ..).boxed();
@@ -146,7 +122,6 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
         .boxed();
 
     let server = warp::serve(api);
-
     let (_, server_fut) = server.bind_with_graceful_shutdown(address, stopper_rx);
     server_fut.await;
     Ok(())
@@ -158,7 +133,13 @@ pub async fn status_handler(id: String, context: ContextLock) -> Result<impl Rep
         .lock()
         .map_err(|_e| Error::Poison)
         .map_err(warp::reject::custom)?;
-    Ok(context_lock.status_by_id(uuid)).map(|r| warp::reply::json(&r))
+
+    let status = context_lock.state();
+    if status.has_id(&uuid) {
+        Err(Error::CannotFindJobByStatus(uuid)).map_err(warp::reject::custom)
+    } else {
+        Ok(status).map(|r| warp::reply::json(&r))
+    }
 }
 
 pub async fn network_tip_handler(context: ContextLock) -> Result<impl Reply, Rejection> {
@@ -195,7 +176,11 @@ pub async fn submit_transaction_handler(
         .lock()
         .map_err(|_e| Error::Poison)
         .map_err(warp::reject::custom)?;
-    let working_dir = context_lock.config().result_dir.clone();
+    let working_dir = context_lock
+        .config()
+        .working_directory()
+        .clone()
+        .ok_or(Error::NoWorkingFolder)?;
     context_lock
         .cardano_cli_executor()
         .transaction()
@@ -211,24 +196,12 @@ pub async fn job_new_handler(
         .lock()
         .map_err(|_e| Error::Poison)
         .map_err(warp::reject::custom)?;
-    let id = context_lock.new_run(request)?;
+    let id = context_lock.state_mut().new_run_requested(request)?;
     Ok(id).map(|r| warp::reply::json(&r))
 }
 
-pub async fn health_handler() -> Result<impl Reply, Rejection> {
-    Ok(warp::reply())
-}
-
-pub async fn files_handler(context: ContextLock) -> Result<impl Reply, Rejection> {
-    let context_lock = context
-        .lock()
-        .map_err(|_e| Error::Poison)
-        .map_err(warp::reject::custom)?;
-    Ok(file_lister::dump_json(context_lock.working_directory())?).map(|r| warp::reply::json(&r))
-}
-
 async fn report_invalid(r: Rejection) -> Result<impl Reply, Infallible> {
-    if let Some(e) = r.find::<file_lister::Error>() {
+    if let Some(e) = r.find::<FileListerError>() {
         Ok(warp::reply::with_status(
             e.to_string(),
             StatusCode::BAD_REQUEST,
@@ -239,28 +212,4 @@ async fn report_invalid(r: Rejection) -> Result<impl Reply, Infallible> {
             StatusCode::INTERNAL_SERVER_ERROR,
         ))
     }
-}
-
-pub async fn authorize_token(
-    token: String,
-    context: Arc<std::sync::Mutex<Context>>,
-) -> Result<(), Rejection> {
-    let context = context
-        .lock()
-        .map_err(|_e| Error::Poison)
-        .map_err(warp::reject::custom)?;
-
-    let api_token = APIToken::from_string(token).map_err(warp::reject::custom)?;
-
-    if context.api_token().is_none() {
-        return Ok(());
-    }
-
-    let manager =
-        APITokenManager::new(context.api_token().unwrap()).map_err(warp::reject::custom)?;
-
-    if !manager.is_token_valid(api_token) {
-        return Err(warp::reject::custom(TokenError::UnauthorizedToken));
-    }
-    Ok(())
 }

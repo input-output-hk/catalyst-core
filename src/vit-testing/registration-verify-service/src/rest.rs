@@ -1,14 +1,14 @@
-use crate::context::{Context, ContextLock};
+use crate::context::ContextLock;
 use crate::multipart::parse_multipart;
 use futures::FutureExt;
 use futures::{channel::mpsc, StreamExt};
-use jortestkit::web::api_token::TokenError;
-use jortestkit::web::api_token::{APIToken, APITokenManager, API_TOKEN_HEADER};
+use scheduler_service_lib::ServerStopper;
 use serde::Serialize;
 use snapshot_trigger_service::client::rest::SnapshotRestClient;
 use std::convert::Infallible;
 use std::sync::Arc;
 use thiserror::Error;
+use tokio::sync::RwLock;
 use uuid::Uuid;
 use warp::multipart::FormData;
 use warp::{http::StatusCode, reject::Reject, Filter, Rejection, Reply};
@@ -28,18 +28,11 @@ pub enum Error {
     NoSnapshotJobIdCached,
     #[error("snapshot error")]
     SnapshotError(#[from] snapshot_trigger_service::client::rest::Error),
+    #[error("cannot find job by id: {0}")]
+    CannotFindJobByStatus(Uuid),
 }
 
 impl Reject for Error {}
-
-#[derive(Clone)]
-pub struct ServerStopper(mpsc::Sender<()>);
-
-impl ServerStopper {
-    pub fn stop(&self) {
-        self.0.clone().try_send(()).unwrap();
-    }
-}
 
 pub async fn start_rest_server(context: ContextLock) {
     let (stopper_tx, stopper_rx) = mpsc::channel::<()>(0);
@@ -49,18 +42,14 @@ pub async fn start_rest_server(context: ContextLock) {
         .unwrap()
         .set_server_stopper(ServerStopper(stopper_tx));
 
-    let is_client_token_enabled = context.lock().unwrap().api_token().is_some();
-    let is_admin_token_enabled = context.lock().unwrap().admin_token().is_some();
-
+    let scheduler_context = context.lock().unwrap().into_scheduler_context();
+    let shared_scheduler_context = Arc::new(RwLock::new(scheduler_context.clone()));
     let address = *context.lock().unwrap().address();
     let with_context = warp::any().map(move || context.clone());
 
     let root = warp::path!("api" / ..).boxed();
 
-    let health = warp::path!("health")
-        .and(warp::get())
-        .and_then(health_handler)
-        .boxed();
+    let health = scheduler_service_lib::rest::health_filter();
 
     let job = {
         let root = warp::path!("job" / ..).boxed();
@@ -78,16 +67,10 @@ pub async fn start_rest_server(context: ContextLock) {
             .and_then(job_status_handler)
             .boxed();
 
-        let api_token_filter = if is_client_token_enabled {
-            warp::header::header(API_TOKEN_HEADER)
-                .and(with_context.clone())
-                .and_then(authorize_token)
-                .and(warp::any())
-                .untuple_one()
-                .boxed()
-        } else {
-            warp::any().boxed()
-        };
+        let api_token_filter = scheduler_service_lib::rest::token_api_filter(
+            shared_scheduler_context.clone(),
+            scheduler_context.api_token().is_some(),
+        );
 
         root.and(api_token_filter).and(status.or(new)).boxed()
     };
@@ -101,16 +84,10 @@ pub async fn start_rest_server(context: ContextLock) {
             .and_then(snapshot_info_handler)
             .boxed();
 
-        let api_token_filter = if is_client_token_enabled {
-            warp::header::header(API_TOKEN_HEADER)
-                .and(with_context.clone())
-                .and_then(authorize_token)
-                .and(warp::any())
-                .untuple_one()
-                .boxed()
-        } else {
-            warp::any().boxed()
-        };
+        let api_token_filter = scheduler_service_lib::rest::token_api_filter(
+            shared_scheduler_context.clone(),
+            scheduler_context.api_token().is_some(),
+        );
 
         root.and(api_token_filter).and(status).boxed()
     };
@@ -124,16 +101,10 @@ pub async fn start_rest_server(context: ContextLock) {
             .and_then(update_job_id_handler)
             .boxed();
 
-        let admin_token_filter = if is_admin_token_enabled {
-            warp::header::header(API_TOKEN_HEADER)
-                .and(with_context.clone())
-                .and_then(authorize_admin_token)
-                .and(warp::any())
-                .untuple_one()
-                .boxed()
-        } else {
-            warp::any().boxed()
-        };
+        let admin_token_filter = scheduler_service_lib::rest::token_admin_filter(
+            shared_scheduler_context.clone(),
+            scheduler_context.admin_token().is_some(),
+        );
 
         root.and(admin_token_filter).and(update).boxed()
     };
@@ -154,7 +125,12 @@ pub async fn job_status_handler(id: String, context: ContextLock) -> Result<impl
     let context_lock = context
         .lock()
         .map_err(|e| Error::CannotGetContext(e.to_string()))?;
-    Ok(context_lock.status_by_id(uuid)).map(|r| warp::reply::json(&r))
+    let status = context_lock.state();
+    if status.has_id(&uuid) {
+        Err(Error::CannotFindJobByStatus(uuid)).map_err(warp::reject::custom)
+    } else {
+        Ok(status).map(|r| warp::reply::json(&r))
+    }
 }
 
 pub async fn update_job_id_handler(
@@ -191,12 +167,8 @@ pub async fn job_new_handler(
     let mut context_lock = context
         .lock()
         .map_err(|e| Error::CannotGetContext(e.to_string()))?;
-    let id = context_lock.new_run(request)?;
+    let id = context_lock.state_mut().new_run_requested(request)?;
     Ok(id).map(|r| warp::reply::json(&r))
-}
-
-pub async fn health_handler() -> Result<impl Reply, Rejection> {
-    Ok(warp::reply())
 }
 
 async fn report_invalid(r: Rejection) -> Result<impl Reply, Infallible> {
@@ -214,49 +186,6 @@ async fn report_invalid(r: Rejection) -> Result<impl Reply, Infallible> {
     });
 
     Ok(warp::reply::with_status(json, code))
-}
-
-pub async fn authorize_token(
-    token: String,
-    context: Arc<std::sync::Mutex<Context>>,
-) -> Result<(), Rejection> {
-    let api_token = APIToken::from_string(token).map_err(warp::reject::custom)?;
-
-    if context.lock().unwrap().api_token().is_none() {
-        return Ok(());
-    }
-
-    let manager = APITokenManager::new(context.lock().unwrap().api_token().unwrap())
-        .map_err(warp::reject::custom)?;
-
-    if !manager.is_token_valid(api_token) {
-        return Err(warp::reject::custom(TokenError::UnauthorizedToken));
-    }
-    Ok(())
-}
-
-pub async fn authorize_admin_token(
-    admin_token: String,
-    context: Arc<std::sync::Mutex<Context>>,
-) -> Result<(), Rejection> {
-    let admin_token = APIToken::from_string(admin_token).map_err(warp::reject::custom)?;
-
-    if context
-        .lock()
-        .map_err(|e| Error::CannotGetContext(e.to_string()))?
-        .admin_token()
-        .is_none()
-    {
-        return Ok(());
-    }
-
-    let manager = APITokenManager::new(context.lock().unwrap().admin_token().unwrap())
-        .map_err(warp::reject::custom)?;
-
-    if !manager.is_token_valid(admin_token) {
-        return Err(warp::reject::custom(TokenError::UnauthorizedToken));
-    }
-    Ok(())
 }
 
 #[derive(Serialize)]

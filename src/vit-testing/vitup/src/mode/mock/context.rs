@@ -1,6 +1,7 @@
 pub type ContextLock = Arc<Mutex<Context>>;
 use super::{mock_state::MockState, Configuration, Logger};
 use crate::config::Config;
+use crate::mode::mock::rest::reject::ForcedErrorCode;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -86,6 +87,19 @@ impl Context {
     #[allow(dead_code)]
     pub fn set_api_token(&mut self, api_token: String) {
         self.config.token = Some(api_token);
+    }
+
+    pub fn check_if_rest_available(&mut self) -> Option<ForcedErrorCode> {
+        if !self.available() {
+            let code = self.state().error_code;
+            self.log(&format!(
+                "unavailability mode is on. Rejecting with error code: {}",
+                code
+            ));
+            Some(ForcedErrorCode { code })
+        } else {
+            None
+        }
     }
 }
 

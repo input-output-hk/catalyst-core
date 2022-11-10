@@ -11,7 +11,7 @@ license = "MIT OR Apache-2.0"
 async-trait = "0.1.33"
 base64 = "0.12.1"
 time = { version = "0.3", features = ["parsing", "formatting"] }
-diesel = { version = "1.4.5", features = ["sqlite", "r2d2", "64-column-tables"] }
+diesel = { version = "1.4.5", features = ["postgres", "sqlite", "r2d2", "64-column-tables"] }
 diesel_migrations = "1.4.0"
 dotenv = "0.15"
 itertools = "0.9.0"
@@ -22,6 +22,7 @@ strum = "0.24"
 strum_macros = "0.24"
 simplelog = "0.8.0"
 structopt = "0.3.14"
+r2d2 = "0.8.10"
 thiserror = "1.0.30"
 tokio = { version = "1.18.0", features = ["macros", "signal", "rt", "fs", "sync"] }
 tracing = "0.1.34"

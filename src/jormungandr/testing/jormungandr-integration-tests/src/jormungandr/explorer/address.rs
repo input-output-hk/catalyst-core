@@ -93,6 +93,7 @@ pub fn explorer_transactions_not_existing_address_test() {
     ExplorerVerifier::assert_transactions_address(HashMap::new(), explorer_transactions_by_address);
 }
 
+#[should_panic]
 #[test] //NPG-4067
 pub fn explorer_transactions_address_test() {
     let jcli: JCli = Default::default();

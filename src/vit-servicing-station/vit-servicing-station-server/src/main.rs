@@ -1,13 +1,20 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use structopt::StructOpt;
 
+use opentelemetry_otlp::WithExportConfig;
+use structopt::StructOpt;
 use tracing::{error, info};
 use tracing_appender::non_blocking::WorkerGuard;
+use tracing_subscriber::filter::LevelFilter;
+use vit_servicing_station_lib::server::exit_codes::ApplicationExitCode;
 use vit_servicing_station_lib::{
-    db, server, server::exit_codes::ApplicationExitCode, server::settings as server_settings,
-    server::settings::ServiceSettings, v0,
+    db,
+    server::{
+        self,
+        settings::{self as server_settings, ServiceSettings},
+    },
+    v0,
 };
 
 fn check_and_build_proper_path(path: &Path) -> std::io::Result<()> {
@@ -25,11 +32,60 @@ fn check_and_build_proper_path(path: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
+struct LogGuard {
+    _nonblocking_worker_guard: WorkerGuard,
+}
+
+impl Drop for LogGuard {
+    fn drop(&mut self) {
+        tracing::trace!("Shutting down opentelemetry trace provider");
+        opentelemetry::global::shutdown_tracer_provider();
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+enum ConfigTracingError {
+    #[error("io error: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("failed to initialize tracing subscriber: {0}")]
+    InitSubscriber(#[from] tracing_subscriber::util::TryInitError),
+    #[error("failed to install opentelemetry pipeline")]
+    InstallOpenTelemetryPipeLine(#[from] opentelemetry::trace::TraceError),
+}
+
 fn config_tracing(
     level: server_settings::LogLevel,
     pathbuf: Option<PathBuf>,
-) -> Result<WorkerGuard, std::io::Error> {
-    if let Some(path) = pathbuf {
+    trace_collector_endpoint: Option<url::Url>,
+) -> Result<LogGuard, ConfigTracingError> {
+    use tracing_subscriber::prelude::*;
+
+    let otel_layer = if let Some(endpoint) = trace_collector_endpoint {
+        let otel_tracer = opentelemetry_otlp::new_pipeline()
+            .tracing()
+            .with_exporter(
+                opentelemetry_otlp::new_exporter()
+                    .tonic()
+                    .with_endpoint(endpoint),
+            )
+            .with_trace_config(opentelemetry::sdk::trace::config().with_resource(
+                opentelemetry::sdk::Resource::new(vec![opentelemetry::KeyValue::new(
+                    opentelemetry_semantic_conventions::resource::SERVICE_NAME,
+                    "jormungandr",
+                )]),
+            ))
+            .install_batch(opentelemetry::runtime::Tokio)?;
+
+        Some(tracing_opentelemetry::layer().with_tracer(otel_tracer))
+    } else {
+        None
+    };
+
+    let subscriber = tracing_subscriber::registry()
+        .with(LevelFilter::from(level))
+        .with(otel_layer);
+
+    let guard = if let Some(path) = pathbuf {
         // check path integrity
         // we try opening the file since tracing appender would just panic instead of
         // returning an error
@@ -54,86 +110,105 @@ fn config_tracing(
         );
 
         let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
-        tracing_subscriber::fmt()
-            .with_writer(non_blocking)
-            .with_max_level(level)
-            .init();
-        Ok(guard)
+
+        let layer = tracing_subscriber::fmt::layer().with_writer(non_blocking);
+
+        subscriber.with(layer).try_init()?;
+
+        guard
     } else {
         let (non_blocking, guard) = tracing_appender::non_blocking(std::io::stdout());
-        tracing_subscriber::fmt()
-            .with_writer(non_blocking)
-            .with_max_level(level)
-            .init();
-        Ok(guard)
-    }
+
+        let layer = tracing_subscriber::fmt::layer().with_writer(non_blocking);
+
+        subscriber.with(layer).try_init()?;
+
+        guard
+    };
+
+    Ok(LogGuard {
+        _nonblocking_worker_guard: guard,
+    })
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> ApplicationExitCode {
     // load settings from command line (defaults to env variables)
     let mut settings: ServiceSettings = ServiceSettings::from_args();
 
     // load settings from file if specified
     if let Some(settings_file) = &settings.in_settings_file {
-        let in_file_settings = server_settings::load_settings_from_file(settings_file)
-            .unwrap_or_else(|e| {
+        let in_file_settings = match server_settings::load_settings_from_file(settings_file) {
+            Ok(s) => s,
+            Err(e) => {
                 error!("Error loading settings from file {}, {}", settings_file, e);
-                std::process::exit(ApplicationExitCode::LoadSettingsError.into())
-            });
+                return ApplicationExitCode::LoadSettingsError;
+            }
+        };
+
         // merge input file settings override by cli arguments
         settings = in_file_settings.override_from(&settings);
     }
 
     // dump settings and exit if specified
     if let Some(settings_file) = &settings.out_settings_file {
-        server_settings::dump_settings_to_file(settings_file, &settings).unwrap_or_else(|e| {
+        if let Err(e) = server_settings::dump_settings_to_file(settings_file, &settings) {
             error!("Error writing settings to file {}: {}", settings_file, e);
-            std::process::exit(ApplicationExitCode::WriteSettingsError.into())
-        });
-        std::process::exit(0);
+            return ApplicationExitCode::WriteSettingsError;
+        }
+
+        return ApplicationExitCode::Success;
     }
 
     // setup logging
-    let _guard = config_tracing(
+    let _guard = match config_tracing(
         settings.log.log_level.unwrap_or_default(),
         settings.log.log_output_path.clone(),
-    )
-    .unwrap_or_else(|e| {
-        error!("Error setting up logging: {}", e);
-        std::process::exit(ApplicationExitCode::LoadSettingsError.into())
-    });
+        settings.log.trace_collector_endpoint.clone(),
+    ) {
+        Ok(g) => g,
+        Err(e) => {
+            error!("Error setting up logging: {}", e);
+            return ApplicationExitCode::LoadSettingsError;
+        }
+    };
 
     // Check db file exists (should be here only for current sqlite db backend)
     if !std::path::Path::new(&settings.db_url).exists() {
         error!("DB file {} not found.", &settings.db_url);
-        std::process::exit(ApplicationExitCode::DbConnectionError.into())
+        return ApplicationExitCode::DbConnectionError;
     }
     // load db pool
-    let db_pool = db::load_db_connection_pool(&settings.db_url).unwrap_or_else(|e| {
-        error!("Error connecting to database: {}", e);
-        std::process::exit(ApplicationExitCode::DbConnectionError.into())
-    });
+    let db_pool = match db::load_db_connection_pool(&settings.db_url) {
+        Ok(d) => d,
+        Err(e) => {
+            error!("Error connecting to database: {}", e);
+            return ApplicationExitCode::DbConnectionError;
+        }
+    };
 
     let paths: Vec<PathBuf> = if let Some(single_block0_path) = &settings.block0_path {
         vec![PathBuf::from_str(single_block0_path).unwrap()]
     } else {
-        fs::read_dir(settings.block0_paths.as_ref().unwrap_or_else(|| {
-            std::process::exit(ApplicationExitCode::EmptyBlock0FolderError.into())
-        }))
-        .unwrap()
-        .filter_map(|path| {
-            let path = path.unwrap().path();
-            match path.extension() {
-                Some(p) if p == "bin" => Some(path.to_path_buf()),
-                _ => None,
-            }
-        })
-        .collect()
+        let block0_paths = match settings.block0_paths.as_ref() {
+            Some(p) => p,
+            None => return ApplicationExitCode::EmptyBlock0FolderError,
+        };
+
+        fs::read_dir(block0_paths)
+            .unwrap()
+            .filter_map(|path| {
+                let path = path.unwrap().path();
+                match path.extension() {
+                    Some(p) if p == "bin" => Some(path.to_path_buf()),
+                    _ => None,
+                }
+            })
+            .collect()
     };
 
     if paths.is_empty() {
-        std::process::exit(ApplicationExitCode::EmptyBlock0FolderError.into());
+        return ApplicationExitCode::EmptyBlock0FolderError;
     }
 
     let context = v0::context::new_shared_context(db_pool, paths, &settings.service_version);
@@ -146,5 +221,6 @@ async fn main() {
     );
 
     // run server with settings
-    server::start_server(app, Some(settings)).await
+    server::start_server(app, Some(settings)).await;
+    ApplicationExitCode::Success
 }

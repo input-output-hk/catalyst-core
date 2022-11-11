@@ -39,7 +39,7 @@ jobs:
         run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
       - name: Install deps
         run:
-          sudo apt install -y protobuf-compiler libssl-dev libpq-dev
+          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev
 
       - name: Run tests
         uses: actions-rs/toolchain@v1

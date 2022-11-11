@@ -65,4 +65,4 @@ jobs:
         with:
           toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
           components: rustfmt, clippy
-      - run: scripts/fmt.sh
+      - run: scripts/check-fmt.sh

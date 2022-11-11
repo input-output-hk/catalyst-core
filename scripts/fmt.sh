@@ -1,6 +1,6 @@
 #! /bin/sh
 set -eux
 
-cargo fmt -- --check
-cargo clippy
-cargo clippy --all-features
+cargo fmt
+cargo clippy --fix --allow-dirty
+

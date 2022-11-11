@@ -37,7 +37,7 @@ impl DbGenerator {
         db_file: &Path,
         template_generator: &mut dyn ValidVotingTemplateGenerator,
     ) -> Result<(), Error> {
-        std::fs::File::create(&db_file)?;
+        std::fs::File::create(db_file)?;
 
         let migration_scripts_path = MigrationFilesBuilder::default().build(&self.root)?;
         println!("{:?}", migration_scripts_path);

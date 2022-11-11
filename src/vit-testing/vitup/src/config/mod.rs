@@ -143,7 +143,7 @@ pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Config> {
         return Err(crate::error::Error::CannotFindConfig(config.to_path_buf()));
     }
 
-    let contents = std::fs::read_to_string(&config)?;
+    let contents = std::fs::read_to_string(config)?;
     serde_json::from_str(&contents).map_err(Into::into)
 }
 
@@ -159,6 +159,6 @@ pub fn read_voter_hirs<P: AsRef<Path>>(snapshot: P) -> Result<Vec<VoterHIR>> {
         ));
     }
 
-    let contents = std::fs::read_to_string(&snapshot)?;
+    let contents = std::fs::read_to_string(snapshot)?;
     serde_json::from_str(&contents).map_err(Into::into)
 }

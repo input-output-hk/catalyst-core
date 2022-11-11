@@ -83,7 +83,7 @@ pub(crate) fn get_stake_address(
         bail!("stake_vkey has length 128");
     } else {
         // Convert hex to public key
-        let hex = hex::decode(&stake_vkey_hex)?;
+        let hex = hex::decode(stake_vkey_hex)?;
         let pub_key = PublicKey::from_bytes(&hex).map_err(|_| eyre!(""))?;
         let cred = StakeCredential::from_keyhash(&pub_key.hash());
         let stake_addr = RewardAddress::new(network.network_id(), &cred).to_address();

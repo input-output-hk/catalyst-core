@@ -27,7 +27,7 @@ pub fn do_snapshot<S: Into<String>, P: Into<String>>(
     println!("Snapshot done: {:?}", snapshot_jobs_status);
     let snapshot = snapshot_client.get_snapshot(
         snapshot_job_id,
-        job_params.tag.unwrap_or_else(|| "".to_string()),
+        job_params.tag.unwrap_or_default(),
     )?;
 
     Ok(SnapshotResult {

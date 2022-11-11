@@ -245,11 +245,11 @@ mod tests {
 
         let password = [1u8, 2, 3, 4];
 
-        let slice = encrypt(&password, &bytes[..], get_random_gen()).unwrap();
+        let slice = encrypt(password, &bytes[..], get_random_gen()).unwrap();
 
         let password = [5u8, 6, 7, 8];
         assert!(matches!(
-            decrypt(&password, slice),
+            decrypt(password, slice),
             Err(Error::AuthenticationFailed)
         ));
     }

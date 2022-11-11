@@ -25,10 +25,8 @@ pub fn do_snapshot<S: Into<String>, P: Into<String>>(
         snapshot_client.wait_for_job_finish(snapshot_job_id.clone(), wait)?;
 
     println!("Snapshot done: {:?}", snapshot_jobs_status);
-    let snapshot = snapshot_client.get_snapshot(
-        snapshot_job_id,
-        job_params.tag.unwrap_or_default(),
-    )?;
+    let snapshot =
+        snapshot_client.get_snapshot(snapshot_job_id, job_params.tag.unwrap_or_default())?;
 
     Ok(SnapshotResult {
         status: snapshot_jobs_status,

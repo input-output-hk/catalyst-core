@@ -234,11 +234,9 @@
           ];
           shellHook = ''
             echo "=== Catalyst Core development shell ==="
-            echo "Info: Git hooks can be installed using \`pre-commit install\`"
           '';
         };
 
-        defaultPackage = warnToUpdateNix packages.default;
         devShell = warnToUpdateNix devShells.default;
       }
     );

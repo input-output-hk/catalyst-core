@@ -123,6 +123,10 @@ pub struct Log {
     /// Application logging level
     #[structopt(long)]
     pub log_level: Option<LogLevel>,
+
+    /// Enable the OTLP trace data exporter and set the collector's GRPC endpoint
+    #[structopt(long = "log-trace-collector-endpoint")]
+    pub trace_collector_endpoint: Option<url::Url>,
 }
 
 fn parse_allowed_origins(arg: &str) -> Result<AllowedOrigins, std::io::Error> {
@@ -334,7 +338,7 @@ impl fmt::Display for LogLevel {
 
 impl Default for LogLevel {
     fn default() -> Self {
-        LogLevel::Disabled
+        LogLevel::Info
     }
 }
 
@@ -397,7 +401,7 @@ mod test {
             "enable_api_tokens" : true,
             "log" : {
                 "log_output_path" : "./server.log",
-                "log_level" : "error"    
+                "log_level" : "error"
             },
             "service_version" : "v0.2.0"
         }

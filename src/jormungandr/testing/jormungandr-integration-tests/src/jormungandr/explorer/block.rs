@@ -147,8 +147,7 @@ pub fn explorer_block_test() {
     ExplorerVerifier::assert_block_by_id(decoded_block, explorer_block).unwrap();
 }
 
-#[should_panic]
-#[test] //NPG-3274
+#[test]
 pub fn explorer_block0_test() {
     let temp_dir = TempDir::new().unwrap();
     let test_context = SingleNodeTestBootstrapper::default()
@@ -317,11 +316,9 @@ pub fn explorer_last_block_test() {
     ExplorerVerifier::assert_last_block(decoded_block, explorer_last_block.block()).unwrap();
 }
 
-#[should_panic]
-#[test] //NPG-3274
+#[test]
 pub fn explorer_all_blocks_test() {
     let temp_dir = TempDir::new().unwrap();
-
     let max_blocks_number = 100;
     let jcli: JCli = Default::default();
     let sender = thor::Wallet::default();
@@ -444,7 +441,6 @@ pub fn explorer_all_blocks_test() {
 #[test]
 pub fn explorer_block_by_chain_length_test() {
     let temp_dir = TempDir::new().unwrap();
-
     let jcli: JCli = Default::default();
     let sender = thor::Wallet::default();
     let receiver = thor::Wallet::default();

@@ -254,7 +254,7 @@ impl LogSettings {
             #[cfg(feature = "gelf")]
             LogOutput::Gelf { backend, .. } => {
                 let (layer, task) = tracing_gelf::Logger::builder()
-                    .connect_tcp(backend)
+                    .connect_tcp(*backend)
                     .map_err(Error::Gelf)?;
                 tokio::spawn(task);
                 subscriber

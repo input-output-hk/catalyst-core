@@ -93,7 +93,7 @@ mod test {
     async fn api_token_insert_and_retrieve() {
         // initialize db
         let pool: DbConnectionPool = load_db_connection_pool("").unwrap();
-        db_testing::initialize_db_with_migration(&pool.get().unwrap());
+        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
 
         // checks
         let token = ApiToken::new(b"foo_bar_zen".to_vec());

@@ -156,7 +156,7 @@ mod test {
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap());
+        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
         let (token, base64_token) = get_testing_token();
         insert_token_to_db(token, pool);
 

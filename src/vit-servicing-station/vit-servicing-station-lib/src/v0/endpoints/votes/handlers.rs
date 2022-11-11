@@ -32,7 +32,7 @@ mod test {
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap());
+        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
         let vote: Vote = votes_testing::get_test_vote();
 
         votes_testing::populate_db_with_vote(&vote, pool);

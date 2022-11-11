@@ -4,10 +4,10 @@ use rand_core::{OsRng, RngCore};
 
 fn common() -> (OsRng, SecretKey, PublicKey, [u8; 10], [u8; 10]) {
     let mut csprng: OsRng = OsRng;
-    let sk = SecretKey::random(&mut csprng);
+    let sk = SecretKey::random(csprng);
     let pk = sk.public();
 
-    let sk_other = SecretKey::random(&mut csprng);
+    let sk_other = SecretKey::random(csprng);
     let _pk_other = sk_other.public();
 
     let mut b1 = [0u8; 10];

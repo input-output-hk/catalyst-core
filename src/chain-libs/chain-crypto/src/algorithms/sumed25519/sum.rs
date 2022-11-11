@@ -592,8 +592,8 @@ pub fn hash(pk1: &PublicKey, pk2: &PublicKey) -> PublicKey {
     use sha2::Digest as _;
     let mut out = [0u8; 32];
     let mut h = sha2::Sha256::default();
-    h.update(&pk1.0);
-    h.update(&pk2.0);
+    h.update(pk1.0);
+    h.update(pk2.0);
 
     let o = h.finalize();
     out.copy_from_slice(&o);

@@ -182,7 +182,7 @@ mod tests {
 
         prop_assert!(to_remove
             .iter()
-            .all(|(idx, _)| sparse_array.get(*idx) == None));
+            .all(|(idx, _)| sparse_array.get(*idx).is_none()));
         prop_assert!(to_set
             .iter()
             .all(|(idx, value)| sparse_array.get(*idx) == Some(&value)));

@@ -34,7 +34,7 @@ impl VerifyQrCodeCmd {
             if let Some(file) = &self.file {
                 vec![file.to_path_buf()]
             } else {
-                std::fs::read_dir(&self.folder.as_ref().unwrap())
+                std::fs::read_dir(self.folder.as_ref().unwrap())
                     .unwrap()
                     .into_iter()
                     .map(|x| x.unwrap().path())

@@ -308,12 +308,12 @@ mod tests {
     #[test]
     fn test_modexp() {
         for (test, test_gas) in TESTS.iter().zip(BERLIN_GAS.iter()) {
-            let input = hex::decode(&test.input).unwrap();
+            let input = hex::decode(test.input).unwrap();
 
             let res = ModExp::run(&input, Some(*test_gas), &new_context(), false)
                 .unwrap()
                 .output;
-            let expected = hex::decode(&test.expected).unwrap();
+            let expected = hex::decode(test.expected).unwrap();
             assert_eq!(res, expected, "{}", test.name);
         }
     }
@@ -321,7 +321,7 @@ mod tests {
     #[test]
     fn test_berlin_modexp_gas() {
         for (test, test_gas) in TESTS.iter().zip(BERLIN_GAS.iter()) {
-            let input = hex::decode(&test.input).unwrap();
+            let input = hex::decode(test.input).unwrap();
 
             let gas = ModExp::required_gas(&input).unwrap();
             assert_eq!(gas, *test_gas, "{} gas", test.name);

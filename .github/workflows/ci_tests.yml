@@ -49,6 +49,7 @@ jobs:
       - run: |
           cargo build -p jormungandr
           cargo build -p jcli
+          cargo test --all-features --all-targets --no-run  
           cargo nextest run --no-fail-fast --partition hash:${{ matrix.shardNumber }}/${{ matrix.totalShards }}
 
 

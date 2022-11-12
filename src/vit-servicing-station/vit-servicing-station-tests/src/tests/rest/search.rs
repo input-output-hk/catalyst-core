@@ -172,6 +172,27 @@ pub fn search_proposal_by_funds() {
 }
 
 #[test]
+pub fn search_proposal_by_title_and_author() {
+    let temp_dir = TempDir::new().unwrap();
+    let (server, data) = quick_start(&temp_dir).unwrap();
+    let rest_client = server.rest_client_with_token(&data.token_hash());
+    let expected_proposal = &data.proposals()[0];
+
+    let response = rest_client
+        .search(
+            SearchRequestBuilder::default()
+                .on_proposals()
+                .by_title(&expected_proposal.proposal.proposal_title)
+                .by_author(&expected_proposal.proposal.proposer.proposer_name)
+                .into(),
+        )
+        .unwrap();
+
+    assert_response_contains_proposals(expected_proposal, response)
+}
+
+
+#[test]
 pub fn search_proposal_by_funds_empty() {
     let temp_dir = TempDir::new().unwrap();
     let (server, data) = quick_start(&temp_dir).unwrap();

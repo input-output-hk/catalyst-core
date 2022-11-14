@@ -95,9 +95,9 @@ impl SnapshotResult {
                 voting_power: output
                     .voting_power
                     .to_u64()
-                    .ok_or(CannotConvertFromOutput(
-                        "cannot extract voting power".to_string(),
-                    ))?
+                    .ok_or_else(|| {
+                        CannotConvertFromOutput("cannot extract voting power".to_string())
+                    })?
                     .into(),
                 reward_address: output.rewards_address.to_string(),
                 delegations: match output.delegations {

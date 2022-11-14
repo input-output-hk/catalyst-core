@@ -50,7 +50,7 @@ impl SnapshotServiceController {
             .unwrap();
         let snapshot: Vec<Output> = serde_json::from_str(&snapshot_content).unwrap();
 
-        Ok(SnapshotResult::from_outputs(status, snapshot)?)
+        SnapshotResult::from_outputs(status, snapshot)
     }
 }
 

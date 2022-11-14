@@ -8,7 +8,7 @@ pub fn load_cert(filename: &Path) -> Result<Vec<rustls::Certificate>, Error> {
 
     match rustls_pemfile::read_one(&mut reader)? {
         Some(rustls_pemfile::Item::X509Certificate(cert)) => Ok(vec![rustls::Certificate(cert)]),
-        Some(rustls_pemfile::Item::RSAKey(_)) | Some(rustls_pemfile::Item::PKCS8Key(_)) => {
+        Some(_) => {
             // TODO: a more specific error could be useful (ExpectedCertFoundKey?)
             Err(Error::InvalidCertificate)
         }

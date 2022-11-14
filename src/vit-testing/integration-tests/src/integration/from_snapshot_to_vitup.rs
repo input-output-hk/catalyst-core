@@ -11,7 +11,7 @@ use jormungandr_lib::interfaces::Initial::Token;
 use jormungandr_lib::interfaces::InitialToken;
 use jormungandr_lib::interfaces::InitialUTxO;
 use jormungandr_lib::interfaces::Value;
-use mainnet_tools::network::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
+use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
 use snapshot_trigger_service::config::JobParameters;
 use vitup::config::ConfigBuilder;
 use vitup::testing::vitup_setup;
@@ -34,10 +34,10 @@ pub fn cip36_mixed_delegation_should_appear_in_block0() {
         .with(alice.as_direct_voter())
         .with(bob.as_delegator(vec![(&david_representative, 1)]))
         .with(clarice.as_delegator(vec![(&edgar_representative, 1), (&edgar_representative, 1)]))
-        .build();
+        .build(&testing_directory);
 
     let snapshot_result =
-        mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory);
+        mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory).unwrap();
 
     let voter_hir = SnapshotFilter::from_snapshot_result(
         &snapshot_result,

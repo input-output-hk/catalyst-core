@@ -13,7 +13,7 @@ pub fn load_cert(filename: &Path) -> Result<Vec<rustls::Certificate>, Error> {
             Err(Error::InvalidCertificate)
         }
         // not a pemfile
-        None | Some(_) => Err(Error::InvalidCertificate),
+        Some(_) | None => Err(Error::InvalidCertificate),
     }
 }
 

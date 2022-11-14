@@ -30,7 +30,7 @@ pub trait SecretKeyFromQrCode {
 
 impl SecretKeyFromQrCode for PathBuf {
     fn secret_key_from_qr_code(&self) -> SecretKey<Ed25519Extended> {
-        let img = image::open(&self).unwrap();
+        let img = image::open(self).unwrap();
         //TODO: send pin to registration service or extract it from qr code filename
         let secrets = kedqr::KeyQrCode::decode(img, &[1, 2, 3, 4]).unwrap();
         let key_qr_code = secrets.get(0).unwrap().clone();

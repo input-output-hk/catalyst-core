@@ -125,8 +125,8 @@ impl TestGen {
     }
 
     pub fn vrf_proof(stake_pool: &StakePool) -> VrfProof {
-        let mut rng = rand_core::OsRng;
-        vrf_evaluate_and_prove(stake_pool.vrf().private_key(), &TestGen::bytes(), &mut rng).into()
+        let rng = rand_core::OsRng;
+        vrf_evaluate_and_prove(stake_pool.vrf().private_key(), &TestGen::bytes(), rng).into()
     }
 
     pub fn stake_pool() -> StakePool {

@@ -1,0 +1,71 @@
+name: CI-Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shardNumber: [1, 2, 3, 4, 5, 6, 7, 8]
+        totalShards: [8]
+    env:
+      RUSTFLAGS: -D warnings
+      RUST_BACKTRACE: 1
+      CARGO_FLAGS: --verbose --locked --features systemd gelf
+      CARGO_INCREMENTAL: 0
+    steps: 
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: Swatinem/rust-cache@v2
+      - name: Free disk space
+        run: |
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          df -h
+      - name: Install Nextest
+        run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+      - name: Install deps
+        run:
+          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+
+      - name: Run tests
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
+          components: rustfmt, clippy
+      - run: |
+          cargo build -p jormungandr
+          cargo build -p jcli
+          cargo nextest run --no-fail-fast --partition hash:${{ matrix.shardNumber }}/${{ matrix.totalShards }}
+
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: Swatinem/rust-cache@v2
+      - name: Install deps
+        run:
+          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+      - name: Clippy and fmt
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
+          components: rustfmt, clippy
+      - run: scripts/check-fmt.sh

@@ -35,7 +35,7 @@ fn trim_new_line_at_end(mut content: String) -> String {
 
 pub fn make_readonly(path: &Path) {
     if !path.exists() {
-        std::fs::File::create(&path).unwrap();
+        std::fs::File::create(path).unwrap();
     }
     let mut perms = fs::metadata(path.as_os_str()).unwrap().permissions();
     perms.set_readonly(true);

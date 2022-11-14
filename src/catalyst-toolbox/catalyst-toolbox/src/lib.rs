@@ -1,3 +1,5 @@
+#![allow(clippy::result_large_err)]
+
 pub mod archive;
 pub mod community_advisors;
 pub mod http;

@@ -31,7 +31,7 @@ pub fn decompress(input: &Path, output: &Path) -> Result<(), DecompressError> {
         .to_str()
         .expect("cannot convert input path to os str");
     if path.ends_with(".zip") {
-        let file = File::open(&path).map_err(|_| DecompressError::CannotOpenArchiveFile)?;
+        let file = File::open(path).map_err(|_| DecompressError::CannotOpenArchiveFile)?;
         let mut archive = zip::ZipArchive::new(file)?;
         for i in 0..archive.len() {
             let mut file = archive

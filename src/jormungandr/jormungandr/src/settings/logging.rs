@@ -209,7 +209,7 @@ impl LogSettings {
                     .create(true)
                     .write(true)
                     .append(true)
-                    .open(&path)
+                    .open(path)
                     .map_err(|cause| Error::FileError {
                         path: path.clone(),
                         cause,

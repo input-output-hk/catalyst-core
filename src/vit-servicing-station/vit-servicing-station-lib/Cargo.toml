@@ -14,7 +14,7 @@ time = { version = "0.3", features = ["parsing", "formatting"] }
 diesel = { version = "1.4.5", features = ["postgres", "sqlite", "r2d2", "64-column-tables"] }
 diesel_migrations = "1.4.0"
 dotenv = "0.15"
-itertools = "0.9.0"
+itertools = "0.10"
 log = { version = "0.4.11", features = ["serde"] }
 serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.79"

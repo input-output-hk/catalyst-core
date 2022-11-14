@@ -104,6 +104,7 @@ impl Context {
 }
 
 #[derive(Error, Debug)]
+#[allow(clippy::large_enum_variant)]
 pub enum Error {
     #[error(transparent)]
     Ledger(#[from] super::ledger_state::Error),

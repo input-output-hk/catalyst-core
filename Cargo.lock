@@ -3420,6 +3420,7 @@ dependencies = [
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
  "vitup",
+ "voting_tools_rs",
 ]
 
 [[package]]
@@ -4163,11 +4164,11 @@ dependencies = [
  "bech32 0.8.1",
  "cardano-serialization-lib",
  "catalyst-toolbox",
- "clap 3.2.22",
+ "clap 3.2.23",
  "color-eyre",
  "futures",
  "hex",
- "itertools 0.10.5",
+ "itertools",
  "jormungandr-lib",
  "mainnet-lib",
  "prettytable-rs",
@@ -6757,6 +6758,7 @@ dependencies = [
  "jormungandr-lib",
  "jortestkit",
  "mainnet-tools",
+ "num-traits",
  "reqwest",
  "scheduler-service-lib",
  "serde",
@@ -6768,6 +6770,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "uuid",
+ "voting_tools_rs",
  "walkdir",
  "warp",
 ]

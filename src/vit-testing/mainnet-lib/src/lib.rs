@@ -18,7 +18,7 @@ mod db_sync;
 mod network;
 mod wallet;
 
-pub use db_sync::{InMemoryDbSync,Error as InMemoryDbSyncError};
+pub use db_sync::{Error as InMemoryDbSyncError, InMemoryDbSync};
 pub use network::{
     MainnetNetwork, MainnetNetworkBuilder, MainnetWalletState, MainnetWalletStateBuilder,
 };

@@ -64,12 +64,12 @@ pub async fn spawn_scheduler<
 
     let request_to_start_task = async {
         loop {
-            if let Some((job_id, request)) = check_if_started(control_context.clone())
-            {
+            if let Some((job_id, request)) = check_if_started(control_context.clone()) {
                 let job_working_dir = result_dir.to_path_buf().join(job_id.to_string());
                 std::fs::create_dir_all(&job_working_dir)?;
                 control_context
-                    .lock().map_err(|_| WrappedPoisonError::Poison)?
+                    .lock()
+                    .map_err(|_| WrappedPoisonError::Poison)?
                     .new_run_started()?;
                 let output_info = job.start(request, job_working_dir.to_path_buf())?;
                 control_context
@@ -91,13 +91,11 @@ pub async fn spawn_scheduler<
 }
 use crate::{JobRunner, RunContext};
 
-
-fn check_if_started<JobRequest: Clone,JobOutputInfo>(control_context: Arc<Mutex<dyn RunContext<JobRequest, JobOutputInfo>>>) -> Option<(Uuid, JobRequest)> {
-    if let Some((job_id, request)) =  control_context
-        .lock()
-        .unwrap()
-        .run_requested() {
-        Some((job_id,request))
+fn check_if_started<JobRequest: Clone, JobOutputInfo>(
+    control_context: Arc<Mutex<dyn RunContext<JobRequest, JobOutputInfo>>>,
+) -> Option<(Uuid, JobRequest)> {
+    if let Some((job_id, request)) = control_context.lock().unwrap().run_requested() {
+        Some((job_id, request))
     } else {
         None
     }

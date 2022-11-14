@@ -28,7 +28,8 @@ pub fn cip36_mixed_delegation() {
         .with(clarice.as_delegator(vec![(&david, 1), (&edgar, 1)]))
         .build(&testing_directory);
 
-    let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory).unwrap()
+    let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
+        .unwrap()
         .filter(
             450u64.into(),
             Fraction::from(1u64),
@@ -77,7 +78,8 @@ pub fn voting_power_cap_for_reps() {
 
     let reps_circle_size = reps.len();
 
-    let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory).unwrap()
+    let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
+        .unwrap()
         .filter(
             450u64.into(),
             Fraction::new(1u64, reps_circle_size as u64),
@@ -106,7 +108,8 @@ pub fn voting_power_cap_for_direct() {
         .with(clarice.as_direct_voter())
         .build(&testing_directory);
 
-    let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory).unwrap()
+    let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
+        .unwrap()
         .filter(
             450u64.into(),
             Fraction::new(1u64, 3u64),
@@ -137,7 +140,8 @@ pub fn voting_power_cap_for_mix() {
         .with(clarice.as_delegator(vec![(&david, 1)]))
         .build(&testing_directory);
 
-    let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory).unwrap()
+    let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
+        .unwrap()
         .filter_default(&reps)
         .to_voters_hirs();
 

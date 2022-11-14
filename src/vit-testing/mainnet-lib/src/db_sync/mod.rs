@@ -168,8 +168,8 @@ pub enum Error {
 
 #[cfg(test)]
 mod tests {
-    use assert_fs::TempDir;
     use crate::{InMemoryDbSync, MainnetNetworkBuilder, MainnetWallet, MainnetWalletStateBuilder};
+    use assert_fs::TempDir;
 
     #[test]
     fn restore_persist_bijection_direct() {
@@ -184,6 +184,6 @@ mod tests {
         let before = db_sync.tx_metadata.clone();
         db_sync.persist().unwrap();
         let db_sync = InMemoryDbSync::restore(&db_sync.db).unwrap();
-        assert_eq!(before,db_sync.tx_metadata);
+        assert_eq!(before, db_sync.tx_metadata);
     }
 }

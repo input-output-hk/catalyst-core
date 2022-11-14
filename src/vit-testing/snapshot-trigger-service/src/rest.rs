@@ -52,8 +52,10 @@ pub async fn start_rest_server(context: ContextLock) {
 
     let root = warp::path!("api" / ..).boxed();
 
-    let files =
-        scheduler_service_lib::rest::files_filter(shared_scheduler_context.clone(), working_dir.to_path_buf());
+    let files = scheduler_service_lib::rest::files_filter(
+        shared_scheduler_context.clone(),
+        working_dir.to_path_buf(),
+    );
     let health = scheduler_service_lib::rest::health_filter();
 
     let job = {
@@ -104,7 +106,11 @@ pub async fn job_new_handler(
     context: ContextLock,
     params: JobParameters,
 ) -> Result<impl Reply, Rejection> {
-    let id = context.lock().unwrap().state_mut().new_run_requested(params)?;
+    let id = context
+        .lock()
+        .unwrap()
+        .state_mut()
+        .new_run_requested(params)?;
     Ok(id).map(|r| warp::reply::json(&r))
 }
 

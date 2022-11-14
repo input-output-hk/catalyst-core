@@ -24,7 +24,6 @@ pub struct Configuration {
 }
 
 impl Configuration {
-
     pub fn result_directory(&self) -> &PathBuf {
         &self.inner.result_dir
     }

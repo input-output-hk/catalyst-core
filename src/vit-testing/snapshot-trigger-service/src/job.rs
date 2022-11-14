@@ -30,7 +30,7 @@ impl SnapshotJobRunner {
 impl JobRunner<JobParameters, (), crate::Error> for SnapshotJobRunner {
     fn start(&self, request: JobParameters, output_folder: PathBuf) -> Result<Option<()>, Error> {
         let mut command = self.0.voting_tools.command()?;
-        if let NetworkType::Testnet(magic)  = self.0.voting_tools.network {
+        if let NetworkType::Testnet(magic) = self.0.voting_tools.network {
             command.arg("--testnet-magic").arg(magic.to_string());
         };
 

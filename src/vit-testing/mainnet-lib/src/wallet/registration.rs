@@ -76,7 +76,7 @@ impl<'a> RegistrationBuilder<'a> {
         match self.delegations.expect("no registration target defined") {
             Delegations::New(_delegations) => {
                 unimplemented!("delegations not implemented");
-            },
+            }
             Delegations::Legacy(legacy) => {
                 meta_map.insert(
                     &METADATUM_1,

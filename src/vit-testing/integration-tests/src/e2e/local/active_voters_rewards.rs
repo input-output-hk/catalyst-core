@@ -37,7 +37,8 @@ pub fn voters_with_at_least_one_vote() {
         .with(clarice_wallet.as_direct_voter())
         .build(&testing_directory);
 
-    let snapshot = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory).unwrap()
+    let snapshot = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
+        .unwrap()
         .filter_default(&HashSet::new());
 
     let vote_timing = VoteBlockchainTime {

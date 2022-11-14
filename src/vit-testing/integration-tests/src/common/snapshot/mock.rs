@@ -1,3 +1,4 @@
+use crate::common::get_available_port;
 use crate::common::snapshot::SnapshotServiceStarter;
 use assert_fs::TempDir;
 use mainnet_lib::InMemoryDbSync;
@@ -5,14 +6,12 @@ use snapshot_trigger_service::client::SnapshotResult;
 use snapshot_trigger_service::config::{
     ConfigurationBuilder, JobParameters, NetworkType, VotingToolsParams,
 };
-use crate::common::{get_available_port};
 
 pub fn do_snapshot(
     db_sync_instance: &InMemoryDbSync,
     job_parameters: JobParameters,
     testing_directory: &TempDir,
-) -> Result<SnapshotResult,Error> {
-
+) -> Result<SnapshotResult, Error> {
     db_sync_instance.persist()?;
 
     let params = VotingToolsParams {
@@ -42,10 +41,10 @@ pub fn do_snapshot(
         .snapshot(job_parameters))
 }
 
-#[derive(thiserror::Error,Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
     DbSync(#[from] mainnet_lib::InMemoryDbSyncError),
     #[error(transparent)]
-    SnapshotIntegrationError(#[from] crate::common::snapshot::Error)
+    SnapshotIntegrationError(#[from] crate::common::snapshot::Error),
 }

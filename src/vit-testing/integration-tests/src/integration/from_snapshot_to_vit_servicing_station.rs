@@ -15,7 +15,7 @@ use chain_impl_mockchain::block::BlockDate;
 use fraction::Fraction;
 use jormungandr_automation::testing::time;
 use jormungandr_lib::crypto::account::Identifier;
-use mainnet_tools::network::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
+use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
 use snapshot_trigger_service::config::JobParameters;
 use vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;

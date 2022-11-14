@@ -13,7 +13,7 @@ RUN apt-get update && \
     mkdir -p ${ENV_PREFIX}
 
 #install rustup
-RUN  apt-get install -y build-essential pkg-config libssl-dev && \
+RUN  apt-get install -y build-essential pkg-config libssl-dev libpq-dev && \
     bash -c "curl https://sh.rustup.rs -sSf | bash -s -- -y" && \
      ~/.cargo/bin/rustup install stable && \
     ~/.cargo/bin/rustup default stable

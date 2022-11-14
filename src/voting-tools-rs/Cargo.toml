@@ -41,7 +41,7 @@ postgres = "0.19"  # just to create the reference db in case it doesn't already 
 diesel_migrations="2"
 
 [features]
-default = ["all_tests"]
+default = []
 all_tests = ["reference_tests", "db_sync_tests"]
 reference_tests = []  
 db_sync_tests = []  

@@ -52,7 +52,7 @@ fn write_rewards_results(
     let writer = common.open_output()?;
     let header = ["Address", "Reward for the voter (lovelace)"];
     let mut csv_writer = csv::Writer::from_writer(writer);
-    csv_writer.write_record(&header)?;
+    csv_writer.write_record(header)?;
 
     for (address, rewards) in rewards.iter() {
         let record = [address.to_string(), rewards.trunc().to_string()];

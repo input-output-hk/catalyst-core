@@ -63,7 +63,7 @@ impl ValidVotePlanGenerator {
                     chain_voteplan_payload: payload_type.to_string(),
                     chain_vote_encryption_key: single_vote_plan
                         .vote_encryption_key()
-                        .unwrap_or_else(|| "".to_string()),
+                        .unwrap_or_default(),
                     fund_id: self.parameters.current_fund.info.fund_id,
                     token_identifier: vote_plan.voting_token().to_string(),
                 }

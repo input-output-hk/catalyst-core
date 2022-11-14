@@ -65,8 +65,8 @@ impl FromStr for LogOutput {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.starts_with("@") {
-            return Ok(Self::File(PathBuf::from(&s[1..])));
+        if let Some(stripped) = s.strip_prefix('@') {
+            return Ok(Self::File(PathBuf::from(stripped)));
         }
 
         match s.trim().to_lowercase().as_str() {
@@ -209,7 +209,7 @@ impl LogSettings {
                     .create(true)
                     .write(true)
                     .append(true)
-                    .open(&path)
+                    .open(path)
                     .map_err(|cause| Error::FileError {
                         path: path.clone(),
                         cause,

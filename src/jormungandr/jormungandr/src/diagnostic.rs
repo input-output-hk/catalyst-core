@@ -10,7 +10,7 @@ pub enum DiagnosticError {
     UnknownError,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Copy, Serialize)]
 pub struct Diagnostic {
     pub open_files_limit: Option<u64>,
     pub cpu_usage_limit: Option<u64>,

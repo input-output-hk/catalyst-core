@@ -70,7 +70,7 @@ impl Deserialize for TokenIdentifier {
 
 impl fmt::Display for TokenIdentifier {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", hex::encode(&self.policy_hash.as_ref()))?;
+        write!(f, "{}", hex::encode(self.policy_hash.as_ref()))?;
         let token_name = self.token_name.as_ref();
         if !token_name.is_empty() {
             write!(f, ".{}", hex::encode(token_name))?;

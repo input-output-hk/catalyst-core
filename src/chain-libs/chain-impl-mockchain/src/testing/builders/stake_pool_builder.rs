@@ -92,10 +92,10 @@ impl StakePoolBuilder {
     }
 
     pub fn build(&self) -> StakePool {
-        let mut rng = rand_core::OsRng;
+        let rng = rand_core::OsRng;
 
-        let pool_vrf: KeyPair<RistrettoGroup2HashDh> = KeyPair::generate(&mut rng);
-        let pool_kes: KeyPair<SumEd25519_12> = KeyPair::generate(&mut rng);
+        let pool_vrf: KeyPair<RistrettoGroup2HashDh> = KeyPair::generate(rng);
+        let pool_kes: KeyPair<SumEd25519_12> = KeyPair::generate(rng);
 
         let permissions = match self.pool_permissions {
             Some(pool_permissions) => pool_permissions,

@@ -26,7 +26,7 @@ macro_rules! if_cond_fail_with(
         }
     };
 );
-
+#[allow(clippy::large_enum_variant)]
 type LedgerCheck = Result<(), Error>;
 
 // Check that a specific block0 transaction has no inputs and no witnesses

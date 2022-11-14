@@ -171,8 +171,8 @@ pub unsafe fn wallet_spending_counters(
 
     let raw_ptr = Box::into_raw(counters);
 
-    (*spending_counters_out).data = raw_ptr as *mut u32;
-    (*spending_counters_out).len = len;
+    spending_counters_out.data = raw_ptr as *mut u32;
+    spending_counters_out.len = len;
 
     Result::success()
 }

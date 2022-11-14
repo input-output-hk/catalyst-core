@@ -253,13 +253,13 @@ impl IdeascaleValidateCommand {
     ) -> Result<Vec<serde_json::Value>, ProposalError> {
         let path = path.as_ref();
         let mut proposals = match parse_proposals(path.to_path_buf()) {
-            Ok(_) => self.parse_proposals_as_value(&path)?,
+            Ok(_) => self.parse_proposals_as_value(path)?,
             Err(err) => {
                 if !self.fix {
                     return Err(ProposalError::Template(err));
                 }
                 println!("Attempt to fix {:?}..", path.to_path_buf());
-                self.try_to_fix_proposals_missing_type(&path)?
+                self.try_to_fix_proposals_missing_type(path)?
             }
         };
 

@@ -78,7 +78,7 @@ impl ExplorerProcess {
 
         if let Some(storage) = &configuration.storage_dir {
             explorer_cmd.arg("--storage-dir");
-            explorer_cmd.arg(&storage);
+            explorer_cmd.arg(storage);
         }
 
         if configuration.params.address_bech32_prefix.is_some() {

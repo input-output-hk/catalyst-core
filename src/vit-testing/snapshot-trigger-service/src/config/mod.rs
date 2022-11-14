@@ -82,7 +82,7 @@ impl Default for Configuration {
                 db_user: "".to_string(),
                 db_pass: "".to_string(),
                 db_host: "".to_string(),
-                additional_params: vec![],
+                additional_params: None,
             },
         }
     }
@@ -109,7 +109,7 @@ pub struct VotingToolsParams {
     #[serde(rename = "db-host")]
     pub db_host: String,
     /// additional parameters
-    pub additional_params: Vec<String>,
+    pub additional_params: Option<Vec<String>>,
 }
 
 impl VotingToolsParams {

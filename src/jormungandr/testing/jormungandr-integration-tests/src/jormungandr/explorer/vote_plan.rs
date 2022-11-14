@@ -1167,7 +1167,6 @@ pub fn explorer_all_vote_plans_private_flow_test() {
     for vote_plan in &vote_plans {
         let first_voter_luigi_fragment =
             fragment_builder.private_vote_cast(&voters[0], vote_plan, VOTE_FOR_LUIGI, &yes_choice);
-        //voters[0].confirm_transaction();
 
         let second_voter_luigi_fragment =
             fragment_builder.private_vote_cast(&voters[1], vote_plan, VOTE_FOR_LUIGI, &yes_choice);

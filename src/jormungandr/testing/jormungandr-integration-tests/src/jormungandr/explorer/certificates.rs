@@ -747,9 +747,8 @@ pub fn explorer_vote_tally_certificate_test() {
         .unwrap();
 }
 
-#[should_panic] //bug NPG-2742
 #[test]
-pub fn explorer_update_proposal_certificate_test() {
+pub fn explorer_update_proposal_and_vote_certificate_test() {
     let temp_dir = TempDir::new().unwrap();
     let mut alice = thor::Wallet::default();
     let mut bob = thor::Wallet::default();

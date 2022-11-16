@@ -95,7 +95,7 @@ pub async fn job_status_handler(id: String, context: ContextLock) -> Result<impl
     let uuid = Uuid::parse_str(&id).map_err(Error::CannotParseUuid)?;
     let context_lock = context.lock().unwrap();
     let status = context_lock.state();
-    if status.has_id(&uuid) {
+    if !status.has_id(&uuid) {
         Err(Error::CannotFindJobByStatus(uuid)).map_err(warp::reject::custom)
     } else {
         Ok(status).map(|r| warp::reply::json(&r))

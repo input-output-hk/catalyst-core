@@ -27,7 +27,7 @@ impl SnapshotJobRunner {
     }
 }
 
-impl JobRunner<JobParameters, (), crate::Error> for SnapshotJobRunner {
+impl JobRunner<JobParameters, (), Error> for SnapshotJobRunner {
     fn start(&self, request: JobParameters, output_folder: PathBuf) -> Result<Option<()>, Error> {
         let mut command = self.0.voting_tools.command()?;
         if let NetworkType::Testnet(magic) = self.0.voting_tools.network {
@@ -52,8 +52,8 @@ impl JobRunner<JobParameters, (), crate::Error> for SnapshotJobRunner {
             command.arg("--slot-no").arg(slot_no.to_string());
         }
 
-        if !self.0.voting_tools.additional_params.is_empty() {
-            command.args(&self.0.voting_tools.additional_params);
+        if let Some(additional_params) = &self.0.voting_tools.additional_params {
+            command.args(additional_params);
         }
 
         self.print_with_password_hidden(&command);

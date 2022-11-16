@@ -3420,6 +3420,7 @@ dependencies = [
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
  "vitup",
+ "voting_tools_rs",
 ]
 
 [[package]]
@@ -6757,6 +6758,7 @@ dependencies = [
  "jormungandr-lib",
  "jortestkit",
  "mainnet-tools",
+ "num-traits",
  "reqwest",
  "scheduler-service-lib",
  "serde",
@@ -6768,6 +6770,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "uuid",
+ "voting_tools_rs",
  "walkdir",
  "warp",
 ]

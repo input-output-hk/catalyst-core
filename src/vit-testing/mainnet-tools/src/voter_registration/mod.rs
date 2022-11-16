@@ -38,7 +38,7 @@ impl VoterRegistrationMock {
             metadata_file.path()
         );
 
-        let mut file = std::fs::File::create(&metadata_file.path()).unwrap();
+        let mut file = std::fs::File::create(metadata_file.path()).unwrap();
         file.write_all(serde_json::to_string(&metadata).unwrap().as_bytes())
             .unwrap();
         self

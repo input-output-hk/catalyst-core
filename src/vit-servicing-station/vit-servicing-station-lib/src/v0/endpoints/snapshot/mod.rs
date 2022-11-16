@@ -249,7 +249,7 @@ mod test {
     pub async fn test_snapshot() {
         let context = new_db_test_shared_context();
         let db_conn = &context.read().await.db_connection_pool.get().unwrap();
-        initialize_db_with_migration(db_conn);
+        initialize_db_with_migration(db_conn).unwrap();
 
         let keys = [
             Identifier::from_hex(
@@ -530,7 +530,7 @@ mod test {
 
         let context = new_db_test_shared_context();
         let db_conn = &context.read().await.db_connection_pool.get().unwrap();
-        initialize_db_with_migration(db_conn);
+        initialize_db_with_migration(db_conn).unwrap();
 
         let voting_key = Identifier::from_hex(
             "0000000000000000000000000000000000000000000000000000000000000000",
@@ -756,7 +756,7 @@ mod test {
 
         let context = new_db_test_shared_context();
         let db_conn = &context.read().await.db_connection_pool.get().unwrap();
-        initialize_db_with_migration(db_conn);
+        initialize_db_with_migration(db_conn).unwrap();
 
         let snapshot_root = warp::path!("snapshot" / ..).boxed();
         let filter = filter(snapshot_root.clone(), context.clone());
@@ -893,7 +893,7 @@ mod test {
 
         let context = new_db_test_shared_context();
         let db_conn = &context.read().await.db_connection_pool.get().unwrap();
-        initialize_db_with_migration(db_conn);
+        initialize_db_with_migration(db_conn).unwrap();
 
         let snapshot_root = warp::path!("snapshot" / ..).boxed();
         let filter = filter(snapshot_root.clone(), context.clone());

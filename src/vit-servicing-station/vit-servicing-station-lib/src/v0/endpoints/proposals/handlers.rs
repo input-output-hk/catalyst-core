@@ -55,7 +55,7 @@ pub mod test {
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap());
+        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
         let mut proposal: FullProposalInfo = proposals_testing::get_test_proposal("group1");
         proposals_testing::populate_db_with_proposal(&proposal, pool);
         let challenge: Challenge =
@@ -94,7 +94,7 @@ pub mod test {
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap());
+        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
         let proposal: FullProposalInfo = proposals_testing::get_test_proposal("group1");
         proposals_testing::populate_db_with_proposal(&proposal, pool);
         let challenge: Challenge =
@@ -127,7 +127,7 @@ pub mod test {
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap());
+        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
         let proposal: FullProposalInfo = proposals_testing::get_test_proposal("group1");
         proposals_testing::populate_db_with_proposal(&proposal, pool);
         let challenge: Challenge =

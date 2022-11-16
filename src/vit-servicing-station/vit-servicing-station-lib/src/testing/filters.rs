@@ -26,7 +26,7 @@ pub async fn test_context() -> (
         .db_connection_pool
         .get()
         .unwrap();
-    initialize_db_with_migration(&conn);
+    initialize_db_with_migration(&conn).unwrap();
     (warp::any().map(move || shared_context.clone()), conn)
 }
 

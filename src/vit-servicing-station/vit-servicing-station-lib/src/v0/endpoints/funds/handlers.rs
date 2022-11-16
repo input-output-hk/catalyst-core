@@ -39,7 +39,7 @@ pub mod test {
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap());
+        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
         let fund: Fund = funds_testing::get_test_fund(Some(1));
         let mut next_fund: Fund = funds_testing::get_test_fund(Some(2));
 
@@ -76,7 +76,7 @@ pub mod test {
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap());
+        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
         let fund: Fund = funds_testing::get_test_fund(None);
         funds_testing::populate_db_with_fund(&fund, pool);
 
@@ -104,7 +104,7 @@ pub mod test {
         let with_context = warp::any().map(move || filter_context.clone());
 
         let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap());
+        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
 
         let fund1: Fund = funds_testing::get_test_fund(Some(1));
         let mut fund2: Fund = funds_testing::get_test_fund(Some(2));
@@ -135,7 +135,7 @@ pub mod test {
         let with_context = warp::any().map(move || filter_context.clone());
 
         let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap());
+        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
 
         let fund1: Fund = funds_testing::get_test_fund(Some(1));
         let mut fund2: Fund = funds_testing::get_test_fund(Some(2));

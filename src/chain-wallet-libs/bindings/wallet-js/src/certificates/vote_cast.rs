@@ -28,7 +28,9 @@ impl Payload {
         let public_key = chain_vote::ElectionPublicKey::from_bytes(public_key)
             .ok_or_else(|| JsValue::from_str("Cannot parse public key bytes"))?;
 
-        let vote = chain_vote::Vote::new(options, choice as usize);
+        let vote = chain_vote::Vote::new(options, choice as usize)
+            .map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
+
         let crs = chain_vote::Crs::from_hash(vote_plan.0.as_ref());
         let (encrypted_vote, proof) =
             chain_impl_mockchain::vote::encrypt_vote(&mut rng, &crs, &public_key, vote);

@@ -36,7 +36,7 @@ impl VotingToolsMock {
 
         println!("{:?}", snapshot_tmp.path());
 
-        let mut file = std::fs::File::create(&snapshot_tmp.path()).unwrap();
+        let mut file = std::fs::File::create(snapshot_tmp.path()).unwrap();
         file.write_all(
             serde_json::to_string(&voting_registrations)
                 .unwrap()

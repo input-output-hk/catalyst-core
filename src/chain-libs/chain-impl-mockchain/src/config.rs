@@ -616,7 +616,7 @@ impl ConfigParamVariant for BftLeaderId {
 
 impl ConfigParamVariant for bool {
     fn to_payload(&self) -> Vec<u8> {
-        vec![if *self { 1 } else { 0 }]
+        vec![u8::from(*self)]
     }
 
     fn from_payload(payload: &[u8]) -> Result<Self, Error> {

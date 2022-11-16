@@ -53,7 +53,7 @@ pub fn cip_36_support() {
         ))
         .snapshot_initials(SnapshotInitials::from_voters_hir(
             snapshot_filter.to_voters_hirs(),
-            tag.unwrap_or_else(|| "".to_string()),
+            tag.unwrap_or_default(),
         ))
         .build();
 

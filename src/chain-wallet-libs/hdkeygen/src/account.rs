@@ -135,7 +135,7 @@ impl AsRef<[u8]> for AccountId {
 
 impl Display for AccountId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        hex::encode(&self.id).fmt(f)
+        hex::encode(self.id).fmt(f)
     }
 }
 

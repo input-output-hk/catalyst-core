@@ -242,10 +242,10 @@ mod tests {
     #[test]
     fn it_works() {
         let mut csprng: OsRng = OsRng;
-        let sk = SecretKey::random(&mut csprng);
+        let sk = SecretKey::random(csprng);
         let pk = sk.public();
 
-        let sk_other = SecretKey::random(&mut csprng);
+        let sk_other = SecretKey::random(csprng);
         let pk_other = sk_other.public();
 
         let mut b1 = [0u8; 10];
@@ -271,7 +271,7 @@ mod tests {
     #[test]
     fn serialisation() {
         let mut csprng: OsRng = OsRng;
-        let sk = SecretKey::random(&mut csprng);
+        let sk = SecretKey::random(csprng);
         let pk = sk.public();
 
         let serialised_sk = sk.to_bytes();
@@ -305,7 +305,7 @@ mod tests {
     #[test]
     fn to_buffer() {
         let mut csprng: OsRng = OsRng;
-        let sk = SecretKey::random(&mut csprng);
+        let sk = SecretKey::random(csprng);
         let pk = sk.public();
 
         let mut alpha = [0u8; 10];

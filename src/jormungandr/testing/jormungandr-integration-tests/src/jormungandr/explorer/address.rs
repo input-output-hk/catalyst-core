@@ -11,7 +11,9 @@ use jormungandr_automation::{
 use jormungandr_lib::interfaces::{ActiveSlotCoefficient, FragmentStatus};
 use jortestkit::process::Wait;
 use std::{collections::HashMap, time::Duration};
-use thor::TransactionHash;
+use thor::{StakePool, TransactionHash};
+const ADDRESS_QUERY_COMPLEXITY_LIMIT: u64 = 150;
+const ADDRESS_QUERY_DEPTH_LIMIT: u64 = 30;
 
 #[test]
 pub fn explorer_address_test() {
@@ -91,7 +93,8 @@ pub fn explorer_transactions_not_existing_address_test() {
     ExplorerVerifier::assert_transactions_address(HashMap::new(), explorer_transactions_by_address);
 }
 
-#[test]
+#[should_panic]
+#[test] //NPG-4067
 pub fn explorer_transactions_address_test() {
     let jcli: JCli = Default::default();
     let mut sender = thor::Wallet::default();
@@ -102,6 +105,8 @@ pub fn explorer_transactions_address_test() {
     let attempts_number = 20;
     let temp_dir = TempDir::new().unwrap();
     let mut fragments = vec![];
+    let address_bech32_prefix = sender.address().0;
+    let stake_pool = StakePool::new(&sender);
 
     let config =
         Block0ConfigurationBuilder::default().with_utxos(vec![sender.to_initial_fund(1_000_000)]);
@@ -141,6 +146,8 @@ pub fn explorer_transactions_address_test() {
 
     fragments.push(&transaction_2);
 
+    sender.confirm_transaction();
+
     let transaction_3 = fragment_builder
         .transaction(&receiver, sender.address(), transaction3_value.into())
         .unwrap();
@@ -150,6 +157,14 @@ pub fn explorer_transactions_address_test() {
         .assert_in_block_with_wait(&wait);
 
     fragments.push(&transaction_3);
+
+    let transaction_4 = fragment_builder.stake_pool_registration(&sender, &stake_pool);
+
+    jcli.fragment_sender(&jormungandr)
+        .send(&transaction_4.encode())
+        .assert_in_block_with_wait(&wait);
+
+    fragments.push(&transaction_4);
 
     let mut fragments_log = jcli.rest().v0().message().logs(jormungandr.rest_uri());
 
@@ -174,7 +189,12 @@ pub fn explorer_transactions_address_test() {
         (block0fragment, &block0_fragment_status),
     );
 
-    let explorer_process = jormungandr.explorer(ExplorerParams::default()).unwrap();
+    let params = ExplorerParams::new(
+        ADDRESS_QUERY_COMPLEXITY_LIMIT,
+        ADDRESS_QUERY_DEPTH_LIMIT,
+        address_bech32_prefix,
+    );
+    let explorer_process = jormungandr.explorer(params).unwrap();
     let explorer = explorer_process.client();
 
     assert!(explorer

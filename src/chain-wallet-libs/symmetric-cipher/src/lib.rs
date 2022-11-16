@@ -180,9 +180,9 @@ mod tests {
 
         let password = [1u8, 2, 3, 4];
 
-        let slice = encrypt(&password, &bytes[..], get_random_gen()).unwrap();
+        let slice = encrypt(password, &bytes[..], get_random_gen()).unwrap();
 
-        assert_eq!(&decrypt(&password, slice).unwrap()[..], &bytes[..]);
+        assert_eq!(&decrypt(password, slice).unwrap()[..], &bytes[..]);
     }
 
     #[test]
@@ -190,7 +190,7 @@ mod tests {
         let bytes = [0u8; 65];
         let password = [1u8, 2, 3, 4];
 
-        assert!(encrypt(&password, &bytes[..], get_random_gen()).is_err())
+        assert!(encrypt(password, &bytes[..], get_random_gen()).is_err())
     }
 
     #[test]
@@ -198,7 +198,7 @@ mod tests {
         let bytes = [];
         let password = [1u8, 2, 3, 4];
 
-        assert!(encrypt(&password, &bytes[..], get_random_gen()).is_err())
+        assert!(encrypt(password, &bytes[..], get_random_gen()).is_err())
     }
 
     #[test]
@@ -232,8 +232,8 @@ mod tests {
         bytes[64..2 * 64].copy_from_slice(&key1);
         bytes[2 * 64..3 * 64].copy_from_slice(&key2);
 
-        let slice = encrypt(&password, &bytes[..], get_random_gen()).unwrap();
-        assert_eq!(&decrypt(&password, slice).unwrap()[..], &bytes[..]);
+        let slice = encrypt(password, &bytes[..], get_random_gen()).unwrap();
+        assert_eq!(&decrypt(password, slice).unwrap()[..], &bytes[..]);
     }
 
     #[test]
@@ -245,11 +245,11 @@ mod tests {
 
         let password = [1u8, 2, 3, 4];
 
-        let slice = encrypt(&password, &bytes[..], get_random_gen()).unwrap();
+        let slice = encrypt(password, &bytes[..], get_random_gen()).unwrap();
 
         let password = [5u8, 6, 7, 8];
         assert!(matches!(
-            decrypt(&password, slice),
+            decrypt(password, slice),
             Err(Error::AuthenticationFailed)
         ));
     }

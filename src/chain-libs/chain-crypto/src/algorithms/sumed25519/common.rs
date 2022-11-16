@@ -78,11 +78,11 @@ pub fn split_seed(r: &Seed) -> (Seed, Seed) {
     let mut hleft = sha2::Sha256::default();
     let mut hright = sha2::Sha256::default();
 
-    hleft.update(&[1]);
-    hleft.update(&r.0);
+    hleft.update([1]);
+    hleft.update(r.0);
 
-    hright.update(&[2]);
-    hright.update(&r.0);
+    hright.update([2]);
+    hright.update(r.0);
 
     let o1 = hleft.finalize();
     let o2 = hright.finalize();

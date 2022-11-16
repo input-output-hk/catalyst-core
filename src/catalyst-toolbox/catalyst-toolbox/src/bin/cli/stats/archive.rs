@@ -30,9 +30,9 @@ impl ArchiveCommand {
     pub fn exec(self) -> Result<(), Report> {
         let archiver: ArchiveStats = {
             if let Some(csv) = &self.csv {
-                load_from_csv(&csv)?.into()
+                load_from_csv(csv)?.into()
             } else if let Some(folder) = &self.folder {
-                load_from_folder(&folder)?.into()
+                load_from_folder(folder)?.into()
             } else {
                 panic!("no csv nor folder defined");
             }

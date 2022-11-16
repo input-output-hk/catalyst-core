@@ -42,7 +42,7 @@ pub fn voters_with_at_least_one_vote() {
         .with(alice_wallet.as_direct_voter())
         .with(bob_wallet.as_direct_voter())
         .with(clarice_wallet.as_direct_voter())
-        .build();
+        .build(&testing_directory);
 
     let job_params = JobParameters::fund("fund9");
     let filter_result =
@@ -82,7 +82,7 @@ pub fn voters_with_at_least_one_vote() {
     let mut alice = iapyx_from_mainnet(&alice_wallet, &wallet_proxy).unwrap();
     let mut bob = iapyx_from_mainnet(&bob_wallet, &wallet_proxy).unwrap();
 
-    let registration = filter_result.registrations().clone();
+    let registration = filter_result.unwrap().registrations().clone();
     let raw_snapshot = RawSnapshot {
         tag: job_params.tag.unwrap(),
         content: RawSnapshotInput {

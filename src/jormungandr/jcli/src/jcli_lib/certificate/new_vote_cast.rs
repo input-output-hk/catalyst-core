@@ -82,7 +82,7 @@ impl PrivateVoteCast {
         let key_line = utils::io::read_line(&self.election_key_path)?;
         let key = chain_vote::ElectionPublicKey::try_from_bech32_str(&key_line)?;
 
-        let vote = chain_vote::Vote::new(self.options, self.choice as usize);
+        let vote = chain_vote::Vote::new(self.options, self.choice as usize)?;
         let crs = chain_vote::Crs::from_hash(self.vote_plan_id.as_ref());
         let (encrypted_vote, proof) =
             chain_impl_mockchain::vote::encrypt_vote(&mut rng, &crs, &key, vote);

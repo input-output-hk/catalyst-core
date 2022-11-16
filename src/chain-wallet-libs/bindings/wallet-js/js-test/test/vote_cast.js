@@ -101,23 +101,4 @@ describe("vote cast certificate tests", function () {
 
     wallet.confirm_transaction(fragment.id());
   });
-
-  it("test", async function () {
-    const lib = await import("wallet-js");
-
-    const votePlanId = lib.VotePlanId.from_bytes(
-      Buffer.from(
-        "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
-        "hex"
-      )
-    );
-    const optionsCount = 2;
-    const choice = 1;
-    const pubKey = Buffer.from(
-      "bed88887abe0a84f64691fe0bdfa3daf1a6cd697a13f07ae07588910ce39c927",
-      "hex"
-    );
-    // fails with "Cannot parse public key bytes" error
-    lib.Payload.new_private(votePlanId, optionsCount, choice, pubKey);
-  });
 });

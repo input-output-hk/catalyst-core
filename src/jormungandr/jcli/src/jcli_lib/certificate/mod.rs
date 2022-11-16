@@ -22,6 +22,7 @@ use crate::jcli_lib::utils::{
     vote::{SharesError, VotePlanError},
 };
 use chain_impl_mockchain::{block::BlockDate, certificate::DecryptedPrivateTallyError};
+use chain_vote::UnitVectorInitializationError;
 use jormungandr_lib::interfaces::{self, CertificateFromBech32Error, CertificateFromStrError};
 use std::{
     fmt::Display,
@@ -119,6 +120,8 @@ pub enum Error {
     PrivateTallyError(#[from] DecryptedPrivateTallyError),
     #[error("config file corrupted")]
     ConfigFileCorrupted(#[source] serde_yaml::Error),
+    #[error(transparent)]
+    InvalidChoice(#[from] UnitVectorInitializationError),
 }
 
 #[allow(clippy::large_enum_variant)]

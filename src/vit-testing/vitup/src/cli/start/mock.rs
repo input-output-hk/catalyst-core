@@ -1,8 +1,11 @@
+use crate::builders::utils::logger;
 use crate::mode::mock::{farm, read_config, start_rest_server, Configuration, Context};
+use jormungandr_automation::jormungandr::LogLevel;
 use std::sync::Mutex;
 use std::{path::PathBuf, sync::Arc};
 use structopt::StructOpt;
 use thiserror::Error;
+use tracing::subscriber::SetGlobalDefaultError;
 
 #[derive(StructOpt, Debug)]
 pub struct MockStartCommandArgs {
@@ -14,11 +17,16 @@ pub struct MockStartCommandArgs {
 
     #[structopt(long = "params")]
     pub params: Option<PathBuf>,
+
+    #[structopt(long = "log-level", default_value = "LogLevel::Info")]
+    pub log_level: LogLevel,
 }
 
 impl MockStartCommandArgs {
     #[tokio::main]
     pub async fn exec(self) -> Result<(), Error> {
+        logger::init(self.log_level)?;
+
         let mut configuration: Configuration = read_config(&self.config)?;
         let start_params = self
             .params
@@ -80,4 +88,6 @@ pub enum Error {
     Farm(#[from] crate::mode::mock::farm::ContextError),
     #[error(transparent)]
     ServerError(#[from] crate::mode::mock::RestError),
+    #[error(transparent)]
+    SetGlobalDefault(#[from] SetGlobalDefaultError),
 }

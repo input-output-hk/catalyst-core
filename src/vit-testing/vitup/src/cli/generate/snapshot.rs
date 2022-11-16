@@ -1,10 +1,11 @@
-use crate::builders::utils::DeploymentTree;
 use crate::builders::utils::SessionSettingsExtension;
+use crate::builders::utils::{logger, DeploymentTree};
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::Block0Initials;
 use crate::config::ConfigBuilder;
 use crate::Result;
 use hersir::config::SessionSettings;
+use jormungandr_automation::jormungandr::LogLevel;
 use jormungandr_automation::testing::block0::read_genesis_yaml;
 use jormungandr_lib::interfaces::Initial;
 use jortestkit::prelude::read_file;
@@ -32,11 +33,16 @@ pub struct SnapshotCommandArgs {
 
     #[structopt(long = "skip-qr-generation")]
     pub skip_qr_generation: bool,
+
+    #[structopt(long = "log-level", default_value = "LogLevel::Info")]
+    pub log_level: LogLevel,
 }
 
 impl SnapshotCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
+
+        logger::init(self.log_level)?;
 
         let session_settings = SessionSettings::from_dir(&self.output_directory);
 

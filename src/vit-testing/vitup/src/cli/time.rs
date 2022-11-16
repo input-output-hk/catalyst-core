@@ -14,7 +14,7 @@ pub struct TimeCommand {
 impl TimeCommand {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
-        read_config(&self.config)?.print_report();
+        read_config(&self.config)?.print_report(None);
         Ok(())
     }
 }

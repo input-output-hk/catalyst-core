@@ -225,7 +225,7 @@ mod tests {
                     let (vote, proof) = ek.encrypt_and_prove_vote(
                         &mut gen,
                         &h,
-                        Vote::new(vote_options as usize, choice as usize),
+                        Vote::new(vote_options as usize, choice as usize).unwrap(),
                     );
                     Payload::private(
                         EncryptedVote::from_inner(vote),

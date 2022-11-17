@@ -115,6 +115,10 @@ impl<A> AsRef<[A]> for Ptp<A> {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+#[error("Can not initialize UnitVector with the provided paraments: size: {0}, index: {1}. index should be less than size")]
+pub struct UnitVectorInitializationError(usize, usize);
+
 #[derive(Clone, Copy)]
 /// Represents a Unit vector which size is @size and the @ith element (0-indexed) is enabled
 pub struct UnitVector {
@@ -139,10 +143,12 @@ impl std::fmt::Display for UnitVector {
 #[allow(clippy::len_without_is_empty)]
 impl UnitVector {
     /// Create a new `ith` unit vector, with `size` greater than zero, and greater than `ith`.
-    pub fn new(size: usize, ith: usize) -> Self {
-        assert!(size > 0);
-        assert!(ith < size);
-        UnitVector { ith, size }
+    pub fn new(size: usize, ith: usize) -> Result<Self, UnitVectorInitializationError> {
+        if ith >= size {
+            Err(UnitVectorInitializationError(size, ith))
+        } else {
+            Ok(UnitVector { ith, size })
+        }
     }
 
     pub fn iter(&self) -> UnitVectorIter {
@@ -212,7 +218,7 @@ mod tests {
 
     #[test]
     fn unit_vector() {
-        let uv = UnitVector::new(5, 0);
+        let uv = UnitVector::new(5, 0).unwrap();
         assert_eq!(
             &uv.iter().collect::<Vec<_>>()[..],
             [true, false, false, false, false]
@@ -222,7 +228,7 @@ mod tests {
             &(0usize..5).map(|i| uv.is_jth(i)).collect::<Vec<_>>()[..]
         );
 
-        let uv = UnitVector::new(5, 4);
+        let uv = UnitVector::new(5, 4).unwrap();
         assert_eq!(
             &uv.iter().collect::<Vec<_>>()[..],
             [false, false, false, false, true]

@@ -160,7 +160,8 @@ impl VoteTestGen {
             Vote::new(
                 proposal.options().choice_range().clone().max().unwrap() as usize + 1,
                 choice.as_byte() as usize,
-            ),
+            )
+            .unwrap(),
         );
 
         Payload::Private {

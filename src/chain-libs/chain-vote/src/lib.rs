@@ -29,6 +29,9 @@ pub use math::babystep::BabyStepsTable as TallyOptimizationTable;
 pub use crate::{
     committee::{ElectionPublicKey, MemberCommunicationKey, MemberPublicKey, MemberState},
     cryptography::Ciphertext, //todo: why this?
-    encrypted_vote::{Ballot, BallotVerificationError, EncryptedVote, ProofOfCorrectVote, Vote},
+    encrypted_vote::{
+        Ballot, BallotVerificationError, EncryptedVote, ProofOfCorrectVote,
+        UnitVectorInitializationError, Vote,
+    },
     tally::{Crs, EncryptedTally, Tally, TallyDecryptShare},
 };

@@ -20,5 +20,10 @@ jobs:
       with:
         # Optional version of wasm-pack to install(eg. 'v0.9.1', 'latest')
         version: 'latest'
+    
+    - name: Build wasm package
+      run: |
+        cd src/chain-wallet-libs/bindings/wallet-js
+        wasm-pack build --target=nodejs
 
     

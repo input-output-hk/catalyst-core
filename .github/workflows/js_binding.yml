@@ -21,6 +21,10 @@ jobs:
         # Optional version of wasm-pack to install(eg. 'v0.9.1', 'latest')
         version: 'latest'
     
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
+    
     - name: Build wasm package
       run: |
         cd src/chain-wallet-libs/bindings/wallet-js

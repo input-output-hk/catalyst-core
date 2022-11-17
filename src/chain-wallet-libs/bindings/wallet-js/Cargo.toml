@@ -8,7 +8,7 @@ interaction with Jörmungandr blockchain technology.
 edition = "2021"
 license = "MIT OR Apache-2.0"
 name = "wallet-js"
-repository = "https://github.com/input-output-hk/catalyst-core/tree/main/src/chain-wallet-libs/bindings/wallet-js"
+repository = "https://github.com/input-output-hk/catalyst-core"
 version = "0.7.0-pre4"
 
 [lib]

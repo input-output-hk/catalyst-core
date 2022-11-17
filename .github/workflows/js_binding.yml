@@ -8,6 +8,9 @@ on:
 
 jobs:
   wallet-js-binding:
+    permissions: 
+      contents: read
+      packages: write 
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -25,6 +28,8 @@ jobs:
       with:
         node-version: 16
         registry-url: 'https://npm.pkg.github.com'
+        # Defaults to the user or organization that owns the workflow fileлс
+        scope: '@Mr-Leshiy'
     
     - name: Build wasm package
       run: |
@@ -39,6 +44,7 @@ jobs:
     - name: Publish
       run: |
         cd src/chain-wallet-libs/bindings/wallet-js/pkg
+        npm install
         npm ci
         npm publish
       env:

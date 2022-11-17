@@ -24,16 +24,24 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: 16
+        registry-url: 'https://npm.pkg.github.com'
     
     - name: Build wasm package
       run: |
         cd src/chain-wallet-libs/bindings/wallet-js
-        wasm-pack build --target=nodejs
+        wasm-pack build --target=nodejs -d pkg
 
     - name: JS tests
       run: |
         cd src/chain-wallet-libs/bindings/wallet-js/js-test
         npm install
         npm test
+    - name: Publish
+      run: |
+        cd src/chain-wallet-libs/bindings/wallet-js/pkg
+        npm ci
+        npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     

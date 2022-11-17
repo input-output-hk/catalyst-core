@@ -5,10 +5,10 @@ description = """Wallet functionalities to interact with Jörmungandr
 This package profiles all that is needed to have an healthy and secure
 interaction with Jörmungandr blockchain technology.
 """
-edition = "2018"
+edition = "2021"
 license = "MIT OR Apache-2.0"
 name = "wallet-js"
-repository = "https://github.com/input-output-hk/chain-wallet-libs"
+repository = "https://github.com/input-output-hk/catalyst-core/tree/main/src/chain-wallet-libs/bindings/wallet-js"
 version = "0.7.0-pre4"
 
 [lib]

@@ -16,9 +16,7 @@ use vitup::testing::vitup_setup;
 #[test]
 pub fn put_raw_snapshot() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
-
     let stake = 10_000;
-
     let alice_wallet = MainnetWallet::new(stake);
     let bob_wallet = MainnetWallet::new(stake);
     let clarice_wallet = MainnetWallet::new(stake);
@@ -68,7 +66,7 @@ pub fn put_raw_snapshot() {
     let registrations = snapshot_result.registrations().clone();
 
     let raw_snapshot = RawSnapshotBuilder::default()
-        .with_voting_registrations(registrations.clone())
+        .with_voting_registrations(registrations)
         .with_tag(job_params.tag.as_ref().unwrap())
         .build();
 
@@ -77,7 +75,7 @@ pub fn put_raw_snapshot() {
     vit_station.put_raw_snapshot(&raw_snapshot).unwrap();
 
     assert_eq!(
-        vec![job_params.tag.clone().unwrap()],
+        vec![job_params.tag.unwrap()],
         vit_station.snapshot_tags().unwrap(),
         "expected tags vs tags taken from REST API"
     );

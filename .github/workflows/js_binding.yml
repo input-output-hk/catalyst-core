@@ -8,6 +8,7 @@ on:
 
 jobs:
   wallet-js-binding:
+    name: Wallet Javascript binding
     permissions: 
       contents: read
       packages: write 
@@ -27,7 +28,7 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: 16
-        registry-url: 'https://npm.pkg.github.com'
+        registry-url: https://npm.pkg.github.com/
         # Defaults to the user or organization that owns the workflow fileлс
         scope: '@Mr-Leshiy'
     

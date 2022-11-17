@@ -2,7 +2,7 @@ name: Javascript wallet binding
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "feature/npg-3884-setup-js-ci" ]
   pull_request:
     branches: [ "main" ]
 

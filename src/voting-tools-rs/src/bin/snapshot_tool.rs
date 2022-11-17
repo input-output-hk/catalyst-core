@@ -2,8 +2,10 @@ use std::{fs::File, io::BufWriter};
 
 use clap::Parser;
 use color_eyre::Result;
+use mainnet_lib::InMemoryDbSync;
 use tracing::debug;
-use voting_tools_rs::{voting_power, Args, Db, DbConfig};
+use voting_tools_rs::test_api::MockDbProvider;
+use voting_tools_rs::{voting_power, Args, DataProvider, Db, DbConfig, DryRunCommand};
 
 fn main() -> Result<()> {
     color_eyre::install()?;
@@ -19,6 +21,7 @@ fn main() -> Result<()> {
         max_slot_no,
         out_file,
         pretty,
+        dry_run,
         ..
     } = Args::parse();
 
@@ -29,8 +32,9 @@ fn main() -> Result<()> {
         password: db_pass,
     };
 
-    let db = Db::connect(db_config)?;
-    let outputs = voting_power(&db, min_slot_no, max_slot_no, testnet_magic)?;
+    let db = get_data_provider(db_config, dry_run)?;
+
+    let outputs = voting_power(Box::leak(db), min_slot_no, max_slot_no, testnet_magic)?;
 
     debug!("calculated {} outputs", outputs.len());
 
@@ -43,4 +47,19 @@ fn main() -> Result<()> {
     }?;
 
     Ok(())
+}
+
+fn get_data_provider(
+    real_db_config: DbConfig,
+    maybe_dry_run: Option<DryRunCommand>,
+) -> Result<Box<dyn DataProvider>> {
+    if let Some(dry_run) = maybe_dry_run {
+        match dry_run {
+            DryRunCommand::DryRun { mock_json_file } => Ok(Box::new(MockDbProvider::from(
+                InMemoryDbSync::restore(&mock_json_file)?,
+            ))),
+        }
+    } else {
+        Ok(Box::new(Db::connect(real_db_config)?))
+    }
 }

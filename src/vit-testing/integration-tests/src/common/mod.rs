@@ -13,7 +13,7 @@ mod wallet;
 pub use reps::{empty_assigner, RepsVoterAssignerSource};
 
 pub use assert::*;
-pub use mainnet_tools::wallet::MainnetWallet;
+pub use mainnet_lib::MainnetWallet;
 pub use rewards::{funded_proposals, VotesRegistry};
 pub use snapshot_filter::SnapshotFilter;
 pub use static_data::SnapshotExtensions;

@@ -460,9 +460,9 @@ mod tests {
         println!("encrypting vote");
 
         let vote_options = 2;
-        let e1 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0));
-        let e2 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 1));
-        let e3 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0));
+        let e1 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0).unwrap());
+        let e2 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 1).unwrap());
+        let e3 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0).unwrap());
 
         println!("tallying");
 
@@ -522,9 +522,9 @@ mod tests {
         println!("encrypting vote");
 
         let vote_options = 2;
-        let e1 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0));
-        let e2 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 1));
-        let e3 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0));
+        let e1 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0).unwrap());
+        let e2 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 1).unwrap());
+        let e3 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0).unwrap());
 
         println!("tallying");
 
@@ -590,7 +590,7 @@ mod tests {
 
         let mut encrypted_tally = EncryptedTally::new(vote_options, ek.clone(), h.clone());
         encrypted_tally.add(
-            &get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0)),
+            &get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0).unwrap()),
             42,
         );
 
@@ -691,7 +691,7 @@ mod tests {
         println!("encrypting vote");
 
         let vote_options = 2;
-        let e = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0));
+        let e = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0).unwrap());
 
         println!("tallying");
 
@@ -784,9 +784,9 @@ mod tests {
         println!("encrypting vote");
 
         let vote_options = 2;
-        let e1 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0));
-        let e2 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 1));
-        let e3 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0));
+        let e1 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0).unwrap());
+        let e2 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 1).unwrap());
+        let e3 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0).unwrap());
 
         println!("tallying");
 

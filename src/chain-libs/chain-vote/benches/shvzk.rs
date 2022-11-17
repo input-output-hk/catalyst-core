@@ -28,7 +28,9 @@ fn encrypt_and_prove(c: &mut Criterion) {
         group.bench_with_input(
             BenchmarkId::new("Encrypt and Prove", parameter_string),
             &number_candidates,
-            |b, &nr| b.iter(|| ek.encrypt_and_prove_vote(&mut rng, &crs, Vote::new(nr, 0))),
+            |b, &nr| {
+                b.iter(|| ek.encrypt_and_prove_vote(&mut rng, &crs, Vote::new(nr, 0).unwrap()))
+            },
         );
     }
 
@@ -43,7 +45,7 @@ fn verify(c: &mut Criterion) {
 
     for &number_candidates in [2usize, 4, 8].iter() {
         let (vote, proof) =
-            ek.encrypt_and_prove_vote(&mut rng, &crs, Vote::new(number_candidates, 0));
+            ek.encrypt_and_prove_vote(&mut rng, &crs, Vote::new(number_candidates, 0).unwrap());
         let parameter_string = format!("{} candidates", number_candidates);
         group.bench_with_input(
             BenchmarkId::new("Verify with", parameter_string),

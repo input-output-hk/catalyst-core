@@ -376,7 +376,7 @@ mod tests {
         let public_key = PublicKey {
             pk: GroupElement::from_hash(&[1u8]),
         };
-        let unit_vector = UnitVector::new(2, 0);
+        let unit_vector = UnitVector::new(2, 0).unwrap();
         let encryption_randomness = vec![Scalar::random(&mut r); unit_vector.len()];
         let ciphertexts: Vec<Ciphertext> = unit_vector
             .iter()
@@ -405,7 +405,7 @@ mod tests {
         let public_key = PublicKey {
             pk: GroupElement::from_hash(&[1u8]),
         };
-        let unit_vector = UnitVector::new(2, 0);
+        let unit_vector = UnitVector::new(2, 0).unwrap();
         let encryption_randomness = vec![Scalar::random(&mut r); unit_vector.len()];
         let ciphertexts: Vec<Ciphertext> = unit_vector
             .iter()
@@ -434,7 +434,7 @@ mod tests {
         let public_key = PublicKey {
             pk: GroupElement::from_hash(&[1u8]),
         };
-        let unit_vector = UnitVector::new(2, 0);
+        let unit_vector = UnitVector::new(2, 0).unwrap();
         let encryption_randomness = vec![Scalar::random(&mut r); unit_vector.len()];
         let ciphertexts: Vec<Ciphertext> = unit_vector
             .iter()
@@ -471,7 +471,7 @@ mod tests {
         let public_key = PublicKey {
             pk: GroupElement::from_hash(&[1u8]),
         };
-        let unit_vector = UnitVector::new(2, 0);
+        let unit_vector = UnitVector::new(2, 0).unwrap();
         let encryption_randomness = vec![Scalar::random(&mut r); unit_vector.len()];
         let ciphertexts: Vec<Ciphertext> = unit_vector
             .iter()

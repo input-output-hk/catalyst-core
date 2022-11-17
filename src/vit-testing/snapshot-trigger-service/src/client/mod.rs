@@ -2,11 +2,14 @@ pub mod args;
 pub mod rest;
 
 use crate::client::rest::SnapshotRestClient;
+use crate::client::Error::CannotConvertFromOutput;
 use crate::config::JobParameters;
 use crate::ContextState;
 use jormungandr_lib::crypto::account::Identifier;
 use jortestkit::prelude::WaitBuilder;
-use snapshot_lib::registration::{Delegations, VotingRegistration};
+use num_traits::cast::ToPrimitive;
+use snapshot_lib::registration::{Delegations as VotingDelegations, VotingRegistration};
+use voting_tools_rs::{Delegations, Output};
 
 pub fn do_snapshot<S: Into<String>, P: Into<String>>(
     job_params: JobParameters,
@@ -84,6 +87,43 @@ pub struct SnapshotResult {
 }
 
 impl SnapshotResult {
+    pub fn from_outputs(status: ContextState, snapshot: Vec<Output>) -> Result<Self, Error> {
+        let mut voting_registrations = vec![];
+        for output in snapshot {
+            voting_registrations.push(VotingRegistration {
+                stake_public_key: output.stake_public_key.to_string(),
+                voting_power: output
+                    .voting_power
+                    .to_u64()
+                    .ok_or_else(|| {
+                        CannotConvertFromOutput("cannot extract voting power".to_string())
+                    })?
+                    .into(),
+                reward_address: output.rewards_address.to_string(),
+                delegations: match output.delegations {
+                    Delegations::Legacy(legacy) => VotingDelegations::Legacy(
+                        Identifier::from_hex(&legacy)
+                            .map_err(|e| CannotConvertFromOutput(e.to_string()))?,
+                    ),
+                    Delegations::Delegated(delegated) => {
+                        let mut new = vec![];
+                        for (key, weight) in delegated {
+                            new.push((
+                                Identifier::from_hex(&key)
+                                    .map_err(|e| CannotConvertFromOutput(e.to_string()))?,
+                                weight,
+                            ));
+                        }
+                        VotingDelegations::New(new)
+                    }
+                },
+                voting_purpose: *output.voting_purpose,
+            });
+        }
+
+        Ok(Self::new(status, voting_registrations))
+    }
+
     pub fn new(status: ContextState, snapshot: Vec<VotingRegistration>) -> Self {
         Self { status, snapshot }
     }
@@ -105,8 +145,8 @@ impl SnapshotResult {
             .iter()
             .cloned()
             .find(|x| match &x.delegations {
-                Delegations::Legacy(id) => id == identifier,
-                Delegations::New(_dist) => false,
+                VotingDelegations::Legacy(id) => id == identifier,
+                VotingDelegations::New(_dist) => false,
             })
     }
 
@@ -116,8 +156,8 @@ impl SnapshotResult {
             .iter()
             .cloned()
             .find(|reg| match &reg.delegations {
-                Delegations::Legacy(delegation) => delegation == id,
-                Delegations::New(delegations) => {
+                VotingDelegations::Legacy(delegation) => delegation == id,
+                VotingDelegations::New(delegations) => {
                     delegations.iter().any(|(identifier, _)| identifier == id)
                 }
             }))
@@ -140,4 +180,6 @@ pub enum Error {
     ChainError(#[from] chain_addr::Error),
     #[error(transparent)]
     Config(#[from] crate::config::Error),
+    #[error("cannot convert voting registration from voting tools output due to: ")]
+    CannotConvertFromOutput(String),
 }

@@ -75,7 +75,7 @@ impl Proposal {
                 // the Choice was validated already, so this can't overflow
                 let choice = choice.as_byte() - self.options.choice_range().start;
 
-                let vote = Vote::new(length.into(), choice.into());
+                let vote = Vote::new(length.into(), choice.into()).unwrap();
                 let (encrypted_vote, proof) = vote::encrypt_vote(
                     &mut rng,
                     &chain_vote::Crs::from_hash(self.vote_plan_id.as_ref()),

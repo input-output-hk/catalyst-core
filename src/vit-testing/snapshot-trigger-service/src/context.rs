@@ -4,7 +4,7 @@ use crate::config::JobParameters;
 use scheduler_service_lib::{RunContext, SchedulerContext, ServerStopper, State};
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
-use std::path::PathBuf;
+use std::path::Path;
 use std::sync::Arc;
 use std::sync::Mutex;
 
@@ -68,8 +68,8 @@ impl Context {
         self.inner.set_api_token(Some(api_token));
     }
 
-    pub fn working_directory(&self) -> &Option<PathBuf> {
-        self.inner.working_directory()
+    pub fn working_directory(&self) -> &Path {
+        &self.inner.config().result_dir
     }
 }
 

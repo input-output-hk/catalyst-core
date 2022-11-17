@@ -1,35 +1,20 @@
-use crate::Vote;
-use std::borrow::Borrow;
-use std::collections::HashSet;
-use std::sync::Arc;
-
 use crate::common::mainnet_wallet_ext::MainnetWalletExtension;
 use crate::common::snapshot::mock;
-use crate::common::snapshot_filter::SnapshotFilterSource;
 use crate::common::MainnetWallet;
-use crate::common::{iapyx_from_mainnet, RepsVoterAssignerSource};
 use assert_fs::TempDir;
-use catalyst_toolbox::rewards::voters::calc_voter_rewards;
-use catalyst_toolbox::rewards::Threshold;
-use chain_impl_mockchain::block::BlockDate;
-use fraction::Fraction;
-use jormungandr_automation::testing::time;
-use jormungandr_lib::crypto::account::Identifier;
 use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
+use snapshot_lib::SnapshotInfo;
 use snapshot_trigger_service::config::JobParameters;
-use vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
-use vit_servicing_station_tests::common::raw_snapshot::RawSnapshot;
+use vit_servicing_station_tests::common::raw_snapshot::RawSnapshotBuilder;
+use vit_servicing_station_tests::common::snapshot::VotingPower;
 use vitup::config::VoteBlockchainTime;
 use vitup::config::{Block0Initials, ConfigBuilder};
-use vitup::config::{Role, DIRECT_VOTING_GROUP};
 use vitup::testing::spawn_network;
 use vitup::testing::vitup_setup;
-use snapshot_lib::{
-    voting_group::{DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP}};
 
 #[test]
-pub fn voters_with_at_least_one_vote() {
+pub fn put_raw_snapshot() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
 
     let stake = 10_000;
@@ -38,28 +23,29 @@ pub fn voters_with_at_least_one_vote() {
     let bob_wallet = MainnetWallet::new(stake);
     let clarice_wallet = MainnetWallet::new(stake);
 
-    let (db_sync, reps) = MainnetNetworkBuilder::default()
+    let (db_sync, _reps) = MainnetNetworkBuilder::default()
         .with(alice_wallet.as_direct_voter())
         .with(bob_wallet.as_direct_voter())
         .with(clarice_wallet.as_direct_voter())
         .build(&testing_directory);
 
     let job_params = JobParameters::fund("fund9");
-    let filter_result =
-        mock::do_snapshot(&db_sync, job_params.clone(), &testing_directory);
+    let snapshot_result =
+        mock::do_snapshot(&db_sync, job_params.clone(), &testing_directory).unwrap();
 
     let vote_timing = VoteBlockchainTime {
-        vote_start: 0,
-        tally_start: 1,
-        tally_end: 2,
+        vote_start: 1,
+        tally_start: 2,
+        tally_end: 3,
         slots_per_epoch: 30,
     };
 
-    let config = ConfigBuilder::default().block0_initials(Block0Initials(vec![
-        alice_wallet.as_initial_entry(),
-        bob_wallet.as_initial_entry(),
-        clarice_wallet.as_initial_entry(),
-    ]))
+    let config = ConfigBuilder::default()
+        .block0_initials(Block0Initials(vec![
+            alice_wallet.as_initial_entry(),
+            bob_wallet.as_initial_entry(),
+            clarice_wallet.as_initial_entry(),
+        ]))
         .vote_timing(vote_timing.into())
         .slot_duration_in_seconds(2)
         .proposals_count(3)
@@ -71,7 +57,7 @@ pub fn voters_with_at_least_one_vote() {
     let (mut controller, vit_parameters, network_params) =
         vitup_setup(&config, testing_directory.path().to_path_buf()).unwrap();
 
-    let (nodes, vit_station, wallet_proxy) = spawn_network(
+    let (_nodes, vit_station, _wallet_proxy) = spawn_network(
         &mut controller,
         vit_parameters,
         network_params,
@@ -79,28 +65,40 @@ pub fn voters_with_at_least_one_vote() {
     )
     .unwrap();
 
-    let mut alice = iapyx_from_mainnet(&alice_wallet, &wallet_proxy).unwrap();
-    let mut bob = iapyx_from_mainnet(&bob_wallet, &wallet_proxy).unwrap();
+    let registrations = snapshot_result.registrations().clone();
 
-    let registration = filter_result.unwrap().registrations().clone();
-    let raw_snapshot = RawSnapshot {
-        tag: job_params.tag.unwrap(),
-        content: RawSnapshotInput {
-            snapshot: snapshot_lib::RawSnapshot::from(registration),
-            update_timestamp: 0,
-            min_stake_threshold: 450u64.into(),
-            voting_power_cap: Fraction::from(1u64),
-            direct_voters_group: Some(DEFAULT_DIRECT_VOTER_GROUP.to_string()),
-            representatives_group: Some(DEFAULT_REPRESENTATIVE_GROUP.to_string()),
-        },
-    };
+    let raw_snapshot = RawSnapshotBuilder::default()
+        .with_voting_registrations(registrations.clone())
+        .with_tag(job_params.tag.as_ref().unwrap())
+        .build();
 
-    println!("snap {:#?}", raw_snapshot);
     assert!(vit_station.check_running());
-    println!("poposals {:?}", vit_station.proposals(DEFAULT_REPRESENTATIVE_GROUP));
-    println!(" tages {:?}",vit_station.snapshot_tags());
 
-    vit_station.put_raw_snapshot(&RawSnapshot::default()).unwrap();
+    vit_station.put_raw_snapshot(&raw_snapshot).unwrap();
 
+    assert_eq!(
+        vec![job_params.tag.clone().unwrap()],
+        vit_station.snapshot_tags().unwrap(),
+        "expected tags vs tags taken from REST API"
+    );
 
+    let snapshot_infos: Vec<SnapshotInfo> = raw_snapshot.clone().try_into().unwrap();
+
+    for snapshot_info in snapshot_infos.iter() {
+        let voting_power = VotingPower::from(snapshot_info.clone());
+        let voter_info = vit_station
+            .voter_info(&raw_snapshot.tag, &snapshot_info.hir.voting_key.to_hex())
+            .unwrap();
+        assert_eq!(
+            vec![voting_power],
+            voter_info.voter_info,
+            "wrong data for entry: {:?}",
+            snapshot_info
+        );
+        assert_eq!(
+            raw_snapshot.content.update_timestamp, voter_info.last_updated,
+            "wrong timestamp for entry: {:?}",
+            snapshot_info
+        );
+    }
 }

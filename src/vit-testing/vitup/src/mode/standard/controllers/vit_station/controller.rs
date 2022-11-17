@@ -4,13 +4,13 @@ use super::{RestClient, Result};
 use jormungandr_automation::jormungandr::NodeAlias;
 use jormungandr_automation::jormungandr::Status;
 use jormungandr_automation::testing::NamedProcess;
-use vit_servicing_station_tests::common::snapshot::VoterInfo;
 use std::net::SocketAddr;
 use std::process::Child;
 use std::sync::{Arc, Mutex};
 use vit_servicing_station_lib::db::models::challenges::Challenge;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_tests::common::raw_snapshot::RawSnapshot;
+use vit_servicing_station_tests::common::snapshot::VoterInfo;
 
 pub type VitStationSettings = vit_servicing_station_lib::server::settings::ServiceSettings;
 
@@ -66,7 +66,7 @@ impl VitStationController {
         Ok(self.rest_client.snapshot_tags()?)
     }
 
-    pub fn voter_info(&self, tag: &str, key: &str) -> Result<VoterInfo>{
+    pub fn voter_info(&self, tag: &str, key: &str) -> Result<VoterInfo> {
         Ok(self.rest_client.voter_info(tag, key)?)
     }
 

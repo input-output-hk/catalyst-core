@@ -28,7 +28,7 @@ pub fn direct_registration_flow() {
         .start_on_available_port(&testing_directory)
         .unwrap();
 
-    let direct_voting_registration = alice.direct_voting_registration();
+    let direct_voting_registration = alice.generate_direct_voting_registration(0);
     voter_registration_mock.with_response(direct_voting_registration, &testing_directory);
 
     let registration_result = registration_service.self_register(&alice, &testing_directory);
@@ -71,7 +71,7 @@ pub fn delegation_registration_flow() {
     let delegations_dist = vec![(bob.catalyst_public_key(), 1u32)];
 
     let delegation_voting_registration =
-        alice.delegation_voting_registration(delegations_dist.clone());
+        alice.generate_delegated_voting_registration(delegations_dist.clone(), 0);
     voter_registration_mock.with_response(delegation_voting_registration, &testing_directory);
 
     let registration_result = registration_service.delegated_register(

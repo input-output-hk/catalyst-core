@@ -24,10 +24,6 @@ pub struct Configuration {
 }
 
 impl Configuration {
-    pub fn working_directory(&self) -> &Option<PathBuf> {
-        &self.inner.working_directory
-    }
-
     pub fn result_directory(&self) -> &PathBuf {
         &self.inner.result_dir
     }
@@ -49,7 +45,6 @@ impl Default for Configuration {
                 address: ([0, 0, 0, 0], 7070).into(),
                 api_token: None,
                 admin_token: None,
-                working_directory: None,
             },
             network: NetworkType::Mainnet,
             cardano_cli: Path::new("cardano_cli").to_path_buf(),

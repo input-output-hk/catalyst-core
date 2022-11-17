@@ -24,15 +24,7 @@ pub fn filter(
 }
 
 pub async fn files_handler(context: SharedContext) -> Result<impl Reply, Rejection> {
-    Ok(dump_json(
-        context
-            .read()
-            .await
-            .working_directory()
-            .clone()
-            .ok_or(Error::NoWorkingDir)?,
-    )
-    .map(|r| warp::reply::json(&r))?)
+    Ok(dump_json(context.read().await.working_directory()).map(|r| warp::reply::json(&r))?)
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -41,8 +33,6 @@ pub enum Error {
     File(#[from] FileListerError),
     #[error("cannot acquire lock on context")]
     Poison,
-    #[error("cannot list files dur to configuration issue: no working directory defined")]
-    NoWorkingDir,
 }
 
 impl<T> From<PoisonError<T>> for Error {

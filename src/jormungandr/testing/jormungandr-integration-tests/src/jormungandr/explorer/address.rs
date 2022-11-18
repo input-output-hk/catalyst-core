@@ -75,7 +75,11 @@ pub fn explorer_transactions_not_existing_address_test() {
         .send(&transaction.encode())
         .assert_in_block_with_wait(&wait);
 
-    let params = ExplorerParams::new(ADDRESS_QUERY_COMPLEXITY_LIMIT, ADDRESS_QUERY_DEPTH_LIMIT, None);
+    let params = ExplorerParams::new(
+        ADDRESS_QUERY_COMPLEXITY_LIMIT,
+        ADDRESS_QUERY_DEPTH_LIMIT,
+        None,
+    );
     let explorer_process = jormungandr.explorer(params).unwrap();
     let explorer = explorer_process.client();
 

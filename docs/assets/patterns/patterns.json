@@ -1,0 +1,20 @@
+[
+    {
+        "title"   : "allows the creation of collapsible regions, turning this.",
+        "usage"   : [
+            "!!collapse:Title",
+            "Content",
+            "!!"
+        ],
+        "pattern" : "!!collapse:(?P<title>([^\n])*)\n(?P<content>(?s:.)*)\n!!\n",
+        "template" : "<details>\n<summary>${title}</summary>\n<div class='collapsed'>\n${content}\n</div>\n</details>"
+    },
+    {
+        "title"   : "Force mermaid diagrams to use the same theme.",
+        "usage"   : [
+            "```kroki-mermaid"
+        ],
+        "pattern" : "^```kroki-mermaid\n``",
+        "template" : "```kroki-mermaid\n%%{init: {'theme':'forest'}}%%\n"
+    }
+]

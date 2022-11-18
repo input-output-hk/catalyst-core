@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Error",""]],"fn":[["job_new_handler",""],["job_status_handler",""],["snapshot_info_handler",""],["start_rest_server",""],["update_job_id_handler",""]]};

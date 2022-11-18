@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["MockDbProvider","Mock db provider based on [`DbSyncInstance`] struct from [`mainnet_lib`] project. In essence struct keep data in memory and provides query for voting tools logic"],["SnapshotOutputAssert","Fluent api for [Output] assertions"]],"trait":[["VerifiableSnapshotOutput","Allows [Output] struct to be assertable"]]};

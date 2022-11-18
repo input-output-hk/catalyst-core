@@ -49,7 +49,7 @@ jobs:
       - run: |
           cd src/jormungandr
           cargo build
-          cargo nextest run --no-fail-fast -p jormungandr -p jcli -p jormungandr-integration-tests --no-fail-fast --partition hash:${{ matrix.shardNumber }}/${{ matrix.totalShards }}
+          cargo nextest run  -p jormungandr -p jcli -p jormungandr-integration-tests --no-fail-fast --partition hash:${{ matrix.shardNumber }}/${{ matrix.totalShards }}
   other_tests:
     runs-on: ubuntu-latest
     strategy:

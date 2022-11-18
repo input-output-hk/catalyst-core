@@ -1,0 +1,258 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Delegating your stake - Catalyst Voting System - Core Technology</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../.././doc-src/assets/css/mdbook-admonish.css">
+        <link rel="stylesheet" href="../.././doc-src/assets/css/open-in.css">
+
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../../intro.html">Introduction</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/introduction.html"><strong aria-hidden="true">1.</strong> Vote Storage Ledger</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/concepts/introduction.html"><strong aria-hidden="true">1.1.</strong> General Concepts</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/concepts/blockchain.html"><strong aria-hidden="true">1.1.1.</strong> Blockchain concepts</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/concepts/stake.html"><strong aria-hidden="true">1.1.2.</strong> Stake</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/concepts/node.html"><strong aria-hidden="true">1.1.3.</strong> Node organisation</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/concepts/network.html"><strong aria-hidden="true">1.1.4.</strong> Network overview</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/quickstart/introduction.html"><strong aria-hidden="true">1.2.</strong> Quick start</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/quickstart/01_command_line.html"><strong aria-hidden="true">1.2.1.</strong> Command lines tools</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/quickstart/02_passive_node.html"><strong aria-hidden="true">1.2.2.</strong> Starting a passive node</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/quickstart/03_rest_api.html"><strong aria-hidden="true">1.2.3.</strong> REST API</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/quickstart/04_explorer.html"><strong aria-hidden="true">1.2.4.</strong> Explorer API</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/quickstart/05_leader_candidate.html"><strong aria-hidden="true">1.2.5.</strong> Starting as a leader candidate</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/configuration/introduction.html"><strong aria-hidden="true">1.3.</strong> Configuration</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/configuration/logging.html"><strong aria-hidden="true">1.3.1.</strong> Logging</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/configuration/network.html"><strong aria-hidden="true">1.3.2.</strong> Node network</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/configuration/mempool.html"><strong aria-hidden="true">1.3.3.</strong> Fragment Pool</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/configuration/leadership.html"><strong aria-hidden="true">1.3.4.</strong> Leader Events</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/jcli/introduction.html"><strong aria-hidden="true">1.4.</strong> jcli</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/jcli/key.html"><strong aria-hidden="true">1.4.1.</strong> Cryptographic keys</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/jcli/address.html"><strong aria-hidden="true">1.4.2.</strong> Address</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/jcli/transaction.html"><strong aria-hidden="true">1.4.3.</strong> Transaction</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/jcli/certificate.html"><strong aria-hidden="true">1.4.4.</strong> Certificate</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/jcli/genesis.html"><strong aria-hidden="true">1.4.5.</strong> Genesis</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/jcli/vote.html"><strong aria-hidden="true">1.4.6.</strong> Voting</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/jcli/rest.html"><strong aria-hidden="true">1.4.7.</strong> REST</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/stake_pool/introduction.html"><strong aria-hidden="true">1.5.</strong> Staking and stake pool</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/stake_pool/delegating_stake.html" class="active"><strong aria-hidden="true">1.5.1.</strong> Delegating your stake</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/stake_pool/registering_stake_pool.html"><strong aria-hidden="true">1.5.2.</strong> Registering stake pool</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/stake_pool/retiring_stake_pool.html"><strong aria-hidden="true">1.5.3.</strong> Retiring stake pool</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/advanced/introduction.html"><strong aria-hidden="true">1.6.</strong> Advanced</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/advanced/01_the_genesis_block.html"><strong aria-hidden="true">1.6.1.</strong> Genesis block</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/advanced/02_starting_bft_blockchain.html"><strong aria-hidden="true">1.6.2.</strong> Starting a bft blockchain</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/advanced/03_starting_genesis_praos_blockchain.html"><strong aria-hidden="true">1.6.3.</strong> Starting a genesis blockchain</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/specs/introduction.html"><strong aria-hidden="true">1.7.</strong> Specs</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/specs/network.html"><strong aria-hidden="true">1.7.1.</strong> Network</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/testing/introduction.html"><strong aria-hidden="true">1.8.</strong> Testing</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/testing/automation.html"><strong aria-hidden="true">1.8.1.</strong> Jormungandr Automation</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/testing/hersir.html"><strong aria-hidden="true">1.8.2.</strong> Hersir</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/testing/thor.html"><strong aria-hidden="true">1.8.3.</strong> Thor</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/testing/mjolnir.html"><strong aria-hidden="true">1.8.4.</strong> Mjolnir</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/testing/loki.html"><strong aria-hidden="true">1.8.5.</strong> Loki</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/testing/integration_tests.html"><strong aria-hidden="true">1.8.6.</strong> Integration tests</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../rust/docs.html"><strong aria-hidden="true">2.</strong> Rust Documentation</a></li><li class="chapter-item expanded "><a href="../../api/api.html"><strong aria-hidden="true">3.</strong> API Documentation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../api/JormungandrV0.html"><strong aria-hidden="true">3.1.</strong> Jormungandr V0 Rest API</a></li><li class="chapter-item expanded "><a href="../../api/JormungandrV1.html"><strong aria-hidden="true">3.2.</strong> Jormungandr V1 Rest API</a></li><li class="chapter-item expanded "><a href="../../api/vit-servicing-station-v0.html"><strong aria-hidden="true">3.3.</strong> VIT Servicing Station Rest API</a></li><li class="chapter-item expanded "><a href="../../api/vit-testing-v0.html"><strong aria-hidden="true">3.4.</strong> VIT Testing Rest API</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Catalyst Voting System - Core Technology</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/input-output-hk/catalyst-core" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="delegating-your-stake"><a class="header" href="#delegating-your-stake">Delegating your stake</a></h1>
+<h2 id="how-to-create-the-delegation-certificate"><a class="header" href="#how-to-create-the-delegation-certificate">how to create the delegation certificate</a></h2>
+<p>Stake is concentrated in accounts, and you will need account public key to delegate its associated stake.</p>
+<h3 id="for-own-account"><a class="header" href="#for-own-account">for own account</a></h3>
+<p>You will need:</p>
+<ul>
+<li>the Stake Pool ID: an hexadecimal string identifying the stake pool you want
+to delegate your stake to.</li>
+</ul>
+<pre><code class="language-sh">jcli certificate new owner-stake-delegation STAKE_POOL_ID --output stake_delegation.cert
+</code></pre>
+<p>Note that the certificate is in blaco, there’s no account key used for its creation.
+In order for delegation to work it must be submitted to a node inside a very specific transaction:</p>
+<ul>
+<li>Transaction must have exactly 1 input</li>
+<li>The input must be from account</li>
+<li>The input value must be strictly equal to fee of the transaction</li>
+<li>Transaction must have 0 outputs</li>
+</ul>
+<p>The account used for input will have its stake delegated to the stake pool</p>
+<h3 id="for-any-account"><a class="header" href="#for-any-account">for any account</a></h3>
+<p>You will need:</p>
+<ul>
+<li>account public key: a bech32 string of a public key</li>
+<li>the Stake Pool ID: an hexadecimal string identifying the stake pool you want
+to delegate your stake to.</li>
+</ul>
+<pre><code class="language-sh">jcli certificate new stake-delegation ACCOUNT_PUBLIC_KEY STAKE_POOL_ID --output stake_delegation.cert
+</code></pre>
+<h2 id="submitting-to-a-node"><a class="header" href="#submitting-to-a-node">submitting to a node</a></h2>
+<p>The <code>jcli transaction add-certificate</code> command should be used to add a certificate <strong>before finalizing</strong> the transaction.</p>
+<p>For example:</p>
+<pre><code class="language-sh">
+...
+
+jcli transaction add-certificate $(cat stake_delegation.cert) --staging tx
+jcli transaction finalize CHANGE_ADDRESS --fee-constant 5 --fee-coefficient 2 --fee-certificate 2 --staging tx
+
+...
+jcli transaction seal --staging tx
+jcli transaction auth --key account_key.prv --staging tx
+...
+
+</code></pre>
+<p>The <code>--fee-certificate</code> flag indicates the cost of adding a certificate, used for computing the fees, it can be omitted if it is zero.</p>
+<p>See <a href="../jcli/transaction.html">here</a> for more documentation on transaction creation.</p>
+<h2 id="how-to-sign-your-delegation-certificate"><a class="header" href="#how-to-sign-your-delegation-certificate">how to sign your delegation certificate</a></h2>
+<p>This procedure is needed only for certificates that are to be included
+in the <code>genesis config</code> file.</p>
+<p>We need to make sure that the owner of the account is authorizing this
+delegation to happens, and for that we need a cryptographic signature.</p>
+<p>We will need the account secret key to create a signature</p>
+<pre><code class="language-sh">jcli certificate sign --certificate stake_delegation.cert --key account_key.prv --output stake_delegation.signedcert
+</code></pre>
+<p>The content of <code>stake_delegation.signedcert</code> will be something like:</p>
+<pre><code class="language-sh">signedcert1q9uxkxptz3zx7akmugkmt4ecjjd3nmzween2qfr5enhzkt37tdt4uqt0j0039z5048mu9ayv3ujep5sl28q2cpdnx9fkvpq30lmjrrgtmqqctzczvu6e3v65m40n40c3y2pnu4vhd888dygkrtnfm0ts92fe50jy0h0ugh6wlvgy4xvr3lz4uuqzg2xgu6vv8tr24jrwhg0l09klp5wvwzl5
+</code></pre>
+<p>and can now be added in the <code>genesis config</code> file.</p>
+<footer id="open-on-gh">Found a bug? <a href="https://github.com/input-output-hk/catalyst-core/edit/main/doc-src/core-ledger-doc/stake_pool/delegating_stake.md">Edit this page on GitHub.</a></footer>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../core-ledger-doc/stake_pool/introduction.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next" href="../../core-ledger-doc/stake_pool/registering_stake_pool.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../core-ledger-doc/stake_pool/introduction.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next" href="../../core-ledger-doc/stake_pool/registering_stake_pool.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../searcher.js" type="text/javascript" charset="utf-8"></script>
+
+        <script src="../../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </body>
+</html>

@@ -81,13 +81,15 @@ jcli certificate new update-proposal \
 ```
 
 Where:
+
 - <PROPOSER_ID>                      - the proposer ID, public key of the one who will sign this certificate
 - <CONFIG_FILE>                      - *optional*, the file path to the config file defining the config param changes If omitted it will be read from the standard input.
 - `output-file`                      - *optional*, write the output to the given file or print it to the standard output if not defined
 
 For example your config file may look like:
+
 ```yaml
-{{#include ../../jormungandr-lib/src/interfaces/CONFIG_PARAMS_DOCUMENTED_EXAMPLE.yaml}}
+{{#include ../../../src/jormungandr/jormungandr-lib/src/interfaces/CONFIG_PARAMS_DOCUMENTED_EXAMPLE.yaml}}
 ```
 
 ## Building vote cast certificate
@@ -105,6 +107,7 @@ jcli certificate new update-cast public \
 ```
 
 Where:
+
 - <choice>                      - the number of choice within the proposal you vote for
 - <proposal-index>              - the number of proposal in the vote plan you vote for
 - <vote-plan-id>                - the vote plan identified on the blockchain
@@ -123,6 +126,7 @@ jcli certificate new update-cast private \
 ```
 
 Where:
+
 - <choice>                      - the number of choice within the proposal you vote for
 - <options>                     - size of voting options
 - <proposal-index>              - the number of proposal in the vote plan you vote for

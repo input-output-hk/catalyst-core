@@ -5,7 +5,7 @@ use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey};
 use cardano_serialization_lib::error::JsError;
 use cardano_serialization_lib::metadata::{
     decode_metadatum_to_json_str, encode_json_value_to_metadatum, GeneralTransactionMetadata,
-    MetadataJsonSchema, MetadataMap, TransactionMetadatum, TransactionMetadatumLabel,
+    MetadataJsonSchema, MetadataList, MetadataMap, TransactionMetadatum, TransactionMetadatumLabel,
 };
 use cardano_serialization_lib::utils::{BigNum, Int};
 use serde_json::{Map, Value};
@@ -73,18 +73,28 @@ impl<'a> RegistrationBuilder<'a> {
     pub fn build(self) -> GeneralTransactionMetadata {
         let mut meta_map: MetadataMap = MetadataMap::new();
 
-        match self.delegations.expect("no registration target defined") {
-            Delegations::New(_delegations) => {
-                unimplemented!("delegations not implemented");
+        let delegation_metadata = match self.delegations.expect("no registration target defined") {
+            Delegations::New(delegations) => {
+                let mut metadata_list = MetadataList::new();
+                for (delegation, weight) in delegations {
+                    let mut inner_metadata_list = MetadataList::new();
+                    inner_metadata_list.add(
+                        &TransactionMetadatum::new_bytes(hex::decode(delegation.to_hex()).unwrap())
+                            .unwrap(),
+                    );
+                    inner_metadata_list.add(&TransactionMetadatum::new_int(&Int::new(
+                        &BigNum::from(weight),
+                    )));
+                    metadata_list.add(&TransactionMetadatum::new_list(&inner_metadata_list));
+                }
+                TransactionMetadatum::new_list(&metadata_list)
             }
             Delegations::Legacy(legacy) => {
-                meta_map.insert(
-                    &METADATUM_1,
-                    &TransactionMetadatum::new_bytes(hex::decode(legacy.to_hex()).unwrap())
-                        .unwrap(),
-                );
+                TransactionMetadatum::new_bytes(hex::decode(legacy.to_hex()).unwrap()).unwrap()
             }
         };
+
+        meta_map.insert(&METADATUM_1, &delegation_metadata);
 
         meta_map.insert(
             &METADATUM_2,
@@ -314,11 +324,40 @@ mod test {
     }
 
     #[test]
-
-    pub fn root_metadata_serialization_bijection() {
+    pub fn root_metadata_serialization_bijection_direct() {
         let metadata_string = r#"{
             "61284": {
                 "1":"0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663",
+                "2":"0x38ee57ed01f04e7bf553f85e6115faa3f0fc94e2a7bf471c939015d716d5dbe7",
+                "3":"0xe0ffc025718baab0ee4cf247706e419ae25d3f1be04006d2d8214de3ed",
+                "4":11614075,
+                "5":0
+            },
+            "61285": {
+                "1":"0x1249f6c152e555af356ae17746457669ae40bcee11ad0671a9a7e9e55441da8a12b152f67c88c15c46f938fd5a0a360dff50e12beeb48556e54ab1e3ea684108"
+            }
+         }"#;
+
+        let root_metadata = GeneralTransactionMetadata::from_json_string(
+            metadata_string,
+            MetadataJsonSchema::BasicConversions,
+        )
+        .unwrap();
+        let left: Value = serde_json::from_str(metadata_string).unwrap();
+        let right: Value = serde_json::from_str(
+            &root_metadata
+                .to_json_string(MetadataJsonSchema::BasicConversions)
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(left, right);
+    }
+
+    #[test]
+    pub fn root_metadata_serialization_bijection_delegated() {
+        let metadata_string = r#"{
+            "61284": {
+                "1":[["0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663", 1], ["0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee", 3]],
                 "2":"0x38ee57ed01f04e7bf553f85e6115faa3f0fc94e2a7bf471c939015d716d5dbe7",
                 "3":"0xe0ffc025718baab0ee4cf247706e419ae25d3f1be04006d2d8214de3ed",
                 "4":11614075,

@@ -22,7 +22,7 @@ fn cip15_correctly_signed_before_snapshot() {
     let assertions = outputs[0].assert();
 
     assertions.voting_power(stake);
-    assertions.delegations(Delegations::Legacy(
+    assertions.delegations(&Delegations::Legacy(
         alice_wallet.stake_public_key().to_hex(),
     ));
     assertions.reward_address(&alice_wallet.reward_address());
@@ -52,7 +52,7 @@ fn cip36_correctly_signed_before_snapshot() {
     let assertions = outputs[0].assert();
 
     assertions.voting_power(stake);
-    assertions.delegations(Delegations::Delegated(vec![
+    assertions.delegations(&Delegations::Delegated(vec![
         (alice_wallet.catalyst_public_key().to_hex(), 1),
         (bob_wallet.catalyst_public_key().to_hex(), 1),
     ]));

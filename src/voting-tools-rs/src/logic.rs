@@ -130,7 +130,9 @@ impl Reg {
                         &TransactionMetadatum::new_bytes(hex::decode(
                             delegation.trim_start_matches("0x"),
                         )?)
-                        .unwrap(),
+                        .map_err(|e| {
+                            eyre!(format!("cannot decode delegation key, due to: {}", e))
+                        })?,
                     );
                     inner_metadata_list.add(&TransactionMetadatum::new_int(&Int::new(
                         &BigNum::from(weight),
@@ -141,7 +143,12 @@ impl Reg {
             }
             Delegations::Legacy(k) => {
                 let bytes = hex::decode(k.trim_start_matches("0x"))?;
-                TransactionMetadatum::new_bytes(bytes).unwrap()
+                TransactionMetadatum::new_bytes(bytes).map_err(|e| {
+                    eyre!(format!(
+                        "cannot decode legacy delegation key, due to: {}",
+                        e
+                    ))
+                })?
             }
         };
 

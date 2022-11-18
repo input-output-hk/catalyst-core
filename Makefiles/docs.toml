@@ -62,11 +62,31 @@ script = '''
 mdbook serve --open
 '''
 
-# Build and serve a live view of the POC Documentation
-[tasks.build-docs]
+
+[tasks.build-rust-docs]
 workspace = false
 category = "docs"
+dependencies = [
+    "build-mdbook"
+] # We build inside the md-book so make sure it exists.
+script_runner = "@shell"
+script = '''
+cargo doc --workspace --target-dir docs/rust/ --no-deps
+'''
+
+# Build and serve a live view of the POC Documentation
+[tasks.build-mdbook]
+workspace = false
+category = "docs"
+
 script_runner = "@shell"
 script = '''
 mdbook build
 '''
+
+[tasks.build-docs]
+workspace = false
+dependencies = [
+    "build-rust-docs",
+    "build-mdbook"
+]

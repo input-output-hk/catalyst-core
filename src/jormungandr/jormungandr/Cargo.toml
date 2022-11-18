@@ -101,3 +101,13 @@ systemd = ["tracing-journald"]
 gelf = ["tracing-gelf"]
 prometheus-metrics = ["prometheus"]
 evm = [ "chain-impl-mockchain/evm", "jormungandr-lib/evm", "chain-evm" ]
+gateway=[]
+
+[[bin]]
+name = "jormungandr"
+path = "src/bin/jormungandr.rs"
+
+[[bin]]
+name = "gateway"
+required-features = ["gateway"]
+path = "src/bin/jormungandr.rs"

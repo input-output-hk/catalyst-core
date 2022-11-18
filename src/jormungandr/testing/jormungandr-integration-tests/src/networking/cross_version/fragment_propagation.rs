@@ -6,7 +6,8 @@ use hersir::{
 };
 use jormungandr_automation::{
     jormungandr::{
-        download_last_n_releases, get_jormungandr_bin, version_0_8_19, FragmentNode, Version,
+        download_last_n_releases, get_jormungandr_bin, version_0_8_19, FragmentNode, LogLevel,
+        Version,
     },
     testing::SyncNode,
 };

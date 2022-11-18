@@ -301,6 +301,7 @@ pub async fn start(params: TaskParams) {
     future::join(listener, handle_cmds).await;
 }
 
+#[cfg(not(feature = "gateway"))]
 async fn handle_network_input(
     mut input: MessageQueue<NetworkMsg>,
     state: GlobalStateR,
@@ -338,7 +339,44 @@ async fn handle_network_input(
     }
 }
 
+#[cfg(feature = "gateway")]
+async fn handle_network_input(
+    mut input: MessageQueue<NetworkMsg>,
+    state: GlobalStateR,
+    _channels: Channels,
+) {
+    while let Some(msg) = input.next().await {
+        tracing::trace!("handling new gateway task item");
+        match msg {
+            NetworkMsg::Propagate(_msg) => {
+                // gateway node drops all propagation to internal network, it can only consume not publish
+            }
+            NetworkMsg::GetBlocks(block_ids) => {
+                state.peers.solicit_blocks_any(block_ids.encode()).await
+            }
+            NetworkMsg::GetNextBlock(node_id, block_id) => {
+                state
+                    .peers
+                    .solicit_blocks_peer(&node_id, Box::new([block_id.encode()]))
+                    .await;
+            }
+            NetworkMsg::PullHeaders { node_id, from, to } => {
+                let from: Vec<_> = from.into();
+                state
+                    .peers
+                    .pull_headers(&node_id, from.encode(), to.encode())
+                    .await;
+            }
+            NetworkMsg::PeerInfo(reply) => {
+                state.peers.infos().map(|infos| reply.reply_ok(infos)).await;
+            }
+        };
+        tracing::trace!("gateway item handling finished");
+    }
+}
+
 // propagate message to every peer and return the ones that we could not contact
+#[allow(dead_code)]
 async fn propagate_message<F, Fut, E, T>(
     f: F,
     sel: poldercast::layer::Selection,
@@ -371,6 +409,7 @@ where
 }
 
 #[instrument(level = "debug", skip_all, fields(addr, hash, id))]
+#[allow(dead_code)]
 async fn handle_propagation_msg(
     msg: PropagateMsg,
     state: GlobalStateR,

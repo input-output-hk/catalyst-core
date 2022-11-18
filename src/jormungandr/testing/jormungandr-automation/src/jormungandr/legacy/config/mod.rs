@@ -70,6 +70,10 @@ impl ConfigurableNodeConfig for LegacyNodeConfigManager {
     }
 
     fn as_communication_params(&self) -> CommunicationParams {
-        todo!()
+        CommunicationParams {
+            p2p_public_address: self.p2p_public_address(),
+            p2p_listen_address: self.p2p_listen_address(),
+            rest_socket_addr: self.rest_socket_addr(),
+        }
     }
 }

@@ -53,6 +53,7 @@ jobs:
   other_tests:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         shardNumber: [1, 2, 3, 4]
         totalShards: [4]

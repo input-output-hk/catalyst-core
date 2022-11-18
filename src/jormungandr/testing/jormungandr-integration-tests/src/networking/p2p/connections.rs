@@ -178,16 +178,16 @@ fn gateway_gossip() {
     //
     // spin up regular client
     //
-    let mut gateway_node_binary = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let mut regular_node_binary = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
 
-    gateway_node_binary.pop();
-    gateway_node_binary.pop();
-    gateway_node_binary.pop();
-    gateway_node_binary.pop();
-    gateway_node_binary.push("target/debug/jormungandr");
+    regular_node_binary.pop();
+    regular_node_binary.pop();
+    regular_node_binary.pop();
+    regular_node_binary.pop();
+    regular_node_binary.push("target/debug/jormungandr");
 
     let _client_b = network_controller
-        .spawn(SpawnParams::new(CLIENT_B))
+        .spawn(SpawnParams::new(CLIENT_B).jormungandr(regular_node_binary))
         .unwrap();
 
     utils::wait(DEFAULT_GOSSIP_INTERVAL_SECS);
@@ -197,6 +197,7 @@ fn gateway_gossip() {
     assert!(!last_gossip.is_empty());
 
     // fragment test todo
+    // make sure gateway node cannot publish
 }
 
 #[test]

@@ -13,6 +13,7 @@ jobs:
   node_tests:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         shardNumber: [1, 2, 3, 4]
         totalShards: [4]
@@ -48,7 +49,7 @@ jobs:
       - run: |
           cd src/jormungandr
           cargo build
-          cargo nextest run -p jormungandr -p jcli -p jormungandr-integration-tests --no-fail-fast --partition hash:${{ matrix.shardNumber }}/${{ matrix.totalShards }}
+          cargo nextest run --no-fail-fast -p jormungandr -p jcli -p jormungandr-integration-tests --no-fail-fast --partition hash:${{ matrix.shardNumber }}/${{ matrix.totalShards }}
   other_tests:
     runs-on: ubuntu-latest
     strategy:
@@ -79,7 +80,7 @@ jobs:
           components: rustfmt, clippy
       - run: |
           cargo build -p vit-servicing-station-cli
-          cargo nextest run --workspace --exclude jormungandr --exclude jcli --exclude jormungandr-integration-tests --no-fail-fast --partition hash:${{ matrix.shardNumber }}/${{ matrix.totalShards }}
+          cargo nextest run --no-fail-fast --workspace --exclude jormungandr --exclude jcli --exclude jormungandr-integration-tests --no-fail-fast --partition hash:${{ matrix.shardNumber }}/${{ matrix.totalShards }}
 
   clippy:
     runs-on: ubuntu-latest

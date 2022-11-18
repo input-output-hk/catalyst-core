@@ -16,6 +16,7 @@
     - [Install Extra Packages/Tools](#install-extra-packagestools)
   - [Testing](#testing)
   - [Deployment](#deployment)
+  - [Building Documentation](#building-documentation)
   - [Support](#support)
   - [License](#license)
 
@@ -61,6 +62,16 @@ TODO:
 ## Deployment
 
 TODO:
+
+## Building Documentation
+
+If you have edited any of the documentation, then it needs to be updated by running:
+
+```sh
+cargo make build-docs
+```
+
+Any update files need to be committed to the repo. (until we have this integrated with CI).
 
 ## Support
 

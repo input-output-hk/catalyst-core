@@ -84,7 +84,6 @@ pub fn passive_node_explorer() {
     leader_2.shutdown();
     leader_3.shutdown();
 
-
     let transaction_id = passive
         .explorer(ExplorerParams::default())
         .unwrap()
@@ -173,7 +172,6 @@ pub fn explorer_passive_node_leaders_shutdown() {
     leader_2.shutdown();
     leader_3.shutdown();
 
-
     let transaction_id = passive
         .explorer(ExplorerParams::default())
         .unwrap()
@@ -256,14 +254,12 @@ pub fn explorer_passive_node_leaders_shutdown_before_update() {
         .send_transaction(&mut alice, &bob, &leader_1, 1_000.into())
         .unwrap();
 
-        leader_1.shutdown();
-        leader_2.shutdown();
-        leader_3.shutdown();
+    leader_1.shutdown();
+    leader_2.shutdown();
+    leader_3.shutdown();
 
     // give some time to update explorer
     time::wait_for_date(BlockDate::new(wait_epoch, wait_slot_id), leader_1.rest());
-
-
 
     let transaction_id = passive
         .explorer(ExplorerParams::default())

@@ -53,6 +53,23 @@
     - [Loki](./core-ledger-doc/testing/loki.md)
     - [Integration tests](./core-ledger-doc/testing/integration_tests.md)
 
+- [Catalyst Core Test Tools](./core-testing-doc/introduction.md)
+  - [Iapyx](./core-testing-doc/iapyx/iapyx.md)
+    - [Load Tool](./core-testing-doc/iapyx/load.md)
+  - [Registration Service](./core-testing-doc/registration-service/introduction.md)
+    - [CLI](./core-testing-doc/registration-service/cli.md)
+    - [Configuration](./core-testing-doc/registration-service/configuration.md)
+  - [Snapshot Service](./core-testing-doc/snapshot-service/introduction.md)
+    - [CLI](./core-testing-doc/snapshot-service/cli.md)
+    - [Configuration](./core-testing-doc/snapshot-service/configuration.md)
+  - [Valgrind](./core-testing-doc/valgrind/introduction.md)
+    - [Configuration](./core-testing-doc/valgrind/configuration.md)
+  - [Vitup](./core-testing-doc/vitup/introduction.md)
+    - [Configuration](./core-testing-doc/vitup/configuration.md)
+    - [Data Generation](./core-testing-doc/vitup/data_generation.md)
+    - [Run Modes](./core-testing-doc/vitup/run_modes.md)
+    - [Mock](./core-testing-doc/vitup/mock.md)
+
 - [Rust Documentation](./rust/docs.md)
 
 - [API Documentation](./api/api.md)

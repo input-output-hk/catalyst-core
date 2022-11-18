@@ -33,5 +33,5 @@ Please note that the end points and the results may change in the future.
 
 To see the whole Node API documentation:
 
-* [Voting ledger REST API V0](../../api/JormungandrV0.md)
-* [Voting ledger REST API V1](../../api/JormungandrV1.md)
+* [Voting ledger REST API V0](../../api/vote-ledger-v0.md)
+* [Voting ledger REST API V1](../../api/vote-ledger-v1.md)

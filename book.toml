@@ -5,6 +5,9 @@ multilingual = false
 src = "doc-src"
 title = "Catalyst Voting System - Core Technology"
 
+[build]
+build-dir = "docs" # This is where github wants it so we can publish as gh-pages.
+
 [preprocessor.regex]
 patterns = "./doc-src/assets/patterns/patterns.json"
 before = [ # Make sure regex pre-processing happens before any other pre-processing.

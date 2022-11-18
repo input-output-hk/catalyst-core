@@ -10,6 +10,10 @@
   - [What's inside?](#whats-inside)
   - [Requirements](#requirements)
   - [Development](#development)
+  - [Prerequisites](#prerequisites)
+    - [Development Environment (NIX Shell)](#development-environment-nix-shell)
+    - [Development Environment (Manual)](#development-environment-manual)
+    - [Install Extra Packages/Tools](#install-extra-packagestools)
   - [Testing](#testing)
   - [Deployment](#deployment)
   - [Support](#support)
@@ -25,7 +29,30 @@ TODO:
 
 ## Development
 
-TODO:
+## Prerequisites
+
+### Development Environment (NIX Shell)
+
+This is the **preferred** development environment.
+
+1. Install NIX : <https://nixos.org/download.html>
+2. Start a nix development environment (From the repo Root):
+   `nix develop`
+
+### Development Environment (Manual)
+
+~~ ***NOT RECOMMENDED*** ~~
+
+TODO...
+
+### Install Extra Packages/Tools
+
+This only needs to be done once when the development environment is created.
+
+1. `cargo install cargo-make` : see <https://github.com/sagiegurari/cargo-make>
+2. `cargo make install-prereqs`
+
+TODO: Can this (or an equivalent) be done by the devshell?
 
 ## Testing
 

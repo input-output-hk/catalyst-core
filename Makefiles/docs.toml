@@ -1,0 +1,72 @@
+# Our docs are in mdbook format, so install that tool
+# See
+[tasks.install-mdbook]
+script_runner = "@shell"
+script = '''
+cargo install mdbook
+'''
+
+# We can use any diagram supported by kroki
+# See: https://lib.rs/crates/mdbook-kroki-preprocessor
+#    : https://kroki.io/
+[tasks.install-mdbook-kroki]
+script_runner = "@shell"
+script = '''
+cargo install mdbook-kroki-preprocessor 
+'''
+
+# We can use Admonish markup, so install that tool
+# See: https://lib.rs/crates/mdbook-admonish
+[tasks.install-mdbook-admonish]
+script_runner = "@shell"
+script = '''
+cargo install mdbook-admonish
+cd ..
+mdbook-admonish install --css-dir ./doc-src/assets/css/
+'''
+
+# We can make our own regex preprocessing templates
+# See: https://lib.rs/crates/mdbook-regex
+[tasks.install-mdbook-regex]
+script_runner = "@shell"
+script = '''
+cargo install mdbook-regex
+'''
+
+# Automatically adds an "Edit this file on GitHub" to each page
+# See: https://lib.rs/crates/mdbook-open-on-gh
+[tasks.install-mdbook-open-on-gh]
+script_runner = "@shell"
+script = '''
+cargo install mdbook-open-on-gh
+'''
+
+
+[tasks.install-docs-prereqs]
+workspace = false
+dependencies = [
+    "install-mdbook",
+    "install-mdbook-kroki",
+    "install-mdbook-regex",
+    "install-mdbook-admonish",
+    "install-mdbook-open-on-gh"
+]
+
+
+# Build and serve a live view of the POC Documentation
+[tasks.view-docs]
+workspace = false
+category = "docs"
+script_runner = "@shell"
+script = '''
+mdbook serve --open
+'''
+
+# Build and serve a live view of the POC Documentation
+[tasks.build-docs]
+workspace = false
+category = "docs"
+script_runner = "@shell"
+script = '''
+mdbook build
+'''

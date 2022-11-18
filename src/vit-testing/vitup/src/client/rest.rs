@@ -9,6 +9,18 @@ pub struct VitupRest {
 }
 
 impl VitupRest {
+    pub fn is_up(&self) -> bool {
+        let response = reqwest::blocking::get(&self.path("api/health"));
+
+        if response.is_err() {
+            return false;
+        }
+
+        response.unwrap().status() == 200
+    }
+}
+
+impl VitupRest {
     pub fn derive_with_port<S: Into<String>>(original: VitupRest, port: S) -> Self {
         Self {
             token: original.token().clone(),
@@ -85,6 +97,15 @@ impl VitupDisruptionRestClient {
 
     pub fn reset(&self) -> Result<(), Error> {
         self.inner.post_skip_response("api/control/command/reset")
+    }
+
+    pub fn reset_with_config(&self, config: &Config) -> Result<Response, Error> {
+        let client = reqwest::blocking::Client::new();
+        client
+            .post(&self.inner.path("api/control/command/reset"))
+            .json(&config)
+            .send()
+            .map_err(Into::into)
     }
 
     pub fn make_unavailable(&self) -> Result<(), Error> {

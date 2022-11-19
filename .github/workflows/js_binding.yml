@@ -73,5 +73,5 @@ jobs:
           cd src/chain-wallet-libs/pkg
           npm ci
           npm publish --access=public
-          env:
-          NODE_AUTH_TOKEN: ${{ secrets.TEST_NPM_TOKEN }}
+        env:
+            NODE_AUTH_TOKEN: ${{ secrets.TEST_NPM_TOKEN }}

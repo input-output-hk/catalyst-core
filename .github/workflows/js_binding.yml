@@ -70,7 +70,6 @@ jobs:
       - name: Publish
         run: |
           cd src/chain-wallet-libs/bindings/wallet-js/pkg
-          npm ci
           npm publish --access=public
         env:
             NODE_AUTH_TOKEN: ${{ secrets.TEST_NPM_TOKEN }}

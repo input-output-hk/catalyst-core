@@ -40,12 +40,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [nodejs, web, bundler]
+               #[nodejs, web, bundler]
+        target: [nodejs]
+
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
         with:
-          submodules: true
+            node-version: '16.x'
+            registry-url: 'https://registry.npmjs.org'
 
       - name: Install wasm pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
@@ -54,15 +57,18 @@ jobs:
         run: |
           cd src/chain-wallet-libs
           wasm-pack build \
-            --scope iohk-jormungandr \
-            --out-name wallet \
+            --scope minikin_ \
+            --out-name wallet-test \
             --release --target ${{ matrix.target }} \
             bindings/wallet-js
 
-      - name: Login
-        run: wasm-pack login
+      - name: Pack
+        run: wasm-pack pack bindings/wallet-js
 
       - name: Publish
         run: |
           cd src/chain-wallet-libs/pkg
+          npm ci
           npm publish --access=public
+          env:
+          NODE_AUTH_TOKEN: ${{ secrets.TEST_NPM_TOKEN }}

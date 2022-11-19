@@ -69,7 +69,7 @@ jobs:
 
       - name: Publish
         run: |
-          cd src/chain-wallet-libs/wallet-js/pkg
+          cd src/chain-wallet-libs/bindings/wallet-js/pkg
           npm ci
           npm publish --access=public
         env:

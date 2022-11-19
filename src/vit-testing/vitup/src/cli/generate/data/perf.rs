@@ -59,7 +59,7 @@ pub struct PerfDataCommandArgs {
     #[structopt(short = "s", long = "single", default_value = "0")]
     pub single: usize,
 
-    #[structopt(long = "log-level", default_value = "LogLevel::Info")]
+    #[structopt(long = "log-level", default_value = "LogLevel::INFO")]
     pub log_level: LogLevel,
 }
 

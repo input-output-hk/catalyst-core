@@ -23,7 +23,7 @@ pub struct AllRandomDataCommandArgs {
     #[structopt(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
 
-    #[structopt(long = "log-level", default_value = "LogLevel::Info")]
+    #[structopt(long = "log-level", default_value = "LogLevel::INFO")]
     pub log_level: LogLevel,
 }
 

@@ -34,7 +34,7 @@ pub struct SnapshotCommandArgs {
     #[structopt(long = "skip-qr-generation")]
     pub skip_qr_generation: bool,
 
-    #[structopt(long = "log-level", default_value = "LogLevel::Info")]
+    #[structopt(long = "log-level", default_value = "LogLevel::INFO")]
     pub log_level: LogLevel,
 }
 

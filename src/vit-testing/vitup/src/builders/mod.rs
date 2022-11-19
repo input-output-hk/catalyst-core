@@ -34,7 +34,7 @@ use std::io::Write;
 use std::path::Path;
 use std::str::FromStr;
 use thiserror::Error;
-use tracing::{info, span, Level};
+use tracing::{info, span, Level, Span};
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 
 pub const LEADER_1: &str = "leader1";
@@ -49,6 +49,7 @@ pub struct VitBackendSettingsBuilder {
     committee_wallet: String,
     //needed for load tests when we rely on secret keys instead of qrs
     skip_qr_generation: bool,
+    span: Span,
 }
 
 impl Default for VitBackendSettingsBuilder {
@@ -58,6 +59,7 @@ impl Default for VitBackendSettingsBuilder {
             skip_qr_generation: false,
             config: Default::default(),
             session_settings: SessionSettings::default(),
+            span: span!(Level::INFO, "builder"),
         }
     }
 }
@@ -65,6 +67,11 @@ impl Default for VitBackendSettingsBuilder {
 impl VitBackendSettingsBuilder {
     pub fn skip_qr_generation(mut self) -> Self {
         self.skip_qr_generation = true;
+        self
+    }
+
+    pub fn span(mut self, span: Span) -> Self {
+        self.span = span;
         self
     }
 
@@ -148,8 +155,7 @@ impl VitBackendSettingsBuilder {
     }
 
     pub fn build(mut self) -> Result<(VitController, ValidVotePlanParameters), Error> {
-        let span = span!(Level::TRACE, "builder");
-        let _enter = span.enter();
+        let _enter = self.span.enter();
 
         let mut builder = VitControllerBuilder::new();
 

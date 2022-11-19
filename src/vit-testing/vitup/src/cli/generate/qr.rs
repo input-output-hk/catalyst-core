@@ -27,7 +27,7 @@ pub struct QrCommandArgs {
     #[structopt(long = "global-pin", default_value = "1234")]
     pub global_pin: String,
 
-    #[structopt(long = "log-level", default_value = "LogLevel::Info")]
+    #[structopt(long = "log-level", default_value = "LogLevel::INFO")]
     pub log_level: LogLevel,
 }
 

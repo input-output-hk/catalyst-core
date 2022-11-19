@@ -131,7 +131,7 @@ pub struct QuickStartCommandArgs {
     #[structopt(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
 
-    #[structopt(long = "vitup-log-level", default_value = "LogLevel::Info")]
+    #[structopt(long = "vitup-log-level", default_value = "LogLevel::INFO")]
     pub vitup_log_level: LogLevel,
 }
 

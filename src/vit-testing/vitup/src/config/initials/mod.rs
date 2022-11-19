@@ -60,9 +60,7 @@ impl FromStr for Role {
         match s {
             REP_VOTING_GROUP | "reps" | "dreps" | "representative" => Ok(Role::Representative),
             DIRECT_VOTING_GROUP | "voter" => Ok(Role::Voter),
-            _ => {
-                Err(Error::UnknownRole(s.to_string()))
-            }
+            _ => Err(Error::UnknownRole(s.to_string())),
         }
     }
 }
@@ -80,24 +78,24 @@ impl Default for Role {
 }
 
 #[cfg(test)]
-mod test{
+mod test {
+    use crate::config::{Role, DIRECT_VOTING_GROUP, REP_VOTING_GROUP};
     use std::str::FromStr;
-    use crate::config::{DIRECT_VOTING_GROUP, REP_VOTING_GROUP, Role};
 
     #[test]
     fn role_bijection_test() {
-        let conversions = vec![(DIRECT_VOTING_GROUP,Role::Voter),
-             (REP_VOTING_GROUP,Role::Representative),
-             ("voter",Role::Voter),
-             ("dreps",Role::Representative),
-             ("rep",Role::Representative),
-             ("dreps",Role::Representative)
+        let conversions = vec![
+            (DIRECT_VOTING_GROUP, Role::Voter),
+            (REP_VOTING_GROUP, Role::Representative),
+            ("voter", Role::Voter),
+            ("dreps", Role::Representative),
+            ("rep", Role::Representative),
+            ("dreps", Role::Representative),
         ];
 
-        for (input, expected )in conversions {
+        for (input, expected) in conversions {
             let role: Role = Role::from_str(input).unwrap();
-            assert_eq!(role,expected)
+            assert_eq!(role, expected)
         }
     }
 }
-

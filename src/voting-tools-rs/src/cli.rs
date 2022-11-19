@@ -1,8 +1,6 @@
-use std::path::PathBuf;
-
-use clap::Parser;
-
 use crate::model::{DbHost, DbName, DbPass, DbUser, SlotNo, TestnetMagic};
+use clap::{Parser, Subcommand};
+use std::path::PathBuf;
 
 #[derive(Debug, Parser)]
 #[cfg_attr(test, derive(PartialEq))]
@@ -45,6 +43,22 @@ pub struct Args {
     /// Whether to pretty-print the json
     #[clap(long, short = 'p')]
     pub pretty: bool,
+
+    /// This parameter should be used only for voting tool dry runs or internal testing
+    #[clap(subcommand)]
+    pub dry_run: Option<DryRunCommand>,
+}
+
+/// Sub command for internal testing or dry runs
+#[derive(Subcommand, Debug, PartialEq)]
+pub enum DryRunCommand {
+    /// Sub command for internal testing or dry runs
+    DryRun {
+        #[clap(long)]
+        /// Mock json file containing content of db sync db. This parameter should be used only for
+        /// voting tool dry runs
+        mock_json_file: PathBuf,
+    },
 }
 
 #[cfg(test)]
@@ -85,6 +99,7 @@ mod tests {
                 min_slot_no: Some(123.into()),
                 max_slot_no: Some(234.into()),
                 out_file: "some/path".into(),
+                dry_run: None,
                 pretty: true,
             }
         );

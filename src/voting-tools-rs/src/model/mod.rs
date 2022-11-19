@@ -3,11 +3,14 @@ use cardano_serialization_lib::address::NetworkInfo;
 use microtype::microtype;
 use serde::{Deserialize, Serialize};
 
+/// Responsible to hold information about voting power assignment
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum Delegations {
+    /// Direct voting. String should contain catalyst identifier
     Legacy(String),
+    /// Delegated one. Collection of catalyst identifiers joined it weights
     Delegated(Vec<(String, u32)>),
 }
 
@@ -26,13 +29,20 @@ pub struct RegoMetadata {
     pub purpose: VotingPurpose,
 }
 
+/// Single output element of voting tools calculations
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Output {
+    /// registration content
     pub delegations: Delegations,
+    /// mainnet rewards address
     pub rewards_address: RewardsAddr,
+    /// stake public key
     pub stake_public_key: StakePubKey,
+    /// voting power expressed in ada
     pub voting_power: BigDecimal,
+    /// voting purpose. By default 0
     pub voting_purpose: VotingPurpose,
+    /// registration transaction id
     pub tx_id: TxId,
 }
 

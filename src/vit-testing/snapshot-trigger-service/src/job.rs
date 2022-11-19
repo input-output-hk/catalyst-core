@@ -27,12 +27,11 @@ impl SnapshotJobRunner {
     }
 }
 
-impl JobRunner<JobParameters, (), crate::Error> for SnapshotJobRunner {
+impl JobRunner<JobParameters, (), Error> for SnapshotJobRunner {
     fn start(&self, request: JobParameters, output_folder: PathBuf) -> Result<Option<()>, Error> {
         let mut command = self.0.voting_tools.command()?;
-        match self.0.voting_tools.network {
-            NetworkType::Mainnet => command.arg("--mainnet"),
-            NetworkType::Testnet(magic) => command.arg("--testnet-magic").arg(magic.to_string()),
+        if let NetworkType::Testnet(magic) = self.0.voting_tools.network {
+            command.arg("--testnet-magic").arg(magic.to_string());
         };
 
         let output_filename = self.crate_snapshot_output_file_name(&request.tag);
@@ -47,12 +46,14 @@ impl JobRunner<JobParameters, (), crate::Error> for SnapshotJobRunner {
             .arg("--db-host")
             .arg(&self.0.voting_tools.db_host)
             .arg("--out-file")
-            .arg(output_folder.join(output_filename))
-            .arg("--scale")
-            .arg(self.0.voting_tools.scale.to_string());
+            .arg(output_folder.join(output_filename));
 
         if let Some(slot_no) = request.slot_no {
             command.arg("--slot-no").arg(slot_no.to_string());
+        }
+
+        if let Some(additional_params) = &self.0.voting_tools.additional_params {
+            command.args(additional_params);
         }
 
         self.print_with_password_hidden(&command);

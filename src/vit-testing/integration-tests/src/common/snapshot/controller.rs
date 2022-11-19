@@ -1,10 +1,10 @@
 use jortestkit::prelude::Wait;
-use snapshot_lib::registration::VotingRegistration;
 use snapshot_trigger_service::client::rest::SnapshotRestClient;
-use snapshot_trigger_service::client::SnapshotResult;
+use snapshot_trigger_service::client::{Error, SnapshotResult};
 use snapshot_trigger_service::config::Configuration;
 use snapshot_trigger_service::config::JobParameters;
 use std::process::Child;
+use voting_tools_rs::Output;
 
 pub struct SnapshotServiceController {
     child: Child,
@@ -36,7 +36,7 @@ impl SnapshotServiceController {
         &self.configuration
     }
 
-    pub fn snapshot(&self, job_params: JobParameters) -> SnapshotResult {
+    pub fn snapshot(&self, job_params: JobParameters) -> Result<SnapshotResult, Error> {
         let id = self.client().job_new(job_params.clone()).unwrap();
 
         let status = self
@@ -48,9 +48,9 @@ impl SnapshotServiceController {
             .client()
             .get_snapshot(id, job_params.tag.as_ref().unwrap().to_string())
             .unwrap();
-        let snapshot: Vec<VotingRegistration> = serde_json::from_str(&snapshot_content).unwrap();
+        let snapshot: Vec<Output> = serde_json::from_str(&snapshot_content).unwrap();
 
-        SnapshotResult::new(status, snapshot)
+        SnapshotResult::from_outputs(status, snapshot)
     }
 }
 

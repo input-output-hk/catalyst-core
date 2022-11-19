@@ -26,7 +26,7 @@ use crate::{
 /// If the database doesn't exist, it will be created and populated. If it does, a handle will be
 /// returned. This function is safe to be called from multiple threads
 pub fn reference_db() -> &'static Db {
-    &*REFERENCE_DB
+    &REFERENCE_DB
 }
 
 static REFERENCE_DB: Lazy<Db> = Lazy::new(critical_section);

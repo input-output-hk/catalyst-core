@@ -3,7 +3,6 @@ mod job;
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
 pub use job::JobParameters;
-use mainnet_tools::voting_tools::VotingToolsMock;
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::path::Path;
@@ -74,7 +73,6 @@ impl Default for Configuration {
                 address: SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 7070),
                 api_token: None,
                 admin_token: None,
-                working_directory: None,
             },
             voting_tools: VotingToolsParams {
                 bin: None,
@@ -84,7 +82,7 @@ impl Default for Configuration {
                 db_user: "".to_string(),
                 db_pass: "".to_string(),
                 db_host: "".to_string(),
-                scale: 1_000_000,
+                additional_params: None,
             },
         }
     }
@@ -110,25 +108,8 @@ pub struct VotingToolsParams {
     /// db host
     #[serde(rename = "db-host")]
     pub db_host: String,
-    /// voting power scale. If 1 then voting power will be expressed in Lovelace
-    pub scale: u32,
-}
-
-impl From<VotingToolsMock> for VotingToolsParams {
-    fn from(voting_tools_mock: VotingToolsMock) -> Self {
-        let config = mainnet_tools::db_sync::Settings::default();
-
-        Self {
-            bin: Some(voting_tools_mock.path().to_str().unwrap().to_string()),
-            nix_branch: None,
-            network: NetworkType::Mainnet,
-            db: config.db_name,
-            db_user: config.db_user,
-            db_host: config.db_host,
-            db_pass: config.db_pass,
-            scale: 1_000_000,
-        }
-    }
+    /// additional parameters
+    pub additional_params: Option<Vec<String>>,
 }
 
 impl VotingToolsParams {

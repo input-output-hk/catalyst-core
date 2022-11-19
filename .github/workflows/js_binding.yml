@@ -15,11 +15,11 @@ jobs:
       version: ${{ steps.get_version.outputs.version }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: actions/create-release@v3
         env:
           # This token is provided by Actions, you do not need to create your own token
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -44,7 +44,7 @@ jobs:
         target: [nodejs]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
             node-version: '16.x'
@@ -63,7 +63,9 @@ jobs:
             bindings/wallet-js
 
       - name: Pack
-        run: wasm-pack pack bindings/wallet-js
+        run: |
+          cd src/chain-wallet-libs
+          wasm-pack pack bindings/wallet-js
 
       - name: Publish
         run: |

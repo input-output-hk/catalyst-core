@@ -69,6 +69,7 @@ jobs:
 
       - name: Publish
         run: |
+          ls -la
           cd src/chain-wallet-libs/pkg
           npm ci
           npm publish --access=public

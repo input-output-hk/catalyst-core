@@ -31,7 +31,8 @@ jobs:
 
       - name: Set version output
         id: get_version
-        run: echo ::set-output name=version::``${GITHUB_REF#refs/tags/}``
+        run: echo ::set-output name=version::`0.7.1` # testing
+        # run: echo ::set-output name=version::``${GITHUB_REF#refs/tags/}``
 
   release_wasm:
     name: Release wasm assets
@@ -57,7 +58,7 @@ jobs:
           cd src/chain-wallet-libs
           wasm-pack build \
             --scope minikin_ \
-            --out-name wallet-test \
+            --out-name walletjs \
             --release --target ${{ matrix.target }} \
             bindings/wallet-js
 

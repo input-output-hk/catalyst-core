@@ -6,7 +6,7 @@ use hersir::{
 };
 use jormungandr_automation::jormungandr::JormungandrProcess;
 use jormungandr_lib::interfaces::{NodeStats, Policy, SlotDuration};
-use std::{fmt::Display, time::Duration};
+use std::{fmt::Display, path::PathBuf, time::Duration};
 use thor::FragmentSender;
 
 const LEADER1: &str = "LEADER1";
@@ -21,6 +21,10 @@ const LEADER: &str = "LEADER";
 const ALICE: &str = "ALICE";
 const BOB: &str = "BOB";
 const CLARICE: &str = "CLARICE";
+
+const CLIENT: &str = "CLIENT";
+const CLIENT_B: &str = "CLIENT_B";
+const SERVER: &str = "SERVER";
 
 #[test]
 pub fn p2p_stats_test() {
@@ -157,6 +161,66 @@ macro_rules! build_network {
             BlockchainConfiguration::default().with_slot_duration(SlotDuration::new(5).unwrap()),
         )
     }};
+}
+
+#[test]
+#[ignore]
+pub fn test_gateway_node_not_publishing() {
+    let mut network_controller = build_network!()
+        .topology(
+            Topology::default()
+                .with_node(Node::new(LEADER))
+                .with_node(Node::new(LEADER_CLIENT).with_trusted_peer(LEADER)),
+        )
+        .wallet_template(
+            WalletTemplateBuilder::new("alice")
+                .with(1_000_000)
+                .delegated_to(LEADER)
+                .build(),
+        )
+        .wallet_template(WalletTemplateBuilder::new("bob").with(1_000_000).build())
+        .blockchain_config(BlockchainConfiguration::default().with_leader(LEADER))
+        .build()
+        .unwrap();
+
+    let leader = network_controller
+        .spawn(SpawnParams::new(LEADER).in_memory())
+        .unwrap();
+
+    //
+    // spin up gateway node
+    //
+    let mut gateway_node_binary = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+
+    gateway_node_binary.pop();
+    gateway_node_binary.pop();
+    gateway_node_binary.pop();
+    gateway_node_binary.pop();
+    gateway_node_binary.push("target/debug/gateway");
+
+    let leader_client = network_controller
+        .spawn(SpawnParams::new(LEADER_CLIENT).jormungandr(gateway_node_binary))
+        .unwrap();
+
+    let mut alice = network_controller.controlled_wallet("alice").unwrap();
+    let mut bob = network_controller.controlled_wallet("bob").unwrap();
+
+    let fragment_sender = FragmentSender::from(&leader.rest().settings().unwrap());
+
+    // gateway node should not be able to send fragments
+    match fragment_sender.send_transactions_round_trip(
+        5,
+        &mut alice,
+        &mut bob,
+        &leader_client,
+        100.into(),
+    ) {
+        Ok(_) => panic!("gateway node should not be able to send fragments"),
+        Err(err) => assert_eq!(
+            err.to_string(),
+            "Too many attempts failed (1) while trying to send fragment to node: ".to_string()
+        ),
+    };
 }
 
 #[test]

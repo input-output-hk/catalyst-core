@@ -28,7 +28,7 @@ jobs:
     - name: Build wasm package
       run: |
         cd src/chain-wallet-libs/bindings/wallet-js
-        wasm-pack build --release --target=nodejs -d pkg --scope=input-output-hk
+        wasm-pack build --release --target=nodejs -d pkg
         echo $(jq '. |= . + {"publishConfig": {"registry": "https://npm.pkg.github.com"}}' pkg/package.json) >| pkg/package.json
         echo $(jq '.name="@input-output-hk/catalyst-core"' pkg/package.json) >| pkg/package.json
         cat pkg/package.json
@@ -39,17 +39,19 @@ jobs:
         npm install
         npm test
       
-    - name: Authenticate with the GitHub Package Registry
-      run: |
-        echo "npm.pkg.github.com:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
-        cat ~/.npmrc
+    # - name: Authenticate with the GitHub Package Registry
+    #   run: |
+    #     cd src/chain-wallet-libs/bindings/wallet-js/pkg
+    #     echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > .npmrc
+    #     cat .npmrc
     
     - name: Publish
       run: |
         cd src/chain-wallet-libs/bindings/wallet-js/pkg
+        echo "@input-output-hk:registry=https://npm.pkg.github.com" > .npmrc
+        echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > .npmrc
+        cat .npmrc
         npm install
         npm ci
         npm publish
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   

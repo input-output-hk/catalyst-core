@@ -17,6 +17,8 @@ jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
 chain-addr = { path = "../../chain-libs/chain-addr" }
 catalyst-toolbox = { path = "../../catalyst-toolbox/catalyst-toolbox", features=["test-api"]}
 snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib" }
+voting_tools_rs = {path = "../../voting-tools-rs"}
+num-traits = "0.2.15"
 futures = "0.3.8"
 assert_fs = "1.0"
 serde = { version = "1", features = ["derive"] }

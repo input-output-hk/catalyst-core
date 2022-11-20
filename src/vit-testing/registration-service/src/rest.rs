@@ -49,13 +49,10 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
 
     let is_token_enabled = context.lock().unwrap().api_token().is_some();
     let address = *context.lock().unwrap().address();
-    let working_dir = context
-        .lock()
-        .unwrap()
-        .config()
-        .working_directory()
-        .clone()
-        .ok_or(Error::NoWorkingFolder)?;
+    let working_dir = {
+        let context_lock = context.lock().unwrap();
+        context_lock.config().result_directory().clone()
+    };
     let scheduler_context = context.lock().unwrap().into_scheduler_context();
     let shared_scheduler_context = Arc::new(RwLock::new(scheduler_context.clone()));
     let with_context = warp::any().map(move || context.clone());
@@ -66,8 +63,10 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
         shared_scheduler_context.clone(),
         is_token_enabled,
     );
-    let files =
-        scheduler_service_lib::rest::files_filter(shared_scheduler_context.clone(), working_dir);
+    let files = scheduler_service_lib::rest::files_filter(
+        shared_scheduler_context.clone(),
+        working_dir.to_path_buf(),
+    );
     let health = scheduler_service_lib::rest::health_filter();
 
     let job = {
@@ -176,11 +175,7 @@ pub async fn submit_transaction_handler(
         .lock()
         .map_err(|_e| Error::Poison)
         .map_err(warp::reject::custom)?;
-    let working_dir = context_lock
-        .config()
-        .working_directory()
-        .clone()
-        .ok_or(Error::NoWorkingFolder)?;
+    let working_dir = context_lock.config().result_directory().clone();
     context_lock
         .cardano_cli_executor()
         .transaction()

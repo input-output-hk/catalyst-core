@@ -13,16 +13,22 @@ structopt = "0.3"
 thiserror = "1.0"
 futures = "0.3.8"
 serde_json = "1.0"
+itertools = "0.10.5"
+color-eyre = "0.6"
 signals-handler = { path = "../signals-handler" }
+mainnet-lib = { path = "../mainnet-lib" }
+voting_tools_rs = { path = "../../voting-tools-rs"}
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1.2", features = ["macros","rt","process"] }
 jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
-thor = { path = "../../jormungandr/testing/thor" }
-chain-addr           = { path = "../../chain-libs/chain-addr", features = [ "property-test-api" ] }
-chain-crypto         = { path = "../../chain-libs/chain-crypto", features = [ "property-test-api" ] }
+cardano-serialization-lib = "11.1.0"
 tempdir = "0.3.7"
 snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib", features=["proptest"] }
 catalyst-toolbox = { path = "../../catalyst-toolbox/catalyst-toolbox", features = [ "test-api" ]}
-rand = "0.8"
+clap = { version = "3.2", features = ["derive"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+
 assert_fs = "1.0"
 prettytable-rs = "0.8.0"

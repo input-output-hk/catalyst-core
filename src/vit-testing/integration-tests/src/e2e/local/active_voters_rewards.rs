@@ -12,7 +12,7 @@ use catalyst_toolbox::rewards::Threshold;
 use chain_impl_mockchain::block::BlockDate;
 use jormungandr_automation::testing::time;
 use jormungandr_lib::crypto::account::Identifier;
-use mainnet_tools::network::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
+use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
 use snapshot_trigger_service::config::JobParameters;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::VoteBlockchainTime;
@@ -35,9 +35,10 @@ pub fn voters_with_at_least_one_vote() {
         .with(alice_wallet.as_direct_voter())
         .with(bob_wallet.as_direct_voter())
         .with(clarice_wallet.as_direct_voter())
-        .build();
+        .build(&testing_directory);
 
     let snapshot = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
+        .unwrap()
         .filter_default(&HashSet::new());
 
     let vote_timing = VoteBlockchainTime {
@@ -156,7 +157,7 @@ pub fn voters_with_at_least_one_vote() {
     assert_eq!(
         records
             .iter()
-            .find(|(x, _y)| **x == alice_wallet.reward_address_as_bech32())
+            .find(|(x, _y)| **x == alice_wallet.reward_address().to_address().to_hex())
             .unwrap()
             .1,
         &50u32.into()
@@ -165,7 +166,7 @@ pub fn voters_with_at_least_one_vote() {
     assert_eq!(
         records
             .iter()
-            .find(|(x, _y)| **x == bob_wallet.reward_address_as_bech32())
+            .find(|(x, _y)| **x == bob_wallet.reward_address().to_address().to_hex())
             .unwrap()
             .1,
         &50u32.into()

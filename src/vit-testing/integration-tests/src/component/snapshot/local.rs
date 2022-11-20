@@ -3,7 +3,7 @@ use crate::common::snapshot::mock;
 use crate::common::snapshot_filter::SnapshotFilterSource;
 use crate::common::MainnetWallet;
 use assert_fs::TempDir;
-use mainnet_tools::network::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
+use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
 use snapshot_lib::VoterHIR;
 use snapshot_trigger_service::config::JobParameters;
 use vitup::config::{DIRECT_VOTING_GROUP, REP_VOTING_GROUP};
@@ -28,9 +28,10 @@ pub fn mixed_registration_transactions() {
         .with(david.as_representative())
         .with(edgar.as_representative())
         .with(fred.as_representative())
-        .build();
+        .build(&testing_directory);
 
     let voters_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
+        .unwrap()
         .filter_default(&reps)
         .to_voters_hirs();
 

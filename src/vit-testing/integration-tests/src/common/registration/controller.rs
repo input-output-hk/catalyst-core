@@ -3,7 +3,7 @@ use registration_service::{client::rest::RegistrationRestClient, config::Configu
 use crate::common::registration::remote::RemoteRegistrationServiceController;
 use assert_fs::TempDir;
 use jormungandr_lib::crypto::account::Identifier;
-use mainnet_tools::wallet::MainnetWallet;
+use mainnet_lib::MainnetWallet;
 use registration_service::client::RegistrationResult;
 use std::process::Child;
 

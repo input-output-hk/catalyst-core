@@ -38,12 +38,6 @@ jobs:
         cd src/chain-wallet-libs/bindings/wallet-js/js-test
         npm install
         npm test
-      
-    # - name: Authenticate with the GitHub Package Registry
-    #   run: |
-    #     cd src/chain-wallet-libs/bindings/wallet-js/pkg
-    #     echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > .npmrc
-    #     cat .npmrc
     
     - name: Publish
       run: |

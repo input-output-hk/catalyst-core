@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Error",""]],"fn":[["do_snapshot",""],["get_snapshot_by_id",""],["get_snapshot_from_history_by_id",""],["read_initials",""]],"mod":[["args",""],["rest",""]],"struct":[["SnapshotResult",""]]};

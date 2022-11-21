@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"cardano_legacy_address":[["impl Deserialize for <a class=\"struct\" href=\"cardano_legacy_address/struct.Attributes.html\" title=\"struct cardano_legacy_address::Attributes\">Attributes</a>"],["impl Deserialize for <a class=\"struct\" href=\"cardano_legacy_address/struct.Addr.html\" title=\"struct cardano_legacy_address::Addr\">Addr</a>"],["impl Deserialize for <a class=\"struct\" href=\"cardano_legacy_address/struct.ExtendedAddr.html\" title=\"struct cardano_legacy_address::ExtendedAddr\">ExtendedAddr</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["generate_account_secret","Generate a secret key for an Ethereum account from the global context."],["generate_keypair","Generate new SECP256K1 keypair."],["sign_data","Sign raw data bytes with a secret key."],["sign_data_hash","Sign a given hash of data with a secret key."]],"struct":[["Secret","A secret key for an Ethereum account."]]};

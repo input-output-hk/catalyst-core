@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["FundedStatus",""],["OutputFormat",""],["YesNo",""]],"fn":[["build_path_for_challenge",""],["calculate_results",""],["proposer_rewards",""]],"mod":[["io",""]],"struct":[["Calculation",""],["ProposerRewards",""],["ProposerRewardsInputs",""]]};

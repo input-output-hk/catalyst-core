@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["CardanoCliCommand",""],["CardanoCliCommandError",""]],"mod":[["fake",""]],"struct":[["CardanoCliMock",""]]};

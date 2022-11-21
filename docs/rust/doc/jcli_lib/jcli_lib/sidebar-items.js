@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["JCliCommand","Jormungandr CLI toolkit"]],"mod":[["address",""],["auto_completion",""],["block",""],["certificate",""],["debug",""],["key",""],["rest",""],["transaction",""],["utils",""],["vote",""]],"struct":[["JCli","Jormungandr CLI toolkit"]]};

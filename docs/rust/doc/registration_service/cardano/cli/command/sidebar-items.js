@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["AddressCommand",""],["CardanoCliCommand",""],["QueryCommand",""],["StakeAddressCommand",""],["TransactionCommand",""],["TransactionIdCommand",""],["TransactionSignCommand",""],["TransactionSubmitCommand",""]]};

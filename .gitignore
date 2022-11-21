@@ -85,7 +85,9 @@ $RECYCLE.BIN/
 *.lnk
 
 # Other
-book
+book/html
+book/rust/**
+
 /vendor
 
 # Used by nix

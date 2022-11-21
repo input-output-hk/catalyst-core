@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["Error",""]],"fn":[["job_new_handler",""],["network_tip_handler",""],["query_utxo_handler",""],["start_rest_server",""],["status_handler",""],["submit_transaction_handler",""]]};

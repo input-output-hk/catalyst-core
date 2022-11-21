@@ -2,14 +2,14 @@
 authors = ["Steven Johnson (steven.johnson@iohk.io)"]
 language = "en"
 multilingual = false
-src = "doc-src"
+src = "book/src"
 title = "Catalyst Voting System - Core Technology"
 
 [build]
-build-dir = "docs" # This is where github wants it so we can publish as gh-pages.
+build-dir = "book/html" # This is where github wants it so we can publish as gh-pages.
 
 [preprocessor.regex]
-patterns = "./doc-src/assets/patterns/patterns.json"
+patterns = "./book/src/assets/patterns/patterns.json"
 before = [ # Make sure regex pre-processing happens before any other pre-processing.
     "kroki-preprocessor",
     "admonish",
@@ -33,8 +33,8 @@ renderer = ["html"]
 
 [output.html]
 additional-css = [
-    "./doc-src/assets/css/mdbook-admonish.css",
-    "./doc-src/assets/css/open-in.css"
+    "./book/src/assets/css/mdbook-admonish.css",
+    "./book/src/assets/css/open-in.css"
 ]
 
 # Required: Your repository URL used in the link.

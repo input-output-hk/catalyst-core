@@ -22,7 +22,7 @@ script_runner = "@shell"
 script = '''
 cargo install mdbook-admonish
 cd ..
-mdbook-admonish install --css-dir ./doc-src/assets/css/
+mdbook-admonish install --css-dir ./doc/src/assets/css/
 '''
 
 # We can make our own regex preprocessing templates
@@ -71,7 +71,7 @@ dependencies = [
 ] # We build inside the md-book so make sure it exists.
 script_runner = "@shell"
 script = '''
-cargo doc --workspace --target-dir docs/rust/ --no-deps
+cargo doc --workspace --target-dir book/src/rust/ --no-deps
 '''
 
 # Build and serve a live view of the POC Documentation

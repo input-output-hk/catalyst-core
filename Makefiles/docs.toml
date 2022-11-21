@@ -22,7 +22,6 @@ cargo install mdbook-kroki-preprocessor
 [tasks.install-mdbook-admonish]
 script_runner = "@shell"
 script = '''
-env
 cargo install mdbook-admonish
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 mdbook-admonish install --css-dir book/src/assets/css/
@@ -63,6 +62,7 @@ workspace = false
 category = "docs"
 script_runner = "@shell" 
 script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 cargo doc --workspace --target-dir book/src/rust/ --no-deps
 rm -rf book/src/rust/debug
 rm -rf book/src/rust/.rust*
@@ -77,6 +77,7 @@ dependencies = [
 ] # We build the rust docs first.
 script_runner = "@shell"
 script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 mdbook serve --open
 '''
 
@@ -89,6 +90,7 @@ dependencies = [
 ] # We build the rust docs first.
 script_runner = "@shell"
 script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 mdbook build
 '''
 

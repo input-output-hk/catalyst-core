@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use crate::model::Output;
+use crate::Delegations;
 use bigdecimal::ToPrimitive;
 use cardano_serialization_lib::address::RewardAddress;
 use cardano_serialization_lib::crypto::PublicKey;
@@ -42,6 +43,14 @@ impl<'a> SnapshotOutputAssert<'a> {
                 .expect("cannot convert voting power to u64"),
             "wrong voting power"
         );
+    }
+
+    /// Asserts delegations address field from [Output]
+    /// # Panics
+    ///
+    /// Panics on assertion failed
+    pub fn delegations(&self, delegations: &Delegations) {
+        assert_eq!(delegations, &self.output.delegations, "delegation target");
     }
 
     /// Asserts reward address field from [Output]

@@ -22,10 +22,9 @@ cargo install mdbook-kroki-preprocessor
 [tasks.install-mdbook-admonish]
 script_runner = "@shell"
 script = '''
+env
 cargo install mdbook-admonish
-cd ..
-echo $(pwd)
-ls -al
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 mdbook-admonish install --css-dir book/src/assets/css/
 '''
 

@@ -50,8 +50,9 @@ TODO...
 
 This only needs to be done once when the development environment is created.
 
-1. `cargo install cargo-make` : see <https://github.com/sagiegurari/cargo-make>
-2. `cargo make install-prereqs`
+1. `cargo install cargo-binstall --locked` : see <https://github.com/cargo-bins/cargo-binstall>
+2. `cargo binstall --no-confirm cargo-make` : see <https://github.com/sagiegurari/cargo-make>
+3. `cargo make install-prereqs`
 
 TODO: Can this (or an equivalent) be done by the devshell?
 

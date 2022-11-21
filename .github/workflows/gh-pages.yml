@@ -17,10 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Update local toolchain
-        run: |
-          rustup update
-          cargo install cargo-make
+      - uses: taiki-e/install-action@v1
+        with:
+          tool: cargo-binstall,cargo-make,mdbook
           
       - name: Setup mdBook prerequisites 
         run: |
@@ -28,7 +27,7 @@ jobs:
 
       - name: Build the book
         run: |
-          mdbook build
+          cargo make build-docs
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3

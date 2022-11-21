@@ -3,8 +3,9 @@ name: Release Wasm Chain Wallet Lib package
 on:
   push:
     branches: [ "feature/npg-3884-setup-js-ci-test" ]
-  pull_request:
-    branches: [ "main" ]
+
+env:
+  VERSION: 0.7.1-test
 
 jobs:
   initial_release:
@@ -24,14 +25,16 @@ jobs:
           # This token is provided by Actions, you do not need to create your own token.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          # tag_name: ${{ github.ref }}
+          # release_name: Release ${{ github.ref }}
+          tag_name: ${{ $VERSION }}
+          release_name: Release ${{ $VERSION }}
           draft: true
           prerelease: false
 
       - name: Set version output
         id: get_version
-        run: echo ::set-output name=version::`0.7.1` # testing
+        run: echo ::set-output name=version::``$VERSION`` # testing
         # run: echo ::set-output name=version::``${GITHUB_REF#refs/tags/}``
 
   release_wasm:

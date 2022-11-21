@@ -3,6 +3,8 @@
 [tasks.install-mdbook]
 script_runner = "@shell"
 script = '''
+echo $(pwd)
+ls -al
 cargo install mdbook
 '''
 
@@ -22,6 +24,8 @@ script_runner = "@shell"
 script = '''
 cargo install mdbook-admonish
 cd ..
+echo $(pwd)
+ls -al
 mdbook-admonish install --css-dir book/src/assets/css/
 '''
 
@@ -52,16 +56,6 @@ dependencies = [
     "install-mdbook-open-on-gh"
 ]
 
-
-# Build and serve a live view of the POC Documentation
-[tasks.view-docs]
-workspace = false
-category = "docs"
-script_runner = "@shell"
-script = '''
-mdbook serve --open
-'''
-
 # Build the RUST src documentation
 # We need to remove the debug and .rust* files otherwise they
 # end up inside the book, and are not needed.
@@ -73,6 +67,18 @@ script = '''
 cargo doc --workspace --target-dir book/src/rust/ --no-deps
 rm -rf book/src/rust/debug
 rm -rf book/src/rust/.rust*
+'''
+
+# Build and serve a live view of the POC Documentation
+[tasks.view-docs]
+workspace = false
+category = "docs"
+dependencies = [
+    "build-rust-docs"
+] # We build the rust docs first.
+script_runner = "@shell"
+script = '''
+mdbook serve --open
 '''
 
 # Build and serve a live view of the POC Documentation

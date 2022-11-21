@@ -91,3 +91,6 @@ features = ["blocking", "rustls-tls", "json"]
 version = "0.11"
 default-features = false
 features = ["blocking", "rustls-tls","native-tls", "json"]
+
+[features]
+soak = []

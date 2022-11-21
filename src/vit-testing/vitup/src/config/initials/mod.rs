@@ -2,7 +2,7 @@ mod block0;
 mod snapshot;
 
 pub use block0::{Initial as Block0Initial, Initials as Block0Initials};
-use serde::{Deserialize, Serialize};
+use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 pub use snapshot::{
     Error as SnapshotError, Initial as SnapshotInitial, Initials as SnapshotInitials,
 };
@@ -20,10 +20,29 @@ pub struct Initials {
 pub const DIRECT_VOTING_GROUP: &str = "direct";
 pub const REP_VOTING_GROUP: &str = "rep";
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum Role {
     Representative,
     Voter,
+}
+
+impl<'de> Deserialize<'de> for Role {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?.to_lowercase();
+        Role::from_str(&s).map_err(|e| de::Error::custom(e.to_string()))
+    }
+}
+
+impl Serialize for Role {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.to_string().to_lowercase())
+    }
 }
 
 impl fmt::Display for Role {
@@ -38,12 +57,10 @@ impl fmt::Display for Role {
 impl FromStr for Role {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.to_lowercase() == DIRECT_VOTING_GROUP {
-            Ok(Role::Voter)
-        } else if s.to_lowercase() == REP_VOTING_GROUP {
-            Ok(Role::Representative)
-        } else {
-            Err(Error::UnknownRole(s.to_string()))
+        match s {
+            REP_VOTING_GROUP | "reps" | "dreps" | "representative" => Ok(Role::Representative),
+            DIRECT_VOTING_GROUP | "voter" => Ok(Role::Voter),
+            _ => Err(Error::UnknownRole(s.to_string())),
         }
     }
 }
@@ -57,5 +74,28 @@ pub enum Error {
 impl Default for Role {
     fn default() -> Self {
         Role::Voter
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::config::{Role, DIRECT_VOTING_GROUP, REP_VOTING_GROUP};
+    use std::str::FromStr;
+
+    #[test]
+    fn role_bijection_test() {
+        let conversions = vec![
+            (DIRECT_VOTING_GROUP, Role::Voter),
+            (REP_VOTING_GROUP, Role::Representative),
+            ("voter", Role::Voter),
+            ("dreps", Role::Representative),
+            ("rep", Role::Representative),
+            ("dreps", Role::Representative),
+        ];
+
+        for (input, expected) in conversions {
+            let role: Role = Role::from_str(input).unwrap();
+            assert_eq!(role, expected)
+        }
     }
 }

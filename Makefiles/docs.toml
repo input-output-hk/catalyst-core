@@ -3,8 +3,6 @@
 [tasks.install-mdbook]
 script_runner = "@shell"
 script = '''
-echo $(pwd)
-ls -al
 cargo binstall --no-confirm mdbook
 '''
 
@@ -46,12 +44,14 @@ cargo binstall --no-confirm mdbook-open-on-gh
 
 [tasks.install-docs-prereqs]
 workspace = false
+run_task = { name = [
+        "install-mdbook-kroki",
+        "install-mdbook-regex",
+        "install-mdbook-admonish",
+        "install-mdbook-open-on-gh"
+    ], parallel = true }
 dependencies = [
     "install-mdbook",
-    "install-mdbook-kroki",
-    "install-mdbook-regex",
-    "install-mdbook-admonish",
-    "install-mdbook-open-on-gh"
 ]
 
 # Build the RUST src documentation

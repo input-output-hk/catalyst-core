@@ -62,23 +62,26 @@ script = '''
 mdbook serve --open
 '''
 
-
+# Build the RUST src documentation
+# We need to remove the debug and .rust* files otherwise they
+# end up inside the book, and are not needed.
 [tasks.build-rust-docs]
 workspace = false
 category = "docs"
-dependencies = [
-    "build-mdbook"
-] # We build inside the md-book so make sure it exists.
-script_runner = "@shell"
+script_runner = "@shell" 
 script = '''
 cargo doc --workspace --target-dir book/src/rust/ --no-deps
+rm -rf book/src/rust/debug
+rm -rf book/src/rust/.rust*
 '''
 
 # Build and serve a live view of the POC Documentation
 [tasks.build-mdbook]
 workspace = false
 category = "docs"
-
+dependencies = [
+    "build-rust-docs"
+] # We build the rust docs first.
 script_runner = "@shell"
 script = '''
 mdbook build

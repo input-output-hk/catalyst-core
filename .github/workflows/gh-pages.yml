@@ -2,13 +2,14 @@ name: GitHub Pages
 
 on:
   push:
-    branches:
-      - main
+    branches: 
+      - "main"
+      - "docs-ci"
   pull_request:
 
 jobs:
   deploy:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     concurrency:
@@ -16,17 +17,22 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup mdBook
-        uses: peaceiris/actions-mdbook@v1
-        with:
-          mdbook-version: '0.4.8'
-          # mdbook-version: 'latest'
+      - name: Update local toolchain
+        run: |
+          rustup update
+          cargo install cargo-make
+          
+      - name: Setup mdBook prerequisites 
+        run: |
+          cargo make install-docs-prereqs
 
-      - run: mdbook build
+      - name: Build the book
+        run: |
+          mdbook build
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/docs-ci' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./book
+          publish_dir: ./book/html

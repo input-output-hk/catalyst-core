@@ -77,3 +77,5 @@
   - [Voting Ledger Rest API - V1](./api/vote-ledger-v1.md)
   - [VIT Servicing Station Rest API](./api/vit-servicing-station-v0.md)
   - [VIT Testing Rest API](./api/vit-testing-v0.md)
+
+- [Example Enhanced Markup](./example-enhanced-markup.md)

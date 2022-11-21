@@ -89,7 +89,7 @@ Where:
 For example your config file may look like:
 
 ```yaml
-{{#include ../../../src/jormungandr/jormungandr-lib/src/interfaces/CONFIG_PARAMS_DOCUMENTED_EXAMPLE.yaml}}
+{{#include ../../../../src/jormungandr/jormungandr-lib/src/interfaces/CONFIG_PARAMS_DOCUMENTED_EXAMPLE.yaml}}
 ```
 
 ## Building vote cast certificate

@@ -1,7 +1,10 @@
 [package]
 name = "jormungandrwallet"
-version = "0.7.0-pre4"
-authors = ["Nicolas Di Prima <nicolas@primetype.co.uk>", "Vincent Hanquez <vincent@typed.io>"]
+version = "0.7.0-pre4-test"
+authors = [
+    "Nicolas Di Prima <nicolas@primetype.co.uk>",
+    "Vincent Hanquez <vincent@typed.io>",
+]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 
@@ -14,4 +17,4 @@ wallet = { path = "../../wallet" }
 chain-ser = { path = "../../../chain-libs/chain-ser" }
 chain-addr = { path = "../../../chain-libs/chain-addr" }
 chain-impl-mockchain = { path = "../../../chain-libs/chain-impl-mockchain" }
-wallet-core = { path = "../wallet-core"}
+wallet-core = { path = "../wallet-core" }

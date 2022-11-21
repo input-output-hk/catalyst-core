@@ -4,7 +4,8 @@ on:
   push:
     branches: [ "feature/npg-3884-setup-js-ci-test" ]
     tags:
-      - waletjs-* # waletjs-0.7.0-pre5
+      # walletjs-0.7.0-test
+      - walletjs-*
 
 jobs:
   initial_release:

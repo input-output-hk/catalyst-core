@@ -3807,7 +3807,7 @@ dependencies = [
 
 [[package]]
 name = "jormungandrwallet"
-version = "0.7.0-pre4"
+version = "0.7.0-pre4-test"
 dependencies = [
  "bip39",
  "chain-addr",
@@ -8297,7 +8297,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-core"
-version = "0.7.0-pre4"
+version = "0.7.0-pre4-test"
 dependencies = [
  "bech32 0.7.3",
  "bip39",
@@ -8319,7 +8319,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-js"
-version = "0.7.0-pre4"
+version = "0.7.0-pre4-test"
 dependencies = [
  "bech32 0.7.3",
  "chain-core",

@@ -1,0 +1,537 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Configuration - Catalyst Voting System - Core Technology</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../.././book/src/assets/css/mdbook-admonish.css">
+        <link rel="stylesheet" href="../.././book/src/assets/css/open-in.css">
+
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../../intro.html">Introduction</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/introduction.html"><strong aria-hidden="true">1.</strong> Vote Storage Ledger</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/concepts/introduction.html"><strong aria-hidden="true">1.1.</strong> General Concepts</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/concepts/blockchain.html"><strong aria-hidden="true">1.1.1.</strong> Blockchain concepts</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/concepts/stake.html"><strong aria-hidden="true">1.1.2.</strong> Stake</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/concepts/node.html"><strong aria-hidden="true">1.1.3.</strong> Node organisation</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/concepts/network.html"><strong aria-hidden="true">1.1.4.</strong> Network overview</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/quickstart/introduction.html"><strong aria-hidden="true">1.2.</strong> Quick start</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/quickstart/01_command_line.html"><strong aria-hidden="true">1.2.1.</strong> Command lines tools</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/quickstart/02_passive_node.html"><strong aria-hidden="true">1.2.2.</strong> Starting a passive node</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/quickstart/03_rest_api.html"><strong aria-hidden="true">1.2.3.</strong> REST API</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/quickstart/04_explorer.html"><strong aria-hidden="true">1.2.4.</strong> Explorer API</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/quickstart/05_leader_candidate.html"><strong aria-hidden="true">1.2.5.</strong> Starting as a leader candidate</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/configuration/introduction.html"><strong aria-hidden="true">1.3.</strong> Configuration</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/configuration/logging.html"><strong aria-hidden="true">1.3.1.</strong> Logging</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/configuration/network.html"><strong aria-hidden="true">1.3.2.</strong> Node network</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/configuration/mempool.html"><strong aria-hidden="true">1.3.3.</strong> Fragment Pool</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/configuration/leadership.html"><strong aria-hidden="true">1.3.4.</strong> Leader Events</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/jcli/introduction.html"><strong aria-hidden="true">1.4.</strong> jcli</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/jcli/key.html"><strong aria-hidden="true">1.4.1.</strong> Cryptographic keys</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/jcli/address.html"><strong aria-hidden="true">1.4.2.</strong> Address</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/jcli/transaction.html"><strong aria-hidden="true">1.4.3.</strong> Transaction</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/jcli/certificate.html"><strong aria-hidden="true">1.4.4.</strong> Certificate</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/jcli/genesis.html"><strong aria-hidden="true">1.4.5.</strong> Genesis</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/jcli/vote.html"><strong aria-hidden="true">1.4.6.</strong> Voting</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/jcli/rest.html"><strong aria-hidden="true">1.4.7.</strong> REST</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/stake_pool/introduction.html"><strong aria-hidden="true">1.5.</strong> Staking and stake pool</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/stake_pool/delegating_stake.html"><strong aria-hidden="true">1.5.1.</strong> Delegating your stake</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/stake_pool/registering_stake_pool.html"><strong aria-hidden="true">1.5.2.</strong> Registering stake pool</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/stake_pool/retiring_stake_pool.html"><strong aria-hidden="true">1.5.3.</strong> Retiring stake pool</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/advanced/introduction.html"><strong aria-hidden="true">1.6.</strong> Advanced</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/advanced/01_the_genesis_block.html"><strong aria-hidden="true">1.6.1.</strong> Genesis block</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/advanced/02_starting_bft_blockchain.html"><strong aria-hidden="true">1.6.2.</strong> Starting a bft blockchain</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/advanced/03_starting_genesis_praos_blockchain.html"><strong aria-hidden="true">1.6.3.</strong> Starting a genesis blockchain</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/specs/introduction.html"><strong aria-hidden="true">1.7.</strong> Specs</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/specs/network.html"><strong aria-hidden="true">1.7.1.</strong> Network</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/testing/introduction.html"><strong aria-hidden="true">1.8.</strong> Testing</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-ledger-doc/testing/automation.html"><strong aria-hidden="true">1.8.1.</strong> Jormungandr Automation</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/testing/hersir.html"><strong aria-hidden="true">1.8.2.</strong> Hersir</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/testing/thor.html"><strong aria-hidden="true">1.8.3.</strong> Thor</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/testing/mjolnir.html"><strong aria-hidden="true">1.8.4.</strong> Mjolnir</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/testing/loki.html"><strong aria-hidden="true">1.8.5.</strong> Loki</a></li><li class="chapter-item expanded "><a href="../../core-ledger-doc/testing/integration_tests.html"><strong aria-hidden="true">1.8.6.</strong> Integration tests</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../core-testing-doc/introduction.html"><strong aria-hidden="true">2.</strong> Catalyst Core Test Tools</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-testing-doc/iapyx/iapyx.html"><strong aria-hidden="true">2.1.</strong> Iapyx</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-testing-doc/iapyx/load.html"><strong aria-hidden="true">2.1.1.</strong> Load Tool</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-testing-doc/registration-service/introduction.html"><strong aria-hidden="true">2.2.</strong> Registration Service</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-testing-doc/registration-service/cli.html"><strong aria-hidden="true">2.2.1.</strong> CLI</a></li><li class="chapter-item expanded "><a href="../../core-testing-doc/registration-service/configuration.html"><strong aria-hidden="true">2.2.2.</strong> Configuration</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-testing-doc/snapshot-service/introduction.html"><strong aria-hidden="true">2.3.</strong> Snapshot Service</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-testing-doc/snapshot-service/cli.html"><strong aria-hidden="true">2.3.1.</strong> CLI</a></li><li class="chapter-item expanded "><a href="../../core-testing-doc/snapshot-service/configuration.html"><strong aria-hidden="true">2.3.2.</strong> Configuration</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-testing-doc/valgrind/introduction.html"><strong aria-hidden="true">2.4.</strong> Valgrind</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-testing-doc/valgrind/configuration.html"><strong aria-hidden="true">2.4.1.</strong> Configuration</a></li></ol></li><li class="chapter-item expanded "><a href="../../core-testing-doc/vitup/introduction.html"><strong aria-hidden="true">2.5.</strong> Vitup</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../core-testing-doc/vitup/configuration.html" class="active"><strong aria-hidden="true">2.5.1.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="../../core-testing-doc/vitup/data_generation.html"><strong aria-hidden="true">2.5.2.</strong> Data Generation</a></li><li class="chapter-item expanded "><a href="../../core-testing-doc/vitup/run_modes.html"><strong aria-hidden="true">2.5.3.</strong> Run Modes</a></li><li class="chapter-item expanded "><a href="../../core-testing-doc/vitup/mock.html"><strong aria-hidden="true">2.5.4.</strong> Mock</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../rust/docs.html"><strong aria-hidden="true">3.</strong> Rust Documentation</a></li><li class="chapter-item expanded "><a href="../../api/api.html"><strong aria-hidden="true">4.</strong> API Documentation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../api/vote-ledger-v0.html"><strong aria-hidden="true">4.1.</strong> Voting Ledger Rest API - V0</a></li><li class="chapter-item expanded "><a href="../../api/vote-ledger-v1.html"><strong aria-hidden="true">4.2.</strong> Voting Ledger Rest API - V1</a></li><li class="chapter-item expanded "><a href="../../api/vit-servicing-station-v0.html"><strong aria-hidden="true">4.3.</strong> VIT Servicing Station Rest API</a></li><li class="chapter-item expanded "><a href="../../api/vit-testing-v0.html"><strong aria-hidden="true">4.4.</strong> VIT Testing Rest API</a></li></ol></li><li class="chapter-item expanded "><a href="../../example-enhanced-markup.html"><strong aria-hidden="true">5.</strong> Example Enhanced Markup</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Catalyst Voting System - Core Technology</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/input-output-hk/catalyst-core" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h2 id="configuration"><a class="header" href="#configuration">Configuration</a></h2>
+<p>This section describe configuration file which can be passed as argument when starting vitup or in some cases send to already running environments in order to restart them with new settings</p>
+<h3 id="initials"><a class="header" href="#initials">Initials</a></h3>
+<h4 id="block0"><a class="header" href="#block0">block0</a></h4>
+<p>Allows to provide initial addresses/voters which addresses would be put in block0.
+Supported syntax:</p>
+<h5 id="above-threshold"><a class="header" href="#above-threshold">above threshold</a></h5>
+<p>Amount of wallets which receive more than value defined in <code>static_data.voting_power</code> parameter</p>
+<p>Example: </p>
+<pre><code>{
+	&quot;above_threshold&quot;:30,
+    &quot;pin&quot;:&quot;1234&quot;
+}
+</code></pre>
+<p>Pin would be set globally for all 30 addresses </p>
+<h5 id="below-threshold"><a class="header" href="#below-threshold">below threshold</a></h5>
+<p>Amount of wallets which receive less than value defined in <code>static_data.voting_power</code> parameter </p>
+<p>Example: </p>
+<pre><code>{
+	&quot;below_threshold&quot;:30,
+    &quot;pin&quot;:&quot;1234&quot;
+}
+</code></pre>
+<p>Pin would be set globally for all 30 addresses </p>
+<h5 id="around-level"><a class="header" href="#around-level">around level</a></h5>
+<p>Amount of wallets which have funds around defined level</p>
+<p>Example: </p>
+<pre><code>{
+	&quot;count&quot;:30,
+    &quot;level&quot;:1000,
+    &quot;pin&quot;:&quot;1234&quot;
+}
+</code></pre>
+<h5 id="zero-funds"><a class="header" href="#zero-funds">zero funds</a></h5>
+<p>Amount of wallets which won’t have any funds in block0</p>
+<p>Example: </p>
+<pre><code>{
+	&quot;zero_funds&quot;:30,
+    &quot;pin&quot;:&quot;1234&quot;
+}
+</code></pre>
+<h5 id="named-wallet"><a class="header" href="#named-wallet">named wallet</a></h5>
+<p>Wallet with custom pin and arbitrary funds amount,</p>
+<p>Example: </p>
+<pre><code>      {
+        &quot;name&quot;:&quot;darek&quot;,
+        &quot;funds&quot;:8000,
+        &quot;pin&quot;:&quot;1111&quot;         
+      },
+</code></pre>
+<h5 id="external-wallet"><a class="header" href="#external-wallet">external wallet</a></h5>
+<p>Wallet with address and pin. For users who already generated address outside vitup.</p>
+<p>Example: </p>
+<pre><code>      {
+        &quot;address&quot;:&quot;ca1qknqa67aflzndy0rvkmxhd3gvccme5637qch53kfh0slzkfgv5nwyq4hxu4&quot;,
+        &quot;funds&quot;:8000     
+      },
+</code></pre>
+<h4 id="snapshot"><a class="header" href="#snapshot">snapshot</a></h4>
+<p>Allows to provide initial addresses/voters which addresses would be put in initial snapshot.
+Supported syntax:</p>
+<h5 id="random"><a class="header" href="#random">random</a></h5>
+<p>Some number of random wallets which receive specified amount of voting power</p>
+<p>Example: </p>
+<pre><code>  {
+    &quot;count&quot;: 2,
+    &quot;level&quot;: 5000
+  },
+</code></pre>
+<h5 id="external"><a class="header" href="#external">external</a></h5>
+<p>A single entry with specified voting key and voting power</p>
+<p>Example: </p>
+<pre><code>  {
+    &quot;key&quot;:&quot;3877098d14e80c62c071a1d82e3df0eb9a6cd339a5f66e9ec338274fdcd9d0f4&quot;,
+    &quot;funds&quot;:300
+  }
+</code></pre>
+<h5 id="named"><a class="header" href="#named">named</a></h5>
+<p>A single entry with specified alias from block0 and optional voting power. If voting power is not defined it would be taken from block0 section. If vitup cannot find alias it will produce an error</p>
+<p>Example: </p>
+<pre><code>  {
+    &quot;name&quot;: &quot;darek&quot;,
+    &quot;funds&quot;: 100
+  },
+</code></pre>
+<h3 id="vote-plan"><a class="header" href="#vote-plan">vote plan</a></h3>
+<h5 id="vote-time"><a class="header" href="#vote-time">vote time</a></h5>
+<p>Below parameters describe how long vote would be active, for how long users can vote and when tally period would begin.</p>
+<p>In cardano time is divided into epochs which consists of slots. There are 2 parameters that defines how long epoch should last, slot_duration and slots_per_epoch with equation:
+<code>epoch_duration = slot_duration * slots_per_epoch</code>.</p>
+<p>For example, for given:</p>
+<pre><code>slot_duration = 2
+slots_per_epoch = 10
+</code></pre>
+<p>then epoch will lasts 20 seconds.</p>
+<p>vote_start, vote_tally, tally_end - describe 2 vote phases: </p>
+<ul>
+<li>from vote_start to vote_tally : casting vote period, where we gather votes.</li>
+<li>from vote_tally to tally_end: tallying vote period, where we gather voting results.</li>
+</ul>
+<p>Sll above parameters are expressed in epochs. Be aware that <code>slot_duration</code> and <code>slots_per_epoch</code> have influence on time voting phase would start.
+For example if we would like to start vote in 5 minutes, allow users to case vote for 20 minutes and give 1 hour for tally operation our setup would be like below:</p>
+<pre><code>&quot;vote_start&quot;:1,
+&quot;vote_tally&quot;:4,
+&quot;tally_end&quot;:20,
+&quot;slots_per_epoch&quot;:60,
+</code></pre>
+<p>See <a href="https://input-output-hk.github.io/jormungandr/concepts/blockchain.html">jormungandr docs</a> for more information.</p>
+<p>NOTE: <code>slot_duration</code> is defined in <code>blockchain</code> section of configuration file</p>
+<h5 id="private"><a class="header" href="#private">private</a></h5>
+<p>If true, then voting is private otherwise public. This parameters basically controls if votes choices are encrypted or not.</p>
+<h6 id="representatives_vote_plan"><a class="header" href="#representatives_vote_plan">representatives_vote_plan</a></h6>
+<p>TBD, currently not used</p>
+<h4 id="example"><a class="header" href="#example">example</a></h4>
+<pre><code> &quot;vote_plan&quot;: {
+        &quot;vote_time&quot;: {
+            &quot;vote_start&quot;: 13,
+            &quot;tally_start&quot;: 98,
+            &quot;tally_end&quot;: 140,
+            &quot;slots_per_epoch&quot;: 3600        
+        },
+        &quot;private&quot;: true,
+        &quot;representatives_vote_plan&quot;: false
+    },
+  },
+</code></pre>
+<h5 id="blockchain"><a class="header" href="#blockchain">blockchain</a></h5>
+<p>Set of parameters which controls blockchain related configuration.</p>
+<p>See <a href="https://input-output-hk.github.io/jormungandr/advanced/01_the_genesis_block.html">jormungandr docs</a> for more information.</p>
+<h5 id="slot_duration"><a class="header" href="#slot_duration">slot_duration</a></h5>
+<p>Describes how frequent block are produces by network. Slot duration is expressed in seconds. Cannot be longer that 128.</p>
+<h5 id="block_content_max_size"><a class="header" href="#block_content_max_size">block_content_max_size</a></h5>
+<p>Describes how big a single block can be. Larger blocks can hold more transactions which results in faster transactions processing, however it put more requirements on space and network throughput.</p>
+<h5 id="block0_time"><a class="header" href="#block0_time">block0_time</a></h5>
+<p>Optional parameter which defines start time of block0. It is useful when one want to defined voting phases that ends and starts precisely in required time. Otherwise block0_time is equal to current time when running vitup</p>
+<h6 id="tx_max_expiry_epochs"><a class="header" href="#tx_max_expiry_epochs">tx_max_expiry_epochs</a></h6>
+<p>Optional parameter which defines what is the maximum duration (expressed in epochs) of transaction timeout.
+Usually it is equal to 1.</p>
+<h6 id="consensus_leader_ids"><a class="header" href="#consensus_leader_ids">consensus_leader_ids</a></h6>
+<p>Allows to override randomly generated consensus leaders ids.
+Useful when we have our own pre-generated leaders keys for nodes.</p>
+<h5 id="linear_fees"><a class="header" href="#linear_fees">linear_fees</a></h5>
+<p>Transactions fees which defined cost of transaction or vote.</p>
+<ul>
+<li>constant - constant fee added to each transaction</li>
+<li>coefficient - coefficient of each transaction output</li>
+<li>certificate - cost of sending certificate.</li>
+</ul>
+<p><code>constant + transaction.output * coefficient + certificate</code></p>
+<p>Example:</p>
+<pre><code>  &quot;linear_fees&quot;: {
+    &quot;constant&quot;: 1,
+    &quot;coefficient&quot;: 1,
+    &quot;certificate&quot;: 2
+  },
+</code></pre>
+<p>Above configuration will result in:</p>
+<p>For transaction with 1 input and 1 output
+<code>1 +  1 * 1 + 0 = 2</code></p>
+<p>For vote
+<code>1 + 0 * 1 + 2 = 3</code></p>
+<h5 id="committees"><a class="header" href="#committees">committees</a></h5>
+<p>Committee is a wallet that is capable of tallying voting results.
+This setting allows to use predefined committee rather than generate random by vitup.</p>
+<h3 id="data"><a class="header" href="#data">data</a></h3>
+<p>Section describes static data used for voting. Mostly defines parameters for <a href="https://github.com/input-output-hk/vit-servicing-station">servicing station</a></p>
+<h4 id="current-fund"><a class="header" href="#current-fund">current fund</a></h4>
+<p>Current fund related settings:</p>
+<h5 id="options"><a class="header" href="#options">options</a></h5>
+<p>Defines options available for voters. Should be expressed as coma-separated values. For example:</p>
+<p><code>options: &quot;yes,no&quot;</code></p>
+<h5 id="proposals"><a class="header" href="#proposals">proposals</a></h5>
+<p>Number of proposals available for voting</p>
+<h5 id="challenges"><a class="header" href="#challenges">challenges</a></h5>
+<p>Number of challenges available for voting. Challenge is a container for proposals for the same domain</p>
+<h5 id="reviews"><a class="header" href="#reviews">reviews</a></h5>
+<p>Number of reviews for proposals</p>
+<h5 id="voting_power"><a class="header" href="#voting_power">voting_power</a></h5>
+<p>Threshold for voting participation, expressed in ADA</p>
+<h5 id="fund_name"><a class="header" href="#fund_name">fund_name</a></h5>
+<p>Name of fund</p>
+<h5 id="fund_id"><a class="header" href="#fund_id">fund_id</a></h5>
+<p>Id of the fund. This parameter also controls behavior of catalyst voting app. If it’s changed between two funds, voting app will refresh it state.</p>
+<h5 id="dates"><a class="header" href="#dates">dates</a></h5>
+<h6 id="proposal_submission_start"><a class="header" href="#proposal_submission_start">proposal_submission_start</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal submission start datetime. </p>
+<h6 id="insight_sharing_start"><a class="header" href="#insight_sharing_start">insight_sharing_start</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal insight sharing start datetime. </p>
+<h6 id="refine_proposals_start"><a class="header" href="#refine_proposals_start">refine_proposals_start</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal refinement start datetime. </p>
+<h6 id="finalize_proposals_start"><a class="header" href="#finalize_proposals_start">finalize_proposals_start</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal finalization start datetime. </p>
+<h6 id="proposal_assessment_start"><a class="header" href="#proposal_assessment_start">proposal_assessment_start</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal assessment start datetime. </p>
+<h6 id="assessment_qa_start"><a class="header" href="#assessment_qa_start">assessment_qa_start</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal assessment qa start datetime. </p>
+<h6 id="snapshot_time"><a class="header" href="#snapshot_time">snapshot_time</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines snapshot datetime.</p>
+<h6 id="next_vote_start_time"><a class="header" href="#next_vote_start_time">next_vote_start_time</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines what is the date of next voting. This data will be shown to users after current voting will ends.</p>
+<h6 id="next_snapshot_time"><a class="header" href="#next_snapshot_time">next_snapshot_time</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines next snapshot datetime. This data will be shown to users after current voting will ends.</p>
+<h4 id="next-funds"><a class="header" href="#next-funds">next funds</a></h4>
+<p>Limited subset of settings comparing to <code>current_fund</code> section for next funds</p>
+<h5 id="fund_name-1"><a class="header" href="#fund_name-1">fund_name</a></h5>
+<p>Name of fund</p>
+<h5 id="fund_id-1"><a class="header" href="#fund_id-1">fund_id</a></h5>
+<p>Id of the fund. This parameter also controls behavior of catalyst voting app. If it’s changed between two funds, voting app will refresh it state.</p>
+<h5 id="dates-1"><a class="header" href="#dates-1">dates</a></h5>
+<h6 id="proposal_submission_start-1"><a class="header" href="#proposal_submission_start-1">proposal_submission_start</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal submission start datetime. </p>
+<h6 id="insight_sharing_start-1"><a class="header" href="#insight_sharing_start-1">insight_sharing_start</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal insight sharing start datetime. </p>
+<h6 id="refine_proposals_start-1"><a class="header" href="#refine_proposals_start-1">refine_proposals_start</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal refinement start datetime. </p>
+<h6 id="finalize_proposals_start-1"><a class="header" href="#finalize_proposals_start-1">finalize_proposals_start</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal finalization start datetime. </p>
+<h6 id="proposal_assessment_start-1"><a class="header" href="#proposal_assessment_start-1">proposal_assessment_start</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal assessment start datetime. </p>
+<h6 id="assessment_qa_start-1"><a class="header" href="#assessment_qa_start-1">assessment_qa_start</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal assessment qa start datetime. </p>
+<h6 id="snapshot_time-1"><a class="header" href="#snapshot_time-1">snapshot_time</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines snapshot datetime. </p>
+<h6 id="next_vote_start_time-1"><a class="header" href="#next_vote_start_time-1">next_vote_start_time</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines what is the date of next voting. This data will be shown to users after current voting will ends.</p>
+<h6 id="next_snapshot_time-1"><a class="header" href="#next_snapshot_time-1">next_snapshot_time</a></h6>
+<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines next snapshot datetime. </p>
+<h3 id="service"><a class="header" href="#service">service</a></h3>
+<p>Service related settings</p>
+<p>NOTE: this section is ignored when only generating data using vitup. </p>
+<h5 id="version"><a class="header" href="#version">version</a></h5>
+<p>Control version of backend. Manipulating this parameter we can tell voting app to force user to self-update application.</p>
+<h5 id="https"><a class="header" href="#https">https</a></h5>
+<p>Controls protocol over which vitup is available for client</p>
+<h3 id="full-example"><a class="header" href="#full-example">Full Example:</a></h3>
+<pre><code>{
+   &quot;initials&quot;:{
+      &quot;snapshot&quot;:{
+         &quot;tag&quot;:&quot;daily&quot;,
+         &quot;content&quot;:[
+            {
+               &quot;count&quot;:2,
+               &quot;level&quot;:1234
+            },
+            {
+               &quot;name&quot;:&quot;alice&quot;
+            },
+            {
+               &quot;name&quot;:&quot;bob&quot;,
+               &quot;funds&quot;:10001
+            }
+         ]
+      },
+      &quot;block0&quot;:[
+         {
+            &quot;above_threshold&quot;:10,
+            &quot;pin&quot;:&quot;1234&quot;
+         },
+         {
+            &quot;name&quot;:&quot;alice&quot;,
+            &quot;pin&quot;:&quot;1234&quot;,
+            &quot;funds&quot;:10000
+         },
+         {
+            &quot;name&quot;:&quot;bob&quot;,
+            &quot;pin&quot;:&quot;1234&quot;,
+            &quot;funds&quot;:10000
+         },
+         {
+            &quot;zero_funds&quot;:10,
+            &quot;pin&quot;:&quot;1234&quot;
+         }
+      ]
+   },
+   &quot;vote_plan&quot;:{
+      &quot;vote_time&quot;:{
+         &quot;vote_start&quot;:0,
+         &quot;tally_start&quot;:134,
+         &quot;tally_end&quot;:234,
+         &quot;slots_per_epoch&quot;:3600
+      },
+      &quot;private&quot;:true
+   },
+   &quot;blockchain&quot;:{
+      &quot;slot_duration&quot;:4,
+      &quot;block_content_max_size&quot;:20971520,
+      &quot;linear_fees&quot;:{
+         &quot;constant&quot;:0,
+         &quot;coefficient&quot;:0,
+         &quot;certificate&quot;:0
+      }
+   },
+   &quot;data&quot;:{
+      &quot;current_fund&quot;:{
+         &quot;options&quot;:&quot;yes,no&quot;,
+         &quot;proposals&quot;:1134,
+         &quot;challenges&quot;:23,
+         &quot;reviews&quot;:7045,
+         &quot;voting_power&quot;:450,
+         &quot;fund_name&quot;:&quot;Fund9&quot;,
+         &quot;fund_id&quot;:9,
+         &quot;dates&quot;:{
+            &quot;insight_sharing_start&quot;:&quot;2022-05-01T12:00:00Z&quot;,
+            &quot;proposal_submission_start&quot;:&quot;2022-05-02T12:00:00Z&quot;,
+            &quot;refine_proposals_start&quot;:&quot;2022-05-03T12:00:00Z&quot;,
+            &quot;finalize_proposals_start&quot;:&quot;2022-05-04T12:00:00Z&quot;,
+            &quot;proposal_assessment_start&quot;:&quot;2022-05-04T12:00:00Z&quot;,
+            &quot;assessment_qa_start&quot;:&quot;2022-05-05T12:00:00Z&quot;,
+            &quot;snapshot_time&quot;:&quot;2022-05-07T12:00:00Z&quot;,
+            &quot;next_snapshot_time&quot;:&quot;2023-05-07T12:00:00Z&quot;,
+            &quot;next_vote_start_time&quot;:&quot;2022-07-14T12:00:00Z&quot;
+         }
+      },
+      &quot;next_funds&quot;:[
+         {
+            &quot;fund_name&quot;:&quot;Fund10&quot;,
+            &quot;fund_id&quot;:10,
+            &quot;dates&quot;:{
+               &quot;insight_sharing_start&quot;:&quot;2023-05-01T12:00:00Z&quot;,
+               &quot;proposal_submission_start&quot;:&quot;2023-05-02T12:00:00Z&quot;,
+               &quot;refine_proposals_start&quot;:&quot;2023-05-03T12:00:00Z&quot;,
+               &quot;finalize_proposals_start&quot;:&quot;2023-05-04T12:00:00Z&quot;,
+               &quot;proposal_assessment_start&quot;:&quot;2023-05-04T12:00:00Z&quot;,
+               &quot;assessment_qa_start&quot;:&quot;2023-05-05T12:00:00Z&quot;,
+               &quot;snapshot_time&quot;:&quot;2023-05-07T12:00:00Z&quot;,
+               &quot;voting_start&quot;:&quot;2023-07-14T12:00:00Z&quot;,
+               &quot;voting_tally_end&quot;:&quot;2023-07-14T12:00:00Z&quot;,
+               &quot;voting_tally_start&quot;:&quot;2023-07-14T12:00:00Z&quot;,
+               &quot;next_snapshot_time&quot;:&quot;2023-07-07T12:00:00Z&quot;,
+               &quot;next_vote_start_time&quot;:&quot;2023-07-14T12:00:00Z&quot;
+            }
+         }
+      ]
+   },
+   &quot;version&quot;:&quot;3.8&quot;
+}
+</code></pre>
+<footer id="open-on-gh">Found a bug? <a href="https://github.com/input-output-hk/catalyst-core/edit/main/book/src/core-testing-doc/vitup/configuration.md">Edit this page on GitHub.</a></footer>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../core-testing-doc/vitup/introduction.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next" href="../../core-testing-doc/vitup/data_generation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../core-testing-doc/vitup/introduction.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next" href="../../core-testing-doc/vitup/data_generation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../searcher.js" type="text/javascript" charset="utf-8"></script>
+
+        <script src="../../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </body>
+</html>

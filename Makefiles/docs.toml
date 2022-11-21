@@ -22,7 +22,7 @@ script_runner = "@shell"
 script = '''
 cargo install mdbook-admonish
 cd ..
-mdbook-admonish install --css-dir ./doc/src/assets/css/
+mdbook-admonish install --css-dir book/src/assets/css/
 '''
 
 # We can make our own regex preprocessing templates

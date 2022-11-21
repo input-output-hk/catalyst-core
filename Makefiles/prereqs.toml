@@ -1,0 +1,10 @@
+# Define our pre-requisites which are installed when we make our development environment.
+# These are things which are not currently deployed by the nix dev shell.
+
+
+# This task installs all pre-requisites, and must be called manually, and usually once.
+[tasks.install-prereqs]
+workspace = false
+dependencies = [
+    { name = "install-docs-prereqs", path = "Makefiles/docs.toml" }
+]

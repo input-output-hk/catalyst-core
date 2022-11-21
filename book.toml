@@ -1,0 +1,48 @@
+[book]
+authors = ["Steven Johnson (steven.johnson@iohk.io)"]
+language = "en"
+multilingual = false
+src = "book/src"
+title = "Catalyst Voting System - Core Technology"
+
+[build]
+build-dir = "book/html" # This is where github wants it so we can publish as gh-pages.
+
+[preprocessor.regex]
+patterns = "./book/src/assets/patterns/patterns.json"
+before = [ # Make sure regex pre-processing happens before any other pre-processing.
+    "kroki-preprocessor",
+    "admonish",
+    "open-on-gh"
+]
+
+[preprocessor.kroki-preprocessor]
+
+[preprocessor.admonish]
+command = "mdbook-admonish"
+assets_version = "2.0.0" # do not edit: managed by `mdbook-admonish install`
+on_failure = "bail"
+before = [
+    "kroki-preprocessor" # Ensure we can put diagrams inside admonish blocks.
+]
+
+
+[preprocessor.open-on-gh]
+command = "mdbook-open-on-gh"
+renderer = ["html"]
+
+[output.html]
+additional-css = [
+    "./book/src/assets/css/mdbook-admonish.css",
+    "./book/src/assets/css/open-in.css"
+]
+
+# Required: Your repository URL used in the link.
+git-repository-url = "https://github.com/input-output-hk/catalyst-core"
+
+# Your git branch. Defaults to `main`
+git-branch = "main"
+
+# The text to use in the footer.
+# The link text is marked by `[]`
+open-on-text = "Found a bug? [Edit this page on GitHub.]"

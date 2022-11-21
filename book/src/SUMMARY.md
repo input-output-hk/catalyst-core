@@ -79,3 +79,5 @@
   - [VIT Testing Rest API](./api/vit-testing-v0.md)
 
 - [Example Enhanced Markup](./example-enhanced-markup.md)
+
+- [Code of Conduct](./CODE_OF_CONDUCT.md)

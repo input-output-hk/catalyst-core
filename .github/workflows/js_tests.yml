@@ -1,4 +1,4 @@
-name: Javascript wallet binding tests
+name: Javascript wallet
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
 
 jobs:
   wallet-js-binding:
+    name: Tests
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -25,7 +26,6 @@ jobs:
       run: |
         cd src/chain-wallet-libs/bindings/wallet-js
         wasm-pack build --release --target=nodejs -d pkg
-        cat pkg/package.json
 
     - name: JS tests
       run: |

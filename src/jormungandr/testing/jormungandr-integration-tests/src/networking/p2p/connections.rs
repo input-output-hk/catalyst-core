@@ -1,10 +1,4 @@
-use std::path::PathBuf;
-
-use crate::{jormungandr::grpc::setup, networking::utils};
-use chain_core::property::{BlockId, HasHeader};
-
-use chain_impl_mockchain::testing::{GenesisPraosBlockBuilder, StakePoolBuilder};
-use chain_time::{Epoch, TimeEra};
+use crate::networking::utils;
 use hersir::{
     builder::{NetworkBuilder, Node, Topology},
     config::{BlockchainConfiguration, SpawnParams, WalletTemplateBuilder},
@@ -22,7 +16,6 @@ const LEADER3: &str = "LEADER3";
 const LEADER4: &str = "LEADER4";
 
 const CLIENT: &str = "CLIENT";
-const CLIENT_B: &str = "CLIENT_B";
 const SERVER: &str = "SERVER";
 const SERVER_1: &str = "SERVER_1";
 const SERVER_2: &str = "SERVER_2";
@@ -113,91 +106,6 @@ pub fn node_trust_itself() {
             "failed to retrieve the list of bootstrap peers from trusted peer",
         )
         .unwrap();
-}
-
-#[ignore]
-#[test]
-fn gateway_gossip() {
-    const SERVER_GOSSIP_INTERVAL_SECS: u64 = 1;
-    const DEFAULT_GOSSIP_INTERVAL_SECS: u64 = 10;
-
-    let mut network_controller = NetworkBuilder::default()
-        .topology(
-            Topology::default()
-                .with_node(Node::new(SERVER))
-                .with_node(Node::new(CLIENT).with_trusted_peer(SERVER))
-                .with_node(Node::new(CLIENT_B).with_trusted_peer(SERVER)),
-        )
-        .blockchain_config(BlockchainConfiguration::default().with_leader(SERVER))
-        .wallet_template(
-            WalletTemplateBuilder::new(ALICE)
-                .with(1_000_000)
-                .delegated_to(CLIENT)
-                .build(),
-        )
-        .wallet_template(
-            WalletTemplateBuilder::new(BOB)
-                .with(1_000_000)
-                .delegated_to(SERVER)
-                .build(),
-        )
-        .build()
-        .unwrap();
-
-    let server = network_controller
-        .spawn(
-            SpawnParams::new(SERVER)
-                .gossip_interval(Duration::new(SERVER_GOSSIP_INTERVAL_SECS, 0))
-                .log_level(LogLevel::TRACE),
-        )
-        .unwrap();
-
-    //
-    // spin up gateway node
-    //
-    let mut gateway_node_binary = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-
-    gateway_node_binary.pop();
-    gateway_node_binary.pop();
-    gateway_node_binary.pop();
-    gateway_node_binary.pop();
-    gateway_node_binary.push("target/debug/gateway");
-
-    let _client_gateway = network_controller
-        .spawn(SpawnParams::new(CLIENT).jormungandr(gateway_node_binary))
-        .unwrap();
-
-    utils::wait(DEFAULT_GOSSIP_INTERVAL_SECS);
-
-    //
-    // there should be no gossip from gateway node to server
-    //
-    let last_gossip = server.rest().network_stats().unwrap();
-
-    assert!(last_gossip.is_empty());
-    //
-    // spin up regular client
-    //
-    let mut regular_node_binary = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-
-    regular_node_binary.pop();
-    regular_node_binary.pop();
-    regular_node_binary.pop();
-    regular_node_binary.pop();
-    regular_node_binary.push("target/debug/jormungandr");
-
-    let _client_b = network_controller
-        .spawn(SpawnParams::new(CLIENT_B).jormungandr(regular_node_binary))
-        .unwrap();
-
-    utils::wait(DEFAULT_GOSSIP_INTERVAL_SECS);
-    let last_gossip = server.rest().network_stats().unwrap();
-
-    // regular node gossips as usual
-    assert!(!last_gossip.is_empty());
-
-    // fragment test todo
-    // make sure gateway node cannot publish
 }
 
 #[test]

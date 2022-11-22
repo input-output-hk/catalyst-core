@@ -343,14 +343,32 @@ async fn handle_network_input(
 async fn handle_network_input(
     mut input: MessageQueue<NetworkMsg>,
     state: GlobalStateR,
-    _channels: Channels,
+    channels: Channels,
 ) {
     while let Some(msg) = input.next().await {
-        tracing::trace!("handling new gateway task item");
+        tracing::trace!("handling new network task item");
         match msg {
-            NetworkMsg::Propagate(_msg) => {
-                // gateway node drops all propagation to internal network, it can only consume not publish
-            }
+            NetworkMsg::Propagate(msg) => match *(msg.clone()) {
+                PropagateMsg::Block(_) | PropagateMsg::Fragment(_) => {
+                    handle_propagation_msg(*(msg.clone()), state.clone(), channels.clone())
+                        .await
+                        .unwrap_or_else(|e| {
+                            tracing::error!("Error while propagating message: {}", e)
+                        })
+                }
+                PropagateMsg::Gossip(peer, _gossips) => {
+                    // drop all gossip from public nodes
+                    if peer.is_global() {
+                        continue;
+                    } else {
+                        handle_propagation_msg(*(msg.clone()), state.clone(), channels.clone())
+                            .await
+                            .unwrap_or_else(|e| {
+                                tracing::error!("Error while propagating message: {}", e)
+                            })
+                    }
+                }
+            },
             NetworkMsg::GetBlocks(block_ids) => {
                 state.peers.solicit_blocks_any(block_ids.encode()).await
             }
@@ -371,7 +389,7 @@ async fn handle_network_input(
                 state.peers.infos().map(|infos| reply.reply_ok(infos)).await;
             }
         };
-        tracing::trace!("gateway item handling finished");
+        tracing::trace!("item handling finished");
     }
 }
 
@@ -450,6 +468,7 @@ async fn handle_propagation_msg(
             Span::current().record("addr", peer.address().to_string().as_str());
             Span::current().record("id", peer.address().to_string().as_str());
             tracing::debug!("gossip to propagate");
+
             let gossip = gossips.encode();
             match prop_state
                 .peers

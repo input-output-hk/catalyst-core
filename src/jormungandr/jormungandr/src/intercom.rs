@@ -588,7 +588,7 @@ pub enum BlockMsg {
 }
 
 /// Propagation requests for the network task.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum PropagateMsg {
     Block(Box<Header>),
     Fragment(Fragment),

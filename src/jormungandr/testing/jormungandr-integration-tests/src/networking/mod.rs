@@ -3,6 +3,7 @@ pub mod communication;
 #[cfg(feature = "cross-version")]
 pub mod cross_version;
 pub mod explorer;
+pub mod gateway;
 pub mod leadership_log;
 pub mod p2p;
 pub mod stake_pool;

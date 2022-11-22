@@ -21,7 +21,7 @@
 <div class="api-container">
 <!-- 4. Change the apiDescriptionUrl to point to the documentation .json file. -->
 <elements-api
-  apiDescriptionUrl="https://raw.githubusercontent.com/input-output-hk/catalyst-core/main/book/src/core-testing-doc/api/vitup/mock-farm/v0.yaml"
+  apiDescriptionUrl="../core-testing-doc/api/vitup/mock-farm/v0.yaml"
   router="memory"
   layout="sidebar"
 />

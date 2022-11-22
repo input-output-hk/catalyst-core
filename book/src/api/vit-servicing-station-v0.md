@@ -21,7 +21,7 @@
 <div class="api-container">
 <!-- 4. Change the apiDescriptionUrl to point to the documentation .json file. -->
 <elements-api
-  apiDescriptionUrl="https://raw.githubusercontent.com/input-output-hk/catalyst-core/main/src/vit-servicing-station/doc/api/v0.yaml"
+  apiDescriptionUrl="../core-vitss-doc/api/v0.yaml"
   router="memory"
   layout="sidebar"
 />

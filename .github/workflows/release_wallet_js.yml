@@ -1,0 +1,84 @@
+name: Release Wasm Chain Wallet Lib package
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+    # tags:
+    #   - walletjs-*
+
+jobs:
+  initial_release:
+    name: Create base release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: true
+          prerelease: false
+
+      - name: Set version output
+        id: get_version
+        run: echo ::set-output name=version::``${GITHUB_REF#refs/tags/}``
+
+  release_wasm:
+    name: Release wasm assets
+    needs: initial_release
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [nodejs, web, bundler]
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+            node-version: '16.x'
+            registry-url: 'https://registry.npmjs.org'
+
+      - name: Install wasm pack
+        uses: jetli/wasm-pack-action@v0.3.0
+        with:
+          # Optional version of wasm-pack to install(eg. 'v0.9.1', 'latest')
+          version: 'latest'
+
+      - name: Build
+        run: |
+          cd src/chain-wallet-libs
+          wasm-pack build \
+            --scope catalyst-core \
+            --out-name walletjs \
+            --release --target ${{ matrix.target }} \
+            bindings/wallet-js
+
+      - name: Run tests
+        run: |
+          cd src/chain-wallet-libs/bindings/wallet-js/js-test
+          npm install
+          npm test
+
+      - name: Pack
+        run: |
+          cd src/chain-wallet-libs
+          wasm-pack pack bindings/wallet-js
+
+      - name: Publish
+        run: |
+          cd src/chain-wallet-libs/bindings/wallet-js/pkg
+          npm publish --access=public
+        env:
+            NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

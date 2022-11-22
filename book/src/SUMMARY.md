@@ -53,6 +53,8 @@
     - [Loki](./core-ledger-doc/testing/loki.md)
     - [Integration tests](./core-ledger-doc/testing/integration_tests.md)
 
+- [Catalyst Core VIT-SS](./core-vitss-doc/testing.md)
+
 - [Catalyst Core Test Tools](./core-testing-doc/introduction.md)
   - [Iapyx](./core-testing-doc/iapyx/iapyx.md)
     - [Load Tool](./core-testing-doc/iapyx/load.md)
@@ -80,4 +82,5 @@
 
 - [Example Enhanced Markup](./example-enhanced-markup.md)
 
+- [Contributing](./CONTRIBUTING.md)
 - [Code of Conduct](./CODE_OF_CONDUCT.md)

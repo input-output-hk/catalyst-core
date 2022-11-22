@@ -1,4 +1,4 @@
-name: Javascript wallet
+name: Javascript wallet tests
 
 on:
   push:

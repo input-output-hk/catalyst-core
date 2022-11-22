@@ -1,4 +1,4 @@
-name: Javascript wallet
+name: Release JavaScript Wallet
 
 on:
   push:

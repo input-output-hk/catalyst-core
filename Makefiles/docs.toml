@@ -1,0 +1,102 @@
+# Our docs are in mdbook format, so install that tool
+# See
+[tasks.install-mdbook]
+script_runner = "@shell"
+script = '''
+cargo binstall --no-confirm mdbook
+'''
+
+# We can use any diagram supported by kroki
+# See: https://lib.rs/crates/mdbook-kroki-preprocessor
+#    : https://kroki.io/
+[tasks.install-mdbook-kroki]
+script_runner = "@shell"
+script = '''
+cargo binstall --no-confirm mdbook-kroki-preprocessor 
+'''
+
+# We can use Admonish markup, so install that tool
+# See: https://lib.rs/crates/mdbook-admonish
+[tasks.install-mdbook-admonish]
+script_runner = "@shell"
+script = '''
+cargo binstall --no-confirm mdbook-admonish
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+mdbook-admonish install --css-dir book/src/assets/css/
+'''
+
+# We can make our own regex preprocessing templates
+# See: https://lib.rs/crates/mdbook-regex
+[tasks.install-mdbook-regex]
+script_runner = "@shell"
+script = '''
+cargo binstall --no-confirm mdbook-regex
+'''
+
+# Automatically adds an "Edit this file on GitHub" to each page
+# See: https://lib.rs/crates/mdbook-open-on-gh
+[tasks.install-mdbook-open-on-gh]
+script_runner = "@shell"
+script = '''
+cargo binstall --no-confirm mdbook-open-on-gh
+'''
+
+
+[tasks.install-docs-prereqs]
+workspace = false
+run_task = { name = [
+        "install-mdbook-kroki",
+        "install-mdbook-regex",
+        "install-mdbook-admonish",
+        "install-mdbook-open-on-gh"
+    ], parallel = true }
+dependencies = [
+    "install-mdbook",
+]
+
+# Build the RUST src documentation
+# We need to remove the debug and .rust* files otherwise they
+# end up inside the book, and are not needed.
+[tasks.build-rust-docs]
+workspace = false
+category = "docs"
+script_runner = "@shell" 
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+cargo doc --workspace --target-dir book/src/rust/ --no-deps
+rm -rf book/src/rust/debug
+rm -rf book/src/rust/.rust*
+'''
+
+# Build and serve a live view of the POC Documentation
+[tasks.view-docs]
+workspace = false
+category = "docs"
+dependencies = [
+    "build-rust-docs"
+] # We build the rust docs first.
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+mdbook serve --open
+'''
+
+# Build and serve a live view of the POC Documentation
+[tasks.build-mdbook]
+workspace = false
+category = "docs"
+dependencies = [
+    "build-rust-docs"
+] # We build the rust docs first.
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+mdbook build
+'''
+
+[tasks.build-docs]
+workspace = false
+dependencies = [
+    "build-rust-docs",
+    "build-mdbook"
+]

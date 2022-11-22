@@ -47,8 +47,7 @@ jobs:
           toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
           components: rustfmt, clippy
       - run: |
-          cargo build -p jormungandr
-          cargo build -p jcli
+          cargo build
           cargo nextest run --no-fail-fast --partition hash:${{ matrix.shardNumber }}/${{ matrix.totalShards }}
 
   clippy:

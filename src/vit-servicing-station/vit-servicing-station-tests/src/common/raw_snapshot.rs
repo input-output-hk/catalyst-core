@@ -95,6 +95,7 @@ pub struct RawSnapshotBuilder {
     direct_voters_group: Option<String>,
     representatives_group: Option<String>,
     voting_registrations_count: usize,
+    voting_registrations: Option<Vec<VotingRegistration>>,
 }
 
 impl Default for RawSnapshotBuilder {
@@ -107,6 +108,7 @@ impl Default for RawSnapshotBuilder {
             direct_voters_group: Some(DEFAULT_DIRECT_VOTER_GROUP.into()),
             representatives_group: Some(DEFAULT_REPRESENTATIVE_GROUP.into()),
             voting_registrations_count: 2,
+            voting_registrations: None,
         }
     }
 }
@@ -122,18 +124,36 @@ impl RawSnapshotBuilder {
         self
     }
 
+    pub fn with_voting_registrations(
+        mut self,
+        voting_registrations: Vec<VotingRegistration>,
+    ) -> Self {
+        self.voting_registrations = Some(voting_registrations);
+        self
+    }
+
     pub fn with_timestamp(mut self, timestamp: i64) -> Self {
         self.update_timestamp = timestamp;
         self
     }
 
-    pub fn build(self) -> RawSnapshot {
+    pub fn with_voting_power_cap(mut self, voting_power_cap: Fraction) -> Self {
+        self.voting_power_cap = voting_power_cap;
+        self
+    }
+
+    pub fn with_min_stake_threshold(mut self, min_stake_threshold: Value) -> Self {
+        self.min_stake_threshold = min_stake_threshold;
+        self
+    }
+
+    pub fn build(mut self) -> RawSnapshot {
         let mut rng = rand::rngs::OsRng;
         let mut delegation_type_count = 0;
 
-        RawSnapshot {
-            content: RawSnapshotInput {
-                snapshot: std::iter::from_fn(|| {
+        if self.voting_registrations.is_none() {
+            self.voting_registrations = Some(
+                std::iter::from_fn(|| {
                     Some(VotingRegistration {
                         stake_public_key: TestGen::public_key().to_string(),
                         voting_power: rng.gen_range(1u64, 1_00u64).into(),
@@ -153,8 +173,13 @@ impl RawSnapshotBuilder {
                     })
                 })
                 .take(self.voting_registrations_count)
-                .collect::<Vec<_>>()
-                .into(),
+                .collect::<Vec<_>>(),
+            )
+        }
+
+        RawSnapshot {
+            content: RawSnapshotInput {
+                snapshot: self.voting_registrations.unwrap().into(),
                 update_timestamp: self.update_timestamp,
                 min_stake_threshold: self.min_stake_threshold,
                 voting_power_cap: self.voting_power_cap,

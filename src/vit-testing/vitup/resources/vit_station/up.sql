@@ -133,6 +133,41 @@ create table groups (
     PRIMARY KEY(token_identifier, fund_id)
 );
 
+create table votes (
+    fragment_id TEXT PRIMARY KEY,
+    caster TEXT NOT NULL,
+    proposal INTEGER NOT NULL,
+    voteplan_id TEXT NOT NULL,
+    time REAL NOT NULL,
+    choice SMALLINT,
+    raw_fragment TEXT NOT NULL
+);
+
+create table snapshots (
+    tag TEXT PRIMARY KEY,
+    last_updated BIGINT NOT NULL
+);
+
+create table voters (
+    voting_key TEXT NOT NULL,
+    voting_power BIGINT NOT NULL,
+    voting_group TEXT NOT NULL,
+    snapshot_tag TEXT NOT NULL,
+    PRIMARY KEY(voting_key, voting_group, snapshot_tag),
+    FOREIGN KEY(snapshot_tag) REFERENCES snapshots(tag) ON DELETE CASCADE
+);
+
+create table contributions (
+    stake_public_key TEXT NOT NULL,
+    reward_address TEXT NOT NULL,
+    value BIGINT NOT NULL,
+    voting_key TEXT NOT NULL,
+    voting_group TEXT NOT NULL,
+    snapshot_tag TEXT NOT NULL,
+    PRIMARY KEY(stake_public_key, voting_key, voting_group, snapshot_tag),
+    FOREIGN KEY(snapshot_tag) REFERENCES snapshots(tag) ON DELETE CASCADE
+);
+
 CREATE VIEW full_proposals_info
 AS
 SELECT
@@ -167,4 +202,3 @@ FROM
             and challenges.challenge_type = 'community-choice'
         LEFT JOIN (SELECT proposal_id as review_proposal_id, COUNT (DISTINCT assessor) as reviews_count FROM community_advisors_reviews GROUP BY proposal_id)
             on proposals.proposal_id = review_proposal_id;
-

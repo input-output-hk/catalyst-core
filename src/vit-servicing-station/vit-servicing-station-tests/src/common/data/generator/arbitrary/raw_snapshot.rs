@@ -38,7 +38,7 @@ impl ArbitraryRawSnapshotGenerator {
     pub fn delegation(&mut self) -> Delegations {
         match self.id_generator.next_u32() % 2 {
             0 => self.legacy_delegation(),
-            1 = > self.new_delegation(),
+            1 => self.new_delegation(),
         }
     }
 

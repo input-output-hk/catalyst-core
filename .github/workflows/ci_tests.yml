@@ -40,6 +40,16 @@ jobs:
       - name: Install deps
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+      
+      - name: Install catalyst tools
+        run: |
+          cargo install --locked --path src/jormungandr/jormungandr
+          cargo install --locked --path src/jormungandr/jcli
+          cargo install --locked --path src/vit-servicing-station/vit-servicing-station-server
+          cargo install --locked --path src/vit-servicing-station/vit-servicing-station-cli
+          cargo install --locked --path src/vit-testing/vitup
+          cargo install --locked --path src/vit-testing/valgrind
+          cargo install --locked --path src/vit-testing/iapyx
 
       - name: Run tests
         uses: actions-rs/toolchain@v1

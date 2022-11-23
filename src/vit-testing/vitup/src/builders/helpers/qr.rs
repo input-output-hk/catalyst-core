@@ -26,16 +26,11 @@ pub fn generate_qr_and_hashes<P: AsRef<Path>>(
     parameters: &Config,
     folder: P,
 ) -> Result<(), Error> {
-    let span = span!(Level::TRACE, "qr code generation");
+    let span = span!(Level::TRACE, "qr code generation", total = wallets.len());
     let _enter = span.enter();
 
     let total = wallets.len();
     let folder = folder.as_ref();
-
-    info!(
-        "generating {} valid qr codes and payloads...",
-        wallets.len()
-    );
 
     for (idx, (alias, wallet)) in wallets.iter().enumerate() {
         let pin = initials

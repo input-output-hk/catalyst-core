@@ -51,6 +51,14 @@ jobs:
           cargo install --locked --path src/vit-testing/valgrind
           cargo install --locked --path src/vit-testing/iapyx
 
+      - name: Free disk space
+        run: |
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          df -h
+
       - name: Run tests
         uses: actions-rs/toolchain@v1
         with:

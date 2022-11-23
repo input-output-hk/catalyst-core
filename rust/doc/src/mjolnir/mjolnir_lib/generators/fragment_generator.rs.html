@@ -416,6 +416,15 @@
 <span id="416">416</span>
 <span id="417">417</span>
 <span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_core::property::FromStr;
 <span class="kw">use </span>chain_crypto::Ed25519;
 <span class="kw">use </span>chain_impl_mockchain::{
@@ -433,7 +442,10 @@
     crypto::{hash::Hash, key::KeyPair},
     interfaces::{BlockContentMaxSize, BlockDate <span class="kw">as </span>BlockDateDto, ConfigParam, ConfigParams},
 };
-<span class="kw">use </span>jortestkit::load::{Request, RequestFailure, RequestGenerator};
+<span class="kw">use </span>jortestkit::{
+    load::{Request, RequestFailure, RequestGenerator},
+    process::Wait,
+};
 <span class="kw">use </span>rand::RngCore;
 <span class="kw">use </span>rand_core::OsRng;
 <span class="kw">use </span>std::{
@@ -516,6 +528,7 @@
         <span class="kw">let </span>settings = <span class="self">self</span>.node.rest().settings().unwrap();
         <span class="kw">let </span>block0_hash = Hash::from_str(<span class="kw-2">&amp;</span>settings.block0_hash).unwrap();
         <span class="kw">let </span>fees = settings.fees;
+
         <span class="kw">if </span>settings.consensus_version == ConsensusVersion::Bft.to_string() {
             <span class="macro">assert!</span>(
                 <span class="self">self</span>.bft_leader.is_some(),
@@ -623,7 +636,12 @@
         <span class="self">self</span>.fragment_sender
             .send_batch_fragments(fragments, <span class="bool-val">true</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.node)
             .unwrap();
-        FragmentVerifier::wait_for_all_fragments(Duration::from_secs(<span class="number">10</span>), <span class="kw-2">&amp;</span><span class="self">self</span>.node).unwrap();
+        FragmentVerifier::wait_until_all_processed(
+            Wait::new(Duration::from_secs(<span class="number">2</span>), <span class="number">20</span>),
+            <span class="kw-2">&amp;</span><span class="self">self</span>.node,
+        )
+        .unwrap();
+
         <span class="self">self</span>.vote_plans_for_casting = votes_plan_for_casting;
         <span class="self">self</span>.vote_plans_for_tally = vote_plans_for_tally;
         <span class="self">self</span>.active_stake_pools = stake_pools;

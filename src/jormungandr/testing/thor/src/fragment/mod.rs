@@ -96,6 +96,10 @@ impl FragmentBuilder {
         }
     }
 
+    pub fn update_valid_until(&mut self, valid_until: BlockDate) {
+        self.valid_until = valid_until;
+    }
+
     pub fn witness_mode(mut self, witness_mode: WitnessMode) -> Self {
         self.fragment_factory = self.fragment_factory.witness_mode(witness_mode);
         self

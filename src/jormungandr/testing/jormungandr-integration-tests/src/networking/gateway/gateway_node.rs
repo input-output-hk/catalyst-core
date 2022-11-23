@@ -2,10 +2,13 @@ use crate::{build_network, jormungandr::grpc::setup::client, networking::utils};
 
 use hersir::{
     builder::{NetworkBuilder, Node, Topology},
-    config::{BlockchainBuilder, BlockchainConfiguration, SpawnParams, WalletTemplateBuilder},
+    config::{
+        BlockchainBuilder, BlockchainConfiguration, NodeConfig, SpawnParams, WalletTemplateBuilder,
+    },
 };
+use indicatif::MultiProgress;
 use jormungandr_automation::{
-    jormungandr::LogLevel,
+    jormungandr::{explorer::configuration::ExplorerParams, LogLevel},
     testing::{ensure_nodes_are_in_sync, SyncWaitParams},
 };
 
@@ -13,59 +16,47 @@ use jormungandr_lib::{
     interfaces::SlotDuration,
     time::{Duration, SystemTime},
 };
+use multiaddr::Multiaddr;
 use std::{
     net::{Ipv6Addr, SocketAddr, SocketAddrV6},
     path::PathBuf,
 };
 use thor::{FragmentSender, FragmentVerifier};
 
-const CLIENT: &str = "CLIENT";
-const CLIENT_B: &str = "CLIENT_B";
-const CLIENT_C: &str = "CLIENT_C";
-
 const SERVER: &str = "SERVER";
+const GATEWAY: &str = "GATEWAY_NODE";
+const PUBLIC_NODE: &str = "PUBLIC";
+const INTERNAL_NODE: &str = "INTERNAL";
 
 const ALICE: &str = "ALICE";
 const BOB: &str = "BOB";
-
-const LEADER_CLIENT: &str = "LEADER_CLIENT";
-const LEADER: &str = "LEADER";
 
 #[ignore]
 #[test]
 fn gateway_gossip() {
     const SERVER_GOSSIP_INTERVAL_SECS: u64 = 1;
-    const DEFAULT_GOSSIP_INTERVAL_SECS: u64 = 10;
 
     let mut network_controller = NetworkBuilder::default()
         .topology(
             Topology::default()
-                .with_node(Node::new(SERVER))
-                .with_node(Node::new(CLIENT).with_trusted_peer(SERVER))
-                .with_node(Node::new(CLIENT_B).with_trusted_peer(SERVER)),
+                .with_node(Node::new(GATEWAY))
+                .with_node(Node::new(INTERNAL_NODE).with_trusted_peer(GATEWAY))
+                .with_node(Node::new(PUBLIC_NODE).with_trusted_peer(GATEWAY)),
         )
-        .blockchain_config(BlockchainConfiguration::default().with_leader(SERVER))
+        .blockchain_config(BlockchainConfiguration::default().with_leader(GATEWAY))
         .wallet_template(
             WalletTemplateBuilder::new(ALICE)
                 .with(1_000_000)
-                .delegated_to(CLIENT)
+                .delegated_to(INTERNAL_NODE)
                 .build(),
         )
         .wallet_template(
             WalletTemplateBuilder::new(BOB)
                 .with(1_000_000)
-                .delegated_to(SERVER)
+                .delegated_to(GATEWAY)
                 .build(),
         )
         .build()
-        .unwrap();
-
-    let server = network_controller
-        .spawn(
-            SpawnParams::new(SERVER)
-                .gossip_interval(Duration::new(SERVER_GOSSIP_INTERVAL_SECS, 0))
-                .log_level(LogLevel::TRACE),
-        )
         .unwrap();
 
     //
@@ -79,20 +70,19 @@ fn gateway_gossip() {
     gateway_node_binary.pop();
     gateway_node_binary.push("target/debug/gateway");
 
-    let _client_gateway = network_controller
-        .spawn(SpawnParams::new(CLIENT).jormungandr(gateway_node_binary))
+    let _gateway = network_controller
+        .spawn(
+            SpawnParams::new(GATEWAY)
+                .gossip_interval(Duration::new(SERVER_GOSSIP_INTERVAL_SECS, 0))
+                .jormungandr(gateway_node_binary)
+                .log_level(LogLevel::TRACE),
+        )
         .unwrap();
 
-    utils::wait(DEFAULT_GOSSIP_INTERVAL_SECS);
+    utils::wait(10);
 
     //
-    // there should be no gossip from gateway node to server
-    //
-    let last_gossip = server.rest().network_stats().unwrap();
-
-    assert!(last_gossip.is_empty());
-    //
-    // spin up regular client
+    // spin up regular client outside the intranet
     //
     let mut regular_node_binary = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
 
@@ -102,39 +92,73 @@ fn gateway_gossip() {
     regular_node_binary.pop();
     regular_node_binary.push("target/debug/jormungandr");
 
-    let _client_b = network_controller
-        .spawn(SpawnParams::new(CLIENT_B).jormungandr(regular_node_binary))
+    let address: Multiaddr = "/ip4/80.9.12.3/tcp/0".parse().unwrap();
+
+    let regular_node = regular_node_binary.clone();
+
+    utils::wait(10);
+
+    // spin up node within the intranet
+    // should not receive gossip from public node
+
+    let _client_internal = network_controller
+        .spawn(
+            SpawnParams::new(INTERNAL_NODE)
+                .jormungandr(regular_node)
+                .gossip_interval(Duration::new(3, 0)),
+        )
         .unwrap();
 
-    utils::wait(DEFAULT_GOSSIP_INTERVAL_SECS);
-    let last_gossip = server.rest().network_stats().unwrap();
+    let _client_public = network_controller
+        .spawn(
+            SpawnParams::new(PUBLIC_NODE)
+                .jormungandr(regular_node_binary)
+                .gossip_interval(Duration::new(2, 0))
+                .public_address(address),
+        )
+        .unwrap();
 
-    // regular node gossips as usual
-    assert!(!last_gossip.is_empty());
+    // internal node should not receive gossip from public node
+
+    let is_gossiping_with_public_node = _client_internal
+        .logger
+        .get_lines_as_string()
+        .iter()
+        .any(|s| s.contains("80.9.12.3"));
+
+    utils::wait(10);
+
+    println!("{:?}", _client_internal.logger.get_lines_as_string());
+
+    assert!(!is_gossiping_with_public_node);
 }
 
 #[ignore]
 #[test]
-pub fn test_gateway_node_not_publishing() {
-    let mut network_controller = build_network!()
+pub fn test_public_node_not_publishing() {
+    const SERVER_GOSSIP_INTERVAL_SECS: u64 = 1;
+
+    let mut network_controller = NetworkBuilder::default()
         .topology(
             Topology::default()
-                .with_node(Node::new(LEADER))
-                .with_node(Node::new(LEADER_CLIENT).with_trusted_peer(LEADER)),
+                .with_node(Node::new(GATEWAY))
+                .with_node(Node::new(INTERNAL_NODE).with_trusted_peer(GATEWAY))
+                .with_node(Node::new(PUBLIC_NODE)),
         )
+        .blockchain_config(BlockchainConfiguration::default().with_leader(SERVER))
         .wallet_template(
-            WalletTemplateBuilder::new("alice")
+            WalletTemplateBuilder::new(ALICE)
                 .with(1_000_000)
-                .delegated_to(LEADER)
+                .delegated_to(INTERNAL_NODE)
                 .build(),
         )
-        .wallet_template(WalletTemplateBuilder::new("bob").with(1_000_000).build())
-        .blockchain_config(BlockchainConfiguration::default().with_leader(LEADER))
+        .wallet_template(
+            WalletTemplateBuilder::new(BOB)
+                .with(1_000_000)
+                .delegated_to(GATEWAY)
+                .build(),
+        )
         .build()
-        .unwrap();
-
-    let leader = network_controller
-        .spawn(SpawnParams::new(LEADER).in_memory())
         .unwrap();
 
     //
@@ -148,30 +172,62 @@ pub fn test_gateway_node_not_publishing() {
     gateway_node_binary.pop();
     gateway_node_binary.push("target/debug/gateway");
 
-    let leader_client = network_controller
+    let _gateway = network_controller
         .spawn(
-            SpawnParams::new(LEADER_CLIENT)
+            SpawnParams::new(GATEWAY)
+                .gossip_interval(Duration::new(SERVER_GOSSIP_INTERVAL_SECS, 0))
                 .jormungandr(gateway_node_binary)
-                .listen_address(Some(SocketAddr::V6(SocketAddrV6::new(
-                    Ipv6Addr::new(0x26, 0, 0x1c9, 0, 0, 0xafc8, 0x10, 0x1),
-                    1234,
-                    0,
-                    0,
-                )))),
+                .log_level(LogLevel::TRACE),
         )
         .unwrap();
 
-    let mut alice = network_controller.controlled_wallet("alice").unwrap();
-    let mut bob = network_controller.controlled_wallet("bob").unwrap();
+    utils::wait(10);
 
-    let fragment_sender = FragmentSender::from(&leader.rest().settings().unwrap());
+    //
+    // spin up regular client outside the intranet
+    //
+    let mut regular_node_binary = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
 
-    // gateway node should not be able to send fragments
+    regular_node_binary.pop();
+    regular_node_binary.pop();
+    regular_node_binary.pop();
+    regular_node_binary.pop();
+    regular_node_binary.push("target/debug/jormungandr");
+
+    let address: Multiaddr = "/ip4/80.9.12.3/tcp/0".parse().unwrap();
+
+    let regular_node = regular_node_binary.clone();
+
+    let _client_public = network_controller
+        .spawn(
+            SpawnParams::new(PUBLIC_NODE)
+                .jormungandr(regular_node_binary)
+                .gossip_interval(Duration::new(2, 0))
+                .public_address(address),
+        )
+        .unwrap();
+
+    // spin up node within the intranet
+
+    let _client_internal = network_controller
+        .spawn(
+            SpawnParams::new(INTERNAL_NODE)
+                .jormungandr(regular_node)
+                .gossip_interval(Duration::new(3, 0)),
+        )
+        .unwrap();
+
+    let mut alice = network_controller.controlled_wallet(ALICE).unwrap();
+    let mut bob = network_controller.controlled_wallet(BOB).unwrap();
+
+    let fragment_sender = FragmentSender::from(&_gateway.rest().settings().unwrap());
+
+    // public node should not be able to send fragments
     match fragment_sender.send_transactions_round_trip(
         5,
         &mut alice,
         &mut bob,
-        &leader_client,
+        &_client_public,
         100.into(),
     ) {
         Ok(_) => panic!("gateway node should not be able to send fragments"),
@@ -186,38 +242,28 @@ pub fn test_gateway_node_not_publishing() {
 #[test]
 pub fn test_gateway_sync() {
     const SERVER_GOSSIP_INTERVAL_SECS: u64 = 1;
-    const DEFAULT_GOSSIP_INTERVAL_SECS: u64 = 10;
 
     let mut network_controller = NetworkBuilder::default()
         .topology(
             Topology::default()
-                .with_node(Node::new(SERVER))
-                .with_node(Node::new(CLIENT).with_trusted_peer(SERVER))
-                .with_node(Node::new(CLIENT_B).with_trusted_peer(SERVER))
-                .with_node(Node::new(CLIENT_C).with_trusted_peer(SERVER)),
+                .with_node(Node::new(GATEWAY))
+                .with_node(Node::new(INTERNAL_NODE).with_trusted_peer(GATEWAY))
+                .with_node(Node::new(PUBLIC_NODE)),
         )
         .blockchain_config(BlockchainConfiguration::default().with_leader(SERVER))
         .wallet_template(
             WalletTemplateBuilder::new(ALICE)
                 .with(1_000_000)
-                .delegated_to(CLIENT)
+                .delegated_to(INTERNAL_NODE)
                 .build(),
         )
         .wallet_template(
             WalletTemplateBuilder::new(BOB)
                 .with(1_000_000)
-                .delegated_to(SERVER)
+                .delegated_to(GATEWAY)
                 .build(),
         )
         .build()
-        .unwrap();
-
-    let server = network_controller
-        .spawn(
-            SpawnParams::new(SERVER)
-                .gossip_interval(Duration::new(SERVER_GOSSIP_INTERVAL_SECS, 0))
-                .log_level(LogLevel::TRACE),
-        )
         .unwrap();
 
     //
@@ -231,14 +277,19 @@ pub fn test_gateway_sync() {
     gateway_node_binary.pop();
     gateway_node_binary.push("target/debug/gateway");
 
-    let _client_gateway = network_controller
-        .spawn(SpawnParams::new(CLIENT).jormungandr(gateway_node_binary))
+    let _gateway = network_controller
+        .spawn(
+            SpawnParams::new(GATEWAY)
+                .gossip_interval(Duration::new(SERVER_GOSSIP_INTERVAL_SECS, 0))
+                .jormungandr(gateway_node_binary)
+                .log_level(LogLevel::TRACE),
+        )
         .unwrap();
 
-    utils::wait(DEFAULT_GOSSIP_INTERVAL_SECS);
+    utils::wait(10);
 
     //
-    // spin up regular client
+    // spin up regular client outside the intranet
     //
     let mut regular_node_binary = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
 
@@ -248,45 +299,68 @@ pub fn test_gateway_sync() {
     regular_node_binary.pop();
     regular_node_binary.push("target/debug/jormungandr");
 
-    // binary without drop gossip from public addrs modifications
-    let regular_node_path = regular_node_binary.clone();
+    let address: Multiaddr = "/ip4/80.9.12.3/tcp/0".parse().unwrap();
 
-    let _client_b = network_controller
-        .spawn(SpawnParams::new(CLIENT_B).jormungandr(regular_node_binary))
+    let regular_node = regular_node_binary.clone();
+
+    let _client_public = network_controller
+        .spawn(
+            SpawnParams::new(PUBLIC_NODE)
+                .jormungandr(regular_node_binary)
+                .gossip_interval(Duration::new(2, 0))
+                .public_address(address),
+        )
         .unwrap();
 
-    let _client_c = network_controller
-        .spawn(SpawnParams::new(CLIENT_C).jormungandr(regular_node_path))
+    // spin up node within the intranet
+
+    let _client_internal = network_controller
+        .spawn(
+            SpawnParams::new(INTERNAL_NODE)
+                .jormungandr(regular_node)
+                .gossip_interval(Duration::new(3, 0)),
+        )
         .unwrap();
-
-    utils::wait(DEFAULT_GOSSIP_INTERVAL_SECS);
-
-    let fragment_sender = FragmentSender::from(&server.rest().settings().unwrap());
 
     let mut alice = network_controller.controlled_wallet(ALICE).unwrap();
     let mut bob = network_controller.controlled_wallet(BOB).unwrap();
+
+    let fragment_sender = FragmentSender::from(&_gateway.rest().settings().unwrap());
 
     match fragment_sender.send_transactions_round_trip(
         5,
         &mut alice,
         &mut bob,
-        &_client_b,
+        &_client_internal,
         100.into(),
     ) {
-        Ok(()) => println!("fragments sent!"),
-        Err(err) => panic!("{:?}", err),
-    }
+        Ok(_) => println!("fragments sent!"),
+        Err(err) => assert_eq!(
+            err.to_string(),
+            "Too many attempts failed (1) while trying to send fragment to node: ".to_string()
+        ),
+    };
 
-    let a = _client_b.grpc().tip().block_content_hash();
-    let b = _client_gateway.grpc().tip().block_content_hash();
-    let c = server.grpc().tip().block_content_hash();
+    utils::wait(5);
 
-    assert_eq!(a, b);
-    assert_eq!(b, c);
+    let internal_node_tip = _client_internal.grpc().tip();
 
-    ensure_nodes_are_in_sync(
-        SyncWaitParams::ZeroWait,
-        &[&_client_gateway, &_client_b, &_client_c],
-    )
-    .unwrap();
+    // public node is up to date
+    let block = _client_public
+        .rest()
+        .block(&internal_node_tip.hash())
+        .unwrap();
+
+    assert_eq!(
+        block.header().block_content_hash(),
+        internal_node_tip.block_content_hash()
+    );
+
+    let public_node_syncs_with_internal_network = _client_internal
+        .logger
+        .get_lines_as_string()
+        .iter()
+        .any(|s| s.contains("receiving block stream from network"));
+
+    assert!(public_node_syncs_with_internal_network);
 }

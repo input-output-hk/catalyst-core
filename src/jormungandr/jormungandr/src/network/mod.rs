@@ -346,7 +346,7 @@ async fn handle_network_input(
     channels: Channels,
 ) {
     while let Some(msg) = input.next().await {
-        tracing::trace!("handling new network task item");
+        tracing::trace!("handling new gateway network task item");
         match msg {
             NetworkMsg::Propagate(msg) => match *(msg.clone()) {
                 PropagateMsg::Block(_) | PropagateMsg::Fragment(_) => {
@@ -359,6 +359,7 @@ async fn handle_network_input(
                 PropagateMsg::Gossip(peer, _gossips) => {
                     // drop all gossip from public nodes
                     if peer.is_global() {
+                        tracing::trace!("dropping gossip msg from {:?}", peer);
                         continue;
                     } else {
                         handle_propagation_msg(*(msg.clone()), state.clone(), channels.clone())

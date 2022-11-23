@@ -218,7 +218,7 @@
         config::{ConfigManager, WalletState},
         Connection,
     },
-    FragmentSender, FragmentVerifier, Wallet,
+    FragmentSender, FragmentVerifier, VerifyExitStrategy, Wallet,
 };
 <span class="kw">use </span>bech32::{u5, FromBase32};
 <span class="kw">use </span>chain_crypto::{Ed25519Extended, SecretKey};
@@ -365,7 +365,7 @@
             FragmentVerifier::wait_fragment(
                 Duration::from_secs(settings.slot_duration * SLOT_COUNT),
                 check.clone(),
-                Default::default(),
+                VerifyExitStrategy::OnProcessed,
                 <span class="kw-2">&amp;</span>node,
             )<span class="question-mark">?</span>;
             <span class="self">self</span>.wallets.wallet_mut()<span class="question-mark">?</span>.spending_counters = thor_wallet

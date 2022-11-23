@@ -315,12 +315,6 @@
 <span id="315">315</span>
 <span id="316">316</span>
 <span id="317">317</span>
-<span id="318">318</span>
-<span id="319">319</span>
-<span id="320">320</span>
-<span id="321">321</span>
-<span id="322">322</span>
-<span id="323">323</span>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_impl_mockchain::fragment::FragmentId;
 <span class="kw">use </span>jormungandr_automation::jormungandr::{FragmentNode, FragmentNodeError, MemPoolCheck};
 <span class="kw">use </span>jormungandr_lib::interfaces::{FragmentLog, FragmentStatus};
@@ -449,7 +443,7 @@
         node: <span class="kw-2">&amp;</span>A,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), FragmentVerifierError&gt; {
         <span class="kw">for </span>check <span class="kw">in </span>checks {
-            <span class="kw">let </span>status = <span class="self">Self</span>::wait_fragment(duration, check, Default::default(), node)<span class="question-mark">?</span>;
+            <span class="kw">let </span>status = <span class="self">Self</span>::wait_fragment(duration, check, ExitStrategy::OnProcessed, node)<span class="question-mark">?</span>;
             <span class="self">Self</span>::is_in_block(status, node)<span class="question-mark">?</span>;
         }
         <span class="prelude-val">Ok</span>(())
@@ -460,7 +454,7 @@
         check: MemPoolCheck,
         node: <span class="kw-2">&amp;</span>A,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), FragmentVerifierError&gt; {
-        <span class="kw">let </span>status = <span class="self">Self</span>::wait_fragment(duration, check, Default::default(), node)<span class="question-mark">?</span>;
+        <span class="kw">let </span>status = <span class="self">Self</span>::wait_fragment(duration, check, ExitStrategy::OnProcessed, node)<span class="question-mark">?</span>;
         <span class="self">Self</span>::is_in_block(status, node)
     }
 
@@ -469,7 +463,7 @@
         check: MemPoolCheck,
         node: <span class="kw-2">&amp;</span>A,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), FragmentVerifierError&gt; {
-        <span class="kw">let </span>status = <span class="self">Self</span>::wait_fragment(duration, check, Default::default(), node)<span class="question-mark">?</span>;
+        <span class="kw">let </span>status = <span class="self">Self</span>::wait_fragment(duration, check, ExitStrategy::OnProcessed, node)<span class="question-mark">?</span>;
         <span class="self">Self</span>::is_rejected(status, node)
     }
 
@@ -479,7 +473,7 @@
         message: S,
         node: <span class="kw-2">&amp;</span>A,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), FragmentVerifierError&gt; {
-        <span class="kw">let </span>status = <span class="self">Self</span>::wait_fragment(duration, check, Default::default(), node)<span class="question-mark">?</span>;
+        <span class="kw">let </span>status = <span class="self">Self</span>::wait_fragment(duration, check, ExitStrategy::OnProcessed, node)<span class="question-mark">?</span>;
         <span class="self">Self</span>::is_rejected_with_message(status, message, node)
     }
 
@@ -637,12 +631,6 @@
     </span>OnPending,
     <span class="doccomment">/// Exit when the fragment has been processed (i.e. either Rejected or InABlock)
     </span>OnProcessed,
-}
-
-<span class="kw">impl </span>Default <span class="kw">for </span>ExitStrategy {
-    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-        ExitStrategy::OnProcessed
-    }
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="thor" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

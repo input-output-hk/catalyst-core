@@ -519,7 +519,7 @@
 <span class="kw">use </span>std::{path::PathBuf, time::Duration};
 <span class="kw">use </span>thor::{
     BlockDateGenerator, DummySyncNode, FragmentBuilderError, FragmentExporter,
-    FragmentExporterError, FragmentVerifier, Wallet,
+    FragmentExporterError, FragmentVerifier, VerifyExitStrategy, Wallet,
 };
 
 <span class="doccomment">/// Send malformed transactions
@@ -832,7 +832,7 @@
         <span class="kw">match </span>FragmentVerifier::wait_fragment(
             Duration::from_secs(<span class="number">2</span>),
             check.clone(),
-            Default::default(),
+            VerifyExitStrategy::OnProcessed,
             node,
         )<span class="question-mark">? </span>{
             FragmentStatus::Rejected { .. } =&gt; <span class="prelude-val">Ok</span>(()),

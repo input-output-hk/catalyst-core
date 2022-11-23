@@ -882,9 +882,11 @@
 <span id="882">882</span>
 <span id="883">883</span>
 <span id="884">884</span>
+<span id="885">885</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{FragmentExporter, FragmentExporterError};
 <span class="kw">use crate</span>::{
-    DummySyncNode, FragmentBuilder, FragmentSenderSetup, FragmentVerifier, StakePool, Wallet,
+    DummySyncNode, FragmentBuilder, FragmentSenderSetup, FragmentVerifier, StakePool,
+    VerifyExitStrategy, Wallet,
 };
 <span class="kw">use </span>chain_core::property::Fragment <span class="kw">as _</span>;
 <span class="kw">use </span>chain_crypto::{Ed25519, SecretKey};
@@ -1467,7 +1469,7 @@
         <span class="kw">match </span>FragmentVerifier::wait_fragment(
             Duration::from_secs(<span class="number">2</span>),
             check.clone(),
-            Default::default(),
+            VerifyExitStrategy::OnProcessed,
             node,
         )<span class="question-mark">? </span>{
             FragmentStatus::Rejected { reason } =&gt; <span class="prelude-val">Err</span>(FragmentSenderError::FragmentNotInBlock {

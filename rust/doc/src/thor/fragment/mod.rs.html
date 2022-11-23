@@ -413,6 +413,10 @@
 <span id="413">413</span>
 <span id="414">414</span>
 <span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
 </pre><pre class="rust"><code><span class="kw">pub use </span><span class="self">self</span>::{
     chain_sender::FragmentChainSender,
     export::{FragmentExporter, FragmentExporterError},
@@ -509,6 +513,10 @@
             fragment_factory: FragmentFactory::new(block0_hash.into_hash(), fees.clone()),
             valid_until,
         }
+    }
+
+    <span class="kw">pub fn </span>update_valid_until(<span class="kw-2">&amp;mut </span><span class="self">self</span>, valid_until: BlockDate) {
+        <span class="self">self</span>.valid_until = valid_until;
     }
 
     <span class="kw">pub fn </span>witness_mode(<span class="kw-2">mut </span><span class="self">self</span>, witness_mode: WitnessMode) -&gt; <span class="self">Self </span>{

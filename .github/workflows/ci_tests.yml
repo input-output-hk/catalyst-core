@@ -67,9 +67,6 @@ jobs:
           sudo rm -rf ~/.cargo/registry
           df -h
 
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
-
       - name: Run tests
         uses: actions-rs/toolchain@v1
         with:

@@ -14,7 +14,7 @@ pub fn get_proposals_by_voteplan_id_and_index() {
         .unwrap();
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .start(&temp_dir)
         .unwrap();
 

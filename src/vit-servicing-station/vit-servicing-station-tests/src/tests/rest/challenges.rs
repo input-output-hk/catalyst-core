@@ -15,13 +15,13 @@ pub fn challenges_are_sorted_by_insertion_order() {
 
     let expected_challenges = snapshot.challenges();
 
-    let db_path = DbBuilder::new()
+    let db_url = DbBuilder::new()
         .with_snapshot(&snapshot)
         .build(&temp_dir)
         .unwrap();
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_url)
         .start(&temp_dir)
         .unwrap();
 

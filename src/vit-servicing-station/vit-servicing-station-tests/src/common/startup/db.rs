@@ -1,18 +1,18 @@
 use assert_fs::{fixture::PathChild, TempDir};
-use diesel::{connection::Connection, prelude::*};
+use diesel::RunQueryDsl;
+use rand::Rng;
 use std::path::Path;
 use std::path::PathBuf;
-use std::str::FromStr;
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::groups::Group;
 use vit_servicing_station_lib::db::models::{
     api_tokens::ApiTokenData, challenges::Challenge, funds::Fund,
 };
+use vit_servicing_station_lib::db::DbConnection;
 
 use crate::common::{
     data::Snapshot,
     db::{DbInserter, DbInserterError},
-    paths::MIGRATION_DIR,
 };
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
@@ -20,7 +20,6 @@ use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 const VIT_STATION_DB: &str = "vit_station.db";
 
 pub struct DbBuilder {
-    migrations_folder: Option<PathBuf>,
     tokens: Option<Vec<ApiTokenData>>,
     proposals: Option<Vec<FullProposalInfo>>,
     funds: Option<Vec<Fund>>,
@@ -32,7 +31,6 @@ pub struct DbBuilder {
 impl DbBuilder {
     pub fn new() -> Self {
         Self {
-            migrations_folder: Some(PathBuf::from_str(MIGRATION_DIR).unwrap()),
             tokens: None,
             proposals: None,
             funds: None,
@@ -87,60 +85,28 @@ impl DbBuilder {
         self
     }
 
-    pub fn disable_migrations(&mut self) -> &mut Self {
-        self.migrations_folder = None;
-        self
-    }
-
-    pub fn with_migrations_from<P: AsRef<Path>>(&mut self, migrations_folder: P) -> &mut Self {
-        self.migrations_folder = Some(migrations_folder.as_ref().into());
-        self
-    }
-
-    fn do_migration(
-        &self,
-        connection: &SqliteConnection,
-        migration_folder: &Path,
-    ) -> Result<(), DbBuilderError> {
-        let mut sink = std::io::sink();
-
-        diesel_migrations::run_pending_migrations_in_directory(
-            connection,
-            migration_folder,
-            &mut sink,
-        )
-        .map_err(DbBuilderError::MigrationsError)
-    }
-
-    fn try_do_migration(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
-        if let Some(migrations_folder) = &self.migrations_folder {
-            self.do_migration(connection, migrations_folder)?;
-        }
-        Ok(())
-    }
-
-    fn try_insert_tokens(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+    fn try_insert_tokens(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
         if let Some(tokens) = &self.tokens {
             DbInserter::new(connection).insert_tokens(tokens)?;
         }
         Ok(())
     }
 
-    fn try_insert_funds(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+    fn try_insert_funds(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
         if let Some(funds) = &self.funds {
             DbInserter::new(connection).insert_funds(funds)?;
         }
         Ok(())
     }
 
-    fn try_insert_proposals(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+    fn try_insert_proposals(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
         if let Some(proposals) = &self.proposals {
             DbInserter::new(connection).insert_proposals(proposals)?;
         }
         Ok(())
     }
 
-    fn try_insert_challenges(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+    fn try_insert_challenges(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
         if let Some(challenges) = &self.challenges {
             DbInserter::new(connection).insert_challenges(challenges)?;
         }
@@ -148,30 +114,75 @@ impl DbBuilder {
         Ok(())
     }
 
-    fn try_insert_reviews(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+    fn try_insert_reviews(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
         if let Some(reviews) = &self.advisor_reviews {
             DbInserter::new(connection).insert_advisor_reviews(reviews)?;
         }
         Ok(())
     }
 
-    fn try_insert_groups(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+    fn try_insert_groups(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
         if let Some(groups) = &self.groups {
             DbInserter::new(connection).insert_groups(groups)?;
         }
         Ok(())
     }
 
-    pub fn build(&self, temp_dir: &TempDir) -> Result<PathBuf, DbBuilderError> {
-        self.build_into_path(temp_dir.child(VIT_STATION_DB).path())
+    pub fn build(&self, temp_dir: &TempDir) -> Result<String, DbBuilderError> {
+        let db_url = match std::env::var("TEST_DATABASE_URL") {
+            Ok(u) => u,
+            Err(std::env::VarError::NotPresent) => {
+                temp_dir.child(VIT_STATION_DB).display().to_string()
+            }
+            Err(e) => return Err(DbBuilderError::DatabaseUrlEnvVar(e)),
+        };
+
+        let (db_url, connection) = {
+            let pool = vit_servicing_station_lib::db::load_db_connection_pool(&db_url).unwrap();
+            let connection = pool.get().unwrap();
+
+            // create a new database to use when testing
+            if let DbConnection::Postgres(conn) = &connection {
+                let tmp_db_name = rand::thread_rng()
+                    .sample_iter(rand::distributions::Alphanumeric)
+                    .filter(char::is_ascii_alphabetic)
+                    .take(8)
+                    .collect::<String>()
+                    .to_lowercase();
+
+                diesel::sql_query(format!("CREATE DATABASE {}", tmp_db_name))
+                    .execute(conn)
+                    .unwrap();
+
+                // reconnect to the created database
+                let db_url = format!("{}/{}", db_url, tmp_db_name);
+                let pool = vit_servicing_station_lib::db::load_db_connection_pool(&db_url).unwrap();
+
+                (db_url, pool.get().unwrap())
+            } else {
+                (db_url, connection)
+            }
+        };
+
+        vit_servicing_station_lib::db::migrations::initialize_db_with_migration(&connection)?;
+        self.try_insert_tokens(&connection)?;
+        self.try_insert_funds(&connection)?;
+        self.try_insert_groups(&connection)?;
+        self.try_insert_proposals(&connection)?;
+        self.try_insert_challenges(&connection)?;
+        self.try_insert_reviews(&connection)?;
+
+        Ok(db_url)
     }
 
     pub fn build_into_path<P: AsRef<Path>>(&self, path: P) -> Result<PathBuf, DbBuilderError> {
         let path = path.as_ref();
         let db_path = path.to_str().ok_or(DbBuilderError::CannotExtractTempPath)?;
 
-        let connection = SqliteConnection::establish(db_path)?;
-        self.try_do_migration(&connection)?;
+        let pool = vit_servicing_station_lib::db::load_db_connection_pool(db_path).unwrap();
+        let connection = pool.get().unwrap();
+
+        vit_servicing_station_lib::db::migrations::initialize_db_with_migration(&connection)?;
         self.try_insert_tokens(&connection)?;
         self.try_insert_funds(&connection)?;
         self.try_insert_groups(&connection)?;
@@ -190,6 +201,8 @@ impl Default for DbBuilder {
 
 #[derive(Error, Debug)]
 pub enum DbBuilderError {
+    #[error("failed to read database url env var")]
+    DatabaseUrlEnvVar(#[from] std::env::VarError),
     #[error("cannot insert data")]
     DbInserterError(#[from] DbInserterError),
     #[error("Cannot open or create database")]
@@ -197,5 +210,7 @@ pub enum DbBuilderError {
     #[error("Cannot initialize on temp directory")]
     CannotExtractTempPath,
     #[error("migration errors")]
-    MigrationsError(#[from] diesel::migration::RunMigrationsError),
+    MigrationsError(
+        #[from] vit_servicing_station_lib::db::migrations::InitializeDbWithMigrationError,
+    ),
 }

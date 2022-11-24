@@ -228,8 +228,14 @@ pub async fn update_from_snapshot_info(
     let (voters, contributions) = convert_snapshot_to_contrib(tag, snapshot);
 
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
-    batch_put_voters(&voters, &db_conn)?;
-    batch_put_contributions(&contributions, &db_conn)?;
+
+    for chunk in voters.chunks(1000) {
+        batch_put_voters(chunk, &db_conn)?;
+    }
+    for chunk in contributions.chunks(1000) {
+        batch_put_contributions(chunk, &db_conn)?;
+    }
+
     Ok(())
 }
 

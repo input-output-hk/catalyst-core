@@ -75,6 +75,24 @@ pub fn put_snapshot(snapshot: Snapshot, pool: &DbConnectionPool) -> Result<(), H
     Ok(())
 }
 
+pub async fn query_voters_by_snapshot_tag(
+    tag: String,
+    pool: &DbConnectionPool,
+) -> Result<Vec<Voter>, HandleError> {
+    let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
+    tokio::task::spawn_blocking(move || {
+        q!(
+            db_conn,
+            voters::dsl::voters
+                .filter(voters::dsl::snapshot_tag.eq(tag))
+                .load(&db_conn)
+        )
+        .map_err(|e| HandleError::NotFound(format!("Error loading voters: {}", e)))
+    })
+    .await
+    .map_err(|e| HandleError::InternalError(format!("Error executing voters: {}", e)))?
+}
+
 pub async fn query_voters_by_voting_key_and_snapshot_tag(
     voting_key: String,
     tag: String,
@@ -150,6 +168,24 @@ pub async fn query_contributions_by_voting_key_and_voter_group_and_snapshot_tag(
             contributions::dsl::contributions
                 .filter(contributions::dsl::voting_key.eq(voting_key))
                 .filter(contributions::dsl::voting_group.eq(voting_group))
+                .filter(contributions::dsl::snapshot_tag.eq(tag))
+                .load(&db_conn)
+        )
+        .map_err(|e| HandleError::NotFound(format!("Error loading contributions: {}", e)))
+    })
+    .await
+    .map_err(|e| HandleError::InternalError(format!("Error executing request: {}", e)))?
+}
+
+pub async fn query_contributions_by_snapshot_tag(
+    tag: String,
+    pool: &DbConnectionPool,
+) -> Result<Vec<Contribution>, HandleError> {
+    let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
+    tokio::task::spawn_blocking(move || {
+        q!(
+            db_conn,
+            contributions::dsl::contributions
                 .filter(contributions::dsl::snapshot_tag.eq(tag))
                 .load(&db_conn)
         )

@@ -1,12 +1,12 @@
-pub type ContextLock = Arc<Mutex<Context>>;
-use super::{mock_state::MockState, Configuration, Logger};
+pub type ContextLock = Arc<RwLock<Context>>;
+use super::{mock_state::MockState, Configuration};
 use crate::config::Config;
 use crate::mode::mock::rest::reject::ForcedErrorCode;
 use std::net::SocketAddr;
 use std::path::PathBuf;
-use std::sync::Arc;
-use std::sync::Mutex;
+use std::sync::{Arc, RwLock};
 use thiserror::Error;
+use tracing::info;
 use valgrind::Protocol;
 use valgrind::VitVersion;
 
@@ -14,7 +14,6 @@ pub struct Context {
     config: Configuration,
     address: SocketAddr,
     state: MockState,
-    logger: Logger,
 }
 
 impl Context {
@@ -27,20 +26,7 @@ impl Context {
             },
             state: MockState::new(params.unwrap_or_default(), config.clone())?,
             config,
-            logger: Logger::new(),
         })
-    }
-
-    pub fn log<S: Into<String>>(&mut self, message: S) {
-        self.logger.log(message)
-    }
-
-    pub fn logs(&self) -> Vec<String> {
-        self.logger.logs()
-    }
-
-    pub fn clear_logs(&mut self) {
-        self.logger.clear()
     }
 
     pub fn version(&self) -> VitVersion {
@@ -89,13 +75,14 @@ impl Context {
         self.config.token = Some(api_token);
     }
 
-    pub fn check_if_rest_available(&mut self) -> Option<ForcedErrorCode> {
+    #[tracing::instrument(skip(self))]
+    pub fn check_if_rest_available(&self) -> Option<ForcedErrorCode> {
         if !self.available() {
             let code = self.state().error_code;
-            self.log(&format!(
-                "unavailability mode is on. Rejecting with error code: {}",
+            info!(
+                "unavailability mode is on. Rejecting any further calls with error code: {}",
                 code
-            ));
+            );
             Some(ForcedErrorCode { code })
         } else {
             None

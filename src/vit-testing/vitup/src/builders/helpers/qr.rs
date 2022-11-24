@@ -10,6 +10,7 @@ use std::io::Write;
 use std::path::Path;
 use thiserror::Error;
 use thor::{Wallet, WalletAlias};
+use tracing::{info, span, trace, Level};
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -25,6 +26,9 @@ pub fn generate_qr_and_hashes<P: AsRef<Path>>(
     parameters: &Config,
     folder: P,
 ) -> Result<(), Error> {
+    let span = span!(Level::TRACE, "qr code generation", total = wallets.len());
+    let _enter = span.enter();
+
     let total = wallets.len();
     let folder = folder.as_ref();
 
@@ -40,11 +44,11 @@ pub fn generate_qr_and_hashes<P: AsRef<Path>>(
             })
             .unwrap();
         let png = folder.join(format!("{}_{}.png", alias, pin));
-        println!("[{}/{}] Qr dumped to {:?}", idx + 1, total, png);
+        trace!("[{}/{}] Qr dumped to {:?}", idx + 1, total, png);
         wallet.save_qr_code(png, &pin_to_bytes(pin));
 
         let hash = folder.join(format!("{}_{}.txt", alias, pin));
-        println!("[{}/{}] QR hash dumped to {:?}", idx + 1, total, hash);
+        trace!("[{}/{}] QR payload dumped to {:?}", idx + 1, total, hash);
         wallet.save_qr_code_hash(hash, &pin_to_bytes(pin));
     }
 
@@ -53,17 +57,32 @@ pub fn generate_qr_and_hashes<P: AsRef<Path>>(
     if zero_funds_initial_counts > 0 {
         let zero_funds_pin = parameters.initials.block0.zero_funds_pin().unwrap();
 
+        info!("generating {} fake qr codes", zero_funds_initial_counts);
         for i in 1..zero_funds_initial_counts + 1 {
             let sk = SecretKey::generate(rand::thread_rng());
             let qr = KeyQrCode::generate(sk.clone(), &pin_to_bytes(&zero_funds_pin));
             let img = qr.to_img();
             let png = folder.join(&format!("zero_funds_{}_{}.png", i, zero_funds_pin));
+            trace!(
+                "[{}/{}] Qr code dumped to {:?}",
+                i + 1,
+                zero_funds_initial_counts + 1,
+                png
+            );
             img.save(png)?;
 
             let hash = folder.join(format!("zero_funds_{}.txt", i));
+            trace!(
+                "[{}/{}] Qr payload dumped to {:?}",
+                i + 1,
+                zero_funds_initial_counts + 1,
+                hash
+            );
             std::fs::write(hash, generate(sk, &pin_to_bytes(&zero_funds_pin)))?;
         }
     }
+
+    info!("qr codes generation done");
     Ok(())
 }
 

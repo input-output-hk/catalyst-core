@@ -1,13 +1,10 @@
-use std::sync::{Arc, Mutex};
-
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::v0::endpoints::search::requests::*;
 use vit_servicing_station_lib::{db::models::challenges::Challenge, v0::result::HandlerResult};
 use warp::{Rejection, Reply};
 
-use crate::mode::mock::Context;
-
 use super::reject::GeneralException;
+use crate::mode::mock::ContextLock;
 
 fn make_error(s: &str, code: u16) -> Rejection {
     warp::reject::custom(GeneralException {
@@ -28,9 +25,10 @@ fn mock_order_by_error() -> Rejection {
     make_error("Mock implementation only supports 0 or 1 `order_by`s", 400)
 }
 
+#[tracing::instrument(skip(context), name = "REST Api call")]
 pub async fn search(
     search_query: SearchQuery,
-    context: Arc<Mutex<Context>>,
+    context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
     let response = search_impl(search_query, context).await?;
     Ok(HandlerResult(Ok(response)))
@@ -47,7 +45,7 @@ async fn search_impl(
         limit,
         offset,
     }: SearchQuery,
-    context: Arc<Mutex<Context>>,
+    context: ContextLock,
 ) -> Result<SearchResponse, Rejection> {
     let order_by = match order_by[..] {
         [] => None,
@@ -73,7 +71,7 @@ async fn search_impl(
                 return Err(challenge_field_error());
             }
 
-            let ctx = context.lock().unwrap();
+            let ctx = context.read().unwrap();
             let challenges = ctx.state().vit().challenges();
             let result = search_challenges(challenges, &filter, order_by);
             let result = limit_and_offset(result, limit, offset);
@@ -104,7 +102,7 @@ async fn search_impl(
                 return Err(make_error("can't search proposal by `fund`", 400));
             }
 
-            let ctx = context.lock().unwrap();
+            let ctx = context.read().unwrap();
             let proposals = ctx.state().vit().proposals();
             let result = search_proposals(proposals, &filter, order_by);
             let result = limit_and_offset(result, limit, offset);
@@ -249,7 +247,7 @@ mod tests {
             SearchResponse::Challenge(challenges) => challenges,
         };
 
-        let mut expected_challenges = context.lock().unwrap().state().vit().challenges();
+        let mut expected_challenges = context.read().unwrap().state().vit().challenges();
 
         challenges.sort_by_key(|c| c.internal_id);
         expected_challenges.sort_by_key(|c| c.internal_id);
@@ -281,7 +279,7 @@ mod tests {
         };
 
         let challenge = context
-            .lock()
+            .read()
             .unwrap()
             .state()
             .vit()

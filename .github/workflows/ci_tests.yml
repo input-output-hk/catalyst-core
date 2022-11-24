@@ -28,13 +28,18 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: Swatinem/rust-cache@v2
-      - name: Free disk space
-        run: |
-          df -h
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          df -h
+      
+      # - name: Free disk space
+      #   run: |
+      #     df -h
+      #     sudo rm -rf /usr/share/dotnet
+      #     sudo rm -rf /opt/ghc
+      #     sudo rm -rf "/usr/local/share/boost"
+      #     df -h
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+
       - name: Install Nextest
         run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
       - name: Install deps
@@ -51,13 +56,16 @@ jobs:
           cargo install --locked --path src/vit-testing/valgrind
           cargo install --locked --path src/vit-testing/iapyx
 
-      - name: Free disk space
-        run: |
-          df -h
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          df -h
+      # - name: Free disk space
+      #   run: |
+      #     df -h
+      #     sudo rm -rf /usr/share/dotnet
+      #     sudo rm -rf /opt/ghc
+      #     sudo rm -rf "/usr/local/share/boost"
+      #     df -h
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
 
       - name: Run tests
         uses: actions-rs/toolchain@v1

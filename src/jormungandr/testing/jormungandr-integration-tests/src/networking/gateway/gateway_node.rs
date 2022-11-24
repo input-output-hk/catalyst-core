@@ -1,4 +1,8 @@
-use crate::{build_network, jormungandr::grpc::setup::client, networking::utils};
+use crate::{
+    build_network,
+    jormungandr::grpc::setup::client::{self, default},
+    networking::utils,
+};
 
 use hersir::{
     builder::{NetworkBuilder, Node, Topology},
@@ -13,7 +17,7 @@ use jormungandr_automation::{
 };
 
 use jormungandr_lib::{
-    interfaces::SlotDuration,
+    interfaces::{Policy, PreferredListConfig, SlotDuration, TrustedPeer},
     time::{Duration, SystemTime},
 };
 use multiaddr::Multiaddr;
@@ -92,31 +96,57 @@ fn gateway_gossip() {
     regular_node_binary.pop();
     regular_node_binary.push("target/debug/jormungandr");
 
-    let address: Multiaddr = "/ip4/80.9.12.3/tcp/0".parse().unwrap();
-
     let regular_node = regular_node_binary.clone();
 
-    utils::wait(10);
+    let gateway_addr = network_controller
+        .node_config(GATEWAY)
+        .unwrap()
+        .p2p
+        .public_address;
 
-    // spin up node within the intranet
-    // should not receive gossip from public node
+    let policy = Policy {
+        quarantine_duration: Some(Duration::new(600, 0)),
+        quarantine_whitelist: Some(vec![gateway_addr.clone()]),
+    };
+
+    let t = TrustedPeer {
+        id: None,
+        address: gateway_addr,
+    };
+
+    let mut preferred = PreferredListConfig::default();
+    preferred.peers = vec![t];
 
     let _client_internal = network_controller
         .spawn(
             SpawnParams::new(INTERNAL_NODE)
+                .preferred_layer(preferred.clone())
+                .policy(policy.clone())
                 .jormungandr(regular_node)
-                .gossip_interval(Duration::new(3, 0)),
+                .gossip_interval(Duration::new(1, 0)),
         )
         .unwrap();
+
+    utils::wait(20);
+
+    // spin up node within the intranet
+    // should not receive gossip from public node
+
+    let address: Multiaddr = "/ip4/80.9.12.3/tcp/0".parse().unwrap();
 
     let _client_public = network_controller
         .spawn(
             SpawnParams::new(PUBLIC_NODE)
+                .policy(policy.clone())
+                .preferred_layer(preferred)
                 .jormungandr(regular_node_binary)
-                .gossip_interval(Duration::new(2, 0))
-                .public_address(address),
+                .gossip_interval(Duration::new(1, 0))
+                .public_address(address)
+                .max_connections(1),
         )
         .unwrap();
+
+    utils::wait(10);
 
     // internal node should not receive gossip from public node
 

@@ -54,53 +54,11 @@ impl ExplorerVerifier {
                 assert!(block.header().get_bft_leader_id().is_none());
             }
         }
-        //Logging the fragments in the block
+
+        //Catch the NPG-3517 bug
         for f in block.fragments() {
-            match f {
-                Fragment::Initial(_) => println!("Fragment::Initial hash {}", f.hash()),
-                Fragment::OldUtxoDeclaration(_) => {
-                    println!("Fragment::OldUtxoDeclaration hash {}", f.hash())
-                }
-                Fragment::Transaction(_) => {
-                    println!("Fragment::Transaction hash {}", f.hash())
-                }
-                Fragment::OwnerStakeDelegation(_) => {
-                    println!("Fragment::OwnerStakeDelegation hash {}", f.hash())
-                }
-                Fragment::StakeDelegation(_) => {
-                    println!("Fragment::StakeDelegation hash {}", f.hash())
-                }
-                Fragment::PoolRegistration(_) => {
-                    println!("Fragment::PoolRegistration hash {}", f.hash())
-                }
-                Fragment::PoolRetirement(_) => {
-                    println!("Fragment::PoolRetirement hash {}", f.hash())
-                }
-                Fragment::PoolUpdate(_) => {
-                    println!("Fragment::PoolUpdate hash {}", f.hash())
-                }
-                Fragment::UpdateProposal(_) => {
-                    println!("Fragment::UpdateProposal hash {}", f.hash())
-                }
-                Fragment::UpdateVote(_) => {
-                    println!("Fragment::UpdateVote hash {}", f.hash())
-                }
-                Fragment::VotePlan(_) => {
-                    println!("Fragment::VotePlan hash {}", f.hash())
-                }
-                Fragment::VoteCast(_) => {
-                    println!("Fragment::VoteCast hash {}", f.hash())
-                }
-                Fragment::VoteTally(_) => {
-                    println!("Fragment::VoteTall hash {}", f.hash())
-                }
-                Fragment::MintToken(_) => {
-                    println!("Fragment::MintToken hash {}", f.hash())
-                }
-                Fragment::Evm(_) => println!("Fragment::Evm hash {}", f.hash()),
-                Fragment::EvmMapping(_) => {
-                    println!("Fragment::EvmMapping hash {}", f.hash())
-                }
+            if let Fragment::MintToken(_) | Fragment::Evm(_) | Fragment::EvmMapping(_) = f {
+                panic!("NPG-3517 BUG Explorer is missing the fragments Fragment::MintToken, Fragment::Evm, Fragment::EvmMapping ")
             }
         }
 

@@ -126,7 +126,7 @@ impl FragmentVerifier {
         node: &A,
     ) -> Result<(), FragmentVerifierError> {
         for check in checks {
-            let status = Self::wait_fragment(duration, check, Default::default(), node)?;
+            let status = Self::wait_fragment(duration, check, ExitStrategy::OnProcessed, node)?;
             Self::is_in_block(status, node)?;
         }
         Ok(())
@@ -137,7 +137,7 @@ impl FragmentVerifier {
         check: MemPoolCheck,
         node: &A,
     ) -> Result<(), FragmentVerifierError> {
-        let status = Self::wait_fragment(duration, check, Default::default(), node)?;
+        let status = Self::wait_fragment(duration, check, ExitStrategy::OnProcessed, node)?;
         Self::is_in_block(status, node)
     }
 
@@ -146,7 +146,7 @@ impl FragmentVerifier {
         check: MemPoolCheck,
         node: &A,
     ) -> Result<(), FragmentVerifierError> {
-        let status = Self::wait_fragment(duration, check, Default::default(), node)?;
+        let status = Self::wait_fragment(duration, check, ExitStrategy::OnProcessed, node)?;
         Self::is_rejected(status, node)
     }
 
@@ -156,7 +156,7 @@ impl FragmentVerifier {
         message: S,
         node: &A,
     ) -> Result<(), FragmentVerifierError> {
-        let status = Self::wait_fragment(duration, check, Default::default(), node)?;
+        let status = Self::wait_fragment(duration, check, ExitStrategy::OnProcessed, node)?;
         Self::is_rejected_with_message(status, message, node)
     }
 
@@ -314,10 +314,4 @@ pub enum ExitStrategy {
     OnPending,
     /// Exit when the fragment has been processed (i.e. either Rejected or InABlock)
     OnProcessed,
-}
-
-impl Default for ExitStrategy {
-    fn default() -> Self {
-        ExitStrategy::OnProcessed
-    }
 }

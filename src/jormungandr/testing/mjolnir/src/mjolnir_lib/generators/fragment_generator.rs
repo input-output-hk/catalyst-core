@@ -15,7 +15,10 @@ use jormungandr_lib::{
     crypto::{hash::Hash, key::KeyPair},
     interfaces::{BlockContentMaxSize, BlockDate as BlockDateDto, ConfigParam, ConfigParams},
 };
-use jortestkit::load::{Request, RequestFailure, RequestGenerator};
+use jortestkit::{
+    load::{Request, RequestFailure, RequestGenerator},
+    process::Wait,
+};
 use rand::RngCore;
 use rand_core::OsRng;
 use std::{
@@ -98,6 +101,7 @@ impl<'a, S: SyncNode + Send> FragmentGenerator<'a, S> {
         let settings = self.node.rest().settings().unwrap();
         let block0_hash = Hash::from_str(&settings.block0_hash).unwrap();
         let fees = settings.fees;
+
         if settings.consensus_version == ConsensusVersion::Bft.to_string() {
             assert!(
                 self.bft_leader.is_some(),
@@ -205,7 +209,12 @@ impl<'a, S: SyncNode + Send> FragmentGenerator<'a, S> {
         self.fragment_sender
             .send_batch_fragments(fragments, true, &self.node)
             .unwrap();
-        FragmentVerifier::wait_for_all_fragments(Duration::from_secs(10), &self.node).unwrap();
+        FragmentVerifier::wait_until_all_processed(
+            Wait::new(Duration::from_secs(2), 20),
+            &self.node,
+        )
+        .unwrap();
+
         self.vote_plans_for_casting = votes_plan_for_casting;
         self.vote_plans_for_tally = vote_plans_for_tally;
         self.active_stake_pools = stake_pools;

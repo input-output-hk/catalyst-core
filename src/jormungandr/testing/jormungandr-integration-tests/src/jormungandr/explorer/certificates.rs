@@ -708,7 +708,7 @@ pub fn explorer_vote_tally_certificate_test() {
 
     let fragment_sender = FragmentSender::from(&jormungandr.rest().settings().unwrap());
 
-    let fragment_builder = FragmentBuilder::from_settings(
+    let mut fragment_builder = FragmentBuilder::from_settings(
         &jormungandr.rest().settings().unwrap(),
         BlockDate::first().next_epoch(),
     );
@@ -729,6 +729,7 @@ pub fn explorer_vote_tally_certificate_test() {
 
     wait_for_epoch(1, jormungandr.rest());
 
+    fragment_builder.update_valid_until(BlockDate::first().next_epoch().next_epoch());
     let vote_tally_fragment =
         fragment_builder.vote_tally(&alice, &vote_plan, VoteTallyPayload::Public);
 

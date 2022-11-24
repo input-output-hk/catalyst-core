@@ -3,7 +3,7 @@ use cardano_serialization_lib::address::{Address, NetworkInfo, RewardAddress};
 use cardano_serialization_lib::chain_crypto::Blake2b256;
 use cardano_serialization_lib::crypto::Ed25519Signature;
 use cardano_serialization_lib::metadata::{
-    GeneralTransactionMetadata, MetadataMap, TransactionMetadatum,
+    GeneralTransactionMetadata, MetadataList, MetadataMap, TransactionMetadatum,
 };
 use cardano_serialization_lib::utils::{BigNum, Int};
 use cardano_serialization_lib::{address::StakeCredential, crypto::PublicKey};
@@ -122,15 +122,36 @@ impl Reg {
         // Translate registration to Cardano metadata type so we can serialize it correctly
         let mut meta_map: MetadataMap = MetadataMap::new();
         let delegations = match self.metadata.delegations.clone() {
-            Delegations::Delegated(_) => {
-                TransactionMetadatum::new_text("foo".to_string()).map_err(|_| eyre!("uh oh"))?
-                // TODO: this seems weird
+            Delegations::Delegated(delegations) => {
+                let mut metadata_list = MetadataList::new();
+                for (delegation, weight) in delegations {
+                    let mut inner_metadata_list = MetadataList::new();
+                    inner_metadata_list.add(
+                        &TransactionMetadatum::new_bytes(hex::decode(
+                            delegation.trim_start_matches("0x"),
+                        )?)
+                        .map_err(|e| {
+                            eyre!(format!("cannot decode delegation key, due to: {}", e))
+                        })?,
+                    );
+                    inner_metadata_list.add(&TransactionMetadatum::new_int(&Int::new(
+                        &BigNum::from(weight),
+                    )));
+                    metadata_list.add(&TransactionMetadatum::new_list(&inner_metadata_list));
+                }
+                TransactionMetadatum::new_list(&metadata_list)
             }
             Delegations::Legacy(k) => {
                 let bytes = hex::decode(k.trim_start_matches("0x"))?;
-                TransactionMetadatum::new_bytes(bytes).unwrap()
+                TransactionMetadatum::new_bytes(bytes).map_err(|e| {
+                    eyre!(format!(
+                        "cannot decode legacy delegation key, due to: {}",
+                        e
+                    ))
+                })?
             }
         };
+
         meta_map.insert(
             &TransactionMetadatum::new_int(&Int::new_i32(1)),
             &delegations,

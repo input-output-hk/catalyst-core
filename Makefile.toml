@@ -1,0 +1,22 @@
+# Build scripts for Catalyst-Core
+# This file is built with `cargo make` see: 
+#  <https://github.com/sagiegurari/cargo-make>
+extend = [
+    { path = "Makefiles/prereqs.toml"  },
+    { path = "Makefiles/docs.toml"  }
+]
+
+[config]
+min_version = "0.36.3"
+
+# env vars common to all profiles
+[env]
+
+# env vars specific to a development build profile
+[env.development]
+
+# env vars specific to a production build profile
+[env.production]
+
+
+# TODO: Replace install-all.sh with this tool (if it makes sense).

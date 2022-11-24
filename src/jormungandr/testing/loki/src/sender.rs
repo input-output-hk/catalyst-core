@@ -24,7 +24,7 @@ use rand::{thread_rng, Rng};
 use std::{path::PathBuf, time::Duration};
 use thor::{
     BlockDateGenerator, DummySyncNode, FragmentBuilderError, FragmentExporter,
-    FragmentExporterError, FragmentVerifier, Wallet,
+    FragmentExporterError, FragmentVerifier, VerifyExitStrategy, Wallet,
 };
 
 /// Send malformed transactions
@@ -337,7 +337,7 @@ impl<'a, S: SyncNode + Send> AdversaryFragmentSender<'a, S> {
         match FragmentVerifier::wait_fragment(
             Duration::from_secs(2),
             check.clone(),
-            Default::default(),
+            VerifyExitStrategy::OnProcessed,
             node,
         )? {
             FragmentStatus::Rejected { .. } => Ok(()),

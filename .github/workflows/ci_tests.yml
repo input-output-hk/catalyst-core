@@ -13,74 +13,75 @@ env:
   CARGO_INCREMENTAL: 0
 
 jobs:
-  node_tests:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        shardNumber: [1, 2, 3, 4]
-        totalShards: [4]
-    env:
-      CARGO_FLAGS: --verbose --locked --features systemd gelf
-    steps: 
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - uses: Swatinem/rust-cache@v2
-      - name: Free disk space
-        run: |
-          df -h
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          df -h
-      - name: Install Nextest
-        run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
-      - name: Install deps
-        run:
-          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+  # node_tests:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       shardNumber: [1, 2, 3, 4]
+  #       totalShards: [4]
+  #   env:
+  #     CARGO_FLAGS: --verbose --locked --features systemd gelf
+  #   steps: 
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
+  #       with:
+  #         ref: ${{ github.event.pull_request.head.sha }}
+  #     - uses: Swatinem/rust-cache@v2
+  #     - name: Free disk space
+  #       run: |
+  #         df -h
+  #         sudo rm -rf /usr/share/dotnet
+  #         sudo rm -rf /opt/ghc
+  #         sudo rm -rf "/usr/local/share/boost"
+  #         df -h
+  #     - name: Install Nextest
+  #       run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+  #     - name: Install deps
+  #       run:
+  #         sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+  #
+  #     - name: Run node tests
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
+  #         components: rustfmt, clippy
+  #     - run: |
+  #         cd src/jormungandr
+  #         cargo build
+  #         cargo nextest run -p jormungandr -p jcli -p jormungandr-integration-tests --partition hash:${{ matrix.shardNumber }}/${{ matrix.totalShards }}
 
-      - name: Run node tests
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-          components: rustfmt, clippy
-      - run: |
-          cd src/jormungandr
-          cargo build
-          cargo nextest run -p jormungandr -p jcli -p jormungandr-integration-tests --partition hash:${{ matrix.shardNumber }}/${{ matrix.totalShards }}
-  other_tests:
-    runs-on: ubuntu-latest
-    env:
-      CARGO_FLAGS: --verbose --locked
-    steps: 
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - uses: Swatinem/rust-cache@v2
-      - name: Install Nextest
-        run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
-      - name: Install deps
-        run:
-          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-
-      - name: Run other tests
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-          components: rustfmt, clippy
-      - run: |
-          cargo nextest run --workspace \
-            --exclude jormungandr \
-            --exclude jcli \
-            --exclude jormungandr-integration-tests \
-            --exclude vit-servicing-station-lib \
-            --exclude vit-servicing-station-cli \
-            --exclude vit-servicing-station-tests \
-            --exclude vit-servicing-station-server \
-            --exclude catalyst-toolbox \
-            --exclude "chain-*" \
+  # other_tests:
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     CARGO_FLAGS: --verbose --locked
+  #   steps: 
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
+  #       with:
+  #         ref: ${{ github.event.pull_request.head.sha }}
+  #     - uses: Swatinem/rust-cache@v2
+  #     - name: Install Nextest
+  #       run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+  #     - name: Install deps
+  #       run:
+  #         sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+  #
+  #     - name: Run other tests
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
+  #         components: rustfmt, clippy
+  #     - run: |
+  #         cargo nextest run --workspace \
+  #           --exclude jormungandr \
+  #           --exclude jcli \
+  #           --exclude jormungandr-integration-tests \
+  #           --exclude vit-servicing-station-lib \
+  #           --exclude vit-servicing-station-cli \
+  #           --exclude vit-servicing-station-tests \
+  #           --exclude vit-servicing-station-server \
+  #           --exclude catalyst-toolbox \
+  #           --exclude "chain-*" \
 
 
   vit_servicing_station:

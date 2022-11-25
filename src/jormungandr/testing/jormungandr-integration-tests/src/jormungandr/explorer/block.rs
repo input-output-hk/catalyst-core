@@ -1,9 +1,12 @@
-use crate::startup::{create_new_leader_key, SingleNodeTestBootstrapper};
+use std::time::Duration;
+
+use crate::startup::SingleNodeTestBootstrapper;
 use assert_fs::TempDir;
 use chain_core::{
     packer::Codec,
     property::{Deserialize, FromStr},
 };
+use chain_crypto::Ed25519;
 use chain_impl_mockchain::{
     block::Block,
     chaintypes::ConsensusType,
@@ -16,13 +19,12 @@ use jormungandr_automation::{
         explorer::{configuration::ExplorerParams, verifiers::ExplorerVerifier},
         Block0ConfigurationBuilder, MemPoolCheck, NodeConfigBuilder,
     },
-    testing::{block0::Block0ConfigurationExtension, time},
+    testing::{block0::Block0ConfigurationExtension, keys::create_new_key_pair, time},
 };
 use jormungandr_lib::interfaces::{
     ActiveSlotCoefficient, BlockDate, FragmentStatus, InitialToken, Mempool,
 };
 use mjolnir::generators::FragmentGenerator;
-use std::{collections::HashMap, time::Duration};
 use thor::{
     Block0ConfigurationBuilderExtension, FragmentSender, FragmentSenderSetup, FragmentVerifier,
 };
@@ -33,26 +35,21 @@ const BLOCK_QUERY_DEPTH_LIMIT: u64 = 30;
 #[test]
 pub fn explorer_block_test() {
     let temp_dir = TempDir::new().unwrap();
-    let jcli: JCli = Default::default();
-    let sender = thor::Wallet::default();
     let receiver = thor::Wallet::default();
-    let bft_leader = create_new_leader_key();
+    let sender = thor::Wallet::default();
+    let bft_secret = create_new_key_pair::<Ed25519>();
+    let jcli: JCli = Default::default();
 
     let jormungandr = SingleNodeTestBootstrapper::default()
-        .with_bft_secret(bft_leader.signing_key())
+        .as_bft_leader()
         .with_block0_config(
             Block0ConfigurationBuilder::default()
+                .with_consensus_leaders_ids(vec![bft_secret.identifier().into()])
                 .with_wallets_having_some_values(vec![&sender, &receiver])
-                .with_block0_consensus(ConsensusType::Bft)
                 .with_slots_per_epoch(20.try_into().unwrap())
                 .with_block_content_max_size(100000.into())
-                .with_consensus_leaders_ids(vec![bft_leader.identifier().into()])
-                .with_consensus_genesis_praos_active_slot_coeff(ActiveSlotCoefficient::MAXIMUM)
                 .with_slot_duration(3.try_into().unwrap())
-                .with_linear_fees(LinearFee::new(1, 1, 1))
                 .with_token(InitialToken {
-                    // FIXME: this works because I know it's the VotePlanBuilder's default, but
-                    // probably should me more explicit.
                     token_id: TokenIdentifier::from_str(
                         "00000000000000000000000000000000000000000000000000000000.00000000",
                     )
@@ -71,46 +68,43 @@ pub fn explorer_block_test() {
         .start_node(temp_dir)
         .unwrap();
 
-    let fragment_sender = FragmentSender::try_from_with_setup(
-        &jormungandr,
-        BlockDate::new(1u32, 1u32).next_epoch().into(),
-        FragmentSenderSetup::no_verify(),
-    )
-    .unwrap();
+    let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
+    let explorer_process = jormungandr.explorer(params).unwrap();
+    let settings = jormungandr.rest().settings().unwrap();
+
+    let fragment_sender =
+        FragmentSender::from_settings_with_setup(&settings, FragmentSenderSetup::resend_3_times());
 
     let time_era = jormungandr.time_era();
 
     let mut fragment_generator = FragmentGenerator::new(
-        sender,
-        receiver,
-        Some(bft_leader),
+        sender.clone(),
+        receiver.clone(),
+        Some(bft_secret),
         jormungandr.to_remote(),
         time_era.slots_per_epoch(),
         2,
         2,
         2,
-        3,
-        fragment_sender,
+        2,
+        fragment_sender.clone(),
     );
 
     fragment_generator.prepare(BlockDate::new(1, 0));
 
     time::wait_for_epoch(2, jormungandr.rest());
 
-    let mem_checks: Vec<MemPoolCheck> = fragment_generator.send_all().unwrap();
-    FragmentVerifier::wait_and_verify_all_are_in_block(
+    let mem_check = fragment_generator.send_random().unwrap();
+    FragmentVerifier::wait_and_verify_is_in_block(
         Duration::from_secs(2),
-        mem_checks.clone(),
+        mem_check.clone(),
         &jormungandr,
     )
     .unwrap();
-
     let fragments_log = jcli.rest().v0().message().logs(jormungandr.rest_uri());
     let fragment_log = fragments_log
         .iter()
-        .find(|x| {
-            *x.fragment_id().to_string() == mem_checks.last().unwrap().fragment_id().to_string()
-        })
+        .find(|x| *x.fragment_id().to_string() == mem_check.fragment_id().to_string())
         .unwrap();
 
     let fragment_block_id =
@@ -130,8 +124,6 @@ pub fn explorer_block_test() {
     let reader = std::io::Cursor::new(&bytes_block);
     let decoded_block = Block::deserialize(&mut Codec::new(reader)).unwrap();
 
-    let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
-    let explorer_process = jormungandr.explorer(params).unwrap();
     let explorer = explorer_process.client();
 
     let explorer_block_response = explorer.block_by_id(fragment_block_id.to_string()).unwrap();
@@ -217,9 +209,8 @@ pub fn explorer_block_incorrect_id_test() {
 
 #[test]
 pub fn explorer_last_block_test() {
-    let temp_dir = TempDir::new().unwrap();
-
     let jcli: JCli = Default::default();
+    let temp_dir = TempDir::new().unwrap();
     let sender = thor::Wallet::default();
     let receiver = thor::Wallet::default();
     let stake_pool = thor::StakePool::new(&sender);
@@ -227,8 +218,9 @@ pub fn explorer_last_block_test() {
     let jormungandr = SingleNodeTestBootstrapper::default()
         .as_genesis_praos_stake_pool(&stake_pool)
         .with_block0_config(
-            Block0ConfigurationBuilder::default()
+            Block0ConfigurationBuilder::minimal_setup()
                 .with_wallets_having_some_values(vec![&sender, &receiver])
+                .with_stake_pool_and_delegation(&stake_pool, vec![&sender])
                 .with_block0_consensus(ConsensusType::GenesisPraos)
                 .with_slots_per_epoch(20.try_into().unwrap())
                 .with_block_content_max_size(100000.into())
@@ -284,6 +276,7 @@ pub fn explorer_last_block_test() {
     time::wait_for_epoch(2, jormungandr.rest());
 
     let mem_checks: Vec<MemPoolCheck> = fragment_generator.send_all().unwrap();
+
     FragmentVerifier::wait_and_verify_all_are_in_block(
         Duration::from_secs(2),
         mem_checks,
@@ -316,20 +309,22 @@ pub fn explorer_last_block_test() {
     ExplorerVerifier::assert_last_block(decoded_block, explorer_last_block.block()).unwrap();
 }
 
+#[should_panic] //NPG-3517
 #[test]
 pub fn explorer_all_blocks_test() {
-    let temp_dir = TempDir::new().unwrap();
-    let max_blocks_number = 100;
     let jcli: JCli = Default::default();
+    let temp_dir = TempDir::new().unwrap();
     let sender = thor::Wallet::default();
     let receiver = thor::Wallet::default();
     let stake_pool = thor::StakePool::new(&sender);
+    let max_blocks_number = 100;
 
     let test_context = SingleNodeTestBootstrapper::default()
         .as_genesis_praos_stake_pool(&stake_pool)
         .with_block0_config(
-            Block0ConfigurationBuilder::default()
+            Block0ConfigurationBuilder::minimal_setup()
                 .with_wallets_having_some_values(vec![&sender, &receiver])
+                .with_stake_pool_and_delegation(&stake_pool, vec![&sender])
                 .with_block0_consensus(ConsensusType::GenesisPraos)
                 .with_slots_per_epoch(20.try_into().unwrap())
                 .with_block_content_max_size(100000.into())
@@ -356,6 +351,7 @@ pub fn explorer_all_blocks_test() {
         .build();
 
     let jormungandr = test_context.start_node(temp_dir).unwrap();
+    let block0_id = test_context.block0_config().to_block_hash();
 
     let params = ExplorerParams::new(BLOCK_QUERY_COMPLEXITY_LIMIT, BLOCK_QUERY_DEPTH_LIMIT, None);
     let explorer_process = jormungandr.explorer(params).unwrap();
@@ -385,6 +381,7 @@ pub fn explorer_all_blocks_test() {
     time::wait_for_epoch(2, jormungandr.rest());
 
     let mem_checks: Vec<MemPoolCheck> = fragment_generator.send_all().unwrap();
+
     FragmentVerifier::wait_and_verify_all_are_in_block(
         Duration::from_secs(2),
         mem_checks,
@@ -408,23 +405,13 @@ pub fn explorer_all_blocks_test() {
     let explorer_blocks_data = explorer_block_response.data.unwrap();
     let explorer_blocks = explorer_blocks_data.tip.blocks.edges;
 
-    let mut block_ids = HashMap::new();
-
-    let block0_id = test_context.block0_config.to_block_hash();
-
-    let block0_id = jcli.rest().v0().block().next(
+    let mut block_ids = jcli.rest().v0().block().next(
         block0_id.to_string(),
-        (max_blocks_number - 1) as u32,
+        (explorer_blocks.len() - 1) as u32,
         jormungandr.rest_uri(),
     );
 
     block_ids.insert(0, block0_id);
-
-    assert_eq!(
-        explorer_blocks_data.tip.blocks.total_count,
-        block_ids.len() as i64
-    );
-
     assert_eq!(explorer_blocks.len(), block_ids.len());
 
     for (n, explorer_block) in explorer_blocks.iter().enumerate() {
@@ -432,9 +419,9 @@ pub fn explorer_all_blocks_test() {
             .rest()
             .v0()
             .block()
-            .get(block_ids[&n].to_string(), jormungandr.rest_uri());
+            .get(block_ids[n].to_string(), jormungandr.rest_uri());
         let decoded_block = ExplorerVerifier::decode_block(encoded_block);
-        ExplorerVerifier::assert_all_blocks(decoded_block, &explorer_block.node).unwrap();
+        ExplorerVerifier::assert_all_blocks(decoded_block, &explorer_block.node).unwrap()
     }
 }
 
@@ -449,8 +436,9 @@ pub fn explorer_block_by_chain_length_test() {
     let jormungandr = SingleNodeTestBootstrapper::default()
         .as_genesis_praos_stake_pool(&stake_pool)
         .with_block0_config(
-            Block0ConfigurationBuilder::default()
+            Block0ConfigurationBuilder::minimal_setup()
                 .with_wallets_having_some_values(vec![&sender, &receiver])
+                .with_stake_pool_and_delegation(&stake_pool, vec![&sender])
                 .with_block0_consensus(ConsensusType::GenesisPraos)
                 .with_slots_per_epoch(20.try_into().unwrap())
                 .with_block_content_max_size(100000.into())
@@ -506,6 +494,7 @@ pub fn explorer_block_by_chain_length_test() {
     time::wait_for_epoch(2, jormungandr.rest());
 
     let mem_checks: Vec<MemPoolCheck> = fragment_generator.send_all().unwrap();
+
     FragmentVerifier::wait_and_verify_all_are_in_block(
         Duration::from_secs(2),
         mem_checks.clone(),

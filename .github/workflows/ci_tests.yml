@@ -106,7 +106,7 @@ jobs:
           toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
       - run: |
           cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
-          cargo nextest run \  
+          cargo nextest run \
             -p vit-servicing-station-cli \
             -p vit-servicing-station-lib \
             -p vit-servicing-station-tests \

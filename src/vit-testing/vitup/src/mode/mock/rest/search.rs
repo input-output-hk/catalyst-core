@@ -34,6 +34,25 @@ pub async fn search(
     Ok(HandlerResult(Ok(response)))
 }
 
+#[tracing::instrument(skip(context), name = "REST Api call")]
+pub async fn search_count(
+    search_query_count: SearchCountQuery,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
+    let search_query = SearchQuery {
+        query: search_query_count,
+        limit: None,
+        offset: None,
+    };
+
+    let response = search_impl(search_query, context).await?;
+
+    Ok(HandlerResult(Ok(match response {
+        SearchResponse::Challenge(challenges) => challenges.len(),
+        SearchResponse::Proposal(proposals) => proposals.len(),
+    })))
+}
+
 async fn search_impl(
     SearchQuery {
         query:

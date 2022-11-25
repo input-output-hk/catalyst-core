@@ -3,6 +3,7 @@ use snapshot_lib::voting_group::{
     RepsVotersAssigner, DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP,
 };
 use snapshot_lib::{Snapshot, SnapshotInfo};
+use tracing::info;
 use vit_servicing_station_lib::db::models::funds::Fund;
 use vit_servicing_station_lib::v0::endpoints::snapshot::{
     convert_snapshot_to_contrib, RawSnapshotInput, SnapshotInfoInput,
@@ -44,11 +45,14 @@ pub fn snapshot_update_filter(
     snapshot_info.or(raw_snapshot)
 }
 
+#[tracing::instrument(skip(context, input), name = "mock admin command received")]
 pub async fn put_raw_snapshot(
     tag: String,
     input: RawSnapshotInput,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
+    info!("put raw snapshot");
+
     let direct_voter = input
         .direct_voters_group
         .unwrap_or_else(|| DEFAULT_DIRECT_VOTER_GROUP.to_owned());
@@ -70,23 +74,29 @@ pub async fn put_raw_snapshot(
     ))
 }
 
+#[tracing::instrument(skip(context, input), name = "mock admin command received")]
 pub async fn put_snapshot_info(
     tag: String,
     input: SnapshotInfoInput,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
+    info!("put snapshot");
+
     Ok(HandlerResult(
         update_from_snapshot_info(tag, input.snapshot, input.update_timestamp, context).await,
     ))
 }
 
+#[tracing::instrument(skip(snapshot, context), name = "mock admin command received")]
 pub async fn update_from_snapshot_info(
     tag: String,
     snapshot: impl IntoIterator<Item = SnapshotInfo>,
     update_timestamp: i64,
     context: ContextLock,
 ) -> Result<(), HandleError> {
-    let mut context = context.lock().unwrap();
+    info!("update from snapshot info");
+
+    let mut context = context.write().unwrap();
     let state = context.state_mut();
     let voters_mut = state.voters_mut();
     voters_mut.put_snapshot_tag(tag.clone(), update_timestamp);
@@ -109,9 +119,12 @@ pub fn fund_put_filter(
         .and_then(put_fund)
 }
 
+#[tracing::instrument(skip(context), fields(fund_id = fund.id), name="mock admin command received")]
 pub async fn put_fund(fund: Fund, context: ContextLock) -> Result<impl Reply, Rejection> {
+    info!("put new fund");
+
     context
-        .lock()
+        .write()
         .unwrap()
         .state_mut()
         .vit_mut()

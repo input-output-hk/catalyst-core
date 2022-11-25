@@ -4,6 +4,7 @@ use assert_fs::TempDir;
 use mainnet_lib::{MainnetNetworkBuilder, MainnetWallet, MainnetWalletStateBuilder};
 
 #[test]
+#[ignore]
 fn cip15_correctly_signed_before_snapshot() {
     let temp_dir = TempDir::new().unwrap();
 

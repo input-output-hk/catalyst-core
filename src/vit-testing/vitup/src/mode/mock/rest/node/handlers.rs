@@ -8,30 +8,32 @@ use chain_impl_mockchain::fragment::{Fragment, FragmentId};
 use jormungandr_lib::crypto::hash::Hash;
 use jormungandr_lib::interfaces::{AccountVotes, FragmentsBatch, VotePlanId, VotePlanStatus};
 use std::str::FromStr;
+use tracing::info;
 use vit_servicing_station_lib::v0::errors::HandleError;
 use vit_servicing_station_lib::v0::result::HandlerResult;
 use warp::{Rejection, Reply};
 
+#[tracing::instrument(skip(message, context), name = "REST Api call")]
 pub async fn post_message(
-    message: warp::hyper::body::Bytes,
+    message: hyper::body::Bytes,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    let mut context = context.lock().unwrap();
+    let mut context = context.write().unwrap();
 
     let fragment =
         match Fragment::deserialize(&mut chain_core::packer::Codec::new(message.as_ref())) {
             Ok(fragment) => fragment,
             Err(err) => {
                 let code = context.state().error_code;
-                context.log(format!(
+                info!(
                     "post_message with wrong fragment. Reason '{:?}'... Error code: {}",
                     err, code
-                ));
+                );
                 return Err(warp::reject::custom(ForcedErrorCode { code }));
             }
         };
 
-    context.log(format!("post_message {}...", fragment.id()));
+    info!("post_message {}...", fragment.id());
 
     if let Some(error_code) = context.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));
@@ -42,9 +44,10 @@ pub async fn post_message(
     Ok(HandlerResult(Ok(fragment_id)))
 }
 
+#[tracing::instrument(skip(context), name = "REST Api call")]
 pub async fn get_node_stats(context: ContextLock) -> Result<impl Reply, Rejection> {
-    let mut context = context.lock().unwrap();
-    context.log("get_node_stats");
+    let context = context.read().unwrap();
+    info!("get_node_stats");
 
     if let Some(error_code) = context.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));
@@ -53,10 +56,11 @@ pub async fn get_node_stats(context: ContextLock) -> Result<impl Reply, Rejectio
     Ok(HandlerResult(Ok(context.state().node_stats())))
 }
 
+#[tracing::instrument(skip(context), name = "REST Api call")]
 pub async fn get_settings(context: ContextLock) -> Result<impl Reply, Rejection> {
-    let mut context = context.lock().unwrap();
+    let context = context.read().unwrap();
 
-    context.log("get_settings");
+    info!("get_settings");
 
     if let Some(error_code) = context.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));
@@ -73,13 +77,14 @@ fn parse_account_id(id_hex: &str) -> Result<account::Identifier, Rejection> {
         .map_err(|_| warp::reject::custom(GeneralException::hex_encoding_malformed()))
 }
 
+#[tracing::instrument(skip(context), name = "REST Api call")]
 pub async fn get_account(
     account_bech32: String,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    let mut context = context.lock().unwrap();
+    let mut context = context.write().unwrap();
 
-    context.log(format!("get_account {}...", &account_bech32));
+    info!("get_account {}...", &account_bech32);
 
     if let Some(error_code) = context.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));
@@ -91,10 +96,10 @@ pub async fn get_account(
         if state.block_account_endpoint() != 0 {
             state.decrement_block_account_endpoint();
             let code = state.error_code;
-            context.log(&format!(
+            info!(
                 "block account endpoint mode is on. Rejecting with error code: {}",
                 code
-            ));
+            );
             return Err(warp::reject::custom(ForcedErrorCode { code }));
         }
     }
@@ -125,13 +130,14 @@ impl GetMessageStatusesQuery {
     }
 }
 
+#[tracing::instrument(skip(context), name = "REST Api call")]
 pub async fn get_fragment_statuses(
     query: GetMessageStatusesQuery,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    let mut context = context.lock().unwrap();
+    let context = context.read().unwrap();
 
-    context.log(format!("get_fragment_statuses {:?}...", query));
+    info!("get_fragment_statuses");
 
     if let Some(error_code) = context.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));
@@ -148,13 +154,14 @@ pub async fn get_fragment_statuses(
         .statuses(ids.unwrap()))))
 }
 
+#[tracing::instrument(skip(context), name = "REST Api call")]
 pub async fn post_fragments(
     batch: FragmentsBatch,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    let mut context = context.lock().unwrap();
+    let mut context = context.write().unwrap();
 
-    context.log("post_fragments");
+    info!("post_fragments");
 
     if let Some(error_code) = context.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));
@@ -172,10 +179,11 @@ pub async fn post_fragments(
     }
 }
 
+#[tracing::instrument(skip(context), name = "REST Api call")]
 pub async fn get_fragment_logs(context: ContextLock) -> Result<impl Reply, Rejection> {
-    let mut context = context.lock().unwrap();
+    let context = context.read().unwrap();
 
-    context.log("get_fragment_logs");
+    info!("get_fragment_logs");
 
     if let Some(error_code) = context.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));
@@ -184,17 +192,15 @@ pub async fn get_fragment_logs(context: ContextLock) -> Result<impl Reply, Rejec
     Ok(HandlerResult(Ok(context.state().ledger().fragment_logs())))
 }
 
+#[tracing::instrument(skip(context), name = "REST Api call")]
 pub async fn get_account_votes_with_plan(
     vote_plan_id: VotePlanId,
     acccount_id_hex: String,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    let mut context = context.lock().unwrap();
+    let context = context.read().unwrap();
 
-    context.log(format!(
-        "get_account_votes: vote plan id {:?}. acccount id hex: {:?}",
-        vote_plan_id, acccount_id_hex
-    ));
+    info!("get_account_votes");
 
     let identifier = into_identifier(acccount_id_hex)?;
 
@@ -230,15 +236,13 @@ pub async fn get_account_votes_with_plan(
     Ok(HandlerResult(Ok(Some(result))))
 }
 
+#[tracing::instrument(skip(context), name = "REST Api call")]
 pub async fn get_account_votes(
     account_id_hex: String,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    let mut context_lock = context.lock().unwrap();
-    context_lock.log(format!(
-        "get_account_votes: account id hex: {:?}",
-        account_id_hex
-    ));
+    let context_lock = context.read().unwrap();
+    info!("get_account_votes");
 
     let identifier = into_identifier(account_id_hex)?;
 
@@ -279,9 +283,10 @@ pub fn into_identifier(account_id_hex: String) -> Result<Identifier, Rejection> 
     })
 }
 
+#[tracing::instrument(skip(context), name = "REST Api call")]
 pub async fn get_active_vote_plans(context: ContextLock) -> Result<impl Reply, Rejection> {
-    let mut context_lock = context.lock().unwrap();
-    context_lock.log("get_active_vote_plans");
+    let context_lock = context.read().unwrap();
+    info!("get_active_vote_plans");
 
     if let Some(error_code) = context_lock.check_if_rest_available() {
         return Err(warp::reject::custom(error_code));
@@ -297,11 +302,14 @@ pub async fn get_active_vote_plans(context: ContextLock) -> Result<impl Reply, R
     Ok(HandlerResult(Ok(vp)))
 }
 
+#[tracing::instrument(skip(context), name = "REST Api call")]
 pub async fn debug_message(
     fragment_id: String,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    let context = context.lock().unwrap();
+    let context = context.read().unwrap();
+
+    info!("debug_message");
 
     let id = FragmentId::from_str(&fragment_id).map_err(|_| HandleError::NotFound(fragment_id))?;
     let fragments = context.state().ledger().received_fragments();

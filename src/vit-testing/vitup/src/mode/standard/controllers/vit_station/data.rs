@@ -40,7 +40,6 @@ impl DbGenerator {
         std::fs::File::create(db_file)?;
 
         let migration_scripts_path = MigrationFilesBuilder::default().build(&self.root)?;
-        println!("{:?}", migration_scripts_path);
         let mut generator = ValidVotePlanGenerator::new(self.parameters);
         let snapshot = generator.build(template_generator);
         DbBuilder::new()

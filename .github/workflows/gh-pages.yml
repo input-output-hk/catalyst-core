@@ -4,7 +4,14 @@ on:
   push:
     branches: 
       - "main"
-  pull_request:
+
+    paths:
+      - book/src/**
+      - CODE_OF_CONDUCT.md
+      - CONTRIBUTING.md
+      - src/jormungandr/jormungandr-lib/src/interfaces/block0_configuration/BLOCKCHAIN_CONFIGURATION_DOCUMENTED_EXAMPLE.yaml
+      - src/jormungandr/jormungandr-lib/src/interfaces/CONFIG_PARAMS_DOCUMENTED_EXAMPLE.yaml
+
 
 jobs:
   deploy:

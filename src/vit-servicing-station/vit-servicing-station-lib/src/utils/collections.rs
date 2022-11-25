@@ -1,4 +1,7 @@
-use std::{collections::HashMap, hash::Hash};
+use std::{
+    collections::{hash_map::Entry, HashMap},
+    hash::Hash,
+};
 
 /// Removes all but the last occurrence of elements that
 /// resolve to the same key maintaining the order in which they
@@ -23,10 +26,14 @@ where
     let mut v = Vec::new();
 
     for i in iter {
-        if let Some(prev_ix) = h.insert(key_fn(&i), v.len()) {
-            v[prev_ix] = i;
-        } else {
-            v.push(i);
+        match h.entry(key_fn(&i)) {
+            Entry::Occupied(e) => {
+                v[*e.get()] = i;
+            }
+            Entry::Vacant(e) => {
+                e.insert(v.len());
+                v.push(i);
+            }
         }
     }
 

@@ -28,9 +28,13 @@ tokio = { version = "1.2", features = ["macros","rt","process"] }
 serde_json = "1.0"
 serde_yaml = "0.8"
 signals-handler = { path = "../signals-handler" }
-mainnet-tools = { path = "../mainnet-tools"}
+tracing = "0.1"
 
 [dependencies.reqwest]
 version = "0.11"
 default-features = false
 features = ["blocking", "rustls-tls","json"]
+
+[features]
+default = ["client"]
+client = []

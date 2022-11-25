@@ -37,6 +37,9 @@ pub fn voting_power(
 ) -> Result<Vec<Output>> {
     let network_info = network_info(testnet_magic);
     let regs = db.vote_registrations(min_slot, max_slot)?;
+
+    debug!("found {} possible registrations", regs.len());
+
     let stake_addrs = regs
         .iter()
         .filter_map(|reg| get_stake_address(&reg.metadata.stake_vkey, &network_info).ok())
@@ -48,9 +51,11 @@ pub fn voting_power(
         .into_iter()
         .filter_map(|reg| {
             if let Err(e) = reg.check_valid() {
-                warn!("invalid reg: {e}");
+                warn!("invalid reg on tx: '{}': {e}", reg.tx_id);
                 return None;
             }
+
+            debug!("registration on tx '{}' is valid", reg.tx_id);
 
             let stake_addr = get_stake_address(&reg.metadata.stake_vkey, &network_info).ok()?;
             let voting_power = values.get(&stake_addr as &str)?.clone();

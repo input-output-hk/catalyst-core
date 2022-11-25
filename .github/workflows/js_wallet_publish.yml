@@ -2,7 +2,6 @@ name: Release JavaScript Wallet
 
 on:
   push:
-    branches: [ "main" ]
     tags:
       - walletjs-*
 
@@ -51,7 +50,6 @@ jobs:
       - name: Install wasm pack
         uses: jetli/wasm-pack-action@v0.3.0
         with:
-          # Optional version of wasm-pack to install(eg. 'v0.9.1', 'latest')
           version: 'latest'
 
       - name: Build

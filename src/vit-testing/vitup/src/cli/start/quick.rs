@@ -1,3 +1,4 @@
+use crate::builders::utils::logger;
 pub use crate::builders::{VitBackendSettingsBuilder, FOLLOWER, LEADER_1, LEADER_2, LEADER_3};
 use crate::config::read_voter_hirs;
 use crate::config::ConfigBuilder;
@@ -129,11 +130,16 @@ pub struct QuickStartCommandArgs {
 
     #[structopt(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
+
+    #[structopt(long = "vitup-log-level", default_value = "LogLevel::INFO")]
+    pub vitup_log_level: LogLevel,
 }
 
 impl QuickStartCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
+
+        logger::init(self.vitup_log_level)?;
 
         let jormungandr = &self.jormungandr;
         let testing_directory = self.testing_directory;

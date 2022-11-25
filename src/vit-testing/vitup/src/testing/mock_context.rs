@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 
 use vit_servicing_station_lib::db::models::{challenges::Challenge, proposals::ChallengeType};
 
@@ -37,5 +37,5 @@ pub fn make_challenges() -> Vec<Challenge> {
 pub fn make_context_impl(challenges: Vec<Challenge>) -> ContextLock {
     let mut context = Context::new(Configuration::default(), None).unwrap();
     *context.state_mut().vit_mut().challenges_mut() = challenges;
-    Arc::new(Mutex::new(context))
+    Arc::new(RwLock::new(context))
 }

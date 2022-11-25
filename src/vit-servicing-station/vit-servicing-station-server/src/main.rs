@@ -171,7 +171,9 @@ async fn main() -> ApplicationExitCode {
     };
 
     // Check db file exists (should be here only for current sqlite db backend)
-    if !std::path::Path::new(&settings.db_url).exists() {
+    if !settings.db_url.starts_with("postgres://")
+        && !std::path::Path::new(&settings.db_url).exists()
+    {
         error!("DB file {} not found.", &settings.db_url);
         return ApplicationExitCode::DbConnectionError;
     }

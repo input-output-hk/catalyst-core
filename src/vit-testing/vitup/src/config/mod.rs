@@ -14,6 +14,7 @@ pub mod mode;
 use crate::config::additional::AdditionalServices;
 use crate::config::builder::convert_to_human_date;
 use crate::config::vote_time::FORMAT;
+use crate::mode::standard::VitController;
 use crate::Result;
 pub use blockchain::Blockchain;
 pub use builder::ConfigBuilder;
@@ -28,9 +29,11 @@ use serde::{Deserialize, Serialize};
 pub use service::Service;
 use snapshot_lib::VoterHIR;
 pub use static_data::StaticData;
+use std::fmt::Debug;
 use std::path::Path;
 use std::time::Duration;
 use time::format_description::{self, FormatItem};
+use tracing::{span, Level};
 use valgrind::Protocol;
 pub use vote_plan::VotePlan;
 pub use vote_time::{VoteBlockchainTime, VoteTime, FORMAT as VOTE_TIME_FORMAT};
@@ -97,47 +100,65 @@ impl Config {
         }
     }
 
-    pub fn print_report(&self) {
+    pub fn print_report(&self, controller: Option<VitController>) {
         let (vote_start_timestamp, tally_start_timestamp, tally_end_timestamp) =
             convert_to_human_date(self);
 
-        println!("Fund id: {}", self.data.current_fund.fund_info.fund_id);
-        println!(
+        let span = span!(Level::INFO, "deployment report");
+        let _enter = span.enter();
+
+        if let Some(controller) = controller {
+            tracing::info!(
+                "voteplan ids: \t\t{:?}",
+                controller
+                    .defined_vote_plans()
+                    .iter()
+                    .map(|x| x.id())
+                    .collect::<Vec<String>>()
+            );
+        }
+
+        tracing::info!(
+            "Fund id: \t\t\t{}",
+            self.data.current_fund.fund_info.fund_id
+        );
+        tracing::info!(
             "block0 date:\t\t(block0_date):\t\t\t\t\t{}",
             jormungandr_lib::time::SystemTime::from_secs_since_epoch(
                 self.blockchain.block0_date_as_unix().to_secs()
             )
         );
 
-        println!(
-            "refresh timestamp:\t(registration_snapshot_time):\t\t\t{}",
+        tracing::info!(
+            "refresh timestamp:\t\t(registration_snapshot_time):\t\t\t{}",
             self.data.current_fund.dates.snapshot_time
         );
 
-        println!(
+        tracing::info!(
             "vote start timestamp:\t(fund_start_time, chain_vote_start_time):\t{}",
             vote_start_timestamp
         );
-        println!(
+        tracing::info!(
             "tally start timestamp:\t(fund_end_time, chain_vote_end_time):\t\t{}",
             tally_start_timestamp
         );
-        println!(
+        tracing::info!(
             "tally end timestamp:\t(chain_committee_end_time):\t\t\t{}",
             tally_end_timestamp
         );
-        println!(
+        tracing::info!(
             "next refresh timestamp:\t(next registration_snapshot_time):\t\t{}",
             self.data.current_fund.dates.next_snapshot_time
         );
-        println!(
+        tracing::info!(
             "next vote start time:\t(next_fund_start_time):\t\t\t\t{}",
             self.data.current_fund.dates.next_vote_start_time
         );
     }
 }
 
-pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Config> {
+#[tracing::instrument]
+pub fn read_config<P: AsRef<Path> + Debug>(config: P) -> Result<Config> {
     let config = config.as_ref();
     if !config.exists() {
         return Err(crate::error::Error::CannotFindConfig(config.to_path_buf()));

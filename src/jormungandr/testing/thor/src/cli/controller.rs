@@ -4,7 +4,7 @@ use crate::{
         config::{ConfigManager, WalletState},
         Connection,
     },
-    FragmentSender, FragmentVerifier, Wallet,
+    FragmentSender, FragmentVerifier, VerifyExitStrategy, Wallet,
 };
 use bech32::{u5, FromBase32};
 use chain_crypto::{Ed25519Extended, SecretKey};
@@ -151,7 +151,7 @@ impl CliController {
             FragmentVerifier::wait_fragment(
                 Duration::from_secs(settings.slot_duration * SLOT_COUNT),
                 check.clone(),
-                Default::default(),
+                VerifyExitStrategy::OnProcessed,
                 &node,
             )?;
             self.wallets.wallet_mut()?.spending_counters = thor_wallet

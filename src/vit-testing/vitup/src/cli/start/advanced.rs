@@ -1,3 +1,4 @@
+use crate::builders::utils::logger;
 use crate::config::mode::{parse_mode_from_str, Mode};
 use crate::config::read_config;
 use crate::config::read_voter_hirs;
@@ -82,15 +83,17 @@ pub struct AdvancedStartCommandArgs {
 
     #[structopt(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
+
+    #[structopt(long = "vitup-log-level", default_value = "LogLevel::INFO")]
+    pub vitup_log_level: LogLevel,
 }
 
 impl AdvancedStartCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 
-        // TODO: what happened to this function? should be re-implemented? does it have a
-        // replacement?
-        // as far as I can see it was only used to verify that the binary exists.
+        logger::init(self.vitup_log_level)?;
+
         let jormungandr = &self.jormungandr;
         let testing_directory = self.testing_directory;
         let generate_documentation = true;

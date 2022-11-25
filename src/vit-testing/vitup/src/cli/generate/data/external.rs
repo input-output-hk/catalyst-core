@@ -1,9 +1,10 @@
-use crate::builders::utils::{DeploymentTree, SessionSettingsExtension};
+use crate::builders::utils::{logger, DeploymentTree, SessionSettingsExtension};
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::read_config;
 use crate::mode::standard::generate_database;
 use crate::Result;
 use hersir::config::SessionSettings;
+use jormungandr_automation::jormungandr::LogLevel;
 use std::path::PathBuf;
 use structopt::StructOpt;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
@@ -46,11 +47,16 @@ pub struct ExternalDataCommandArgs {
 
     #[structopt(long = "skip-qr-generation")]
     pub skip_qr_generation: bool,
+
+    #[structopt(long = "log-level", default_value = "LogLevel::INFO")]
+    pub log_level: LogLevel,
 }
 
 impl ExternalDataCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
+
+        logger::init(self.log_level)?;
 
         let session_settings = SessionSettings::from_dir(&self.output_directory);
 
@@ -86,16 +92,7 @@ impl ExternalDataCommandArgs {
 
         generate_database(&deployment_tree, vit_parameters, template_generator)?;
 
-        println!(
-            "voteplan ids: {:?}",
-            controller
-                .defined_vote_plans()
-                .iter()
-                .map(|x| x.id())
-                .collect::<Vec<String>>()
-        );
-
-        config.print_report();
+        config.print_report(Some(controller));
         Ok(())
     }
 }

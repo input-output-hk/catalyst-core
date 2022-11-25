@@ -1,0 +1,17 @@
+digraph protocol {
+  subgraph nodes {
+    node [ style = filled; color = lightgrey ];
+
+    "leader3🐍[b]"
+    "leader3🐍[b]" -> "leader1🐍[b]" [ label = "trusts" ; color = blue ]
+    "leader3🐍[b]" -> "leader2🐍[b]" [ label = "trusts" ; color = blue ]
+    "leader1🐍[b]"
+    "leader2🐍[b]"
+    "leader2🐍[b]" -> "leader1🐍[b]" [ label = "trusts" ; color = blue ]
+    "follower🐍"
+    "follower🐍" -> "leader3🐍[b]" [ label = "trusts" ; color = blue ]
+    "follower🐍" -> "leader1🐍[b]" [ label = "trusts" ; color = blue ]
+    "follower🐍" -> "leader2🐍[b]" [ label = "trusts" ; color = blue ]
+  }
+  "committee_1💳\nfunds = 1000000"
+}

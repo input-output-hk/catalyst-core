@@ -1,3 +1,4 @@
+pub mod logger;
 mod session_settings;
 mod tree;
 

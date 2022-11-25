@@ -29,7 +29,7 @@ fn join_fund(mut fund: Fund, db_conn: &DbConnection) -> Result<Fund, HandleError
             .filter(voteplans_dsl::fund_id.eq(id))
             .load::<Voteplan>(db_conn)
     )
-    .map_err(|_e| HandleError::NotFound("Error loading voteplans".to_string()))?;
+    .map_err(|e| HandleError::NotFound(format!("Error loading voteplans, error: {}", e)))?;
 
     fund.challenges = q!(
         db_conn,
@@ -38,7 +38,7 @@ fn join_fund(mut fund: Fund, db_conn: &DbConnection) -> Result<Fund, HandleError
             .order_by(challenges_dsl::internal_id.asc())
             .load::<Challenge>(db_conn)
     )
-    .map_err(|_e| HandleError::NotFound("Error loading challenges".to_string()))?;
+    .map_err(|e| HandleError::NotFound(format!("Error loading challenges, error: {}", e)))?;
 
     fund.goals = q!(
         db_conn,
@@ -46,7 +46,7 @@ fn join_fund(mut fund: Fund, db_conn: &DbConnection) -> Result<Fund, HandleError
             .filter(goals_dsl::fund_id.eq(id))
             .load::<Goal>(db_conn)
     )
-    .map_err(|_e| HandleError::NotFound("Error loading goals".to_string()))?;
+    .map_err(|e| HandleError::NotFound(format!("Error loading goals, error: {}", e)))?;
 
     fund.groups = q!(
         db_conn,
@@ -54,7 +54,7 @@ fn join_fund(mut fund: Fund, db_conn: &DbConnection) -> Result<Fund, HandleError
             .filter(groups_dsl::fund_id.eq(id))
             .load::<Group>(db_conn)
     )
-    .map_err(|_e| HandleError::NotFound("Error loading groups".to_string()))?
+    .map_err(|e| HandleError::NotFound(format!("Error loading groups, error: {}", e)))?
     .into_iter()
     .collect();
 

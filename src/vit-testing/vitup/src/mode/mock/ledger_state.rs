@@ -16,6 +16,8 @@ use jormungandr_lib::interfaces::{FragmentRejectionReason, FragmentsProcessingSu
 use jormungandr_lib::time::SystemTime;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::fmt;
+use std::fmt::{Display, Formatter};
 use thiserror::Error;
 use thor::BlockDateGenerator;
 
@@ -27,6 +29,12 @@ pub enum FragmentRecieveStrategy {
     None,
     //For cases when we want to implement mempool cleaning
     Forget,
+}
+
+impl Display for FragmentRecieveStrategy {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 pub struct LedgerState {

@@ -1,11 +1,12 @@
-use crate::builders::utils::DeploymentTree;
 use crate::builders::utils::SessionSettingsExtension;
+use crate::builders::utils::{logger, DeploymentTree};
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::read_config;
 use crate::mode::standard::generate_database;
 use crate::Result;
 use glob::glob;
 use hersir::config::SessionSettings;
+use jormungandr_automation::jormungandr::LogLevel;
 use std::path::Path;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -57,11 +58,16 @@ pub struct PerfDataCommandArgs {
 
     #[structopt(short = "s", long = "single", default_value = "0")]
     pub single: usize,
+
+    #[structopt(long = "log-level", default_value = "LogLevel::INFO")]
+    pub log_level: LogLevel,
 }
 
 impl PerfDataCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
+
+        logger::init(self.log_level.clone())?;
 
         let session_settings = SessionSettings::from_dir(&self.output_directory);
 
@@ -99,16 +105,7 @@ impl PerfDataCommandArgs {
         )?;
         self.split_secrets(&deployment_tree)?;
 
-        println!(
-            "voteplan ids: {:?}",
-            controller
-                .defined_vote_plans()
-                .iter()
-                .map(|x| x.id())
-                .collect::<Vec<String>>()
-        );
-
-        config.print_report();
+        config.print_report(Some(controller));
         Ok(())
     }
 

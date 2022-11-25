@@ -12,6 +12,7 @@ use std::time::Duration;
 use thor::FragmentSenderError;
 use thor::FragmentVerifierError;
 use thor::WalletError;
+use tracing::subscriber::SetGlobalDefaultError;
 use vit_servicing_station_tests::common::startup::server::ServerBootstrapperError;
 
 #[derive(thiserror::Error, Debug)]
@@ -115,4 +116,6 @@ pub enum Error {
     NoChallengeIdFound { proposal_id: String },
     #[error("no challenge id: {id} and group: {group} found")]
     NoChallengeIdAndGroupFound { id: String, group: String },
+    #[error("cannot set tracing")]
+    SetGlobalDefault(#[from] SetGlobalDefaultError),
 }

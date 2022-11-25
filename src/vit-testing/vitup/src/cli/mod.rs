@@ -18,6 +18,7 @@ use structopt::StructOpt;
 pub use validate::Error as ValidateError;
 use validate::ValidateCommand;
 
+#[allow(clippy::large_enum_variant)]
 #[derive(StructOpt, Debug)]
 pub enum VitCliCommand {
     /// Starts catalyst backend

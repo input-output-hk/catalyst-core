@@ -1,10 +1,11 @@
-use crate::builders::utils::DeploymentTree;
 use crate::builders::utils::SessionSettingsExtension;
+use crate::builders::utils::{logger, DeploymentTree};
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::ConfigBuilder;
 use crate::config::Initials;
 use crate::Result;
 use hersir::config::SessionSettings;
+use jormungandr_automation::jormungandr::LogLevel;
 use jortestkit::prelude::read_file;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -25,11 +26,16 @@ pub struct QrCommandArgs {
 
     #[structopt(long = "global-pin", default_value = "1234")]
     pub global_pin: String,
+
+    #[structopt(long = "log-level", default_value = "LogLevel::INFO")]
+    pub log_level: LogLevel,
 }
 
 impl QrCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
+
+        logger::init(self.log_level)?;
 
         let session_settings = SessionSettings::from_dir(&self.output_directory);
 

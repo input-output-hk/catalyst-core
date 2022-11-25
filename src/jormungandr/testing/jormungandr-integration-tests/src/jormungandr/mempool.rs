@@ -37,12 +37,13 @@ pub fn dump_send_correct_fragments() {
     let persistent_log_path = temp_dir.child("persistent_log");
     let receiver = thor::Wallet::default();
     let sender = thor::Wallet::default();
-    let first_bft_leader = create_new_key_pair::<Ed25519>();
+    let bft_secret = create_new_key_pair::<Ed25519>();
 
     let jormungandr = SingleNodeTestBootstrapper::default()
         .as_bft_leader()
         .with_block0_config(
             Block0ConfigurationBuilder::default()
+                .with_consensus_leaders_ids(vec![bft_secret.identifier().into()])
                 .with_wallets_having_some_values(vec![&sender, &receiver])
                 .with_slots_per_epoch(60.try_into().unwrap())
                 .with_block_content_max_size(100000.into())
@@ -80,14 +81,14 @@ pub fn dump_send_correct_fragments() {
     let mut fragment_generator = FragmentGenerator::new(
         sender,
         receiver,
-        Some(first_bft_leader),
+        Some(bft_secret),
         jormungandr.to_remote(),
         time_era.slots_per_epoch(),
         2,
         2,
         2,
         2,
-        fragment_sender,
+        fragment_sender.clone(),
     );
 
     fragment_generator.prepare(BlockDateDto::new(1, 0));
@@ -95,6 +96,7 @@ pub fn dump_send_correct_fragments() {
     time::wait_for_epoch(2, jormungandr.rest());
 
     let mem_checks: Vec<MemPoolCheck> = fragment_generator.send_all().unwrap();
+
     FragmentVerifier::wait_and_verify_all_are_in_block(
         Duration::from_secs(2),
         mem_checks,

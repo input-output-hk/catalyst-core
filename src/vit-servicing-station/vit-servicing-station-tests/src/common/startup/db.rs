@@ -1,6 +1,5 @@
 use assert_fs::{fixture::PathChild, TempDir};
 use diesel::{connection::Connection, prelude::*};
-use std::io;
 use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -103,12 +102,12 @@ impl DbBuilder {
         connection: &SqliteConnection,
         migration_folder: &Path,
     ) -> Result<(), DbBuilderError> {
-        let stdout = io::stdout();
-        let mut handle = stdout.lock();
+        let mut sink = std::io::sink();
+
         diesel_migrations::run_pending_migrations_in_directory(
             connection,
             migration_folder,
-            &mut handle,
+            &mut sink,
         )
         .map_err(DbBuilderError::MigrationsError)
     }

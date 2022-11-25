@@ -1,6 +1,7 @@
 use super::{FragmentExporter, FragmentExporterError};
 use crate::{
-    DummySyncNode, FragmentBuilder, FragmentSenderSetup, FragmentVerifier, StakePool, Wallet,
+    DummySyncNode, FragmentBuilder, FragmentSenderSetup, FragmentVerifier, StakePool,
+    VerifyExitStrategy, Wallet,
 };
 use chain_core::property::Fragment as _;
 use chain_crypto::{Ed25519, SecretKey};
@@ -583,7 +584,7 @@ impl<'a, S: SyncNode + Send> FragmentSender<'a, S> {
         match FragmentVerifier::wait_fragment(
             Duration::from_secs(2),
             check.clone(),
-            Default::default(),
+            VerifyExitStrategy::OnProcessed,
             node,
         )? {
             FragmentStatus::Rejected { reason } => Err(FragmentSenderError::FragmentNotInBlock {

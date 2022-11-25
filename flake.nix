@@ -71,7 +71,7 @@
               protobuf
               rustfmt
             ]
-            ++ (pkgs.lib.optionals (name == "voting_tools_rs") [
+            ++ (pkgs.lib.optionals (name == "voting_tools_rs" || name == "vit-servicing-station-server") [
               postgresql
             ]);
 

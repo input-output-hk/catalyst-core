@@ -21,7 +21,7 @@
 <div class="api-container">
 <!-- 4. Change the apiDescriptionUrl to point to the documentation .json file. -->
 <elements-api
-  apiDescriptionUrl="https://raw.githubusercontent.com/input-output-hk/catalyst-core/main/src/jormungandr/doc/api/v1.yaml"
+  apiDescriptionUrl="../core-ledger-doc/api/v1.yaml"
   router="memory"
   layout="sidebar"
 />

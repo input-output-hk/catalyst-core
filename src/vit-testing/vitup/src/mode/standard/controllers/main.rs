@@ -249,8 +249,7 @@ impl VitController {
         let db_file = dir.join(STORAGE);
         dump_settings_to_file(config_file.to_str().unwrap(), settings).unwrap();
 
-        DbGenerator::new(vote_plan_parameters, working_directory)
-            .build(&db_file, template_generator)?;
+        DbGenerator::new(vote_plan_parameters).build(&db_file, template_generator)?;
 
         let mut command_builder =
             BootstrapCommandBuilder::new(PathBuf::from("vit-servicing-station-server"));

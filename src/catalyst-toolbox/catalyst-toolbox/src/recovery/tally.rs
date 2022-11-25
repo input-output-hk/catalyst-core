@@ -610,6 +610,7 @@ mod test {
     use chain_addr::Discrimination;
     use chain_impl_mockchain::certificate::VoteTallyPayload;
     use chain_impl_mockchain::chaintypes::ConsensusType;
+    use chain_impl_mockchain::key::BftLeaderId;
     use chain_impl_mockchain::tokens::minting_policy::MintingPolicy;
     use chain_impl_mockchain::vote::Choice;
     use chain_impl_mockchain::vote::Tally;
@@ -677,6 +678,7 @@ mod test {
             .with_block0_consensus(ConsensusType::Bft)
             .with_kes_update_speed(KesUpdateSpeed::new(43200).unwrap())
             .with_discrimination(Discrimination::Production)
+            .with_leader(BftLeaderId::from([0; 32]).into())
             .with_committees(&[alice.to_committee_id()])
             .with_slot_duration(slot_duration.try_into().unwrap())
             .with_slots_per_epoch(slots_per_epoch.try_into().unwrap())

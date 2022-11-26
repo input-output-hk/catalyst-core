@@ -28,6 +28,7 @@ pub struct SpawnParams {
     log_level: Option<LogLevel>,
     max_bootstrap_attempts: Option<usize>,
     max_connections: Option<u32>,
+    allow_private_addresses: Option<bool>,
     max_inbound_connections: Option<u32>,
     mempool: Option<Mempool>,
     network_stuck_check: Option<Duration>,
@@ -59,6 +60,7 @@ impl SpawnParams {
             log_level: None,
             max_bootstrap_attempts: None,
             max_connections: None,
+            allow_private_addresses: None,
             max_inbound_connections: None,
             mempool: None,
             network_stuck_check: None,
@@ -135,6 +137,11 @@ impl SpawnParams {
 
     pub fn max_connections(mut self, max_connections: u32) -> Self {
         self.max_connections = Some(max_connections);
+        self
+    }
+
+    pub fn allow_private_addresses(mut self, switch: bool) -> Self {
+        self.allow_private_addresses = Some(switch);
         self
     }
 
@@ -271,6 +278,10 @@ impl SpawnParams {
 
         if let Some(max_inbound_connections) = &self.max_inbound_connections {
             node_config.p2p.max_inbound_connections = Some(*max_inbound_connections);
+        }
+
+        if let Some(allow_private_addresses) = &self.allow_private_addresses {
+            node_config.p2p.allow_private_addresses = *allow_private_addresses;
         }
 
         if let Some(max_connections) = &self.max_connections {

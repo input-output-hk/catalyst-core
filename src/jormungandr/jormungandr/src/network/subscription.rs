@@ -24,7 +24,7 @@ fn filter_gossip_node(node: &Gossip, config: &Configuration) -> bool {
     if config.allow_private_addresses {
         node.has_valid_address()
     } else {
-        node.is_global()
+        !node.is_global()
     }
 }
 
@@ -410,6 +410,7 @@ impl Sink<net_data::Gossip> for GossipProcessor {
         let state1 = self.global_state.clone();
         let mut mbox = self.mbox.clone();
         let node_id = self.node_id;
+
         let fut = future::join(
             async move {
                 let refreshed = state1.peers.refresh_peer_on_gossip(&node_id).await;

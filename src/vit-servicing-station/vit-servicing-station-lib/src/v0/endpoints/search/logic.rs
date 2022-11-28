@@ -54,7 +54,7 @@ mod test {
         let body = serde_json::to_string(&SearchQuery {
             query: SearchCountQuery {
                 table: Table::Challenges,
-                filter: vec![Constraint {
+                filter: vec![Constraint::Text {
                     search: "1".to_string(),
                     column: Column::Title,
                 }],
@@ -78,7 +78,7 @@ mod test {
 
         let body = serde_json::to_string(&SearchCountQuery {
             table: Table::Challenges,
-            filter: vec![Constraint {
+            filter: vec![Constraint::Text {
                 search: "1".to_string(),
                 column: Column::Title,
             }],
@@ -127,11 +127,11 @@ mod test {
         let query = SearchQuery {
             query: SearchCountQuery {
                 table: Table::Challenges,
-                filter: vec![Constraint {
+                filter: vec![Constraint::Text {
                     column: Column::Title,
                     search: "1".to_string(),
                 }],
-                order_by: vec![OrderBy {
+                order_by: vec![OrderBy::Column {
                     column: Column::Title,
                     descending: false,
                 }],
@@ -171,11 +171,11 @@ mod test {
 
         let body = serde_json::to_string(&SearchCountQuery {
             table: Table::Challenges,
-            filter: vec![Constraint {
+            filter: vec![Constraint::Text {
                 column: Column::Title,
                 search: "1".to_string(),
             }],
-            order_by: vec![OrderBy {
+            order_by: vec![OrderBy::Column {
                 column: Column::Title,
                 descending: false,
             }],
@@ -194,7 +194,7 @@ mod test {
 
         let body = serde_json::to_string(&SearchQuery {
             query: SearchCountQuery {
-                order_by: vec![OrderBy {
+                order_by: vec![OrderBy::Column {
                     column: Column::Title,
                     descending: true,
                 }],
@@ -220,12 +220,12 @@ mod test {
         assert_eq!(reversed, reversed_output);
 
         let body = serde_json::to_string(&SearchCountQuery {
-            order_by: vec![OrderBy {
+            order_by: vec![OrderBy::Column {
                 column: Column::Title,
                 descending: true,
             }],
             table: Table::Challenges,
-            filter: vec![Constraint {
+            filter: vec![Constraint::Text {
                 column: Column::Title,
                 search: "1".to_string(),
             }],
@@ -262,11 +262,11 @@ mod test {
         let query = SearchQuery {
             query: SearchCountQuery {
                 table: Table::Challenges,
-                filter: vec![Constraint {
+                filter: vec![Constraint::Text {
                     column: Column::Title,
                     search: "1".to_string(),
                 }],
-                order_by: vec![OrderBy {
+                order_by: vec![OrderBy::Column {
                     column: Column::Title,
                     descending: false,
                 }],

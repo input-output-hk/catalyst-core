@@ -20,24 +20,41 @@ use vit_servicing_station_tests::common::{
 };
 use voting_tools_rs::Output;
 
+/// Snapshot wormhole command which schedules snapshot file transport from snapshot trigger service to
+/// servicing station
 #[derive(StructOpt, Debug)]
-pub struct SnapshotWormholeCommand {
+pub struct Command {
+    /// Path to configuration file
     #[structopt(short, long)]
     pub config: PathBuf,
 
+    /// Log level
     #[structopt(long = "log-level", default_value = "INFO")]
     pub log_level: LogLevel,
 
     #[structopt(subcommand)]
-    cmd: SubCommand,
+    cmd: Operation,
 }
 
+/// Sub command to run. Either 'one-shot' job, which ends program after single job is done, or 'schedule'
+/// which will run job continuously based on cron string
+///
+/// WARNING: there is custom cron string used which allows to program scheduler based on seconds.
+/// The scheduling format is as follows:
+///
+/// sec   min   hour   day of month   month   day of week   year
+/// *     *     *      *              *       *             *
 #[derive(StructOpt, Debug)]
-pub enum SubCommand {
+pub enum Operation {
     OneShot,
     Schedule(Schedule),
 }
-impl SnapshotWormholeCommand {
+impl Command {
+    /// Executes command
+    ///
+    /// # Errors
+    ///
+    /// On IO related errors
     pub fn exec(self) -> Result<()> {
         color_eyre::install()?;
 
@@ -54,12 +71,17 @@ impl SnapshotWormholeCommand {
         let config = read_config(self.config)?;
 
         match self.cmd {
-            SubCommand::OneShot => one_shot(&config),
-            SubCommand::Schedule(schedule) => schedule.exec(config),
+            Operation::OneShot => one_shot(&config),
+            Operation::Schedule(schedule) => schedule.exec(&config),
         }
     }
 }
 
+/// Performs one-time snapshot transport operation.
+///
+/// # Errors
+///
+/// On any errors from services
 #[instrument(fields(
     source=config.snapshot_service.address.to_string(),
     target=config.servicing_station.address.to_string(),
@@ -109,7 +131,8 @@ pub fn one_shot(config: &Config) -> Result<(), eyre::Report> {
             update_timestamp: SystemTime::now()
                 .duration_since(UNIX_EPOCH)
                 .expect("Time went backwards")
-                .as_secs() as i64,
+                .as_secs()
+                .try_into()?,
             min_stake_threshold: config.parameters.min_stake_threshold,
             voting_power_cap: config.parameters.voting_power_cap,
             direct_voters_group: config.parameters.direct_voters_group.clone(),
@@ -129,23 +152,31 @@ pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Config, eyre::Report> {
     serde_json::from_str(&contents).map_err(Into::into)
 }
 
+/// Run job in a schedule mode.
 #[derive(StructOpt, Debug)]
 pub struct Schedule {
+    /// Cron string
     #[structopt(long)]
     pub cron: String,
 
+    /// If set to true, job will be run immediately.
     #[structopt(short, long)]
     pub eagerly: bool,
 }
 
 impl Schedule {
-    pub fn exec(self, config: Config) -> Result<(), eyre::Report> {
+    /// Executes command
+    ///
+    /// # Errors
+    ///
+    /// On Parsing cron job or any services unavailability
+    pub fn exec(self, config: &Config) -> Result<(), eyre::Report> {
         if self.eagerly {
-            self.run_single(&config);
+            Self::run_single(config);
         }
         let mut sched = JobScheduler::new();
 
-        sched.add(Job::new(self.cron.parse()?, || self.run_single(&config)));
+        sched.add(Job::new(self.cron.parse()?, || Self::run_single(config)));
 
         loop {
             sched.tick();
@@ -153,7 +184,7 @@ impl Schedule {
         }
     }
 
-    pub fn run_single(&self, config: &Config) {
+    fn run_single(config: &Config) {
         if let Err(err) = one_shot(config) {
             error!("scheduled transfer failed due to: {err}");
         }

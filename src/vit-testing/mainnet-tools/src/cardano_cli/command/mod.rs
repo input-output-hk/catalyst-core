@@ -8,20 +8,30 @@ mod query;
 mod stake_address;
 mod transaction;
 
-pub use address::AddressCommand;
-pub use query::QueryCommand;
-pub use stake_address::StakeAddressCommand;
-pub use transaction::TransactionCommand;
+pub use address::Address;
+pub use query::Query;
+pub use stake_address::StakeAddress;
+pub use transaction::Transaction;
 
+/// Wrapper around cardano CLI commands
 #[derive(StructOpt, Debug)]
-pub enum CardanoCliCommand {
-    Query(QueryCommand),
-    Address(AddressCommand),
-    StakeAddress(StakeAddressCommand),
-    Transaction(TransactionCommand),
+pub enum Command {
+    /// Query commands
+    Query(Query),
+    /// Address related commands
+    Address(Address),
+    /// Stake address related commands
+    StakeAddress(StakeAddress),
+    /// Transaction commands
+    Transaction(Transaction),
 }
 
-impl CardanoCliCommand {
+impl Command {
+    /// Executes command
+    ///
+    /// # Errors
+    ///
+    /// On any sub commands errors
     pub fn exec(self) -> Result<(), Error> {
         match self {
             Self::Query(query) => query.exec().map_err(Into::into),
@@ -34,7 +44,7 @@ impl CardanoCliCommand {
 
 pub fn write_to_file_or_println(
     maybe_file: Option<PathBuf>,
-    content: String,
+    content: &str,
 ) -> Result<(), std::io::Error> {
     if let Some(out_file) = maybe_file {
         let mut file = File::create(out_file)?;
@@ -45,10 +55,13 @@ pub fn write_to_file_or_println(
     Ok(())
 }
 
+/// Errors for Cardano CLI wrapper
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// On any parsing error
     #[error(transparent)]
     Parsing(#[from] serde_json::Error),
+    /// On any IO related error
     #[error(transparent)]
     Io(#[from] std::io::Error),
 }

@@ -4,30 +4,44 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::fmt;
 
+/// Arbitrary blockchain tip
+#[must_use]
 pub fn tip() -> Tip {
-    Default::default()
+    Tip::default()
 }
 
+/// Arbitraty query utxo response
+#[must_use]
 pub fn utxo() -> QueryUTxO {
-    Default::default()
+    QueryUTxO::default()
 }
 
+/// Arbitrary hash
+#[must_use]
 pub fn hash() -> String {
     "a3a93043d015e9bb089b1a90d59b1922dffb9684b5c64a61426b6134e348123d".to_string()
 }
 
+/// Arbitrary address
+#[must_use]
 pub fn address() -> String {
     "addr1q9e0wsxghc395p8e3ff0zx2gdzurveq0pcu68lyq2z59vc5squl6qr0re0pe2x5syq7j5qf77q6s7zl43nass8u85vgscexsev".to_string()
 }
 
+/// Arbitrary stake address
+#[must_use]
 pub fn stake_address() -> String {
     "stake1uxgqw0aqph3uhsu4r2gzq0f2qyl0qdg0p06ce7cgr7r6xygwmtwku".to_string()
 }
 
+/// Arbitrary Response from Cardano CLI on submit transaction command
+#[must_use]
 pub fn submit() -> String {
     "Transaction successfully submitted.".to_string()
 }
 
+/// Response from transaction sign command
+#[must_use]
 pub fn sign() -> String {
     "{\
         \"type\": \"TxSignedShelley\", \
@@ -36,13 +50,20 @@ pub fn sign() -> String {
     }".to_string()
 }
 
+/// Helper struct which imitates response from tip
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Tip {
+    /// tip hash
     pub hash: String,
+    /// tip block height
     pub block: u64,
+    /// tip slot
     pub slot: u64,
+    /// tip sync progress
     pub sync_progress: String,
+    /// tip era
     pub era: String,
+    /// tip epoch
     pub epoch: u64,
 }
 
@@ -50,8 +71,8 @@ impl Default for Tip {
     fn default() -> Self {
         Self {
             hash: hash(),
-            block: 6589745,
-            slot: 47163888,
+            block: 6_589_745,
+            slot: 47_163_888,
             sync_progress: "100.00".to_string(),
             era: "Alonzo".to_string(),
             epoch: 306,
@@ -59,13 +80,18 @@ impl Default for Tip {
     }
 }
 
+/// Helper struct which imitates response from utxo
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UTxO {
+    /// Utxo tx hash
     pub tx_hash: String,
+    /// Utxo tx id
     pub tx_ix: u64,
+    /// Utxo ada amount
     pub amount: u64,
 }
 
+/// Helper struct which imitates response from query utxo
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct QueryUTxO {
     utxos: Vec<UTxO>,
@@ -104,72 +130,76 @@ impl Default for QueryUTxO {
                     tx_hash: "61d47e568b1502064906e977aae848c7aec9a76f97e7d11ad5d752e95c438011"
                         .to_string(),
                     tx_ix: 0,
-                    amount: 1379280,
+                    amount: 1_379_280,
                 },
                 UTxO {
                     tx_hash: "ac1d8802a4e100d90ce59fb4e4573f1c7884a65197ff39810a88eb0b07de3aa6"
                         .to_string(),
                     tx_ix: 0,
-                    amount: 30000000,
+                    amount: 30_000_000,
                 },
                 UTxO {
                     tx_hash: "69818d49963ffafe8a287ec270d05ba89493de33ddf7b5b9bcb07e97802a0f28"
                         .to_string(),
                     tx_ix: 0,
-                    amount: 5573009,
+                    amount: 5_573_009,
                 },
                 UTxO {
                     tx_hash: "fba1526c49684722199b102bffd5b4a66ea1d490605532753fa24e12af925722"
                         .to_string(),
                     tx_ix: 0,
-                    amount: 5000000,
+                    amount: 5_000_000,
                 },
             ],
         }
     }
 }
 
+/// Arbitrary protocol parameters
+#[must_use]
 pub fn protocol_parameters() -> Value {
     json!({
         "txFeePerByte": 44,
-        "minUTxOValue": 34482,
+        "minUTxOValue": 34_482,
         "decentralization": 0,
-        "utxoCostPerWord": 34482,
-        "stakePoolDeposit": 500000000,
+        "utxoCostPerWord": 34_482,
+        "stakePoolDeposit": 500_000_000,
         "poolRetireMaxEpoch": 18,
         "extraPraosEntropy": null,
         "collateralPercentage": 150,
         "stakePoolTargetNum": 500,
-        "maxBlockBodySize": 73728,
-        "minPoolCost": 340000000,
-        "maxTxSize": 16384,
+        "maxBlockBodySize": 73_728,
+        "minPoolCost": 340_000_000,
+        "maxTxSize": 16_384,
         "treasuryCut": 0.2,
         "maxBlockExecutionUnits": {
-        "memory": 50000000,
-        "steps": 4000000
+        "memory": 50_000_000,
+        "steps": 4_000_000
         },
         "maxCollateralInputs": 3,
-        "maxValueSize": 5000,
-        "maxBlockHeaderSize": 1100,
+        "maxValueSize": 5_000,
+        "maxBlockHeaderSize": 1_100,
         "maxTxExecutionUnits": {
-        "memory": 11250000,
-        "steps": 1000000
+        "memory": 11_250_000,
+        "steps": 1_000_000
         },
         "costModels": {},
         "protocolVersion": {
         "minor": 0,
         "major": 6
         },
-        "txFeeFixed": 155381,
-        "stakeAddressDeposit": 2000000,
+        "txFeeFixed": 155_381,
+        "stakeAddressDeposit": 2_000_000,
         "monetaryExpansion": 0.003,
         "poolPledgeInfluence": 0.3,
         "executionUnitPrices": {
-        "priceSteps": 0.0000721,
-        "priceMemory": 0.0577
+        "priceSteps": 0.000_072_1,
+        "priceMemory": 0.057_7
     }})
 }
 
+/// Arbitrary stake certificate
+#[must_use]
 pub fn stake_certificate() -> String {
     "type: CertificateShelley \
     description: Stake Registration Certificate \
@@ -182,6 +212,8 @@ pub fn stake_certificate() -> String {
         .to_string()
 }
 
+/// Arbitrary transaction
+#[must_use]
 pub fn transaction() -> String {
     "[{0: [[h'C2642218EF9C5B2BC1EF66BF27C37640C0DFD159A0274C8100C852CA0B03D484', 1]], 1: [[h'01B2344AB02D3DB07A62D640E2BA6F307CB02F3BB8196E81FE68BE8B780C39E651F9564FEFB52309B211E6F5A96BE9EE2A773AEC691219789E', 0]], 2: 0, 3: 25000000}, null]".to_string()
 }

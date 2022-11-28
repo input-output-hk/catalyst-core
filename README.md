@@ -9,11 +9,11 @@
     <img src="https://github.com/input-output-hk/catalyst-core/actions/workflows/ci_tests.yml/badge.svg" alt="Current CI Status." />
   </a>
   
-   <a href="https://github.com/input-output-hk/catalyst-core/main/LICENSE">
+   <a href="https://github.com/input-output-hk/catalyst-core#license">
     <img src="https://img.shields.io/badge/license-MIT%2FApache--2.0-blue" alt="Catalyst Core is released under either of Apache License, Version 2.0 or MIT license at your option.." />
   </a>
 
-  <a href="https://github.com/input-output-hk/catalyst-core/main/CODE_OF_CONDUCT.md">
+  <a href="https://github.com/input-output-hk/catalyst-core/blob/main/CODE_OF_CONDUCT.md">
     <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome!" />
   </a>
 </p>

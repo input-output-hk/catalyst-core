@@ -14,7 +14,7 @@ pub fn token_validation() -> Result<(), Box<dyn std::error::Error>> {
     let db_path = DbBuilder::new().with_token(token).build(&temp_dir).unwrap();
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .with_api_tokens(true)
         .start(&temp_dir)
         .unwrap();

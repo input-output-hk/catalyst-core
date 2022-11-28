@@ -78,7 +78,7 @@ pub fn quick_start(temp_dir: &TempDir) -> Result<(Server, Snapshot), ServerBoots
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(temp_dir)?;
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .start(temp_dir)?;
 
     if !server.is_up(&snapshot.token_hash()) {
@@ -88,6 +88,6 @@ pub fn quick_start(temp_dir: &TempDir) -> Result<(Server, Snapshot), ServerBoots
     Ok((server, snapshot))
 }
 
-pub fn empty_db(temp_dir: &TempDir) -> PathBuf {
+pub fn empty_db(temp_dir: &TempDir) -> String {
     DbBuilder::new().build(temp_dir).unwrap()
 }

@@ -23,17 +23,28 @@ pub struct SearchCountQuery {
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
-pub struct Constraint {
-    pub search: String,
-    pub column: Column,
+#[serde(untagged)]
+pub enum Constraint {
+    Text {
+        search: String,
+        column: Column,
+    },
+    Range {
+        lower: Option<i64>,
+        upper: Option<i64>,
+        column: Column,
+    },
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
-pub struct OrderBy {
-    pub column: Column,
-    #[serde(default)]
-    pub descending: bool,
+pub enum OrderBy {
+    Column {
+        column: Column,
+        #[serde(default)]
+        descending: bool,
+    },
+    Random,
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
@@ -51,6 +62,7 @@ pub enum Column {
     Desc,
     Author,
     Funds,
+    ImpactScore,
 }
 
 #[derive(Debug, Clone, Serialize)]

@@ -21,7 +21,7 @@ jobs:
   #       totalShards: [4]
   #   env:
   #     CARGO_FLAGS: --verbose --locked --features systemd gelf
-  #   steps: 
+  #   steps:
   #     - name: Checkout code
   #       uses: actions/checkout@v3
   #       with:
@@ -54,7 +54,7 @@ jobs:
   #   runs-on: ubuntu-latest
   #   env:
   #     CARGO_FLAGS: --verbose --locked
-  #   steps: 
+  #   steps:
   #     - name: Checkout code
   #       uses: actions/checkout@v3
   #       with:
@@ -82,7 +82,6 @@ jobs:
   #           --exclude vit-servicing-station-server \
   #           --exclude catalyst-toolbox \
   #           --exclude "chain-*" \
-
 
   vit_servicing_station:
     runs-on: ubuntu-latest
@@ -117,7 +116,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CARGO_FLAGS: --verbose --locked
-    steps: 
+    steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
@@ -161,7 +160,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CARGO_FLAGS: --verbose --locked
-    steps: 
+    steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
@@ -178,10 +177,35 @@ jobs:
         with:
           toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
       - run: cargo nextest run -p "chain-*"
+
+  wallet-js-binding:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+
+    - uses: jetli/wasm-pack-action@v0.3.0
+      with:
+        version: 'latest'
+
+    - name: Build wasm package
+      run: |
+        cd src/chain-wallet-libs/bindings/wallet-js
+        wasm-pack build --release --target=nodejs -d pkg
+
+    - name: JS tests
+      run: |
+        cd src/chain-wallet-libs/bindings/wallet-js/js-test
+        npm install
+        npm test
+
   clippy:
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v3
         with:

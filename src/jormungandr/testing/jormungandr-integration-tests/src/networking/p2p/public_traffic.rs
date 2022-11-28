@@ -27,6 +27,8 @@ const PUBLIC_NODE: &str = "PUBLIC";
 const INTERNAL_NODE: &str = "INTERNAL";
 const INTERNAL_NODE_2: &str = "INTERNAL_2";
 const INTERNAL_NODE_3: &str = "INTERNAL_3";
+const INTERNAL_NODE_4: &str = "INTERNAL_4";
+const LEADER: &str = "LEADER";
 
 const ALICE: &str = "ALICE";
 const BOB: &str = "BOB";
@@ -209,7 +211,7 @@ pub fn test_public_node_cannot_publish() {
                 .with_node(Node::new(INTERNAL_NODE))
                 .with_node(Node::new(INTERNAL_NODE_2).with_trusted_peer(INTERNAL_NODE))
                 .with_node(Node::new(INTERNAL_NODE_3).with_trusted_peer(INTERNAL_NODE_2))
-                .with_node(Node::new(GATEWAY).with_trusted_peer(INTERNAL_NODE_3))
+                .with_node(Node::new(GATEWAY).with_trusted_peer(INTERNAL_NODE))
                 .with_node(Node::new(PUBLIC_NODE).with_trusted_peer(GATEWAY)),
         )
         .blockchain_config(BlockchainConfiguration::default().with_leader(INTERNAL_NODE))
@@ -273,15 +275,15 @@ pub fn test_public_node_cannot_publish() {
             SpawnParams::new(PUBLIC_NODE)
                 .gossip_interval(Duration::new(1, 0))
                 .public_address(address)
-                .allow_private_addresses(true),
+                .allow_private_addresses(false),
         )
         .unwrap();
 
     let mut alice = network_controller.controlled_wallet(ALICE).unwrap();
     let mut bob = network_controller.controlled_wallet(BOB).unwrap();
 
-    // public node sends fragments to gateway
-    let fragment_sender = FragmentSender::from(&_client_public.rest().settings().unwrap());
+    // public node sends fragments to network
+    let fragment_sender = FragmentSender::from(&network_controller.settings().block0);
 
     match fragment_sender.send_transactions_round_trip(
         5,
@@ -294,14 +296,17 @@ pub fn test_public_node_cannot_publish() {
         Err(err) => panic!("{:?}", err),
     };
 
-    utils::wait(30);
+    // public node should not propagate state
 
-    // fragments will be rejected by internal nodes as they do not accept global gossip
-    // consensus will be stabilized after a period of time with no global mutation i.e public nodes cannot publish
+    println!(
+        "a {:?}  {:?}",
+        _client_public.rest().account_state(&alice.account_id()),
+        _client_public.rest().account_state(&bob.account_id()),
+    );
 
-    ensure_nodes_are_in_sync(
-        SyncWaitParams::ZeroWait,
-        &[&_client_internal_3, &_client_internal_2, &_client_internal],
-    )
-    .unwrap();
+    println!(
+        "a {:?}  {:?}",
+        _client_internal.rest().account_state(&alice.account_id()),
+        _client_internal.rest().account_state(&bob.account_id()),
+    );
 }

@@ -179,7 +179,7 @@ jobs:
       - run: cargo nextest run -p "chain-*"
 
   wallet-js-binding:
-    name: Tests
+    name: Wallet JS Binding Tests
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -197,7 +197,7 @@ jobs:
         cd src/chain-wallet-libs/bindings/wallet-js
         wasm-pack build --release --target=nodejs -d pkg
 
-    - name: JS tests
+    - name: Run JS tests
       run: |
         cd src/chain-wallet-libs/bindings/wallet-js/js-test
         npm install

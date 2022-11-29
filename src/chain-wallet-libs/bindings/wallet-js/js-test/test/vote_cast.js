@@ -1,7 +1,5 @@
 var assert = require("assert");
 
-const MAX_LANES = 8;
-
 const private_key = Buffer.from(
   "c86596c2d1208885db1fe3658406aa0f7cc7b8e13c362fe46a6db277fc5064583e487588c98a6c36e2e7445c0add36f83f171cb5ccfd815509d19cd38ecb0af3",
   "hex"
@@ -13,18 +11,8 @@ const block0 = Buffer.from(
 );
 
 function generate_wallet(wasm_wallet) {
-  let wallet = wasm_wallet.Wallet.import_key(private_key);
-
-  let spending_counters = wasm_wallet.SpendingCounters.new();
-  for (let lane = 0; lane < MAX_LANES; lane++) {
-    let spending_counter = wasm_wallet.SpendingCounter.new(lane, 1);
-    spending_counters.add(spending_counter);
-  }
-
-  wallet.set_state(BigInt(1000), spending_counters);
-
+  let wallet = new wasm_wallet.Wallet(private_key, BigInt(1000));
   assert(wallet.total_value() === BigInt(1000));
-
   return wallet;
 }
 
@@ -39,25 +27,18 @@ describe("vote cast certificate tests", function () {
 
     let wallet = generate_wallet(wasm_wallet);
     let settings = generate_settings(wasm_wallet);
-    let vote_plan = wasm_wallet.VotePlanId.from_bytes(
+    let vote = wasm_wallet.Vote.public(
       Buffer.from(
         "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "hex"
-      )
+      ),
+      8,
+      0
     );
-    let payload = wasm_wallet.Payload.new_public(0);
-    let vote_cast = wasm_wallet.VoteCast.new(vote_plan, 8, payload);
 
     let block_date = wasm_wallet.BlockDate.new(0, 1);
-    let certificate = wasm_wallet.Certificate.vote_cast(vote_cast);
-    let fragment = wallet.sign_transaction(
-      settings,
-      block_date,
-      0,
-      certificate
-    );
-
-    wallet.confirm_transaction(fragment.id());
+    let fragments = wallet.signVotes([vote], settings, block_date, 0);
+    assert(fragments.length == 1);
   });
 
   it("private", async function () {
@@ -65,15 +46,12 @@ describe("vote cast certificate tests", function () {
 
     let wallet = generate_wallet(wasm_wallet);
     let settings = generate_settings(wasm_wallet);
-
-    let vote_plan = wasm_wallet.VotePlanId.from_bytes(
+    let vote = wasm_wallet.Vote.private(
       Buffer.from(
         "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "hex"
-      )
-    );
-    let payload = wasm_wallet.Payload.new_private(
-      vote_plan,
+      ),
+      8,
       4,
       0,
       Buffer.from(
@@ -82,23 +60,8 @@ describe("vote cast certificate tests", function () {
       )
     );
 
-    vote_plan = wasm_wallet.VotePlanId.from_bytes(
-      Buffer.from(
-        "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
-        "hex"
-      )
-    );
-    let vote_cast = wasm_wallet.VoteCast.new(vote_plan, 8, payload);
-
     let block_date = wasm_wallet.BlockDate.new(0, 1);
-    let certificate = wasm_wallet.Certificate.vote_cast(vote_cast);
-    let fragment = wallet.sign_transaction(
-      settings,
-      block_date,
-      0,
-      certificate
-    );
-
-    wallet.confirm_transaction(fragment.id());
+    let fragments = wallet.signVotes([vote], settings, block_date, 0);
+    assert(fragments.length == 1);
   });
 });

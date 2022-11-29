@@ -13,7 +13,7 @@ const block0 = Buffer.from(
 );
 
 function generate_wallet(wasm_wallet) {
-  let wallet = wasm_wallet.Wallet.import_keys(private_key);
+  let wallet = wasm_wallet.Wallet.import_key(private_key);
 
   let spending_counters = wasm_wallet.SpendingCounters.new();
   for (let lane = 0; lane < MAX_LANES; lane++) {

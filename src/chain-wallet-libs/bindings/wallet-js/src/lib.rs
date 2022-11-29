@@ -64,15 +64,11 @@ impl_collection!(SpendingCounters, SpendingCounter);
 
 #[wasm_bindgen]
 impl Wallet {
-    /// Imports private keys to create a wallet.
+    /// Imports private key to create a wallet.
     ///
     /// The `account` parameter gives the Ed25519Extended private key
     /// of the account.
-    ///
-    /// The `keys` parameter should be a concatenation of Ed25519Extended
-    /// private keys that will be used to retrieve the associated UTxOs.
-    /// Pass an empty buffer when this functionality is not needed.
-    pub fn import_keys(account: &[u8]) -> Result<Wallet, JsValue> {
+    pub fn import_key(account: &[u8]) -> Result<Wallet, JsValue> {
         wallet_core::Wallet::recover_free_keys(account)
             .map_err(|e| JsValue::from(e.to_string()))
             .map(Wallet)

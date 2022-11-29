@@ -35,6 +35,8 @@ pub async fn search_count_db(
         .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
 }
 
+no_arg_sql_function!(RANDOM, ());
+
 type ChallengesSelectST = (
     diesel::sql_types::Integer,
     diesel::sql_types::Integer,
@@ -65,25 +67,35 @@ fn build_challenges_query<'a, DB: 'a + Backend>(
 
     let mut query = challenges.into_boxed();
 
-    for Constraint { search, column } in filter {
-        let search = format!("%{search}%");
-        query = match column {
-            Title => query.filter(title.like(search)),
-            Desc => query.filter(description.like(search)),
-            Type => query.filter(challenge_type.like(search)),
-            _ => return Err(HandleError::BadRequest("invalid column".to_string())),
+    for constraint in filter {
+        match constraint {
+            Constraint::Text { search, column } => {
+                let search = format!("%{search}%");
+                query = match column {
+                    Title => query.filter(title.like(search)),
+                    Desc => query.filter(description.like(search)),
+                    Type => query.filter(challenge_type.like(search)),
+                    _ => return Err(HandleError::BadRequest("invalid column".to_string())),
+                }
+            }
+            Constraint::Range { .. } => {
+                return Err(HandleError::BadRequest("invalid constraint".to_string()));
+            }
         }
     }
 
-    for OrderBy { column, descending } in order_by {
-        query = match (descending, column) {
-            (false, Title) => query.then_order_by(title),
-            (false, Desc) => query.then_order_by(description),
-            (false, Type) => query.then_order_by(challenge_type),
-            (true, Title) => query.then_order_by(title.desc()),
-            (true, Desc) => query.then_order_by(description.desc()),
-            (true, Type) => query.then_order_by(challenge_type.desc()),
-            _ => return Err(HandleError::BadRequest("invalid column".to_string())),
+    for order in order_by {
+        query = match order {
+            OrderBy::Random => query.then_order_by(RANDOM),
+            OrderBy::Column { column, descending } => match (descending, column) {
+                (false, Title) => query.then_order_by(title),
+                (false, Desc) => query.then_order_by(description),
+                (false, Type) => query.then_order_by(challenge_type),
+                (true, Title) => query.then_order_by(title.desc()),
+                (true, Desc) => query.then_order_by(description.desc()),
+                (true, Type) => query.then_order_by(challenge_type.desc()),
+                _ => return Err(HandleError::BadRequest("invalid column".to_string())),
+            },
         }
     }
     Ok(query)
@@ -143,27 +155,51 @@ fn build_proposals_query<'a, DB: 'a + Backend>(
 
     let mut query = proposals.into_boxed();
 
-    for Constraint { search, column } in filter {
-        let search = format!("%{search}%");
-        query = match column {
-            Title => query.filter(proposal_title.like(search)),
-            Desc => query.filter(proposal_summary.like(search)),
-            Author => query.filter(proposer_name.like(search)),
-            _ => return Err(HandleError::BadRequest("invalid column".to_string())),
+    for constraint in filter {
+        match constraint {
+            Constraint::Text { search, column } => {
+                let search = format!("%{search}%");
+                query = match column {
+                    Title => query.filter(proposal_title.like(search)),
+                    Desc => query.filter(proposal_summary.like(search)),
+                    Author => query.filter(proposer_name.like(search)),
+                    _ => return Err(HandleError::BadRequest("invalid column".to_string())),
+                }
+            }
+            Constraint::Range {
+                lower,
+                upper,
+                column,
+            } => {
+                let lower = lower.unwrap_or(i64::MIN);
+                let upper = upper.unwrap_or(i64::MAX);
+                query = match column {
+                    ImpactScore => query
+                        .filter(proposal_impact_score.ge(lower))
+                        .filter(proposal_impact_score.le(upper)),
+                    Funds => query
+                        .filter(proposal_funds.ge(lower))
+                        .filter(proposal_funds.le(upper)),
+                    _ => return Err(HandleError::BadRequest("invalid column".to_string())),
+                };
+            }
         }
     }
 
-    for OrderBy { column, descending } in order_by {
-        query = match (descending, column) {
-            (false, Title) => query.then_order_by(proposal_title),
-            (false, Desc) => query.then_order_by(proposal_summary),
-            (false, Author) => query.then_order_by(proposer_name),
-            (false, Funds) => query.then_order_by(proposal_funds),
-            (true, Title) => query.then_order_by(proposal_title.desc()),
-            (true, Desc) => query.then_order_by(proposal_summary.desc()),
-            (true, Author) => query.then_order_by(proposer_name.desc()),
-            (true, Funds) => query.then_order_by(proposal_funds.desc()),
-            _ => return Err(HandleError::BadRequest("invalid column".to_string())),
+    for order in order_by {
+        query = match order {
+            OrderBy::Random => query.then_order_by(RANDOM),
+            OrderBy::Column { column, descending } => match (descending, column) {
+                (false, Title) => query.then_order_by(proposal_title),
+                (false, Desc) => query.then_order_by(proposal_summary),
+                (false, Author) => query.then_order_by(proposer_name),
+                (false, Funds) => query.then_order_by(proposal_funds),
+                (true, Title) => query.then_order_by(proposal_title.desc()),
+                (true, Desc) => query.then_order_by(proposal_summary.desc()),
+                (true, Author) => query.then_order_by(proposer_name.desc()),
+                (true, Funds) => query.then_order_by(proposal_funds.desc()),
+                _ => return Err(HandleError::BadRequest("invalid column".to_string())),
+            },
         }
     }
     Ok(query)

@@ -11,7 +11,7 @@ pub fn non_existing_block0_file() -> Result<(), Box<dyn std::error::Error>> {
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .start(&temp_dir)?;
 
     assert!(server.is_up(&snapshot.any_token().0));
@@ -25,7 +25,7 @@ pub fn malformed_path() -> Result<(), Box<dyn std::error::Error>> {
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .with_block0_path("C:/tmp/a:/block0.bin")
         .start(&temp_dir)?;
 
@@ -41,7 +41,7 @@ pub fn network_path() -> Result<(), Box<dyn std::error::Error>> {
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .with_block0_path("//tmp/block0.bin")
         .start(&temp_dir)?;
 

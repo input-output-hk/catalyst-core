@@ -9,8 +9,8 @@ pub async fn control_filter(
     context: ContextLock,
     root: BoxedFilter<()>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    let working_dir = context.lock().unwrap().working_dir();
-    let is_token_enabled = context.lock().unwrap().api_token().is_some();
+    let working_dir = context.read().unwrap().working_dir();
+    let is_token_enabled = context.read().unwrap().api_token().is_some();
 
     let with_context = warp::any().map(move || context.clone());
 
@@ -23,22 +23,6 @@ pub async fn control_filter(
             .boxed()
     } else {
         warp::any().boxed()
-    };
-
-    let logs = {
-        let root = warp::path!("logs" / ..).boxed();
-
-        let list = warp::path!("get")
-            .and(warp::get())
-            .and(with_context.clone())
-            .and_then(logs_get);
-
-        let clear = warp::path!("clear")
-            .and(warp::post())
-            .and(with_context.clone())
-            .and_then(logs_clear);
-
-        root.and(clear.or(list)).boxed()
     };
 
     let files = {
@@ -226,5 +210,5 @@ pub async fn control_filter(
         )
         .boxed()
     };
-    root.and(api_token_filter).and(command.or(files).or(logs))
+    root.and(api_token_filter).and(command.or(files))
 }

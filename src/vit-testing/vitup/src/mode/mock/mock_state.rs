@@ -11,6 +11,7 @@ use hersir::{builder::Wallet as WalletSettings, config::SessionSettings};
 use jormungandr_lib::interfaces::{NodeState, NodeStats, NodeStatsDto};
 use thiserror::Error;
 use thor::WalletAlias;
+use tracing::{info, span, Level};
 use valgrind::VitVersion;
 use vit_servicing_station_lib::db::models::funds::Fund;
 use vit_servicing_station_tests::common::data::ArbitrarySnapshotGenerator;
@@ -34,15 +35,24 @@ pub struct MockState {
 
 impl MockState {
     pub fn new(params: Config, config: MockConfig) -> Result<Self, Error> {
+        let span = span!(Level::INFO, "mock state");
+        let _enter = span.enter();
+
+        info!("building default voting event");
+
         if config.working_dir.exists() {
             std::fs::remove_dir_all(&config.working_dir)?;
         }
+
         let session_settings = SessionSettings::from_dir(&config.working_dir);
         let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
         let (controller, vit_parameters) = VitBackendSettingsBuilder::default()
             .config(&params)
             .session_settings(session_settings)
+            .span(span!(Level::INFO, "voting data builder"))
             .build()?;
+
+        info!("building default voting event done");
 
         let mut generator = ValidVotePlanGenerator::new(vit_parameters);
         let mut vit_state = generator.build(&mut template_generator);

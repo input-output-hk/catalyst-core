@@ -3,7 +3,7 @@ use crate::model::{
     Delegations, Reg, RegoMetadata, RegoSignature, RewardsAddr, Signature, SlotNo, StakeVKey, TxId,
     VotingPurpose,
 };
-use bigdecimal::BigDecimal;
+use bigdecimal::{BigDecimal, FromPrimitive};
 use cardano_serialization_lib::address::Address;
 use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey};
 use mainnet_lib::{
@@ -63,7 +63,19 @@ impl DataProvider for MockDbProvider {
                             if let Ok(data) = metadata.as_bytes() {
                                 Delegations::Legacy(hex::encode(data))
                             } else {
-                                Delegations::Delegated(vec![])
+                                let mut delegations = vec![];
+                                let delgation_list = metadata.as_list().unwrap();
+                                for i in 0..delgation_list.len() {
+                                    let inner_list = delgation_list.get(i).as_list().unwrap();
+
+                                    let delegation = inner_list.get(0).as_bytes().unwrap();
+                                    let weight = inner_list.get(1).as_int().unwrap();
+                                    let weight =
+                                        u32::from_i32(weight.as_i32_or_fail().unwrap()).unwrap();
+                                    delegations.push((hex::encode(delegation), weight));
+                                }
+
+                                Delegations::Delegated(delegations)
                             }
                         };
 

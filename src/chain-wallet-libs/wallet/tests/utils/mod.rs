@@ -1,3 +1,5 @@
+#![allow(clippy::result_large_err)]
+
 use chain_impl_mockchain::{
     accounting::account::SpendingCounterIncreasing,
     block::Block,

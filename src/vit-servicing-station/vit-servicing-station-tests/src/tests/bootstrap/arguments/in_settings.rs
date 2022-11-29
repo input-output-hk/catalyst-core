@@ -48,7 +48,7 @@ pub fn in_settings_file_malformed() {
     let mut settings_builder: ServerSettingsBuilder = Default::default();
     let settings = settings_builder
         .with_random_localhost_address()
-        .with_db_path(empty_db(&temp_dir).to_str().unwrap())
+        .with_db_path(empty_db(&temp_dir))
         .with_block0_path(BLOCK0_BIN)
         .build();
 
@@ -89,8 +89,6 @@ pub fn in_settings_file_with_malformed_path() {
 
 #[test]
 pub fn db_url_and_block0_replaced() -> Result<(), Box<dyn std::error::Error>> {
-    let temp_dir = TempDir::new().unwrap();
-
     let (_, token) = data::token();
 
     let mut gen = ArbitrarySnapshotGenerator::default();
@@ -98,6 +96,7 @@ pub fn db_url_and_block0_replaced() -> Result<(), Box<dyn std::error::Error>> {
     let proposals = gen.proposals(&funds);
     let groups = gen.groups(&funds);
 
+    let temp_dir = TempDir::new().unwrap();
     let db_path = DbBuilder::new()
         .with_token(token)
         .with_groups(groups)
@@ -106,7 +105,7 @@ pub fn db_url_and_block0_replaced() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut command_builder: BootstrapCommandBuilder = Default::default();
     command_builder
-        .block0_path(Some(db_path.to_str().unwrap().to_owned()))
+        .block0_path(Some(db_path))
         .db_url(BLOCK0_BIN)
         .build()
         .assert()

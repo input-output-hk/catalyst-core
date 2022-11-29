@@ -137,7 +137,7 @@ jobs:
       - run: cargo nextest run -p catalyst-toolbox -p snapshot-lib
 
   voting_tools:
-    name: Voting Toolss Tests
+    name: Voting Tools Tests
     runs-on: ubuntu-latest
     env:
       CARGO_FLAGS: --verbose --locked

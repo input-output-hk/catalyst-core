@@ -84,10 +84,11 @@ jobs:
   #           --exclude "chain-*" \
 
   vit_servicing_station:
+    name: Vit Servicing Station Tests
     runs-on: ubuntu-latest
     env:
       CARGO_FLAGS: --verbose --locked
-    steps: 
+    steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
@@ -113,6 +114,7 @@ jobs:
             --retries 10
 
   catalyst_toolbox:
+    name: Catalyst Toolbox Tests
     runs-on: ubuntu-latest
     env:
       CARGO_FLAGS: --verbose --locked
@@ -135,10 +137,11 @@ jobs:
       - run: cargo nextest run -p catalyst-toolbox -p snapshot-lib
 
   voting_tools:
+    name: Voting Toolss Tests
     runs-on: ubuntu-latest
     env:
       CARGO_FLAGS: --verbose --locked
-    steps: 
+    steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
@@ -157,6 +160,7 @@ jobs:
       - run: cargo nextest run -p voting_tools_rs
 
   chain-libs:
+    name: Chain Libs Tests
     runs-on: ubuntu-latest
     env:
       CARGO_FLAGS: --verbose --locked
@@ -204,6 +208,7 @@ jobs:
         npm test
 
   clippy:
+    name: Clippy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

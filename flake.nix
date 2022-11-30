@@ -39,10 +39,22 @@
     }
     {
       devShells = std.harvest inputs.self ["automation" "devshells"];
-      # packages = std.harvest inputs.self [
-      # ];
-      # containers = std.harvest inputs.self [
-      # ];
+      packages = std.harvest inputs.self [
+        ["artifacts" "packages"]
+        ["catalyst-toolbox" "packages"]
+        ["chain-libs" "packages"]
+        ["chain-wallet-libs" "packages"]
+        ["jormungandr" "packages"]
+        ["jortestkit" "packages"]
+        ["vit-servicing-station" "packages"]
+        ["vit-testing" "packages"]
+        ["voting-tools-rs" "packages"]
+      ];
+      containers = std.harvest inputs.self [
+        ["jormungandr" "containers"]
+        ["vit-servicing-station" "containers"]
+        ["vit-testing" "containers"]
+      ];
     };
 
   nixConfig = {

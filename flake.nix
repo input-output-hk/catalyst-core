@@ -29,6 +29,7 @@
       cellBlocks = [
         (std.blockTypes.containers "containers")
         (std.blockTypes.devshells "devshells")
+        (std.blockTypes.functions "constants")
         (std.blockTypes.functions "lib")
         (std.blockTypes.functions "toolchains")
         (std.blockTypes.installables "packages")

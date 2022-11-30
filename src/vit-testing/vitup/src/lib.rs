@@ -1,5 +1,6 @@
 #![recursion_limit = "256"]
 #![allow(clippy::result_large_err)]
+#![allow(opaque_hidden_inferred_bound)]
 
 pub mod builders;
 pub mod cli;

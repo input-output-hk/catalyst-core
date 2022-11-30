@@ -1,3 +1,4 @@
+#![allow(opaque_hidden_inferred_bound)]
 mod client;
 mod config;
 mod context;

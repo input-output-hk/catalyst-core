@@ -1,3 +1,5 @@
+// #![warn(clippy::all)]
+// #![deny(missing_docs)]
 pub mod era;
 pub mod timeframe;
 pub mod timeline;
@@ -10,3 +12,4 @@ pub use units::DurationSeconds;
 
 #[cfg(any(test, feature = "property-test-api"))]
 pub mod testing;
+

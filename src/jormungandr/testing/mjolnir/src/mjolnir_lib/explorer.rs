@@ -24,7 +24,7 @@ pub struct ExplorerLoadCommand {
     #[structopt(short = "e", long = "endpoint")]
     pub endpoint: String,
 
-    /// Amount of delay [milliseconds] between sync attempts
+    /// Amount of delay (in milliseconds) between sync attempts
     #[structopt(long = "delay", default_value = "50")]
     pub delay: u64,
 

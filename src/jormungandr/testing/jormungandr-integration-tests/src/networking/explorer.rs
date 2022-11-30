@@ -76,27 +76,28 @@ pub fn passive_node_explorer() {
     let mut bob = controller.controlled_wallet(BOB).unwrap();
     let mut clarice = controller.controlled_wallet(CLARICE).unwrap();
     let mut mem_pool_checks = Vec::new();
+    let fragment_sender = FragmentSender::from(&controller.settings().block0);
 
     mem_pool_checks.push(
-        FragmentSender::from(&controller.settings().block0)
+        fragment_sender
             .send_transaction(&mut alice, &bob, &leader_1, 1_000.into())
             .unwrap(),
     );
 
     mem_pool_checks.push(
-        FragmentSender::from(&controller.settings().block0)
+        fragment_sender
             .send_transaction(&mut bob, &alice, &leader_2, 1_000.into())
             .unwrap(),
     );
 
     mem_pool_checks.push(
-        FragmentSender::from(&controller.settings().block0)
+        fragment_sender
             .send_transaction(&mut bob, &alice, &leader_3, 1_000.into())
             .unwrap(),
     );
 
     mem_pool_checks.push(
-        FragmentSender::from(&controller.settings().block0)
+        fragment_sender
             .send_transaction(&mut clarice, &alice, &leader_3, 1_000.into())
             .unwrap(),
     );
@@ -184,26 +185,28 @@ pub fn explorer_passive_node_leaders_shutdown() {
     let mut clarice = controller.controlled_wallet(CLARICE).unwrap();
     let mut mem_pool_checks = Vec::new();
 
+    let fragment_sender = FragmentSender::from(&controller.settings().block0);
+
     mem_pool_checks.push(
-        FragmentSender::from(&controller.settings().block0)
+        fragment_sender
             .send_transaction(&mut alice, &bob, &leader_1, 1_000.into())
             .unwrap(),
     );
 
     mem_pool_checks.push(
-        FragmentSender::from(&controller.settings().block0)
+        fragment_sender
             .send_transaction(&mut bob, &alice, &leader_2, 1_000.into())
             .unwrap(),
     );
 
     mem_pool_checks.push(
-        FragmentSender::from(&controller.settings().block0)
+        fragment_sender
             .send_transaction(&mut bob, &alice, &leader_3, 1_000.into())
             .unwrap(),
     );
 
     mem_pool_checks.push(
-        FragmentSender::from(&controller.settings().block0)
+        fragment_sender
             .send_transaction(&mut clarice, &alice, &leader_3, 1_000.into())
             .unwrap(),
     );

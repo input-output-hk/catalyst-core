@@ -205,7 +205,7 @@ jobs:
           toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
       - run: cargo nextest run -p jormungandr
 
-jormungandr integration:
+  jormungandr-integration:
     name: Jormungandr Integration Tests
     runs-on: ubuntu-latest
     env:

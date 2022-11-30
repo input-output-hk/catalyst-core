@@ -6,8 +6,8 @@ mod transaction;
 pub use address::Address;
 pub use query::Query;
 pub use stake_address::StakeAddress;
-pub use transaction::Transaction;
 use std::process::Command;
+pub use transaction::Transaction;
 
 pub struct Root {
     command: Command,

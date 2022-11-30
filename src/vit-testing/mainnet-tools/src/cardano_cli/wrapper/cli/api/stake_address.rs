@@ -1,9 +1,9 @@
+use crate::cardano_cli::wrapper::cli::command;
+use crate::cardano_cli::wrapper::Error;
+use snapshot_trigger_service::config::NetworkType;
 use std::io::Write;
 use std::path::Path;
 use std::process::ExitStatus;
-use snapshot_trigger_service::config::NetworkType;
-use crate::cardano_cli::wrapper::cli::command;
-use crate::cardano_cli::wrapper::Error;
 
 pub struct StakeAddress {
     stake_address_command: command::StakeAddress,

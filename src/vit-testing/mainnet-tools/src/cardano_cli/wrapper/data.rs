@@ -1,9 +1,9 @@
 #![allow(dead_code)]
 
 use super::error::Error;
+use crate::cardano_cli::wrapper::utils::write_content;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use crate::cardano_cli::wrapper::utils::write_content;
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
 pub struct CardanoKeyTemplate {

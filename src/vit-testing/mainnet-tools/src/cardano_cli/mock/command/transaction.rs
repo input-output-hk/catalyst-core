@@ -1,10 +1,10 @@
+use crate::cardano_cli::mock::command::write_to_file_or_println;
+use crate::cardano_cli::mock::fake;
 use std::fs::File;
 use std::io;
 use std::io::Write;
 use std::path::PathBuf;
 use structopt::StructOpt;
-use crate::cardano_cli::mock::command::write_to_file_or_println;
-use crate::cardano_cli::mock::fake;
 
 #[derive(StructOpt, Debug)]
 pub enum Transaction {

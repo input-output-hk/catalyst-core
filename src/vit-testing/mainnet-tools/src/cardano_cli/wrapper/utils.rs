@@ -1,7 +1,7 @@
+use snapshot_trigger_service::config::NetworkType;
 use std::io::Write;
 use std::path::Path;
 use std::process::Command;
-use snapshot_trigger_service::config::NetworkType;
 
 pub trait CommandExt {
     fn arg_network(&mut self, network: NetworkType) -> &mut Self;

@@ -5,11 +5,11 @@ mod id;
 mod sign;
 mod submit;
 
-use std::process::Command;
+pub use build::Builder as TransactionCommandBuilder;
 pub use id::Builder as IdCommandBuilder;
 pub use sign::Builder as SignCommandBuilder;
+use std::process::Command;
 pub use submit::Builder as SubmitCommandBuilder;
-pub use build::Builder as TransactionCommandBuilder;
 
 pub struct Transaction {
     command: Command,

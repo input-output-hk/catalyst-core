@@ -1,12 +1,12 @@
-use jortestkit::prelude::ProcessOutput;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::path::Path;
-use std::process::ExitStatus;
-use snapshot_trigger_service::config::NetworkType;
 use crate::cardano_cli::mock::fake::Tip;
 use crate::cardano_cli::wrapper::cli::command;
 use crate::cardano_cli::wrapper::Error;
+use jortestkit::prelude::ProcessOutput;
+use serde::{Deserialize, Serialize};
+use snapshot_trigger_service::config::NetworkType;
+use std::collections::HashMap;
+use std::path::Path;
+use std::process::ExitStatus;
 
 pub struct Query {
     query_command: command::Query,

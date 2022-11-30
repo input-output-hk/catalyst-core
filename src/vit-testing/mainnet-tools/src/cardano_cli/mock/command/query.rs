@@ -1,8 +1,8 @@
+use crate::cardano_cli::mock::command::write_to_file_or_println;
+use crate::cardano_cli::mock::fake;
 use std::io::Error;
 use std::path::PathBuf;
 use structopt::StructOpt;
-use crate::cardano_cli::mock::command::write_to_file_or_println;
-use crate::cardano_cli::mock::fake;
 
 #[derive(StructOpt, Debug)]
 pub enum Query {

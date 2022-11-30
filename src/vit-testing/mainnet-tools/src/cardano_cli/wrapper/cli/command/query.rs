@@ -1,7 +1,7 @@
+use crate::cardano_cli::wrapper::utils::CommandExt;
+use snapshot_trigger_service::config::NetworkType;
 use std::path::Path;
 use std::process::Command;
-use snapshot_trigger_service::config::NetworkType;
-use crate::cardano_cli::wrapper::utils::CommandExt;
 
 pub struct Query {
     command: Command,

@@ -3,14 +3,14 @@
   cell,
 }: let
   inherit (inputs) nixpkgs std;
-  inherit (inputs.cells.automation.lib) mkPackage;
+  inherit (inputs.cells.lib) lib;
   l = nixpkgs.lib // builtins;
 
   name = "vit-servicing-station";
   root = inputs.self + "/src/${name}";
 
   mkVitPkg = subPkg:
-    mkPackage {
+    lib.mkPackage {
       pkgPath = root + "/${subPkg}";
       nativeBuildInputs = with nixpkgs; [
         postgresql.lib

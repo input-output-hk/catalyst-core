@@ -44,12 +44,4 @@ in rec {
         openssl
       ];
     };
-  wrap = pkg: deps: let
-    name = pkg.name;
-  in
-    nixpkgs.runCommand "wrapped-${name}" {nativeBuildInputs = [nixpkgs.makeWrapper];} ''
-      mkdir -p $out/bin
-      ln -s ${pkg}/bin/${name} $out/bin/${name}
-      wrapProgram $out/bin/${name} --prefix PATH : ${l.makeBinPath deps}
-    '';
 }

@@ -3,7 +3,7 @@
   cell,
 }: let
   inherit (inputs) nixpkgs std;
-  inherit (cell.toolchains) rustToolchain;
+  inherit (inputs.cells.lib.toolchains) rustToolchain;
   l = nixpkgs.lib // builtins;
 
   mkEnv = env: l.mapAttrsToList (name: value: {inherit name value;}) env;

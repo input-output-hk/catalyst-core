@@ -25,7 +25,7 @@ cardano-serialization-lib = "11.1.0"
 tempdir = "0.3.7"
 snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib", features=["proptest"] }
 catalyst-toolbox = { path = "../../catalyst-toolbox/catalyst-toolbox", features = [ "test-api" ]}
-clap = { version = "3.2", features = ["derive"] }
+clap = { version = "4", features = ["derive"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
 

@@ -80,7 +80,7 @@ tokio-stream = { version = "0.1.8", features = ["net"] }
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
 assert_fs ="1.0"
-assert_cmd = "1.0"
+assert_cmd = "2"
 
 [dependencies.reqwest]
 version = "0.11"

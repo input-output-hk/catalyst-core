@@ -17,19 +17,11 @@ pub struct Wait {
 
 impl Display for Wait {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        if self.current != 0 {
-            write!(
-                f,
-                "Total attempts '{}' with sleep between for '{:?}'. Currently at {} attempt",
-                self.attempts, self.sleep, self.current
-            )
-        } else {
-            write!(
-                f,
-                "Total attempts '{}' with sleep between for '{:?}'",
-                self.attempts, self.sleep
-            )
-        }
+        write!(
+            f,
+            "Total attempts '{}' with sleep between for '{:?}'. Currently at {} attempt",
+            self.attempts, self.sleep, self.current
+        )
     }
 }
 

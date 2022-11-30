@@ -3,7 +3,7 @@ mod command;
 /// Should be used purely for testing
 pub mod fake;
 
-pub use command::{Command, Error};
+pub use command::Command;
 use std::path::{Path, PathBuf};
 
 /// Cardano CLI mock. It can return arbitrary/fake data but preserves correct Cardano CLI format.

@@ -1,3 +1,4 @@
+use color_eyre::Report;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
@@ -32,7 +33,7 @@ impl Command {
     /// # Errors
     ///
     /// On any sub commands errors
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Report> {
         match self {
             Self::Query(query) => query.exec().map_err(Into::into),
             Self::Address(address) => address.exec().map_err(Into::into),
@@ -53,15 +54,4 @@ pub fn write_to_file_or_println(
         println!("{}", content);
     }
     Ok(())
-}
-
-/// Errors for Cardano CLI wrapper
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    /// On any parsing error
-    #[error(transparent)]
-    Parsing(#[from] serde_json::Error),
-    /// On any IO related error
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
 }

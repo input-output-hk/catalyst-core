@@ -1,5 +1,4 @@
 use crate::snapshot_wormhole::Config;
-use color_eyre::eyre;
 use color_eyre::eyre::Result;
 use job_scheduler_ng::{Job, JobScheduler};
 use jormungandr_automation::jormungandr::LogLevel;
@@ -56,8 +55,6 @@ impl Command {
     ///
     /// On IO related errors
     pub fn exec(self) -> Result<()> {
-        color_eyre::install()?;
-
         let subscriber = FmtSubscriber::builder()
             .with_file(false)
             .with_target(true)
@@ -89,7 +86,7 @@ impl Command {
    ),
    skip(config)
 )]
-pub fn one_shot(config: &Config) -> Result<(), eyre::Report> {
+pub fn one_shot(config: &Config) -> Result<()> {
     info!("Job started");
 
     let snapshot_params = JobParameters {
@@ -147,7 +144,7 @@ pub fn one_shot(config: &Config) -> Result<(), eyre::Report> {
     Ok(())
 }
 
-pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Config, eyre::Report> {
+pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Config> {
     let contents = std::fs::read_to_string(&config)?;
     serde_json::from_str(&contents).map_err(Into::into)
 }
@@ -170,7 +167,7 @@ impl Schedule {
     /// # Errors
     ///
     /// On Parsing cron job or any services unavailability
-    pub fn exec(self, config: &Config) -> Result<(), eyre::Report> {
+    pub fn exec(self, config: &Config) -> Result<()> {
         if self.eagerly {
             Self::run_single(config);
         }

@@ -33,7 +33,7 @@ pub fn do_snapshot<S: Into<String>, P: Into<String>>(
 
     Ok(SnapshotResult {
         status: snapshot_jobs_status,
-        snapshot: read_initials(&snapshot)?,
+        snapshot: read_initials(snapshot)?,
     })
 }
 
@@ -52,7 +52,7 @@ pub fn get_snapshot_by_id<Q: Into<String>, S: Into<String>, P: Into<String>>(
 
     Ok(SnapshotResult {
         status,
-        snapshot: read_initials(&snapshot)?,
+        snapshot: read_initials(snapshot)?,
     })
 }
 
@@ -71,7 +71,7 @@ pub fn get_snapshot_from_history_by_id<Q: Into<String>, S: Into<String>, P: Into
 
     Ok(SnapshotResult {
         status,
-        snapshot: read_initials(&snapshot)?,
+        snapshot: read_initials(snapshot)?,
     })
 }
 

@@ -111,7 +111,7 @@ impl FragmentFactory {
         from: &Wallet,
         distribution: &[(&StakePool, u8)],
     ) -> Fragment {
-        let pools_ratio_sum: u8 = distribution.iter().map(|(_st, ratio)| *ratio as u8).sum();
+        let pools_ratio_sum: u8 = distribution.iter().map(|(_st, ratio)| *ratio).sum();
         let pools: Vec<(PoolId, u8)> = distribution
             .iter()
             .map(|(st, ratio)| (st.info().to_id(), *ratio))

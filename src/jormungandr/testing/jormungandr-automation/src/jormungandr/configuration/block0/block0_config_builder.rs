@@ -113,7 +113,7 @@ impl Block0ConfigurationBuilder {
     }
 
     pub fn with_some_consensus_leader(self) -> Self {
-        let leader_key = KeyPair::generate(&mut rand::thread_rng());
+        let leader_key = KeyPair::generate(rand::thread_rng());
         self.with_leader_key_pair(&leader_key)
     }
 
@@ -309,11 +309,11 @@ impl Block0ConfigurationBuilder {
 }
 
 fn default_initial(discrimination: Discrimination) -> Vec<Initial> {
-    let sk1: SecretKey<Ed25519Extended> = SecretKey::generate(&mut ChaChaRng::from_seed([1; 32]));
+    let sk1: SecretKey<Ed25519Extended> = SecretKey::generate(ChaChaRng::from_seed([1; 32]));
     let pk1: PublicKey<Ed25519> = sk1.to_public();
     let initial_funds_address1 = ChainAddress(discrimination, Kind::Single(pk1));
 
-    let sk2: SecretKey<Ed25519Extended> = SecretKey::generate(&mut ChaChaRng::from_seed([2; 32]));
+    let sk2: SecretKey<Ed25519Extended> = SecretKey::generate(ChaChaRng::from_seed([2; 32]));
     let pk2: PublicKey<Ed25519> = sk2.to_public();
     let initial_funds_address2 = ChainAddress(discrimination, Kind::Single(pk2));
     let initial_funds = vec![Initial::Fund(vec![
@@ -330,8 +330,8 @@ fn default_initial(discrimination: Discrimination) -> Vec<Initial> {
 }
 
 fn default_leaders() -> Vec<ConsensusLeaderId> {
-    let leader_1: KeyPair<Ed25519Extended> = KeyPair::generate(&mut ChaChaRng::from_seed([1; 32]));
-    let leader_2: KeyPair<Ed25519Extended> = KeyPair::generate(&mut ChaChaRng::from_seed([2; 32]));
+    let leader_1: KeyPair<Ed25519Extended> = KeyPair::generate(ChaChaRng::from_seed([1; 32]));
+    let leader_2: KeyPair<Ed25519Extended> = KeyPair::generate(ChaChaRng::from_seed([2; 32]));
     let mut leaders: Vec<ConsensusLeaderId> = Vec::new();
     let leader_1_pk: ConsensusLeaderId = leader_1.0.public_key().clone().into();
     let leader_2_pk: ConsensusLeaderId = leader_2.0.public_key().clone().into();

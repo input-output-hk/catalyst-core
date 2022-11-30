@@ -39,7 +39,7 @@ pub fn accounts_funds_are_updated_after_transaction() {
     let receiever_account_state_before = jcli
         .rest()
         .v0()
-        .account_stats(&receiver.address().to_string(), &jormungandr.rest_uri());
+        .account_stats(receiver.address().to_string(), jormungandr.rest_uri());
 
     let sender_value_before = sender_account_state_before.value();
     let receiver_value_before = receiever_account_state_before.value();
@@ -61,11 +61,11 @@ pub fn accounts_funds_are_updated_after_transaction() {
     let sender_account_state = jcli
         .rest()
         .v0()
-        .account_stats(sender.address().to_string(), &jormungandr.rest_uri());
+        .account_stats(sender.address().to_string(), jormungandr.rest_uri());
     let receiver_account_state = jcli
         .rest()
         .v0()
-        .account_stats(receiver.address().to_string(), &jormungandr.rest_uri());
+        .account_stats(receiver.address().to_string(), jormungandr.rest_uri());
 
     let sender_value_before_u64: u64 = (*sender_value_before).into();
     let receiver_value_before_u64: u64 = (*receiver_value_before).into();

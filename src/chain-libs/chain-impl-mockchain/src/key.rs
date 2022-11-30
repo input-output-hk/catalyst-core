@@ -428,8 +428,8 @@ mod tests {
             }
 
             let tcg = testing::TestCryptoGen::arbitrary(g);
-            let mut rng = tcg.get_rng(0);
-            let vrf_sk: SecretKey<RistrettoGroup2HashDh> = SecretKey::generate(&mut rng);
+            let rng = tcg.get_rng(0);
+            let vrf_sk: SecretKey<RistrettoGroup2HashDh> = SecretKey::generate(rng);
             GenesisPraosLeader {
                 vrf_public_key: vrf_sk.to_public(),
                 kes_public_key: PK_KES.clone(),

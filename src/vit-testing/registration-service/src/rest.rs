@@ -179,7 +179,7 @@ pub async fn submit_transaction_handler(
     context_lock
         .cardano_cli_executor()
         .transaction()
-        .submit_from_bytes(bytes.to_vec(), &working_dir)?;
+        .submit_from_bytes(bytes.to_vec(), working_dir)?;
     Ok(warp::reply())
 }
 

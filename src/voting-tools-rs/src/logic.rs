@@ -88,7 +88,7 @@ pub(crate) fn get_stake_address(
         let cred = StakeCredential::from_keyhash(&pub_key.hash());
         let stake_addr = RewardAddress::new(network.network_id(), &cred).to_address();
         let stake_addr_bytes = stake_addr.to_bytes();
-        let stake_addr_bytes_hex = hex::encode(&stake_addr_bytes);
+        let stake_addr_bytes_hex = hex::encode(stake_addr_bytes);
         Ok(stake_addr_bytes_hex)
     }
 }
@@ -131,7 +131,7 @@ impl Reg {
                             delegation.trim_start_matches("0x"),
                         )?)
                         .map_err(|e| {
-                            eyre!(format!("cannot decode delegation key, due to: {}", e))
+                            eyre!(format!("cannot decode delegation key, due to: {e}"))
                         })?,
                     );
                     inner_metadata_list.add(&TransactionMetadatum::new_int(&Int::new(

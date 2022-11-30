@@ -33,6 +33,6 @@ pub fn test_rest_tls_config() {
 
     println!(
         "{:?}",
-        jormungandr.secure_rest(&ca_crt_file).stats().unwrap()
+        jormungandr.secure_rest(ca_crt_file).stats().unwrap()
     );
 }

@@ -102,7 +102,7 @@ impl<'a> FragmentCheck<'a> {
                     .rest()
                     .v0()
                     .message()
-                    .logs(&self.jormungandr.rest_uri())
+                    .logs(self.jormungandr.rest_uri())
             ),
             transaction_id: Hash::from_hash(self.id),
             log_content: self.jormungandr.logger.get_log_content(),

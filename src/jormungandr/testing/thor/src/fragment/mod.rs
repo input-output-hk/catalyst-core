@@ -293,7 +293,7 @@ impl FragmentBuilder {
         let inner_wallet = wallet.clone().into();
         let vote_cast = VoteCast::new(
             vote_plan.to_id(),
-            proposal_index as u8,
+            proposal_index,
             Payload::public(*choice),
         );
         self.fragment_factory
@@ -333,7 +333,7 @@ impl FragmentBuilder {
 
         let vote_cast = VoteCast::new(
             vote_plan.to_id(),
-            proposal_index as u8,
+            proposal_index,
             Payload::Private {
                 encrypted_vote,
                 proof,

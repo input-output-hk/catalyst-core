@@ -38,9 +38,7 @@ impl UpdateProposalData {
     }
 
     pub fn gen_votes(&self, proposal_id: UpdateProposalId) -> Vec<UpdateVote> {
-        self.voters
-            .iter()
-            .map(|(id, _)| UpdateVote::new(proposal_id, id.clone()))
+        self.voters.keys().map(|id| UpdateVote::new(proposal_id, id.clone()))
             .collect()
     }
 }

@@ -37,7 +37,7 @@ impl<'de> Deserialize<'de> for TokenName {
     {
         if deserializer.is_human_readable() {
             let s = String::deserialize(deserializer)?;
-            let data = hex::decode(&s).map_err(<D::Error as serde::de::Error>::custom)?;
+            let data = hex::decode(s).map_err(<D::Error as serde::de::Error>::custom)?;
             Ok(Self(
                 name::TokenName::try_from(data).map_err(<D::Error as serde::de::Error>::custom)?,
             ))

@@ -30,7 +30,7 @@ impl VoterRegistrationCli {
         slot: u64,
         metadata_path: Q,
     ) -> Result<(), Error> {
-        let mut command = Command::new(&self.path);
+        let mut command = Command::new(self.path);
         command
             .arg("--rewards-address")
             .arg(rewards_address.into())
@@ -58,7 +58,7 @@ impl VoterRegistrationCli {
         slot: u64,
         metadata_path: R,
     ) -> Result<(), Error> {
-        let mut command = Command::new(&self.path);
+        let mut command = Command::new(self.path);
 
         command.arg("--rewards-address").arg(rewards_address.into());
 

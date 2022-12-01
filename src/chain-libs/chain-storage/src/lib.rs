@@ -1,3 +1,5 @@
+#![deny(missing_docs)]
+
 //! Block storage crate.
 //!
 //! # Data model

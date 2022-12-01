@@ -7,6 +7,7 @@ pub mod context;
 pub mod jcli;
 #[cfg(test)]
 pub mod jormungandr;
+#[cfg(all(test, featre = "network"))]
 pub mod networking;
 #[cfg(all(test, feature = "non-functional"))]
 pub mod non_functional;

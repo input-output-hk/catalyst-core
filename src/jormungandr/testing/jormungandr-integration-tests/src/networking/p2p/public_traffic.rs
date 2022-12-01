@@ -398,28 +398,36 @@ pub fn test_public_node_synced_with_internal() {
 
     //
     //
-    // account state should be the same
+    // account states should be the same
 
-    println!(
-        "public node {:?}  {:?}",
-        _client_public.rest().account_state(&alice.account_id()),
-        _client_public.rest().account_state(&bob.account_id()),
-    );
+    let public_state_a = _client_internal_2
+        .rest()
+        .account_state(&alice.account_id())
+        .unwrap();
 
-    println!(
-        "internal node {:?}  {:?}",
-        _client_internal_2.rest().account_state(&alice.account_id()),
-        _client_internal_2.rest().account_state(&bob.account_id()),
-    );
+    let public_state_b = _client_public
+        .rest()
+        .account_state(&bob.account_id())
+        .unwrap();
 
+    let internal_state_a = _client_internal_2
+        .rest()
+        .account_state(&alice.account_id())
+        .unwrap();
+
+    let internal_state_b = _client_public
+        .rest()
+        .account_state(&bob.account_id())
+        .unwrap();
+
+    assert_eq!(public_state_a, internal_state_a);
+    assert_eq!(public_state_b, internal_state_b);
+
+    // based on this test; nodes will never be fully synced as gossip from the public node is dropped by internal nodes
+    // which do not allow private addresses
     ensure_nodes_are_in_sync(
         SyncWaitParams::ZeroWait,
-        &[
-            &_gateway,
-            &_client_internal,
-            &_client_internal_2,
-            &_client_public,
-        ],
+        &[&_client_internal_2, &_client_public],
     )
     .unwrap();
 }

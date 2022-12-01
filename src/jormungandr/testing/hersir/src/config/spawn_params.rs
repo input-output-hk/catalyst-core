@@ -19,6 +19,7 @@ use std::{
 #[derive(Clone, Debug, Deserialize)]
 pub struct SpawnParams {
     alias: NodeAlias,
+
     bootstrap_from_peers: Option<bool>,
     faketime: Option<FaketimeConfig>,
     gossip_interval: Option<Duration>,
@@ -29,6 +30,7 @@ pub struct SpawnParams {
     max_bootstrap_attempts: Option<usize>,
     max_connections: Option<u32>,
     allow_private_addresses: Option<bool>,
+    whitelist: Option<Vec<SocketAddr>>,
     max_inbound_connections: Option<u32>,
     mempool: Option<Mempool>,
     network_stuck_check: Option<Duration>,
@@ -61,6 +63,7 @@ impl SpawnParams {
             max_bootstrap_attempts: None,
             max_connections: None,
             allow_private_addresses: None,
+            whitelist: None,
             max_inbound_connections: None,
             mempool: None,
             network_stuck_check: None,
@@ -142,6 +145,11 @@ impl SpawnParams {
 
     pub fn allow_private_addresses(mut self, switch: bool) -> Self {
         self.allow_private_addresses = Some(switch);
+        self
+    }
+
+    pub fn whitelist(mut self, nodes: Vec<SocketAddr>) -> Self {
+        self.whitelist = Some(nodes);
         self
     }
 
@@ -282,6 +290,10 @@ impl SpawnParams {
 
         if let Some(allow_private_addresses) = &self.allow_private_addresses {
             node_config.p2p.allow_private_addresses = *allow_private_addresses;
+        }
+
+        if let Some(whitelist) = &self.whitelist {
+            node_config.p2p.whitelist = Some(whitelist.clone());
         }
 
         if let Some(max_connections) = &self.max_connections {

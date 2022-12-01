@@ -10,6 +10,7 @@ use chain_network::{
     data as net_data,
     error::{Code, Error},
 };
+use futures::executor;
 use futures::{future::BoxFuture, prelude::*, ready};
 use jormungandr_lib::interfaces::FragmentOrigin;
 use std::{
@@ -165,6 +166,12 @@ impl FragmentProcessor {
         }
     }
 
+    fn get_ingress(&self) -> std::net::SocketAddr {
+        let state = self.global_state.clone();
+        let node_id = self.node_id;
+        executor::block_on(state.peers.get_peer_addr(&node_id))
+    }
+
     fn refresh_stat(&mut self) {
         let state = self.global_state.clone();
         let node_id = self.node_id;
@@ -302,7 +309,15 @@ impl Sink<net_data::Fragment> for FragmentProcessor {
         })?;
         tracing::debug!(hash = %fragment.hash(), "received fragment");
 
-        self.buffered_fragments.push(fragment);
+        match &self.global_state.config.whitelist {
+            Some(whitelist) => {
+                if whitelist.contains(&self.get_ingress()) {
+                    self.buffered_fragments.push(fragment);
+                }
+            }
+            None => self.buffered_fragments.push(fragment),
+        };
+
         Ok(())
     }
 

@@ -256,6 +256,12 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
             .and(with_context.clone())
             .and_then(search::search);
 
+        let search_count = warp::path!("search_count")
+            .and(warp::post())
+            .and(warp::body::json())
+            .and(with_context.clone())
+            .and_then(search::search_count);
+
         root.and(
             proposals
                 .or(admin_filter)
@@ -270,7 +276,8 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
                 .or(votes)
                 .or(message)
                 .or(snapshot)
-                .or(search),
+                .or(search)
+                .or(search_count),
         )
         .boxed()
     };

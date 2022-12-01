@@ -34,7 +34,7 @@ catalyst-toolbox = { path = "../../catalyst-toolbox/catalyst-toolbox", features=
 snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib", features=["test-api"]}
 thiserror = "1.0"
 netstat2 = "0.9"
-image = "0.23.9"
+image = "0.23"
 rand = "0.8"
 hex = "0.4.3"
 lazy_static = "1"

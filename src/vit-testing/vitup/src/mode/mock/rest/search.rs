@@ -34,6 +34,25 @@ pub async fn search(
     Ok(HandlerResult(Ok(response)))
 }
 
+#[tracing::instrument(skip(context), name = "REST Api call")]
+pub async fn search_count(
+    search_query_count: SearchCountQuery,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
+    let search_query = SearchQuery {
+        query: search_query_count,
+        limit: None,
+        offset: None,
+    };
+
+    let response = search_impl(search_query, context).await?;
+
+    Ok(HandlerResult(Ok(match response {
+        SearchResponse::Challenge(challenges) => challenges.len(),
+        SearchResponse::Proposal(proposals) => proposals.len(),
+    })))
+}
+
 async fn search_impl(
     SearchQuery {
         query:
@@ -54,16 +73,21 @@ async fn search_impl(
     };
     match table {
         Table::Challenges => {
-            if filter
-                .iter()
-                .any(|Constraint { column, .. }| matches!(column, Column::Funds | Column::Author))
-            {
+            if filter.iter().any(|c| {
+                matches!(
+                    c,
+                    Constraint::Text {
+                        column: Column::Funds | Column::Author,
+                        ..
+                    }
+                )
+            }) {
                 return Err(challenge_field_error());
             }
 
             if matches!(
                 order_by,
-                Some(OrderBy {
+                Some(OrderBy::Column {
                     column: Column::Funds | Column::Author,
                     ..
                 })
@@ -78,23 +102,33 @@ async fn search_impl(
             Ok(SearchResponse::Challenge(result))
         }
         Table::Proposals => {
-            if filter
-                .iter()
-                .any(|Constraint { column, .. }| matches!(column, Column::Type))
-            {
+            if filter.iter().any(|c| {
+                matches!(
+                    c,
+                    Constraint::Text {
+                        column: Column::Type,
+                        ..
+                    }
+                )
+            }) {
                 return Err(proposal_field_error());
             }
 
-            if filter
-                .iter()
-                .any(|Constraint { column, .. }| matches!(column, Column::Funds))
-            {
+            if filter.iter().any(|c| {
+                matches!(
+                    c,
+                    Constraint::Text {
+                        column: Column::Funds,
+                        ..
+                    }
+                )
+            }) {
                 return Err(proposal_field_error());
             }
 
             if matches!(
                 order_by,
-                Some(OrderBy {
+                Some(OrderBy::Column {
                     column: Column::Type,
                     ..
                 })
@@ -125,7 +159,8 @@ fn search_proposals(
     filter: &[Constraint],
     order_by: Option<OrderBy>,
 ) -> Vec<FullProposalInfo> {
-    fn is_match(proposal: &FullProposalInfo, Constraint { search, column }: &Constraint) -> bool {
+    fn is_match(proposal: &FullProposalInfo, constraint: &Constraint) -> bool {
+        let Constraint::Text { column, search } = constraint else { todo!() };
         let string = match column {
             Column::Desc => &proposal.proposal.proposal_summary,
             Column::Title => &proposal.proposal.proposal_title,
@@ -139,8 +174,8 @@ fn search_proposals(
     let should_retain = |p: &FullProposalInfo| filter.iter().all(|cons| is_match(p, cons));
     proposals.retain(should_retain);
 
-    if let Some(order_by) = order_by {
-        match order_by.column {
+    if let Some(OrderBy::Column { column, descending }) = order_by {
+        match column {
             Column::Desc => proposals.sort_by(|a, b| {
                 a.proposal
                     .proposal_summary
@@ -161,7 +196,7 @@ fn search_proposals(
             _ => {}
         };
 
-        if order_by.descending {
+        if descending {
             proposals.reverse();
         }
     }
@@ -174,7 +209,8 @@ fn search_challenges(
     filter: &[Constraint],
     order_by: Option<OrderBy>,
 ) -> Vec<Challenge> {
-    fn is_match(challenge: &Challenge, Constraint { search, column }: &Constraint) -> bool {
+    fn is_match(challenge: &Challenge, constraint: &Constraint) -> bool {
+        let Constraint::Text { search, column } = constraint else { todo!() };
         let string = match column {
             Column::Type => {
                 return challenge
@@ -194,8 +230,8 @@ fn search_challenges(
     let should_retain = |c: &Challenge| filter.iter().all(|cons| is_match(c, cons));
     challenges.retain(should_retain);
 
-    if let Some(order_by) = order_by {
-        match order_by.column {
+    if let Some(OrderBy::Column { column, descending }) = order_by {
+        match column {
             Column::Type => challenges.sort_by(|a, b| {
                 a.challenge_type
                     .to_string()
@@ -206,7 +242,7 @@ fn search_challenges(
             _ => {}
         }
 
-        if order_by.descending {
+        if descending {
             challenges.reverse();
         }
     }
@@ -262,7 +298,7 @@ mod tests {
         let query = SearchQuery {
             query: SearchCountQuery {
                 table: Table::Challenges,
-                filter: vec![Constraint {
+                filter: vec![Constraint::Text {
                     search: "1".to_string(),
                     column: Column::Desc,
                 }],

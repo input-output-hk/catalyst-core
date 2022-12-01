@@ -122,13 +122,16 @@ impl ApiTokenCmd {
         }
     }
 
-    fn handle_api_token_add_whith_db_backup(
+    fn handle_api_token_add_with_db_backup(
         tokens: &Option<Vec<String>>,
         db_url: &str,
     ) -> Result<(), Error> {
-        let backup_file = backup_db_file(db_url)?;
         if let Err(e) = Self::handle_api_token_add(tokens, db_url) {
-            restore_db_file(backup_file, db_url)?;
+            if !db_url.starts_with("postgres://") {
+                let backup_file = backup_db_file(db_url)?;
+                restore_db_file(backup_file, db_url)?;
+            }
+
             Err(e)
         } else {
             Ok(())
@@ -150,7 +153,7 @@ impl ExecTask for ApiTokenCmd {
     fn exec(&self) -> Result<(), Error> {
         match self {
             ApiTokenCmd::Add { tokens, db_url } => {
-                ApiTokenCmd::handle_api_token_add_whith_db_backup(tokens, db_url)
+                ApiTokenCmd::handle_api_token_add_with_db_backup(tokens, db_url)
             }
             ApiTokenCmd::Generate { n, size } => {
                 ApiTokenCmd::handle_generate(*n, *size);

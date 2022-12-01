@@ -5,12 +5,16 @@ use crate::{
         DbConnection, DbConnectionPool,
     },
     q,
+    utils::collections::dedup_by_key_keep_last,
     v0::errors::HandleError,
 };
 use diesel::{
     pg::upsert::excluded, query_dsl::methods::ExecuteDsl, Connection, ExpressionMethods, QueryDsl,
     RunQueryDsl,
 };
+use itertools::Itertools;
+
+const BATCH_PUT_CHUNK_SIZE: usize = 1000;
 
 pub async fn query_all_snapshots(pool: &DbConnectionPool) -> Result<Vec<Snapshot>, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
@@ -139,17 +143,32 @@ pub fn batch_put_voters(voters: &[Voter], db_conn: &DbConnection) -> Result<(), 
         DbConnection::Sqlite(db_conn) => ExecuteDsl::<_, diesel::sqlite::Sqlite>::execute(
             diesel::replace_into(voters::table).values(voters),
             db_conn,
-        ),
-        DbConnection::Postgres(db_conn) => diesel::insert_into(voters::table)
-            .values(voters)
-            .on_conflict((
-                voters::voting_key,
-                voters::voting_group,
-                voters::snapshot_tag,
-            ))
-            .do_update()
-            .set((voters::voting_power.eq(excluded(voters::voting_power)),))
-            .execute(db_conn),
+        )
+        .map(|_| ()),
+        DbConnection::Postgres(db_conn) => {
+            // Postgres will not allow batch inserting if there are any values that would modify the same row twice.
+            // SQLite will allow it then, for Postgres, we keep only the latest conflicting value.
+            let unique_voters = dedup_by_key_keep_last(voters.iter(), |v| {
+                (&v.voting_key, &v.voting_group, &v.snapshot_tag)
+            });
+
+            db_conn.build_transaction().read_write().run(move || {
+                for chunk in &unique_voters.into_iter().chunks(BATCH_PUT_CHUNK_SIZE) {
+                    diesel::insert_into(voters::table)
+                        .values(chunk.collect::<Vec<_>>())
+                        .on_conflict((
+                            voters::voting_key,
+                            voters::voting_group,
+                            voters::snapshot_tag,
+                        ))
+                        .do_update()
+                        .set((voters::voting_power.eq(excluded(voters::voting_power)),))
+                        .execute(db_conn)?;
+                }
+
+                Ok(())
+            })
+        }
     }
     .map_err(|e| HandleError::InternalError(format!("Error executing request: {}", e)))?;
     Ok(())
@@ -223,21 +242,45 @@ pub fn batch_put_contributions(
         DbConnection::Sqlite(db_conn) => ExecuteDsl::<_, diesel::sqlite::Sqlite>::execute(
             diesel::replace_into(contributions::table).values(contributions),
             db_conn,
-        ),
-        DbConnection::Postgres(db_conn) => diesel::insert_into(contributions::table)
-            .values(contributions)
-            .on_conflict((
-                contributions::stake_public_key,
-                contributions::voting_group,
-                contributions::voting_key,
-                contributions::snapshot_tag,
-            ))
-            .do_update()
-            .set((
-                contributions::reward_address.eq(excluded(contributions::reward_address)),
-                contributions::value.eq(excluded(contributions::value)),
-            ))
-            .execute(db_conn),
+        )
+        .map(|_| ()),
+        DbConnection::Postgres(db_conn) => {
+            // Postgres will not allow batch inserting if there are any values that would modify the same row twice.
+            // SQLite will allow it then, for Postgres, we keep only the latest conflicting value.
+            let unique_contributions = dedup_by_key_keep_last(contributions.iter(), |c| {
+                (
+                    &c.stake_public_key,
+                    &c.voting_group,
+                    &c.voting_key,
+                    &c.snapshot_tag,
+                )
+            });
+
+            db_conn.build_transaction().read_write().run(move || {
+                for chunk in &unique_contributions
+                    .into_iter()
+                    .chunks(BATCH_PUT_CHUNK_SIZE)
+                {
+                    diesel::insert_into(contributions::table)
+                        .values(chunk.collect::<Vec<_>>())
+                        .on_conflict((
+                            contributions::stake_public_key,
+                            contributions::voting_group,
+                            contributions::voting_key,
+                            contributions::snapshot_tag,
+                        ))
+                        .do_update()
+                        .set((
+                            contributions::reward_address
+                                .eq(excluded(contributions::reward_address)),
+                            contributions::value.eq(excluded(contributions::value)),
+                        ))
+                        .execute(db_conn)?;
+                }
+
+                Ok(())
+            })
+        }
     }
     .map_err(|e| HandleError::InternalError(format!("Error executing request: {}", e)))?;
     Ok(())

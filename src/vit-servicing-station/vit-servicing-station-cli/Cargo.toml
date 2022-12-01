@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-base64 = "0.12.1"
+base64 = "0.13"
 time = "0.3"
 csv = "1.1"
 diesel = "1.4"

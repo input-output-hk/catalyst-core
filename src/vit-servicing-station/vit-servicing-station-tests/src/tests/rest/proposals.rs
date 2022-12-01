@@ -54,7 +54,7 @@ pub fn get_proposal_by_id() -> Result<(), Box<dyn std::error::Error>> {
         .build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .start(&temp_dir)
         .unwrap();
 

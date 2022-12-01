@@ -4,10 +4,13 @@ use crate::common::load::SnapshotRandomizer;
 use jortestkit::load::{Request, RequestFailure, RequestGenerator};
 use std::time::Duration;
 
+const DEFAULT_MAX_SPLITS: usize = 7; // equals to 128 splits, will likely not reach that value but it's there just to prevent a stack overflow
+
 #[derive(Clone, Debug)]
 pub struct VitRestRequestGenerator {
     rest_client: RestClient,
     snapshot_randomizer: SnapshotRandomizer,
+    max_splits: usize, // avoid infinite splitting
 }
 
 impl VitRestRequestGenerator {
@@ -17,6 +20,7 @@ impl VitRestRequestGenerator {
         Self {
             snapshot_randomizer: SnapshotRandomizer::new(snapshot),
             rest_client,
+            max_splits: DEFAULT_MAX_SPLITS,
         }
     }
 }
@@ -65,7 +69,11 @@ impl RequestGenerator for VitRestRequestGenerator {
         }
     }
 
-    fn split(self) -> (Self, Option<Self>) {
-        todo!()
+    fn split(mut self) -> (Self, Option<Self>) {
+        if self.max_splits == 0 {
+            return (self, None);
+        }
+        self.max_splits -= 1;
+        (self.clone(), Some(self))
     }
 }

@@ -193,7 +193,7 @@ impl IdeascaleValidateCommand {
             vec![],
         ));
 
-        DbGenerator::new(parameters, self.output.clone())
+        DbGenerator::new(parameters)
             .build(&deployment_tree.database_path(), &mut template_generator)?;
 
         Ok(())

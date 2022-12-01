@@ -15,7 +15,7 @@ use jormungandr_automation::{
 use jormungandr_lib::interfaces::{
     Initial, InitialToken, NumberOfSlotsPerEpoch, SlotDuration, Tally, TallyResult, VotePlanStatus,
 };
-use std::{collections::BTreeSet, path::Path, str::FromStr, time::Duration};
+use std::{collections::BTreeSet, path::Path, str::FromStr};
 use thor::{vote_plan_cert, FragmentSender, FragmentSenderSetup, Wallet};
 
 const INITIAL_FUND_PER_WALLET: u64 = 1_000_000;
@@ -103,13 +103,14 @@ pub fn merge_two_voteplans() {
     let jormungandr = SingleNodeTestBootstrapper::default()
         .as_bft_leader()
         .with_block0_config(config)
-        .build().start_node(temp_dir).unwrap();
+        .build()
+        .start_node(temp_dir)
+        .unwrap();
 
-        let settings = jormungandr.rest().settings().unwrap();
+    let settings = jormungandr.rest().settings().unwrap();
 
-        let transaction_sender =
-            FragmentSender::from_settings_with_setup(&settings, FragmentSenderSetup::resend_3_times());
-
+    let transaction_sender =
+        FragmentSender::from_settings_with_setup(&settings, FragmentSenderSetup::resend_3_times());
 
     transaction_sender
         .send_vote_cast(

@@ -125,6 +125,7 @@ table! {
         chain_proposal_id -> Binary,
         chain_vote_options -> Text,
         challenge_id -> Integer,
+        proposal_extra_fields -> Nullable<Text>,
     }
 }
 

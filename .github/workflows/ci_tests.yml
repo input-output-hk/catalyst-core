@@ -105,5 +105,5 @@ jobs:
         with:
           toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
       - run: |
-           cargo build -p jcli -p jormungandr
-           cargo nextest run -p jormungandr-integration-tests --no-fail-fast 
+           cargo build -p jcli -p jormungandr -p explorer
+           cargo nextest run -p jormungandr-integration-tests --no-fail-fast

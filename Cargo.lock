@@ -8292,8 +8292,12 @@ dependencies = [
  "hex",
  "imhamt",
  "itertools",
+ "jormungandr-lib",
  "quickcheck",
  "quickcheck_macros",
+ "serde",
+ "serde_json",
+ "serde_yaml",
  "thiserror",
  "zeroize",
 ]

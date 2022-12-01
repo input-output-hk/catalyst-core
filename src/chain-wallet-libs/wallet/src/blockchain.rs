@@ -9,6 +9,25 @@ use chain_impl_mockchain::{
     transaction::Input,
 };
 use chain_time::TimeEra;
+use jormungandr_lib::{
+    crypto::hash::Hash,
+    interfaces::{DiscriminationDef, LinearFeeDef},
+};
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Settings2 {
+    #[serde(with = "LinearFeeDef")]
+    pub fees: LinearFee,
+    #[serde(with = "DiscriminationDef")]
+    pub discrimination: Discrimination,
+    #[serde(with = "Hash")]
+    pub block0_initial_hash: HeaderId,
+    // pub block0_date: Block0Date,
+    pub slot_duration: u8,
+    // pub time_era: TimeEra,
+    pub transaction_max_expiry_epochs: u8,
+}
 
 #[derive(Clone)]
 pub struct Settings {
@@ -71,4 +90,21 @@ impl Settings {
     pub fn discrimination(&self) -> Discrimination {
         self.discrimination
     }
+}
+
+#[test]
+fn check() {
+    let setting = Settings2 {
+        fees: LinearFee::new(0, 0, 0),
+        discrimination: Discrimination::Production,
+        block0_initial_hash: HeaderId::zero_hash(),
+        slot_duration: 0,
+        transaction_max_expiry_epochs: 0,
+    };
+    let string = serde_json::to_string(&setting).unwrap();
+    let _setting: Settings2 = serde_json::from_str(&string).unwrap();
+
+    let hash: Hash2 = HeaderId::zero_hash().into();
+    let string = serde_json::to_string(&hash).unwrap();
+    // let _hash: Hash2 = serde_json::from_str(&string).unwrap();
 }

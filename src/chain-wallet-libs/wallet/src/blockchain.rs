@@ -100,7 +100,7 @@ mod tests {
             transaction_max_expiry_epochs: 0,
             time_era: TimeEra::new(0_u64.into(), Epoch(0), 0),
         };
-        
+
         let string = serde_json::to_string(&settings).unwrap();
         assert_eq!(string, "{\"fees\":{\"constant\":0,\"coefficient\":0,\"certificate\":0},\"discrimination\":\"production\",\"block0_initial_hash\":{\"hash\":\"0000000000000000000000000000000000000000000000000000000000000000\"},\"block0_date\":0,\"slot_duration\":0,\"time_era\":{\"epoch_start\":0,\"slot_start\":0,\"slots_per_epoch\":0},\"transaction_max_expiry_epochs\":0}");
 

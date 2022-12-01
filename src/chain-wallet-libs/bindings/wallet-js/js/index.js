@@ -1,6 +1,5 @@
 const wasm = require("wallet-js");
 
-module.exports.Settings = wasm.Settings;
 module.exports.SpendingCounter = wasm.SpendingCounter;
 module.exports.SpendingCounters = wasm.SpendingCounters;
 module.exports.VotePlanId = wasm.VotePlanId;
@@ -8,6 +7,17 @@ module.exports.Payload = wasm.Payload;
 module.exports.VoteCast = wasm.VoteCast;
 module.exports.BlockDate = wasm.BlockDate;
 module.exports.Certificate = wasm.Certificate;
+
+class Settings {
+  constructor(json) {
+    this.settings = wasm.Settings.from_json(json);
+  }
+
+  to_json() {
+    return this.settings.to_json();
+  }
+}
+module.exports.Settings = Settings;
 
 class Vote {
   static public(vote_plan_bytes, proposal_index, choice) {
@@ -56,7 +66,7 @@ class Wallet {
     for (let i = 0; i < votes.length; i++) {
       let certificate = wasm.Certificate.vote_cast(votes[i].vote_cast);
       let fragment = this.wallet.sign_transaction(
-        settings,
+        settings.settings,
         valid_until,
         lane,
         certificate

@@ -150,6 +150,12 @@ impl ArbitrarySnapshotGenerator {
             chain_voteplan_payload: voteplan.chain_voteplan_payload.clone(),
             chain_vote_encryption_key: voteplan.chain_vote_encryption_key.clone(),
             fund_id: fund.id,
+            proposal_extra_fields: Some(
+                vec![("key1", "value1"), ("key2", "value2")]
+                    .into_iter()
+                    .map(|(a, b)| (a.to_string(), b.to_string()))
+                    .collect(),
+            ),
             challenge_id,
         };
 

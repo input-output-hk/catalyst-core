@@ -6,8 +6,7 @@ use crate::measurement::{
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
-use sysinfo::AsU32;
-use sysinfo::{ProcessExt, SystemExt};
+use sysinfo::{PidExt, ProcessExt, SystemExt};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -126,7 +125,7 @@ impl ConsumptionBenchmarkRun {
 
         for (named_process, resources) in self.markers.iter_mut() {
             let (_, process) = system
-                .get_processes()
+                .processes()
                 .iter()
                 .find(|(pid, _)| (named_process.id() as u32) == pid.as_u32())
                 .ok_or_else(|| ConsumptionBenchmarkError::NoProcessWitId(named_process.clone()))?;

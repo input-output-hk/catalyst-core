@@ -100,17 +100,16 @@ pub fn merge_two_voteplans() {
         .with_certs(vote_plan_certs)
         .with_slot_duration(SlotDuration::new(SLOT_DURATION).unwrap());
 
-    let jormungandr = SingleNodeTestBootstrapper::default()
+    let test_config = SingleNodeTestBootstrapper::default()
         .as_bft_leader()
         .with_block0_config(config)
-        .build()
-        .start_node(temp_dir)
-        .unwrap();
+        .build();
+    let jormungandr = test_config.start_node(temp_dir).unwrap();
 
-    let settings = jormungandr.rest().settings().unwrap();
-
-    let transaction_sender =
-        FragmentSender::from_settings_with_setup(&settings, FragmentSenderSetup::resend_3_times());
+    let transaction_sender = FragmentSender::from_with_setup(
+        &test_config.block0_config(),
+        FragmentSenderSetup::resend_3_times(),
+    );
 
     transaction_sender
         .send_vote_cast(

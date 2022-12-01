@@ -47,6 +47,11 @@ impl Hash {
         self.hash.into()
     }
 
+    #[inline]
+    pub fn into_hash(self) -> key::Hash {
+        key::Hash::from(self)
+    }
+
     pub fn into_digest_of<T>(self) -> DigestOf<Blake2b256, T> {
         self.into_digest().into()
     }

@@ -79,8 +79,8 @@ pub fn dump_send_correct_fragments() {
     let time_era = jormungandr.time_era();
 
     let mut fragment_generator = FragmentGenerator::new(
-        sender.clone(),
-        receiver.clone(),
+        sender,
+        receiver,
         Some(bft_secret),
         jormungandr.to_remote(),
         time_era.slots_per_epoch(),

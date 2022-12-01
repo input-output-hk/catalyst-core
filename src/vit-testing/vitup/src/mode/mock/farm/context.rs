@@ -2,7 +2,6 @@ pub type ContextLock = Arc<Mutex<Context>>;
 use super::config::Config;
 use super::MockBootstrap;
 use super::MockController;
-use crate::mode::mock::Logger;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -18,7 +17,6 @@ pub struct Context {
     config: Config,
     state: MockState,
     address: SocketAddr,
-    logger: Logger,
 }
 
 impl Context {
@@ -31,20 +29,7 @@ impl Context {
             },
             state: HashMap::new(),
             config,
-            logger: Logger::new(),
         }
-    }
-
-    pub fn log<S: Into<String>>(&mut self, message: S) {
-        self.logger.log(message)
-    }
-
-    pub fn logs(&self) -> Vec<String> {
-        self.logger.logs()
-    }
-
-    pub fn clear_logs(&mut self) {
-        self.logger.clear()
     }
 
     pub fn protocol(&self) -> Protocol {

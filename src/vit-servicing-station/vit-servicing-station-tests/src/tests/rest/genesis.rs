@@ -16,7 +16,7 @@ pub fn genesis_deserialize_bijection() -> Result<(), Box<dyn std::error::Error>>
     let db_path = DbBuilder::new().with_token(token).build(&temp_dir).unwrap();
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .with_block0_path(BLOCK0_BIN)
         .start(&temp_dir)
         .unwrap();
@@ -40,7 +40,7 @@ pub fn non_existing_block0() {
     let db_path = DbBuilder::new().with_token(token).build(&temp_dir).unwrap();
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .with_block0_path("non/existing/path")
         .start(&temp_dir)
         .unwrap();

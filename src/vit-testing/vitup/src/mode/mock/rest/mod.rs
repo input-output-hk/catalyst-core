@@ -10,10 +10,10 @@ mod vit_ss;
 use futures::StreamExt;
 use rustls::KeyLogFile;
 use std::convert::Infallible;
-use std::fs::File;
 use std::sync::Arc;
 use tokio::net::TcpListener;
 use tokio_rustls::TlsAcceptor;
+use tracing::{span, Level};
 use warp::hyper::service::make_service_fn;
 
 use super::ContextLock;
@@ -25,7 +25,6 @@ use jormungandr_lib::interfaces::VotePlanId;
 use node::*;
 pub use ssl::{load_cert, load_private_key};
 use thiserror::Error;
-use tracing_subscriber::fmt::format::FmtSpan;
 use valgrind::Protocol;
 use vit_ss::*;
 use warp::{reject::Reject, Filter, Rejection, Reply};
@@ -55,19 +54,13 @@ pub enum Error {
 impl Reject for Error {}
 
 pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
-    let address = *context.lock().unwrap().address();
-    let protocol = context.lock().unwrap().protocol();
+    let address = *context.read().unwrap().address();
+    let protocol = context.read().unwrap().protocol();
     let with_context = context.clone();
     let with_context = warp::any().map(move || with_context.clone());
 
-    let (non_block, _guard) = tracing_appender::non_blocking(File::create("vole.trace").unwrap());
-
-    let filter = std::env::var("RUST_LOG").unwrap_or_else(|_| "tracing=info,warp=debug".to_owned());
-    tracing_subscriber::fmt()
-        .with_writer(non_block)
-        .with_env_filter(filter)
-        .with_span_events(FmtSpan::CLOSE)
-        .init();
+    let span = span!(Level::INFO, "rest");
+    let _enter = span.enter();
 
     let root = warp::path!("api" / ..);
 
@@ -229,8 +222,10 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
         let block0 = warp::path!("block0")
             .and(with_context.clone())
             .map(move |context: ContextLock| {
-                context.lock().unwrap().log("get_block0");
-                Ok(context.lock().unwrap().block0_bin())
+                let span = span!(Level::INFO, "rest api call received");
+                let _enter = span.enter();
+                tracing::info!("get block0");
+                Ok(context.read().unwrap().block0_bin())
             })
             .with(warp::reply::with::headers(default_headers()));
 
@@ -261,6 +256,12 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
             .and(with_context.clone())
             .and_then(search::search);
 
+        let search_count = warp::path!("search_count")
+            .and(warp::post())
+            .and(warp::body::json())
+            .and(with_context.clone())
+            .and_then(search::search_count);
+
         root.and(
             proposals
                 .or(admin_filter)
@@ -275,7 +276,8 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
                 .or(votes)
                 .or(message)
                 .or(snapshot)
-                .or(search),
+                .or(search)
+                .or(search_count),
         )
         .boxed()
     };
@@ -329,7 +331,7 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
     let version = warp::path!("vit-version")
         .and(warp::get())
         .and(with_context.clone())
-        .map(move |context: ContextLock| warp::reply::json(&context.lock().unwrap().version()))
+        .map(move |context: ContextLock| warp::reply::json(&context.read().unwrap().version()))
         .with(warp::reply::with::headers(default_headers()));
 
     let cors_filter = cors_filter();
@@ -385,11 +387,11 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
 
             let server = hyper::Server::builder(incoming).serve(service);
 
-            println!("serving at: https://{}", address);
+            tracing::info!("serving at: https://{}", address);
             Ok(server.await?)
         }
         Protocol::Http => {
-            println!("serving at: http://{}", address);
+            tracing::info!("serving at: http://{}", address);
             warp::serve(api).bind(address).await;
             Ok(())
         }

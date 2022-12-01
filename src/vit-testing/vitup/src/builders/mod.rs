@@ -34,6 +34,7 @@ use std::io::Write;
 use std::path::Path;
 use std::str::FromStr;
 use thiserror::Error;
+use tracing::{info, span, Level, Span};
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 
 pub const LEADER_1: &str = "leader1";
@@ -48,6 +49,7 @@ pub struct VitBackendSettingsBuilder {
     committee_wallet: String,
     //needed for load tests when we rely on secret keys instead of qrs
     skip_qr_generation: bool,
+    span: Span,
 }
 
 impl Default for VitBackendSettingsBuilder {
@@ -57,6 +59,7 @@ impl Default for VitBackendSettingsBuilder {
             skip_qr_generation: false,
             config: Default::default(),
             session_settings: SessionSettings::default(),
+            span: span!(Level::INFO, "builder"),
         }
     }
 }
@@ -64,6 +67,11 @@ impl Default for VitBackendSettingsBuilder {
 impl VitBackendSettingsBuilder {
     pub fn skip_qr_generation(mut self) -> Self {
         self.skip_qr_generation = true;
+        self
+    }
+
+    pub fn span(mut self, span: Span) -> Self {
+        self.span = span;
         self
     }
 
@@ -147,6 +155,8 @@ impl VitBackendSettingsBuilder {
     }
 
     pub fn build(mut self) -> Result<(VitController, ValidVotePlanParameters), Error> {
+        let _enter = self.span.enter();
+
         let mut builder = VitControllerBuilder::new();
 
         let vote_blockchain_time = convert_to_blockchain_date(&self.config);
@@ -158,7 +168,7 @@ impl VitBackendSettingsBuilder {
             )
             .with_slot_duration(SlotDuration::new(self.config.blockchain.slot_duration).unwrap());
 
-        println!("building topology..");
+        info!("building topology..");
 
         builder = builder.topology(self.build_topology());
         blockchain = blockchain
@@ -166,7 +176,7 @@ impl VitBackendSettingsBuilder {
             .with_leader(LEADER_2)
             .with_leader(LEADER_3);
 
-        println!("building blockchain parameters..");
+        info!("building blockchain parameters..");
 
         blockchain = blockchain
             .with_linear_fee(self.config.blockchain.linear_fees.clone())
@@ -193,7 +203,7 @@ impl VitBackendSettingsBuilder {
 
         builder = builder.committee(committe);
 
-        println!("building voting token..");
+        info!("building voting token..");
 
         let root = self.session_settings.root.path().to_path_buf();
         std::fs::create_dir_all(&root)?;
@@ -226,7 +236,7 @@ impl VitBackendSettingsBuilder {
 
         self.write_token(root.join("voting_token.txt"), &token_list)?;
 
-        println!("building initials..");
+        info!("building initials..");
 
         self.config.initials.block0.push(Wallet {
             name: self.committee_wallet.clone(),
@@ -251,7 +261,7 @@ impl VitBackendSettingsBuilder {
                 builder = builder.wallet(wallet.clone());
             }
         }
-        println!("building direct voteplan..");
+        info!("building direct voteplan..");
 
         builder = builder.vote_plans(
             VitVotePlanDefBuilder::default()
@@ -293,7 +303,7 @@ impl VitBackendSettingsBuilder {
 
         builder = builder.blockchain(blockchain);
 
-        println!("building additional services..");
+        info!("building additional services..");
 
         if self.config.additional.explorer {
             builder = builder.explorer(ExplorerTemplate {
@@ -309,7 +319,7 @@ impl VitBackendSettingsBuilder {
             builder = builder.archive_conf(discover_archive_input_files(url)?);
         }
 
-        println!("building controllers..");
+        info!("building controllers..");
 
         let controller = builder.build(self.session_settings.clone())?;
 
@@ -317,13 +327,13 @@ impl VitBackendSettingsBuilder {
             self.dump_qrs(&controller, &generated_wallet_templates, &root)?;
         }
 
-        println!("dumping vote keys..");
+        info!("dumping vote keys..");
 
         controller
             .settings()
             .dump_private_vote_keys(ChildPath::new(root));
 
-        println!("build servicing station static data..");
+        info!("building servicing station static data..");
 
         let parameters = build_servicing_station_parameters(
             &self.config,

@@ -67,141 +67,167 @@ async fn search_impl(
     };
     match table {
         Table::Challenges => {
-            let mut results = context.read().unwrap().state().vit().challenges();
-
-            for f in &filter {
-                use Column::*;
-                match f {
-                    Constraint::Text { search, column } => {
-                        let search = search.to_lowercase();
-                        let string_function = match column {
-                            Type => |c: &Challenge| c.challenge_type.to_string(),
-                            Title => |c: &Challenge| c.title.clone(),
-                            Desc => |c: &Challenge| c.description.clone(),
-                            Author | Funds | ImpactScore => {
-                                return Err(make_error("invalid column", 400))
-                            }
-                        };
-
-                        results.retain(|c| string_function(c).to_lowercase().contains(&search))
-                    }
-                    Constraint::Range {
-                        lower,
-                        upper,
-                        column,
-                    } => {
-                        let lower = lower.unwrap_or(i64::MIN);
-                        let upper = upper.unwrap_or(i64::MAX);
-
-                        let num_function = match column {
-                            Funds => |c: &Challenge| c.rewards_total,
-                            _ => return Err(make_error("invalid column", 400)),
-                        };
-
-                        results.retain(|c| {
-                            let num = num_function(c);
-                            lower <= num && num <= upper
-                        });
-                    }
-                }
-
-                if let Some(OrderBy::Column { column, descending }) = order_by {
-                    match column {
-                        Column::Type => results.sort_by(|a, b| {
-                            a.challenge_type
-                                .to_string()
-                                .cmp(&b.challenge_type.to_string())
-                        }),
-                        Column::Desc => results.sort_by(|a, b| a.description.cmp(&b.description)),
-                        Column::Title => results.sort_by(|a, b| a.title.cmp(&b.title)),
-                        _ => {}
-                    }
-
-                    if descending {
-                        results.reverse();
-                    }
-                }
-            }
+            let results = context.read().unwrap().state().vit().challenges();
+            let results = filter_challenges(results, &filter)?;
+            let results = sort_challenges(results, order_by);
             let results = limit_and_offset(results, limit, offset);
             Ok(SearchResponse::Challenge(results))
         }
         Table::Proposals => {
-            let mut results = context.read().unwrap().state().vit().proposals();
-
-            for f in &filter {
-                use Column::*;
-                match f {
-                    Constraint::Text { search, column } => {
-                        let search = search.to_lowercase();
-                        let string_function = match column {
-                            Type => |p: &FullProposalInfo| p.challenge_type.to_string(),
-                            Title => |p: &FullProposalInfo| p.proposal.proposal_title.clone(),
-                            Desc => |p: &FullProposalInfo| p.proposal.proposal_summary.clone(),
-                            Author => {
-                                |p: &FullProposalInfo| p.proposal.proposer.proposer_name.clone()
-                            }
-                            Funds | ImpactScore => return Err(make_error("invalid column", 400)),
-                        };
-
-                        results.retain(|p| string_function(p).to_lowercase().contains(&search))
-                    }
-                    Constraint::Range {
-                        lower,
-                        upper,
-                        column,
-                    } => {
-                        let lower = lower.unwrap_or(i64::MIN);
-                        let upper = upper.unwrap_or(i64::MAX);
-
-                        let num_function = match column {
-                            Funds => |p: &FullProposalInfo| p.proposal.proposal_funds,
-                            ImpactScore => |p: &FullProposalInfo| p.proposal.proposal_impact_score,
-                            _ => return Err(make_error("invalid column", 400)),
-                        };
-
-                        results.retain(|p| {
-                            let num = num_function(p);
-                            lower <= num && num <= upper
-                        });
-                    }
-                }
-
-                match order_by {
-                    None => {}
-                    Some(OrderBy::Random) => results.shuffle(&mut thread_rng()),
-                    Some(OrderBy::Column { column, descending }) => {
-                        match column {
-                            Column::Desc => results.sort_by(|a, b| {
-                                a.proposal
-                                    .proposal_summary
-                                    .cmp(&b.proposal.proposal_summary)
-                            }),
-                            Column::Title => results.sort_by(|a, b| {
-                                a.proposal.proposal_title.cmp(&b.proposal.proposal_title)
-                            }),
-                            Column::Funds => results.sort_by(|a, b| {
-                                a.proposal.proposal_funds.cmp(&b.proposal.proposal_funds)
-                            }),
-                            Column::Author => results.sort_by(|a, b| {
-                                a.proposal
-                                    .proposer
-                                    .proposer_name
-                                    .cmp(&b.proposal.proposer.proposer_name)
-                            }),
-                            _ => {}
-                        };
-
-                        if descending {
-                            results.reverse();
-                        }
-                    }
-                }
-            }
-
+            let results = context.read().unwrap().state().vit().proposals();
+            let results = filter_proposals(results, &filter)?;
+            let results = sort_proposals(results, order_by);
             let results = limit_and_offset(results, limit, offset);
             Ok(SearchResponse::Proposal(results))
         }
     }
+}
+
+fn filter_challenges(
+    mut challenges: Vec<Challenge>,
+    filter: &[Constraint],
+) -> Result<Vec<Challenge>, Rejection> {
+    for f in filter {
+        use Column::*;
+        match f {
+            Constraint::Text { search, column } => {
+                let search = search.to_lowercase();
+                let string_function = match column {
+                    Type => |c: &Challenge| c.challenge_type.to_string(),
+                    Title => |c: &Challenge| c.title.clone(),
+                    Desc => |c: &Challenge| c.description.clone(),
+                    Author | Funds | ImpactScore => return Err(make_error("invalid column", 400)),
+                };
+
+                challenges.retain(|c| string_function(c).to_lowercase().contains(&search))
+            }
+            Constraint::Range {
+                lower,
+                upper,
+                column,
+            } => {
+                let lower = lower.unwrap_or(i64::MIN);
+                let upper = upper.unwrap_or(i64::MAX);
+
+                let num_function = match column {
+                    Funds => |c: &Challenge| c.rewards_total,
+                    _ => return Err(make_error("invalid column", 400)),
+                };
+
+                challenges.retain(|c| {
+                    let num = num_function(c);
+                    lower <= num && num <= upper
+                });
+            }
+        }
+    }
+
+    Ok(challenges)
+}
+
+fn sort_challenges(mut challenges: Vec<Challenge>, order_by: Option<OrderBy>) -> Vec<Challenge> {
+    match order_by {
+        None => {}
+        Some(OrderBy::Random) => challenges.shuffle(&mut thread_rng()),
+        Some(OrderBy::Column { column, descending }) => {
+            match column {
+                Column::Type => challenges.sort_by(|a, b| {
+                    a.challenge_type
+                        .to_string()
+                        .cmp(&b.challenge_type.to_string())
+                }),
+                Column::Desc => challenges.sort_by(|a, b| a.description.cmp(&b.description)),
+                Column::Title => challenges.sort_by(|a, b| a.title.cmp(&b.title)),
+                _ => {}
+            }
+
+            if descending {
+                challenges.reverse();
+            }
+        }
+    };
+
+    challenges
+}
+
+fn filter_proposals(
+    mut proposals: Vec<FullProposalInfo>,
+    filter: &[Constraint],
+) -> Result<Vec<FullProposalInfo>, Rejection> {
+    for f in filter {
+        use Column::*;
+        match f {
+            Constraint::Text { search, column } => {
+                let search = search.to_lowercase();
+                let string_function = match column {
+                    Type => |p: &FullProposalInfo| p.challenge_type.to_string(),
+                    Title => |p: &FullProposalInfo| p.proposal.proposal_title.clone(),
+                    Desc => |p: &FullProposalInfo| p.proposal.proposal_summary.clone(),
+                    Author => |p: &FullProposalInfo| p.proposal.proposer.proposer_name.clone(),
+                    Funds | ImpactScore => return Err(make_error("invalid column", 400)),
+                };
+
+                proposals.retain(|p| string_function(p).to_lowercase().contains(&search))
+            }
+            Constraint::Range {
+                lower,
+                upper,
+                column,
+            } => {
+                let lower = lower.unwrap_or(i64::MIN);
+                let upper = upper.unwrap_or(i64::MAX);
+
+                let num_function = match column {
+                    Funds => |p: &FullProposalInfo| p.proposal.proposal_funds,
+                    ImpactScore => |p: &FullProposalInfo| p.proposal.proposal_impact_score,
+                    _ => return Err(make_error("invalid column", 400)),
+                };
+
+                proposals.retain(|p| {
+                    let num = num_function(p);
+                    lower <= num && num <= upper
+                });
+            }
+        }
+    }
+
+    Ok(proposals)
+}
+
+fn sort_proposals(
+    mut proposals: Vec<FullProposalInfo>,
+    order_by: Option<OrderBy>,
+) -> Vec<FullProposalInfo> {
+    match order_by {
+        None => {}
+        Some(OrderBy::Random) => proposals.shuffle(&mut thread_rng()),
+        Some(OrderBy::Column { column, descending }) => {
+            match column {
+                Column::Desc => proposals.sort_by(|a, b| {
+                    a.proposal
+                        .proposal_summary
+                        .cmp(&b.proposal.proposal_summary)
+                }),
+                Column::Title => proposals
+                    .sort_by(|a, b| a.proposal.proposal_title.cmp(&b.proposal.proposal_title)),
+                Column::Funds => proposals
+                    .sort_by(|a, b| a.proposal.proposal_funds.cmp(&b.proposal.proposal_funds)),
+                Column::Author => proposals.sort_by(|a, b| {
+                    a.proposal
+                        .proposer
+                        .proposer_name
+                        .cmp(&b.proposal.proposer.proposer_name)
+                }),
+                _ => {}
+            };
+
+            if descending {
+                proposals.reverse();
+            }
+        }
+    }
+
+    proposals
 }
 
 fn limit_and_offset<T>(vec: Vec<T>, limit: Option<u64>, offset: Option<u64>) -> Vec<T> {

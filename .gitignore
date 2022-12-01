@@ -100,3 +100,4 @@ result*
 # Development Environments
 .vscode
 **/.idea/
+.temp/

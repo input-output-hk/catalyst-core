@@ -7,12 +7,6 @@ pub struct SearchRequestBuilder {
     query: SearchQuery,
 }
 
-impl SearchRequestBuilder {
-    pub fn by_funds(self, funds: i64) -> Self {
-        self.by(funds.to_string(), Column::Funds)
-    }
-}
-
 #[allow(clippy::from_over_into)]
 impl Into<SearchQuery> for SearchRequestBuilder {
     fn into(self) -> SearchQuery {
@@ -50,8 +44,20 @@ impl SearchRequestBuilder {
         self
     }
 
+    pub fn by_funds_exact(self, funds: i64) -> Self {
+        self.by_funds(Some(funds), Some(funds))
+    }
+
+    pub fn by_funds(self, lower: Option<i64>, upper: Option<i64>) -> Self {
+        self.by_range(lower, upper, Column::Funds)
+    }
+
+    pub fn by_impact_score(self, impact_score: i64) -> Self {
+        self.by_range(Some(impact_score), Some(impact_score), Column::ImpactScore)
+    }
+
     pub fn by_author(self, author: impl Into<String>) -> Self {
-        self.by(author, Column::Author)
+        self.by_text(author, Column::Author)
     }
 
     pub fn offset(mut self, offset: u64) -> Self {
@@ -65,20 +71,29 @@ impl SearchRequestBuilder {
     }
 
     pub fn by_body(self, body: impl Into<String>) -> Self {
-        self.by(body, Column::Desc)
+        self.by_text(body, Column::Desc)
     }
 
     pub fn by_title(self, title: impl Into<String>) -> Self {
-        self.by(title.into(), Column::Title)
+        self.by_text(title.into(), Column::Title)
     }
 
     pub fn by_type(self, challenge_type: &ChallengeType) -> Self {
-        self.by(challenge_type.to_string(), Column::Type)
+        self.by_text(challenge_type.to_string(), Column::Type)
     }
 
-    pub fn by(mut self, phrase: impl Into<String>, column: Column) -> Self {
-        self.query.query.filter.push(Constraint {
+    pub fn by_text(mut self, phrase: impl Into<String>, column: Column) -> Self {
+        self.query.query.filter.push(Constraint::Text {
             search: phrase.into(),
+            column,
+        });
+        self
+    }
+
+    pub fn by_range(mut self, lower: Option<i64>, upper: Option<i64>, column: Column) -> Self {
+        self.query.query.filter.push(Constraint::Range {
+            upper,
+            lower,
             column,
         });
         self
@@ -89,7 +104,7 @@ impl SearchRequestBuilder {
     }
 
     pub fn order_by_asc(mut self, column: Column) -> Self {
-        self.query.query.order_by.push(OrderBy {
+        self.query.query.order_by.push(OrderBy::Column {
             column,
             descending: false,
         });
@@ -97,10 +112,15 @@ impl SearchRequestBuilder {
     }
 
     pub fn order_by_desc(mut self, column: Column) -> Self {
-        self.query.query.order_by.push(OrderBy {
+        self.query.query.order_by.push(OrderBy::Column {
             column,
             descending: true,
         });
+        self
+    }
+
+    pub fn order_by_random(mut self) -> Self {
+        self.query.query.order_by.push(OrderBy::Random);
         self
     }
 }

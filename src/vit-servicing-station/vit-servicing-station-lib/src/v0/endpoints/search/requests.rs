@@ -72,6 +72,15 @@ pub enum SearchResponse {
     Proposal(Vec<FullProposalInfo>),
 }
 
+impl SearchResponse {
+    pub fn is_empty(&self) -> bool {
+        match self {
+            Self::Challenge(challenges) => challenges.is_empty(),
+            Self::Proposal(proposals) => proposals.is_empty(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use serde_json::{from_value, json, to_string};

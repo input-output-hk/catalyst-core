@@ -3,7 +3,9 @@ use crate::common::startup::quick_start;
 use assert_fs::TempDir;
 use vit_servicing_station_lib::db::models::challenges::Challenge;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
-use vit_servicing_station_lib::v0::endpoints::search::requests::{Column, SearchResponse};
+use vit_servicing_station_lib::v0::endpoints::search::requests::{
+    Column, SearchQuery, SearchResponse,
+};
 
 #[test]
 pub fn search_challenges_by_title() {
@@ -163,7 +165,29 @@ pub fn search_proposal_by_funds() {
         .search(
             SearchRequestBuilder::default()
                 .on_proposals()
-                .by_funds(expected_proposal.proposal.proposal_funds)
+                .by_funds_exact(expected_proposal.proposal.proposal_funds)
+                .into(),
+        )
+        .unwrap();
+
+    assert_response_contains_proposals(expected_proposal, response)
+}
+
+#[test]
+pub fn search_proposal_by_funds_range() {
+    let temp_dir = TempDir::new().unwrap();
+    let (server, data) = quick_start(&temp_dir).unwrap();
+    let rest_client = server.rest_client_with_token(&data.token_hash());
+    let expected_proposal = &data.proposals()[0];
+
+    let response = rest_client
+        .search(
+            SearchRequestBuilder::default()
+                .on_proposals()
+                .by_funds(
+                    Some(expected_proposal.proposal.proposal_funds - 10),
+                    Some(expected_proposal.proposal.proposal_funds + 10),
+                )
                 .into(),
         )
         .unwrap();
@@ -191,10 +215,9 @@ pub fn search_proposal_by_title_and_author() {
     assert_response_contains_proposals(expected_proposal, response)
 }
 
-
 #[test]
 pub fn search_proposal_by_funds_empty() {
-    let temp_dir = TempDir::new().unwrap();
+    let temp_dir = TempDir::new().unwrap().into_persistent();
     let (server, data) = quick_start(&temp_dir).unwrap();
     let rest_client = server.rest_client_with_token(&data.token_hash());
 
@@ -202,16 +225,12 @@ pub fn search_proposal_by_funds_empty() {
         .search(
             SearchRequestBuilder::default()
                 .on_proposals()
-                .by_funds(1)
+                .by_funds_exact(1)
                 .into(),
         )
         .unwrap();
 
-    if let SearchResponse::Proposal(proposals) = response {
-        assert!(proposals.is_empty());
-    } else {
-        panic!("internal error: querying for proposals but got challenges");
-    }
+    assert!(response.is_empty());
 }
 
 #[test]
@@ -318,6 +337,64 @@ pub fn sort_proposals_result_by_title_desc() {
             .map(|x| &x.proposal.proposal_title)
             .collect();
         assert_eq!(expected, actual);
+    } else {
+        panic!("internal error: querying for proposals but got challenges");
+    }
+}
+
+#[test]
+pub fn search_proposal_by_impact_score() {
+    let temp_dir = TempDir::new().unwrap();
+    let (server, data) = quick_start(&temp_dir).unwrap();
+    let rest_client = server.rest_client_with_token(&data.token_hash());
+
+    let expected_proposal = &data.proposals()[0];
+    let impact_score = data.proposals()[0].proposal.proposal_impact_score;
+
+    let response = rest_client
+        .search(
+            SearchRequestBuilder::default()
+                .on_proposals()
+                .by_impact_score(impact_score)
+                .into(),
+        )
+        .unwrap();
+
+    assert_response_contains_proposals(expected_proposal, response)
+}
+#[test]
+pub fn sort_proposals_result_by_title_random() {
+    let temp_dir = TempDir::new().unwrap();
+    let (server, data) = quick_start(&temp_dir).unwrap();
+    let rest_client = server.rest_client_with_token(&data.token_hash());
+    let filter_query = "a";
+    let expected_proposals: Vec<FullProposalInfo> = data
+        .proposals()
+        .into_iter()
+        .filter(|x| x.proposal.proposal_title.contains(filter_query))
+        .collect();
+
+    let search_query: SearchQuery = SearchRequestBuilder::default()
+        .on_proposals()
+        .by_title(filter_query)
+        .order_by_random()
+        .into();
+
+    let response = rest_client.search(search_query.clone()).unwrap();
+
+    let first_random_proposals = if let SearchResponse::Proposal(proposals) = response {
+        assert_eq!(expected_proposals.len(), proposals.len());
+        assert_ne!(expected_proposals, proposals);
+        proposals
+    } else {
+        panic!("internal error: querying for proposals but got challenges");
+    };
+
+    let response = rest_client.search(search_query).unwrap();
+
+    if let SearchResponse::Proposal(proposals) = response {
+        assert_eq!(first_random_proposals.len(), proposals.len());
+        assert_ne!(first_random_proposals, proposals);
     } else {
         panic!("internal error: querying for proposals but got challenges");
     }

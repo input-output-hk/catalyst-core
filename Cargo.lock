@@ -200,7 +200,7 @@ dependencies = [
  "async-graphql-value",
  "async-stream",
  "async-trait",
- "base64 0.13.1",
+ "base64",
  "bytes",
  "fast_chemail",
  "fnv",
@@ -411,12 +411,6 @@ name = "base-x"
 version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4cbbc9d0964165b47557570cce6c952866c2678457aca742aafc9fb771d30270"
-
-[[package]]
-name = "base64"
-version = "0.12.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3441f0f7b02788e948e47f457ca01f1d7e6d92c693bc132c22b087d3141c03ff"
 
 [[package]]
 name = "base64"
@@ -934,7 +928,7 @@ name = "chain-evm"
 version = "0.1.0"
 dependencies = [
  "aurora-bn",
- "base64 0.13.1",
+ "base64",
  "blake2",
  "byte-slice-cast",
  "chain-core",
@@ -1731,18 +1725,6 @@ dependencies = [
 
 [[package]]
 name = "dialoguer"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61579ada4ec0c6031cfac3f86fdba0d195a7ebeb5e36693bd53cb5999a25beeb"
-dependencies = [
- "console",
- "lazy_static",
- "tempfile",
- "zeroize",
-]
-
-[[package]]
-name = "dialoguer"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a92e7e37ecef6857fdc0c0c5d42fd5b0938e46590c2183cc92dd310a6d078eb1"
@@ -2201,7 +2183,7 @@ dependencies = [
  "assert_fs",
  "async-graphql",
  "async-graphql-warp",
- "base64 0.13.1",
+ "base64",
  "cardano-legacy-address",
  "chain-addr",
  "chain-core",
@@ -2821,11 +2803,11 @@ dependencies = [
 
 [[package]]
 name = "hashlink"
-version = "0.7.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7249a3129cbc1ffccd74857f81464a323a152173cdb134e0fd81bc803b29facf"
+checksum = "69fe1fcf8b4278d860ad0548329f892a3631fb63f82574df68275f34cdbe0ffa"
 dependencies = [
- "hashbrown 0.11.2",
+ "hashbrown 0.12.3",
 ]
 
 [[package]]
@@ -2853,7 +2835,7 @@ version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f3e372db8e5c0d213e0cd0b9be18be2aca3d44cf2fe30a9d46a65581cd454584"
 dependencies = [
- "base64 0.13.1",
+ "base64",
  "bitflags",
  "bytes",
  "headers-core",
@@ -3148,7 +3130,7 @@ dependencies = [
  "console",
  "cryptoxide 0.4.2",
  "csv",
- "dialoguer 0.10.2",
+ "dialoguer",
  "dirs",
  "eccoxide 0.2.0",
  "ed25519-bip32 0.3.2",
@@ -3521,7 +3503,7 @@ name = "jcli"
 version = "0.13.0"
 dependencies = [
  "assert_fs",
- "base64 0.13.1",
+ "base64",
  "bech32 0.8.1",
  "bincode",
  "bytes",
@@ -3601,7 +3583,7 @@ version = "0.13.0"
 dependencies = [
  "arc-swap",
  "async-trait",
- "base64 0.13.1",
+ "base64",
  "bech32 0.8.1",
  "cardano-legacy-address",
  "chain-addr",
@@ -3668,7 +3650,7 @@ version = "0.13.0"
 dependencies = [
  "assert_cmd",
  "assert_fs",
- "base64 0.13.1",
+ "base64",
  "bech32 0.8.1",
  "bytesize",
  "cardano-legacy-address",
@@ -3735,7 +3717,7 @@ version = "0.13.0"
 dependencies = [
  "assert_cmd",
  "assert_fs",
- "base64 0.13.1",
+ "base64",
  "bech32 0.7.3",
  "chain-addr",
  "chain-core",
@@ -3783,7 +3765,7 @@ dependencies = [
 name = "jormungandr-lib"
 version = "0.13.0"
 dependencies = [
- "base64 0.13.1",
+ "base64",
  "bech32 0.8.1",
  "bincode",
  "cardano-legacy-address",
@@ -3831,13 +3813,13 @@ name = "jortestkit"
 version = "0.1.0"
 dependencies = [
  "assert_fs",
- "base64 0.13.1",
+ "base64",
  "bech32 0.8.1",
  "bytesize",
  "console",
  "csv",
  "custom_debug",
- "dialoguer 0.9.0",
+ "dialoguer",
  "flate2",
  "fs_extra",
  "hex",
@@ -4024,7 +4006,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95b09eff1b35ed3b33b877ced3a691fc7a481919c7e29c53c906226fcf55e2a1"
 dependencies = [
  "arrayref",
- "base64 0.13.1",
+ "base64",
  "digest 0.9.0",
  "libsecp256k1-core",
  "libsecp256k1-gen-ecmult",
@@ -5257,7 +5239,7 @@ version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "878c6cbf956e03af9aa8204b407b9cbf47c072164800aa918c516cd4b056c50c"
 dependencies = [
- "base64 0.13.1",
+ "base64",
  "byteorder",
  "bytes",
  "fallible-iterator",
@@ -5992,7 +5974,7 @@ version = "0.11.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68cc60575865c7831548863cc02356512e3f1dc2f3f82cb837d7fc4cc8f3c97c"
 dependencies = [
- "base64 0.13.1",
+ "base64",
  "bytes",
  "encoding_rs",
  "futures-core",
@@ -6212,7 +6194,7 @@ version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5eebeaeb360c87bfb72e84abdb3447159c0eaececf1bef2aecd65a8be949d1c9"
 dependencies = [
- "base64 0.13.1",
+ "base64",
 ]
 
 [[package]]
@@ -6221,7 +6203,7 @@ version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0864aeff53f8c05aa08d86e5ef839d3dfcf07aeba2db32f12db0ef716e87bd55"
 dependencies = [
- "base64 0.13.1",
+ "base64",
 ]
 
 [[package]]
@@ -6541,7 +6523,7 @@ version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "25bf4a5a814902cd1014dbccfa4d4560fb8432c779471e96e035602519f82eef"
 dependencies = [
- "base64 0.13.1",
+ "base64",
  "chrono",
  "hex",
  "indexmap",
@@ -7007,9 +6989,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.104"
+version = "1.0.105"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ae548ec36cf198c0ef7710d3c230987c2d6d7bd98ad6edc0274462724c585ce"
+checksum = "60b9b43d45702de4c839cb9b51d9f529c5dd26a4aff255b42b1ebc03e88ee908"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -7457,7 +7439,7 @@ checksum = "ff08f4649d10a70ffa3522ca559031285d8e421d727ac85c60825761818f5d0a"
 dependencies = [
  "async-stream",
  "async-trait",
- "base64 0.13.1",
+ "base64",
  "bytes",
  "futures-core",
  "futures-util",
@@ -7489,7 +7471,7 @@ dependencies = [
  "async-stream",
  "async-trait",
  "axum",
- "base64 0.13.1",
+ "base64",
  "bytes",
  "futures-core",
  "futures-util",
@@ -7800,7 +7782,7 @@ version = "0.17.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e27992fd6a8c29ee7eef28fc78349aa244134e10ad447ce3b9f0ac0ed0fa4ce0"
 dependencies = [
- "base64 0.13.1",
+ "base64",
  "byteorder",
  "bytes",
  "http",
@@ -8054,7 +8036,7 @@ dependencies = [
 name = "vit-servicing-station-cli"
 version = "0.3.4-dev"
 dependencies = [
- "base64 0.12.3",
+ "base64",
  "csv",
  "diesel 1.4.8",
  "diesel_migrations 1.4.0",
@@ -8075,7 +8057,7 @@ name = "vit-servicing-station-lib"
 version = "0.3.4-dev"
 dependencies = [
  "async-trait",
- "base64 0.12.3",
+ "base64",
  "chain-ser",
  "diesel 1.4.8",
  "diesel_migrations 1.4.0",
@@ -8133,7 +8115,7 @@ version = "0.3.4-dev"
 dependencies = [
  "assert_cmd",
  "assert_fs",
- "base64 0.12.3",
+ "base64",
  "cfg-if 0.1.10",
  "chain-addr",
  "chain-crypto",
@@ -8173,7 +8155,7 @@ version = "0.0.1"
 dependencies = [
  "assert_cmd",
  "assert_fs",
- "base64 0.12.3",
+ "base64",
  "catalyst-toolbox",
  "chain-addr",
  "chain-core",
@@ -8185,7 +8167,7 @@ dependencies = [
  "csv",
  "ctrlc",
  "custom_debug",
- "dialoguer 0.10.2",
+ "dialoguer",
  "diffy",
  "fake",
  "function_name",

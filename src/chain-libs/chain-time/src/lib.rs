@@ -12,4 +12,3 @@ pub use units::DurationSeconds;
 
 #[cfg(any(test, feature = "property-test-api"))]
 pub mod testing;
-

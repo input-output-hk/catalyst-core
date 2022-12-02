@@ -22,7 +22,6 @@
 
     # Voting Tools
     voting-tools.url = "github:input-output-hk/voting-tools";
-    voting-tools.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = {std, ...} @ inputs:

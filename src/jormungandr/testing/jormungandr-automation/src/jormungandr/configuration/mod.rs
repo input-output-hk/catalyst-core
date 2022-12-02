@@ -1,6 +1,5 @@
 use lazy_static::lazy_static;
 use netstat2::{get_sockets_info, AddressFamilyFlags, ProtocolFlags};
-//use rand::Rng;
 use std::{
     collections::HashSet,
     sync::atomic::{AtomicU16, Ordering},
@@ -31,9 +30,7 @@ lazy_static! {
 
 pub fn get_available_port() -> u16 {
     loop {
-        //let mut rng = rand::thread_rng();
-        let add = 1; //rng.gen_range(10..1000);
-        let candidate_port = NEXT_AVAILABLE_PORT_NUMBER.fetch_add(add, Ordering::SeqCst);
+        let candidate_port = NEXT_AVAILABLE_PORT_NUMBER.fetch_add(1, Ordering::SeqCst);
         if !(*OCCUPIED_PORTS).contains(&candidate_port) {
             return candidate_port;
         }

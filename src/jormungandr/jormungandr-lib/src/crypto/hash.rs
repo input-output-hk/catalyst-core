@@ -113,7 +113,7 @@ impl From<Hash> for Blake2b256 {
 impl From<key::Hash> for Hash {
     fn from(hash: key::Hash) -> Self {
         Self {
-            hash: hash.get_hash().clone(),
+            hash: *hash.get_hash(),
         }
     }
 }

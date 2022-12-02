@@ -106,19 +106,18 @@ impl JormungandrProcess {
                 });
             }
 
-            let stauts_result = self.status(verification_mode);
+            let status = self.status(verification_mode)?;
 
-            if let Ok(status) = stauts_result {
-                match status {
-                    Status::Running => {
-                        return Ok(());
-                    }
-                    Status::Exited(exit_status) => {
-                        return Err(StartupError::ProcessExited(exit_status))
-                    }
-                    Status::Starting => (),
+            match status {
+                Status::Running => {
+                    return Ok(());
                 }
+                Status::Exited(exit_status) => {
+                    return Err(StartupError::ProcessExited(exit_status))
+                }
+                Status::Starting => (),
             }
+
             std::thread::sleep(Duration::from_secs(2));
         }
     }
@@ -143,8 +142,15 @@ impl JormungandrProcess {
     }
 
     fn check_startup_errors_in_logs(&self) -> Result<(), JormungandrError> {
-        let port_occupied_msgs = ["error 87", "error 98", "panicked at 'Box<Any>'"];
-        if self.logger.contains_any_of(&port_occupied_msgs) {
+        let port_occupied_msgs = [
+            "error 87",
+            "error 98",
+            "panicked at 'Box<Any>'",
+            "error binding",
+        ];
+        if self.logger.contains_any_of(&port_occupied_msgs)
+            || self.logger.panic_contains_any_of(&port_occupied_msgs)
+        {
             return Err(JormungandrError::PortAlreadyInUse);
         }
 
@@ -168,6 +174,7 @@ impl JormungandrProcess {
                 let output = self.rest().stats();
                 if let Err(err) = output {
                     println!("Error while waiting for node to bootstrap: {:?}", err);
+                    self.check_startup_errors_in_logs()?;
                     return Err(StartupError::CannotGetRestStatus(err));
                 }
 

@@ -4,7 +4,6 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -107,3 +106,4 @@ jobs:
       - run: |
            cargo build -p jcli -p jormungandr -p explorer
            cargo nextest run -p jormungandr-integration-tests --no-fail-fast
+           

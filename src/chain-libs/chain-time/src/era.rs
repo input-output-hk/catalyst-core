@@ -85,6 +85,16 @@ impl TimeEra {
         }
     }
 
+    /// retrieve the epoch start during a given Era
+    pub fn epoch_start(&self) -> Epoch {
+        self.epoch_start
+    }
+
+    /// retrieve the slot start of an epoch during a given Era
+    pub fn slot_start(&self) -> Slot {
+        self.slot_start
+    }
+
     /// retrieve the number of slots in an epoch during a given Era
     pub fn slots_per_epoch(&self) -> u32 {
         self.slots_per_epoch

@@ -21,8 +21,6 @@ in {
   integration-tests = mkVitPkg "integration-tests";
   mainnet-lib = mkVitPkg "mainnet-lib";
   mainnet-tools = mkVitPkg "mainnet-tools";
-  registration-service = mkVitPkg "registration-service";
-  registration-verify-service = mkVitPkg "registration-verify-service";
   scheduler-service-lib = mkVitPkg "scheduler-service-lib";
   signals-handler = mkVitPkg "signals-handler";
   snapshot-trigger-service = mkVitPkg "snapshot-trigger-service";

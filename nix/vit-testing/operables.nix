@@ -24,27 +24,6 @@
       };
     };
 in {
-  registration-service = mkSimpleOperable {
-    name = "registration-service";
-    runtimeInputs = [
-      catalyst-toolbox
-      jcli
-      cardano-cli
-      voting-tools-rs
-    ];
-    args = {
-      "--config" = "/secrets/registration-service.config";
-    };
-  };
-  registration-verify-service = mkSimpleOperable {
-    name = "registration-verify-service";
-    runtimeInputs = [
-      jcli
-    ];
-    args = {
-      "--config" = "/secrets/registration-verify-service.config";
-    };
-  };
   snapshot-trigger-service = mkSimpleOperable {
     name = "snapshot-trigger-service";
     runtimeInputs = [

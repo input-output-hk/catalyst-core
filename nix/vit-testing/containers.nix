@@ -15,7 +15,5 @@
       inherit name operable;
     };
 in {
-  registration-service = mkOCI "registration-service";
-  registration-verify-service = mkOCI "registration-verify-service";
   snapshot-trigger-service = mkOCI "snapshot-trigger-service";
 }

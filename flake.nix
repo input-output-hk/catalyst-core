@@ -18,6 +18,11 @@
 
     # Cardano
     cardano-node.url = "github:input-output-hk/cardano-node/1.33.0";
+    cardano-node.inputs.nixpkgs.follows = "nixpkgs";
+
+    # Voting Tools
+    voting-tools.url = "github:input-output-hk/voting-tools";
+    voting-tools.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = {std, ...} @ inputs:
@@ -48,6 +53,7 @@
         ["jortestkit" "packages"]
         ["vit-servicing-station" "packages"]
         ["vit-testing" "packages"]
+        ["voting-tools" "packages"]
         ["voting-tools-rs" "packages"]
       ];
       containers = std.harvest inputs.self [
@@ -59,7 +65,7 @@
 
   nixConfig = {
     extra-substituters = [
-      "https://hydra.iohk.io"
+      #"https://hydra.iohk.io"
       "https://iog-gov-nix.s3.eu-central-1.amazonaws.com"
     ];
     extra-trusted-public-keys = [

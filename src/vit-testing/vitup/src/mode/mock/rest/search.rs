@@ -1,3 +1,5 @@
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::v0::endpoints::search::requests::*;
 use vit_servicing_station_lib::{db::models::challenges::Challenge, v0::result::HandlerResult};
@@ -11,14 +13,6 @@ fn make_error(s: &str, code: u16) -> Rejection {
         summary: s.to_string(),
         code,
     })
-}
-
-fn challenge_field_error() -> Rejection {
-    make_error("`challenge` doesn't support `funds` or `author`", 400)
-}
-
-fn proposal_field_error() -> Rejection {
-    make_error("`proposal` doesn't support `type`", 400)
 }
 
 fn mock_order_by_error() -> Rejection {
@@ -73,76 +67,167 @@ async fn search_impl(
     };
     match table {
         Table::Challenges => {
-            if filter.iter().any(|c| {
-                matches!(
-                    c,
-                    Constraint::Text {
-                        column: Column::Funds | Column::Author,
-                        ..
-                    }
-                )
-            }) {
-                return Err(challenge_field_error());
-            }
-
-            if matches!(
-                order_by,
-                Some(OrderBy::Column {
-                    column: Column::Funds | Column::Author,
-                    ..
-                })
-            ) {
-                return Err(challenge_field_error());
-            }
-
-            let ctx = context.read().unwrap();
-            let challenges = ctx.state().vit().challenges();
-            let result = search_challenges(challenges, &filter, order_by);
-            let result = limit_and_offset(result, limit, offset);
-            Ok(SearchResponse::Challenge(result))
+            let results = context.read().unwrap().state().vit().challenges();
+            let results = filter_challenges(results, &filter)?;
+            let results = sort_challenges(results, order_by);
+            let results = limit_and_offset(results, limit, offset);
+            Ok(SearchResponse::Challenge(results))
         }
         Table::Proposals => {
-            if filter.iter().any(|c| {
-                matches!(
-                    c,
-                    Constraint::Text {
-                        column: Column::Type,
-                        ..
-                    }
-                )
-            }) {
-                return Err(proposal_field_error());
-            }
-
-            if filter.iter().any(|c| {
-                matches!(
-                    c,
-                    Constraint::Text {
-                        column: Column::Funds,
-                        ..
-                    }
-                )
-            }) {
-                return Err(proposal_field_error());
-            }
-
-            if matches!(
-                order_by,
-                Some(OrderBy::Column {
-                    column: Column::Type,
-                    ..
-                })
-            ) {
-                return Err(make_error("can't search proposal by `fund`", 400));
-            }
-
-            let ctx = context.read().unwrap();
-            let proposals = ctx.state().vit().proposals();
-            let result = search_proposals(proposals, &filter, order_by);
-            let result = limit_and_offset(result, limit, offset);
-            Ok(SearchResponse::Proposal(result))
+            let results = context.read().unwrap().state().vit().proposals();
+            let results = filter_proposals(results, &filter)?;
+            let results = sort_proposals(results, order_by);
+            let results = limit_and_offset(results, limit, offset);
+            Ok(SearchResponse::Proposal(results))
         }
     }
+}
+
+fn filter_challenges(
+    mut challenges: Vec<Challenge>,
+    filter: &[Constraint],
+) -> Result<Vec<Challenge>, Rejection> {
+    for f in filter {
+        use Column::*;
+        match f {
+            Constraint::Text { search, column } => {
+                let search = search.to_lowercase();
+                let string_function = match column {
+                    Type => |c: &Challenge| c.challenge_type.to_string(),
+                    Title => |c: &Challenge| c.title.clone(),
+                    Desc => |c: &Challenge| c.description.clone(),
+                    Author | Funds | ImpactScore => return Err(make_error("invalid column", 400)),
+                };
+
+                challenges.retain(|c| string_function(c).to_lowercase().contains(&search))
+            }
+            Constraint::Range {
+                lower,
+                upper,
+                column,
+            } => {
+                let lower = lower.unwrap_or(i64::MIN);
+                let upper = upper.unwrap_or(i64::MAX);
+
+                let num_function = match column {
+                    Funds => |c: &Challenge| c.rewards_total,
+                    _ => return Err(make_error("invalid column", 400)),
+                };
+
+                challenges.retain(|c| {
+                    let num = num_function(c);
+                    lower <= num && num <= upper
+                });
+            }
+        }
+    }
+
+    Ok(challenges)
+}
+
+fn sort_challenges(mut challenges: Vec<Challenge>, order_by: Option<OrderBy>) -> Vec<Challenge> {
+    match order_by {
+        None => {}
+        Some(OrderBy::Random) => challenges.shuffle(&mut thread_rng()),
+        Some(OrderBy::Column { column, descending }) => {
+            match column {
+                Column::Type => challenges.sort_by(|a, b| {
+                    a.challenge_type
+                        .to_string()
+                        .cmp(&b.challenge_type.to_string())
+                }),
+                Column::Desc => challenges.sort_by(|a, b| a.description.cmp(&b.description)),
+                Column::Title => challenges.sort_by(|a, b| a.title.cmp(&b.title)),
+                _ => {}
+            }
+
+            if descending {
+                challenges.reverse();
+            }
+        }
+    };
+
+    challenges
+}
+
+fn filter_proposals(
+    mut proposals: Vec<FullProposalInfo>,
+    filter: &[Constraint],
+) -> Result<Vec<FullProposalInfo>, Rejection> {
+    for f in filter {
+        use Column::*;
+        match f {
+            Constraint::Text { search, column } => {
+                let search = search.to_lowercase();
+                let string_function = match column {
+                    Type => |p: &FullProposalInfo| p.challenge_type.to_string(),
+                    Title => |p: &FullProposalInfo| p.proposal.proposal_title.clone(),
+                    Desc => |p: &FullProposalInfo| p.proposal.proposal_summary.clone(),
+                    Author => |p: &FullProposalInfo| p.proposal.proposer.proposer_name.clone(),
+                    Funds | ImpactScore => return Err(make_error("invalid column", 400)),
+                };
+
+                proposals.retain(|p| string_function(p).to_lowercase().contains(&search))
+            }
+            Constraint::Range {
+                lower,
+                upper,
+                column,
+            } => {
+                let lower = lower.unwrap_or(i64::MIN);
+                let upper = upper.unwrap_or(i64::MAX);
+
+                let num_function = match column {
+                    Funds => |p: &FullProposalInfo| p.proposal.proposal_funds,
+                    ImpactScore => |p: &FullProposalInfo| p.proposal.proposal_impact_score,
+                    _ => return Err(make_error("invalid column", 400)),
+                };
+
+                proposals.retain(|p| {
+                    let num = num_function(p);
+                    lower <= num && num <= upper
+                });
+            }
+        }
+    }
+
+    Ok(proposals)
+}
+
+fn sort_proposals(
+    mut proposals: Vec<FullProposalInfo>,
+    order_by: Option<OrderBy>,
+) -> Vec<FullProposalInfo> {
+    match order_by {
+        None => {}
+        Some(OrderBy::Random) => proposals.shuffle(&mut thread_rng()),
+        Some(OrderBy::Column { column, descending }) => {
+            match column {
+                Column::Desc => proposals.sort_by(|a, b| {
+                    a.proposal
+                        .proposal_summary
+                        .cmp(&b.proposal.proposal_summary)
+                }),
+                Column::Title => proposals
+                    .sort_by(|a, b| a.proposal.proposal_title.cmp(&b.proposal.proposal_title)),
+                Column::Funds => proposals
+                    .sort_by(|a, b| a.proposal.proposal_funds.cmp(&b.proposal.proposal_funds)),
+                Column::Author => proposals.sort_by(|a, b| {
+                    a.proposal
+                        .proposer
+                        .proposer_name
+                        .cmp(&b.proposal.proposer.proposer_name)
+                }),
+                _ => {}
+            };
+
+            if descending {
+                proposals.reverse();
+            }
+        }
+    }
+
+    proposals
 }
 
 fn limit_and_offset<T>(vec: Vec<T>, limit: Option<u64>, offset: Option<u64>) -> Vec<T> {
@@ -152,102 +237,6 @@ fn limit_and_offset<T>(vec: Vec<T>, limit: Option<u64>, offset: Option<u64>) -> 
         .skip(offset as usize)
         .take(limit as usize)
         .collect()
-}
-
-fn search_proposals(
-    mut proposals: Vec<FullProposalInfo>,
-    filter: &[Constraint],
-    order_by: Option<OrderBy>,
-) -> Vec<FullProposalInfo> {
-    fn is_match(proposal: &FullProposalInfo, constraint: &Constraint) -> bool {
-        let Constraint::Text { column, search } = constraint else { todo!() };
-        let string = match column {
-            Column::Desc => &proposal.proposal.proposal_summary,
-            Column::Title => &proposal.proposal.proposal_title,
-            Column::Author => &proposal.proposal.proposer.proposer_name,
-            _ => return false,
-        };
-
-        string.to_lowercase().contains(&search.to_lowercase())
-    }
-
-    let should_retain = |p: &FullProposalInfo| filter.iter().all(|cons| is_match(p, cons));
-    proposals.retain(should_retain);
-
-    if let Some(OrderBy::Column { column, descending }) = order_by {
-        match column {
-            Column::Desc => proposals.sort_by(|a, b| {
-                a.proposal
-                    .proposal_summary
-                    .cmp(&b.proposal.proposal_summary)
-            }),
-            Column::Title => {
-                proposals.sort_by(|a, b| a.proposal.proposal_title.cmp(&b.proposal.proposal_title))
-            }
-            Column::Funds => {
-                proposals.sort_by(|a, b| a.proposal.proposal_funds.cmp(&b.proposal.proposal_funds))
-            }
-            Column::Author => proposals.sort_by(|a, b| {
-                a.proposal
-                    .proposer
-                    .proposer_name
-                    .cmp(&b.proposal.proposer.proposer_name)
-            }),
-            _ => {}
-        };
-
-        if descending {
-            proposals.reverse();
-        }
-    }
-
-    proposals
-}
-
-fn search_challenges(
-    mut challenges: Vec<Challenge>,
-    filter: &[Constraint],
-    order_by: Option<OrderBy>,
-) -> Vec<Challenge> {
-    fn is_match(challenge: &Challenge, constraint: &Constraint) -> bool {
-        let Constraint::Text { search, column } = constraint else { todo!() };
-        let string = match column {
-            Column::Type => {
-                return challenge
-                    .challenge_type
-                    .to_string()
-                    .to_lowercase()
-                    .contains(&challenge.challenge_type.to_string())
-            }
-            Column::Desc => &challenge.description,
-            Column::Title => &challenge.title,
-            _ => return false,
-        };
-
-        string.to_lowercase().contains(&search.to_lowercase())
-    }
-
-    let should_retain = |c: &Challenge| filter.iter().all(|cons| is_match(c, cons));
-    challenges.retain(should_retain);
-
-    if let Some(OrderBy::Column { column, descending }) = order_by {
-        match column {
-            Column::Type => challenges.sort_by(|a, b| {
-                a.challenge_type
-                    .to_string()
-                    .cmp(&b.challenge_type.to_string())
-            }),
-            Column::Desc => challenges.sort_by(|a, b| a.description.cmp(&b.description)),
-            Column::Title => challenges.sort_by(|a, b| a.title.cmp(&b.title)),
-            _ => {}
-        }
-
-        if descending {
-            challenges.reverse();
-        }
-    }
-
-    challenges
 }
 
 #[cfg(test)]

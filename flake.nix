@@ -65,6 +65,7 @@
   nixConfig = {
     extra-substituters = [
       #"https://hydra.iohk.io"
+      "https://cache.iog.io"
       "https://iog-gov-nix.s3.eu-central-1.amazonaws.com"
     ];
     extra-trusted-public-keys = [

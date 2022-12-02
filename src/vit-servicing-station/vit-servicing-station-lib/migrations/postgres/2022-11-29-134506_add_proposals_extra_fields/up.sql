@@ -1,4 +1,4 @@
-ALTER TABLE proposals ADD proposal_extra_fields TEXT;
+ALTER TABLE proposals ADD extra TEXT;
 
 -- Recreate view so it's updated with the added field
 DROP VIEW full_proposals_info;

@@ -1,1 +1,1 @@
-ALTER TABLE proposals DROP extra_fields;
+ALTER TABLE proposals DROP extra;

@@ -119,7 +119,7 @@ pub struct Proposal {
     #[serde(alias = "reviewsCount")]
     pub reviews_count: i32,
     #[serde(alias = "extraFields")]
-    pub proposal_extra_fields: Option<ProposalExtraFields>,
+    pub extra: Option<ProposalExtraFields>,
 }
 
 #[derive(PartialEq, Eq, Debug, Clone)]
@@ -301,7 +301,7 @@ where
             fund_id: row.24,
             challenge_id: row.16,
             reviews_count: row.18,
-            proposal_extra_fields: row.17.map(|s| {
+            extra: row.17.map(|s| {
                 serde_json::from_str(&s).expect("invalid value for proposal extra_fields")
             }),
         }
@@ -393,7 +393,7 @@ impl Insertable<proposals::table> for Proposal {
         diesel::dsl::Eq<proposals::chain_proposal_id, Vec<u8>>,
         diesel::dsl::Eq<proposals::chain_vote_options, String>,
         diesel::dsl::Eq<proposals::challenge_id, i32>,
-        diesel::dsl::Eq<proposals::proposal_extra_fields, Option<String>>,
+        diesel::dsl::Eq<proposals::extra, Option<String>>,
     );
 
     fn values(self) -> Self::Values {
@@ -414,9 +414,7 @@ impl Insertable<proposals::table> for Proposal {
             proposals::chain_proposal_id.eq(self.chain_proposal_id),
             proposals::chain_vote_options.eq(self.chain_vote_options.as_csv_string()),
             proposals::challenge_id.eq(self.challenge_id),
-            proposals::proposal_extra_fields.eq(self
-                .proposal_extra_fields
-                .map(|h| serde_json::to_string(&h).unwrap())),
+            proposals::extra.eq(self.extra.map(|h| serde_json::to_string(&h).unwrap())),
         )
     }
 }
@@ -550,7 +548,7 @@ pub mod test {
                 chain_vote_encryption_key: "none".to_string(),
                 fund_id: 1,
                 challenge_id: CHALLENGE_ID,
-                proposal_extra_fields: Some(
+                extra: Some(
                     vec![("key1", "value1"), ("key2", "value2")]
                         .into_iter()
                         .map(|(a, b)| (a.to_string(), b.to_string()))
@@ -606,8 +604,8 @@ pub mod test {
             proposals::chain_proposal_id.eq(proposal.chain_proposal_id.clone()),
             proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),
             proposals::challenge_id.eq(proposal.challenge_id),
-            proposals::proposal_extra_fields.eq(proposal
-                .proposal_extra_fields
+            proposals::extra.eq(proposal
+                .extra
                 .as_ref()
                 .map(|h| serde_json::to_string(h).unwrap())),
         );

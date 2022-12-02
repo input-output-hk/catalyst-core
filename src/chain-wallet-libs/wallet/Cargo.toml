@@ -15,7 +15,7 @@ chain-path-derivation = { path = "../chain-path-derivation" }
 hdkeygen = { path = "../hdkeygen" }
 hex = "0.4.2"
 itertools = "0.10"
-hashlink = "0.7.0"
+hashlink = "0.8"
 zeroize = "1.5.3"
 serde = {version = "1.0.114", features = ["derive"]}
 

@@ -64,8 +64,8 @@ serde = { version = "1", features = ["derive"] }
 warp = "0.3"
 tokio = { version = "1.4", features = ["macros","rt","rt-multi-thread"] }
 json = "0.12.4"
-image = "0.23.12"
-base64 = "0.12.1"
+image = "0.23"
+base64 = "0.13"
 uuid = { version = "0.8", features = ["serde", "v4"] }
 tracing-subscriber = { version = "0.3", features= ["std", "env-filter"] }
 tracing = "0.1"
@@ -80,7 +80,7 @@ tokio-stream = { version = "0.1.8", features = ["net"] }
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
 assert_fs ="1.0"
-assert_cmd = "1.0"
+assert_cmd = "2"
 
 [dependencies.reqwest]
 version = "0.11"

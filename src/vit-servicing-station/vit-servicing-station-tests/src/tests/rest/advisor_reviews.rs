@@ -34,7 +34,7 @@ pub fn get_advisor_reviews() -> Result<(), Box<dyn std::error::Error>> {
         .build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .start(&temp_dir)?;
 
     let rest_client = server.rest_client_with_token(&hash);

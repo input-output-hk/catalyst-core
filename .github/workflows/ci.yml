@@ -20,5 +20,5 @@ jobs:
       group: ${{ github.workflow }}
     steps:
       - name: Standard Discovery
-        uses: divnix/std-action/discover@main
+        uses: jmgilman/std-action/discover@fixup
         id: discovery

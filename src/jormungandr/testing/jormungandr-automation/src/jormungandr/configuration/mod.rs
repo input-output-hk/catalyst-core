@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 use netstat2::{get_sockets_info, AddressFamilyFlags, ProtocolFlags};
-use rand::Rng;
+//use rand::Rng;
 use std::{
     collections::HashSet,
     sync::atomic::{AtomicU16, Ordering},

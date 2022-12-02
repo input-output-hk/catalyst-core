@@ -1801,11 +1801,11 @@
         "yants": "yants"
       },
       "locked": {
-        "lastModified": 1669595171,
-        "narHash": "sha256-YCqzwIU0vFziwAUI6gz5WhYa4fFJGBKVxKX9V16fcVw=",
+        "lastModified": 1669987194,
+        "narHash": "sha256-jwqWqdzYfc5UvNW1XpiQMtadshBT2YCfos2EaIGZ6yQ=",
         "owner": "divnix",
         "repo": "std",
-        "rev": "18fc2ed09072baf480801fc99b10429f81c181f3",
+        "rev": "91e736f821d058a9db78560fb18ac24b5292f065",
         "type": "github"
       },
       "original": {

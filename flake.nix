@@ -36,7 +36,7 @@
         (std.blockTypes.functions "constants")
         (std.blockTypes.functions "lib")
         (std.blockTypes.functions "toolchains")
-        (std.blockTypes.installables "packages")
+        (std.blockTypes.installables "packages" {ci.build = true;})
         (std.blockTypes.nixago "configs")
         (std.blockTypes.runnables "operables")
       ];

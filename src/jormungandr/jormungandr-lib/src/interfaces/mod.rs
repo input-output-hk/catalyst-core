@@ -2,6 +2,7 @@ mod account_identifier;
 mod account_state;
 mod address;
 mod block0_configuration;
+mod block0_date;
 mod blockdate;
 mod certificate;
 mod committee;
@@ -29,6 +30,7 @@ mod stake_distribution;
 mod stake_pool_stats;
 mod stats;
 mod tax_type;
+mod time_era;
 mod transaction_input;
 mod transaction_output;
 mod transaction_witness;
@@ -42,6 +44,7 @@ pub use self::{
     account_state::AccountState,
     address::Address,
     block0_configuration::*,
+    block0_date::Block0DateDef,
     blockdate::BlockDate,
     certificate::{
         Certificate, CertificateFromBech32Error, CertificateFromStrError, CertificateToBech32Error,
@@ -78,6 +81,7 @@ pub use self::{
     stake_pool_stats::{Rewards, StakePoolStats},
     stats::{NodeState, NodeStats, NodeStatsDto},
     tax_type::TaxType,
+    time_era::TimeEraDef,
     transaction_input::{TransactionInput, TransactionInputType},
     transaction_output::TransactionOutput,
     transaction_witness::TransactionWitness,

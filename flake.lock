@@ -1955,7 +1955,9 @@
         "haskellNix": "haskellNix_4",
         "iohkNix": "iohkNix_4",
         "nixpkgs": [
-          "nixpkgs"
+          "voting-tools",
+          "haskellNix",
+          "nixpkgs-2111"
         ],
         "tullia": "tullia",
         "utils": "utils_5"

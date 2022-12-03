@@ -20,6 +20,7 @@ pub use params::{
 use serde::Deserialize;
 use std::{
     fmt::Debug,
+    fs,
     path::{Path, PathBuf},
     process::{Child, Command, ExitStatus, Stdio},
     time::{Duration, Instant},
@@ -346,7 +347,7 @@ impl ConfiguredStarter {
         mut temp_dir: Option<TestingDirectory>,
         mut command: Command,
     ) -> Result<JormungandrProcess, StartupError> {
-        let mut retry_counter = 30;
+        let mut retry_counter = 5;
         loop {
             let process = self.start_process(&mut command);
 
@@ -384,7 +385,12 @@ impl ConfiguredStarter {
                     );
                     assert!(err.is_connect());
                     params.refresh_instance_params();
-                    println!("New REST addr {:?}",jormungandr.rest_address().to_string());
+
+                    let contents = fs::read_to_string(params.node_config_path())
+                        .expect("Should have been able to read the file");
+
+                    println!("With text:\n{contents}");
+                    println!("New REST addr {:?}", jormungandr.rest_address().to_string());
                     retry_counter -= 1;
                 }
                 (Err(err), OnFail::Panic) => {

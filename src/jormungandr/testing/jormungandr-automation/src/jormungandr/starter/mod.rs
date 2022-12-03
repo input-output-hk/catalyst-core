@@ -362,7 +362,7 @@ impl ConfiguredStarter {
                 self.on_fail,
             ) {
                 (Ok(()), _) => {
-                    crate::cond_println!(self.verbose, "jormungandr is up");
+                    crate::cond_println!(self.verbose, "Jormungandr is up");
                     return Ok(jormungandr);
                 }
 
@@ -374,6 +374,18 @@ impl ConfiguredStarter {
                         self.verbose,
                         "Port already in use error detected. Retrying with different port... "
                     );
+                    params.refresh_instance_params();
+                }
+
+                (
+                    Err(StartupError::CannotGetRestStatus(RestError::RequestError(err))),
+                    OnFail::RetryUnlimitedOnPortOccupied,
+                ) => {
+                    crate::cond_println!(
+                        self.verbose,
+                        "Connection error. Retrying with different port... ",
+                    );
+                    assert!(err.is_connect());
                     params.refresh_instance_params();
                 }
                 (Err(err), OnFail::Panic) => {

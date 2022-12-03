@@ -152,17 +152,15 @@
 <span id="152">152</span>
 <span id="153">153</span>
 <span id="154">154</span>
-<span id="155">155</span>
-<span id="156">156</span>
-<span id="157">157</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::DeploymentTree;
-<span class="kw">use </span><span class="kw">crate</span>::builders::utils::SessionSettingsExtension;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::SessionSettingsExtension;
+<span class="kw">use </span><span class="kw">crate</span>::builders::utils::{logger, DeploymentTree};
 <span class="kw">use </span><span class="kw">crate</span>::builders::VitBackendSettingsBuilder;
 <span class="kw">use </span><span class="kw">crate</span>::config::read_config;
 <span class="kw">use </span><span class="kw">crate</span>::mode::standard::generate_database;
 <span class="kw">use </span><span class="kw">crate</span>::Result;
 <span class="kw">use </span>glob::glob;
 <span class="kw">use </span>hersir::config::SessionSettings;
+<span class="kw">use </span>jormungandr_automation::jormungandr::LogLevel;
 <span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>std::path::PathBuf;
 <span class="kw">use </span>structopt::StructOpt;
@@ -214,11 +212,16 @@
 
     <span class="attribute">#[structopt(short = <span class="string">&quot;s&quot;</span>, long = <span class="string">&quot;single&quot;</span>, default_value = <span class="string">&quot;0&quot;</span>)]
     </span><span class="kw">pub </span>single: usize,
+
+    <span class="attribute">#[structopt(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;LogLevel::INFO&quot;</span>)]
+    </span><span class="kw">pub </span>log_level: LogLevel,
 }
 
 <span class="kw">impl </span>PerfDataCommandArgs {
     <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         std::env::set_var(<span class="string">&quot;RUST_BACKTRACE&quot;</span>, <span class="string">&quot;full&quot;</span>);
+
+        logger::init(<span class="self">self</span>.log_level.clone())<span class="question-mark">?</span>;
 
         <span class="kw">let </span>session_settings = SessionSettings::from_dir(<span class="kw-2">&amp;</span><span class="self">self</span>.output_directory);
 
@@ -256,16 +259,7 @@
         )<span class="question-mark">?</span>;
         <span class="self">self</span>.split_secrets(<span class="kw-2">&amp;</span>deployment_tree)<span class="question-mark">?</span>;
 
-        <span class="macro">println!</span>(
-            <span class="string">&quot;voteplan ids: {:?}&quot;</span>,
-            controller
-                .defined_vote_plans()
-                .iter()
-                .map(|x| x.id())
-                .collect::&lt;Vec&lt;String&gt;&gt;()
-        );
-
-        config.print_report();
+        config.print_report(<span class="prelude-val">Some</span>(controller));
         <span class="prelude-val">Ok</span>(())
     }
 

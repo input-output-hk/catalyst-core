@@ -405,6 +405,12 @@
 <span id="405">405</span>
 <span id="406">406</span>
 <span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::common::data::ArbitraryGenerator;
 <span class="kw">use </span><span class="kw">crate</span>::common::data::ArbitraryValidVotingTemplateGenerator;
 <span class="kw">use </span><span class="kw">crate</span>::common::data::{Snapshot, ValidVotingTemplateGenerator};
@@ -557,6 +563,12 @@
             chain_voteplan_payload: voteplan.chain_voteplan_payload.clone(),
             chain_vote_encryption_key: voteplan.chain_vote_encryption_key.clone(),
             fund_id: fund.id,
+            extra: <span class="prelude-val">Some</span>(
+                <span class="macro">vec!</span>[(<span class="string">&quot;key1&quot;</span>, <span class="string">&quot;value1&quot;</span>), (<span class="string">&quot;key2&quot;</span>, <span class="string">&quot;value2&quot;</span>)]
+                    .into_iter()
+                    .map(|(a, b)| (a.to_string(), b.to_string()))
+                    .collect(),
+            ),
             challenge_id,
         };
 

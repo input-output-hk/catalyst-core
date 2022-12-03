@@ -234,15 +234,48 @@
 <span id="234">234</span>
 <span id="235">235</span>
 <span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
 </pre><pre class="rust"><code><span class="kw">use </span>diesel::expression_methods::ExpressionMethods;
 <span class="kw">use </span>diesel::query_dsl::RunQueryDsl;
-<span class="kw">use </span>diesel::{Insertable, QueryDsl, SqliteConnection};
+<span class="kw">use </span>diesel::{Insertable, QueryDsl};
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">use </span>vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 <span class="kw">use </span>vit_servicing_station_lib::db::models::goals::InsertGoal;
 <span class="kw">use </span>vit_servicing_station_lib::db::models::groups::Group;
 <span class="kw">use </span>vit_servicing_station_lib::db::schema::goals;
 <span class="kw">use </span>vit_servicing_station_lib::db::schema::{groups, proposals_voteplans};
+<span class="kw">use </span>vit_servicing_station_lib::db::DbConnection;
 <span class="kw">use </span>vit_servicing_station_lib::db::{
     models::{
         api_tokens::ApiTokenData,
@@ -255,13 +288,28 @@
         proposal_community_choice_challenge, proposal_simple_challenge, proposals, voteplans,
     },
 };
+<span class="kw">use </span>vit_servicing_station_lib::q;
+
+<span class="macro">macro_rules! </span>insert_or_ignore_into_q {
+    (<span class="macro-nonterminal">$conn</span>:ident,<span class="macro-nonterminal">$table</span>:expr,<span class="macro-nonterminal">$values</span>:expr) =&gt; {
+        <span class="kw">match </span><span class="macro-nonterminal">$conn </span>{
+            DbConnection::Sqlite(<span class="macro-nonterminal">$conn</span>) =&gt; diesel::insert_or_ignore_into(<span class="macro-nonterminal">$table</span>)
+                .values(<span class="macro-nonterminal">$values</span>)
+                .execute(<span class="macro-nonterminal">$conn</span>),
+            DbConnection::Postgres(<span class="macro-nonterminal">$conn</span>) =&gt; diesel::insert_into(<span class="macro-nonterminal">$table</span>)
+                .values(<span class="macro-nonterminal">$values</span>)
+                .on_conflict_do_nothing()
+                .execute(<span class="macro-nonterminal">$conn</span>),
+        }
+    };
+}
 
 <span class="kw">pub struct </span>DbInserter&lt;<span class="lifetime">&#39;a</span>&gt; {
-    connection: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>SqliteConnection,
+    connection: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>DbConnection,
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; DbInserter&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">pub fn </span>new(connection: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>SqliteConnection) -&gt; <span class="self">Self </span>{
+    <span class="kw">pub fn </span>new(connection: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>DbConnection) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{ connection }
     }
 
@@ -272,10 +320,14 @@
             api_tokens::dsl::expire_time.eq(token_data.expire_time),
         );
 
-        diesel::insert_into(api_tokens::table)
-            .values(values)
-            .execute(<span class="self">self</span>.connection)
-            .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
+        <span class="kw">let </span>conn = <span class="self">self</span>.connection;
+        <span class="macro">q!</span>(
+            conn,
+            diesel::insert_into(api_tokens::table)
+                .values(values)
+                .execute(conn)
+        )
+        .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
@@ -288,6 +340,8 @@
     }
 
     <span class="kw">pub fn </span>insert_proposals(<span class="kw-2">&amp;</span><span class="self">self</span>, proposals: <span class="kw-2">&amp;</span>[FullProposalInfo]) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbInserterError&gt; {
+        <span class="kw">let </span>conn = <span class="self">self</span>.connection;
+
         <span class="kw">for </span>proposal <span class="kw">in </span>proposals {
             <span class="kw">let </span>proposal_id = proposal.proposal.proposal_id.clone();
             <span class="kw">let </span>values = (
@@ -317,10 +371,10 @@
                 proposals::chain_vote_options
                     .eq(proposal.proposal.chain_vote_options.as_csv_string()),
                 proposals::challenge_id.eq(proposal.proposal.challenge_id),
+                proposals::extra.eq(serde_json::to_string(<span class="kw-2">&amp;</span>proposal.proposal.extra).unwrap()),
             );
-            diesel::insert_or_ignore_into(proposals::table)
-                .values(values)
-                .execute(<span class="self">self</span>.connection)
+
+            <span class="macro">insert_or_ignore_into_q!</span>(conn, proposals::table, values)
                 .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
 
             <span class="kw">let </span>values = (
@@ -330,17 +384,23 @@
                 proposals_voteplans::chain_voteplan_id
                     .eq(proposal.voteplan.chain_voteplan_id.clone()),
             );
-            diesel::insert_into(proposals_voteplans::table)
-                .values(values)
-                .execute(<span class="self">self</span>.connection)
-                .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
+            <span class="macro">q!</span>(
+                conn,
+                diesel::insert_into(proposals_voteplans::table)
+                    .values(values)
+                    .execute(conn)
+            )
+            .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
 
-            <span class="kw">let </span>token_id = groups::table
-                .filter(groups::fund_id.eq(proposal.proposal.fund_id))
-                .filter(groups::group_id.eq(<span class="kw-2">&amp;</span>proposal.group_id))
-                .select(groups::token_identifier)
-                .first::&lt;String&gt;(<span class="self">self</span>.connection)
-                .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
+            <span class="kw">let </span>token_id = <span class="macro">q!</span>(
+                conn,
+                groups::table
+                    .filter(groups::fund_id.eq(proposal.proposal.fund_id))
+                    .filter(groups::group_id.eq(<span class="kw-2">&amp;</span>proposal.group_id))
+                    .select(groups::token_identifier)
+                    .first::&lt;String&gt;(conn)
+            )
+            .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
 
             <span class="kw">let </span>voteplan_values = (
                 voteplans::chain_voteplan_id.eq(proposal.voteplan.chain_voteplan_id.clone()),
@@ -355,9 +415,7 @@
                 voteplans::token_identifier.eq(token_id),
             );
 
-            diesel::insert_or_ignore_into(voteplans::table)
-                .values(voteplan_values)
-                .execute(<span class="self">self</span>.connection)
+            <span class="macro">insert_or_ignore_into_q!</span>(conn, voteplans::table, voteplan_values)
                 .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
 
             <span class="kw">match </span><span class="kw-2">&amp;</span>proposal.challenge_info {
@@ -368,9 +426,7 @@
                         proposal_simple_challenge::proposal_solution
                             .eq(data.proposal_solution.clone()),
                     );
-                    diesel::insert_or_ignore_into(proposal_simple_challenge::table)
-                        .values(simple_values)
-                        .execute(<span class="self">self</span>.connection)
+                    <span class="macro">insert_or_ignore_into_q!</span>(conn, proposal_simple_challenge::table, simple_values)
                         .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
                 }
                 ProposalChallengeInfo::CommunityChoice(data) =&gt; {
@@ -386,10 +442,13 @@
                         proposal_community_choice_challenge::proposal_metrics
                             .eq(data.proposal_metrics.clone()),
                     );
-                    diesel::insert_or_ignore_into(proposal_community_choice_challenge::table)
-                        .values(community_values)
-                        .execute(<span class="self">self</span>.connection)
-                        .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
+
+                    <span class="macro">insert_or_ignore_into_q!</span>(
+                        conn,
+                        proposal_community_choice_challenge::table,
+                        community_values
+                    )
+                    .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
                 }
             };
         }
@@ -397,13 +456,18 @@
     }
 
     <span class="kw">pub fn </span>insert_funds(<span class="kw-2">&amp;</span><span class="self">self</span>, funds: <span class="kw-2">&amp;</span>[Fund]) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbInserterError&gt; {
+        <span class="kw">let </span>conn = <span class="self">self</span>.connection;
+
         <span class="kw">for </span>fund <span class="kw">in </span>funds {
             <span class="kw">let </span>values = fund.clone().values();
 
-            diesel::insert_into(funds::table)
-                .values(values)
-                .execute(<span class="self">self</span>.connection)
-                .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
+            <span class="macro">q!</span>(
+                conn,
+                diesel::insert_into(funds::table)
+                    .values(values)
+                    .execute(conn)
+            )
+            .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
 
             <span class="kw">for </span>voteplan <span class="kw">in </span><span class="kw-2">&amp;</span>fund.chain_vote_plans {
                 <span class="kw">let </span>values = (
@@ -418,16 +482,12 @@
                     voteplans::fund_id.eq(voteplan.fund_id),
                     voteplans::token_identifier.eq(voteplan.token_identifier.clone()),
                 );
-                diesel::insert_or_ignore_into(voteplans::table)
-                    .values(values)
-                    .execute(<span class="self">self</span>.connection)
+                <span class="macro">insert_or_ignore_into_q!</span>(conn, voteplans::table, values)
                     .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
             }
 
             <span class="kw">for </span>goal <span class="kw">in </span><span class="kw-2">&amp;</span>fund.goals {
-                diesel::insert_or_ignore_into(goals::table)
-                    .values(InsertGoal::from(goal))
-                    .execute(<span class="self">self</span>.connection)
+                <span class="macro">insert_or_ignore_into_q!</span>(conn, goals::table, InsertGoal::from(goal))
                     .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
             }
         }
@@ -435,30 +495,34 @@
     }
 
     <span class="kw">pub fn </span>insert_challenges(<span class="kw-2">&amp;</span><span class="self">self</span>, challenges: <span class="kw-2">&amp;</span>[Challenge]) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbInserterError&gt; {
+        <span class="kw">let </span>conn = <span class="self">self</span>.connection;
+
         <span class="kw">for </span>challenge <span class="kw">in </span>challenges {
-            diesel::insert_or_ignore_into(challenges::table)
-                .values(challenge.clone().values())
-                .execute(<span class="self">self</span>.connection)
+            <span class="macro">insert_or_ignore_into_q!</span>(conn, challenges::table, challenge.clone().values())
                 .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
         }
         <span class="prelude-val">Ok</span>(())
     }
 
     <span class="kw">pub fn </span>insert_advisor_reviews(<span class="kw-2">&amp;</span><span class="self">self</span>, reviews: <span class="kw-2">&amp;</span>[AdvisorReview]) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbInserterError&gt; {
+        <span class="kw">let </span>conn = <span class="self">self</span>.connection;
+
         <span class="kw">for </span>review <span class="kw">in </span>reviews {
-            diesel::insert_or_ignore_into(community_advisors_reviews::table)
-                .values(review.clone().values())
-                .execute(<span class="self">self</span>.connection)
-                .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
+            <span class="macro">insert_or_ignore_into_q!</span>(
+                conn,
+                community_advisors_reviews::table,
+                review.clone().values()
+            )
+            .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
         }
         <span class="prelude-val">Ok</span>(())
     }
 
     <span class="kw">pub fn </span>insert_groups(<span class="kw-2">&amp;</span><span class="self">self</span>, groups: <span class="kw-2">&amp;</span>[Group]) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbInserterError&gt; {
+        <span class="kw">let </span>conn = <span class="self">self</span>.connection;
+
         <span class="kw">for </span>group <span class="kw">in </span>groups {
-            diesel::insert_or_ignore_into(groups::table)
-                .values(group.clone().values())
-                .execute(<span class="self">self</span>.connection)
+            <span class="macro">insert_or_ignore_into_q!</span>(conn, groups::table, group.clone().values())
                 .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
         }
         <span class="prelude-val">Ok</span>(())

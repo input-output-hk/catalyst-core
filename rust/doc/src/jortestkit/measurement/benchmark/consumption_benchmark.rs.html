@@ -199,7 +199,6 @@
 <span id="199">199</span>
 <span id="200">200</span>
 <span id="201">201</span>
-<span id="202">202</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::measurement::{
     attribute::{Consumption, NamedProcess},
     marker::ResourcesUsage,
@@ -208,8 +207,7 @@
 <span class="kw">use </span>std::collections::HashMap;
 <span class="kw">use </span>std::sync::{Arc, Mutex};
 <span class="kw">use </span>std::thread::JoinHandle;
-<span class="kw">use </span>sysinfo::AsU32;
-<span class="kw">use </span>sysinfo::{ProcessExt, SystemExt};
+<span class="kw">use </span>sysinfo::{PidExt, ProcessExt, SystemExt};
 <span class="kw">use </span>thiserror::Error;
 
 <span class="attribute">#[derive(Error, Debug)]
@@ -328,7 +326,7 @@
 
         <span class="kw">for </span>(named_process, resources) <span class="kw">in </span><span class="self">self</span>.markers.iter_mut() {
             <span class="kw">let </span>(<span class="kw">_</span>, process) = system
-                .get_processes()
+                .processes()
                 .iter()
                 .find(|(pid, <span class="kw">_</span>)| (named_process.id() <span class="kw">as </span>u32) == pid.as_u32())
                 .ok_or_else(|| ConsumptionBenchmarkError::NoProcessWitId(named_process.clone()))<span class="question-mark">?</span>;

@@ -474,6 +474,14 @@
 <span id="474">474</span>
 <span id="475">475</span>
 <span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_addr::Discrimination;
 <span class="kw">use </span>chain_core::property::Block;
 <span class="kw">use </span>chain_core::property::Fragment <span class="kw">as _</span>;
@@ -492,6 +500,8 @@
 <span class="kw">use </span>jormungandr_lib::time::SystemTime;
 <span class="kw">use </span>std::collections::HashMap;
 <span class="kw">use </span>std::collections::HashSet;
+<span class="kw">use </span>std::fmt;
+<span class="kw">use </span>std::fmt::{Display, Formatter};
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">use </span>thor::BlockDateGenerator;
 
@@ -503,6 +513,12 @@
     <span class="prelude-val">None</span>,
     <span class="comment">//For cases when we want to implement mempool cleaning
     </span>Forget,
+}
+
+<span class="kw">impl </span>Display <span class="kw">for </span>FragmentRecieveStrategy {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>Formatter) -&gt; fmt::Result {
+        <span class="macro">write!</span>(f, <span class="string">&quot;{:?}&quot;</span>, <span class="self">self</span>)
+    }
 }
 
 <span class="kw">pub struct </span>LedgerState {

@@ -762,6 +762,8 @@
 <span id="762">762</span>
 <span id="763">763</span>
 <span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_addr::{Discrimination, Kind};
 <span class="kw">use </span>chain_core::property::Fragment <span class="kw">as _</span>;
 <span class="kw">use </span>chain_crypto::{Ed25519Extended, SecretKey};
@@ -1374,6 +1376,7 @@
     <span class="kw">use </span>chain_addr::Discrimination;
     <span class="kw">use </span>chain_impl_mockchain::certificate::VoteTallyPayload;
     <span class="kw">use </span>chain_impl_mockchain::chaintypes::ConsensusType;
+    <span class="kw">use </span>chain_impl_mockchain::key::BftLeaderId;
     <span class="kw">use </span>chain_impl_mockchain::tokens::minting_policy::MintingPolicy;
     <span class="kw">use </span>chain_impl_mockchain::vote::Choice;
     <span class="kw">use </span>chain_impl_mockchain::vote::Tally;
@@ -1441,6 +1444,7 @@
             .with_block0_consensus(ConsensusType::Bft)
             .with_kes_update_speed(KesUpdateSpeed::new(<span class="number">43200</span>).unwrap())
             .with_discrimination(Discrimination::Production)
+            .with_leader(BftLeaderId::from([<span class="number">0</span>; <span class="number">32</span>]).into())
             .with_committees(<span class="kw-2">&amp;</span>[alice.to_committee_id()])
             .with_slot_duration(slot_duration.try_into().unwrap())
             .with_slots_per_epoch(slots_per_epoch.try_into().unwrap())

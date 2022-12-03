@@ -1191,45 +1191,6 @@
 <span id="1191">1191</span>
 <span id="1192">1192</span>
 <span id="1193">1193</span>
-<span id="1194">1194</span>
-<span id="1195">1195</span>
-<span id="1196">1196</span>
-<span id="1197">1197</span>
-<span id="1198">1198</span>
-<span id="1199">1199</span>
-<span id="1200">1200</span>
-<span id="1201">1201</span>
-<span id="1202">1202</span>
-<span id="1203">1203</span>
-<span id="1204">1204</span>
-<span id="1205">1205</span>
-<span id="1206">1206</span>
-<span id="1207">1207</span>
-<span id="1208">1208</span>
-<span id="1209">1209</span>
-<span id="1210">1210</span>
-<span id="1211">1211</span>
-<span id="1212">1212</span>
-<span id="1213">1213</span>
-<span id="1214">1214</span>
-<span id="1215">1215</span>
-<span id="1216">1216</span>
-<span id="1217">1217</span>
-<span id="1218">1218</span>
-<span id="1219">1219</span>
-<span id="1220">1220</span>
-<span id="1221">1221</span>
-<span id="1222">1222</span>
-<span id="1223">1223</span>
-<span id="1224">1224</span>
-<span id="1225">1225</span>
-<span id="1226">1226</span>
-<span id="1227">1227</span>
-<span id="1228">1228</span>
-<span id="1229">1229</span>
-<span id="1230">1230</span>
-<span id="1231">1231</span>
-<span id="1232">1232</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{ExplorerVerifier, VerifierError};
 <span class="kw">use </span><span class="kw">crate</span>::jormungandr::explorer::data::all_blocks::{<span class="self">self</span>, PayloadType <span class="kw">as </span>expPayloadType, <span class="kw-2">*</span>};
 <span class="kw">use </span>chain_addr::AddressReadable;
@@ -1283,58 +1244,16 @@
                 <span class="macro">assert!</span>(block.header().get_bft_leader_id().is_none());
             }
         }
-        <span class="comment">//Logging the fragments in the block
+
+        <span class="comment">//Catch the NPG-3517 bug
         </span><span class="kw">for </span>f <span class="kw">in </span>block.fragments() {
-            <span class="kw">match </span>f {
-                Fragment::Initial(<span class="kw">_</span>) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Fragment::Initial hash {}&quot;</span>, f.hash()),
-                Fragment::OldUtxoDeclaration(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::OldUtxoDeclaration hash {}&quot;</span>, f.hash())
-                }
-                Fragment::Transaction(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::Transaction hash {}&quot;</span>, f.hash())
-                }
-                Fragment::OwnerStakeDelegation(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::OwnerStakeDelegation hash {}&quot;</span>, f.hash())
-                }
-                Fragment::StakeDelegation(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::StakeDelegation hash {}&quot;</span>, f.hash())
-                }
-                Fragment::PoolRegistration(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::PoolRegistration hash {}&quot;</span>, f.hash())
-                }
-                Fragment::PoolRetirement(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::PoolRetirement hash {}&quot;</span>, f.hash())
-                }
-                Fragment::PoolUpdate(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::PoolUpdate hash {}&quot;</span>, f.hash())
-                }
-                Fragment::UpdateProposal(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::UpdateProposal hash {}&quot;</span>, f.hash())
-                }
-                Fragment::UpdateVote(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::UpdateVote hash {}&quot;</span>, f.hash())
-                }
-                Fragment::VotePlan(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::VotePlan hash {}&quot;</span>, f.hash())
-                }
-                Fragment::VoteCast(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::VoteCast hash {}&quot;</span>, f.hash())
-                }
-                Fragment::VoteTally(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::VoteTall hash {}&quot;</span>, f.hash())
-                }
-                Fragment::MintToken(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::MintToken hash {}&quot;</span>, f.hash())
-                }
-                Fragment::Evm(<span class="kw">_</span>) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Fragment::Evm hash {}&quot;</span>, f.hash()),
-                Fragment::EvmMapping(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::EvmMapping hash {}&quot;</span>, f.hash())
-                }
+            <span class="kw">if let </span>Fragment::MintToken(<span class="kw">_</span>) | Fragment::Evm(<span class="kw">_</span>) | Fragment::EvmMapping(<span class="kw">_</span>) = f {
+                <span class="macro">panic!</span>(<span class="string">&quot;NPG-3517 BUG Explorer is missing the fragments Fragment::MintToken, Fragment::Evm, Fragment::EvmMapping &quot;</span>)
             }
         }
 
         <span class="macro">assert_eq!</span>(
-            explorer_block.transactions.total_count + <span class="number">1</span>,
+            explorer_block.transactions.total_count,
             block.contents().len() <span class="kw">as </span>i64
         );
         <span class="kw">let </span><span class="kw-2">mut </span>matching_fragments_count = <span class="number">0</span>;
@@ -1527,9 +1446,12 @@
                                             }
                                         }
                                         AllBlocksTipBlocksEdgesNodeTransactionsEdgesNodeCertificate::MintToken(<span class="kw">_</span>) =&gt; {
+                                        <span class="kw">if </span>!(explorer_block.date.epoch.id.parse::&lt;u32&gt;().unwrap() == <span class="number">0 </span>&amp;&amp;
+                                            explorer_block.date.slot.parse::&lt;u32&gt;().unwrap() == <span class="number">0</span>){
                                            <span class="kw">return </span><span class="prelude-val">Err</span>(VerifierError::InvalidCertificate {
                                                 received: <span class="string">&quot;MintToken can be only in block0&quot;</span>.to_string(),
-                                            });
+                                            })
+                                        };
                                         }
                                         AllBlocksTipBlocksEdgesNodeTransactionsEdgesNodeCertificate::EvmMapping(<span class="kw">_</span>) =&gt; {
                                             <span class="comment">//Not implemented because of the bug EAS-238

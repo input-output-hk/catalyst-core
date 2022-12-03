@@ -687,6 +687,28 @@
 <span id="687">687</span>
 <span id="688">688</span>
 <span id="689">689</span>
+<span id="690">690</span>
+<span id="691">691</span>
+<span id="692">692</span>
+<span id="693">693</span>
+<span id="694">694</span>
+<span id="695">695</span>
+<span id="696">696</span>
+<span id="697">697</span>
+<span id="698">698</span>
+<span id="699">699</span>
+<span id="700">700</span>
+<span id="701">701</span>
+<span id="702">702</span>
+<span id="703">703</span>
+<span id="704">704</span>
+<span id="705">705</span>
+<span id="706">706</span>
+<span id="707">707</span>
+<span id="708">708</span>
+<span id="709">709</span>
+<span id="710">710</span>
+<span id="711">711</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::vote_options;
 <span class="kw">use </span><span class="kw">crate</span>::db::models::vote_options::VoteOptions;
 <span class="kw">use </span><span class="kw">crate</span>::db::schema::proposals_voteplans;
@@ -696,6 +718,7 @@
 <span class="kw">use </span>diesel::types::FromSql;
 <span class="kw">use </span>diesel::{ExpressionMethods, Insertable, Queryable};
 <span class="kw">use </span>serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
+<span class="kw">use </span>std::collections::BTreeMap;
 <span class="kw">use </span>std::convert::{TryFrom, TryInto};
 
 <span class="kw">pub mod </span>community_choice;
@@ -753,6 +776,8 @@
     }
 }
 
+<span class="kw">pub type </span>ProposalExtraFields = BTreeMap&lt;String, String&gt;;
+
 <span class="attribute">#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 </span><span class="kw">pub struct </span>Proposal {
     <span class="attribute">#[serde(alias = <span class="string">&quot;internalId&quot;</span>)]
@@ -804,6 +829,8 @@
     </span><span class="kw">pub </span>challenge_id: i32,
     <span class="attribute">#[serde(alias = <span class="string">&quot;reviewsCount&quot;</span>)]
     </span><span class="kw">pub </span>reviews_count: i32,
+    <span class="attribute">#[serde(alias = <span class="string">&quot;extraFields&quot;</span>)]
+    </span><span class="kw">pub </span>extra: <span class="prelude-ty">Option</span>&lt;ProposalExtraFields&gt;,
 }
 
 <span class="attribute">#[derive(PartialEq, Eq, Debug, Clone)]
@@ -908,37 +935,39 @@
     </span>String,
     <span class="comment">// 16 -&gt; challenge_id
     </span>i32,
-    <span class="comment">// 17 -&gt; reviews_count
+    <span class="comment">// 17 -&gt; extra_fields
+    </span><span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="comment">// 18 -&gt; reviews_count
     </span>i32,
-    <span class="comment">// 18 -&gt; chain_vote_start_time
+    <span class="comment">// 19 -&gt; chain_vote_start_time
     </span>i64,
-    <span class="comment">// 19 -&gt; chain_vote_end_time
+    <span class="comment">// 20 -&gt; chain_vote_end_time
     </span>i64,
-    <span class="comment">// 20 -&gt; chain_committee_end_time
+    <span class="comment">// 21 -&gt; chain_committee_end_time
     </span>i64,
-    <span class="comment">// 21 -&gt; chain_voteplan_payload
+    <span class="comment">// 22 -&gt; chain_voteplan_payload
     </span>String,
-    <span class="comment">// 22 -&gt; chain_vote_encryption_key
+    <span class="comment">// 23 -&gt; chain_vote_encryption_key
     </span>String,
-    <span class="comment">// 23 -&gt; fund_id
+    <span class="comment">// 24 -&gt; fund_id
     </span>i32,
-    <span class="comment">// 24 -&gt; challenge_type
+    <span class="comment">// 25 -&gt; challenge_type
     </span>String,
-    <span class="comment">// 25 -&gt; proposal_solution
+    <span class="comment">// 26 -&gt; proposal_solution
     </span><span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="comment">// 26 -&gt; proposal_brief
+    <span class="comment">// 27 -&gt; proposal_brief
     </span><span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="comment">// 27 -&gt; proposal_importance
+    <span class="comment">// 28 -&gt; proposal_importance
     </span><span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="comment">// 28 -&gt; proposal_goal
+    <span class="comment">// 29 -&gt; proposal_goal
     </span><span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="comment">// 29 -&gt; proposal_metrics
+    <span class="comment">// 30 -&gt; proposal_metrics
     </span><span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="comment">// 30 -&gt; chain_proposal_index
+    <span class="comment">// 31 -&gt; chain_proposal_index
     </span>i64,
-    <span class="comment">// 31 -&gt; chain_voteplan_id
+    <span class="comment">// 32 -&gt; chain_voteplan_id
     </span>String,
-    <span class="comment">// 32 -&gt; group_id
+    <span class="comment">// 33 -&gt; group_id
     </span>String,
 );
 
@@ -975,14 +1004,17 @@
             },
             chain_proposal_id: row.<span class="number">14</span>,
             chain_vote_options: vote_options::VoteOptions::parse_coma_separated_value(<span class="kw-2">&amp;</span>row.<span class="number">15</span>),
-            chain_vote_start_time: row.<span class="number">18</span>,
-            chain_vote_end_time: row.<span class="number">19</span>,
-            chain_committee_end_time: row.<span class="number">20</span>,
-            chain_voteplan_payload: row.<span class="number">21</span>,
-            chain_vote_encryption_key: row.<span class="number">22</span>,
-            fund_id: row.<span class="number">23</span>,
+            chain_vote_start_time: row.<span class="number">19</span>,
+            chain_vote_end_time: row.<span class="number">20</span>,
+            chain_committee_end_time: row.<span class="number">21</span>,
+            chain_voteplan_payload: row.<span class="number">22</span>,
+            chain_vote_encryption_key: row.<span class="number">23</span>,
+            fund_id: row.<span class="number">24</span>,
             challenge_id: row.<span class="number">16</span>,
-            reviews_count: row.<span class="number">17</span>,
+            reviews_count: row.<span class="number">18</span>,
+            extra: row.<span class="number">17</span>.map(|s| {
+                serde_json::from_str(<span class="kw-2">&amp;</span>s).expect(<span class="string">&quot;invalid value for proposal extra_fields&quot;</span>)
+            }),
         }
     }
 }
@@ -1000,8 +1032,8 @@
         ProposalVotePlan {
             proposal_id: row.<span class="number">1</span>,
             common: ProposalVotePlanCommon {
-                chain_proposal_index: row.<span class="number">30</span>,
-                chain_voteplan_id: row.<span class="number">31</span>,
+                chain_proposal_index: row.<span class="number">31</span>,
+                chain_voteplan_id: row.<span class="number">32</span>,
             },
         }
     }
@@ -1017,29 +1049,29 @@
     <span class="kw">type </span>Row = FullProposalsInfoRow;
 
     <span class="kw">fn </span>build(row: <span class="self">Self</span>::Row) -&gt; <span class="self">Self </span>{
-        <span class="kw">let </span>challenge_type = row.<span class="number">24</span>.parse().unwrap();
+        <span class="kw">let </span>challenge_type = row.<span class="number">25</span>.parse().unwrap();
         <span class="comment">// It should be safe to unwrap this values here if DB is sanitized and hence tables have data
         // relative to the challenge type.
         </span><span class="kw">let </span>challenge_info = <span class="kw">match </span>challenge_type {
             ChallengeType::Simple =&gt; ProposalChallengeInfo::Simple(simple::ChallengeInfo {
-                proposal_solution: row.<span class="number">25</span>.clone().unwrap(),
+                proposal_solution: row.<span class="number">26</span>.clone().unwrap(),
             }),
             ChallengeType::CommunityChoice =&gt; {
                 ProposalChallengeInfo::CommunityChoice(community_choice::ChallengeInfo {
-                    proposal_brief: row.<span class="number">26</span>.clone().unwrap(),
-                    proposal_importance: row.<span class="number">27</span>.clone().unwrap(),
-                    proposal_goal: row.<span class="number">28</span>.clone().unwrap(),
-                    proposal_metrics: row.<span class="number">29</span>.clone().unwrap(),
+                    proposal_brief: row.<span class="number">27</span>.clone().unwrap(),
+                    proposal_importance: row.<span class="number">28</span>.clone().unwrap(),
+                    proposal_goal: row.<span class="number">29</span>.clone().unwrap(),
+                    proposal_metrics: row.<span class="number">30</span>.clone().unwrap(),
                 })
             }
         };
 
         <span class="kw">let </span>voteplan = ProposalVotePlanCommon {
-            chain_proposal_index: row.<span class="number">30</span>,
-            chain_voteplan_id: row.<span class="number">31</span>.clone(),
+            chain_proposal_index: row.<span class="number">31</span>,
+            chain_voteplan_id: row.<span class="number">32</span>.clone(),
         };
 
-        <span class="kw">let </span>group_id = row.<span class="number">32</span>.clone();
+        <span class="kw">let </span>group_id = row.<span class="number">33</span>.clone();
 
         FullProposalInfo {
             proposal: Proposal::build(row),
@@ -1072,6 +1104,7 @@
         diesel::dsl::Eq&lt;proposals::chain_proposal_id, Vec&lt;u8&gt;&gt;,
         diesel::dsl::Eq&lt;proposals::chain_vote_options, String&gt;,
         diesel::dsl::Eq&lt;proposals::challenge_id, i32&gt;,
+        diesel::dsl::Eq&lt;proposals::extra, <span class="prelude-ty">Option</span>&lt;String&gt;&gt;,
     );
 
     <span class="kw">fn </span>values(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Values {
@@ -1092,6 +1125,7 @@
             proposals::chain_proposal_id.eq(<span class="self">self</span>.chain_proposal_id),
             proposals::chain_vote_options.eq(<span class="self">self</span>.chain_vote_options.as_csv_string()),
             proposals::challenge_id.eq(<span class="self">self</span>.challenge_id),
+            proposals::extra.eq(<span class="self">self</span>.extra.map(|h| serde_json::to_string(<span class="kw-2">&amp;</span>h).unwrap())),
         )
     }
 }
@@ -1225,6 +1259,12 @@
                 chain_vote_encryption_key: <span class="string">&quot;none&quot;</span>.to_string(),
                 fund_id: <span class="number">1</span>,
                 challenge_id: CHALLENGE_ID,
+                extra: <span class="prelude-val">Some</span>(
+                    <span class="macro">vec!</span>[(<span class="string">&quot;key1&quot;</span>, <span class="string">&quot;value1&quot;</span>), (<span class="string">&quot;key2&quot;</span>, <span class="string">&quot;value2&quot;</span>)]
+                        .into_iter()
+                        .map(|(a, b)| (a.to_string(), b.to_string()))
+                        .collect(),
+                ),
             },
             challenge_info: ProposalChallengeInfo::CommunityChoice(
                 community_choice::ChallengeInfo {
@@ -1275,6 +1315,10 @@
             proposals::chain_proposal_id.eq(proposal.chain_proposal_id.clone()),
             proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),
             proposals::challenge_id.eq(proposal.challenge_id),
+            proposals::extra.eq(proposal
+                .extra
+                .as_ref()
+                .map(|h| serde_json::to_string(h).unwrap())),
         );
 
         <span class="macro">q!</span>(

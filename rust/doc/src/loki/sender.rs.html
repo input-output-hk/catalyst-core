@@ -926,7 +926,7 @@
         <span class="kw">let </span>input = from.add_input_with_value(input_value.into());
         <span class="kw">let </span>output = OutputAddress::from_address(to.address().into(), Value(<span class="number">1u64</span>));
         <span class="self">self</span>.transaction_to(<span class="kw-2">&amp;</span>[input], <span class="kw-2">&amp;</span>[output], |sign_data| {
-            <span class="macro">vec!</span>[from.mk_witness(<span class="kw-2">&amp;</span>Hash::from_hash(TestGen::hash()), sign_data)]
+            <span class="macro">vec!</span>[from.mk_witness(<span class="kw-2">&amp;</span>Hash::from(TestGen::hash()), sign_data)]
         })
     }
 

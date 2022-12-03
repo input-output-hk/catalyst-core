@@ -96,15 +96,13 @@
 <span id="96">96</span>
 <span id="97">97</span>
 <span id="98">98</span>
-<span id="99">99</span>
-<span id="100">100</span>
-<span id="101">101</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::{DeploymentTree, SessionSettingsExtension};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::{logger, DeploymentTree, SessionSettingsExtension};
 <span class="kw">use </span><span class="kw">crate</span>::builders::VitBackendSettingsBuilder;
 <span class="kw">use </span><span class="kw">crate</span>::config::read_config;
 <span class="kw">use </span><span class="kw">crate</span>::mode::standard::generate_database;
 <span class="kw">use </span><span class="kw">crate</span>::Result;
 <span class="kw">use </span>hersir::config::SessionSettings;
+<span class="kw">use </span>jormungandr_automation::jormungandr::LogLevel;
 <span class="kw">use </span>std::path::PathBuf;
 <span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
@@ -147,11 +145,16 @@
 
     <span class="attribute">#[structopt(long = <span class="string">&quot;skip-qr-generation&quot;</span>)]
     </span><span class="kw">pub </span>skip_qr_generation: bool,
+
+    <span class="attribute">#[structopt(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;LogLevel::INFO&quot;</span>)]
+    </span><span class="kw">pub </span>log_level: LogLevel,
 }
 
 <span class="kw">impl </span>ExternalDataCommandArgs {
     <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         std::env::set_var(<span class="string">&quot;RUST_BACKTRACE&quot;</span>, <span class="string">&quot;full&quot;</span>);
+
+        logger::init(<span class="self">self</span>.log_level)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>session_settings = SessionSettings::from_dir(<span class="kw-2">&amp;</span><span class="self">self</span>.output_directory);
 
@@ -187,16 +190,7 @@
 
         generate_database(<span class="kw-2">&amp;</span>deployment_tree, vit_parameters, template_generator)<span class="question-mark">?</span>;
 
-        <span class="macro">println!</span>(
-            <span class="string">&quot;voteplan ids: {:?}&quot;</span>,
-            controller
-                .defined_vote_plans()
-                .iter()
-                .map(|x| x.id())
-                .collect::&lt;Vec&lt;String&gt;&gt;()
-        );
-
-        config.print_report();
+        config.print_report(<span class="prelude-val">Some</span>(controller));
         <span class="prelude-val">Ok</span>(())
     }
 }

@@ -142,7 +142,11 @@
 <span id="142">142</span>
 <span id="143">143</span>
 <span id="144">144</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::config::mode::{parse_mode_from_str, Mode};
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::logger;
+<span class="kw">use </span><span class="kw">crate</span>::config::mode::{parse_mode_from_str, Mode};
 <span class="kw">use </span><span class="kw">crate</span>::config::read_config;
 <span class="kw">use </span><span class="kw">crate</span>::config::read_voter_hirs;
 <span class="kw">use </span><span class="kw">crate</span>::mode::spawn::{spawn_network, NetworkSpawnParams};
@@ -226,16 +230,18 @@
 
     <span class="attribute">#[structopt(long = <span class="string">&quot;snapshot&quot;</span>)]
     </span><span class="kw">pub </span>snapshot: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
+
+    <span class="attribute">#[structopt(long = <span class="string">&quot;vitup-log-level&quot;</span>, default_value = <span class="string">&quot;LogLevel::INFO&quot;</span>)]
+    </span><span class="kw">pub </span>vitup_log_level: LogLevel,
 }
 
 <span class="kw">impl </span>AdvancedStartCommandArgs {
     <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         std::env::set_var(<span class="string">&quot;RUST_BACKTRACE&quot;</span>, <span class="string">&quot;full&quot;</span>);
 
-        <span class="comment">// TODO: what happened to this function? should be re-implemented? does it have a
-        // replacement?
-        // as far as I can see it was only used to verify that the binary exists.
-        </span><span class="kw">let </span>jormungandr = <span class="kw-2">&amp;</span><span class="self">self</span>.jormungandr;
+        logger::init(<span class="self">self</span>.vitup_log_level)<span class="question-mark">?</span>;
+
+        <span class="kw">let </span>jormungandr = <span class="kw-2">&amp;</span><span class="self">self</span>.jormungandr;
         <span class="kw">let </span>testing_directory = <span class="self">self</span>.testing_directory;
         <span class="kw">let </span>generate_documentation = <span class="bool-val">true</span>;
         <span class="kw">let </span>log_level = <span class="self">self</span>.log_level;

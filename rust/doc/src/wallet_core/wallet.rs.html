@@ -209,7 +209,6 @@
 <span id="209">209</span>
 <span id="210">210</span>
 <span id="211">211</span>
-<span id="212">212</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{Error, Proposal};
 <span class="kw">use </span>chain_core::property::Serialize <span class="kw">as _</span>;
 <span class="kw">use </span>chain_crypto::SecretKey;
@@ -244,7 +243,7 @@
         <span class="self">self</span>.account.account_id()
     }
 
-    <span class="doccomment">/// Retrieve a wallet from a list of free keys used as utxo&#39;s
+    <span class="doccomment">/// Retrieve a wallet from a key used as utxo&#39;s
     ///
     /// You can also use this function to recover a wallet even after you have
     /// transferred all the funds to the new format (see the [Self::convert] function).
@@ -252,7 +251,6 @@
     /// Parameters
     ///
     /// * `account_key`: the private key used for voting
-    /// * `keys`: unused
     ///
     /// # Errors
     ///

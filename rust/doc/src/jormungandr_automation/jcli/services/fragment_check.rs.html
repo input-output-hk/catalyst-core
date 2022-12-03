@@ -247,7 +247,7 @@
                     serde_yaml::from_str(<span class="kw-2">&amp;</span>content).expect(<span class="string">&quot;Cannot parse fragment logs&quot;</span>);
                 <span class="kw">match </span>fragments
                     .iter()
-                    .find(|x| <span class="kw-2">*</span>x.fragment_id() == Hash::from_hash(<span class="self">self</span>.id))
+                    .find(|x| <span class="kw-2">*</span>x.fragment_id() == Hash::from(<span class="self">self</span>.id))
                 {
                     <span class="prelude-val">Some</span>(x) =&gt; {
                         <span class="macro">println!</span>(<span class="string">&quot;Transaction found in mempool. {:?}&quot;</span>, x);
@@ -281,7 +281,7 @@
                     .message()
                     .logs(<span class="kw-2">&amp;</span><span class="self">self</span>.jormungandr.rest_uri())
             ),
-            transaction_id: Hash::from_hash(<span class="self">self</span>.id),
+            transaction_id: Hash::from(<span class="self">self</span>.id),
             log_content: <span class="self">self</span>.jormungandr.logger.get_log_content(),
         })
     }
@@ -295,7 +295,7 @@
             .logs(<span class="self">self</span>.jormungandr.rest_uri());
         <span class="kw">match </span>fragments
             .iter()
-            .find(|x| <span class="kw-2">*</span>x.fragment_id() == Hash::from_hash(<span class="self">self</span>.id))
+            .find(|x| <span class="kw-2">*</span>x.fragment_id() == Hash::from(<span class="self">self</span>.id))
         {
             <span class="prelude-val">Some</span>(x) =&gt; <span class="macro">assert!</span>(
                 x.is_in_a_block(),
@@ -321,7 +321,7 @@
             .logs(<span class="self">self</span>.jormungandr.rest_uri());
         <span class="kw">match </span>fragments
             .iter()
-            .find(|x| <span class="kw-2">*</span>x.fragment_id() == Hash::from_hash(<span class="self">self</span>.id))
+            .find(|x| <span class="kw-2">*</span>x.fragment_id() == Hash::from(<span class="self">self</span>.id))
         {
             <span class="prelude-val">Some</span>(x) =&gt; {
                 <span class="macro">assert!</span>(

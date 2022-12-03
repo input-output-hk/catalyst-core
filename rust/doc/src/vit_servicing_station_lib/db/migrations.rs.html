@@ -59,17 +59,21 @@
 <span id="59">59</span>
 <span id="60">60</span>
 <span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
 </pre><pre class="rust"><code><span class="kw">use </span>tempfile::TempDir;
 <span class="kw">use </span>thiserror::Error;
 
 <span class="kw">use </span><span class="kw">crate</span>::db::DbConnection;
 
-<span class="kw">const </span>PG_INITIAL_SETUP_UP: <span class="kw-2">&amp;</span>str =
-    <span class="macro">include_str!</span>(<span class="string">&quot;../../migrations/postgres/00000000000000_diesel_initial_setup/up.sql&quot;</span>);
-<span class="kw">const </span>PG_SETUP_UP: <span class="kw-2">&amp;</span>str =
-    <span class="macro">include_str!</span>(<span class="string">&quot;../../migrations/postgres/2022-11-03-210841_setup_db/up.sql&quot;</span>);
-<span class="kw">const </span>SQLITE_SETUP_UP: <span class="kw-2">&amp;</span>str =
-    <span class="macro">include_str!</span>(<span class="string">&quot;../../migrations/sqlite/2020-05-22-112032_setup_db/up.sql&quot;</span>);
+<span class="kw">static </span>PG_MIGRATIONS_DIR: include_dir::Dir&lt;<span class="lifetime">&#39;_</span>&gt; =
+    <span class="macro">include_dir::include_dir!</span>(<span class="string">&quot;$CARGO_MANIFEST_DIR/migrations/postgres&quot;</span>);
+
+<span class="kw">static </span>SQLITE_MIGRATIONS_DIR: include_dir::Dir&lt;<span class="lifetime">&#39;_</span>&gt; =
+    <span class="macro">include_dir::include_dir!</span>(<span class="string">&quot;$CARGO_MANIFEST_DIR/migrations/sqlite&quot;</span>);
 
 <span class="attribute">#[derive(Debug, Error)]
 </span><span class="kw">pub enum </span>InitializeDbWithMigrationError {
@@ -86,15 +90,10 @@
 
     <span class="kw">match </span><span class="kw-2">&amp;</span>db_conn {
         DbConnection::Sqlite(<span class="kw">_</span>) =&gt; {
-            write_tmp_migration(<span class="kw-2">&amp;</span>t, <span class="string">&quot;2020-05-22-112032_setup_db&quot;</span>, SQLITE_SETUP_UP)<span class="question-mark">?</span>;
+            write_tmp_migration(<span class="kw-2">&amp;</span>t, <span class="kw-2">&amp;</span>SQLITE_MIGRATIONS_DIR)<span class="question-mark">?</span>;
         }
         DbConnection::Postgres(<span class="kw">_</span>) =&gt; {
-            write_tmp_migration(
-                <span class="kw-2">&amp;</span>t,
-                <span class="string">&quot;00000000000000_diesel_initial_setup&quot;</span>,
-                PG_INITIAL_SETUP_UP,
-            )<span class="question-mark">?</span>;
-            write_tmp_migration(<span class="kw-2">&amp;</span>t, <span class="string">&quot;2022-11-03-210841_setup_db&quot;</span>, PG_SETUP_UP)<span class="question-mark">?</span>;
+            write_tmp_migration(<span class="kw-2">&amp;</span>t, <span class="kw-2">&amp;</span>PG_MIGRATIONS_DIR)<span class="question-mark">?</span>;
         }
     }
 
@@ -110,15 +109,26 @@
 }
 
 <span class="kw">fn </span>write_tmp_migration(
-    dir: <span class="kw-2">&amp;</span>TempDir,
-    migration_name: <span class="kw-2">&amp;</span>str,
-    up_contents: <span class="kw-2">&amp;</span>str,
+    temp_dir: <span class="kw-2">&amp;</span>TempDir,
+    migrations_dir: <span class="kw-2">&amp;</span>include_dir::Dir&lt;<span class="lifetime">&#39;_</span>&gt;,
 ) -&gt; std::io::Result&lt;()&gt; {
-    <span class="kw">let </span>migration_dir = dir.path().join(migration_name);
+    <span class="kw">for </span>e <span class="kw">in </span>migrations_dir.entries() {
+        <span class="kw">if let </span>include_dir::DirEntry::Dir(d) = e {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(dir_name) = d.path().file_name() {
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(up_file) = d.get_file(d.path().join(<span class="string">&quot;up.sql&quot;</span>)) {
+                    <span class="kw">let </span>migration_dir = temp_dir.path().join(dir_name);
 
-    std::fs::create_dir(migration_dir.as_path())<span class="question-mark">?</span>;
-    std::fs::write(migration_dir.as_path().join(<span class="string">&quot;up.sql&quot;</span>), up_contents)<span class="question-mark">?</span>;
-    std::fs::write(migration_dir.join(<span class="string">&quot;down.sql&quot;</span>), <span class="string">&quot;&quot;</span>)
+                    std::fs::create_dir(migration_dir.as_path())<span class="question-mark">?</span>;
+                    std::fs::write(
+                        migration_dir.as_path().join(<span class="string">&quot;up.sql&quot;</span>),
+                        up_file.contents_utf8().unwrap(),
+                    )<span class="question-mark">?</span>;
+                    std::fs::write(migration_dir.join(<span class="string">&quot;down.sql&quot;</span>), <span class="string">&quot;&quot;</span>)<span class="question-mark">?</span>;
+                }
+            }
+        }
+    }
+    <span class="prelude-val">Ok</span>(())
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="vit_servicing_station_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

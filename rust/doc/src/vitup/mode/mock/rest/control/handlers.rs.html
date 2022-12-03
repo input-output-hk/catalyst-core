@@ -265,76 +265,92 @@
 <span id="265">265</span>
 <span id="266">266</span>
 <span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::config::{Config, SnapshotInitials};
 <span class="kw">use </span><span class="kw">crate</span>::mode::mock::rest::reject::GeneralException;
 <span class="kw">use </span><span class="kw">crate</span>::mode::mock::{ContextLock, FragmentRecieveStrategy, LedgerState, NetworkCongestionMode};
 <span class="kw">use </span><span class="kw">crate</span>::mode::service::manager::file_lister::dump_json;
 <span class="kw">use </span>jortestkit::web::api_token::{APIToken, APITokenManager, TokenError};
+<span class="kw">use </span>tracing::{info, trace};
 <span class="kw">use </span>vit_servicing_station_lib::db::models::funds::Fund;
 <span class="kw">use </span>vit_servicing_station_lib::v0::result::HandlerResult;
 <span class="kw">use </span>warp::{Rejection, Reply};
 
-<span class="kw">pub async fn </span>logs_get(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span>context_lock = context.lock().unwrap();
-    <span class="prelude-val">Ok</span>(HandlerResult(<span class="prelude-val">Ok</span>(context_lock.logs())))
-}
-
-<span class="kw">pub async fn </span>logs_clear(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>context_lock = context.lock().unwrap();
-    context_lock.clear_logs();
-    <span class="prelude-val">Ok</span>(warp::reply())
-}
-
-<span class="kw">pub async fn </span>file_lister_handler(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span>context_lock = context.lock().unwrap();
+<span class="attribute">#[tracing::instrument(skip(context), name = <span class="string">&quot;control&quot;</span>)]
+</span><span class="kw">pub async fn </span>file_lister_handler(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
+    <span class="macro">info!</span>(<span class="string">&quot;get files command&quot;</span>);
+    <span class="kw">let </span>context_lock = context.read().unwrap();
     <span class="prelude-val">Ok</span>(dump_json(context_lock.working_dir())<span class="question-mark">?</span>).map(|r| warp::reply::json(<span class="kw-2">&amp;</span>r))
 }
 
-<span class="kw">pub async fn </span>command_reset_mock(
+<span class="attribute">#[tracing::instrument(skip(context, config), name = <span class="string">&quot;mock control command received&quot;</span>)]
+</span><span class="kw">pub async fn </span>command_reset_mock(
     context: ContextLock,
     config: Config,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    context.lock().unwrap().reset(config)<span class="question-mark">?</span>;
+    <span class="macro">info!</span>(<span class="string">&quot;reset voting command received&quot;</span>);
+    context.write().unwrap().reset(config)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(warp::reply())
 }
 
-<span class="kw">pub async fn </span>command_available(
+<span class="attribute">#[tracing::instrument(skip(context), name = <span class="string">&quot;mock control command received&quot;</span>)]
+</span><span class="kw">pub async fn </span>command_available(
     available: bool,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    context.lock().unwrap().state_mut().available = available;
+    <span class="macro">info!</span>(<span class="string">&quot;set mock availability command&quot;</span>);
+    context.write().unwrap().state_mut().available = available;
     <span class="prelude-val">Ok</span>(warp::reply())
 }
 
-<span class="kw">pub async fn </span>command_block_account(
+<span class="attribute">#[tracing::instrument(skip(context), name = <span class="string">&quot;mock control command received&quot;</span>)]
+</span><span class="kw">pub async fn </span>command_block_account(
     block_account_endpoint_counter: u32,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
+    <span class="macro">info!</span>(<span class="string">&quot;block account command&quot;</span>);
     context
-        .lock()
+        .write()
         .unwrap()
         .state_mut()
         .set_block_account_endpoint(block_account_endpoint_counter);
     <span class="prelude-val">Ok</span>(warp::reply())
 }
 
-<span class="kw">pub async fn </span>command_reset_block_account(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
+<span class="attribute">#[tracing::instrument(skip(context), name = <span class="string">&quot;mock control command received&quot;</span>)]
+</span><span class="kw">pub async fn </span>command_reset_block_account(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
+    <span class="macro">info!</span>(<span class="string">&quot;reset block account command&quot;</span>);
     context
-        .lock()
+        .write()
         .unwrap()
         .state_mut()
         .reset_block_account_endpoint();
     <span class="prelude-val">Ok</span>(warp::reply())
 }
 
-<span class="kw">pub fn </span>update_fragment_id(
+<span class="attribute">#[tracing::instrument(skip(ledger_state), name = <span class="string">&quot;mock control command received&quot;</span>)]
+</span><span class="kw">pub fn </span>update_fragment_id(
     fragment_id: String,
     ledger_state: <span class="kw-2">&amp;mut </span>LedgerState,
     fragment_strategy: FragmentRecieveStrategy,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
+    <span class="macro">info!</span>(<span class="string">&quot;update fragment id command&quot;</span>);
     <span class="kw">if </span>fragment_id.to_uppercase() == <span class="kw-2">*</span><span class="string">&quot;LAST&quot;</span>.to_string() {
+        <span class="macro">trace!</span>(<span class="string">&quot;updating last fragment to {}&quot;</span>, fragment_strategy);
         ledger_state.set_status_for_recent_fragment(fragment_strategy);
     } <span class="kw">else </span>{
+        <span class="macro">trace!</span>(
+            <span class="string">&quot;updating fragment with id &#39;{}&#39; to be: {}&quot;</span>,
+            fragment_id,
+            fragment_strategy
+        );
         ledger_state
             .set_status_for_fragment_id(fragment_id, fragment_strategy)
             .map_err(|err| GeneralException {
@@ -349,7 +365,7 @@
     fragment_id: String,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>context_lock = context.lock().unwrap();
+    <span class="kw">let </span><span class="kw-2">mut </span>context_lock = context.write().unwrap();
     <span class="kw">let </span>ledger = context_lock.state_mut().ledger_mut();
     update_fragment_id(fragment_id, ledger, FragmentRecieveStrategy::Forget)
 }
@@ -358,7 +374,7 @@
     fragment_id: String,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>context_lock = context.lock().unwrap();
+    <span class="kw">let </span><span class="kw-2">mut </span>context_lock = context.write().unwrap();
     <span class="kw">let </span>ledger = context_lock.state_mut().ledger_mut();
     update_fragment_id(fragment_id, ledger, FragmentRecieveStrategy::Reject)
 }
@@ -367,7 +383,7 @@
     fragment_id: String,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>context_lock = context.lock().unwrap();
+    <span class="kw">let </span><span class="kw-2">mut </span>context_lock = context.write().unwrap();
     <span class="kw">let </span>ledger = context_lock.state_mut().ledger_mut();
     update_fragment_id(fragment_id, ledger, FragmentRecieveStrategy::Accept)
 }
@@ -376,25 +392,24 @@
     fragment_id: String,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>context_lock = context.lock().unwrap();
+    <span class="kw">let </span><span class="kw-2">mut </span>context_lock = context.write().unwrap();
     <span class="kw">let </span>ledger = context_lock.state_mut().ledger_mut();
     update_fragment_id(fragment_id, ledger, FragmentRecieveStrategy::Pending)
 }
 
-<span class="kw">pub async fn </span>command_error_code(
+<span class="attribute">#[tracing::instrument(skip(context), name = <span class="string">&quot;mock control command received&quot;</span>)]
+</span><span class="kw">pub async fn </span>command_error_code(
     error_code: u16,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    context
-        .lock()
-        .unwrap()
-        .log(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;set-error-code: {}&quot;</span>, error_code));
-    context.lock().unwrap().state_mut().error_code = error_code;
+    <span class="macro">info!</span>(<span class="string">&quot;always return error code for REST Api call&quot;</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>context_lock = context.write().unwrap();
+    context_lock.state_mut().error_code = error_code;
     <span class="prelude-val">Ok</span>(warp::reply())
 }
 
 <span class="kw">pub async fn </span>command_fund_id(id: i32, context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    context.lock().unwrap().state_mut().set_fund_id(id);
+    context.write().unwrap().state_mut().set_fund_id(id);
     <span class="prelude-val">Ok</span>(warp::reply())
 }
 
@@ -402,7 +417,7 @@
     fund: Fund,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    context.lock().unwrap().state_mut().update_fund(fund);
+    context.write().unwrap().state_mut().update_fund(fund);
     <span class="prelude-val">Ok</span>(warp::reply())
 }
 
@@ -410,13 +425,13 @@
     version: String,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    context.lock().unwrap().state_mut().set_version(version);
+    context.write().unwrap().state_mut().set_version(version);
     <span class="prelude-val">Ok</span>(warp::reply())
 }
 
 <span class="kw">pub async fn </span>command_congestion_normal(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
     context
-        .lock()
+        .write()
         .unwrap()
         .state_mut()
         .set_congestion(NetworkCongestionMode::Normal);
@@ -425,7 +440,7 @@
 
 <span class="kw">pub async fn </span>command_congestion_jammed(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
     context
-        .lock()
+        .write()
         .unwrap()
         .state_mut()
         .set_congestion(NetworkCongestionMode::Jammed);
@@ -434,7 +449,7 @@
 
 <span class="kw">pub async fn </span>command_congestion_moderate(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
     context
-        .lock()
+        .write()
         .unwrap()
         .state_mut()
         .set_congestion(NetworkCongestionMode::Moderate);
@@ -443,7 +458,7 @@
 
 <span class="kw">pub async fn </span>command_congestion_reset(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
     context
-        .lock()
+        .write()
         .unwrap()
         .state_mut()
         .set_congestion(NetworkCongestionMode::Disabled);
@@ -452,7 +467,7 @@
 
 <span class="kw">pub async fn </span>command_reject(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
     context
-        .lock()
+        .write()
         .unwrap()
         .state_mut()
         .ledger_mut()
@@ -462,7 +477,7 @@
 
 <span class="kw">pub async fn </span>command_accept(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
     context
-        .lock()
+        .write()
         .unwrap()
         .state_mut()
         .ledger_mut()
@@ -471,7 +486,7 @@
 }
 <span class="kw">pub async fn </span>command_pending(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
     context
-        .lock()
+        .write()
         .unwrap()
         .state_mut()
         .ledger_mut()
@@ -480,7 +495,7 @@
 }
 <span class="kw">pub async fn </span>command_reset(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
     context
-        .lock()
+        .write()
         .unwrap()
         .state_mut()
         .ledger_mut()
@@ -490,7 +505,7 @@
 
 <span class="kw">pub async fn </span>command_forget(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
     context
-        .lock()
+        .write()
         .unwrap()
         .state_mut()
         .ledger_mut()
@@ -502,7 +517,7 @@
     config: SnapshotInitials,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span>context_lock = context.lock().unwrap();
+    <span class="kw">let </span>context_lock = context.read().unwrap();
     <span class="kw">let </span>state = context_lock.state();
 
     <span class="kw">let </span>voters_hirs = config
@@ -518,14 +533,15 @@
 }
 
 <span class="kw">pub async fn </span>authorize_token(token: String, context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;(), Rejection&gt; {
+    <span class="kw">let </span>context = context.read().unwrap();
     <span class="kw">let </span>api_token = APIToken::from_string(token).map_err(warp::reject::custom)<span class="question-mark">?</span>;
 
-    <span class="kw">if </span>context.lock().unwrap().api_token().is_none() {
+    <span class="kw">if </span>context.api_token().is_none() {
         <span class="kw">return </span><span class="prelude-val">Ok</span>(());
     }
 
-    <span class="kw">let </span>manager = APITokenManager::new(context.lock().unwrap().api_token().unwrap())
-        .map_err(warp::reject::custom)<span class="question-mark">?</span>;
+    <span class="kw">let </span>manager =
+        APITokenManager::new(context.api_token().unwrap()).map_err(warp::reject::custom)<span class="question-mark">?</span>;
 
     <span class="kw">if </span>!manager.is_token_valid(api_token) {
         <span class="kw">return </span><span class="prelude-val">Err</span>(warp::reject::custom(TokenError::UnauthorizedToken));

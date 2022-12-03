@@ -69,17 +69,28 @@
 <span id="69">69</span>
 <span id="70">70</span>
 <span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::common::clients::RestClient;
 <span class="kw">use </span><span class="kw">crate</span>::common::data::Snapshot <span class="kw">as </span>Data;
 <span class="kw">use </span><span class="kw">crate</span>::common::load::SnapshotRandomizer;
 <span class="kw">use </span>jortestkit::load::{Request, RequestFailure, RequestGenerator};
 <span class="kw">use </span>std::time::Duration;
 
-<span class="attribute">#[derive(Clone, Debug)]
+<span class="kw">const </span>DEFAULT_MAX_SPLITS: usize = <span class="number">7</span>; <span class="comment">// equals to 128 splits, will likely not reach that value but it&#39;s there just to prevent a stack overflow
+
+</span><span class="attribute">#[derive(Clone, Debug)]
 </span><span class="kw">pub struct </span>VitRestRequestGenerator {
     rest_client: RestClient,
     snapshot_randomizer: SnapshotRandomizer,
-}
+    max_splits: usize, <span class="comment">// avoid infinite splitting
+</span>}
 
 <span class="kw">impl </span>VitRestRequestGenerator {
     <span class="kw">pub fn </span>new(snapshot: Data, <span class="kw-2">mut </span>rest_client: RestClient) -&gt; <span class="self">Self </span>{
@@ -88,6 +99,7 @@
         <span class="self">Self </span>{
             snapshot_randomizer: SnapshotRandomizer::new(snapshot),
             rest_client,
+            max_splits: DEFAULT_MAX_SPLITS,
         }
     }
 }
@@ -136,8 +148,12 @@
         }
     }
 
-    <span class="kw">fn </span>split(<span class="self">self</span>) -&gt; (<span class="self">Self</span>, <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;) {
-        <span class="macro">todo!</span>()
+    <span class="kw">fn </span>split(<span class="kw-2">mut </span><span class="self">self</span>) -&gt; (<span class="self">Self</span>, <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;) {
+        <span class="kw">if </span><span class="self">self</span>.max_splits == <span class="number">0 </span>{
+            <span class="kw">return </span>(<span class="self">self</span>, <span class="prelude-val">None</span>);
+        }
+        <span class="self">self</span>.max_splits -= <span class="number">1</span>;
+        (<span class="self">self</span>.clone(), <span class="prelude-val">Some</span>(<span class="self">self</span>))
     }
 }
 </code></pre></div>

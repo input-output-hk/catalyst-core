@@ -350,6 +350,16 @@
 <span id="350">350</span>
 <span id="351">351</span>
 <span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>helpers;
 <span class="kw">mod </span>reviews;
 <span class="kw">pub mod </span>utils;
@@ -386,6 +396,7 @@
 <span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>std::str::FromStr;
 <span class="kw">use </span>thiserror::Error;
+<span class="kw">use </span>tracing::{info, span, Level, Span};
 <span class="kw">use </span>vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 
 <span class="kw">pub const </span>LEADER_1: <span class="kw-2">&amp;</span>str = <span class="string">&quot;leader1&quot;</span>;
@@ -400,6 +411,7 @@
     committee_wallet: String,
     <span class="comment">//needed for load tests when we rely on secret keys instead of qrs
     </span>skip_qr_generation: bool,
+    span: Span,
 }
 
 <span class="kw">impl </span>Default <span class="kw">for </span>VitBackendSettingsBuilder {
@@ -409,6 +421,7 @@
             skip_qr_generation: <span class="bool-val">false</span>,
             config: Default::default(),
             session_settings: SessionSettings::default(),
+            span: <span class="macro">span!</span>(Level::INFO, <span class="string">&quot;builder&quot;</span>),
         }
     }
 }
@@ -416,6 +429,11 @@
 <span class="kw">impl </span>VitBackendSettingsBuilder {
     <span class="kw">pub fn </span>skip_qr_generation(<span class="kw-2">mut </span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.skip_qr_generation = <span class="bool-val">true</span>;
+        <span class="self">self
+    </span>}
+
+    <span class="kw">pub fn </span>span(<span class="kw-2">mut </span><span class="self">self</span>, span: Span) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.span = span;
         <span class="self">self
     </span>}
 
@@ -499,6 +517,8 @@
     }
 
     <span class="kw">pub fn </span>build(<span class="kw-2">mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(VitController, ValidVotePlanParameters), Error&gt; {
+        <span class="kw">let </span>_enter = <span class="self">self</span>.span.enter();
+
         <span class="kw">let </span><span class="kw-2">mut </span>builder = VitControllerBuilder::new();
 
         <span class="kw">let </span>vote_blockchain_time = convert_to_blockchain_date(<span class="kw-2">&amp;</span><span class="self">self</span>.config);
@@ -510,7 +530,7 @@
             )
             .with_slot_duration(SlotDuration::new(<span class="self">self</span>.config.blockchain.slot_duration).unwrap());
 
-        <span class="macro">println!</span>(<span class="string">&quot;building topology..&quot;</span>);
+        <span class="macro">info!</span>(<span class="string">&quot;building topology..&quot;</span>);
 
         builder = builder.topology(<span class="self">self</span>.build_topology());
         blockchain = blockchain
@@ -518,7 +538,7 @@
             .with_leader(LEADER_2)
             .with_leader(LEADER_3);
 
-        <span class="macro">println!</span>(<span class="string">&quot;building blockchain parameters..&quot;</span>);
+        <span class="macro">info!</span>(<span class="string">&quot;building blockchain parameters..&quot;</span>);
 
         blockchain = blockchain
             .with_linear_fee(<span class="self">self</span>.config.blockchain.linear_fees.clone())
@@ -545,7 +565,7 @@
 
         builder = builder.committee(committe);
 
-        <span class="macro">println!</span>(<span class="string">&quot;building voting token..&quot;</span>);
+        <span class="macro">info!</span>(<span class="string">&quot;building voting token..&quot;</span>);
 
         <span class="kw">let </span>root = <span class="self">self</span>.session_settings.root.path().to_path_buf();
         std::fs::create_dir_all(<span class="kw-2">&amp;</span>root)<span class="question-mark">?</span>;
@@ -578,7 +598,7 @@
 
         <span class="self">self</span>.write_token(root.join(<span class="string">&quot;voting_token.txt&quot;</span>), <span class="kw-2">&amp;</span>token_list)<span class="question-mark">?</span>;
 
-        <span class="macro">println!</span>(<span class="string">&quot;building initials..&quot;</span>);
+        <span class="macro">info!</span>(<span class="string">&quot;building initials..&quot;</span>);
 
         <span class="self">self</span>.config.initials.block0.push(Wallet {
             name: <span class="self">self</span>.committee_wallet.clone(),
@@ -603,7 +623,7 @@
                 builder = builder.wallet(wallet.clone());
             }
         }
-        <span class="macro">println!</span>(<span class="string">&quot;building direct voteplan..&quot;</span>);
+        <span class="macro">info!</span>(<span class="string">&quot;building direct voteplan..&quot;</span>);
 
         builder = builder.vote_plans(
             VitVotePlanDefBuilder::default()
@@ -645,7 +665,7 @@
 
         builder = builder.blockchain(blockchain);
 
-        <span class="macro">println!</span>(<span class="string">&quot;building additional services..&quot;</span>);
+        <span class="macro">info!</span>(<span class="string">&quot;building additional services..&quot;</span>);
 
         <span class="kw">if </span><span class="self">self</span>.config.additional.explorer {
             builder = builder.explorer(ExplorerTemplate {
@@ -661,7 +681,7 @@
             builder = builder.archive_conf(discover_archive_input_files(url)<span class="question-mark">?</span>);
         }
 
-        <span class="macro">println!</span>(<span class="string">&quot;building controllers..&quot;</span>);
+        <span class="macro">info!</span>(<span class="string">&quot;building controllers..&quot;</span>);
 
         <span class="kw">let </span>controller = builder.build(<span class="self">self</span>.session_settings.clone())<span class="question-mark">?</span>;
 
@@ -669,13 +689,13 @@
             <span class="self">self</span>.dump_qrs(<span class="kw-2">&amp;</span>controller, <span class="kw-2">&amp;</span>generated_wallet_templates, <span class="kw-2">&amp;</span>root)<span class="question-mark">?</span>;
         }
 
-        <span class="macro">println!</span>(<span class="string">&quot;dumping vote keys..&quot;</span>);
+        <span class="macro">info!</span>(<span class="string">&quot;dumping vote keys..&quot;</span>);
 
         controller
             .settings()
             .dump_private_vote_keys(ChildPath::new(root));
 
-        <span class="macro">println!</span>(<span class="string">&quot;build servicing station static data..&quot;</span>);
+        <span class="macro">info!</span>(<span class="string">&quot;building servicing station static data..&quot;</span>);
 
         <span class="kw">let </span>parameters = build_servicing_station_parameters(
             <span class="kw-2">&amp;</span><span class="self">self</span>.config,

@@ -100,28 +100,15 @@
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
-<span id="103">103</span>
-<span id="104">104</span>
-<span id="105">105</span>
-<span id="106">106</span>
-<span id="107">107</span>
-<span id="108">108</span>
-<span id="109">109</span>
-<span id="110">110</span>
-<span id="111">111</span>
-<span id="112">112</span>
-<span id="113">113</span>
-<span id="114">114</span>
-<span id="115">115</span>
-</pre><pre class="rust"><code><span class="kw">pub type </span>ContextLock = Arc&lt;Mutex&lt;Context&gt;&gt;;
-<span class="kw">use super</span>::{mock_state::MockState, Configuration, Logger};
+</pre><pre class="rust"><code><span class="kw">pub type </span>ContextLock = Arc&lt;RwLock&lt;Context&gt;&gt;;
+<span class="kw">use super</span>::{mock_state::MockState, Configuration};
 <span class="kw">use </span><span class="kw">crate</span>::config::Config;
 <span class="kw">use </span><span class="kw">crate</span>::mode::mock::rest::reject::ForcedErrorCode;
 <span class="kw">use </span>std::net::SocketAddr;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>std::sync::Arc;
-<span class="kw">use </span>std::sync::Mutex;
+<span class="kw">use </span>std::sync::{Arc, RwLock};
 <span class="kw">use </span>thiserror::Error;
+<span class="kw">use </span>tracing::info;
 <span class="kw">use </span>valgrind::Protocol;
 <span class="kw">use </span>valgrind::VitVersion;
 
@@ -129,7 +116,6 @@
     config: Configuration,
     address: SocketAddr,
     state: MockState,
-    logger: Logger,
 }
 
 <span class="kw">impl </span>Context {
@@ -142,20 +128,7 @@
             },
             state: MockState::new(params.unwrap_or_default(), config.clone())<span class="question-mark">?</span>,
             config,
-            logger: Logger::new(),
         })
-    }
-
-    <span class="kw">pub fn </span>log&lt;S: Into&lt;String&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, message: S) {
-        <span class="self">self</span>.logger.log(message)
-    }
-
-    <span class="kw">pub fn </span>logs(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;String&gt; {
-        <span class="self">self</span>.logger.logs()
-    }
-
-    <span class="kw">pub fn </span>clear_logs(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-        <span class="self">self</span>.logger.clear()
     }
 
     <span class="kw">pub fn </span>version(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; VitVersion {
@@ -204,13 +177,14 @@
         <span class="self">self</span>.config.token = <span class="prelude-val">Some</span>(api_token);
     }
 
-    <span class="kw">pub fn </span>check_if_rest_available(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;ForcedErrorCode&gt; {
+    <span class="attribute">#[tracing::instrument(skip(<span class="self">self</span>))]
+    </span><span class="kw">pub fn </span>check_if_rest_available(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;ForcedErrorCode&gt; {
         <span class="kw">if </span>!<span class="self">self</span>.available() {
             <span class="kw">let </span>code = <span class="self">self</span>.state().error_code;
-            <span class="self">self</span>.log(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
-                <span class="string">&quot;unavailability mode is on. Rejecting with error code: {}&quot;</span>,
+            <span class="macro">info!</span>(
+                <span class="string">&quot;unavailability mode is on. Rejecting any further calls with error code: {}&quot;</span>,
                 code
-            ));
+            );
             <span class="prelude-val">Some</span>(ForcedErrorCode { code })
         } <span class="kw">else </span>{
             <span class="prelude-val">None

@@ -902,48 +902,6 @@
 <span id="902">902</span>
 <span id="903">903</span>
 <span id="904">904</span>
-<span id="905">905</span>
-<span id="906">906</span>
-<span id="907">907</span>
-<span id="908">908</span>
-<span id="909">909</span>
-<span id="910">910</span>
-<span id="911">911</span>
-<span id="912">912</span>
-<span id="913">913</span>
-<span id="914">914</span>
-<span id="915">915</span>
-<span id="916">916</span>
-<span id="917">917</span>
-<span id="918">918</span>
-<span id="919">919</span>
-<span id="920">920</span>
-<span id="921">921</span>
-<span id="922">922</span>
-<span id="923">923</span>
-<span id="924">924</span>
-<span id="925">925</span>
-<span id="926">926</span>
-<span id="927">927</span>
-<span id="928">928</span>
-<span id="929">929</span>
-<span id="930">930</span>
-<span id="931">931</span>
-<span id="932">932</span>
-<span id="933">933</span>
-<span id="934">934</span>
-<span id="935">935</span>
-<span id="936">936</span>
-<span id="937">937</span>
-<span id="938">938</span>
-<span id="939">939</span>
-<span id="940">940</span>
-<span id="941">941</span>
-<span id="942">942</span>
-<span id="943">943</span>
-<span id="944">944</span>
-<span id="945">945</span>
-<span id="946">946</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{ExplorerVerifier, VerifierError};
 <span class="kw">use </span><span class="kw">crate</span>::jormungandr::explorer::data::blocks_by_chain_length::{
     PayloadType <span class="kw">as </span>expPayloadType, <span class="kw-2">*</span>,
@@ -999,53 +957,11 @@
                 <span class="macro">assert!</span>(block.header().get_bft_leader_id().is_none());
             }
         }
-        <span class="comment">//Logging the fragments in the block
+
+        <span class="comment">//Catch the NPG-3517 bug
         </span><span class="kw">for </span>f <span class="kw">in </span>block.fragments() {
-            <span class="kw">match </span>f {
-                Fragment::Initial(<span class="kw">_</span>) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Fragment::Initial hash {}&quot;</span>, f.hash()),
-                Fragment::OldUtxoDeclaration(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::OldUtxoDeclaration hash {}&quot;</span>, f.hash())
-                }
-                Fragment::Transaction(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::Transaction hash {}&quot;</span>, f.hash())
-                }
-                Fragment::OwnerStakeDelegation(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::OwnerStakeDelegation hash {}&quot;</span>, f.hash())
-                }
-                Fragment::StakeDelegation(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::StakeDelegation hash {}&quot;</span>, f.hash())
-                }
-                Fragment::PoolRegistration(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::PoolRegistration hash {}&quot;</span>, f.hash())
-                }
-                Fragment::PoolRetirement(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::PoolRetirement hash {}&quot;</span>, f.hash())
-                }
-                Fragment::PoolUpdate(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::PoolUpdate hash {}&quot;</span>, f.hash())
-                }
-                Fragment::UpdateProposal(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::UpdateProposal hash {}&quot;</span>, f.hash())
-                }
-                Fragment::UpdateVote(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::UpdateVote hash {}&quot;</span>, f.hash())
-                }
-                Fragment::VotePlan(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::VotePlan hash {}&quot;</span>, f.hash())
-                }
-                Fragment::VoteCast(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::VoteCast hash {}&quot;</span>, f.hash())
-                }
-                Fragment::VoteTally(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::VoteTall hash {}&quot;</span>, f.hash())
-                }
-                Fragment::MintToken(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::MintToken hash {}&quot;</span>, f.hash())
-                }
-                Fragment::Evm(<span class="kw">_</span>) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Fragment::Evm hash {}&quot;</span>, f.hash()),
-                Fragment::EvmMapping(<span class="kw">_</span>) =&gt; {
-                    <span class="macro">println!</span>(<span class="string">&quot;Fragment::EvmMapping hash {}&quot;</span>, f.hash())
-                }
+            <span class="kw">if let </span>Fragment::MintToken(<span class="kw">_</span>) | Fragment::Evm(<span class="kw">_</span>) | Fragment::EvmMapping(<span class="kw">_</span>) = f {
+                <span class="macro">panic!</span>(<span class="string">&quot;NPG-3517 BUG Explorer is missing the fragments Fragment::MintToken, Fragment::Evm, Fragment::EvmMapping &quot;</span>)
             }
         }
 

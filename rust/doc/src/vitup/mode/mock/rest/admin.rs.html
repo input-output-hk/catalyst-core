@@ -119,11 +119,25 @@
 <span id="119">119</span>
 <span id="120">120</span>
 <span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::mode::mock::ContextLock;
 <span class="kw">use </span>snapshot_lib::voting_group::{
     RepsVotersAssigner, DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP,
 };
 <span class="kw">use </span>snapshot_lib::{Snapshot, SnapshotInfo};
+<span class="kw">use </span>tracing::info;
 <span class="kw">use </span>vit_servicing_station_lib::db::models::funds::Fund;
 <span class="kw">use </span>vit_servicing_station_lib::v0::endpoints::snapshot::{
     convert_snapshot_to_contrib, RawSnapshotInput, SnapshotInfoInput,
@@ -165,11 +179,14 @@
     snapshot_info.or(raw_snapshot)
 }
 
-<span class="kw">pub async fn </span>put_raw_snapshot(
+<span class="attribute">#[tracing::instrument(skip(context, input), name = <span class="string">&quot;mock admin command received&quot;</span>)]
+</span><span class="kw">pub async fn </span>put_raw_snapshot(
     tag: String,
     input: RawSnapshotInput,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
+    <span class="macro">info!</span>(<span class="string">&quot;put raw snapshot&quot;</span>);
+
     <span class="kw">let </span>direct_voter = input
         .direct_voters_group
         .unwrap_or_else(|| DEFAULT_DIRECT_VOTER_GROUP.to_owned());
@@ -191,23 +208,29 @@
     ))
 }
 
-<span class="kw">pub async fn </span>put_snapshot_info(
+<span class="attribute">#[tracing::instrument(skip(context, input), name = <span class="string">&quot;mock admin command received&quot;</span>)]
+</span><span class="kw">pub async fn </span>put_snapshot_info(
     tag: String,
     input: SnapshotInfoInput,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
+    <span class="macro">info!</span>(<span class="string">&quot;put snapshot&quot;</span>);
+
     <span class="prelude-val">Ok</span>(HandlerResult(
         update_from_snapshot_info(tag, input.snapshot, input.update_timestamp, context).<span class="kw">await</span>,
     ))
 }
 
-<span class="kw">pub async fn </span>update_from_snapshot_info(
+<span class="attribute">#[tracing::instrument(skip(snapshot, context), name = <span class="string">&quot;mock admin command received&quot;</span>)]
+</span><span class="kw">pub async fn </span>update_from_snapshot_info(
     tag: String,
     snapshot: <span class="kw">impl </span>IntoIterator&lt;Item = SnapshotInfo&gt;,
     update_timestamp: i64,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), HandleError&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>context = context.lock().unwrap();
+    <span class="macro">info!</span>(<span class="string">&quot;update from snapshot info&quot;</span>);
+
+    <span class="kw">let </span><span class="kw-2">mut </span>context = context.write().unwrap();
     <span class="kw">let </span>state = context.state_mut();
     <span class="kw">let </span>voters_mut = state.voters_mut();
     voters_mut.put_snapshot_tag(tag.clone(), update_timestamp);
@@ -230,9 +253,12 @@
         .and_then(put_fund)
 }
 
-<span class="kw">pub async fn </span>put_fund(fund: Fund, context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
+<span class="attribute">#[tracing::instrument(skip(context), fields(fund_id = fund.id), name=<span class="string">&quot;mock admin command received&quot;</span>)]
+</span><span class="kw">pub async fn </span>put_fund(fund: Fund, context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
+    <span class="macro">info!</span>(<span class="string">&quot;put new fund&quot;</span>);
+
     context
-        .lock()
+        .write()
         .unwrap()
         .state_mut()
         .vit_mut()

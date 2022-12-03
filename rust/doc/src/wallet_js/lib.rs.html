@@ -130,11 +130,6 @@
 <span id="130">130</span>
 <span id="131">131</span>
 <span id="132">132</span>
-<span id="133">133</span>
-<span id="134">134</span>
-<span id="135">135</span>
-<span id="136">136</span>
-<span id="137">137</span>
 </pre><pre class="rust"><code><span class="doccomment">//! JavaScript and TypeScript bindings for the Jormungandr wallet SDK.
 
 </span><span class="kw">pub use </span>certificates::Certificate;
@@ -142,9 +137,6 @@
     vote_cast::{Payload, VoteCast},
     vote_plan::VotePlanId,
 };
-<span class="kw">use </span>chain_core::packer::Codec;
-<span class="kw">use </span>chain_core::property::DeserializeFromSlice;
-<span class="kw">use </span>chain_impl_mockchain::block::Block;
 <span class="kw">pub use </span>fragment::{Fragment, FragmentId};
 <span class="kw">pub use </span>utils::set_panic_hook;
 <span class="kw">use </span>wasm_bindgen::prelude::<span class="kw-2">*</span>;
@@ -165,12 +157,14 @@
 
 <span class="attribute">#[wasm_bindgen]
 </span><span class="kw">impl </span>Settings {
-    <span class="kw">pub fn </span>new(block0_bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;Settings, JsValue&gt; {
-        <span class="kw">let </span>block0 = Block::deserialize_from_slice(<span class="kw-2">&amp;mut </span>Codec::new(block0_bytes))
-            .map_err(|e| JsValue::from(e.to_string()))<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(
-            wallet_core::Settings::new(<span class="kw-2">&amp;</span>block0).map_err(|e| JsValue::from(e.to_string()))<span class="question-mark">?</span>,
+    <span class="kw">pub fn </span>from_json(json: String) -&gt; <span class="prelude-ty">Result</span>&lt;Settings, JsValue&gt; {
+        <span class="prelude-val">Ok</span>(Settings(
+            serde_json::from_str(<span class="kw-2">&amp;</span>json).map_err(|e| JsValue::from(e.to_string()))<span class="question-mark">?</span>,
         ))
+    }
+
+    <span class="kw">pub fn </span>to_json(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;String, JsValue&gt; {
+        serde_json::to_string(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>).map_err(|e| JsValue::from(e.to_string()))
     }
 }
 
@@ -201,15 +195,11 @@
 
 <span class="attribute">#[wasm_bindgen]
 </span><span class="kw">impl </span>Wallet {
-    <span class="doccomment">/// Imports private keys to create a wallet.
+    <span class="doccomment">/// Imports private key to create a wallet.
     ///
     /// The `account` parameter gives the Ed25519Extended private key
     /// of the account.
-    ///
-    /// The `keys` parameter should be a concatenation of Ed25519Extended
-    /// private keys that will be used to retrieve the associated UTxOs.
-    /// Pass an empty buffer when this functionality is not needed.
-    </span><span class="kw">pub fn </span>import_keys(account: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;Wallet, JsValue&gt; {
+    </span><span class="kw">pub fn </span>import_key(account: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;Wallet, JsValue&gt; {
         wallet_core::Wallet::recover_free_keys(account)
             .map_err(|e| JsValue::from(e.to_string()))
             .map(Wallet)

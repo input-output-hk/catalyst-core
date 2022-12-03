@@ -212,22 +212,6 @@
 <span id="212">212</span>
 <span id="213">213</span>
 <span id="214">214</span>
-<span id="215">215</span>
-<span id="216">216</span>
-<span id="217">217</span>
-<span id="218">218</span>
-<span id="219">219</span>
-<span id="220">220</span>
-<span id="221">221</span>
-<span id="222">222</span>
-<span id="223">223</span>
-<span id="224">224</span>
-<span id="225">225</span>
-<span id="226">226</span>
-<span id="227">227</span>
-<span id="228">228</span>
-<span id="229">229</span>
-<span id="230">230</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::mode::mock::ContextLock;
 <span class="kw">use </span>jortestkit::web::api_token::API_TOKEN_HEADER;
 <span class="kw">use </span>warp::filters::BoxedFilter;
@@ -239,8 +223,8 @@
     context: ContextLock,
     root: BoxedFilter&lt;()&gt;,
 ) -&gt; <span class="kw">impl </span>Filter&lt;Extract = <span class="kw">impl </span>Reply, Error = Rejection&gt; + Clone {
-    <span class="kw">let </span>working_dir = context.lock().unwrap().working_dir();
-    <span class="kw">let </span>is_token_enabled = context.lock().unwrap().api_token().is_some();
+    <span class="kw">let </span>working_dir = context.read().unwrap().working_dir();
+    <span class="kw">let </span>is_token_enabled = context.read().unwrap().api_token().is_some();
 
     <span class="kw">let </span>with_context = warp::any().map(<span class="kw">move </span>|| context.clone());
 
@@ -253,22 +237,6 @@
             .boxed()
     } <span class="kw">else </span>{
         warp::any().boxed()
-    };
-
-    <span class="kw">let </span>logs = {
-        <span class="kw">let </span>root = <span class="macro">warp::path!</span>(<span class="string">&quot;logs&quot; </span>/ ..).boxed();
-
-        <span class="kw">let </span>list = <span class="macro">warp::path!</span>(<span class="string">&quot;get&quot;</span>)
-            .and(warp::get())
-            .and(with_context.clone())
-            .and_then(logs_get);
-
-        <span class="kw">let </span>clear = <span class="macro">warp::path!</span>(<span class="string">&quot;clear&quot;</span>)
-            .and(warp::post())
-            .and(with_context.clone())
-            .and_then(logs_clear);
-
-        root.and(clear.or(list)).boxed()
     };
 
     <span class="kw">let </span>files = {
@@ -456,7 +424,7 @@
         )
         .boxed()
     };
-    root.and(api_token_filter).and(command.or(files).or(logs))
+    root.and(api_token_filter).and(command.or(files))
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../../../" data-current-crate="vitup" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

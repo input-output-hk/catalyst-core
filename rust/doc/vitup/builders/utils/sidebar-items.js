@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["DeploymentTree",""]],"trait":[["SessionSettingsExtension",""]]};
+window.SIDEBAR_ITEMS = {"mod":[["logger",""]],"struct":[["DeploymentTree",""]],"trait":[["SessionSettingsExtension",""]]};

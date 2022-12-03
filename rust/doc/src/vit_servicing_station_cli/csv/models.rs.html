@@ -575,9 +575,12 @@
 <span id="575">575</span>
 <span id="576">576</span>
 <span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
 </pre><pre class="rust"><code><span class="kw">use </span>diesel::{ExpressionMethods, Insertable};
 <span class="kw">use </span>serde::Deserialize;
-<span class="kw">use </span>std::collections::BTreeSet;
+<span class="kw">use </span>std::collections::{BTreeMap, BTreeSet};
 <span class="kw">use </span>std::convert::TryInto;
 <span class="kw">use </span>vit_servicing_station_lib::db;
 <span class="kw">use </span>vit_servicing_station_lib::db::models::challenges::{
@@ -909,6 +912,8 @@
     </span>proposal_goal: <span class="prelude-ty">Option</span>&lt;String&gt;,
     <span class="attribute">#[serde(alias = <span class="string">&quot;proposalMetrics&quot;</span>, default)]
     </span>proposal_metrics: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(alias = <span class="string">&quot;proposalExtraFields&quot;</span>, default)]
+    </span>extra: <span class="prelude-ty">Option</span>&lt;BTreeMap&lt;String, String&gt;&gt;,
 }
 
 <span class="kw">fn </span>default_fund_id() -&gt; i32 {
@@ -993,6 +998,7 @@
             chain_vote_encryption_key: <span class="self">self</span>.chain_vote_encryption_key,
             fund_id: <span class="self">self</span>.fund_id,
             challenge_id: <span class="self">self</span>.challenge_id,
+            extra: <span class="self">self</span>.extra,
         };
 
         <span class="kw">let </span>challenge_info = <span class="kw">match </span>challenge_type {

@@ -231,6 +231,12 @@
 <span id="231">231</span>
 <span id="232">232</span>
 <span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashMap;
 
 <span class="kw">use </span><span class="kw">super</span>::parameters::SingleVotePlanParameters;
@@ -401,6 +407,12 @@
                     chain_vote_encryption_key: vote_plan.chain_vote_encryption_key.clone(),
                     fund_id: fund.id,
                     challenge_id: challenge.id,
+                    extra: <span class="prelude-val">Some</span>(
+                        <span class="macro">vec!</span>[(<span class="string">&quot;key1&quot;</span>, <span class="string">&quot;value1&quot;</span>), (<span class="string">&quot;key2&quot;</span>, <span class="string">&quot;value2&quot;</span>)]
+                            .into_iter()
+                            .map(|(a, b)| (a.to_string(), b.to_string()))
+                            .collect(),
+                    ),
                 };
 
                 proposals.push(FullProposalInfo {

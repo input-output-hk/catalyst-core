@@ -237,7 +237,7 @@
             .filter(voteplans_dsl::fund_id.eq(id))
             .load::&lt;Voteplan&gt;(db_conn)
     )
-    .map_err(|_e| HandleError::NotFound(<span class="string">&quot;Error loading voteplans&quot;</span>.to_string()))<span class="question-mark">?</span>;
+    .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading voteplans, error: {}&quot;</span>, e)))<span class="question-mark">?</span>;
 
     fund.challenges = <span class="macro">q!</span>(
         db_conn,
@@ -246,7 +246,7 @@
             .order_by(challenges_dsl::internal_id.asc())
             .load::&lt;Challenge&gt;(db_conn)
     )
-    .map_err(|_e| HandleError::NotFound(<span class="string">&quot;Error loading challenges&quot;</span>.to_string()))<span class="question-mark">?</span>;
+    .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading challenges, error: {}&quot;</span>, e)))<span class="question-mark">?</span>;
 
     fund.goals = <span class="macro">q!</span>(
         db_conn,
@@ -254,7 +254,7 @@
             .filter(goals_dsl::fund_id.eq(id))
             .load::&lt;Goal&gt;(db_conn)
     )
-    .map_err(|_e| HandleError::NotFound(<span class="string">&quot;Error loading goals&quot;</span>.to_string()))<span class="question-mark">?</span>;
+    .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading goals, error: {}&quot;</span>, e)))<span class="question-mark">?</span>;
 
     fund.groups = <span class="macro">q!</span>(
         db_conn,
@@ -262,7 +262,7 @@
             .filter(groups_dsl::fund_id.eq(id))
             .load::&lt;Group&gt;(db_conn)
     )
-    .map_err(|_e| HandleError::NotFound(<span class="string">&quot;Error loading groups&quot;</span>.to_string()))<span class="question-mark">?
+    .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading groups, error: {}&quot;</span>, e)))<span class="question-mark">?
     </span>.into_iter()
     .collect();
 

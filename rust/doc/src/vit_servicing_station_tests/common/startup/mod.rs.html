@@ -171,7 +171,7 @@
     <span class="kw">let </span>db_path = DbBuilder::new().with_snapshot(<span class="kw-2">&amp;</span>snapshot).build(temp_dir)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .start(temp_dir)<span class="question-mark">?</span>;
 
     <span class="kw">if </span>!server.is_up(<span class="kw-2">&amp;</span>snapshot.token_hash()) {
@@ -181,7 +181,7 @@
     <span class="prelude-val">Ok</span>((server, snapshot))
 }
 
-<span class="kw">pub fn </span>empty_db(temp_dir: <span class="kw-2">&amp;</span>TempDir) -&gt; PathBuf {
+<span class="kw">pub fn </span>empty_db(temp_dir: <span class="kw-2">&amp;</span>TempDir) -&gt; String {
     DbBuilder::new().build(temp_dir).unwrap()
 }
 </code></pre></div>

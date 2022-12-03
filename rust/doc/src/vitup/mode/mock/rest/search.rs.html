@@ -293,16 +293,38 @@
 <span id="293">293</span>
 <span id="294">294</span>
 <span id="295">295</span>
-</pre><pre class="rust"><code><span class="kw">use </span>std::sync::{Arc, Mutex};
-
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+</pre><pre class="rust"><code><span class="kw">use </span>rand::seq::SliceRandom;
+<span class="kw">use </span>rand::thread_rng;
 <span class="kw">use </span>vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 <span class="kw">use </span>vit_servicing_station_lib::v0::endpoints::search::requests::<span class="kw-2">*</span>;
 <span class="kw">use </span>vit_servicing_station_lib::{db::models::challenges::Challenge, v0::result::HandlerResult};
 <span class="kw">use </span>warp::{Rejection, Reply};
 
-<span class="kw">use </span><span class="kw">crate</span>::mode::mock::Context;
-
 <span class="kw">use </span><span class="kw">super</span>::reject::GeneralException;
+<span class="kw">use </span><span class="kw">crate</span>::mode::mock::ContextLock;
 
 <span class="kw">fn </span>make_error(s: <span class="kw-2">&amp;</span>str, code: u16) -&gt; Rejection {
     warp::reject::custom(GeneralException {
@@ -311,24 +333,36 @@
     })
 }
 
-<span class="kw">fn </span>challenge_field_error() -&gt; Rejection {
-    make_error(<span class="string">&quot;`challenge` doesn&#39;t support `funds` or `author`&quot;</span>, <span class="number">400</span>)
-}
-
-<span class="kw">fn </span>proposal_field_error() -&gt; Rejection {
-    make_error(<span class="string">&quot;`proposal` doesn&#39;t support `type`&quot;</span>, <span class="number">400</span>)
-}
-
 <span class="kw">fn </span>mock_order_by_error() -&gt; Rejection {
     make_error(<span class="string">&quot;Mock implementation only supports 0 or 1 `order_by`s&quot;</span>, <span class="number">400</span>)
 }
 
-<span class="kw">pub async fn </span>search(
+<span class="attribute">#[tracing::instrument(skip(context), name = <span class="string">&quot;REST Api call&quot;</span>)]
+</span><span class="kw">pub async fn </span>search(
     search_query: SearchQuery,
-    context: Arc&lt;Mutex&lt;Context&gt;&gt;,
+    context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
     <span class="kw">let </span>response = search_impl(search_query, context).<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(HandlerResult(<span class="prelude-val">Ok</span>(response)))
+}
+
+<span class="attribute">#[tracing::instrument(skip(context), name = <span class="string">&quot;REST Api call&quot;</span>)]
+</span><span class="kw">pub async fn </span>search_count(
+    search_query_count: SearchCountQuery,
+    context: ContextLock,
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
+    <span class="kw">let </span>search_query = SearchQuery {
+        query: search_query_count,
+        limit: <span class="prelude-val">None</span>,
+        offset: <span class="prelude-val">None</span>,
+    };
+
+    <span class="kw">let </span>response = search_impl(search_query, context).<span class="kw">await</span><span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(HandlerResult(<span class="prelude-val">Ok</span>(<span class="kw">match </span>response {
+        SearchResponse::Challenge(challenges) =&gt; challenges.len(),
+        SearchResponse::Proposal(proposals) =&gt; proposals.len(),
+    })))
 }
 
 <span class="kw">async fn </span>search_impl(
@@ -342,7 +376,7 @@
         limit,
         offset,
     }: SearchQuery,
-    context: Arc&lt;Mutex&lt;Context&gt;&gt;,
+    context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;SearchResponse, Rejection&gt; {
     <span class="kw">let </span>order_by = <span class="kw">match </span>order_by[..] {
         [] =&gt; <span class="prelude-val">None</span>,
@@ -351,61 +385,167 @@
     };
     <span class="kw">match </span>table {
         Table::Challenges =&gt; {
-            <span class="kw">if </span>filter
-                .iter()
-                .any(|Constraint { column, .. }| <span class="macro">matches!</span>(column, Column::Funds | Column::Author))
-            {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(challenge_field_error());
-            }
-
-            <span class="kw">if </span><span class="macro">matches!</span>(
-                order_by,
-                <span class="prelude-val">Some</span>(OrderBy {
-                    column: Column::Funds | Column::Author,
-                    ..
-                })
-            ) {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(challenge_field_error());
-            }
-
-            <span class="kw">let </span>ctx = context.lock().unwrap();
-            <span class="kw">let </span>challenges = ctx.state().vit().challenges();
-            <span class="kw">let </span>result = search_challenges(challenges, <span class="kw-2">&amp;</span>filter, order_by);
-            <span class="kw">let </span>result = limit_and_offset(result, limit, offset);
-            <span class="prelude-val">Ok</span>(SearchResponse::Challenge(result))
+            <span class="kw">let </span>results = context.read().unwrap().state().vit().challenges();
+            <span class="kw">let </span>results = filter_challenges(results, <span class="kw-2">&amp;</span>filter)<span class="question-mark">?</span>;
+            <span class="kw">let </span>results = sort_challenges(results, order_by);
+            <span class="kw">let </span>results = limit_and_offset(results, limit, offset);
+            <span class="prelude-val">Ok</span>(SearchResponse::Challenge(results))
         }
         Table::Proposals =&gt; {
-            <span class="kw">if </span>filter
-                .iter()
-                .any(|Constraint { column, .. }| <span class="macro">matches!</span>(column, Column::Type))
-            {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(proposal_field_error());
-            }
-
-            <span class="kw">if </span>filter
-                .iter()
-                .any(|Constraint { column, .. }| <span class="macro">matches!</span>(column, Column::Funds))
-            {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(proposal_field_error());
-            }
-
-            <span class="kw">if </span><span class="macro">matches!</span>(
-                order_by,
-                <span class="prelude-val">Some</span>(OrderBy {
-                    column: Column::Type,
-                    ..
-                })
-            ) {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(make_error(<span class="string">&quot;can&#39;t search proposal by `fund`&quot;</span>, <span class="number">400</span>));
-            }
-
-            <span class="kw">let </span>ctx = context.lock().unwrap();
-            <span class="kw">let </span>proposals = ctx.state().vit().proposals();
-            <span class="kw">let </span>result = search_proposals(proposals, <span class="kw-2">&amp;</span>filter, order_by);
-            <span class="kw">let </span>result = limit_and_offset(result, limit, offset);
-            <span class="prelude-val">Ok</span>(SearchResponse::Proposal(result))
+            <span class="kw">let </span>results = context.read().unwrap().state().vit().proposals();
+            <span class="kw">let </span>results = filter_proposals(results, <span class="kw-2">&amp;</span>filter)<span class="question-mark">?</span>;
+            <span class="kw">let </span>results = sort_proposals(results, order_by);
+            <span class="kw">let </span>results = limit_and_offset(results, limit, offset);
+            <span class="prelude-val">Ok</span>(SearchResponse::Proposal(results))
         }
     }
+}
+
+<span class="kw">fn </span>filter_challenges(
+    <span class="kw-2">mut </span>challenges: Vec&lt;Challenge&gt;,
+    filter: <span class="kw-2">&amp;</span>[Constraint],
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Challenge&gt;, Rejection&gt; {
+    <span class="kw">for </span>f <span class="kw">in </span>filter {
+        <span class="kw">use </span>Column::<span class="kw-2">*</span>;
+        <span class="kw">match </span>f {
+            Constraint::Text { search, column } =&gt; {
+                <span class="kw">let </span>search = search.to_lowercase();
+                <span class="kw">let </span>string_function = <span class="kw">match </span>column {
+                    Type =&gt; |c: <span class="kw-2">&amp;</span>Challenge| c.challenge_type.to_string(),
+                    Title =&gt; |c: <span class="kw-2">&amp;</span>Challenge| c.title.clone(),
+                    Desc =&gt; |c: <span class="kw-2">&amp;</span>Challenge| c.description.clone(),
+                    Author | Funds | ImpactScore =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(make_error(<span class="string">&quot;invalid column&quot;</span>, <span class="number">400</span>)),
+                };
+
+                challenges.retain(|c| string_function(c).to_lowercase().contains(<span class="kw-2">&amp;</span>search))
+            }
+            Constraint::Range {
+                lower,
+                upper,
+                column,
+            } =&gt; {
+                <span class="kw">let </span>lower = lower.unwrap_or(i64::MIN);
+                <span class="kw">let </span>upper = upper.unwrap_or(i64::MAX);
+
+                <span class="kw">let </span>num_function = <span class="kw">match </span>column {
+                    Funds =&gt; |c: <span class="kw-2">&amp;</span>Challenge| c.rewards_total,
+                    <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(make_error(<span class="string">&quot;invalid column&quot;</span>, <span class="number">400</span>)),
+                };
+
+                challenges.retain(|c| {
+                    <span class="kw">let </span>num = num_function(c);
+                    lower &lt;= num &amp;&amp; num &lt;= upper
+                });
+            }
+        }
+    }
+
+    <span class="prelude-val">Ok</span>(challenges)
+}
+
+<span class="kw">fn </span>sort_challenges(<span class="kw-2">mut </span>challenges: Vec&lt;Challenge&gt;, order_by: <span class="prelude-ty">Option</span>&lt;OrderBy&gt;) -&gt; Vec&lt;Challenge&gt; {
+    <span class="kw">match </span>order_by {
+        <span class="prelude-val">None </span>=&gt; {}
+        <span class="prelude-val">Some</span>(OrderBy::Random) =&gt; challenges.shuffle(<span class="kw-2">&amp;mut </span>thread_rng()),
+        <span class="prelude-val">Some</span>(OrderBy::Column { column, descending }) =&gt; {
+            <span class="kw">match </span>column {
+                Column::Type =&gt; challenges.sort_by(|a, b| {
+                    a.challenge_type
+                        .to_string()
+                        .cmp(<span class="kw-2">&amp;</span>b.challenge_type.to_string())
+                }),
+                Column::Desc =&gt; challenges.sort_by(|a, b| a.description.cmp(<span class="kw-2">&amp;</span>b.description)),
+                Column::Title =&gt; challenges.sort_by(|a, b| a.title.cmp(<span class="kw-2">&amp;</span>b.title)),
+                <span class="kw">_ </span>=&gt; {}
+            }
+
+            <span class="kw">if </span>descending {
+                challenges.reverse();
+            }
+        }
+    };
+
+    challenges
+}
+
+<span class="kw">fn </span>filter_proposals(
+    <span class="kw-2">mut </span>proposals: Vec&lt;FullProposalInfo&gt;,
+    filter: <span class="kw-2">&amp;</span>[Constraint],
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;FullProposalInfo&gt;, Rejection&gt; {
+    <span class="kw">for </span>f <span class="kw">in </span>filter {
+        <span class="kw">use </span>Column::<span class="kw-2">*</span>;
+        <span class="kw">match </span>f {
+            Constraint::Text { search, column } =&gt; {
+                <span class="kw">let </span>search = search.to_lowercase();
+                <span class="kw">let </span>string_function = <span class="kw">match </span>column {
+                    Type =&gt; |p: <span class="kw-2">&amp;</span>FullProposalInfo| p.challenge_type.to_string(),
+                    Title =&gt; |p: <span class="kw-2">&amp;</span>FullProposalInfo| p.proposal.proposal_title.clone(),
+                    Desc =&gt; |p: <span class="kw-2">&amp;</span>FullProposalInfo| p.proposal.proposal_summary.clone(),
+                    Author =&gt; |p: <span class="kw-2">&amp;</span>FullProposalInfo| p.proposal.proposer.proposer_name.clone(),
+                    Funds | ImpactScore =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(make_error(<span class="string">&quot;invalid column&quot;</span>, <span class="number">400</span>)),
+                };
+
+                proposals.retain(|p| string_function(p).to_lowercase().contains(<span class="kw-2">&amp;</span>search))
+            }
+            Constraint::Range {
+                lower,
+                upper,
+                column,
+            } =&gt; {
+                <span class="kw">let </span>lower = lower.unwrap_or(i64::MIN);
+                <span class="kw">let </span>upper = upper.unwrap_or(i64::MAX);
+
+                <span class="kw">let </span>num_function = <span class="kw">match </span>column {
+                    Funds =&gt; |p: <span class="kw-2">&amp;</span>FullProposalInfo| p.proposal.proposal_funds,
+                    ImpactScore =&gt; |p: <span class="kw-2">&amp;</span>FullProposalInfo| p.proposal.proposal_impact_score,
+                    <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(make_error(<span class="string">&quot;invalid column&quot;</span>, <span class="number">400</span>)),
+                };
+
+                proposals.retain(|p| {
+                    <span class="kw">let </span>num = num_function(p);
+                    lower &lt;= num &amp;&amp; num &lt;= upper
+                });
+            }
+        }
+    }
+
+    <span class="prelude-val">Ok</span>(proposals)
+}
+
+<span class="kw">fn </span>sort_proposals(
+    <span class="kw-2">mut </span>proposals: Vec&lt;FullProposalInfo&gt;,
+    order_by: <span class="prelude-ty">Option</span>&lt;OrderBy&gt;,
+) -&gt; Vec&lt;FullProposalInfo&gt; {
+    <span class="kw">match </span>order_by {
+        <span class="prelude-val">None </span>=&gt; {}
+        <span class="prelude-val">Some</span>(OrderBy::Random) =&gt; proposals.shuffle(<span class="kw-2">&amp;mut </span>thread_rng()),
+        <span class="prelude-val">Some</span>(OrderBy::Column { column, descending }) =&gt; {
+            <span class="kw">match </span>column {
+                Column::Desc =&gt; proposals.sort_by(|a, b| {
+                    a.proposal
+                        .proposal_summary
+                        .cmp(<span class="kw-2">&amp;</span>b.proposal.proposal_summary)
+                }),
+                Column::Title =&gt; proposals
+                    .sort_by(|a, b| a.proposal.proposal_title.cmp(<span class="kw-2">&amp;</span>b.proposal.proposal_title)),
+                Column::Funds =&gt; proposals
+                    .sort_by(|a, b| a.proposal.proposal_funds.cmp(<span class="kw-2">&amp;</span>b.proposal.proposal_funds)),
+                Column::Author =&gt; proposals.sort_by(|a, b| {
+                    a.proposal
+                        .proposer
+                        .proposer_name
+                        .cmp(<span class="kw-2">&amp;</span>b.proposal.proposer.proposer_name)
+                }),
+                <span class="kw">_ </span>=&gt; {}
+            };
+
+            <span class="kw">if </span>descending {
+                proposals.reverse();
+            }
+        }
+    }
+
+    proposals
 }
 
 <span class="kw">fn </span>limit_and_offset&lt;T&gt;(vec: Vec&lt;T&gt;, limit: <span class="prelude-ty">Option</span>&lt;u64&gt;, offset: <span class="prelude-ty">Option</span>&lt;u64&gt;) -&gt; Vec&lt;T&gt; {
@@ -415,100 +555,6 @@
         .skip(offset <span class="kw">as </span>usize)
         .take(limit <span class="kw">as </span>usize)
         .collect()
-}
-
-<span class="kw">fn </span>search_proposals(
-    <span class="kw-2">mut </span>proposals: Vec&lt;FullProposalInfo&gt;,
-    filter: <span class="kw-2">&amp;</span>[Constraint],
-    order_by: <span class="prelude-ty">Option</span>&lt;OrderBy&gt;,
-) -&gt; Vec&lt;FullProposalInfo&gt; {
-    <span class="kw">fn </span>is_match(proposal: <span class="kw-2">&amp;</span>FullProposalInfo, Constraint { search, column }: <span class="kw-2">&amp;</span>Constraint) -&gt; bool {
-        <span class="kw">let </span>string = <span class="kw">match </span>column {
-            Column::Desc =&gt; <span class="kw-2">&amp;</span>proposal.proposal.proposal_summary,
-            Column::Title =&gt; <span class="kw-2">&amp;</span>proposal.proposal.proposal_title,
-            Column::Author =&gt; <span class="kw-2">&amp;</span>proposal.proposal.proposer.proposer_name,
-            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="bool-val">false</span>,
-        };
-
-        string.to_lowercase().contains(<span class="kw-2">&amp;</span>search.to_lowercase())
-    }
-
-    <span class="kw">let </span>should_retain = |p: <span class="kw-2">&amp;</span>FullProposalInfo| filter.iter().all(|cons| is_match(p, cons));
-    proposals.retain(should_retain);
-
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(order_by) = order_by {
-        <span class="kw">match </span>order_by.column {
-            Column::Desc =&gt; proposals.sort_by(|a, b| {
-                a.proposal
-                    .proposal_summary
-                    .cmp(<span class="kw-2">&amp;</span>b.proposal.proposal_summary)
-            }),
-            Column::Title =&gt; {
-                proposals.sort_by(|a, b| a.proposal.proposal_title.cmp(<span class="kw-2">&amp;</span>b.proposal.proposal_title))
-            }
-            Column::Funds =&gt; {
-                proposals.sort_by(|a, b| a.proposal.proposal_funds.cmp(<span class="kw-2">&amp;</span>b.proposal.proposal_funds))
-            }
-            Column::Author =&gt; proposals.sort_by(|a, b| {
-                a.proposal
-                    .proposer
-                    .proposer_name
-                    .cmp(<span class="kw-2">&amp;</span>b.proposal.proposer.proposer_name)
-            }),
-            <span class="kw">_ </span>=&gt; {}
-        };
-
-        <span class="kw">if </span>order_by.descending {
-            proposals.reverse();
-        }
-    }
-
-    proposals
-}
-
-<span class="kw">fn </span>search_challenges(
-    <span class="kw-2">mut </span>challenges: Vec&lt;Challenge&gt;,
-    filter: <span class="kw-2">&amp;</span>[Constraint],
-    order_by: <span class="prelude-ty">Option</span>&lt;OrderBy&gt;,
-) -&gt; Vec&lt;Challenge&gt; {
-    <span class="kw">fn </span>is_match(challenge: <span class="kw-2">&amp;</span>Challenge, Constraint { search, column }: <span class="kw-2">&amp;</span>Constraint) -&gt; bool {
-        <span class="kw">let </span>string = <span class="kw">match </span>column {
-            Column::Type =&gt; {
-                <span class="kw">return </span>challenge
-                    .challenge_type
-                    .to_string()
-                    .to_lowercase()
-                    .contains(<span class="kw-2">&amp;</span>challenge.challenge_type.to_string())
-            }
-            Column::Desc =&gt; <span class="kw-2">&amp;</span>challenge.description,
-            Column::Title =&gt; <span class="kw-2">&amp;</span>challenge.title,
-            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="bool-val">false</span>,
-        };
-
-        string.to_lowercase().contains(<span class="kw-2">&amp;</span>search.to_lowercase())
-    }
-
-    <span class="kw">let </span>should_retain = |c: <span class="kw-2">&amp;</span>Challenge| filter.iter().all(|cons| is_match(c, cons));
-    challenges.retain(should_retain);
-
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(order_by) = order_by {
-        <span class="kw">match </span>order_by.column {
-            Column::Type =&gt; challenges.sort_by(|a, b| {
-                a.challenge_type
-                    .to_string()
-                    .cmp(<span class="kw-2">&amp;</span>b.challenge_type.to_string())
-            }),
-            Column::Desc =&gt; challenges.sort_by(|a, b| a.description.cmp(<span class="kw-2">&amp;</span>b.description)),
-            Column::Title =&gt; challenges.sort_by(|a, b| a.title.cmp(<span class="kw-2">&amp;</span>b.title)),
-            <span class="kw">_ </span>=&gt; {}
-        }
-
-        <span class="kw">if </span>order_by.descending {
-            challenges.reverse();
-        }
-    }
-
-    challenges
 }
 
 <span class="attribute">#[cfg(test)]
@@ -544,7 +590,7 @@
             SearchResponse::Challenge(challenges) =&gt; challenges,
         };
 
-        <span class="kw">let </span><span class="kw-2">mut </span>expected_challenges = context.lock().unwrap().state().vit().challenges();
+        <span class="kw">let </span><span class="kw-2">mut </span>expected_challenges = context.read().unwrap().state().vit().challenges();
 
         challenges.sort_by_key(|c| c.internal_id);
         expected_challenges.sort_by_key(|c| c.internal_id);
@@ -559,7 +605,7 @@
         <span class="kw">let </span>query = SearchQuery {
             query: SearchCountQuery {
                 table: Table::Challenges,
-                filter: <span class="macro">vec!</span>[Constraint {
+                filter: <span class="macro">vec!</span>[Constraint::Text {
                     search: <span class="string">&quot;1&quot;</span>.to_string(),
                     column: Column::Desc,
                 }],
@@ -576,7 +622,7 @@
         };
 
         <span class="kw">let </span>challenge = context
-            .lock()
+            .read()
             .unwrap()
             .state()
             .vit()

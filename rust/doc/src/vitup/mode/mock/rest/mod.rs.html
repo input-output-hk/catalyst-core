@@ -399,6 +399,8 @@
 <span id="399">399</span>
 <span id="400">400</span>
 <span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>admin;
 <span class="kw">mod </span>control;
 <span class="kw">mod </span>cors;
@@ -411,10 +413,10 @@
 <span class="kw">use </span>futures::StreamExt;
 <span class="kw">use </span>rustls::KeyLogFile;
 <span class="kw">use </span>std::convert::Infallible;
-<span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::sync::Arc;
 <span class="kw">use </span>tokio::net::TcpListener;
 <span class="kw">use </span>tokio_rustls::TlsAcceptor;
+<span class="kw">use </span>tracing::{span, Level};
 <span class="kw">use </span>warp::hyper::service::make_service_fn;
 
 <span class="kw">use </span><span class="kw">super</span>::ContextLock;
@@ -426,7 +428,6 @@
 <span class="kw">use </span>node::<span class="kw-2">*</span>;
 <span class="kw">pub use </span>ssl::{load_cert, load_private_key};
 <span class="kw">use </span>thiserror::Error;
-<span class="kw">use </span>tracing_subscriber::fmt::format::FmtSpan;
 <span class="kw">use </span>valgrind::Protocol;
 <span class="kw">use </span>vit_ss::<span class="kw-2">*</span>;
 <span class="kw">use </span>warp::{reject::Reject, Filter, Rejection, Reply};
@@ -456,19 +457,13 @@
 <span class="kw">impl </span>Reject <span class="kw">for </span>Error {}
 
 <span class="kw">pub async fn </span>start_rest_server(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-    <span class="kw">let </span>address = <span class="kw-2">*</span>context.lock().unwrap().address();
-    <span class="kw">let </span>protocol = context.lock().unwrap().protocol();
+    <span class="kw">let </span>address = <span class="kw-2">*</span>context.read().unwrap().address();
+    <span class="kw">let </span>protocol = context.read().unwrap().protocol();
     <span class="kw">let </span>with_context = context.clone();
     <span class="kw">let </span>with_context = warp::any().map(<span class="kw">move </span>|| with_context.clone());
 
-    <span class="kw">let </span>(non_block, _guard) = tracing_appender::non_blocking(File::create(<span class="string">&quot;vole.trace&quot;</span>).unwrap());
-
-    <span class="kw">let </span>filter = std::env::var(<span class="string">&quot;RUST_LOG&quot;</span>).unwrap_or_else(|<span class="kw">_</span>| <span class="string">&quot;tracing=info,warp=debug&quot;</span>.to_owned());
-    tracing_subscriber::fmt()
-        .with_writer(non_block)
-        .with_env_filter(filter)
-        .with_span_events(FmtSpan::CLOSE)
-        .init();
+    <span class="kw">let </span>span = <span class="macro">span!</span>(Level::INFO, <span class="string">&quot;rest&quot;</span>);
+    <span class="kw">let </span>_enter = span.enter();
 
     <span class="kw">let </span>root = <span class="macro">warp::path!</span>(<span class="string">&quot;api&quot; </span>/ ..);
 
@@ -630,8 +625,10 @@
         <span class="kw">let </span>block0 = <span class="macro">warp::path!</span>(<span class="string">&quot;block0&quot;</span>)
             .and(with_context.clone())
             .map(<span class="kw">move </span>|context: ContextLock| {
-                context.lock().unwrap().log(<span class="string">&quot;get_block0&quot;</span>);
-                <span class="prelude-val">Ok</span>(context.lock().unwrap().block0_bin())
+                <span class="kw">let </span>span = <span class="macro">span!</span>(Level::INFO, <span class="string">&quot;rest api call received&quot;</span>);
+                <span class="kw">let </span>_enter = span.enter();
+                <span class="macro">tracing::info!</span>(<span class="string">&quot;get block0&quot;</span>);
+                <span class="prelude-val">Ok</span>(context.read().unwrap().block0_bin())
             })
             .with(warp::reply::with::headers(default_headers()));
 
@@ -662,6 +659,12 @@
             .and(with_context.clone())
             .and_then(search::search);
 
+        <span class="kw">let </span>search_count = <span class="macro">warp::path!</span>(<span class="string">&quot;search_count&quot;</span>)
+            .and(warp::post())
+            .and(warp::body::json())
+            .and(with_context.clone())
+            .and_then(search::search_count);
+
         root.and(
             proposals
                 .or(admin_filter)
@@ -676,7 +679,8 @@
                 .or(votes)
                 .or(message)
                 .or(snapshot)
-                .or(search),
+                .or(search)
+                .or(search_count),
         )
         .boxed()
     };
@@ -730,7 +734,7 @@
     <span class="kw">let </span>version = <span class="macro">warp::path!</span>(<span class="string">&quot;vit-version&quot;</span>)
         .and(warp::get())
         .and(with_context.clone())
-        .map(<span class="kw">move </span>|context: ContextLock| warp::reply::json(<span class="kw-2">&amp;</span>context.lock().unwrap().version()))
+        .map(<span class="kw">move </span>|context: ContextLock| warp::reply::json(<span class="kw-2">&amp;</span>context.read().unwrap().version()))
         .with(warp::reply::with::headers(default_headers()));
 
     <span class="kw">let </span>cors_filter = cors_filter();
@@ -786,11 +790,11 @@
 
             <span class="kw">let </span>server = hyper::Server::builder(incoming).serve(service);
 
-            <span class="macro">println!</span>(<span class="string">&quot;serving at: https://{}&quot;</span>, address);
+            <span class="macro">tracing::info!</span>(<span class="string">&quot;serving at: https://{}&quot;</span>, address);
             <span class="prelude-val">Ok</span>(server.<span class="kw">await</span><span class="question-mark">?</span>)
         }
         Protocol::Http =&gt; {
-            <span class="macro">println!</span>(<span class="string">&quot;serving at: http://{}&quot;</span>, address);
+            <span class="macro">tracing::info!</span>(<span class="string">&quot;serving at: http://{}&quot;</span>, address);
             warp::serve(api).bind(address).<span class="kw">await</span>;
             <span class="prelude-val">Ok</span>(())
         }

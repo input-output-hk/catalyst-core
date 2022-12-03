@@ -91,10 +91,15 @@
 <span id="91">91</span>
 <span id="92">92</span>
 <span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>account_identifier;
 <span class="kw">mod </span>account_state;
 <span class="kw">mod </span>address;
 <span class="kw">mod </span>block0_configuration;
+<span class="kw">mod </span>block0_date;
 <span class="kw">mod </span>blockdate;
 <span class="kw">mod </span>certificate;
 <span class="kw">mod </span>committee;
@@ -122,6 +127,7 @@
 <span class="kw">mod </span>stake_pool_stats;
 <span class="kw">mod </span>stats;
 <span class="kw">mod </span>tax_type;
+<span class="kw">mod </span>time_era;
 <span class="kw">mod </span>transaction_input;
 <span class="kw">mod </span>transaction_output;
 <span class="kw">mod </span>transaction_witness;
@@ -135,6 +141,7 @@
     account_state::AccountState,
     address::Address,
     block0_configuration::<span class="kw-2">*</span>,
+    block0_date::Block0DateDef,
     blockdate::BlockDate,
     certificate::{
         Certificate, CertificateFromBech32Error, CertificateFromStrError, CertificateToBech32Error,
@@ -171,6 +178,7 @@
     stake_pool_stats::{Rewards, StakePoolStats},
     stats::{NodeState, NodeStats, NodeStatsDto},
     tax_type::TaxType,
+    time_era::TimeEraDef,
     transaction_input::{TransactionInput, TransactionInputType},
     transaction_output::TransactionOutput,
     transaction_witness::TransactionWitness,

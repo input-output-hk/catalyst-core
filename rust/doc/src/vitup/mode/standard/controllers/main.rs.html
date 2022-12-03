@@ -375,7 +375,6 @@
 <span id="375">375</span>
 <span id="376">376</span>
 <span id="377">377</span>
-<span id="378">378</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{
     <span class="kw">super</span>::VitSettings,
     vit_station::{
@@ -627,8 +626,7 @@
         <span class="kw">let </span>db_file = dir.join(STORAGE);
         dump_settings_to_file(config_file.to_str().unwrap(), settings).unwrap();
 
-        DbGenerator::new(vote_plan_parameters, working_directory)
-            .build(<span class="kw-2">&amp;</span>db_file, template_generator)<span class="question-mark">?</span>;
+        DbGenerator::new(vote_plan_parameters).build(<span class="kw-2">&amp;</span>db_file, template_generator)<span class="question-mark">?</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>command_builder =
             BootstrapCommandBuilder::new(PathBuf::from(<span class="string">&quot;vit-servicing-station-server&quot;</span>));

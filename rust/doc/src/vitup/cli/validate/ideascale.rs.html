@@ -647,7 +647,7 @@
             <span class="macro">vec!</span>[],
         ));
 
-        DbGenerator::new(parameters, <span class="self">self</span>.output.clone())
+        DbGenerator::new(parameters)
             .build(<span class="kw-2">&amp;</span>deployment_tree.database_path(), <span class="kw-2">&amp;mut </span>template_generator)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())

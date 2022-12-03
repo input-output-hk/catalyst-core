@@ -67,13 +67,20 @@
 <span id="67">67</span>
 <span id="68">68</span>
 <span id="69">69</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::DeploymentTree;
-<span class="kw">use </span><span class="kw">crate</span>::builders::utils::SessionSettingsExtension;
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::SessionSettingsExtension;
+<span class="kw">use </span><span class="kw">crate</span>::builders::utils::{logger, DeploymentTree};
 <span class="kw">use </span><span class="kw">crate</span>::builders::VitBackendSettingsBuilder;
 <span class="kw">use </span><span class="kw">crate</span>::config::ConfigBuilder;
 <span class="kw">use </span><span class="kw">crate</span>::config::Initials;
 <span class="kw">use </span><span class="kw">crate</span>::Result;
 <span class="kw">use </span>hersir::config::SessionSettings;
+<span class="kw">use </span>jormungandr_automation::jormungandr::LogLevel;
 <span class="kw">use </span>jortestkit::prelude::read_file;
 <span class="kw">use </span>std::path::PathBuf;
 <span class="kw">use </span>structopt::StructOpt;
@@ -94,11 +101,16 @@
 
     <span class="attribute">#[structopt(long = <span class="string">&quot;global-pin&quot;</span>, default_value = <span class="string">&quot;1234&quot;</span>)]
     </span><span class="kw">pub </span>global_pin: String,
+
+    <span class="attribute">#[structopt(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;LogLevel::INFO&quot;</span>)]
+    </span><span class="kw">pub </span>log_level: LogLevel,
 }
 
 <span class="kw">impl </span>QrCommandArgs {
     <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         std::env::set_var(<span class="string">&quot;RUST_BACKTRACE&quot;</span>, <span class="string">&quot;full&quot;</span>);
+
+        logger::init(<span class="self">self</span>.log_level)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>session_settings = SessionSettings::from_dir(<span class="kw-2">&amp;</span><span class="self">self</span>.output_directory);
 

@@ -235,6 +235,16 @@
 <span id="235">235</span>
 <span id="236">236</span>
 <span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Split timeframe in eras
 
 </span><span class="kw">use </span><span class="kw">crate</span>::timeframe::Slot;
@@ -320,6 +330,16 @@
             slot_start,
             slots_per_epoch,
         }
+    }
+
+    <span class="doccomment">/// retrieve the epoch start during a given Era
+    </span><span class="kw">pub fn </span>epoch_start(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Epoch {
+        <span class="self">self</span>.epoch_start
+    }
+
+    <span class="doccomment">/// retrieve the slot start of an epoch during a given Era
+    </span><span class="kw">pub fn </span>slot_start(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Slot {
+        <span class="self">self</span>.slot_start
     }
 
     <span class="doccomment">/// retrieve the number of slots in an epoch during a given Era

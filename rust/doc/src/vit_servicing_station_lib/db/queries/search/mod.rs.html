@@ -262,6 +262,43 @@
 <span id="262">262</span>
 <span id="263">263</span>
 <span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::convert::TryInto;
 
 <span class="kw">use crate</span>::{
@@ -299,6 +336,8 @@
         </span>.map_err(|_e| HandleError::InternalError(<span class="string">&quot;Error executing request&quot;</span>.to_string()))<span class="question-mark">?
 </span>}
 
+<span class="macro">no_arg_sql_function!</span>(RANDOM, ());
+
 <span class="kw">type </span>ChallengesSelectST = (
     diesel::sql_types::Integer,
     diesel::sql_types::Integer,
@@ -329,25 +368,35 @@
 
     <span class="kw">let </span><span class="kw-2">mut </span>query = challenges.into_boxed();
 
-    <span class="kw">for </span>Constraint { search, column } <span class="kw">in </span>filter {
-        <span class="kw">let </span>search = <span class="macro">format!</span>(<span class="string">&quot;%{search}%&quot;</span>);
-        query = <span class="kw">match </span>column {
-            Title =&gt; query.filter(title.like(search)),
-            Desc =&gt; query.filter(description.like(search)),
-            Type =&gt; query.filter(challenge_type.like(search)),
-            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(HandleError::BadRequest(<span class="string">&quot;invalid column&quot;</span>.to_string())),
+    <span class="kw">for </span>constraint <span class="kw">in </span>filter {
+        <span class="kw">match </span>constraint {
+            Constraint::Text { search, column } =&gt; {
+                <span class="kw">let </span>search = <span class="macro">format!</span>(<span class="string">&quot;%{search}%&quot;</span>);
+                query = <span class="kw">match </span>column {
+                    Title =&gt; query.filter(title.like(search)),
+                    Desc =&gt; query.filter(description.like(search)),
+                    Type =&gt; query.filter(challenge_type.like(search)),
+                    <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(HandleError::BadRequest(<span class="string">&quot;invalid column&quot;</span>.to_string())),
+                }
+            }
+            Constraint::Range { .. } =&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(HandleError::BadRequest(<span class="string">&quot;invalid constraint&quot;</span>.to_string()));
+            }
         }
     }
 
-    <span class="kw">for </span>OrderBy { column, descending } <span class="kw">in </span>order_by {
-        query = <span class="kw">match </span>(descending, column) {
-            (<span class="bool-val">false</span>, Title) =&gt; query.then_order_by(title),
-            (<span class="bool-val">false</span>, Desc) =&gt; query.then_order_by(description),
-            (<span class="bool-val">false</span>, Type) =&gt; query.then_order_by(challenge_type),
-            (<span class="bool-val">true</span>, Title) =&gt; query.then_order_by(title.desc()),
-            (<span class="bool-val">true</span>, Desc) =&gt; query.then_order_by(description.desc()),
-            (<span class="bool-val">true</span>, Type) =&gt; query.then_order_by(challenge_type.desc()),
-            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(HandleError::BadRequest(<span class="string">&quot;invalid column&quot;</span>.to_string())),
+    <span class="kw">for </span>order <span class="kw">in </span>order_by {
+        query = <span class="kw">match </span>order {
+            OrderBy::Random =&gt; query.then_order_by(RANDOM),
+            OrderBy::Column { column, descending } =&gt; <span class="kw">match </span>(descending, column) {
+                (<span class="bool-val">false</span>, Title) =&gt; query.then_order_by(title),
+                (<span class="bool-val">false</span>, Desc) =&gt; query.then_order_by(description),
+                (<span class="bool-val">false</span>, Type) =&gt; query.then_order_by(challenge_type),
+                (<span class="bool-val">true</span>, Title) =&gt; query.then_order_by(title.desc()),
+                (<span class="bool-val">true</span>, Desc) =&gt; query.then_order_by(description.desc()),
+                (<span class="bool-val">true</span>, Type) =&gt; query.then_order_by(challenge_type.desc()),
+                <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(HandleError::BadRequest(<span class="string">&quot;invalid column&quot;</span>.to_string())),
+            },
         }
     }
     <span class="prelude-val">Ok</span>(query)
@@ -371,6 +420,7 @@
     diesel::sql_types::Binary,
     diesel::sql_types::Text,
     diesel::sql_types::Integer,
+    diesel::sql_types::Nullable&lt;diesel::sql_types::Text&gt;,
     diesel::sql_types::Integer,
     diesel::sql_types::BigInt,
     diesel::sql_types::BigInt,
@@ -407,27 +457,51 @@
 
     <span class="kw">let </span><span class="kw-2">mut </span>query = proposals.into_boxed();
 
-    <span class="kw">for </span>Constraint { search, column } <span class="kw">in </span>filter {
-        <span class="kw">let </span>search = <span class="macro">format!</span>(<span class="string">&quot;%{search}%&quot;</span>);
-        query = <span class="kw">match </span>column {
-            Title =&gt; query.filter(proposal_title.like(search)),
-            Desc =&gt; query.filter(proposal_summary.like(search)),
-            Author =&gt; query.filter(proposer_name.like(search)),
-            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(HandleError::BadRequest(<span class="string">&quot;invalid column&quot;</span>.to_string())),
+    <span class="kw">for </span>constraint <span class="kw">in </span>filter {
+        <span class="kw">match </span>constraint {
+            Constraint::Text { search, column } =&gt; {
+                <span class="kw">let </span>search = <span class="macro">format!</span>(<span class="string">&quot;%{search}%&quot;</span>);
+                query = <span class="kw">match </span>column {
+                    Title =&gt; query.filter(proposal_title.like(search)),
+                    Desc =&gt; query.filter(proposal_summary.like(search)),
+                    Author =&gt; query.filter(proposer_name.like(search)),
+                    <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(HandleError::BadRequest(<span class="string">&quot;invalid column&quot;</span>.to_string())),
+                }
+            }
+            Constraint::Range {
+                lower,
+                upper,
+                column,
+            } =&gt; {
+                <span class="kw">let </span>lower = lower.unwrap_or(i64::MIN);
+                <span class="kw">let </span>upper = upper.unwrap_or(i64::MAX);
+                query = <span class="kw">match </span>column {
+                    ImpactScore =&gt; query
+                        .filter(proposal_impact_score.ge(lower))
+                        .filter(proposal_impact_score.le(upper)),
+                    Funds =&gt; query
+                        .filter(proposal_funds.ge(lower))
+                        .filter(proposal_funds.le(upper)),
+                    <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(HandleError::BadRequest(<span class="string">&quot;invalid column&quot;</span>.to_string())),
+                };
+            }
         }
     }
 
-    <span class="kw">for </span>OrderBy { column, descending } <span class="kw">in </span>order_by {
-        query = <span class="kw">match </span>(descending, column) {
-            (<span class="bool-val">false</span>, Title) =&gt; query.then_order_by(proposal_title),
-            (<span class="bool-val">false</span>, Desc) =&gt; query.then_order_by(proposal_summary),
-            (<span class="bool-val">false</span>, Author) =&gt; query.then_order_by(proposer_name),
-            (<span class="bool-val">false</span>, Funds) =&gt; query.then_order_by(proposal_funds),
-            (<span class="bool-val">true</span>, Title) =&gt; query.then_order_by(proposal_title.desc()),
-            (<span class="bool-val">true</span>, Desc) =&gt; query.then_order_by(proposal_summary.desc()),
-            (<span class="bool-val">true</span>, Author) =&gt; query.then_order_by(proposer_name.desc()),
-            (<span class="bool-val">true</span>, Funds) =&gt; query.then_order_by(proposal_funds.desc()),
-            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(HandleError::BadRequest(<span class="string">&quot;invalid column&quot;</span>.to_string())),
+    <span class="kw">for </span>order <span class="kw">in </span>order_by {
+        query = <span class="kw">match </span>order {
+            OrderBy::Random =&gt; query.then_order_by(RANDOM),
+            OrderBy::Column { column, descending } =&gt; <span class="kw">match </span>(descending, column) {
+                (<span class="bool-val">false</span>, Title) =&gt; query.then_order_by(proposal_title),
+                (<span class="bool-val">false</span>, Desc) =&gt; query.then_order_by(proposal_summary),
+                (<span class="bool-val">false</span>, Author) =&gt; query.then_order_by(proposer_name),
+                (<span class="bool-val">false</span>, Funds) =&gt; query.then_order_by(proposal_funds),
+                (<span class="bool-val">true</span>, Title) =&gt; query.then_order_by(proposal_title.desc()),
+                (<span class="bool-val">true</span>, Desc) =&gt; query.then_order_by(proposal_summary.desc()),
+                (<span class="bool-val">true</span>, Author) =&gt; query.then_order_by(proposer_name.desc()),
+                (<span class="bool-val">true</span>, Funds) =&gt; query.then_order_by(proposal_funds.desc()),
+                <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(HandleError::BadRequest(<span class="string">&quot;invalid column&quot;</span>.to_string())),
+            },
         }
     }
     <span class="prelude-val">Ok</span>(query)

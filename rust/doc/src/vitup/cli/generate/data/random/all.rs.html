@@ -58,17 +58,17 @@
 <span id="58">58</span>
 <span id="59">59</span>
 <span id="60">60</span>
-<span id="61">61</span>
-<span id="62">62</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::DeploymentTree;
-<span class="kw">use </span><span class="kw">crate</span>::builders::utils::SessionSettingsExtension;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::SessionSettingsExtension;
+<span class="kw">use </span><span class="kw">crate</span>::builders::utils::{logger, DeploymentTree};
 <span class="kw">use </span><span class="kw">crate</span>::builders::VitBackendSettingsBuilder;
 <span class="kw">use </span><span class="kw">crate</span>::config::read_config;
 <span class="kw">use </span><span class="kw">crate</span>::mode::standard::generate_random_database;
 <span class="kw">use </span><span class="kw">crate</span>::Result;
 <span class="kw">use </span>hersir::config::SessionSettings;
+<span class="kw">use </span>jormungandr_automation::jormungandr::LogLevel;
 <span class="kw">use </span>std::path::PathBuf;
 <span class="kw">use </span>structopt::StructOpt;
+
 <span class="attribute">#[derive(StructOpt, Debug)]
 #[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
 </span><span class="kw">pub struct </span>AllRandomDataCommandArgs {
@@ -82,11 +82,16 @@
 
     <span class="attribute">#[structopt(long = <span class="string">&quot;snapshot&quot;</span>)]
     </span><span class="kw">pub </span>snapshot: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
+
+    <span class="attribute">#[structopt(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;LogLevel::INFO&quot;</span>)]
+    </span><span class="kw">pub </span>log_level: LogLevel,
 }
 
 <span class="kw">impl </span>AllRandomDataCommandArgs {
     <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         std::env::set_var(<span class="string">&quot;RUST_BACKTRACE&quot;</span>, <span class="string">&quot;full&quot;</span>);
+
+        logger::init(<span class="self">self</span>.log_level)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>session_settings = SessionSettings::from_dir(<span class="kw-2">&amp;</span><span class="self">self</span>.output_directory);
 
@@ -109,16 +114,7 @@
 
         generate_random_database(<span class="kw-2">&amp;</span>deployment_tree, vit_parameters)<span class="question-mark">?</span>;
 
-        <span class="macro">println!</span>(
-            <span class="string">&quot;voteplan ids: {:?}&quot;</span>,
-            controller
-                .defined_vote_plans()
-                .iter()
-                .map(|x| x.id())
-                .collect::&lt;Vec&lt;String&gt;&gt;()
-        );
-
-        config.print_report();
+        config.print_report(<span class="prelude-val">Some</span>(controller));
         <span class="prelude-val">Ok</span>(())
     }
 }

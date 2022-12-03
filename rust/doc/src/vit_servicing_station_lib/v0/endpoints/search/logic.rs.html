@@ -365,7 +365,7 @@
         <span class="kw">let </span>body = serde_json::to_string(<span class="kw-2">&amp;</span>SearchQuery {
             query: SearchCountQuery {
                 table: Table::Challenges,
-                filter: <span class="macro">vec!</span>[Constraint {
+                filter: <span class="macro">vec!</span>[Constraint::Text {
                     search: <span class="string">&quot;1&quot;</span>.to_string(),
                     column: Column::Title,
                 }],
@@ -389,7 +389,7 @@
 
         <span class="kw">let </span>body = serde_json::to_string(<span class="kw-2">&amp;</span>SearchCountQuery {
             table: Table::Challenges,
-            filter: <span class="macro">vec!</span>[Constraint {
+            filter: <span class="macro">vec!</span>[Constraint::Text {
                 search: <span class="string">&quot;1&quot;</span>.to_string(),
                 column: Column::Title,
             }],
@@ -438,11 +438,11 @@
         <span class="kw">let </span>query = SearchQuery {
             query: SearchCountQuery {
                 table: Table::Challenges,
-                filter: <span class="macro">vec!</span>[Constraint {
+                filter: <span class="macro">vec!</span>[Constraint::Text {
                     column: Column::Title,
                     search: <span class="string">&quot;1&quot;</span>.to_string(),
                 }],
-                order_by: <span class="macro">vec!</span>[OrderBy {
+                order_by: <span class="macro">vec!</span>[OrderBy::Column {
                     column: Column::Title,
                     descending: <span class="bool-val">false</span>,
                 }],
@@ -482,11 +482,11 @@
 
         <span class="kw">let </span>body = serde_json::to_string(<span class="kw-2">&amp;</span>SearchCountQuery {
             table: Table::Challenges,
-            filter: <span class="macro">vec!</span>[Constraint {
+            filter: <span class="macro">vec!</span>[Constraint::Text {
                 column: Column::Title,
                 search: <span class="string">&quot;1&quot;</span>.to_string(),
             }],
-            order_by: <span class="macro">vec!</span>[OrderBy {
+            order_by: <span class="macro">vec!</span>[OrderBy::Column {
                 column: Column::Title,
                 descending: <span class="bool-val">false</span>,
             }],
@@ -505,7 +505,7 @@
 
         <span class="kw">let </span>body = serde_json::to_string(<span class="kw-2">&amp;</span>SearchQuery {
             query: SearchCountQuery {
-                order_by: <span class="macro">vec!</span>[OrderBy {
+                order_by: <span class="macro">vec!</span>[OrderBy::Column {
                     column: Column::Title,
                     descending: <span class="bool-val">true</span>,
                 }],
@@ -531,12 +531,12 @@
         <span class="macro">assert_eq!</span>(reversed, reversed_output);
 
         <span class="kw">let </span>body = serde_json::to_string(<span class="kw-2">&amp;</span>SearchCountQuery {
-            order_by: <span class="macro">vec!</span>[OrderBy {
+            order_by: <span class="macro">vec!</span>[OrderBy::Column {
                 column: Column::Title,
                 descending: <span class="bool-val">true</span>,
             }],
             table: Table::Challenges,
-            filter: <span class="macro">vec!</span>[Constraint {
+            filter: <span class="macro">vec!</span>[Constraint::Text {
                 column: Column::Title,
                 search: <span class="string">&quot;1&quot;</span>.to_string(),
             }],
@@ -573,11 +573,11 @@
         <span class="kw">let </span>query = SearchQuery {
             query: SearchCountQuery {
                 table: Table::Challenges,
-                filter: <span class="macro">vec!</span>[Constraint {
+                filter: <span class="macro">vec!</span>[Constraint::Text {
                     column: Column::Title,
                     search: <span class="string">&quot;1&quot;</span>.to_string(),
                 }],
-                order_by: <span class="macro">vec!</span>[OrderBy {
+                order_by: <span class="macro">vec!</span>[OrderBy::Column {
                     column: Column::Title,
                     descending: <span class="bool-val">false</span>,
                 }],

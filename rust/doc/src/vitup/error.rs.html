@@ -116,6 +116,9 @@
 <span id="116">116</span>
 <span id="117">117</span>
 <span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::mode::standard::{
     VitStationControllerError, WalletProxyControllerError, WalletProxyError,
 };
@@ -130,6 +133,7 @@
 <span class="kw">use </span>thor::FragmentSenderError;
 <span class="kw">use </span>thor::FragmentVerifierError;
 <span class="kw">use </span>thor::WalletError;
+<span class="kw">use </span>tracing::subscriber::SetGlobalDefaultError;
 <span class="kw">use </span>vit_servicing_station_tests::common::startup::server::ServerBootstrapperError;
 
 <span class="attribute">#[derive(thiserror::Error, Debug)]
@@ -233,6 +237,8 @@
     </span>NoChallengeIdFound { proposal_id: String },
     <span class="attribute">#[error(<span class="string">&quot;no challenge id: {id} and group: {group} found&quot;</span>)]
     </span>NoChallengeIdAndGroupFound { id: String, group: String },
+    <span class="attribute">#[error(<span class="string">&quot;cannot set tracing&quot;</span>)]
+    </span>SetGlobalDefault(<span class="attribute">#[from] </span>SetGlobalDefaultError),
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="vitup" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

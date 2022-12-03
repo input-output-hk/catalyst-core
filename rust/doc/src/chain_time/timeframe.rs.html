@@ -202,7 +202,7 @@
     any(test, feature = <span class="string">&quot;property-test-api&quot;</span>),
     derive(test_strategy::Arbitrary)
 )]
-</span><span class="kw">pub struct </span>Slot(<span class="kw">pub</span>(<span class="kw">crate</span>) u64);
+</span><span class="kw">pub struct </span>Slot(<span class="kw">pub </span>u64);
 
 <span class="kw">impl </span>From&lt;u64&gt; <span class="kw">for </span>Slot {
     <span class="kw">fn </span>from(slot_number: u64) -&gt; Slot {

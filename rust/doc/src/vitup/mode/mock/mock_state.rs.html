@@ -232,6 +232,16 @@
 <span id="232">232</span>
 <span id="233">233</span>
 <span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{snapshot::VoterSnapshot, Configuration <span class="kw">as </span>MockConfig, LedgerState};
 <span class="kw">use </span><span class="kw">crate</span>::builders::utils::SessionSettingsExtension;
 <span class="kw">use </span><span class="kw">crate</span>::builders::VitBackendSettingsBuilder;
@@ -245,6 +255,7 @@
 <span class="kw">use </span>jormungandr_lib::interfaces::{NodeState, NodeStats, NodeStatsDto};
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">use </span>thor::WalletAlias;
+<span class="kw">use </span>tracing::{info, span, Level};
 <span class="kw">use </span>valgrind::VitVersion;
 <span class="kw">use </span>vit_servicing_station_lib::db::models::funds::Fund;
 <span class="kw">use </span>vit_servicing_station_tests::common::data::ArbitrarySnapshotGenerator;
@@ -268,15 +279,24 @@
 
 <span class="kw">impl </span>MockState {
     <span class="kw">pub fn </span>new(params: Config, config: MockConfig) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
+        <span class="kw">let </span>span = <span class="macro">span!</span>(Level::INFO, <span class="string">&quot;mock state&quot;</span>);
+        <span class="kw">let </span>_enter = span.enter();
+
+        <span class="macro">info!</span>(<span class="string">&quot;building default voting event&quot;</span>);
+
         <span class="kw">if </span>config.working_dir.exists() {
             std::fs::remove_dir_all(<span class="kw-2">&amp;</span>config.working_dir)<span class="question-mark">?</span>;
         }
+
         <span class="kw">let </span>session_settings = SessionSettings::from_dir(<span class="kw-2">&amp;</span>config.working_dir);
         <span class="kw">let </span><span class="kw-2">mut </span>template_generator = ArbitraryValidVotingTemplateGenerator::new();
         <span class="kw">let </span>(controller, vit_parameters) = VitBackendSettingsBuilder::default()
             .config(<span class="kw-2">&amp;</span>params)
             .session_settings(session_settings)
+            .span(<span class="macro">span!</span>(Level::INFO, <span class="string">&quot;voting data builder&quot;</span>))
             .build()<span class="question-mark">?</span>;
+
+        <span class="macro">info!</span>(<span class="string">&quot;building default voting event done&quot;</span>);
 
         <span class="kw">let </span><span class="kw-2">mut </span>generator = ValidVotePlanGenerator::new(vit_parameters);
         <span class="kw">let </span><span class="kw-2">mut </span>vit_state = generator.build(<span class="kw-2">&amp;mut </span>template_generator);

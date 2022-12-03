@@ -120,6 +120,25 @@
 <span id="120">120</span>
 <span id="121">121</span>
 <span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::config::Config;
 <span class="kw">use </span>catalyst_toolbox::kedqr::{generate, KeyQrCode};
 <span class="kw">use </span>chain_crypto::SecretKey;
@@ -132,6 +151,7 @@
 <span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">use </span>thor::{Wallet, WalletAlias};
+<span class="kw">use </span>tracing::{info, span, trace, Level};
 
 <span class="attribute">#[derive(Debug, Error)]
 </span><span class="kw">pub enum </span>Error {
@@ -147,6 +167,9 @@
     parameters: <span class="kw-2">&amp;</span>Config,
     folder: P,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+    <span class="kw">let </span>span = <span class="macro">span!</span>(Level::TRACE, <span class="string">&quot;qr code generation&quot;</span>, total = wallets.len());
+    <span class="kw">let </span>_enter = span.enter();
+
     <span class="kw">let </span>total = wallets.len();
     <span class="kw">let </span>folder = folder.as_ref();
 
@@ -162,11 +185,11 @@
             })
             .unwrap();
         <span class="kw">let </span>png = folder.join(<span class="macro">format!</span>(<span class="string">&quot;{}_{}.png&quot;</span>, alias, pin));
-        <span class="macro">println!</span>(<span class="string">&quot;[{}/{}] Qr dumped to {:?}&quot;</span>, idx + <span class="number">1</span>, total, png);
+        <span class="macro">trace!</span>(<span class="string">&quot;[{}/{}] Qr dumped to {:?}&quot;</span>, idx + <span class="number">1</span>, total, png);
         wallet.save_qr_code(png, <span class="kw-2">&amp;</span>pin_to_bytes(pin));
 
         <span class="kw">let </span>hash = folder.join(<span class="macro">format!</span>(<span class="string">&quot;{}_{}.txt&quot;</span>, alias, pin));
-        <span class="macro">println!</span>(<span class="string">&quot;[{}/{}] QR hash dumped to {:?}&quot;</span>, idx + <span class="number">1</span>, total, hash);
+        <span class="macro">trace!</span>(<span class="string">&quot;[{}/{}] QR payload dumped to {:?}&quot;</span>, idx + <span class="number">1</span>, total, hash);
         wallet.save_qr_code_hash(hash, <span class="kw-2">&amp;</span>pin_to_bytes(pin));
     }
 
@@ -175,17 +198,32 @@
     <span class="kw">if </span>zero_funds_initial_counts &gt; <span class="number">0 </span>{
         <span class="kw">let </span>zero_funds_pin = parameters.initials.block0.zero_funds_pin().unwrap();
 
+        <span class="macro">info!</span>(<span class="string">&quot;generating {} fake qr codes&quot;</span>, zero_funds_initial_counts);
         <span class="kw">for </span>i <span class="kw">in </span><span class="number">1</span>..zero_funds_initial_counts + <span class="number">1 </span>{
             <span class="kw">let </span>sk = SecretKey::generate(rand::thread_rng());
             <span class="kw">let </span>qr = KeyQrCode::generate(sk.clone(), <span class="kw-2">&amp;</span>pin_to_bytes(<span class="kw-2">&amp;</span>zero_funds_pin));
             <span class="kw">let </span>img = qr.to_img();
             <span class="kw">let </span>png = folder.join(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;zero_funds_{}_{}.png&quot;</span>, i, zero_funds_pin));
+            <span class="macro">trace!</span>(
+                <span class="string">&quot;[{}/{}] Qr code dumped to {:?}&quot;</span>,
+                i + <span class="number">1</span>,
+                zero_funds_initial_counts + <span class="number">1</span>,
+                png
+            );
             img.save(png)<span class="question-mark">?</span>;
 
             <span class="kw">let </span>hash = folder.join(<span class="macro">format!</span>(<span class="string">&quot;zero_funds_{}.txt&quot;</span>, i));
+            <span class="macro">trace!</span>(
+                <span class="string">&quot;[{}/{}] Qr payload dumped to {:?}&quot;</span>,
+                i + <span class="number">1</span>,
+                zero_funds_initial_counts + <span class="number">1</span>,
+                hash
+            );
             std::fs::write(hash, generate(sk, <span class="kw-2">&amp;</span>pin_to_bytes(<span class="kw-2">&amp;</span>zero_funds_pin)))<span class="question-mark">?</span>;
         }
     }
+
+    <span class="macro">info!</span>(<span class="string">&quot;qr codes generation done&quot;</span>);
     <span class="prelude-val">Ok</span>(())
 }
 

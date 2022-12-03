@@ -312,6 +312,14 @@
 <span id="312">312</span>
 <span id="313">313</span>
 <span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::mode::mock::rest::reject::{ForcedErrorCode, GeneralException, InvalidBatch};
 <span class="kw">use </span><span class="kw">crate</span>::mode::mock::ContextLock;
 <span class="kw">use </span>chain_core::property::{Deserialize, Fragment <span class="kw">as _</span>};
@@ -322,30 +330,32 @@
 <span class="kw">use </span>jormungandr_lib::crypto::hash::Hash;
 <span class="kw">use </span>jormungandr_lib::interfaces::{AccountVotes, FragmentsBatch, VotePlanId, VotePlanStatus};
 <span class="kw">use </span>std::str::FromStr;
+<span class="kw">use </span>tracing::info;
 <span class="kw">use </span>vit_servicing_station_lib::v0::errors::HandleError;
 <span class="kw">use </span>vit_servicing_station_lib::v0::result::HandlerResult;
 <span class="kw">use </span>warp::{Rejection, Reply};
 
-<span class="kw">pub async fn </span>post_message(
-    message: warp::hyper::body::Bytes,
+<span class="attribute">#[tracing::instrument(skip(message, context), name = <span class="string">&quot;REST Api call&quot;</span>)]
+</span><span class="kw">pub async fn </span>post_message(
+    message: hyper::body::Bytes,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>context = context.lock().unwrap();
+    <span class="kw">let </span><span class="kw-2">mut </span>context = context.write().unwrap();
 
     <span class="kw">let </span>fragment =
         <span class="kw">match </span>Fragment::deserialize(<span class="kw-2">&amp;mut </span>chain_core::packer::Codec::new(message.as_ref())) {
             <span class="prelude-val">Ok</span>(fragment) =&gt; fragment,
             <span class="prelude-val">Err</span>(err) =&gt; {
                 <span class="kw">let </span>code = context.state().error_code;
-                context.log(<span class="macro">format!</span>(
+                <span class="macro">info!</span>(
                     <span class="string">&quot;post_message with wrong fragment. Reason &#39;{:?}&#39;... Error code: {}&quot;</span>,
                     err, code
-                ));
+                );
                 <span class="kw">return </span><span class="prelude-val">Err</span>(warp::reject::custom(ForcedErrorCode { code }));
             }
         };
 
-    context.log(<span class="macro">format!</span>(<span class="string">&quot;post_message {}...&quot;</span>, fragment.id()));
+    <span class="macro">info!</span>(<span class="string">&quot;post_message {}...&quot;</span>, fragment.id());
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(error_code) = context.check_if_rest_available() {
         <span class="kw">return </span><span class="prelude-val">Err</span>(warp::reject::custom(error_code));
@@ -356,9 +366,10 @@
     <span class="prelude-val">Ok</span>(HandlerResult(<span class="prelude-val">Ok</span>(fragment_id)))
 }
 
-<span class="kw">pub async fn </span>get_node_stats(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>context = context.lock().unwrap();
-    context.log(<span class="string">&quot;get_node_stats&quot;</span>);
+<span class="attribute">#[tracing::instrument(skip(context), name = <span class="string">&quot;REST Api call&quot;</span>)]
+</span><span class="kw">pub async fn </span>get_node_stats(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
+    <span class="kw">let </span>context = context.read().unwrap();
+    <span class="macro">info!</span>(<span class="string">&quot;get_node_stats&quot;</span>);
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(error_code) = context.check_if_rest_available() {
         <span class="kw">return </span><span class="prelude-val">Err</span>(warp::reject::custom(error_code));
@@ -367,10 +378,11 @@
     <span class="prelude-val">Ok</span>(HandlerResult(<span class="prelude-val">Ok</span>(context.state().node_stats())))
 }
 
-<span class="kw">pub async fn </span>get_settings(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>context = context.lock().unwrap();
+<span class="attribute">#[tracing::instrument(skip(context), name = <span class="string">&quot;REST Api call&quot;</span>)]
+</span><span class="kw">pub async fn </span>get_settings(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
+    <span class="kw">let </span>context = context.read().unwrap();
 
-    context.log(<span class="string">&quot;get_settings&quot;</span>);
+    <span class="macro">info!</span>(<span class="string">&quot;get_settings&quot;</span>);
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(error_code) = context.check_if_rest_available() {
         <span class="kw">return </span><span class="prelude-val">Err</span>(warp::reject::custom(error_code));
@@ -387,13 +399,14 @@
         .map_err(|<span class="kw">_</span>| warp::reject::custom(GeneralException::hex_encoding_malformed()))
 }
 
-<span class="kw">pub async fn </span>get_account(
+<span class="attribute">#[tracing::instrument(skip(context), name = <span class="string">&quot;REST Api call&quot;</span>)]
+</span><span class="kw">pub async fn </span>get_account(
     account_bech32: String,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>context = context.lock().unwrap();
+    <span class="kw">let </span><span class="kw-2">mut </span>context = context.write().unwrap();
 
-    context.log(<span class="macro">format!</span>(<span class="string">&quot;get_account {}...&quot;</span>, <span class="kw-2">&amp;</span>account_bech32));
+    <span class="macro">info!</span>(<span class="string">&quot;get_account {}...&quot;</span>, <span class="kw-2">&amp;</span>account_bech32);
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(error_code) = context.check_if_rest_available() {
         <span class="kw">return </span><span class="prelude-val">Err</span>(warp::reject::custom(error_code));
@@ -405,10 +418,10 @@
         <span class="kw">if </span>state.block_account_endpoint() != <span class="number">0 </span>{
             state.decrement_block_account_endpoint();
             <span class="kw">let </span>code = state.error_code;
-            context.log(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+            <span class="macro">info!</span>(
                 <span class="string">&quot;block account endpoint mode is on. Rejecting with error code: {}&quot;</span>,
                 code
-            ));
+            );
             <span class="kw">return </span><span class="prelude-val">Err</span>(warp::reject::custom(ForcedErrorCode { code }));
         }
     }
@@ -439,13 +452,14 @@
     }
 }
 
-<span class="kw">pub async fn </span>get_fragment_statuses(
+<span class="attribute">#[tracing::instrument(skip(context), name = <span class="string">&quot;REST Api call&quot;</span>)]
+</span><span class="kw">pub async fn </span>get_fragment_statuses(
     query: GetMessageStatusesQuery,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>context = context.lock().unwrap();
+    <span class="kw">let </span>context = context.read().unwrap();
 
-    context.log(<span class="macro">format!</span>(<span class="string">&quot;get_fragment_statuses {:?}...&quot;</span>, query));
+    <span class="macro">info!</span>(<span class="string">&quot;get_fragment_statuses&quot;</span>);
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(error_code) = context.check_if_rest_available() {
         <span class="kw">return </span><span class="prelude-val">Err</span>(warp::reject::custom(error_code));
@@ -462,13 +476,14 @@
         .statuses(ids.unwrap()))))
 }
 
-<span class="kw">pub async fn </span>post_fragments(
+<span class="attribute">#[tracing::instrument(skip(context), name = <span class="string">&quot;REST Api call&quot;</span>)]
+</span><span class="kw">pub async fn </span>post_fragments(
     batch: FragmentsBatch,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>context = context.lock().unwrap();
+    <span class="kw">let </span><span class="kw-2">mut </span>context = context.write().unwrap();
 
-    context.log(<span class="string">&quot;post_fragments&quot;</span>);
+    <span class="macro">info!</span>(<span class="string">&quot;post_fragments&quot;</span>);
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(error_code) = context.check_if_rest_available() {
         <span class="kw">return </span><span class="prelude-val">Err</span>(warp::reject::custom(error_code));
@@ -486,10 +501,11 @@
     }
 }
 
-<span class="kw">pub async fn </span>get_fragment_logs(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>context = context.lock().unwrap();
+<span class="attribute">#[tracing::instrument(skip(context), name = <span class="string">&quot;REST Api call&quot;</span>)]
+</span><span class="kw">pub async fn </span>get_fragment_logs(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
+    <span class="kw">let </span>context = context.read().unwrap();
 
-    context.log(<span class="string">&quot;get_fragment_logs&quot;</span>);
+    <span class="macro">info!</span>(<span class="string">&quot;get_fragment_logs&quot;</span>);
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(error_code) = context.check_if_rest_available() {
         <span class="kw">return </span><span class="prelude-val">Err</span>(warp::reject::custom(error_code));
@@ -498,17 +514,15 @@
     <span class="prelude-val">Ok</span>(HandlerResult(<span class="prelude-val">Ok</span>(context.state().ledger().fragment_logs())))
 }
 
-<span class="kw">pub async fn </span>get_account_votes_with_plan(
+<span class="attribute">#[tracing::instrument(skip(context), name = <span class="string">&quot;REST Api call&quot;</span>)]
+</span><span class="kw">pub async fn </span>get_account_votes_with_plan(
     vote_plan_id: VotePlanId,
     acccount_id_hex: String,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>context = context.lock().unwrap();
+    <span class="kw">let </span>context = context.read().unwrap();
 
-    context.log(<span class="macro">format!</span>(
-        <span class="string">&quot;get_account_votes: vote plan id {:?}. acccount id hex: {:?}&quot;</span>,
-        vote_plan_id, acccount_id_hex
-    ));
+    <span class="macro">info!</span>(<span class="string">&quot;get_account_votes&quot;</span>);
 
     <span class="kw">let </span>identifier = into_identifier(acccount_id_hex)<span class="question-mark">?</span>;
 
@@ -544,15 +558,13 @@
     <span class="prelude-val">Ok</span>(HandlerResult(<span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(result))))
 }
 
-<span class="kw">pub async fn </span>get_account_votes(
+<span class="attribute">#[tracing::instrument(skip(context), name = <span class="string">&quot;REST Api call&quot;</span>)]
+</span><span class="kw">pub async fn </span>get_account_votes(
     account_id_hex: String,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>context_lock = context.lock().unwrap();
-    context_lock.log(<span class="macro">format!</span>(
-        <span class="string">&quot;get_account_votes: account id hex: {:?}&quot;</span>,
-        account_id_hex
-    ));
+    <span class="kw">let </span>context_lock = context.read().unwrap();
+    <span class="macro">info!</span>(<span class="string">&quot;get_account_votes&quot;</span>);
 
     <span class="kw">let </span>identifier = into_identifier(account_id_hex)<span class="question-mark">?</span>;
 
@@ -593,9 +605,10 @@
     })
 }
 
-<span class="kw">pub async fn </span>get_active_vote_plans(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>context_lock = context.lock().unwrap();
-    context_lock.log(<span class="string">&quot;get_active_vote_plans&quot;</span>);
+<span class="attribute">#[tracing::instrument(skip(context), name = <span class="string">&quot;REST Api call&quot;</span>)]
+</span><span class="kw">pub async fn </span>get_active_vote_plans(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
+    <span class="kw">let </span>context_lock = context.read().unwrap();
+    <span class="macro">info!</span>(<span class="string">&quot;get_active_vote_plans&quot;</span>);
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(error_code) = context_lock.check_if_rest_available() {
         <span class="kw">return </span><span class="prelude-val">Err</span>(warp::reject::custom(error_code));
@@ -611,11 +624,14 @@
     <span class="prelude-val">Ok</span>(HandlerResult(<span class="prelude-val">Ok</span>(vp)))
 }
 
-<span class="kw">pub async fn </span>debug_message(
+<span class="attribute">#[tracing::instrument(skip(context), name = <span class="string">&quot;REST Api call&quot;</span>)]
+</span><span class="kw">pub async fn </span>debug_message(
     fragment_id: String,
     context: ContextLock,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span>context = context.lock().unwrap();
+    <span class="kw">let </span>context = context.read().unwrap();
+
+    <span class="macro">info!</span>(<span class="string">&quot;debug_message&quot;</span>);
 
     <span class="kw">let </span>id = FragmentId::from_str(<span class="kw-2">&amp;</span>fragment_id).map_err(|<span class="kw">_</span>| HandleError::NotFound(fragment_id))<span class="question-mark">?</span>;
     <span class="kw">let </span>fragments = context.state().ledger().received_fragments();

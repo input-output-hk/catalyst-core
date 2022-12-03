@@ -200,6 +200,7 @@
 <span id="200">200</span>
 <span id="201">201</span>
 <span id="202">202</span>
+<span id="203">203</span>
 </pre><pre class="rust"><code><span class="macro">table! </span>{
     api_tokens (token) {
         token -&gt; Binary,
@@ -327,6 +328,7 @@
         chain_proposal_id -&gt; Binary,
         chain_vote_options -&gt; Text,
         challenge_id -&gt; Integer,
+        extra -&gt; Nullable&lt;Text&gt;,
     }
 }
 

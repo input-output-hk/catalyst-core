@@ -42,6 +42,7 @@
 <span id="42">42</span>
 <span id="43">43</span>
 <span id="44">44</span>
+<span id="45">45</span>
 </pre><pre class="rust"><code><span class="kw">use </span>diesel::table;
 
 <span class="macro">table! </span>{
@@ -63,6 +64,7 @@
         chain_proposal_id -&gt; Binary,
         chain_vote_options -&gt; Text,
         challenge_id -&gt; Integer,
+        extra -&gt; Nullable&lt;Text&gt;,
 
         reviews_count -&gt; Integer,
 

@@ -64,10 +64,10 @@
 
 <span class="kw">pub fn </span>db_file_exists(db_url: <span class="kw-2">&amp;</span>str) -&gt; io::Result&lt;()&gt; {
     <span class="comment">// check if db file exists
-    </span><span class="kw">if </span>!std::path::Path::new(db_url).exists() {
+    </span><span class="kw">if </span>!db_url.starts_with(<span class="string">&quot;postgres://&quot;</span>) &amp;&amp; !std::path::Path::new(db_url).exists() {
         <span class="kw">return </span><span class="prelude-val">Err</span>(io::Error::new(
             io::ErrorKind::InvalidInput,
-            <span class="macro">format!</span>(<span class="string">&quot;{} url does not exists&quot;</span>, db_url),
+            <span class="macro">format!</span>(<span class="string">&quot;DB file does not exist: {}&quot;</span>, db_url),
         ));
     }
     <span class="prelude-val">Ok</span>(())

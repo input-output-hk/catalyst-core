@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["datetime",""],["serde",""]]};
+window.SIDEBAR_ITEMS = {"mod":[["collections",""],["datetime",""],["serde",""]]};

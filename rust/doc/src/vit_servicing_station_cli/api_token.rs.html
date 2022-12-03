@@ -201,6 +201,9 @@
 <span id="201">201</span>
 <span id="202">202</span>
 <span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db_utils::{backup_db_file, restore_db_file};
 <span class="kw">use crate</span>::{db_utils::db_file_exists, task::ExecTask};
 <span class="kw">use </span>rand::Rng;
@@ -325,13 +328,16 @@
         }
     }
 
-    <span class="kw">fn </span>handle_api_token_add_whith_db_backup(
+    <span class="kw">fn </span>handle_api_token_add_with_db_backup(
         tokens: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;Vec&lt;String&gt;&gt;,
         db_url: <span class="kw-2">&amp;</span>str,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-        <span class="kw">let </span>backup_file = backup_db_file(db_url)<span class="question-mark">?</span>;
         <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = <span class="self">Self</span>::handle_api_token_add(tokens, db_url) {
-            restore_db_file(backup_file, db_url)<span class="question-mark">?</span>;
+            <span class="kw">if </span>!db_url.starts_with(<span class="string">&quot;postgres://&quot;</span>) {
+                <span class="kw">let </span>backup_file = backup_db_file(db_url)<span class="question-mark">?</span>;
+                restore_db_file(backup_file, db_url)<span class="question-mark">?</span>;
+            }
+
             <span class="prelude-val">Err</span>(e)
         } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
@@ -353,7 +359,7 @@
     <span class="kw">fn </span>exec(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             ApiTokenCmd::Add { tokens, db_url } =&gt; {
-                ApiTokenCmd::handle_api_token_add_whith_db_backup(tokens, db_url)
+                ApiTokenCmd::handle_api_token_add_with_db_backup(tokens, db_url)
             }
             ApiTokenCmd::Generate { n, size } =&gt; {
                 ApiTokenCmd::handle_generate(<span class="kw-2">*</span>n, <span class="kw-2">*</span>size);

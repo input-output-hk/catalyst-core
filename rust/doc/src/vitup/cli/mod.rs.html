@@ -94,6 +94,7 @@
 <span id="94">94</span>
 <span id="95">95</span>
 <span id="96">96</span>
+<span id="97">97</span>
 </pre><pre class="rust"><code><span class="kw">pub mod </span>diff;
 <span class="kw">pub mod </span>generate;
 <span class="kw">pub mod </span>import;
@@ -114,7 +115,8 @@
 <span class="kw">pub use </span>validate::Error <span class="kw">as </span>ValidateError;
 <span class="kw">use </span>validate::ValidateCommand;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[allow(clippy::large_enum_variant)]
+#[derive(StructOpt, Debug)]
 </span><span class="kw">pub enum </span>VitCliCommand {
     <span class="doccomment">/// Starts catalyst backend
     </span>Start(StartCommand),

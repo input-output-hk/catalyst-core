@@ -234,7 +234,14 @@
 <span id="234">234</span>
 <span id="235">235</span>
 <span id="236">236</span>
-</pre><pre class="rust"><code><span class="kw">pub use </span><span class="kw">crate</span>::builders::{VitBackendSettingsBuilder, FOLLOWER, LEADER_1, LEADER_2, LEADER_3};
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::logger;
+<span class="kw">pub use </span><span class="kw">crate</span>::builders::{VitBackendSettingsBuilder, FOLLOWER, LEADER_1, LEADER_2, LEADER_3};
 <span class="kw">use </span><span class="kw">crate</span>::config::read_voter_hirs;
 <span class="kw">use </span><span class="kw">crate</span>::config::ConfigBuilder;
 <span class="kw">use </span><span class="kw">crate</span>::config::{
@@ -365,11 +372,16 @@
 
     <span class="attribute">#[structopt(long = <span class="string">&quot;snapshot&quot;</span>)]
     </span><span class="kw">pub </span>snapshot: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
+
+    <span class="attribute">#[structopt(long = <span class="string">&quot;vitup-log-level&quot;</span>, default_value = <span class="string">&quot;LogLevel::INFO&quot;</span>)]
+    </span><span class="kw">pub </span>vitup_log_level: LogLevel,
 }
 
 <span class="kw">impl </span>QuickStartCommandArgs {
     <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         std::env::set_var(<span class="string">&quot;RUST_BACKTRACE&quot;</span>, <span class="string">&quot;full&quot;</span>);
+
+        logger::init(<span class="self">self</span>.vitup_log_level)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>jormungandr = <span class="kw-2">&amp;</span><span class="self">self</span>.jormungandr;
         <span class="kw">let </span>testing_directory = <span class="self">self</span>.testing_directory;

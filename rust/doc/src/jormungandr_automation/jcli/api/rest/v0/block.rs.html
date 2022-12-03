@@ -63,6 +63,11 @@
 <span id="63">63</span>
 <span id="64">64</span>
 <span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::jcli::command::rest::v0::BlockCommand;
 <span class="kw">use </span>assert_cmd::assert::OutputAssertExt;
 <span class="kw">use </span>jormungandr_lib::crypto::hash::Hash;
@@ -101,7 +106,12 @@
             .stderr(predicates::str::contains(expected_msg));
     }
 
-    <span class="kw">pub fn </span>next&lt;P: Into&lt;String&gt;, S: Into&lt;String&gt;&gt;(<span class="self">self</span>, block_id: P, limit: u32, host: S) -&gt; Hash {
+    <span class="kw">pub fn </span>next&lt;P: Into&lt;String&gt;, S: Into&lt;String&gt;&gt;(
+        <span class="self">self</span>,
+        block_id: P,
+        limit: u32,
+        host: S,
+    ) -&gt; Vec&lt;Hash&gt; {
         <span class="kw">let </span>content = <span class="self">self
             </span>.block_command
             .next(block_id, limit, host)
@@ -109,8 +119,8 @@
             .assert()
             .success()
             .get_output()
-            .as_single_line();
-        Hash::from_hex(<span class="kw-2">&amp;</span>content).unwrap()
+            .as_multi_line();
+        content.iter().map(|b| Hash::from_hex(b).unwrap()).collect()
     }
 
     <span class="kw">pub fn </span>next_expect_fail&lt;P: Into&lt;String&gt;, S: Into&lt;String&gt;&gt;(

@@ -174,10 +174,6 @@ impl JormungandrProcess {
                 let output = self.rest().stats();
                 if let Err(err) = output {
                     println!("Error while waiting for node to bootstrap: {:?}", err);
-                    self.check_startup_errors_in_logs()?;
-                    println!("Log content: {:?}", self.logger.get_log_content());
-                    println!("Panic content {:?}", self.logger.get_panic_content());
-
                     return Err(StartupError::CannotGetRestStatus(err));
                 }
 

@@ -4,7 +4,6 @@ use assert_fs::TempDir;
 use mainnet_lib::{MainnetNetworkBuilder, MainnetWallet, MainnetWalletStateBuilder};
 
 #[test]
-#[ignore]
 fn cip15_correctly_signed_before_snapshot() {
     let temp_dir = TempDir::new().unwrap();
 
@@ -24,7 +23,7 @@ fn cip15_correctly_signed_before_snapshot() {
 
     assertions.voting_power(stake);
     assertions.delegations(&Delegations::Legacy(
-        alice_wallet.stake_public_key().to_hex(),
+        alice_wallet.catalyst_public_key().to_hex(),
     ));
     assertions.reward_address(&alice_wallet.reward_address());
     assertions.stake_key(&alice_wallet.stake_public_key());

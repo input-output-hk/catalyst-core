@@ -377,16 +377,14 @@ impl ConfiguredStarter {
                     params.refresh_instance_params();
                 }
 
-                (
-                    Err(StartupError::CannotGetRestStatus(RestError::RequestError(err))),
-                    OnFail::RetryUnlimitedOnPortOccupied,
-                ) => {
+                (Err(StartupError::CannotGetRestStatus(RestError::RequestError(err))), _) => {
                     crate::cond_println!(
                         self.verbose,
                         "Connection error. Retrying with different port... ",
                     );
                     assert!(err.is_connect());
                     params.refresh_instance_params();
+                    retry_counter -= 1;
                 }
                 (Err(err), OnFail::Panic) => {
                     panic!("Jormungandr node cannot start due to error: {}", err);

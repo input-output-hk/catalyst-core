@@ -8268,6 +8268,7 @@ dependencies = [
  "diesel_migrations 2.0.0",
  "hex",
  "insta",
+ "jormungandr-lib",
  "mainnet-lib",
  "microtype",
  "once_cell",

@@ -37,6 +37,7 @@ pub struct RegistrationBuilder<'a> {
     wallet: &'a MainnetWallet,
     delegations: Option<Delegations>,
     slot_no: u64,
+    voting_purpose: u64,
 }
 
 impl<'a> RegistrationBuilder<'a> {
@@ -47,6 +48,7 @@ impl<'a> RegistrationBuilder<'a> {
             wallet,
             delegations: None,
             slot_no: 0,
+            voting_purpose: 0,
         }
     }
 
@@ -61,6 +63,12 @@ impl<'a> RegistrationBuilder<'a> {
     #[must_use]
     pub fn on(mut self, slot_no: u64) -> Self {
         self.slot_no = slot_no;
+        self
+    }
+    /// Defines voting purposes for registration transaction
+    #[must_use]
+    pub fn for_voting_purpose(mut self, voting_purpose: u64) -> Self {
+        self.voting_purpose = voting_purpose;
         self
     }
 
@@ -110,6 +118,11 @@ impl<'a> RegistrationBuilder<'a> {
             &TransactionMetadatum::new_int(&Int::new(&BigNum::from(self.slot_no))),
         );
 
+        meta_map.insert(
+            &METADATUM_5,
+            &TransactionMetadatum::new_int(&Int::new(&BigNum::from(self.voting_purpose))),
+        );
+
         let mut metadata = GeneralTransactionMetadata::new();
         metadata.insert(
             &BigNum::from(*REGISTRATION_METADATA_IDX),
@@ -149,18 +162,43 @@ pub enum JsonConversionError {
     IncorrectInputJson,
 }
 
+/// Extension trait for `GeneralTransactionMetadata` struct
 pub trait GeneralTransactionMetadataInfo {
+    /// Serialize to json string. Extension allows to groups more than one metadata entry and serialize
+    /// then in batch
+    ///
+    /// # Errors
+    ///
+    /// On incorrect schema
+    ///
     fn to_json_string(&self, schema: MetadataJsonSchema) -> Result<String, JsonConversionError>;
+
+    /// Deserialize from json string. Extension allows to groups more than one metadata entry and deserialize
+    /// then in batch
+    ///
+    /// # Errors
+    ///
+    /// On incorrect schema
     fn from_json_string(
         json: &str,
         schema: MetadataJsonSchema,
     ) -> Result<Self, JsonConversionError>
     where
         Self: Sized;
+
+    /// Get delegations part as bytes
     fn delegations(&self) -> Vec<u8>;
+
+    /// Get stake public key from metadata
     fn stake_public_key(&self) -> PublicKey;
+
+    /// Get reward address part from metadata
     fn reward_address(&self) -> Address;
+
+    /// Get signature from metadata
     fn signature(&self) -> Ed25519Signature;
+
+    /// Get registration as hash
     fn registration_blake_256_hash(&self) -> Blake2b256;
 }
 

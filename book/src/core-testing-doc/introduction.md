@@ -8,6 +8,7 @@ Vit testing is a family of projects, with the aim to support all quality assuran
 - integration tests,
 - registration service and registration verify service,
 - snapshot service,
+- snapshot wormhole,
 - custom proxy for catalyst backend,
 - cli voting app implementation,
 - load driver imitating voting app users.

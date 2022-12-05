@@ -296,9 +296,17 @@ impl JormungandrLogger {
     }
 
     pub fn contains_any_of(&self, messages: &[&str]) -> bool {
-        self.entries()
+        self.entries().iter().any(|line| {
+            messages
+                .iter()
+                .any(|x| line.message().contains(x) || line.reason_contains(x))
+        })
+    }
+
+    pub fn panic_contains_any_of(&self, messages: &[&str]) -> bool {
+        self.panic_entries()
             .iter()
-            .any(|line| messages.iter().any(|x| line.message().contains(x)))
+            .any(|line| messages.iter().any(|x| line.contains(x)))
     }
 
     pub fn get_created_blocks_hashes(&self) -> Vec<Hash> {

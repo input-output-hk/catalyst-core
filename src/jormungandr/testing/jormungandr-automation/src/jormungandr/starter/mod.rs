@@ -20,6 +20,7 @@ pub use params::{
 use serde::Deserialize;
 use std::{
     fmt::Debug,
+    fs,
     path::{Path, PathBuf},
     process::{Child, Command, ExitStatus, Stdio},
     time::{Duration, Instant},
@@ -346,7 +347,7 @@ impl ConfiguredStarter {
         mut temp_dir: Option<TestingDirectory>,
         mut command: Command,
     ) -> Result<JormungandrProcess, StartupError> {
-        let mut retry_counter = 1;
+        let mut retry_counter = 5;
         loop {
             let process = self.start_process(&mut command);
 
@@ -362,7 +363,7 @@ impl ConfiguredStarter {
                 self.on_fail,
             ) {
                 (Ok(()), _) => {
-                    crate::cond_println!(self.verbose, "jormungandr is up");
+                    crate::cond_println!(self.verbose, "Jormungandr is up");
                     return Ok(jormungandr);
                 }
 
@@ -375,6 +376,22 @@ impl ConfiguredStarter {
                         "Port already in use error detected. Retrying with different port... "
                     );
                     params.refresh_instance_params();
+                }
+
+                (Err(StartupError::CannotGetRestStatus(RestError::RequestError(err))), _) => {
+                    crate::cond_println!(
+                        self.verbose,
+                        "Connection error. Retrying with different port... ",
+                    );
+                    assert!(err.is_connect());
+                    params.refresh_instance_params();
+
+                    let contents = fs::read_to_string(params.node_config_path())
+                        .expect("Should have been able to read the file");
+
+                    println!("With text:\n{contents}");
+                    println!("New REST addr {:?}", jormungandr.rest_address().to_string());
+                    retry_counter -= 1;
                 }
                 (Err(err), OnFail::Panic) => {
                     panic!("Jormungandr node cannot start due to error: {}", err);

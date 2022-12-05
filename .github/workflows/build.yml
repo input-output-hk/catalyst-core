@@ -49,7 +49,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Install deps
         run:
-          choco install protoc
+          choco install protoc openssl sqlite pkgconfiglite
 
       - name: Build on Windows
         uses: actions-rs/toolchain@v1

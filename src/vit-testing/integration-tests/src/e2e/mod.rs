@@ -2,3 +2,4 @@
 mod testnet;
 
 mod local;
+mod rewards;

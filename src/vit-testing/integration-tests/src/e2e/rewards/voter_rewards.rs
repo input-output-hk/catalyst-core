@@ -12,8 +12,10 @@ use catalyst_toolbox::rewards::Threshold;
 use chain_impl_mockchain::block::BlockDate;
 use jormungandr_automation::testing::time;
 use jormungandr_lib::crypto::account::Identifier;
+use jormungandr_lib::crypto::hash::Hash;
 use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
 use snapshot_trigger_service::config::JobParameters;
+use valgrind::ProposalExtension;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::VoteBlockchainTime;
 use vitup::config::{Block0Initials, ConfigBuilder};
@@ -96,7 +98,7 @@ pub fn voters_reward_happy_path() {
     };
     time::wait_for_date(target_date.into(), nodes[0].rest());
 
-    let proposals = vit_station.proposals(DIRECT_VOTING_GROUP).unwrap();
+    let mut proposals = vit_station.proposals(DIRECT_VOTING_GROUP).unwrap();
 
     let account_votes_count = nodes[0]
         .rest()
@@ -136,11 +138,32 @@ pub fn voters_reward_happy_path() {
         })
         .collect();
 
+    //println!("{:#?}", proposals);
+
+    //println!("{:?}", proposals.len());
+
+    println!("{:?}", proposals[0].proposal.chain_proposal_id);
+
+    println!("{:?}", proposals[0].proposal.chain_proposal_id.len());
+
+    let hex = hex::decode(&proposals[0].proposal.chain_proposal_id);
+
+    println!("{:?}", hex);
+
+    //println!("{:?}", hex.len());
+
+    //println!("{:?}", <[u8; 32]>::try_from(proposals[0].clone().proposal.chain_proposal_id).unwrap());
+
+    // solve Threshold creation, but probably is creating incoherent data?
+    /*for proposal in &mut proposals {
+        proposal.proposal.chain_proposal_id.truncate(32);
+    }*/
+
+    // this keeps failing due to proposals[0].proposal.chain_proposal_id.len() = 64
     let vote_threshold = Threshold::new(
         threshold,
         vit_station.challenges().unwrap().iter().map(|x| (x.id, x.proposers_rewards as usize)).collect(),
-        proposals)
-        .unwrap();
+        proposals.into_iter().map(|mut p| p.proposal.chain_proposal_id = hex::decode(p.proposal.chain_proposal_id))).unwrap();
 
     let records = calc_voter_rewards(
         account_votes_count,

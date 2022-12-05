@@ -30,14 +30,12 @@ fn assert_response_contains_challenge(
     expected_challenge: &Challenge,
     search_response: SearchResponse,
 ) {
-    if let SearchResponse::Challenge(challenges) = search_response {
-        assert!(challenges
-            .iter()
-            .map(|c| &c.title)
-            .any(|title| *title == expected_challenge.title));
-    } else {
-        panic!("internal error: querying for challenges but got proposals");
-    }
+    let SearchResponse::Challenge(challenges) = search_response else { panic!("internal error: querying for challenges but got proposals") };
+
+    assert!(challenges
+        .iter()
+        .map(|c| &c.title)
+        .any(|title| *title == expected_challenge.title));
 }
 
 #[test]
@@ -93,11 +91,8 @@ pub fn search_challenges_by_title_empty() {
         )
         .unwrap();
 
-    if let SearchResponse::Challenge(challenges) = response {
-        assert!(challenges.is_empty());
-    } else {
-        panic!("internal error: querying for challenges but got proposals");
-    }
+    let SearchResponse::Challenge(challenges) = response else { panic!("internal error: querying for challenges but got proposals") };
+    assert!(challenges.is_empty());
 }
 
 #[test]
@@ -125,14 +120,14 @@ fn assert_response_contains_proposals(
     expected_proposal: &FullProposalInfo,
     search_response: SearchResponse,
 ) {
-    if let SearchResponse::Proposal(proposals) = search_response {
-        assert!(proposals
-            .iter()
-            .map(|c| &c.proposal.proposal_title)
-            .any(|title| *title == expected_proposal.proposal.proposal_title));
-    } else {
+    let SearchResponse::Proposal(proposals) = search_response else {
         panic!("internal error: querying for challenges but got proposals");
-    }
+    };
+
+    assert!(proposals
+        .iter()
+        .map(|c| &c.proposal.proposal_title)
+        .any(|title| *title == expected_proposal.proposal.proposal_title));
 }
 
 #[test]
@@ -255,15 +250,15 @@ pub fn sort_challenges_result_by_title_desc() {
         )
         .unwrap();
 
-    if let SearchResponse::Challenge(challenges) = response {
-        let mut expected: Vec<&String> = expected_challenges.iter().map(|x| &x.title).collect();
-        expected.sort_by(|x, y| y.cmp(x));
+    let SearchResponse::Challenge(challenges) = response  else {
+            panic!("internal error: querying for challenges but got proposals");
+    };
 
-        let actual: Vec<&String> = challenges.iter().map(|x| &x.title).collect();
-        assert_eq!(expected, actual);
-    } else {
-        panic!("internal error: querying for challenges but got proposals");
-    }
+    let mut expected: Vec<&String> = expected_challenges.iter().map(|x| &x.title).collect();
+    expected.sort_by(|x, y| y.cmp(x));
+
+    let actual: Vec<&String> = challenges.iter().map(|x| &x.title).collect();
+    assert_eq!(expected, actual);
 }
 
 #[test]
@@ -289,19 +284,18 @@ pub fn sort_proposals_result_by_funds_asc() {
         )
         .unwrap();
 
-    if let SearchResponse::Proposal(proposals) = response {
-        let expected: Vec<String> = expected_proposals
-            .iter()
-            .map(|x| x.proposal.proposal_funds.to_string())
-            .collect();
-        let actual: Vec<String> = proposals
-            .iter()
-            .map(|x| x.proposal.proposal_funds.to_string())
-            .collect();
-        assert_eq!(expected, actual);
-    } else {
-        panic!("internal error: querying for proposals but got challenges");
-    }
+    let SearchResponse::Proposal(proposals) = response else {
+        panic!("internal error: querying for proposals but got challenges")
+    };
+    let expected: Vec<String> = expected_proposals
+        .iter()
+        .map(|x| x.proposal.proposal_funds.to_string())
+        .collect();
+    let actual: Vec<String> = proposals
+        .iter()
+        .map(|x| x.proposal.proposal_funds.to_string())
+        .collect();
+    assert_eq!(expected, actual);
 }
 
 #[test]
@@ -325,21 +319,20 @@ pub fn sort_proposals_result_by_title_desc() {
         )
         .unwrap();
 
-    if let SearchResponse::Proposal(proposals) = response {
-        let mut expected: Vec<&String> = expected_proposals
-            .iter()
-            .map(|x| &x.proposal.proposal_title)
-            .collect();
-        expected.sort();
-        expected.reverse();
-        let actual: Vec<&String> = proposals
-            .iter()
-            .map(|x| &x.proposal.proposal_title)
-            .collect();
-        assert_eq!(expected, actual);
-    } else {
-        panic!("internal error: querying for proposals but got challenges");
-    }
+    let SearchResponse::Proposal(proposals) = response else {
+        panic!("internal error: querying for proposals but got challenges")
+    };
+    let mut expected: Vec<&String> = expected_proposals
+        .iter()
+        .map(|x| &x.proposal.proposal_title)
+        .collect();
+    expected.sort();
+    expected.reverse();
+    let actual: Vec<&String> = proposals
+        .iter()
+        .map(|x| &x.proposal.proposal_title)
+        .collect();
+    assert_eq!(expected, actual);
 }
 
 #[test]
@@ -382,22 +375,19 @@ pub fn sort_proposals_result_by_title_random() {
 
     let response = rest_client.search(search_query.clone()).unwrap();
 
-    let first_random_proposals = if let SearchResponse::Proposal(proposals) = response {
-        assert_eq!(expected_proposals.len(), proposals.len());
-        assert_ne!(expected_proposals, proposals);
-        proposals
-    } else {
-        panic!("internal error: querying for proposals but got challenges");
+    let SearchResponse::Proposal(first_random_proposals) = response else {
+        panic!("internal error: querying for proposals but got challenges")
     };
+    assert_eq!(expected_proposals.len(), first_random_proposals.len());
+    assert_ne!(expected_proposals, first_random_proposals);
 
     let response = rest_client.search(search_query).unwrap();
 
-    if let SearchResponse::Proposal(proposals) = response {
-        assert_eq!(first_random_proposals.len(), proposals.len());
-        assert_ne!(first_random_proposals, proposals);
-    } else {
+    let SearchResponse::Proposal(proposals) = response else {
         panic!("internal error: querying for proposals but got challenges");
-    }
+    };
+    assert_eq!(first_random_proposals.len(), proposals.len());
+    assert_ne!(first_random_proposals, proposals);
 }
 
 #[test]
@@ -425,24 +415,15 @@ pub fn search_proposals_limit() {
         )
         .unwrap();
 
-    println!(
-        "{:?}",
-        expected_proposals
-            .iter()
-            .map(|x| &x.proposal.proposal_title)
-            .collect::<Vec<&String>>()
-    );
-
-    if let SearchResponse::Proposal(proposals) = response {
-        let expected = vec![expected_proposals[0].proposal.proposal_title.clone()];
-        let actual: Vec<String> = proposals
-            .iter()
-            .map(|x| x.proposal.proposal_title.clone())
-            .collect();
-        assert_eq!(expected, actual);
-    } else {
-        panic!("internal error: querying for proposals but got challenges");
-    }
+    let SearchResponse::Proposal(proposals) = response else {
+        panic!("internal error: querying for proposals but got challenges")
+    };
+    let expected = vec![expected_proposals[0].proposal.proposal_title.clone()];
+    let actual: Vec<String> = proposals
+        .iter()
+        .map(|x| x.proposal.proposal_title.clone())
+        .collect();
+    assert_eq!(expected, actual);
 }
 
 #[test]
@@ -470,14 +451,13 @@ pub fn search_proposals_offset() {
         )
         .unwrap();
 
-    if let SearchResponse::Proposal(proposals) = response {
-        let expected = vec![expected_proposals[1].proposal.proposal_title.clone()];
-        let actual: Vec<String> = proposals
-            .iter()
-            .map(|x| x.proposal.proposal_title.clone())
-            .collect();
-        assert_eq!(expected, actual);
-    } else {
+    let SearchResponse::Proposal(proposals) = response else {
         panic!("internal error: querying for proposals but got challenges");
-    }
+    };
+    let expected = vec![expected_proposals[1].proposal.proposal_title.clone()];
+    let actual: Vec<String> = proposals
+        .iter()
+        .map(|x| x.proposal.proposal_title.clone())
+        .collect();
+    assert_eq!(expected, actual);
 }

@@ -64,14 +64,22 @@ jobs:
           rm bindings/wallet-js/pkg/README.md
           cp bindings/wallet-js/package_README.md bindings/wallet-js/pkg/README.md
 
-      - name: Pack
+      - name: Pack wasm package
         run: |
           cd src/chain-wallet-libs
           wasm-pack pack bindings/wallet-js
 
-      - name: Publish
+      - name: Publish wasm package
         run: |
           cd src/chain-wallet-libs/bindings/wallet-js/pkg
+          npm publish --access=public
+        env:
+            NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish api package
+        run: |
+          cd src/chain-wallet-libs/bindings/wallet-js/js
+          npm install
           npm publish --access=public
         env:
             NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

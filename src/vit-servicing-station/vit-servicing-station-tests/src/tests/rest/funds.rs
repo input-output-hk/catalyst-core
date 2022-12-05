@@ -35,7 +35,7 @@ pub fn get_funds_by_id() {
         .unwrap();
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .start(&temp_dir)
         .unwrap();
 

@@ -25,14 +25,14 @@ pub fn run_mock_with_restarts_for_15_minutes() {
 
     let config_child = temp_dir.child("config.yaml");
     let config_file_path = config_child.path();
-    write_config(&configuration, &config_file_path);
+    write_config(&configuration, config_file_path);
 
     let mut cmd = Command::cargo_bin("vitup").unwrap();
     let mut mock_process = cmd
         .arg("start")
         .arg("mock")
         .arg("--config")
-        .arg(&config_file_path)
+        .arg(config_file_path)
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .spawn()

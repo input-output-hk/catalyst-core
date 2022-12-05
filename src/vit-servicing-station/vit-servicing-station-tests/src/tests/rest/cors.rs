@@ -16,7 +16,7 @@ pub fn cors_illegal_domain() -> Result<(), Box<dyn std::error::Error>> {
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .with_allowed_origins("http://domain.com")
         .start(&temp_dir)?;
 
@@ -45,7 +45,7 @@ pub fn cors_malformed_domain_no_http() -> Result<(), Box<dyn std::error::Error>>
 
     let mut command_builder: BootstrapCommandBuilder = Default::default();
     command_builder
-        .db_url(db_path.to_str().unwrap())
+        .db_url(db_path)
         .allowed_origins("domain.com")
         .build()
         .assert()
@@ -60,7 +60,7 @@ pub fn cors_ip_versus_domain() -> Result<(), Box<dyn std::error::Error>> {
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .with_allowed_origins("http://127.0.0.1")
         .start(&temp_dir)?;
 
@@ -80,7 +80,7 @@ pub fn cors_wrong_delimiter() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut command_builder: BootstrapCommandBuilder = Default::default();
     command_builder
-        .db_url(db_path.to_str().unwrap())
+        .db_url(db_path)
         .allowed_origins("http://domain.com,http://other_domain.com")
         .build()
         .assert()
@@ -95,7 +95,7 @@ pub fn cors_single_domain() -> Result<(), Box<dyn std::error::Error>> {
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .with_allowed_origins("http://domain.com")
         .start(&temp_dir)?;
 
@@ -115,7 +115,7 @@ pub fn cors_https() -> Result<(), Box<dyn std::error::Error>> {
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .with_allowed_origins("https://domain.com")
         .start(&temp_dir)?;
 
@@ -135,7 +135,7 @@ pub fn cors_multi_domain() -> Result<(), Box<dyn std::error::Error>> {
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .with_allowed_origins("http://domain.com;http://other_domain.com")
         .start(&temp_dir)?;
 

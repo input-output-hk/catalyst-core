@@ -12,6 +12,7 @@ use std::path::Path;
 use std::process::Command;
 
 #[test]
+#[ignore]
 pub fn sanity_notification() {
     let access_token = get_env("NOTIFICATION_ACCESS_TOKEN");
     let app_token = get_env("NOTIFICATION_APP_CODE");

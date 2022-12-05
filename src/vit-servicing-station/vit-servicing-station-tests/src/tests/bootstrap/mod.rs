@@ -13,7 +13,7 @@ pub fn bootstrap_with_random_data() -> Result<(), Box<dyn std::error::Error>> {
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_path.to_str().unwrap())
+        .with_db_path(db_path)
         .start(&temp_dir)?;
 
     std::thread::sleep(std::time::Duration::from_secs(1));

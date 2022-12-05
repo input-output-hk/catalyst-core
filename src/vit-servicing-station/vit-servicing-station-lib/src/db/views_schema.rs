@@ -19,6 +19,7 @@ table! {
         chain_proposal_id -> Binary,
         chain_vote_options -> Text,
         challenge_id -> Integer,
+        extra -> Nullable<Text>,
 
         reviews_count -> Integer,
 

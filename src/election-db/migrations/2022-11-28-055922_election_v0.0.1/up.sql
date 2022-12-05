@@ -475,7 +475,10 @@ CREATE TABLE stake_address_balance (
 COMMENT ON TABLE stake_address_balance IS 'The balance of a particular stake address at a particular point in time. Note, this table catches ALL stake addresses, not only those registered.';
 COMMENT ON COLUMN stake_address_balance.row_id IS 'Synthetic record ID of the balance update.';
 COMMENT ON COLUMN stake_address_balance.time IS 'The time the stake address balance changed to the value in this record.';
-COMMENT ON COLUMN stake_address_balance.block IS 'The block on cardano where this balance change occurred. If there were multiple changes in the block, this record is the result of all changes at the end of the block, after all transaction are processed.';
+COMMENT ON COLUMN stake_address_balance.block IS
+'The block number on cardano where this balance change occurred.
+If there were multiple changes to the stake address balance made in the same block, then this record is the result of
+all changes at the end of the block, after all transaction are processed.';
 COMMENT ON COLUMN stake_address_balance.public_key IS 'The stake public key address who''s value changed.';
 COMMENT ON COLUMN stake_address_balance.balance IS 'The ADA.LOVELACE balance of the stake address, at this time.';
 COMMENT ON COLUMN stake_address_balance.unpaid_rewards IS 'The ADA.LOVELACE balance of all unpaid rewards associated with this public stake key address.';

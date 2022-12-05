@@ -7,6 +7,7 @@ use diesel::sql_types::{BigInt, Binary, Integer, Text};
 use diesel::types::FromSql;
 use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
+use std::collections::BTreeMap;
 use std::convert::{TryFrom, TryInto};
 
 pub mod community_choice;
@@ -64,6 +65,8 @@ impl std::fmt::Display for ChallengeType {
     }
 }
 
+pub type ProposalExtraFields = BTreeMap<String, String>;
+
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub struct Proposal {
     #[serde(alias = "internalId")]
@@ -115,6 +118,8 @@ pub struct Proposal {
     pub challenge_id: i32,
     #[serde(alias = "reviewsCount")]
     pub reviews_count: i32,
+    #[serde(alias = "extraFields")]
+    pub extra: Option<ProposalExtraFields>,
 }
 
 #[derive(PartialEq, Eq, Debug, Clone)]
@@ -219,37 +224,39 @@ type FullProposalsInfoRow = (
     String,
     // 16 -> challenge_id
     i32,
-    // 17 -> reviews_count
+    // 17 -> extra_fields
+    Option<String>,
+    // 18 -> reviews_count
     i32,
-    // 18 -> chain_vote_start_time
+    // 19 -> chain_vote_start_time
     i64,
-    // 19 -> chain_vote_end_time
+    // 20 -> chain_vote_end_time
     i64,
-    // 20 -> chain_committee_end_time
+    // 21 -> chain_committee_end_time
     i64,
-    // 21 -> chain_voteplan_payload
+    // 22 -> chain_voteplan_payload
     String,
-    // 22 -> chain_vote_encryption_key
+    // 23 -> chain_vote_encryption_key
     String,
-    // 23 -> fund_id
+    // 24 -> fund_id
     i32,
-    // 24 -> challenge_type
+    // 25 -> challenge_type
     String,
-    // 25 -> proposal_solution
+    // 26 -> proposal_solution
     Option<String>,
-    // 26 -> proposal_brief
+    // 27 -> proposal_brief
     Option<String>,
-    // 27 -> proposal_importance
+    // 28 -> proposal_importance
     Option<String>,
-    // 28 -> proposal_goal
+    // 29 -> proposal_goal
     Option<String>,
-    // 29 -> proposal_metrics
+    // 30 -> proposal_metrics
     Option<String>,
-    // 30 -> chain_proposal_index
+    // 31 -> chain_proposal_index
     i64,
-    // 31 -> chain_voteplan_id
+    // 32 -> chain_voteplan_id
     String,
-    // 32 -> group_id
+    // 33 -> group_id
     String,
 );
 
@@ -286,14 +293,17 @@ where
             },
             chain_proposal_id: row.14,
             chain_vote_options: vote_options::VoteOptions::parse_coma_separated_value(&row.15),
-            chain_vote_start_time: row.18,
-            chain_vote_end_time: row.19,
-            chain_committee_end_time: row.20,
-            chain_voteplan_payload: row.21,
-            chain_vote_encryption_key: row.22,
-            fund_id: row.23,
+            chain_vote_start_time: row.19,
+            chain_vote_end_time: row.20,
+            chain_committee_end_time: row.21,
+            chain_voteplan_payload: row.22,
+            chain_vote_encryption_key: row.23,
+            fund_id: row.24,
             challenge_id: row.16,
-            reviews_count: row.17,
+            reviews_count: row.18,
+            extra: row.17.map(|s| {
+                serde_json::from_str(&s).expect("invalid value for proposal extra_fields")
+            }),
         }
     }
 }
@@ -311,8 +321,8 @@ where
         ProposalVotePlan {
             proposal_id: row.1,
             common: ProposalVotePlanCommon {
-                chain_proposal_index: row.30,
-                chain_voteplan_id: row.31,
+                chain_proposal_index: row.31,
+                chain_voteplan_id: row.32,
             },
         }
     }
@@ -328,29 +338,29 @@ where
     type Row = FullProposalsInfoRow;
 
     fn build(row: Self::Row) -> Self {
-        let challenge_type = row.24.parse().unwrap();
+        let challenge_type = row.25.parse().unwrap();
         // It should be safe to unwrap this values here if DB is sanitized and hence tables have data
         // relative to the challenge type.
         let challenge_info = match challenge_type {
             ChallengeType::Simple => ProposalChallengeInfo::Simple(simple::ChallengeInfo {
-                proposal_solution: row.25.clone().unwrap(),
+                proposal_solution: row.26.clone().unwrap(),
             }),
             ChallengeType::CommunityChoice => {
                 ProposalChallengeInfo::CommunityChoice(community_choice::ChallengeInfo {
-                    proposal_brief: row.26.clone().unwrap(),
-                    proposal_importance: row.27.clone().unwrap(),
-                    proposal_goal: row.28.clone().unwrap(),
-                    proposal_metrics: row.29.clone().unwrap(),
+                    proposal_brief: row.27.clone().unwrap(),
+                    proposal_importance: row.28.clone().unwrap(),
+                    proposal_goal: row.29.clone().unwrap(),
+                    proposal_metrics: row.30.clone().unwrap(),
                 })
             }
         };
 
         let voteplan = ProposalVotePlanCommon {
-            chain_proposal_index: row.30,
-            chain_voteplan_id: row.31.clone(),
+            chain_proposal_index: row.31,
+            chain_voteplan_id: row.32.clone(),
         };
 
-        let group_id = row.32.clone();
+        let group_id = row.33.clone();
 
         FullProposalInfo {
             proposal: Proposal::build(row),
@@ -383,6 +393,7 @@ impl Insertable<proposals::table> for Proposal {
         diesel::dsl::Eq<proposals::chain_proposal_id, Vec<u8>>,
         diesel::dsl::Eq<proposals::chain_vote_options, String>,
         diesel::dsl::Eq<proposals::challenge_id, i32>,
+        diesel::dsl::Eq<proposals::extra, Option<String>>,
     );
 
     fn values(self) -> Self::Values {
@@ -403,6 +414,7 @@ impl Insertable<proposals::table> for Proposal {
             proposals::chain_proposal_id.eq(self.chain_proposal_id),
             proposals::chain_vote_options.eq(self.chain_vote_options.as_csv_string()),
             proposals::challenge_id.eq(self.challenge_id),
+            proposals::extra.eq(self.extra.map(|h| serde_json::to_string(&h).unwrap())),
         )
     }
 }
@@ -536,6 +548,12 @@ pub mod test {
                 chain_vote_encryption_key: "none".to_string(),
                 fund_id: 1,
                 challenge_id: CHALLENGE_ID,
+                extra: Some(
+                    vec![("key1", "value1"), ("key2", "value2")]
+                        .into_iter()
+                        .map(|(a, b)| (a.to_string(), b.to_string()))
+                        .collect(),
+                ),
             },
             challenge_info: ProposalChallengeInfo::CommunityChoice(
                 community_choice::ChallengeInfo {
@@ -586,6 +604,10 @@ pub mod test {
             proposals::chain_proposal_id.eq(proposal.chain_proposal_id.clone()),
             proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),
             proposals::challenge_id.eq(proposal.challenge_id),
+            proposals::extra.eq(proposal
+                .extra
+                .as_ref()
+                .map(|h| serde_json::to_string(h).unwrap())),
         );
 
         q!(

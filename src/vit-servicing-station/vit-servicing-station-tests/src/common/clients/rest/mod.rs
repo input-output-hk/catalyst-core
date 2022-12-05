@@ -1,13 +1,16 @@
 mod logger;
 mod path;
 mod raw;
+mod search;
+
+pub use raw::RestClient as RawRestClient;
+pub use search::SearchRequestBuilder;
 
 use crate::common::clients::rest::path::RestPathBuilder;
 use crate::common::raw_snapshot::RawSnapshot;
 use crate::common::snapshot::{Snapshot, VoterInfo};
 use hyper::StatusCode;
 use logger::RestClientLogger;
-pub use raw::RestClient as RawRestClient;
 use reqwest::blocking::Response;
 use std::collections::HashMap;
 use std::time::Duration;
@@ -17,6 +20,7 @@ use vit_servicing_station_lib::db::models::challenges::Challenge;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::server::settings::ServiceSettings;
+use vit_servicing_station_lib::v0::endpoints::search::requests::{SearchQuery, SearchResponse};
 use vit_servicing_station_lib::{
     db::models::funds::Fund,
     v0::endpoints::{proposals::ProposalVoteplanIdAndIndexes, service_version::ServiceVersion},
@@ -38,7 +42,7 @@ impl From<&ServiceSettings> for RestClient {
                 }
             };
             //we accepted ServiceSettings struct in constructor, so address should be proper
-            //SockerAddr struct, therefore we won't have any problems with parsing result
+            //SocketAddr struct, therefore we won't have any problems with parsing result
             format!("{}://{}", scheme, settings.address)
                 .parse()
                 .unwrap()
@@ -178,6 +182,22 @@ impl RestClient {
         proposal_id: &str,
     ) -> Result<HashMap<String, Vec<AdvisorReview>>, Error> {
         let response = self.raw.advisor_reviews(proposal_id)?;
+        self.verify_status_code(&response)?;
+        let content = response.text()?;
+        self.raw.log_text(&content);
+        serde_json::from_str(&content).map_err(Error::CannotDeserialize)
+    }
+
+    pub fn search(&self, search: SearchQuery) -> Result<SearchResponse, Error> {
+        let response = self.raw.search(serde_json::to_string(&search)?)?;
+        self.verify_status_code(&response)?;
+        let content = response.text()?;
+        self.raw.log_text(&content);
+        serde_json::from_str(&content).map_err(Error::CannotDeserialize)
+    }
+
+    pub fn search_count(&self, search: SearchQuery) -> Result<i64, Error> {
+        let response = self.raw.search_count(serde_json::to_string(&search)?)?;
         self.verify_status_code(&response)?;
         let content = response.text()?;
         self.raw.log_text(&content);

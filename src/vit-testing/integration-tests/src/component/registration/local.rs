@@ -1,8 +1,8 @@
 use crate::common::registration::RegistrationServiceStarter;
 use crate::common::MainnetWallet;
 use assert_fs::TempDir;
-use mainnet_tools::cardano_cli::CardanoCliMock;
-use mainnet_tools::voter_registration::VoterRegistrationMock;
+use mainnet_tools::cardano_cli::Mock as CardanoCliMock;
+use mainnet_tools::voter_registration::Mock as VoterRegistrationMock;
 use registration_service::config::{ConfigurationBuilder, NetworkType};
 use registration_service::utils::SecretKeyFromQrCode;
 
@@ -29,7 +29,7 @@ pub fn direct_registration_flow() {
         .unwrap();
 
     let direct_voting_registration = alice.generate_direct_voting_registration(0);
-    voter_registration_mock.with_response(direct_voting_registration, &testing_directory);
+    let _ = voter_registration_mock.with_response(&direct_voting_registration, &testing_directory);
 
     let registration_result = registration_service.self_register(&alice, &testing_directory);
 
@@ -72,7 +72,8 @@ pub fn delegation_registration_flow() {
 
     let delegation_voting_registration =
         alice.generate_delegated_voting_registration(delegations_dist.clone(), 0);
-    voter_registration_mock.with_response(delegation_voting_registration, &testing_directory);
+    let _ =
+        voter_registration_mock.with_response(&delegation_voting_registration, &testing_directory);
 
     let registration_result = registration_service.delegated_register(
         &alice,

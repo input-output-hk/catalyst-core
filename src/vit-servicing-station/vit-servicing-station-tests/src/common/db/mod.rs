@@ -103,6 +103,7 @@ impl<'a> DbInserter<'a> {
                 proposals::chain_vote_options
                     .eq(proposal.proposal.chain_vote_options.as_csv_string()),
                 proposals::challenge_id.eq(proposal.proposal.challenge_id),
+                proposals::extra.eq(serde_json::to_string(&proposal.proposal.extra).unwrap()),
             );
 
             insert_or_ignore_into_q!(conn, proposals::table, values)

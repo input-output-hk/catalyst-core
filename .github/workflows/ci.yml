@@ -38,4 +38,4 @@ jobs:
           nix_key: ${{ secrets.NIX_SIGNING_KEY }}
           s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          cache: s3://iog-catalyst-cache&region=eu-central-1
+          cache: s3://iog-catalyst-cache?region=eu-central-1

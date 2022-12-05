@@ -12,27 +12,44 @@ use std::{fmt, str::FromStr};
 /// wrapper around the Blake2b256 hash
 ///
 #[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Hash, Serialize, Deserialize)]
-pub struct Hash(
+#[serde(remote = "key::Hash")]
+pub struct Hash {
     #[serde(
         deserialize_with = "internal::deserialize_hash",
-        serialize_with = "internal::serialize_hash"
+        serialize_with = "internal::serialize_hash",
+        getter = "key::Hash::get_hash"
     )]
-    Blake2b256,
-);
+    hash: Blake2b256,
+}
+
+impl Serialize for Hash {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        internal::serialize_hash(&self.hash, serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for Hash {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        Ok(Self {
+            hash: internal::deserialize_hash(deserializer)?,
+        })
+    }
+}
 
 impl Hash {
+    pub fn into_digest(self) -> Digest<Blake2b256> {
+        self.hash.into()
+    }
+
     #[inline]
     pub fn into_hash(self) -> key::Hash {
-        key::Hash::from(self.0)
-    }
-
-    pub fn from_hash(key: key::Hash) -> Self {
-        let bytes: [u8; 32] = key.into();
-        Self::from(bytes)
-    }
-
-    pub fn into_digest(self) -> Digest<Blake2b256> {
-        self.0.into()
+        key::Hash::from(self)
     }
 
     pub fn into_digest_of<T>(self) -> DigestOf<Blake2b256, T> {
@@ -44,7 +61,7 @@ impl Hash {
     }
 
     pub fn from_hex(s: &str) -> Result<Self, chain_crypto::hash::Error> {
-        s.parse().map(Hash)
+        s.parse().map(|hash| Hash { hash })
     }
 }
 
@@ -52,7 +69,7 @@ impl Hash {
 
 impl fmt::Display for Hash {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.0.fmt(f)
+        self.hash.fmt(f)
     }
 }
 
@@ -75,7 +92,7 @@ impl fmt::Debug for Hash {
 
 impl AsRef<Blake2b256> for Hash {
     fn as_ref(&self) -> &Blake2b256 {
-        &self.0
+        &self.hash
     }
 }
 
@@ -83,26 +100,33 @@ impl AsRef<Blake2b256> for Hash {
 
 impl From<Blake2b256> for Hash {
     fn from(hash: Blake2b256) -> Self {
-        Hash(hash)
+        Hash { hash }
     }
 }
 
 impl From<Hash> for Blake2b256 {
     fn from(hash: Hash) -> Self {
-        hash.0
+        hash.hash
     }
 }
 
 impl From<key::Hash> for Hash {
     fn from(hash: key::Hash) -> Self {
-        let bytes: [u8; 32] = hash.into();
-        Hash(Blake2b256::from(bytes))
+        Self {
+            hash: *hash.get_hash(),
+        }
+    }
+}
+
+impl From<Hash> for key::Hash {
+    fn from(hash: Hash) -> Self {
+        Self::new(hash.hash)
     }
 }
 
 impl From<[u8; 32]> for Hash {
     fn from(bytes: [u8; 32]) -> Self {
-        Hash(bytes.into())
+        Hash { hash: bytes.into() }
     }
 }
 
@@ -115,13 +139,13 @@ impl<T> From<DigestOf<Blake2b256, T>> for Hash {
 
 impl<T> From<Hash> for DigestOf<Blake2b256, T> {
     fn from(h: Hash) -> Self {
-        DigestOf::from(h.0)
+        DigestOf::from(h.hash)
     }
 }
 
 impl From<Hash> for [u8; 32] {
     fn from(hash: Hash) -> [u8; 32] {
-        hash.0.into()
+        hash.hash.into()
     }
 }
 
@@ -135,7 +159,9 @@ mod test {
         where
             G: Gen,
         {
-            Hash(Blake2b256::arbitrary(g))
+            Hash {
+                hash: Blake2b256::arbitrary(g),
+            }
         }
     }
 
@@ -147,7 +173,9 @@ mod test {
             "2020202020202020202020202020202020202020202020202020202020202020";
         const HASH_BYTES: [u8; 32] = [0x20; 32];
 
-        let hash = Hash(Blake2b256::from(HASH_BYTES));
+        let hash = Hash {
+            hash: Blake2b256::from(HASH_BYTES),
+        };
 
         assert_eq!(hash.to_string(), EXPECTED_HASH_STR);
     }
@@ -160,7 +188,9 @@ mod test {
             "---\n\"2020202020202020202020202020202020202020202020202020202020202020\"\n";
         const HASH_BYTES: [u8; 32] = [0x20; 32];
 
-        let hash = Hash(Blake2b256::from(HASH_BYTES));
+        let hash = Hash {
+            hash: Blake2b256::from(HASH_BYTES),
+        };
 
         let hash_str = serde_yaml::to_string(&hash).unwrap();
 

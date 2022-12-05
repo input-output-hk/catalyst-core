@@ -105,6 +105,16 @@ impl RestClient {
             .map_err(Into::into)
     }
 
+    pub fn search(&self, query: impl Into<String>) -> Result<Response, Error> {
+        self.post(&self.path_builder.search(), query.into())
+            .map_err(Into::into)
+    }
+
+    pub fn search_count(&self, query: impl Into<String>) -> Result<Response, Error> {
+        self.post(&self.path_builder.search_count(), query.into())
+            .map_err(Into::into)
+    }
+
     pub fn client(&self) -> Result<reqwest::blocking::Client, reqwest::Error> {
         reqwest::blocking::Client::builder()
             .danger_accept_invalid_certs(true)

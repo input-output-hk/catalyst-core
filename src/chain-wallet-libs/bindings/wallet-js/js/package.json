@@ -1,0 +1,11 @@
+{
+  "name": "js",
+  "version": "0.0.1",
+  "description": "Jormungandr wallet capabilities for Javascript",
+  "main": "index.js",
+  "repository": "https://github.com/input-output-hk/catalyst-core",
+  "license": "MIT",
+  "devDependencies": {
+    "wallet-js": "file:../pkg"
+  }
+}

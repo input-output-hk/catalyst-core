@@ -173,6 +173,10 @@ impl Reg {
             &TransactionMetadatum::new_int(&Int::new_i32(4)),
             &TransactionMetadatum::new_int(&Int::new(&BigNum::from(self.metadata.slot.0))),
         );
+        meta_map.insert(
+            &TransactionMetadatum::new_int(&Int::new_i32(5)),
+            &TransactionMetadatum::new_int(&Int::new(&BigNum::from(self.metadata.purpose.0))),
+        );
 
         let mut meta = GeneralTransactionMetadata::new();
         meta.insert(
@@ -187,9 +191,47 @@ impl Reg {
         let sig_str = self.signature.signature.0.clone().split_off(2);
         let sig =
             Ed25519Signature::from_hex(&sig_str).map_err(|e| eyre!("invalid ed25519 sig: {e}"))?;
+
         match pub_key.verify(meta_bytes_hash.as_hash_bytes(), &sig) {
             true => Ok(()),
             false => Err(eyre!("signature verification failed")),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use assert_fs::TempDir;
+    use cardano_serialization_lib::metadata::{GeneralTransactionMetadata, MetadataJsonSchema};
+
+    use crate::test_api::MockDbProvider;
+    use crate::DataProvider;
+    use jormungandr_lib::interfaces::BlockDate;
+    use mainnet_lib::GeneralTransactionMetadataInfo;
+    use mainnet_lib::InMemoryDbSync;
+
+    #[test]
+    pub fn nami_wallet_tx() {
+        let temp_dir = TempDir::new().unwrap();
+
+        let metadata_string = r#"{
+            "61284":  {"1":[["0xf83870fde8c07e0552040cb4b005d63d58cd5f6450454f253844df7f76764a35",1]],"2":"0xebd231995f6bdbe6a1582625d1c291eed374fc7baab03feab6701ec21395180e","3":"0xe0b6d6e47f7d683a90bf4c638d337e95aaebcc9584188ca817a8691604","4":14150366,"5":0},
+            "61285": {"1":"0x826c2edf51906865c27f0f8217faac6d2301636bad867d8182176025952ab76ebb8180f31a36370ab2229c55ad6f4137c9c8745e89bedc933727c56d351b5307"}
+         }"#;
+
+        let root_metadata = GeneralTransactionMetadata::from_json_string(
+            metadata_string,
+            MetadataJsonSchema::BasicConversions,
+        )
+        .unwrap();
+
+        let mut db_sync = InMemoryDbSync::new(&temp_dir);
+        db_sync.push_transaction(BlockDate::new(0, 0), root_metadata);
+
+        let regs = MockDbProvider::from(db_sync)
+            .vote_registrations(None, None)
+            .unwrap();
+
+        assert!(regs[0].check_valid().is_ok());
     }
 }

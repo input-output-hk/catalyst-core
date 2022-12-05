@@ -22,7 +22,7 @@ jobs:
       - name: Standard Discovery
         uses: divnix/std-action/discover@main
         id: discovery
-  build-packages: &run-job
+  build-packages:
     needs: discover
     strategy:
       matrix:

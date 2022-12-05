@@ -101,7 +101,19 @@
 <span id="101">101</span>
 <span id="102">102</span>
 <span id="103">103</span>
-</pre><pre class="rust"><code><span class="kw">use </span>std::{thread, time::Duration};
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+</pre><pre class="rust"><code><span class="kw">use </span>std::fmt::{Display, Formatter};
+<span class="kw">use </span>std::{thread, time::Duration};
 <span class="kw">use </span>thiserror::Error;
 
 <span class="attribute">#[derive(Debug, Error)]
@@ -115,6 +127,16 @@
     sleep: Duration,
     attempts: u64,
     current: u64,
+}
+
+<span class="kw">impl </span>Display <span class="kw">for </span>Wait {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+        <span class="macro">write!</span>(
+            f,
+            <span class="string">&quot;Total attempts &#39;{}&#39; with sleep between for &#39;{:?}&#39;. Currently at {} attempt&quot;</span>,
+            <span class="self">self</span>.attempts, <span class="self">self</span>.sleep, <span class="self">self</span>.current
+        )
+    }
 }
 
 <span class="kw">impl </span>Wait {

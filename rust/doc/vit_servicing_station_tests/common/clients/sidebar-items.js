@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["rest",""]],"struct":[["RawRestClient",""]]};
+window.SIDEBAR_ITEMS = {"mod":[["rest",""]],"struct":[["RawRestClient",""],["SearchRequestBuilder",""]]};

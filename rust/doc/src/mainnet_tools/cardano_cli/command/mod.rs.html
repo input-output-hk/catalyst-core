@@ -52,7 +52,11 @@
 <span id="52">52</span>
 <span id="53">53</span>
 <span id="54">54</span>
-</pre><pre class="rust"><code><span class="kw">use </span>std::fs::File;
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+</pre><pre class="rust"><code><span class="kw">use </span>color_eyre::Report;
+<span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::path::PathBuf;
 <span class="kw">use </span>structopt::StructOpt;
@@ -62,21 +66,31 @@
 <span class="kw">mod </span>stake_address;
 <span class="kw">mod </span>transaction;
 
-<span class="kw">pub use </span>address::AddressCommand;
-<span class="kw">pub use </span>query::QueryCommand;
-<span class="kw">pub use </span>stake_address::StakeAddressCommand;
-<span class="kw">pub use </span>transaction::TransactionCommand;
+<span class="kw">pub use </span>address::Address;
+<span class="kw">pub use </span>query::Query;
+<span class="kw">pub use </span>stake_address::StakeAddress;
+<span class="kw">pub use </span>transaction::Transaction;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-</span><span class="kw">pub enum </span>CardanoCliCommand {
-    Query(QueryCommand),
-    Address(AddressCommand),
-    StakeAddress(StakeAddressCommand),
-    Transaction(TransactionCommand),
+<span class="doccomment">/// Wrapper around cardano CLI commands
+</span><span class="attribute">#[derive(StructOpt, Debug)]
+</span><span class="kw">pub enum </span>Command {
+    <span class="doccomment">/// Query commands
+    </span>Query(Query),
+    <span class="doccomment">/// Address related commands
+    </span>Address(Address),
+    <span class="doccomment">/// Stake address related commands
+    </span>StakeAddress(StakeAddress),
+    <span class="doccomment">/// Transaction commands
+    </span>Transaction(Transaction),
 }
 
-<span class="kw">impl </span>CardanoCliCommand {
-    <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+<span class="kw">impl </span>Command {
+    <span class="doccomment">/// Executes command
+    ///
+    /// # Errors
+    ///
+    /// On any sub commands errors
+    </span><span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Report&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Query(query) =&gt; query.exec().map_err(Into::into),
             <span class="self">Self</span>::Address(address) =&gt; address.exec().map_err(Into::into),
@@ -88,7 +102,7 @@
 
 <span class="kw">pub fn </span>write_to_file_or_println(
     maybe_file: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
-    content: String,
+    content: <span class="kw-2">&amp;</span>str,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), std::io::Error&gt; {
     <span class="kw">if let </span><span class="prelude-val">Some</span>(out_file) = maybe_file {
         <span class="kw">let </span><span class="kw-2">mut </span>file = File::create(out_file)<span class="question-mark">?</span>;
@@ -97,14 +111,6 @@
         <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, content);
     }
     <span class="prelude-val">Ok</span>(())
-}
-
-<span class="attribute">#[derive(Debug, thiserror::Error)]
-</span><span class="kw">pub enum </span>Error {
-    <span class="attribute">#[error(transparent)]
-    </span>Parsing(<span class="attribute">#[from] </span>serde_json::Error),
-    <span class="attribute">#[error(transparent)]
-    </span>Io(<span class="attribute">#[from] </span>std::io::Error),
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="mainnet_tools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -52,6 +52,16 @@
 <span id="52">52</span>
 <span id="53">53</span>
 <span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::fake;
 <span class="kw">use </span>std::path::PathBuf;
 <span class="kw">use </span>structopt::StructOpt;
@@ -59,26 +69,31 @@
 
 <span class="kw">pub const </span>PATH_TO_DYNAMIC_CONTENT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;VOTER_REGISTRATION_DYNAMIC_CONTENT&quot;</span>;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-</span><span class="kw">pub struct </span>VoterRegistrationCommand {
-    <span class="attribute">#[structopt(long = <span class="string">&quot;rewards-address&quot;</span>)]
+<span class="doccomment">/// Voter registration mock. It can return correctly formatted but faked response similar to
+/// Haskel voter registration CLI: &lt;https://github.com/input-output-hk/voting-tools/tree/master/registration&gt;
+</span><span class="attribute">#[derive(StructOpt, Debug)]
+</span><span class="kw">pub struct </span>Command {
+    <span class="doccomment">/// Rewards address in bech32
+    </span><span class="attribute">#[structopt(long = <span class="string">&quot;rewards-address&quot;</span>)]
     </span><span class="kw">pub </span>rewards_address: String,
-
-    <span class="attribute">#[structopt(long = <span class="string">&quot;vote-public-key-file&quot;</span>)]
+    <span class="doccomment">/// Path to catalyst voting key file in bech32
+    </span><span class="attribute">#[structopt(long = <span class="string">&quot;vote-public-key-file&quot;</span>)]
     </span><span class="kw">pub </span>vote_public_key_file: PathBuf,
-
-    <span class="attribute">#[structopt(long = <span class="string">&quot;stake-signing-key-file&quot;</span>)]
+    <span class="doccomment">/// Path to cardano stake signing key file in bech32
+    </span><span class="attribute">#[structopt(long = <span class="string">&quot;stake-signing-key-file&quot;</span>)]
     </span><span class="kw">pub </span>stake_signing_key_file: PathBuf,
-
-    <span class="attribute">#[structopt(long = <span class="string">&quot;slot-no&quot;</span>)]
+    <span class="doccomment">/// Slot number which will be used as a nonce
+    </span><span class="attribute">#[structopt(long = <span class="string">&quot;slot-no&quot;</span>)]
     </span><span class="kw">pub </span>slot_no: u32,
-
-    <span class="attribute">#[structopt(long = <span class="string">&quot;json&quot;</span>)]
-    </span><span class="kw">pub </span>json: bool,
 }
 
-<span class="kw">impl </span>VoterRegistrationCommand {
-    <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+<span class="kw">impl </span>Command {
+    <span class="doccomment">/// Executes command
+    ///
+    /// # Errors
+    ///
+    /// On missing parameters or IO related errors
+    </span><span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">if </span>!<span class="self">self</span>.stake_signing_key_file.exists() {
             <span class="kw">return </span><span class="prelude-val">Err</span>(Error::StakeSigningKey);
         }
@@ -87,7 +102,7 @@
         }
 
         <span class="kw">let </span>output = <span class="kw">match </span>std::env::var(PATH_TO_DYNAMIC_CONTENT) {
-            <span class="prelude-val">Ok</span>(value) =&gt; std::fs::read_to_string(value).unwrap(),
+            <span class="prelude-val">Ok</span>(value) =&gt; std::fs::read_to_string(value)<span class="question-mark">?</span>,
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; fake::metadata(),
         };
         <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, output);
@@ -95,15 +110,20 @@
     }
 }
 
-<span class="attribute">#[derive(Error, Debug)]
+<span class="doccomment">/// Errors for Voter Registration Mock
+</span><span class="attribute">#[derive(Error, Debug)]
 </span><span class="kw">pub enum </span>Error {
-    <span class="attribute">#[error(<span class="string">&quot;payment-signing-key: file does not exists&quot;</span>)]
+    <span class="doccomment">/// Payment key IO related error
+    </span><span class="attribute">#[error(<span class="string">&quot;payment-signing-key: file does not exists&quot;</span>)]
     </span>PaymentSigningKey,
-    <span class="attribute">#[error(<span class="string">&quot;stake-signing-key: file does not exists&quot;</span>)]
+    <span class="doccomment">/// Stake signing key IO related error
+    </span><span class="attribute">#[error(<span class="string">&quot;stake-signing-key: file does not exists&quot;</span>)]
     </span>StakeSigningKey,
-    <span class="attribute">#[error(<span class="string">&quot;vote-public-key: file does not exists&quot;</span>)]
+    <span class="doccomment">/// Catalyst key IO related error
+    </span><span class="attribute">#[error(<span class="string">&quot;vote-public-key: file does not exists&quot;</span>)]
     </span>VotePublicKey,
-    <span class="attribute">#[error(<span class="string">&quot;cannot create output file&quot;</span>)]
+    <span class="doccomment">/// General IO related error
+    </span><span class="attribute">#[error(<span class="string">&quot;cannot create output file&quot;</span>)]
     </span>IoError(<span class="attribute">#[from] </span>std::io::Error),
 }
 </code></pre></div>

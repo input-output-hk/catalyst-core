@@ -194,6 +194,16 @@
 <span id="194">194</span>
 <span id="195">195</span>
 <span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::Error;
 <span class="kw">use super</span>::{RestClientLogger, RestPathBuilder};
 <span class="kw">use </span>reqwest::blocking::Response;
@@ -298,6 +308,16 @@
 
     <span class="kw">pub fn </span>advisor_reviews(<span class="kw-2">&amp;</span><span class="self">self</span>, proposal_id: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response, Error&gt; {
         <span class="self">self</span>.get(<span class="kw-2">&amp;</span><span class="self">self</span>.path_builder.advisor_reviews(proposal_id))
+            .map_err(Into::into)
+    }
+
+    <span class="kw">pub fn </span>search(<span class="kw-2">&amp;</span><span class="self">self</span>, query: <span class="kw">impl </span>Into&lt;String&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Response, Error&gt; {
+        <span class="self">self</span>.post(<span class="kw-2">&amp;</span><span class="self">self</span>.path_builder.search(), query.into())
+            .map_err(Into::into)
+    }
+
+    <span class="kw">pub fn </span>search_count(<span class="kw-2">&amp;</span><span class="self">self</span>, query: <span class="kw">impl </span>Into&lt;String&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Response, Error&gt; {
+        <span class="self">self</span>.post(<span class="kw-2">&amp;</span><span class="self">self</span>.path_builder.search_count(), query.into())
             .map_err(Into::into)
     }
 

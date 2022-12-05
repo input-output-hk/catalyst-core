@@ -48,25 +48,37 @@
 <span id="48">48</span>
 <span id="49">49</span>
 <span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>command;
-<span class="kw">pub mod </span>fake;
+<span class="doccomment">/// Arbitrary responses from voter registartion mock
+</span><span class="kw">pub mod </span>fake;
 
 <span class="kw">use </span>assert_fs::fixture::PathChild;
 <span class="kw">use </span>assert_fs::TempDir;
 <span class="kw">use </span>cardano_serialization_lib::metadata::GeneralTransactionMetadata;
 <span class="kw">use </span>command::PATH_TO_DYNAMIC_CONTENT;
-<span class="kw">pub use </span>command::{Error, VoterRegistrationCommand};
+<span class="kw">pub use </span>command::{Command, Error};
 <span class="kw">use </span>std::env;
 <span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>std::path::PathBuf;
 
-<span class="attribute">#[derive(Debug, Clone)]
-</span><span class="kw">pub struct </span>VoterRegistrationMock {
+<span class="doccomment">/// Voter registration mock
+</span><span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>Mock {
     path: PathBuf,
 }
 
-<span class="kw">impl </span>Default <span class="kw">for </span>VoterRegistrationMock {
+<span class="kw">impl </span>Default <span class="kw">for </span>Mock {
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             path: Path::new(<span class="string">&quot;voter-registration-mock&quot;</span>).to_path_buf(),
@@ -74,8 +86,14 @@
     }
 }
 
-<span class="kw">impl </span>VoterRegistrationMock {
-    <span class="kw">pub fn </span>with_response(<span class="self">self</span>, metadata: GeneralTransactionMetadata, temp_dir: <span class="kw-2">&amp;</span>TempDir) -&gt; <span class="self">Self </span>{
+<span class="kw">impl </span>Mock {
+    <span class="doccomment">/// Set response which will be returned when executing registration generation
+    ///
+    /// # Panics
+    ///
+    /// On IO related errors
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>with_response(<span class="self">self</span>, metadata: <span class="kw-2">&amp;</span>GeneralTransactionMetadata, temp_dir: <span class="kw-2">&amp;</span>TempDir) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>metadata_file = temp_dir.child(<span class="string">&quot;metadata.tmp&quot;</span>);
 
         env::set_var(
@@ -94,8 +112,10 @@
         <span class="self">self
     </span>}
 
-    <span class="kw">pub fn </span>path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; PathBuf {
-        <span class="self">self</span>.path.to_path_buf()
+    <span class="doccomment">/// Path to persisted response
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; PathBuf {
+        <span class="self">self</span>.path.clone()
     }
 }
 </code></pre></div>

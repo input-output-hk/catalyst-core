@@ -94,6 +94,15 @@
 <span id="94">94</span>
 <span id="95">95</span>
 <span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
 </pre><pre class="rust"><code><span class="kw">use </span>serde::{Deserialize, Serialize};
 
 <span class="kw">use </span><span class="kw">crate</span>::db::models::{challenges::Challenge, proposals::FullProposalInfo};
@@ -161,11 +170,20 @@
     ImpactScore,
 }
 
-<span class="attribute">#[derive(Debug, Clone, Serialize)]
+<span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)] </span><span class="comment">// should serialize as if it is either a `Vec&lt;Challenge&gt;` or `Vec&lt;FullProposalInfo&gt;`
 </span><span class="kw">pub enum </span>SearchResponse {
     Challenge(Vec&lt;Challenge&gt;),
     Proposal(Vec&lt;FullProposalInfo&gt;),
+}
+
+<span class="kw">impl </span>SearchResponse {
+    <span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::Challenge(challenges) =&gt; challenges.is_empty(),
+            <span class="self">Self</span>::Proposal(proposals) =&gt; proposals.is_empty(),
+        }
+    }
 }
 
 <span class="attribute">#[cfg(test)]

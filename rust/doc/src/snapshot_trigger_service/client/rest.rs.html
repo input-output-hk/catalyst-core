@@ -125,6 +125,16 @@
 <span id="125">125</span>
 <span id="126">126</span>
 <span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::config::JobParameters;
 <span class="kw">use </span><span class="kw">crate</span>::ContextState;
 <span class="kw">use </span>jortestkit::string::StringExtension;
@@ -132,8 +142,10 @@
 <span class="kw">use </span>scheduler_service_lib::{FolderDump, SchedulerRestClient};
 <span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>thiserror::Error;
+<span class="kw">use </span>tracing::{debug, instrument};
 
-<span class="kw">pub struct </span>SnapshotRestClient(SchedulerRestClient);
+<span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub struct </span>SnapshotRestClient(SchedulerRestClient);
 
 <span class="kw">impl </span>SnapshotRestClient {
     <span class="kw">pub fn </span>new_with_token(token: String, address: String) -&gt; <span class="self">Self </span>{
@@ -193,15 +205,23 @@
         <span class="self">self</span>.<span class="number">0</span>.job_status(id).map_err(Into::into)
     }
 
-    <span class="kw">pub fn </span>job_new(<span class="kw-2">&amp;</span><span class="self">self</span>, params: JobParameters) -&gt; <span class="prelude-ty">Result</span>&lt;String, Error&gt; {
+    <span class="attribute">#[instrument]
+    </span><span class="kw">pub fn </span>job_new(<span class="kw-2">&amp;</span><span class="self">self</span>, params: JobParameters) -&gt; <span class="prelude-ty">Result</span>&lt;String, Error&gt; {
         <span class="kw">let </span>client = reqwest::blocking::Client::new();
         <span class="kw">let </span>path = <span class="self">self</span>.<span class="number">0</span>.path(<span class="string">&quot;api/job/new&quot;</span>);
-        <span class="macro">println!</span>(<span class="string">&quot;Calling: {}&quot;</span>, path);
+        <span class="macro">debug!</span>(<span class="string">&quot;Calling: {path}&quot;</span>);
         <span class="kw">let </span>request = <span class="self">self</span>.<span class="number">0</span>.set_header(client.post(<span class="kw-2">&amp;</span>path));
-        request
-            .json(<span class="kw-2">&amp;</span>params)
-            .send()<span class="question-mark">?
-            </span>.text()
+        <span class="kw">let </span>response = request.json(<span class="kw-2">&amp;</span>params).send()<span class="question-mark">?</span>;
+
+        <span class="kw">if </span>response.status() != <span class="number">200 </span>{
+            <span class="kw">return </span><span class="prelude-val">Err</span>(Error::UnexpectedSnapshotRestResponse {
+                path,
+                text: response.text()<span class="question-mark">?</span>,
+            });
+        }
+
+        response
+            .text()
             .map_err(Into::into)
             .map(|text| text.remove_quotas())
     }
@@ -247,8 +267,8 @@
     </span>IoError(<span class="attribute">#[from] </span>std::io::Error),
     <span class="attribute">#[error(<span class="string">&quot;timeout error&quot;</span>)]
     </span>WaitError(<span class="attribute">#[from] </span>WaitError),
-    <span class="attribute">#[error(<span class="string">&quot;error recieved from call: {0}&quot;</span>)]
-    </span>UnexpectedSnapshotRestResponse(String),
+    <span class="attribute">#[error(<span class="string">&quot;error received from call on endpoint &#39;{path}&#39;: {text}&quot;</span>)]
+    </span>UnexpectedSnapshotRestResponse { path: String, text: String },
     <span class="attribute">#[error(transparent)]
     </span>Inner(<span class="attribute">#[from] </span>scheduler_service_lib::RestError),
 }

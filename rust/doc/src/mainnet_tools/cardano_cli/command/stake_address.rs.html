@@ -61,7 +61,6 @@
 <span id="61">61</span>
 <span id="62">62</span>
 <span id="63">63</span>
-<span id="64">64</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::cardano_cli::command::write_to_file_or_println;
 <span class="kw">use </span><span class="kw">crate</span>::cardano_cli::fake;
 <span class="kw">use </span>std::fs::File;
@@ -70,12 +69,12 @@
 <span class="kw">use </span>structopt::StructOpt;
 
 <span class="attribute">#[derive(StructOpt, Debug)]
-</span><span class="kw">pub enum </span>StakeAddressCommand {
+</span><span class="kw">pub enum </span>StakeAddress {
     Build(BuildCommand),
     RegisterCertificate(RegistrationCertificateCommand),
 }
 
-<span class="kw">impl </span>StakeAddressCommand {
+<span class="kw">impl </span>StakeAddress {
     <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), std::io::Error&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Build(build) =&gt; build.exec(),
@@ -104,10 +103,9 @@
 
 <span class="kw">impl </span>BuildCommand {
     <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), std::io::Error&gt; {
-        <span class="kw">if </span><span class="self">self</span>.stake_verification_key.is_none() &amp;&amp; <span class="self">self</span>.stake_verification_key_file.is_none() {
-            <span class="macro">panic!</span>(<span class="string">&quot;either --stake-verification-key or --stake-verification-key-file option need to be defined &quot;</span>);
-        }
-        write_to_file_or_println(<span class="self">self</span>.out_file, fake::stake_address())
+        <span class="macro">assert!</span>(!(<span class="self">self</span>.stake_verification_key.is_none() &amp;&amp; <span class="self">self</span>.stake_verification_key_file.is_none()),
+                <span class="string">&quot;either --stake-verification-key or --stake-verification-key-file option need to be defined &quot;</span>);
+        write_to_file_or_println(<span class="self">self</span>.out_file, <span class="kw-2">&amp;</span>fake::stake_address())
     }
 }
 

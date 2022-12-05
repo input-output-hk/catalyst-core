@@ -183,6 +183,11 @@
 <span id="183">183</span>
 <span id="184">184</span>
 <span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
 </pre><pre class="rust"><code><span class="kw">pub mod </span>args;
 <span class="kw">pub mod </span>rest;
 
@@ -194,9 +199,16 @@
 <span class="kw">use </span>jortestkit::prelude::WaitBuilder;
 <span class="kw">use </span>num_traits::cast::ToPrimitive;
 <span class="kw">use </span>snapshot_lib::registration::{Delegations <span class="kw">as </span>VotingDelegations, VotingRegistration};
+<span class="kw">use </span>std::fmt::Debug;
+<span class="kw">use </span>tracing::{debug, instrument};
 <span class="kw">use </span>voting_tools_rs::{Delegations, Output};
 
-<span class="kw">pub fn </span>do_snapshot&lt;S: Into&lt;String&gt;, P: Into&lt;String&gt;&gt;(
+<span class="attribute">#[instrument(fields(
+    snapshot_token = snapshot_token.clone().into(),
+    snapshot_address = snapshot_address.clone().into(),
+    )
+)]
+</span><span class="kw">pub fn </span>do_snapshot&lt;S: Into&lt;String&gt; + Debug + Clone, P: Into&lt;String&gt; + Debug + Clone&gt;(
     job_params: JobParameters,
     snapshot_token: S,
     snapshot_address: P,
@@ -204,15 +216,13 @@
     <span class="kw">let </span>snapshot_client =
         SnapshotRestClient::new_with_token(snapshot_token.into(), snapshot_address.into());
 
-    <span class="macro">println!</span>(<span class="string">&quot;Snapshot params: {:?}&quot;</span>, job_params);
     <span class="kw">let </span>snapshot_job_id = snapshot_client.job_new(job_params.clone()).unwrap();
     <span class="kw">let </span>wait = WaitBuilder::new().tries(<span class="number">10</span>).sleep_between_tries(<span class="number">10</span>).build();
 
-    <span class="macro">println!</span>(<span class="string">&quot;waiting for snapshot job&quot;</span>);
     <span class="kw">let </span>snapshot_jobs_status =
         snapshot_client.wait_for_job_finish(snapshot_job_id.clone(), wait)<span class="question-mark">?</span>;
 
-    <span class="macro">println!</span>(<span class="string">&quot;Snapshot done: {:?}&quot;</span>, snapshot_jobs_status);
+    <span class="macro">debug!</span>(<span class="string">&quot;Snapshot done: {snapshot_jobs_status:?}&quot;</span>);
     <span class="kw">let </span>snapshot =
         snapshot_client.get_snapshot(snapshot_job_id, job_params.tag.unwrap_or_default())<span class="question-mark">?</span>;
 
@@ -287,14 +297,14 @@
                 reward_address: output.rewards_address.to_string(),
                 delegations: <span class="kw">match </span>output.delegations {
                     Delegations::Legacy(legacy) =&gt; VotingDelegations::Legacy(
-                        Identifier::from_hex(<span class="kw-2">&amp;</span>legacy)
+                        Identifier::from_hex(legacy.trim_start_matches(<span class="string">&quot;0x&quot;</span>))
                             .map_err(|e| CannotConvertFromOutput(e.to_string()))<span class="question-mark">?</span>,
                     ),
                     Delegations::Delegated(delegated) =&gt; {
                         <span class="kw">let </span><span class="kw-2">mut </span>new = <span class="macro">vec!</span>[];
                         <span class="kw">for </span>(key, weight) <span class="kw">in </span>delegated {
                             new.push((
-                                Identifier::from_hex(<span class="kw-2">&amp;</span>key)
+                                Identifier::from_hex(key.trim_start_matches(<span class="string">&quot;0x&quot;</span>))
                                     .map_err(|e| CannotConvertFromOutput(e.to_string()))<span class="question-mark">?</span>,
                                 weight,
                             ));
@@ -365,7 +375,7 @@
     </span>ChainError(<span class="attribute">#[from] </span>chain_addr::Error),
     <span class="attribute">#[error(transparent)]
     </span>Config(<span class="attribute">#[from] </span><span class="kw">crate</span>::config::Error),
-    <span class="attribute">#[error(<span class="string">&quot;cannot convert voting registration from voting tools output due to: &quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;cannot convert voting registration from voting tools output due to: {0}&quot;</span>)]
     </span>CannotConvertFromOutput(String),
 }
 </code></pre></div>

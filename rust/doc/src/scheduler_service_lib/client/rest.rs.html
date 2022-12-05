@@ -134,6 +134,13 @@
 <span id="134">134</span>
 <span id="135">135</span>
 <span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::FolderDump;
 <span class="kw">use </span>jortestkit::process::WaitError;
 <span class="kw">use </span>jortestkit::web::api_token::API_TOKEN_HEADER;
@@ -142,8 +149,10 @@
 <span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>thiserror::Error;
+<span class="kw">use </span>tracing::debug;
 
-<span class="kw">pub struct </span>SchedulerRestClient {
+<span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub struct </span>SchedulerRestClient {
     api_token: <span class="prelude-ty">Option</span>&lt;String&gt;,
     admin_token: <span class="prelude-ty">Option</span>&lt;String&gt;,
     address: String,
@@ -180,10 +189,15 @@
 
     <span class="kw">pub fn </span>get&lt;S: Into&lt;String&gt;&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, local_path: S) -&gt; <span class="prelude-ty">Result</span>&lt;String, Error&gt; {
         <span class="kw">let </span>path = <span class="self">self</span>.path(local_path);
-        <span class="macro">println!</span>(<span class="string">&quot;Calling: {}&quot;</span>, path);
+        <span class="macro">debug!</span>(<span class="string">&quot;Calling: {}&quot;</span>, path);
         <span class="kw">let </span>client = reqwest::blocking::Client::new();
         <span class="kw">let </span>request = <span class="self">self</span>.set_header(client.get(<span class="kw-2">&amp;</span>path));
-        request.send()<span class="question-mark">?</span>.text().map_err(Into::into)
+        <span class="kw">let </span>response = request.send()<span class="question-mark">?</span>;
+
+        <span class="kw">if </span>response.status() != <span class="number">200 </span>{
+            <span class="kw">return </span><span class="prelude-val">Err</span>(Error::UnexpectedResponse(response.text()<span class="question-mark">?</span>));
+        }
+        response.text().map_err(Into::into)
     }
 
     <span class="kw">pub fn </span>set_header(
@@ -221,7 +235,7 @@
     <span class="kw">pub fn </span>job_new&lt;Request: Serialize&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, request: Request) -&gt; <span class="prelude-ty">Result</span>&lt;String, Error&gt; {
         <span class="kw">let </span>client = reqwest::blocking::Client::new();
         <span class="kw">let </span>path = <span class="self">self</span>.path(<span class="string">&quot;api/job/new&quot;</span>);
-        <span class="macro">println!</span>(<span class="string">&quot;Calling: {}&quot;</span>, path);
+        <span class="macro">debug!</span>(<span class="string">&quot;Calling: {}&quot;</span>, path);
         <span class="kw">let </span>request_builder = <span class="self">self</span>.set_header(client.post(<span class="kw-2">&amp;</span>path));
         <span class="attribute">#[allow(clippy::single_char_pattern)]
         </span>request_builder

@@ -228,16 +228,39 @@
 <span id="228">228</span>
 <span id="229">229</span>
 <span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>logger;
 <span class="kw">mod </span>path;
 <span class="kw">mod </span>raw;
+<span class="kw">mod </span>search;
+
+<span class="kw">pub use </span>raw::RestClient <span class="kw">as </span>RawRestClient;
+<span class="kw">pub use </span>search::SearchRequestBuilder;
 
 <span class="kw">use </span><span class="kw">crate</span>::common::clients::rest::path::RestPathBuilder;
 <span class="kw">use </span><span class="kw">crate</span>::common::raw_snapshot::RawSnapshot;
 <span class="kw">use </span><span class="kw">crate</span>::common::snapshot::{Snapshot, VoterInfo};
 <span class="kw">use </span>hyper::StatusCode;
 <span class="kw">use </span>logger::RestClientLogger;
-<span class="kw">pub use </span>raw::RestClient <span class="kw">as </span>RawRestClient;
 <span class="kw">use </span>reqwest::blocking::Response;
 <span class="kw">use </span>std::collections::HashMap;
 <span class="kw">use </span>std::time::Duration;
@@ -247,6 +270,7 @@
 <span class="kw">use </span>vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 <span class="kw">use </span>vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 <span class="kw">use </span>vit_servicing_station_lib::server::settings::ServiceSettings;
+<span class="kw">use </span>vit_servicing_station_lib::v0::endpoints::search::requests::{SearchQuery, SearchResponse};
 <span class="kw">use </span>vit_servicing_station_lib::{
     db::models::funds::Fund,
     v0::endpoints::{proposals::ProposalVoteplanIdAndIndexes, service_version::ServiceVersion},
@@ -268,7 +292,7 @@
                 </span>}
             };
             <span class="comment">//we accepted ServiceSettings struct in constructor, so address should be proper
-            //SockerAddr struct, therefore we won&#39;t have any problems with parsing result
+            //SocketAddr struct, therefore we won&#39;t have any problems with parsing result
             </span><span class="macro">format!</span>(<span class="string">&quot;{}://{}&quot;</span>, scheme, settings.address)
                 .parse()
                 .unwrap()
@@ -408,6 +432,22 @@
         proposal_id: <span class="kw-2">&amp;</span>str,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;HashMap&lt;String, Vec&lt;AdvisorReview&gt;&gt;, Error&gt; {
         <span class="kw">let </span>response = <span class="self">self</span>.raw.advisor_reviews(proposal_id)<span class="question-mark">?</span>;
+        <span class="self">self</span>.verify_status_code(<span class="kw-2">&amp;</span>response)<span class="question-mark">?</span>;
+        <span class="kw">let </span>content = response.text()<span class="question-mark">?</span>;
+        <span class="self">self</span>.raw.log_text(<span class="kw-2">&amp;</span>content);
+        serde_json::from_str(<span class="kw-2">&amp;</span>content).map_err(Error::CannotDeserialize)
+    }
+
+    <span class="kw">pub fn </span>search(<span class="kw-2">&amp;</span><span class="self">self</span>, search: SearchQuery) -&gt; <span class="prelude-ty">Result</span>&lt;SearchResponse, Error&gt; {
+        <span class="kw">let </span>response = <span class="self">self</span>.raw.search(serde_json::to_string(<span class="kw-2">&amp;</span>search)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
+        <span class="self">self</span>.verify_status_code(<span class="kw-2">&amp;</span>response)<span class="question-mark">?</span>;
+        <span class="kw">let </span>content = response.text()<span class="question-mark">?</span>;
+        <span class="self">self</span>.raw.log_text(<span class="kw-2">&amp;</span>content);
+        serde_json::from_str(<span class="kw-2">&amp;</span>content).map_err(Error::CannotDeserialize)
+    }
+
+    <span class="kw">pub fn </span>search_count(<span class="kw-2">&amp;</span><span class="self">self</span>, search: SearchQuery) -&gt; <span class="prelude-ty">Result</span>&lt;i64, Error&gt; {
+        <span class="kw">let </span>response = <span class="self">self</span>.raw.search_count(serde_json::to_string(<span class="kw-2">&amp;</span>search)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.verify_status_code(<span class="kw-2">&amp;</span>response)<span class="question-mark">?</span>;
         <span class="kw">let </span>content = response.text()<span class="question-mark">?</span>;
         <span class="self">self</span>.raw.log_text(<span class="kw-2">&amp;</span>content);

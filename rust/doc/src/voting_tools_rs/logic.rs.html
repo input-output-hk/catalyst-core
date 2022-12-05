@@ -188,6 +188,53 @@
 <span id="188">188</span>
 <span id="189">189</span>
 <span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data_provider::DataProvider;
 <span class="kw">use </span>cardano_serialization_lib::address::{Address, NetworkInfo, RewardAddress};
 <span class="kw">use </span>cardano_serialization_lib::chain_crypto::Blake2b256;
@@ -227,6 +274,9 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Output&gt;&gt; {
     <span class="kw">let </span>network_info = network_info(testnet_magic);
     <span class="kw">let </span>regs = db.vote_registrations(min_slot, max_slot)<span class="question-mark">?</span>;
+
+    <span class="macro">debug!</span>(<span class="string">&quot;found {} possible registrations&quot;</span>, regs.len());
+
     <span class="kw">let </span>stake_addrs = regs
         .iter()
         .filter_map(|reg| get_stake_address(<span class="kw-2">&amp;</span>reg.metadata.stake_vkey, <span class="kw-2">&amp;</span>network_info).ok())
@@ -238,9 +288,11 @@
         .into_iter()
         .filter_map(|reg| {
             <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = reg.check_valid() {
-                <span class="macro">warn!</span>(<span class="string">&quot;invalid reg: {e}&quot;</span>);
+                <span class="macro">warn!</span>(<span class="string">&quot;invalid reg on tx: &#39;{}&#39;: {e}&quot;</span>, reg.tx_id);
                 <span class="kw">return </span><span class="prelude-val">None</span>;
             }
+
+            <span class="macro">debug!</span>(<span class="string">&quot;registration on tx &#39;{}&#39; is valid&quot;</span>, reg.tx_id);
 
             <span class="kw">let </span>stake_addr = get_stake_address(<span class="kw-2">&amp;</span>reg.metadata.stake_vkey, <span class="kw-2">&amp;</span>network_info).ok()<span class="question-mark">?</span>;
             <span class="kw">let </span>voting_power = values.get(<span class="kw-2">&amp;</span>stake_addr <span class="kw">as </span><span class="kw-2">&amp;</span>str)<span class="question-mark">?</span>.clone();
@@ -358,6 +410,10 @@
             <span class="kw-2">&amp;</span>TransactionMetadatum::new_int(<span class="kw-2">&amp;</span>Int::new_i32(<span class="number">4</span>)),
             <span class="kw-2">&amp;</span>TransactionMetadatum::new_int(<span class="kw-2">&amp;</span>Int::new(<span class="kw-2">&amp;</span>BigNum::from(<span class="self">self</span>.metadata.slot.<span class="number">0</span>))),
         );
+        meta_map.insert(
+            <span class="kw-2">&amp;</span>TransactionMetadatum::new_int(<span class="kw-2">&amp;</span>Int::new_i32(<span class="number">5</span>)),
+            <span class="kw-2">&amp;</span>TransactionMetadatum::new_int(<span class="kw-2">&amp;</span>Int::new(<span class="kw-2">&amp;</span>BigNum::from(<span class="self">self</span>.metadata.purpose.<span class="number">0</span>))),
+        );
 
         <span class="kw">let </span><span class="kw-2">mut </span>meta = GeneralTransactionMetadata::new();
         meta.insert(
@@ -372,10 +428,48 @@
         </span><span class="kw">let </span>sig_str = <span class="self">self</span>.signature.signature.<span class="number">0</span>.clone().split_off(<span class="number">2</span>);
         <span class="kw">let </span>sig =
             Ed25519Signature::from_hex(<span class="kw-2">&amp;</span>sig_str).map_err(|e| <span class="macro">eyre!</span>(<span class="string">&quot;invalid ed25519 sig: {e}&quot;</span>))<span class="question-mark">?</span>;
+
         <span class="kw">match </span>pub_key.verify(meta_bytes_hash.as_hash_bytes(), <span class="kw-2">&amp;</span>sig) {
             <span class="bool-val">true </span>=&gt; <span class="prelude-val">Ok</span>(()),
             <span class="bool-val">false </span>=&gt; <span class="prelude-val">Err</span>(<span class="macro">eyre!</span>(<span class="string">&quot;signature verification failed&quot;</span>)),
         }
+    }
+}
+
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span>assert_fs::TempDir;
+    <span class="kw">use </span>cardano_serialization_lib::metadata::{GeneralTransactionMetadata, MetadataJsonSchema};
+
+    <span class="kw">use </span><span class="kw">crate</span>::test_api::MockDbProvider;
+    <span class="kw">use </span><span class="kw">crate</span>::DataProvider;
+    <span class="kw">use </span>jormungandr_lib::interfaces::BlockDate;
+    <span class="kw">use </span>mainnet_lib::GeneralTransactionMetadataInfo;
+    <span class="kw">use </span>mainnet_lib::InMemoryDbSync;
+
+    <span class="attribute">#[test]
+    </span><span class="kw">pub fn </span>nami_wallet_tx() {
+        <span class="kw">let </span>temp_dir = TempDir::new().unwrap();
+
+        <span class="kw">let </span>metadata_string = <span class="string">r#&quot;{
+            &quot;61284&quot;:  {&quot;1&quot;:[[&quot;0xf83870fde8c07e0552040cb4b005d63d58cd5f6450454f253844df7f76764a35&quot;,1]],&quot;2&quot;:&quot;0xebd231995f6bdbe6a1582625d1c291eed374fc7baab03feab6701ec21395180e&quot;,&quot;3&quot;:&quot;0xe0b6d6e47f7d683a90bf4c638d337e95aaebcc9584188ca817a8691604&quot;,&quot;4&quot;:14150366,&quot;5&quot;:0},
+            &quot;61285&quot;: {&quot;1&quot;:&quot;0x826c2edf51906865c27f0f8217faac6d2301636bad867d8182176025952ab76ebb8180f31a36370ab2229c55ad6f4137c9c8745e89bedc933727c56d351b5307&quot;}
+         }&quot;#</span>;
+
+        <span class="kw">let </span>root_metadata = GeneralTransactionMetadata::from_json_string(
+            metadata_string,
+            MetadataJsonSchema::BasicConversions,
+        )
+        .unwrap();
+
+        <span class="kw">let </span><span class="kw-2">mut </span>db_sync = InMemoryDbSync::new(<span class="kw-2">&amp;</span>temp_dir);
+        db_sync.push_transaction(BlockDate::new(<span class="number">0</span>, <span class="number">0</span>), root_metadata);
+
+        <span class="kw">let </span>regs = MockDbProvider::from(db_sync)
+            .vote_registrations(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
+            .unwrap();
+
+        <span class="macro">assert!</span>(regs[<span class="number">0</span>].check_valid().is_ok());
     }
 }
 </code></pre></div>

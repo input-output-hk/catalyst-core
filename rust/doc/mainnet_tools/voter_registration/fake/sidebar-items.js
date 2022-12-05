@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["metadata",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["metadata","Arbitrary metadata"]]};

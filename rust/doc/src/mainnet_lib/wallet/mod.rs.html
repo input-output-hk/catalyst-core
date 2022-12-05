@@ -133,8 +133,8 @@
 </pre><pre class="rust"><code><span class="kw">mod </span>registration;
 
 <span class="kw">pub use </span><span class="kw">crate</span>::wallet::registration::{
-    RegistrationBuilder, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
-    REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
+    GeneralTransactionMetadataInfo, RegistrationBuilder, METADATUM_1, METADATUM_2, METADATUM_3,
+    METADATUM_4, REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
 };
 <span class="kw">use </span>cardano_serialization_lib::address::{NetworkInfo, RewardAddress, StakeCredential};
 <span class="kw">use </span>cardano_serialization_lib::crypto::{PrivateKey, PublicKey};

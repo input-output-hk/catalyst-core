@@ -86,6 +86,7 @@
 <span id="86">86</span>
 <span id="87">87</span>
 <span id="88">88</span>
+<span id="89">89</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::cardano_cli::command::write_to_file_or_println;
 <span class="kw">use </span><span class="kw">crate</span>::cardano_cli::fake;
 <span class="kw">use </span>std::io::Error;
@@ -93,13 +94,13 @@
 <span class="kw">use </span>structopt::StructOpt;
 
 <span class="attribute">#[derive(StructOpt, Debug)]
-</span><span class="kw">pub enum </span>QueryCommand {
+</span><span class="kw">pub enum </span>Query {
     Utxo(UTxOCommand),
     Tip(TipCommand),
     ProtocolParameters(ProtocolParametersCommand),
 }
 
-<span class="kw">impl </span>QueryCommand {
+<span class="kw">impl </span>Query {
     <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Utxo(utxo) =&gt; utxo.exec(),
@@ -123,14 +124,15 @@
 
 <span class="kw">impl </span>ProtocolParametersCommand {
     <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-        <span class="kw">if </span>!<span class="self">self</span>.mainnet &amp;&amp; <span class="self">self</span>.testnet_magic.is_none() {
-            <span class="macro">panic!</span>(<span class="string">&quot;no network setting&quot;</span>);
-        }
+        <span class="macro">assert!</span>(
+            !(<span class="self">self</span>.mainnet || <span class="self">self</span>.testnet_magic.is_some()),
+            <span class="string">&quot;no network setting&quot;
+        </span>);
 
         <span class="kw">let </span>protocol_parameters = fake::protocol_parameters();
         write_to_file_or_println(
             <span class="self">self</span>.out_file,
-            serde_json::to_string(<span class="kw-2">&amp;</span>protocol_parameters).unwrap(),
+            <span class="kw-2">&amp;</span>serde_json::to_string(<span class="kw-2">&amp;</span>protocol_parameters).unwrap(),
         )
     }
 }
@@ -150,7 +152,7 @@
 <span class="kw">impl </span>TipCommand {
     <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">let </span>tip = fake::tip();
-        write_to_file_or_println(<span class="self">self</span>.out_file, serde_json::to_string(<span class="kw-2">&amp;</span>tip).unwrap())
+        write_to_file_or_println(<span class="self">self</span>.out_file, <span class="kw-2">&amp;</span>serde_json::to_string(<span class="kw-2">&amp;</span>tip).unwrap())
     }
 }
 <span class="attribute">#[derive(StructOpt, Debug)]
@@ -171,7 +173,7 @@
 <span class="kw">impl </span>UTxOCommand {
     <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">let </span>utxos = fake::utxo();
-        write_to_file_or_println(<span class="self">self</span>.out_file, utxos.to_string())
+        write_to_file_or_println(<span class="self">self</span>.out_file, <span class="kw-2">&amp;</span>utxos.to_string())
     }
 }
 </code></pre></div>

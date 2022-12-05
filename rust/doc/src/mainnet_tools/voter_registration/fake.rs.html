@@ -7,7 +7,11 @@
 <span id="7">7</span>
 <span id="8">8</span>
 <span id="9">9</span>
-</pre><pre class="rust"><code><span class="kw">pub fn </span>metadata() -&gt; String {
+<span id="10">10</span>
+<span id="11">11</span>
+</pre><pre class="rust"><code><span class="doccomment">/// Arbitrary metadata
+</span><span class="attribute">#[must_use]
+</span><span class="kw">pub fn </span>metadata() -&gt; String {
     <span class="string">&quot;{ \
         reward_address: \&quot;0xe1ffff2912572257b59dca84c965e4638a09f1524af7a15787eb0d8a46\&quot;,  \
         stake_public_key: \&quot;0xe7d6616840734686855ec80ee9658f5ead9e29e494ec6889a5d1988b50eb8d0f\&quot;, \

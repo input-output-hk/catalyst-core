@@ -68,7 +68,7 @@
 <span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>color_eyre::Result;
 <span class="kw">use </span>mainnet_lib::InMemoryDbSync;
-<span class="kw">use </span>tracing::debug;
+<span class="kw">use </span>tracing::info;
 <span class="kw">use </span>voting_tools_rs::test_api::MockDbProvider;
 <span class="kw">use </span>voting_tools_rs::{voting_power, Args, DataProvider, Db, DbConfig, DryRunCommand};
 
@@ -101,7 +101,7 @@
 
     <span class="kw">let </span>outputs = voting_power(Box::leak(db), min_slot_no, max_slot_no, testnet_magic)<span class="question-mark">?</span>;
 
-    <span class="macro">debug!</span>(<span class="string">&quot;calculated {} outputs&quot;</span>, outputs.len());
+    <span class="macro">info!</span>(<span class="string">&quot;calculated {} outputs&quot;</span>, outputs.len());
 
     <span class="kw">let </span>file = File::options().write(<span class="bool-val">true</span>).create(<span class="bool-val">true</span>).open(out_file)<span class="question-mark">?</span>;
     <span class="kw">let </span>writer = BufWriter::new(file);

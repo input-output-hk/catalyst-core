@@ -12,15 +12,17 @@
 <span id="12">12</span>
 <span id="13">13</span>
 <span id="14">14</span>
-</pre><pre class="rust"><code><span class="kw">use </span>futures::future::FutureExt;
-<span class="kw">use </span>mainnet_tools::cardano_cli::{CardanoCliCommand, CardanoCliCommandError};
+<span id="15">15</span>
+</pre><pre class="rust"><code><span class="kw">use </span>color_eyre::Report;
+<span class="kw">use </span>futures::future::FutureExt;
+<span class="kw">use </span>mainnet_tools::cardano_cli::Command;
 <span class="kw">use </span>structopt::StructOpt;
 
 <span class="attribute">#[tokio::main]
-</span><span class="kw">pub async fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), CardanoCliCommandError&gt; {
+</span><span class="kw">pub async fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), Report&gt; {
     std::env::set_var(<span class="string">&quot;RUST_BACKTRACE&quot;</span>, <span class="string">&quot;full&quot;</span>);
 
-    <span class="kw">let </span>cli_future = tokio::task::spawn_blocking(|| CardanoCliCommand::from_args().exec())
+    <span class="kw">let </span>cli_future = tokio::task::spawn_blocking(|| Command::from_args().exec())
         .map(|res| res.expect(<span class="string">&quot;CLI command failed for an unknown reason&quot;</span>))
         .fuse();
 

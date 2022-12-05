@@ -3,10 +3,32 @@
 <span id="3">3</span>
 <span id="4">4</span>
 <span id="5">5</span>
-</pre><pre class="rust"><code><span class="attribute">#[macro_use]
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Toolbox for testing and mocking Cardano haskell part of catalyst bridge.
+
+</span><span class="attribute">#![forbid(missing_docs)]
+#![warn(clippy::pedantic)]
+
+#[macro_use]
 </span><span class="kw">extern crate </span>prettytable;
 
-<span class="kw">pub mod </span>cardano_cli;
-<span class="kw">pub mod </span>voter_registration;
+<span class="doccomment">/// Cardano CLI wrapper and mock
+</span><span class="kw">pub mod </span>cardano_cli;
+<span class="doccomment">/// Simple scheduler for transporting snapshot from snapshot trigger service to servicing station service
+/// Should be discarded when production component will be ready
+</span><span class="kw">pub mod </span>snapshot_wormhole;
+<span class="doccomment">/// Mock for voter registration. It can produce mocked catalyst registration.
+/// TODO: replace with mainnet wallet mock as it can produce real not mock catalyst registration
+</span><span class="kw">pub mod </span>voter_registration;
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="mainnet_tools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

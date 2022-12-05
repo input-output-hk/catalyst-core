@@ -22,18 +22,26 @@
 <span id="22">22</span>
 <span id="23">23</span>
 <span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>command;
-<span class="kw">pub mod </span>fake;
+<span class="doccomment">/// Module for providing fake/arbitrary data which Cardano CLI can return.
+/// Should be used purely for testing
+</span><span class="kw">pub mod </span>fake;
 
-<span class="kw">pub use </span>command::{CardanoCliCommand, Error <span class="kw">as </span>CardanoCliCommandError};
+<span class="kw">pub use </span>command::Command;
 <span class="kw">use </span>std::path::{Path, PathBuf};
 
-<span class="attribute">#[derive(Debug, Clone)]
-</span><span class="kw">pub struct </span>CardanoCliMock {
+<span class="doccomment">/// Cardano CLI mock. It can return arbitrary/fake data but preserves correct Cardano CLI format.
+</span><span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>Mock {
     path: PathBuf,
 }
 
-<span class="kw">impl </span>Default <span class="kw">for </span>CardanoCliMock {
+<span class="kw">impl </span>Default <span class="kw">for </span>Mock {
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             path: Path::new(<span class="string">&quot;cardano-cli-mock&quot;</span>).to_path_buf(),
@@ -41,9 +49,11 @@
     }
 }
 
-<span class="kw">impl </span>CardanoCliMock {
-    <span class="kw">pub fn </span>path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; PathBuf {
-        <span class="self">self</span>.path.to_path_buf()
+<span class="kw">impl </span>Mock {
+    <span class="doccomment">/// Path to mock cli
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; PathBuf {
+        <span class="self">self</span>.path.clone()
     }
 }
 </code></pre></div>

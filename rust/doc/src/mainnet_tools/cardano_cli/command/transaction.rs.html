@@ -127,23 +127,23 @@
 <span class="kw">use </span>structopt::StructOpt;
 
 <span class="attribute">#[derive(StructOpt, Debug)]
-</span><span class="kw">pub enum </span>TransactionCommand {
+</span><span class="kw">pub enum </span>Transaction {
     Id(IdCommand),
     Sign(SignCommand),
     Submit(SubmitCommand),
     Build(BuildCommand),
 }
 
-<span class="kw">impl </span>TransactionCommand {
+<span class="kw">impl </span>Transaction {
     <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), io::Error&gt; {
         <span class="kw">match </span><span class="self">self </span>{
-            <span class="self">Self</span>::Id(id) =&gt; {
-                id.exec();
+            <span class="self">Self</span>::Id(_id) =&gt; {
+                IdCommand::exec();
                 <span class="prelude-val">Ok</span>(())
             }
             <span class="self">Self</span>::Sign(sign) =&gt; sign.exec(),
-            <span class="self">Self</span>::Submit(submit) =&gt; {
-                submit.exec();
+            <span class="self">Self</span>::Submit(_submit) =&gt; {
+                SubmitCommand::exec();
                 <span class="prelude-val">Ok</span>(())
             }
             <span class="self">Self</span>::Build(build) =&gt; build.exec(),
@@ -158,7 +158,7 @@
 }
 
 <span class="kw">impl </span>IdCommand {
-    <span class="kw">pub fn </span>exec(<span class="self">self</span>) {
+    <span class="kw">pub fn </span>exec() {
         <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, fake::hash());
     }
 }
@@ -183,7 +183,7 @@
 
 <span class="kw">impl </span>SignCommand {
     <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), io::Error&gt; {
-        write_to_file_or_println(<span class="self">self</span>.out_file, fake::sign())
+        write_to_file_or_println(<span class="self">self</span>.out_file, <span class="kw-2">&amp;</span>fake::sign())
     }
 }
 
@@ -200,7 +200,7 @@
 }
 
 <span class="kw">impl </span>SubmitCommand {
-    <span class="kw">pub fn </span>exec(<span class="self">self</span>) {
+    <span class="kw">pub fn </span>exec() {
         <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, fake::submit());
     }
 }

@@ -19,8 +19,7 @@ use vit_servicing_station_tests::common::{
 };
 use voting_tools_rs::Output;
 
-/// Snapshot wormhole command which schedules snapshot file transport from snapshot trigger service to
-/// servicing station
+/// Main command
 #[derive(StructOpt, Debug)]
 pub struct Command {
     /// Path to configuration file
@@ -35,16 +34,23 @@ pub struct Command {
     cmd: Operation,
 }
 
-/// Sub command to run. Either 'one-shot' job, which ends program after single job is done, or 'schedule'
-/// which will run job continuously based on cron string
+/// Snapshot wormhole
 ///
-/// WARNING: there is custom cron string used which allows to program scheduler based on seconds.
-/// The scheduling format is as follows:
+/// Schedules snapshot file transport from snapshot trigger service to
+/// servicing station. Two modes are available:
 ///
-/// sec   min   hour   day of month   month   day of week   year
-/// *     *     *      *              *       *             *
+/// - one-shot - Ends program after single job is done,
+///
+/// - schedule - Run job continuously based on cron string.
+///              WARNING: there is custom cron string used which allows to program scheduler based on seconds.
+///              The scheduling format is as follows:
+///
+///              sec   min   hour   day of month   month   day of week   year
+///
+///              *     *     *      *              *       *             *
 #[derive(StructOpt, Debug)]
 pub enum Operation {
+    /// run single job
     OneShot,
     Schedule(Schedule),
 }
@@ -152,7 +158,7 @@ pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Config> {
 /// Run job in a schedule mode.
 #[derive(StructOpt, Debug)]
 pub struct Schedule {
-    /// Cron string
+    /// Cron string defining frequency of jobs
     #[structopt(long)]
     pub cron: String,
 

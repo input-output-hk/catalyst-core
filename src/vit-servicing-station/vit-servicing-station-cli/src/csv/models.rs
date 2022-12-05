@@ -1,6 +1,6 @@
 use diesel::{ExpressionMethods, Insertable};
 use serde::Deserialize;
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::convert::TryInto;
 use vit_servicing_station_lib::db;
 use vit_servicing_station_lib::db::models::challenges::{
@@ -332,6 +332,8 @@ pub struct Proposal {
     proposal_goal: Option<String>,
     #[serde(alias = "proposalMetrics", default)]
     proposal_metrics: Option<String>,
+    #[serde(alias = "proposalExtraFields", default)]
+    extra: Option<BTreeMap<String, String>>,
 }
 
 fn default_fund_id() -> i32 {
@@ -416,6 +418,7 @@ impl Proposal {
             chain_vote_encryption_key: self.chain_vote_encryption_key,
             fund_id: self.fund_id,
             challenge_id: self.challenge_id,
+            extra: self.extra,
         };
 
         let challenge_info = match challenge_type {

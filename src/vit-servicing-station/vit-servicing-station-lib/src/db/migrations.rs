@@ -3,12 +3,11 @@ use thiserror::Error;
 
 use crate::db::DbConnection;
 
-const PG_INITIAL_SETUP_UP: &str =
-    include_str!("../../migrations/postgres/00000000000000_diesel_initial_setup/up.sql");
-const PG_SETUP_UP: &str =
-    include_str!("../../migrations/postgres/2022-11-03-210841_setup_db/up.sql");
-const SQLITE_SETUP_UP: &str =
-    include_str!("../../migrations/sqlite/2020-05-22-112032_setup_db/up.sql");
+static PG_MIGRATIONS_DIR: include_dir::Dir<'_> =
+    include_dir::include_dir!("$CARGO_MANIFEST_DIR/migrations/postgres");
+
+static SQLITE_MIGRATIONS_DIR: include_dir::Dir<'_> =
+    include_dir::include_dir!("$CARGO_MANIFEST_DIR/migrations/sqlite");
 
 #[derive(Debug, Error)]
 pub enum InitializeDbWithMigrationError {
@@ -25,15 +24,10 @@ pub fn initialize_db_with_migration(
 
     match &db_conn {
         DbConnection::Sqlite(_) => {
-            write_tmp_migration(&t, "2020-05-22-112032_setup_db", SQLITE_SETUP_UP)?;
+            write_tmp_migration(&t, &SQLITE_MIGRATIONS_DIR)?;
         }
         DbConnection::Postgres(_) => {
-            write_tmp_migration(
-                &t,
-                "00000000000000_diesel_initial_setup",
-                PG_INITIAL_SETUP_UP,
-            )?;
-            write_tmp_migration(&t, "2022-11-03-210841_setup_db", PG_SETUP_UP)?;
+            write_tmp_migration(&t, &PG_MIGRATIONS_DIR)?;
         }
     }
 
@@ -49,13 +43,24 @@ pub fn initialize_db_with_migration(
 }
 
 fn write_tmp_migration(
-    dir: &TempDir,
-    migration_name: &str,
-    up_contents: &str,
+    temp_dir: &TempDir,
+    migrations_dir: &include_dir::Dir<'_>,
 ) -> std::io::Result<()> {
-    let migration_dir = dir.path().join(migration_name);
+    for e in migrations_dir.entries() {
+        if let include_dir::DirEntry::Dir(d) = e {
+            if let Some(dir_name) = d.path().file_name() {
+                if let Some(up_file) = d.get_file(d.path().join("up.sql")) {
+                    let migration_dir = temp_dir.path().join(dir_name);
 
-    std::fs::create_dir(migration_dir.as_path())?;
-    std::fs::write(migration_dir.as_path().join("up.sql"), up_contents)?;
-    std::fs::write(migration_dir.join("down.sql"), "")
+                    std::fs::create_dir(migration_dir.as_path())?;
+                    std::fs::write(
+                        migration_dir.as_path().join("up.sql"),
+                        up_file.contents_utf8().unwrap(),
+                    )?;
+                    std::fs::write(migration_dir.join("down.sql"), "")?;
+                }
+            }
+        }
+    }
+    Ok(())
 }

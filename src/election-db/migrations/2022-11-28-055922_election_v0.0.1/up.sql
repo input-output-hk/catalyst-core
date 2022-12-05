@@ -2,12 +2,12 @@
 
 -- Version of the schema.
 
-/*
+
 CREATE VIEW schema_version AS SELECT
     version
 FROM __diesel_schema_migrations
 WHERE version = (SELECT MAX(version) FROM __diesel_schema_migrations);
-*/
+
 
 -- Config Table
 -- This table is looked up with three keys, `id`, `id2` and `id3`
@@ -21,11 +21,11 @@ CREATE TABLE config
   value  JSONB NULL
 );
 
--- id+id2+id3 must be unique, they are a combined key.  
+-- id+id2+id3 must be unique, they are a combined key.
 CREATE UNIQUE INDEX config_idx ON config(id,id2,id3);
 
 
-COMMENT ON TABLE config IS 
+COMMENT ON TABLE config IS
 'General JSON Configuration and Data Values.
 Defined  Data Formats:
   Schema Version:
@@ -52,7 +52,7 @@ COMMENT ON INDEX config_idx IS 'We use three keys combined uniquely rather than 
 
 -- Elections Table - Defines each election
 
-CREATE TABLE election 
+CREATE TABLE election
 (
     row_id SERIAL PRIMARY KEY,
 
@@ -97,24 +97,24 @@ COMMENT ON COLUMN election.finalize_proposals_start IS 'The Time (UTC) when all 
 COMMENT ON COLUMN election.proposal_assessment_start IS 'The Time (UTC) when PA Assessors can start assessing proposals. NULL = Not yet defined, or Not applicable.';
 COMMENT ON COLUMN election.assessment_qa_start IS 'The Time (UTC) when vPA Assessors can start assessing assessments. NULL = Not yet defined, or Not applicable.';
 COMMENT ON COLUMN election.snapshot_start IS 'The Time (UTC) when the voting power of registered stake addresses is taken from main net. NULL = Not yet defined.';
-COMMENT ON COLUMN election.voting_start IS 'The earlisest time that registered wallets with sufficient voting power can place votes in the election. NULL = Not yet defined.';
+COMMENT ON COLUMN election.voting_start IS 'The earliest time that registered wallets with sufficient voting power can place votes in the election. NULL = Not yet defined.';
 COMMENT ON COLUMN election.voting_end IS 'The latest time that registered wallets with sufficient voting power can place votes in the election. NULL = Not yet defined.';
 COMMENT ON COLUMN election.tallying_end IS 'The latest time that tallying the election can complete by. NULL = Not yet defined.';
 COMMENT ON COLUMN election.extra IS 'Json Map defining election specific extra data. NULL = Not yet defined. "url"."results" = a results URL, "url"."survey" = a survey URL, others can be defined as required.';
 
 -- challenge types table - Defines all currently known challenges types.
-CREATE TABLE challenge_type
+CREATE TABLE challenge_category
 (
-    name TEXT PRIMARY KEY,    
+    name TEXT PRIMARY KEY,
     description TEXT
 );
 
-COMMENT ON TABLE challenge_type IS 'Defines all known and valid challenge types.';
-COMMENT ON COLUMN challenge_type.name IS 'The name of this challenge type.';
-COMMENT ON COLUMN challenge_type.description IS 'A Description of this kind of challenge type.';
+COMMENT ON TABLE challenge_category IS 'Defines all known and valid challenge categories.';
+COMMENT ON COLUMN challenge_category.name IS 'The name of this challenge category.';
+COMMENT ON COLUMN challenge_category.description IS 'A Description of this kind of challenge category.';
 
--- Define known challenge types
-INSERT INTO challenge_type (name,  description)
+-- Define known challenge categories
+INSERT INTO challenge_category (name,  description)
 VALUES
     ('simple','A Simple choice'),
     ('native','??'),
@@ -123,7 +123,7 @@ VALUES
 -- known currencies - Defines all currently known currencies.
 CREATE TABLE currency
 (
-    name TEXT PRIMARY KEY,    
+    name TEXT PRIMARY KEY,
     description TEXT
 );
 
@@ -167,7 +167,7 @@ CREATE TABLE challenge
     id INTEGER NOT NULL,
     election INTEGER NOT NULL,
 
-    type TEXT NOT NULL,
+    category TEXT NOT NULL,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
 
@@ -179,7 +179,7 @@ CREATE TABLE challenge
     extra JSONB,
 
     FOREIGN KEY(election) REFERENCES election(row_id),
-    FOREIGN KEY(type) REFERENCES challenge_type(name),
+    FOREIGN KEY(category) REFERENCES challenge_category(name),
     FOREIGN KEY(rewards_currency) REFERENCES currency(name),
     FOREIGN KEY(vote_options) REFERENCES vote_options(id)
 );
@@ -190,7 +190,7 @@ COMMENT ON TABLE challenge IS 'All Challenges for all elections. A Challenge is 
 COMMENT ON COLUMN challenge.row_id IS 'Synthetic Unique Key';
 COMMENT ON COLUMN challenge.id IS 'Fund specific Challenge ID, can be non-unique between funds (Eg, Ideascale ID for challenge).';
 COMMENT ON COLUMN challenge.election IS 'The specific Election ID this Challenge is part of.';
-COMMENT ON COLUMN challenge.type IS 'What type of challenge is this, see the challenge_type table for allowed values.';
+COMMENT ON COLUMN challenge.category IS 'What category of challenge is this, see the challenge_category table for allowed values.';
 COMMENT ON COLUMN challenge.title IS 'The  title of the challenge.';
 COMMENT ON COLUMN challenge.description IS 'Long form description of the challenge.';
 COMMENT ON COLUMN challenge.rewards_currency IS 'The currency rewards values are represented as.';
@@ -214,7 +214,7 @@ CREATE TABLE proposal
     files_url TEXT NOT NULL,
     impact_score BIGINT NOT NULL,
 
-    extra JSONB, 
+    extra JSONB,
 
     proposer_name TEXT NOT NULL,
     proposer_contact TEXT NOT NULL,
@@ -236,17 +236,17 @@ COMMENT ON COLUMN proposal.title IS 'Brief title of the proposal.';
 COMMENT ON COLUMN proposal.summary IS 'A Summary of the proposal to be implemented.';
 COMMENT ON COLUMN proposal.public_key IS '???';
 COMMENT ON COLUMN proposal.funds IS 'How much funds (in the currency of the fund)';
-COMMENT ON COLUMN proposal.url IS 'A URL with supporting information for the prpopsal.';
-COMMENT ON COLUMN proposal.files_url IS 'A URL link to relevent files supporting the proposal.';
+COMMENT ON COLUMN proposal.url IS 'A URL with supporting information for the proposal.';
+COMMENT ON COLUMN proposal.files_url IS 'A URL link to relevant files supporting the proposal.';
 COMMENT ON COLUMN proposal.impact_score IS 'The Impact score assigned to this proposal by the Assessors.';
 COMMENT ON COLUMN proposal.proposer_name IS 'The proposers name.';
 COMMENT ON COLUMN proposal.proposer_contact IS 'Contact details for the proposer.';
 COMMENT ON COLUMN proposal.proposer_url IS 'A URL with details of the proposer.';
-COMMENT ON COLUMN proposal.proposer_relevant_experience IS 'A freeform  string descibing the proposers experience relating to thier capability to implement the proposal.';
+COMMENT ON COLUMN proposal.proposer_relevant_experience IS 'A freeform  string describing the proposers experience relating to their capability to implement the proposal.';
 COMMENT ON COLUMN proposal.bb_proposal_id IS 'The ID used by the voting ledger (bulletin board) to refer to this proposal.';
 COMMENT ON COLUMN proposal.bb_vote_options IS 'The selectable options by the voter.';
-COMMENT ON COLUMN proposal.extra IS 
-'Extra data about the proposal.  
+COMMENT ON COLUMN proposal.extra IS
+'Extra data about the proposal.
  The types of extra data are defined by the proposal type and are not enforced.
  Extra Fields for `native` challenges:
     NONE.
@@ -260,24 +260,24 @@ COMMENT ON COLUMN proposal.extra IS
     "goal"       : <text> - The goal of the proposal is addressed to meet.
     "metrics"    : <text> - The metrics of the proposal or how success will be determined.';
 
--- Vote Plan Types
+-- Vote Plan Categories
 
-CREATE TABLE voteplan_types 
+CREATE TABLE voteplan_category
 (
     name TEXT PRIMARY KEY,
     public_key BOOL
 );
 
 
-INSERT INTO voteplan_types (name, public_key)
-VALUES 
+INSERT INTO voteplan_category (name, public_key)
+VALUES
     ('public', false), -- Fully public votes only
     ('private', true), -- Fully private votes only.
     ('semi-private', true); -- Private until tally, then decrypted.
 
-COMMENT ON TABLE voteplan_types IS 'The types of voteplans currently supported.';
-COMMENT ON COLUMN voteplan_types.name IS 'The UNIQUE name of this voteplan type.';
-COMMENT ON COLUMN voteplan_types.public_key IS 'Does this vote plan type require a public key.';
+COMMENT ON TABLE voteplan_category IS 'The category of vote plan currently supported.';
+COMMENT ON COLUMN voteplan_category.name IS 'The UNIQUE name of this voteplan category.';
+COMMENT ON COLUMN voteplan_category.public_key IS 'Does this vote plan category require a public key.';
 
 
 -- groups
@@ -288,7 +288,7 @@ CREATE TABLE voting_group (
     election_id INTEGER NOT NULL,
     token_id VARCHAR,
 
-    FOREIGN KEY(election_id) REFERENCES election(row_id)    
+    FOREIGN KEY(election_id) REFERENCES election(row_id)
 );
 
 CREATE UNIQUE INDEX token_fund_id ON voting_group (token_id, election_id);
@@ -307,29 +307,29 @@ CREATE TABLE voteplan
     election_id INTEGER NOT NULL,
 
     id VARCHAR NOT NULL UNIQUE,
-    type TEXT NOT NULL,
+    category TEXT NOT NULL,
     encryption_key VARCHAR,
     group_id INTEGER,
 
     FOREIGN KEY(election_id) REFERENCES election(row_id),
-    FOREIGN KEY(type) REFERENCES voteplan_types(name),
+    FOREIGN KEY(category) REFERENCES voteplan_category(name),
     FOREIGN KEY(group_id) REFERENCES voting_group(row_id)
 );
 
-COMMENT ON TABLE voteplan IS 'All Voteplans.';
+COMMENT ON TABLE voteplan IS 'All Vote plans.';
 
 COMMENT ON COLUMN voteplan.row_id IS 'Synthetic Unique Key';
 COMMENT ON COLUMN voteplan.id IS 'The ID of the Vote plan in the voting ledger/bulletin board. A Binary value encoded as hex.';
-COMMENT ON COLUMN voteplan.type IS 'The kind of vote which can be cast on this vote plan.';
-COMMENT ON COLUMN voteplan.encryption_key IS 'The public encryption key used, ONLY if required by the voteplan type.';
+COMMENT ON COLUMN voteplan.category IS 'The kind of vote which can be cast on this vote plan.';
+COMMENT ON COLUMN voteplan.encryption_key IS 'The public encryption key used, ONLY if required by the voteplan category.';
 COMMENT ON COLUMN voteplan.group_id IS 'The identifier of voting power token used withing this plan.';
 
--- Table to link Proposals to Voteplans in a many-many relationship.
--- This Many-Many relationship arrises because:
---  in the vote ledger/bulleting board, 
---      one proopsal may be within multiple different vote plans, 
+-- Table to link Proposals to Vote plans in a many-many relationship.
+-- This Many-Many relationship arises because:
+--  in the vote ledger/bulletin board,
+--      one proposal may be within multiple different vote plans,
 --      and each voteplan can contain multiple proposals.
-CREATE TABLE proposal_voteplan 
+CREATE TABLE proposal_voteplan
 (
     row_id SERIAL PRIMARY KEY,
     proposal_id INTEGER,
@@ -342,7 +342,7 @@ CREATE TABLE proposal_voteplan
 
 CREATE UNIQUE INDEX proposal_voteplan_idx ON proposal_voteplan(proposal_id,voteplan_id,bb_proposal_index);
 
-COMMENT ON TABLE proposal_voteplan IS 'Table to link Proposals to Voteplans in a Many to Many relationship.';
+COMMENT ON TABLE proposal_voteplan IS 'Table to link Proposals to Vote plans in a Many to Many relationship.';
 COMMENT ON COLUMN proposal_voteplan.row_id IS 'Synthetic ID of this Voteplan/Proposal M-M relationship.';
 COMMENT ON COLUMN proposal_voteplan.proposal_id IS 'The link to the Proposal primary key that links to this voteplan.';
 COMMENT ON COLUMN proposal_voteplan.voteplan_id IS 'The link to the Voteplan primary key that links to this proposal.';
@@ -402,15 +402,15 @@ COMMENT ON COLUMN goal.name IS 'The description of this election goal.';
 COMMENT ON COLUMN goal.election_id IS 'The ID of the election this goal belongs to.';
 COMMENT ON INDEX goal_index IS 'An index to enforce uniqueness of the relative `idx` field per election.';
 
--- Types of voter registration
+-- categories of voter registration
 
-CREATE TABLE voter_registration_type(
+CREATE TABLE voter_registration_category(
     name TEXT PRIMARY KEY,
     description TEXT
 );
 
-INSERT INTO voter_registration_type (name, description)
-VALUES 
+INSERT INTO voter_registration_category (name, description)
+VALUES
     ('cip15','cip-15 registration'), -- CIP-15 style registration.
     ('cip36','cip-36 registration'), -- CIP-36 style registration.
     ('cip36d', 'cip-36 deregistration'); -- CIP-36 style deregistration.
@@ -426,31 +426,31 @@ CREATE TABLE voter_registration (
     purpose BIGINT,
     stake_pub TEXT,
 
-    type TEXT,
+    category TEXT,
     delegations JSONB,
     reward_addr TEXT,
 
     txn BYTEA,
     block BIGINT,
 
-    FOREIGN KEY(type) REFERENCES voter_registration_type(name)
+    FOREIGN KEY(category) REFERENCES voter_registration_category(name)
 );
 
 CREATE UNIQUE INDEX latest_registration_index ON voter_registration(time,nonce,purpose,stake_pub);
 
 COMMENT ON TABLE voter_registration IS 'Every voter registration made on cardano.';
-COMMENT ON COLUMN voter_registration.row_id IS 'Syntetic Unique ID for a particular voter registration record.';
+COMMENT ON COLUMN voter_registration.row_id IS 'Synthetic Unique ID for a particular voter registration record.';
 COMMENT ON COLUMN voter_registration.time IS 'The time the voter registration was made, derived from the block the registration was in.';
-COMMENT ON COLUMN voter_registration.delegations IS 
+COMMENT ON COLUMN voter_registration.delegations IS
 'The JSON equivalent encoding of the voting key or delegations Array:
-  IF type == "cip15":
-    {"key":"<voting key>"} 
+  IF category == "cip15":
+    {"key":"<voting key>"}
     (See cip-15 <https://cips.cardano.org/cips/cip15/> for details.)
-  IF type == "cip36":
+  IF category == "cip36":
     {"delegation":[["<voting key>",weight],...]}
     (See cip-36 <https://cips.cardano.org/cips/cip36/> for details.)
-  IF type == "cip36d":
-    {} 
+  IF category == "cip36d":
+    {}
     (See cip-36 <https://cips.cardano.org/cips/cip36/> for details.)';
 COMMENT ON COLUMN voter_registration.stake_pub IS 'A stake address for the network that this transaction is submitted to (to point to the Ada that is being delegated).';
 COMMENT ON COLUMN voter_registration.reward_addr IS 'A Shelley address discriminated for the same network this transaction is submitted to to receive rewards.';
@@ -475,8 +475,8 @@ CREATE TABLE stake_address_balance (
 COMMENT ON TABLE stake_address_balance IS 'The balance of a particular stake address at a particular point in time. Note, this table catches ALL stake addresses, not only those registered.';
 COMMENT ON COLUMN stake_address_balance.row_id IS 'Synthetic record ID of the balance update.';
 COMMENT ON COLUMN stake_address_balance.time IS 'The time the stake address balance changed to the value in this record.';
-COMMENT ON COLUMN stake_address_balance.block IS 'The block on cardano where this balance change occured. If there were multiple changes in the block, this record is the result of all changes at the end of the block, after all transaction are processed.';
-COMMENT ON COLUMN stake_address_balance.public_key IS 'The stake public key address whos value changed.';
+COMMENT ON COLUMN stake_address_balance.block IS 'The block on cardano where this balance change occurred. If there were multiple changes in the block, this record is the result of all changes at the end of the block, after all transaction are processed.';
+COMMENT ON COLUMN stake_address_balance.public_key IS 'The stake public key address who''s value changed.';
 COMMENT ON COLUMN stake_address_balance.balance IS 'The ADA.LOVELACE balance of the stake address, at this time.';
 COMMENT ON COLUMN stake_address_balance.unpaid_rewards IS 'The ADA.LOVELACE balance of all unpaid rewards associated with this public stake key address.';
 

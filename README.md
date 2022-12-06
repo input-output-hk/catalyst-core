@@ -4,15 +4,13 @@
     <h2 align="center">Core Catalyst Governance Engine and utilities</h2>
 </p>
 
-<p align="center">  
+<p align="center">
  <a href="https://github.com/input-output-hk/catalyst-core/actions/workflows/ci_tests.yml">
     <img src="https://github.com/input-output-hk/catalyst-core/actions/workflows/ci_tests.yml/badge.svg" alt="Current CI Status." />
   </a>
-  
    <a href="https://github.com/input-output-hk/catalyst-core#license">
     <img src="https://img.shields.io/badge/license-MIT%2FApache--2.0-blue" alt="Catalyst Core is released under either of Apache License, Version 2.0 or MIT license at your option.." />
   </a>
-
   <a href="https://github.com/input-output-hk/catalyst-core/blob/main/CODE_OF_CONDUCT.md">
     <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome!" />
   </a>
@@ -24,9 +22,12 @@
   - [What's inside?](#whats-inside)
   - [Requirements](#requirements)
   - [Development](#development)
-  - [Prerequisites](#prerequisites)
     - [Development Environment (NIX Shell)](#development-environment-nix-shell)
     - [Development Environment (Manual)](#development-environment-manual)
+      - [Prerequisites](#prerequisites)
+        - [Linux](#linux)
+        - [macOS](#macos)
+        - [Windows](#windows)
     - [Install Extra Packages/Tools](#install-extra-packagestools)
   - [Testing](#testing)
   - [Deployment](#deployment)
@@ -40,11 +41,8 @@ TODO:
 
 ## Requirements
 
-TODO:
-
 ## Development
 
-## Prerequisites
 
 ### Development Environment (NIX Shell)
 
@@ -58,7 +56,27 @@ This is the **preferred** development environment.
 
 ~~ ***NOT RECOMMENDED*** ~~
 
-TODO...
+#### Prerequisites
+
+##### Linux
+
+```sh
+sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+```
+
+##### macOS
+
+- [brew](https://brew.sh/)
+
+```sh
+brew install protobuf-c libsigsegv libpq libserdes pkg-config
+```
+
+##### Windows
+
+```sh
+TODO
+```
 
 ### Install Extra Packages/Tools
 

@@ -8396,7 +8396,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "wallet-js"
+name = "wallet-wasm-js"
 version = "0.8.1"
 dependencies = [
  "bech32 0.7.3",

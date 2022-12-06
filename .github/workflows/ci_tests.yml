@@ -221,17 +221,17 @@ jobs:
 
     - name: Build wasm package
       run: |
-        cd src/chain-wallet-libs/bindings/wallet-js
+        cd src/chain-wallet-libs/bindings/wallet-wasm-js
         wasm-pack build --release --target=nodejs -d pkg
 
     - name: Build JS package
       run: |
-        cd src/chain-wallet-libs/bindings/wallet-js/js
+        cd src/chain-wallet-libs/bindings/wallet-wasm-js/js
         npm install
 
     - name: Run JS tests
       run: |
-        cd src/chain-wallet-libs/bindings/wallet-js/js-test
+        cd src/chain-wallet-libs/bindings/wallet-wasm-js/js-test
         npm install
         npm test
 

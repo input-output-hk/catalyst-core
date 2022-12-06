@@ -55,6 +55,12 @@ jobs:
       - name: Install deps
         run:
           choco install -y protoc openssl sqlite postgresql14 visualstudio2019buildtools
+      - name: Set env variables
+        run: |
+          "PQ_LIB_DIR="%PROGRAMFILES%\PostgreSQL\14\lib" >> $env:GITHUB_ENV
+      - run: |
+          $env:PQ_LIB_DIR
+
       - name: Print env variables
         shell: powershell
         run: |

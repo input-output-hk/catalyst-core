@@ -46,6 +46,11 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+      - name: Allow long paths on Windows
+        shell: powershell
+        run: |
+          reg add HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1 /f
+          git config --system core.longpaths true
       - uses: Swatinem/rust-cache@v2
       - name: Install deps
         run:

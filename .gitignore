@@ -19,9 +19,8 @@
 .AppleDouble
 .LSOverride
 
-# Icon must end with two \r
+# Icon must end with two
 Icon
-
 
 # Thumbnails
 ._*
@@ -101,3 +100,11 @@ result*
 .vscode
 **/.idea/
 .temp/
+
+# std
+.std
+
+# nixago: ignore-linked-files
+.prettierrc
+lefthook.yml
+treefmt.toml

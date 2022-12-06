@@ -1388,6 +1388,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "cron"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ff76b51e4c068c52bfd2866e1567bee7c567ae8f24ada09fd4307019e25eab7"
+dependencies = [
+ "chrono",
+ "nom",
+ "once_cell",
+]
+
+[[package]]
 name = "crossbeam-channel"
 version = "0.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1746,6 +1757,7 @@ dependencies = [
  "libsqlite3-sys",
  "pq-sys",
  "r2d2",
+ "serde_json",
 ]
 
 [[package]]
@@ -2426,21 +2438,6 @@ name = "fuchsia-cprng"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a06f77d526c1a601b7c4cdd98f54b5eaabffc14d5f2f0296febdc7f357c6d3ba"
-
-[[package]]
-name = "function_name"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1ab577a896d09940b5fe12ec5ae71f9d8211fff62c919c03a3750a9901e98a7"
-dependencies = [
- "function_name-proc-macro",
-]
-
-[[package]]
-name = "function_name-proc-macro"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "673464e1e314dd67a0fd9544abc99e8eb28d0c7e3b69b033bcff9b2d00b87333"
 
 [[package]]
 name = "funty"
@@ -3272,6 +3269,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "include_dir"
+version = "0.7.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "18762faeff7122e89e0857b02f7ce6fcc0d101d5e9ad2ad7846cc01d61b7f19e"
+dependencies = [
+ "include_dir_macros",
+]
+
+[[package]]
+name = "include_dir_macros"
+version = "0.7.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b139284b5cf57ecfa712bcc66950bb635b31aff41c188e8a4cfc758eca374a3f"
+dependencies = [
+ "proc-macro2",
+ "quote",
+]
+
+[[package]]
 name = "indenter"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3566,6 +3582,17 @@ checksum = "43ae63fcfc45e99ab3d1b29a46782ad679e98436c3169d15a167a1108a724b69"
 dependencies = [
  "jemalloc-sys",
  "libc",
+]
+
+[[package]]
+name = "job_scheduler_ng"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "854c3036c710866ee61a7e1cd7f39988dd077d0d97ce5dd23b0a1f64f3fffb42"
+dependencies = [
+ "chrono",
+ "cron",
+ "uuid 1.2.2",
 ]
 
 [[package]]
@@ -4157,25 +4184,31 @@ dependencies = [
  "assert_fs",
  "bech32 0.8.1",
  "cardano-serialization-lib",
- "catalyst-toolbox",
  "clap 4.0.29",
  "color-eyre",
  "futures",
+ "futures-util",
  "hex",
  "itertools",
+ "job_scheduler_ng",
+ "jormungandr-automation",
  "jormungandr-lib",
+ "jortestkit",
  "mainnet-lib",
  "prettytable-rs",
  "serde",
  "serde_json",
  "signals-handler",
  "snapshot-lib",
+ "snapshot-trigger-service",
  "structopt",
  "tempdir",
  "thiserror",
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "vit-servicing-station-lib",
+ "vit-servicing-station-tests",
  "voting_tools_rs",
 ]
 
@@ -4320,6 +4353,12 @@ dependencies = [
  "mime",
  "unicase",
 ]
+
+[[package]]
+name = "minimal-lexical"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
 name = "miniz_oxide"
@@ -4525,6 +4564,16 @@ name = "no-std-compat"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b93853da6d84c2e3c7d730d6473e8817692dd89be387eb01b94d7f108ecb5b8c"
+
+[[package]]
+name = "nom"
+version = "7.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8903e5a29a317527874d0402f867152a3d21c908bb0b933e416c65e301d4c36"
+dependencies = [
+ "memchr",
+ "minimal-lexical",
+]
 
 [[package]]
 name = "nonzero_ext"
@@ -5915,7 +5964,7 @@ dependencies = [
  "structopt",
  "thiserror",
  "tokio",
- "uuid",
+ "uuid 0.8.2",
  "walkdir",
  "warp",
 ]
@@ -5945,7 +5994,7 @@ dependencies = [
  "structopt",
  "thiserror",
  "tokio",
- "uuid",
+ "uuid 0.8.2",
  "walkdir",
  "warp",
 ]
@@ -6303,7 +6352,8 @@ dependencies = [
  "structopt",
  "thiserror",
  "tokio",
- "uuid",
+ "tracing",
+ "uuid 0.8.2",
  "walkdir",
  "warp",
 ]
@@ -6795,7 +6845,6 @@ dependencies = [
  "futures",
  "jormungandr-lib",
  "jortestkit",
- "mainnet-tools",
  "num-traits",
  "reqwest",
  "scheduler-service-lib",
@@ -6807,7 +6856,8 @@ dependencies = [
  "structopt",
  "thiserror",
  "tokio",
- "uuid",
+ "tracing",
+ "uuid 0.8.2",
  "voting_tools_rs",
  "walkdir",
  "warp",
@@ -7967,6 +8017,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "uuid"
+version = "1.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "422ee0de9031b5b948b97a8fc04e3aa35230001a722ddd27943e0be31564ce4c"
+dependencies = [
+ "getrandom 0.2.8",
+]
+
+[[package]]
 name = "valgrind"
 version = "0.1.0"
 dependencies = [
@@ -8064,6 +8123,7 @@ dependencies = [
  "dotenv",
  "eccoxide 0.2.0",
  "http-zipkin",
+ "include_dir",
  "itertools",
  "jormungandr-lib",
  "libsqlite3-sys",
@@ -8170,7 +8230,6 @@ dependencies = [
  "dialoguer",
  "diffy",
  "fake",
- "function_name",
  "futures",
  "glob",
  "hersir",
@@ -8217,7 +8276,7 @@ dependencies = [
  "tracing-appender",
  "tracing-subscriber",
  "url",
- "uuid",
+ "uuid 0.8.2",
  "valgrind",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
@@ -8247,6 +8306,7 @@ dependencies = [
  "diesel_migrations 2.0.0",
  "hex",
  "insta",
+ "jormungandr-lib",
  "mainnet-lib",
  "microtype",
  "once_cell",
@@ -8303,8 +8363,12 @@ dependencies = [
  "hex",
  "imhamt",
  "itertools",
+ "jormungandr-lib",
  "quickcheck",
  "quickcheck_macros",
+ "serde",
+ "serde_json",
+ "serde_yaml",
  "thiserror",
  "zeroize",
 ]
@@ -8347,6 +8411,7 @@ dependencies = [
  "js-sys",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
+ "serde_json",
  "symmetric-cipher",
  "wallet-core",
  "wasm-bindgen",

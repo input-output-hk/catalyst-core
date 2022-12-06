@@ -1,8 +1,8 @@
 mod registration;
 
 pub use crate::wallet::registration::{
-    RegistrationBuilder, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
-    REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
+    GeneralTransactionMetadataInfo, RegistrationBuilder, METADATUM_1, METADATUM_2, METADATUM_3,
+    METADATUM_4, REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
 };
 use cardano_serialization_lib::address::{NetworkInfo, RewardAddress, StakeCredential};
 use cardano_serialization_lib::crypto::{PrivateKey, PublicKey};

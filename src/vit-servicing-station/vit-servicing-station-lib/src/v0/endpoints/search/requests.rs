@@ -65,11 +65,20 @@ pub enum Column {
     ImpactScore,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)] // should serialize as if it is either a `Vec<Challenge>` or `Vec<FullProposalInfo>`
 pub enum SearchResponse {
     Challenge(Vec<Challenge>),
     Proposal(Vec<FullProposalInfo>),
+}
+
+impl SearchResponse {
+    pub fn is_empty(&self) -> bool {
+        match self {
+            Self::Challenge(challenges) => challenges.is_empty(),
+            Self::Proposal(proposals) => proposals.is_empty(),
+        }
+    }
 }
 
 #[cfg(test)]

@@ -468,13 +468,13 @@ dependencies = [
 
 [[package]]
 name = "bip39"
-version = "0.1.0"
+version = "0.8.1"
 dependencies = [
  "cryptoxide 0.4.2",
  "hex",
  "quickcheck",
  "quickcheck_macros",
- "rand 0.8.5",
+ "rand 0.3.23",
  "thiserror",
  "unicode-normalization",
  "zeroize",
@@ -1010,7 +1010,7 @@ dependencies = [
 
 [[package]]
 name = "chain-path-derivation"
-version = "0.1.0"
+version = "0.8.1"
 dependencies = [
  "paste",
  "quickcheck",
@@ -1385,6 +1385,17 @@ checksum = "2673cc8207403546f45f5fd319a974b1e6983ad1a3ee7e6041650013be041876"
 dependencies = [
  "cast",
  "itertools",
+]
+
+[[package]]
+name = "cron"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ff76b51e4c068c52bfd2866e1567bee7c567ae8f24ada09fd4307019e25eab7"
+dependencies = [
+ "chrono",
+ "nom",
+ "once_cell",
 ]
 
 [[package]]
@@ -2429,21 +2440,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a06f77d526c1a601b7c4cdd98f54b5eaabffc14d5f2f0296febdc7f357c6d3ba"
 
 [[package]]
-name = "function_name"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1ab577a896d09940b5fe12ec5ae71f9d8211fff62c919c03a3750a9901e98a7"
-dependencies = [
- "function_name-proc-macro",
-]
-
-[[package]]
-name = "function_name-proc-macro"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "673464e1e314dd67a0fd9544abc99e8eb28d0c7e3b69b033bcff9b2d00b87333"
-
-[[package]]
 name = "funty"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2813,7 +2809,7 @@ dependencies = [
 
 [[package]]
 name = "hdkeygen"
-version = "0.2.0"
+version = "0.8.1"
 dependencies = [
  "bip39",
  "cardano-legacy-address",
@@ -3589,6 +3585,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "job_scheduler_ng"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "854c3036c710866ee61a7e1cd7f39988dd077d0d97ce5dd23b0a1f64f3fffb42"
+dependencies = [
+ "chrono",
+ "cron",
+ "uuid 1.2.2",
+]
+
+[[package]]
 name = "jobserver"
 version = "0.1.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3818,7 +3825,7 @@ dependencies = [
 
 [[package]]
 name = "jormungandrwallet"
-version = "0.7.0-pre4"
+version = "0.8.1"
 dependencies = [
  "bip39",
  "chain-addr",
@@ -4177,25 +4184,31 @@ dependencies = [
  "assert_fs",
  "bech32 0.8.1",
  "cardano-serialization-lib",
- "catalyst-toolbox",
  "clap 4.0.29",
  "color-eyre",
  "futures",
+ "futures-util",
  "hex",
  "itertools",
+ "job_scheduler_ng",
+ "jormungandr-automation",
  "jormungandr-lib",
+ "jortestkit",
  "mainnet-lib",
  "prettytable-rs",
  "serde",
  "serde_json",
  "signals-handler",
  "snapshot-lib",
+ "snapshot-trigger-service",
  "structopt",
  "tempdir",
  "thiserror",
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "vit-servicing-station-lib",
+ "vit-servicing-station-tests",
  "voting_tools_rs",
 ]
 
@@ -4340,6 +4353,12 @@ dependencies = [
  "mime",
  "unicase",
 ]
+
+[[package]]
+name = "minimal-lexical"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
 name = "miniz_oxide"
@@ -4545,6 +4564,16 @@ name = "no-std-compat"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b93853da6d84c2e3c7d730d6473e8817692dd89be387eb01b94d7f108ecb5b8c"
+
+[[package]]
+name = "nom"
+version = "7.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8903e5a29a317527874d0402f867152a3d21c908bb0b933e416c65e301d4c36"
+dependencies = [
+ "memchr",
+ "minimal-lexical",
+]
 
 [[package]]
 name = "nonzero_ext"
@@ -5935,7 +5964,7 @@ dependencies = [
  "structopt",
  "thiserror",
  "tokio",
- "uuid",
+ "uuid 0.8.2",
  "walkdir",
  "warp",
 ]
@@ -5965,7 +5994,7 @@ dependencies = [
  "structopt",
  "thiserror",
  "tokio",
- "uuid",
+ "uuid 0.8.2",
  "walkdir",
  "warp",
 ]
@@ -6323,7 +6352,8 @@ dependencies = [
  "structopt",
  "thiserror",
  "tokio",
- "uuid",
+ "tracing",
+ "uuid 0.8.2",
  "walkdir",
  "warp",
 ]
@@ -6815,7 +6845,6 @@ dependencies = [
  "futures",
  "jormungandr-lib",
  "jortestkit",
- "mainnet-tools",
  "num-traits",
  "reqwest",
  "scheduler-service-lib",
@@ -6827,7 +6856,8 @@ dependencies = [
  "structopt",
  "thiserror",
  "tokio",
- "uuid",
+ "tracing",
+ "uuid 0.8.2",
  "voting_tools_rs",
  "walkdir",
  "warp",
@@ -6998,7 +7028,7 @@ checksum = "734676eb262c623cec13c3155096e08d1f8f29adce39ba17948b18dad1e54142"
 
 [[package]]
 name = "symmetric-cipher"
-version = "0.5.0"
+version = "0.8.1"
 dependencies = [
  "cryptoxide 0.4.2",
  "rand 0.8.5",
@@ -7987,6 +8017,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "uuid"
+version = "1.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "422ee0de9031b5b948b97a8fc04e3aa35230001a722ddd27943e0be31564ce4c"
+dependencies = [
+ "getrandom 0.2.8",
+]
+
+[[package]]
 name = "valgrind"
 version = "0.1.0"
 dependencies = [
@@ -8191,7 +8230,6 @@ dependencies = [
  "dialoguer",
  "diffy",
  "fake",
- "function_name",
  "futures",
  "glob",
  "hersir",
@@ -8238,7 +8276,7 @@ dependencies = [
  "tracing-appender",
  "tracing-subscriber",
  "url",
- "uuid",
+ "uuid 0.8.2",
  "valgrind",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
@@ -8307,7 +8345,7 @@ dependencies = [
 
 [[package]]
 name = "wallet"
-version = "0.6.0-pre.1"
+version = "0.8.1"
 dependencies = [
  "bip39",
  "cardano-legacy-address",
@@ -8337,7 +8375,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-core"
-version = "0.7.0-pre4"
+version = "0.8.1"
 dependencies = [
  "bech32 0.7.3",
  "bip39",
@@ -8358,8 +8396,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "wallet-js"
-version = "0.7.0-pre4"
+name = "wallet-wasm-js"
+version = "0.8.1"
 dependencies = [
  "bech32 0.7.3",
  "chain-core",

@@ -66,11 +66,11 @@
     extra-substituters = [
       #"https://hydra.iohk.io"
       "https://cache.iog.io"
-      "https://iog-gov-nix.s3.eu-central-1.amazonaws.com"
+      "https://iog-catalyst-cache.s3.eu-central-1.amazonaws.com"
     ];
     extra-trusted-public-keys = [
       "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
-      "gov:uG8+LG8RqFGScUmOrDkGb4VCbtNhChbnycVnxZxb8AY="
+      "catalyst:kNW0n7ijUJDvu4BrpqC3j54rgoHNccXx7ABuVzuL9WM="
     ];
     allow-import-from-derivation = "true";
   };

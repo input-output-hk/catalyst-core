@@ -54,8 +54,9 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Install deps
         run:
-          choco install -y protoc openssl sqlite postgresql14 visualstudio2019buildtools
+          choco install -y protoc openssl sqlite postgresql14 visualstudio2022buildtools
       - name: Set env variables
+        shell: powershell
         run: |
           "PQ_LIB_DIR=${env:PROGRAMFILES}\PostgreSQL\14\lib" >> $env:GITHUB_ENV
       - run: |

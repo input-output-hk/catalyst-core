@@ -227,6 +227,8 @@ jobs:
     - name: Build JS package
       run: |
         cd src/chain-wallet-libs/bindings/wallet-wasm-js/js
+        rm package.json
+        cp package_test.json package.json
         npm install
 
     - name: Run JS tests

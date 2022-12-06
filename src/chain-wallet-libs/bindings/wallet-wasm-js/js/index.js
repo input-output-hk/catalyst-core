@@ -1,4 +1,4 @@
-const wasm = require("wallet-js");
+const wasm = require("wallet-wasm-js");
 
 module.exports.SpendingCounter = wasm.SpendingCounter;
 module.exports.SpendingCounters = wasm.SpendingCounters;

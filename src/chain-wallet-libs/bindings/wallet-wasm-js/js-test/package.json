@@ -13,6 +13,7 @@
   ],
   "devDependencies": {
     "mocha": "^10.1.0",
-    "wallet-js": "file:../js"
+    "wallet-js": "file:../js",
+    "wallet-wasm-js": "file:../pkg"
   }
 }

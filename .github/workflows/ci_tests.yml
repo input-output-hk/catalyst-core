@@ -110,7 +110,7 @@ jobs:
             -p vit-servicing-station-lib \
             -p vit-servicing-station-tests \
             -p vit-servicing-station-server \
-            --retries 10
+            --profile ci
 
   catalyst_toolbox:
     name: Catalyst Toolbox Tests
@@ -133,7 +133,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-      - run: cargo nextest run -p catalyst-toolbox -p snapshot-lib
+      - run: cargo nextest run -p catalyst-toolbox -p snapshot-lib --profile ci
 
   voting_tools:
     name: Voting Tools Tests
@@ -156,7 +156,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-      - run: cargo nextest run -p voting_tools_rs
+      - run: cargo nextest run -p voting_tools_rs --profile ci
 
   chain-libs:
     name: Chain Libs Tests
@@ -179,7 +179,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-      - run: cargo nextest run -p "chain-*"
+      - run: cargo nextest run -p "chain-*" --profile ci
 
   jormungandr:
     name: Jormungandr Tests
@@ -202,7 +202,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-      - run: cargo nextest run -p jormungandr
+      - run: cargo nextest run -p jormungandr --profile ci
 
 
   wallet-js-binding:
@@ -221,17 +221,19 @@ jobs:
 
     - name: Build wasm package
       run: |
-        cd src/chain-wallet-libs/bindings/wallet-js
+        cd src/chain-wallet-libs/bindings/wallet-wasm-js
         wasm-pack build --release --target=nodejs -d pkg
 
     - name: Build JS package
       run: |
-        cd src/chain-wallet-libs/bindings/wallet-js/js
+        cd src/chain-wallet-libs/bindings/wallet-wasm-js/js
+        rm package.json
+        cp package_test.json package.json
         npm install
 
     - name: Run JS tests
       run: |
-        cd src/chain-wallet-libs/bindings/wallet-js/js-test
+        cd src/chain-wallet-libs/bindings/wallet-wasm-js/js-test
         npm install
         npm test
 

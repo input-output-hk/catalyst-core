@@ -7,23 +7,23 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
-pub enum TransactionCommand {
+pub enum Transaction {
     Id(IdCommand),
     Sign(SignCommand),
     Submit(SubmitCommand),
     Build(BuildCommand),
 }
 
-impl TransactionCommand {
+impl Transaction {
     pub fn exec(self) -> Result<(), io::Error> {
         match self {
-            Self::Id(id) => {
-                id.exec();
+            Self::Id(_id) => {
+                IdCommand::exec();
                 Ok(())
             }
             Self::Sign(sign) => sign.exec(),
-            Self::Submit(submit) => {
-                submit.exec();
+            Self::Submit(_submit) => {
+                SubmitCommand::exec();
                 Ok(())
             }
             Self::Build(build) => build.exec(),
@@ -38,7 +38,7 @@ pub struct IdCommand {
 }
 
 impl IdCommand {
-    pub fn exec(self) {
+    pub fn exec() {
         println!("{}", fake::hash());
     }
 }
@@ -63,7 +63,7 @@ pub struct SignCommand {
 
 impl SignCommand {
     pub fn exec(self) -> Result<(), io::Error> {
-        write_to_file_or_println(self.out_file, fake::sign())
+        write_to_file_or_println(self.out_file, &fake::sign())
     }
 }
 
@@ -80,7 +80,7 @@ pub struct SubmitCommand {
 }
 
 impl SubmitCommand {
-    pub fn exec(self) {
+    pub fn exec() {
         println!("{}", fake::submit());
     }
 }

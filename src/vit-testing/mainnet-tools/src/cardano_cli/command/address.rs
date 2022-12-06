@@ -5,11 +5,11 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
-pub enum AddressCommand {
+pub enum Address {
     Build(BuildCommand),
 }
 
-impl AddressCommand {
+impl Address {
     pub fn exec(self) -> Result<(), io::Error> {
         match self {
             Self::Build(build) => build.exec(),
@@ -43,13 +43,9 @@ pub struct BuildCommand {
 
 impl BuildCommand {
     pub fn exec(self) -> Result<(), io::Error> {
-        if self.stake_verification_key.is_none() && self.stake_verification_key_file.is_none() {
-            panic!("either --stake-verification-key or --stake-verification-key-file option need to be defined ");
-        }
-        if self.payment_verification_key.is_none() && self.payment_verification_key_file.is_none() {
-            panic!("either --payment-verification-key or --payment-verification-key-file option need to be defined ");
-        }
+        assert!(!(self.stake_verification_key.is_none() && self.stake_verification_key_file.is_none()), "either --stake-verification-key or --stake-verification-key-file option need to be defined ");
+        assert!(!(self.payment_verification_key.is_none() && self.payment_verification_key_file.is_none()), "either --payment-verification-key or --payment-verification-key-file option need to be defined ");
 
-        write_to_file_or_println(self.out_file, fake::address())
+        write_to_file_or_println(self.out_file, &fake::address())
     }
 }

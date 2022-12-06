@@ -5,7 +5,9 @@ use jortestkit::{prelude::Wait, process::WaitError};
 use scheduler_service_lib::{FolderDump, SchedulerRestClient};
 use std::path::Path;
 use thiserror::Error;
+use tracing::{debug, instrument};
 
+#[derive(Debug)]
 pub struct SnapshotRestClient(SchedulerRestClient);
 
 impl SnapshotRestClient {
@@ -66,14 +68,22 @@ impl SnapshotRestClient {
         self.0.job_status(id).map_err(Into::into)
     }
 
+    #[instrument]
     pub fn job_new(&self, params: JobParameters) -> Result<String, Error> {
         let client = reqwest::blocking::Client::new();
         let path = self.0.path("api/job/new");
-        println!("Calling: {}", path);
+        debug!("Calling: {path}");
         let request = self.0.set_header(client.post(&path));
-        request
-            .json(&params)
-            .send()?
+        let response = request.json(&params).send()?;
+
+        if response.status() != 200 {
+            return Err(Error::UnexpectedSnapshotRestResponse {
+                path,
+                text: response.text()?,
+            });
+        }
+
+        response
             .text()
             .map_err(Into::into)
             .map(|text| text.remove_quotas())
@@ -120,8 +130,8 @@ pub enum Error {
     IoError(#[from] std::io::Error),
     #[error("timeout error")]
     WaitError(#[from] WaitError),
-    #[error("error recieved from call: {0}")]
-    UnexpectedSnapshotRestResponse(String),
+    #[error("error received from call on endpoint '{path}': {text}")]
+    UnexpectedSnapshotRestResponse { path: String, text: String },
     #[error(transparent)]
     Inner(#[from] scheduler_service_lib::RestError),
 }

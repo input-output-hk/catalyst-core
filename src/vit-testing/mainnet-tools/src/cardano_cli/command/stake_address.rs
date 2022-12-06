@@ -6,12 +6,12 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
-pub enum StakeAddressCommand {
+pub enum StakeAddress {
     Build(BuildCommand),
     RegisterCertificate(RegistrationCertificateCommand),
 }
 
-impl StakeAddressCommand {
+impl StakeAddress {
     pub fn exec(self) -> Result<(), std::io::Error> {
         match self {
             Self::Build(build) => build.exec(),
@@ -40,10 +40,9 @@ pub struct BuildCommand {
 
 impl BuildCommand {
     pub fn exec(self) -> Result<(), std::io::Error> {
-        if self.stake_verification_key.is_none() && self.stake_verification_key_file.is_none() {
-            panic!("either --stake-verification-key or --stake-verification-key-file option need to be defined ");
-        }
-        write_to_file_or_println(self.out_file, fake::stake_address())
+        assert!(!(self.stake_verification_key.is_none() && self.stake_verification_key_file.is_none()),
+                "either --stake-verification-key or --stake-verification-key-file option need to be defined ");
+        write_to_file_or_println(self.out_file, &fake::stake_address())
     }
 }
 

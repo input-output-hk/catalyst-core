@@ -23,7 +23,7 @@ use std::{
     fmt,
     fmt::Debug,
     mem,
-    net::{IpAddr, Ipv4Addr, SocketAddr},
+    net::SocketAddr,
     pin::Pin,
     task::{Context, Poll},
     time::SystemTime,
@@ -666,12 +666,12 @@ impl Peers {
         }
     }
 
-    pub async fn get_peer_addr(&self, peer: &NodeId) -> SocketAddr {
+    pub async fn get_peer_addr(&self, peer: &NodeId) -> Option<SocketAddr> {
         let mut map = self.inner().await;
 
         match map.peer_comms(peer) {
-            Some(peer) => peer.remote_addr(),
-            None => SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080),
+            Some(peer) => Some(peer.remote_addr()),
+            None => None,
         }
     }
 

@@ -54,7 +54,14 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Install deps
         run:
-          choco install -y protoc openssl sqlite postgresql visualstudio2019buildtools
+          choco install -y protoc openssl sqlite postgresql14 visualstudio2019buildtools
+      - name: Print env variables
+        shell: powershell
+        run: |
+           Get-Item "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
+      - name: Print github variables
+        run: |
+           echo "$PATH"
 
       - name: Build on Windows
         uses: actions-rs/toolchain@v1

@@ -668,11 +668,7 @@ impl Peers {
 
     pub async fn get_peer_addr(&self, peer: &NodeId) -> Option<SocketAddr> {
         let mut map = self.inner().await;
-
-        match map.peer_comms(peer) {
-            Some(peer) => Some(peer.remote_addr()),
-            None => None,
-        }
+        map.peer_comms(peer).map(|peer| peer.remote_addr())
     }
 
     pub async fn refresh_peer_on_gossip(&self, peer: &NodeId) -> bool {

@@ -169,10 +169,7 @@ impl FragmentProcessor {
     fn get_ingress_addr(&self) -> Option<std::net::SocketAddr> {
         let state = self.global_state.clone();
         let node_id = self.node_id;
-        match executor::block_on(state.peers.get_peer_addr(&node_id)) {
-            Some(sock_addr) => Some(sock_addr),
-            None => None,
-        }
+        executor::block_on(state.peers.get_peer_addr(&node_id)).map(|sock_addr| sock_addr)
     }
 
     fn refresh_stat(&mut self) {

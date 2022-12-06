@@ -54,7 +54,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Install deps
         run:
-          choco install -y protoc openssl sqlite postgresql
+          choco install -y protoc openssl sqlite postgresql visualstudio2019buildtools
 
       - name: Build on Windows
         uses: actions-rs/toolchain@v1

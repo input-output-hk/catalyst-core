@@ -31,7 +31,7 @@
     ];
   };
 in
-  l.mapAttrs (_: std.lib.dev.mkShell) {
+  l.mapAttrs (_: std.lib.dev.mkShell) rec {
     dev = {...}: {
       imports = [
         catalystCore
@@ -42,4 +42,5 @@ in
         catalystCore
       ];
     };
+    default = dev;
   }

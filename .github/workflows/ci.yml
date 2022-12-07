@@ -24,7 +24,7 @@ jobs:
       group: ${{ github.workflow }}
     steps:
       - name: Standard Discovery
-        uses: jmgilman/std-action/discover@debugging
+        uses: divnix/std-action/discover@main
         id: discovery
   build-packages:
     needs: discover

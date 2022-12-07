@@ -437,7 +437,7 @@ paths:
           description: Success
         "400":
           description: The input is malformed.
-      
+
 
   /api/v0/admin/fund:
     put:
@@ -642,6 +642,9 @@ components:
           description: URL to a web page with details on this proposal.
         proposal_files:
           type: string
+        proposal_extra_fields:
+          type: object
+          description: Map of proposal's extra fields.
         proposer:
           type: object
           properties:
@@ -1005,7 +1008,7 @@ components:
     SearchTable:
       type: string
       enum: [challenges, proposals]
-    
+
     SearchColumn:
       type: string
       enum: [title, type, desc, author, funds]
@@ -1182,17 +1185,17 @@ components:
         voting_groups:
           description: List of the assigned voting groups
           type: array
-          items: 
+          items:
             description: Voting group id (the same as voting token id)
             type: string
         last_updated:
           description: Date and time for the latest update to this snapshot information
           type: string
           format: date-time
-      example: 
+      example:
         {
           delegators: ["f5285eeead8b5885a1420800de14b0d1960db1a990a6c2f7b517125bedc000db", "7ef044ba437057d6d944ace679b7f811335639a689064cd969dffc8b55a7cc19"],
           voting_groups: ["group1", "group2"],
           last_updated: "2021-02-11T10:10:27+00:00"
         }
-          
+

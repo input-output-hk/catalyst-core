@@ -1,6 +1,6 @@
 [package]
 name = "chain-path-derivation"
-version = "0.1.0"
+version = "0.8.1"
 authors = ["Nicolas Di Prima <nicolas@primetype.co.uk>", "Vincent Hanquez <vincent@typed.io>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"

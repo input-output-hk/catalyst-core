@@ -5,13 +5,13 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
-pub enum QueryCommand {
+pub enum Query {
     Utxo(UTxOCommand),
     Tip(TipCommand),
     ProtocolParameters(ProtocolParametersCommand),
 }
 
-impl QueryCommand {
+impl Query {
     pub fn exec(self) -> Result<(), Error> {
         match self {
             Self::Utxo(utxo) => utxo.exec(),
@@ -35,14 +35,15 @@ pub struct ProtocolParametersCommand {
 
 impl ProtocolParametersCommand {
     pub fn exec(self) -> Result<(), Error> {
-        if !self.mainnet && self.testnet_magic.is_none() {
-            panic!("no network setting");
-        }
+        assert!(
+            !(self.mainnet || self.testnet_magic.is_some()),
+            "no network setting"
+        );
 
         let protocol_parameters = fake::protocol_parameters();
         write_to_file_or_println(
             self.out_file,
-            serde_json::to_string(&protocol_parameters).unwrap(),
+            &serde_json::to_string(&protocol_parameters).unwrap(),
         )
     }
 }
@@ -62,7 +63,7 @@ pub struct TipCommand {
 impl TipCommand {
     pub fn exec(self) -> Result<(), Error> {
         let tip = fake::tip();
-        write_to_file_or_println(self.out_file, serde_json::to_string(&tip).unwrap())
+        write_to_file_or_println(self.out_file, &serde_json::to_string(&tip).unwrap())
     }
 }
 #[derive(StructOpt, Debug)]
@@ -83,6 +84,6 @@ pub struct UTxOCommand {
 impl UTxOCommand {
     pub fn exec(self) -> Result<(), Error> {
         let utxos = fake::utxo();
-        write_to_file_or_println(self.out_file, utxos.to_string())
+        write_to_file_or_println(self.out_file, &utxos.to_string())
     }
 }

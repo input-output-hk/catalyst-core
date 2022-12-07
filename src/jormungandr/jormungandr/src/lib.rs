@@ -20,11 +20,7 @@ use chain_impl_mockchain::leadership::LeadershipConsensus;
 use futures::{executor::block_on, prelude::*};
 use jormungandr_lib::interfaces::NodeState;
 use settings::{logging::LogGuard, start::RawSettings, CommandLine};
-use std::{
-    net::{IpAddr, Ipv4Addr, SocketAddr},
-    sync::Arc,
-    time::Duration,
-};
+use std::{sync::Arc, time::Duration};
 use tokio::signal;
 use tokio_util::sync::CancellationToken;
 use tracing::{span, Level, Span};
@@ -608,7 +604,7 @@ fn initialize_node() -> Result<InitializedNode, start_up::Error> {
     let diagnostic = Diagnostic::new()?;
     tracing::debug!("system settings are: {}", diagnostic);
 
-    let mut settings = raw_settings.try_into_settings()?;
+    let settings = raw_settings.try_into_settings()?;
 
     let storage = start_up::prepare_storage(&settings)?;
     if exit_after_storage_setup {
@@ -618,13 +614,6 @@ fn initialize_node() -> Result<InitializedNode, start_up::Error> {
         std::mem::drop(storage);
         std::process::exit(0);
     }
-
-    settings.network.whitelist = Some(vec![
-        SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 10007),
-        SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 10010),
-        SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 10001),
-        SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 10004),
-    ]);
 
     if settings.network.trusted_peers.is_empty() && !settings.network.skip_bootstrap {
         return Err(network::bootstrap::Error::EmptyTrustedPeers.into());

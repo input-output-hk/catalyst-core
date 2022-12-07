@@ -31,7 +31,7 @@
       cellsFrom = ./nix;
 
       cellBlocks = [
-        (std.blockTypes.containers "containers")
+        (std.blockTypes.containers "containers" {ci.build = true;})
         (std.blockTypes.devshells "devshells")
         (std.blockTypes.functions "constants")
         (std.blockTypes.functions "lib")

@@ -74,9 +74,9 @@ brew install protobuf-c libsigsegv libpq libserdes pkg-config
 
 ##### Windows
 
-```sh
-TODO
-```
+
+TODO: - https://github.com/input-output-hk/catalyst-core/issues/138
+
 
 ### Install Extra Packages/Tools
 

@@ -1,3 +1,5 @@
+/// Arbitrary metadata
+#[must_use]
 pub fn metadata() -> String {
     "{ \
         reward_address: \"0xe1ffff2912572257b59dca84c965e4638a09f1524af7a15787eb0d8a46\",  \

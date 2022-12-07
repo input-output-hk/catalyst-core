@@ -1,0 +1,48 @@
+[package]
+authors = ["Enzo Cioppettini <ecioppettini@atixlabs.com>"]
+description = """Wallet functionalities to interact with Jörmungandr
+
+This package profiles all that is needed to have an healthy and secure
+interaction with Jörmungandr blockchain technology.
+"""
+edition = "2021"
+license = "MIT OR Apache-2.0"
+name = "wallet-wasm-js"
+repository = "https://github.com/input-output-hk/catalyst-core"
+version = "0.8.1"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["console_error_panic_hook"]
+
+[dependencies]
+chain-crypto = { path = "../../../chain-libs/chain-crypto" }
+chain-vote = { path = "../../../chain-libs/chain-vote" }
+chain-core = { path = "../../../chain-libs/chain-core" }
+chain-impl-mockchain = { path = "../../../chain-libs/chain-impl-mockchain" }
+getrandom = { version = "0.2.2", features = ["js"] }
+rand = "0.8.3"
+rand_chacha = "0.3.0"
+symmetric-cipher = {path = "../../symmetric-cipher"}
+wallet-core = {path = "../wallet-core"}
+wasm-bindgen = "0.2"
+js-sys = "0.3.40"
+bech32 = "0.7.2"
+serde_json = "1.0"
+
+# The `console_error_panic_hook` crate provides better debugging of panics by
+# logging them with `console.error`. This is great for development, but requires
+# all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
+# code size when deploying.
+console_error_panic_hook = {version = "0.1.1", optional = true}
+
+# clear_on_drop is a dependency of ed25519_dalek
+# The default can't be compiled to wasm, so it's necessary to enable either the 'nightly'
+# feature or this one.
+clear_on_drop = {version = "0.2", features = ["no_cc"]}
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
+hex = "0.4.2"

@@ -9,9 +9,16 @@ use jormungandr_lib::crypto::account::Identifier;
 use jortestkit::prelude::WaitBuilder;
 use num_traits::cast::ToPrimitive;
 use snapshot_lib::registration::{Delegations as VotingDelegations, VotingRegistration};
+use std::fmt::Debug;
+use tracing::{debug, instrument};
 use voting_tools_rs::{Delegations, Output};
 
-pub fn do_snapshot<S: Into<String>, P: Into<String>>(
+#[instrument(fields(
+    snapshot_token = snapshot_token.clone().into(),
+    snapshot_address = snapshot_address.clone().into(),
+    )
+)]
+pub fn do_snapshot<S: Into<String> + Debug + Clone, P: Into<String> + Debug + Clone>(
     job_params: JobParameters,
     snapshot_token: S,
     snapshot_address: P,
@@ -19,15 +26,13 @@ pub fn do_snapshot<S: Into<String>, P: Into<String>>(
     let snapshot_client =
         SnapshotRestClient::new_with_token(snapshot_token.into(), snapshot_address.into());
 
-    println!("Snapshot params: {:?}", job_params);
     let snapshot_job_id = snapshot_client.job_new(job_params.clone()).unwrap();
     let wait = WaitBuilder::new().tries(10).sleep_between_tries(10).build();
 
-    println!("waiting for snapshot job");
     let snapshot_jobs_status =
         snapshot_client.wait_for_job_finish(snapshot_job_id.clone(), wait)?;
 
-    println!("Snapshot done: {:?}", snapshot_jobs_status);
+    debug!("Snapshot done: {snapshot_jobs_status:?}");
     let snapshot =
         snapshot_client.get_snapshot(snapshot_job_id, job_params.tag.unwrap_or_default())?;
 
@@ -102,14 +107,14 @@ impl SnapshotResult {
                 reward_address: output.rewards_address.to_string(),
                 delegations: match output.delegations {
                     Delegations::Legacy(legacy) => VotingDelegations::Legacy(
-                        Identifier::from_hex(&legacy)
+                        Identifier::from_hex(legacy.trim_start_matches("0x"))
                             .map_err(|e| CannotConvertFromOutput(e.to_string()))?,
                     ),
                     Delegations::Delegated(delegated) => {
                         let mut new = vec![];
                         for (key, weight) in delegated {
                             new.push((
-                                Identifier::from_hex(&key)
+                                Identifier::from_hex(key.trim_start_matches("0x"))
                                     .map_err(|e| CannotConvertFromOutput(e.to_string()))?,
                                 weight,
                             ));
@@ -180,6 +185,6 @@ pub enum Error {
     ChainError(#[from] chain_addr::Error),
     #[error(transparent)]
     Config(#[from] crate::config::Error),
-    #[error("cannot convert voting registration from voting tools output due to: ")]
+    #[error("cannot convert voting registration from voting tools output due to: {0}")]
     CannotConvertFromOutput(String),
 }

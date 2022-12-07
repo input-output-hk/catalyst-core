@@ -44,3 +44,25 @@ jobs:
           s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           cache: s3://iog-catalyst-cache?region=eu-central-1
+  publish-containers:
+    needs: discover
+    strategy:
+      matrix:
+        target: ${{ fromJSON(needs.discover.outputs.hits).containers.publish }}
+    name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          config="$HOME/.docker/config.json"
+          mkdir -p "${config%/*}"
+          echo '${{ secrets.DOCKER_AUTH_TOKEN }}' > "$config"
+          chmod 0600 "$config"
+      - uses: divnix/std-action/run@main
+        with:
+          extra_nix_config: |
+            ${{ needs.discover.outputs.nix_conf }}
+          json: ${{ toJSON(matrix.target) }}
+          nix_key: ${{ secrets.NIX_SIGNING_KEY }}
+          s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          cache: s3://iog-catalyst-cache?region=eu-central-1

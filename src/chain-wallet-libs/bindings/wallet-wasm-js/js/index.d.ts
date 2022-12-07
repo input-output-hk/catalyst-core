@@ -19,14 +19,14 @@ export class Settings {
    *
    * @returns {string}
    */
-  to_json(): string;
+  toJson(): string;
 }
 
 /**
  * Wrapper over wallet-wasm-js VoteCast type
  */
 export class Vote {
-  vote_cast: wallet_wasm.VoteCast;
+  voteCast: wallet_wasm.VoteCast;
 
   /**
    * Constructs public wallet-wasm-js VoteCast vote
@@ -49,7 +49,7 @@ export class Vote {
    * @param {number} proposal_index vote's plan proposal index
    * @param {number} options number of available vote plan options
    * @param {number} choice choosen vote plan option
-   * @param {Uint8Array} public_key cometee public key bytes representation
+   * @param {Uint8Array} public_key committee public key bytes representation
    * @returns {Vote}
    */
   static private(
@@ -97,5 +97,5 @@ export class Wallet {
    *
    * @returns {bigint}
    */
-  total_value(): bigint;
+  totalValue(): bigint;
 }

@@ -36,6 +36,7 @@
         (std.blockTypes.functions "constants")
         (std.blockTypes.functions "lib")
         (std.blockTypes.functions "toolchains")
+        (std.blockTypes.installables "libraries")
         (std.blockTypes.installables "packages" {ci.build = true;})
         (std.blockTypes.nixago "configs")
         (std.blockTypes.runnables "operables")
@@ -43,28 +44,34 @@
     }
     {
       devShells = std.harvest inputs.self ["automation" "devshells"];
-      packages = std.harvest inputs.self [
-        ["artifacts" "packages"]
-        ["catalyst-toolbox" "packages"]
-        ["chain-libs" "packages"]
-        ["chain-wallet-libs" "packages"]
-        ["jormungandr" "packages"]
-        ["jortestkit" "packages"]
-        ["vit-servicing-station" "packages"]
-        ["vit-testing" "packages"]
-        ["voting-tools" "packages"]
-        ["voting-tools-rs" "packages"]
-      ];
       containers = std.harvest inputs.self [
         ["jormungandr" "containers"]
         ["vit-servicing-station" "containers"]
         ["vit-testing" "containers"]
       ];
+      libraries = std.harvest inputs.self [
+        ["catalyst-toolbox" "libraries"]
+        ["chain-libs" "libraries"]
+        ["chain-libs" "libraries"]
+        ["chain-wallet-libs" "libraries"]
+        ["jormungandr" "libraries"]
+        ["jortestkit" "libraries"]
+        ["vit-servicing-station" "libraries"]
+        ["vit-testing" "libraries"]
+      ];
+      packages = std.harvest inputs.self [
+        ["artifacts" "packages"]
+        ["catalyst-toolbox" "packages"]
+        ["jormungandr" "packages"]
+        ["vit-servicing-station" "packages"]
+        ["vit-testing" "packages"]
+        ["voting-tools" "packages"]
+        ["voting-tools-rs" "packages"]
+      ];
     };
 
   nixConfig = {
     extra-substituters = [
-      #"https://hydra.iohk.io"
       "https://cache.iog.io"
       "https://iog-catalyst-cache.s3.eu-central-1.amazonaws.com"
     ];

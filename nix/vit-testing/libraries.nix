@@ -6,7 +6,7 @@
   inherit (inputs.cells.lib) lib;
   l = nixpkgs.lib // builtins;
 
-  name = "vit-servicing-station";
+  name = "vit-testing";
   root = inputs.self + "/src/${name}";
 
   mkVitPkg = subPkg:
@@ -17,6 +17,10 @@
       ];
     };
 in {
-  vit-servicing-station-cli = mkVitPkg "vit-servicing-station-cli";
-  vit-servicing-station-server = mkVitPkg "vit-servicing-station-server";
+  iapyx = mkVitPkg "iapyx";
+  integration-tests = mkVitPkg "integration-tests";
+  mainnet-lib = mkVitPkg "mainnet-lib";
+  scheduler-service-lib = mkVitPkg "scheduler-service-lib";
+  signals-handler = mkVitPkg "signals-handler";
+  valgrind = mkVitPkg "valgrind";
 }

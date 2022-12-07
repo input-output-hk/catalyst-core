@@ -17,6 +17,6 @@
       ];
     };
 in {
-  vit-servicing-station-cli = mkVitPkg "vit-servicing-station-cli";
-  vit-servicing-station-server = mkVitPkg "vit-servicing-station-server";
+  vit-servicing-station-lib = mkVitPkg "vit-servicing-station-lib";
+  vit-servicing-station-tests = mkVitPkg "vit-servicing-station-tests";
 }

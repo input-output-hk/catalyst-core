@@ -45,6 +45,21 @@ impl Default for JormungandrBootstrapper {
 }
 
 impl JormungandrBootstrapper {
+    pub fn default_with_config(node_config: NodeConfig) -> Self {
+        Self {
+            node_config: Box::new(NodeConfigManager {
+                node_config,
+                file: None,
+            }),
+            genesis: Default::default(),
+            secret: Default::default(),
+            leadership_mode: LeadershipMode::Leader,
+            jormungandr_app: None,
+            verbose: true,
+            rewards_history: false,
+        }
+    }
+
     pub fn passive(mut self) -> Self {
         self.leadership_mode = LeadershipMode::Passive;
         self

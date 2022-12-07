@@ -79,18 +79,18 @@ export class Wallet {
   /**
    * Signes provided votes and returns a completly generated transaction list
    *
-   * @param {[Vote]} votes list of votes
+   * @param {Vote[]} votes list of votes
    * @param {Settings} settings wallet Settings
    * @param {wallet_wasm.BlockDate} valid_until 
    * @param {number} lane
-   * @returns {[wallet_wasm.Fragment]}
+   * @returns {wallet_wasm.Fragment[]}
    */
   signVotes(
-    votes: [Vote],
+    votes: Vote[],
     settings: Settings,
     valid_until: wallet_wasm.BlockDate,
     lane: number
-  ): [wallet_wasm.Fragment];
+  ): wallet_wasm.Fragment[];
 
   /**
    * Returns current balance of the wallet

@@ -47,6 +47,7 @@ jobs:
   publish-containers:
     needs: discover
     strategy:
+      fail-fast: false
       matrix:
         target: ${{ fromJSON(needs.discover.outputs.hits).containers.publish }}
     name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
@@ -55,7 +56,7 @@ jobs:
       - run: |
           config="$HOME/.docker/config.json"
           mkdir -p "${config%/*}"
-          echo '${{ secrets.DOCKER_AUTH_TOKEN }}' > "$config"
+          jq -n --arg token "${{ secrets.DOCKER_AUTH_TOKEN }}" '{ "auths": { "registry.ci.iog.io": { auth: $token } } }' > "$config"
           chmod 0600 "$config"
       - uses: divnix/std-action/run@main
         with:

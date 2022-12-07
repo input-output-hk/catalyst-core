@@ -3,6 +3,7 @@
   "version": "0.8.1",
   "description": "Jormungandr wallet capabilities for Javascript",
   "main": "index.js",
+  "types": "index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/input-output-hk/catalyst-core"

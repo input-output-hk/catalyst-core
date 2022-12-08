@@ -10,8 +10,10 @@ pub type Funds = Decimal;
 pub type Rewards = Decimal;
 pub type VoteCount = HashMap<Identifier, HashSet<Hash>>;
 
+use chain_impl_mockchain::certificate::ExternalProposalId;
 use jormungandr_lib::crypto::{account::Identifier, hash::Hash};
 use std::collections::{HashMap, HashSet};
+use std::str::FromStr;
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
@@ -36,9 +38,16 @@ impl Threshold {
         let proposals = proposals
             .into_iter()
             .map(|p| {
-                <[u8; 32]>::try_from(p.proposal.chain_proposal_id)
-                    .map_err(Error::InvalidHash)
-                    .map(|hash| (p.proposal.challenge_id, Hash::from(hash)))
+                // the chain_proposal_id comes as hex-encoded string digest of a blake2b256 key
+                // the first step is to decode the &str
+                let chain_proposal_str = std::str::from_utf8(&p.proposal.chain_proposal_id)
+                    .map_err(|_| Error::InvalidHash(p.proposal.chain_proposal_id.clone()))?;
+                // second step is to convert &str into a digest so that it can be converted into
+                // [u8;32]
+                let chain_proposal_id = ExternalProposalId::from_str(chain_proposal_str)
+                    .map_err(|_| Error::InvalidHash(p.proposal.chain_proposal_id.clone()))?;
+                let bytes: [u8; 32] = chain_proposal_id.into();
+                Ok((p.proposal.challenge_id, Hash::from(bytes)))
             })
             .collect::<Result<Vec<_>, Error>>()?;
         Ok(Self {

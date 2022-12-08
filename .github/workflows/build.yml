@@ -56,6 +56,14 @@ jobs:
       - name: Set default linker
         run: rustup default stable-x86_64-pc-windows-gnu
 
+      - name: Free disk space
+        run: |
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          df -h
+
       - name: Install dependencies
         run:
           choco install -y protoc openssl sqlite postgresql14 visualstudio2022buildtools

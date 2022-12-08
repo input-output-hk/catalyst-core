@@ -174,7 +174,7 @@ CREATE TABLE challenge
     rewards_currency TEXT,
     rewards_total BIGINT,
     proposers_rewards BIGINT,
-    vote_options BIGINT,
+    vote_options INTEGER,
 
     extra JSONB,
 
@@ -205,7 +205,7 @@ CREATE TABLE proposal
 (
     row_id SERIAL PRIMARY KEY,
     id INTEGER NOT NULL UNIQUE,
-    challenge BIGINT NOT NULL,
+    challenge INTEGER NOT NULL,
     title TEXT NOT NULL,
     summary TEXT NOT NULL,
     public_key TEXT NOT NULL,

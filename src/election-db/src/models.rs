@@ -3,34 +3,39 @@
 #![allow(unused)]
 #![allow(clippy::all)]
 
+use crate::schema::*;
+
 
 use chrono::NaiveDateTime;
 use bigdecimal::BigDecimal;
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(row_id))]
+#[diesel(table_name = challenge)]
 pub struct Challenge {
     pub row_id: i32,
     pub id: i32,
     pub election: i32,
-    pub type_: String,
+    pub category: String,
     pub title: String,
     pub description: String,
     pub rewards_currency: Option<String>,
     pub rewards_total: Option<i64>,
     pub proposers_rewards: Option<i64>,
-    pub vote_options: Option<i64>,
+    pub vote_options: Option<i32>,
     pub extra: Option<serde_json::Value>,
 }
 
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(name))]
-pub struct ChallengeType {
+#[diesel(table_name = challenge_category)]
+pub struct ChallengeCategory {
     pub name: String,
     pub description: Option<String>,
 }
 
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(row_id))]
+#[diesel(table_name = community_advisors_review)]
 pub struct CommunityAdvisorsReview {
     pub row_id: i32,
     pub proposal_id: i32,
@@ -46,6 +51,7 @@ pub struct CommunityAdvisorsReview {
 
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(row_id))]
+#[diesel(table_name = config)]
 pub struct Config {
     pub row_id: i32,
     pub id: String,
@@ -56,6 +62,7 @@ pub struct Config {
 
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(name))]
+#[diesel(table_name = currency)]
 pub struct Currency {
     pub name: String,
     pub description: Option<String>,
@@ -63,6 +70,7 @@ pub struct Currency {
 
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(row_id))]
+#[diesel(table_name = election)]
 pub struct Election {
     pub row_id: i32,
     pub name: String,
@@ -86,6 +94,7 @@ pub struct Election {
 }
 
 #[derive(Queryable, Debug, Identifiable)]
+#[diesel(table_name = goal)]
 pub struct Goal {
     pub id: i32,
     pub election_id: i32,
@@ -95,10 +104,11 @@ pub struct Goal {
 
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(row_id))]
+#[diesel(table_name = proposal)]
 pub struct Proposal {
     pub row_id: i32,
     pub id: i32,
-    pub challenge: i64,
+    pub challenge: i32,
     pub title: String,
     pub summary: String,
     pub public_key: String,
@@ -117,6 +127,7 @@ pub struct Proposal {
 
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(row_id))]
+#[diesel(table_name = proposal_voteplan)]
 pub struct ProposalVoteplan {
     pub row_id: i32,
     pub proposal_id: Option<i32>,
@@ -126,6 +137,7 @@ pub struct ProposalVoteplan {
 
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(row_id))]
+#[diesel(table_name = stake_address_balance)]
 pub struct StakeAddressBalance {
     pub row_id: i64,
     pub time: Option<NaiveDateTime>,
@@ -136,6 +148,7 @@ pub struct StakeAddressBalance {
 }
 
 #[derive(Queryable, Debug, Identifiable)]
+#[diesel(table_name = vote_options)]
 pub struct VoteOption {
     pub id: i32,
     pub idea_scale: Option<String>,
@@ -144,31 +157,34 @@ pub struct VoteOption {
 
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(row_id))]
+#[diesel(table_name = voteplan)]
 pub struct Voteplan {
     pub row_id: i32,
     pub election_id: i32,
     pub id: String,
-    pub type_: String,
+    pub category: String,
     pub encryption_key: Option<String>,
     pub group_id: Option<i32>,
 }
 
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(name))]
-pub struct VoteplanType {
+#[diesel(table_name = voteplan_category)]
+pub struct VoteplanCategory {
     pub name: String,
     pub public_key: Option<bool>,
 }
 
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(row_id))]
+#[diesel(table_name = voter_registration)]
 pub struct VoterRegistration {
     pub row_id: i64,
     pub time: Option<NaiveDateTime>,
     pub nonce: Option<i64>,
     pub purpose: Option<i64>,
     pub stake_pub: Option<String>,
-    pub type_: Option<String>,
+    pub category: Option<String>,
     pub delegations: Option<serde_json::Value>,
     pub reward_addr: Option<String>,
     pub txn: Option<Vec<u8>>,
@@ -177,13 +193,15 @@ pub struct VoterRegistration {
 
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(name))]
-pub struct VoterRegistrationType {
+#[diesel(table_name = voter_registration_category)]
+pub struct VoterRegistrationCategory {
     pub name: String,
     pub description: Option<String>,
 }
 
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(row_id))]
+#[diesel(table_name = voting_group)]
 pub struct VotingGroup {
     pub row_id: i32,
     pub group_id: String,
@@ -191,12 +209,15 @@ pub struct VotingGroup {
     pub token_id: Option<String>,
 }
 
+
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(row_id))]
+#[diesel(table_name = voting_power)]
+/// ttttt
 pub struct VotingPower {
+    /// yyyyy
     pub row_id: i64,
     pub election: Option<i32>,
     pub voting_key: Option<String>,
     pub power: Option<BigDecimal>,
 }
-

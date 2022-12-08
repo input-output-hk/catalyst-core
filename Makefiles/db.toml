@@ -3,8 +3,9 @@
 [tasks.install-diesel-cli-ext]
 script_runner = "@shell"
 script = '''
-cargo binstall --no-confirm diesel_cli_ext
+cargo install --git https://github.com/stevenj/diesel_cli_ext --branch all-changes
 '''
+# Was  binstall --no-confirm diesel_cli_ext
 
 # All the prerequisite tooling needed to work with the DB.
 [tasks.install-db-prereqs]

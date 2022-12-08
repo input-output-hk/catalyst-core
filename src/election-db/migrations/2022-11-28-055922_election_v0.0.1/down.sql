@@ -4,13 +4,13 @@ DROP VIEW IF EXISTS
     
 DROP TABLE IF EXISTS 
     config,
-    voteplan_types,
+    voteplan_category,
     voting_group,
     voteplan,
     proposal_voteplan,
     community_advisors_review,
     goal,
-    voter_registration_type,
+    voter_registration_category,
     voter_registration,
     stake_address_balance,
     voting_power,

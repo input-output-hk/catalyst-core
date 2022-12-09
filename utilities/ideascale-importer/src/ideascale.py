@@ -4,7 +4,7 @@ import json
 import marshmallow
 import marshmallow_dataclass
 import rich.progress
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Iterable, List, Mapping
 
 import utils
 
@@ -33,7 +33,6 @@ class CampaignGroup(ExcludeUnknownFields):
 class Idea(ExcludeUnknownFields):
     id: int
     title: str
-    custom_fields: Optional[Mapping[str, str]]
 
 class Stage(ExcludeUnknownFields):
     id: int
@@ -109,6 +108,35 @@ class IdeaScale:
     async def campaign_ideas(self, campaign_id: int) -> List[Idea]:
         res = await self._get(f"/v1/campaigns/{campaign_id}/ideas")
         return IdeaSchema().load(res, many=True) or []
+
+    async def stage_ideas(self, stage_id: int, page_size: int = 50) -> List[Idea]:
+        class WorkerData:
+            page: int = 0
+            done: bool = False
+            ideas: List[Idea] = []
+
+        async def worker(d: WorkerData):
+            while True:
+                if d.done:
+                    break
+
+                p = d.page
+                d.page += 1
+
+                res = await self._get(f"/v1/stages/{stage_id}/ideas/{p}/{page_size}")
+                res_ideas = IdeaSchema().load(res, many=True) or []
+
+                d.ideas.extend(res_ideas)
+
+                if len(res_ideas) < page_size:
+                    d.done = True
+
+        d = WorkerData()
+        worker_tasks = [asyncio.create_task(worker(d)) for _ in range(10)]
+        for task in worker_tasks:
+            await task
+
+        return d.ideas
 
     async def campaign_group_ideas(self, group_id: int) -> List[Idea]:
         campaigns = await self.campaigns(group_id)

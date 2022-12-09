@@ -1,5 +1,6 @@
 import asyncio
-from tabulate import tabulate
+import rich.console
+import rich.table
 import typer
 
 import ideascale
@@ -18,14 +19,17 @@ def list_campaigns(
         client = ideascale.client_with_progress(api_token)
 
         campaigns = []
-        with client.request_progress_observer.progress:
+        with client.request_progress_observer:
             campaigns = await client.campaigns(campaign_group_id)
         typer.echo()
 
-        table = [[c.id, c.name] for c in campaigns]
-        table.sort(key=lambda i: i[0], reverse=True)
+        table = rich.table.Table("Id", "Name", title="Campaigns")
 
-        typer.echo(tabulate(table, headers=["Id", "Name"]))
+        campaigns.sort(key=lambda c: c.id, reverse=True)
+        for c in campaigns:
+            table.add_row(str(c.id), c.name)
+
+        rich.console.Console().print(table)
 
     asyncio.run(inner())
 
@@ -38,14 +42,17 @@ def list_campaign_groups(api_token: str = typer.Option(..., help="IdeaScale API 
         client = ideascale.client_with_progress(api_token)
 
         groups = []
-        with client.request_progress_observer.progress:
+        with client.request_progress_observer:
             groups = await client.campaign_groups()
         typer.echo()
 
-        table = [[g.id, g.name] for g in groups]
-        table.sort(key=lambda i: i[0], reverse=True)
+        table = rich.table.Table("Id", "Name", title="Campaign Groups")
 
-        typer.echo(tabulate(table, headers=["Id", "Name"]))
+        groups.sort(key=lambda g: g.id, reverse=True)
+        for g in groups:
+            table.add_row(str(g.id), g.name)
+
+        rich.console.Console().print(table)
 
     asyncio.run(inner())
 
@@ -61,14 +68,17 @@ def list_campaign_ideas(
         client = ideascale.client_with_progress(api_token)
 
         ideas = []
-        with client.request_progress_observer.progress:
+        with client.request_progress_observer:
             ideas = await client.campaign_ideas(campaign_id)
         typer.echo()
 
-        table = [[i.id, i.title] for i in ideas]
-        table.sort(key=lambda i: i[0])
+        table = rich.table.Table("Id", "Title", title="Ideas")
 
-        typer.echo(tabulate(table, headers=["Id", "Title"]))
+        ideas.sort(key=lambda i: i.id)
+        for i in ideas:
+            table.add_row(str(i.id), i.title)
+
+        rich.console.Console().print(table)
 
     asyncio.run(inner())
 
@@ -83,13 +93,17 @@ def list_campaign_group_ideas(
     async def inner():
         client = ideascale.client_with_progress(api_token)
 
-        ideas = await client.campaign_group_ideas(campaign_group_id)
+        with client.request_progress_observer:
+            ideas = await client.campaign_group_ideas(campaign_group_id)
 
         typer.echo()
 
-        table = [[i.id, i.title] for i in ideas]
-        table.sort(key=lambda i: i[0])
+        table = rich.table.Table("Id", "Title", title="Ideas")
 
-        typer.echo(tabulate(table, headers=["Id", "Title"]))
+        ideas.sort(key=lambda i: i.id)
+        for i in ideas:
+            table.add_row(str(i.id), i.title)
+
+        rich.console.Console().print(table)
 
     asyncio.run(inner())

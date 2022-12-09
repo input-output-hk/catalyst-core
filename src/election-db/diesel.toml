@@ -6,9 +6,6 @@ file = "src/schema.rs"
 generate_missing_sql_type_definitions = true
 
 with_docs = true 
-    # 1. Docs are pretty useless and not pulled from schema comments.  
-    # 2. Docs also breaks model generation from the schema.
-    # Don't enable  `with_docs` unless both of these  issues are fixed.
 
 [migrations_directory]
 dir = "migrations"

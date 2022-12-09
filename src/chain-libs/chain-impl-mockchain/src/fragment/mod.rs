@@ -209,7 +209,7 @@ impl Serialize for Fragment {
                 Fragment::UpdateProposal(proposal) => proposal.serialized_size(),
                 Fragment::UpdateVote(vote) => vote.serialized_size(),
                 Fragment::VotePlan(vote_plan) => vote_plan.serialized_size(),
-                Fragment::VoteCast(vote_plan) => vote_plan.serialized_size(),
+                Fragment::VoteCast(vote_cast) => vote_cast.serialized_size(),
                 Fragment::VoteTally(vote_tally) => vote_tally.serialized_size(),
                 Fragment::MintToken(mint_token) => mint_token.serialized_size(),
                 Fragment::Evm(deployment) => deployment.serialized_size(),

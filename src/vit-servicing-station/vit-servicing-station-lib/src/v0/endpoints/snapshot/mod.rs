@@ -971,7 +971,7 @@ mod test {
                 .reply(&put_filter)
                 .await
                 .status(),
-            StatusCode::OK
+            StatusCode::BAD_REQUEST
         );
     }
 }

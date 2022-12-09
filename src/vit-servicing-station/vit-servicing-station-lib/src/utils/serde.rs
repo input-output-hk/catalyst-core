@@ -2,7 +2,9 @@ use crate::db::models::vote_options::VoteOptions;
 use crate::utils::datetime::unix_timestamp_to_datetime;
 use serde::de::Visitor;
 use serde::{ser::Error, Deserialize, Deserializer, Serializer};
+use snapshot_lib::Fraction;
 use std::fmt;
+use std::str::FromStr;
 use time::{format_description::well_known::Rfc3339, OffsetDateTime};
 
 // this warning should be disable here since the interface for this function requires
@@ -113,7 +115,7 @@ pub fn deserialize_vote_options_from_string<'de, D>(
 where
     D: Deserializer<'de>,
 {
-    struct VoteOptionsDeserializer();
+    struct VoteOptionsDeserializer;
 
     impl<'de> Visitor<'de> for VoteOptionsDeserializer {
         type Value = VoteOptions;
@@ -130,7 +132,7 @@ where
         }
     }
 
-    deserializer.deserialize_str(VoteOptionsDeserializer())
+    deserializer.deserialize_str(VoteOptionsDeserializer)
 }
 
 pub fn serialize_vote_options_to_string<S: Serializer>(
@@ -149,4 +151,40 @@ where
         truthy_value.to_lowercase().as_ref(),
         "x" | "1" | "true"
     ))
+}
+
+pub fn serialize_fraction_to_string<S: Serializer>(
+    fraction: &Fraction,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    serializer.serialize_str(&fraction.to_string())
+}
+
+pub fn deserialize_fraction_from_string<'de, D>(deserializer: D) -> Result<Fraction, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    struct FractionDeserializer;
+
+    impl<'de> Visitor<'de> for FractionDeserializer {
+        type Value = Fraction;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("A fraction value e.g. 1.0, 0.56")
+        }
+
+        fn visit_str<E>(self, value: &str) -> Result<Fraction, E>
+        where
+            E: serde::de::Error,
+        {
+            match value {
+                "NaN" => Err(E::custom(
+                    "Invalid value, should be 1.0, or 0.56".to_string(),
+                )),
+                _ => Ok(Fraction::from_str(value).map_err(|e| E::custom(e.to_string()))?),
+            }
+        }
+    }
+
+    deserializer.deserialize_str(FractionDeserializer)
 }

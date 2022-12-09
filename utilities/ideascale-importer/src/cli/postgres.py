@@ -11,11 +11,11 @@ import ideascale
 app = typer.Typer()
 
 @app.command()
-def import_challenges(
+def import_all(
     api_token: str = typer.Option(..., help="IdeaScale API token"),
 ):
     """
-    Import challenges from IdeaScale (a Challenge is represented as a Campaign in IdeaScale)
+    Import all fund data from IdeaScale
     """
     async def inner():
         client = ideascale.client_with_progress(api_token)
@@ -67,7 +67,13 @@ def import_challenges(
         console.print(stages_table)
 
         stage_id = rich.prompt.Prompt.ask("Select a stage id", choices=list(map(lambda s: str(s.id), stages)), show_choices=False)
+        stage_id = int(stage_id, base=10)
         console.print()
+
+        ideas = []
+        with client.request_progress_observer:
+            ideas = await client.stage_ideas(stage_id)
+        console.print(f"Fetched {len(ideas)} ideas")
 
         console.print("SHOULD MAP AND INSERT DATA INTO POSTGRES TABLES NOW")
 

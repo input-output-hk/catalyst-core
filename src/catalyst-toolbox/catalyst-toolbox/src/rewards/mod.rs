@@ -23,6 +23,21 @@ pub enum Error {
     InvalidHash(Vec<u8>),
 }
 
+/// Convert a slice of bytes that represent a valid `ExternalProposalId`, and returns an array of
+/// the decoded 32-byte array.
+pub(crate) fn chain_proposal_id_bytes(v: &[u8]) -> Result<[u8; 32], Error> {
+    // the chain_proposal_id comes as hex-encoded string digest of a blake2b256 key
+    // the first step is to decode the &str
+    let chain_proposal_str =
+        std::str::from_utf8(v).map_err(|_| Error::InvalidHash(v.to_owned()))?;
+    // second step is to convert &str into a digest so that it can be converted into
+    // [u8;32]
+    let chain_proposal_id = ExternalProposalId::from_str(chain_proposal_str)
+        .map_err(|_| Error::InvalidHash(v.to_owned()))?;
+    let bytes: [u8; 32] = chain_proposal_id.into();
+    Ok(bytes)
+}
+
 pub struct Threshold {
     total: usize,
     per_challenge: HashMap<i32, usize>,
@@ -38,15 +53,7 @@ impl Threshold {
         let proposals = proposals
             .into_iter()
             .map(|p| {
-                // the chain_proposal_id comes as hex-encoded string digest of a blake2b256 key
-                // the first step is to decode the &str
-                let chain_proposal_str = std::str::from_utf8(&p.proposal.chain_proposal_id)
-                    .map_err(|_| Error::InvalidHash(p.proposal.chain_proposal_id.clone()))?;
-                // second step is to convert &str into a digest so that it can be converted into
-                // [u8;32]
-                let chain_proposal_id = ExternalProposalId::from_str(chain_proposal_str)
-                    .map_err(|_| Error::InvalidHash(p.proposal.chain_proposal_id.clone()))?;
-                let bytes: [u8; 32] = chain_proposal_id.into();
+                let bytes = chain_proposal_id_bytes(&p.proposal.chain_proposal_id)?;
                 Ok((p.proposal.challenge_id, Hash::from(bytes)))
             })
             .collect::<Result<Vec<_>, Error>>()?;

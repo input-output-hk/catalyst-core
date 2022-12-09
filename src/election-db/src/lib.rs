@@ -15,13 +15,21 @@ use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use dotenvy::dotenv;
 use std::env;
+use std::error::Error;
 
 ///  Establish a connection to the database, and check the schema is up-to-date.
-pub fn establish_connection(url : Option<&str>) -> PgConnection {
+#[must_use] 
+pub fn establish_connection(url : Option<&str>) -> Result<PgConnection, Box<dyn Error + Send + Sync + 'static>> {
     // Support env vars in a `.env` file
     dotenv().ok();
 
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    PgConnection::establish(&database_url)
-        .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
+    // If the Database connection URL is not supplied, try and get from the env var.
+    let database_url = match url {
+        Some(url) => url,
+        None => &env::var("DATABASE_URL")?
+    };
+
+    let con = PgConnection::establish(database_url)?;
+
+    Ok(con)
 }

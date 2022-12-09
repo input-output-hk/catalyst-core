@@ -47,6 +47,20 @@ cover but you want to describe it, please do.
 
 ## Joaquin Rosales
 
+### `Proposal.chain_proposal_id`
+
+This field is not very well documented, except for a line in `book/src/core-vitss-doc/api/v0.yaml` that describes it as:
+
+    > Identifier of the proposal on the blockchain.
+
+Internally, the identifier is of type `ExternalProposalId` (`src/chain-libs/chain-impl-mockchain/src/certificate/vote_plan.rs`) which is an alias type for `DigestOf<Blake2b256, _>`, from the `chain_crypto` crate. This is undocumented.
+
+The `ExternalProposalId` is sent through the wire and csv files as a 64-character hex-encoded string.
+
+The `catalyst-toolbox` binary decodes this hex string, and converts it into a valid `ExternalProposalId` so that the underlying `[u8; 32]` can be extracted, hashed and used in logic related to rewards thresholds, votes, and dreps.
+
+There is an arbitrary snapshot generator used in `vit-servicing-station-tests` that creates valid `ExternalProposalId` from a randomized `[u8; 32]` array that is used in integration tests found in `vit-testing`.
+
 ## Stefano Cunego
 
 ## Conor Gannon

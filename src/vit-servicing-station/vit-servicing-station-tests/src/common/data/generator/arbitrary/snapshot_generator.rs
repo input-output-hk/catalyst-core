@@ -1,6 +1,7 @@
 use crate::common::data::ArbitraryGenerator;
 use crate::common::data::ArbitraryValidVotingTemplateGenerator;
 use crate::common::data::{Snapshot, ValidVotingTemplateGenerator};
+use chain_impl_mockchain::certificate::ExternalProposalId;
 use std::collections::BTreeSet;
 use std::iter;
 use time::{Duration, OffsetDateTime};
@@ -129,6 +130,10 @@ impl ArbitrarySnapshotGenerator {
         let challenge_info = self
             .template_generator
             .proposals_challenge_info(&challenge.challenge_type);
+        let chain_proposal_id = ExternalProposalId::from(self.id_generator.bytes())
+            .to_string()
+            .as_bytes()
+            .to_vec();
         let proposal = Proposal {
             internal_id: id.abs(),
             proposal_id: id.abs().to_string(),
@@ -142,7 +147,7 @@ impl ArbitrarySnapshotGenerator {
             reviews_count: 0,
             proposal_files_url: proposal.files_url,
             proposer: self.template_generator.proposer(),
-            chain_proposal_id: self.id_generator.hash().as_bytes().to_vec(),
+            chain_proposal_id,
             chain_vote_options: proposal.chain_vote_options,
             chain_vote_start_time: voteplan.chain_vote_start_time,
             chain_vote_end_time: voteplan.chain_vote_end_time,

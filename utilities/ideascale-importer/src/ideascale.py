@@ -23,6 +23,7 @@ class ExcludeUnknownFields:
 class Campaign(ExcludeUnknownFields):
     id: int
     name: str
+    funnel_id: int
 
 class CampaignGroup(ExcludeUnknownFields):
     id: int
@@ -34,9 +35,22 @@ class Idea(ExcludeUnknownFields):
     title: str
     custom_fields: Optional[Mapping[str, str]]
 
+class Stage(ExcludeUnknownFields):
+    id: int
+    key: str
+    label: str
+    funnel_name: str
+
+class Funnel(ExcludeUnknownFields):
+    id: int
+    name: str
+    stages: List[Stage]
+
 CampaignSchema = marshmallow_dataclass.class_schema(Campaign)
 CampaignGroupSchema = marshmallow_dataclass.class_schema(CampaignGroup)
 IdeaSchema = marshmallow_dataclass.class_schema(Idea)
+StageSchema = marshmallow_dataclass.class_schema(Stage)
+FunnelSchema = marshmallow_dataclass.class_schema(Funnel)
 
 class RequestProgressObserver:
     def __init__(self):
@@ -101,6 +115,13 @@ class IdeaScale:
         ideas = await asyncio.gather(*[self.campaign_ideas(c.id) for c in campaigns])
         return [i for campaign_ideas in ideas for i in campaign_ideas]
 
+    async def funnel(self, funnel_id: int) -> Funnel:
+        funnel = FunnelSchema().load(await self._get(f"/v1/funnels/{funnel_id}"))
+        if isinstance(funnel, Funnel):
+            return funnel
+        else:
+            raise BadResponse()
+
     async def _get(self, path: str) -> Mapping[str, Any] | Iterable[Mapping[str, Any]]:
         url = f"{IdeaScale.API_URL}{path}"
         headers = {"api_token": self.api_token}
@@ -124,13 +145,7 @@ class IdeaScale:
                     # Doing this so we can describe schemas with types and
                     # not worry about field names not being in snake case format.
                     parsed_json = json.loads(content)
-                    if isinstance(parsed_json, dict):
-                        parsed_json = utils.snake_case_keys(parsed_json)
-                    elif isinstance(parsed_json, list):
-                        for i in range(len(parsed_json)):
-                            if isinstance(parsed_json, dict):
-                                parsed_json[i] = utils.snake_case_keys(parsed_json[i])
-
+                    utils.snake_case_keys(parsed_json)
                     return parsed_json
                 else:
                     raise GetFailed(r.status, r.reason, content)

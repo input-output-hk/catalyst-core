@@ -1,16 +1,18 @@
 import re
-from typing import Dict, TypeVar
+from typing import Any, Dict, List, TypeVar
 
-T = TypeVar("T")
+DictOrList = TypeVar("DictOrList", Dict[str, Any], List[Any])
 
-def snake_case_keys(d: Dict[str, T]) -> Dict[str, T]:
-    new_d = {}
-    for k, v in d.items():
-        if isinstance(v, dict):
-            v = snake_case_keys(v)
+def snake_case_keys(x: DictOrList):
+    if isinstance(x, dict):
+        keys = list(x.keys())
+        for k in keys:
+            v = x.pop(k)
+            snake_case_keys(v)
+            x[snake_case(k)] = v
+    elif isinstance(x, list):
+        for i in range(len(x)):
+            snake_case_keys(x[i])
 
-        k = re.sub(r"([a-z])([A-Z])", r"\1_\2", k).lower()
-
-        new_d[k] = v
-
-    return new_d
+def snake_case(s: str) -> str:
+    return re.sub(r"([a-z])([A-Z])", r"\1_\2", s).lower()

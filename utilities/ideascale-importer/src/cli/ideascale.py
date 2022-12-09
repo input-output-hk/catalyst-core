@@ -7,7 +7,13 @@ import ideascale
 app = typer.Typer()
 
 @app.command()
-def list_campaigns(api_token: str = typer.Option(...), campaign_group_id: int = typer.Option(...)):
+def list_campaigns(
+    api_token: str = typer.Option(..., help="IdeaScale API token"),
+    campaign_group_id: int = typer.Option(..., help="IdeaScale campaign group id"),
+):
+    """
+    List campaigns from IdeaScale belonging to the given campaign group
+    """
     async def inner():
         client = ideascale.client_with_progress(api_token)
 
@@ -24,7 +30,10 @@ def list_campaigns(api_token: str = typer.Option(...), campaign_group_id: int = 
     asyncio.run(inner())
 
 @app.command()
-def list_campaign_groups(api_token: str = typer.Option(...)):
+def list_campaign_groups(api_token: str = typer.Option(..., help="IdeaScale API token")):
+    """
+    List campaign groups from IdeaScale
+    """
     async def inner():
         client = ideascale.client_with_progress(api_token)
 
@@ -41,7 +50,13 @@ def list_campaign_groups(api_token: str = typer.Option(...)):
     asyncio.run(inner())
 
 @app.command()
-def list_campaign_ideas(api_token: str = typer.Option(...), campaign_id: int = typer.Option(...)):
+def list_campaign_ideas(
+    api_token: str = typer.Option(..., help="IdeaScale API token"),
+    campaign_id: int = typer.Option(..., help="IdeaScale campaign id"),
+):
+    """
+    List ideas from IdeaScale beloging to a given campaign
+    """
     async def inner():
         client = ideascale.client_with_progress(api_token)
 
@@ -58,7 +73,13 @@ def list_campaign_ideas(api_token: str = typer.Option(...), campaign_id: int = t
     asyncio.run(inner())
 
 @app.command()
-def list_campaign_group_ideas(api_token: str = typer.Option(...), campaign_group_id: int = typer.Option(...)):
+def list_campaign_group_ideas(
+    api_token: str = typer.Option(..., help="IdeaScale API token"),
+    campaign_group_id: int = typer.Option(..., help="IdeaScale campaign group id"),
+):
+    """
+    List ideas from IdeaScale beloging to a given campaign group
+    """
     async def inner():
         client = ideascale.client_with_progress(api_token)
 

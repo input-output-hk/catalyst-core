@@ -83,12 +83,8 @@ def list_campaign_group_ideas(
     async def inner():
         client = ideascale.client_with_progress(api_token)
 
-        campaigns = await client.campaigns(campaign_group_id)
+        ideas = await client.campaign_group_ideas(campaign_group_id)
 
-        ideas = []
-        with client.request_progress_observer.progress:
-            ideas = await asyncio.gather(*[client.campaign_ideas(c.id) for c in campaigns])
-            ideas = [i for campaign_ideas in ideas for i in campaign_ideas]
         typer.echo()
 
         table = [[i.id, i.title] for i in ideas]

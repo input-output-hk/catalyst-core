@@ -1,4 +1,5 @@
 import aiohttp
+import asyncio
 import json
 import marshmallow
 import marshmallow_dataclass
@@ -57,6 +58,16 @@ class RequestProgressObserver:
     def request_end(self, req_id):
         self.progress.update(self.inflight_requests[req_id][0], total=self.inflight_requests[req_id][1])
 
+    def __enter__(self):
+        self.progress.__enter__()
+
+    def __exit__(self, *args):
+        self.progress.__exit__(*args)
+
+        for [task_id, _] in self.inflight_requests.values():
+            self.progress.remove_task(task_id)
+        self.inflight_requests.clear()
+
 class IdeaScale:
     API_URL = "https://cardano.ideascale.com/a/rest"
 
@@ -65,7 +76,7 @@ class IdeaScale:
         self.request_counter = 0
         self.request_progress_observer = RequestProgressObserver()
 
-    async def campaigns(self, group_id) -> List[Campaign]:
+    async def campaigns(self, group_id: int) -> List[Campaign]:
         res = await self._get(f"/v1/campaigns/groups/{group_id}")
 
         campaigns = []
@@ -84,6 +95,11 @@ class IdeaScale:
     async def campaign_ideas(self, campaign_id: int) -> List[Idea]:
         res = await self._get(f"/v1/campaigns/{campaign_id}/ideas")
         return IdeaSchema().load(res, many=True) or []
+
+    async def campaign_group_ideas(self, group_id: int) -> List[Idea]:
+        campaigns = await self.campaigns(group_id)
+        ideas = await asyncio.gather(*[self.campaign_ideas(c.id) for c in campaigns])
+        return [i for campaign_ideas in ideas for i in campaign_ideas]
 
     async def _get(self, path: str) -> Mapping[str, Any] | Iterable[Mapping[str, Any]]:
         url = f"{IdeaScale.API_URL}{path}"

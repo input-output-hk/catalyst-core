@@ -4,6 +4,7 @@
 #![allow(clippy::all)]
 
 // For now this has to be manually added...
+#[allow(clippy::wildcard_imports)]
 use crate::schema::*;
 
 use chrono::NaiveDateTime;

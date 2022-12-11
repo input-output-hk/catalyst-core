@@ -3,12 +3,12 @@
   cell,
 }: let
   inherit (inputs) nixpkgs std;
-  inherit (inputs.cells) artifacts;
+  inherit (inputs.cells.artifacts) artifacts;
   inherit (inputs.cells.lib) constants;
   l = nixpkgs.lib // builtins;
 
   mkOperable = package: namespace: let
-    artifacts' = artifacts.packages."artifacts-${namespace}";
+    artifacts' = artifacts."artifacts-${namespace}";
   in
     std.lib.ops.mkOperable {
       inherit package;

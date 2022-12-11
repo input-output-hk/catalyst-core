@@ -2,7 +2,6 @@
 
 -- Version of the schema.
 
-
 CREATE VIEW schema_version AS SELECT
     version
 FROM __diesel_schema_migrations
@@ -28,12 +27,6 @@ CREATE UNIQUE INDEX config_idx ON config(id,id2,id3);
 COMMENT ON TABLE config IS
 'General JSON Configuration and Data Values.
 Defined  Data Formats:
-  Schema Version:
-    `id` = "version"
-    `id2` = "" (Unused)
-    `id3` = "" (Unused)
-    `value`->"version" = "<Version string of the API".
-    NOTE: We may be able to remove this if we can use the diesel api version directly.
   API Tokens:
     `id` = "api_token"
     `id2` = <API Token, encrypted with a secret, as base-64 encoded string "">`
@@ -41,6 +34,7 @@ Defined  Data Formats:
     `value`->"name" = "<Name of the token owner>",
     `value`->"created" = <Integer Unix Epoch when Token was created>,
     `value`->"expires" = <Integer Unix Epoch when Token will expire>,
+    `value`->"perms" = {Permissions assigned to this api key}
 ';
 COMMENT ON COLUMN config.row_id IS 'Synthetic unique key.  Always lookup using id.';
 COMMENT ON COLUMN config.id IS  'The name/id of the general config value/variable';

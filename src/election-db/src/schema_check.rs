@@ -9,7 +9,9 @@ use diesel::{pg::Pg, migration::{MigrationSource, MigrationVersion}};
 /// Schema in database does not match schema supported by the Crate.
 #[derive(Debug)]
 struct MismatchedSchema<'a> {
+    /// List of migrations which are applied to the DB but which this schema does not know about.
     unknown_applied_migrations : Vec<MigrationVersion<'a>>,
+    /// List of migrations which this schema knows about, but are not applied to the DB.    
     missing_migrations: Vec<MigrationVersion<'a>>
 }
 
@@ -32,13 +34,24 @@ impl fmt::Display for MismatchedSchema<'_> {
 const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
 
 /// Check iof all the migrations we know about are applied, and ONLY those
-/// migrations are applied. This will NOT apply any migrations.  Migrations
-/// should be applied manually if they are not upo-to-date as there is no single
-/// master of the database.  The purpose of this check is to ensure the election
-/// db library matches the deployed db schema.
+/// migrations are applied. 
+/// 
+/// # Errors
+///
+/// This function will return an error if:
+/// * `url` is None and the environment variable "`DATABASE_URL`" isn't set.
+/// * The database schema in the DB does not 100% match the schema supported by
+///   this library.
+/// 
+/// $ Notes
+/// 
+/// This function will NOT apply any migrations.  Migrations should be applied
+/// manually if they are not up-to-date as there is no single master of the
+/// database schema.  The purpose of this check is to ensure the election db
+/// library matches the deployed db schema.
 fn all_migrations_synced<S: MigrationSource<Pg>>(
     harness: &mut impl MigrationHarness<Pg>,
-    source: S,
+    source: &S,
 ) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     // All migrations which were applied but that we have no knowledge of.
     let mut unknown_applied_migrations = Vec::new();
@@ -67,6 +80,7 @@ fn all_migrations_synced<S: MigrationSource<Pg>>(
         .map(|(_, m)| m.name().version().as_owned())
         .collect::<Vec<_>>();
 
+    // If we match the schema in the database exactly, then everything is A-OK.
     if unknown_applied_migrations.is_empty() && migrations.is_empty() {
         Ok(())
     } else {
@@ -80,5 +94,5 @@ fn all_migrations_synced<S: MigrationSource<Pg>>(
 
 /// Check if the DB has all migrations applied like we expect it should.
 pub fn db_version_check(connection: &mut impl MigrationHarness<Pg>) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
-    all_migrations_synced(connection, MIGRATIONS)
+    all_migrations_synced(connection, &MIGRATIONS)
 }

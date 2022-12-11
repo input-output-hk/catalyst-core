@@ -40,7 +40,7 @@ category = "db"
 script_runner = "@shell" 
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/election-db
-diesel_ext --model > src/models.rs
+diesel_ext --model -t > src/models.rs
 '''
 
 # Build the Catalyst election DB
@@ -50,6 +50,5 @@ category = "db"
 run_task = { name = [
         "run-election-db-migration",
         "generate-election-db-models"
-        # "revert-election-db-migration"
     ]}
 

@@ -3,8 +3,8 @@
 #![allow(unused)]
 #![allow(clippy::all)]
 
+// For now this has to be manually added...
 use crate::schema::*;
-
 
 use chrono::NaiveDateTime;
 use bigdecimal::BigDecimal;
@@ -209,15 +209,13 @@ pub struct VotingGroup {
     pub token_id: Option<String>,
 }
 
-
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(row_id))]
 #[diesel(table_name = voting_power)]
-/// ttttt
 pub struct VotingPower {
-    /// yyyyy
     pub row_id: i64,
     pub election: Option<i32>,
     pub voting_key: Option<String>,
     pub power: Option<BigDecimal>,
 }
+

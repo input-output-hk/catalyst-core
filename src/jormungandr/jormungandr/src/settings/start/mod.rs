@@ -328,7 +328,7 @@ fn generate_network(
             .unwrap_or(network::DEFAULT_MAX_CLIENT_CONNECTIONS),
         timeout: std::time::Duration::from_secs(15),
         allow_private_addresses: p2p.allow_private_addresses,
-        whitelist: None,
+        whitelist: p2p.whitelist,
         gossip_interval: p2p
             .gossip_interval
             .map(|d| d.into())

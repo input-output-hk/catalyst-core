@@ -136,7 +136,7 @@ impl LegacyNodeConfigConverter {
                 max_inbound_connections: None,
                 max_connections: None,
                 topics_of_interest: None,
-                allow_private_addresses: source.p2p.allow_private_addresses.clone(),
+                allow_private_addresses: source.p2p.allow_private_addresses,
                 policy: source.p2p.policy.clone(),
                 layers: source.p2p.layers.clone(),
                 public_id: None,
@@ -176,7 +176,7 @@ impl LegacyNodeConfigConverter {
                 max_inbound_connections: None,
                 max_connections: None,
                 topics_of_interest: None,
-                allow_private_addresses: source.p2p.allow_private_addresses.clone(),
+                allow_private_addresses: source.p2p.allow_private_addresses,
                 policy: source.p2p.policy.clone(),
                 layers: source.p2p.layers.clone(),
                 public_id: None,
@@ -236,7 +236,7 @@ impl LegacyNodeConfigConverter {
                     .layers
                     .as_ref()
                     .and_then(|c| c.topics_of_interest.clone()),
-                allow_private_addresses: source.p2p.allow_private_addresses.clone(),
+                allow_private_addresses: source.p2p.allow_private_addresses,
                 policy: source.p2p.policy.clone(),
                 layers: None,
                 public_id: None,

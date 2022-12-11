@@ -1,9 +1,32 @@
 //! Check if the schema is up-to-date.
 
-use std::{error::Error, collections::HashMap};
+use std::{error::Error, collections::HashMap, fmt};
 
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-use diesel::{pg::Pg, migration::MigrationSource};
+use diesel::{pg::Pg, migration::{MigrationSource, MigrationVersion}};
+
+
+/// Schema in database does not match schema supported by the Crate.
+#[derive(Debug)]
+struct MismatchedSchema<'a> {
+    unknown_applied_migrations : Vec<MigrationVersion<'a>>,
+    missing_migrations: Vec<MigrationVersion<'a>>
+}
+
+impl Error for MismatchedSchema<'_> {}
+
+impl fmt::Display for MismatchedSchema<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Schema in database does not match schema supported by the Crate.")?;
+        if !self.unknown_applied_migrations.is_empty() {
+            write!(f, "Unknown but applied migrations = {:?}", self.unknown_applied_migrations)?;
+        }
+        if !self.unknown_applied_migrations.is_empty() {
+            write!(f, "Migrations which have not been applied = {:?}", self.missing_migrations)?;
+        }
+        Ok(())
+    }
+}
 
 // MIGRATIONS is internal only.  The only purpose is to check the schema version in the db.
 const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
@@ -41,13 +64,17 @@ fn all_migrations_synced<S: MigrationSource<Pg>>(
     // Get the list of migrations we should need to apply.
     let migrations = migrations
         .into_iter()
-        .map(|(_, m)| m)
+        .map(|(_, m)| m.name().version().as_owned())
         .collect::<Vec<_>>();
 
     if unknown_applied_migrations.is_empty() && migrations.is_empty() {
         Ok(())
     } else {
-        Ok(())
+         Err(
+            Box::new(MismatchedSchema{
+                unknown_applied_migrations,
+                missing_migrations: migrations,
+        }))
     }
 }
 

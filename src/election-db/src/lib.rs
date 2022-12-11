@@ -7,9 +7,10 @@ extern crate diesel;
 #[macro_use] 
 extern crate diesel_autoincrement_new_struct;
 
-pub mod models;
-pub mod schema;
+mod models;
+mod schema;
 mod schema_check;
+mod config_table;
 
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
@@ -17,6 +18,9 @@ use dotenvy::dotenv;
 use schema_check::db_version_check;
 use std::env;
 use std::error::Error;
+
+/// Database URL Environment Variable name.
+const DATABASE_URL: &str = "DATABASE_URL";
 
 /// Connection to the Election Database
 pub struct ElectionDB {
@@ -60,7 +64,7 @@ pub fn establish_connection(url : Option<&str>) -> Result<ElectionDB, Box<dyn Er
     // If the Database connection URL is not supplied, try and get from the env var.
     let database_url = match url {
         Some(url) => url.to_string(),
-        None => env::var("DATABASE_URL")?
+        None => env::var(DATABASE_URL)?
     };
 
     let mut conn = PgConnection::establish(database_url.as_str())?;
@@ -75,7 +79,7 @@ pub fn establish_connection(url : Option<&str>) -> Result<ElectionDB, Box<dyn Er
 
 /// Check if the schema version in the DB is up to date.
 fn check_schema_version() {
-    use crate::*;
+    use crate::establish_connection;
 
     establish_connection(None).unwrap();
 }

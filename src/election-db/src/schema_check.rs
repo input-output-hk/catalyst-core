@@ -36,6 +36,11 @@ const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
 /// Check iof all the migrations we know about are applied, and ONLY those
 /// migrations are applied. 
 /// 
+/// # Parameters
+/// 
+/// * `harness` - The Migration Harness for this database connection.
+/// * `source` - The Source of the migrations to check against.
+/// 
 /// # Errors
 ///
 /// This function will return an error if:
@@ -94,5 +99,10 @@ fn all_migrations_synced<S: MigrationSource<Pg>>(
 
 /// Check if the DB has all migrations applied like we expect it should.
 pub fn db_version_check(connection: &mut impl MigrationHarness<Pg>) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
+    // We only have 1 actual Election DB.  If checking the schema every time we
+    // get a DB connection adds too much overhead, the result could be cached
+    // using something like the `once_cell` crate.
+
+    // Check if all migrations are synched.
     all_migrations_synced(connection, &MIGRATIONS)
 }

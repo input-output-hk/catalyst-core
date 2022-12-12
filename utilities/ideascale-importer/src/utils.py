@@ -3,6 +3,7 @@ from typing import Any, Dict, List, TypeVar
 
 DictOrList = TypeVar("DictOrList", Dict[str, Any], List[Any])
 
+
 def snake_case_keys(x: DictOrList):
     if isinstance(x, dict):
         keys = list(x.keys())
@@ -13,6 +14,7 @@ def snake_case_keys(x: DictOrList):
     elif isinstance(x, list):
         for i in range(len(x)):
             snake_case_keys(x[i])
+
 
 def snake_case(s: str) -> str:
     return re.sub(r"([a-z])([A-Z])", r"\1_\2", s).lower()

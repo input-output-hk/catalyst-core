@@ -31,12 +31,14 @@ export class Vote {
   /**
    * Constructs public wallet-wasm-js VoteCast vote
    *
+   * @param {wallet_wasm.SpendingCounter} spending_counter
    * @param {Uint8Array} vote_plan_bytes vote plan id bytes representation
    * @param {number} proposal_index vote's plan proposal index
    * @param {number} choice choosen vote plan option
    * @returns {Vote}
    */
   static public(
+    spending_counter: wallet_wasm.SpendingCounter,
     vote_plan_bytes: Uint8Array,
     proposal_index: number,
     choice: number
@@ -45,6 +47,7 @@ export class Vote {
   /**
    * Constructs public wallet-wasm-js VoteCast vote
    *
+   * @param {wallet_wasm.SpendingCounter} spending_counter
    * @param {Uint8Array} vote_plan_bytes vote plan id bytes representation
    * @param {number} proposal_index vote's plan proposal index
    * @param {number} options number of available vote plan options
@@ -53,6 +56,7 @@ export class Vote {
    * @returns {Vote}
    */
   static private(
+    spending_counter: wallet_wasm.SpendingCounter,
     vote_plan_bytes: Uint8Array,
     proposal_index: number,
     options: number,
@@ -62,40 +66,17 @@ export class Vote {
 }
 
 /**
- * Wrapper over wallet-wasm-js Wallet type
+ * Signes provided votes and returns a completly generated transaction list
+ *
+ * @param {Vote[]} votes list of votes
+ * @param {Settings} settings wallet Settings
+ * @param {wallet_wasm.BlockDate} valid_until
+ * @param {Uint8Array} private_key user private key bytes representation
+ * @returns {wallet_wasm.Fragment[]}
  */
-export class Wallet {
-  wallet: wallet_wasm.Wallet;
-
-  /**
-   * Wallet type constructor
-   *
-   * @param {Uint8Array} private_key user private key bytes representation
-   * @param {bigint} init_value wallet initial balance value
-   * @returns {Wallet}
-   */
-  constructor(private_key: Uint8Array, init_value: bigint): Wallet;
-
-  /**
-   * Signes provided votes and returns a completly generated transaction list
-   *
-   * @param {Vote[]} votes list of votes
-   * @param {Settings} settings wallet Settings
-   * @param {wallet_wasm.BlockDate} valid_until 
-   * @param {number} lane
-   * @returns {wallet_wasm.Fragment[]}
-   */
-  signVotes(
-    votes: Vote[],
-    settings: Settings,
-    valid_until: wallet_wasm.BlockDate,
-    lane: number
-  ): wallet_wasm.Fragment[];
-
-  /**
-   * Returns current balance of the wallet
-   *
-   * @returns {bigint}
-   */
-  totalValue(): bigint;
-}
+function signVotes(
+  votes: Vote[],
+  settings: Settings,
+  valid_until: wallet_wasm.BlockDate,
+  private_key: Uint8Array
+): wallet_wasm.Fragment[];

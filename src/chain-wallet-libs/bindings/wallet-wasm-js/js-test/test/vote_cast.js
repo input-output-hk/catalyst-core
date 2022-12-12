@@ -8,19 +8,13 @@ const private_key = Buffer.from(
 const settings_json =
   '{"fees":{"constant":10,"coefficient":2,"certificate":100},"discrimination":"production","block0_initial_hash":{"hash":"baf6b54817cf2a3e865f432c3922d28ac5be641e66662c66d445f141e409183e"},"block0_date":1586637936,"slot_duration":20,"time_era":{"epoch_start":0,"slot_start":0,"slots_per_epoch":180},"transaction_max_expiry_epochs":1}';
 
-function generate_wallet(wasm_wallet) {
-  let wallet = new wasm_wallet.Wallet(private_key, BigInt(1000));
-  assert(wallet.total_value() === BigInt(1000));
-  return wallet;
-}
-
 describe("vote cast certificate tests", function () {
   it("public", async function () {
     const wasm_wallet = await import("wallet-js");
 
-    let wallet = generate_wallet(wasm_wallet);
     let settings = new wasm_wallet.Settings(settings_json);
     let vote = wasm_wallet.Vote.public(
+      wasm_wallet.SpendingCounter.new(1, 1),
       Buffer.from(
         "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "hex"
@@ -30,16 +24,21 @@ describe("vote cast certificate tests", function () {
     );
 
     let block_date = wasm_wallet.BlockDate.new(0, 1);
-    let fragments = wasm_wallet.signVotes(wallet, [vote], settings, block_date, 0);
+    let fragments = wasm_wallet.signVotes(
+      [vote],
+      private_key,
+      settings,
+      block_date
+    );
     assert(fragments.length == 1);
   });
 
   it("private", async function () {
     const wasm_wallet = await import("wallet-js");
 
-    let wallet = generate_wallet(wasm_wallet);
     let settings = new wasm_wallet.Settings(settings_json);
     let vote = wasm_wallet.Vote.private(
+      wasm_wallet.SpendingCounter.new(1, 1),
       Buffer.from(
         "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "hex"
@@ -54,7 +53,12 @@ describe("vote cast certificate tests", function () {
     );
 
     let block_date = wasm_wallet.BlockDate.new(0, 1);
-    let fragments = wasm_wallet.signVotes(wallet, [vote], settings, block_date, 0);
+    let fragments = wasm_wallet.signVotes(
+      [vote],
+      private_key,
+      settings,
+      block_date
+    );
     assert(fragments.length == 1);
   });
 });

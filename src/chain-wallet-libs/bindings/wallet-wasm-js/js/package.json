@@ -10,6 +10,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "wallet-wasm-js": "file:../pkg"
+    "@catalyst-core/wallet-wasm-js": "0.8.1"
   }
 }

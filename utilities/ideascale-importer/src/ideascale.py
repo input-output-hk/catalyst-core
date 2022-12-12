@@ -103,7 +103,7 @@ class IdeaScale:
     async def campaigns(self, group_id: int) -> List[Campaign]:
         res = await self._get(f"/v1/campaigns/groups/{group_id}")
 
-        campaigns = []
+        campaigns: List[Campaign] = []
         for group in res:
             assert isinstance(group, dict)
 

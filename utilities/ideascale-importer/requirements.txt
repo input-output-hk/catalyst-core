@@ -12,12 +12,14 @@ marshmallow==3.19.0
 marshmallow-dataclass==8.5.10
 mccabe==0.7.0
 multidict==6.0.3
+mypy==0.991
 mypy-extensions==0.4.3
 packaging==22.0
 pycodestyle==2.10.0
 pyflakes==3.0.1
 Pygments==2.13.0
 rich==12.6.0
+tomli==2.0.1
 typer==0.7.0
 typing-inspect==0.8.0
 typing_extensions==4.4.0

@@ -1,6 +1,7 @@
 import re
 from typing import Any, Dict, List, TypeVar
 
+
 DictOrList = TypeVar("DictOrList", Dict[str, Any], List[Any])
 
 

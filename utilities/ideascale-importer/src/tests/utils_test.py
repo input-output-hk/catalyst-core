@@ -36,3 +36,7 @@ class TestUtils(unittest.TestCase):
         utils.snake_case_keys(d)
 
         self.assertEqual(d, expected_d)
+
+
+if __name__ == "__main__":
+    unittest.main()

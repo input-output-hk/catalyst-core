@@ -52,9 +52,10 @@ pub struct SpendingCounter(chain_impl_mockchain::account::SpendingCounter);
 
 #[wasm_bindgen]
 impl SpendingCounter {
-    pub fn new(lane: usize, counter: u32) -> Self {
-        Self(chain_impl_mockchain::account::SpendingCounter::new(
-            lane, counter,
+    pub fn new(lane: usize, counter: u32) -> Result<SpendingCounter, JsValue> {
+        Ok(Self(
+            chain_impl_mockchain::account::SpendingCounter::new(lane, counter)
+                .map_err(|e| JsValue::from(e.to_string()))?,
         ))
     }
 }

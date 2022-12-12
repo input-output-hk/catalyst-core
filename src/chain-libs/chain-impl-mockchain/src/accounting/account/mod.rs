@@ -38,6 +38,8 @@ pub enum LedgerError {
     },
     #[error("Value calculation failed")]
     ValueError(#[from] ValueError),
+    #[error(transparent)]
+    SpendingCounterError(#[from] spending::Error),
 }
 
 impl From<UpdateError<LedgerError>> for LedgerError {

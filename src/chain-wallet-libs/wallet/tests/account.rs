@@ -31,7 +31,7 @@ fn update_state_overrides_old() {
         .set_state(
             Value(110),
             (0..SpendingCounterIncreasing::LANES)
-                .map(|lane| SpendingCounter::new(lane, 1))
+                .map(|lane| SpendingCounter::new(lane, 1).unwrap())
                 .collect(),
         )
         .unwrap();

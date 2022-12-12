@@ -1,21 +1,18 @@
-use assert_fs::fixture::PathChild;
 use crate::test_api::{MockDbProvider, VerifiableSnapshotOutput};
 use crate::Delegations;
-use assert_fs::TempDir;
-use mainnet_lib::{MainnetNetworkBuilder, CardanoWallet, MainnetWalletStateBuilder, JsonBasedDbSync};
+use mainnet_lib::{MainnetNetworkBuilder, CardanoWallet, MainnetWalletStateBuilder};
 
 #[test]
 fn cip15_correctly_signed_before_snapshot() {
-    let temp_dir = TempDir::new().unwrap();
 
     let stake = 10_000;
     let alice_wallet = CardanoWallet::new(stake);
 
     let (db_sync, _node, _) = MainnetNetworkBuilder::default()
         .with(alice_wallet.as_direct_voter())
-        .in_memory();
+        .build();
 
-    let db = MockDbProvider::from(JsonBasedDbSync::from_in_memory(db_sync,temp_dir.child("database.json").path()));
+    let db = MockDbProvider::from(db_sync);
     let outputs = crate::voting_power(&db, None, None, None).unwrap();
 
     assert_eq!(outputs.len(), 1);
@@ -32,7 +29,6 @@ fn cip15_correctly_signed_before_snapshot() {
 
 #[test]
 fn cip36_correctly_signed_before_snapshot() {
-    let temp_dir = TempDir::new().unwrap();
 
     let stake = 10_000;
     let alice_wallet = CardanoWallet::new(stake);
@@ -43,9 +39,9 @@ fn cip36_correctly_signed_before_snapshot() {
         .with(alice_wallet.as_representative())
         .with(bob_wallet.as_representative())
         .with(clarice_wallet.as_delegator(vec![(&alice_wallet, 1), (&bob_wallet, 1)]))
-        .in_memory();
+        .build();
 
-    let db = MockDbProvider::from(JsonBasedDbSync::from_in_memory(db_sync,temp_dir.child("database.json").path()));
+    let db = MockDbProvider::from(db_sync);
     let outputs = crate::voting_power(&db, None, None, None).unwrap();
 
     assert_eq!(outputs.len(), 1);

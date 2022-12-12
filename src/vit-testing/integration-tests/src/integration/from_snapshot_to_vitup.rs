@@ -1,5 +1,5 @@
 use crate::common::snapshot::mock;
-use crate::common::{CardanoWallet, RepsVoterAssignerSource, SnapshotFilter};
+use crate::common::{CardanoWallet, SnapshotFilter, RepsVoterAssignerSource};
 use assert_fs::TempDir;
 use chain_impl_mockchain::certificate::VotePlan;
 use fraction::Fraction;
@@ -34,7 +34,7 @@ pub fn cip36_mixed_delegation_should_appear_in_block0() {
         .with(alice.as_direct_voter())
         .with(bob.as_delegator(vec![(&david_representative, 1)]))
         .with(clarice.as_delegator(vec![(&edgar_representative, 1), (&edgar_representative, 1)]))
-        .as_json(&testing_directory);
+        .build();
 
     let snapshot_result =
         mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory).unwrap();

@@ -38,7 +38,7 @@ pub fn cip36_and_voting_group_merge() {
         .with(alice.as_direct_voter())
         .with(bob.as_delegator(vec![(&david, 1)]))
         .with(clarice.as_delegator(vec![(&david, 1), (&edgar, 1)]))
-        .as_json(&testing_directory);
+        .build();
 
     let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
         .unwrap()

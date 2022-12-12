@@ -1,9 +1,8 @@
-use crate::db_sync::{InMemoryDbSync, JsonBasedDbSync};
+use crate::db_sync::{InMemoryDbSync, SharedInMemoryDbSync};
 use crate::wallet::CardanoWallet;
 use cardano_serialization_lib::address::Address;
 use jormungandr_lib::crypto::account::Identifier;
 use std::collections::HashSet;
-use std::path::Path;
 use cardano_serialization_lib::Transaction;
 pub use crate::cardano_node::settings::Settings;
 use crate::InMemoryNode;
@@ -26,7 +25,7 @@ impl MainnetNetworkBuilder {
     }
 
     /// Builds dbsync instance and set or representatives identifiers
-    pub fn in_memory(self) -> (InMemoryDbSync, InMemoryNode, HashSet<Identifier>) {
+    pub fn in_memory_internal(self) -> (SharedInMemoryDbSync, InMemoryNode, HashSet<Identifier>) {
         let txs = self.states.iter().filter_map(|x| x.registration_tx.clone() ).collect();
 
         let block0 = Block0{
@@ -35,12 +34,9 @@ impl MainnetNetworkBuilder {
         };
 
         let mut node = InMemoryNode::start(block0);
-        let mut db_sync_instance = InMemoryDbSync::default();
-        db_sync_instance.connect_to_node(&mut node);
-
 
         (
-            db_sync_instance,
+            InMemoryDbSync::default().connect_to_node(&mut node),
             node,
             self.states
                 .iter()
@@ -51,13 +47,33 @@ impl MainnetNetworkBuilder {
         )
     }
 
-
-    #[must_use]
-    #[allow(clippy::missing_panics_doc)]
     /// Builds dbsync instance and set or representatives identifiers
-    pub fn as_json(self, path: impl AsRef<Path>) -> (JsonBasedDbSync, InMemoryNode, HashSet<Identifier>) {
-        let (db_sync,node, dreps) = self.in_memory();
-        (JsonBasedDbSync::from_in_memory(db_sync,path),node,dreps)
+    pub fn shared(self) -> (SharedInMemoryDbSync, InMemoryNode, HashSet<Identifier>) {
+        let (db_sync, mut node, reps) = self.build();
+        (db_sync.connect_to_node(&mut node),node,reps)
+    }
+
+    /// Builds dbsync instance and set or representatives identifiers
+    pub fn build(self) -> (InMemoryDbSync, InMemoryNode, HashSet<Identifier>) {
+        let txs = self.states.iter().filter_map(|x| x.registration_tx.clone() ).collect();
+
+        let block0 = Block0{
+            block: BlockBuilder::next_block(None,txs),
+            settings: self.settings
+        };
+
+        let node = InMemoryNode::start(block0);
+
+        (
+            InMemoryDbSync::default(),
+            node,
+            self.states
+                .iter()
+                .map(|x| x.rep.as_ref())
+                .filter(Option::is_some)
+                .map(|x| x.unwrap().clone())
+                .collect(),
+        )
     }
 }
 

@@ -28,7 +28,7 @@ pub fn mixed_registration_transactions() {
         .with(david.as_representative())
         .with(edgar.as_representative())
         .with(fred.as_representative())
-        .as_json(&testing_directory);
+        .build();
 
     let voters_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
         .unwrap()

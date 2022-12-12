@@ -4,11 +4,21 @@ use cardano_serialization_lib::crypto::{BlockHash, Ed25519Signature, KESSignatur
 use cardano_serialization_lib::utils::BigNum;
 use crate::Settings;
 
+
 pub struct Block0{
     pub block: Block,
     pub settings: Settings
 }
 
+
+impl Default for Block0 {
+    fn default() -> Self {
+        Self {
+            block: BlockBuilder::next_block(None,vec![]),
+            settings: Default::default()
+        }
+    }
+}
 
 pub struct BlockBuilder;
 
@@ -16,7 +26,7 @@ impl BlockBuilder {
 
     pub fn next_block(prev: Option<&Block>, transactions: Vec<Transaction>) -> Block {
         let header_body = Self::block_header(
-            prev.map(|b| b.header().header_body().block_number()).unwrap_or(0),
+            prev.map(|b| b.header().header_body().block_number()).unwrap_or(1),
             prev.map(|b| b.header().header_body().block_body_hash())
         );
 
@@ -51,14 +61,14 @@ impl BlockBuilder {
         let issuer_vkey = PrivateKey::generate_ed25519extended().unwrap().to_public();
 
         HeaderBody::new_headerbody(block_number,
-                                   &BigNum::zero(),
+                                   &BigNum::from(block_number),
                                    prev_hash,
                                    &Vkey::new(&issuer_vkey),
-                                   &VRFVKey::from_hex(&issuer_vkey.to_hex()).unwrap(),
-                                   &VRFCert::from_hex(&issuer_vkey.to_hex()).unwrap(),
+                                   &VRFVKey::from_bytes(Self::generate_random_bytes_of_len(32)).unwrap(),
+                                   &VRFCert::new(Self::generate_random_bytes_of_len(32),Self::generate_random_bytes_of_len(VRFCert::PROOF_LEN)).unwrap(),
                                    0,
-                                   &BlockHash::from_hex(&issuer_vkey.to_hex()).unwrap(),
-                                   &OperationalCert::new(&KESVKey::from_hex(&issuer_vkey.to_hex()).unwrap(),0,0,&Ed25519Signature::from_hex(&issuer_vkey.to_hex()).unwrap()), &ProtocolVersion::new(0,1))
+                                   &BlockHash::from_bytes(Self::generate_random_bytes_of_len(32)).unwrap(),
+                                   &OperationalCert::new(&KESVKey::from_bytes(Self::generate_random_bytes_of_len(32)).unwrap(),0,0,&Ed25519Signature::from_bytes(Self::generate_random_bytes_of_len(64)).unwrap()), &ProtocolVersion::new(0,1))
 
     }
 }

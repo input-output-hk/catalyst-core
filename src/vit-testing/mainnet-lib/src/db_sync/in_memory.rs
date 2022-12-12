@@ -2,17 +2,39 @@ use cardano_serialization_lib::metadata::GeneralTransactionMetadata;
 use jormungandr_lib::interfaces::BlockDate;
 use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
+use std::fs::File;
+use std::io::Write;
+use std::path::Path;
+use std::sync::{Arc, RwLock};
 use cardano_serialization_lib::{Block, Transaction, TransactionWitnessSet};
 use cardano_serialization_lib::utils::BigNum;
 use futures::executor::block_on;
+use futures_util::StreamExt;
 use serde::{Deserialize,Serialize};
-use pharos::{Events,Channel,Observable};
+use pharos::{Channel,Observable};
+use tokio::task::JoinHandle;
 use crate::InMemoryNode;
 
 const CARDANO_MAINNET_SLOTS_PER_EPOCH: u64 = 43200;
 
 pub type BlockNo = u32;
 pub type Address = String;
+
+
+/// thread safe `InMemoryDbSync`. It has inner struct db_sync with rw lock guard and handle to update
+/// thread which listen to `InMemoryNode` mock block updates
+pub struct SharedInMemoryDbSync{
+    pub(crate) update_thread: JoinHandle<()>,
+    // Allowing for now since there is no usage yet in explorer service
+    #[allow(dead_code)]
+    pub(crate) db_sync: Arc<RwLock<InMemoryDbSync>>
+}
+
+impl Drop for SharedInMemoryDbSync {
+    fn drop(&mut self) {
+        self.update_thread.abort();
+    }
+}
 
 
 /// Mock of real cardano db sync. At this moment we only stores transactions metadata
@@ -23,10 +45,7 @@ pub struct InMemoryDbSync {
     pub(crate) transactions: HashMap<BlockNo,Vec<Transaction>>,
     pub(crate) blocks: Vec<Block>,
     stakes: HashMap<Address, BigNum>,
-    settings: Settings,
-    #[serde(skip_serializing)]
-    #[serde(skip_deserializing)]
-    pub(crate) node_observer: Option<Events<Block>>
+    settings: Settings
 }
 
 impl Debug for InMemoryDbSync {
@@ -38,11 +57,27 @@ impl Debug for InMemoryDbSync {
 impl InMemoryDbSync {
 
     /// Connects to Cardano mock node using simple observer/observable mechanism
-    pub fn connect_to_node(&mut self, node: &mut InMemoryNode) {
-        let observer = block_on(async {
-            node.observe( Channel::Bounded( 3 ).into() ).await.expect("observer")
+    pub fn connect_to_node(self, node: &mut InMemoryNode) -> SharedInMemoryDbSync {
+        let mut observer = block_on(async {
+            node.observe( Channel::Bounded( 1 ).into() ).await.expect("observer")
         });
-        self.node_observer = Some(observer);
+
+        let shared_db_sync = Arc::new(RwLock::new(self));
+        let db_sync = shared_db_sync.clone();
+
+        let handle = tokio::spawn( async move {
+             loop {
+                let block = observer.next().await;
+                if let Some(block) = block {
+                    db_sync.write().unwrap().on_block_propagation(&block);
+                }
+            }
+        });
+
+        SharedInMemoryDbSync{
+            update_thread: handle,
+            db_sync: shared_db_sync
+        }
     }
 
     /// Retrieves db sync content as string
@@ -78,6 +113,7 @@ impl InMemoryDbSync {
         self.transactions.insert(block.header().header_body().block_number(), transactions);
     }
 
+    /// Query transaction by it's hash representation
     pub fn transaction_by_hash(&self, hash: &str) -> Vec<(&Block,&Transaction)> {
         self.transactions.iter().filter_map(|(block, txs)| {
             if let Some(tx) = txs.iter().find(|tx| tx.to_hex() == hash) {
@@ -101,6 +137,7 @@ impl InMemoryDbSync {
             })
     }
 
+    /// Gets all metadata per block number
     pub fn metadata(&self) -> HashMap<BlockNo,Vec<GeneralTransactionMetadata>> {
         self.transactions.iter().map(|(block,tx)| {
             let metadata = tx.iter().filter_map(|x| {
@@ -150,6 +187,27 @@ impl InMemoryDbSync {
     pub fn stakes(&self) -> &HashMap<String, BigNum> {
         &self.stakes
     }
+
+
+    /// Persists current state of db sync
+    /// # Errors
+    ///
+    /// If cannot create file or cannot serialize to json
+    pub fn persist(&self, path: impl AsRef<Path>) -> Result<(), Error> {
+        let mut file = File::create(path)?;
+        file.write_all(serde_json::to_string(&self)?.as_bytes())?;
+        Ok(())
+    }
+
+    /// Restores current state of db sync from json file
+    /// # Errors
+    ///
+    /// If file cannot be opened or cannot deserialize from json
+    pub fn restore(path: impl AsRef<Path>) -> Result<Self, Error> {
+        let db_sync_file = File::open(path)?;
+        let db_sync: Self = serde_json::from_reader(db_sync_file)?;
+        Ok(db_sync)
+    }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -160,8 +218,11 @@ pub struct Settings {
     pub db_pass: String,
 }
 
+/// Basic converter from absolute slot number and {epoch,slot} pair
 pub trait BlockDateFromCardanoAbsoluteSlotNo {
-    fn from_absolute_slot_no(absolute_slot_no: u64) -> Self;
+    /// Converts absolute slot number to block date
+    fn from_absolute_slot_no(absolute_slot_no: u64)-> Self;
+    /// Converts epoch/slot representation to absolute slot number
     fn to_absolute_slot_no(self) -> u64;
 }
 
@@ -177,25 +238,60 @@ impl BlockDateFromCardanoAbsoluteSlotNo for BlockDate {
     }
 }
 
+/// Db sync error
+#[derive(thiserror::Error, Debug)]
+pub enum Error {
+    /// I/O related error
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+    /// Serialization error
+    #[error(transparent)]
+    Serde(#[from] serde_json::Error),
+}
+
 #[cfg(test)]
 mod tests {
+    use std::time::Duration;
     use assert_fs::fixture::PathChild;
-    use crate::{JsonBasedDbSync, MainnetNetworkBuilder, CardanoWallet, MainnetWalletStateBuilder};
+    use crate::{MainnetNetworkBuilder, CardanoWallet, MainnetWalletStateBuilder, InMemoryDbSync};
     use assert_fs::TempDir;
+    use cardano_serialization_lib::utils::BigNum;
+    use crate::{Block0, InMemoryNode};
 
-    #[test]
-    fn restore_persist_bijection_direct() {
+    #[tokio::test]
+    async fn restore_persist_bijection_direct() {
         let testing_directory = TempDir::new().unwrap();
 
         let alice = CardanoWallet::new(1_000);
 
         let (db_sync, _node,  _reps) = MainnetNetworkBuilder::default()
             .with(alice.as_direct_voter())
-            .as_json(testing_directory.child("database.json").path());
+            .build();
 
-        let before = db_sync.tx_metadata().clone();
-        db_sync.persist().unwrap();
-        let db_sync = JsonBasedDbSync::restore(&db_sync.db_file).unwrap();
-        assert_eq!(before, db_sync.tx_metadata());
+        let before = db_sync.metadata().clone();
+        let file = testing_directory.child("database.json");
+        db_sync.persist(file.path()).unwrap();
+        let db_sync = InMemoryDbSync::restore(file.path()).unwrap();
+        assert_eq!(before, db_sync.metadata());
     }
+
+        #[tokio::test]
+        pub async fn dbsync_observer_test() {
+            let mut node = InMemoryNode::start(Block0::default());
+            let cardano_wallet = CardanoWallet::new(1_000);
+
+            let shared_db_sync = InMemoryDbSync::default().connect_to_node(&mut node);
+
+            node.push_transaction(cardano_wallet.generate_direct_voting_registration(0));
+
+            tokio::time::sleep(Duration::from_secs(node.settings().unwrap().slot_duration as u64 + 1)).await;
+
+            let db_sync = shared_db_sync.db_sync.read().unwrap();
+
+            assert_eq!(db_sync.blocks.len(),1);
+            assert_eq!(db_sync.blocks.iter().last().unwrap().header().header_body().slot_bignum(),BigNum::from(1u32));
+            assert_eq!(db_sync.transactions.get(&1).unwrap().len(),1);
+            assert_eq!(db_sync.metadata().get(&1).unwrap().len(),1);
+            assert_eq!(db_sync.stakes().get(&cardano_wallet.address().to_address().to_hex()).unwrap(),&BigNum::from(1_000u32));
+        }
 }

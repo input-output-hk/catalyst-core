@@ -1,18 +1,20 @@
+use assert_fs::fixture::PathChild;
 use crate::common::get_available_port;
 use crate::common::snapshot::SnapshotServiceStarter;
 use assert_fs::TempDir;
-use mainnet_lib::{JsonBasedBdSyncError, JsonBasedDbSync};
+use mainnet_lib::{DbSyncError, InMemoryDbSync};
 use snapshot_trigger_service::client::SnapshotResult;
 use snapshot_trigger_service::config::{
     ConfigurationBuilder, JobParameters, NetworkType, VotingToolsParams,
 };
 
 pub fn do_snapshot(
-    db_sync_instance: &JsonBasedDbSync,
+    db_sync_instance: &InMemoryDbSync,
     job_parameters: JobParameters,
     testing_directory: &TempDir,
 ) -> Result<SnapshotResult, Error> {
-    db_sync_instance.persist()?;
+    let mock_json_file  = testing_directory.child("database.json");
+    db_sync_instance.persist(mock_json_file.path())?;
 
     let params = VotingToolsParams {
         bin: Some("snapshot_tool".to_string()),
@@ -25,7 +27,7 @@ pub fn do_snapshot(
         additional_params: Some(vec![
             "dry-run".to_string(),
             "--mock-json-file".to_string(),
-            db_sync_instance.db_path().to_str().unwrap().to_string(),
+            mock_json_file.path().to_str().unwrap().to_string(),
         ]),
     };
 
@@ -44,7 +46,7 @@ pub fn do_snapshot(
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
-    DbSync(#[from] JsonBasedBdSyncError),
+    DbSync(#[from] DbSyncError),
     #[error(transparent)]
     SnapshotIntegration(#[from] crate::common::snapshot::Error),
     #[error(transparent)]

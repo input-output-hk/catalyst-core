@@ -133,6 +133,7 @@ impl<'a> RegistrationTransactionBuilder<'a> {
         metadata
     }
 
+    /// Builds transaction instance
     pub fn build(self) -> Transaction {
         let metadata = self.build_metadata();
         TransactionBuilder::build_transaction_with_metadata(&self.wallet.address().to_address(),self.wallet.stake, &metadata)
@@ -140,23 +141,31 @@ impl<'a> RegistrationTransactionBuilder<'a> {
 }
 
 
+/// Metadata conversion error
 #[derive(thiserror::Error, Debug)]
 pub enum JsonConversionError {
+    /// Serialization
     #[error(transparent)]
     Serde(#[from] serde_json::Error),
+    /// Missing registration label
     #[error("missing registration label in json")]
     MissingRegistrationLabel,
+    /// Missing registration signature label
     #[error("missing registration signature label in json")]
     MissingRegistrationSignatureLabel,
+    /// Internal error
     #[error(transparent)]
     Internal(#[from] JsError),
+    /// Incorrect schema
     #[error("incorrect input json: root is not a map")]
     IncorrectInputJson,
 }
 
 /// Extension for `GeneralTransactionMetadata` tailored for Catalyst purposes
 pub trait GeneralTransactionMetadataInfo {
+    /// Converts metadata to json
     fn to_json_string(&self, schema: MetadataJsonSchema) -> Result<String, JsonConversionError>;
+    /// Converts json to metadata
     fn from_json_string(
         json: &str,
         schema: MetadataJsonSchema,
@@ -164,12 +173,22 @@ pub trait GeneralTransactionMetadataInfo {
     where
         Self: Sized;
 
+    /// Converts combined jsons to registration and registration metadata
+    fn from_jsons(reg_metadata: serde_json::Value, signature_metadata: serde_json::Value, schema: MetadataJsonSchema) -> Result<Self, JsonConversionError>
+        where
+            Self: Sized;
+
     /// Get delegations part as bytes
     fn delegations(&self) -> Vec<u8>;
+    /// Stake public key
     fn stake_public_key(&self) -> PublicKey;
+    /// Reward address
     fn reward_address(&self) -> Address;
+    /// metadata signature
     fn signature(&self) -> Ed25519Signature;
+    /// registration metadata hash
     fn registration_blake_256_hash(&self) -> Blake2b256;
+    /// nonce
     fn nonce(&self)-> i32;
 }
 

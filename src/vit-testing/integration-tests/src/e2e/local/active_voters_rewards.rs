@@ -35,7 +35,7 @@ pub fn voters_with_at_least_one_vote() {
         .with(alice_wallet.as_direct_voter())
         .with(bob_wallet.as_direct_voter())
         .with(clarice_wallet.as_direct_voter())
-        .as_json(&testing_directory);
+        .build();
 
     let snapshot = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
         .unwrap()

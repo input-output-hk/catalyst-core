@@ -35,7 +35,7 @@ pub fn cip_36_support() {
         .with(bob.as_representative())
         .with(clarice.as_representative())
         .with(dave.as_delegator(vec![(&bob, 1u8), (&clarice, 1u8)]))
-        .as_json(&testing_directory);
+        .build();
 
     let snapshot_result = mock::do_snapshot(&db_sync, job_param, &testing_directory).unwrap();
 

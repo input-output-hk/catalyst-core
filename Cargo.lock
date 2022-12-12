@@ -538,6 +538,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "blockfrost"
+version = "0.2.1"
+dependencies = [
+ "futures",
+ "paste 1.0.10",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "toml",
+]
+
+[[package]]
 name = "borsh"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -998,7 +1010,7 @@ dependencies = [
 name = "chain-path-derivation"
 version = "0.8.1"
 dependencies = [
- "paste",
+ "paste 0.1.18",
  "quickcheck",
  "quickcheck_macros",
  "thiserror",
@@ -4111,19 +4123,27 @@ version = "0.1.0"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",
+ "blockfrost",
  "cardano-serialization-lib",
  "chain-addr",
  "chain-crypto",
+ "chain-impl-mockchain",
+ "futures",
+ "futures-util",
  "hex",
  "jormungandr-lib",
+ "jortestkit",
  "lazy_static",
+ "pharos",
  "rand 0.8.5",
+ "rayon",
  "serde",
  "serde_json",
  "snapshot-lib",
  "tempdir",
  "thiserror",
  "thor",
+ "tokio",
 ]
 
 [[package]]
@@ -4133,11 +4153,13 @@ dependencies = [
  "assert_fs",
  "bech32 0.8.1",
  "cardano-serialization-lib",
+ "chain-impl-mockchain",
  "clap 4.0.29",
  "color-eyre",
  "futures",
  "futures-util",
  "hex",
+ "http-zipkin",
  "itertools",
  "job_scheduler_ng",
  "jormungandr-automation",
@@ -4145,6 +4167,7 @@ dependencies = [
  "jortestkit",
  "mainnet-lib",
  "prettytable-rs",
+ "scheduler-service-lib",
  "serde",
  "serde_json",
  "signals-handler",
@@ -4160,6 +4183,7 @@ dependencies = [
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
  "voting_tools_rs",
+ "warp",
 ]
 
 [[package]]
@@ -5018,6 +5042,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "paste"
+version = "1.0.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf1c2c742266c2f1041c914ba65355a83ae8747b05f208319784083583494b4b"
+
+[[package]]
 name = "paste-impl"
 version = "0.1.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5079,6 +5109,16 @@ checksum = "e6d5014253a1331579ce62aa67443b4a658c5e7dd03d4bc6d302b94474888143"
 dependencies = [
  "fixedbitset",
  "indexmap",
+]
+
+[[package]]
+name = "pharos"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e9567389417feee6ce15dd6527a8a1ecac205ef62c2932bcf3d9f6fc5b78b414"
+dependencies = [
+ "futures",
+ "rustc_version",
 ]
 
 [[package]]
@@ -5926,6 +5966,7 @@ dependencies = [
  "js-sys",
  "log",
  "mime",
+ "mime_guess",
  "native-tls",
  "once_cell",
  "percent-encoding",

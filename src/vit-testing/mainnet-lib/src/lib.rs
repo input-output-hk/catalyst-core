@@ -5,7 +5,7 @@
 //! Wallet - api implementation of cardano wallet which is capable of sending and signing registration
 //! transactions
 
-//#![forbid(missing_docs)]
+#![forbid(missing_docs)]
 #![warn(clippy::pedantic)]
 #![allow(
     clippy::module_name_repetitions,
@@ -22,7 +22,7 @@ mod cardano_node;
 
 pub use exports::*;
 mod exports {
-    pub use crate::db_sync::{BlockDateFromCardanoAbsoluteSlotNo, InMemoryDbSync, JsonBasedBdSyncError, JsonBasedDbSync};
+    pub use crate::db_sync::{BlockDateFromCardanoAbsoluteSlotNo, InMemoryDbSync, SharedInMemoryDbSync, Error as DbSyncError};
     pub use crate::network::{
         MainnetNetworkBuilder, MainnetWalletState, MainnetWalletStateBuilder,
     };

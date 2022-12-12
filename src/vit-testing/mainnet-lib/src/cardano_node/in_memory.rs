@@ -1,8 +1,9 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, PoisonError, RwLock, RwLockReadGuard};
+use std::time::Duration;
 use cardano_serialization_lib::{Block, Transaction};
 use tokio::task::JoinHandle;
 use jortestkit::process::sleep;
-use crate::Ledger;
+use crate::{Ledger, Settings};
 use pharos::{Observable, Observe, ObserveConfig, PharErr, SharedPharos};
 use futures_util::FutureExt;
 use crate::cardano_node::block::Block0;
@@ -10,7 +11,7 @@ use crate::cardano_node::block::Block0;
 pub struct InMemoryNode {
     block_notifier: SharedPharos<Block>,
     ledger: Arc<RwLock<Ledger>>,
-    handle: JoinHandle<()>
+    leadership_process: JoinHandle<()>
 }
 
 impl Observable<Block> for InMemoryNode
@@ -24,6 +25,10 @@ impl Observable<Block> for InMemoryNode
 }
 
 impl InMemoryNode {
+
+    pub fn settings(&self) -> Result<Settings,PoisonError<RwLockReadGuard<'_, Ledger>>> {
+        Ok(self.ledger.read()?.settings())
+    }
 
     pub fn push_transaction(&mut self, transaction: Transaction) {
         self.ledger.write().unwrap().push_transaction(transaction);
@@ -48,10 +53,9 @@ impl InMemoryNode {
 
         let ledger = shared_ledger.clone();
         let block_notifier = shared_block_notifier.clone();
-
         let handle = tokio::spawn( async move {
             loop {
-                sleep(slot_duration.into());
+                tokio::time::sleep(Duration::from_secs(slot_duration as u64)).await;
                 let block = ledger.write().unwrap().mint_block();
                 block_notifier.notify(block).await.unwrap();
             }
@@ -60,13 +64,37 @@ impl InMemoryNode {
         Self {
             ledger: shared_ledger,
             block_notifier: shared_block_notifier,
-            handle
+            leadership_process: handle,
         }
     }
 }
 
 impl Drop for InMemoryNode {
     fn drop(&mut self) {
-        self.handle.abort();
+        self.leadership_process.abort();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use cardano_serialization_lib::utils::BigNum;
+    use futures_util::StreamExt;
+    use pharos::{Channel, Observable};
+    use crate::{Block0, CardanoWallet, InMemoryNode};
+
+    #[tokio::test]
+    pub async fn observer_test() {
+        let mut node = InMemoryNode::start(Block0::default());
+        let cardano_wallet = CardanoWallet::new(1_000);
+        let mut observer = node.observe( Channel::Bounded( 1 ).into() ).await.unwrap();
+
+        node.push_transaction(cardano_wallet.generate_direct_voting_registration(0));
+
+
+        let block = observer.next().await.unwrap();
+
+        assert_eq!(block.header().header_body().block_number(),1);
+        assert_eq!(block.header().header_body().slot_bignum(),BigNum::from(1u32));
+        assert_eq!(block.transaction_bodies().len(),1);
     }
 }

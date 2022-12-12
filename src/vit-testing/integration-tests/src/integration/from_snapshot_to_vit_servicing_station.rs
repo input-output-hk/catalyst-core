@@ -25,7 +25,7 @@ pub fn put_raw_snapshot() {
         .with(alice_wallet.as_direct_voter())
         .with(bob_wallet.as_direct_voter())
         .with(clarice_wallet.as_direct_voter())
-        .as_json(&testing_directory);
+        .build();
 
     let job_params = JobParameters::fund("fund9");
     let snapshot_result =

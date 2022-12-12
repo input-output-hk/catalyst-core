@@ -3429,7 +3429,6 @@ dependencies = [
  "netstat2",
  "rand 0.8.5",
  "rand_chacha 0.2.2",
- "registration-service",
  "serde",
  "serde_json",
  "snapshot-lib",
@@ -4253,6 +4252,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "uuid 1.2.2",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
  "voting_tools_rs",
@@ -5990,68 +5990,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "456c603be3e8d448b072f410900c09faf164fbce2d480456f50eea6e25f9c848"
 
 [[package]]
-name = "registration-service"
-version = "0.1.0"
-dependencies = [
- "assert_fs",
- "catalyst-toolbox",
- "chain-addr",
- "chain-crypto",
- "chrono",
- "futures",
- "image",
- "jormungandr-automation",
- "jormungandr-integration-tests",
- "jormungandr-lib",
- "jortestkit",
- "libmath",
- "mainnet-tools",
- "regex",
- "reqwest",
- "scheduler-service-lib",
- "serde",
- "serde_json",
- "serde_yaml",
- "signals-handler",
- "structopt",
- "thiserror",
- "tokio",
- "uuid 0.8.2",
- "walkdir",
- "warp",
-]
-
-[[package]]
-name = "registration-verify-service"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "catalyst-toolbox",
- "chain-addr",
- "chain-crypto",
- "chrono",
- "futures",
- "hex",
- "iapyx",
- "jormungandr-integration-tests",
- "jormungandr-lib",
- "jortestkit",
- "reqwest",
- "scheduler-service-lib",
- "serde",
- "serde_json",
- "serde_yaml",
- "signals-handler",
- "snapshot-trigger-service",
- "structopt",
- "thiserror",
- "tokio",
- "uuid 0.8.2",
- "walkdir",
- "warp",
-]
-
-[[package]]
 name = "remove_dir_all"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6090,7 +6028,6 @@ dependencies = [
  "js-sys",
  "log",
  "mime",
- "mime_guess",
  "native-tls",
  "once_cell",
  "percent-encoding",

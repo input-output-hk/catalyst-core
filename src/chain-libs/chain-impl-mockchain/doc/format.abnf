@@ -44,6 +44,12 @@ FRAGMENT-SPEC    = %x00 INITIAL
                  / %x07 POOL-UPDATE
                  / %x08 UPDATE-PROPOSAL
                  / %x09 UPDATE-VOTE
+                 / %x0a VOTE-PLAN
+                 / %x0b VOTE-CAST
+                 / %x0c VOTE-TALLY
+                 / %x0d MINT-TOKEN
+                 / %x0e EVM
+                 / %x0f EVM-MAPPING
 
 ; ####################
 ; FRAGMENT only present in genesis block
@@ -139,6 +145,52 @@ CHANGES           = SIZE-ELEMENT-16BIT ; number of changes
 
 PROPOSAL-ID       = FRAGMENT-ID
 
+
+; ####################
+; FRAGMENT Vote plan, vote cast, vote tally
+; ####################
+
+VOTE-PLAN         = PLAN-CERT IOW ED25519-SIGNATURE
+VOTE-CAST         = CAST-CERT IOW
+VOTE-TALLY        = TALLY-CERT IOW
+
+PLAN-CERT         = VOTE-START VOTE-END COMMITTE-END PROPOSALS PAYLOAD-TYPE
+
+VOTE-START        = BLOCK-DATE
+VOTE-END          = BLOCK-DATE
+COMMITTE-END      = BLOCK-DATE
+PROPOSALS         = SIZE-ELEMENT-8BIT *PROPOSAL-ELEMENT 
+PROPOSAL-ELEMENT  = TODO
+
+CAST-CERT         = VOTE-PLAN-ID PROPOSAL-INDEX CAST-PAYLOAD
+PROPOSAL-INDEX    = U8
+CAST-PAYLOAD      = %x01 CHOICE; Public payload
+                   / %x02 ENCRYPTED-VOTE PROOF-VOTE ; Private payload
+CHOICE            = U8
+ENCRYPTED-VOTE    = SIZE-ELEMENT-8BIT *CYPHERTEXT
+CYPHERTEXT        = E1 E2 
+PROOF-VOTE        = SIZE-ELEMENT-8BIT *ANNOUNCEMENT *CYPHERTEXT *R-RESPONSE SCALAR ; size of the *ANNOUNCEMENT, *CYPHERTEXT, *R-RESPONSE are equal to SIZE-ELEMENT-8BIT value
+ANNOUNCEMENT      = I A B
+R-RESPONSE        = 3 * SCALAR
+I                 = GROUP-ELEMENT
+A                 = GROUP-ELEMENT
+B                 = GROUP-ELEMENT
+E1                = GROUP-ELEMENT
+E2                = GROUP-ELEMENT
+
+TALLY-CERT        = VOTE-PLAN-ID TALLY-PAYLOAD
+TALLY-PAYLOAD     = %x01 ; Public payload
+                   / %x02 PRIVATE-TALLY ; Private payload       
+PRIVATE-TALLY     = SIZE-ELEMENT-8BIT *TALLY-ELEMENT
+TALLY-ELEMENT     = MEMBERS-SIZE OPTIONS-SIZE *MEMBER-ELEMENT *OPTION-ELEMENT
+MEMBERS-SIZE      = SIZE-ELEMENT-8BIT
+OPTIONS-SIZE      = SIZE-ELEMENT-8BIT
+MEMBER-ELEMENT    = *SHARE-ELEMENT ; size is equal to the OPTIONS-SIZE value
+SHARE-ELEMENT     = SIZE-ELEMENT-64BIT SIZE-ELEMENT-65BIT
+OPTION-ELEMENT    = U64
+
+VOTE-PLAN-ID = 32OCTET
+
 ; ####################
 ; TRANSACTION CONSTRUCTION
 ;
@@ -151,7 +203,7 @@ IOW               = BLOCK-DATE        ; end validity of this IOW
                     *INPUT            ; as many as indicated in the number of inputs
                     *OUTPUT           ; sa many as indicated in the number of outputs
                     *WITNESS          ; as many as indicated in the number of inputs
-INPUT             = INPUT-UTXO / INPUT_ACCOUNT
+INPUT             = INPUT-UTXO / INPUT-ACCOUNT
 INPUT-UTXO        = IDX VALUE FRAGMENT-ID
 INPUT-ACCOUNT     = %xff VALUE UNTAG-ACCOUNT-ID
 IDX               = %x00-fe
@@ -218,3 +270,9 @@ U8                = OCTET   ; unsigned integer 8 bit
 U16               = 2OCTET ; unsigned integer 16 bit (BE)
 U32               = 4OCTET ; unsigned integer 32 bit (BE)
 U64               = 8OCTET ; unsigned integer 64 bit (BE)
+SIZE-BYTES-32BYTE = 32OCTET ; unsigned integer 256 bit (32 bytes) (BE)
+SIZE-BYTES-64BYTE = 64OCTET ; unsigned integer 512 bit (64 bytes) (BE)
+SIZE-BYTES-65BYTE = 65OCTET ; unsigned integer 520 bit (65 bytes) (BE)
+SCALAR            = SIZE-BYTES-32BYTE
+GROUP-ELEMENT     = SIZE-BYTES-32BYTE ; ristretto255 backend (build with the feature=ristretto255, it is enabled by default)
+                  / SIZE-BYTES-65BYTE ; p256k1 backend (build with the feature=p256k1)

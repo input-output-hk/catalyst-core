@@ -49,6 +49,14 @@ pub enum EitherAccount {
 }
 
 impl EitherAccount {
+    pub fn new_from_seed(seed: Seed) -> Self {
+        EitherAccount::Seed(Account::from_seed(seed))
+    }
+
+    pub fn new_from_key(key: SecretKey<Ed25519Extended>) -> Self {
+        EitherAccount::Extended(Account::from_secret_key(key))
+    }
+
     pub fn account_id(&self) -> AccountId {
         match self {
             EitherAccount::Extended(account) => account.account_id(),
@@ -73,16 +81,16 @@ impl EitherAccount {
 }
 
 impl Wallet {
-    pub fn new_from_seed(seed: Seed) -> Wallet {
+    pub fn new_from_seed(seed: Seed) -> Self {
         Wallet {
-            account: EitherAccount::Seed(Account::from_seed(seed)),
+            account: EitherAccount::new_from_seed(seed),
             state: States::new(FragmentId::zero_hash(), Default::default()),
         }
     }
 
-    pub fn new_from_key(key: SecretKey<Ed25519Extended>) -> Wallet {
+    pub fn new_from_key(key: SecretKey<Ed25519Extended>) -> Self {
         Wallet {
-            account: EitherAccount::Extended(Account::from_secret_key(key)),
+            account: EitherAccount::new_from_key(key),
             state: States::new(FragmentId::zero_hash(), Default::default()),
         }
     }

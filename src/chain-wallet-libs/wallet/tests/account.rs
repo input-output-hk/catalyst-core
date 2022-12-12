@@ -70,7 +70,7 @@ fn cast_vote() {
         let cast = VoteCast::new(vote_plan_id.clone(), i, payload);
 
         let mut builder = wallet::TransactionBuilder::new(
-            &settings,
+            settings.clone(),
             cast.clone(),
             wallet::time::max_expiration_date(&settings, current_time).unwrap(),
         );

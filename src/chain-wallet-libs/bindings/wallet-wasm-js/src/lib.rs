@@ -5,6 +5,9 @@ pub use certificates::{
     vote_cast::{Payload, VoteCast},
     vote_plan::VotePlanId,
 };
+use chain_impl_mockchain::{
+    certificate::VoteCast as VoteCastLib, fragment::Fragment as FragmentLib,
+};
 pub use fragment::{Fragment, FragmentId};
 pub use utils::set_panic_hook;
 use wasm_bindgen::prelude::*;
@@ -19,8 +22,8 @@ mod utils;
 #[wasm_bindgen]
 pub struct Wallet(wallet_core::Wallet);
 
-// #[wasm_bindgen]
-// pub struct TxBuilder(wallet_core::TxBuilder<'static, VoteCast>);
+#[wasm_bindgen]
+pub struct VoteCastTxBuilder(wallet_core::TxBuilder<VoteCastLib>);
 
 /// Encapsulates blockchain settings needed for some operations.
 #[wasm_bindgen]
@@ -63,6 +66,47 @@ impl SpendingCounter {
 }
 
 impl_collection!(SpendingCounters, SpendingCounter);
+
+#[wasm_bindgen]
+impl VoteCastTxBuilder {
+    /// Initializing of the VoteCastTxBuilder
+    ///
+    pub fn new(
+        settings: Settings,
+        valid_until: BlockDate,
+        vote_cast: VoteCast,
+    ) -> VoteCastTxBuilder {
+        Self(wallet_core::TxBuilder::new(
+            settings.0,
+            valid_until.0,
+            vote_cast.0,
+        ))
+    }
+
+    /// First step of the VoteCast transaction building process
+    ///
+    /// The `account` parameter gives the Ed25519Extended private key
+    /// of the account.
+    pub fn build_tx(
+        mut self,
+        account: &[u8],
+        spending_counter: SpendingCounter,
+    ) -> Result<VoteCastTxBuilder, JsValue> {
+        self.0 = self
+            .0
+            .build_tx(account, spending_counter.0)
+            .map_err(|e| JsValue::from(e.to_string()))?;
+        Ok(self)
+    }
+
+    /// Finish step of building VoteCast fragment
+    pub fn finalize_tx(self) -> Result<Fragment, JsValue> {
+        self.0
+            .finalize_tx((), |tx| FragmentLib::VoteCast(tx))
+            .map_err(|e| JsValue::from(e.to_string()))
+            .map(Fragment)
+    }
+}
 
 #[wasm_bindgen]
 impl Wallet {
@@ -113,14 +157,14 @@ impl Wallet {
 
     pub fn sign_transaction(
         &mut self,
-        settings: &Settings,
+        settings: Settings,
         valid_until: BlockDate,
         lane: u8,
         certificate: Certificate,
     ) -> Result<Fragment, JsValue> {
         let fragment = self
             .0
-            .sign_transaction(&settings.0, valid_until.0, lane, certificate.0)
+            .sign_transaction(settings.0, valid_until.0, lane, certificate.0)
             .map_err(|e| JsValue::from(e.to_string()))?;
         Ok(Fragment(fragment))
     }

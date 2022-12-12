@@ -30,7 +30,7 @@ CREATE VIEW funds AS SELECT
     this_fund.extra->'url'->'results' AS results_url,
     this_fund.extra->'url'->'survey' AS survey_url
 FROM election this_fund
-INNER JOIN election next_fund ON next_fund.row_id == this_fund.row_id + 1;
+INNER JOIN election next_fund ON next_fund.row_id = this_fund.row_id + 1;
 
 COMMENT ON VIEW funds IS
     'This view maps the original VIT-SS funds table to the new election table.

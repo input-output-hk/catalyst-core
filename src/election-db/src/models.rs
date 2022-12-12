@@ -62,6 +62,19 @@ pub struct Config {
 }
 
 #[derive(Queryable, Debug, Identifiable)]
+#[diesel(primary_key(row_id))]
+#[diesel(table_name = contributions)]
+pub struct Contribution {
+    pub row_id: i32,
+    pub stake_public_key: String,
+    pub voting_key: String,
+    pub voting_group: String,
+    pub snapshot_tag: String,
+    pub reward_address: String,
+    pub value: i64,
+}
+
+#[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(name))]
 #[diesel(table_name = currency)]
 pub struct Currency {
@@ -137,6 +150,14 @@ pub struct ProposalVoteplan {
 }
 
 #[derive(Queryable, Debug, Identifiable)]
+#[diesel(primary_key(tag))]
+#[diesel(table_name = snapshots)]
+pub struct Snapshot {
+    pub tag: String,
+    pub last_updated: NaiveDateTime,
+}
+
+#[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(row_id))]
 #[diesel(table_name = stake_address_balance)]
 pub struct StakeAddressBalance {
@@ -198,6 +219,29 @@ pub struct VoterRegistration {
 pub struct VoterRegistrationCategory {
     pub name: String,
     pub description: Option<String>,
+}
+
+#[derive(Queryable, Debug, Identifiable)]
+#[diesel(primary_key(voting_key, voting_group, snapshot_tag))]
+#[diesel(table_name = voters)]
+pub struct Voter {
+    pub voting_key: String,
+    pub voting_power: i64,
+    pub voting_group: String,
+    pub snapshot_tag: String,
+}
+
+#[derive(Queryable, Debug, Identifiable)]
+#[diesel(primary_key(fragment_id))]
+#[diesel(table_name = votes)]
+pub struct Vote {
+    pub fragment_id: String,
+    pub caster: String,
+    pub proposal: i32,
+    pub voteplan_id: String,
+    pub time: f32,
+    pub choice: Option<i16>,
+    pub raw_fragment: String,
 }
 
 #[derive(Queryable, Debug, Identifiable)]

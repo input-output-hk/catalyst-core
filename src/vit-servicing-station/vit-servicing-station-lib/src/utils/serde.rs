@@ -179,7 +179,7 @@ where
         {
             match value {
                 "NaN" => Err(E::custom(
-                    "Invalid value, should be 1.0, or 0.56".to_string(),
+                    "Invalid value format, should be a number e.g. 1.0, 0.56".to_string(),
                 )),
                 _ => Ok(Fraction::from_str(value).map_err(|e| E::custom(e.to_string()))?),
             }

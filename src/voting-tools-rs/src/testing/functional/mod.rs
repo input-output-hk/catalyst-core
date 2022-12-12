@@ -1,10 +1,9 @@
 use crate::test_api::{MockDbProvider, VerifiableSnapshotOutput};
 use crate::Delegations;
-use mainnet_lib::{MainnetNetworkBuilder, CardanoWallet, MainnetWalletStateBuilder};
+use mainnet_lib::{CardanoWallet, MainnetNetworkBuilder, MainnetWalletStateBuilder};
 
 #[test]
 fn cip15_correctly_signed_before_snapshot() {
-
     let stake = 10_000;
     let alice_wallet = CardanoWallet::new(stake);
 
@@ -29,13 +28,12 @@ fn cip15_correctly_signed_before_snapshot() {
 
 #[test]
 fn cip36_correctly_signed_before_snapshot() {
-
     let stake = 10_000;
     let alice_wallet = CardanoWallet::new(stake);
     let bob_wallet = CardanoWallet::new(stake);
     let clarice_wallet = CardanoWallet::new(stake);
 
-    let (db_sync, _node , _) = MainnetNetworkBuilder::default()
+    let (db_sync, _node, _) = MainnetNetworkBuilder::default()
         .with(alice_wallet.as_representative())
         .with(bob_wallet.as_representative())
         .with(clarice_wallet.as_delegator(vec![(&alice_wallet, 1), (&bob_wallet, 1)]))

@@ -1,19 +1,19 @@
+pub use crate::cardano_node::settings::Settings;
+use crate::cardano_node::{Block0, BlockBuilder};
 use crate::db_sync::{InMemoryDbSync, SharedInMemoryDbSync};
 use crate::wallet::CardanoWallet;
+use crate::InMemoryNode;
 use cardano_serialization_lib::address::Address;
+use cardano_serialization_lib::Transaction;
 use jormungandr_lib::crypto::account::Identifier;
 use std::collections::HashSet;
-use cardano_serialization_lib::Transaction;
-pub use crate::cardano_node::settings::Settings;
-use crate::InMemoryNode;
-use crate::cardano_node::{Block0, BlockBuilder};
 
 /// Cardano Network state builder, responsible to create a given state of cardano network which will
 /// be an input for snapshot
 #[derive(Default)]
 pub struct MainnetNetworkBuilder {
     states: Vec<MainnetWalletState>,
-    settings: Settings
+    settings: Settings,
 }
 
 impl MainnetNetworkBuilder {
@@ -25,12 +25,21 @@ impl MainnetNetworkBuilder {
     }
 
     /// Builds dbsync instance and set or representatives identifiers
+    ///
+    /// # Panics
+    ///
+    /// On internal logic issue
+    #[must_use]
     pub fn in_memory_internal(self) -> (SharedInMemoryDbSync, InMemoryNode, HashSet<Identifier>) {
-        let txs = self.states.iter().filter_map(|x| x.registration_tx.clone() ).collect();
+        let txs: Vec<_> = self
+            .states
+            .iter()
+            .filter_map(|x| x.registration_tx.clone())
+            .collect();
 
-        let block0 = Block0{
-            block: BlockBuilder::next_block(None,txs),
-            settings: self.settings
+        let block0 = Block0 {
+            block: BlockBuilder::next_block(None, &txs),
+            settings: self.settings,
         };
 
         let mut node = InMemoryNode::start(block0);
@@ -48,18 +57,28 @@ impl MainnetNetworkBuilder {
     }
 
     /// Builds dbsync instance and set or representatives identifiers
+    #[must_use]
     pub fn shared(self) -> (SharedInMemoryDbSync, InMemoryNode, HashSet<Identifier>) {
         let (db_sync, mut node, reps) = self.build();
-        (db_sync.connect_to_node(&mut node),node,reps)
+        (db_sync.connect_to_node(&mut node), node, reps)
     }
 
     /// Builds dbsync instance and set or representatives identifiers
+    ///
+    /// # Panics
+    ///
+    /// On internal logic issue
+    #[must_use]
     pub fn build(self) -> (InMemoryDbSync, InMemoryNode, HashSet<Identifier>) {
-        let txs = self.states.iter().filter_map(|x| x.registration_tx.clone() ).collect();
+        let txs: Vec<_> = self
+            .states
+            .iter()
+            .filter_map(|x| x.registration_tx.clone())
+            .collect();
 
-        let block0 = Block0{
-            block: BlockBuilder::next_block(None,txs),
-            settings: self.settings
+        let block0 = Block0 {
+            block: BlockBuilder::next_block(None, &txs),
+            settings: self.settings,
         };
 
         let node = InMemoryNode::start(block0);

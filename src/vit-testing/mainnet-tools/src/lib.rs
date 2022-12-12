@@ -16,4 +16,3 @@ pub mod snapshot_wormhole;
 /// Mock for voter registration. It can produce mocked catalyst registration.
 /// TODO: replace with mainnet wallet mock as it can produce real not mock catalyst registration
 pub mod voter_registration;
-

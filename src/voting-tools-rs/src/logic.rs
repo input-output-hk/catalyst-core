@@ -205,8 +205,10 @@ mod tests {
 
     use crate::test_api::MockDbProvider;
     use crate::DataProvider;
-    use mainnet_lib::{BlockBuilder, CardanoWallet, GeneralTransactionMetadataInfo, InMemoryDbSync, TransactionBuilder};
-
+    use mainnet_lib::{
+        BlockBuilder, CardanoWallet, GeneralTransactionMetadataInfo, InMemoryDbSync,
+        TransactionBuilder,
+    };
 
     #[test]
     pub fn nami_wallet_tx() {
@@ -223,10 +225,14 @@ mod tests {
         )
         .unwrap();
 
-        let transaction = TransactionBuilder::build_transaction_with_metadata(&cardano_wallet.address().to_address(), cardano_wallet.stake(), &root_metadata);
+        let transaction = TransactionBuilder::build_transaction_with_metadata(
+            &cardano_wallet.address().to_address(),
+            cardano_wallet.stake(),
+            &root_metadata,
+        );
 
         let mut db_sync = InMemoryDbSync::default();
-        db_sync.on_block_propagation(&BlockBuilder::next_block(None,vec![transaction]));
+        db_sync.on_block_propagation(&BlockBuilder::next_block(None, &vec![transaction]));
 
         let regs = MockDbProvider::from(db_sync)
             .vote_registrations(None, None)

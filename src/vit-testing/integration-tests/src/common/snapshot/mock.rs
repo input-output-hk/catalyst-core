@@ -1,6 +1,6 @@
-use assert_fs::fixture::PathChild;
 use crate::common::get_available_port;
 use crate::common::snapshot::SnapshotServiceStarter;
+use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
 use mainnet_lib::{DbSyncError, InMemoryDbSync};
 use snapshot_trigger_service::client::SnapshotResult;
@@ -13,7 +13,7 @@ pub fn do_snapshot(
     job_parameters: JobParameters,
     testing_directory: &TempDir,
 ) -> Result<SnapshotResult, Error> {
-    let mock_json_file  = testing_directory.child("database.json");
+    let mock_json_file = testing_directory.child("database.json");
     db_sync_instance.persist(mock_json_file.path())?;
 
     let params = VotingToolsParams {

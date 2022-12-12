@@ -2,8 +2,8 @@ use std::{fs::File, io::BufWriter};
 
 use clap::Parser;
 use color_eyre::Result;
-use tracing::info;
 use mainnet_lib::InMemoryDbSync;
+use tracing::info;
 use voting_tools_rs::test_api::MockDbProvider;
 use voting_tools_rs::{voting_power, Args, DataProvider, Db, DbConfig, DryRunCommand};
 

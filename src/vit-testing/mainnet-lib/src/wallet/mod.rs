@@ -1,12 +1,14 @@
 mod registration;
 
-
-
 pub use crate::wallet::registration::{
-    RegistrationTransactionBuilder, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4, GeneralTransactionMetadataInfo, JsonConversionError,
-    REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL, REGISTRATION_METADATA_IDX, REGISTRATION_SIGNATURE_METADATA_IDX
+    GeneralTransactionMetadataInfo, JsonConversionError, RegistrationTransactionBuilder,
+    METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4, REGISTRATION_METADATA_IDX,
+    REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
+    REGISTRATION_SIGNATURE_METADATA_IDX,
 };
-use cardano_serialization_lib::address::{BaseAddress, NetworkInfo, RewardAddress, StakeCredential};
+use cardano_serialization_lib::address::{
+    BaseAddress, NetworkInfo, RewardAddress, StakeCredential,
+};
 use cardano_serialization_lib::crypto::{PrivateKey, PublicKey};
 use cardano_serialization_lib::Transaction;
 use chain_addr::Discrimination;
@@ -59,15 +61,16 @@ impl CardanoWallet {
     }
 
     /// Stake address based on stake public key
+    #[must_use]
     pub fn stake_credential(&self) -> StakeCredential {
         StakeCredential::from_keyhash(&self.stake_key.to_public().hash())
     }
 
     /// Payment address based on stake public key
+    #[must_use]
     pub fn payment_credential(&self) -> StakeCredential {
         StakeCredential::from_keyhash(&self.payment_key.to_public().hash())
     }
-
 
     /// Cardano stake public key
     #[must_use]
@@ -90,7 +93,11 @@ impl CardanoWallet {
     /// Mainnet address
     #[must_use]
     pub fn address(&self) -> BaseAddress {
-        BaseAddress::new(self.network.network_id(),&self.payment_credential(), &self.stake_credential())
+        BaseAddress::new(
+            self.network.network_id(),
+            &self.payment_credential(),
+            &self.stake_credential(),
+        )
     }
     /// Catalyst address
     #[must_use]

@@ -6,10 +6,13 @@ use crate::model::{
 use bigdecimal::{BigDecimal, FromPrimitive};
 use cardano_serialization_lib::address::Address;
 use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey};
-use mainnet_lib::{InMemoryDbSync, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4, REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL};
+use cardano_serialization_lib::utils::BigNum;
+use mainnet_lib::{
+    InMemoryDbSync, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
+    REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
+};
 use std::collections::HashMap;
 use std::str::FromStr;
-use cardano_serialization_lib::utils::BigNum;
 
 /// Mock db provider based on [`DbSyncInstance`] struct from [`mainnet_lib`] project.
 /// In essence struct keep data in memory and provides query for voting tools logic
@@ -135,11 +138,13 @@ impl DataProvider for MockDbProvider {
         Ok(stake_addrs
             .iter()
             .map(|addr| {
-                let big_num = self.db_sync_instance.stakes().get(addr).unwrap_or(&BigNum::zero()).to_string();
-                (
-                    addr.as_str(),
-                    BigDecimal::from_str(&big_num).unwrap(),
-                )
+                let big_num = self
+                    .db_sync_instance
+                    .stakes()
+                    .get(addr)
+                    .unwrap_or(&BigNum::zero())
+                    .to_string();
+                (addr.as_str(), BigDecimal::from_str(&big_num).unwrap())
             })
             .collect())
     }

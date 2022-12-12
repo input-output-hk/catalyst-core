@@ -19,6 +19,9 @@ mod utils;
 #[wasm_bindgen]
 pub struct Wallet(wallet_core::Wallet);
 
+// #[wasm_bindgen]
+// pub struct TxBuilder(wallet_core::TxBuilder<'static, VoteCast>);
+
 /// Encapsulates blockchain settings needed for some operations.
 #[wasm_bindgen]
 pub struct Settings(wallet_core::Settings);

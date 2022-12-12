@@ -4,12 +4,12 @@ use self::utils::State;
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::{
     account::SpendingCounter,
+    accounting::account::SpendingCounterIncreasing,
     certificate::VoteCast,
     fragment::Fragment,
     value::Value,
     vote::{Choice, Payload},
 };
-use wallet::MAX_LANES;
 
 const BLOCK0: &[u8] = include_bytes!("../../test-vectors/block0");
 const ACCOUNT_KEY: &str = include_str!("../../test-vectors/free_keys/key1.prv");
@@ -30,7 +30,7 @@ fn update_state_overrides_old() {
     account
         .set_state(
             Value(110),
-            (0..MAX_LANES)
+            (0..SpendingCounterIncreasing::LANES)
                 .map(|lane| SpendingCounter::new(lane, 1))
                 .collect(),
         )

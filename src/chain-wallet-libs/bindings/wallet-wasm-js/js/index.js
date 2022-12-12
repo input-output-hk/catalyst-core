@@ -61,24 +61,26 @@ class Wallet {
     this.wallet.set_state(init_value, spending_counters);
   }
 
-  signVotes(votes, settings, valid_until, lane) {
-    let fragments = [];
-    for (let i = 0; i < votes.length; i++) {
-      let certificate = wasm.Certificate.vote_cast(votes[i].vote_cast);
-      let fragment = this.wallet.sign_transaction(
-        settings.settings,
-        valid_until,
-        lane,
-        certificate
-      );
-      this.wallet.confirm_transaction(fragment.id());
-      fragments.push(fragment);
-    }
-    return fragments;
-  }
-
   total_value() {
     return this.wallet.total_value();
   }
 }
 module.exports.Wallet = Wallet;
+
+function signVotes(wallet, votes, settings, valid_until, lane) {
+  let fragments = [];
+  for (let i = 0; i < votes.length; i++) {
+    let certificate = wasm.Certificate.vote_cast(votes[i].vote_cast);
+    let fragment = wallet.wallet.sign_transaction(
+      settings.settings,
+      valid_until,
+      lane,
+      certificate
+    );
+    wallet.wallet.confirm_transaction(fragment.id());
+    fragments.push(fragment);
+  }
+  return fragments;
+}
+module.exports.signVotes = signVotes;
+

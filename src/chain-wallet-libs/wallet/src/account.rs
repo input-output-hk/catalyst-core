@@ -13,8 +13,6 @@ pub use hdkeygen::account::AccountId;
 use hdkeygen::account::{Account, Seed};
 use thiserror::Error;
 
-pub const MAX_LANES: usize = 8;
-
 pub struct Wallet {
     account: EitherAccount,
     state: States<FragmentId, State>,
@@ -45,9 +43,33 @@ pub enum Error {
     NonMonotonicSpendingCounter,
 }
 
-enum EitherAccount {
+pub enum EitherAccount {
     Seed(Account<Ed25519>),
     Extended(Account<Ed25519Extended>),
+}
+
+impl EitherAccount {
+    pub fn account_id(&self) -> AccountId {
+        match self {
+            EitherAccount::Extended(account) => account.account_id(),
+            EitherAccount::Seed(account) => account.account_id(),
+        }
+    }
+
+    pub fn witness_builder(&self, spending_counter: SpendingCounter) -> AccountWitnessBuilder {
+        match &self {
+            EitherAccount::Seed(account) => crate::transaction::AccountWitnessBuilder::Ed25519(
+                account.secret().clone(),
+                spending_counter,
+            ),
+            EitherAccount::Extended(account) => {
+                crate::transaction::AccountWitnessBuilder::Ed25519Extended(
+                    account.secret().clone(),
+                    spending_counter,
+                )
+            }
+        }
+    }
 }
 
 impl Wallet {
@@ -66,10 +88,7 @@ impl Wallet {
     }
 
     pub fn account_id(&self) -> AccountId {
-        match &self.account {
-            EitherAccount::Extended(account) => account.account_id(),
-            EitherAccount::Seed(account) => account.account_id(),
-        }
+        self.account.account_id()
     }
 
     /// set the state counter so we can sync with the blockchain and the
@@ -250,18 +269,7 @@ impl<'a> WalletBuildTx<'a> {
     }
 
     pub fn witness_builder(&self) -> AccountWitnessBuilder {
-        match &self.wallet.account {
-            EitherAccount::Seed(account) => crate::transaction::AccountWitnessBuilder::Ed25519(
-                account.secret().clone(),
-                self.current_counter,
-            ),
-            EitherAccount::Extended(account) => {
-                crate::transaction::AccountWitnessBuilder::Ed25519Extended(
-                    account.secret().clone(),
-                    self.current_counter,
-                )
-            }
-        }
+        self.wallet.account.witness_builder(self.current_counter)
     }
 
     pub fn add_fragment_id(self, fragment_id: FragmentId) {

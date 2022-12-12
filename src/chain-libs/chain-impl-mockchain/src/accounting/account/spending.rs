@@ -15,7 +15,7 @@ const LANES_BITS: usize = 3;
 const UNLANES_BITS: usize = 32 - LANES_BITS;
 
 impl SpendingCounterIncreasing {
-    /// number of parallel lanes of increasing counters
+    /// number of parallel lanes of increasing counters, equals to 8
     pub const LANES: usize = 1 << LANES_BITS;
 
     pub fn new_from_counter(set: SpendingCounter) -> Self {

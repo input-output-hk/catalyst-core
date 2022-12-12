@@ -30,7 +30,7 @@ describe("vote cast certificate tests", function () {
     );
 
     let block_date = wasm_wallet.BlockDate.new(0, 1);
-    let fragments = wallet.signVotes([vote], settings, block_date, 0);
+    let fragments = wasm_wallet.signVotes(wallet, [vote], settings, block_date, 0);
     assert(fragments.length == 1);
   });
 
@@ -54,7 +54,7 @@ describe("vote cast certificate tests", function () {
     );
 
     let block_date = wasm_wallet.BlockDate.new(0, 1);
-    let fragments = wallet.signVotes([vote], settings, block_date, 0);
+    let fragments = wasm_wallet.signVotes(wallet, [vote], settings, block_date, 0);
     assert(fragments.length == 1);
   });
 });

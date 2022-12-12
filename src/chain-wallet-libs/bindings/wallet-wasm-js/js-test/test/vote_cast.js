@@ -10,11 +10,11 @@ const settings_json =
 
 describe("vote cast certificate tests", function () {
   it("public", async function () {
-    const wasm_wallet = await import("wallet-js");
+    const wallet = await import("wallet-js");
 
-    let settings = new wasm_wallet.Settings(settings_json);
-    let vote = wasm_wallet.Vote.public(
-      wasm_wallet.SpendingCounter.new(1, 1),
+    let settings = new wallet.Settings(settings_json);
+    let vote = wallet.Vote.public(
+      wallet.SpendingCounter.new(1, 1),
       Buffer.from(
         "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "hex"
@@ -23,22 +23,17 @@ describe("vote cast certificate tests", function () {
       0
     );
 
-    let block_date = wasm_wallet.BlockDate.new(0, 1);
-    let fragments = wasm_wallet.signVotes(
-      [vote],
-      private_key,
-      settings,
-      block_date
-    );
+    let block_date = new wallet.BlockDate(0, 1);
+    let fragments = wallet.signVotes([vote], settings, block_date, private_key);
     assert(fragments.length == 1);
   });
 
   it("private", async function () {
-    const wasm_wallet = await import("wallet-js");
+    const wallet = await import("wallet-js");
 
-    let settings = new wasm_wallet.Settings(settings_json);
-    let vote = wasm_wallet.Vote.private(
-      wasm_wallet.SpendingCounter.new(1, 1),
+    let settings = new wallet.Settings(settings_json);
+    let vote = wallet.Vote.private(
+      wallet.SpendingCounter.new(1, 1),
       Buffer.from(
         "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "hex"
@@ -52,13 +47,8 @@ describe("vote cast certificate tests", function () {
       )
     );
 
-    let block_date = wasm_wallet.BlockDate.new(0, 1);
-    let fragments = wasm_wallet.signVotes(
-      [vote],
-      private_key,
-      settings,
-      block_date
-    );
+    let block_date = new wallet.BlockDate(0, 1);
+    let fragments = wallet.signVotes([vote], settings, block_date, private_key);
     assert(fragments.length == 1);
   });
 });

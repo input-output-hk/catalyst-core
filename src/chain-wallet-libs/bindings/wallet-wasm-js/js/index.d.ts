@@ -1,10 +1,18 @@
 import * as wallet_wasm from "wallet-wasm-js";
 
+export class BlockDate {
+  epoch: number;
+  slot: number;
+
+  constructor(epoch: number, slot: number): BlockDate;
+}
+
 /**
  * Wrapper over wallet-wasm-js Settings type
  */
 export class Settings {
   settings: wallet_wasm.Settings;
+  spending_counter: wallet_wasm.SpendingCounter;
 
   /**
    * Settings type constructor

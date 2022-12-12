@@ -1,10 +1,14 @@
 const wasm = require("wallet-wasm-js");
 
 module.exports.SpendingCounter = wasm.SpendingCounter;
-module.exports.SpendingCounters = wasm.SpendingCounters;
-module.exports.VotePlanId = wasm.VotePlanId;
-module.exports.VoteCast = wasm.VoteCast;
-module.exports.BlockDate = wasm.BlockDate;
+
+class BlockDate {
+  constructor(epoch, slot) {
+    this.epoch = epoch;
+    this.slot = slot;
+  }
+}
+module.exports.BlockDate = BlockDate;
 
 class Settings {
   constructor(json) {
@@ -58,7 +62,8 @@ function signVotes(votes, settings, valid_until, private_key) {
   for (let i = 0; i < votes.length; i++) {
     let builder = wasm.VoteCastTxBuilder.new(
       settings.settings,
-      valid_until,
+      valid_until.epoch,
+      valid_until.slot,
       votes[i].vote_cast
     );
     let fragment = builder

@@ -5,6 +5,7 @@ pub use certificates::{
     vote_cast::{Payload, VoteCast},
     vote_plan::VotePlanId,
 };
+use chain_impl_mockchain::header::BlockDate;
 use chain_impl_mockchain::{
     certificate::VoteCast as VoteCastLib, fragment::Fragment as FragmentLib,
 };
@@ -36,16 +37,6 @@ impl Settings {
     }
 }
 
-#[wasm_bindgen]
-pub struct BlockDate(chain_impl_mockchain::block::BlockDate);
-
-#[wasm_bindgen]
-impl BlockDate {
-    pub fn new(epoch: u32, slot_id: u32) -> BlockDate {
-        BlockDate(chain_impl_mockchain::block::BlockDate { epoch, slot_id })
-    }
-}
-
 #[derive(Clone)]
 #[wasm_bindgen]
 pub struct SpendingCounter(chain_impl_mockchain::account::SpendingCounter);
@@ -68,12 +59,16 @@ impl VoteCastTxBuilder {
     ///
     pub fn new(
         settings: Settings,
-        valid_until: BlockDate,
+        valid_until_epoch: u32,
+        valid_until_slot: u32,
         vote_cast: VoteCast,
     ) -> VoteCastTxBuilder {
         Self(wallet_core::TxBuilder::new(
             settings.0,
-            valid_until.0,
+            BlockDate {
+                epoch: valid_until_epoch,
+                slot_id: valid_until_slot,
+            },
             vote_cast.0,
         ))
     }

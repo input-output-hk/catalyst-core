@@ -10,6 +10,7 @@ import ideascale
 
 app = typer.Typer()
 
+
 @app.command()
 def import_all(
     api_token: str = typer.Option(..., help="IdeaScale API token"),
@@ -37,7 +38,10 @@ def import_all(
 
         console.print(funds_table)
 
-        campaign_group_id = rich.prompt.Prompt.ask("Select a fund id", choices=list(map(lambda g: str(g.id), groups)), show_choices=False)
+        campaign_group_id = rich.prompt.Prompt.ask(
+            "Select a fund id",
+            choices=list(map(lambda g: str(g.id), groups)),
+            show_choices=False)
         campaign_group_id = int(campaign_group_id, base=10)
         console.print()
 
@@ -66,7 +70,10 @@ def import_all(
             stages_table.add_row(str(stage.id), stage.label, stage.funnel_name)
         console.print(stages_table)
 
-        stage_id = rich.prompt.Prompt.ask("Select a stage id", choices=list(map(lambda s: str(s.id), stages)), show_choices=False)
+        stage_id = rich.prompt.Prompt.ask(
+            "Select a stage id",
+            choices=list(map(lambda s: str(s.id), stages)),
+            show_choices=False)
         stage_id = int(stage_id, base=10)
         console.print()
 

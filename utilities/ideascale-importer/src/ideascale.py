@@ -8,31 +8,38 @@ from typing import Any, Iterable, List, Mapping
 
 import utils
 
+
 class BadResponse(Exception):
     def __init__(self):
         super().__init__("Bad response")
+
 
 class GetFailed(Exception):
     def __init__(self, status, reason, content):
         super().__init__(f"{status} {reason}\n{content})")
 
+
 class ExcludeUnknownFields:
     class Meta:
         unknown = marshmallow.EXCLUDE
+
 
 class Campaign(ExcludeUnknownFields):
     id: int
     name: str
     funnel_id: int
 
+
 class CampaignGroup(ExcludeUnknownFields):
     id: int
     name: str
     campaigns: List[Campaign]
 
+
 class Idea(ExcludeUnknownFields):
     id: int
     title: str
+
 
 class Stage(ExcludeUnknownFields):
     id: int
@@ -40,16 +47,19 @@ class Stage(ExcludeUnknownFields):
     label: str
     funnel_name: str
 
+
 class Funnel(ExcludeUnknownFields):
     id: int
     name: str
     stages: List[Stage]
+
 
 CampaignSchema = marshmallow_dataclass.class_schema(Campaign)
 CampaignGroupSchema = marshmallow_dataclass.class_schema(CampaignGroup)
 IdeaSchema = marshmallow_dataclass.class_schema(Idea)
 StageSchema = marshmallow_dataclass.class_schema(Stage)
 FunnelSchema = marshmallow_dataclass.class_schema(Funnel)
+
 
 class RequestProgressObserver:
     def __init__(self):
@@ -81,6 +91,7 @@ class RequestProgressObserver:
             self.progress.remove_task(task_id)
         self.inflight_requests.clear()
 
+
 class IdeaScale:
     API_URL = "https://cardano.ideascale.com/a/rest"
 
@@ -102,7 +113,7 @@ class IdeaScale:
         return campaigns
 
     async def campaign_groups(self) -> List[CampaignGroup]:
-        res = await self._get(f"/v1/campaigns/groups")
+        res = await self._get("/v1/campaigns/groups")
         return CampaignGroupSchema().load(res, many=True) or []
 
     async def campaign_ideas(self, campaign_id: int) -> List[Idea]:
@@ -177,6 +188,7 @@ class IdeaScale:
                     return parsed_json
                 else:
                     raise GetFailed(r.status, r.reason, content)
+
 
 def client_with_progress(api_token: str) -> IdeaScale:
     client = IdeaScale(api_token)

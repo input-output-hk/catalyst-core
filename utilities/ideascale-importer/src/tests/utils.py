@@ -2,6 +2,7 @@ import unittest
 
 from .. import utils
 
+
 class TestUtils(unittest.TestCase):
     def test_snake_case_keys_on_dicts(self):
         d = {

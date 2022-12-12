@@ -7,6 +7,7 @@ import ideascale
 
 app = typer.Typer()
 
+
 @app.command()
 def list_campaigns(
     api_token: str = typer.Option(..., help="IdeaScale API token"),
@@ -33,6 +34,7 @@ def list_campaigns(
 
     asyncio.run(inner())
 
+
 @app.command()
 def list_campaign_groups(api_token: str = typer.Option(..., help="IdeaScale API token")):
     """
@@ -55,6 +57,7 @@ def list_campaign_groups(api_token: str = typer.Option(..., help="IdeaScale API 
         rich.console.Console().print(table)
 
     asyncio.run(inner())
+
 
 @app.command()
 def list_campaign_ideas(
@@ -81,6 +84,7 @@ def list_campaign_ideas(
         rich.console.Console().print(table)
 
     asyncio.run(inner())
+
 
 @app.command()
 def list_campaign_group_ideas(

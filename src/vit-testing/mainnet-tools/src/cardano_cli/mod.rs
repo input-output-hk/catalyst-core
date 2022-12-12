@@ -1,4 +1,5 @@
 mod mock;
 mod wrapper;
 
-pub use mock::Command as MockCommand;
+pub use mock::{Mock, Command as MockCommand};
+pub use wrapper::Api;

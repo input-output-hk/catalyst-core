@@ -6,6 +6,7 @@
 #[macro_use]
 extern crate prettytable;
 
+#[allow(dead_code)]
 /// Cardano CLI wrapper and mock
 pub mod cardano_cli;
 /// Simple scheduler for transporting snapshot from snapshot trigger service to servicing station service

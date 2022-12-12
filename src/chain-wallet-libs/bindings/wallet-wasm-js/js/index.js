@@ -21,29 +21,37 @@ module.exports.Settings = Settings;
 
 class Vote {
   constructor(
-    spending_counter,
-    spending_counter_lane,
-    valid_until,
-    vote_plan,
-    proposal_index,
+    spendingCounter,
+    spendingCounterLane,
+    validUntil,
+    votePlan,
+    proposalIndex,
     choice,
     options,
-    public_key
+    publicKey
   ) {
-    this.spending_counter = spending_counter;
-    this.spending_counter_lane = spending_counter_lane;
-    this.valid_until = valid_until;
-    if (options != undefined && public_key != undefined) {
+    this.spendingCounter = spendingCounter;
+    this.spendingCounterLane = spendingCounterLane;
+    this.validUntil = validUntil;
+    if (options != undefined && publicKey != undefined) {
       let payload = wasm.Payload.new_private(
-        vote_plan,
+        wasm.VotePlanId.from_bytes(votePlan),
         options,
         choice,
-        public_key
+        publicKey
       );
-      this.vote_cast = wasm.VoteCast.new(vote_plan, proposal_index, payload);
+      this.voteCast = wasm.VoteCast.new(
+        wasm.VotePlanId.from_bytes(votePlan),
+        proposalIndex,
+        payload
+      );
     } else {
       let payload = wasm.Payload.new_public(choice);
-      this.vote_cast = wasm.VoteCast.new(vote_plan, proposal_index, payload);
+      this.voteCast = wasm.VoteCast.new(
+        wasm.VotePlanId.from_bytes(votePlan),
+        proposalIndex,
+        payload
+      );
     }
   }
 }
@@ -51,38 +59,38 @@ module.exports.Vote = Vote;
 
 class Proposal {
   constructor(
-    vote_plan_bytes,
-    options_count,
-    vote_public,
-    proposal_index,
+    votePlan,
+    voteOptions,
+    votePublic,
+    proposalIndex,
     committee_public_key
   ) {
-    this.vote_plan = wasm.VotePlanId.from_bytes(vote_plan_bytes);
-    this.options_count = options_count;
-    this.vote_public = vote_public;
-    this.proposal_index = proposal_index;
+    this.votePlan = votePlan;
+    this.voteOptions = voteOptions;
+    this.votePublic = votePublic;
+    this.proposalIndex = proposalIndex;
     this.committee_public_key = committee_public_key;
   }
 
-  vote(spending_counter, spending_counter_lane, valid_until, choice) {
-    if (this.vote_public) {
+  vote(spendingCounter, spendingCounterLane, validUntil, choice) {
+    if (this.votePublic) {
       return new Vote(
-        spending_counter,
-        spending_counter_lane,
-        valid_until,
-        this.vote_plan,
-        this.proposal_index,
+        spendingCounter,
+        spendingCounterLane,
+        validUntil,
+        this.votePlan,
+        this.proposalIndex,
         choice
       );
     } else {
       return new Vote(
-        spending_counter,
-        spending_counter_lane,
-        valid_until,
-        this.vote_plan,
-        this.proposal_index,
+        spendingCounter,
+        spendingCounterLane,
+        validUntil,
+        this.votePlan,
+        this.proposalIndex,
         choice,
-        this.options_count,
+        this.voteOptions,
         this.committee_public_key
       );
     }
@@ -90,20 +98,20 @@ class Proposal {
 }
 module.exports.Proposal = Proposal;
 
-function signVotes(votes, settings, private_key) {
+function signVotes(votes, settings, privateKey) {
   let fragments = [];
   for (let i = 0; i < votes.length; i++) {
     let builder = wasm.VoteCastTxBuilder.new(
       settings.settings,
-      votes[i].valid_until.epoch,
-      votes[i].valid_until.slot,
-      votes[i].vote_cast
+      votes[i].validUntil.epoch,
+      votes[i].validUntil.slot,
+      votes[i].voteCast
     );
     let fragment = builder
       .build_tx(
-        private_key,
-        votes[i].spending_counter,
-        votes[i].spending_counter_lane
+        privateKey,
+        votes[i].spendingCounter,
+        votes[i].spendingCounterLane
       )
       .finalize_tx();
     fragments.push(fragment);

@@ -2,6 +2,7 @@ use color_eyre::Report;
 use futures::future::FutureExt;
 use mainnet_tools::cardano_cli::MockCommand;
 use structopt::StructOpt;
+use mainnet_tools::cardano_cli::{MockCommand,MockError};
 
 #[tokio::main]
 pub async fn main() -> Result<(), Report> {

@@ -1,5 +1,5 @@
 use crate::common::snapshot::mock;
-use crate::common::{MainnetWallet, RepsVoterAssignerSource, SnapshotFilter};
+use crate::common::{CardanoWallet, RepsVoterAssignerSource, SnapshotFilter};
 use assert_fs::TempDir;
 use chain_impl_mockchain::certificate::VotePlan;
 use fraction::Fraction;
@@ -22,19 +22,19 @@ pub fn cip36_mixed_delegation_should_appear_in_block0() {
     let discrimination = chain_addr::Discrimination::Production;
     let stake = 10_000;
 
-    let alice = MainnetWallet::new(stake);
-    let bob = MainnetWallet::new(stake);
-    let clarice = MainnetWallet::new(stake);
+    let alice = CardanoWallet::new(stake);
+    let bob = CardanoWallet::new(stake);
+    let clarice = CardanoWallet::new(stake);
 
-    let david_representative = MainnetWallet::new(500);
-    let edgar_representative = MainnetWallet::new(1_000);
-    let fred_representative = MainnetWallet::new(8_000);
+    let david_representative = CardanoWallet::new(500);
+    let edgar_representative = CardanoWallet::new(1_000);
+    let fred_representative = CardanoWallet::new(8_000);
 
-    let (db_sync, reps) = MainnetNetworkBuilder::default()
+    let (db_sync, _node, reps) = MainnetNetworkBuilder::default()
         .with(alice.as_direct_voter())
         .with(bob.as_delegator(vec![(&david_representative, 1)]))
         .with(clarice.as_delegator(vec![(&edgar_representative, 1), (&edgar_representative, 1)]))
-        .build(&testing_directory);
+        .as_json(&testing_directory);
 
     let snapshot_result =
         mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory).unwrap();

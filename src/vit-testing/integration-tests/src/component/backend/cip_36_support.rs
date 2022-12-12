@@ -4,7 +4,7 @@ use crate::common::RepsVoterAssignerSource;
 use assert_fs::TempDir;
 use chain_addr::Discrimination;
 use fraction::Fraction;
-use mainnet_lib::MainnetWallet;
+use mainnet_lib::CardanoWallet;
 use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
 use snapshot_trigger_service::config::JobParameters;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
@@ -25,17 +25,17 @@ pub fn cip_36_support() {
         tag: tag.clone(),
     };
 
-    let alice = MainnetWallet::new(1_000);
-    let bob = MainnetWallet::new(1_000);
-    let clarice = MainnetWallet::new(1_000);
-    let dave = MainnetWallet::new(1_000);
+    let alice = CardanoWallet::new(1_000);
+    let bob = CardanoWallet::new(1_000);
+    let clarice = CardanoWallet::new(1_000);
+    let dave = CardanoWallet::new(1_000);
 
-    let (db_sync, reps) = MainnetNetworkBuilder::default()
+    let (db_sync, _node, reps) = MainnetNetworkBuilder::default()
         .with(alice.as_direct_voter())
         .with(bob.as_representative())
         .with(clarice.as_representative())
         .with(dave.as_delegator(vec![(&bob, 1u8), (&clarice, 1u8)]))
-        .build(&testing_directory);
+        .as_json(&testing_directory);
 
     let snapshot_result = mock::do_snapshot(&db_sync, job_param, &testing_directory).unwrap();
 

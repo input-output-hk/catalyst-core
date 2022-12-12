@@ -5,7 +5,7 @@
 //! Wallet - api implementation of cardano wallet which is capable of sending and signing registration
 //! transactions
 
-#![forbid(missing_docs)]
+//#![forbid(missing_docs)]
 #![warn(clippy::pedantic)]
 #![allow(
     clippy::module_name_repetitions,
@@ -17,12 +17,21 @@
 mod db_sync;
 mod network;
 mod wallet;
+mod blockfrost;
+mod cardano_node;
 
-pub use db_sync::{Error as InMemoryDbSyncError, InMemoryDbSync};
-pub use network::{
-    MainnetNetwork, MainnetNetworkBuilder, MainnetWalletState, MainnetWalletStateBuilder,
-};
-pub use wallet::{
-    GeneralTransactionMetadataInfo, MainnetWallet, RegistrationBuilder, METADATUM_1, METADATUM_2,
-    METADATUM_3, METADATUM_4, REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
-};
+pub use exports::*;
+mod exports {
+    pub use crate::db_sync::{BlockDateFromCardanoAbsoluteSlotNo, InMemoryDbSync, JsonBasedBdSyncError, JsonBasedDbSync};
+    pub use crate::network::{
+        MainnetNetworkBuilder, MainnetWalletState, MainnetWalletStateBuilder,
+    };
+    pub use crate::wallet::{
+        CardanoWallet, GeneralTransactionMetadataInfo, JsonConversionError, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4, REGISTRATION_METADATA_IDX,
+        REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL, REGISTRATION_SIGNATURE_METADATA_IDX, RegistrationTransactionBuilder
+    };
+    pub use crate::blockfrost::{CatalystBlockFrostApi, Error as CatalystBlockFrostApiError};
+
+    pub use crate::cardano_node::{InMemoryNode, Ledger, Settings};
+    pub use crate::cardano_node::{Block0,BlockBuilder,TransactionBuilder};
+}

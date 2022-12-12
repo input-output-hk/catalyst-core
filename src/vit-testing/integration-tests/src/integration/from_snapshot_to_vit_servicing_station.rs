@@ -1,6 +1,6 @@
 use crate::common::mainnet_wallet_ext::MainnetWalletExtension;
 use crate::common::snapshot::mock;
-use crate::common::MainnetWallet;
+use crate::common::CardanoWallet;
 use assert_fs::TempDir;
 use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
 use snapshot_lib::SnapshotInfo;
@@ -17,15 +17,15 @@ use vitup::testing::vitup_setup;
 pub fn put_raw_snapshot() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
     let stake = 10_000;
-    let alice_wallet = MainnetWallet::new(stake);
-    let bob_wallet = MainnetWallet::new(stake);
-    let clarice_wallet = MainnetWallet::new(stake);
+    let alice_wallet = CardanoWallet::new(stake);
+    let bob_wallet = CardanoWallet::new(stake);
+    let clarice_wallet = CardanoWallet::new(stake);
 
-    let (db_sync, _reps) = MainnetNetworkBuilder::default()
+    let (db_sync, _node, _reps) = MainnetNetworkBuilder::default()
         .with(alice_wallet.as_direct_voter())
         .with(bob_wallet.as_direct_voter())
         .with(clarice_wallet.as_direct_voter())
-        .build(&testing_directory);
+        .as_json(&testing_directory);
 
     let job_params = JobParameters::fund("fund9");
     let snapshot_result =

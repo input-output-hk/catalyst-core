@@ -1,14 +1,14 @@
 use crate::common::get_available_port;
 use crate::common::snapshot::SnapshotServiceStarter;
 use assert_fs::TempDir;
-use mainnet_lib::InMemoryDbSync;
+use mainnet_lib::{JsonBasedBdSyncError, JsonBasedDbSync};
 use snapshot_trigger_service::client::SnapshotResult;
 use snapshot_trigger_service::config::{
     ConfigurationBuilder, JobParameters, NetworkType, VotingToolsParams,
 };
 
 pub fn do_snapshot(
-    db_sync_instance: &InMemoryDbSync,
+    db_sync_instance: &JsonBasedDbSync,
     job_parameters: JobParameters,
     testing_directory: &TempDir,
 ) -> Result<SnapshotResult, Error> {
@@ -44,7 +44,7 @@ pub fn do_snapshot(
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
-    DbSync(#[from] mainnet_lib::InMemoryDbSyncError),
+    DbSync(#[from] JsonBasedBdSyncError),
     #[error(transparent)]
     SnapshotIntegration(#[from] crate::common::snapshot::Error),
     #[error(transparent)]

@@ -1,6 +1,6 @@
 use crate::common::snapshot::mock;
 use crate::common::snapshot_filter::SnapshotFilterSource;
-use crate::common::{MainnetWallet, RepsVoterAssignerSource};
+use crate::common::{CardanoWallet, RepsVoterAssignerSource};
 use assert_fs::TempDir;
 use fraction::Fraction;
 use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
@@ -14,19 +14,19 @@ pub fn cip36_mixed_delegation() {
 
     let stake = 10_000;
 
-    let alice = MainnetWallet::new(stake);
-    let bob = MainnetWallet::new(stake);
-    let clarice = MainnetWallet::new(stake);
+    let alice = CardanoWallet::new(stake);
+    let bob = CardanoWallet::new(stake);
+    let clarice = CardanoWallet::new(stake);
 
-    let david = MainnetWallet::new(0);
-    let edgar = MainnetWallet::new(0);
-    let fred = MainnetWallet::new(0);
+    let david = CardanoWallet::new(0);
+    let edgar = CardanoWallet::new(0);
+    let fred = CardanoWallet::new(0);
 
-    let (db_sync, reps) = MainnetNetworkBuilder::default()
+    let (db_sync, _node, reps) = MainnetNetworkBuilder::default()
         .with(alice.as_direct_voter())
         .with(bob.as_delegator(vec![(&david, 1)]))
         .with(clarice.as_delegator(vec![(&david, 1), (&edgar, 1)]))
-        .build(&testing_directory);
+        .as_json(&testing_directory);
 
     let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
         .unwrap()
@@ -62,19 +62,19 @@ pub fn cip36_mixed_delegation() {
 pub fn voting_power_cap_for_reps() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
 
-    let alice = MainnetWallet::new(1_000);
-    let bob = MainnetWallet::new(1_000);
-    let clarice = MainnetWallet::new(10_000);
+    let alice = CardanoWallet::new(1_000);
+    let bob = CardanoWallet::new(1_000);
+    let clarice = CardanoWallet::new(10_000);
 
-    let david = MainnetWallet::new(0);
-    let edgar = MainnetWallet::new(0);
-    let fred = MainnetWallet::new(0);
+    let david = CardanoWallet::new(0);
+    let edgar = CardanoWallet::new(0);
+    let fred = CardanoWallet::new(0);
 
-    let (db_sync, reps) = MainnetNetworkBuilder::default()
+    let (db_sync, _node, reps) = MainnetNetworkBuilder::default()
         .with(alice.as_delegator(vec![(&david, 1)]))
         .with(bob.as_delegator(vec![(&edgar, 1)]))
         .with(clarice.as_delegator(vec![(&fred, 1)]))
-        .build(&testing_directory);
+        .as_json(&testing_directory);
 
     let reps_circle_size = reps.len();
 
@@ -98,15 +98,15 @@ pub fn voting_power_cap_for_reps() {
 pub fn voting_power_cap_for_direct() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
 
-    let alice = MainnetWallet::new(10_000);
-    let bob = MainnetWallet::new(10_000);
-    let clarice = MainnetWallet::new(1_000);
+    let alice = CardanoWallet::new(10_000);
+    let bob = CardanoWallet::new(10_000);
+    let clarice = CardanoWallet::new(1_000);
 
-    let (db_sync, reps) = MainnetNetworkBuilder::default()
+    let (db_sync, _node, reps) = MainnetNetworkBuilder::default()
         .with(alice.as_direct_voter())
         .with(bob.as_direct_voter())
         .with(clarice.as_direct_voter())
-        .build(&testing_directory);
+        .as_json(&testing_directory);
 
     let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
         .unwrap()
@@ -128,17 +128,17 @@ pub fn voting_power_cap_for_direct() {
 pub fn voting_power_cap_for_mix() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
 
-    let alice = MainnetWallet::new(10_000);
-    let bob = MainnetWallet::new(1_000);
-    let clarice = MainnetWallet::new(10_000);
+    let alice = CardanoWallet::new(10_000);
+    let bob = CardanoWallet::new(1_000);
+    let clarice = CardanoWallet::new(10_000);
 
-    let david = MainnetWallet::new(0);
+    let david = CardanoWallet::new(0);
 
-    let (db_sync, reps) = MainnetNetworkBuilder::default()
+    let (db_sync, _node, reps) = MainnetNetworkBuilder::default()
         .with(alice.as_direct_voter())
         .with(bob.as_direct_voter())
         .with(clarice.as_delegator(vec![(&david, 1)]))
-        .build(&testing_directory);
+        .as_json(&testing_directory);
 
     let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
         .unwrap()

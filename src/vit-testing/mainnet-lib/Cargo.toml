@@ -8,16 +8,24 @@ edition = "2021"
 [dependencies]
 cardano-serialization-lib = "11.1.0"
 jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
+blockfrost = { path = "../../../../blockfrost-rust" }
+jortestkit = { path = "../../jortestkit" }
 tempdir = "0.3.7"
 snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib", features=["proptest"] }
 thor = { path = "../../jormungandr/testing/thor" }
 chain-addr           = { path = "../../chain-libs/chain-addr", features = [ "property-test-api" ] }
 chain-crypto         = { path = "../../chain-libs/chain-crypto", features = [ "property-test-api" ] }
+chain-impl-mockchain  = { path = "../../chain-libs/chain-impl-mockchain", features = [ "property-test-api" ] }
 serde = { version = "1", features = ["derive"] }
 thiserror = "1.0"
 hex = "0.4"
+futures-util = "0.3.25"
+pharos = "0.5"
 bech32 = "0.8.1"
 rand = "0.8"
 assert_fs = "1.0"
 serde_json = "1.0"
 lazy_static = "1.4.0"
+tokio = "1.21.2"
+rayon = "1.6.0"
+futures = "0.3.25"

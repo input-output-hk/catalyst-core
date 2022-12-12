@@ -2,7 +2,7 @@ use std::{fs::File, io::BufWriter};
 
 use clap::Parser;
 use color_eyre::Result;
-use mainnet_lib::InMemoryDbSync;
+use mainnet_lib::JsonBasedDbSync;
 use tracing::info;
 use voting_tools_rs::test_api::MockDbProvider;
 use voting_tools_rs::{voting_power, Args, DataProvider, Db, DbConfig, DryRunCommand};
@@ -56,7 +56,7 @@ fn get_data_provider(
     if let Some(dry_run) = maybe_dry_run {
         match dry_run {
             DryRunCommand::DryRun { mock_json_file } => Ok(Box::new(MockDbProvider::from(
-                InMemoryDbSync::restore(&mock_json_file)?,
+                JsonBasedDbSync::restore(&mock_json_file)?,
             ))),
         }
     } else {

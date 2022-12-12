@@ -1,7 +1,7 @@
 use crate::common::mainnet_wallet_ext::MainnetWalletExtension;
 use crate::common::snapshot::mock;
 use crate::common::snapshot_filter::SnapshotFilterSource;
-use crate::common::MainnetWallet;
+use crate::common::CardanoWallet;
 use assert_fs::TempDir;
 use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
 use snapshot_lib::VoterHIR;
@@ -13,22 +13,22 @@ pub fn mixed_registration_transactions() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
     let stake = 10_000;
 
-    let alice = MainnetWallet::new(stake);
-    let bob = MainnetWallet::new(stake);
-    let clarice = MainnetWallet::new(stake);
+    let alice = CardanoWallet::new(stake);
+    let bob = CardanoWallet::new(stake);
+    let clarice = CardanoWallet::new(stake);
 
-    let david = MainnetWallet::new(500);
-    let edgar = MainnetWallet::new(1_000);
-    let fred = MainnetWallet::new(8_000);
+    let david = CardanoWallet::new(500);
+    let edgar = CardanoWallet::new(1_000);
+    let fred = CardanoWallet::new(8_000);
 
-    let (db_sync, reps) = MainnetNetworkBuilder::default()
+    let (db_sync, _node, reps) = MainnetNetworkBuilder::default()
         .with(alice.as_direct_voter())
         .with(bob.as_delegator(vec![(&david, 1)]))
         .with(clarice.as_delegator(vec![(&david, 1), (&edgar, 1)]))
         .with(david.as_representative())
         .with(edgar.as_representative())
         .with(fred.as_representative())
-        .build(&testing_directory);
+        .as_json(&testing_directory);
 
     let voters_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
         .unwrap()

@@ -13,18 +13,17 @@ describe("vote cast certificate tests", function () {
     const wallet = await import("wallet-js");
 
     let settings = new wallet.Settings(settings_json);
-    let vote = wallet.Vote.public(
-      wallet.SpendingCounter.new(1, 1),
+    let proposal = new wallet.Proposal(
       Buffer.from(
         "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "hex"
       ),
-      8,
-      0
+      2,
+      true,
+      8
     );
-
-    let block_date = new wallet.BlockDate(0, 1);
-    let fragments = wallet.signVotes([vote], settings, block_date, private_key);
+    let vote = proposal.vote(1, 1, new wallet.BlockDate(0, 1), 0);
+    let fragments = wallet.signVotes([vote], settings, private_key);
     assert(fragments.length == 1);
   });
 
@@ -32,23 +31,21 @@ describe("vote cast certificate tests", function () {
     const wallet = await import("wallet-js");
 
     let settings = new wallet.Settings(settings_json);
-    let vote = wallet.Vote.private(
-      wallet.SpendingCounter.new(1, 1),
+    let proposal = new wallet.Proposal(
       Buffer.from(
         "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
         "hex"
       ),
-      8,
       4,
-      0,
+      true,
+      8,
       Buffer.from(
         "bed88887abe0a84f64691fe0bdfa3daf1a6cd697a13f07ae07588910ce39c927",
         "hex"
       )
     );
-
-    let block_date = new wallet.BlockDate(0, 1);
-    let fragments = wallet.signVotes([vote], settings, block_date, private_key);
+    let vote = proposal.vote(1, 1, new wallet.BlockDate(0, 1), 0);
+    let fragments = wallet.signVotes([vote], settings, private_key);
     assert(fragments.length == 1);
   });
 });

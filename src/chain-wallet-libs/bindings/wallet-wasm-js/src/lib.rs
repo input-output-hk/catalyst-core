@@ -5,12 +5,12 @@ pub use certificates::{
     vote_cast::{Payload, VoteCast},
     vote_plan::VotePlanId,
 };
+use chain_impl_mockchain::account::SpendingCounter;
 use chain_impl_mockchain::header::BlockDate;
 use chain_impl_mockchain::{
     certificate::VoteCast as VoteCastLib, fragment::Fragment as FragmentLib,
 };
 pub use fragment::{Fragment, FragmentId};
-pub use utils::set_panic_hook;
 use wasm_bindgen::prelude::*;
 
 mod certificates;
@@ -36,22 +36,6 @@ impl Settings {
         serde_json::to_string(&self.0).map_err(|e| JsValue::from(e.to_string()))
     }
 }
-
-#[derive(Clone)]
-#[wasm_bindgen]
-pub struct SpendingCounter(chain_impl_mockchain::account::SpendingCounter);
-
-#[wasm_bindgen]
-impl SpendingCounter {
-    pub fn new(lane: usize, counter: u32) -> Result<SpendingCounter, JsValue> {
-        Ok(Self(
-            chain_impl_mockchain::account::SpendingCounter::new(lane, counter)
-                .map_err(|e| JsValue::from(e.to_string()))?,
-        ))
-    }
-}
-
-impl_collection!(SpendingCounters, SpendingCounter);
 
 #[wasm_bindgen]
 impl VoteCastTxBuilder {
@@ -80,11 +64,15 @@ impl VoteCastTxBuilder {
     pub fn build_tx(
         mut self,
         account: &[u8],
-        spending_counter: SpendingCounter,
+        counter: u32,
+        lane: usize,
     ) -> Result<VoteCastTxBuilder, JsValue> {
         self.0 = self
             .0
-            .build_tx(account, spending_counter.0)
+            .build_tx(
+                account,
+                SpendingCounter::new(lane, counter).map_err(|e| JsValue::from(e.to_string()))?,
+            )
             .map_err(|e| JsValue::from(e.to_string()))?;
         Ok(self)
     }

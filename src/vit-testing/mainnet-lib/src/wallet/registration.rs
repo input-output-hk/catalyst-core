@@ -157,6 +157,7 @@ impl<'a> RegistrationTransactionBuilder<'a> {
 }
 
 /// Metadata conversion error
+/// Metadata conversion error
 #[derive(thiserror::Error, Debug)]
 pub enum JsonConversionError {
     /// Serialization

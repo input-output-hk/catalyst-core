@@ -1,4 +1,5 @@
 import asyncio
+import psycopg
 import rich.panel
 import rich.prompt
 import rich.table
@@ -6,6 +7,7 @@ import rich.console
 import typer
 from typing import List
 
+import db
 import ideascale
 
 app = typer.Typer()
@@ -14,13 +16,22 @@ app = typer.Typer()
 @app.command()
 def import_all(
     api_token: str = typer.Option(..., help="IdeaScale API token"),
+    database_url: str = typer.Option(..., help="Postgres database URL"),
 ):
     """
     Import all fund data from IdeaScale
     """
     async def inner():
-        client = ideascale.client_with_progress(api_token)
         console = rich.console.Console()
+
+        db_conn = await psycopg.AsyncConnection.connect(database_url)
+
+        select_election_id = rich.prompt.Prompt.ask("Enter the election database id")
+        if not await db.election_exists(db_conn, int(select_election_id, base=10)):
+            console.print("\n[red]No election exists with the given id[/red]")
+            return
+
+        client = ideascale.client_with_progress(api_token)
 
         groups = []
         with client.request_progress_observer:
@@ -83,5 +94,7 @@ def import_all(
         console.print(f"Fetched {len(ideas)} ideas")
 
         console.print("SHOULD MAP AND INSERT DATA INTO POSTGRES TABLES NOW")
+
+        await db_conn.close()
 
     asyncio.run(inner())

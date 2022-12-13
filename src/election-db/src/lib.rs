@@ -20,7 +20,8 @@ use std::env;
 use std::error::Error;
 
 /// Database URL Environment Variable name.
-const DATABASE_URL: &str = "DATABASE_URL";
+/// eg: "`postgres://catalyst-dev:CHANGE_ME@localhost/CatalystDev`"
+const DATABASE_URL_ENVVAR: &str = "ELECTION_DB_URL";
 
 /// Connection to the Election Database
 pub struct ElectionDB {
@@ -64,7 +65,7 @@ pub fn establish_connection(url : Option<&str>) -> Result<ElectionDB, Box<dyn Er
     // If the Database connection URL is not supplied, try and get from the env var.
     let database_url = match url {
         Some(url) => url.to_string(),
-        None => env::var(DATABASE_URL)?
+        None => env::var(DATABASE_URL_ENVVAR)?
     };
 
     let mut conn = PgConnection::establish(database_url.as_str())?;
@@ -84,11 +85,4 @@ mod test {
         
         establish_connection(None).unwrap();
     }
-}
-
-/// Check if the schema version in the DB is up to date.
-fn check_schema_version() {
-    use crate::establish_connection;
-
-    establish_connection(None).unwrap();
 }

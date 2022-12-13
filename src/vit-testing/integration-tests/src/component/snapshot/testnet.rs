@@ -1,4 +1,3 @@
-use crate::common::registration::{do_registration, RegistrationResultAsserts};
 use crate::common::snapshot::do_snapshot;
 use crate::common::snapshot::wait_for_db_sync;
 use crate::common::snapshot::RegistrationAsserts;
@@ -9,6 +8,7 @@ const GRACE_PERIOD_FOR_SNAPSHOT: u64 = 300;
 //SR001
 //SR003
 #[test]
+#[ignore]
 pub fn multiple_registration() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
 
@@ -45,6 +45,7 @@ pub fn multiple_registration() {
 ///SR002
 /// Test for catalyst-toolbox filter which should remove entry from snapshot with too low funds
 #[test]
+#[ignore]
 pub fn wallet_has_less_than_threshold() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
 
@@ -68,6 +69,7 @@ pub fn wallet_has_less_than_threshold() {
 
 //SR005
 #[test]
+#[ignore]
 pub fn wallet_with_funds_equals_to_threshold_should_be_elligible_to_vote() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
 
@@ -92,6 +94,7 @@ pub fn wallet_with_funds_equals_to_threshold_should_be_elligible_to_vote() {
 
 //SR004
 #[test]
+#[ignore]
 pub fn registration_after_snapshot_is_not_taken_into_account() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
 

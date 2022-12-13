@@ -46,26 +46,36 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Copy to C drive
+        run: cp D:\a C:\ -Recurse
+
       - name: Allow long paths on Windows
+        working-directory: "C:\\a\\${{ github.event.repository.name }}\\${{ github.event.repository.name }}"
         shell: powershell
         run: |
           reg add HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1 /f
           git config --system core.longpaths true
+          
       - uses: Swatinem/rust-cache@v2
 
       - name: Set default linker
+        working-directory: "C:\\a\\${{ github.event.repository.name }}\\${{ github.event.repository.name }}"
         run: rustup default stable-x86_64-pc-windows-gnu
 
       - name: Free disk space
+        working-directory: "C:\\a\\${{ github.event.repository.name }}\\${{ github.event.repository.name }}"
         shell: powershell
         run: |
           Get-PSDrive
 
       - name: Install dependencies
+        working-directory: "C:\\a\\${{ github.event.repository.name }}\\${{ github.event.repository.name }}"
         run:
           choco install -y protoc openssl sqlite postgresql14
 
       - name: Set PostgreSQL env variables
+        working-directory: "C:\\a\\${{ github.event.repository.name }}\\${{ github.event.repository.name }}"
         shell: powershell
         run: |
           "PQ_LIB_DIR=${env:PROGRAMFILES}\PostgreSQL\14\lib" >> $env:GITHUB_ENV
@@ -73,6 +83,7 @@ jobs:
           $env:PQ_LIB_DIR
 
       - name: Build on Windows
+        working-directory: "C:\\a\\${{ github.event.repository.name }}\\${{ github.event.repository.name }}"
         uses: actions-rs/toolchain@v1
         with:
           toolchain: "1.65"

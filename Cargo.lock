@@ -467,20 +467,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bip39"
-version = "0.8.1"
-dependencies = [
- "cryptoxide 0.4.2",
- "hex",
- "quickcheck",
- "quickcheck_macros",
- "rand 0.3.23",
- "thiserror",
- "unicode-normalization",
- "zeroize",
-]
-
-[[package]]
 name = "bit-set"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2811,7 +2797,6 @@ dependencies = [
 name = "hdkeygen"
 version = "0.8.1"
 dependencies = [
- "bip39",
  "cardano-legacy-address",
  "cbor_event",
  "chain-addr",
@@ -3826,7 +3811,6 @@ dependencies = [
 name = "jormungandrwallet"
 version = "0.8.1"
 dependencies = [
- "bip39",
  "chain-addr",
  "chain-impl-mockchain",
  "chain-ser",
@@ -8284,7 +8268,6 @@ dependencies = [
 name = "wallet"
 version = "0.8.1"
 dependencies = [
- "bip39",
  "cardano-legacy-address",
  "cbor_event",
  "chain-addr",
@@ -8315,7 +8298,6 @@ name = "wallet-core"
 version = "0.8.1"
 dependencies = [
  "bech32 0.7.3",
- "bip39",
  "chain-addr",
  "chain-core",
  "chain-crypto",

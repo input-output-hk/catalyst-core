@@ -191,8 +191,9 @@ impl HdKey {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bip39::SEED_SIZE;
     use ed25519_bip32::XPrv;
+
+    const SEED_SIZE: usize = 64;
 
     fn generate_from_daedalus_seed(bytes: &[u8]) -> XPrv {
         use cryptoxide::mac::Mac;

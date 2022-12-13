@@ -4,6 +4,7 @@
 
 use std::assert_eq;
 
+use chain_impl_mockchain::accounting::account::SpendingCounterIncreasing;
 use wallet_js::{SpendingCounter, *};
 use wasm_bindgen::JsValue;
 use wasm_bindgen_test::*;
@@ -14,7 +15,6 @@ wasm_bindgen_test_configure!(run_in_browser);
 
 const ACCOUNT_KEY: &str = include_str!("../../../test-vectors/free_keys/key1.prv");
 const BLOCK0: &[u8] = include_bytes!("../../../test-vectors/block0");
-const MAX_LANES: usize = 8;
 
 pub fn generate_wallet() -> Result<Wallet, JsValue> {
     let mut wallet = Wallet::import_keys(
@@ -25,7 +25,7 @@ pub fn generate_wallet() -> Result<Wallet, JsValue> {
 
     wallet.set_state(
         1_000,
-        (0..MAX_LANES)
+        (0..SpendingCounterIncreasing::LANES)
             .map(|lane| SpendingCounter::new(lane, 1))
             .collect::<Vec<SpendingCounter>>()
             .into(),

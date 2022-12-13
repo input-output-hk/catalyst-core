@@ -18,6 +18,7 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
+
 use tracing_futures::Instrument;
 
 fn filter_gossip_node(node: &Gossip, config: &Configuration) -> bool {
@@ -349,10 +350,19 @@ impl FragmentProcessor {
             &mut self.buffered_fragments,
             Vec::with_capacity(buffer_sizes::inbound::FRAGMENTS),
         );
+
+        let addr = match self.global_state.config.address() {
+            Some(addr) => FragmentOrigin::Network { addr },
+            None => {
+                tracing::error!("unable to obtain address of node");
+                FragmentOrigin::default_origin_addr()
+            }
+        };
+
         let (reply_handle, _reply_future) = intercom::unary_reply();
         self.mbox
             .start_send(TransactionMsg::SendTransactions {
-                origin: FragmentOrigin::Network,
+                origin: addr,
                 fragments,
                 fail_fast: false,
                 reply_handle,

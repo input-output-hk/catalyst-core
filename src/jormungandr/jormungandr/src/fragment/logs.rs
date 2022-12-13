@@ -76,7 +76,10 @@ impl Logs {
                 // Also, in this scenario we accept any provided FragmentStatus, since we do not
                 // actually know what the previous status was, and thus cannot execute the correct
                 // state transition.
-                let mut entry = FragmentLog::new(fragment_id.into_hash(), FragmentOrigin::Network);
+                let mut entry = FragmentLog::new(
+                    fragment_id.into_hash(),
+                    FragmentOrigin::default_origin_addr(),
+                );
                 entry.modify(status);
                 self.entries.put(fragment_id, (entry, Some(ledger_date)));
             }

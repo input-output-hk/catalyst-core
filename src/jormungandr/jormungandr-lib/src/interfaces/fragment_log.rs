@@ -1,3 +1,5 @@
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+
 use crate::{crypto::hash::Hash, interfaces::BlockDate, time::SystemTime};
 use chain_impl_mockchain::key;
 use serde::{Deserialize, Serialize};
@@ -10,15 +12,23 @@ pub enum FragmentOrigin {
     /// origins of the fragment and eventually blacklisting
     /// the senders from sending us more fragment (in case
     /// they are invalids or so)
-    ///
-    /// TODO: add the network identifier/IP Address
-    Network,
+    Network { addr: SocketAddr },
     /// This marks the fragment is coming from the REST interface
     /// (a client wallet or another service).
     Rest,
     /// This marks the fragment is coming from the JRpc interface
     /// (a client wallet or another service).
     JRpc,
+}
+
+impl FragmentOrigin {
+    // return default network identifier
+    // use case: error handling
+    pub fn default_origin_addr() -> Self {
+        FragmentOrigin::Network {
+            addr: SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 27000),
+        }
+    }
 }
 
 /// status of the fragment within the blockchain or the pool

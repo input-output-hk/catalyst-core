@@ -65,8 +65,8 @@ def import_all(
             console.print()
             funds_table = rich.table.Table("Id", "Name", title="Available Funds")
 
-            for group in groups:
-                funds_table.add_row(str(group.id), group.name)
+            for g in groups:
+                funds_table.add_row(str(g.id), g.name)
             console.print(funds_table)
 
             selected_campaign_group_id = rich.prompt.Prompt.ask(
@@ -76,7 +76,7 @@ def import_all(
             campaign_group_id = int(selected_campaign_group_id, base=10)
             console.print()
 
-        group = None
+        group: Optional[ideascale.CampaignGroup] = None
         for g in groups:
             if g.id == campaign_group_id:
                 group = g

@@ -65,7 +65,7 @@ jobs:
         run: rustup default stable-x86_64-pc-windows-gnu
 
       - name: Free disk space
-        working-directory: "C:\\${{ github.event.repository.name }}""
+        working-directory: "C:\\${{ github.event.repository.name }}"
         shell: powershell
         run: |
           Get-PSDrive

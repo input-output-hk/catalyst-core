@@ -9,7 +9,6 @@
   name = "chain-wallet-libs";
   mkSimplePkg = subPkg: lib.mkPackage {pkgPath = "${name}/${subPkg}";};
 in {
-  bip39 = mkSimplePkg "bip39";
   chain-path-derivation = mkSimplePkg "chain-path-derivation";
   hdkeygen = mkSimplePkg "hdkeygen";
   symmetric-cipher = mkSimplePkg "symmetric-cipher";

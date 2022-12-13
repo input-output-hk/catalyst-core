@@ -1,5 +1,4 @@
 use crate::common::iapyx_from_qr;
-use crate::common::registration::{do_registration, RegistrationResultAsserts};
 use crate::common::snapshot::do_snapshot;
 use crate::common::snapshot::wait_for_db_sync;
 use crate::common::snapshot_filter::SnapshotFilterSource;
@@ -8,7 +7,6 @@ use assert_fs::TempDir;
 use chain_impl_mockchain::header::BlockDate;
 use jormungandr_automation::testing::asserts::VotePlanStatusAssert;
 use jormungandr_automation::testing::time;
-use registration_service::utils::PinProvider;
 use snapshot_trigger_service::config::JobParameters;
 use std::collections::HashSet;
 use thor::FragmentSender;
@@ -22,6 +20,7 @@ use vitup::testing::vitup_setup;
 const GRACE_PERIOD_FOR_SNAPSHOT: u64 = 300;
 
 #[test]
+#[ignore]
 pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
     let result = do_registration(&temp_dir).as_legacy_registration().unwrap();

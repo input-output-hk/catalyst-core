@@ -1,5 +1,8 @@
 [package]
-authors = ["Nicolas Di Prima <nicolas@primetype.co.uk>", "Vincent Hanquez <vincent@typed.io>"]
+authors = [
+    "Nicolas Di Prima <nicolas@primetype.co.uk>",
+    "Vincent Hanquez <vincent@typed.io>",
+]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 name = "wallet-core"
@@ -11,19 +14,19 @@ version = "0.8.1"
 crate-type = ["lib"]
 
 [dependencies]
-bip39 = {path = "../../bip39"}
+
 chain-addr = { path = "../../../chain-libs/chain-addr" }
 chain-core = { path = "../../../chain-libs/chain-core" }
 chain-crypto = { path = "../../../chain-libs/chain-crypto" }
 chain-impl-mockchain = { path = "../../../chain-libs/chain-impl-mockchain" }
-chain-path-derivation = {path = "../../chain-path-derivation"}
+chain-path-derivation = { path = "../../chain-path-derivation" }
 chain-ser = { path = "../../../chain-libs/chain-ser" }
 chain-vote = { path = "../../../chain-libs/chain-vote" }
 chain-time = { path = "../../../chain-libs/chain-time" }
-hdkeygen = {path = "../../hdkeygen"}
-symmetric-cipher = {path = "../../symmetric-cipher"}
-thiserror = {version = "1.0.13", default-features = false}
-wallet = {path = "../../wallet"}
+hdkeygen = { path = "../../hdkeygen" }
+symmetric-cipher = { path = "../../symmetric-cipher" }
+thiserror = { version = "1.0.13", default-features = false }
+wallet = { path = "../../wallet" }
 bech32 = "0.7.2"
 
 rand = { version = "0.8.3", features = ["getrandom"] }

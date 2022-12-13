@@ -167,11 +167,8 @@ mod tests {
         let voters = snapshot.to_full_snapshot_info();
 
         let snapshot = ArbitrarySnapshotGenerator::default().snapshot();
-        let mut proposals = snapshot.proposals();
-        // for some reasone they are base64 encoded and truncatin is just easier
-        for proposal in &mut proposals {
-            proposal.proposal.chain_proposal_id.truncate(32);
-        }
+        let proposals = snapshot.proposals();
+
         let proposals_by_challenge =
             proposals
                 .iter()
@@ -179,7 +176,10 @@ mod tests {
                     acc.entry(prop.proposal.challenge_id)
                         .or_default()
                         .push(Hash::from(
-                            <[u8; 32]>::try_from(prop.proposal.chain_proposal_id.clone()).unwrap(),
+                            crate::rewards::chain_proposal_id_bytes(
+                                &prop.proposal.chain_proposal_id,
+                            )
+                            .unwrap(),
                         ));
                     acc
                 });

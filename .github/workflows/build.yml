@@ -57,12 +57,9 @@ jobs:
         run: rustup default stable-x86_64-pc-windows-gnu
 
       - name: Free disk space
+        shell: powershell
         run: |
-          df -h
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          df -h
+          Get-PSDrive
 
       - name: Install dependencies
         run:

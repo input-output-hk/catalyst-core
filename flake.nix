@@ -56,7 +56,6 @@
       libraries = std.harvest inputs.self [
         ["catalyst-toolbox" "libraries"]
         ["chain-libs" "libraries"]
-        ["chain-libs" "libraries"]
         ["chain-wallet-libs" "libraries"]
         ["jormungandr" "libraries"]
         ["jortestkit" "libraries"]

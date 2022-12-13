@@ -56,20 +56,20 @@ function signVotes(votes, settings, privateKey) {
       vote.proposal.voteEncKey != undefined
     ) {
       let payload = wasm.Payload.new_private(
-        wasm.VotePlanId.from_bytes(vote.proposal.votePlan),
+        wasm.VotePlanId.from_hex(vote.proposal.votePlan),
         vote.proposal.options,
         vote.choice,
         vote.proposal.voteEncKey
       );
       voteCast = wasm.VoteCast.new(
-        wasm.VotePlanId.from_bytes(vote.proposal.votePlan),
+        wasm.VotePlanId.from_hex(vote.proposal.votePlan),
         vote.proposal.proposalIndex,
         payload
       );
     } else {
       let payload = wasm.Payload.new_public(vote.choice);
       voteCast = wasm.VoteCast.new(
-        wasm.VotePlanId.from_bytes(vote.proposal.votePlan),
+        wasm.VotePlanId.from_hex(vote.proposal.votePlan),
         vote.proposal.proposalIndex,
         payload
       );

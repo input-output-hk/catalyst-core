@@ -63,14 +63,16 @@ impl VoteCastTxBuilder {
     /// of the account.
     pub fn build_tx(
         mut self,
-        account: &[u8],
+        hex_account: String,
         counter: u32,
         lane: usize,
     ) -> Result<VoteCastTxBuilder, JsValue> {
         self.0 = self
             .0
             .build_tx(
-                account,
+                hex::decode(hex_account)
+                    .map_err(|e| JsValue::from(e.to_string()))?
+                    .as_slice(),
                 SpendingCounter::new(lane, counter).map_err(|e| JsValue::from(e.to_string()))?,
             )
             .map_err(|e| JsValue::from(e.to_string()))?;

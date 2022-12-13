@@ -61,22 +61,22 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: Set default linker
-        working-directory: "C:\\a\\${{ github.event.repository.name }}"
+        working-directory: "C:\\${{ github.event.repository.name }}"
         run: rustup default stable-x86_64-pc-windows-gnu
 
       - name: Free disk space
-        working-directory: "C:\\a\\${{ github.event.repository.name }}""
+        working-directory: "C:\\${{ github.event.repository.name }}""
         shell: powershell
         run: |
           Get-PSDrive
 
       - name: Install dependencies
-        working-directory: "C:\\a\\${{ github.event.repository.name }}"
+        working-directory: "C:\\${{ github.event.repository.name }}"
         run:
           choco install -y protoc openssl sqlite postgresql14
 
       - name: Set PostgreSQL env variables
-        working-directory: "C:\\a\\${{ github.event.repository.name }}"
+        working-directory: "C:\\${{ github.event.repository.name }}"
         shell: powershell
         run: |
           "PQ_LIB_DIR=${env:PROGRAMFILES}\PostgreSQL\14\lib" >> $env:GITHUB_ENV
@@ -88,5 +88,5 @@ jobs:
           toolchain: "1.65"
 
       - name: Build on Windows
-        working-directory: "C:\\a\\${{ github.event.repository.name }}"
+        working-directory: "C:\\${{ github.event.repository.name }}"
         run: cargo build

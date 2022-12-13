@@ -44,10 +44,12 @@ jobs:
     steps:
       - name: Checkout code
         run: |
-          echo ${{ github.event.repository.name }}
+          echo ${{ github.event.repository.url }}
           echo ${{ github.event.pull_request.head.sha }}
           mkdir C:\\${{ github.event.repository.name }}
-          git clone ${{ github.event.pull_request.head.sha }} C:\\${{ github.event.repository.name }} --depth 1
+          git clone -n ${{ github.event.repository.url }} C:\\${{ github.event.repository.name }} --depth 1
+          cd C:\\${{ github.event.repository.name }}
+          git checkout ${{ github.event.pull_request.head.sha }}
 
       - name: Allow long paths on Windows
         working-directory: "C:\\${{ github.event.repository.name }}\\${{ github.event.repository.name }}"

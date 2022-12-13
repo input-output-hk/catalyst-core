@@ -7,15 +7,12 @@
   l = nixpkgs.lib // builtins;
 
   name = "catalyst-toolbox";
-  root = inputs.self + "/src/${name}";
-
-  mkSimplePkg = subPkg: lib.mkPackage {pkgPath = root + "/${subPkg}";};
+  mkSimplePkg = subPkg: lib.mkPackage {pkgPath = "${name}/${subPkg}";};
 in {
   catalyst-toolbox = lib.mkPackage {
-    pkgPath = root + "/catalyst-toolbox";
+    pkgPath = "${name}/catalyst-toolbox";
     nativeBuildInputs = with nixpkgs; [
       postgresql.lib
     ];
   };
-  snapshot-lib = mkSimplePkg "snapshot-lib";
 }

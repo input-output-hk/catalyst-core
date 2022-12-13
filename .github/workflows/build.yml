@@ -82,9 +82,10 @@ jobs:
       - run: |
           $env:PQ_LIB_DIR
 
-      - name: Build on Windows
-        uses: actions-rs/toolchain@v1
+      - uses: actions-rs/toolchain@v1
         with:
           toolchain: "1.65"
-        - run: cargo build
-          working-directory: "C:\\a\\${{ github.event.repository.name }}\\${{ github.event.repository.name }}"
+
+      - name: Build on Windows
+        run: cargo build
+        working-directory: "C:\\a\\${{ github.event.repository.name }}\\${{ github.event.repository.name }}"

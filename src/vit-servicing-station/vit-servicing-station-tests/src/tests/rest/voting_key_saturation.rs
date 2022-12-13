@@ -1,10 +1,11 @@
 use crate::common::{
-    data,
+    data::{self, ArbitrarySnapshotGenerator},
     startup::{db::DbBuilder, server::ServerBootstrapper},
 };
 
 use assert_fs::TempDir;
 use itertools::Itertools;
+use vit_servicing_station_lib::v0::endpoints::snapshot::Group;
 use crate::common::snapshot::SnapshotBuilder;
 
 #[test] // api/v0/snapshot/voter/{tag}/{voting_key}
@@ -13,17 +14,16 @@ pub fn get_voting_key_saturation() {
 
     let snapshot = SnapshotBuilder::default().with_tag("tag").build();
 
+    //let mut gen = ArbitrarySnapshotGenerator::default();
+
+    //let funds = gen.funds();
+    //let groups = gen.groups(&funds);
+
+    //let snapshot = gen.snapshot();
+
     let (hash, token) = data::token();
 
-    let groups = snapshot
-        .content
-        .snapshot
-        .iter()
-        .map(|x| x.hir.voting_group.clone());
-        //.unique();
-        //.collect();
-
-    println!("group map: {:#?}", groups);
+    //println!("group map: {:#?}", groups);
 
     let db_path = DbBuilder::new()
         .with_token(token)

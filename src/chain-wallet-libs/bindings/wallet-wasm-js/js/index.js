@@ -1,12 +1,12 @@
 const wasm = require("wallet-wasm-js");
 
-module.exports.SpendingCounter = wasm.SpendingCounter;
-module.exports.SpendingCounters = wasm.SpendingCounters;
-module.exports.VotePlanId = wasm.VotePlanId;
-module.exports.Payload = wasm.Payload;
-module.exports.VoteCast = wasm.VoteCast;
-module.exports.BlockDate = wasm.BlockDate;
-module.exports.Certificate = wasm.Certificate;
+class BlockDate {
+  constructor(epoch, slot) {
+    this.epoch = epoch;
+    this.slot = slot;
+  }
+}
+module.exports.BlockDate = BlockDate;
 
 class Settings {
   constructor(json) {
@@ -19,66 +19,73 @@ class Settings {
 }
 module.exports.Settings = Settings;
 
-class Vote {
-  static public(vote_plan_bytes, proposal_index, choice) {
-    let res = new Vote();
-    let vote_plan = wasm.VotePlanId.from_bytes(vote_plan_bytes);
-    let payload = wasm.Payload.new_public(choice);
-    let vote_cast = wasm.VoteCast.new(vote_plan, proposal_index, payload);
-    res.vote_cast = vote_cast;
-    return res;
+class Proposal {
+  constructor(votePlan, voteOptions, proposalIndex, voteEncKey) {
+    this.votePlan = votePlan;
+    this.voteOptions = voteOptions;
+    this.proposalIndex = proposalIndex;
+    this.voteEncKey = voteEncKey;
   }
+}
+module.exports.Proposal = Proposal;
 
-  static private(vote_plan_bytes, proposal_index, options, choice, public_key) {
-    let res = new Vote();
-    let vote_plan = wasm.VotePlanId.from_bytes(vote_plan_bytes);
-    let payload = wasm.Payload.new_private(
-      vote_plan,
-      options,
-      choice,
-      public_key
-    );
-    vote_plan = wasm.VotePlanId.from_bytes(vote_plan_bytes);
-    let vote_cast = wasm.VoteCast.new(vote_plan, proposal_index, payload);
-    res.vote_cast = vote_cast;
-    return res;
+class Vote {
+  constructor(
+    proposal,
+    choice,
+    expiration,
+    spendingCounter,
+    spendingCounterLane
+  ) {
+    this.proposal = proposal;
+    this.choice = choice;
+    this.expiration = expiration;
+    this.spendingCounter = spendingCounter;
+    this.spendingCounterLane = spendingCounterLane;
   }
 }
 module.exports.Vote = Vote;
 
-const MAX_LANES = 8;
-
-class Wallet {
-  constructor(private_key, init_value) {
-    this.wallet = wasm.Wallet.import_key(private_key, init_value);
-
-    let spending_counters = wasm.SpendingCounters.new();
-    for (let lane = 0; lane < MAX_LANES; lane++) {
-      let spending_counter = wasm.SpendingCounter.new(lane, 1);
-      spending_counters.add(spending_counter);
-    }
-
-    this.wallet.set_state(init_value, spending_counters);
-  }
-
-  signVotes(votes, settings, valid_until, lane) {
-    let fragments = [];
-    for (let i = 0; i < votes.length; i++) {
-      let certificate = wasm.Certificate.vote_cast(votes[i].vote_cast);
-      let fragment = this.wallet.sign_transaction(
-        settings.settings,
-        valid_until,
-        lane,
-        certificate
+function signVotes(votes, settings, privateKey) {
+  let fragments = [];
+  for (let i = 0; i < votes.length; i++) {
+    let vote = votes[i];
+    let voteCast;
+    if (
+      vote.proposal.options != undefined &&
+      vote.proposal.voteEncKey != undefined
+    ) {
+      let payload = wasm.Payload.new_private(
+        wasm.VotePlanId.from_hex(vote.proposal.votePlan),
+        vote.proposal.options,
+        vote.choice,
+        vote.proposal.voteEncKey
       );
-      this.wallet.confirm_transaction(fragment.id());
-      fragments.push(fragment);
+      voteCast = wasm.VoteCast.new(
+        wasm.VotePlanId.from_hex(vote.proposal.votePlan),
+        vote.proposal.proposalIndex,
+        payload
+      );
+    } else {
+      let payload = wasm.Payload.new_public(vote.choice);
+      voteCast = wasm.VoteCast.new(
+        wasm.VotePlanId.from_hex(vote.proposal.votePlan),
+        vote.proposal.proposalIndex,
+        payload
+      );
     }
-    return fragments;
-  }
 
-  total_value() {
-    return this.wallet.total_value();
+    let builder = wasm.VoteCastTxBuilder.new(
+      settings.settings,
+      vote.expiration.epoch,
+      vote.expiration.slot,
+      voteCast
+    );
+    let fragment = builder
+      .build_tx(privateKey, vote.spendingCounter, vote.spendingCounterLane)
+      .finalize_tx();
+    fragments.push(fragment);
   }
+  return fragments;
 }
-module.exports.Wallet = Wallet;
+module.exports.signVotes = signVotes;

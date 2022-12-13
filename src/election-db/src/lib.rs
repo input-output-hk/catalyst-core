@@ -75,7 +75,16 @@ pub fn establish_connection(url : Option<&str>) -> Result<ElectionDB, Box<dyn Er
     Ok(db)
 }
 
-#[test]
+#[cfg(test)]
+mod test {
+    /// Check if the schema version in the DB is up to date.
+    #[test]
+    fn check_schema_version() {
+        use crate::establish_connection;
+        
+        establish_connection(None).unwrap();
+    }
+}
 
 /// Check if the schema version in the DB is up to date.
 fn check_schema_version() {

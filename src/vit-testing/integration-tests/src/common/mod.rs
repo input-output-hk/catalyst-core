@@ -1,7 +1,6 @@
 mod assert;
 pub mod load;
 pub mod mainnet_wallet_ext;
-pub mod registration;
 mod reps;
 mod rewards;
 pub mod snapshot;

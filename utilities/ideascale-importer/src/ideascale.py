@@ -27,6 +27,7 @@ class ExcludeUnknownFields:
 class Campaign(ExcludeUnknownFields):
     id: int
     name: str
+    description: str
     funnel_id: int
 
 
@@ -38,7 +39,9 @@ class CampaignGroup(ExcludeUnknownFields):
 
 class Idea(ExcludeUnknownFields):
     id: int
+    campaign_id: int
     title: str
+    text: str
 
 
 class Stage(ExcludeUnknownFields):

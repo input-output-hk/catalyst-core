@@ -12,15 +12,15 @@ class Model:
 class Challenge(Model):
     id: int
     election: int
-    type: str
+    category: str
     title: str
     description: str
-    rewards_currency: str
-    rewards_total: int
+    rewards_currency: Optional[str]
+    rewards_total: Optional[int]
 
     @staticmethod
     def table() -> str:
-        return "challenges"
+        return "challenge"
 
 
 @dataclasses.dataclass
@@ -42,8 +42,8 @@ class Proposal(Model):
     proposer_url: str
     proposer_relevant_experience: str
 
-    bb_proposal_id: bytes
-    bb_vote_options: str
+    bb_proposal_id: Optional[bytes]
+    bb_vote_options: Optional[str]
 
     @staticmethod
     def table() -> str:

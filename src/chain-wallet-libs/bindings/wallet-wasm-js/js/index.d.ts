@@ -35,6 +35,9 @@ export class Settings {
  */
 export class Vote {
   voteCast: wallet_wasm.VoteCast;
+  spendingCounter: number;
+  spendingCounterLane: number;
+  validUntil: BlockDate;
 
   /**
    * Constructs public wallet-wasm-js VoteCast vote

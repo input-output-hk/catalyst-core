@@ -13,7 +13,7 @@ pub struct TxBuilder<P: Payload> {
     builder: wallet::TransactionBuilder<P>,
 }
 
-impl<'settings, P: Payload> TxBuilder<P> {
+impl<P: Payload> TxBuilder<P> {
     pub fn new(settings: Settings, valid_until: BlockDate, payload: P) -> Self {
         let builder = wallet::TransactionBuilder::new(settings, payload, valid_until);
         Self { builder }

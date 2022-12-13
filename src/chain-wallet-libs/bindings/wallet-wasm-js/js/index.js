@@ -21,79 +21,27 @@ module.exports.Settings = Settings;
 
 class Vote {
   constructor(
-    spendingCounter,
-    spendingCounterLane,
-    validUntil,
-    votePlan,
-    proposalIndex,
+    proposal,
     choice,
-    options,
-    publicKey
+    expiration,
+    spendingCounter,
+    spendingCounterLane
   ) {
+    this.proposal = proposal;
+    this.choice = choice;
+    this.expiration = expiration;
     this.spendingCounter = spendingCounter;
     this.spendingCounterLane = spendingCounterLane;
-    this.validUntil = validUntil;
-    if (options != undefined && publicKey != undefined) {
-      let payload = wasm.Payload.new_private(
-        wasm.VotePlanId.from_bytes(votePlan),
-        options,
-        choice,
-        publicKey
-      );
-      this.voteCast = wasm.VoteCast.new(
-        wasm.VotePlanId.from_bytes(votePlan),
-        proposalIndex,
-        payload
-      );
-    } else {
-      let payload = wasm.Payload.new_public(choice);
-      this.voteCast = wasm.VoteCast.new(
-        wasm.VotePlanId.from_bytes(votePlan),
-        proposalIndex,
-        payload
-      );
-    }
   }
 }
 module.exports.Vote = Vote;
 
 class Proposal {
-  constructor(
-    votePlan,
-    voteOptions,
-    votePublic,
-    proposalIndex,
-    committee_public_key
-  ) {
+  constructor(votePlan, voteOptions, proposalIndex, voteEncKey) {
     this.votePlan = votePlan;
     this.voteOptions = voteOptions;
-    this.votePublic = votePublic;
     this.proposalIndex = proposalIndex;
-    this.committee_public_key = committee_public_key;
-  }
-
-  vote(spendingCounter, spendingCounterLane, validUntil, choice) {
-    if (this.votePublic) {
-      return new Vote(
-        spendingCounter,
-        spendingCounterLane,
-        validUntil,
-        this.votePlan,
-        this.proposalIndex,
-        choice
-      );
-    } else {
-      return new Vote(
-        spendingCounter,
-        spendingCounterLane,
-        validUntil,
-        this.votePlan,
-        this.proposalIndex,
-        choice,
-        this.voteOptions,
-        this.committee_public_key
-      );
-    }
+    this.voteEncKey = voteEncKey;
   }
 }
 module.exports.Proposal = Proposal;
@@ -101,18 +49,40 @@ module.exports.Proposal = Proposal;
 function signVotes(votes, settings, privateKey) {
   let fragments = [];
   for (let i = 0; i < votes.length; i++) {
+    let vote = votes[i];
+    let voteCast;
+    if (
+      vote.proposal.options != undefined &&
+      vote.proposal.voteEncKey != undefined
+    ) {
+      let payload = wasm.Payload.new_private(
+        wasm.VotePlanId.from_bytes(vote.proposal.votePlan),
+        vote.proposal.options,
+        vote.choice,
+        vote.proposal.voteEncKey
+      );
+      voteCast = wasm.VoteCast.new(
+        wasm.VotePlanId.from_bytes(vote.proposal.votePlan),
+        vote.proposal.proposalIndex,
+        payload
+      );
+    } else {
+      let payload = wasm.Payload.new_public(vote.choice);
+      voteCast = wasm.VoteCast.new(
+        wasm.VotePlanId.from_bytes(vote.proposal.votePlan),
+        vote.proposal.proposalIndex,
+        payload
+      );
+    }
+
     let builder = wasm.VoteCastTxBuilder.new(
       settings.settings,
-      votes[i].validUntil.epoch,
-      votes[i].validUntil.slot,
-      votes[i].voteCast
+      vote.expiration.epoch,
+      vote.expiration.slot,
+      voteCast
     );
     let fragment = builder
-      .build_tx(
-        privateKey,
-        votes[i].spendingCounter,
-        votes[i].spendingCounterLane
-      )
+      .build_tx(privateKey, vote.spendingCounter, vote.spendingCounterLane)
       .finalize_tx();
     fragments.push(fragment);
   }

@@ -294,7 +294,6 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
     pub fn spending_counter_increasing_wrong_lane() {
         let mut sc_increasing = SpendingCounterIncreasing::default();
         let incorrect_sc = SpendingCounter::new(SpendingCounterIncreasing::LANES, 1).unwrap();

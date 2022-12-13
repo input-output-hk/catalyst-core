@@ -19,10 +19,9 @@ describe("vote cast certificate tests", function () {
         "hex"
       ),
       2,
-      true,
       8
     );
-    let vote = proposal.vote(1, 1, new wallet.BlockDate(0, 1), 0);
+    let vote = new wallet.Vote(proposal, 0, new wallet.BlockDate(0, 1), 1, 1);
     let fragments = wallet.signVotes([vote], settings, private_key);
     assert(fragments.length == 1);
   });
@@ -37,14 +36,13 @@ describe("vote cast certificate tests", function () {
         "hex"
       ),
       4,
-      true,
       8,
       Buffer.from(
         "bed88887abe0a84f64691fe0bdfa3daf1a6cd697a13f07ae07588910ce39c927",
         "hex"
       )
     );
-    let vote = proposal.vote(1, 1, new wallet.BlockDate(0, 1), 0);
+    let vote = new wallet.Vote(proposal, 0, new wallet.BlockDate(0, 1), 1, 1);
     let fragments = wallet.signVotes([vote], settings, private_key);
     assert(fragments.length == 1);
   });

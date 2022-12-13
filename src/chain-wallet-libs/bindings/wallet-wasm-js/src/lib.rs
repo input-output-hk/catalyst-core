@@ -80,7 +80,7 @@ impl VoteCastTxBuilder {
     /// Finish step of building VoteCast fragment
     pub fn finalize_tx(self) -> Result<Fragment, JsValue> {
         self.0
-            .finalize_tx((), |tx| FragmentLib::VoteCast(tx))
+            .finalize_tx((), FragmentLib::VoteCast)
             .map_err(|e| JsValue::from(e.to_string()))
             .map(Fragment)
     }

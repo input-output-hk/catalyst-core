@@ -22,8 +22,6 @@ pub enum FragmentOrigin {
 }
 
 impl FragmentOrigin {
-    // return default network identifier
-    // use case: error handling
     pub fn default_origin_addr() -> Self {
         FragmentOrigin::Network {
             addr: SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 27000),

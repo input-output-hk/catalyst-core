@@ -12,7 +12,6 @@ export class BlockDate {
  */
 export class Settings {
   settings: wallet_wasm.Settings;
-  spending_counter: wallet_wasm.SpendingCounter;
 
   /**
    * Settings type constructor
@@ -30,49 +29,55 @@ export class Settings {
   toJson(): string;
 }
 
+export class Proposal {
+  votePlan: string;
+  proposalIndex: number;
+  voteOptions?: number;
+  voteEncKey?: string;
+
+  /**
+   * Proposal constructor
+   *
+   * @param {string} votePlan vote plan id bytes representation
+   * @param {number} voteOptions number of available vote plan options
+   * @param {number} proposalIndex vote's plan proposal index, mandatory for private proposal
+   * @param {string} voteEncKey committee public key in hex representation, mandatory for private proposal
+   * @returns {Proposal}
+   */
+  constructor(
+    votePlan: string,
+    voteOptions: number,
+    proposalIndex?: number,
+    voteEncKey?: string
+  ): Proposal;
+}
+
 /**
  * Wrapper over wallet-wasm-js VoteCast type
  */
 export class Vote {
-  voteCast: wallet_wasm.VoteCast;
+  proposal: Proposal;
+  choice: number;
+  expiration: BlockDate;
   spendingCounter: number;
   spendingCounterLane: number;
-  validUntil: BlockDate;
 
   /**
-   * Constructs public wallet-wasm-js VoteCast vote
+   * Vote constructor
    *
-   * @param {wallet_wasm.SpendingCounter} spending_counter
-   * @param {Uint8Array} vote_plan_bytes vote plan id bytes representation
-   * @param {number} proposal_index vote's plan proposal index
+   * @param {Proposal} proposal
    * @param {number} choice choosen vote plan option
+   * @param {BlockDate} expiration expiration date of vote transaction
+   * @param {number} spendingCounter
+   * @param {number} spendingCounterLane
    * @returns {Vote}
    */
-  static public(
-    spending_counter: wallet_wasm.SpendingCounter,
-    vote_plan_bytes: Uint8Array,
-    proposal_index: number,
-    choice: number
-  ): Vote;
-
-  /**
-   * Constructs public wallet-wasm-js VoteCast vote
-   *
-   * @param {wallet_wasm.SpendingCounter} spending_counter
-   * @param {Uint8Array} vote_plan_bytes vote plan id bytes representation
-   * @param {number} proposal_index vote's plan proposal index
-   * @param {number} options number of available vote plan options
-   * @param {number} choice choosen vote plan option
-   * @param {Uint8Array} public_key committee public key bytes representation
-   * @returns {Vote}
-   */
-  static private(
-    spending_counter: wallet_wasm.SpendingCounter,
-    vote_plan_bytes: Uint8Array,
-    proposal_index: number,
-    options: number,
+  constructor(
+    proposal: Proposal,
     choice: number,
-    public_key: Uint8Array
+    expiration: BlockDate,
+    spendingCounter: number,
+    spendingCounterLane: number
   ): Vote;
 }
 
@@ -81,13 +86,11 @@ export class Vote {
  *
  * @param {Vote[]} votes list of votes
  * @param {Settings} settings wallet Settings
- * @param {wallet_wasm.BlockDate} valid_until
- * @param {Uint8Array} private_key user private key bytes representation
+ * @param {string} privateKey user private key hex representation
  * @returns {wallet_wasm.Fragment[]}
  */
 function signVotes(
   votes: Vote[],
   settings: Settings,
-  valid_until: wallet_wasm.BlockDate,
-  private_key: Uint8Array
+  privateKey: string
 ): wallet_wasm.Fragment[];

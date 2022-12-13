@@ -19,6 +19,16 @@ class Settings {
 }
 module.exports.Settings = Settings;
 
+class Proposal {
+  constructor(votePlan, voteOptions, proposalIndex, voteEncKey) {
+    this.votePlan = votePlan;
+    this.voteOptions = voteOptions;
+    this.proposalIndex = proposalIndex;
+    this.voteEncKey = voteEncKey;
+  }
+}
+module.exports.Proposal = Proposal;
+
 class Vote {
   constructor(
     proposal,
@@ -35,16 +45,6 @@ class Vote {
   }
 }
 module.exports.Vote = Vote;
-
-class Proposal {
-  constructor(votePlan, voteOptions, proposalIndex, voteEncKey) {
-    this.votePlan = votePlan;
-    this.voteOptions = voteOptions;
-    this.proposalIndex = proposalIndex;
-    this.voteEncKey = voteEncKey;
-  }
-}
-module.exports.Proposal = Proposal;
 
 function signVotes(votes, settings, privateKey) {
   let fragments = [];

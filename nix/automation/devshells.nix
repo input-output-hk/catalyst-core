@@ -10,19 +10,23 @@
 
   catalystCore = {...}: {
     name = nixpkgs.lib.mkForce "Catalyst Core";
-    env = mkEnv {
-      PROTOC = "${nixpkgs.protobuf}/bin/protoc";
-      PROTOC_INCLUDE = "${nixpkgs.protobuf}/include";
-    };
+    env = with nixpkgs;
+      mkEnv {
+        OPENSSL_NO_VENDOR = 1;
+        OPENSSL_DIR = "${l.getDev openssl}";
+        OPENSSL_LIB_DIR = "${l.getLib openssl}/lib";
+        PROTOC = "${protobuf}/bin/protoc";
+        PROTOC_INCLUDE = "${protobuf}/include";
+      };
     nixago = [
       cell.configs.lefthook
       cell.configs.prettier
       cell.configs.treefmt
     ];
     packages = with nixpkgs; [
+      gcc
       rustToolchain
       pkg-config
-      openssl
       protobuf
       uniffi-bindgen
       postgresql

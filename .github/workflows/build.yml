@@ -63,7 +63,7 @@ jobs:
 
       - name: Install dependencies
         run:
-          choco install -y protoc openssl sqlite postgresql14 visualstudio2022buildtools
+          choco install -y protoc openssl sqlite postgresql14
 
       - name: Set PostgreSQL env variables
         shell: powershell

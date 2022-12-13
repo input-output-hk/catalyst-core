@@ -47,7 +47,7 @@ jobs:
           echo ${{ github.event.repository.url }}
           echo ${{ github.event.pull_request.head.sha }}
           mkdir C:\\${{ github.event.repository.name }}
-          git clone -n https://github.com/input-output-hk/${{ github.event.repository.name }}.git C:\\${{ github.event.repository.name }} --depth 1
+          git clone -n -v --progress  --depth 1 https://github.com/input-output-hk/${{ github.event.repository.name }}.git C:\\${{ github.event.repository.name }}
           cd C:\\${{ github.event.repository.name }}
           git checkout ${{ github.event.pull_request.head.sha }}
 

@@ -517,7 +517,8 @@ impl FragmentReplayer {
         let builder_help = wallet
             .new_transaction(tx.total_input().unwrap(), 0)
             .unwrap();
-        let mut builder = TransactionBuilder::new(&self.settings, vote_cast, tx.valid_until());
+        let mut builder =
+            TransactionBuilder::new(self.settings.clone(), vote_cast, tx.valid_until());
         builder.add_input(builder_help.input(), builder_help.witness_builder());
         let res = Fragment::VoteCast(builder.finalize_tx(()).unwrap());
 
@@ -567,7 +568,7 @@ impl FragmentReplayer {
         let builder_help = wallet
             .new_transaction(tx.total_input().unwrap(), 0)
             .unwrap();
-        let mut builder = TransactionBuilder::new(&self.settings, NoExtra, tx.valid_until());
+        let mut builder = TransactionBuilder::new(self.settings.clone(), NoExtra, tx.valid_until());
         builder.add_input(builder_help.input(), builder_help.witness_builder());
         builder.add_output(Output::from_address(output_address, output.value));
         let res = Fragment::Transaction(builder.finalize_tx(()).unwrap());

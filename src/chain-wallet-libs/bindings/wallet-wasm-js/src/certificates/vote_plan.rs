@@ -11,6 +11,16 @@ pub struct VotePlanId(pub(crate) VotePlanIdLib);
 
 #[wasm_bindgen]
 impl VotePlanId {
+    pub fn from_hex(hex_data: String) -> Result<VotePlanId, JsValue> {
+        Ok(VotePlanId(
+            VotePlanIdLib::try_from(
+                hex::decode(hex_data)
+                    .map_err(|e| JsValue::from(e.to_string()))?
+                    .as_slice(),
+            )
+            .map_err(|e| JsValue::from(e.to_string()))?,
+        ))
+    }
     pub fn from_bytes(bytes: &[u8]) -> Result<VotePlanId, JsValue> {
         Ok(VotePlanId(
             VotePlanIdLib::try_from(bytes).map_err(|e| JsValue::from(e.to_string()))?,

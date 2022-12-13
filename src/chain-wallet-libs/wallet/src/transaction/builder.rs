@@ -16,8 +16,8 @@ use thiserror::Error;
 #[error("Cannot balance the transaction")]
 pub struct BalancingError;
 
-pub struct TransactionBuilder<'settings, P: Payload> {
-    settings: &'settings Settings,
+pub struct TransactionBuilder<P: Payload> {
+    settings: Settings,
     payload: P,
     validity: BlockDate,
     outputs: Vec<Output<Address>>,
@@ -31,9 +31,9 @@ pub enum AddInputStatus {
     NotEnoughSpace,
 }
 
-impl<'settings, P: Payload> TransactionBuilder<'settings, P> {
+impl<P: Payload> TransactionBuilder<P> {
     /// create a new transaction builder with the given settings and outputs
-    pub fn new(settings: &'settings Settings, payload: P, validity: BlockDate) -> Self {
+    pub fn new(settings: Settings, payload: P, validity: BlockDate) -> Self {
         Self {
             settings,
             payload,

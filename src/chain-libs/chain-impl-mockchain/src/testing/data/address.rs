@@ -1,6 +1,6 @@
 use crate::{
     account::Identifier,
-    account::SpendingCounter,
+    account::{LedgerError, SpendingCounter},
     accounting::account::SpendingCounterIncreasing,
     chaintypes::HeaderId,
     key::EitherEd25519SecretKey,
@@ -190,7 +190,9 @@ impl AddressData {
 
     pub fn confirm_transaction_at_lane(&mut self, lane: usize) -> Result<(), Error> {
         let sc = self.spending_counter_at_lane(lane)?;
-        self.spending_counter.next_verify(sc).map_err(Into::into)
+        self.spending_counter
+            .next_verify(sc)
+            .map_err(|e| LedgerError::SpendingCounterError(e).into())
     }
 
     pub fn spending_counter_at_lane(&self, lane: usize) -> Result<SpendingCounter, Error> {

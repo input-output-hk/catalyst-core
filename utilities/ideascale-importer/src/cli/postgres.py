@@ -1,14 +1,15 @@
 import asyncio
-import psycopg
+import asyncpg
 import rich.panel
 import rich.prompt
 import rich.table
 import rich.console
 import typer
-from typing import List
+from typing import List, Optional
 
 import db
 import ideascale
+import mappers
 
 app = typer.Typer()
 
@@ -17,17 +18,36 @@ app = typer.Typer()
 def import_all(
     api_token: str = typer.Option(..., help="IdeaScale API token"),
     database_url: str = typer.Option(..., help="Postgres database URL"),
+    election_id: Optional[int] = typer.Option(
+        None,
+        help="Database row id of the election which data will be imported",
+    ),
+    campaign_group_id: Optional[int] = typer.Option(
+        None,
+        help="IdeaScale campaign group id for the election which data will be imported",
+    ),
+    stage_id: Optional[int] = typer.Option(
+        None,
+        help="IdeaScale stage id for from which proposal data will be imported",
+    ),
 ):
     """
-    Import all fund data from IdeaScale
+    Import all election data from IdeaScale for a given election
     """
-    async def inner():
+    async def inner(
+        election_id: Optional[int],
+        campaign_group_id: Optional[int],
+        stage_id: Optional[int],
+    ):
         console = rich.console.Console()
 
-        db_conn = await psycopg.AsyncConnection.connect(database_url)
+        db_conn: asyncpg.Connection = await asyncpg.connect(database_url)
 
-        select_election_id = rich.prompt.Prompt.ask("Enter the election database id")
-        if not await db.election_exists(db_conn, int(select_election_id, base=10)):
+        if election_id is None:
+            select_election_id = rich.prompt.Prompt.ask("Enter the election database id")
+            election_id = int(select_election_id, base=10)
+
+        if not await db.election_exists(db_conn, election_id):
             console.print("\n[red]No election exists with the given id[/red]")
             return
 
@@ -41,60 +61,85 @@ def import_all(
             console.print("No funds found")
             return
 
-        console.print()
-        funds_table = rich.table.Table("Id", "Name", title="Available Funds")
+        if campaign_group_id is None:
+            console.print()
+            funds_table = rich.table.Table("Id", "Name", title="Available Funds")
 
-        for group in groups:
-            funds_table.add_row(str(group.id), group.name)
+            for group in groups:
+                funds_table.add_row(str(group.id), group.name)
+            console.print(funds_table)
 
-        console.print(funds_table)
+            selected_campaign_group_id = rich.prompt.Prompt.ask(
+                "Select a fund id",
+                choices=list(map(lambda g: str(g.id), groups)),
+                show_choices=False)
+            campaign_group_id = int(selected_campaign_group_id, base=10)
+            console.print()
 
-        selected_campaign_group_id = rich.prompt.Prompt.ask(
-            "Select a fund id",
-            choices=list(map(lambda g: str(g.id), groups)),
-            show_choices=False)
-        campaign_group_id = int(selected_campaign_group_id, base=10)
-        console.print()
+        group = None
+        for g in groups:
+            if g.id == campaign_group_id:
+                group = g
+                break
 
-        # Garanteed to match only 1
-        group = [g for g in groups if g.id == campaign_group_id][0]
-
-        funnel_ids = set()
-        for c in group.campaigns:
-            if c.funnel_id is not None:
-                funnel_ids.add(c.funnel_id)
-
-        funnels: List[ideascale.Funnel] = []
-        with client.request_progress_observer:
-            funnels = await asyncio.gather(*[client.funnel(id) for id in funnel_ids])
-
-        stages = [stage for funnel in funnels for stage in funnel.stages]
-
-        if len(stages) == 0:
-            console.print("No stages found")
+        if group is None:
+            console.print("\n[red]Campaign group id does not correspond to any fund campaign group id[/red]")
             return
 
-        stages_table = rich.table.Table("Id", "Label", "Funnel Name", title="Available Stages")
+        if stage_id is None:
+            funnel_ids = set()
+            for c in group.campaigns:
+                if c.funnel_id is not None:
+                    funnel_ids.add(c.funnel_id)
 
-        stages.sort(key=lambda s: f"{s.funnel_name}{s.id}")
-        for stage in stages:
-            stages_table.add_row(str(stage.id), stage.label, stage.funnel_name)
-        console.print(stages_table)
+            funnels: List[ideascale.Funnel] = []
+            with client.request_progress_observer:
+                funnels = await asyncio.gather(*[client.funnel(id) for id in funnel_ids])
 
-        selected_stage_id = rich.prompt.Prompt.ask(
-            "Select a stage id",
-            choices=list(map(lambda s: str(s.id), stages)),
-            show_choices=False)
-        stage_id = int(selected_stage_id, base=10)
-        console.print()
+            stages = [stage for funnel in funnels for stage in funnel.stages]
+
+            if len(stages) == 0:
+                console.print("No stages found")
+                return
+
+            stages_table = rich.table.Table("Id", "Label", "Funnel Name", title="Available Stages")
+
+            stages.sort(key=lambda s: f"{s.funnel_name}{s.id}")
+            for stage in stages:
+                stages_table.add_row(str(stage.id), stage.label, stage.funnel_name)
+            console.print(stages_table)
+
+            selected_stage_id = rich.prompt.Prompt.ask(
+                "Select a stage id",
+                choices=list(map(lambda s: str(s.id), stages)),
+                show_choices=False)
+            stage_id = int(selected_stage_id, base=10)
+            console.print()
 
         ideas = []
         with client.request_progress_observer:
             ideas = await client.stage_ideas(stage_id)
-        console.print(f"Fetched {len(ideas)} ideas")
 
-        console.print("SHOULD MAP AND INSERT DATA INTO POSTGRES TABLES NOW")
+        challenges = [mappers.map_challenge(a, election_id) for a in group.campaigns]
+        challenge_count = len(challenges)
+        proposal_count = 0
+
+        async with db_conn.transaction():
+            challenge_row_ids = await db.insert_many(db_conn, challenges, returning="row_id")
+
+            # This mapping is needed because the 'challenge' foreign key in the 'proposal' table
+            # expects challenge.row_id which is generated by Postgres and
+            # not challenge.id which comes from IdeaScale.
+            challenge_id_to_row_id_map = {}
+            for challenge, row_id in zip(challenges, challenge_row_ids):
+                challenge_id_to_row_id_map[challenge.id] = row_id
+
+            proposals = [mappers.map_proposal(a, challenge_id_to_row_id_map) for a in ideas]
+            proposal_count = len(proposals)
+            await db.insert_many(db_conn, proposals)
 
         await db_conn.close()
 
-    asyncio.run(inner())
+        console.print(f"Imported {challenge_count} challenges and {proposal_count} proposals")
+
+    asyncio.run(inner(election_id, campaign_group_id, stage_id))

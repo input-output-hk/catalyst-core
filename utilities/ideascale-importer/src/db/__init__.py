@@ -1,32 +1,54 @@
+import asyncpg
 import dataclasses
-import psycopg
-import typing
+from typing import Any, List, Optional, Tuple, TypeVar
 
 from .models import Model
 
 
-def insert_statement(model: Model) -> str:
-    field_names = []
-    field_values = []
-
-    for field in dataclasses.fields(model):
-        field_value = getattr(model, field.name)
-        if field_value is not None:
-            if field.type is str or \
-               typing.get_origin(field.type) is typing.Union and typing.get_args(field.type) == (str, type(None)):
-                field_values.append(f"'{field_value}'")
-            else:
-                field_values.append(str(field_value))
-            field_names.append(field.name)
-
-    field_names_str = ",".join(field_names)
-    field_values_str = ",".join(field_values)
-
-    return f"INSERT INTO {model.table()} ({field_names_str}) VALUES ({field_values_str})"
+M = TypeVar("M", bound=Model)
 
 
-async def election_exists(conn: psycopg.AsyncConnection, id: int) -> bool:
-    async with conn.cursor() as cur:
-        await cur.execute(f"SELECT row_id FROM election WHERE row_id = {id}")
-        result = await cur.fetchone()
-        return result is not None
+def items(models: List[M]) -> Tuple[List[str], List[List[Any]]]:
+    if len(models) == 0:
+        raise Exception("No models")
+
+    field_names = [field.name for field in dataclasses.fields(models[0])]
+    return (field_names, [[getattr(m, f) for f in field_names] for m in models])
+
+
+async def insert_many(
+    conn: asyncpg.Connection,
+    models: List[M],
+    returning: Optional[str] = None
+) -> List[Any]:
+    if len(models) == 0:
+        return []
+
+    cols, vals = items(models)
+
+    # Creates a list for the placeholders for value params, e.g. ["($1, $2, $3)", "($4, $5, $6)"]
+    val_nums = []
+    for i in range(0, len(vals)):
+        nums = range(i*len(cols)+1, (i+1)*len(cols)+1)
+        nums_str = ",".join(map(lambda x: f"${x}", nums))
+        val_nums.append(f"({nums_str})")
+
+    val_nums_str = ",".join(val_nums)
+    cols_str = ','.join(cols)
+
+    flat_vals = [v for vs in vals for v in vs]
+
+    stmt_template = f"INSERT INTO {models[0].table()} ({cols_str}) VALUES {val_nums_str}"
+
+    if returning is None:
+        await conn.execute(stmt_template, *flat_vals)
+        return []
+    else:
+        stmt_template += f" RETURNING {returning}"
+        ret = await conn.fetch(stmt_template, *flat_vals)
+        return [record[returning] for record in ret]
+
+
+async def election_exists(conn: asyncpg.Connection, id: int) -> bool:
+    row = await conn.fetchrow("SELECT row_id FROM election WHERE row_id = $1", id)
+    return row is not None

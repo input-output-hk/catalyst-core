@@ -16,13 +16,6 @@ proptest = { workspace = true }
 test-strategy = "0.2"
 trybuild = "1"
 
-[target.'cfg(unix)'.dev-dependencies]
-jemalloc-ctl = "0.3"
-jemallocator = "*"
-
-[[example]]
-name = "memdump"
-path = "examples/memdump/main.rs"
 
 [[bench]]
 harness = false

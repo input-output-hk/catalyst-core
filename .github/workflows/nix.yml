@@ -2,9 +2,21 @@ name: Nix CI
 
 on:
   pull_request:
+    paths:
+      - '.github/workflows/nix.yml'
+      - 'nix/**'
+      - 'src/**'
+      - 'Cargo.*'
+      - 'flake.*'
   push:
     branches:
       - main
+    paths:
+      - '.github/workflows/nix.yml'
+      - 'nix/**'
+      - 'src/**'
+      - 'Cargo.*'
+      - 'flake.*'
   workflow_dispatch:
 
 permissions:
@@ -26,24 +38,6 @@ jobs:
       - name: Standard Discovery
         uses: divnix/std-action/discover@main
         id: discovery
-  build-packages:
-    needs: discover
-    strategy:
-      fail-fast: false
-      matrix:
-        target: ${{ fromJSON(needs.discover.outputs.hits).packages.build }}
-    name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: divnix/std-action/run@fix-run
-        with:
-          extra_nix_config: |
-            ${{ needs.discover.outputs.nix_conf }}
-          json: ${{ toJSON(matrix.target) }}
-          nix_key: ${{ secrets.NIX_SIGNING_KEY }}
-          s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          cache: s3://iog-catalyst-cache?region=eu-central-1
   publish-containers:
     needs: discover
     strategy:
@@ -67,3 +61,46 @@ jobs:
           s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           cache: s3://iog-catalyst-cache?region=eu-central-1
+  build-packages:
+    if: always()
+    needs:
+      - discover
+      - publish-containers
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJSON(needs.discover.outputs.hits).packages.build }}
+    name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: divnix/std-action/run@fix-run
+        with:
+          extra_nix_config: |
+            ${{ needs.discover.outputs.nix_conf }}
+          json: ${{ toJSON(matrix.target) }}
+          nix_key: ${{ secrets.NIX_SIGNING_KEY }}
+          s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          cache: s3://iog-catalyst-cache?region=eu-central-1
+  build-devshells:
+    if: always()
+    needs:
+      - discover
+      - publish-containers
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJSON(needs.discover.outputs.hits).devshells.build }}
+    name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: divnix/std-action/run@main
+        with:
+          github_pat: ${{ secrets.HUB_PAT }}
+          nix_key: ${{ secrets.NIX_SECRET_KEY }}
+          s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          cache: s3://iohk-mamba-bitte/infra/binary-cache/?region=eu-central-1
+          extra_nix_config: |
+            ${{ needs.discover.outputs.nix_conf }}
+          json: ${{ toJSON(matrix.target) }}

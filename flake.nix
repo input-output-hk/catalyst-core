@@ -32,7 +32,7 @@
 
       cellBlocks = [
         (std.blockTypes.containers "containers" {ci.publish = true;})
-        (std.blockTypes.devshells "devshells")
+        (std.blockTypes.devshells "devshells" {ci.build = true;})
         (std.blockTypes.functions "constants")
         (std.blockTypes.functions "lib")
         (std.blockTypes.functions "toolchains")

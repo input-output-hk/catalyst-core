@@ -92,4 +92,4 @@ jobs:
 
       - name: Build on Windows
         working-directory: "C:\\${{ github.event.repository.name }}"
-        run: cargo build
+        run: cargo build --workspace

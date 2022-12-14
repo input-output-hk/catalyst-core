@@ -7,18 +7,8 @@
   l = nixpkgs.lib // builtins;
 
   name = "vit-servicing-station";
-  root = inputs.self + "/src/${name}";
-
-  mkVitPkg = subPkg:
-    lib.mkPackage {
-      pkgPath = root + "/${subPkg}";
-      nativeBuildInputs = with nixpkgs; [
-        postgresql.lib
-      ];
-    };
+  mkSimplePkg = subPkg: lib.mkPackage {pkgPath = "${name}/${subPkg}";};
 in {
-  vit-servicing-station-cli = mkVitPkg "vit-servicing-station-cli";
-  vit-servicing-station-lib = mkVitPkg "vit-servicing-station-lib";
-  vit-servicing-station-server = mkVitPkg "vit-servicing-station-server";
-  vit-servicing-station-tests = mkVitPkg "vit-servicing-station-tests";
+  vit-servicing-station-cli = mkSimplePkg "vit-servicing-station-cli";
+  vit-servicing-station-server = mkSimplePkg "vit-servicing-station-server";
 }

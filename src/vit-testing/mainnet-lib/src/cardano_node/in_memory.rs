@@ -72,8 +72,18 @@ impl InMemoryNode {
     /// On accessing ledger state
     #[must_use]
     pub fn start(block0: Block0) -> Self {
-        let slot_duration = block0.settings.slot_duration;
-        let shared_ledger: Arc<RwLock<Ledger>> = Arc::new(RwLock::new(Ledger::new(block0)));
+        Self::start_from_ledger(Ledger::new(block0))
+    }
+
+    /// Starts node process from ledger
+    ///
+    /// # Panics
+    ///
+    /// On accessing ledger state
+    #[must_use]
+    pub fn start_from_ledger(ledger: Ledger) -> Self {
+        let slot_duration = ledger.settings().slot_duration;
+        let shared_ledger: Arc<RwLock<Ledger>> = Arc::new(RwLock::new(ledger));
         let shared_block_notifier = SharedPharos::default();
 
         let ledger = shared_ledger.clone();

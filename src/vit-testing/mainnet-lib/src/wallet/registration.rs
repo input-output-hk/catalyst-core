@@ -30,7 +30,7 @@ lazy_static::lazy_static! {
     pub  static ref METADATUM_3: TransactionMetadatum = TransactionMetadatum::new_int(&Int::new_i32(3));
     /// metadatum label 4 constant
     pub  static ref METADATUM_4: TransactionMetadatum = TransactionMetadatum::new_int(&Int::new_i32(4));
-    /// metadatum label 4 constant
+    /// metadatum label 5 constant
     pub  static ref METADATUM_5: TransactionMetadatum = TransactionMetadatum::new_int(&Int::new_i32(5));
 }
 
@@ -115,6 +115,10 @@ impl<'a> RegistrationTransactionBuilder<'a> {
             &METADATUM_4,
             &TransactionMetadatum::new_int(&Int::new(&BigNum::from(self.slot_no))),
         );
+        meta_map.insert(
+            &METADATUM_5,
+            &TransactionMetadatum::new_int(&Int::new(&BigNum::zero())),
+        );
 
         let mut metadata = GeneralTransactionMetadata::new();
         metadata.insert(
@@ -145,7 +149,7 @@ impl<'a> RegistrationTransactionBuilder<'a> {
     pub fn build(self) -> Transaction {
         let metadata = self.build_metadata();
         TransactionBuilder::build_transaction_with_metadata(
-            &self.wallet.address().to_address(),
+            &self.wallet.reward_address().to_address(),
             self.wallet.stake,
             &metadata,
         )

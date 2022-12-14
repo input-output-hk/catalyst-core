@@ -1,4 +1,4 @@
-use crate::InMemoryNode;
+use crate::{Block0, InMemoryNode};
 use cardano_serialization_lib::metadata::GeneralTransactionMetadata;
 use cardano_serialization_lib::utils::BigNum;
 use cardano_serialization_lib::{Block, Transaction, TransactionWitnessSet};
@@ -45,7 +45,6 @@ pub struct InMemoryDbSync {
     stakes: HashMap<Address, BigNum>,
     settings: Settings,
 }
-
 impl Debug for InMemoryDbSync {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.settings)
@@ -53,6 +52,15 @@ impl Debug for InMemoryDbSync {
 }
 
 impl InMemoryDbSync {
+
+    /// Creates new instance out of block0
+    #[must_use]
+    pub fn from_block0(block0: &Block0) -> Self {
+        let mut db_sync = InMemoryDbSync::default();
+        db_sync.on_block_propagation(&block0.block);
+        db_sync
+    }
+
     /// Connects to Cardano mock node using simple observer/observable mechanism
     ///
     /// # Panics

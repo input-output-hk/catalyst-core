@@ -105,7 +105,30 @@ pub fn deserialize_hash<'de, D>(deserializer: D) -> Result<Blake2b256, D::Error>
 where
     D: Deserializer<'de>,
 {
-    let hash_visitor = HashVisitor::new();
+    struct HashVisitor;
+    impl<'de> Visitor<'de> for HashVisitor {
+        type Value = Blake2b256;
+
+        fn expecting(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+            write!(fmt, "a Blake2b256 Hash",)
+        }
+
+        fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+        where
+            E: DeserializerError,
+        {
+            Blake2b256::from_str(v).map_err(E::custom)
+        }
+
+        fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
+        where
+            E: DeserializerError,
+        {
+            Blake2b256::try_from_slice(v).map_err(E::custom)
+        }
+    }
+
+    let hash_visitor = HashVisitor;
     if deserializer.is_human_readable() {
         deserializer.deserialize_str(hash_visitor)
     } else {
@@ -113,7 +136,6 @@ where
     }
 }
 
-struct HashVisitor;
 struct SecretKeyVisitor<A: AsymmetricKey> {
     _marker: std::marker::PhantomData<A>,
 }
@@ -123,11 +145,6 @@ struct PublicKeyVisitor<A: AsymmetricPublicKey> {
 struct SignatureVisitor<T, A: VerificationAlgorithm> {
     _marker_1: std::marker::PhantomData<T>,
     _marker_2: std::marker::PhantomData<A>,
-}
-impl HashVisitor {
-    fn new() -> Self {
-        HashVisitor
-    }
 }
 impl<A: AsymmetricKey> SecretKeyVisitor<A> {
     fn new() -> Self {
@@ -246,28 +263,6 @@ where
             Err(SignatureError::StructureInvalid) => Err(E::custom("Invalid structure")),
             Ok(key) => Ok(key),
         }
-    }
-}
-
-impl<'de> Visitor<'de> for HashVisitor {
-    type Value = Blake2b256;
-
-    fn expecting(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        write!(fmt, "a Blake2b256 Hash",)
-    }
-
-    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-    where
-        E: DeserializerError,
-    {
-        Blake2b256::from_str(v).map_err(E::custom)
-    }
-
-    fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
-    where
-        E: DeserializerError,
-    {
-        Blake2b256::try_from_slice(v).map_err(E::custom)
     }
 }
 

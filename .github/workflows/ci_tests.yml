@@ -4,7 +4,6 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -224,6 +223,11 @@ jobs:
       run: |
         cd src/chain-wallet-libs/bindings/wallet-js
         wasm-pack build --release --target=nodejs -d pkg
+
+    - name: Build JS package
+      run: |
+        cd src/chain-wallet-libs/bindings/wallet-js/js
+        npm install
 
     - name: Run JS tests
       run: |

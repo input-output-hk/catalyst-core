@@ -70,7 +70,7 @@ impl<'a> FragmentCheck<'a> {
                     serde_yaml::from_str(&content).expect("Cannot parse fragment logs");
                 match fragments
                     .iter()
-                    .find(|x| *x.fragment_id() == Hash::from_hash(self.id))
+                    .find(|x| *x.fragment_id() == Hash::from(self.id))
                 {
                     Some(x) => {
                         println!("Transaction found in mempool. {:?}", x);
@@ -104,7 +104,7 @@ impl<'a> FragmentCheck<'a> {
                     .message()
                     .logs(self.jormungandr.rest_uri())
             ),
-            transaction_id: Hash::from_hash(self.id),
+            transaction_id: Hash::from(self.id),
             log_content: self.jormungandr.logger.get_log_content(),
         })
     }
@@ -118,7 +118,7 @@ impl<'a> FragmentCheck<'a> {
             .logs(self.jormungandr.rest_uri());
         match fragments
             .iter()
-            .find(|x| *x.fragment_id() == Hash::from_hash(self.id))
+            .find(|x| *x.fragment_id() == Hash::from(self.id))
         {
             Some(x) => assert!(
                 x.is_in_a_block(),
@@ -144,7 +144,7 @@ impl<'a> FragmentCheck<'a> {
             .logs(self.jormungandr.rest_uri());
         match fragments
             .iter()
-            .find(|x| *x.fragment_id() == Hash::from_hash(self.id))
+            .find(|x| *x.fragment_id() == Hash::from(self.id))
         {
             Some(x) => {
                 assert!(

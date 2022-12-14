@@ -465,7 +465,7 @@
                 Fragment::UpdateProposal(proposal) =&gt; proposal.serialized_size(),
                 Fragment::UpdateVote(vote) =&gt; vote.serialized_size(),
                 Fragment::VotePlan(vote_plan) =&gt; vote_plan.serialized_size(),
-                Fragment::VoteCast(vote_plan) =&gt; vote_plan.serialized_size(),
+                Fragment::VoteCast(vote_cast) =&gt; vote_cast.serialized_size(),
                 Fragment::VoteTally(vote_tally) =&gt; vote_tally.serialized_size(),
                 Fragment::MintToken(mint_token) =&gt; mint_token.serialized_size(),
                 Fragment::Evm(deployment) =&gt; deployment.serialized_size(),

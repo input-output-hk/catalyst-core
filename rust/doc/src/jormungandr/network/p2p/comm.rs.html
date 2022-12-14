@@ -765,6 +765,11 @@
 <span id="765">765</span>
 <span id="766">766</span>
 <span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>peer_map;
 <span class="kw">use </span><span class="kw">super</span>::Address;
 <span class="kw">use crate</span>::{
@@ -1431,6 +1436,11 @@
             </span>}
             <span class="prelude-val">None </span>=&gt; <span class="bool-val">false</span>,
         }
+    }
+
+    <span class="kw">pub async fn </span>get_peer_addr(<span class="kw-2">&amp;</span><span class="self">self</span>, peer: <span class="kw-2">&amp;</span>NodeId) -&gt; <span class="prelude-ty">Option</span>&lt;SocketAddr&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>map = <span class="self">self</span>.inner().<span class="kw">await</span>;
+        map.peer_comms(peer).map(|peer| peer.remote_addr())
     }
 
     <span class="kw">pub async fn </span>refresh_peer_on_gossip(<span class="kw-2">&amp;</span><span class="self">self</span>, peer: <span class="kw-2">&amp;</span>NodeId) -&gt; bool {

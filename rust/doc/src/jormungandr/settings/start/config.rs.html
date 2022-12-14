@@ -180,6 +180,8 @@
 <span id="180">180</span>
 <span id="181">181</span>
 <span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     network::p2p::Address,
     settings::{
@@ -192,7 +194,7 @@
 <span class="kw">use </span>jormungandr_lib::{interfaces::Mempool, time::Duration};
 <span class="kw">use </span>multiaddr::Multiaddr;
 <span class="kw">use </span>serde::{de::Error <span class="kw">as _</span>, Deserialize, Deserializer, Serialize, Serializer};
-<span class="kw">use </span>std::path::PathBuf;
+<span class="kw">use </span>std::{net::SocketAddr, path::PathBuf};
 <span class="kw">use </span>tracing::level_filters::LevelFilter;
 
 <span class="attribute">#[derive(Debug, Deserialize)]
@@ -280,6 +282,8 @@
     /// The default is to not allow advertising non-public IP addresses.
     </span><span class="attribute">#[serde(default)]
     </span><span class="kw">pub </span>allow_private_addresses: bool,
+
+    <span class="kw">pub </span>whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;SocketAddr&gt;&gt;,
 
     <span class="doccomment">/// setting for the policy
     </span><span class="attribute">#[serde(default)]

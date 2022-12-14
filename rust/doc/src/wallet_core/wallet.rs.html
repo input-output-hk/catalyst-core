@@ -314,7 +314,7 @@
 
     <span class="kw">fn </span>sign_transaction_impl&lt;P: Payload&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        settings: <span class="kw-2">&amp;</span>Settings,
+        settings: Settings,
         valid_until: BlockDate,
         lane: u8,
         payload: P,
@@ -350,7 +350,7 @@
     /// This function outputs a fragment containing a signed transaction.
     </span><span class="kw">pub fn </span>sign_transaction(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        settings: <span class="kw-2">&amp;</span>Settings,
+        settings: Settings,
         valid_until: BlockDate,
         lane: u8,
         certificate: Certificate,
@@ -394,7 +394,7 @@
             <span class="kw">return </span><span class="prelude-val">Err</span>(Error::wallet_vote_range());
         };
 
-        <span class="kw">let </span><span class="kw-2">mut </span>builder = wallet::TransactionBuilder::new(<span class="kw-2">&amp;</span>settings, payload, <span class="kw-2">*</span>valid_until);
+        <span class="kw">let </span><span class="kw-2">mut </span>builder = wallet::TransactionBuilder::new(settings, payload, <span class="kw-2">*</span>valid_until);
 
         <span class="kw">let </span>value = builder.estimate_fee_with(<span class="number">1</span>, <span class="number">0</span>);
 

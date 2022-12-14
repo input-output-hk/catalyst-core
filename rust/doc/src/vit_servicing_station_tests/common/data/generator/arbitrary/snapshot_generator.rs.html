@@ -411,9 +411,15 @@
 <span id="411">411</span>
 <span id="412">412</span>
 <span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::common::data::ArbitraryGenerator;
 <span class="kw">use </span><span class="kw">crate</span>::common::data::ArbitraryValidVotingTemplateGenerator;
 <span class="kw">use </span><span class="kw">crate</span>::common::data::{Snapshot, ValidVotingTemplateGenerator};
+<span class="kw">use </span>chain_impl_mockchain::certificate::ExternalProposalId;
 <span class="kw">use </span>std::collections::BTreeSet;
 <span class="kw">use </span>std::iter;
 <span class="kw">use </span>time::{Duration, OffsetDateTime};
@@ -542,6 +548,10 @@
         <span class="kw">let </span>challenge_info = <span class="self">self
             </span>.template_generator
             .proposals_challenge_info(<span class="kw-2">&amp;</span>challenge.challenge_type);
+        <span class="kw">let </span>chain_proposal_id = ExternalProposalId::from(<span class="self">self</span>.id_generator.bytes())
+            .to_string()
+            .as_bytes()
+            .to_vec();
         <span class="kw">let </span>proposal = Proposal {
             internal_id: id.abs(),
             proposal_id: id.abs().to_string(),
@@ -555,7 +565,7 @@
             reviews_count: <span class="number">0</span>,
             proposal_files_url: proposal.files_url,
             proposer: <span class="self">self</span>.template_generator.proposer(),
-            chain_proposal_id: <span class="self">self</span>.id_generator.hash().as_bytes().to_vec(),
+            chain_proposal_id,
             chain_vote_options: proposal.chain_vote_options,
             chain_vote_start_time: voteplan.chain_vote_start_time,
             chain_vote_end_time: voteplan.chain_vote_end_time,

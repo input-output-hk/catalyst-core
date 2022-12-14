@@ -434,9 +434,11 @@
 <span id="434">434</span>
 <span id="435">435</span>
 <span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     account::Identifier,
-    account::SpendingCounter,
+    account::{LedgerError, SpendingCounter},
     accounting::account::SpendingCounterIncreasing,
     chaintypes::HeaderId,
     key::EitherEd25519SecretKey,
@@ -626,7 +628,9 @@
 
     <span class="kw">pub fn </span>confirm_transaction_at_lane(<span class="kw-2">&amp;mut </span><span class="self">self</span>, lane: usize) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">let </span>sc = <span class="self">self</span>.spending_counter_at_lane(lane)<span class="question-mark">?</span>;
-        <span class="self">self</span>.spending_counter.next_verify(sc).map_err(Into::into)
+        <span class="self">self</span>.spending_counter
+            .next_verify(sc)
+            .map_err(|e| LedgerError::SpendingCounterError(e).into())
     }
 
     <span class="kw">pub fn </span>spending_counter_at_lane(<span class="kw-2">&amp;</span><span class="self">self</span>, lane: usize) -&gt; <span class="prelude-ty">Result</span>&lt;SpendingCounter, Error&gt; {

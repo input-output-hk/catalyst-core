@@ -327,6 +327,29 @@
 <span id="327">327</span>
 <span id="328">328</span>
 <span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::NodeAlias;
 <span class="kw">use </span>jormungandr_automation::jormungandr::{
     FaketimeConfig, LeadershipMode, LogLevel, PersistenceMode, Version,
@@ -348,6 +371,7 @@
 <span class="attribute">#[derive(Clone, Debug, Deserialize)]
 </span><span class="kw">pub struct </span>SpawnParams {
     alias: NodeAlias,
+
     bootstrap_from_peers: <span class="prelude-ty">Option</span>&lt;bool&gt;,
     faketime: <span class="prelude-ty">Option</span>&lt;FaketimeConfig&gt;,
     gossip_interval: <span class="prelude-ty">Option</span>&lt;Duration&gt;,
@@ -357,6 +381,8 @@
     log_level: <span class="prelude-ty">Option</span>&lt;LogLevel&gt;,
     max_bootstrap_attempts: <span class="prelude-ty">Option</span>&lt;usize&gt;,
     max_connections: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    allow_private_addresses: <span class="prelude-ty">Option</span>&lt;bool&gt;,
+    whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;SocketAddr&gt;&gt;,
     max_inbound_connections: <span class="prelude-ty">Option</span>&lt;u32&gt;,
     mempool: <span class="prelude-ty">Option</span>&lt;Mempool&gt;,
     network_stuck_check: <span class="prelude-ty">Option</span>&lt;Duration&gt;,
@@ -388,6 +414,8 @@
             log_level: <span class="prelude-val">None</span>,
             max_bootstrap_attempts: <span class="prelude-val">None</span>,
             max_connections: <span class="prelude-val">None</span>,
+            allow_private_addresses: <span class="prelude-val">None</span>,
+            whitelist: <span class="prelude-val">None</span>,
             max_inbound_connections: <span class="prelude-val">None</span>,
             mempool: <span class="prelude-val">None</span>,
             network_stuck_check: <span class="prelude-val">None</span>,
@@ -464,6 +492,16 @@
 
     <span class="kw">pub fn </span>max_connections(<span class="kw-2">mut </span><span class="self">self</span>, max_connections: u32) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.max_connections = <span class="prelude-val">Some</span>(max_connections);
+        <span class="self">self
+    </span>}
+
+    <span class="kw">pub fn </span>allow_private_addresses(<span class="kw-2">mut </span><span class="self">self</span>, switch: bool) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.allow_private_addresses = <span class="prelude-val">Some</span>(switch);
+        <span class="self">self
+    </span>}
+
+    <span class="kw">pub fn </span>whitelist(<span class="kw-2">mut </span><span class="self">self</span>, nodes: Vec&lt;SocketAddr&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.whitelist = <span class="prelude-val">Some</span>(nodes);
         <span class="self">self
     </span>}
 
@@ -600,6 +638,14 @@
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(max_inbound_connections) = <span class="kw-2">&amp;</span><span class="self">self</span>.max_inbound_connections {
             node_config.p2p.max_inbound_connections = <span class="prelude-val">Some</span>(<span class="kw-2">*</span>max_inbound_connections);
+        }
+
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(allow_private_addresses) = <span class="kw-2">&amp;</span><span class="self">self</span>.allow_private_addresses {
+            node_config.p2p.allow_private_addresses = <span class="kw-2">*</span>allow_private_addresses;
+        }
+
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(whitelist) = <span class="kw-2">&amp;</span><span class="self">self</span>.whitelist {
+            node_config.p2p.whitelist = <span class="prelude-val">Some</span>(whitelist.clone());
         }
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(max_connections) = <span class="kw-2">&amp;</span><span class="self">self</span>.max_connections {

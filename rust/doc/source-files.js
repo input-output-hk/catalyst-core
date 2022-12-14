@@ -1,5 +1,4 @@
 var sourcesIndex = JSON.parse('{\
-"bip39":["",[],["bits.rs","dictionary.rs","entropy.rs","error.rs","lib.rs","mnemonic.rs","seed.rs","types.rs"]],\
 "blockchain":["",[],["block0.rs","blockchain.rs","checkpoints.rs","epoch_info.rs","lib.rs","reference.rs"]],\
 "cardano_cli_mock":["",[],["cardano-cli-mock.rs"]],\
 "cardano_legacy_address":["",[],["address.rs","base58.rs","cbor.rs","crc32.rs","lib.rs"]],\
@@ -36,12 +35,8 @@ var sourcesIndex = JSON.parse('{\
 "jortestkit":["",[["archive",[],["mod.rs"]],["console",[],["interactive.rs","mod.rs","progress_bar.rs","style.rs"]],["csv",[],["mod.rs"]],["file",[],["mod.rs"]],["github",[],["mod.rs","release.rs"]],["load",[],["config.rs","mod.rs","monitor.rs","progress.rs","rayon.rs","request.rs","response.rs","stats.rs","status.rs"]],["measurement",[["attribute",[],["consumption.rs","efficiency.rs","endurance.rs","mod.rs","speed.rs"]],["benchmark",[],["consumption_benchmark.rs","efficiency_benchmark.rs","endurance_benchmark.rs","mod.rs","speed_benchmark.rs"]],["marker",[],["counter.rs","mod.rs","resources_usage.rs","timestamp.rs"]]],["mod.rs","status.rs","thresholds.rs"]],["openssl",[],["mod.rs"]],["process",[],["mod.rs","output_extensions.rs","wait.rs"]],["web",[],["api_token.rs","mod.rs"]]],["env.rs","lib.rs","predicates.rs","string.rs"]],\
 "loki":["",[["rest",[],["handlers.rs","mod.rs"]]],["args.rs","block.rs","error.rs","lib.rs","process.rs","sender.rs"]],\
 "mainnet_lib":["",[["db_sync",[],["mod.rs"]],["network",[],["mod.rs"]],["wallet",[],["mod.rs","registration.rs"]]],["lib.rs"]],\
-"mainnet_tools":["",[["cardano_cli",[["command",[],["address.rs","mod.rs","query.rs","stake_address.rs","transaction.rs"]]],["fake.rs","mod.rs"]],["snapshot_wormhole",[],["command.rs","config.rs","mod.rs"]],["voter_registration",[],["command.rs","fake.rs","mod.rs"]]],["lib.rs"]],\
+"mainnet_tools":["",[["cardano_cli",[["mock",[["command",[],["address.rs","mod.rs","query.rs","stake_address.rs","transaction.rs"]]],["fake.rs","mod.rs"]],["wrapper",[["cli",[["api",[],["address.rs","mod.rs","query.rs","stake_address.rs","transaction.rs"]],["command",[["address",[],["build.rs","mod.rs"]],["stake_address",[],["build.rs","mod.rs","registration.rs"]],["transaction",[],["build.rs","id.rs","mod.rs","sign.rs","submit.rs"]]],["mod.rs","query.rs"]]],["mod.rs"]]],["data.rs","error.rs","mod.rs","utils.rs"]]],["mod.rs"]],["snapshot_wormhole",[],["command.rs","config.rs","mod.rs"]],["voter_registration",[],["command.rs","fake.rs","mod.rs"]]],["lib.rs"]],\
 "mjolnir":["",[["mjolnir_lib",[["bootstrap",[["scenario",[],["duration.rs","iteration.rs","mod.rs"]]],["config.rs","mod.rs"]],["fragment",[["batch",[["adversary",[],["all.rs","mod.rs","votes_only.rs"]]],["mod.rs","tx_only.rs"]],["standard",[["adversary",[],["all.rs","mod.rs","votes_only.rs"]]],["all.rs","mod.rs","tx_only.rs"]]],["mod.rs"]],["generators",[],["adversary_generator.rs","adversary_vote_casts_generator.rs","batch_generator.rs","explorer.rs","fragment_generator.rs","mod.rs","rest.rs","status_provider.rs","transaction_generator.rs","vote_casts_generator.rs","wallet_lane_iter.rs"]]],["args.rs","error.rs","explorer.rs","mod.rs","rest.rs"]]],["lib.rs"]],\
-"registration_cli":["",[],["registration-cli.rs"]],\
-"registration_service":["",[["args",[],["mod.rs"]],["cardano",[["cli",[["api",[],["address.rs","mod.rs","query.rs","stake_address.rs","transaction.rs"]],["command",[["address",[],["build.rs","mod.rs"]],["stake_address",[],["build.rs","mod.rs","registration.rs"]],["transaction",[],["build.rs","id.rs","mod.rs","sign.rs","submit.rs"]]],["mod.rs","query.rs"]]],["mod.rs"]]],["data.rs","error.rs","mod.rs"]],["catalyst_toolbox",[],["mod.rs"]],["client",[],["args.rs","mod.rs","rest.rs"]],["config",[],["builder.rs","mod.rs","network.rs"]],["job",[],["builder.rs","info.rs","mod.rs"]],["voter_registration",[],["mod.rs"]]],["context.rs","error.rs","lib.rs","request.rs","rest.rs","utils.rs"]],\
-"registration_verify_cli":["",[],["registration-verify-cli.rs"]],\
-"registration_verify_service":["",[["args",[],["mod.rs"]],["client",[],["args.rs","mod.rs","rest.rs"]],["config",[],["mod.rs","network.rs"]],["job",[],["info.rs","mod.rs"]]],["context.rs","lib.rs","multipart.rs","request.rs","rest.rs"]],\
 "scheduler_service_lib":["",[["client",[],["args.rs","mod.rs","rest.rs"]],["rest",[],["files.rs","health.rs","mod.rs","token.rs"]]],["config.rs","context.rs","file_lister.rs","lib.rs","service.rs","state.rs"]],\
 "settings":["",[],["lib.rs"]],\
 "signals_handler":["",[],["lib.rs"]],\
@@ -64,7 +59,7 @@ var sourcesIndex = JSON.parse('{\
 "voter_registration_mock":["",[],["voter-registration-mock.rs"]],\
 "voting_tools_rs":["",[["db",[["queries",[],["mod.rs","stake_value.rs","vote_registrations.rs"]]],["mod.rs","schema.rs","types.rs","utils.rs"]],["model",[],["mod.rs"]],["testing",[["test_api",[],["fake.rs","mod.rs","output_assertions.rs"]]],["mod.rs"]]],["cli.rs","data_provider.rs","lib.rs","logic.rs"]],\
 "wallet":["",[["scheme",[],["mod.rs"]],["transaction",[],["builder.rs","mod.rs","strategy.rs","witness_builder.rs"]]],["account.rs","blockchain.rs","lib.rs","password.rs","states.rs","time.rs"]],\
-"wallet_core":["",[["c",[],["fragment.rs","macros.rs","mod.rs","settings.rs","time.rs","vote.rs"]]],["error.rs","lib.rs","vote.rs","wallet.rs"]],\
-"wallet_js":["",[["certificates",[],["mod.rs","vote_cast.rs","vote_plan.rs"]]],["fragment.rs","lib.rs","utils.rs"]]\
+"wallet_core":["",[["c",[],["fragment.rs","macros.rs","mod.rs","settings.rs","time.rs","vote.rs"]]],["error.rs","lib.rs","tx_builder.rs","vote.rs","wallet.rs"]],\
+"wallet_wasm_js":["",[["certificates",[],["mod.rs","vote_cast.rs","vote_plan.rs"]]],["fragment.rs","lib.rs","utils.rs"]]\
 }');
 createSourceSidebar();

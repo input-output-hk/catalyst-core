@@ -311,8 +311,31 @@
 <span id="311">311</span>
 <span id="312">312</span>
 <span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Spending strategies
-</span><span class="kw">use </span><span class="kw">super</span>::LedgerError;
+</span><span class="attribute">#[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>Error {
+    <span class="attribute">#[error(<span class="string">&quot;Spending credential invalid, expected {} got {} in lane {}&quot;</span>, .expected.unlaned_counter(), .actual.unlaned_counter(), .actual.lane())]
+    </span>SpendingCredentialInvalid {
+        expected: SpendingCounter,
+        actual: SpendingCounter,
+    },
+    <span class="attribute">#[error(<span class="string">&quot;Invalid lane: {0} or counter: {1}, expected lane &lt; (1 &lt;&lt; LANES_BITS), counter &lt; (1 &lt;&lt; UNLANES_BITS)&quot;</span>)]
+    </span>InvalidLaneOrCounter(usize, u32),
+}
 
 <span class="doccomment">/// Simple strategy to spend from multiple increasing counters
 </span><span class="attribute">#[derive(Debug, Clone, PartialEq, Eq)]
@@ -328,7 +351,7 @@
 </span><span class="kw">const </span>UNLANES_BITS: usize = <span class="number">32 </span>- LANES_BITS;
 
 <span class="kw">impl </span>SpendingCounterIncreasing {
-    <span class="doccomment">/// number of parallel lanes of increasing counters
+    <span class="doccomment">/// number of parallel lanes of increasing counters, equals to 8
     </span><span class="kw">pub const </span>LANES: usize = <span class="number">1 </span>&lt;&lt; LANES_BITS;
 
     <span class="kw">pub fn </span>new_from_counter(set: SpendingCounter) -&gt; <span class="self">Self </span>{
@@ -359,14 +382,14 @@
     }
 
     <span class="doccomment">/// try to match the lane of the counter in argument, if it doesn&#39;t match
-    /// a ledger error reported.
+    /// an error reported.
     ///
     /// If the counter match succesfully, then the counter at this lane is incremented by one.
-    </span><span class="kw">pub fn </span>next_verify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, counter: SpendingCounter) -&gt; <span class="prelude-ty">Result</span>&lt;(), LedgerError&gt; {
+    </span><span class="kw">pub fn </span>next_verify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, counter: SpendingCounter) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">let </span>actual_counter = <span class="self">self</span>.nexts[counter.lane()];
 
         <span class="kw">if </span>actual_counter != counter {
-            <span class="prelude-val">Err</span>(LedgerError::SpendingCredentialInvalid {
+            <span class="prelude-val">Err</span>(Error::SpendingCredentialInvalid {
                 expected: actual_counter,
                 actual: counter,
             })
@@ -391,7 +414,7 @@
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="kw">let </span><span class="kw-2">mut </span>nexts = Vec::new();
         <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="self">Self</span>::LANES {
-            nexts.push(SpendingCounter::new(i, <span class="number">0</span>));
+            nexts.push(SpendingCounter::new(i, <span class="number">0</span>).unwrap());
         }
         SpendingCounterIncreasing { nexts }
     }
@@ -428,10 +451,14 @@
         <span class="self">self</span>.<span class="number">0 </span>&amp; <span class="self">Self</span>::UNLANED_MASK
     }
 
-    <span class="kw">pub fn </span>new(lane: usize, counter: u32) -&gt; <span class="self">Self </span>{
-        <span class="macro">assert!</span>(lane &lt; (<span class="number">1 </span>&lt;&lt; LANES_BITS));
-        <span class="macro">assert!</span>(counter &lt; (<span class="number">1 </span>&lt;&lt; UNLANES_BITS));
-        SpendingCounter((lane &lt;&lt; UNLANES_BITS) <span class="kw">as </span>u32 | (counter &amp; <span class="self">Self</span>::UNLANED_MASK))
+    <span class="kw">pub fn </span>new(lane: usize, counter: u32) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
+        <span class="kw">if </span>lane &lt; (<span class="number">1 </span>&lt;&lt; LANES_BITS) || counter &lt; (<span class="number">1 </span>&lt;&lt; UNLANES_BITS) {
+            <span class="prelude-val">Ok</span>(SpendingCounter(
+                (lane &lt;&lt; UNLANES_BITS) <span class="kw">as </span>u32 | (counter &amp; <span class="self">Self</span>::UNLANED_MASK),
+            ))
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(Error::InvalidLaneOrCounter(lane, counter))
+        }
     }
 
     <span class="kw">pub fn </span>zero() -&gt; <span class="self">Self </span>{
@@ -488,18 +515,17 @@
     }
 
     <span class="attribute">#[test]
-    #[should_panic]
     </span><span class="kw">fn </span>new_invalid_spending_counter() {
         <span class="kw">let </span>lane: usize = (<span class="number">1 </span>&lt;&lt; LANES_BITS) + <span class="number">1</span>;
         <span class="kw">let </span>counter: u32 = <span class="number">1 </span>&lt;&lt; UNLANES_BITS;
-        SpendingCounter::new(lane, counter);
+        <span class="macro">assert!</span>(SpendingCounter::new(lane, counter).is_err());
     }
 
     <span class="attribute">#[quickcheck_macros::quickcheck]
     </span><span class="kw">fn </span>new_spending_counter(<span class="kw-2">mut </span>lane: usize, <span class="kw-2">mut </span>counter: u32) {
         lane %= <span class="number">1 </span>&lt;&lt; LANES_BITS;
         counter %= <span class="number">1 </span>&lt;&lt; UNLANES_BITS;
-        <span class="kw">let </span>sc = SpendingCounter::new(lane, counter);
+        <span class="kw">let </span>sc = SpendingCounter::new(lane, counter).unwrap();
 
         <span class="macro">assert_eq!</span>(lane, sc.lane());
         <span class="macro">assert_eq!</span>(counter, sc.unlaned_counter());
@@ -533,14 +559,14 @@
     #[should_panic]
     #[cfg(debug_assertions)]
     </span><span class="kw">fn </span>increment_counter_overflow_debug() {
-        <span class="kw">let _ </span>= SpendingCounter::new(<span class="number">8</span>, u32::MAX).increment();
+        <span class="kw">let _ </span>= SpendingCounter::new(<span class="number">8</span>, u32::MAX).unwrap().increment();
     }
 
     <span class="attribute">#[test]
     #[should_panic]
     #[cfg(debug_assertions)]
     </span><span class="kw">pub fn </span>increment_nth_overflow_debug() {
-        <span class="kw">let _ </span>= SpendingCounter::new(<span class="number">0</span>, <span class="number">1</span>).increment_nth(u32::MAX);
+        <span class="kw">let _ </span>= SpendingCounter::new(<span class="number">0</span>, <span class="number">1</span>).unwrap().increment_nth(u32::MAX);
     }
 
     <span class="attribute">#[quickcheck_macros::quickcheck]
@@ -561,7 +587,10 @@
 
     <span class="attribute">#[test]
     </span><span class="kw">pub fn </span>spending_counters_incorrect_order() {
-        <span class="kw">let </span>counters = <span class="macro">vec!</span>[SpendingCounter::new(<span class="number">1</span>, <span class="number">0</span>), SpendingCounter::new(<span class="number">0</span>, <span class="number">0</span>)];
+        <span class="kw">let </span>counters = <span class="macro">vec!</span>[
+            SpendingCounter::new(<span class="number">1</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">0</span>, <span class="number">0</span>).unwrap(),
+        ];
         <span class="macro">assert!</span>(SpendingCounterIncreasing::new_from_counters(counters).is_none());
     }
 
@@ -587,15 +616,14 @@
     <span class="attribute">#[test]
     </span><span class="kw">pub fn </span>spending_counter_increasing_wrong_counter() {
         <span class="kw">let </span><span class="kw-2">mut </span>sc_increasing = SpendingCounterIncreasing::default();
-        <span class="kw">let </span>incorrect_sc = SpendingCounter::new(<span class="number">0</span>, <span class="number">100</span>);
+        <span class="kw">let </span>incorrect_sc = SpendingCounter::new(<span class="number">0</span>, <span class="number">100</span>).unwrap();
         <span class="macro">assert!</span>(sc_increasing.next_verify(incorrect_sc).is_err());
     }
 
     <span class="attribute">#[test]
-    #[should_panic]
     </span><span class="kw">pub fn </span>spending_counter_increasing_wrong_lane() {
         <span class="kw">let </span><span class="kw-2">mut </span>sc_increasing = SpendingCounterIncreasing::default();
-        <span class="kw">let </span>incorrect_sc = SpendingCounter::new(SpendingCounterIncreasing::LANES, <span class="number">1</span>);
+        <span class="kw">let </span>incorrect_sc = SpendingCounter::new(SpendingCounterIncreasing::LANES, <span class="number">1</span>).unwrap();
         <span class="macro">assert!</span>(sc_increasing.next_verify(incorrect_sc).is_err());
     }
 

@@ -246,6 +246,9 @@
 <span id="246">246</span>
 <span id="247">247</span>
 <span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>data;
 
 <span class="kw">use </span><span class="kw">crate</span>::jormungandr::{
@@ -388,6 +391,7 @@
                 policy: source.p2p.policy.clone(),
                 layers: source.p2p.layers.clone(),
                 public_id: <span class="prelude-val">None</span>,
+                whitelist: source.p2p.whitelist.clone(),
             },
             mempool: source.mempool.clone(),
             bootstrap_from_trusted_peers: source.bootstrap_from_trusted_peers,
@@ -427,6 +431,7 @@
                 policy: source.p2p.policy.clone(),
                 layers: source.p2p.layers.clone(),
                 public_id: <span class="prelude-val">None</span>,
+                whitelist: source.p2p.whitelist.clone(),
             },
             mempool: source.mempool.clone(),
             bootstrap_from_trusted_peers: source.bootstrap_from_trusted_peers,
@@ -486,6 +491,7 @@
                 policy: source.p2p.policy.clone(),
                 layers: <span class="prelude-val">None</span>,
                 public_id: <span class="prelude-val">None</span>,
+                whitelist: source.p2p.whitelist.clone(),
             },
             mempool: source.mempool.clone(),
             bootstrap_from_trusted_peers: source.bootstrap_from_trusted_peers,

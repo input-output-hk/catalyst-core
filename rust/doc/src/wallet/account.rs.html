@@ -279,6 +279,22 @@
 <span id="279">279</span>
 <span id="280">280</span>
 <span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::transaction::AccountWitnessBuilder;
 <span class="kw">use </span><span class="kw">crate</span>::scheme::{on_tx_input_and_witnesses, on_tx_output};
 <span class="kw">use </span><span class="kw">crate</span>::states::States;
@@ -293,8 +309,6 @@
 <span class="kw">pub use </span>hdkeygen::account::AccountId;
 <span class="kw">use </span>hdkeygen::account::{Account, Seed};
 <span class="kw">use </span>thiserror::Error;
-
-<span class="kw">pub const </span>MAX_LANES: usize = <span class="number">8</span>;
 
 <span class="kw">pub struct </span>Wallet {
     account: EitherAccount,
@@ -326,31 +340,60 @@
     </span>NonMonotonicSpendingCounter,
 }
 
-<span class="kw">enum </span>EitherAccount {
+<span class="kw">pub enum </span>EitherAccount {
     Seed(Account&lt;Ed25519&gt;),
     Extended(Account&lt;Ed25519Extended&gt;),
 }
 
+<span class="kw">impl </span>EitherAccount {
+    <span class="kw">pub fn </span>new_from_seed(seed: Seed) -&gt; <span class="self">Self </span>{
+        EitherAccount::Seed(Account::from_seed(seed))
+    }
+
+    <span class="kw">pub fn </span>new_from_key(key: SecretKey&lt;Ed25519Extended&gt;) -&gt; <span class="self">Self </span>{
+        EitherAccount::Extended(Account::from_secret_key(key))
+    }
+
+    <span class="kw">pub fn </span>account_id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; AccountId {
+        <span class="kw">match </span><span class="self">self </span>{
+            EitherAccount::Extended(account) =&gt; account.account_id(),
+            EitherAccount::Seed(account) =&gt; account.account_id(),
+        }
+    }
+
+    <span class="kw">pub fn </span>witness_builder(<span class="kw-2">&amp;</span><span class="self">self</span>, spending_counter: SpendingCounter) -&gt; AccountWitnessBuilder {
+        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self </span>{
+            EitherAccount::Seed(account) =&gt; <span class="kw">crate</span>::transaction::AccountWitnessBuilder::Ed25519(
+                account.secret().clone(),
+                spending_counter,
+            ),
+            EitherAccount::Extended(account) =&gt; {
+                <span class="kw">crate</span>::transaction::AccountWitnessBuilder::Ed25519Extended(
+                    account.secret().clone(),
+                    spending_counter,
+                )
+            }
+        }
+    }
+}
+
 <span class="kw">impl </span>Wallet {
-    <span class="kw">pub fn </span>new_from_seed(seed: Seed) -&gt; Wallet {
+    <span class="kw">pub fn </span>new_from_seed(seed: Seed) -&gt; <span class="self">Self </span>{
         Wallet {
-            account: EitherAccount::Seed(Account::from_seed(seed)),
+            account: EitherAccount::new_from_seed(seed),
             state: States::new(FragmentId::zero_hash(), Default::default()),
         }
     }
 
-    <span class="kw">pub fn </span>new_from_key(key: SecretKey&lt;Ed25519Extended&gt;) -&gt; Wallet {
+    <span class="kw">pub fn </span>new_from_key(key: SecretKey&lt;Ed25519Extended&gt;) -&gt; <span class="self">Self </span>{
         Wallet {
-            account: EitherAccount::Extended(Account::from_secret_key(key)),
+            account: EitherAccount::new_from_key(key),
             state: States::new(FragmentId::zero_hash(), Default::default()),
         }
     }
 
     <span class="kw">pub fn </span>account_id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; AccountId {
-        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.account {
-            EitherAccount::Extended(account) =&gt; account.account_id(),
-            EitherAccount::Seed(account) =&gt; account.account_id(),
-        }
+        <span class="self">self</span>.account.account_id()
     }
 
     <span class="doccomment">/// set the state counter so we can sync with the blockchain and the
@@ -531,18 +574,7 @@
     }
 
     <span class="kw">pub fn </span>witness_builder(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; AccountWitnessBuilder {
-        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.wallet.account {
-            EitherAccount::Seed(account) =&gt; <span class="kw">crate</span>::transaction::AccountWitnessBuilder::Ed25519(
-                account.secret().clone(),
-                <span class="self">self</span>.current_counter,
-            ),
-            EitherAccount::Extended(account) =&gt; {
-                <span class="kw">crate</span>::transaction::AccountWitnessBuilder::Ed25519Extended(
-                    account.secret().clone(),
-                    <span class="self">self</span>.current_counter,
-                )
-            }
-        }
+        <span class="self">self</span>.wallet.account.witness_builder(<span class="self">self</span>.current_counter)
     }
 
     <span class="kw">pub fn </span>add_fragment_id(<span class="self">self</span>, fragment_id: FragmentId) {

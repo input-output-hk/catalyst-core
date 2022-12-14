@@ -199,8 +199,8 @@
 #[error(<span class="string">&quot;Cannot balance the transaction&quot;</span>)]
 </span><span class="kw">pub struct </span>BalancingError;
 
-<span class="kw">pub struct </span>TransactionBuilder&lt;<span class="lifetime">&#39;settings</span>, P: Payload&gt; {
-    settings: <span class="kw-2">&amp;</span><span class="lifetime">&#39;settings </span>Settings,
+<span class="kw">pub struct </span>TransactionBuilder&lt;P: Payload&gt; {
+    settings: Settings,
     payload: P,
     validity: BlockDate,
     outputs: Vec&lt;Output&lt;Address&gt;&gt;,
@@ -214,9 +214,9 @@
     NotEnoughSpace,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;settings</span>, P: Payload&gt; TransactionBuilder&lt;<span class="lifetime">&#39;settings</span>, P&gt; {
+<span class="kw">impl</span>&lt;P: Payload&gt; TransactionBuilder&lt;P&gt; {
     <span class="doccomment">/// create a new transaction builder with the given settings and outputs
-    </span><span class="kw">pub fn </span>new(settings: <span class="kw-2">&amp;</span><span class="lifetime">&#39;settings </span>Settings, payload: P, validity: BlockDate) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>new(settings: Settings, payload: P, validity: BlockDate) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             settings,
             payload,

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["Command","Wrapper around cardano CLI commands"]],"mod":[["fake","Module for providing fake/arbitrary data which Cardano CLI can return. Should be used purely for testing"]],"struct":[["Mock","Cardano CLI mock. It can return arbitrary/fake data but preserves correct Cardano CLI format."]]};
+window.SIDEBAR_ITEMS = {"enum":[["MockCommand","Wrapper around cardano CLI commands"]]};

@@ -222,7 +222,7 @@
                         actual: lane,
                     });
                 }
-                <span class="prelude-val">Ok</span>(SpendingCounter::new(lane, counter))
+                <span class="prelude-val">Ok</span>(SpendingCounter::new(lane, counter).unwrap())
             })
             .transpose()<span class="question-mark">?</span>;
         <span class="kw">let </span>witness = make_witness(

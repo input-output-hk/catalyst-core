@@ -15,13 +15,17 @@
 <span id="15">15</span>
 <span id="16">16</span>
 <span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
 </pre><pre class="rust"><code><span class="kw">pub mod </span>c;
 <span class="kw">mod </span>error;
+<span class="kw">mod </span>tx_builder;
 <span class="kw">mod </span>vote;
 <span class="kw">mod </span>wallet;
 
 <span class="kw">pub use </span><span class="self">self</span>::{
     error::{Error, ErrorCode, ErrorKind, <span class="prelude-ty">Result</span>},
+    tx_builder::TxBuilder,
     vote::Proposal,
     wallet::Wallet,
 };

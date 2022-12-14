@@ -447,6 +447,7 @@
 <span id="447">447</span>
 <span id="448">448</span>
 <span id="449">449</span>
+<span id="450">450</span>
 </pre><pre class="rust"><code><span class="doccomment">//! HD Payload
 //!
 //! The HD Payload is an Address attribute stored along the address
@@ -640,8 +641,9 @@
 <span class="attribute">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use </span>bip39::SEED_SIZE;
     <span class="kw">use </span>ed25519_bip32::XPrv;
+
+    <span class="kw">const </span>SEED_SIZE: usize = <span class="number">64</span>;
 
     <span class="kw">fn </span>generate_from_daedalus_seed(bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; XPrv {
         <span class="kw">use </span>cryptoxide::mac::Mac;

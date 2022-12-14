@@ -466,6 +466,30 @@
 <span id="466">466</span>
 <span id="467">467</span>
 <span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{buffer_sizes, convert::Decode, GlobalStateR};
 <span class="kw">use crate</span>::{
     blockcfg::Fragment,
@@ -478,6 +502,7 @@
     data <span class="kw">as </span>net_data,
     error::{Code, Error},
 };
+<span class="kw">use </span>futures::executor;
 <span class="kw">use </span>futures::{future::BoxFuture, prelude::<span class="kw-2">*</span>, ready};
 <span class="kw">use </span>jormungandr_lib::interfaces::FragmentOrigin;
 <span class="kw">use </span>std::{
@@ -492,7 +517,7 @@
     <span class="kw">if </span>config.allow_private_addresses {
         node.has_valid_address()
     } <span class="kw">else </span>{
-        node.is_global()
+        !node.is_global()
     }
 }
 
@@ -633,6 +658,12 @@
         }
     }
 
+    <span class="kw">fn </span>get_ingress_addr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;std::net::SocketAddr&gt; {
+        <span class="kw">let </span>state = <span class="self">self</span>.global_state.clone();
+        <span class="kw">let </span>node_id = <span class="self">self</span>.node_id;
+        executor::block_on(state.peers.get_peer_addr(<span class="kw-2">&amp;</span>node_id))
+    }
+
     <span class="kw">fn </span>refresh_stat(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
         <span class="kw">let </span>state = <span class="self">self</span>.global_state.clone();
         <span class="kw">let </span>node_id = <span class="self">self</span>.node_id;
@@ -769,7 +800,23 @@
             e
         })<span class="question-mark">?</span>;
         <span class="macro">tracing::debug!</span>(hash = %fragment.hash(), <span class="string">&quot;received fragment&quot;</span>);
-        <span class="self">self</span>.buffered_fragments.push(fragment);
+
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(whitelist) = <span class="kw-2">&amp;</span><span class="self">self</span>.global_state.config.whitelist {
+            <span class="kw">match </span><span class="self">self</span>.get_ingress_addr() {
+                <span class="prelude-val">Some</span>(ingress_addr) =&gt; {
+                    <span class="kw">if </span>whitelist.contains(<span class="kw-2">&amp;</span>ingress_addr) {
+                        <span class="self">self</span>.buffered_fragments.push(fragment);
+                    } <span class="kw">else </span>{
+                        <span class="macro">tracing::info!</span>(<span class="string">&quot;dropping fragments from {}&quot;</span>, ingress_addr);
+                    }
+                }
+                <span class="prelude-val">None </span>=&gt; <span class="macro">tracing::warn!</span>(<span class="string">&quot;unable to resolve address of ingress client&quot;</span>),
+            }
+        } <span class="kw">else </span>{
+            <span class="comment">// if no whitelist config, normal behaviour, no filtering
+            </span><span class="self">self</span>.buffered_fragments.push(fragment);
+        }
+
         <span class="prelude-val">Ok</span>(())
     }
 
@@ -878,6 +925,7 @@
         <span class="kw">let </span>state1 = <span class="self">self</span>.global_state.clone();
         <span class="kw">let </span><span class="kw-2">mut </span>mbox = <span class="self">self</span>.mbox.clone();
         <span class="kw">let </span>node_id = <span class="self">self</span>.node_id;
+
         <span class="kw">let </span>fut = future::join(
             <span class="kw">async move </span>{
                 <span class="kw">let </span>refreshed = state1.peers.refresh_peer_on_gossip(<span class="kw-2">&amp;</span>node_id).<span class="kw">await</span>;

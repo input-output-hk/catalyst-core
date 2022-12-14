@@ -157,6 +157,7 @@
 <span id="157">157</span>
 <span id="158">158</span>
 <span id="159">159</span>
+<span id="160">160</span>
 </pre><pre class="rust"><code><span class="attribute">#![allow(dead_code)]
 
 </span><span class="kw">use </span><span class="kw">crate</span>::jormungandr::get_available_port;
@@ -241,6 +242,7 @@
                 gossip_interval: <span class="prelude-val">None</span>,
                 max_bootstrap_attempts: <span class="prelude-val">None</span>,
                 network_stuck_check: <span class="prelude-val">None</span>,
+                whitelist: <span class="prelude-val">None</span>,
             },
             mempool: <span class="prelude-val">Some</span>(Mempool::default()),
         }

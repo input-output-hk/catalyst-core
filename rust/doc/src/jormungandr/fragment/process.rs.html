@@ -225,7 +225,6 @@
 <span id="225">225</span>
 <span id="226">226</span>
 <span id="227">227</span>
-<span id="228">228</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     blockchain::Tip,
     fragment::{Logs, Pool},
@@ -342,7 +341,6 @@
                 tip,
                 stats_counter.clone()
             );
-
             <span class="kw">loop </span>{
                 <span class="macro">tokio::select! </span>{
                     maybe_msg = input.next() =&gt; {

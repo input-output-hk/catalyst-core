@@ -950,6 +950,31 @@
 <span id="950">950</span>
 <span id="951">951</span>
 <span id="952">952</span>
+<span id="953">953</span>
+<span id="954">954</span>
+<span id="955">955</span>
+<span id="956">956</span>
+<span id="957">957</span>
+<span id="958">958</span>
+<span id="959">959</span>
+<span id="960">960</span>
+<span id="961">961</span>
+<span id="962">962</span>
+<span id="963">963</span>
+<span id="964">964</span>
+<span id="965">965</span>
+<span id="966">966</span>
+<span id="967">967</span>
+<span id="968">968</span>
+<span id="969">969</span>
+<span id="970">970</span>
+<span id="971">971</span>
+<span id="972">972</span>
+<span id="973">973</span>
+<span id="974">974</span>
+<span id="975">975</span>
+<span id="976">976</span>
+<span id="977">977</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>handlers;
 <span class="kw">mod </span>routes;
 
@@ -1647,10 +1672,11 @@
         <span class="kw">const </span>GROUP1: <span class="kw-2">&amp;</span>str = <span class="string">&quot;group1&quot;</span>;
         <span class="kw">const </span>GROUP2: <span class="kw-2">&amp;</span>str = <span class="string">&quot;group2&quot;</span>;
 
-        <span class="kw">let </span>_e = tracing_subscriber::fmt()
+        tracing_subscriber::fmt()
             .with_max_level(Level::TRACE)
             .with_writer(tracing_subscriber::fmt::TestWriter::new())
-            .try_init();
+            .try_init()
+            .unwrap();
 
         <span class="kw">let </span>keys = [
             <span class="string">&quot;0000000000000000000000000000000000000000000000000000000000000000&quot;</span>,
@@ -1770,10 +1796,11 @@
 
     <span class="attribute">#[tokio::test]
     </span><span class="kw">async fn </span>test_snapshot_get_tags_2() {
-        <span class="kw">let </span>_e = tracing_subscriber::fmt()
+        tracing_subscriber::fmt()
             .with_max_level(Level::TRACE)
             .with_writer(tracing_subscriber::fmt::TestWriter::new())
-            .try_init();
+            .try_init()
+            .unwrap();
 
         <span class="kw">let </span>key = <span class="string">&quot;0000000000000000000000000000000000000000000000000000000000000000&quot;</span>;
 
@@ -1900,6 +1927,29 @@
         tags.sort_unstable();
 
         <span class="macro">assert_eq!</span>(tags, <span class="macro">vec!</span>[<span class="string">&quot;tag_a&quot;</span>, <span class="string">&quot;tag_b&quot;</span>]);
+    }
+
+    <span class="attribute">#[tokio::test]
+    </span><span class="kw">async fn </span>test_put_raw_snapshot() {
+        <span class="kw">let </span>content = <span class="string">r#&quot;{&quot;snapshot&quot;:[{&quot;stake_public_key&quot;:&quot;0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663&quot;,&quot;voting_power&quot;:2,&quot;reward_address&quot;:&quot;0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663&quot;,&quot;delegations&quot;:&quot;0x0000000000000000000000000000000000000000000000000000000000000000&quot;,&quot;voting_purpose&quot;:0},{&quot;stake_public_key&quot;:&quot;0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee&quot;,&quot;voting_power&quot;:1,&quot;reward_address&quot;:&quot;0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee&quot;,&quot;delegations&quot;:&quot;0x0000000000000000000000000000000000000000000000000000000000000000&quot;,&quot;voting_purpose&quot;:0}],&quot;update_timestamp&quot;:&quot;1970-01-01T00:00:00Z&quot;,&quot;min_stake_threshold&quot;:0,&quot;voting_power_cap&quot;: &quot;NaN&quot;,&quot;direct_voters_group&quot;:null,&quot;representatives_group&quot;:null}&quot;#</span>;
+
+        <span class="kw">let </span>context = new_db_test_shared_context();
+        <span class="kw">let </span>db_conn = <span class="kw-2">&amp;</span>context.read().<span class="kw">await</span>.db_connection_pool.get().unwrap();
+        initialize_db_with_migration(db_conn).unwrap();
+
+        <span class="kw">let </span>snapshot_root = <span class="macro">warp::path!</span>(<span class="string">&quot;snapshot&quot; </span>/ ..).boxed();
+        <span class="kw">let </span>put_filter = snapshot_root.and(update_filter(context));
+
+        <span class="macro">assert_eq!</span>(
+            warp::test::request()
+                .path(<span class="string">&quot;/snapshot/raw_snapshot/tag_a&quot;</span>)
+                .method(<span class="string">&quot;PUT&quot;</span>)
+                .body(content)
+                .reply(<span class="kw-2">&amp;</span>put_filter)
+                .<span class="kw">await
+                </span>.status(),
+            StatusCode::BAD_REQUEST
+        );
     }
 }
 </code></pre></div>

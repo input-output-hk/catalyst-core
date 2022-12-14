@@ -170,6 +170,8 @@
 <span id="170">170</span>
 <span id="171">171</span>
 <span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::config;
 <span class="kw">use crate</span>::{
     network::p2p::Address,
@@ -256,6 +258,8 @@
 
     <span class="doccomment">/// Whether to allow non-public IP addresses in gossip
     </span><span class="kw">pub </span>allow_private_addresses: bool,
+
+    <span class="kw">pub </span>whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;SocketAddr&gt;&gt;,
 
     <span class="kw">pub </span>gossip_interval: Duration,
 

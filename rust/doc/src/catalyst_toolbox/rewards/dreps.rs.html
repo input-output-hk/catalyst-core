@@ -405,11 +405,8 @@
         <span class="kw">let </span>voters = snapshot.to_full_snapshot_info();
 
         <span class="kw">let </span>snapshot = ArbitrarySnapshotGenerator::default().snapshot();
-        <span class="kw">let </span><span class="kw-2">mut </span>proposals = snapshot.proposals();
-        <span class="comment">// for some reasone they are base64 encoded and truncatin is just easier
-        </span><span class="kw">for </span>proposal <span class="kw">in </span><span class="kw-2">&amp;mut </span>proposals {
-            proposal.proposal.chain_proposal_id.truncate(<span class="number">32</span>);
-        }
+        <span class="kw">let </span>proposals = snapshot.proposals();
+
         <span class="kw">let </span>proposals_by_challenge =
             proposals
                 .iter()
@@ -417,7 +414,10 @@
                     acc.entry(prop.proposal.challenge_id)
                         .or_default()
                         .push(Hash::from(
-                            &lt;[u8; <span class="number">32</span>]&gt;::try_from(prop.proposal.chain_proposal_id.clone()).unwrap(),
+                            <span class="kw">crate</span>::rewards::chain_proposal_id_bytes(
+                                <span class="kw-2">&amp;</span>prop.proposal.chain_proposal_id,
+                            )
+                            .unwrap(),
                         ));
                     acc
                 });

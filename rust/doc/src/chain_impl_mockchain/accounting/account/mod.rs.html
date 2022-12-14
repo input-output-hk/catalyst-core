@@ -751,9 +751,6 @@
 <span id="751">751</span>
 <span id="752">752</span>
 <span id="753">753</span>
-<span id="754">754</span>
-<span id="755">755</span>
-<span id="756">756</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Generic account like accounting
 //!
 //! This is effectively an immutable clonable-HAMT of bank style account,
@@ -787,13 +784,10 @@
     </span>AlreadyExists,
     <span class="attribute">#[error(<span class="string">&quot;Removed account is not empty&quot;</span>)]
     </span>NonZero,
-    <span class="attribute">#[error(<span class="string">&quot;Spending credential invalid, expected {} got {} in lane {}&quot;</span>, .expected.unlaned_counter(), .actual.unlaned_counter(), .actual.lane())]
-    </span>SpendingCredentialInvalid {
-        expected: SpendingCounter,
-        actual: SpendingCounter,
-    },
     <span class="attribute">#[error(<span class="string">&quot;Value calculation failed&quot;</span>)]
     </span>ValueError(<span class="attribute">#[from] </span>ValueError),
+    <span class="attribute">#[error(transparent)]
+    </span>SpendingCounterError(<span class="attribute">#[from] </span>spending::Error),
 }
 
 <span class="kw">impl </span>From&lt;UpdateError&lt;LedgerError&gt;&gt; <span class="kw">for </span>LedgerError {

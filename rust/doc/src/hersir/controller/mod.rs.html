@@ -315,6 +315,7 @@
 <span id="315">315</span>
 <span id="316">316</span>
 <span id="317">317</span>
+<span id="318">318</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>error;
 <span class="kw">pub mod </span>interactive;
 <span class="kw">mod </span>monitor;
@@ -568,6 +569,7 @@
 
         <span class="kw">let </span>node_setting = <span class="self">self</span>.node_settings(spawn_params.get_alias())<span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>config = node_setting.config.clone();
+
         spawn_params.override_settings(<span class="kw-2">&amp;mut </span>config);
 
         <span class="kw">for </span>peer <span class="kw">in </span>config.p2p.trusted_peers.iter_mut() {

@@ -310,6 +310,8 @@
 <span id="310">310</span>
 <span id="311">311</span>
 <span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     crypto::key::Identifier,
     interfaces::config::{Log, Mempool},
@@ -522,6 +524,8 @@
     </span><span class="kw">pub </span>max_inbound_connections: <span class="prelude-ty">Option</span>&lt;u32&gt;,
 
     <span class="kw">pub </span>allow_private_addresses: bool,
+
+    <span class="kw">pub </span>whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;SocketAddr&gt;&gt;,
 
     <span class="kw">pub </span>policy: <span class="prelude-ty">Option</span>&lt;Policy&gt;,
 

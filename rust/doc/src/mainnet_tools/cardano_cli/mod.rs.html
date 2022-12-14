@@ -2,59 +2,9 @@
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
-<span id="5">5</span>
-<span id="6">6</span>
-<span id="7">7</span>
-<span id="8">8</span>
-<span id="9">9</span>
-<span id="10">10</span>
-<span id="11">11</span>
-<span id="12">12</span>
-<span id="13">13</span>
-<span id="14">14</span>
-<span id="15">15</span>
-<span id="16">16</span>
-<span id="17">17</span>
-<span id="18">18</span>
-<span id="19">19</span>
-<span id="20">20</span>
-<span id="21">21</span>
-<span id="22">22</span>
-<span id="23">23</span>
-<span id="24">24</span>
-<span id="25">25</span>
-<span id="26">26</span>
-<span id="27">27</span>
-<span id="28">28</span>
-<span id="29">29</span>
-</pre><pre class="rust"><code><span class="kw">mod </span>command;
-<span class="doccomment">/// Module for providing fake/arbitrary data which Cardano CLI can return.
-/// Should be used purely for testing
-</span><span class="kw">pub mod </span>fake;
+</pre><pre class="rust"><code><span class="kw">mod </span>mock;
+<span class="kw">mod </span>wrapper;
 
-<span class="kw">pub use </span>command::Command;
-<span class="kw">use </span>std::path::{Path, PathBuf};
-
-<span class="doccomment">/// Cardano CLI mock. It can return arbitrary/fake data but preserves correct Cardano CLI format.
-</span><span class="attribute">#[derive(Debug, Clone)]
-</span><span class="kw">pub struct </span>Mock {
-    path: PathBuf,
-}
-
-<span class="kw">impl </span>Default <span class="kw">for </span>Mock {
-    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
-            path: Path::new(<span class="string">&quot;cardano-cli-mock&quot;</span>).to_path_buf(),
-        }
-    }
-}
-
-<span class="kw">impl </span>Mock {
-    <span class="doccomment">/// Path to mock cli
-    </span><span class="attribute">#[must_use]
-    </span><span class="kw">pub fn </span>path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; PathBuf {
-        <span class="self">self</span>.path.clone()
-    }
-}
+<span class="kw">pub use </span>mock::Command <span class="kw">as </span>MockCommand;
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="mainnet_tools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

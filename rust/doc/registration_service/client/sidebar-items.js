@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["Error",""],["RegistrationResult",""]],"fn":[["do_registration",""]],"mod":[["args",""],["rest",""]],"struct":[["DelegationResultInfo",""],["LegacyResultInfo",""]]};

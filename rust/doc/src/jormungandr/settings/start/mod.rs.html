@@ -353,6 +353,7 @@
 <span id="353">353</span>
 <span id="354">354</span>
 <span id="355">355</span>
+<span id="356">356</span>
 </pre><pre class="rust"><code><span class="kw">pub mod </span>config;
 <span class="kw">pub mod </span>network;
 
@@ -683,6 +684,7 @@
             .unwrap_or(network::DEFAULT_MAX_CLIENT_CONNECTIONS),
         timeout: std::time::Duration::from_secs(<span class="number">15</span>),
         allow_private_addresses: p2p.allow_private_addresses,
+        whitelist: p2p.whitelist,
         gossip_interval: p2p
             .gossip_interval
             .map(|d| d.into())

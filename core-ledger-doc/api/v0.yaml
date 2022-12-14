@@ -71,10 +71,12 @@ paths:
                     description: Current balance of this account
                     type: integer
                     minimum: 0
-                  counter:
-                    description: Number of transactions performed with this account
-                    type: integer
-                    minimum: 0
+                  counters:
+                    description: An array of corresponding spending counters to the account
+                    type: array
+                    items:
+                      description: Spending counter with the specified lane
+                      type: integer
                   tokens:
                     description: Current state of the token balances of this account
                     type: object

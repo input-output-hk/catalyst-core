@@ -764,6 +764,7 @@
 <span id="764">764</span>
 <span id="765">765</span>
 <span id="766">766</span>
+<span id="767">767</span>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_addr::{Discrimination, Kind};
 <span class="kw">use </span>chain_core::property::Fragment <span class="kw">as _</span>;
 <span class="kw">use </span>chain_crypto::{Ed25519Extended, SecretKey};
@@ -1283,7 +1284,8 @@
         </span><span class="kw">let </span>builder_help = wallet
             .new_transaction(tx.total_input().unwrap(), <span class="number">0</span>)
             .unwrap();
-        <span class="kw">let </span><span class="kw-2">mut </span>builder = TransactionBuilder::new(<span class="kw-2">&amp;</span><span class="self">self</span>.settings, vote_cast, tx.valid_until());
+        <span class="kw">let </span><span class="kw-2">mut </span>builder =
+            TransactionBuilder::new(<span class="self">self</span>.settings.clone(), vote_cast, tx.valid_until());
         builder.add_input(builder_help.input(), builder_help.witness_builder());
         <span class="kw">let </span>res = Fragment::VoteCast(builder.finalize_tx(()).unwrap());
 
@@ -1333,7 +1335,7 @@
         </span><span class="kw">let </span>builder_help = wallet
             .new_transaction(tx.total_input().unwrap(), <span class="number">0</span>)
             .unwrap();
-        <span class="kw">let </span><span class="kw-2">mut </span>builder = TransactionBuilder::new(<span class="kw-2">&amp;</span><span class="self">self</span>.settings, NoExtra, tx.valid_until());
+        <span class="kw">let </span><span class="kw-2">mut </span>builder = TransactionBuilder::new(<span class="self">self</span>.settings.clone(), NoExtra, tx.valid_until());
         builder.add_input(builder_help.input(), builder_help.witness_builder());
         builder.add_output(Output::from_address(output_address, output.value));
         <span class="kw">let </span>res = Fragment::Transaction(builder.finalize_tx(()).unwrap());

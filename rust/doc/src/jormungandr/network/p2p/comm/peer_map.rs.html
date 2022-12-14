@@ -583,7 +583,7 @@
             .iter()
             .map(|(<span class="kw-2">&amp;</span>id, data)| PeerInfo {
                 id,
-                addr: <span class="prelude-val">None</span>,
+                addr: <span class="prelude-val">Some</span>(data.comms.remote_addr),
                 stats: data.stats.clone(),
             })
             .collect()

@@ -48,7 +48,7 @@ jobs:
           cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-lib/Cargo.toml --profile ci
           cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-server/Cargo.toml --profile ci
           # cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-tests/Cargo.toml --profile ci
-          cargo llvm-cov report --lcov
+          cargo llvm-cov report --lcov --output-path ./lcov.info
 
       - name: Upload coverage to Coveralls
         uses: coverallsapp/github-action@master

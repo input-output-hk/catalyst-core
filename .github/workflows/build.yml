@@ -1,0 +1,97 @@
+name: Build
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore: ["README.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md"]
+  pull_request:
+    branches: [ "main" ]
+    paths-ignore: ["README.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md"]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+  RUST_BACKTRACE: 1
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  build_on_linux:
+    name: Build Catalyst Core on Linux
+    runs-on: ubuntu-latest
+    env:
+      CARGO_FLAGS: --verbose --locked
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install Nextest
+        run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+
+      - name: Install deps
+        run:
+          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+
+      - name: Build on Linux
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: "1.65"
+      - run: cargo build
+
+  build_on_windows:
+    name: Build Catalyst Core on Windows
+    runs-on: windows-latest
+    env:
+      CARGO_FLAGS: --verbose --locked
+    steps:
+      - name: Checkout code
+        run: |
+          echo ${{ github.event.repository.url }}
+          echo ${{ github.event.pull_request.head.sha }}
+          mkdir C:\\${{ github.event.repository.name }}
+          git clone -n -v --progress https://github.com/input-output-hk/${{ github.event.repository.name }}.git C:\\${{ github.event.repository.name }}
+          cd C:\\${{ github.event.repository.name }}
+          git checkout ${{ github.event.pull_request.head.sha }}
+
+      - name: Allow long paths on Windows
+        working-directory: "C:\\${{ github.event.repository.name }}"
+        shell: powershell
+        run: |
+          reg add HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1 /f
+          git config --system core.longpaths true
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Set default linker
+        working-directory: "C:\\${{ github.event.repository.name }}"
+        run: rustup default stable-x86_64-pc-windows-gnu
+
+      - name: Free disk space
+        working-directory: "C:\\${{ github.event.repository.name }}"
+        shell: powershell
+        run: |
+          Get-PSDrive
+
+      - name: Install dependencies
+        working-directory: "C:\\${{ github.event.repository.name }}"
+        run:
+          choco install -y protoc openssl sqlite postgresql14
+
+      - name: Set PostgreSQL env variables
+        working-directory: "C:\\${{ github.event.repository.name }}"
+        shell: powershell
+        run: |
+          "PQ_LIB_DIR=${env:PROGRAMFILES}\PostgreSQL\14\lib" >> $env:GITHUB_ENV
+      - run: |
+          $env:PQ_LIB_DIR
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: "1.65"
+
+      - name: Build on Windows
+        working-directory: "C:\\${{ github.event.repository.name }}"
+        run: cargo build

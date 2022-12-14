@@ -1,0 +1,69 @@
+name: Nix CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  discover:
+    outputs:
+      hits: ${{ steps.discovery.outputs.hits }}
+      nix_conf: ${{ steps.discovery.outputs.nix_conf }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}
+    steps:
+      - name: Standard Discovery
+        uses: divnix/std-action/discover@main
+        id: discovery
+  build-packages:
+    needs: discover
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJSON(needs.discover.outputs.hits).packages.build }}
+    name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: divnix/std-action/run@main
+        with:
+          extra_nix_config: |
+            ${{ needs.discover.outputs.nix_conf }}
+          json: ${{ toJSON(matrix.target) }}
+          nix_key: ${{ secrets.NIX_SIGNING_KEY }}
+          s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          cache: s3://iog-catalyst-cache?region=eu-central-1
+  publish-containers:
+    needs: discover
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJSON(needs.discover.outputs.hits).containers.publish }}
+    name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          config="$HOME/.docker/config.json"
+          mkdir -p "${config%/*}"
+          jq -n --arg token "${{ secrets.DOCKER_AUTH_TOKEN }}" '{ "auths": { "registry.ci.iog.io": { auth: $token } } }' > "$config"
+          chmod 0600 "$config"
+      - uses: divnix/std-action/run@main
+        with:
+          extra_nix_config: |
+            ${{ needs.discover.outputs.nix_conf }}
+          json: ${{ toJSON(matrix.target) }}
+          nix_key: ${{ secrets.NIX_SIGNING_KEY }}
+          s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          cache: s3://iog-catalyst-cache?region=eu-central-1

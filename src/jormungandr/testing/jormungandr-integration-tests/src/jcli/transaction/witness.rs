@@ -146,7 +146,9 @@ pub fn test_account_transaction_different_lane_is_accepted() {
         .add_output(&receiver.address_bech32(Discrimination::Test), 100.into())
         .set_expiry_date(BlockDate::first().into())
         .finalize();
-    let witness = transaction_wrapper
-        .create_witness_default(WitnessType::Account, Some(SpendingCounter::new(2, 0)));
+    let witness = transaction_wrapper.create_witness_default(
+        WitnessType::Account,
+        Some(SpendingCounter::new(2, 0).unwrap()),
+    );
     transaction_wrapper.seal_with_witness(&witness).to_message();
 }

@@ -6,10 +6,8 @@
   inherit (inputs.cells.lib) lib;
   l = nixpkgs.lib // builtins;
 
-  name = "vit-testing";
+  name = "catalyst-toolbox";
   mkSimplePkg = subPkg: lib.mkPackage {pkgPath = "${name}/${subPkg}";};
 in {
-  mainnet-tools = mkSimplePkg "mainnet-tools";
-  snapshot-trigger-service = mkSimplePkg "snapshot-trigger-service";
-  vitup = mkSimplePkg "vitup";
+  snapshot-lib = mkSimplePkg "snapshot-lib";
 }

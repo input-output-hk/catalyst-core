@@ -7,9 +7,7 @@
   l = nixpkgs.lib // builtins;
 
   name = "chain-libs";
-  root = inputs.self + "/src/${name}";
-
-  mkSimplePkg = subPkg: lib.mkPackage {pkgPath = root + "/${subPkg}";};
+  mkSimplePkg = subPkg: lib.mkPackage {pkgPath = "${name}/${subPkg}";};
 in {
   chain-addr = mkSimplePkg "chain-addr";
   cardano-legacy-address = mkSimplePkg "cardano-legacy-address";

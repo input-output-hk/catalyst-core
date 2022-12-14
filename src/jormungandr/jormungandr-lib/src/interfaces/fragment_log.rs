@@ -2,6 +2,7 @@ use std::net::{IpAddr, Ipv4Addr};
 
 use crate::{crypto::hash::Hash, interfaces::BlockDate, time::SystemTime};
 use chain_impl_mockchain::key;
+#[cfg(not(target_arch = "wasm32-unknown-unknown"))]
 use local_ip_address::local_ip;
 use serde::{Deserialize, Serialize};
 

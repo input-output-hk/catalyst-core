@@ -2,6 +2,7 @@ use super::{buffer_sizes, convert::Decode, GlobalStateR};
 use crate::{
     blockcfg::Fragment,
     intercom::{self, BlockMsg, TopologyMsg, TransactionMsg},
+    network::bootstrap::local_addr_lookup,
     settings::start::network::Configuration,
     topology::{Gossip, NodeId},
     utils::async_msg::{self, MessageBox},
@@ -378,7 +379,9 @@ impl FragmentProcessor {
             Some(addr) => FragmentOrigin::Network { addr: addr.ip() },
             None => {
                 tracing::error!("node addr not present in config, reverting to local lookup");
-                FragmentOrigin::default_origin_addr()
+                FragmentOrigin::Network {
+                    addr: local_addr_lookup(),
+                }
             }
         };
 

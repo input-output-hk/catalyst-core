@@ -1,4 +1,4 @@
-use crate::fragment::FragmentId;
+use crate::{fragment::FragmentId, network::bootstrap::local_addr_lookup};
 use jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{BlockDate, FragmentLog, FragmentOrigin, FragmentStatus},
@@ -78,7 +78,9 @@ impl Logs {
                 // state transition.
                 let mut entry = FragmentLog::new(
                     fragment_id.into_hash(),
-                    FragmentOrigin::default_origin_addr(),
+                    FragmentOrigin::Network {
+                        addr: local_addr_lookup(),
+                    },
                 );
                 entry.modify(status);
                 self.entries.put(fragment_id, (entry, Some(ledger_date)));

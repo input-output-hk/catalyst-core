@@ -8,7 +8,11 @@ use crate::{
 use chain_core::property::ReadError;
 use chain_network::{data as net_data, error::Error as NetworkError};
 use futures::prelude::*;
-use std::fmt::Debug;
+use local_ip_address::local_ip;
+use std::{
+    fmt::Debug,
+    net::{IpAddr, Ipv4Addr},
+};
 use tokio_util::sync::CancellationToken;
 
 #[derive(thiserror::Error, Debug)]
@@ -124,5 +128,18 @@ pub async fn bootstrap_from_peer(
         )
         .await
         .map_err(Box::new)?;
+    }
+}
+
+pub fn local_addr_lookup() -> IpAddr {
+    match local_ip() {
+        Ok(ip) => ip,
+        Err(err) => {
+            tracing::error!(
+                reason = %err,
+                "unable to lookup local addr"
+            );
+            std::net::IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1))
+        }
     }
 }

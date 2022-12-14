@@ -1,9 +1,8 @@
-use std::net::{IpAddr, Ipv4Addr};
+use std::net::IpAddr;
 
 use crate::{crypto::hash::Hash, interfaces::BlockDate, time::SystemTime};
 use chain_impl_mockchain::key;
-#[cfg(not(target_family = "wasm"))]
-use local_ip_address::local_ip;
+
 use serde::{Deserialize, Serialize};
 
 /// identify the source of a fragment
@@ -21,18 +20,6 @@ pub enum FragmentOrigin {
     /// This marks the fragment is coming from the JRpc interface
     /// (a client wallet or another service).
     JRpc,
-}
-
-impl FragmentOrigin {
-    pub fn default_origin_addr() -> Self {
-        #[cfg(not(target_family = "wasm"))]
-        match local_ip() {
-            Ok(ip) => FragmentOrigin::Network { addr: ip },
-            Err(_err) => FragmentOrigin::Network {
-                addr: std::net::IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
-            },
-        }
-    }
 }
 
 /// status of the fragment within the blockchain or the pool

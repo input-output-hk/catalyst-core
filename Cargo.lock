@@ -1755,7 +1755,9 @@ dependencies = [
 name = "db-sync-explorer"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "bigdecimal",
+ "cardano-serialization-lib",
  "chrono",
  "clap 3.2.23",
  "color-eyre",
@@ -1763,7 +1765,9 @@ dependencies = [
  "diesel-derive-enum",
  "futures-util",
  "http-zipkin",
+ "jormungandr-lib",
  "jortestkit",
+ "mainnet-lib",
  "microtype",
  "serde",
  "serde_json",

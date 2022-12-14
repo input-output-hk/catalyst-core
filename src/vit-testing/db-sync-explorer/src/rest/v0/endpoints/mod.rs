@@ -5,6 +5,7 @@ use warp::{Filter, Rejection, Reply};
 mod api_token;
 mod health;
 mod meta;
+mod mock;
 mod sync;
 mod tx;
 
@@ -24,12 +25,25 @@ pub async fn filter(
     let meta_root = warp::path!("meta" / ..);
     let meta_filter = meta::filter(meta_root.boxed(), context.clone()).await;
 
-    let api_token_filter = if context.read().await.token().is_some() {
+    let mock_root = warp::path!("mock" / ..);
+    let mock_filter = mock::filter(mock_root.boxed(), context.clone()).await;
+
+    let is_token_enabled = context.read().await.token().is_some();
+
+    let api_token_filter = if is_token_enabled {
         api_token::api_token_filter(context).await.boxed()
     } else {
         warp::any().boxed()
     };
 
-    root.and(api_token_filter.and(sync_filter.or(health_filter).or(tx_filter).or(meta_filter)))
-        .boxed()
+    root.and(
+        api_token_filter.and(
+            sync_filter
+                .or(health_filter)
+                .or(tx_filter)
+                .or(meta_filter)
+                .or(mock_filter),
+        ),
+    )
+    .boxed()
 }

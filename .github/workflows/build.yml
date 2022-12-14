@@ -54,14 +54,14 @@ jobs:
           git clone -n -v --progress https://github.com/input-output-hk/${{ github.event.repository.name }}.git C:\\${{ github.event.repository.name }}
           cd C:\\${{ github.event.repository.name }}
           git checkout ${{ github.event.pull_request.head.sha }}
-        if: github.event_name == 'pull_request'
+        if: ${{ github.event_name == 'pull_request' }}
 
       - name: Checkout code on push
         run: |
           mkdir C:\\${{ github.event.repository.name }}
           git clone -v --progress https://github.com/input-output-hk/${{ github.event.repository.name }}.git C:\\${{ github.event.repository.name }}
           cd C:\\${{ github.event.repository.name }}
-        if: github.event_name == 'push'
+        if: ${{ github.event_name == 'push' }}
 
       - name: Allow long paths on Windows
         working-directory: "C:\\${{ github.event.repository.name }}"

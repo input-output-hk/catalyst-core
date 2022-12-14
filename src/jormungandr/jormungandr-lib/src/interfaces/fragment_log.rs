@@ -1,7 +1,8 @@
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::net::{IpAddr, Ipv4Addr};
 
 use crate::{crypto::hash::Hash, interfaces::BlockDate, time::SystemTime};
 use chain_impl_mockchain::key;
+use local_ip_address::local_ip;
 use serde::{Deserialize, Serialize};
 
 /// identify the source of a fragment
@@ -12,7 +13,7 @@ pub enum FragmentOrigin {
     /// origins of the fragment and eventually blacklisting
     /// the senders from sending us more fragment (in case
     /// they are invalids or so)
-    Network { addr: SocketAddr },
+    Network { addr: IpAddr },
     /// This marks the fragment is coming from the REST interface
     /// (a client wallet or another service).
     Rest,
@@ -23,8 +24,11 @@ pub enum FragmentOrigin {
 
 impl FragmentOrigin {
     pub fn default_origin_addr() -> Self {
-        FragmentOrigin::Network {
-            addr: SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 27000),
+        match local_ip() {
+            Ok(ip) => FragmentOrigin::Network { addr: ip },
+            Err(_err) => FragmentOrigin::Network {
+                addr: std::net::IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
+            },
         }
     }
 }

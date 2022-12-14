@@ -375,9 +375,9 @@ impl FragmentProcessor {
         );
 
         let addr = match self.global_state.config.address() {
-            Some(addr) => FragmentOrigin::Network { addr },
+            Some(addr) => FragmentOrigin::Network { addr: addr.ip() },
             None => {
-                tracing::error!("unable to obtain address of node");
+                tracing::error!("node addr not present in config, reverting to local lookup");
                 FragmentOrigin::default_origin_addr()
             }
         };

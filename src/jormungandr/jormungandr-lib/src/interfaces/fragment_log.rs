@@ -24,6 +24,7 @@ pub enum FragmentOrigin {
 
 impl FragmentOrigin {
     pub fn default_origin_addr() -> Self {
+        #[cfg(not(target_arch = "wasm32-unknown-unknown"))]
         match local_ip() {
             Ok(ip) => FragmentOrigin::Network { addr: ip },
             Err(_err) => FragmentOrigin::Network {

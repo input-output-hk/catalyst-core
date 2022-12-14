@@ -5,29 +5,29 @@ use crate::common::{
 
 use assert_fs::TempDir;
 use itertools::Itertools;
-use vit_servicing_station_lib::v0::endpoints::snapshot::Group;
+use vit_servicing_station_lib::db::models::groups::Group;
 use crate::common::snapshot::SnapshotBuilder;
 
 #[test] // api/v0/snapshot/voter/{tag}/{voting_key}
 pub fn get_voting_key_saturation() {
     let temp_dir = TempDir::new().unwrap();
 
-    let snapshot = SnapshotBuilder::default().with_tag("tag").build();
+    let mut gen = ArbitrarySnapshotGenerator::default();
 
-    //let mut gen = ArbitrarySnapshotGenerator::default();
+    let arbitrary_snapshot = gen.snapshot();
 
-    //let funds = gen.funds();
-    //let groups = gen.groups(&funds);
+    println!("arbitrary snapshot: {:#?}", arbitrary_snapshot);
 
-    //let snapshot = gen.snapshot();
+    let snapshot = SnapshotBuilder::default()
+        .with_tag("tag")
+        //.with_groups(arbitrary_snapshot.groups())
+        .build();
 
     let (hash, token) = data::token();
 
-    //println!("group map: {:#?}", groups);
-
     let db_path = DbBuilder::new()
         .with_token(token)
-        //.with_groups(groups)
+        .with_snapshot(&arbitrary_snapshot)
         .build(&temp_dir).unwrap();
 
     let server = ServerBootstrapper::new()
@@ -35,8 +35,6 @@ pub fn get_voting_key_saturation() {
         .start(&temp_dir).unwrap();
 
     let client = server.rest_client_with_token(&hash);
-
-    //println!("snapshot content: {:#?}", snapshot.content);
 
     let public_key = snapshot.content.snapshot[0].contributions[0].clone().stake_public_key;
 

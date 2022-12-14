@@ -15,8 +15,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  vit_servicing_station:
-    name: Vit Servicing Station Coverage
+  monorepo:
+    name: Catalyst Core Coverage
     runs-on: ubuntu-latest
     env:
       CARGO_FLAGS: --verbose --locked
@@ -48,6 +48,31 @@ jobs:
           cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-lib/Cargo.toml --profile ci
           cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-server/Cargo.toml --profile ci
           # cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-tests/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/voting-tools-rs/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/cardano-legacy-address/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-addr/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-core/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-crypto/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-evm/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-impl-mockchain/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-network/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-ser/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-storage/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-time/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-vote/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/imhamt/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/sparse-array/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/typed-bytes/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-c/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-core/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-uniffi/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-wasm-js/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/chain-path-derivation/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/hdkeygen/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/symmetric-cipher/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/wallet/Cargo.toml
+          cargo llvm-cov nextest --no-report --manifest-path ./src/jormungandr/jormungandr/Cargo.toml
+
           cargo llvm-cov report --lcov --output-path ./lcov.info
 
       - name: Upload coverage to Coveralls

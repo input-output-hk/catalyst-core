@@ -96,11 +96,10 @@ jobs:
     steps:
       - uses: divnix/std-action/run@main
         with:
-          github_pat: ${{ secrets.HUB_PAT }}
-          nix_key: ${{ secrets.NIX_SECRET_KEY }}
-          s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          cache: s3://iohk-mamba-bitte/infra/binary-cache/?region=eu-central-1
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}
           json: ${{ toJSON(matrix.target) }}
+          nix_key: ${{ secrets.NIX_SIGNING_KEY }}
+          s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          cache: s3://iog-catalyst-cache?region=eu-central-1

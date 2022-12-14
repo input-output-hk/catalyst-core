@@ -63,7 +63,6 @@ jobs:
           git config --system core.longpaths true
 
       - uses: Swatinem/rust-cache@v2
-        working-directory: "C:\\${{ github.event.repository.name }}"
 
       - name: Set default linker
         working-directory: "C:\\${{ github.event.repository.name }}"
@@ -81,7 +80,6 @@ jobs:
           "PQ_LIB_DIR=${env:PROGRAMFILES}\PostgreSQL\14\lib" >> $env:GITHUB_ENV
 
       - uses: actions-rs/toolchain@v1
-        working-directory: "C:\\${{ github.event.repository.name }}"
         with:
           toolchain: "1.65"
 

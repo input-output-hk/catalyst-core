@@ -3,7 +3,9 @@ name: CI-Tests
 on:
   push:
     branches: [ "main" ]
+    paths-ignore: ["README.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md"]
   pull_request:
+    paths-ignore: ["README.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md"]
 
 env:
   CARGO_TERM_COLOR: always
@@ -12,76 +14,6 @@ env:
   CARGO_INCREMENTAL: 0
 
 jobs:
-  # node_tests:
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       shardNumber: [1, 2, 3, 4]
-  #       totalShards: [4]
-  #   env:
-  #     CARGO_FLAGS: --verbose --locked --features systemd gelf
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v3
-  #       with:
-  #         ref: ${{ github.event.pull_request.head.sha }}
-  #     - uses: Swatinem/rust-cache@v2
-  #     - name: Free disk space
-  #       run: |
-  #         df -h
-  #         sudo rm -rf /usr/share/dotnet
-  #         sudo rm -rf /opt/ghc
-  #         sudo rm -rf "/usr/local/share/boost"
-  #         df -h
-  #     - name: Install Nextest
-  #       run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
-  #     - name: Install deps
-  #       run:
-  #         sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-  #
-  #     - name: Run node tests
-  #       uses: actions-rs/toolchain@v1
-  #       with:
-  #         toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-  #         components: rustfmt, clippy
-  #     - run: |
-  #         cd src/jormungandr
-  #         cargo build
-  #         cargo nextest run -p jormungandr -p jcli -p jormungandr-integration-tests --partition hash:${{ matrix.shardNumber }}/${{ matrix.totalShards }}
-
-  # other_tests:
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     CARGO_FLAGS: --verbose --locked
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v3
-  #       with:
-  #         ref: ${{ github.event.pull_request.head.sha }}
-  #     - uses: Swatinem/rust-cache@v2
-  #     - name: Install Nextest
-  #       run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
-  #     - name: Install deps
-  #       run:
-  #         sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-  #
-  #     - name: Run other tests
-  #       uses: actions-rs/toolchain@v1
-  #       with:
-  #         toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-  #         components: rustfmt, clippy
-  #     - run: |
-  #         cargo nextest run --workspace \
-  #           --exclude jormungandr \
-  #           --exclude jcli \
-  #           --exclude jormungandr-integration-tests \
-  #           --exclude vit-servicing-station-lib \
-  #           --exclude vit-servicing-station-cli \
-  #           --exclude vit-servicing-station-tests \
-  #           --exclude vit-servicing-station-server \
-  #           --exclude catalyst-toolbox \
-  #           --exclude "chain-*" \
-
   vit_servicing_station:
     name: Vit Servicing Station Tests
     runs-on: ubuntu-latest
@@ -110,7 +42,7 @@ jobs:
             -p vit-servicing-station-lib \
             -p vit-servicing-station-tests \
             -p vit-servicing-station-server \
-            --retries 10
+            --profile ci
 
   catalyst_toolbox:
     name: Catalyst Toolbox Tests
@@ -133,7 +65,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-      - run: cargo nextest run -p catalyst-toolbox -p snapshot-lib
+      - run: cargo nextest run -p catalyst-toolbox -p snapshot-lib --profile ci
 
   voting_tools:
     name: Voting Tools Tests
@@ -156,7 +88,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-      - run: cargo nextest run -p voting_tools_rs
+      - run: cargo nextest run -p voting_tools_rs --profile ci
 
   chain-libs:
     name: Chain Libs Tests
@@ -179,7 +111,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-      - run: cargo nextest run -p "chain-*"
+      - run: cargo nextest run -p "chain-*" --profile ci
 
   jormungandr:
     name: Jormungandr Tests
@@ -198,12 +130,36 @@ jobs:
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
-      - name: Run chain-libs tests
+      - name: Run jormungandr tests
         uses: actions-rs/toolchain@v1
         with:
           toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-      - run: cargo nextest run -p jormungandr
+      - run: cargo nextest run -p jormungandr --profile ci
 
+  jormungandr-integration:
+    name: Jormungandr Integration Tests
+    runs-on: ubuntu-latest
+    env:
+      CARGO_FLAGS: --verbose --locked
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: Swatinem/rust-cache@v2
+      - name: Install Nextest
+        run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+      - name: Install deps
+        run:
+          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+
+      - name: Run jormungandr-integration tests
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
+      - run: |
+           cargo build -p jcli -p jormungandr -p explorer
+           cargo nextest run -p jormungandr-integration-tests --profile ci
 
   wallet-js-binding:
     name: Wallet JS Binding Tests
@@ -221,17 +177,19 @@ jobs:
 
     - name: Build wasm package
       run: |
-        cd src/chain-wallet-libs/bindings/wallet-js
+        cd src/chain-wallet-libs/bindings/wallet-wasm-js
         wasm-pack build --release --target=nodejs -d pkg
 
     - name: Build JS package
       run: |
-        cd src/chain-wallet-libs/bindings/wallet-js/js
+        cd src/chain-wallet-libs/bindings/wallet-wasm-js/js
+        rm package.json
+        cp package_test.json package.json
         npm install
 
     - name: Run JS tests
       run: |
-        cd src/chain-wallet-libs/bindings/wallet-js/js-test
+        cd src/chain-wallet-libs/bindings/wallet-wasm-js/js-test
         npm install
         npm test
 

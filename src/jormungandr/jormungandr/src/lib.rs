@@ -291,6 +291,7 @@ fn start_services(bootstrapped_node: BootstrappedNode) -> Result<(), start_up::E
 
     {
         let blockchain_tip = blockchain_tip.clone();
+
         let process = fragment::Process::new(
             bootstrapped_node.settings.mempool.pool_max_entries.into(),
             bootstrapped_node.settings.mempool.log_max_entries.into(),

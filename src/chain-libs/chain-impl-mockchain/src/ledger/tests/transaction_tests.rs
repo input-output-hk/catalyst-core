@@ -130,9 +130,12 @@ pub fn duplicated_account_transaction() {
     match result {
         Err(err) => panic!("first transaction should be succesful but {}", err),
         Ok(_) => match test_ledger.apply_transaction(fragment2, BlockDate::first()) {
-            Err(ledger::Error::Account(
-                crate::account::LedgerError::SpendingCredentialInvalid { expected, actual },
-            )) => {
+            Err(ledger::Error::Account(crate::account::LedgerError::SpendingCounterError(
+                crate::accounting::account::spending::Error::SpendingCredentialInvalid {
+                    expected,
+                    actual,
+                },
+            ))) => {
                 assert_eq!(expected, SpendingCounter::zero().increment());
                 assert_eq!(actual, SpendingCounter::zero());
             }

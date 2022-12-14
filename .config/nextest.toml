@@ -1,0 +1,9 @@
+[profile.ci]
+# Show output for all tests as soon as they fail and at the end of the test run.
+failure-output = "immediate-final"
+# Do not cancel the test run on the first failure.
+fail-fast = false
+# Show all tests in the CI output.
+status-level = "all"
+# Retries the test n times, tests that succeed on a subsequent attempt will be marked as flaky
+retries = 10

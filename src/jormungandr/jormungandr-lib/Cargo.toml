@@ -29,7 +29,7 @@ hex = "0.4"
 bech32 = "0.8"
 base64 = "0.13.0"
 http = "0.2.2"
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+[target.'cfg(not(target_arch = "wasm32-unknown-unknown"))'.dependencies]
 local-ip-address = "0.4.9"
 
 [dev-dependencies]

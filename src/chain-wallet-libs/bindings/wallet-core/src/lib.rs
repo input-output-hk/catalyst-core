@@ -1,10 +1,12 @@
 pub mod c;
 mod error;
+mod tx_builder;
 mod vote;
 mod wallet;
 
 pub use self::{
     error::{Error, ErrorCode, ErrorKind, Result},
+    tx_builder::TxBuilder,
     vote::Proposal,
     wallet::Wallet,
 };

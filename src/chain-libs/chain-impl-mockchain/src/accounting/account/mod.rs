@@ -31,13 +31,10 @@ pub enum LedgerError {
     AlreadyExists,
     #[error("Removed account is not empty")]
     NonZero,
-    #[error("Spending credential invalid, expected {} got {} in lane {}", .expected.unlaned_counter(), .actual.unlaned_counter(), .actual.lane())]
-    SpendingCredentialInvalid {
-        expected: SpendingCounter,
-        actual: SpendingCounter,
-    },
     #[error("Value calculation failed")]
     ValueError(#[from] ValueError),
+    #[error(transparent)]
+    SpendingCounterError(#[from] spending::Error),
 }
 
 impl From<UpdateError<LedgerError>> for LedgerError {

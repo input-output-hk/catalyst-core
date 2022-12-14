@@ -31,6 +31,7 @@ wasm-bindgen = "0.2"
 js-sys = "0.3.40"
 bech32 = "0.7.2"
 serde_json = "1.0"
+hex = "0.4.2"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
@@ -45,4 +46,3 @@ clear_on_drop = {version = "0.2", features = ["no_cc"]}
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
-hex = "0.4.2"

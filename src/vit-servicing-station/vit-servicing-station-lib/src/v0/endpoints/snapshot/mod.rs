@@ -695,10 +695,11 @@ mod test {
         const GROUP1: &str = "group1";
         const GROUP2: &str = "group2";
 
-        let _e = tracing_subscriber::fmt()
+        tracing_subscriber::fmt()
             .with_max_level(Level::TRACE)
             .with_writer(tracing_subscriber::fmt::TestWriter::new())
-            .try_init();
+            .try_init()
+            .unwrap();
 
         let keys = [
             "0000000000000000000000000000000000000000000000000000000000000000",
@@ -818,10 +819,11 @@ mod test {
 
     #[tokio::test]
     async fn test_snapshot_get_tags_2() {
-        let _e = tracing_subscriber::fmt()
+        tracing_subscriber::fmt()
             .with_max_level(Level::TRACE)
             .with_writer(tracing_subscriber::fmt::TestWriter::new())
-            .try_init();
+            .try_init()
+            .unwrap();
 
         let key = "0000000000000000000000000000000000000000000000000000000000000000";
 
@@ -948,5 +950,28 @@ mod test {
         tags.sort_unstable();
 
         assert_eq!(tags, vec!["tag_a", "tag_b"]);
+    }
+
+    #[tokio::test]
+    async fn test_put_raw_snapshot() {
+        let content = r#"{"snapshot":[{"stake_public_key":"0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663","voting_power":2,"reward_address":"0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663","delegations":"0x0000000000000000000000000000000000000000000000000000000000000000","voting_purpose":0},{"stake_public_key":"0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee","voting_power":1,"reward_address":"0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee","delegations":"0x0000000000000000000000000000000000000000000000000000000000000000","voting_purpose":0}],"update_timestamp":"1970-01-01T00:00:00Z","min_stake_threshold":0,"voting_power_cap": "NaN","direct_voters_group":null,"representatives_group":null}"#;
+
+        let context = new_db_test_shared_context();
+        let db_conn = &context.read().await.db_connection_pool.get().unwrap();
+        initialize_db_with_migration(db_conn).unwrap();
+
+        let snapshot_root = warp::path!("snapshot" / ..).boxed();
+        let put_filter = snapshot_root.and(update_filter(context));
+
+        assert_eq!(
+            warp::test::request()
+                .path("/snapshot/raw_snapshot/tag_a")
+                .method("PUT")
+                .body(content)
+                .reply(&put_filter)
+                .await
+                .status(),
+            StatusCode::BAD_REQUEST
+        );
     }
 }

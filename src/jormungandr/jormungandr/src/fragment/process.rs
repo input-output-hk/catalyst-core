@@ -114,7 +114,6 @@ impl Process {
                 tip,
                 stats_counter.clone()
             );
-
             loop {
                 tokio::select! {
                     maybe_msg = input.next() => {

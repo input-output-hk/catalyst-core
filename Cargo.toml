@@ -16,7 +16,6 @@ members = [
   "src/chain-libs/cardano-legacy-address",
   "src/chain-libs/sparse-array",
   "src/chain-libs/typed-bytes",
-  "src/chain-wallet-libs/bip39",
   "src/chain-wallet-libs/chain-path-derivation",
   "src/chain-wallet-libs/hdkeygen",
   "src/chain-wallet-libs/wallet",
@@ -51,7 +50,7 @@ members = [
   "src/vit-testing/snapshot-trigger-service",
   "src/vit-testing/signals-handler",
   "src/vit-testing/scheduler-service-lib",
-  "src/voting-tools-rs"
+  "src/voting-tools-rs",
 ]
 
 [workspace.dependencies]

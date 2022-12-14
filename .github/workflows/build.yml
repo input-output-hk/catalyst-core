@@ -49,8 +49,6 @@ jobs:
     steps:
       - name: Checkout code
         run: |
-          echo ${{ github.event.repository.url }}
-          echo ${{ github.event.pull_request.head.sha }}
           mkdir C:\\${{ github.event.repository.name }}
           git clone -n -v --progress https://github.com/input-output-hk/${{ github.event.repository.name }}.git C:\\${{ github.event.repository.name }}
           cd C:\\${{ github.event.repository.name }}
@@ -69,12 +67,6 @@ jobs:
         working-directory: "C:\\${{ github.event.repository.name }}"
         run: rustup default stable-x86_64-pc-windows-gnu
 
-      - name: Free disk space
-        working-directory: "C:\\${{ github.event.repository.name }}"
-        shell: powershell
-        run: |
-          Get-PSDrive
-
       - name: Install dependencies
         working-directory: "C:\\${{ github.event.repository.name }}"
         run:
@@ -85,9 +77,7 @@ jobs:
         shell: powershell
         run: |
           "PQ_LIB_DIR=${env:PROGRAMFILES}\PostgreSQL\14\lib" >> $env:GITHUB_ENV
-      - run: |
-          $env:PQ_LIB_DIR
-
+      
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: "1.65"

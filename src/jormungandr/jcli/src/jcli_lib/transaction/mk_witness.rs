@@ -81,7 +81,7 @@ impl MkWitness {
                         actual: lane,
                     });
                 }
-                Ok(SpendingCounter::new(lane, counter))
+                Ok(SpendingCounter::new(lane, counter).unwrap())
             })
             .transpose()?;
         let witness = make_witness(

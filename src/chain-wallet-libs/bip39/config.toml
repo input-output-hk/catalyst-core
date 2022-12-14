@@ -1,3 +1,0 @@
-[profile.release]
-lto = "yes"
-strip = "symbols"

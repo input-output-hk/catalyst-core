@@ -467,20 +467,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bip39"
-version = "0.8.1"
-dependencies = [
- "cryptoxide 0.4.2",
- "hex",
- "quickcheck",
- "quickcheck_macros",
- "rand 0.3.23",
- "thiserror",
- "unicode-normalization",
- "zeroize",
-]
-
-[[package]]
 name = "bit-set"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2811,7 +2797,6 @@ dependencies = [
 name = "hdkeygen"
 version = "0.8.1"
 dependencies = [
- "bip39",
  "cardano-legacy-address",
  "cbor_event",
  "chain-addr",
@@ -3221,8 +3206,6 @@ name = "imhamt"
 version = "0.1.0"
 dependencies = [
  "criterion",
- "jemalloc-ctl",
- "jemallocator",
  "proptest",
  "rustc_version",
  "test-strategy",
@@ -3552,38 +3535,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "jemalloc-ctl"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c502a5ff9dd2924f1ed32ba96e3b65735d837b4bfd978d3161b1702e66aca4b7"
-dependencies = [
- "jemalloc-sys",
- "libc",
- "paste",
-]
-
-[[package]]
-name = "jemalloc-sys"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d3b9f3f5c9b31aa0f5ed3260385ac205db665baa41d49bb8338008ae94ede45"
-dependencies = [
- "cc",
- "fs_extra",
- "libc",
-]
-
-[[package]]
-name = "jemallocator"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43ae63fcfc45e99ab3d1b29a46782ad679e98436c3169d15a167a1108a724b69"
-dependencies = [
- "jemalloc-sys",
- "libc",
-]
-
-[[package]]
 name = "job_scheduler_ng"
 version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3826,7 +3777,6 @@ dependencies = [
 name = "jormungandrwallet"
 version = "0.8.1"
 dependencies = [
- "bip39",
  "chain-addr",
  "chain-impl-mockchain",
  "chain-ser",
@@ -8284,7 +8234,6 @@ dependencies = [
 name = "wallet"
 version = "0.8.1"
 dependencies = [
- "bip39",
  "cardano-legacy-address",
  "cbor_event",
  "chain-addr",
@@ -8315,7 +8264,6 @@ name = "wallet-core"
 version = "0.8.1"
 dependencies = [
  "bech32 0.7.3",
- "bip39",
  "chain-addr",
  "chain-core",
  "chain-crypto",

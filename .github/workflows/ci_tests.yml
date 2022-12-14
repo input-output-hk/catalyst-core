@@ -10,10 +10,34 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -D warnings
+  RUSTDOCFLAGS: -D warnings
   RUST_BACKTRACE: 1
   CARGO_INCREMENTAL: 0
 
 jobs:
+  docs:
+    name: Build Docs
+    runs-on: ubuntu-latest
+    env:
+      CARGO_FLAGS: --verbose --locked
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: Swatinem/rust-cache@v2
+      - name: Install Nextest
+        run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+      - name: Install deps
+        run:
+          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+
+      - name: Run vit-ss tests
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: "nightly-2022-12-14"  
+      - run: cargo doc
+
   vit_servicing_station:
     name: Vit Servicing Station Tests
     runs-on: ubuntu-latest

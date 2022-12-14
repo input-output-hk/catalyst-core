@@ -211,3 +211,15 @@ jobs:
           toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
           components: rustfmt, clippy
       - run: scripts/check-fmt.sh
+  devshell:
+    name: Build catalyst-core from devshell
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: cachix/install-nix-action@v18
+      with:
+        extra_nix_config: |
+          access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+    - run: nix develop --command 'cargo test --no-run'

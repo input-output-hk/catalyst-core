@@ -74,7 +74,7 @@ jobs:
 
       - name: Set default linker
         working-directory: "C:\\${{ github.event.repository.name }}"
-        run: rustup default stable-x86_64-pc-windows-gnu
+        run: rustup default stable-x86_64-pc-windows-msvc
 
       - name: Install dependencies
         working-directory: "C:\\${{ github.event.repository.name }}"

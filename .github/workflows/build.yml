@@ -47,13 +47,21 @@ jobs:
     env:
       CARGO_FLAGS: --verbose --locked
     steps:
-      - name: Checkout code
+      - name: Checkout code on PR
         #Workaround for the running out of disk space issue. See https://github.com/actions/runner-images/issues/1341
         run: |
           mkdir C:\\${{ github.event.repository.name }}
           git clone -n -v --progress https://github.com/input-output-hk/${{ github.event.repository.name }}.git C:\\${{ github.event.repository.name }}
           cd C:\\${{ github.event.repository.name }}
           git checkout ${{ github.event.pull_request.head.sha }}
+        if: github.event_name == 'pull_request'
+
+      - name: Checkout code on push
+        run: |
+          mkdir C:\\${{ github.event.repository.name }}
+          git clone -v --progress https://github.com/input-output-hk/${{ github.event.repository.name }}.git C:\\${{ github.event.repository.name }}
+          cd C:\\${{ github.event.repository.name }}
+        if: github.event_name == 'push'
 
       - name: Allow long paths on Windows
         working-directory: "C:\\${{ github.event.repository.name }}"

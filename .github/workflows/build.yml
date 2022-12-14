@@ -71,6 +71,8 @@ jobs:
           git config --system core.longpaths true
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "C:\\${{ github.event.repository.name }}"
 
       - name: Set default linker
         working-directory: "C:\\${{ github.event.repository.name }}"

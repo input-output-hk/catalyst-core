@@ -2,6 +2,7 @@ use crate::wallet::GeneralTransactionMetadataInfo;
 use crate::{REGISTRATION_METADATA_IDX, REGISTRATION_SIGNATURE_METADATA_IDX};
 use blockfrost::{load, AddressTransaction, BlockFrostApi, BlockFrostSettings};
 use cardano_serialization_lib::address::Address;
+use cardano_serialization_lib::error::JsError;
 use cardano_serialization_lib::metadata::{GeneralTransactionMetadata, MetadataJsonSchema};
 
 /// Wrapper on Blockfrost api tailored for catalyst needs
@@ -98,4 +99,7 @@ pub enum Error {
     /// Json conversion error
     #[error("blockfrost")]
     JsonConversion(#[from] crate::JsonConversionError),
+    /// Cardano serialization lib error
+    #[error("cardano serialization lib")]
+    CardanoSerialization(#[from] JsError),
 }

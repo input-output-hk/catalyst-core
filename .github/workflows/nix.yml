@@ -35,7 +35,7 @@ jobs:
     name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
     runs-on: ubuntu-latest
     steps:
-      - uses: divnix/std-action/run@main
+      - uses: divnix/std-action/run@fix-run
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}
@@ -58,7 +58,7 @@ jobs:
           mkdir -p "${config%/*}"
           jq -n --arg token "${{ secrets.DOCKER_AUTH_TOKEN }}" '{ "auths": { "registry.ci.iog.io": { auth: $token } } }' > "$config"
           chmod 0600 "$config"
-      - uses: divnix/std-action/run@main
+      - uses: divnix/std-action/run@fix-run
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}

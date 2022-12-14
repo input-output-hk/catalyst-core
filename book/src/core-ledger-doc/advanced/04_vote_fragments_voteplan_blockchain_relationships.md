@@ -1,26 +1,26 @@
 # How Vote plans, Vote Fragments and the block chain transaction work and inter-relate
 
 Please just brain dump everything you know about the above topics, or anything
-related to them, either individually or interrelated.  This process is not
+related to them, either individually or interrelated. This process is not
 intended to consume an excessive amount of your time, so focus more on getting
 the information you have to contribute down in the quickest way possible.
 
-Don't be overly concerned with format or correctness,  its not a test.  If you
-think things work in a particular way, describe it.  Obviously, different people
+Don't be overly concerned with format or correctness, its not a test. If you
+think things work in a particular way, describe it. Obviously, different people
 will know different things, don't second guess info and not include it because
 you think someone else might say it.
 
 If you have technical details, like the format of a data entity that can be
-explained, please include it.  This is intended to become a deep dive, to the
-byte level.  If you want to,  feel free to x-ref the code as well.
+explained, please include it. This is intended to become a deep dive, to the
+byte level. If you want to, feel free to x-ref the code as well.
 
 Add what you know (if anything) in the section below your name and submit a PR
-to the DOCS branch (not main) with Steven Johnson for review.  I will both
-review and merge these.  I will also start collating the data once this process
+to the DOCS branch (not main) with Steven Johnson for review. I will both
+review and merge these. I will also start collating the data once this process
 is complete, and we can then iterate until the picture is fully formed and
 accurate. Feel free to include other .md files if there is a big piece of
 information, such as the format of a vote transaction, or the vote plan section
-of block 0, etc.  Or refer to other documentation we may already have (in any
+of block 0, etc. Or refer to other documentation we may already have (in any
 form, eg confluence, jira issue or Miro, or the old repos or Anywhere else is
 ok.).
 
@@ -36,7 +36,7 @@ We are particularly interested in, with respect to Jormungandr:
 6. Anything else which is not listed but is necessary to fully understand the
    votes cast in jormungandr.
 
-Don't feel limited by this list,  if there is anything else the list doesn't
+Don't feel limited by this list, if there is anything else the list doesn't
 cover but you want to describe it, please do.
 
 ## Sasha Prokhorenko
@@ -66,6 +66,31 @@ There is an arbitrary snapshot generator used in `vit-servicing-station-tests` t
 ## Conor Gannon
 
 ## Alex Pozhylenkov
+
+### `Spending Counters`
+
+Spending counter associated to an account. Every time the owner is spending from an account, the counter is incremented. This features is similar to the Ethereum `nonce` field in the block and prevents from the replay attack.
+
+```
+pub struct SpendingCounter(pub(crate) u32);
+```
+
+As it was said before every account associated with the a current state of the Spending Counter, or to be more precised to an array of 8 Spending counters.
+
+```
+pub struct SpendingCounterIncreasing {
+    nexts: Vec<SpendingCounter>,
+}
+```
+
+Each spending counter differes with each other with the specified `lane` bits which are a first 3 bits of the original Spending counter value. Spending counter structure:
+
+```
+(001)[lane] (00000 00000000 00000000 00000001){counter}
+(00100000 00000000 00000000 00000001){whole Spending Counter}
+```
+
+With such approach user can generate up to 8 transactions with the specified different lanes and correspoding counters and submit it into the blockchain with no mater on the transaction processing order. So incrementing of the counter will be done in "parallel" for each lane. That is the only difference with the original Ethereum approach with `nonce` (counter in our implementation), where for each transaction you should specify an exact value and submits transaction in the exact order.
 
 ## Cameron Mcloughlin
 

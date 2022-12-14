@@ -10,7 +10,7 @@ pub use jormungandr_lib::interfaces::{Cors, JRpc, LayersConfig, Rest, Tls, Trust
 use jormungandr_lib::{interfaces::Mempool, time::Duration};
 use multiaddr::Multiaddr;
 use serde::{de::Error as _, Deserialize, Deserializer, Serialize, Serializer};
-use std::path::PathBuf;
+use std::{net::SocketAddr, path::PathBuf};
 use tracing::level_filters::LevelFilter;
 
 #[derive(Debug, Deserialize)]
@@ -98,6 +98,8 @@ pub struct P2pConfig {
     /// The default is to not allow advertising non-public IP addresses.
     #[serde(default)]
     pub allow_private_addresses: bool,
+
+    pub whitelist: Option<Vec<SocketAddr>>,
 
     /// setting for the policy
     #[serde(default)]

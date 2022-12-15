@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["era","Split timeframe in eras"],["testing",""],["timeframe",""],["timeline",""],["units",""]]};
+window.SIDEBAR_ITEMS = {"mod":[["era","Split timeframe in eras"],["testing",""],["timeframe","Timeframe"],["timeline",""],["units",""]]};

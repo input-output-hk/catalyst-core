@@ -137,7 +137,12 @@
 <span id="137">137</span>
 <span id="138">138</span>
 <span id="139">139</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::fragment::FragmentId;
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+</pre><pre class="rust"><code><span class="kw">use crate</span>::{fragment::FragmentId, network::retrieve_local_ip};
 <span class="kw">use </span>jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{BlockDate, FragmentLog, FragmentOrigin, FragmentStatus},
@@ -215,7 +220,12 @@
                 // Also, in this scenario we accept any provided FragmentStatus, since we do not
                 // actually know what the previous status was, and thus cannot execute the correct
                 // state transition.
-                </span><span class="kw">let </span><span class="kw-2">mut </span>entry = FragmentLog::new(fragment_id.into_hash(), FragmentOrigin::Network);
+                </span><span class="kw">let </span><span class="kw-2">mut </span>entry = FragmentLog::new(
+                    fragment_id.into_hash(),
+                    FragmentOrigin::Network {
+                        addr: retrieve_local_ip(),
+                    },
+                );
                 entry.modify(status);
                 <span class="self">self</span>.entries.put(fragment_id, (entry, <span class="prelude-val">Some</span>(ledger_date)));
             }

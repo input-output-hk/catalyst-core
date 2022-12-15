@@ -33,26 +33,25 @@ Note that if you call <code>store.get_blocks_by_chain_length(3)</code> only <cod
 <code>store.flush_to_permanent_store(block 3' id)</code> now.</p>
 <p><strong>fig.1 - note that root does not actually exist, this is an ID referredby</strong>
 <strong>the first block in the chain</strong></p>
-
-<div class="example-wrap ignore"><div class='tooltip'>ⓘ</div><pre class="rust rust-example-rendered"><code>+---------+       +---------+
+<div class="example-wrap"><pre class="language-text"><code>+---------+       +---------+
 |         |       |         |
-| Block <span class="number">4 </span>|       | Block <span class="number">4</span><span class="string">&#39;|
-</span>|         |       |         |
+| Block 4 |       | Block 4&#39;|
+|         |       |         |
 +---------+       +---------+
      |                 |
      |                 |
      v                 v
 +---------+       +---------+
 |         |       |         |
-| Block <span class="number">3 </span>|       | Block <span class="number">3</span><span class="string">&#39;|
-</span>|         |       |         |
+| Block 3 |       | Block 3&#39;|
+|         |       |         |
 +---------+       +---------+
      |                 |
      |                 |
      v                 |
 +---------+            |
 |         |            |
-| Block <span class="number">2 </span>+&lt;-----------+
+| Block 2 +&lt;-----------+
 |         |
 +---------+
      |
@@ -60,7 +59,7 @@ Note that if you call <code>store.get_blocks_by_chain_length(3)</code> only <cod
      v
 +---------+
 |         |
-| Block <span class="number">1 </span>|
+| Block 1 |
 |         |
 +---------+
      |
@@ -70,8 +69,7 @@ Note that if you call <code>store.get_blocks_by_chain_length(3)</code> only <cod
 |         |
 |  (root) |
 |         |
-+---------+</code></pre></div>
-<h3 id="removing-stale-branches"><a href="#removing-stale-branches">Removing stale branches</a></h3>
++---------+</code></pre></div><h3 id="removing-stale-branches"><a href="#removing-stale-branches">Removing stale branches</a></h3>
 <p>If you want to clean up branches, do the following:</p>
 <ul>
 <li>Call <code>store.get_tips_ids()</code>, in our example it will return
@@ -91,8 +89,7 @@ it.</li>
 <li>O(1) access by chain length.</li>
 </ul>
 <p><strong>fig. 2 - permanent storage structure</strong></p>
-
-<div class="example-wrap ignore"><div class='tooltip'>ⓘ</div><pre class="rust rust-example-rendered"><code>store                  block no. index
+<div class="example-wrap"><pre class="language-text"><code>store                  block no. index
 
 +--------------+       +-------------+
 |              |       |             |
@@ -110,13 +107,10 @@ it.</li>
 |              |       |             |
 | blockn       |       | blockn pos  |
 |              |       |             |
-+--------------+       +-------------+</code></pre></div>
-<h2 id="storage-directory-layout"><a href="#storage-directory-layout">Storage directory layout</a></h2>
-<div class="example-wrap ignore"><div class='tooltip'>ⓘ</div><pre class="rust rust-example-rendered"><code>store
++--------------+       +-------------+</code></pre></div><h2 id="storage-directory-layout"><a href="#storage-directory-layout">Storage directory layout</a></h2><div class="example-wrap"><pre class="language-text"><code>store
 ├── permanent       - permanent storage directory
 │   └── flatfile    - storage file that can be transferred over the network
-└── volatile        - volatile storage</code></pre></div>
-</div></details><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="mod" href="test_utils/index.html" title="chain_storage::test_utils mod">test_utils</a></div><div class="item-right docblock-short">Utilities for testing the storage.</div></div></div><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.BlockInfo.html" title="chain_storage::BlockInfo struct">BlockInfo</a></div><div class="item-right docblock-short">A structure that holds the information about a blocks, that is needed to
+└── volatile        - volatile storage</code></pre></div></div></details><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="mod" href="test_utils/index.html" title="chain_storage::test_utils mod">test_utils</a></div><div class="item-right docblock-short">Utilities for testing the storage.</div></div></div><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.BlockInfo.html" title="chain_storage::BlockInfo struct">BlockInfo</a></div><div class="item-right docblock-short">A structure that holds the information about a blocks, that is needed to
 maintain consistency of the storage. This include the ID of the blocks, the
 ID of its parent and the length of the block chain for the given block.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.BlockStore.html" title="chain_storage::BlockStore struct">BlockStore</a></div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.StorageIterator.html" title="chain_storage::StorageIterator struct">StorageIterator</a></div><div class="item-right docblock-short">Iterator over blocks. Starts from n-th ancestor of the given block.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Value.html" title="chain_storage::Value struct">Value</a></div><div class="item-right docblock-short">Wrapper for data held by the database. This wrapper holds structs returned
 by both volatile and permanent storage to ensure we don’t have needless

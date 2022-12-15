@@ -490,10 +490,24 @@
 <span id="490">490</span>
 <span id="491">491</span>
 <span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{buffer_sizes, convert::Decode, GlobalStateR};
 <span class="kw">use crate</span>::{
     blockcfg::Fragment,
     intercom::{<span class="self">self</span>, BlockMsg, TopologyMsg, TransactionMsg},
+    network::retrieve_local_ip,
     settings::start::network::Configuration,
     topology::{Gossip, NodeId},
     utils::async_msg::{<span class="self">self</span>, MessageBox},
@@ -511,6 +525,7 @@
     pin::Pin,
     task::{Context, Poll},
 };
+
 <span class="kw">use </span>tracing_futures::Instrument;
 
 <span class="kw">fn </span>filter_gossip_node(node: <span class="kw-2">&amp;</span>Gossip, config: <span class="kw-2">&amp;</span>Configuration) -&gt; bool {
@@ -864,10 +879,21 @@
             <span class="kw-2">&amp;mut </span><span class="self">self</span>.buffered_fragments,
             Vec::with_capacity(buffer_sizes::inbound::FRAGMENTS),
         );
+
+        <span class="kw">let </span>addr = <span class="kw">match </span><span class="self">self</span>.global_state.config.address() {
+            <span class="prelude-val">Some</span>(addr) =&gt; FragmentOrigin::Network { addr: addr.ip() },
+            <span class="prelude-val">None </span>=&gt; {
+                <span class="macro">tracing::info!</span>(<span class="string">&quot;node addr not present in config, reverting to local lookup&quot;</span>);
+                FragmentOrigin::Network {
+                    addr: retrieve_local_ip(),
+                }
+            }
+        };
+
         <span class="kw">let </span>(reply_handle, _reply_future) = intercom::unary_reply();
         <span class="self">self</span>.mbox
             .start_send(TransactionMsg::SendTransactions {
-                origin: FragmentOrigin::Network,
+                origin: addr,
                 fragments,
                 fail_fast: <span class="bool-val">false</span>,
                 reply_handle,

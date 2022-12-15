@@ -168,7 +168,7 @@
 <span class="kw">use </span>std::collections::HashMap;
 <span class="kw">use </span>std::str::FromStr;
 
-<span class="doccomment">/// Mock db provider based on [`DbSyncInstance`] struct from [`mainnet_lib`] project.
+<span class="doccomment">/// Mock db provider based on [`InMemoryDbSync`] struct from [`mainnet_lib`] project.
 /// In essence struct keep data in memory and provides query for voting tools logic
 </span><span class="attribute">#[derive(Debug)]
 </span><span class="kw">pub struct </span>MockDbProvider {
@@ -200,8 +200,8 @@
         <span class="kw">let </span><span class="kw-2">mut </span>tx_id = <span class="number">0</span>;
 
         <span class="prelude-val">Ok</span>(filtered_regs
-            .iter()
-            .map(|(_block0, registrations)| {
+            .values()
+            .map(|registrations| {
                 registrations
                     .iter()
                     .map(|r| {

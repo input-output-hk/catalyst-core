@@ -108,12 +108,6 @@
 <span id="108">108</span>
 <span id="109">109</span>
 <span id="110">110</span>
-<span id="111">111</span>
-<span id="112">112</span>
-<span id="113">113</span>
-<span id="114">114</span>
-<span id="115">115</span>
-<span id="116">116</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::model::{DbHost, DbName, DbPass, DbUser};
 
 <span class="kw">mod </span>queries;
@@ -148,12 +142,6 @@
 }
 
 <span class="doccomment">/// Inner module to hide database internals from database code
-///
-/// Calls to the database are blocking, which blocks tokio. Instead, all calls should go through
-/// `exec`, which uses runs them on a thread pool with [`tokio::task::spawn_blocking`].
-///
-/// This module hides the inner connection pool from queries, so they cannot accidentally get a
-/// regular connection and block the executor
 </span><span class="kw">mod </span>inner {
     <span class="kw">use </span><span class="kw">super</span>::DbConfig;
     <span class="kw">use </span>color_eyre::Result;
@@ -193,7 +181,7 @@
                 .unwrap_or_default();
 
             <span class="kw">let </span>url = <span class="macro">format!</span>(<span class="string">&quot;postgres://{user}{password}@{host}/{name}&quot;</span>,);
-            <span class="kw">let </span>manager = ConnectionManager::new(<span class="kw-2">&amp;</span>url);
+            <span class="kw">let </span>manager = ConnectionManager::new(url);
             <span class="kw">let </span>pool = Pool::new(manager)<span class="question-mark">?</span>;
 
             password.zeroize();

@@ -128,8 +128,12 @@
 <span id="128">128</span>
 <span id="129">129</span>
 <span id="130">130</span>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{crypto::hash::Hash, interfaces::BlockDate, time::SystemTime};
+<span id="131">131</span>
+</pre><pre class="rust"><code><span class="kw">use </span>std::net::IpAddr;
+
+<span class="kw">use crate</span>::{crypto::hash::Hash, interfaces::BlockDate, time::SystemTime};
 <span class="kw">use </span>chain_impl_mockchain::key;
+
 <span class="kw">use </span>serde::{Deserialize, Serialize};
 
 <span class="doccomment">/// identify the source of a fragment
@@ -140,9 +144,7 @@
     /// origins of the fragment and eventually blacklisting
     /// the senders from sending us more fragment (in case
     /// they are invalids or so)
-    ///
-    /// TODO: add the network identifier/IP Address
-    </span>Network,
+    </span>Network { addr: IpAddr },
     <span class="doccomment">/// This marks the fragment is coming from the REST interface
     /// (a client wallet or another service).
     </span>Rest,

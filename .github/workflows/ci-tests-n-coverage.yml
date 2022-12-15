@@ -39,80 +39,47 @@ jobs:
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
-      - name: Run vit-ss tests and coverage info
+      - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-      - name: VIT Servicing Station Integration Tests
-        run: |
-          source <(cargo llvm-cov show-env --export-prefix)
-          cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
-          cargo llvm-cov nextest --no-report -j 1 --manifest-path ./src/vit-servicing-station/vit-servicing-station-tests/Cargo.toml --profile ci
-      - name: Jörmungandr Integration Tests
+      - name: Run rests with coverage
         run: |
           source <(cargo llvm-cov show-env --export-prefix)
           cargo build -p jcli -p jormungandr -p explorer -p vit-servicing-station-cli -p vit-servicing-station-server
-          cargo llvm-cov nextest --no-report -j 1 --manifest-path ./src/jormungandr/testing/jormungandr-integration-tests/Cargo.toml --profile ci
-      - run:
+          cargo llvm-cov nextest --no-report -j 1 --manifest-path ./src/vit-servicing-station/vit-servicing-station-tests/Cargo.toml --profile ci
+          #cargo llvm-cov nextest --no-report -j 1 --manifest-path ./src/jormungandr/testing/jormungandr-integration-tests/Cargo.toml --profile ci
           cargo llvm-cov nextest --no-report --manifest-path ./src/catalyst-toolbox/catalyst-toolbox/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/catalyst-toolbox/snapshot-lib/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-cli/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-lib/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-server/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/voting-tools-rs/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/cardano-legacy-address/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-addr/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-core/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-crypto/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-evm/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-impl-mockchain/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-network/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-ser/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-storage/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-time/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-vote/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/imhamt/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/sparse-array/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/typed-bytes/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-c/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-core/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-wasm-js/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/chain-path-derivation/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/hdkeygen/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/symmetric-cipher/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/wallet/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/jormungandr/jormungandr/Cargo.toml --profile ci
-      - run:
           cargo llvm-cov report --lcov --output-path ./lcov.info
 
-      - name: Upload Code Coverage to coveralls.io
+      - name: Upload code coverage to coveralls.io
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

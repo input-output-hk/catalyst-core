@@ -378,7 +378,7 @@ impl FragmentProcessor {
         let addr = match self.global_state.config.address() {
             Some(addr) => FragmentOrigin::Network { addr: addr.ip() },
             None => {
-                tracing::error!("node addr not present in config, reverting to local lookup");
+                tracing::info!("node addr not present in config, reverting to local lookup");
                 FragmentOrigin::Network {
                     addr: retrieve_local_ip(),
                 }

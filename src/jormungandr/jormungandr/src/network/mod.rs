@@ -15,6 +15,11 @@ mod subscription;
 
 use self::convert::Encode;
 use futures::{future, prelude::*};
+use local_ip_address::local_ip;
+use std::{
+    fmt::Debug,
+    net::{IpAddr, Ipv4Addr},
+};
 use thiserror::Error;
 use tokio_util::sync::CancellationToken;
 
@@ -780,4 +785,18 @@ pub enum FetchBlockError {
     NoTrustedPeers,
     #[error("could not download block hash {block}")]
     CouldNotDownloadBlock { block: HeaderHash },
+}
+
+/// Infallible util function to obtain local IP addr
+pub fn retrieve_local_ip() -> IpAddr {
+    match local_ip() {
+        Ok(ip) => ip,
+        Err(err) => {
+            tracing::error!(
+                reason = %err,
+                "unable to lookup local addr"
+            );
+            std::net::IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1))
+        }
+    }
 }

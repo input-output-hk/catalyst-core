@@ -1,5 +1,6 @@
 import asyncio
 import asyncpg
+import json
 import rich.panel
 import rich.prompt
 import rich.table
@@ -8,8 +9,8 @@ import typer
 from typing import List, Optional
 
 import db
+import db.mapper
 import ideascale
-import mappers
 
 app = typer.Typer()
 
@@ -42,6 +43,7 @@ def import_all(
         console = rich.console.Console()
 
         db_conn: asyncpg.Connection = await asyncpg.connect(database_url)
+        await db_conn.set_type_codec("jsonb", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
 
         if election_id is None:
             select_election_id = rich.prompt.Prompt.ask("Enter the election database id")
@@ -120,7 +122,9 @@ def import_all(
         with client.request_progress_observer:
             ideas = await client.stage_ideas(stage_id)
 
-        challenges = [mappers.map_challenge(a, election_id) for a in group.campaigns]
+        mapper = db.mapper.Mapper()
+
+        challenges = [mapper.map_challenge(a, election_id) for a in group.campaigns]
         challenge_count = len(challenges)
         proposal_count = 0
 
@@ -134,7 +138,7 @@ def import_all(
             for challenge, row_id in zip(challenges, challenge_row_ids):
                 challenge_id_to_row_id_map[challenge.id] = row_id
 
-            proposals = [mappers.map_proposal(a, challenge_id_to_row_id_map) for a in ideas]
+            proposals = [mapper.map_proposal(a, challenge_id_to_row_id_map) for a in ideas]
             proposal_count = len(proposals)
             await db.insert_many(db_conn, proposals)
 

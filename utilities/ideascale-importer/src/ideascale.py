@@ -29,6 +29,7 @@ class Campaign(ExcludeUnknownFields):
     name: str
     description: str
     funnel_id: int
+    tagline: str
 
 
 class CampaignGroup(ExcludeUnknownFields):
@@ -37,11 +38,17 @@ class CampaignGroup(ExcludeUnknownFields):
     campaigns: List[Campaign]
 
 
+class IdeaAuthorInfo(ExcludeUnknownFields):
+    name: str
+
+
 class Idea(ExcludeUnknownFields):
     id: int
     campaign_id: int
     title: str
     text: str
+    author_info: IdeaAuthorInfo
+    custom_fields_by_key: Mapping[str, str]
 
 
 class Stage(ExcludeUnknownFields):
@@ -59,6 +66,7 @@ class Funnel(ExcludeUnknownFields):
 
 CampaignSchema = marshmallow_dataclass.class_schema(Campaign)
 CampaignGroupSchema = marshmallow_dataclass.class_schema(CampaignGroup)
+IdeaAuthorInfoSchema = marshmallow_dataclass.class_schema(IdeaAuthorInfo)
 IdeaSchema = marshmallow_dataclass.class_schema(Idea)
 StageSchema = marshmallow_dataclass.class_schema(Stage)
 FunnelSchema = marshmallow_dataclass.class_schema(Funnel)

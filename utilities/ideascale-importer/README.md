@@ -22,7 +22,7 @@ python src/main.py --help
 The easiest way is to run:
 
 ```sh
-python src/main.py postgres import-all \
+python src/main.py \
     --api-token IDEASCALE_API_TOKEN \
     --database-url POSTGRES_URL
 ```

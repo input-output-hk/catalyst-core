@@ -45,7 +45,6 @@ impl Default for JormungandrBootstrapper {
 }
 
 impl JormungandrBootstrapper {
-
     //This function is meant to be used instead of JormungandrBootstrapper::default().with_node_config(node_config)
     //This is because the Default trait for JormungandrBootstrapper instanciates a NodeConfig struct that will be overwritten
     //by the NodeConfig passed by the .with_node_config() function. NodeConfig calls the function get_available_port()

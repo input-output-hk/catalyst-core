@@ -1,3 +1,4 @@
+//! Units used for time calculations
 use std::time::Duration;
 
 /// Represent a Duration where the maximum precision is in the second

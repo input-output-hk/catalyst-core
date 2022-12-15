@@ -38,7 +38,7 @@ pub fn decrypt_tally(
         })
         .unzip();
 
-    let tallies = batch_decrypt(&tallies).unwrap();
+    let tallies = batch_decrypt(tallies).unwrap();
 
     let proposals = shares
         .into_iter()

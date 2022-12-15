@@ -311,7 +311,7 @@ impl Transaction {
 
     pub fn fragment_id<P: AsRef<Path>>(self, staging_file: P) -> Hash {
         let fragment_hex = self.convert_to_message(staging_file);
-        let fragment_bytes = hex::decode(&fragment_hex).expect("Failed to parse message hex");
+        let fragment_bytes = hex::decode(fragment_hex).expect("Failed to parse message hex");
         Fragment::deserialize_from_slice(&mut Codec::new(fragment_bytes.as_slice()))
             .expect("Failed to parse message")
             .hash()

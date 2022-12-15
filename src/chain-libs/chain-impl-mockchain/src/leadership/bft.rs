@@ -36,7 +36,7 @@ impl LeadershipData {
     #[inline]
     fn offset(&self, block_number: u64) -> BftRoundRobinIndex {
         let max = self.number_of_leaders() as u64;
-        BftRoundRobinIndex((block_number % max) as u64)
+        BftRoundRobinIndex(block_number % max)
     }
 
     pub(crate) fn verify(&self, block_header: &Header) -> Verification {

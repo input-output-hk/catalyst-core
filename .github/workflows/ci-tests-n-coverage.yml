@@ -1,8 +1,9 @@
-name: Coveralls Test Code Coverage
+name: Testing and Code Coverage
 
 on:
   push:
-    branches: [ "feature/add-ci-coveralls" ]
+    # TODO: remove feature branch before merging
+    branches: [ "main", "feature/add-ci-coveralls" ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -16,7 +17,7 @@ concurrency:
 
 jobs:
   monorepo:
-    name: Catalyst Core Coverage
+    name: Catalyst Core Tests and Code Coverage
     runs-on: ubuntu-latest
     env:
       CARGO_FLAGS: --verbose --locked
@@ -109,7 +110,7 @@ jobs:
       - run:
           cargo llvm-cov report --lcov --output-path ./lcov.info
 
-      - name: Upload coverage to Coveralls
+      - name: Upload Code Coverage to coveralls.io
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

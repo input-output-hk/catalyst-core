@@ -1,3 +1,6 @@
+//! Timeframe
+//!
+
 use crate::timeline::Timeline;
 use std::time::{Duration, SystemTime};
 

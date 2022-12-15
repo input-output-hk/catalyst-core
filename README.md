@@ -77,9 +77,11 @@ brew install protobuf-c libsigsegv libpq libserdes pkg-config
 
 ##### Windows
 
+- [choco](https://chocolatey.org/)
 
-TODO: - https://github.com/input-output-hk/catalyst-core/issues/138
-
+```sh
+choco install protoc openssl sqlite postgresql14
+```
 
 ### Install Extra Packages/Tools
 

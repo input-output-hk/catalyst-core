@@ -1,7 +1,7 @@
 use crate::common::iapyx_from_mainnet;
 use crate::common::snapshot::mock;
 use crate::common::snapshot_filter::SnapshotFilterSource;
-use crate::common::MainnetWallet;
+use crate::common::CardanoWallet;
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
 use chain_impl_mockchain::block::BlockDate;
@@ -26,19 +26,19 @@ pub fn cip36_and_voting_group_merge() {
     let stake = 10_000;
     let yes_vote = chain_impl_mockchain::vote::Choice::new(0);
 
-    let alice = MainnetWallet::new(stake);
-    let bob = MainnetWallet::new(stake);
-    let clarice = MainnetWallet::new(stake);
+    let alice = CardanoWallet::new(stake);
+    let bob = CardanoWallet::new(stake);
+    let clarice = CardanoWallet::new(stake);
 
-    let david = MainnetWallet::new(500);
-    let edgar = MainnetWallet::new(1_000);
-    let _fred = MainnetWallet::new(8_000);
+    let david = CardanoWallet::new(500);
+    let edgar = CardanoWallet::new(1_000);
+    let _fred = CardanoWallet::new(8_000);
 
-    let (db_sync, reps) = MainnetNetworkBuilder::default()
+    let (db_sync, _node, reps) = MainnetNetworkBuilder::default()
         .with(alice.as_direct_voter())
         .with(bob.as_delegator(vec![(&david, 1)]))
         .with(clarice.as_delegator(vec![(&david, 1), (&edgar, 1)]))
-        .build(&testing_directory);
+        .build();
 
     let voter_hir = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
         .unwrap()

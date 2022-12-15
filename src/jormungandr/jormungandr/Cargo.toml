@@ -63,7 +63,7 @@ tonic = "0.6"
 url = { version = "2", features = ["serde"] }
 lru = "0.7"
 warp = { version = "0.3.2", features = ["tls"] }
-serde_with = { version = "1.12", features = ["macros"] }
+serde_with = { version = "2", features = ["macros"] }
 http-zipkin = "0.3.0"
 prometheus = { version = "0.13", optional = true }
 jsonrpsee-http-server = { version = "0.11.0" }
@@ -89,7 +89,7 @@ versionisator = "1.0.2"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2.124"
-nix = "0.23.0"
+nix = "0.25"
 
 [features]
 default = ["codegen-rustfmt"]

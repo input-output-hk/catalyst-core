@@ -23,6 +23,6 @@ pub use network::{
     MainnetNetwork, MainnetNetworkBuilder, MainnetWalletState, MainnetWalletStateBuilder,
 };
 pub use wallet::{
-    MainnetWallet, RegistrationBuilder, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
-    REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
+    GeneralTransactionMetadataInfo, MainnetWallet, RegistrationBuilder, METADATUM_1, METADATUM_2,
+    METADATUM_3, METADATUM_4, REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
 };

@@ -431,7 +431,7 @@ impl FaultyTransactionBuilder {
         let input = from.add_input_with_value(input_value.into());
         let output = OutputAddress::from_address(to.address().into(), Value(1u64));
         self.transaction_to(&[input], &[output], |sign_data| {
-            vec![from.mk_witness(&Hash::from_hash(TestGen::hash()), sign_data)]
+            vec![from.mk_witness(&Hash::from(TestGen::hash()), sign_data)]
         })
     }
 

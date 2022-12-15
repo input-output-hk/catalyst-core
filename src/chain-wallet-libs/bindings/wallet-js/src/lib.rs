@@ -5,9 +5,6 @@ pub use certificates::{
     vote_cast::{Payload, VoteCast},
     vote_plan::VotePlanId,
 };
-use chain_core::packer::Codec;
-use chain_core::property::DeserializeFromSlice;
-use chain_impl_mockchain::block::Block;
 pub use fragment::{Fragment, FragmentId};
 pub use utils::set_panic_hook;
 use wasm_bindgen::prelude::*;
@@ -28,12 +25,14 @@ pub struct Settings(wallet_core::Settings);
 
 #[wasm_bindgen]
 impl Settings {
-    pub fn new(block0_bytes: &[u8]) -> Result<Settings, JsValue> {
-        let block0 = Block::deserialize_from_slice(&mut Codec::new(block0_bytes))
-            .map_err(|e| JsValue::from(e.to_string()))?;
-        Ok(Self(
-            wallet_core::Settings::new(&block0).map_err(|e| JsValue::from(e.to_string()))?,
+    pub fn from_json(json: String) -> Result<Settings, JsValue> {
+        Ok(Settings(
+            serde_json::from_str(&json).map_err(|e| JsValue::from(e.to_string()))?,
         ))
+    }
+
+    pub fn to_json(&self) -> Result<String, JsValue> {
+        serde_json::to_string(&self.0).map_err(|e| JsValue::from(e.to_string()))
     }
 }
 
@@ -64,15 +63,11 @@ impl_collection!(SpendingCounters, SpendingCounter);
 
 #[wasm_bindgen]
 impl Wallet {
-    /// Imports private keys to create a wallet.
+    /// Imports private key to create a wallet.
     ///
     /// The `account` parameter gives the Ed25519Extended private key
     /// of the account.
-    ///
-    /// The `keys` parameter should be a concatenation of Ed25519Extended
-    /// private keys that will be used to retrieve the associated UTxOs.
-    /// Pass an empty buffer when this functionality is not needed.
-    pub fn import_keys(account: &[u8]) -> Result<Wallet, JsValue> {
+    pub fn import_key(account: &[u8]) -> Result<Wallet, JsValue> {
         wallet_core::Wallet::recover_free_keys(account)
             .map_err(|e| JsValue::from(e.to_string()))
             .map(Wallet)

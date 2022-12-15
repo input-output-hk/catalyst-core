@@ -15,7 +15,7 @@ use std::time::{Duration, SystemTime};
     any(test, feature = "property-test-api"),
     derive(test_strategy::Arbitrary)
 )]
-pub struct Slot(pub(crate) u64);
+pub struct Slot(pub u64);
 
 impl From<u64> for Slot {
     fn from(slot_number: u64) -> Slot {

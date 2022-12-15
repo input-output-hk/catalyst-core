@@ -32,7 +32,7 @@ impl Wallet {
         self.account.account_id()
     }
 
-    /// Retrieve a wallet from a list of free keys used as utxo's
+    /// Retrieve a wallet from a key used as utxo's
     ///
     /// You can also use this function to recover a wallet even after you have
     /// transferred all the funds to the new format
@@ -40,7 +40,6 @@ impl Wallet {
     /// Parameters
     ///
     /// * `account_key`: the private key used for voting
-    /// * `keys`: unused
     ///
     /// # Errors
     ///

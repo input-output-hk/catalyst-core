@@ -226,22 +226,41 @@ impl<T: Clone, A: VerificationAlgorithm> Clone for Signed<T, A> {
     any(test, feature = "property-test-api"),
     derive(test_strategy::Arbitrary)
 )]
-pub struct Hash(crypto::Blake2b256);
+pub struct Hash {
+    hash: crypto::Blake2b256,
+}
+
 impl Hash {
+    pub fn new(hash: crypto::Blake2b256) -> Self {
+        Self { hash }
+    }
+
+    pub fn get_hash(&self) -> &crypto::Blake2b256 {
+        &self.hash
+    }
+
     /// All 0 hash used as a special hash
     pub fn zero_hash() -> Self {
-        Hash(crypto::Blake2b256::from([0; crypto::Blake2b256::HASH_SIZE]))
+        Hash {
+            hash: crypto::Blake2b256::from([0; crypto::Blake2b256::HASH_SIZE]),
+        }
     }
+
     pub fn hash_bytes(bytes: &[u8]) -> Self {
-        Hash(crypto::Blake2b256::new(bytes))
+        Hash {
+            hash: crypto::Blake2b256::new(bytes),
+        }
     }
+
     pub fn from_bytes(bytes: [u8; 32]) -> Self {
-        Hash(crypto::Blake2b256::from(bytes))
+        Hash {
+            hash: crypto::Blake2b256::from(bytes),
+        }
     }
 
     #[inline]
     pub fn as_bytes(&self) -> &[u8] {
-        self.0.as_ref()
+        self.hash.as_ref()
     }
 }
 
@@ -253,36 +272,40 @@ impl From<[u8; 32]> for Hash {
 
 impl From<Hash> for [u8; 32] {
     fn from(h: Hash) -> Self {
-        h.0.into()
+        h.hash.into()
     }
 }
 
 impl<'a> From<&'a Hash> for &'a [u8; 32] {
     fn from(h: &'a Hash) -> Self {
-        (&h.0).into()
+        (&h.hash).into()
     }
 }
 
 impl Serialize for Hash {
     fn serialized_size(&self) -> usize {
-        self.0.as_hash_bytes().serialized_size()
+        self.hash.as_hash_bytes().serialized_size()
     }
 
     fn serialize<W: std::io::Write>(&self, codec: &mut Codec<W>) -> Result<(), WriteError> {
-        codec.put_bytes(self.0.as_hash_bytes())
+        codec.put_bytes(self.hash.as_hash_bytes())
     }
 }
 
 impl Deserialize for Hash {
     fn deserialize<R: std::io::Read>(codec: &mut Codec<R>) -> Result<Self, ReadError> {
         let bytes = <[u8; crypto::Blake2b256::HASH_SIZE]>::deserialize(codec)?;
-        Ok(Hash(crypto::Blake2b256::from(bytes)))
+        Ok(Hash {
+            hash: crypto::Blake2b256::from(bytes),
+        })
     }
 }
 
 impl BlockId for Hash {
     fn zero() -> Hash {
-        Hash(crypto::Blake2b256::from([0; crypto::Blake2b256::HASH_SIZE]))
+        Hash {
+            hash: crypto::Blake2b256::from([0; crypto::Blake2b256::HASH_SIZE]),
+        }
     }
 }
 
@@ -290,26 +313,28 @@ impl FragmentId for Hash {}
 
 impl AsRef<[u8]> for Hash {
     fn as_ref(&self) -> &[u8] {
-        self.0.as_ref()
+        self.hash.as_ref()
     }
 }
 
 impl From<crypto::Blake2b256> for Hash {
     fn from(hash: crypto::Blake2b256) -> Self {
-        Hash(hash)
+        Hash { hash }
     }
 }
 
 impl std::fmt::Display for Hash {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}", self.hash)
     }
 }
 
 impl FromStr for Hash {
     type Err = crypto::hash::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Hash(crypto::Blake2b256::from_str(s)?))
+        Ok(Hash {
+            hash: crypto::Blake2b256::from_str(s)?,
+        })
     }
 }
 
@@ -408,7 +433,9 @@ mod tests {
 
     impl Arbitrary for Hash {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            Hash(Arbitrary::arbitrary(g))
+            Hash {
+                hash: Arbitrary::arbitrary(g),
+            }
         }
     }
     impl Arbitrary for EitherEd25519SecretKey {

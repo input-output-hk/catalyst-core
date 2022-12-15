@@ -1,5 +1,3 @@
-#![allow(opaque_hidden_inferred_bound)]
-
 #[macro_use]
 extern crate diesel;
 #[macro_use]

@@ -16,8 +16,10 @@ futures = "0.3.8"
 serde_json = "1.0"
 itertools = "0.10.5"
 color-eyre = "0.6"
+http-zipkin = "0.3.0"
 signals-handler = { path = "../signals-handler" }
 mainnet-lib = { path = "../mainnet-lib" }
+chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain"}
 voting_tools_rs = { path = "../../voting-tools-rs"}
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1.2", features = ["macros","rt","process"] }
@@ -27,6 +29,7 @@ jormungandr-automation = { path = "../../jormungandr/testing/jormungandr-automat
 vit-servicing-station-tests = { path = "../../vit-servicing-station/vit-servicing-station-tests" }
 vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib" }
 cardano-serialization-lib = "11.1.0"
+scheduler-service-lib = { path = "../scheduler-service-lib"}
 tempdir = "0.3.7"
 job_scheduler_ng = "*"
 snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib", features=["proptest"] }
@@ -34,6 +37,7 @@ snapshot-trigger-service = { path = "../snapshot-trigger-service" }
 clap = { version = "4", features = ["derive"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
+warp = "0.3.3"
 futures-util = "0.3.25"
 
 assert_fs = "1.0"

@@ -1,9 +1,9 @@
-use crate::common::MainnetWallet;
+use crate::common::CardanoWallet;
 use std::path::Path;
 use vitup::mode::standard::WalletProxyController;
 
 pub fn iapyx_from_mainnet(
-    wallet: &MainnetWallet,
+    wallet: &CardanoWallet,
     proxy: &WalletProxyController,
 ) -> Result<iapyx::Controller, iapyx::ControllerBuilderError> {
     iapyx::ControllerBuilder::default()

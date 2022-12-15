@@ -35,7 +35,7 @@ impl Wallet {
     /// Retrieve a wallet from a key used as utxo's
     ///
     /// You can also use this function to recover a wallet even after you have
-    /// transferred all the funds to the new format (see the [Self::convert] function).
+    /// transferred all the funds to the new format
     ///
     /// Parameters
     ///

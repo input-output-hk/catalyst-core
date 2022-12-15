@@ -28,18 +28,18 @@ pub struct ClientLoadCommand {
     #[structopt(short = "a", long = "address")]
     pub address: String,
 
-    /// amount of delay [seconds] between sync attempts
+    /// amount of delay (in seconds) between sync attempts
     #[structopt(short = "p", long = "pace", default_value = "2")]
     pub pace: u64,
 
     #[structopt(short = "d", long = "storage")]
     pub initial_storage: Option<PathBuf>,
 
-    /// amount of delay [seconds] between sync attempts
+    /// amount of delay (in seconds) between sync attempts
     #[structopt(short = "r", long = "duration")]
     pub duration: Option<u64>,
 
-    /// amount of delay [seconds] between sync attempts
+    /// amount of delay (in seconds) between sync attempts
     #[structopt(short = "n", long = "iterations")]
     pub sync_iteration: Option<u32>,
 

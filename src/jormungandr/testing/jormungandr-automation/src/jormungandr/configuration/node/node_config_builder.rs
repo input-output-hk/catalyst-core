@@ -82,6 +82,7 @@ impl Default for NodeConfigBuilder {
                 gossip_interval: None,
                 max_bootstrap_attempts: None,
                 network_stuck_check: None,
+                whitelist: None,
             },
             mempool: Some(Mempool::default()),
         }

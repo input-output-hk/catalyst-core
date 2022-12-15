@@ -107,7 +107,7 @@ impl DerivationPath<Bip44<Root>> {
     /// use the same "model" of 5 derivation level but instead of starting with the
     /// bip44 Hard Derivation uses the `'1852` (`'0x073C`) derivation path.
     ///
-    /// see https://input-output-hk.github.io/adrestia/docs/key-concepts/hierarchical-deterministic-wallets/
+    /// see <https://input-output-hk.github.io/adrestia/docs/key-concepts/hierarchical-deterministic-wallets/>
     ///
     pub fn chimeric(&self) -> DerivationPath<Bip44<Purpose>> {
         let mut p = self.clone();

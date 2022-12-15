@@ -1832,7 +1832,6 @@ dependencies = [
  "bigdecimal",
  "bitflags",
  "byteorder",
- "chrono",
  "diesel_derives 2.0.1",
  "itoa 1.0.4",
  "num-bigint",

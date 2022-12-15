@@ -1,5 +1,5 @@
 use crate::common::snapshot::mock;
-use crate::common::{CardanoWallet, SnapshotFilter, RepsVoterAssignerSource};
+use crate::common::{CardanoWallet, RepsVoterAssignerSource, SnapshotFilter};
 use assert_fs::TempDir;
 use chain_impl_mockchain::certificate::VotePlan;
 use fraction::Fraction;

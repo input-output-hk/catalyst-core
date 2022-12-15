@@ -13,14 +13,7 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 use std::sync::{Arc, RwLock};
-use cardano_serialization_lib::{Block, Transaction, TransactionWitnessSet};
-use cardano_serialization_lib::utils::BigNum;
-use futures::executor::block_on;
-use futures_util::StreamExt;
-use serde::{Deserialize,Serialize};
-use pharos::{Channel,Observable};
 use tokio::task::JoinHandle;
-use crate::InMemoryNode;
 
 pub type BlockNo = u32;
 pub type Address = String;
@@ -31,14 +24,7 @@ pub struct SharedInMemoryDbSync {
     pub(crate) update_thread: JoinHandle<()>,
     // Allowing for now since there is no usage yet in explorer service
     #[allow(dead_code)]
-
-/// thread safe `InMemoryDbSync`. It has inner struct db_sync with rw lock guard and handle to update
-/// thread which listen to `InMemoryNode` mock block updates
-pub struct SharedInMemoryDbSync{
-    pub(crate) update_thread: JoinHandle<()>,
-    // Allowing for now since there is no usage yet in explorer service
-    #[allow(dead_code)]
-    pub(crate) db_sync: Arc<RwLock<InMemoryDbSync>>
+    pub(crate) db_sync: Arc<RwLock<InMemoryDbSync>>,
 }
 
 impl Drop for SharedInMemoryDbSync {
@@ -46,7 +32,6 @@ impl Drop for SharedInMemoryDbSync {
         self.update_thread.abort();
     }
 }
-
 
 /// Mock of real cardano db sync. At this moment we only stores transactions metadata
 /// as the only purpose of existance for this struct is to provide catalyst voting registrations
@@ -56,7 +41,7 @@ pub struct InMemoryDbSync {
     pub(crate) transactions: HashMap<BlockNo, Vec<Transaction>>,
     pub(crate) blocks: Vec<Block>,
     stakes: HashMap<Address, BigNum>,
-    settings: Settings
+    settings: Settings,
 }
 
 impl Debug for InMemoryDbSync {
@@ -89,8 +74,8 @@ impl InMemoryDbSync {
         let shared_db_sync = Arc::new(RwLock::new(self));
         let db_sync = shared_db_sync.clone();
 
-        let handle = tokio::spawn( async move {
-             loop {
+        let handle = tokio::spawn(async move {
+            loop {
                 let block = observer.next().await;
                 if let Some(block) = block {
                     db_sync.write().unwrap().on_block_propagation(&block);
@@ -98,9 +83,9 @@ impl InMemoryDbSync {
             }
         });
 
-        SharedInMemoryDbSync{
+        SharedInMemoryDbSync {
             update_thread: handle,
-            db_sync: shared_db_sync
+            db_sync: shared_db_sync,
         }
     }
 

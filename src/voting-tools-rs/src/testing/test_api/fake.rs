@@ -14,7 +14,7 @@ use mainnet_lib::{
 use std::collections::HashMap;
 use std::str::FromStr;
 
-/// Mock db provider based on [`DbSyncInstance`] struct from [`mainnet_lib`] project.
+/// Mock db provider based on [`InMemoryDbSync`] struct from [`mainnet_lib`] project.
 /// In essence struct keep data in memory and provides query for voting tools logic
 #[derive(Debug)]
 pub struct MockDbProvider {
@@ -46,8 +46,8 @@ impl DataProvider for MockDbProvider {
         let mut tx_id = 0;
 
         Ok(filtered_regs
-            .iter()
-            .map(|(_block0, registrations)| {
+            .values()
+            .map(|registrations| {
                 registrations
                     .iter()
                     .map(|r| {

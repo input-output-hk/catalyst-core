@@ -32,12 +32,6 @@ pub struct DbConfig {
 }
 
 /// Inner module to hide database internals from database code
-///
-/// Calls to the database are blocking, which blocks tokio. Instead, all calls should go through
-/// `exec`, which uses runs them on a thread pool with [`tokio::task::spawn_blocking`].
-///
-/// This module hides the inner connection pool from queries, so they cannot accidentally get a
-/// regular connection and block the executor
 mod inner {
     use super::DbConfig;
     use color_eyre::Result;
@@ -77,7 +71,7 @@ mod inner {
                 .unwrap_or_default();
 
             let url = format!("postgres://{user}{password}@{host}/{name}",);
-            let manager = ConnectionManager::new(&url);
+            let manager = ConnectionManager::new(url);
             let pool = Pool::new(manager)?;
 
             password.zeroize();

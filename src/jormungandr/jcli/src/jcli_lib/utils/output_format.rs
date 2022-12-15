@@ -8,7 +8,7 @@ use thiserror::Error;
 pub struct OutputFormat {
     /// Format of output data. Possible values: json, yaml.
     /// Any other value is treated as a custom format using values from output data structure.
-    /// Syntax is Go text template: https://golang.org/pkg/text/template/.
+    /// Syntax is Go text template: <https://golang.org/pkg/text/template/>.
     #[structopt(long = "output-format", default_value = "yaml", parse(from_str))]
     format: FormatVariant,
 }

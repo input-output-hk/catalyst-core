@@ -65,14 +65,14 @@ jobs:
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/typed-bytes/Cargo.toml
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-c/Cargo.toml
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-core/Cargo.toml
-          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-uniffi/Cargo.toml
+          # cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-uniffi/Cargo.toml
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-wasm-js/Cargo.toml
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/chain-path-derivation/Cargo.toml
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/hdkeygen/Cargo.toml
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/symmetric-cipher/Cargo.toml
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/wallet/Cargo.toml
           cargo llvm-cov nextest --no-report --manifest-path ./src/jormungandr/jormungandr/Cargo.toml
-
+          ## merge lcov data and create report to upload
           cargo llvm-cov report --lcov --output-path ./lcov.info
 
       - name: Upload coverage to Coveralls

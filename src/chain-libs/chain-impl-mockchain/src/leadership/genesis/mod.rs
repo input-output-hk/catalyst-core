@@ -398,8 +398,7 @@ mod tests {
         let total_election_count: u64 = pools.values().map(|y| y.1).sum();
         let ideal_election_count_per_pool: f32 =
             total_election_count as f32 / leader_election_parameters.pools_count as f32;
-        let ideal_election_percentage =
-            ideal_election_count_per_pool / total_election_count as f32;
+        let ideal_election_percentage = ideal_election_count_per_pool / total_election_count as f32;
         let grace_percentage: f32 = 0.08;
         println!(
             "ideal percentage: {:.2}, grace_percentage: {:.2}",

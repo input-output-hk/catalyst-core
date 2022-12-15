@@ -135,9 +135,7 @@ impl Reg {
                         &TransactionMetadatum::new_bytes(hex::decode(
                             delegation.trim_start_matches("0x"),
                         )?)
-                        .map_err(|e| {
-                            eyre!(format!("cannot decode delegation key, due to: {e}"))
-                        })?,
+                        .map_err(|e| eyre!(format!("cannot decode delegation key, due to: {e}")))?,
                     );
                     inner_metadata_list.add(&TransactionMetadatum::new_int(&Int::new(
                         &BigNum::from(weight),

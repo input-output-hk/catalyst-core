@@ -1,6 +1,7 @@
 //! Timeframes
 //!
 //! A [`TimeFrame`] represents a [`Timeline`] that is split into discrete slots
+
 //!
 
 use crate::timeline::Timeline;

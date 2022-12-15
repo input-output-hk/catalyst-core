@@ -3,6 +3,7 @@
 //! Utilities for working with time
 #![warn(clippy::all)]
 #![deny(missing_docs)]
+
 pub mod era;
 pub mod timeframe;
 pub mod timeline;

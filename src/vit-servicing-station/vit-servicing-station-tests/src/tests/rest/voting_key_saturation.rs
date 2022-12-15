@@ -1,42 +1,38 @@
 use crate::common::{
-    data::{self, ArbitrarySnapshotGenerator},
-    startup::{db::DbBuilder, server::ServerBootstrapper},
+    data::{self, Snapshot},
+    startup::{db::DbBuilder, quick_start, server::ServerBootstrapper},
 };
 
 use assert_fs::TempDir;
-use itertools::Itertools;
-use vit_servicing_station_lib::db::models::groups::Group;
 use crate::common::snapshot::SnapshotBuilder;
+use vit_servicing_station_lib::db::models::{
+    api_tokens::ApiTokenData,
+    challenges::Challenge,
+    funds::Fund,
+    groups::Group,
+    proposals::{ChallengeType, Proposal},
+    voteplans::Voteplan,
+};
+use crate::common::data::ArbitrarySnapshotGenerator;
 
 #[test] // api/v0/snapshot/voter/{tag}/{voting_key}
-pub fn get_voting_key_saturation() {
+pub fn get_voting_key_saturation() { // 2 snapshots required: 1 from SnapshotBuilder, the other from ArbitrarySnapshotGenerator
     let temp_dir = TempDir::new().unwrap();
+    let (server, _snapshot) = quick_start(&temp_dir).unwrap();
 
-    let mut gen = ArbitrarySnapshotGenerator::default();
+    let snapshot = SnapshotBuilder::default().build();
 
-    let arbitrary_snapshot = gen.snapshot();
-
-    println!("arbitrary snapshot: {:#?}", arbitrary_snapshot);
-
-    let snapshot = SnapshotBuilder::default()
-        .with_tag("tag")
-        //.with_groups(arbitrary_snapshot.groups())
-        .build();
+    println!("snapshot: {:#?}", snapshot);
 
     let (hash, token) = data::token();
 
-    let db_path = DbBuilder::new()
-        .with_token(token)
-        .with_snapshot(&arbitrary_snapshot)
-        .build(&temp_dir).unwrap();
-
-    let server = ServerBootstrapper::new()
-        .with_db_path(db_path)
-        .start(&temp_dir).unwrap();
-
     let client = server.rest_client_with_token(&hash);
 
-    let public_key = snapshot.content.snapshot[0].contributions[0].clone().stake_public_key;
+    let snapshot_tag = snapshot.clone().tag;
+
+    println!("snapshot tags from data: {:#?}", snapshot_tag);
+
+    let public_key = snapshot.content.snapshot[0].hir.clone().voting_key.to_string();
 
     println!("public key: {:#?}", public_key);
 
@@ -46,9 +42,10 @@ pub fn get_voting_key_saturation() {
 
     let snapshot_tags = client.snapshot_tags();
 
-    println!("snapshot tags: {:#?}", snapshot_tags);
+    println!("snapshot tags from server: {:#?}", snapshot_tags);
 
-    let voter_info = client.voter_info("tag", &public_key);
+    let voter_info = client.voter_info(&snapshot_tag, &public_key);
 
     println!("voter info: {:#?}", voter_info)
 }
+

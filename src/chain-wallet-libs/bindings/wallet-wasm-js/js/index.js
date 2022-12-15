@@ -46,8 +46,8 @@ class Vote {
 }
 module.exports.Vote = Vote;
 
-function signVotes(votes, settings, privateKey) {
-  let fragments = [];
+function signVotes(votes, settings, accountId, privateKey) {
+  let tx_builders = [];
   for (let i = 0; i < votes.length; i++) {
     let vote = votes[i];
     let voteCast;
@@ -81,11 +81,16 @@ function signVotes(votes, settings, privateKey) {
       vote.expiration.slot,
       voteCast
     );
-    let fragment = builder
-      .build_tx(privateKey, vote.spendingCounter, vote.spendingCounterLane)
-      .finalize_tx();
-    fragments.push(fragment);
+    let tx_builder = builder.build_tx(
+      accountId,
+      vote.spendingCounter,
+      vote.spendingCounterLane
+    );
+    if (privateKey != undefined) {
+      tx_builder = tx_builder.sign_tx(privateKey);
+    }
+    tx_builders.push(tx_builder);
   }
-  return fragments;
+  return tx_builders;
 }
 module.exports.signVotes = signVotes;

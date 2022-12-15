@@ -1,19 +1,9 @@
 use crate::common::{
-    data::{self, Snapshot},
-    startup::{db::DbBuilder, quick_start, server::ServerBootstrapper},
+    data::{self},
+    startup::{quick_start},
 };
-
 use assert_fs::TempDir;
 use crate::common::snapshot::SnapshotBuilder;
-use vit_servicing_station_lib::db::models::{
-    api_tokens::ApiTokenData,
-    challenges::Challenge,
-    funds::Fund,
-    groups::Group,
-    proposals::{ChallengeType, Proposal},
-    voteplans::Voteplan,
-};
-use crate::common::data::ArbitrarySnapshotGenerator;
 
 #[test] // api/v0/snapshot/voter/{tag}/{voting_key}
 pub fn get_voting_key_saturation() { // 2 snapshots required: 1 from SnapshotBuilder, the other from ArbitrarySnapshotGenerator
@@ -24,7 +14,7 @@ pub fn get_voting_key_saturation() { // 2 snapshots required: 1 from SnapshotBui
 
     println!("snapshot: {:#?}", snapshot);
 
-    let (hash, token) = data::token();
+    let (hash, _token) = data::token();
 
     let client = server.rest_client_with_token(&hash);
 

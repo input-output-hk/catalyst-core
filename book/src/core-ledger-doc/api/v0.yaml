@@ -102,12 +102,12 @@ paths:
                         minimum: 0
                 required:
                   - value
-                  - counter
+                  - counters
               examples:
                 with_delegation:
                   value:
                     {
-                      'counter': 1,
+                      'counters': [1,73,0,123,9999,0,0,987654],
                       'delegation':
                         {
                           'pools':
@@ -125,7 +125,7 @@ paths:
                 without_delegation:
                   value:
                     {
-                      'counter': 0,
+                      'counters': [1,73,0,123,9999,0,0,987654],
                       'delegation': { 'pools': [] },
                       'last_rewards': { 'epoch': 0, 'reward': 0 },
                       'value': 1000,

@@ -199,18 +199,18 @@ impl Reg {
 
 #[cfg(test)]
 mod tests {
-    use assert_fs::TempDir;
     use cardano_serialization_lib::metadata::{GeneralTransactionMetadata, MetadataJsonSchema};
 
     use crate::test_api::MockDbProvider;
     use crate::DataProvider;
-    use jormungandr_lib::interfaces::BlockDate;
-    use mainnet_lib::GeneralTransactionMetadataInfo;
-    use mainnet_lib::InMemoryDbSync;
+    use mainnet_lib::{
+        BlockBuilder, CardanoWallet, GeneralTransactionMetadataInfo, InMemoryDbSync,
+        TransactionBuilder,
+    };
 
     #[test]
     pub fn nami_wallet_tx() {
-        let temp_dir = TempDir::new().unwrap();
+        let cardano_wallet = CardanoWallet::new(1);
 
         let metadata_string = r#"{
             "61284":  {"1":[["0xf83870fde8c07e0552040cb4b005d63d58cd5f6450454f253844df7f76764a35",1]],"2":"0xebd231995f6bdbe6a1582625d1c291eed374fc7baab03feab6701ec21395180e","3":"0xe0b6d6e47f7d683a90bf4c638d337e95aaebcc9584188ca817a8691604","4":14150366,"5":0},
@@ -223,8 +223,14 @@ mod tests {
         )
         .unwrap();
 
-        let mut db_sync = InMemoryDbSync::new(&temp_dir);
-        db_sync.push_transaction(BlockDate::new(0, 0), root_metadata);
+        let transaction = TransactionBuilder::build_transaction_with_metadata(
+            &cardano_wallet.address().to_address(),
+            cardano_wallet.stake(),
+            &root_metadata,
+        );
+
+        let mut db_sync = InMemoryDbSync::default();
+        db_sync.on_block_propagation(&BlockBuilder::next_block(None, &vec![transaction]));
 
         let regs = MockDbProvider::from(db_sync)
             .vote_registrations(None, None)

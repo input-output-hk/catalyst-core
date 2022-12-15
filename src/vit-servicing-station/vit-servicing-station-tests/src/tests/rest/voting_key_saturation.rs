@@ -22,7 +22,7 @@ pub fn get_voting_key_saturation() { // 2 snapshots required: 1 from SnapshotBui
 
     println!("snapshot tags from data: {:#?}", snapshot_tag);
 
-    let public_key = snapshot.content.snapshot[0].hir.clone().voting_key.to_string();
+    let public_key = snapshot.content.snapshot[0].hir.clone().voting_key.to_hex();
 
     println!("public key: {:#?}", public_key);
 
@@ -36,6 +36,10 @@ pub fn get_voting_key_saturation() { // 2 snapshots required: 1 from SnapshotBui
 
     let voter_info = client.voter_info(&snapshot_tag, &public_key);
 
-    println!("voter info: {:#?}", voter_info)
+    println!("voter info: {:#?}", voter_info);
+
+    let total_voting_power: u64 = snapshot.content.snapshot.iter().map(|x| u64::from(x.hir.voting_power)).sum();
+
+    println!("total voting power: {:#?}", total_voting_power);
 }
 

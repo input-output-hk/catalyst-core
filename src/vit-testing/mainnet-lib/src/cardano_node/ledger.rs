@@ -45,14 +45,24 @@ impl Ledger {
     }
 
     /// Mint new block
-    pub fn mint_block(&mut self) -> Block {
-        let last_block = self
-            .blocks
-            .last()
-            .expect("internal error no block0 in blockchain");
+    ///
+    /// # Errors
+    ///
+    /// On blockchain inconsistency
+    pub fn mint_block(&mut self) -> Result<Block, Error> {
+        let last_block = self.blocks.last().ok_or(Error::MissingBlock0)?;
         let next_block = BlockBuilder::next_block(Some(last_block), &self.mempool);
         self.blocks.push(next_block.clone());
         self.mempool.clear();
-        next_block
+        Ok(next_block)
     }
 }
+
+#[derive(thiserror::Error, Debug, Clone)]
+pub enum Error {
+    #[error("no block0 in blockchain")]
+    MissingBlock0,
+}
+
+unsafe impl Send for Error {}
+unsafe impl Send for Ledger {}

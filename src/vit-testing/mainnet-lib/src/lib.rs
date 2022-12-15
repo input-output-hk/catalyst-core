@@ -20,6 +20,9 @@ mod db_sync;
 mod network;
 mod wallet;
 
+/// Const defining caradno mainnet slot per epoch setting
+pub const CARDANO_MAINNET_SLOTS_PER_EPOCH: u64 = 43200;
+
 pub use exports::*;
 mod exports {
     pub use crate::blockfrost::{CatalystBlockFrostApi, Error as CatalystBlockFrostApiError};

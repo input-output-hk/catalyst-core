@@ -91,7 +91,11 @@ impl InMemoryNode {
         let handle = tokio::spawn(async move {
             loop {
                 tokio::time::sleep(Duration::from_secs(u64::from(slot_duration))).await;
-                let block = ledger.write().unwrap().mint_block();
+                let block = ledger
+                    .write()
+                    .unwrap()
+                    .mint_block()
+                    .expect("leadership event failed");
                 block_notifier.notify(block).await.unwrap();
             }
         });

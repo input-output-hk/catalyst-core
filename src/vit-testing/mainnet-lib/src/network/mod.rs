@@ -71,7 +71,7 @@ impl MainnetNetworkBuilder {
     pub fn build_shared(self) -> (SharedInMemoryDbSync, InMemoryNode, HashSet<Identifier>) {
         let (db_sync, ledger, reps) = self.build();
         let mut node = InMemoryNode::start_from_ledger(ledger);
-        (db_sync.connect_to_node(&mut node),node, reps)
+        (db_sync.connect_to_node(&mut node), node, reps)
     }
 }
 

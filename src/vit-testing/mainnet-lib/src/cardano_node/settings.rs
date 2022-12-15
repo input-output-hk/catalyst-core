@@ -1,3 +1,4 @@
+use crate::CARDANO_MAINNET_SLOTS_PER_EPOCH;
 use chain_impl_mockchain::testing::TestGen;
 use std::time::SystemTime;
 
@@ -11,7 +12,7 @@ pub struct Settings {
     /// slot duration
     pub slot_duration: u32,
     /// slots per epoch
-    pub slots_per_epoch: u32,
+    pub slots_per_epoch: u64,
 }
 
 impl Default for Settings {
@@ -20,7 +21,7 @@ impl Default for Settings {
             block0_hash: TestGen::hash().to_string(),
             block0_time: SystemTime::now(),
             slot_duration: 1,
-            slots_per_epoch: 43200,
+            slots_per_epoch: CARDANO_MAINNET_SLOTS_PER_EPOCH,
         }
     }
 }

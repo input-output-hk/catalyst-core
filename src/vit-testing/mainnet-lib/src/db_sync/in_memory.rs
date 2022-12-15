@@ -1,4 +1,4 @@
-use crate::{Block0, InMemoryNode};
+use crate::{Block0, InMemoryNode, CARDANO_MAINNET_SLOTS_PER_EPOCH};
 use cardano_serialization_lib::metadata::GeneralTransactionMetadata;
 use cardano_serialization_lib::utils::BigNum;
 use cardano_serialization_lib::{Block, Transaction, TransactionWitnessSet};
@@ -14,8 +14,6 @@ use std::io::Write;
 use std::path::Path;
 use std::sync::{Arc, RwLock};
 use tokio::task::JoinHandle;
-
-const CARDANO_MAINNET_SLOTS_PER_EPOCH: u64 = 43200;
 
 pub type BlockNo = u32;
 pub type Address = String;
@@ -52,7 +50,6 @@ impl Debug for InMemoryDbSync {
 }
 
 impl InMemoryDbSync {
-
     /// Creates new instance out of block0
     #[must_use]
     pub fn from_block0(block0: &Block0) -> Self {
@@ -135,7 +132,7 @@ impl InMemoryDbSync {
 
     /// Query transaction by it's hash representation
     #[must_use]
-    pub fn transaction_by_hash(&self, hash: &str) -> Vec<(&Block, &Transaction)> {
+    pub fn transaction_by_hash(&self, hash: &str) -> Vec<(Option<&Block>, &Transaction)> {
         self.transactions
             .iter()
             .filter_map(|(block, txs)| {
@@ -143,8 +140,7 @@ impl InMemoryDbSync {
                     let block = self
                         .blocks
                         .iter()
-                        .find(|x| x.header().header_body().block_number() == *block)
-                        .expect("data inconsitency. cannot find block with block no from tx");
+                        .find(|x| x.header().header_body().block_number() == *block);
 
                     return Some((block, tx));
                 }

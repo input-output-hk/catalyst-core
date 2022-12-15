@@ -175,5 +175,5 @@ impl JormungandrBootstrapper {
 }
 
 fn create_new_leader_key() -> KeyPair<Ed25519> {
-    KeyPair::generate(&mut rand::thread_rng())
+    KeyPair::generate(rand::thread_rng())
 }

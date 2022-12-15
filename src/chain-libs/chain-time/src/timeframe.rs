@@ -1,4 +1,7 @@
-//! Timeframe
+//! Timeframes
+//!
+//! A [`TimeFrame`] represents a [`Timeline`] that is split into discrete slots
+
 //!
 
 use crate::timeline::Timeline;
@@ -30,6 +33,7 @@ impl From<Slot> for u64 {
 /// Identify a slot in a specific timeframe and a leftover duration
 #[derive(Debug)]
 pub struct SlotAndDuration {
+    /// The slot
     pub slot: Slot,
     /// The offset of a specific time frame in
     pub offset: Duration,
@@ -50,11 +54,17 @@ pub struct TimeFrame {
 pub struct SlotDuration(u64);
 
 impl SlotDuration {
+    /// Create a [`SlotDuration`] from a number of seconds
+    ///
+    /// # Panics
+    ///
+    /// Panics if `seconds >= 600`
     pub fn from_secs(seconds: u32) -> Self {
         assert!(seconds < 600);
         SlotDuration(seconds as u64)
     }
 
+    /// Convert this [`SlotDuration`] to a [`core::time::Duration`]
     pub fn to_duration(self) -> Duration {
         Duration::from_secs(self.0)
     }
@@ -106,8 +116,9 @@ impl TimeFrame {
         }
     }
 
+    /// The current slot offset
     pub fn slot0(&self) -> Slot {
-        Slot(self.slot_offset.0)
+        self.slot_offset
     }
 
     /// Given a system time get the slot and associated duration leftover

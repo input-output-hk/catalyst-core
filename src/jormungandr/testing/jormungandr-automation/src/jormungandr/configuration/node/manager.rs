@@ -28,7 +28,7 @@ impl ConfigurableNodeConfig for NodeConfigManager {
     }
 
     fn write_node_config(&self) {
-        let mut output_file = File::create(&self.node_config_path()).unwrap();
+        let mut output_file = File::create(self.node_config_path()).unwrap();
         serde_yaml::to_writer(&mut output_file, &self.node_config)
             .expect("cannot serialize node config");
     }

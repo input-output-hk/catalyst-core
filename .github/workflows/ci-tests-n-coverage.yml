@@ -58,7 +58,7 @@ jobs:
       - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-server/Cargo.toml --profile ci
       - run:
-          cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-tests/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report -j 1 --manifest-path ./src/vit-servicing-station/vit-servicing-station-tests/Cargo.toml --profile ci
       - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/voting-tools-rs/Cargo.toml --profile ci
       - run:
@@ -106,7 +106,7 @@ jobs:
       - run:
           cargo llvm-cov nextest --no-report --manifest-path ./src/jormungandr/jormungandr/Cargo.toml --profile ci
       - run:
-          cargo llvm-cov nextest --no-report --manifest-path ./src/jormungandr/testing/jormungandr-integration-tests/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report -j 1 --manifest-path ./src/jormungandr/testing/jormungandr-integration-tests/Cargo.toml --profile ci
       - run:
           cargo llvm-cov report --lcov --output-path ./lcov.info
 

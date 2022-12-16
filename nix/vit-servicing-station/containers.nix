@@ -9,21 +9,15 @@
   mkOCI = namespace: let
     # TODO: fix git rev
     # rev =
-    #   if (inputs.self ? rev)
+    #   if (inputs.self.rev != "not-a-commit")
     #   then inputs.self.rev
     #   else "dirty";
-    image = std.lib.ops.mkStandardOCI {
+  in
+    std.lib.ops.mkStandardOCI {
       name = "${constants.registry}/vit-servicing-station-server";
-      #tag = "${rev}-${namespace}";
+      tag = namespace;
       operable = cell.operables."vit-servicing-station-server-${namespace}";
       debug = true;
-    };
-  in
-    image
-    // {
-      imageTag = let
-        hash = l.head (l.strings.splitString "-" (baseNameOf image.outPath));
-      in "${hash}-${namespace}";
     };
 in
   {}

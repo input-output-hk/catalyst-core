@@ -8,7 +8,7 @@
 
   mkOCI = namespace: let
     rev =
-      if (inputs.self.rev != "not-a-commit")
+      if (inputs.self ? rev)
       then inputs.self.rev
       else "dirty";
   in

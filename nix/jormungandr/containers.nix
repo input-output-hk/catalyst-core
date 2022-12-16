@@ -12,6 +12,7 @@
     std.lib.ops.mkStandardOCI {
       inherit operable;
       name = "${constants.registry}/${name}";
+      debug = true;
     };
 in {
   jormungandr = mkOCI "jormungandr";

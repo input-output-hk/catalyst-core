@@ -55,7 +55,7 @@ in {
 
       if [ -n "$PRIVATE" ]; then
         echo "Running with node with secrets..."
-        exec jormungandr \
+        exec ${l.getExe package} \
           --storage "$STORAGE_DIR" \
           --config "$NOMAD_TASK_DIR/running.yaml" \
           --genesis-block "artifacts/block0.bin" \
@@ -63,7 +63,7 @@ in {
           "$@" || true
       else
         echo "Running with follower node..."
-        exec jormungandr \
+        exec ${l.getExe package} \
           --storage "$STORAGE_DIR" \
           --config "$NOMAD_TASK_DIR/running.yaml" \
           --genesis-block "artifacts/block0.bin" \

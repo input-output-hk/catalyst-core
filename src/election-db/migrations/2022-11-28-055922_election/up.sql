@@ -130,7 +130,9 @@ COMMENT ON COLUMN currency.description IS 'A Description of this kind of currenc
 INSERT INTO currency (name,  description)
 VALUES
     ('USD_ADA','US Dollars, converted to Cardano ADA at time of reward calculation.'),
-    ('ADA','Cardano ADA.');
+    ('ADA','Cardano ADA.'),
+    ('CLAP', 'CLAP tokens.'),
+    ('COTI', 'COTI tokens.');
 
 -- known vote options - Defines all currently known vote options.
 CREATE TABLE vote_options

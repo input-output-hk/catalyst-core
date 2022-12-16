@@ -41,13 +41,13 @@ in {
       #     };
       #   };
       # };
-      pre-commit = {
-        commands = {
-          treefmt = {
-            run = "${nixpkgs.treefmt}/bin/treefmt --fail-on-change {staged_files}";
-          };
-        };
-      };
+      #pre-commit = {
+      #  commands = {
+      #    treefmt = {
+      #      run = "${nixpkgs.treefmt}/bin/treefmt --fail-on-change {staged_files}";
+      #    };
+      #  };
+      #};
     };
   };
   prettier =

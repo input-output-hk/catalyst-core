@@ -73,7 +73,7 @@ impl<'de> Deserialize<'de> for EvmTransaction {
     {
         if deserializer.is_human_readable() {
             let s = String::deserialize(deserializer)?;
-            let data = hex::decode(&s).map_err(<D::Error as serde::de::Error>::custom)?;
+            let data = hex::decode(s).map_err(<D::Error as serde::de::Error>::custom)?;
             Ok(Self(
                 evm::EvmTransaction::deserialize_from_slice(&mut Codec::new(data.as_slice()))
                     .map_err(<D::Error as serde::de::Error>::custom)?,

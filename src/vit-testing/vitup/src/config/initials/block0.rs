@@ -215,7 +215,7 @@ impl Initials {
                 role,
             } = initial
             {
-                let funds = *funds as u64;
+                let funds = *funds;
 
                 let mut tokens = HashMap::new();
                 tokens.insert(roles(role), funds);
@@ -256,7 +256,7 @@ impl Initials {
                         let value: u64 =
                             threshold + rand.gen_range(GRACE_VALUE..=threshold - GRACE_VALUE);
                         templates.insert(
-                            WalletTemplateBuilder::new(&wallet_alias)
+                            WalletTemplateBuilder::new(wallet_alias)
                                 .with(value)
                                 .with_token(roles(role), value)
                                 .discrimination(discrimination)
@@ -277,7 +277,7 @@ impl Initials {
                         let value: u64 =
                             threshold - rand.gen_range(GRACE_VALUE..=threshold - GRACE_VALUE);
                         templates.insert(
-                            WalletTemplateBuilder::new(&wallet_alias)
+                            WalletTemplateBuilder::new(wallet_alias)
                                 .with(value)
                                 .with_token(roles(role), value)
                                 .discrimination(discrimination)
@@ -294,9 +294,9 @@ impl Initials {
                 } => {
                     templates.insert(
                         WalletTemplateBuilder::new(name)
-                            .with(*funds as u64)
+                            .with(*funds)
                             .discrimination(discrimination)
-                            .with_token(roles(role), (*funds) as u64)
+                            .with_token(roles(role), *funds)
                             .build(),
                         pin.to_string(),
                     );
@@ -313,7 +313,7 @@ impl Initials {
                             format!("wallet_{}_around_{}", around_level_index, threshold);
                         let value: u64 = rand.gen_range(level - GRACE_VALUE..=level + GRACE_VALUE);
                         templates.insert(
-                            WalletTemplateBuilder::new(&wallet_alias)
+                            WalletTemplateBuilder::new(wallet_alias)
                                 .with(value)
                                 .discrimination(discrimination)
                                 .with_token(roles(role), value)

@@ -115,10 +115,10 @@ impl IdeascaleValidateCommand {
         std::env::set_var("RUST_BACKTRACE", "full");
         std::fs::create_dir_all(&self.output)?;
 
-        let proposals_path = self.input.join(&self.add_prefix("proposals.json"));
-        let funds_path = self.input.join(&self.add_prefix("funds.json"));
-        let challenges_path = self.input.join(&self.add_prefix("challenges.json"));
-        let reviews_path = self.input.join(&self.add_prefix("reviews.json"));
+        let proposals_path = self.input.join(self.add_prefix("proposals.json"));
+        let funds_path = self.input.join(self.add_prefix("funds.json"));
+        let challenges_path = self.input.join(self.add_prefix("challenges.json"));
+        let reviews_path = self.input.join(self.add_prefix("reviews.json"));
 
         let mut funds = parse_funds(funds_path.clone())?;
         let challenges = self.validate_challenges(

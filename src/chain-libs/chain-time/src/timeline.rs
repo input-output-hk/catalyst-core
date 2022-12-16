@@ -1,3 +1,6 @@
+//! Timeline
+//!
+//! A [`Timeline`] represents a frame of reference relative to a point in earth time
 use crate::units::DurationSeconds;
 use std::time::{Duration, SystemTime};
 

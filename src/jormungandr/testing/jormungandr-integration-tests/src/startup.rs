@@ -206,7 +206,7 @@ pub fn create_new_utxo_address() -> Wallet {
 }
 
 pub fn create_new_leader_key() -> KeyPair<Ed25519> {
-    KeyPair::generate(&mut rand::thread_rng())
+    KeyPair::generate(rand::thread_rng())
 }
 
 pub fn create_new_account_address() -> Wallet {

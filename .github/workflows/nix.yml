@@ -26,6 +26,10 @@ concurrency:
   group: ${{ github.sha }}
   cancel-in-progress: true
 
+env:
+  ECR_REGISTRY: 432820653916.dkr.ecr.eu-central-1.amazonaws.com
+  S3_CACHE: s3://iog-catalyst-nix-cache?region=eu-central-1
+
 jobs:
   discover:
     outputs:
@@ -47,11 +51,13 @@ jobs:
     name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          config="$HOME/.docker/config.json"
-          mkdir -p "${config%/*}"
-          jq -n --arg token "${{ secrets.DOCKER_AUTH_TOKEN }}" '{ "auths": { "registry.ci.iog.io": { auth: $token } } }' > "$config"
-          chmod 0600 "$config"
+      - name: Configure Registry
+        run: |
+          aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin "${{ env.ECR_REGISTRY }}"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: eu-central-1
       - uses: divnix/std-action/run@main
         with:
           extra_nix_config: |
@@ -60,7 +66,7 @@ jobs:
           nix_key: ${{ secrets.NIX_SIGNING_KEY }}
           s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          cache: s3://iog-catalyst-cache?region=eu-central-1
+          cache: ${{ env.S3_CACHE }}
   build-packages:
     if: always()
     needs:
@@ -81,7 +87,7 @@ jobs:
           nix_key: ${{ secrets.NIX_SIGNING_KEY }}
           s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          cache: s3://iog-catalyst-cache?region=eu-central-1
+          cache: ${{ env.S3_CACHE }}
   build-devshells:
     if: always()
     needs:
@@ -102,4 +108,4 @@ jobs:
           nix_key: ${{ secrets.NIX_SIGNING_KEY }}
           s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          cache: s3://iog-catalyst-cache?region=eu-central-1
+          cache: ${{ env.S3_CACHE }}

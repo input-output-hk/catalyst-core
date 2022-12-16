@@ -267,7 +267,7 @@ impl Node {
         let reader = BufReader::new(stderr);
         for line_result in reader.lines() {
             let line = line_result.expect("failed to read a line from log output");
-            self.progress_bar.log_info(&line);
+            self.progress_bar.log_info(line);
         }
     }
 
@@ -287,7 +287,7 @@ impl Node {
     }
 
     fn progress_bar_failure(&self) {
-        self.progress_bar.finish_with_message(&format!(
+        self.progress_bar.finish_with_message(format!(
             "{} {} {}",
             *style::icons::jormungandr,
             style::binary.apply_to(self.alias()),
@@ -296,7 +296,7 @@ impl Node {
     }
 
     fn progress_bar_success(&self) {
-        self.progress_bar.finish_with_message(&format!(
+        self.progress_bar.finish_with_message(format!(
             "{} {} {}",
             *style::icons::jormungandr,
             style::binary.apply_to(self.alias()),

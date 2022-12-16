@@ -173,7 +173,7 @@ mod serde_impl {
         use bech32::ToBase32;
         let bytes = hex::decode(String::deserialize(deserializer)?.trim_start_matches("0x"))
             .map_err(|e| D::Error::custom(format!("invalid hex string: {}", e)))?;
-        bech32::encode("stake", &bytes.to_base32(), bech32::Variant::Bech32)
+        bech32::encode("stake", bytes.to_base32(), bech32::Variant::Bech32)
             .map_err(|e| D::Error::custom(format!("bech32 encoding failed: {}", e)))
     }
 }
@@ -237,7 +237,7 @@ mod tests {
                 .prop_map(|((stake_key, rewards_addr, delegations), vp)| {
                     let stake_public_key = hex::encode(stake_key);
                     let reward_address =
-                        bech32::encode("stake", &rewards_addr.to_base32(), bech32::Variant::Bech32)
+                        bech32::encode("stake", rewards_addr.to_base32(), bech32::Variant::Bech32)
                             .unwrap();
                     let voting_power: Value = vp.into();
                     VotingRegistration {

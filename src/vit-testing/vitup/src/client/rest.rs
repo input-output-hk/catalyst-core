@@ -10,7 +10,7 @@ pub struct VitupRest {
 
 impl VitupRest {
     pub fn is_up(&self) -> bool {
-        let response = reqwest::blocking::get(&self.path("api/health"));
+        let response = reqwest::blocking::get(self.path("api/health"));
 
         if response.is_err() {
             return false;
@@ -102,7 +102,7 @@ impl VitupDisruptionRestClient {
     pub fn reset_with_config(&self, config: &Config) -> Result<Response, Error> {
         let client = reqwest::blocking::Client::new();
         client
-            .post(&self.inner.path("api/control/command/reset"))
+            .post(self.inner.path("api/control/command/reset"))
             .json(&config)
             .send()
             .map_err(Into::into)
@@ -148,7 +148,7 @@ impl VitupDisruptionRestClient {
 
     pub fn is_up(&self) -> bool {
         if let Ok(path) = self.inner.get("api/health") {
-            if let Ok(response) = reqwest::blocking::get(&path) {
+            if let Ok(response) = reqwest::blocking::get(path) {
                 return response.status() == reqwest::StatusCode::OK;
             }
         }
@@ -177,7 +177,7 @@ impl VitupAdminRestClient {
     pub fn start_custom(&self, params: Config) -> Result<String, Error> {
         let path = self.inner.path("control/command/start/custom");
         let client = reqwest::blocking::Client::new();
-        let response = client.post(&path).json(&params).send()?;
+        let response = client.post(path).json(&params).send()?;
         Ok(response.text()?)
     }
 

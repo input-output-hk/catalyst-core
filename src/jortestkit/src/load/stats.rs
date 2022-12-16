@@ -21,7 +21,7 @@ impl Stats {
             .map(|r| r.duration().as_secs_f64())
             .sum();
 
-        total_duration / total_requests as f64
+        total_duration / total_requests
     }
 
     pub fn total_requests_made(&self) -> usize {

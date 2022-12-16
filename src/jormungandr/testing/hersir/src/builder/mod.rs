@@ -127,7 +127,7 @@ impl NetworkBuilder {
                         alias: alias.clone(),
                         config: node_config,
                         secret: NodeSecret::default(),
-                        topology_secret: SigningKey::generate(&mut rand::thread_rng()),
+                        topology_secret: SigningKey::generate(rand::thread_rng()),
                         node_topology: node.clone(),
                     },
                 )
@@ -175,7 +175,7 @@ impl NetworkBuilder {
 }
 
 fn document(path: &Path, settings: &Settings) -> Result<(), Error> {
-    let file = std::fs::File::create(&path.join("initial_setup.dot"))?;
+    let file = std::fs::File::create(path.join("initial_setup.dot"))?;
 
     let dotifier = Dotifier;
     dotifier.dottify(settings, file)?;
@@ -184,7 +184,7 @@ fn document(path: &Path, settings: &Settings) -> Result<(), Error> {
         wallet.save_to(path)?;
     }
 
-    let file = std::fs::File::create(&path.join("genesis.yaml"))?;
+    let file = std::fs::File::create(path.join("genesis.yaml"))?;
     serde_yaml::to_writer(file, &settings.block0).unwrap();
 
     Ok(())

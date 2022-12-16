@@ -29,7 +29,7 @@ impl Wallet {
     pub fn save_to<P: AsRef<Path>>(&self, dir: P) -> std::io::Result<()> {
         if let Some(inner) = &self.inner {
             let dir = dir.as_ref().join(self.template().id());
-            let file = std::fs::File::create(&dir)?;
+            let file = std::fs::File::create(dir)?;
             inner.save_to(file)
         } else {
             Ok(())

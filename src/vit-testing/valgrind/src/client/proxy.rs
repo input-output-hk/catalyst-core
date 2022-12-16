@@ -36,7 +36,7 @@ impl ProxyClient {
     }
 
     pub fn health(&self) -> Result<(), Error> {
-        let status_code = reqwest::blocking::get(&self.path("health")).map(|r| r.status())?;
+        let status_code = reqwest::blocking::get(self.path("health")).map(|r| r.status())?;
 
         if status_code != StatusCode::OK {
             Err(Error::ServerIsNotUp(status_code))
@@ -46,7 +46,7 @@ impl ProxyClient {
     }
 
     pub fn block0(&self) -> Result<Vec<u8>, Error> {
-        let response = reqwest::blocking::get(&self.path("api/v0/block0"))?;
+        let response = reqwest::blocking::get(self.path("api/v0/block0"))?;
         self.print_response(&response);
         Ok(response.bytes()?.to_vec())
     }

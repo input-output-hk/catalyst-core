@@ -764,7 +764,7 @@ mod tests {
         let mut sigs = Vec::new();
         for (i, key) in pool_owner_with_sign.indexed_signatories_sks() {
             let sig = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(d.0));
-            sigs.push((i as u8, sig))
+            sigs.push((i, sig))
         }
         let pool_owner_signed = PoolOwnersSigned { signatures: sigs };
         let verification = if should_pass {

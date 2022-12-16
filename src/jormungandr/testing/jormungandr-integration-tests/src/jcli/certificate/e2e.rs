@@ -25,7 +25,7 @@ pub fn test_create_and_sign_new_stake_delegation() {
     let stake_pool_id = jcli.certificate().stake_pool_id(input_file.path()).unwrap();
     let certificate = jcli
         .certificate()
-        .new_stake_delegation(&stake_pool_id, &owner.identifier().to_bech32_str());
+        .new_stake_delegation(stake_pool_id, owner.identifier().to_bech32_str());
 
     assert_ne!(certificate, "", "delegation cert is empty");
 

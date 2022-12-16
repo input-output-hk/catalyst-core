@@ -15,18 +15,20 @@ pub struct LastRewards {
     pub reward: Value,
 }
 
-impl LastRewards {
+impl Default for LastRewards {
     /// Create an initial value of epoch=0 reward=0
     ///
     /// It is also safe as the "uninitialized" value, since
     /// epoch 0 doesn't have by construction any reward associated.
-    pub fn default() -> Self {
+    fn default() -> Self {
         LastRewards {
             epoch: 0,
             reward: Value::zero(),
         }
     }
+}
 
+impl LastRewards {
     /// Add some value to the last reward, if the epoch is the same, then the
     /// result is just added, however.account
     ///

@@ -50,7 +50,8 @@ jobs:
     name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
     runs-on: ubuntu-latest
     steps:
-      - run: |
+      - name: Configure Registry
+        run: |
           aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin "${{ env.ECR_REGISTRY }}"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

@@ -22,7 +22,7 @@
 in rec {
   inherit envs events;
   namespaces = l.flatten (l.map (event: mkNamespaces event) events);
-  registry = "registry.ci.iog.io";
+  registry = "432820653916.dkr.ecr.eu-central-1.amazonaws.com";
 
   mapToNamespaces = {
     prefix ? "",

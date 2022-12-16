@@ -2,8 +2,7 @@ name: Testing and Code Coverage
 
 on:
   push:
-    # TODO: remove feature branch before merging
-    branches: [ "main", "feature/add-ci-coveralls" ]
+    branches: [ "main" ]
 
 env:
   CARGO_TERM_COLOR: always

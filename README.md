@@ -15,7 +15,7 @@
     <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome!" />
   </a>
   <a href='https://coveralls.io/github/input-output-hk/catalyst-core?branch=feature/add-ci-coveralls'>
-    <img src='https://coveralls.io/repos/github/input-output-hk/catalyst-core/badge.svg?branch=feature/add-ci-coveralls' alt='Coverage Status' />
+    <img src='https://coveralls.io/repos/github/input-output-hk/catalyst-core/badge.svg?branch=main' alt='Coverage Status' />
   </a>
 </p>
 

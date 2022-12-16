@@ -1,5 +1,5 @@
-use crate::common::startup::quick_start;
 use crate::common::snapshot::SnapshotBuilder;
+use crate::common::startup::quick_start;
 use assert_fs::TempDir;
 
 const DIRECT_VOTING_GROUP_NAME: &str = "direct";
@@ -19,11 +19,21 @@ pub fn get_voting_key_saturation() {
 
     client.put_snapshot_info(&snapshot).unwrap();
 
-    let total_direct_voting_power = snapshot.content.snapshot.iter()
-        .filter(|x| x.hir.voting_group == DIRECT_VOTING_GROUP_NAME).map(|x| u64::from(x.hir.voting_power)).sum::<u64>() as f64;
+    let total_direct_voting_power = snapshot
+        .content
+        .snapshot
+        .iter()
+        .filter(|x| x.hir.voting_group == DIRECT_VOTING_GROUP_NAME)
+        .map(|x| u64::from(x.hir.voting_power))
+        .sum::<u64>() as f64;
 
-    let total_drep_voting_power = snapshot.content.snapshot.iter()
-        .filter(|x| x.hir.voting_group == DREP_VOTING_GROUP_NAME).map(|x| u64::from(x.hir.voting_power)).sum::<u64>() as f64;
+    let total_drep_voting_power = snapshot
+        .content
+        .snapshot
+        .iter()
+        .filter(|x| x.hir.voting_group == DREP_VOTING_GROUP_NAME)
+        .map(|x| u64::from(x.hir.voting_power))
+        .sum::<u64>() as f64;
 
     for i in 0..snapshot.content.snapshot.len() {
         let key = snapshot.content.snapshot[i].hir.clone().voting_key.to_hex();
@@ -32,23 +42,28 @@ pub fn get_voting_key_saturation() {
 
         let voting_group = snapshot.content.snapshot[i].clone().hir.voting_group;
 
-        assert!(voter_info.voter_info.len() > 0, "Voter info is empty");
+        assert!(!voter_info.voter_info.is_empty(), "Voter info is empty");
 
         let voting_power = u64::from(snapshot.content.snapshot[i].hir.clone().voting_power) as f64;
 
-        let mut expected_voting_key_saturation:f64 = 0.0;
+        let expected_voting_key_saturation;
 
         if voting_group == DIRECT_VOTING_GROUP_NAME {
             expected_voting_key_saturation = voting_power / total_direct_voting_power;
         } else if voting_group == DREP_VOTING_GROUP_NAME {
             expected_voting_key_saturation = voting_power / total_drep_voting_power;
         } else {
-            assert!(false, "Voting group not recognized");
+            panic!("Voting group not recognized");
         }
 
-        let voting_key_saturation = client.voter_info(&snapshot_tag, &key).unwrap().voter_info.first().unwrap().voting_power_saturation;
+        let voting_key_saturation = client
+            .voter_info(&snapshot_tag, &key)
+            .unwrap()
+            .voter_info
+            .first()
+            .unwrap()
+            .voting_power_saturation;
 
         assert_eq!(expected_voting_key_saturation, voting_key_saturation);
     }
 }
-

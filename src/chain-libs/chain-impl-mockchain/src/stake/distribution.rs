@@ -95,7 +95,7 @@ impl StakeDistribution {
 
     /// Return the total stake held by the eligible stake pools.
     pub fn total_stake(&self) -> Stake {
-        Stake::sum(self.to_pools.iter().map(|(_, pool)| pool.stake.total))
+        Stake::sum(self.to_pools.values().map(|pool| pool.stake.total))
     }
 
     pub fn get_stake_for(&self, poolid: &PoolId) -> Option<Stake> {
@@ -596,19 +596,19 @@ mod tests {
         pools: Stake,
     ) -> TestResult {
         if stake_distribution.unassigned != unassigned {
-            return TestResult::error(&format!(
+            return TestResult::error(format!(
                 "wrong unassigned {} vs {}",
                 stake_distribution.unassigned, unassigned
             ));
         }
         if stake_distribution.dangling != dangling {
-            return TestResult::error(&format!(
+            return TestResult::error(format!(
                 "wrong dangling {} vs {}",
                 stake_distribution.dangling, dangling
             ));
         }
         if stake_distribution.total_stake() != pools {
-            return TestResult::error(&format!(
+            return TestResult::error(format!(
                 "wrong to_pools {} vs {}",
                 stake_distribution.total_stake(),
                 pools

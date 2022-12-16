@@ -208,7 +208,7 @@ impl CommitteeDataManager {
                 (decrypt_shares, tally)
             })
             .unzip();
-        let tallies = batch_decrypt(&tallies).unwrap();
+        let tallies = batch_decrypt(tallies).unwrap();
 
         DecryptedPrivateTally::new(
             tallies

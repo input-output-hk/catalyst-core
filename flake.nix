@@ -31,45 +31,55 @@
       cellsFrom = ./nix;
 
       cellBlocks = [
-        (std.blockTypes.containers "containers")
-        (std.blockTypes.devshells "devshells")
+        (std.blockTypes.containers "containers" {ci.publish = true;})
+        (std.blockTypes.devshells "devshells" {ci.build = true;})
         (std.blockTypes.functions "constants")
         (std.blockTypes.functions "lib")
         (std.blockTypes.functions "toolchains")
-        (std.blockTypes.installables "packages")
+        (std.blockTypes.installables "artifacts")
+        (std.blockTypes.installables "libraries")
+        (std.blockTypes.installables "packages" {ci.build = true;})
         (std.blockTypes.nixago "configs")
         (std.blockTypes.runnables "operables")
       ];
     }
     {
       devShells = std.harvest inputs.self ["automation" "devshells"];
-      packages = std.harvest inputs.self [
-        ["artifacts" "packages"]
-        ["catalyst-toolbox" "packages"]
-        ["chain-libs" "packages"]
-        ["chain-wallet-libs" "packages"]
-        ["jormungandr" "packages"]
-        ["jortestkit" "packages"]
-        ["vit-servicing-station" "packages"]
-        ["vit-testing" "packages"]
-        ["voting-tools" "packages"]
-        ["voting-tools-rs" "packages"]
+      artifacts = std.harvest inputs.self [
+        ["artifacts" "artifacts"]
       ];
       containers = std.harvest inputs.self [
         ["jormungandr" "containers"]
         ["vit-servicing-station" "containers"]
         ["vit-testing" "containers"]
       ];
+      libraries = std.harvest inputs.self [
+        ["catalyst-toolbox" "libraries"]
+        ["chain-libs" "libraries"]
+        ["chain-wallet-libs" "libraries"]
+        ["jormungandr" "libraries"]
+        ["jortestkit" "libraries"]
+        ["vit-servicing-station" "libraries"]
+        ["vit-testing" "libraries"]
+      ];
+      packages = std.harvest inputs.self [
+        ["catalyst-toolbox" "packages"]
+        ["jormungandr" "packages"]
+        ["vit-servicing-station" "packages"]
+        ["vit-testing" "packages"]
+        ["voting-tools" "packages"]
+        ["voting-tools-rs" "packages"]
+      ];
     };
 
   nixConfig = {
     extra-substituters = [
-      #"https://hydra.iohk.io"
-      "https://iog-gov-nix.s3.eu-central-1.amazonaws.com"
+      "https://cache.iog.io"
+      "https://iog-catalyst-nix-cache.s3.eu-central-1.amazonaws.com"
     ];
     extra-trusted-public-keys = [
       "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
-      "gov:uG8+LG8RqFGScUmOrDkGb4VCbtNhChbnycVnxZxb8AY="
+      "catalyst:kNW0n7ijUJDvu4BrpqC3j54rgoHNccXx7ABuVzuL9WM="
     ];
     allow-import-from-derivation = "true";
   };

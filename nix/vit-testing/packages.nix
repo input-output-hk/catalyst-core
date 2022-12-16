@@ -7,23 +7,9 @@
   l = nixpkgs.lib // builtins;
 
   name = "vit-testing";
-  root = inputs.self + "/src/${name}";
-
-  mkVitPkg = subPkg:
-    lib.mkPackage {
-      pkgPath = root + "/${subPkg}";
-      nativeBuildInputs = with nixpkgs; [
-        postgresql.lib
-      ];
-    };
+  mkSimplePkg = subPkg: lib.mkPackage {pkgPath = "${name}/${subPkg}";};
 in {
-  iapyx = mkVitPkg "iapyx";
-  integration-tests = mkVitPkg "integration-tests";
-  mainnet-lib = mkVitPkg "mainnet-lib";
-  mainnet-tools = mkVitPkg "mainnet-tools";
-  scheduler-service-lib = mkVitPkg "scheduler-service-lib";
-  signals-handler = mkVitPkg "signals-handler";
-  snapshot-trigger-service = mkVitPkg "snapshot-trigger-service";
-  valgrind = mkVitPkg "valgrind";
-  vitup = mkVitPkg "vitup";
+  mainnet-tools = mkSimplePkg "mainnet-tools";
+  snapshot-trigger-service = mkSimplePkg "snapshot-trigger-service";
+  vitup = mkSimplePkg "vitup";
 }

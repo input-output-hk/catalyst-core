@@ -25,7 +25,7 @@ pub enum Command {
 
 impl SnapshotCommand {
     pub fn exec(&self) -> Result<(), Report> {
-        let initials: Vec<Initial> = read_initials(&jortestkit::file::read_file(&self.snapshot)?)?;
+        let initials: Vec<Initial> = read_initials(jortestkit::file::read_file(&self.snapshot)?)?;
 
         match self.command {
             Command::Count => calculate_wallet_distribution_from_initials(

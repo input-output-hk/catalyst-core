@@ -1,4 +1,5 @@
-use crate::MainnetWallet;
+use crate::cardano_node::TransactionBuilder;
+use crate::CardanoWallet;
 use cardano_serialization_lib::address::Address;
 use cardano_serialization_lib::chain_crypto::Blake2b256;
 use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey};
@@ -8,7 +9,8 @@ use cardano_serialization_lib::metadata::{
     MetadataJsonSchema, MetadataList, MetadataMap, TransactionMetadatum, TransactionMetadatumLabel,
 };
 use cardano_serialization_lib::utils::{BigNum, Int};
-use serde_json::{Map, Value};
+use cardano_serialization_lib::Transaction;
+use serde_json::Map;
 use snapshot_lib::registration::Delegations;
 
 lazy_static::lazy_static! {
@@ -28,27 +30,25 @@ lazy_static::lazy_static! {
     pub  static ref METADATUM_3: TransactionMetadatum = TransactionMetadatum::new_int(&Int::new_i32(3));
     /// metadatum label 4 constant
     pub  static ref METADATUM_4: TransactionMetadatum = TransactionMetadatum::new_int(&Int::new_i32(4));
-    /// metadatum label 4 constant
+    /// metadatum label 5 constant
     pub  static ref METADATUM_5: TransactionMetadatum = TransactionMetadatum::new_int(&Int::new_i32(5));
 }
 
 /// Responsible for building registration transaction metadata
-pub struct RegistrationBuilder<'a> {
-    wallet: &'a MainnetWallet,
+pub struct RegistrationTransactionBuilder<'a> {
+    wallet: &'a CardanoWallet,
     delegations: Option<Delegations>,
     slot_no: u64,
-    voting_purpose: u64,
 }
 
-impl<'a> RegistrationBuilder<'a> {
+impl<'a> RegistrationTransactionBuilder<'a> {
     /// Creates registration builder for given wallet
     #[must_use]
-    pub fn new(wallet: &'a MainnetWallet) -> Self {
+    pub fn new(wallet: &'a CardanoWallet) -> Self {
         Self {
             wallet,
             delegations: None,
             slot_no: 0,
-            voting_purpose: 0,
         }
     }
 
@@ -65,12 +65,6 @@ impl<'a> RegistrationBuilder<'a> {
         self.slot_no = slot_no;
         self
     }
-    /// Defines voting purposes for registration transaction
-    #[must_use]
-    pub fn for_voting_purpose(mut self, voting_purpose: u64) -> Self {
-        self.voting_purpose = voting_purpose;
-        self
-    }
 
     /// Creates transaction metadata
     ///
@@ -78,10 +72,14 @@ impl<'a> RegistrationBuilder<'a> {
     ///
     /// On metadata size overflow
     #[must_use]
-    pub fn build(self) -> GeneralTransactionMetadata {
+    fn build_metadata(&self) -> GeneralTransactionMetadata {
         let mut meta_map: MetadataMap = MetadataMap::new();
 
-        let delegation_metadata = match self.delegations.expect("no registration target defined") {
+        let delegation_metadata = match self
+            .delegations
+            .as_ref()
+            .expect("no registration target defined")
+        {
             Delegations::New(delegations) => {
                 let mut metadata_list = MetadataList::new();
                 for (delegation, weight) in delegations {
@@ -91,7 +89,7 @@ impl<'a> RegistrationBuilder<'a> {
                             .unwrap(),
                     );
                     inner_metadata_list.add(&TransactionMetadatum::new_int(&Int::new(
-                        &BigNum::from(weight),
+                        &BigNum::from(*weight),
                     )));
                     metadata_list.add(&TransactionMetadatum::new_list(&inner_metadata_list));
                 }
@@ -117,10 +115,9 @@ impl<'a> RegistrationBuilder<'a> {
             &METADATUM_4,
             &TransactionMetadatum::new_int(&Int::new(&BigNum::from(self.slot_no))),
         );
-
         meta_map.insert(
             &METADATUM_5,
-            &TransactionMetadatum::new_int(&Int::new(&BigNum::from(self.voting_purpose))),
+            &TransactionMetadatum::new_int(&Int::new(&BigNum::zero())),
         );
 
         let mut metadata = GeneralTransactionMetadata::new();
@@ -146,39 +143,52 @@ impl<'a> RegistrationBuilder<'a> {
         );
         metadata
     }
+
+    /// Builds transaction instance
+    #[must_use]
+    pub fn build(self) -> Transaction {
+        let metadata = self.build_metadata();
+        TransactionBuilder::build_transaction_with_metadata(
+            &self.wallet.reward_address().to_address(),
+            self.wallet.stake,
+            &metadata,
+        )
+    }
 }
 
+/// Metadata conversion error
 #[derive(thiserror::Error, Debug)]
 pub enum JsonConversionError {
+    /// Serialization
     #[error(transparent)]
     Serde(#[from] serde_json::Error),
+    /// Missing registration label
     #[error("missing registration label in json")]
     MissingRegistrationLabel,
+    /// Missing registration signature label
     #[error("missing registration signature label in json")]
     MissingRegistrationSignatureLabel,
+    /// Internal error
     #[error(transparent)]
     Internal(#[from] JsError),
+    /// Incorrect schema
     #[error("incorrect input json: root is not a map")]
     IncorrectInputJson,
 }
 
-/// Extension trait for `GeneralTransactionMetadata` struct
+/// Extension for `GeneralTransactionMetadata` tailored for Catalyst purposes
 pub trait GeneralTransactionMetadataInfo {
-    /// Serialize to json string. Extension allows to groups more than one metadata entry and serialize
-    /// then in batch
+    /// Converts metadata to json
     ///
     /// # Errors
     ///
-    /// On incorrect schema
-    ///
+    /// On json conversion error
     fn to_json_string(&self, schema: MetadataJsonSchema) -> Result<String, JsonConversionError>;
-
-    /// Deserialize from json string. Extension allows to groups more than one metadata entry and deserialize
-    /// then in batch
+    /// Converts json to metadata
     ///
     /// # Errors
     ///
-    /// On incorrect schema
+    /// On json conversion error
     fn from_json_string(
         json: &str,
         schema: MetadataJsonSchema,
@@ -186,20 +196,31 @@ pub trait GeneralTransactionMetadataInfo {
     where
         Self: Sized;
 
+    /// Converts combined jsons to registration and registration metadata
+    ///
+    /// # Errors
+    ///
+    /// On json conversion error
+    fn from_jsons(
+        reg_metadata: serde_json::Value,
+        signature_metadata: serde_json::Value,
+        schema: MetadataJsonSchema,
+    ) -> Result<Self, JsonConversionError>
+    where
+        Self: Sized;
+
     /// Get delegations part as bytes
     fn delegations(&self) -> Vec<u8>;
-
-    /// Get stake public key from metadata
+    /// Stake public key
     fn stake_public_key(&self) -> PublicKey;
-
-    /// Get reward address part from metadata
+    /// Reward address
     fn reward_address(&self) -> Address;
-
-    /// Get signature from metadata
+    /// metadata signature
     fn signature(&self) -> Ed25519Signature;
-
-    /// Get registration as hash
+    /// registration metadata hash
     fn registration_blake_256_hash(&self) -> Blake2b256;
+    /// nonce
+    fn nonce(&self) -> i32;
 }
 
 impl GeneralTransactionMetadataInfo for GeneralTransactionMetadata {
@@ -222,14 +243,14 @@ impl GeneralTransactionMetadataInfo for GeneralTransactionMetadata {
             REGISTRATION_SIGNATURE_METADATA_IDX.to_string(),
             serde_json::from_str(&registration_sig_json)?,
         );
-        serde_json::to_string_pretty(&Value::Object(map)).map_err(Into::into)
+        serde_json::to_string_pretty(&serde_json::Value::Object(map)).map_err(Into::into)
     }
 
     fn from_json_string(
         json: &str,
         schema: MetadataJsonSchema,
     ) -> Result<Self, JsonConversionError> {
-        let json: Value = serde_json::from_str(json)?;
+        let json: serde_json::Value = serde_json::from_str(json)?;
 
         let map = json
             .as_object()
@@ -246,6 +267,27 @@ impl GeneralTransactionMetadataInfo for GeneralTransactionMetadata {
                 .clone(),
             schema,
         )?;
+
+        let mut root_metadata = GeneralTransactionMetadata::new();
+        root_metadata.insert(&REGISTRATION_METADATA_LABEL, &registration_json);
+        root_metadata.insert(
+            &REGISTRATION_METADATA_SIGNATURE_LABEL,
+            &registration_sig_json,
+        );
+
+        Ok(root_metadata)
+    }
+
+    fn from_jsons(
+        reg_metadata: serde_json::Value,
+        signature_metadata: serde_json::Value,
+        schema: MetadataJsonSchema,
+    ) -> Result<Self, JsonConversionError>
+    where
+        Self: Sized,
+    {
+        let registration_json = encode_json_value_to_metadatum(reg_metadata, schema)?;
+        let registration_sig_json = encode_json_value_to_metadatum(signature_metadata, schema)?;
 
         let mut root_metadata = GeneralTransactionMetadata::new();
         root_metadata.insert(&REGISTRATION_METADATA_LABEL, &registration_json);
@@ -297,6 +339,18 @@ impl GeneralTransactionMetadataInfo for GeneralTransactionMetadata {
         let meta_bytes = metadata.to_bytes();
         Blake2b256::new(&meta_bytes)
     }
+
+    fn nonce(&self) -> i32 {
+        let metadata = self.get(&REGISTRATION_METADATA_LABEL).unwrap();
+        let metadata_map = metadata.as_map().unwrap();
+        metadata_map
+            .get(&METADATUM_4)
+            .unwrap()
+            .as_int()
+            .unwrap()
+            .as_i32_or_fail()
+            .unwrap()
+    }
 }
 
 #[cfg(test)]
@@ -309,10 +363,12 @@ mod test {
 
     #[test]
     pub fn cip15_registration() {
-        let wallet = MainnetWallet::new(1);
-        let metadata = RegistrationBuilder::new(&wallet)
+        let wallet = CardanoWallet::new(1);
+        let transaction = RegistrationTransactionBuilder::new(&wallet)
             .to(Delegations::Legacy(wallet.catalyst_public_key()))
             .build();
+
+        let metadata = transaction.auxiliary_data().unwrap().metadata().unwrap();
 
         assert_eq!(
             Identifier::from_hex(&hex::encode(metadata.delegations())).unwrap(),
@@ -381,8 +437,8 @@ mod test {
             MetadataJsonSchema::BasicConversions,
         )
         .unwrap();
-        let left: Value = serde_json::from_str(metadata_string).unwrap();
-        let right: Value = serde_json::from_str(
+        let left: serde_json::Value = serde_json::from_str(metadata_string).unwrap();
+        let right: serde_json::Value = serde_json::from_str(
             &root_metadata
                 .to_json_string(MetadataJsonSchema::BasicConversions)
                 .unwrap(),
@@ -411,8 +467,8 @@ mod test {
             MetadataJsonSchema::BasicConversions,
         )
         .unwrap();
-        let left: Value = serde_json::from_str(metadata_string).unwrap();
-        let right: Value = serde_json::from_str(
+        let left: serde_json::Value = serde_json::from_str(metadata_string).unwrap();
+        let right: serde_json::Value = serde_json::from_str(
             &root_metadata
                 .to_json_string(MetadataJsonSchema::BasicConversions)
                 .unwrap(),

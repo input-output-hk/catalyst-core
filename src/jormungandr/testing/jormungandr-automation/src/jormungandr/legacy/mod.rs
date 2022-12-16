@@ -40,7 +40,7 @@ pub fn get_jormungandr_bin(release: &Release, temp_dir: &impl PathChild) -> Path
         .unwrap()
         .unwrap();
     let asset_name = asset.name();
-    let output = temp_dir.child(&asset_name);
+    let output = temp_dir.child(asset_name);
     asset
         .download_to(output.path())
         .expect("cannot download file");

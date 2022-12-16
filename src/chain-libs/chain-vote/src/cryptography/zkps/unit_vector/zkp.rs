@@ -316,7 +316,7 @@ fn powers_z_encs(
     index: usize,
     bit_size: u32,
 ) -> Scalar {
-    let idx = binrep(index, bit_size as u32);
+    let idx = binrep(index, bit_size);
 
     let multz = z.iter().enumerate().fold(Scalar::one(), |acc, (j, zwv)| {
         let m = if idx[j] {

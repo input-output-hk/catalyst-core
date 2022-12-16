@@ -41,7 +41,7 @@ impl<'de> Deserialize<'de> for FragmentDef {
     {
         let bytes = if deserializer.is_human_readable() {
             let h = String::deserialize(deserializer)?;
-            hex::decode(&h).map_err(serde::de::Error::custom)?
+            hex::decode(h).map_err(serde::de::Error::custom)?
         } else {
             Vec::<u8>::deserialize(deserializer)?
         };

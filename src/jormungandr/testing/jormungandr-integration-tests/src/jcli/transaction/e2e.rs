@@ -219,7 +219,7 @@ pub fn test_account_is_created_if_transaction_out_is_account() {
     jcli.rest()
         .v0()
         .utxo()
-        .assert_contains(&utxo, &jormungandr.rest_uri());
+        .assert_contains(&utxo, jormungandr.rest_uri());
 
     let transaction_message = jcli
         .transaction_builder(block0_config.to_block_hash())

@@ -82,7 +82,7 @@ impl SchedulerRestClient {
         let local_path = format!("api/job/files/get/{}", sub_location.into());
         let path = self.path(local_path);
         let client = reqwest::blocking::Client::new();
-        let request = self.set_header(client.get(&path));
+        let request = self.set_header(client.get(path));
         let bytes = request.send()?.bytes()?;
         let mut file = std::fs::File::create(&output)?;
         file.write_all(&bytes)?;
@@ -113,7 +113,7 @@ impl SchedulerRestClient {
     }
 
     pub fn is_up(&self) -> bool {
-        if let Ok(response) = reqwest::blocking::get(&self.path("api/health")) {
+        if let Ok(response) = reqwest::blocking::get(self.path("api/health")) {
             return response.status() == reqwest::StatusCode::OK;
         }
         false

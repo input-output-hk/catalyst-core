@@ -47,7 +47,7 @@ jobs:
         run: |
           source <(cargo llvm-cov show-env --export-prefix)
           cargo build -p jcli -p jormungandr -p explorer -p vit-servicing-station-cli -p vit-servicing-station-server
-          cargo llvm-cov nextest --no-report -j 1 --manifest-path ./src/vit-servicing-station/vit-servicing-station-tests/Cargo.toml --profile ci
+          #cargo llvm-cov nextest --no-report -j 1 --manifest-path ./src/vit-servicing-station/vit-servicing-station-tests/Cargo.toml --profile ci
           #cargo llvm-cov nextest --no-report -j 1 --manifest-path ./src/jormungandr/testing/jormungandr-integration-tests/Cargo.toml --profile ci
           cargo llvm-cov nextest --no-report --manifest-path ./src/catalyst-toolbox/catalyst-toolbox/Cargo.toml --profile ci
           cargo llvm-cov nextest --no-report --manifest-path ./src/catalyst-toolbox/snapshot-lib/Cargo.toml --profile ci

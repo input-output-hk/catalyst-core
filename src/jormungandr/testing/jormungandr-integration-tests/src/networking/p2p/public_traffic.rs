@@ -1,25 +1,15 @@
 use crate::networking::utils;
 use hersir::{
     builder::{NetworkBuilder, Node, Topology},
-    config::{
-        BlockchainBuilder, BlockchainConfiguration, NodeConfig, SpawnParams, WalletTemplateBuilder,
-    },
+    config::{BlockchainConfiguration, SpawnParams, WalletTemplateBuilder},
 };
 use jormungandr_automation::{
-    jormungandr::{explorer::configuration::ExplorerParams, LogLevel},
+    jormungandr::LogLevel,
     testing::{ensure_nodes_are_in_sync, SyncWaitParams},
 };
-
-use jormungandr_lib::{
-    interfaces::{Policy, PreferredListConfig, SlotDuration, TrustedPeer},
-    time::{Duration, SystemTime},
-};
+use jormungandr_lib::time::Duration;
 use multiaddr::Multiaddr;
-use std::{
-    net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV6},
-    path::PathBuf,
-};
-use thor::{FragmentSender, FragmentVerifier};
+use thor::FragmentSender;
 
 const GATEWAY: &str = "GATEWAY";
 
@@ -221,7 +211,7 @@ pub fn test_public_node_cannot_publish() {
         .gossip_interval(Duration::new(1, 0))
         .allow_private_addresses(true)
         .public_address(address)
-        .whitelist(whitelist.clone());
+        .whitelist(whitelist);
 
     params.override_settings(&mut public_node_config);
 
@@ -368,7 +358,7 @@ pub fn test_public_node_synced_with_internal() {
         .gossip_interval(Duration::new(1, 0))
         .allow_private_addresses(true)
         .public_address(address)
-        .whitelist(whitelist.clone());
+        .whitelist(whitelist);
 
     params.override_settings(&mut public_node_config);
 

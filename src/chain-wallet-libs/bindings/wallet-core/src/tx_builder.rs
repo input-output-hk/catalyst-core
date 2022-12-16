@@ -35,8 +35,7 @@ impl<P: Payload> TxBuilder<P> {
         // It is needed to provide a 1 extra input as we are generating it later, but should take into account at this place.
         let value = self.builder.estimate_fee_with(1, 0);
         let input = Input::from_account_public_key(account_id.into(), value);
-        self.inputs
-            .insert(account_id, (input.clone(), spending_counter));
+        self.inputs.insert(account_id, (input, spending_counter));
         Ok(self)
     }
 
@@ -46,7 +45,7 @@ impl<P: Payload> TxBuilder<P> {
                 .map_err(|e| Error::wallet_transaction().with(e))?,
         );
 
-        let (input, spending_counter) = self.inputs.get(&account.account_id()).ok_or(Error::invalid_input("Cannot find corresponded input to the provided account, make sure that you have correctly execute build_tx function first"))?.clone();
+        let (input, spending_counter) = self.inputs.get(&account.account_id()).ok_or_else(|| Error::invalid_input("Cannot find corresponded input to the provided account, make sure that you have correctly execute build_tx function first"))?.clone();
         let witness_builder = account.witness_builder(spending_counter);
         self.builder.add_input(input, witness_builder);
         Ok(self)

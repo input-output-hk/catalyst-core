@@ -38,7 +38,8 @@ def import_all(
             database_url,
             election_id,
             campaign_group_id,
-            stage_id
+            stage_id,
+            None
         )
 
         await importer.connect()

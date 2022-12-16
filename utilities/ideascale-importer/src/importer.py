@@ -7,16 +7,25 @@ import rich.table
 import rich.console
 from typing import List, Optional
 
+import config
 import db
 import db.mapper
 import ideascale
 
 
+class ReadConfigException(Exception):
+    ...
+
+
 class Importer:
     def __init__(
         self,
-        api_token: str, database_url: str,
-        election_id: Optional[int], campaign_group_id: Optional[int], stage_id: Optional[int]
+        api_token: str,
+        database_url: str,
+        election_id: Optional[int],
+        campaign_group_id: Optional[int],
+        stage_id: Optional[int],
+        config_path: Optional[str],
     ):
         self.api_token = api_token
         self.database_url = database_url
@@ -24,6 +33,11 @@ class Importer:
         self.campaign_group_id = campaign_group_id
         self.stage_id = stage_id
         self.conn: asyncpg.Connection | None = None
+
+        try:
+            self.config = config.load(config_path or "config.json")
+        except Exception as e:
+            raise ReadConfigException(e)
 
     async def connect(self):
         if self.conn is None:
@@ -123,7 +137,7 @@ class Importer:
         with client.request_progress_observer:
             ideas = await client.stage_ideas(stage_id)
 
-        mapper = db.mapper.Mapper()
+        mapper = db.mapper.Mapper(self.config)
 
         challenges = [mapper.map_challenge(a, election_id) for a in group.campaigns]
         challenge_count = len(challenges)

@@ -1,13 +1,17 @@
 import dataclasses
 from markdownify import markdownify
 import re
-from typing import Mapping
+from typing import Any, Mapping
 
+import config
 import db.models
 import ideascale
 
 
 class Mapper:
+    def __init__(self, config: config.Config):
+        self.config = config
+
     def map_challenge(self, a: ideascale.Campaign, election_id: int) -> db.models.Challenge:
         reward = parse_reward(a.tagline)
 
@@ -25,24 +29,54 @@ class Mapper:
         )
 
     def map_proposal(self, a: ideascale.Idea, challenge_id_to_row_id_map: Mapping[int, int]) -> db.models.Proposal:
+        field_mappings = self.config.proposals.field_mappings
+
+        proposer_name = ", ".join([a.author_info.name]+a.contributors_name())
+        proposer_url = map_value(a.custom_fields_by_key, field_mappings.proposer_url) or ""
+        proposer_relevant_experience = html_to_md(map_value(
+            a.custom_fields_by_key,
+            field_mappings.proposer_relevant_experience
+        ) or "")
+        funds = int(map_value(a.custom_fields_by_key, field_mappings.funds) or "0", base=10)
+        public_key = map_value(a.custom_fields_by_key, field_mappings.public_key) or ""
+
+        extra_fields_mappings = self.config.proposals.extra_field_mappings
+
+        extra = {}
+        for k, v in extra_fields_mappings.items():
+            mv = map_value(a.custom_fields_by_key, v)
+            if mv is not None:
+                extra[k] = html_to_md(mv)
+
         return db.models.Proposal(
             id=a.id,
             challenge=challenge_id_to_row_id_map[a.campaign_id],
             title=html_to_md(a.title),
             summary=html_to_md(a.text),
-            public_key="",
-            funds=0,
+            public_key=public_key,
+            funds=funds,
             url="",
             files_url="",
             impact_score=0,
-            extra={},
-            proposer_name=a.author_info.name,
+            extra=extra,
+            proposer_name=proposer_name,
             proposer_contact="",
-            proposer_relevant_experience="",
-            proposer_url="",
+            proposer_relevant_experience=proposer_relevant_experience,
+            proposer_url=proposer_url,
             bb_proposal_id=None,
             bb_vote_options="yes,no",
         )
+
+
+def map_value(m: Mapping[str, Any], f: config.FieldMapping) -> Any | None:
+    if isinstance(f, list):
+        for k in f:
+            if k in m:
+                return m[k]
+    else:
+        if f in m:
+            return m[f]
+    return None
 
 
 def html_to_md(s: str) -> str:

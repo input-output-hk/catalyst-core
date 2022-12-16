@@ -48,7 +48,11 @@ class Idea(ExcludeUnknownFields):
     title: str
     text: str
     author_info: IdeaAuthorInfo
+    contributors: List[IdeaAuthorInfo]
     custom_fields_by_key: Mapping[str, str]
+
+    def contributors_name(self) -> List[str]:
+        return list(map(lambda c: c.name, self.contributors))
 
 
 class Stage(ExcludeUnknownFields):

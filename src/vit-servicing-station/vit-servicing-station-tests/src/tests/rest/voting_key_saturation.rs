@@ -12,34 +12,44 @@ pub fn get_voting_key_saturation() { // 2 snapshots required: 1 from SnapshotBui
 
     let snapshot = SnapshotBuilder::default().build();
 
-    println!("snapshot: {:#?}", snapshot);
-
     let (hash, _token) = data::token();
 
     let client = server.rest_client_with_token(&hash);
 
     let snapshot_tag = snapshot.clone().tag;
 
-    println!("snapshot tags from data: {:#?}", snapshot_tag);
+    client.put_snapshot_info(&snapshot).unwrap();
 
-    let public_key = snapshot.content.snapshot[0].hir.clone().voting_key.to_hex();
+    let total_voting_power = snapshot.content.snapshot.iter().map(|x| u64::from(x.hir.voting_power)).sum::<u64>();
 
-    println!("public key: {:#?}", public_key);
+    println!("total voting power before cast: {:#?}", total_voting_power);
 
-    let put_snapshot_response = client.put_snapshot_info(&snapshot);
+    let total_voting_power_f = total_voting_power as f64;
 
-    println!("put snapshot response: {:#?}", put_snapshot_response);
+    println!("total voting power after cast: {:#?}", total_voting_power_f);
 
-    let snapshot_tags = client.snapshot_tags();
+    for i in 0..snapshot.content.snapshot.len() {
+        let key = snapshot.content.snapshot[i].hir.clone().voting_key.to_hex();
 
-    println!("snapshot tags from server: {:#?}", snapshot_tags);
+        let voter_info = client.voter_info(&snapshot_tag, &key).unwrap();
 
-    let voter_info = client.voter_info(&snapshot_tag, &public_key);
+        assert!(voter_info.voter_info.len() > 0, "Voter info is empty");
 
-    println!("voter info: {:#?}", voter_info);
+        println!("voting power before cast: {:#?}", snapshot.content.snapshot[i].hir.clone().voting_power);
 
-    let total_voting_power: u64 = snapshot.content.snapshot.iter().map(|x| u64::from(x.hir.voting_power)).sum();
+        let voting_power = u64::from(snapshot.content.snapshot[i].hir.clone().voting_power) as f64;
 
-    println!("total voting power: {:#?}", total_voting_power);
+        println!("voting power after cast: {:#?}", voting_power);
+
+        let expected_voting_key_saturation = voting_power / total_voting_power_f;
+
+        println!("expected_voting_key_saturation: {:#?}", expected_voting_key_saturation);
+
+        let voting_key_saturation = client.voter_info(&snapshot_tag, &key).unwrap().voter_info.first().unwrap().voting_power_saturation;
+
+        println!("voting_key_saturation: {:#?}", voting_key_saturation);
+
+        assert_eq!(expected_voting_key_saturation, voting_key_saturation);
+    }
 }
 

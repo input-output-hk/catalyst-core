@@ -112,7 +112,7 @@ impl SnapshotBuilder {
     }
 }
 
-#[derive(Deserialize, Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Deserialize, Serialize, Debug, PartialEq, Clone)]
 pub struct VoterInfo {
     #[serde(
         deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_unix_timestamp_from_rfc3339"
@@ -124,12 +124,13 @@ pub struct VoterInfo {
     pub voter_info: Vec<VotingPower>,
 }
 
-#[derive(Deserialize, Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Deserialize, Serialize, Debug, PartialEq, Clone)]
 pub struct VotingPower {
     pub voting_power: u64,
     pub voting_group: String,
     pub delegations_power: u64,
     pub delegations_count: u64,
+    pub voting_power_saturation: f64,
 }
 
 impl From<SnapshotInfo> for VotingPower {
@@ -144,6 +145,7 @@ impl From<SnapshotInfo> for VotingPower {
             voting_group: snapshot_info.hir.voting_group,
             delegations_power,
             delegations_count: snapshot_info.contributions.len() as u64,
+            voting_power_saturation: 0 as f64,
         }
     }
 }

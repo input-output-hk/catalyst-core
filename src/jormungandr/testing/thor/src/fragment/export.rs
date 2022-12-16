@@ -159,7 +159,7 @@ impl FragmentExporter {
         use chain_core::property::Serialize;
 
         let bytes = fragment.serialize_as_vec().unwrap();
-        hex::encode(&bytes)
+        hex::encode(bytes)
     }
 
     fn format_address(&self, address: Address) -> String {

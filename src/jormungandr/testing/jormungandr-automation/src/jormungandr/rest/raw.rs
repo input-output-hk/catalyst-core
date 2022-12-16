@@ -183,7 +183,7 @@ impl RawRest {
         let key = hex::encode(account::Identifier::from(pk.clone()).as_ref());
 
         let request = format!("votes/plan/account-votes/{}", key);
-        self.client.get(&self.path(ApiVersion::V1, &request)).send()
+        self.client.get(self.path(ApiVersion::V1, &request)).send()
     }
 
     pub fn account_votes_with_plan_id(
@@ -195,7 +195,7 @@ impl RawRest {
         let key = hex::encode(account::Identifier::from(pk.clone()).as_ref());
 
         let request = format!("votes/plan/{}/account-votes/{}", vote_plan_id, key);
-        self.client.get(&self.path(ApiVersion::V1, &request)).send()
+        self.client.get(self.path(ApiVersion::V1, &request)).send()
     }
 
     pub fn stake_distribution_at(&self, epoch: u32) -> Result<Response, reqwest::Error> {
@@ -205,7 +205,7 @@ impl RawRest {
 
     pub fn account_votes_all(&self) -> Result<Response, reqwest::Error> {
         self.client
-            .get(&self.path(ApiVersion::V1, "votes/plan/accounts-votes-all"))
+            .get(self.path(ApiVersion::V1, "votes/plan/accounts-votes-all"))
             .send()
     }
 
@@ -272,7 +272,7 @@ impl RawRest {
         body: Vec<u8>,
     ) -> Result<reqwest::blocking::Response, reqwest::Error> {
         self.client
-            .post(&self.path(ApiVersion::V0, path))
+            .post(self.path(ApiVersion::V0, path))
             .headers(self.construct_headers())
             .body(body)
             .send()
@@ -295,7 +295,7 @@ impl RawRest {
             .into_iter()
             .map(|body| {
                 self.client
-                    .post(&self.path(ApiVersion::V0, "message"))
+                    .post(self.path(ApiVersion::V0, "message"))
                     .headers(self.construct_headers())
                     .body(body)
             })
@@ -309,13 +309,13 @@ impl RawRest {
 
     pub fn fragments_logs(&self) -> Result<Response, reqwest::Error> {
         self.client
-            .get(&self.path(ApiVersion::V1, "fragments/logs"))
+            .get(self.path(ApiVersion::V1, "fragments/logs"))
             .send()
     }
 
     pub fn fragments_statuses(&self, ids: Vec<String>) -> Result<Response, reqwest::Error> {
         self.client
-            .get(&self.path(ApiVersion::V1, "fragments/statuses"))
+            .get(self.path(ApiVersion::V1, "fragments/statuses"))
             .query(&[("fragment_ids", ids.join(","))])
             .send()
     }
@@ -326,7 +326,7 @@ impl RawRest {
         fail_fast: bool,
     ) -> Result<Response, reqwest::Error> {
         self.client
-            .post(&self.path(ApiVersion::V1, "fragments"))
+            .post(self.path(ApiVersion::V1, "fragments"))
             .headers(self.construct_headers())
             .json(&FragmentsBatch {
                 fail_fast,

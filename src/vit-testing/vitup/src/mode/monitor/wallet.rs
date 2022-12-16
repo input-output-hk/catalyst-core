@@ -63,7 +63,7 @@ impl WalletProxyMonitorController {
 
     #[allow(dead_code)]
     fn progress_bar_failure(&self) {
-        self.progress_bar.finish_with_message(&format!(
+        self.progress_bar.finish_with_message(format!(
             "{} {} {}",
             *style::icons::jormungandr,
             style::binary.apply_to(self.alias()),
@@ -73,7 +73,7 @@ impl WalletProxyMonitorController {
 
     #[allow(dead_code)]
     fn progress_bar_success(&self) {
-        self.progress_bar.finish_with_message(&format!(
+        self.progress_bar.finish_with_message(format!(
             "{} {} {}",
             *style::icons::jormungandr,
             style::binary.apply_to(self.alias()),

@@ -1,3 +1,15 @@
+extern crate web_sys;
+
+// A macro to provide `println!(..)`-style syntax for `console.log` logging.
+// taken from:
+// https://rustwasm.github.io/book/game-of-life/debugging.html
+#[macro_export]
+macro_rules! log {
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
+}
+
 // taken from:
 // https://github.com/input-output-hk/js-chain-libs/blob/cc463b59fdc64a4fff63f67901118f60b783520c/src/utils.rs#L12
 #[macro_export]

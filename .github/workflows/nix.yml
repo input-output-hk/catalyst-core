@@ -27,7 +27,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  ECR_REGISTRY: 432820653916.dkr.ecr.eu-central-1.amazonaws.com/catalyst
+  ECR_REGISTRY: 432820653916.dkr.ecr.eu-central-1.amazonaws.com
 
 jobs:
   discover:

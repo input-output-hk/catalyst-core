@@ -51,11 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          token="$(aws ecr get-login-password --region eu-central-1)"
-          config="$HOME/.docker/config.json"
-          mkdir -p "${config%/*}"
-          jq -n --arg token "${token}" '{ "auths": { "${{ env.ECR_REGISTRY }}": { auth: $token } } }' > "$config"
-          chmod 0600 "$config"
+          aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin "${{ env.ECR_REGISTRY }}"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

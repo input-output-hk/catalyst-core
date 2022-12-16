@@ -7,16 +7,23 @@
   l = nixpkgs.lib // builtins;
 
   mkOCI = namespace: let
-    rev =
-      if (inputs.self ? rev)
-      then inputs.self.rev
-      else "dirty";
-  in
-    std.lib.ops.mkStandardOCI {
+    # TODO: fix git rev
+    # rev =
+    #   if (inputs.self ? rev)
+    #   then inputs.self.rev
+    #   else "dirty";
+    image = std.lib.ops.mkStandardOCI {
       name = "${constants.registry}/vit-servicing-station-server";
-      tag = "${rev}-${namespace}";
+      #tag = "${rev}-${namespace}";
       operable = cell.operables."vit-servicing-station-server-${namespace}";
       debug = true;
+    };
+  in
+    image
+    // {
+      imageTag = let
+        hash = l.head (l.strings.splitString "-" (baseNameOf image.outPath));
+      in "${hash}-${namespace}";
     };
 in
   {}

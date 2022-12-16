@@ -103,7 +103,7 @@ impl Asset {
     pub fn download_to(&self, path: &Path) -> Result<(), GitHubApiError> {
         download_file(self.download_url(), path)?;
         if let Some((checksum_type, asset)) = &self.checksum {
-            let checksum = reqwest::blocking::get(&asset.download_url())?;
+            let checksum = reqwest::blocking::get(asset.download_url())?;
             if !checksum_type.check(&hex::decode(checksum.text()?)?, path)? {
                 return Err(GitHubApiError::WrongChecksum);
             }
@@ -266,7 +266,7 @@ impl GitHubApi {
     fn get(&self, path: &str) -> Result<reqwest::blocking::Response, GitHubApiError> {
         let client = reqwest::blocking::Client::new();
         let mut req = client
-            .get(&format!("{}/{}", self.base_url, path))
+            .get(format!("{}/{}", self.base_url, path))
             .header(USER_AGENT, "request");
         if let Some(token) = &self.token {
             req = req.bearer_auth(token);

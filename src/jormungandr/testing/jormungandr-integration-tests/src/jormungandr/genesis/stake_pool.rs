@@ -125,7 +125,7 @@ pub fn create_new_stake_pool(
     assert!(
         jcli.rest()
             .v0()
-            .stake_pools(&jormungandr.rest_uri())
+            .stake_pools(jormungandr.rest_uri())
             .contains(&stake_pool_id),
         "cannot find stake-pool certificate in blockchain"
     );
@@ -151,9 +151,9 @@ pub fn delegate_stake(
 
     let stake_pool_delegation = jcli
         .certificate()
-        .new_stake_delegation(stake_pool_id, &account.identifier().to_bech32_str());
+        .new_stake_delegation(stake_pool_id, account.identifier().to_bech32_str());
 
-    let settings = jcli.rest().v0().settings(&jormungandr.rest_uri());
+    let settings = jcli.rest().v0().settings(jormungandr.rest_uri());
     let fees: LinearFee = settings.fees;
     let fee_value: Value = (fees.certificate + fees.coefficient + fees.constant).into();
 
@@ -247,7 +247,7 @@ pub fn retire_stake_pool(
         !jcli
             .rest()
             .v0()
-            .stake_pools(&jormungandr.rest_uri())
+            .stake_pools(jormungandr.rest_uri())
             .contains(&stake_pool_id.to_owned()),
         "stake pool should not be listed among active stake pools"
     );

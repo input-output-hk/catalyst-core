@@ -30,7 +30,9 @@ pub struct EpochSlotOffset(pub u32);
     derive(test_strategy::Arbitrary)
 )]
 pub struct EpochPosition {
+    /// The base epoch
     pub epoch: Epoch,
+    /// The offset from `epoch`
     pub slot: EpochSlotOffset,
 }
 
@@ -53,6 +55,7 @@ pub struct TimeEra {
     slots_per_epoch: u32,
 }
 
+/// Write a [`TimeEra`] into a [`Codec`]
 pub fn pack_time_era<W: std::io::Write>(
     time_era: &TimeEra,
     codec: &mut Codec<W>,
@@ -63,6 +66,7 @@ pub fn pack_time_era<W: std::io::Write>(
     Ok(())
 }
 
+/// Read a [`TimeEra`] from a [`Codec`]
 pub fn unpack_time_era<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<TimeEra, ReadError> {
     let epoch_start = Epoch(codec.get_be_u32()?);
     let slot_start = Slot(codec.get_be_u64()?);

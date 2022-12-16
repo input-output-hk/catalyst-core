@@ -276,7 +276,7 @@ impl TransactionBuilder {
 
     pub fn fragment_id(&self) -> Hash {
         let fragment_hex = self.to_message();
-        let fragment_bytes = hex::decode(&fragment_hex).expect("Failed to parse message hex");
+        let fragment_bytes = hex::decode(fragment_hex).expect("Failed to parse message hex");
         Fragment::deserialize_from_slice(&mut Codec::new(fragment_bytes.as_slice()))
             .expect("Failed to parse message")
             .hash()

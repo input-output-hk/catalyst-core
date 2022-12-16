@@ -356,7 +356,7 @@ impl Certificate {
         // jormungandr_lib::Certificate is only used in jcli so we don't
         Ok(bech32::encode(
             CERTIFICATE_HRP,
-            &bytes.to_base32(),
+            bytes.to_base32(),
             bech32::Variant::Bech32m,
         )?)
     }
@@ -382,7 +382,7 @@ impl SignedCertificate {
         let bytes = property::Serialize::serialize_as_vec(&self)?;
         Ok(bech32::encode(
             SIGNED_CERTIFICATE_HRP,
-            &bytes.to_base32(),
+            bytes.to_base32(),
             bech32::Variant::Bech32m,
         )?)
     }

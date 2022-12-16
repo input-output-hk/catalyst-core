@@ -212,7 +212,7 @@ impl Starter {
             comm,
             temp_dir,
             expected_msg_in_logs,
-            get_command(&params, &app, params.leadership()),
+            get_command(&params, app, params.leadership()),
         )
     }
 
@@ -224,7 +224,7 @@ impl Starter {
         self.configured_starter.start_async(
             comm,
             temp_dir,
-            get_command(&params, &app, params.leadership()),
+            get_command(&params, app, params.leadership()),
         )
     }
 

@@ -44,8 +44,8 @@ impl MockServerData {
         storage: BlockStore,
         invalid_get_blocks_hash: bool,
     ) -> Self {
-        let keypair = KeyPair::generate(&mut rand::thread_rng());
-        let topology_key = keynesis::key::ed25519::SecretKey::new(&mut rand::thread_rng());
+        let keypair = KeyPair::generate(rand::thread_rng());
+        let topology_key = keynesis::key::ed25519::SecretKey::new(rand::thread_rng());
         let profile = poldercast::Profile::new(addr, &topology_key);
         Self {
             genesis_hash,

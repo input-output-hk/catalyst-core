@@ -538,6 +538,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "blockfrost"
+version = "0.2.1"
+source = "git+https://github.com/dkijania/blockfrost-rust.git#5702277a41e70259586935b0f740f81507057d29"
+dependencies = [
+ "futures",
+ "paste 1.0.10",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "toml",
+]
+
+[[package]]
 name = "borsh"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3614,6 +3627,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "linked-hash-map",
+ "local-ip-address",
  "lru",
  "nix",
  "opentelemetry",
@@ -4083,6 +4097,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f9f08d8963a6c613f4b1a78f4f4a4dbfadf8e6545b2d72861731e4858b8b47f"
 
 [[package]]
+name = "local-ip-address"
+version = "0.4.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9eab7f092fb08006040e656c2adce6670e6a516bea831a8b2b3d0fb24d4488f5"
+dependencies = [
+ "libc",
+ "neli",
+ "thiserror",
+ "windows-sys 0.42.0",
+]
+
+[[package]]
 name = "lock_api"
 version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4157,19 +4183,27 @@ version = "0.1.0"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",
+ "blockfrost",
  "cardano-serialization-lib",
  "chain-addr",
  "chain-crypto",
+ "chain-impl-mockchain",
+ "futures",
+ "futures-util",
  "hex",
  "jormungandr-lib",
+ "jortestkit",
  "lazy_static",
+ "pharos",
  "rand 0.8.5",
+ "rayon",
  "serde",
  "serde_json",
  "snapshot-lib",
  "tempdir",
  "thiserror",
  "thor",
+ "tokio",
 ]
 
 [[package]]
@@ -4179,11 +4213,13 @@ dependencies = [
  "assert_fs",
  "bech32 0.8.1",
  "cardano-serialization-lib",
+ "chain-impl-mockchain",
  "clap 4.0.29",
  "color-eyre",
  "futures",
  "futures-util",
  "hex",
+ "http-zipkin",
  "itertools",
  "job_scheduler_ng",
  "jormungandr-automation",
@@ -4191,6 +4227,7 @@ dependencies = [
  "jortestkit",
  "mainnet-lib",
  "prettytable-rs",
+ "scheduler-service-lib",
  "serde",
  "serde_json",
  "signals-handler",
@@ -4206,6 +4243,7 @@ dependencies = [
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
  "voting_tools_rs",
+ "warp",
 ]
 
 [[package]]
@@ -4525,6 +4563,16 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "tempfile",
+]
+
+[[package]]
+name = "neli"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9053554eb5dcb7e10d9cdab1206965bde870eed5d0d341532ca035e3ba221508"
+dependencies = [
+ "byteorder",
+ "libc",
 ]
 
 [[package]]
@@ -5065,9 +5113,9 @@ dependencies = [
 
 [[package]]
 name = "paste"
-version = "1.0.9"
+version = "1.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1de2e551fb905ac83f73f7aedf2f0cb4a0da7e35efa24a202a936269f1f18e1"
+checksum = "cf1c2c742266c2f1041c914ba65355a83ae8747b05f208319784083583494b4b"
 
 [[package]]
 name = "paste-impl"
@@ -5131,6 +5179,16 @@ checksum = "e6d5014253a1331579ce62aa67443b4a658c5e7dd03d4bc6d302b94474888143"
 dependencies = [
  "fixedbitset",
  "indexmap",
+]
+
+[[package]]
+name = "pharos"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e9567389417feee6ce15dd6527a8a1ecac205ef62c2932bcf3d9f6fc5b78b414"
+dependencies = [
+ "futures",
+ "rustc_version",
 ]
 
 [[package]]
@@ -5978,6 +6036,7 @@ dependencies = [
  "js-sys",
  "log",
  "mime",
+ "mime_guess",
  "native-tls",
  "once_cell",
  "percent-encoding",

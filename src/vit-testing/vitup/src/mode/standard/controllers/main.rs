@@ -319,7 +319,7 @@ impl VitController {
         let working_directory = self.hersir_controller.working_directory();
 
         let dir = working_directory.child(alias);
-        std::fs::DirBuilder::new().recursive(true).create(&dir)?;
+        std::fs::DirBuilder::new().recursive(true).create(dir)?;
 
         settings_overriden.node_backend_address = Some(node_setting.config.rest.listen);
 

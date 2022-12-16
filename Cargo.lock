@@ -8412,6 +8412,7 @@ dependencies = [
  "wallet-core",
  "wasm-bindgen",
  "wasm-bindgen-test",
+ "web-sys",
 ]
 
 [[package]]

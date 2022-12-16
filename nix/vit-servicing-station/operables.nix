@@ -4,27 +4,26 @@
 }: let
   inherit (inputs) nixpkgs std;
   inherit (inputs.cells.artifacts) artifacts;
-  inherit (inputs.cells.lib) constants;
+  inherit (inputs.cells.lib) lib;
   l = nixpkgs.lib // builtins;
 
-  mkSimpleOperable = {
-    name,
-    runtimeInputs ? [],
-    args ? [],
-  }: let
-    package = cell.packages.${name};
+  package = cell.packages.vit-servicing-station-server;
+
+  mkVitOperable = namespace: let
+    artifacts' = artifacts."artifacts-${namespace}";
   in
     std.lib.ops.mkOperable {
-      inherit package runtimeInputs;
+      inherit package;
+      runtimeInputs = [
+        artifacts'
+      ];
       runtimeScript = std.lib.ops.mkOperableScript {
-        inherit args package;
+        inherit package;
+        args = {
+          "--in-settings-file" = "/local/station-config.json";
+        };
       };
     };
-in {
-  vit-servicing-station-server = mkSimpleOperable {
-    name = "vit-servicing-station-server";
-    args = {
-      "--in-settings-file" = "/local/station-config.json";
-    };
-  };
-}
+in
+  {}
+  // lib.mapToNamespaces "vit-servicing-station-server" mkVitOperable

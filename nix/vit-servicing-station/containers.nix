@@ -3,17 +3,21 @@
   cell,
 }: let
   inherit (inputs) nixpkgs std;
-  inherit (inputs.cells.lib) constants;
+  inherit (inputs.cells.lib) constants lib;
   l = nixpkgs.lib // builtins;
 
-  mkOCI = name: let
-    operable = cell.operables.${name};
+  mkOCI = namespace: let
+    rev =
+      if (inputs.self.rev != "not-a-commit")
+      then inputs.self.rev
+      else "dirty";
   in
     std.lib.ops.mkStandardOCI {
-      inherit operable;
-      name = "${constants.registry}/${name}";
+      name = "${constants.registry}/vit-servicing-station-server";
+      tag = "${rev}-${namespace}";
+      operable = cell.operables."vit-servicing-station-server-${namespace}";
       debug = true;
     };
-in {
-  vit-servicing-station-server = mkOCI "vit-servicing-station-server";
-}
+in
+  {}
+  // lib.mapToNamespaces "vit-servicing-station-server" mkOCI

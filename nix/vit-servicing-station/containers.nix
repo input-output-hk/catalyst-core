@@ -6,12 +6,14 @@
   inherit (inputs.cells.lib) constants;
   l = nixpkgs.lib // builtins;
 
-  mkOCI = name: namespace:
+  mkOCI = name: let
+    operable = cell.operables.${name};
+  in
     std.lib.ops.mkStandardOCI {
-      name = "${constants.registry}/${name}-${namespace}";
-      operable = cell.operables."${name}-${namespace}";
+      inherit operable;
+      name = "${constants.registry}/${name}";
       debug = true;
     };
-in
-  {}
-  // constants.mapToNamespaces {prefix = "vit-servicing-station-server";} (mkOCI "vit-servicing-station-server")
+in {
+  vit-servicing-station-server = mkOCI "vit-servicing-station-server";
+}

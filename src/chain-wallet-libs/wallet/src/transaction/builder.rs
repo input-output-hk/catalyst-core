@@ -101,13 +101,12 @@ impl<P: Payload> TransactionBuilder<P> {
         input: Input,
         witness_builder: B,
     ) -> bool {
-        match self.inputs.len().cmp(&255) {
-            std::cmp::Ordering::Less => {
-                self.inputs.push(input);
-                self.witness_builders.push(Box::new(witness_builder));
-                true
-            }
-            _ => false,
+        if self.inputs().len() < 255 {
+            self.inputs.push(input);
+            self.witness_builders.push(Box::new(witness_builder));
+            true
+        } else {
+            false
         }
     }
 

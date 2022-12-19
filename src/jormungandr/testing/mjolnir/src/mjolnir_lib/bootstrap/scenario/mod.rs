@@ -38,8 +38,7 @@ pub fn start_node(
         .with_storage(temp_dir.child(storage_folder_name).to_path_buf())
         .build();
 
-    let config = JormungandrBootstrapper::default()
-        .with_node_config(node)
+    let config = JormungandrBootstrapper::default_with_config(node)
         .with_block0_hash(*client_config.block0_hash())
         .passive()
         .verbose()

@@ -45,6 +45,26 @@ impl Default for JormungandrBootstrapper {
 }
 
 impl JormungandrBootstrapper {
+    //This function is meant to be used instead of JormungandrBootstrapper::default().with_node_config(node_config)
+    //This is because the Default trait for JormungandrBootstrapper instanciates a NodeConfig struct that will be overwritten
+    //by the NodeConfig passed by the .with_node_config() function. NodeConfig calls the function get_available_port()
+    //that makes operations on an Atomic variable and "flags" some ports as being used, both operations that would
+    //be better to not duplicate for performance and debbugging reasons.
+    pub fn default_with_config(node_config: NodeConfig) -> Self {
+        Self {
+            node_config: Box::new(NodeConfigManager {
+                node_config,
+                file: None,
+            }),
+            genesis: Default::default(),
+            secret: Default::default(),
+            leadership_mode: LeadershipMode::Leader,
+            jormungandr_app: None,
+            verbose: true,
+            rewards_history: false,
+        }
+    }
+
     pub fn passive(mut self) -> Self {
         self.leadership_mode = LeadershipMode::Passive;
         self

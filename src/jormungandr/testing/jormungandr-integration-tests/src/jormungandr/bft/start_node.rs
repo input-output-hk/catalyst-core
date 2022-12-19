@@ -28,16 +28,15 @@ pub fn test_jormungandr_passive_node_starts_successfully() {
         .build();
     let jormungandr_leader = test_context.start_node(leader_temp_dir).unwrap();
 
-    let jormungandr_passive = JormungandrBootstrapper::default()
-        .passive()
-        .with_block0_hash(test_context.block0_config().to_block_hash())
-        .with_node_config(
-            NodeConfigBuilder::default()
-                .with_trusted_peers(vec![jormungandr_leader.to_trusted_peer()])
-                .build(),
-        )
-        .start(passive_temp_dir)
-        .unwrap();
+    let jormungandr_passive = JormungandrBootstrapper::default_with_config(
+        NodeConfigBuilder::default()
+            .with_trusted_peers(vec![jormungandr_leader.to_trusted_peer()])
+            .build(),
+    )
+    .passive()
+    .with_block0_hash(test_context.block0_config().to_block_hash())
+    .start(passive_temp_dir)
+    .unwrap();
 
     jormungandr_passive.assert_no_errors_in_log();
     jormungandr_leader.assert_no_errors_in_log();
@@ -49,18 +48,17 @@ pub fn test_jormungandr_passive_node_without_trusted_peers_fails_to_start() {
 
     let block0 = Block0ConfigurationBuilder::minimal_setup().build();
 
-    JormungandrBootstrapper::default()
-        .passive()
-        .with_block0_hash(block0.to_block_hash())
-        .with_node_config(
-            NodeConfigBuilder::default()
-                .with_trusted_peers(vec![])
-                .build(),
-        )
-        .into_starter(temp_dir)
-        .unwrap()
-        .start_should_fail_with_message("no trusted peers specified")
-        .unwrap();
+    JormungandrBootstrapper::default_with_config(
+        NodeConfigBuilder::default()
+            .with_trusted_peers(vec![])
+            .build(),
+    )
+    .passive()
+    .with_block0_hash(block0.to_block_hash())
+    .into_starter(temp_dir)
+    .unwrap()
+    .start_should_fail_with_message("no trusted peers specified")
+    .unwrap();
 }
 
 #[test]

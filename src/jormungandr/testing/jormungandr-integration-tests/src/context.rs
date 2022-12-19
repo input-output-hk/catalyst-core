@@ -30,10 +30,10 @@ impl TestContext {
     }
 
     pub fn start_node(&self, temp_dir: TempDir) -> Result<JormungandrProcess, StartupError> {
-        let mut bootstrapper = JormungandrBootstrapper::default()
-            .with_block0_configuration(self.block0_config.clone())
-            .with_node_config(self.node_config.clone())
-            .with_secret(self.secret_factory.clone());
+        let mut bootstrapper =
+            JormungandrBootstrapper::default_with_config(self.node_config.clone())
+                .with_block0_configuration(self.block0_config.clone())
+                .with_secret(self.secret_factory.clone());
         if self.reward_history {
             bootstrapper = bootstrapper.with_rewards_history();
         }
@@ -41,10 +41,10 @@ impl TestContext {
     }
 
     pub(crate) fn starter(&self, temp_dir: TempDir) -> Result<Starter, StartupError> {
-        let mut bootstrapper = JormungandrBootstrapper::default()
-            .with_block0_configuration(self.block0_config.clone())
-            .with_node_config(self.node_config.clone())
-            .with_secret(self.secret_factory.clone());
+        let mut bootstrapper =
+            JormungandrBootstrapper::default_with_config(self.node_config.clone())
+                .with_block0_configuration(self.block0_config.clone())
+                .with_secret(self.secret_factory.clone());
         if self.reward_history {
             bootstrapper = bootstrapper.with_rewards_history();
         }

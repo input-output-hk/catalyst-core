@@ -3,6 +3,7 @@
   cell,
 }: let
   inherit (inputs) nixpkgs std;
+  inherit (inputs.cells.lib) constants;
   inherit (cell.toolchains) naersk rustToolchain;
   l = nixpkgs.lib // builtins;
 in rec {
@@ -114,4 +115,19 @@ in rec {
         openssl
       ];
     };
+
+  # Maps a function to all possible namespaces, returning results of the
+  # function calls as an attribute set where the key is `{service}-{namespace}`
+  # and the value is the function result.
+  mapToNamespaces = service: fn:
+    l.listToAttrs (
+      l.map
+      (
+        namespace: {
+          name = "${service}-${namespace}";
+          value = fn namespace;
+        }
+      )
+      constants.namespaces
+    );
 }

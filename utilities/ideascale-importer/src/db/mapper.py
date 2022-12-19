@@ -55,7 +55,7 @@ class Mapper:
             summary=html_to_md(a.text),
             public_key=public_key,
             funds=funds,
-            url="",
+            url=a.url,
             files_url="",
             impact_score=0,
             extra=extra,

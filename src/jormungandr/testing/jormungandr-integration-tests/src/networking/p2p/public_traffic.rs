@@ -20,8 +20,8 @@ const INTERNAL_NODE_2: &str = "INTERNAL_2";
 const ALICE: &str = "ALICE";
 const BOB: &str = "BOB";
 
-#[ignore]
 #[test]
+#[ignore]
 fn public_gossip_rejection() {
     const SERVER_GOSSIP_INTERVAL_SECS: u64 = 10;
 
@@ -94,8 +94,8 @@ fn public_gossip_rejection() {
     assert!(gossip_dropped);
 }
 
-#[ignore]
 #[test]
+#[ignore]
 pub fn test_public_node_cannot_publish() {
     let mut network_controller = NetworkBuilder::default()
         .topology(
@@ -154,19 +154,19 @@ pub fn test_public_node_cannot_publish() {
     // add whitelists to nodes config
     let mut internal_node_config = network_controller.node_config(INTERNAL_NODE).unwrap();
 
-    internal_node_config.p2p.whitelist = Some(whitelist.clone());
+    internal_node_config.p2p.connection.whitelist = Some(whitelist.clone());
 
     let mut internal_node_2_config = network_controller.node_config(INTERNAL_NODE_2).unwrap();
 
-    internal_node_2_config.p2p.whitelist = Some(whitelist.clone());
+    internal_node_2_config.p2p.connection.whitelist = Some(whitelist.clone());
 
     let mut gateway_node_config = network_controller.node_config(GATEWAY).unwrap();
 
-    gateway_node_config.p2p.whitelist = Some(whitelist.clone());
+    gateway_node_config.p2p.connection.whitelist = Some(whitelist.clone());
 
     let mut public_node_config = network_controller.node_config(PUBLIC_NODE).unwrap();
 
-    public_node_config.p2p.whitelist = Some(whitelist.clone());
+    public_node_config.p2p.connection.whitelist = Some(whitelist.clone());
 
     //
     //
@@ -241,8 +241,8 @@ pub fn test_public_node_cannot_publish() {
     };
 }
 
-#[ignore]
 #[test]
+#[ignore]
 pub fn test_public_node_synced_with_internal() {
     let mut network_controller = NetworkBuilder::default()
         .topology(
@@ -301,19 +301,19 @@ pub fn test_public_node_synced_with_internal() {
     // add whitelists to nodes config
     let mut internal_node_config = network_controller.node_config(INTERNAL_NODE).unwrap();
 
-    internal_node_config.p2p.whitelist = Some(whitelist.clone());
+    internal_node_config.p2p.connection.whitelist = Some(whitelist.clone());
 
     let mut internal_node_2_config = network_controller.node_config(INTERNAL_NODE_2).unwrap();
 
-    internal_node_2_config.p2p.whitelist = Some(whitelist.clone());
+    internal_node_2_config.p2p.connection.whitelist = Some(whitelist.clone());
 
     let mut gateway_node_config = network_controller.node_config(GATEWAY).unwrap();
 
-    gateway_node_config.p2p.whitelist = Some(whitelist.clone());
+    gateway_node_config.p2p.connection.whitelist = Some(whitelist.clone());
 
     let mut public_node_config = network_controller.node_config(PUBLIC_NODE).unwrap();
 
-    public_node_config.p2p.whitelist = Some(whitelist.clone());
+    public_node_config.p2p.connection.whitelist = Some(whitelist.clone());
 
     //
     //

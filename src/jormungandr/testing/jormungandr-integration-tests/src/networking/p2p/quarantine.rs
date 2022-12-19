@@ -45,6 +45,7 @@ pub fn node_whitelist_itself() {
         .node_config(CLIENT)
         .unwrap()
         .p2p
+        .connection
         .public_address;
     let policy = Policy {
         quarantine_duration: Some(Duration::new(1, 0)),

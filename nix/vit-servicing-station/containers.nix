@@ -8,14 +8,14 @@
 
   mkOCI = namespace: let
     # TODO: fix git rev
-    # rev =
-    #   if (inputs.self.rev != "not-a-commit")
-    #   then inputs.self.rev
-    #   else "dirty";
+    rev =
+      if (inputs.self.rev != "not-a-commit")
+      then inputs.self.rev
+      else "dirty";
   in
     std.lib.ops.mkStandardOCI {
       name = "${constants.registry}/vit-servicing-station-server";
-      tag = namespace;
+      tag = "${rev}-${namespace}";
       operable = cell.operables."vit-servicing-station-server-${namespace}";
       debug = true;
     };

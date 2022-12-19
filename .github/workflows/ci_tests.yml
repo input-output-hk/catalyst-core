@@ -25,6 +25,13 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cov"
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
+          components: llvm-tools-preview
       - name: Install Nextest
         run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
       - name: Install cargo-llvm-cov
@@ -32,20 +39,14 @@ jobs:
       - name: Install deps
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-
       - name: Run vit-ss tests
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-      - run: |
+        run: |
           source <(cargo llvm-cov show-env --export-prefix)
           cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
-          cargo nextest run \
-            -p vit-servicing-station-cli \
-            -p vit-servicing-station-lib \
-            -p vit-servicing-station-tests \
-            -p vit-servicing-station-server \
-            --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-cli/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-lib/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-server/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-tests/Cargo.toml --profile ci
 
   catalyst_toolbox:
     name: Catalyst Toolbox Tests
@@ -58,6 +59,13 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cov"
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
+          components: llvm-tools-preview
       - name: Install Nextest
         run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
       - name: Install cargo-llvm-cov
@@ -67,12 +75,10 @@ jobs:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
       - name: Run catalyst-toolbox tests
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-      - run: |
+        run: |
           source <(cargo llvm-cov show-env --export-prefix)
-          cargo nextest run -p catalyst-toolbox -p snapshot-lib --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/catalyst-toolbox/catalyst-toolbox/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/catalyst-toolbox/snapshot-lib/Cargo.toml --profile ci
 
   voting_tools:
     name: Voting Tools Tests
@@ -85,6 +91,13 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cov"
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
+          components: llvm-tools-preview
       - name: Install Nextest
         run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
       - name: Install cargo-llvm-cov
@@ -94,12 +107,9 @@ jobs:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
       - name: Run voting-tools tests
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-      - run: |
+        run: |
           source <(cargo llvm-cov show-env --export-prefix)
-          cargo nextest run -p voting_tools_rs --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/voting-tools-rs/Cargo.toml --profile ci
 
   chain-libs:
     name: Chain Libs Tests
@@ -112,6 +122,13 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cov"
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
+          components: llvm-tools-preview
       - name: Install Nextest
         run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
       - name: Install cargo-llvm-cov
@@ -121,12 +138,29 @@ jobs:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
       - name: Run chain-libs tests
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
       - run: |
           source <(cargo llvm-cov show-env --export-prefix)
-          cargo nextest run -p "chain-*" --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/cardano-legacy-address/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-addr/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-core/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-crypto/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-evm/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-impl-mockchain/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-network/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-ser/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-storage/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-time/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-vote/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/imhamt/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/sparse-array/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/typed-bytes/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-c/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-core/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-wasm-js/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/chain-path-derivation/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/hdkeygen/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/symmetric-cipher/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/wallet/Cargo.toml --profile ci
 
   jormungandr:
     name: Jormungandr Tests
@@ -139,6 +173,13 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cov"
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
+          components: llvm-tools-preview
       - name: Install Nextest
         run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
       - name: Install deps
@@ -146,12 +187,9 @@ jobs:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
       - name: Run jormungandr tests
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-      - run: |
+        run: |
           source <(cargo llvm-cov show-env --export-prefix)
-          cargo nextest run -p jormungandr --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/jormungandr/jormungandr/Cargo.toml --profile ci
 
   jormungandr-integration:
     name: Jormungandr Integration Tests
@@ -164,6 +202,13 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cov"
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
+          components: llvm-tools-preview
       - name: Install Nextest
         run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
       - name: Install cargo-llvm-cov
@@ -173,14 +218,19 @@ jobs:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
       - name: Run jormungandr-integration tests
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
-      - run: |
+        run: |
           source <(cargo llvm-cov show-env --export-prefix)
           cargo build -p jcli -p jormungandr -p explorer
-          cargo nextest run -p jormungandr-integration-tests --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/jormungandr/testing/jormungandr-integration-tests/Cargo.toml --profile ci
 
+  code-coverage:
+    name: Generage and publish code coverage
+    runs-on: ubuntu-latest
+    needs: [vit_servicing_station, catalyst_toolbox, voting_tools, chain-libs, jormungandr, jormungandr-integration]
+    steps:
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cov"
       - name: Generate lcov.info
         run: cargo llvm-cov report --lcov --output-path ./lcov.info
 
@@ -231,6 +281,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cov"
       - name: Install deps
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config

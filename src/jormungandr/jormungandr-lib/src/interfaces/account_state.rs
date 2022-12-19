@@ -115,7 +115,7 @@ impl AccountState {
     ///
     #[inline]
     pub fn counters(&self) -> [u32; SpendingCounterIncreasing::LANES] {
-        self.counters.clone()
+        self.counters
     }
 
     /// the last rewards transfered to account

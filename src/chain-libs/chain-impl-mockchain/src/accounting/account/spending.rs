@@ -51,7 +51,7 @@ impl SpendingCounterIncreasing {
     }
 
     pub fn get_valid_counters(&self) -> [SpendingCounter; Self::LANES] {
-        self.nexts.clone()
+        self.nexts
     }
 
     /// try to match the lane of the counter in argument, if it doesn't match

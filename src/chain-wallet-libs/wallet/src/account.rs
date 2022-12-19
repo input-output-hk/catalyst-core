@@ -37,12 +37,10 @@ pub enum Error {
     NotEnoughFunds { current: Value, needed: Value },
     #[error("invalid lane for spending counter")]
     InvalidLane,
-    #[error("malformed spending counters")]
-    MalformedSpendingCounters,
     #[error("spending counter does not match current state")]
     NonMonotonicSpendingCounter,
     #[error(transparent)]
-    SpendingCountersError(#[from] spending::Error),
+    SpendingCounters(#[from] spending::Error),
 }
 
 pub enum EitherAccount {

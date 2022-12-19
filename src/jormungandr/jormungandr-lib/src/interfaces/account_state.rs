@@ -1,6 +1,6 @@
 use super::mint_token::TokenIdentifier;
 use crate::{crypto::hash::Hash, interfaces::Value};
-use chain_impl_mockchain::{accounting::account, block::Epoch};
+use chain_impl_mockchain::{account::SpendingCounterIncreasing, accounting::account, block::Epoch};
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, convert::TryInto};
 
@@ -88,7 +88,7 @@ impl LastRewards {
 pub struct AccountState {
     delegation: DelegationType,
     value: Value,
-    counters: Vec<u32>,
+    counters: [u32; SpendingCounterIncreasing::LANES],
     tokens: BTreeMap<TokenIdentifier, Value>,
     last_rewards: LastRewards,
 }
@@ -114,7 +114,7 @@ impl AccountState {
     /// when adding a new account input to a transaction.
     ///
     #[inline]
-    pub fn counters(&self) -> Vec<u32> {
+    pub fn counters(&self) -> [u32; SpendingCounterIncreasing::LANES] {
         self.counters.clone()
     }
 
@@ -153,15 +153,20 @@ impl From<LastRewards> for account::LastRewards {
 
 impl<E> From<account::AccountState<E>> for AccountState {
     fn from(account: account::AccountState<E>) -> Self {
+        let counters = account.spending.get_valid_counters();
         AccountState {
             delegation: account.delegation().clone().into(),
             value: account.value().into(),
-            counters: account
-                .spending
-                .get_valid_counters()
-                .into_iter()
-                .map(Into::into)
-                .collect(),
+            counters: [
+                counters[0].into(),
+                counters[1].into(),
+                counters[2].into(),
+                counters[3].into(),
+                counters[4].into(),
+                counters[5].into(),
+                counters[6].into(),
+                counters[7].into(),
+            ],
             tokens: account
                 .tokens
                 .iter()
@@ -179,15 +184,20 @@ impl<E> From<account::AccountState<E>> for AccountState {
 
 impl<'a, E> From<&'a account::AccountState<E>> for AccountState {
     fn from(account: &'a account::AccountState<E>) -> Self {
+        let counters = account.spending.get_valid_counters();
         AccountState {
             delegation: account.delegation().clone().into(),
             value: account.value().into(),
-            counters: account
-                .spending
-                .get_valid_counters()
-                .into_iter()
-                .map(Into::into)
-                .collect(),
+            counters: [
+                counters[0].into(),
+                counters[1].into(),
+                counters[2].into(),
+                counters[3].into(),
+                counters[4].into(),
+                counters[5].into(),
+                counters[6].into(),
+                counters[7].into(),
+            ],
             tokens: account
                 .tokens
                 .iter()

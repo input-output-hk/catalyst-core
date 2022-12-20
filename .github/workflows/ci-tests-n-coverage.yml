@@ -1,9 +1,9 @@
 name: Testing and Code Coverage
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
+  schedule:
+    # runs 5min after midnight, everyday
+    - cron: '5 0 * * *'
 
 env:
   CARGO_TERM_COLOR: always

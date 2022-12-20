@@ -287,8 +287,6 @@ fn generate_network(
         .transpose()?
         .unwrap_or_default();
 
-    // TODO: do we want to check that we end up with a valid address?
-    // Is it possible for a node to specify no public address?
     let config_addr = p2p.connection.public_address;
     let public_address = command_arguments
         .public_address

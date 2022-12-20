@@ -1801,15 +1801,16 @@
         "yants": "yants"
       },
       "locked": {
-        "lastModified": 1670364577,
-        "narHash": "sha256-dMIUIOv5WDQY/bHBEoQH/Z2v7qU01CxNB1Uswq8QSnk=",
+        "lastModified": 1671462885,
+        "narHash": "sha256-cY0k1RAR/qhpag5qfC/AegMDWxV372dhN2cjtNvS4fs=",
         "owner": "divnix",
         "repo": "std",
-        "rev": "28ab21483243cb32203bc675bebab8306c466e90",
+        "rev": "ecd19dc3efc6554b2b2dbb5d21a6ec146123d47b",
         "type": "github"
       },
       "original": {
         "owner": "divnix",
+        "ref": "target-in-actions",
         "repo": "std",
         "type": "github"
       }

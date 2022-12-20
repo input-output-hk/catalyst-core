@@ -64,8 +64,7 @@ impl CheckNode {
             }))
             .build();
 
-        let inner = JormungandrBootstrapper::default()
-            .with_node_config(node_config)
+        let inner = JormungandrBootstrapper::default_with_config(node_config)
             .passive()
             .with_block0_hash(Hash::from_str(&genesis_block_hash).unwrap())
             .with_jormungandr(jormungandr_bin.unwrap_or_else(|| PathBuf::from(JORMUNGANDR_APP)))

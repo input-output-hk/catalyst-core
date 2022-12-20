@@ -5,7 +5,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
     ## Std ##
-    std.url = "github:divnix/std";
+    std.url = "github:divnix/std/target-in-actions";
     std.inputs.nixpkgs.follows = "nixpkgs";
 
     # Rust overlay

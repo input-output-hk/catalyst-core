@@ -52,3 +52,14 @@ async def insert_many(
 async def election_exists(conn: asyncpg.Connection, id: int) -> bool:
     row = await conn.fetchrow("SELECT row_id FROM election WHERE row_id = $1", id)
     return row is not None
+
+
+class VoteOptionsNotFound(Exception):
+    ...
+
+
+async def get_vote_options_id(conn: asyncpg.Connection, challenge: str) -> int:
+    row = await conn.fetchrow("SELECT id FROM vote_options WHERE challenge = $1", challenge)
+    if row is None:
+        raise VoteOptionsNotFound()
+    return row["id"]

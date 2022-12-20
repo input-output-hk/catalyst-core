@@ -137,7 +137,8 @@ class Importer:
         with client.request_progress_observer:
             ideas = await client.stage_ideas(stage_id)
 
-        mapper = db.mapper.Mapper(self.config)
+        vote_options_id = await db.get_vote_options_id(self.conn, "yes,no")
+        mapper = db.mapper.Mapper(vote_options_id, self.config)
 
         challenges = [mapper.map_challenge(a, election_id) for a in group.campaigns]
         challenge_count = len(challenges)

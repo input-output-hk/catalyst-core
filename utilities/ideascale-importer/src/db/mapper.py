@@ -4,13 +4,15 @@ import re
 from typing import Any, Mapping
 
 import config
+import db
 import db.models
 import ideascale
 
 
 class Mapper:
-    def __init__(self, config: config.Config):
+    def __init__(self, vote_options_id: int, config: config.Config):
         self.config = config
+        self.vote_options_id = vote_options_id
 
     def map_challenge(self, a: ideascale.Campaign, election_id: int) -> db.models.Challenge:
         reward = parse_reward(a.tagline)
@@ -24,8 +26,8 @@ class Mapper:
             rewards_currency=reward.currency,
             rewards_total=reward.amount,
             proposers_rewards=reward.amount,
-            vote_options=None,  # TODO: Should get this id from the DB I guess
-            extra=None          # TODO: Not sure if we have this information in IdeaScale
+            vote_options=self.vote_options_id,
+            extra=None
         )
 
     def map_proposal(self, a: ideascale.Idea, challenge_id_to_row_id_map: Mapping[int, int]) -> db.models.Proposal:

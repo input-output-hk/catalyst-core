@@ -56,7 +56,7 @@ fn get_data_provider(
     if let Some(dry_run) = maybe_dry_run {
         match dry_run {
             DryRunCommand::DryRun { mock_json_file } => Ok(Box::new(MockDbProvider::from(
-                InMemoryDbSync::restore(&mock_json_file)?,
+                InMemoryDbSync::restore(mock_json_file)?,
             ))),
         }
     } else {

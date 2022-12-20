@@ -64,8 +64,11 @@ microtype! {
     #[derive(Debug, PartialEq, Clone)]
     #[string]
     pub String {
+        /// Database name
         DbName,
+        /// Database user
         DbUser,
+        /// Database host
         DbHost,
         RewardsAddr,
         StakeAddr,
@@ -78,6 +81,7 @@ microtype! {
     #[secret]
     #[string]
     pub String {
+         /// Database password
         DbPass,
     }
 

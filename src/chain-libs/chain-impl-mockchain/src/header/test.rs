@@ -63,8 +63,8 @@ impl Arbitrary for GenesisPraosProof {
         let node_id = Arbitrary::arbitrary(g);
 
         let vrf_proof = {
-            let sk = RistrettoGroup2HashDh::generate(&mut tcg.get_rng(0));
-            RistrettoGroup2HashDh::evaluate_and_prove(&sk, &[0, 1, 2, 3], &mut tcg.get_rng(1))
+            let sk = RistrettoGroup2HashDh::generate(tcg.get_rng(0));
+            RistrettoGroup2HashDh::evaluate_and_prove(&sk, &[0, 1, 2, 3], tcg.get_rng(1))
         };
 
         let kes_proof = {

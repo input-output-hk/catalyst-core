@@ -4,10 +4,12 @@
 }: let
   inherit (inputs) nixpkgs std;
   inherit (inputs.cells.artifacts) artifacts;
-  inherit (inputs.cells.lib) constants;
+  inherit (inputs.cells.lib) lib;
   l = nixpkgs.lib // builtins;
 
-  mkOperable = package: namespace: let
+  package = cell.packages.jormungandr;
+
+  mkOperable = namespace: let
     artifacts' = artifacts."artifacts-${namespace}";
   in
     std.lib.ops.mkOperable {
@@ -15,19 +17,15 @@
       # TODO: Remove all the bitte stuff
       runtimeScript = ''
         ulimit -n 1024
-
         nodeConfig="$NOMAD_TASK_DIR/node-config.json"
         runConfig="$NOMAD_TASK_DIR/running.json"
         runYaml="$NOMAD_TASK_DIR/running.yaml"
-
         chmod u+rwx -R "$NOMAD_TASK_DIR" || true
-
         function convert () {
           chmod u+rwx -R "$NOMAD_TASK_DIR" || true
           cp "$nodeConfig" "$runConfig"
           remarshal --if json --of yaml "$runConfig" > "$runYaml"
         }
-
         if [ "$RESET" = "true" ]; then
           echo "RESET is given, will start from scratch..."
           rm -rf "$STORAGE_DIR"
@@ -35,7 +33,6 @@
           echo "$STORAGE_DIR found, not restoring from backup..."
         else
           echo "$STORAGE_DIR not found, restoring backup..."
-
           restic restore latest \
             --verbose=5 \
             --no-lock \
@@ -43,19 +40,16 @@
             --target / \
           || echo "couldn't restore backup, continue startup procedure..."
         fi
-
         set +x
         echo "waiting for $REQUIRED_PEER_COUNT peers"
         until [ "$(jq -e -r '.p2p.trusted_peers | length' < "$nodeConfig" || echo 0)" -ge "$REQUIRED_PEER_COUNT" ]; do
           sleep 1
         done
         set -x
-
         convert
-
         if [ -n "$PRIVATE" ]; then
           echo "Running with node with secrets..."
-          exec jormungandr \
+          exec ${l.getExe package} \
             --storage "$STORAGE_DIR" \
             --config "$NOMAD_TASK_DIR/running.yaml" \
             --genesis-block "${artifacts'}/block0.bin" \
@@ -63,7 +57,7 @@
             "$@" || true
         else
           echo "Running with follower node..."
-          exec jormungandr \
+          exec ${l.getExe package} \
             --storage "$STORAGE_DIR" \
             --config "$NOMAD_TASK_DIR/running.yaml" \
             --genesis-block "${artifacts'}/block0.bin" \
@@ -73,4 +67,4 @@
     };
 in
   {}
-  // constants.mapToNamespaces {prefix = "jormungandr";} (mkOperable cell.packages.jormungandr)
+  // lib.mapToNamespaces "jormungandr" mkOperable

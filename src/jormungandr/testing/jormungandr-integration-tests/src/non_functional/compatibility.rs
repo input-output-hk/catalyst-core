@@ -150,12 +150,13 @@ fn test_upgrade_and_downgrade_from_legacy_to_master(version: Version, temp_dir: 
         .unwrap();
     // upgrade node to newest
 
-    let jormungandr = JormungandrBootstrapper::default()
-        .with_block0_configuration(legacy_test_context.block0_config())
-        .with_node_config(NodeConfigBuilder::default().with_storage(storage).build())
-        .with_secret(legacy_test_context.test_context.secret_factory.clone())
-        .start(temp_dir)
-        .unwrap();
+    let jormungandr = JormungandrBootstrapper::default_with_config(
+        NodeConfigBuilder::default().with_storage(storage).build(),
+    )
+    .with_block0_configuration(legacy_test_context.block0_config())
+    .with_secret(legacy_test_context.test_context.secret_factory.clone())
+    .start(temp_dir)
+    .unwrap();
 
     fragment_sender
         .send_transactions_round_trip(10, &mut sender, &mut receiver, &jormungandr, 100.into())

@@ -5,7 +5,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
     ## Std ##
-    std.url = "github:divnix/std";
+    std.url = "github:divnix/std/target-in-actions";
     std.inputs.nixpkgs.follows = "nixpkgs";
 
     # Rust overlay
@@ -31,14 +31,14 @@
       cellsFrom = ./nix;
 
       cellBlocks = [
-        (std.blockTypes.containers "containers")
-        (std.blockTypes.devshells "devshells")
+        (std.blockTypes.containers "containers" {ci.publish = true;})
+        (std.blockTypes.devshells "devshells" {ci.build = true;})
         (std.blockTypes.functions "constants")
         (std.blockTypes.functions "lib")
         (std.blockTypes.functions "toolchains")
         (std.blockTypes.installables "artifacts")
         (std.blockTypes.installables "libraries")
-        (std.blockTypes.installables "packages")
+        (std.blockTypes.installables "packages" {ci.build = true;})
         (std.blockTypes.nixago "configs")
         (std.blockTypes.runnables "operables")
       ];
@@ -75,7 +75,7 @@
   nixConfig = {
     extra-substituters = [
       "https://cache.iog.io"
-      "https://iog-catalyst-cache.s3.eu-central-1.amazonaws.com"
+      "https://iog-catalyst-nix-cache.s3.eu-central-1.amazonaws.com"
     ];
     extra-trusted-public-keys = [
       "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="

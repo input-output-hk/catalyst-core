@@ -80,7 +80,7 @@ pub fn test_get_committee_id() {
         .rest()
         .v0()
         .vote()
-        .active_voting_committees(&jormungandr.rest_uri());
+        .active_voting_committees(jormungandr.rest_uri());
 
     assert_eq!(expected_committee_ids, actual_committee_ids);
 }

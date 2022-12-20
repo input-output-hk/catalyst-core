@@ -14,6 +14,9 @@
   <a href="https://github.com/input-output-hk/catalyst-core/blob/main/CODE_OF_CONDUCT.md">
     <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome!" />
   </a>
+  <a href='https://coveralls.io/github/input-output-hk/catalyst-core?branch=main'>
+    <img src='https://coveralls.io/repos/github/input-output-hk/catalyst-core/badge.svg?branch=main' alt='Coverage Status' />
+  </a>
 </p>
 
 # Content
@@ -74,9 +77,11 @@ brew install protobuf-c libsigsegv libpq libserdes pkg-config
 
 ##### Windows
 
+- [choco](https://chocolatey.org/)
 
-TODO: - https://github.com/input-output-hk/catalyst-core/issues/138
-
+```sh
+choco install protoc openssl sqlite postgresql14
+```
 
 ### Install Extra Packages/Tools
 

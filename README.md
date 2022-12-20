@@ -14,7 +14,7 @@
   <a href="https://github.com/input-output-hk/catalyst-core/blob/main/CODE_OF_CONDUCT.md">
     <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome!" />
   </a>
-  <a href='https://coveralls.io/github/input-output-hk/catalyst-core?branch=feature/add-ci-coveralls'>
+  <a href='https://coveralls.io/github/input-output-hk/catalyst-core?branch=main'>
     <img src='https://coveralls.io/repos/github/input-output-hk/catalyst-core/badge.svg?branch=main' alt='Coverage Status' />
   </a>
 </p>

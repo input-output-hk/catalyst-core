@@ -40,7 +40,7 @@ jobs:
       group: ${{ github.workflow }}
     steps:
       - name: Standard Discovery
-        uses: divnix/std-action/discover@main
+        uses: divnix/std-action/discover@v0.0.2
         id: discovery
   build-packages:
     needs: discover
@@ -51,7 +51,7 @@ jobs:
     name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
     runs-on: ubuntu-latest
     steps:
-      - uses: divnix/std-action/run@main
+      - uses: divnix/std-action/run@v0.0.2
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}
@@ -69,7 +69,7 @@ jobs:
     name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
     runs-on: ubuntu-latest
     steps:
-      - uses: divnix/std-action/run@main
+      - uses: divnix/std-action/run@v0.0.2
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}
@@ -97,7 +97,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: eu-central-1
-      - uses: divnix/std-action/run@main
+      - uses: divnix/std-action/run@v0.0.2
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}

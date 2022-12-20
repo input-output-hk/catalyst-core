@@ -36,7 +36,7 @@ class Proposal(Model):
     funds: int
     url: str
     files_url: str
-    impact_score: int
+    impact_score: Optional[float]
 
     extra: Optional[Mapping[str, str]]
 

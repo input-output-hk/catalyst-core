@@ -1,11 +1,12 @@
 import asyncio
 import asyncpg
+import csv
 import json
 import rich.panel
 import rich.prompt
 import rich.table
 import rich.console
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import config
 import db
@@ -17,15 +18,20 @@ class ReadConfigException(Exception):
     ...
 
 
+class ReadProposalsScoresCsv(Exception):
+    ...
+
+
 class Importer:
     def __init__(
         self,
         api_token: str,
         database_url: str,
+        config_path: Optional[str],
         election_id: Optional[int],
         campaign_group_id: Optional[int],
         stage_id: Optional[int],
-        config_path: Optional[str],
+        proposals_scores_csv_path: Optional[str],
     ):
         self.api_token = api_token
         self.database_url = database_url
@@ -37,7 +43,23 @@ class Importer:
         try:
             self.config = config.load(config_path or "config.json")
         except Exception as e:
-            raise ReadConfigException(e)
+            raise ReadConfigException(repr(e)) from e
+
+        self.proposals_impact_scores: Dict[int, int] = {}
+        if proposals_scores_csv_path is not None:
+            try:
+                with open(proposals_scores_csv_path) as f:
+                    r = csv.DictReader(f)
+                    for row in r:
+                        proposal_id = int(row[self.config.proposals_scores_csv.id_field], base=10)
+
+                        # Multiply the scores by 100 so we have 3.14 -> 314 which is
+                        # the format app expects.
+                        score = int(float(row[self.config.proposals_scores_csv.score_field])*100)
+
+                        self.proposals_impact_scores[proposal_id] = score
+            except Exception as e:
+                raise ReadProposalsScoresCsv(repr(e)) from e
 
     async def connect(self):
         if self.conn is None:
@@ -154,7 +176,10 @@ class Importer:
             for challenge, row_id in zip(challenges, challenge_row_ids):
                 challenge_id_to_row_id_map[challenge.id] = row_id
 
-            proposals = [mapper.map_proposal(a, challenge_id_to_row_id_map) for a in ideas]
+            proposals = [
+                mapper.map_proposal(a, challenge_id_to_row_id_map, self.proposals_impact_scores)
+                for a in ideas
+            ]
             proposal_count = len(proposals)
             await db.insert_many(self.conn, proposals)
 

@@ -27,5 +27,9 @@
             "progress_metrics": "what_will_you_measure_to_track_your_project_s_progress__and_how_will_you_measure_it_",
             "new_proposal": "is_this_proposal_is_a_continuation_of_a_previously_funded_project_in_catalyst__or_an_entirely_new_o"
         }
+    },
+    "proposals_scores_csv": {
+        "id_field": "proposal_id",
+        "score_field": "Rating"
     }
 }

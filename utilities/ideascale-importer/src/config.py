@@ -17,12 +17,19 @@ class ProposalsConfig:
     extra_field_mappings: Mapping[str, FieldMapping]
 
 
+class ProposalsScoresCsvConfig:
+    id_field: str
+    score_field: str
+
+
 class Config:
     proposals: ProposalsConfig
+    proposals_scores_csv: ProposalsScoresCsvConfig
 
 
 ProposalsFieldsMappingConfigSchema = marshmallow_dataclass.class_schema(ProposalsFieldsMappingConfig)
 ProposalsConfigSchema = marshmallow_dataclass.class_schema(ProposalsConfig)
+ProposalsScoresCsvConfigSchema = marshmallow_dataclass.class_schema(ProposalsScoresCsvConfig)
 ConfigSchema = marshmallow_dataclass.class_schema(Config)
 
 

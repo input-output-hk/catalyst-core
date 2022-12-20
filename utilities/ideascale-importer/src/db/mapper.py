@@ -30,7 +30,12 @@ class Mapper:
             extra=None
         )
 
-    def map_proposal(self, a: ideascale.Idea, challenge_id_to_row_id_map: Mapping[int, int]) -> db.models.Proposal:
+    def map_proposal(
+        self,
+        a: ideascale.Idea,
+        challenge_id_to_row_id_map: Mapping[int, int],
+        impact_scores: Mapping[int, int],
+    ) -> db.models.Proposal:
         field_mappings = self.config.proposals.field_mappings
 
         proposer_name = ", ".join([a.author_info.name]+a.contributors_name())
@@ -59,7 +64,7 @@ class Mapper:
             funds=funds,
             url=a.url,
             files_url="",
-            impact_score=0,
+            impact_score=impact_scores.get(a.id),
             extra=extra,
             proposer_name=proposer_name,
             proposer_contact="",

@@ -208,7 +208,7 @@ CREATE TABLE proposal
     funds BIGINT NOT NULL,
     url TEXT NOT NULL,
     files_url TEXT NOT NULL,
-    impact_score BIGINT NOT NULL,
+    impact_score NUMERIC(3, 2),
 
     extra JSONB,
 

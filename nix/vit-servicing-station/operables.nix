@@ -4,10 +4,12 @@
 }: let
   inherit (inputs) nixpkgs std;
   inherit (inputs.cells.artifacts) artifacts;
-  inherit (inputs.cells.lib) constants;
+  inherit (inputs.cells.lib) lib;
   l = nixpkgs.lib // builtins;
 
-  mkVitOperable = package: namespace: let
+  package = cell.packages.vit-servicing-station-server;
+
+  mkVitOperable = namespace: let
     artifacts' = artifacts."artifacts-${namespace}";
   in
     std.lib.ops.mkOperable {
@@ -24,4 +26,4 @@
     };
 in
   {}
-  // constants.mapToNamespaces {prefix = "vit-servicing-station-server";} (mkVitOperable cell.packages.vit-servicing-station-server)
+  // lib.mapToNamespaces "vit-servicing-station-server" mkVitOperable

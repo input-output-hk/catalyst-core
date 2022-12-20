@@ -80,7 +80,7 @@ impl SnapshotCommandArgs {
         let genesis_yaml = deployment_tree.genesis_path();
 
         //remove all files except qr codes and genesis
-        for entry in std::fs::read_dir(&deployment_tree.root_path())? {
+        for entry in std::fs::read_dir(deployment_tree.root_path())? {
             let entry = entry?;
             let md = std::fs::metadata(entry.path()).unwrap();
             if md.is_dir() {
@@ -119,7 +119,7 @@ impl SnapshotCommandArgs {
                 i += 1;
                 std::fs::rename(
                     path.clone(),
-                    std::path::Path::new(path.parent().unwrap()).join(&new_file_name),
+                    std::path::Path::new(path.parent().unwrap()).join(new_file_name),
                 )?;
             }
             println!("Qr codes dumped into {:?}", qr_codes);

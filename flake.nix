@@ -5,7 +5,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
     ## Std ##
-    std.url = "github:divnix/std";
+    std.url = "github:divnix/std/target-in-actions";
     std.inputs.nixpkgs.follows = "nixpkgs";
 
     # Rust overlay
@@ -75,7 +75,7 @@
   nixConfig = {
     extra-substituters = [
       "https://cache.iog.io"
-      "https://iog-catalyst-cache.s3.eu-central-1.amazonaws.com"
+      "https://iog-catalyst-nix-cache.s3.eu-central-1.amazonaws.com"
     ];
     extra-trusted-public-keys = [
       "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="

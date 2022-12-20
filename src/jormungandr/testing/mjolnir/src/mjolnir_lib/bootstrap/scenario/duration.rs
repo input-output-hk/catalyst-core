@@ -111,7 +111,7 @@ impl DurationBasedClientLoad {
 
         Ok(thread::spawn(move || {
             loop {
-                let benchmark = benchmark_speed(&storage_folder_name.clone())
+                let benchmark = benchmark_speed(storage_folder_name.clone())
                     .no_target()
                     .start();
                 let benchmark_result = Self::wait_for_bootstrap_phase_completed(

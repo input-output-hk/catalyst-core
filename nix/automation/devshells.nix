@@ -21,7 +21,7 @@
         PROTOC_INCLUDE = "${protobuf}/include";
       };
     nixago = [
-      cell.configs.lefthook
+      # cell.configs.lefthook
       cell.configs.prettier
       cell.configs.treefmt
     ];

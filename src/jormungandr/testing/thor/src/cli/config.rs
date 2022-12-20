@@ -146,7 +146,7 @@ impl ConfigManager {
         let config_file = self.config_file()?;
 
         if !config_file.exists() {
-            std::fs::create_dir_all(&app_dir)
+            std::fs::create_dir_all(app_dir)
                 .map_err(|_| Error::CannotCreateConfigFileFolder(config_file.to_path_buf()))?;
             let mut file = std::fs::File::create(&config_file)
                 .map_err(|_| Error::CannotCreateConfigFile(config_file.to_path_buf()))?;

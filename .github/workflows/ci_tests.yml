@@ -2,10 +2,15 @@ name: CI-Tests
 
 on:
   push:
-    branches: [ "main" ]
-    paths-ignore: ["README.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md"]
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
   pull_request:
-    paths-ignore: ["README.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md"]
+    paths-ignore:
+       - '**.md'
+       - 'book/**'
+       - 'src/**/**.md'
 
 env:
   CARGO_TERM_COLOR: always

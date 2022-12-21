@@ -27,7 +27,7 @@ class Mapper:
             rewards_total=reward.amount,
             proposers_rewards=reward.amount,
             vote_options=self.vote_options_id,
-            extra=None
+            extra={"url": {"challenge": a.campaign_url}}
         )
 
     def map_proposal(

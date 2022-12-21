@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Mapping, Optional
+from typing import Any, Mapping, Optional
 
 
 class Model:
@@ -19,7 +19,7 @@ class Challenge(Model):
     rewards_total: Optional[int]
     proposers_rewards: Optional[int]
     vote_options: Optional[int]
-    extra: Optional[Mapping[str, str]]
+    extra: Optional[Mapping[str, Any]]
 
     @staticmethod
     def table() -> str:

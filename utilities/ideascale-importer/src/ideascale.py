@@ -30,6 +30,7 @@ class Campaign(ExcludeUnknownFields):
     description: str
     funnel_id: int
     tagline: str
+    campaign_url: str
 
 
 class CampaignGroup(ExcludeUnknownFields):

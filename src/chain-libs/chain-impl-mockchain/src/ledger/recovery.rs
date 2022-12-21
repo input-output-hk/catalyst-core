@@ -38,8 +38,7 @@
 use super::pots;
 use super::{Entry, EntryOwned};
 use crate::accounting::account::{
-    AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounter,
-    SpendingCounterIncreasing,
+    AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounterIncreasing,
 };
 use crate::certificate::{
     PoolId, PoolRegistration, Proposal, Proposals, UpdateProposal, UpdateProposalId, UpdateVoterId,
@@ -161,19 +160,18 @@ fn pack_spending_strategy<W: std::io::Write>(
 fn unpack_spending_strategy(
     codec: &mut Codec<&[u8]>,
 ) -> Result<SpendingCounterIncreasing, ReadError> {
-    let mut counters = Vec::new();
-    for _ in 0..SpendingCounterIncreasing::LANES {
-        let counter = SpendingCounter(codec.get_be_u32()?);
-        counters.push(counter);
-    }
-    let got_length = counters.len();
-    SpendingCounterIncreasing::new_from_counters(counters).ok_or_else(|| {
-        ReadError::InvalidData(format!(
-            "wrong numbers of lanes, expecting {} but got {}",
-            SpendingCounterIncreasing::LANES,
-            got_length,
-        ))
-    })
+    let counters = [
+        codec.get_be_u32()?.into(),
+        codec.get_be_u32()?.into(),
+        codec.get_be_u32()?.into(),
+        codec.get_be_u32()?.into(),
+        codec.get_be_u32()?.into(),
+        codec.get_be_u32()?.into(),
+        codec.get_be_u32()?.into(),
+        codec.get_be_u32()?.into(),
+    ];
+    SpendingCounterIncreasing::new_from_counters(counters)
+        .map_err(|e| ReadError::InvalidData(e.to_string()))
 }
 
 #[cfg(feature = "evm")]

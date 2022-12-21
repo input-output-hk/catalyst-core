@@ -1,0 +1,9 @@
+{
+	"address": "127.0.0.1:8080",
+	"db": {
+		"name": "name",
+		"user": "user",
+		"password": "pass",
+		"host": "host"
+	}
+}

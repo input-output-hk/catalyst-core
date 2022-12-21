@@ -16,7 +16,13 @@ pub fn generate_explorer(
     Ok(ExplorerConfiguration {
         explorer_port: get_available_port(),
         explorer_listen_address: "127.0.0.1".to_string(),
-        node_address: settings.config.p2p.connection.public_address.clone().to_http_addr(),
+        node_address: settings
+            .config
+            .p2p
+            .connection
+            .public_address
+            .clone()
+            .to_http_addr(),
         logs_dir: Default::default(),
         storage_dir: None,
         params: explorer_template.to_explorer_params(),

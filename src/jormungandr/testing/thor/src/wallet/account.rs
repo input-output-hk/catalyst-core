@@ -108,7 +108,7 @@ impl Wallet {
         self.internal_counters.get_valid_counter()
     }
 
-    pub fn internal_counters(&self) -> Vec<SpendingCounter> {
+    pub fn internal_counters(&self) -> [SpendingCounter; SpendingCounterIncreasing::LANES] {
         self.internal_counters.get_valid_counters()
     }
 

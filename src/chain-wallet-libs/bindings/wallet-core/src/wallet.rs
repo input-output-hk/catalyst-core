@@ -2,7 +2,7 @@ use crate::{Error, Proposal};
 use chain_core::property::Serialize as _;
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::{
-    account::SpendingCounter,
+    account::SpendingCounterIncreasing,
     block::BlockDate,
     certificate::Certificate,
     fragment::{Fragment, FragmentId},
@@ -62,12 +62,18 @@ impl Wallet {
 
     /// get the current spending counter
     ///
-    pub fn spending_counter(&self) -> Vec<u32> {
-        self.account
-            .spending_counter()
-            .into_iter()
-            .map(SpendingCounter::into)
-            .collect()
+    pub fn spending_counter(&self) -> [u32; SpendingCounterIncreasing::LANES] {
+        let spending_counters = self.account.spending_counter();
+        [
+            spending_counters[0].into(),
+            spending_counters[1].into(),
+            spending_counters[2].into(),
+            spending_counters[3].into(),
+            spending_counters[4].into(),
+            spending_counters[5].into(),
+            spending_counters[6].into(),
+            spending_counters[7].into(),
+        ]
     }
 
     /// get the total value in the wallet
@@ -92,11 +98,24 @@ impl Wallet {
     /// before doing any transactions, otherwise future transactions may fail
     /// to be accepted by the blockchain nodes because of an invalid witness
     /// signature.
-    pub fn set_state(&mut self, value: Value, counters: Vec<u32>) -> Result<(), Error> {
+    pub fn set_state(
+        &mut self,
+        value: Value,
+        counters: [u32; SpendingCounterIncreasing::LANES],
+    ) -> Result<(), Error> {
         self.account
             .set_state(
                 value,
-                counters.into_iter().map(SpendingCounter::from).collect(),
+                [
+                    counters[0].into(),
+                    counters[1].into(),
+                    counters[2].into(),
+                    counters[3].into(),
+                    counters[4].into(),
+                    counters[5].into(),
+                    counters[6].into(),
+                    counters[7].into(),
+                ],
             )
             .map_err(|_| Error::invalid_spending_counters())
     }

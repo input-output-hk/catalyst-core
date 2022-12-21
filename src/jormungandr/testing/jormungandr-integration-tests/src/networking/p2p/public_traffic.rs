@@ -20,8 +20,8 @@ const INTERNAL_NODE_2: &str = "INTERNAL_2";
 const ALICE: &str = "ALICE";
 const BOB: &str = "BOB";
 
-#[ignore]
 #[test]
+#[ignore]
 fn public_gossip_rejection() {
     const SERVER_GOSSIP_INTERVAL_SECS: u64 = 10;
 
@@ -94,8 +94,8 @@ fn public_gossip_rejection() {
     assert!(gossip_dropped);
 }
 
-#[ignore]
 #[test]
+#[ignore]
 pub fn test_public_node_cannot_publish() {
     let mut network_controller = NetworkBuilder::default()
         .topology(
@@ -121,8 +121,6 @@ pub fn test_public_node_cannot_publish() {
         .build()
         .unwrap();
 
-    //
-    //
     // Get addresses of nodes for whitelisting
     let internal_node_addr = network_controller
         .node_config(INTERNAL_NODE)
@@ -149,27 +147,23 @@ pub fn test_public_node_cannot_publish() {
 
     println!("whitelist {:?}", whitelist);
 
-    //
-    //
     // add whitelists to nodes config
     let mut internal_node_config = network_controller.node_config(INTERNAL_NODE).unwrap();
 
-    internal_node_config.p2p.whitelist = Some(whitelist.clone());
+    internal_node_config.p2p.connection.whitelist = Some(whitelist.clone());
 
     let mut internal_node_2_config = network_controller.node_config(INTERNAL_NODE_2).unwrap();
 
-    internal_node_2_config.p2p.whitelist = Some(whitelist.clone());
+    internal_node_2_config.p2p.connection.whitelist = Some(whitelist.clone());
 
     let mut gateway_node_config = network_controller.node_config(GATEWAY).unwrap();
 
-    gateway_node_config.p2p.whitelist = Some(whitelist.clone());
+    gateway_node_config.p2p.connection.whitelist = Some(whitelist.clone());
 
     let mut public_node_config = network_controller.node_config(PUBLIC_NODE).unwrap();
 
-    public_node_config.p2p.whitelist = Some(whitelist.clone());
+    public_node_config.p2p.connection.whitelist = Some(whitelist.clone());
 
-    //
-    //
     // spin up internal nodes
     let params = SpawnParams::new(INTERNAL_NODE)
         .gossip_interval(Duration::new(1, 0))
@@ -189,8 +183,6 @@ pub fn test_public_node_cannot_publish() {
 
     let _client_internal_2 = network_controller.spawn(params).unwrap();
 
-    //
-    //
     // node from internal network exposed to public
 
     let params = SpawnParams::new(GATEWAY)
@@ -202,8 +194,6 @@ pub fn test_public_node_cannot_publish() {
 
     let _gateway = network_controller.spawn(params).unwrap();
 
-    //
-    //
     // simulate node in the wild
     let address: Multiaddr = "/ip4/80.9.12.3/tcp/0".parse().unwrap();
 
@@ -217,8 +207,6 @@ pub fn test_public_node_cannot_publish() {
 
     let _client_public = network_controller.spawn(params).unwrap();
 
-    //
-    //
     // public node sends fragments to network
     // it should fail as they public node is not whitelisted
     let mut alice = network_controller.controlled_wallet(ALICE).unwrap();
@@ -241,8 +229,8 @@ pub fn test_public_node_cannot_publish() {
     };
 }
 
-#[ignore]
 #[test]
+#[ignore]
 pub fn test_public_node_synced_with_internal() {
     let mut network_controller = NetworkBuilder::default()
         .topology(
@@ -268,8 +256,6 @@ pub fn test_public_node_synced_with_internal() {
         .build()
         .unwrap();
 
-    //
-    //
     // Get addresses of nodes for whitelisting
     let internal_node_addr = network_controller
         .node_config(INTERNAL_NODE)
@@ -296,27 +282,23 @@ pub fn test_public_node_synced_with_internal() {
 
     println!("whitelist {:?}", whitelist);
 
-    //
-    //
     // add whitelists to nodes config
     let mut internal_node_config = network_controller.node_config(INTERNAL_NODE).unwrap();
 
-    internal_node_config.p2p.whitelist = Some(whitelist.clone());
+    internal_node_config.p2p.connection.whitelist = Some(whitelist.clone());
 
     let mut internal_node_2_config = network_controller.node_config(INTERNAL_NODE_2).unwrap();
 
-    internal_node_2_config.p2p.whitelist = Some(whitelist.clone());
+    internal_node_2_config.p2p.connection.whitelist = Some(whitelist.clone());
 
     let mut gateway_node_config = network_controller.node_config(GATEWAY).unwrap();
 
-    gateway_node_config.p2p.whitelist = Some(whitelist.clone());
+    gateway_node_config.p2p.connection.whitelist = Some(whitelist.clone());
 
     let mut public_node_config = network_controller.node_config(PUBLIC_NODE).unwrap();
 
-    public_node_config.p2p.whitelist = Some(whitelist.clone());
+    public_node_config.p2p.connection.whitelist = Some(whitelist.clone());
 
-    //
-    //
     // spin up internal nodes
     let params = SpawnParams::new(INTERNAL_NODE)
         .gossip_interval(Duration::new(1, 0))
@@ -336,8 +318,6 @@ pub fn test_public_node_synced_with_internal() {
 
     let _client_internal_2 = network_controller.spawn(params).unwrap();
 
-    //
-    //
     // node from internal network exposed to public
 
     let params = SpawnParams::new(GATEWAY)
@@ -349,8 +329,6 @@ pub fn test_public_node_synced_with_internal() {
 
     let _gateway = network_controller.spawn(params).unwrap();
 
-    //
-    //
     // simulate node in the wild
     let address: Multiaddr = "/ip4/80.9.12.3/tcp/0".parse().unwrap();
 
@@ -364,8 +342,6 @@ pub fn test_public_node_synced_with_internal() {
 
     let _client_public = network_controller.spawn(params).unwrap();
 
-    //
-    //
     // internal node sends fragments to network
     // fragments should be propagated to the publish node (which can consume but not publish)
     let mut alice = network_controller.controlled_wallet(ALICE).unwrap();
@@ -386,8 +362,6 @@ pub fn test_public_node_synced_with_internal() {
 
     utils::wait(10);
 
-    //
-    //
     // account states should be the same
 
     let public_state_a = _client_internal_2

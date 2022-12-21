@@ -5,7 +5,8 @@ pub mod discrimination;
 pub mod utxo;
 
 use crate::{
-    wallet::discrimination::DiscriminationExtension, FragmentBuilder, FragmentBuilderError,
+    cli::Error, wallet::discrimination::DiscriminationExtension, FragmentBuilder,
+    FragmentBuilderError,
 };
 use chain_addr::{AddressReadable, Discrimination};
 use chain_crypto::{Ed25519, Ed25519Extended, PublicKey, SecretKey, Signature};
@@ -324,11 +325,11 @@ impl Wallet {
         }
     }
 
-    pub fn spending_counter(&self) -> Option<SpendingCounterIncreasing> {
+    pub fn spending_counter(&self) -> Result<SpendingCounterIncreasing, Error> {
         match self {
-            Wallet::Account(account) => {
-                SpendingCounterIncreasing::new_from_counters(account.internal_counters())
-            }
+            Wallet::Account(account) => Ok(SpendingCounterIncreasing::new_from_counters(
+                account.internal_counters(),
+            )?),
             _ => unimplemented!(),
         }
     }

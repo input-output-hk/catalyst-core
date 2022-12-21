@@ -42,36 +42,8 @@ jobs:
       - name: Standard Discovery
         uses: divnix/std-action/discover@main
         id: discovery
-  publish-containers:
-    needs: discover
-    strategy:
-      fail-fast: false
-      matrix:
-        target: ${{ fromJSON(needs.discover.outputs.hits).containers.publish }}
-    name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure Registry
-        run: |
-          aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin "${{ env.ECR_REGISTRY }}"
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: eu-central-1
-      - uses: divnix/std-action/run@main
-        with:
-          extra_nix_config: |
-            ${{ needs.discover.outputs.nix_conf }}
-          json: ${{ toJSON(matrix.target) }}
-          nix_key: ${{ secrets.NIX_SIGNING_KEY }}
-          s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          cache: ${{ env.S3_CACHE }}
   build-packages:
-    if: always()
-    needs:
-      - discover
-      - publish-containers
+    needs: discover
     strategy:
       fail-fast: false
       matrix:
@@ -89,10 +61,7 @@ jobs:
           s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           cache: ${{ env.S3_CACHE }}
   build-devshells:
-    if: always()
-    needs:
-      - discover
-      - publish-containers
+    needs: discover
     strategy:
       fail-fast: false
       matrix:
@@ -100,6 +69,34 @@ jobs:
     name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
     runs-on: ubuntu-latest
     steps:
+      - uses: divnix/std-action/run@main
+        with:
+          extra_nix_config: |
+            ${{ needs.discover.outputs.nix_conf }}
+          json: ${{ toJSON(matrix.target) }}
+          nix_key: ${{ secrets.NIX_SIGNING_KEY }}
+          s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          cache: ${{ env.S3_CACHE }}
+  publish-containers:
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - discover
+      - build-packages
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJSON(needs.discover.outputs.hits).containers.publish }}
+    name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure Registry
+        run: |
+          aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin "${{ env.ECR_REGISTRY }}"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: eu-central-1
       - uses: divnix/std-action/run@main
         with:
           extra_nix_config: |

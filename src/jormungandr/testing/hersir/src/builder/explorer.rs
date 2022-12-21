@@ -3,7 +3,7 @@ use jormungandr_automation::{
     jormungandr::{explorer::configuration::ExplorerConfiguration, get_available_port, NodeAlias},
     utils::MultiaddrExtension,
 };
-use std::{collections::HashMap, path::Path};
+use std::{collections::HashMap};
 
 pub fn generate_explorer(
     nodes: &HashMap<NodeAlias, NodeSetting>,

@@ -116,7 +116,9 @@
 <span id="116">116</span>
 <span id="117">117</span>
 <span id="118">118</span>
+<span id="119">119</span>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_addr::{AddressReadable, Discrimination};
+<span class="kw">use </span>chain_impl_mockchain::account::SpendingCounterIncreasing;
 <span class="kw">use </span>chain_impl_mockchain::{block::BlockDate, fragment::FragmentId};
 <span class="kw">use </span>hdkeygen::account::AccountId;
 <span class="kw">use </span>jormungandr_lib::interfaces::AccountIdentifier;
@@ -195,12 +197,12 @@
         <span class="self">self</span>.inner.total_value()
     }
 
-    <span class="kw">pub fn </span>set_state(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: Value, counter: Vec&lt;u32&gt;) {
+    <span class="kw">pub fn </span>set_state(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: Value, counters: [u32; SpendingCounterIncreasing::LANES]) {
         <span class="comment">//TODO map error instead of unwrapping
-        </span><span class="self">self</span>.inner.set_state(value, counter).unwrap();
+        </span><span class="self">self</span>.inner.set_state(value, counters).unwrap();
     }
 
-    <span class="kw">pub fn </span>spending_counter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u32&gt; {
+    <span class="kw">pub fn </span>spending_counter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; [u32; SpendingCounterIncreasing::LANES] {
         <span class="self">self</span>.inner.spending_counter()
     }
 

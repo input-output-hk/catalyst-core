@@ -304,7 +304,6 @@
 <span id="304">304</span>
 <span id="305">305</span>
 <span id="306">306</span>
-<span id="307">307</span>
 </pre><pre class="rust"><code><span class="attribute">#![allow(dead_code)]
 
 </span><span class="kw">use </span><span class="kw">crate</span>::context::{ActorsTestContext, LegacyTestContext, TestContext};
@@ -513,7 +512,7 @@
 }
 
 <span class="kw">pub fn </span>create_new_leader_key() -&gt; KeyPair&lt;Ed25519&gt; {
-    KeyPair::generate(<span class="kw-2">&amp;mut </span>rand::thread_rng())
+    KeyPair::generate(rand::thread_rng())
 }
 
 <span class="kw">pub fn </span>create_new_account_address() -&gt; Wallet {
@@ -604,10 +603,9 @@
         .with_certs(initial_certs.into_iter().map(Initial::Cert).collect())
         .build();
 
-    JormungandrBootstrapper::default()
+    JormungandrBootstrapper::default_with_config(node_config_builder.build())
         .with_block0_configuration(block0_config)
         .with_secret(secret)
-        .with_node_config(node_config_builder.build())
         .into_starter(temp_dir)<span class="question-mark">?
         </span>.start()
         .map(|process| (process, stake_pools))

@@ -401,7 +401,7 @@
     <span class="kw">pub fn </span>download_to(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>Path) -&gt; <span class="prelude-ty">Result</span>&lt;(), GitHubApiError&gt; {
         download_file(<span class="self">self</span>.download_url(), path)<span class="question-mark">?</span>;
         <span class="kw">if let </span><span class="prelude-val">Some</span>((checksum_type, asset)) = <span class="kw-2">&amp;</span><span class="self">self</span>.checksum {
-            <span class="kw">let </span>checksum = reqwest::blocking::get(<span class="kw-2">&amp;</span>asset.download_url())<span class="question-mark">?</span>;
+            <span class="kw">let </span>checksum = reqwest::blocking::get(asset.download_url())<span class="question-mark">?</span>;
             <span class="kw">if </span>!checksum_type.check(<span class="kw-2">&amp;</span>hex::decode(checksum.text()<span class="question-mark">?</span>)<span class="question-mark">?</span>, path)<span class="question-mark">? </span>{
                 <span class="kw">return </span><span class="prelude-val">Err</span>(GitHubApiError::WrongChecksum);
             }
@@ -564,7 +564,7 @@
     <span class="kw">fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;reqwest::blocking::Response, GitHubApiError&gt; {
         <span class="kw">let </span>client = reqwest::blocking::Client::new();
         <span class="kw">let </span><span class="kw-2">mut </span>req = client
-            .get(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{}/{}&quot;</span>, <span class="self">self</span>.base_url, path))
+            .get(<span class="macro">format!</span>(<span class="string">&quot;{}/{}&quot;</span>, <span class="self">self</span>.base_url, path))
             .header(USER_AGENT, <span class="string">&quot;request&quot;</span>);
         <span class="kw">if let </span><span class="prelude-val">Some</span>(token) = <span class="kw-2">&amp;</span><span class="self">self</span>.token {
             req = req.bearer_auth(token);

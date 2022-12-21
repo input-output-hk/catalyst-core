@@ -139,7 +139,7 @@
     {
         <span class="kw">let </span>bytes = <span class="kw">if </span>deserializer.is_human_readable() {
             <span class="kw">let </span>h = String::deserialize(deserializer)<span class="question-mark">?</span>;
-            hex::decode(<span class="kw-2">&amp;</span>h).map_err(serde::de::Error::custom)<span class="question-mark">?
+            hex::decode(h).map_err(serde::de::Error::custom)<span class="question-mark">?
         </span>} <span class="kw">else </span>{
             Vec::&lt;u8&gt;::deserialize(deserializer)<span class="question-mark">?
         </span>};

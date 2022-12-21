@@ -217,8 +217,8 @@
         storage: BlockStore,
         invalid_get_blocks_hash: bool,
     ) -&gt; <span class="self">Self </span>{
-        <span class="kw">let </span>keypair = KeyPair::generate(<span class="kw-2">&amp;mut </span>rand::thread_rng());
-        <span class="kw">let </span>topology_key = keynesis::key::ed25519::SecretKey::new(<span class="kw-2">&amp;mut </span>rand::thread_rng());
+        <span class="kw">let </span>keypair = KeyPair::generate(rand::thread_rng());
+        <span class="kw">let </span>topology_key = keynesis::key::ed25519::SecretKey::new(rand::thread_rng());
         <span class="kw">let </span>profile = poldercast::Profile::new(addr, <span class="kw-2">&amp;</span>topology_key);
         <span class="self">Self </span>{
             genesis_hash,

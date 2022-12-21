@@ -235,6 +235,10 @@
 <span id="235">235</span>
 <span id="236">236</span>
 <span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data_provider::DataProvider;
 <span class="kw">use </span>cardano_serialization_lib::address::{Address, NetworkInfo, RewardAddress};
 <span class="kw">use </span>cardano_serialization_lib::chain_crypto::Blake2b256;
@@ -330,7 +334,7 @@
         <span class="kw">let </span>cred = StakeCredential::from_keyhash(<span class="kw-2">&amp;</span>pub_key.hash());
         <span class="kw">let </span>stake_addr = RewardAddress::new(network.network_id(), <span class="kw-2">&amp;</span>cred).to_address();
         <span class="kw">let </span>stake_addr_bytes = stake_addr.to_bytes();
-        <span class="kw">let </span>stake_addr_bytes_hex = hex::encode(<span class="kw-2">&amp;</span>stake_addr_bytes);
+        <span class="kw">let </span>stake_addr_bytes_hex = hex::encode(stake_addr_bytes);
         <span class="prelude-val">Ok</span>(stake_addr_bytes_hex)
     }
 }
@@ -372,9 +376,7 @@
                         <span class="kw-2">&amp;</span>TransactionMetadatum::new_bytes(hex::decode(
                             delegation.trim_start_matches(<span class="string">&quot;0x&quot;</span>),
                         )<span class="question-mark">?</span>)
-                        .map_err(|e| {
-                            <span class="macro">eyre!</span>(<span class="macro">format!</span>(<span class="string">&quot;cannot decode delegation key, due to: {}&quot;</span>, e))
-                        })<span class="question-mark">?</span>,
+                        .map_err(|e| <span class="macro">eyre!</span>(<span class="macro">format!</span>(<span class="string">&quot;cannot decode delegation key, due to: {e}&quot;</span>)))<span class="question-mark">?</span>,
                     );
                     inner_metadata_list.add(<span class="kw-2">&amp;</span>TransactionMetadatum::new_int(<span class="kw-2">&amp;</span>Int::new(
                         <span class="kw-2">&amp;</span>BigNum::from(weight),
@@ -438,18 +440,18 @@
 
 <span class="attribute">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
-    <span class="kw">use </span>assert_fs::TempDir;
     <span class="kw">use </span>cardano_serialization_lib::metadata::{GeneralTransactionMetadata, MetadataJsonSchema};
 
     <span class="kw">use </span><span class="kw">crate</span>::test_api::MockDbProvider;
     <span class="kw">use </span><span class="kw">crate</span>::DataProvider;
-    <span class="kw">use </span>jormungandr_lib::interfaces::BlockDate;
-    <span class="kw">use </span>mainnet_lib::GeneralTransactionMetadataInfo;
-    <span class="kw">use </span>mainnet_lib::InMemoryDbSync;
+    <span class="kw">use </span>mainnet_lib::{
+        BlockBuilder, CardanoWallet, GeneralTransactionMetadataInfo, InMemoryDbSync,
+        TransactionBuilder,
+    };
 
     <span class="attribute">#[test]
     </span><span class="kw">pub fn </span>nami_wallet_tx() {
-        <span class="kw">let </span>temp_dir = TempDir::new().unwrap();
+        <span class="kw">let </span>cardano_wallet = CardanoWallet::new(<span class="number">1</span>);
 
         <span class="kw">let </span>metadata_string = <span class="string">r#&quot;{
             &quot;61284&quot;:  {&quot;1&quot;:[[&quot;0xf83870fde8c07e0552040cb4b005d63d58cd5f6450454f253844df7f76764a35&quot;,1]],&quot;2&quot;:&quot;0xebd231995f6bdbe6a1582625d1c291eed374fc7baab03feab6701ec21395180e&quot;,&quot;3&quot;:&quot;0xe0b6d6e47f7d683a90bf4c638d337e95aaebcc9584188ca817a8691604&quot;,&quot;4&quot;:14150366,&quot;5&quot;:0},
@@ -462,8 +464,14 @@
         )
         .unwrap();
 
-        <span class="kw">let </span><span class="kw-2">mut </span>db_sync = InMemoryDbSync::new(<span class="kw-2">&amp;</span>temp_dir);
-        db_sync.push_transaction(BlockDate::new(<span class="number">0</span>, <span class="number">0</span>), root_metadata);
+        <span class="kw">let </span>transaction = TransactionBuilder::build_transaction_with_metadata(
+            <span class="kw-2">&amp;</span>cardano_wallet.address().to_address(),
+            cardano_wallet.stake(),
+            <span class="kw-2">&amp;</span>root_metadata,
+        );
+
+        <span class="kw">let </span><span class="kw-2">mut </span>db_sync = InMemoryDbSync::default();
+        db_sync.on_block_propagation(<span class="kw-2">&amp;</span>BlockBuilder::next_block(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span><span class="macro">vec!</span>[transaction]));
 
         <span class="kw">let </span>regs = MockDbProvider::from(db_sync)
             .vote_registrations(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>)

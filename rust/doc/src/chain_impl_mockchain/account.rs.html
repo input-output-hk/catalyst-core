@@ -88,6 +88,8 @@
 <span id="88">88</span>
 <span id="89">89</span>
 <span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::accounting::account;
 <span class="kw">use </span><span class="kw">crate</span>::key::{deserialize_public_key, serialize_public_key};
 <span class="kw">use </span><span class="kw">crate</span>::transaction::WitnessAccountData;
@@ -98,7 +100,9 @@
 };
 <span class="kw">use </span>chain_crypto::{Ed25519, PublicKey, Signature};
 
-<span class="kw">pub use </span>account::{DelegationRatio, DelegationType, LedgerError, SpendingCounter};
+<span class="kw">pub use </span>account::{
+    DelegationRatio, DelegationType, LedgerError, SpendingCounter, SpendingCounterIncreasing,
+};
 
 <span class="kw">pub type </span>AccountAlg = Ed25519;
 

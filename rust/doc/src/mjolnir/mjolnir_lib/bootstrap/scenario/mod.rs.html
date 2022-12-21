@@ -78,7 +78,6 @@
 <span id="78">78</span>
 <span id="79">79</span>
 <span id="80">80</span>
-<span id="81">81</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>duration;
 <span class="kw">mod </span>iteration;
 <span class="kw">use </span><span class="kw">super</span>::ClientLoadConfig;
@@ -119,8 +118,7 @@
         .with_storage(temp_dir.child(storage_folder_name).to_path_buf())
         .build();
 
-    <span class="kw">let </span>config = JormungandrBootstrapper::default()
-        .with_node_config(node)
+    <span class="kw">let </span>config = JormungandrBootstrapper::default_with_config(node)
         .with_block0_hash(<span class="kw-2">*</span>client_config.block0_hash())
         .passive()
         .verbose()

@@ -295,11 +295,14 @@
 <span id="295">295</span>
 <span id="296">296</span>
 <span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::transaction::AccountWitnessBuilder;
 <span class="kw">use </span><span class="kw">crate</span>::scheme::{on_tx_input_and_witnesses, on_tx_output};
 <span class="kw">use </span><span class="kw">crate</span>::states::States;
 <span class="kw">use </span>chain_crypto::{Ed25519, Ed25519Extended, PublicKey, SecretKey};
-<span class="kw">use </span>chain_impl_mockchain::accounting::account::SpendingCounterIncreasing;
+<span class="kw">use </span>chain_impl_mockchain::accounting::account::{spending, SpendingCounterIncreasing};
 <span class="kw">use </span>chain_impl_mockchain::{
     account::SpendingCounter,
     fragment::{Fragment, FragmentId},
@@ -334,10 +337,10 @@
     </span>NotEnoughFunds { current: Value, needed: Value },
     <span class="attribute">#[error(<span class="string">&quot;invalid lane for spending counter&quot;</span>)]
     </span>InvalidLane,
-    <span class="attribute">#[error(<span class="string">&quot;malformed spending counters&quot;</span>)]
-    </span>MalformedSpendingCounters,
     <span class="attribute">#[error(<span class="string">&quot;spending counter does not match current state&quot;</span>)]
     </span>NonMonotonicSpendingCounter,
+    <span class="attribute">#[error(transparent)]
+    </span>SpendingCounters(<span class="attribute">#[from] </span>spending::Error),
 }
 
 <span class="kw">pub enum </span>EitherAccount {
@@ -406,16 +409,19 @@
     ///
     /// TODO: change to a constructor/initializator?, or just make it so it resets the state
     ///
-    </span><span class="kw">pub fn </span>set_state(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: Value, counters: Vec&lt;SpendingCounter&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-        <span class="kw">let </span>counters = SpendingCounterIncreasing::new_from_counters(counters)
-            .ok_or(Error::MalformedSpendingCounters)<span class="question-mark">?</span>;
+    </span><span class="kw">pub fn </span>set_state(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        value: Value,
+        counters: [SpendingCounter; SpendingCounterIncreasing::LANES],
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span>counters = SpendingCounterIncreasing::new_from_counters(counters)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.state = States::new(FragmentId::zero_hash(), State { value, counters });
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub fn </span>spending_counter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;SpendingCounter&gt; {
+    <span class="kw">pub fn </span>spending_counter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; [SpendingCounter; SpendingCounterIncreasing::LANES] {
         <span class="self">self</span>.state
             .last_state()
             .state()

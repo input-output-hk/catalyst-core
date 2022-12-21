@@ -222,7 +222,7 @@
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::wallet::discrimination::DiscriminationExtension;
 <span class="kw">use </span>chain_addr::{Address, AddressReadable, Discrimination, Kind};
 <span class="kw">use </span>chain_crypto::{bech32::Bech32, Ed25519, PublicKey};
-<span class="kw">use </span>chain_impl_mockchain::account::Identifier;
+<span class="kw">use </span>chain_impl_mockchain::account::{Identifier, SpendingCounterIncreasing};
 <span class="kw">use </span>jormungandr_automation::jormungandr::{JormungandrRest, RestSettings};
 <span class="kw">use </span>jormungandr_lib::crypto::hash::Hash;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
@@ -298,7 +298,7 @@
 </span><span class="kw">pub struct </span>WalletState {
     <span class="kw">pub </span>pending_tx: Vec&lt;Hash&gt;,
     <span class="kw">pub </span>public_key: String,
-    <span class="kw">pub </span>spending_counters: Vec&lt;u32&gt;,
+    <span class="kw">pub </span>spending_counters: [u32; SpendingCounterIncreasing::LANES],
     <span class="comment">//path to secret key in format of SecretKey struct
     </span><span class="kw">pub </span>secret_file: PathBuf,
     <span class="kw">pub </span>testing: bool,
@@ -367,7 +367,7 @@
         <span class="kw">let </span>config_file = <span class="self">self</span>.config_file()<span class="question-mark">?</span>;
 
         <span class="kw">if </span>!config_file.exists() {
-            std::fs::create_dir_all(<span class="kw-2">&amp;</span>app_dir)
+            std::fs::create_dir_all(app_dir)
                 .map_err(|<span class="kw">_</span>| Error::CannotCreateConfigFileFolder(config_file.to_path_buf()))<span class="question-mark">?</span>;
             <span class="kw">let </span><span class="kw-2">mut </span>file = std::fs::File::create(<span class="kw-2">&amp;</span>config_file)
                 .map_err(|<span class="kw">_</span>| Error::CannotCreateConfigFile(config_file.to_path_buf()))<span class="question-mark">?</span>;

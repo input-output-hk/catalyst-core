@@ -856,7 +856,7 @@
     index: usize,
     bit_size: u32,
 ) -&gt; Scalar {
-    <span class="kw">let </span>idx = binrep(index, bit_size <span class="kw">as </span>u32);
+    <span class="kw">let </span>idx = binrep(index, bit_size);
 
     <span class="kw">let </span>multz = z.iter().enumerate().fold(Scalar::one(), |acc, (j, zwv)| {
         <span class="kw">let </span>m = <span class="kw">if </span>idx[j] {

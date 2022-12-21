@@ -212,6 +212,11 @@
 <span id="212">212</span>
 <span id="213">213</span>
 <span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{Error, WalletController};
 <span class="kw">use crate</span>::{
     cli::{
@@ -307,15 +312,16 @@
         <span class="prelude-val">Ok</span>(Wallet::Account(
             <span class="kw">crate</span>::wallet::account::Wallet::from_secret_key(
                 <span class="self">self</span>.secret_key_for_wallet_state(password, <span class="kw-2">&amp;</span>template)<span class="question-mark">?</span>,
-                SpendingCounterIncreasing::new_from_counters(
-                    template
-                        .spending_counters
-                        .iter()
-                        .cloned()
-                        .map(Into::into)
-                        .collect(),
-                )
-                .ok_or(Error::SpendingCounter)<span class="question-mark">?</span>,
+                SpendingCounterIncreasing::new_from_counters([
+                    template.spending_counters[<span class="number">0</span>].into(),
+                    template.spending_counters[<span class="number">1</span>].into(),
+                    template.spending_counters[<span class="number">2</span>].into(),
+                    template.spending_counters[<span class="number">3</span>].into(),
+                    template.spending_counters[<span class="number">4</span>].into(),
+                    template.spending_counters[<span class="number">5</span>].into(),
+                    template.spending_counters[<span class="number">6</span>].into(),
+                    template.spending_counters[<span class="number">7</span>].into(),
+                ])<span class="question-mark">?</span>,
                 template.discrimination(),
             ),
         ))
@@ -368,13 +374,17 @@
                 VerifyExitStrategy::OnProcessed,
                 <span class="kw-2">&amp;</span>node,
             )<span class="question-mark">?</span>;
-            <span class="self">self</span>.wallets.wallet_mut()<span class="question-mark">?</span>.spending_counters = thor_wallet
-                .spending_counter()
-                .ok_or(Error::SpendingCounter)<span class="question-mark">?
-                </span>.get_valid_counters()
-                .into_iter()
-                .map(|x| x.into())
-                .collect();
+            <span class="kw">let </span>counters = thor_wallet.spending_counter()<span class="question-mark">?</span>.get_valid_counters();
+            <span class="self">self</span>.wallets.wallet_mut()<span class="question-mark">?</span>.spending_counters = [
+                counters[<span class="number">0</span>].into(),
+                counters[<span class="number">1</span>].into(),
+                counters[<span class="number">2</span>].into(),
+                counters[<span class="number">3</span>].into(),
+                counters[<span class="number">4</span>].into(),
+                counters[<span class="number">5</span>].into(),
+                counters[<span class="number">6</span>].into(),
+                counters[<span class="number">7</span>].into(),
+            ];
         }
         <span class="prelude-val">Ok</span>(check)
     }

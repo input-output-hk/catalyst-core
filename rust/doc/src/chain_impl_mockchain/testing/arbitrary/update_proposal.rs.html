@@ -128,8 +128,8 @@
 
     <span class="kw">pub fn </span>gen_votes(<span class="kw-2">&amp;</span><span class="self">self</span>, proposal_id: UpdateProposalId) -&gt; Vec&lt;UpdateVote&gt; {
         <span class="self">self</span>.voters
-            .iter()
-            .map(|(id, <span class="kw">_</span>)| UpdateVote::new(proposal_id, id.clone()))
+            .keys()
+            .map(|id| UpdateVote::new(proposal_id, id.clone()))
             .collect()
     }
 }

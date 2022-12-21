@@ -130,30 +130,61 @@
 <span id="130">130</span>
 <span id="131">131</span>
 <span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>registration;
 
 <span class="kw">pub use </span><span class="kw">crate</span>::wallet::registration::{
-    GeneralTransactionMetadataInfo, RegistrationBuilder, METADATUM_1, METADATUM_2, METADATUM_3,
-    METADATUM_4, REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
+    GeneralTransactionMetadataInfo, JsonConversionError, RegistrationTransactionBuilder,
+    METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4, REGISTRATION_METADATA_IDX,
+    REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
+    REGISTRATION_SIGNATURE_METADATA_IDX,
 };
-<span class="kw">use </span>cardano_serialization_lib::address::{NetworkInfo, RewardAddress, StakeCredential};
+<span class="kw">use </span>cardano_serialization_lib::address::{
+    BaseAddress, NetworkInfo, RewardAddress, StakeCredential,
+};
 <span class="kw">use </span>cardano_serialization_lib::crypto::{PrivateKey, PublicKey};
-<span class="kw">use </span>cardano_serialization_lib::metadata::GeneralTransactionMetadata;
+<span class="kw">use </span>cardano_serialization_lib::Transaction;
 <span class="kw">use </span>chain_addr::Discrimination;
 <span class="kw">use </span>jormungandr_lib::crypto::account::Identifier;
 <span class="kw">use </span>jormungandr_lib::interfaces::Address;
 <span class="kw">use </span>rand::{CryptoRng, RngCore};
 <span class="kw">use </span>snapshot_lib::registration::Delegations;
 
-<span class="doccomment">/// Represents Cardano mainnet wallet which generate registration transaction metadata
-</span><span class="kw">pub struct </span>MainnetWallet {
+<span class="doccomment">/// Represents Cardano mainnet wallet which is able to generate registration transaction metadata
+</span><span class="kw">pub struct </span>CardanoWallet {
     catalyst: thor::Wallet,
     stake_key: PrivateKey,
     payment_key: PrivateKey,
+    network: NetworkInfo,
     stake: u64,
 }
 
-<span class="kw">impl </span>MainnetWallet {
+<span class="kw">impl </span>CardanoWallet {
     <span class="doccomment">/// Creates new wallet with given ada. Currently wallet is purely used for testing purposes,
     /// therefore we treat stake as arbitrary number not connected to any blockchain state.
     /// # Panics
@@ -176,6 +207,7 @@
             catalyst: thor::Wallet::new_account(<span class="kw-2">&amp;mut </span>rng, Discrimination::Production),
             stake_key: PrivateKey::generate_ed25519extended().unwrap(),
             payment_key: PrivateKey::generate_ed25519extended().unwrap(),
+            network: NetworkInfo::mainnet(),
             stake,
         }
     }
@@ -183,8 +215,19 @@
     <span class="doccomment">/// Rewards address based on stake public key
     </span><span class="attribute">#[must_use]
     </span><span class="kw">pub fn </span>reward_address(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; RewardAddress {
-        <span class="kw">let </span>staking_key = StakeCredential::from_keyhash(<span class="kw-2">&amp;</span><span class="self">self</span>.stake_key.to_public().hash());
-        RewardAddress::new(NetworkInfo::mainnet().network_id(), <span class="kw-2">&amp;</span>staking_key)
+        RewardAddress::new(<span class="self">self</span>.network.network_id(), <span class="kw-2">&amp;</span><span class="self">self</span>.stake_credential())
+    }
+
+    <span class="doccomment">/// Stake address based on stake public key
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>stake_credential(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; StakeCredential {
+        StakeCredential::from_keyhash(<span class="kw-2">&amp;</span><span class="self">self</span>.stake_key.to_public().hash())
+    }
+
+    <span class="doccomment">/// Payment address based on stake public key
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>payment_credential(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; StakeCredential {
+        StakeCredential::from_keyhash(<span class="kw-2">&amp;</span><span class="self">self</span>.payment_key.to_public().hash())
     }
 
     <span class="doccomment">/// Cardano stake public key
@@ -205,6 +248,15 @@
         <span class="self">self</span>.catalyst.secret_key().to_public().into()
     }
 
+    <span class="doccomment">/// Mainnet address
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>address(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; BaseAddress {
+        BaseAddress::new(
+            <span class="self">self</span>.network.network_id(),
+            <span class="kw-2">&amp;</span><span class="self">self</span>.payment_credential(),
+            <span class="kw-2">&amp;</span><span class="self">self</span>.stake_credential(),
+        )
+    }
     <span class="doccomment">/// Catalyst address
     </span><span class="attribute">#[must_use]
     </span><span class="kw">pub fn </span>catalyst_address(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Address {
@@ -218,8 +270,8 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         delegations: Delegations,
         slot_no: u64,
-    ) -&gt; GeneralTransactionMetadata {
-        RegistrationBuilder::new(<span class="self">self</span>)
+    ) -&gt; Transaction {
+        RegistrationTransactionBuilder::new(<span class="self">self</span>)
             .to(delegations)
             .on(slot_no)
             .build()
@@ -231,13 +283,13 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         delegations: Vec&lt;(Identifier, u32)&gt;,
         slot_no: u64,
-    ) -&gt; GeneralTransactionMetadata {
+    ) -&gt; Transaction {
         <span class="self">self</span>.generate_voting_registration(Delegations::New(delegations), slot_no)
     }
 
     <span class="doccomment">/// Creates direct (a.k.a self) voting registration metadata according to [Cip-36](https://cips.cardano.org/cips/cip36/) on given absolut slot number.
     </span><span class="attribute">#[must_use]
-    </span><span class="kw">pub fn </span>generate_direct_voting_registration(<span class="kw-2">&amp;</span><span class="self">self</span>, slot_no: u64) -&gt; GeneralTransactionMetadata {
+    </span><span class="kw">pub fn </span>generate_direct_voting_registration(<span class="kw-2">&amp;</span><span class="self">self</span>, slot_no: u64) -&gt; Transaction {
         <span class="self">self</span>.generate_voting_registration(
             Delegations::Legacy(<span class="self">self</span>.catalyst.identifier().into()),
             slot_no,

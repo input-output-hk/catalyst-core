@@ -212,7 +212,7 @@
     <span class="kw">pub fn </span>save_to&lt;P: AsRef&lt;Path&gt;&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, dir: P) -&gt; std::io::Result&lt;()&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(inner) = <span class="kw-2">&amp;</span><span class="self">self</span>.inner {
             <span class="kw">let </span>dir = dir.as_ref().join(<span class="self">self</span>.template().id());
-            <span class="kw">let </span>file = std::fs::File::create(<span class="kw-2">&amp;</span>dir)<span class="question-mark">?</span>;
+            <span class="kw">let </span>file = std::fs::File::create(dir)<span class="question-mark">?</span>;
             inner.save_to(file)
         } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())

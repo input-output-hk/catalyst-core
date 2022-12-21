@@ -162,24 +162,24 @@
 }
 
 <span class="kw">pub fn </span>parse_proposals(proposals: PathBuf) -&gt; <span class="prelude-ty">Result</span>&lt;LinkedList&lt;ProposalTemplate&gt;, TemplateLoad&gt; {
-    serde_json::from_str(<span class="kw-2">&amp;</span>std::fs::read_to_string(<span class="kw-2">&amp;</span>proposals)<span class="question-mark">?</span>)
+    serde_json::from_str(<span class="kw-2">&amp;</span>std::fs::read_to_string(proposals)<span class="question-mark">?</span>)
         .map_err(|err| TemplateLoad::Proposal(err.to_string()))
 }
 
 <span class="kw">pub fn </span>parse_challenges(
     challenges: PathBuf,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;LinkedList&lt;ChallengeTemplate&gt;, TemplateLoad&gt; {
-    serde_json::from_str(<span class="kw-2">&amp;</span>std::fs::read_to_string(<span class="kw-2">&amp;</span>challenges)<span class="question-mark">?</span>)
+    serde_json::from_str(<span class="kw-2">&amp;</span>std::fs::read_to_string(challenges)<span class="question-mark">?</span>)
         .map_err(|err| TemplateLoad::Challenge(err.to_string()))
 }
 
 <span class="kw">pub fn </span>parse_funds(funds: PathBuf) -&gt; <span class="prelude-ty">Result</span>&lt;LinkedList&lt;FundTemplate&gt;, TemplateLoad&gt; {
-    serde_json::from_str(<span class="kw-2">&amp;</span>std::fs::read_to_string(<span class="kw-2">&amp;</span>funds)<span class="question-mark">?</span>)
+    serde_json::from_str(<span class="kw-2">&amp;</span>std::fs::read_to_string(funds)<span class="question-mark">?</span>)
         .map_err(|err| TemplateLoad::Fund(err.to_string()))
 }
 
 <span class="kw">pub fn </span>parse_reviews(reviews: PathBuf) -&gt; <span class="prelude-ty">Result</span>&lt;LinkedList&lt;ReviewTemplate&gt;, TemplateLoad&gt; {
-    serde_json::from_str(<span class="kw-2">&amp;</span>std::fs::read_to_string(<span class="kw-2">&amp;</span>reviews)<span class="question-mark">?</span>)
+    serde_json::from_str(<span class="kw-2">&amp;</span>std::fs::read_to_string(reviews)<span class="question-mark">?</span>)
         .map_err(|err| TemplateLoad::Review(err.to_string()))
 }
 

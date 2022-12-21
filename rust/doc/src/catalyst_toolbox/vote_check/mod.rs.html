@@ -113,7 +113,6 @@
 <span id="113">113</span>
 <span id="114">114</span>
 <span id="115">115</span>
-<span id="116">116</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>explorer;
 
 <span class="kw">use </span>assert_fs::TempDir;
@@ -180,8 +179,7 @@
             }))
             .build();
 
-        <span class="kw">let </span>inner = JormungandrBootstrapper::default()
-            .with_node_config(node_config)
+        <span class="kw">let </span>inner = JormungandrBootstrapper::default_with_config(node_config)
             .passive()
             .with_block0_hash(Hash::from_str(<span class="kw-2">&amp;</span>genesis_block_hash).unwrap())
             .with_jormungandr(jormungandr_bin.unwrap_or_else(|| PathBuf::from(JORMUNGANDR_APP)))

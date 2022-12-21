@@ -413,10 +413,6 @@
 <span id="413">413</span>
 <span id="414">414</span>
 <span id="415">415</span>
-<span id="416">416</span>
-<span id="417">417</span>
-<span id="418">418</span>
-<span id="419">419</span>
 </pre><pre class="rust"><code><span class="kw">pub use </span><span class="self">self</span>::{
     chain_sender::FragmentChainSender,
     export::{FragmentExporter, FragmentExporterError},
@@ -710,11 +706,7 @@
         choice: <span class="kw-2">&amp;</span>Choice,
     ) -&gt; Fragment {
         <span class="kw">let </span>inner_wallet = wallet.clone().into();
-        <span class="kw">let </span>vote_cast = VoteCast::new(
-            vote_plan.to_id(),
-            proposal_index <span class="kw">as </span>u8,
-            Payload::public(<span class="kw-2">*</span>choice),
-        );
+        <span class="kw">let </span>vote_cast = VoteCast::new(vote_plan.to_id(), proposal_index, Payload::public(<span class="kw-2">*</span>choice));
         <span class="self">self</span>.fragment_factory
             .vote_cast(<span class="self">self</span>.valid_until, <span class="kw-2">&amp;</span>inner_wallet, vote_cast)
     }
@@ -752,7 +744,7 @@
 
         <span class="kw">let </span>vote_cast = VoteCast::new(
             vote_plan.to_id(),
-            proposal_index <span class="kw">as </span>u8,
+            proposal_index,
             Payload::Private {
                 encrypted_vote,
                 proof,

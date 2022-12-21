@@ -278,7 +278,7 @@
         <span class="self">self</span>.internal_counters.get_valid_counter()
     }
 
-    <span class="kw">pub fn </span>internal_counters(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;SpendingCounter&gt; {
+    <span class="kw">pub fn </span>internal_counters(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; [SpendingCounter; SpendingCounterIncreasing::LANES] {
         <span class="self">self</span>.internal_counters.get_valid_counters()
     }
 

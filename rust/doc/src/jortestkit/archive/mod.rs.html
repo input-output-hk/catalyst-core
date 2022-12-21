@@ -101,7 +101,7 @@
                 .ok_or_else(|| DecompressError::UnsafeFileName(file.name().to_owned()))<span class="question-mark">?</span>;
             <span class="kw">let </span>outpath = output.join(file_name);
             <span class="kw">let </span><span class="kw-2">mut </span>outfile =
-                File::create(<span class="kw-2">&amp;</span>outpath).map_err(DecompressError::CannotWriteOutputFile)<span class="question-mark">?</span>;
+                File::create(outpath).map_err(DecompressError::CannotWriteOutputFile)<span class="question-mark">?</span>;
             io::copy(<span class="kw-2">&amp;mut </span>file, <span class="kw-2">&amp;mut </span>outfile)<span class="question-mark">?</span>;
         }
         <span class="kw">return </span><span class="prelude-val">Ok</span>(());

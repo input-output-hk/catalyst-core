@@ -181,8 +181,8 @@
         <span class="kw">let </span>node_id = Arbitrary::arbitrary(g);
 
         <span class="kw">let </span>vrf_proof = {
-            <span class="kw">let </span>sk = RistrettoGroup2HashDh::generate(<span class="kw-2">&amp;mut </span>tcg.get_rng(<span class="number">0</span>));
-            RistrettoGroup2HashDh::evaluate_and_prove(<span class="kw-2">&amp;</span>sk, <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>], <span class="kw-2">&amp;mut </span>tcg.get_rng(<span class="number">1</span>))
+            <span class="kw">let </span>sk = RistrettoGroup2HashDh::generate(tcg.get_rng(<span class="number">0</span>));
+            RistrettoGroup2HashDh::evaluate_and_prove(<span class="kw-2">&amp;</span>sk, <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>], tcg.get_rng(<span class="number">1</span>))
         };
 
         <span class="kw">let </span>kes_proof = {

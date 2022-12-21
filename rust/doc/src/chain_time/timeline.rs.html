@@ -64,7 +64,13 @@
 <span id="64">64</span>
 <span id="65">65</span>
 <span id="66">66</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::units::DurationSeconds;
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Timeline
+//!
+//! A [`Timeline`] represents a frame of reference relative to a point in earth time
+</span><span class="kw">use </span><span class="kw">crate</span>::units::DurationSeconds;
 <span class="kw">use </span>std::time::{Duration, SystemTime};
 
 <span class="doccomment">/// Represent a timeline with a specific start point rooted on earth time.

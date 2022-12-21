@@ -115,6 +115,10 @@
 <span id="115">115</span>
 <span id="116">116</span>
 <span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
 </pre><pre class="rust"><code><span class="kw">use </span>bigdecimal::BigDecimal;
 <span class="kw">use </span>cardano_serialization_lib::address::NetworkInfo;
 <span class="kw">use </span>microtype::microtype;
@@ -181,9 +185,12 @@
     <span class="attribute">#[derive(Debug, PartialEq, Clone)]
     #[string]
     </span><span class="kw">pub </span>String {
-        DbName,
-        DbUser,
-        DbHost,
+        <span class="doccomment">/// Database name
+        </span>DbName,
+        <span class="doccomment">/// Database user
+        </span>DbUser,
+        <span class="doccomment">/// Database host
+        </span>DbHost,
         RewardsAddr,
         StakeAddr,
         StakePubKey,
@@ -195,7 +202,8 @@
     <span class="attribute">#[secret]
     #[string]
     </span><span class="kw">pub </span>String {
-        DbPass,
+         <span class="doccomment">/// Database password
+        </span>DbPass,
     }
 
     <span class="attribute">#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]

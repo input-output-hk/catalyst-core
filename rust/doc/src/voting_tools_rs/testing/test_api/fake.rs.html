@@ -153,6 +153,10 @@
 <span id="153">153</span>
 <span id="154">154</span>
 <span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data_provider::DataProvider;
 <span class="kw">use </span><span class="kw">crate</span>::model::{
     Delegations, Reg, RegoMetadata, RegoSignature, RewardsAddr, Signature, SlotNo, StakeVKey, TxId,
@@ -161,6 +165,7 @@
 <span class="kw">use </span>bigdecimal::{BigDecimal, FromPrimitive};
 <span class="kw">use </span>cardano_serialization_lib::address::Address;
 <span class="kw">use </span>cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey};
+<span class="kw">use </span>cardano_serialization_lib::utils::BigNum;
 <span class="kw">use </span>mainnet_lib::{
     InMemoryDbSync, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
     REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
@@ -292,10 +297,13 @@
         <span class="prelude-val">Ok</span>(stake_addrs
             .iter()
             .map(|addr| {
-                (
-                    addr.as_str(),
-                    BigDecimal::from(<span class="kw-2">*</span><span class="self">self</span>.db_sync_instance.stakes().get(addr).unwrap_or(<span class="kw-2">&amp;</span><span class="number">0u64</span>)),
-                )
+                <span class="kw">let </span>big_num = <span class="self">self
+                    </span>.db_sync_instance
+                    .stakes()
+                    .get(addr)
+                    .unwrap_or(<span class="kw-2">&amp;</span>BigNum::zero())
+                    .to_string();
+                (addr.as_str(), BigDecimal::from_str(<span class="kw-2">&amp;</span>big_num).unwrap())
             })
             .collect())
     }

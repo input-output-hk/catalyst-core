@@ -178,72 +178,22 @@
 <span id="178">178</span>
 <span id="179">179</span>
 <span id="180">180</span>
-<span id="181">181</span>
-<span id="182">182</span>
-<span id="183">183</span>
-<span id="184">184</span>
-<span id="185">185</span>
-<span id="186">186</span>
-<span id="187">187</span>
-<span id="188">188</span>
-<span id="189">189</span>
-<span id="190">190</span>
-<span id="191">191</span>
-<span id="192">192</span>
-<span id="193">193</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db_sync::InMemoryDbSync;
-<span class="kw">use </span><span class="kw">crate</span>::wallet::MainnetWallet;
-<span class="kw">use </span>assert_fs::TempDir;
+</pre><pre class="rust"><code><span class="kw">pub use </span><span class="kw">crate</span>::cardano_node::settings::Settings;
+<span class="kw">use </span><span class="kw">crate</span>::cardano_node::{Block0, BlockBuilder};
+<span class="kw">use </span><span class="kw">crate</span>::db_sync::{InMemoryDbSync, SharedInMemoryDbSync};
+<span class="kw">use </span><span class="kw">crate</span>::wallet::CardanoWallet;
+<span class="kw">use crate</span>::{InMemoryNode, Ledger};
 <span class="kw">use </span>cardano_serialization_lib::address::Address;
-<span class="kw">use </span>cardano_serialization_lib::metadata::GeneralTransactionMetadata;
+<span class="kw">use </span>cardano_serialization_lib::Transaction;
 <span class="kw">use </span>jormungandr_lib::crypto::account::Identifier;
-<span class="kw">use </span>jormungandr_lib::interfaces::BlockDate;
 <span class="kw">use </span>std::collections::HashSet;
-
-<span class="doccomment">/// Mainnet network mock. It holds current block date as indicator on which epoch and slot mainnet
-/// network currently is. Also struct can have multiple db sync which once register can be notified
-/// on incoming transactions.
-</span><span class="kw">pub struct </span>MainnetNetwork&lt;<span class="lifetime">&#39;a</span>&gt; {
-    block_date: BlockDate,
-    observers: Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>InMemoryDbSync&gt;,
-}
-
-<span class="kw">impl </span>Default <span class="kw">for </span>MainnetNetwork&lt;<span class="lifetime">&#39;_</span>&gt; {
-    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
-            block_date: BlockDate::new(<span class="number">0</span>, <span class="number">0</span>),
-            observers: <span class="macro">vec!</span>[],
-        }
-    }
-}
-
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; MainnetNetwork&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="doccomment">/// accepts registration tx in form of raw metadata and notifies all db sync instances
-    </span><span class="kw">pub fn </span>accept_registration_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, registration: <span class="kw-2">&amp;</span>GeneralTransactionMetadata) {
-        <span class="kw">for </span>observer <span class="kw">in </span><span class="kw-2">&amp;mut </span><span class="self">self</span>.observers {
-            observer.push_transaction(<span class="self">self</span>.block_date, registration.clone());
-        }
-    }
-
-    <span class="doccomment">/// register db sync instance as observer, which will be notified on each incoming transaction
-    </span><span class="kw">pub fn </span>sync_with(<span class="kw-2">&amp;mut </span><span class="self">self</span>, observer: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>InMemoryDbSync) {
-        <span class="self">self</span>.observers.push(observer);
-    }
-
-    <span class="doccomment">/// accept address and it&#39;s ada value. This is simplification for calculating wallet stake, since
-    /// out point of focus are only registration transactions
-    </span><span class="kw">pub fn </span>accept_address(<span class="kw-2">&amp;mut </span><span class="self">self</span>, address: <span class="kw-2">&amp;</span>Address, stake: u64) {
-        <span class="kw">for </span>observer <span class="kw">in </span><span class="kw-2">&amp;mut </span><span class="self">self</span>.observers {
-            observer.push_address(address, stake);
-        }
-    }
-}
 
 <span class="doccomment">/// Cardano Network state builder, responsible to create a given state of cardano network which will
 /// be an input for snapshot
 </span><span class="attribute">#[derive(Default)]
 </span><span class="kw">pub struct </span>MainnetNetworkBuilder {
     states: Vec&lt;MainnetWalletState&gt;,
+    settings: Settings,
 }
 
 <span class="kw">impl </span>MainnetNetworkBuilder {
@@ -254,23 +204,35 @@
         <span class="self">self
     </span>}
 
-    <span class="attribute">#[must_use]
-    #[allow(clippy::missing_panics_doc)]
-    </span><span class="doccomment">/// Builds dbsync instance and set or representatives identifiers
-    </span><span class="kw">pub fn </span>build(<span class="self">self</span>, temp_dir: <span class="kw-2">&amp;</span>TempDir) -&gt; (InMemoryDbSync, HashSet&lt;Identifier&gt;) {
-        <span class="kw">let </span><span class="kw-2">mut </span>mainnet_network = MainnetNetwork::default();
-        <span class="kw">let </span><span class="kw-2">mut </span>db_sync_instance = InMemoryDbSync::new(temp_dir);
+    <span class="doccomment">/// Builds block0
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>build_block0(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Block0 {
+        <span class="kw">let </span>txs: Vec&lt;<span class="kw">_</span>&gt; = <span class="self">self
+            </span>.states
+            .iter()
+            .filter_map(|x| x.registration_tx.clone())
+            .collect();
 
-        mainnet_network.sync_with(<span class="kw-2">&amp;mut </span>db_sync_instance);
+        Block0 {
+            block: BlockBuilder::next_block(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>txs),
+            settings: <span class="self">self</span>.settings.clone(),
+        }
+    }
 
-        <span class="self">self</span>.states.iter().for_each(|x| {
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(tx) = <span class="kw-2">&amp;</span>x.registration {
-                mainnet_network.accept_registration_tx(tx);
-            }
-            mainnet_network.accept_address(<span class="kw-2">&amp;</span>x.stake_address, x.stake);
-        });
+    <span class="doccomment">/// Builds dbsync instance and set or representatives identifiers
+    ///
+    /// # Panics
+    ///
+    /// On internal logic issue
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>build(<span class="self">self</span>) -&gt; (InMemoryDbSync, Ledger, HashSet&lt;Identifier&gt;) {
+        <span class="kw">let </span>block0 = <span class="self">self</span>.build_block0();
+        <span class="kw">let </span>db_sync = InMemoryDbSync::from_block0(<span class="kw-2">&amp;</span>block0);
+        <span class="kw">let </span>ledger = Ledger::new(block0);
+
         (
-            db_sync_instance,
+            db_sync,
+            ledger,
             <span class="self">self</span>.states
                 .iter()
                 .map(|x| x.rep.as_ref())
@@ -278,6 +240,18 @@
                 .map(|x| x.unwrap().clone())
                 .collect(),
         )
+    }
+
+    <span class="doccomment">/// Builds dbsync instance and set or representatives identifiers tailored for async usage
+    ///
+    /// # Panics
+    ///
+    /// On internal logic issue
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>build_shared(<span class="self">self</span>) -&gt; (SharedInMemoryDbSync, InMemoryNode, HashSet&lt;Identifier&gt;) {
+        <span class="kw">let </span>(db_sync, ledger, reps) = <span class="self">self</span>.build();
+        <span class="kw">let </span><span class="kw-2">mut </span>node = InMemoryNode::start_from_ledger(ledger);
+        (db_sync.connect_to_node(<span class="kw-2">&amp;mut </span>node), node, reps)
     }
 }
 
@@ -295,21 +269,21 @@
     /// given nonce = `slot_no`
     </span><span class="kw">fn </span>as_direct_voter_on_slot_no(<span class="kw-2">&amp;</span><span class="self">self</span>, slot_no: u64) -&gt; MainnetWalletState;
     <span class="doccomment">/// wallet registers as delegator, meaning it will send delegation registration
-    </span><span class="kw">fn </span>as_delegator(<span class="kw-2">&amp;</span><span class="self">self</span>, delegations: Vec&lt;(<span class="kw-2">&amp;</span>MainnetWallet, u8)&gt;) -&gt; MainnetWalletState;
+    </span><span class="kw">fn </span>as_delegator(<span class="kw-2">&amp;</span><span class="self">self</span>, delegations: Vec&lt;(<span class="kw-2">&amp;</span>CardanoWallet, u8)&gt;) -&gt; MainnetWalletState;
     <span class="doccomment">/// wallet registers as delegator, meaning it will send delegation registration with
     /// given nonce = `slot_no`
     </span><span class="kw">fn </span>as_delegator_on_slot_no(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        delegations: Vec&lt;(<span class="kw-2">&amp;</span>MainnetWallet, u8)&gt;,
+        delegations: Vec&lt;(<span class="kw-2">&amp;</span>CardanoWallet, u8)&gt;,
         slot_no: u64,
     ) -&gt; MainnetWalletState;
 }
 
-<span class="kw">impl </span>MainnetWalletStateBuilder <span class="kw">for </span>MainnetWallet {
+<span class="kw">impl </span>MainnetWalletStateBuilder <span class="kw">for </span>CardanoWallet {
     <span class="kw">fn </span>as_representative(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; MainnetWalletState {
         MainnetWalletState {
             rep: <span class="prelude-val">Some</span>(<span class="self">self</span>.catalyst_public_key()),
-            registration: <span class="prelude-val">None</span>,
+            registration_tx: <span class="prelude-val">None</span>,
             stake: <span class="self">self</span>.stake(),
             stake_address: <span class="self">self</span>.reward_address().to_address(),
         }
@@ -322,24 +296,24 @@
     <span class="kw">fn </span>as_direct_voter_on_slot_no(<span class="kw-2">&amp;</span><span class="self">self</span>, slot_no: u64) -&gt; MainnetWalletState {
         MainnetWalletState {
             rep: <span class="prelude-val">None</span>,
-            registration: <span class="prelude-val">Some</span>(<span class="self">self</span>.generate_direct_voting_registration(slot_no)),
+            registration_tx: <span class="prelude-val">Some</span>(<span class="self">self</span>.generate_direct_voting_registration(slot_no)),
             stake: <span class="self">self</span>.stake(),
             stake_address: <span class="self">self</span>.reward_address().to_address(),
         }
     }
 
-    <span class="kw">fn </span>as_delegator(<span class="kw-2">&amp;</span><span class="self">self</span>, delegations: Vec&lt;(<span class="kw-2">&amp;</span>MainnetWallet, u8)&gt;) -&gt; MainnetWalletState {
+    <span class="kw">fn </span>as_delegator(<span class="kw-2">&amp;</span><span class="self">self</span>, delegations: Vec&lt;(<span class="kw-2">&amp;</span>CardanoWallet, u8)&gt;) -&gt; MainnetWalletState {
         <span class="self">self</span>.as_delegator_on_slot_no(delegations, <span class="number">0</span>)
     }
 
     <span class="kw">fn </span>as_delegator_on_slot_no(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        delegations: Vec&lt;(<span class="kw-2">&amp;</span>MainnetWallet, u8)&gt;,
+        delegations: Vec&lt;(<span class="kw-2">&amp;</span>CardanoWallet, u8)&gt;,
         slot_no: u64,
     ) -&gt; MainnetWalletState {
         MainnetWalletState {
             rep: <span class="prelude-val">None</span>,
-            registration: <span class="prelude-val">Some</span>(
+            registration_tx: <span class="prelude-val">Some</span>(
                 <span class="self">self</span>.generate_delegated_voting_registration(
                     delegations
                         .into_iter()
@@ -357,7 +331,7 @@
 <span class="doccomment">/// Represents wallet candidate for registration. Defines wallet role (delegator/direct-voter/representative)
 </span><span class="kw">pub struct </span>MainnetWalletState {
     rep: <span class="prelude-ty">Option</span>&lt;Identifier&gt;,
-    registration: <span class="prelude-ty">Option</span>&lt;GeneralTransactionMetadata&gt;,
+    registration_tx: <span class="prelude-ty">Option</span>&lt;Transaction&gt;,
     stake: u64,
     stake_address: Address,
 }
@@ -370,8 +344,8 @@
     }
     <span class="doccomment">/// get registration metadata
     </span><span class="attribute">#[must_use]
-    </span><span class="kw">pub fn </span>registration(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;GeneralTransactionMetadata&gt; {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.registration
+    </span><span class="kw">pub fn </span>registration(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;Transaction&gt; {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.registration_tx
     }
     <span class="doccomment">/// get wallet stake
     </span><span class="attribute">#[must_use]

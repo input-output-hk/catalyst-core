@@ -150,10 +150,10 @@
     }
 
     <span class="kw">pub fn </span>start_node(<span class="kw-2">&amp;</span><span class="self">self</span>, temp_dir: TempDir) -&gt; <span class="prelude-ty">Result</span>&lt;JormungandrProcess, StartupError&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>bootstrapper = JormungandrBootstrapper::default()
-            .with_block0_configuration(<span class="self">self</span>.block0_config.clone())
-            .with_node_config(<span class="self">self</span>.node_config.clone())
-            .with_secret(<span class="self">self</span>.secret_factory.clone());
+        <span class="kw">let </span><span class="kw-2">mut </span>bootstrapper =
+            JormungandrBootstrapper::default_with_config(<span class="self">self</span>.node_config.clone())
+                .with_block0_configuration(<span class="self">self</span>.block0_config.clone())
+                .with_secret(<span class="self">self</span>.secret_factory.clone());
         <span class="kw">if </span><span class="self">self</span>.reward_history {
             bootstrapper = bootstrapper.with_rewards_history();
         }
@@ -161,10 +161,10 @@
     }
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>starter(<span class="kw-2">&amp;</span><span class="self">self</span>, temp_dir: TempDir) -&gt; <span class="prelude-ty">Result</span>&lt;Starter, StartupError&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>bootstrapper = JormungandrBootstrapper::default()
-            .with_block0_configuration(<span class="self">self</span>.block0_config.clone())
-            .with_node_config(<span class="self">self</span>.node_config.clone())
-            .with_secret(<span class="self">self</span>.secret_factory.clone());
+        <span class="kw">let </span><span class="kw-2">mut </span>bootstrapper =
+            JormungandrBootstrapper::default_with_config(<span class="self">self</span>.node_config.clone())
+                .with_block0_configuration(<span class="self">self</span>.block0_config.clone())
+                .with_secret(<span class="self">self</span>.secret_factory.clone());
         <span class="kw">if </span><span class="self">self</span>.reward_history {
             bootstrapper = bootstrapper.with_rewards_history();
         }

@@ -1573,8 +1573,6 @@
 <span id="1573">1573</span>
 <span id="1574">1574</span>
 <span id="1575">1575</span>
-<span id="1576">1576</span>
-<span id="1577">1577</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module holds all the necessary methods to be able to serialize the ledger.
 //! There are 2 methods for each type that needs to be serialize `pack_*` and `unpack_*`.
 //!
@@ -1615,8 +1613,7 @@
 </span><span class="kw">use </span><span class="kw">super</span>::pots;
 <span class="kw">use super</span>::{Entry, EntryOwned};
 <span class="kw">use </span><span class="kw">crate</span>::accounting::account::{
-    AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounter,
-    SpendingCounterIncreasing,
+    AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounterIncreasing,
 };
 <span class="kw">use </span><span class="kw">crate</span>::certificate::{
     PoolId, PoolRegistration, Proposal, Proposals, UpdateProposal, UpdateProposalId, UpdateVoterId,
@@ -1738,19 +1735,18 @@
 <span class="kw">fn </span>unpack_spending_strategy(
     codec: <span class="kw-2">&amp;mut </span>Codec&lt;<span class="kw-2">&amp;</span>[u8]&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;SpendingCounterIncreasing, ReadError&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>counters = Vec::new();
-    <span class="kw">for _ in </span><span class="number">0</span>..SpendingCounterIncreasing::LANES {
-        <span class="kw">let </span>counter = SpendingCounter(codec.get_be_u32()<span class="question-mark">?</span>);
-        counters.push(counter);
-    }
-    <span class="kw">let </span>got_length = counters.len();
-    SpendingCounterIncreasing::new_from_counters(counters).ok_or_else(|| {
-        ReadError::InvalidData(<span class="macro">format!</span>(
-            <span class="string">&quot;wrong numbers of lanes, expecting {} but got {}&quot;</span>,
-            SpendingCounterIncreasing::LANES,
-            got_length,
-        ))
-    })
+    <span class="kw">let </span>counters = [
+        codec.get_be_u32()<span class="question-mark">?</span>.into(),
+        codec.get_be_u32()<span class="question-mark">?</span>.into(),
+        codec.get_be_u32()<span class="question-mark">?</span>.into(),
+        codec.get_be_u32()<span class="question-mark">?</span>.into(),
+        codec.get_be_u32()<span class="question-mark">?</span>.into(),
+        codec.get_be_u32()<span class="question-mark">?</span>.into(),
+        codec.get_be_u32()<span class="question-mark">?</span>.into(),
+        codec.get_be_u32()<span class="question-mark">?</span>.into(),
+    ];
+    SpendingCounterIncreasing::new_from_counters(counters)
+        .map_err(|e| ReadError::InvalidData(e.to_string()))
 }
 
 <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]

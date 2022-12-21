@@ -209,11 +209,30 @@
 <span id="209">209</span>
 <span id="210">210</span>
 <span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{Error, Proposal};
 <span class="kw">use </span>chain_core::property::Serialize <span class="kw">as _</span>;
 <span class="kw">use </span>chain_crypto::SecretKey;
 <span class="kw">use </span>chain_impl_mockchain::{
-    account::SpendingCounter,
+    account::SpendingCounterIncreasing,
     block::BlockDate,
     certificate::Certificate,
     fragment::{Fragment, FragmentId},
@@ -273,12 +292,18 @@
 
     <span class="doccomment">/// get the current spending counter
     ///
-    </span><span class="kw">pub fn </span>spending_counter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u32&gt; {
-        <span class="self">self</span>.account
-            .spending_counter()
-            .into_iter()
-            .map(SpendingCounter::into)
-            .collect()
+    </span><span class="kw">pub fn </span>spending_counter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; [u32; SpendingCounterIncreasing::LANES] {
+        <span class="kw">let </span>spending_counters = <span class="self">self</span>.account.spending_counter();
+        [
+            spending_counters[<span class="number">0</span>].into(),
+            spending_counters[<span class="number">1</span>].into(),
+            spending_counters[<span class="number">2</span>].into(),
+            spending_counters[<span class="number">3</span>].into(),
+            spending_counters[<span class="number">4</span>].into(),
+            spending_counters[<span class="number">5</span>].into(),
+            spending_counters[<span class="number">6</span>].into(),
+            spending_counters[<span class="number">7</span>].into(),
+        ]
     }
 
     <span class="doccomment">/// get the total value in the wallet
@@ -303,11 +328,24 @@
     /// before doing any transactions, otherwise future transactions may fail
     /// to be accepted by the blockchain nodes because of an invalid witness
     /// signature.
-    </span><span class="kw">pub fn </span>set_state(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: Value, counters: Vec&lt;u32&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+    </span><span class="kw">pub fn </span>set_state(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        value: Value,
+        counters: [u32; SpendingCounterIncreasing::LANES],
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="self">self</span>.account
             .set_state(
                 value,
-                counters.into_iter().map(SpendingCounter::from).collect(),
+                [
+                    counters[<span class="number">0</span>].into(),
+                    counters[<span class="number">1</span>].into(),
+                    counters[<span class="number">2</span>].into(),
+                    counters[<span class="number">3</span>].into(),
+                    counters[<span class="number">4</span>].into(),
+                    counters[<span class="number">5</span>].into(),
+                    counters[<span class="number">6</span>].into(),
+                    counters[<span class="number">7</span>].into(),
+                ],
             )
             .map_err(|<span class="kw">_</span>| Error::invalid_spending_counters())
     }

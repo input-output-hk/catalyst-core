@@ -146,7 +146,7 @@
     }
     <span class="attribute">#[allow(dead_code)]
     </span><span class="kw">fn </span>progress_bar_failure(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-        <span class="self">self</span>.progress_bar.finish_with_message(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+        <span class="self">self</span>.progress_bar.finish_with_message(<span class="macro">format!</span>(
             <span class="string">&quot;{} {} {}&quot;</span>,
             <span class="kw-2">*</span>style::icons::jormungandr,
             style::binary.apply_to(<span class="self">self</span>.alias()),
@@ -156,7 +156,7 @@
 
     <span class="attribute">#[allow(dead_code)]
     </span><span class="kw">fn </span>progress_bar_success(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-        <span class="self">self</span>.progress_bar.finish_with_message(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+        <span class="self">self</span>.progress_bar.finish_with_message(<span class="macro">format!</span>(
             <span class="string">&quot;{} {} {}&quot;</span>,
             <span class="kw-2">*</span>style::icons::jormungandr,
             style::binary.apply_to(<span class="self">self</span>.alias()),

@@ -454,7 +454,7 @@
     }
 
     <span class="kw">pub fn </span>with_some_consensus_leader(<span class="self">self</span>) -&gt; <span class="self">Self </span>{
-        <span class="kw">let </span>leader_key = KeyPair::generate(<span class="kw-2">&amp;mut </span>rand::thread_rng());
+        <span class="kw">let </span>leader_key = KeyPair::generate(rand::thread_rng());
         <span class="self">self</span>.with_leader_key_pair(<span class="kw-2">&amp;</span>leader_key)
     }
 
@@ -650,11 +650,11 @@
 }
 
 <span class="kw">fn </span>default_initial(discrimination: Discrimination) -&gt; Vec&lt;Initial&gt; {
-    <span class="kw">let </span>sk1: SecretKey&lt;Ed25519Extended&gt; = SecretKey::generate(<span class="kw-2">&amp;mut </span>ChaChaRng::from_seed([<span class="number">1</span>; <span class="number">32</span>]));
+    <span class="kw">let </span>sk1: SecretKey&lt;Ed25519Extended&gt; = SecretKey::generate(ChaChaRng::from_seed([<span class="number">1</span>; <span class="number">32</span>]));
     <span class="kw">let </span>pk1: PublicKey&lt;Ed25519&gt; = sk1.to_public();
     <span class="kw">let </span>initial_funds_address1 = ChainAddress(discrimination, Kind::Single(pk1));
 
-    <span class="kw">let </span>sk2: SecretKey&lt;Ed25519Extended&gt; = SecretKey::generate(<span class="kw-2">&amp;mut </span>ChaChaRng::from_seed([<span class="number">2</span>; <span class="number">32</span>]));
+    <span class="kw">let </span>sk2: SecretKey&lt;Ed25519Extended&gt; = SecretKey::generate(ChaChaRng::from_seed([<span class="number">2</span>; <span class="number">32</span>]));
     <span class="kw">let </span>pk2: PublicKey&lt;Ed25519&gt; = sk2.to_public();
     <span class="kw">let </span>initial_funds_address2 = ChainAddress(discrimination, Kind::Single(pk2));
     <span class="kw">let </span>initial_funds = <span class="macro">vec!</span>[Initial::Fund(<span class="macro">vec!</span>[
@@ -671,8 +671,8 @@
 }
 
 <span class="kw">fn </span>default_leaders() -&gt; Vec&lt;ConsensusLeaderId&gt; {
-    <span class="kw">let </span>leader_1: KeyPair&lt;Ed25519Extended&gt; = KeyPair::generate(<span class="kw-2">&amp;mut </span>ChaChaRng::from_seed([<span class="number">1</span>; <span class="number">32</span>]));
-    <span class="kw">let </span>leader_2: KeyPair&lt;Ed25519Extended&gt; = KeyPair::generate(<span class="kw-2">&amp;mut </span>ChaChaRng::from_seed([<span class="number">2</span>; <span class="number">32</span>]));
+    <span class="kw">let </span>leader_1: KeyPair&lt;Ed25519Extended&gt; = KeyPair::generate(ChaChaRng::from_seed([<span class="number">1</span>; <span class="number">32</span>]));
+    <span class="kw">let </span>leader_2: KeyPair&lt;Ed25519Extended&gt; = KeyPair::generate(ChaChaRng::from_seed([<span class="number">2</span>; <span class="number">32</span>]));
     <span class="kw">let </span><span class="kw-2">mut </span>leaders: Vec&lt;ConsensusLeaderId&gt; = Vec::new();
     <span class="kw">let </span>leader_1_pk: ConsensusLeaderId = leader_1.<span class="number">0</span>.public_key().clone().into();
     <span class="kw">let </span>leader_2_pk: ConsensusLeaderId = leader_2.<span class="number">0</span>.public_key().clone().into();

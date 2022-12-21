@@ -794,7 +794,6 @@
 <span id="794">794</span>
 <span id="795">795</span>
 <span id="796">796</span>
-<span id="797">797</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>vrfeval;
 
 <span class="kw">use crate</span>::{
@@ -1192,11 +1191,10 @@
         <span class="macro">println!</span>(<span class="string">&quot;Calculating percentage of election per pool....&quot;</span>);
         <span class="macro">println!</span>(<span class="string">&quot;parameters = {:?}&quot;</span>, leader_election_parameters);
         <span class="macro">println!</span>(<span class="string">&quot;empty slots = {}&quot;</span>, empty_slots);
-        <span class="kw">let </span>total_election_count: u64 = pools.iter().map(|(<span class="kw">_</span>, y)| y.<span class="number">1</span>).sum();
+        <span class="kw">let </span>total_election_count: u64 = pools.values().map(|y| y.<span class="number">1</span>).sum();
         <span class="kw">let </span>ideal_election_count_per_pool: f32 =
             total_election_count <span class="kw">as </span>f32 / leader_election_parameters.pools_count <span class="kw">as </span>f32;
-        <span class="kw">let </span>ideal_election_percentage =
-            ideal_election_count_per_pool <span class="kw">as </span>f32 / total_election_count <span class="kw">as </span>f32;
+        <span class="kw">let </span>ideal_election_percentage = ideal_election_count_per_pool / total_election_count <span class="kw">as </span>f32;
         <span class="kw">let </span>grace_percentage: f32 = <span class="number">0.08</span>;
         <span class="macro">println!</span>(
             <span class="string">&quot;ideal percentage: {:.2}, grace_percentage: {:.2}&quot;</span>,

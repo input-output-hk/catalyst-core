@@ -847,7 +847,7 @@
         <span class="kw">pub fn </span>to_vec(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;(TransactionIndex, Output&lt;Address&gt;)&gt; {
             <span class="kw">let </span><span class="kw-2">mut </span>outputs = Vec::with_capacity(<span class="self">self</span>.utxos.len());
             <span class="kw">for </span>(key, value) <span class="kw">in </span><span class="self">self</span>.utxos.iter() {
-                outputs.push((<span class="kw-2">*</span>key <span class="kw">as </span>u8, value.clone()));
+                outputs.push((<span class="kw-2">*</span>key, value.clone()));
             }
             outputs
         }

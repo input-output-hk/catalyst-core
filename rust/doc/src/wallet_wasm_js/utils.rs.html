@@ -33,7 +33,31 @@
 <span id="33">33</span>
 <span id="34">34</span>
 <span id="35">35</span>
-</pre><pre class="rust"><code><span class="comment">// taken from:
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+</pre><pre class="rust"><code><span class="kw">extern crate </span>web_sys;
+
+<span class="comment">// A macro to provide `println!(..)`-style syntax for `console.log` logging.
+// taken from:
+// https://rustwasm.github.io/book/game-of-life/debugging.html
+</span><span class="attribute">#[macro_export]
+</span><span class="macro">macro_rules! </span>log {
+    ( $( <span class="macro-nonterminal">$t</span>:tt )* ) =&gt; {
+        web_sys::console::log_1(<span class="kw-2">&amp;</span><span class="macro">format!</span>( $( <span class="macro-nonterminal">$t </span>)* ).into());
+    }
+}
+
+<span class="comment">// taken from:
 // https://github.com/input-output-hk/js-chain-libs/blob/cc463b59fdc64a4fff63f67901118f60b783520c/src/utils.rs#L12
 </span><span class="attribute">#[macro_export]
 </span><span class="macro">macro_rules! </span>impl_collection {

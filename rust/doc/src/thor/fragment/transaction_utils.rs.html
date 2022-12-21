@@ -21,7 +21,7 @@
 <span class="kw">impl </span>TransactionHash <span class="kw">for </span>Fragment {
     <span class="kw">fn </span>encode(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="kw">let </span>bytes = <span class="self">self</span>.serialize_as_vec().unwrap();
-        hex::encode(<span class="kw-2">&amp;</span>bytes)
+        hex::encode(bytes)
     }
 }
 </code></pre></div>

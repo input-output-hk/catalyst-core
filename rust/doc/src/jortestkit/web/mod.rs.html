@@ -41,7 +41,7 @@
 }
 
 <span class="kw">pub fn </span>download_file(link: String, output: <span class="kw-2">&amp;</span>Path) -&gt; <span class="prelude-ty">Result</span>&lt;(), WebError&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>resp = reqwest::blocking::get(<span class="kw-2">&amp;</span>link).map_err(WebError::CannotDownloadFile)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>resp = reqwest::blocking::get(link).map_err(WebError::CannotDownloadFile)<span class="question-mark">?</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>out = File::create(output.as_os_str()).map_err(|<span class="kw">_</span>| WebError::CannotCreateOutputFile)<span class="question-mark">?</span>;
     io::copy(<span class="kw-2">&amp;mut </span>resp, <span class="kw-2">&amp;mut </span>out)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())

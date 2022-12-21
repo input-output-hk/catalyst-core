@@ -110,7 +110,7 @@
     }
 
     <span class="kw">pub fn </span>health(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-        <span class="kw">let </span>status_code = reqwest::blocking::get(<span class="kw-2">&amp;</span><span class="self">self</span>.path(<span class="string">&quot;health&quot;</span>)).map(|r| r.status())<span class="question-mark">?</span>;
+        <span class="kw">let </span>status_code = reqwest::blocking::get(<span class="self">self</span>.path(<span class="string">&quot;health&quot;</span>)).map(|r| r.status())<span class="question-mark">?</span>;
 
         <span class="kw">if </span>status_code != StatusCode::OK {
             <span class="prelude-val">Err</span>(Error::ServerIsNotUp(status_code))
@@ -120,7 +120,7 @@
     }
 
     <span class="kw">pub fn </span>block0(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;u8&gt;, Error&gt; {
-        <span class="kw">let </span>response = reqwest::blocking::get(<span class="kw-2">&amp;</span><span class="self">self</span>.path(<span class="string">&quot;api/v0/block0&quot;</span>))<span class="question-mark">?</span>;
+        <span class="kw">let </span>response = reqwest::blocking::get(<span class="self">self</span>.path(<span class="string">&quot;api/v0/block0&quot;</span>))<span class="question-mark">?</span>;
         <span class="self">self</span>.print_response(<span class="kw-2">&amp;</span>response);
         <span class="prelude-val">Ok</span>(response.bytes()<span class="question-mark">?</span>.to_vec())
     }

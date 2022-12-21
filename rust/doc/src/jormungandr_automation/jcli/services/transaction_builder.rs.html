@@ -561,7 +561,7 @@
 
     <span class="kw">pub fn </span>fragment_id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Hash {
         <span class="kw">let </span>fragment_hex = <span class="self">self</span>.to_message();
-        <span class="kw">let </span>fragment_bytes = hex::decode(<span class="kw-2">&amp;</span>fragment_hex).expect(<span class="string">&quot;Failed to parse message hex&quot;</span>);
+        <span class="kw">let </span>fragment_bytes = hex::decode(fragment_hex).expect(<span class="string">&quot;Failed to parse message hex&quot;</span>);
         Fragment::deserialize_from_slice(<span class="kw-2">&amp;mut </span>Codec::new(fragment_bytes.as_slice()))
             .expect(<span class="string">&quot;Failed to parse message&quot;</span>)
             .hash()

@@ -541,7 +541,7 @@
         <span class="kw">let </span>key = hex::encode(account::Identifier::from(pk.clone()).as_ref());
 
         <span class="kw">let </span>request = <span class="macro">format!</span>(<span class="string">&quot;votes/plan/account-votes/{}&quot;</span>, key);
-        <span class="self">self</span>.client.get(<span class="kw-2">&amp;</span><span class="self">self</span>.path(ApiVersion::V1, <span class="kw-2">&amp;</span>request)).send()
+        <span class="self">self</span>.client.get(<span class="self">self</span>.path(ApiVersion::V1, <span class="kw-2">&amp;</span>request)).send()
     }
 
     <span class="kw">pub fn </span>account_votes_with_plan_id(
@@ -553,7 +553,7 @@
         <span class="kw">let </span>key = hex::encode(account::Identifier::from(pk.clone()).as_ref());
 
         <span class="kw">let </span>request = <span class="macro">format!</span>(<span class="string">&quot;votes/plan/{}/account-votes/{}&quot;</span>, vote_plan_id, key);
-        <span class="self">self</span>.client.get(<span class="kw-2">&amp;</span><span class="self">self</span>.path(ApiVersion::V1, <span class="kw-2">&amp;</span>request)).send()
+        <span class="self">self</span>.client.get(<span class="self">self</span>.path(ApiVersion::V1, <span class="kw-2">&amp;</span>request)).send()
     }
 
     <span class="kw">pub fn </span>stake_distribution_at(<span class="kw-2">&amp;</span><span class="self">self</span>, epoch: u32) -&gt; <span class="prelude-ty">Result</span>&lt;Response, reqwest::Error&gt; {
@@ -563,7 +563,7 @@
 
     <span class="kw">pub fn </span>account_votes_all(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Response, reqwest::Error&gt; {
         <span class="self">self</span>.client
-            .get(<span class="kw-2">&amp;</span><span class="self">self</span>.path(ApiVersion::V1, <span class="string">&quot;votes/plan/accounts-votes-all&quot;</span>))
+            .get(<span class="self">self</span>.path(ApiVersion::V1, <span class="string">&quot;votes/plan/accounts-votes-all&quot;</span>))
             .send()
     }
 
@@ -630,7 +630,7 @@
         body: Vec&lt;u8&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;reqwest::blocking::Response, reqwest::Error&gt; {
         <span class="self">self</span>.client
-            .post(<span class="kw-2">&amp;</span><span class="self">self</span>.path(ApiVersion::V0, path))
+            .post(<span class="self">self</span>.path(ApiVersion::V0, path))
             .headers(<span class="self">self</span>.construct_headers())
             .body(body)
             .send()
@@ -653,7 +653,7 @@
             .into_iter()
             .map(|body| {
                 <span class="self">self</span>.client
-                    .post(<span class="kw-2">&amp;</span><span class="self">self</span>.path(ApiVersion::V0, <span class="string">&quot;message&quot;</span>))
+                    .post(<span class="self">self</span>.path(ApiVersion::V0, <span class="string">&quot;message&quot;</span>))
                     .headers(<span class="self">self</span>.construct_headers())
                     .body(body)
             })
@@ -667,13 +667,13 @@
 
     <span class="kw">pub fn </span>fragments_logs(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Response, reqwest::Error&gt; {
         <span class="self">self</span>.client
-            .get(<span class="kw-2">&amp;</span><span class="self">self</span>.path(ApiVersion::V1, <span class="string">&quot;fragments/logs&quot;</span>))
+            .get(<span class="self">self</span>.path(ApiVersion::V1, <span class="string">&quot;fragments/logs&quot;</span>))
             .send()
     }
 
     <span class="kw">pub fn </span>fragments_statuses(<span class="kw-2">&amp;</span><span class="self">self</span>, ids: Vec&lt;String&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Response, reqwest::Error&gt; {
         <span class="self">self</span>.client
-            .get(<span class="kw-2">&amp;</span><span class="self">self</span>.path(ApiVersion::V1, <span class="string">&quot;fragments/statuses&quot;</span>))
+            .get(<span class="self">self</span>.path(ApiVersion::V1, <span class="string">&quot;fragments/statuses&quot;</span>))
             .query(<span class="kw-2">&amp;</span>[(<span class="string">&quot;fragment_ids&quot;</span>, ids.join(<span class="string">&quot;,&quot;</span>))])
             .send()
     }
@@ -684,7 +684,7 @@
         fail_fast: bool,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Response, reqwest::Error&gt; {
         <span class="self">self</span>.client
-            .post(<span class="kw-2">&amp;</span><span class="self">self</span>.path(ApiVersion::V1, <span class="string">&quot;fragments&quot;</span>))
+            .post(<span class="self">self</span>.path(ApiVersion::V1, <span class="string">&quot;fragments&quot;</span>))
             .headers(<span class="self">self</span>.construct_headers())
             .json(<span class="kw-2">&amp;</span>FragmentsBatch {
                 fail_fast,

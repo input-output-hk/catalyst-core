@@ -421,7 +421,64 @@
 <span id="421">421</span>
 <span id="422">422</span>
 <span id="423">423</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::MainnetWallet;
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::cardano_node::TransactionBuilder;
+<span class="kw">use </span><span class="kw">crate</span>::CardanoWallet;
 <span class="kw">use </span>cardano_serialization_lib::address::Address;
 <span class="kw">use </span>cardano_serialization_lib::chain_crypto::Blake2b256;
 <span class="kw">use </span>cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey};
@@ -431,7 +488,8 @@
     MetadataJsonSchema, MetadataList, MetadataMap, TransactionMetadatum, TransactionMetadatumLabel,
 };
 <span class="kw">use </span>cardano_serialization_lib::utils::{BigNum, Int};
-<span class="kw">use </span>serde_json::{Map, Value};
+<span class="kw">use </span>cardano_serialization_lib::Transaction;
+<span class="kw">use </span>serde_json::Map;
 <span class="kw">use </span>snapshot_lib::registration::Delegations;
 
 <span class="macro">lazy_static::lazy_static! </span>{
@@ -451,27 +509,25 @@
     </span><span class="kw">pub  static </span><span class="kw-2">ref </span>METADATUM_3: TransactionMetadatum = TransactionMetadatum::new_int(<span class="kw-2">&amp;</span>Int::new_i32(<span class="number">3</span>));
     <span class="doccomment">/// metadatum label 4 constant
     </span><span class="kw">pub  static </span><span class="kw-2">ref </span>METADATUM_4: TransactionMetadatum = TransactionMetadatum::new_int(<span class="kw-2">&amp;</span>Int::new_i32(<span class="number">4</span>));
-    <span class="doccomment">/// metadatum label 4 constant
+    <span class="doccomment">/// metadatum label 5 constant
     </span><span class="kw">pub  static </span><span class="kw-2">ref </span>METADATUM_5: TransactionMetadatum = TransactionMetadatum::new_int(<span class="kw-2">&amp;</span>Int::new_i32(<span class="number">5</span>));
 }
 
 <span class="doccomment">/// Responsible for building registration transaction metadata
-</span><span class="kw">pub struct </span>RegistrationBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
-    wallet: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>MainnetWallet,
+</span><span class="kw">pub struct </span>RegistrationTransactionBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
+    wallet: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>CardanoWallet,
     delegations: <span class="prelude-ty">Option</span>&lt;Delegations&gt;,
     slot_no: u64,
-    voting_purpose: u64,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; RegistrationBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; RegistrationTransactionBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="doccomment">/// Creates registration builder for given wallet
     </span><span class="attribute">#[must_use]
-    </span><span class="kw">pub fn </span>new(wallet: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>MainnetWallet) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>new(wallet: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>CardanoWallet) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             wallet,
             delegations: <span class="prelude-val">None</span>,
             slot_no: <span class="number">0</span>,
-            voting_purpose: <span class="number">0</span>,
         }
     }
 
@@ -488,12 +544,6 @@
         <span class="self">self</span>.slot_no = slot_no;
         <span class="self">self
     </span>}
-    <span class="doccomment">/// Defines voting purposes for registration transaction
-    </span><span class="attribute">#[must_use]
-    </span><span class="kw">pub fn </span>for_voting_purpose(<span class="kw-2">mut </span><span class="self">self</span>, voting_purpose: u64) -&gt; <span class="self">Self </span>{
-        <span class="self">self</span>.voting_purpose = voting_purpose;
-        <span class="self">self
-    </span>}
 
     <span class="doccomment">/// Creates transaction metadata
     ///
@@ -501,10 +551,14 @@
     ///
     /// On metadata size overflow
     </span><span class="attribute">#[must_use]
-    </span><span class="kw">pub fn </span>build(<span class="self">self</span>) -&gt; GeneralTransactionMetadata {
+    </span><span class="kw">fn </span>build_metadata(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; GeneralTransactionMetadata {
         <span class="kw">let </span><span class="kw-2">mut </span>meta_map: MetadataMap = MetadataMap::new();
 
-        <span class="kw">let </span>delegation_metadata = <span class="kw">match </span><span class="self">self</span>.delegations.expect(<span class="string">&quot;no registration target defined&quot;</span>) {
+        <span class="kw">let </span>delegation_metadata = <span class="kw">match </span><span class="self">self
+            </span>.delegations
+            .as_ref()
+            .expect(<span class="string">&quot;no registration target defined&quot;</span>)
+        {
             Delegations::New(delegations) =&gt; {
                 <span class="kw">let </span><span class="kw-2">mut </span>metadata_list = MetadataList::new();
                 <span class="kw">for </span>(delegation, weight) <span class="kw">in </span>delegations {
@@ -514,7 +568,7 @@
                             .unwrap(),
                     );
                     inner_metadata_list.add(<span class="kw-2">&amp;</span>TransactionMetadatum::new_int(<span class="kw-2">&amp;</span>Int::new(
-                        <span class="kw-2">&amp;</span>BigNum::from(weight),
+                        <span class="kw-2">&amp;</span>BigNum::from(<span class="kw-2">*</span>weight),
                     )));
                     metadata_list.add(<span class="kw-2">&amp;</span>TransactionMetadatum::new_list(<span class="kw-2">&amp;</span>inner_metadata_list));
                 }
@@ -540,10 +594,9 @@
             <span class="kw-2">&amp;</span>METADATUM_4,
             <span class="kw-2">&amp;</span>TransactionMetadatum::new_int(<span class="kw-2">&amp;</span>Int::new(<span class="kw-2">&amp;</span>BigNum::from(<span class="self">self</span>.slot_no))),
         );
-
         meta_map.insert(
             <span class="kw-2">&amp;</span>METADATUM_5,
-            <span class="kw-2">&amp;</span>TransactionMetadatum::new_int(<span class="kw-2">&amp;</span>Int::new(<span class="kw-2">&amp;</span>BigNum::from(<span class="self">self</span>.voting_purpose))),
+            <span class="kw-2">&amp;</span>TransactionMetadatum::new_int(<span class="kw-2">&amp;</span>Int::new(<span class="kw-2">&amp;</span>BigNum::zero())),
         );
 
         <span class="kw">let </span><span class="kw-2">mut </span>metadata = GeneralTransactionMetadata::new();
@@ -569,39 +622,52 @@
         );
         metadata
     }
+
+    <span class="doccomment">/// Builds transaction instance
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>build(<span class="self">self</span>) -&gt; Transaction {
+        <span class="kw">let </span>metadata = <span class="self">self</span>.build_metadata();
+        TransactionBuilder::build_transaction_with_metadata(
+            <span class="kw-2">&amp;</span><span class="self">self</span>.wallet.reward_address().to_address(),
+            <span class="self">self</span>.wallet.stake,
+            <span class="kw-2">&amp;</span>metadata,
+        )
+    }
 }
 
-<span class="attribute">#[derive(thiserror::Error, Debug)]
+<span class="doccomment">/// Metadata conversion error
+</span><span class="attribute">#[derive(thiserror::Error, Debug)]
 </span><span class="kw">pub enum </span>JsonConversionError {
-    <span class="attribute">#[error(transparent)]
+    <span class="doccomment">/// Serialization
+    </span><span class="attribute">#[error(transparent)]
     </span>Serde(<span class="attribute">#[from] </span>serde_json::Error),
-    <span class="attribute">#[error(<span class="string">&quot;missing registration label in json&quot;</span>)]
+    <span class="doccomment">/// Missing registration label
+    </span><span class="attribute">#[error(<span class="string">&quot;missing registration label in json&quot;</span>)]
     </span>MissingRegistrationLabel,
-    <span class="attribute">#[error(<span class="string">&quot;missing registration signature label in json&quot;</span>)]
+    <span class="doccomment">/// Missing registration signature label
+    </span><span class="attribute">#[error(<span class="string">&quot;missing registration signature label in json&quot;</span>)]
     </span>MissingRegistrationSignatureLabel,
-    <span class="attribute">#[error(transparent)]
+    <span class="doccomment">/// Internal error
+    </span><span class="attribute">#[error(transparent)]
     </span>Internal(<span class="attribute">#[from] </span>JsError),
-    <span class="attribute">#[error(<span class="string">&quot;incorrect input json: root is not a map&quot;</span>)]
+    <span class="doccomment">/// Incorrect schema
+    </span><span class="attribute">#[error(<span class="string">&quot;incorrect input json: root is not a map&quot;</span>)]
     </span>IncorrectInputJson,
 }
 
-<span class="doccomment">/// Extension trait for `GeneralTransactionMetadata` struct
+<span class="doccomment">/// Extension for `GeneralTransactionMetadata` tailored for Catalyst purposes
 </span><span class="kw">pub trait </span>GeneralTransactionMetadataInfo {
-    <span class="doccomment">/// Serialize to json string. Extension allows to groups more than one metadata entry and serialize
-    /// then in batch
+    <span class="doccomment">/// Converts metadata to json
     ///
     /// # Errors
     ///
-    /// On incorrect schema
-    ///
+    /// On json conversion error
     </span><span class="kw">fn </span>to_json_string(<span class="kw-2">&amp;</span><span class="self">self</span>, schema: MetadataJsonSchema) -&gt; <span class="prelude-ty">Result</span>&lt;String, JsonConversionError&gt;;
-
-    <span class="doccomment">/// Deserialize from json string. Extension allows to groups more than one metadata entry and deserialize
-    /// then in batch
+    <span class="doccomment">/// Converts json to metadata
     ///
     /// # Errors
     ///
-    /// On incorrect schema
+    /// On json conversion error
     </span><span class="kw">fn </span>from_json_string(
         json: <span class="kw-2">&amp;</span>str,
         schema: MetadataJsonSchema,
@@ -609,20 +675,31 @@
     <span class="kw">where
         </span><span class="self">Self</span>: Sized;
 
+    <span class="doccomment">/// Converts combined jsons to registration and registration metadata
+    ///
+    /// # Errors
+    ///
+    /// On json conversion error
+    </span><span class="kw">fn </span>from_jsons(
+        reg_metadata: serde_json::Value,
+        signature_metadata: serde_json::Value,
+        schema: MetadataJsonSchema,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, JsonConversionError&gt;
+    <span class="kw">where
+        </span><span class="self">Self</span>: Sized;
+
     <span class="doccomment">/// Get delegations part as bytes
     </span><span class="kw">fn </span>delegations(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt;;
-
-    <span class="doccomment">/// Get stake public key from metadata
+    <span class="doccomment">/// Stake public key
     </span><span class="kw">fn </span>stake_public_key(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; PublicKey;
-
-    <span class="doccomment">/// Get reward address part from metadata
+    <span class="doccomment">/// Reward address
     </span><span class="kw">fn </span>reward_address(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Address;
-
-    <span class="doccomment">/// Get signature from metadata
+    <span class="doccomment">/// metadata signature
     </span><span class="kw">fn </span>signature(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Ed25519Signature;
-
-    <span class="doccomment">/// Get registration as hash
+    <span class="doccomment">/// registration metadata hash
     </span><span class="kw">fn </span>registration_blake_256_hash(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Blake2b256;
+    <span class="doccomment">/// nonce
+    </span><span class="kw">fn </span>nonce(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; i32;
 }
 
 <span class="kw">impl </span>GeneralTransactionMetadataInfo <span class="kw">for </span>GeneralTransactionMetadata {
@@ -645,14 +722,14 @@
             REGISTRATION_SIGNATURE_METADATA_IDX.to_string(),
             serde_json::from_str(<span class="kw-2">&amp;</span>registration_sig_json)<span class="question-mark">?</span>,
         );
-        serde_json::to_string_pretty(<span class="kw-2">&amp;</span>Value::Object(map)).map_err(Into::into)
+        serde_json::to_string_pretty(<span class="kw-2">&amp;</span>serde_json::Value::Object(map)).map_err(Into::into)
     }
 
     <span class="kw">fn </span>from_json_string(
         json: <span class="kw-2">&amp;</span>str,
         schema: MetadataJsonSchema,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, JsonConversionError&gt; {
-        <span class="kw">let </span>json: Value = serde_json::from_str(json)<span class="question-mark">?</span>;
+        <span class="kw">let </span>json: serde_json::Value = serde_json::from_str(json)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>map = json
             .as_object()
@@ -669,6 +746,27 @@
                 </span>.clone(),
             schema,
         )<span class="question-mark">?</span>;
+
+        <span class="kw">let </span><span class="kw-2">mut </span>root_metadata = GeneralTransactionMetadata::new();
+        root_metadata.insert(<span class="kw-2">&amp;</span>REGISTRATION_METADATA_LABEL, <span class="kw-2">&amp;</span>registration_json);
+        root_metadata.insert(
+            <span class="kw-2">&amp;</span>REGISTRATION_METADATA_SIGNATURE_LABEL,
+            <span class="kw-2">&amp;</span>registration_sig_json,
+        );
+
+        <span class="prelude-val">Ok</span>(root_metadata)
+    }
+
+    <span class="kw">fn </span>from_jsons(
+        reg_metadata: serde_json::Value,
+        signature_metadata: serde_json::Value,
+        schema: MetadataJsonSchema,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, JsonConversionError&gt;
+    <span class="kw">where
+        </span><span class="self">Self</span>: Sized,
+    {
+        <span class="kw">let </span>registration_json = encode_json_value_to_metadatum(reg_metadata, schema)<span class="question-mark">?</span>;
+        <span class="kw">let </span>registration_sig_json = encode_json_value_to_metadatum(signature_metadata, schema)<span class="question-mark">?</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>root_metadata = GeneralTransactionMetadata::new();
         root_metadata.insert(<span class="kw-2">&amp;</span>REGISTRATION_METADATA_LABEL, <span class="kw-2">&amp;</span>registration_json);
@@ -720,6 +818,18 @@
         <span class="kw">let </span>meta_bytes = metadata.to_bytes();
         Blake2b256::new(<span class="kw-2">&amp;</span>meta_bytes)
     }
+
+    <span class="kw">fn </span>nonce(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; i32 {
+        <span class="kw">let </span>metadata = <span class="self">self</span>.get(<span class="kw-2">&amp;</span>REGISTRATION_METADATA_LABEL).unwrap();
+        <span class="kw">let </span>metadata_map = metadata.as_map().unwrap();
+        metadata_map
+            .get(<span class="kw-2">&amp;</span>METADATUM_4)
+            .unwrap()
+            .as_int()
+            .unwrap()
+            .as_i32_or_fail()
+            .unwrap()
+    }
 }
 
 <span class="attribute">#[cfg(test)]
@@ -732,10 +842,12 @@
 
     <span class="attribute">#[test]
     </span><span class="kw">pub fn </span>cip15_registration() {
-        <span class="kw">let </span>wallet = MainnetWallet::new(<span class="number">1</span>);
-        <span class="kw">let </span>metadata = RegistrationBuilder::new(<span class="kw-2">&amp;</span>wallet)
+        <span class="kw">let </span>wallet = CardanoWallet::new(<span class="number">1</span>);
+        <span class="kw">let </span>transaction = RegistrationTransactionBuilder::new(<span class="kw-2">&amp;</span>wallet)
             .to(Delegations::Legacy(wallet.catalyst_public_key()))
             .build();
+
+        <span class="kw">let </span>metadata = transaction.auxiliary_data().unwrap().metadata().unwrap();
 
         <span class="macro">assert_eq!</span>(
             Identifier::from_hex(<span class="kw-2">&amp;</span>hex::encode(metadata.delegations())).unwrap(),
@@ -804,8 +916,8 @@
             MetadataJsonSchema::BasicConversions,
         )
         .unwrap();
-        <span class="kw">let </span>left: Value = serde_json::from_str(metadata_string).unwrap();
-        <span class="kw">let </span>right: Value = serde_json::from_str(
+        <span class="kw">let </span>left: serde_json::Value = serde_json::from_str(metadata_string).unwrap();
+        <span class="kw">let </span>right: serde_json::Value = serde_json::from_str(
             <span class="kw-2">&amp;</span>root_metadata
                 .to_json_string(MetadataJsonSchema::BasicConversions)
                 .unwrap(),
@@ -834,8 +946,8 @@
             MetadataJsonSchema::BasicConversions,
         )
         .unwrap();
-        <span class="kw">let </span>left: Value = serde_json::from_str(metadata_string).unwrap();
-        <span class="kw">let </span>right: Value = serde_json::from_str(
+        <span class="kw">let </span>left: serde_json::Value = serde_json::from_str(metadata_string).unwrap();
+        <span class="kw">let </span>right: serde_json::Value = serde_json::from_str(
             <span class="kw-2">&amp;</span>root_metadata
                 .to_json_string(MetadataJsonSchema::BasicConversions)
                 .unwrap(),

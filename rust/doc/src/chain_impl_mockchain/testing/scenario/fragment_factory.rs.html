@@ -371,7 +371,7 @@
         from: <span class="kw-2">&amp;</span>Wallet,
         distribution: <span class="kw-2">&amp;</span>[(<span class="kw-2">&amp;</span>StakePool, u8)],
     ) -&gt; Fragment {
-        <span class="kw">let </span>pools_ratio_sum: u8 = distribution.iter().map(|(_st, ratio)| <span class="kw-2">*</span>ratio <span class="kw">as </span>u8).sum();
+        <span class="kw">let </span>pools_ratio_sum: u8 = distribution.iter().map(|(_st, ratio)| <span class="kw-2">*</span>ratio).sum();
         <span class="kw">let </span>pools: Vec&lt;(PoolId, u8)&gt; = distribution
             .iter()
             .map(|(st, ratio)| (st.info().to_id(), <span class="kw-2">*</span>ratio))

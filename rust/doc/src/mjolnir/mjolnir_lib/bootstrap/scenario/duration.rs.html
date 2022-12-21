@@ -248,7 +248,7 @@
 
         <span class="prelude-val">Ok</span>(thread::spawn(<span class="kw">move </span>|| {
             <span class="kw">loop </span>{
-                <span class="kw">let </span>benchmark = benchmark_speed(<span class="kw-2">&amp;</span>storage_folder_name.clone())
+                <span class="kw">let </span>benchmark = benchmark_speed(storage_folder_name.clone())
                     .no_target()
                     .start();
                 <span class="kw">let </span>benchmark_result = <span class="self">Self</span>::wait_for_bootstrap_phase_completed(

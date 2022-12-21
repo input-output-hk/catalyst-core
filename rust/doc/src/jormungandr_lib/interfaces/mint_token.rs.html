@@ -234,7 +234,7 @@
     {
         <span class="kw">if </span>deserializer.is_human_readable() {
             <span class="kw">let </span>s = String::deserialize(deserializer)<span class="question-mark">?</span>;
-            <span class="kw">let </span>data = hex::decode(<span class="kw-2">&amp;</span>s).map_err(&lt;D::Error <span class="kw">as </span>serde::de::Error&gt;::custom)<span class="question-mark">?</span>;
+            <span class="kw">let </span>data = hex::decode(s).map_err(&lt;D::Error <span class="kw">as </span>serde::de::Error&gt;::custom)<span class="question-mark">?</span>;
             <span class="prelude-val">Ok</span>(<span class="self">Self</span>(
                 name::TokenName::try_from(data).map_err(&lt;D::Error <span class="kw">as </span>serde::de::Error&gt;::custom)<span class="question-mark">?</span>,
             ))

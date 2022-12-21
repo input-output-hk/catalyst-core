@@ -93,7 +93,7 @@
         .unwrap()
         .unwrap();
     <span class="kw">let </span>asset_name = asset.name();
-    <span class="kw">let </span>output = temp_dir.child(<span class="kw-2">&amp;</span>asset_name);
+    <span class="kw">let </span>output = temp_dir.child(asset_name);
     asset
         .download_to(output.path())
         .expect(<span class="string">&quot;cannot download file&quot;</span>);

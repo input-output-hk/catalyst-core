@@ -325,6 +325,19 @@
 <span id="325">325</span>
 <span id="326">326</span>
 <span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Spending strategies
 </span><span class="attribute">#[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>Error {
@@ -333,6 +346,8 @@
         expected: SpendingCounter,
         actual: SpendingCounter,
     },
+    <span class="attribute">#[error(<span class="string">&quot;Invalid lane value during the SpendingCountersIncreasingInitialization, expected: {0}, got: {1}&quot;</span>)]
+    </span>InvalidLaneValue(usize, usize),
     <span class="attribute">#[error(<span class="string">&quot;Invalid lane: {0} or counter: {1}, expected lane &lt; (1 &lt;&lt; LANES_BITS), counter &lt; (1 &lt;&lt; UNLANES_BITS)&quot;</span>)]
     </span>InvalidLaneOrCounter(usize, u32),
 }
@@ -340,7 +355,7 @@
 <span class="doccomment">/// Simple strategy to spend from multiple increasing counters
 </span><span class="attribute">#[derive(Debug, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>SpendingCounterIncreasing {
-    nexts: Vec&lt;SpendingCounter&gt;,
+    nexts: [SpendingCounter; <span class="self">Self</span>::LANES],
 }
 
 <span class="comment">// SpendingCounterIncreasing has extra invariants (e.g. nexts has 8 elements, each belongs to a different lane), so a derived implementation is not suitable
@@ -360,25 +375,23 @@
         x
     }
 
-    <span class="kw">pub fn </span>new_from_counters(set: Vec&lt;SpendingCounter&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">if </span>set.len() == <span class="self">Self</span>::LANES {
-            <span class="kw">for </span>(i, i_set_value) <span class="kw">in </span>set.iter().enumerate() {
-                <span class="kw">if </span>i_set_value.lane() != i {
-                    <span class="kw">return </span><span class="prelude-val">None</span>;
-                }
+    <span class="kw">pub fn </span>new_from_counters(
+        nexts: [SpendingCounter; SpendingCounterIncreasing::LANES],
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
+        <span class="kw">for </span>(i, i_set_value) <span class="kw">in </span>nexts.iter().enumerate() {
+            <span class="kw">if </span>i_set_value.lane() != i {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(Error::InvalidLaneValue(i, i_set_value.lane()));
             }
-            <span class="prelude-val">Some</span>(SpendingCounterIncreasing { nexts: set })
-        } <span class="kw">else </span>{
-            <span class="prelude-val">None
-        </span>}
+        }
+        <span class="prelude-val">Ok</span>(SpendingCounterIncreasing { nexts })
     }
 
     <span class="kw">pub fn </span>get_valid_counter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; SpendingCounter {
         <span class="self">self</span>.nexts[<span class="number">0</span>]
     }
 
-    <span class="kw">pub fn </span>get_valid_counters(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;SpendingCounter&gt; {
-        <span class="self">self</span>.nexts.clone()
+    <span class="kw">pub fn </span>get_valid_counters(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; [SpendingCounter; <span class="self">Self</span>::LANES] {
+        <span class="self">self</span>.nexts
     }
 
     <span class="doccomment">/// try to match the lane of the counter in argument, if it doesn&#39;t match
@@ -412,10 +425,16 @@
 
 <span class="kw">impl </span>Default <span class="kw">for </span>SpendingCounterIncreasing {
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-        <span class="kw">let </span><span class="kw-2">mut </span>nexts = Vec::new();
-        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="self">Self</span>::LANES {
-            nexts.push(SpendingCounter::new(i, <span class="number">0</span>).unwrap());
-        }
+        <span class="kw">let </span>nexts = [
+            SpendingCounter::new(<span class="number">0</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">1</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">2</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">3</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">4</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">5</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">6</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">7</span>, <span class="number">0</span>).unwrap(),
+        ];
         SpendingCounterIncreasing { nexts }
     }
 }
@@ -434,7 +453,7 @@
     any(test, feature = <span class="string">&quot;property-test-api&quot;</span>),
     derive(test_strategy::Arbitrary)
 )]
-</span><span class="kw">pub struct </span>SpendingCounter(<span class="kw">pub</span>(<span class="kw">crate</span>) u32);
+</span><span class="kw">pub struct </span>SpendingCounter(u32);
 
 <span class="kw">impl </span>SpendingCounter {
     <span class="comment">// on 32 bits: 0x1fff_ffff;
@@ -581,25 +600,32 @@
 
     <span class="attribute">#[test]
     </span><span class="kw">pub fn </span>spending_counters_duplication() {
-        <span class="kw">let </span>counters = <span class="macro">vec!</span>[SpendingCounter::zero(), SpendingCounter::zero()];
-        <span class="macro">assert!</span>(SpendingCounterIncreasing::new_from_counters(counters).is_none());
+        <span class="kw">let </span>counters = [
+            SpendingCounter::zero(),
+            SpendingCounter::zero(),
+            SpendingCounter::new(<span class="number">2</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">3</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">4</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">5</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">6</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">7</span>, <span class="number">0</span>).unwrap(),
+        ];
+        <span class="macro">assert!</span>(SpendingCounterIncreasing::new_from_counters(counters).is_err());
     }
 
     <span class="attribute">#[test]
     </span><span class="kw">pub fn </span>spending_counters_incorrect_order() {
-        <span class="kw">let </span>counters = <span class="macro">vec!</span>[
+        <span class="kw">let </span>counters = [
             SpendingCounter::new(<span class="number">1</span>, <span class="number">0</span>).unwrap(),
             SpendingCounter::new(<span class="number">0</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">2</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">3</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">4</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">5</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">6</span>, <span class="number">0</span>).unwrap(),
+            SpendingCounter::new(<span class="number">7</span>, <span class="number">0</span>).unwrap(),
         ];
-        <span class="macro">assert!</span>(SpendingCounterIncreasing::new_from_counters(counters).is_none());
-    }
-
-    <span class="attribute">#[test]
-    </span><span class="kw">pub fn </span>spending_counters_too_many_sub_counters() {
-        <span class="kw">let </span>counters = std::iter::from_fn(|| <span class="prelude-val">Some</span>(SpendingCounter::zero()))
-            .take(SpendingCounterIncreasing::LANES + <span class="number">1</span>)
-            .collect();
-        <span class="macro">assert!</span>(SpendingCounterIncreasing::new_from_counters(counters).is_none());
+        <span class="macro">assert!</span>(SpendingCounterIncreasing::new_from_counters(counters).is_err());
     }
 
     <span class="attribute">#[quickcheck_macros::quickcheck]
@@ -642,8 +668,8 @@
                     any::&lt;SpendingCounter&gt;()
                         .prop_map(|counter| <span class="prelude-val">Some</span>(<span class="self">Self</span>::new_from_counter(counter)))
                         .boxed(),
-                    any::&lt;Vec&lt;SpendingCounter&gt;&gt;()
-                        .prop_map(<span class="self">Self</span>::new_from_counters)
+                    any::&lt;[SpendingCounter; SpendingCounterIncreasing::LANES]&gt;()
+                        .prop_map(|counters| <span class="self">Self</span>::new_from_counters(counters).ok())
                         .boxed(),
                 ]
                 .prop_filter_map(<span class="string">&quot;must be valid spending counter set&quot;</span>, |i| i)

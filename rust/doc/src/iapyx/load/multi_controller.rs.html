@@ -357,7 +357,7 @@
         <span class="kw">let </span>txs = votes_data
             .into_iter()
             .map(|(p, c)| {
-                wallet.set_state((<span class="kw-2">*</span>account_state.value()).into(), counters.clone());
+                wallet.set_state((<span class="kw-2">*</span>account_state.value()).into(), counters);
                 <span class="kw">let </span>tx = wallet
                     .vote(
                         settings.clone(),

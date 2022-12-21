@@ -318,7 +318,7 @@
                         alias: alias.clone(),
                         config: node_config,
                         secret: NodeSecret::default(),
-                        topology_secret: SigningKey::generate(<span class="kw-2">&amp;mut </span>rand::thread_rng()),
+                        topology_secret: SigningKey::generate(rand::thread_rng()),
                         node_topology: node.clone(),
                     },
                 )
@@ -366,7 +366,7 @@
 }
 
 <span class="kw">fn </span>document(path: <span class="kw-2">&amp;</span>Path, settings: <span class="kw-2">&amp;</span>Settings) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-    <span class="kw">let </span>file = std::fs::File::create(<span class="kw-2">&amp;</span>path.join(<span class="string">&quot;initial_setup.dot&quot;</span>))<span class="question-mark">?</span>;
+    <span class="kw">let </span>file = std::fs::File::create(path.join(<span class="string">&quot;initial_setup.dot&quot;</span>))<span class="question-mark">?</span>;
 
     <span class="kw">let </span>dotifier = Dotifier;
     dotifier.dottify(settings, file)<span class="question-mark">?</span>;
@@ -375,7 +375,7 @@
         wallet.save_to(path)<span class="question-mark">?</span>;
     }
 
-    <span class="kw">let </span>file = std::fs::File::create(<span class="kw-2">&amp;</span>path.join(<span class="string">&quot;genesis.yaml&quot;</span>))<span class="question-mark">?</span>;
+    <span class="kw">let </span>file = std::fs::File::create(path.join(<span class="string">&quot;genesis.yaml&quot;</span>))<span class="question-mark">?</span>;
     serde_yaml::to_writer(file, <span class="kw-2">&amp;</span>settings.block0).unwrap();
 
     <span class="prelude-val">Ok</span>(())

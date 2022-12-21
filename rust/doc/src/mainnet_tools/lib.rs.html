@@ -14,6 +14,8 @@
 <span id="14">14</span>
 <span id="15">15</span>
 <span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Toolbox for testing and mocking Cardano haskell part of catalyst bridge.
 
 </span><span class="attribute">#![forbid(missing_docs)]
@@ -21,8 +23,10 @@
 
 #[macro_use]
 </span><span class="kw">extern crate </span>prettytable;
+<span class="kw">extern crate </span>core;
 
-<span class="doccomment">/// Cardano CLI wrapper and mock
+<span class="attribute">#[allow(dead_code)]
+</span><span class="doccomment">/// Cardano CLI wrapper and mock
 </span><span class="kw">pub mod </span>cardano_cli;
 <span class="doccomment">/// Simple scheduler for transporting snapshot from snapshot trigger service to servicing station service
 /// Should be discarded when production component will be ready

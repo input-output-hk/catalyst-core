@@ -134,7 +134,7 @@
             .map(|r| r.duration().as_secs_f64())
             .sum();
 
-        total_duration / total_requests <span class="kw">as </span>f64
+        total_duration / total_requests
     }
 
     <span class="kw">pub fn </span>total_requests_made(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {

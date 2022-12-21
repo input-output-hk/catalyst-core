@@ -493,7 +493,7 @@
             .into_iter()
             .map(|(p, c)| {
                 <span class="self">self</span>.wallet
-                    .set_state((<span class="kw-2">*</span>account_state.value()).into(), counters.clone());
+                    .set_state((<span class="kw-2">*</span>account_state.value()).into(), counters);
                 <span class="kw">let </span>tx = <span class="self">self
                     </span>.wallet
                     .vote(

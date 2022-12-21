@@ -279,7 +279,7 @@
                     .rest()
                     .v0()
                     .message()
-                    .logs(<span class="kw-2">&amp;</span><span class="self">self</span>.jormungandr.rest_uri())
+                    .logs(<span class="self">self</span>.jormungandr.rest_uri())
             ),
             transaction_id: Hash::from(<span class="self">self</span>.id),
             log_content: <span class="self">self</span>.jormungandr.logger.get_log_content(),

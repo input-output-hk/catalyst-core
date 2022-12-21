@@ -1546,7 +1546,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>sigs = Vec::new();
         <span class="kw">for </span>(i, key) <span class="kw">in </span>pool_owner_with_sign.indexed_signatories_sks() {
             <span class="kw">let </span>sig = SingleAccountBindingSignature::new(<span class="kw-2">&amp;</span>auth_data, |d| key.sign_slice(d.<span class="number">0</span>));
-            sigs.push((i <span class="kw">as </span>u8, sig))
+            sigs.push((i, sig))
         }
         <span class="kw">let </span>pool_owner_signed = PoolOwnersSigned { signatures: sigs };
         <span class="kw">let </span>verification = <span class="kw">if </span>should_pass {

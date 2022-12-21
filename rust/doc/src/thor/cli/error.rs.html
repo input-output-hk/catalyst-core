@@ -59,11 +59,10 @@
 <span id="59">59</span>
 <span id="60">60</span>
 <span id="61">61</span>
-<span id="62">62</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::config::Alias;
 <span class="kw">use crate</span>::{FragmentSenderError, FragmentVerifierError};
 <span class="kw">use </span>chain_crypto::SecretKeyError;
-<span class="kw">use </span>chain_impl_mockchain::fragment::FragmentId;
+<span class="kw">use </span>chain_impl_mockchain::{accounting::account::spending, fragment::FragmentId};
 <span class="kw">use </span>jormungandr_automation::jormungandr::RestError;
 <span class="kw">use </span>jormungandr_lib::crypto::account::SigningKeyParseError;
 <span class="kw">use </span>thiserror::Error;
@@ -90,9 +89,8 @@
     </span>Config(<span class="attribute">#[from] </span><span class="kw">crate</span>::cli::config::Error),
     <span class="attribute">#[error(<span class="string">&quot;cannot serialize secret key&quot;</span>)]
     </span>CannotrSerializeSecretKey,
-    <span class="attribute">#[error(<span class="string">&quot;cannot create spending counter&quot;</span>)]
-    </span>SpendingCounter,
-
+    <span class="attribute">#[error(transparent)]
+    </span>SpendingCounterError(<span class="attribute">#[from] </span>spending::Error),
     <span class="attribute">#[error(<span class="string">&quot;cannot read secret key&quot;</span>)]
     </span>CannotReadSecretKey,
     <span class="attribute">#[error(<span class="string">&quot;unknown alias: &#39;{0}&#39;&quot;</span>)]

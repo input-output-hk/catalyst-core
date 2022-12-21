@@ -696,7 +696,7 @@
         <span class="kw">let </span>working_directory = <span class="self">self</span>.hersir_controller.working_directory();
 
         <span class="kw">let </span>dir = working_directory.child(alias);
-        std::fs::DirBuilder::new().recursive(<span class="bool-val">true</span>).create(<span class="kw-2">&amp;</span>dir)<span class="question-mark">?</span>;
+        std::fs::DirBuilder::new().recursive(<span class="bool-val">true</span>).create(dir)<span class="question-mark">?</span>;
 
         settings_overriden.node_backend_address = <span class="prelude-val">Some</span>(node_setting.config.rest.listen);
 

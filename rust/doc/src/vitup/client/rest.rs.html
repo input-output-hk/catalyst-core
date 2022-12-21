@@ -220,7 +220,7 @@
 
 <span class="kw">impl </span>VitupRest {
     <span class="kw">pub fn </span>is_up(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="kw">let </span>response = reqwest::blocking::get(<span class="kw-2">&amp;</span><span class="self">self</span>.path(<span class="string">&quot;api/health&quot;</span>));
+        <span class="kw">let </span>response = reqwest::blocking::get(<span class="self">self</span>.path(<span class="string">&quot;api/health&quot;</span>));
 
         <span class="kw">if </span>response.is_err() {
             <span class="kw">return </span><span class="bool-val">false</span>;
@@ -312,7 +312,7 @@
     <span class="kw">pub fn </span>reset_with_config(<span class="kw-2">&amp;</span><span class="self">self</span>, config: <span class="kw-2">&amp;</span>Config) -&gt; <span class="prelude-ty">Result</span>&lt;Response, Error&gt; {
         <span class="kw">let </span>client = reqwest::blocking::Client::new();
         client
-            .post(<span class="kw-2">&amp;</span><span class="self">self</span>.inner.path(<span class="string">&quot;api/control/command/reset&quot;</span>))
+            .post(<span class="self">self</span>.inner.path(<span class="string">&quot;api/control/command/reset&quot;</span>))
             .json(<span class="kw-2">&amp;</span>config)
             .send()
             .map_err(Into::into)
@@ -358,7 +358,7 @@
 
     <span class="kw">pub fn </span>is_up(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="kw">if let </span><span class="prelude-val">Ok</span>(path) = <span class="self">self</span>.inner.get(<span class="string">&quot;api/health&quot;</span>) {
-            <span class="kw">if let </span><span class="prelude-val">Ok</span>(response) = reqwest::blocking::get(<span class="kw-2">&amp;</span>path) {
+            <span class="kw">if let </span><span class="prelude-val">Ok</span>(response) = reqwest::blocking::get(path) {
                 <span class="kw">return </span>response.status() == reqwest::StatusCode::OK;
             }
         }
@@ -387,7 +387,7 @@
     <span class="kw">pub fn </span>start_custom(<span class="kw-2">&amp;</span><span class="self">self</span>, params: Config) -&gt; <span class="prelude-ty">Result</span>&lt;String, Error&gt; {
         <span class="kw">let </span>path = <span class="self">self</span>.inner.path(<span class="string">&quot;control/command/start/custom&quot;</span>);
         <span class="kw">let </span>client = reqwest::blocking::Client::new();
-        <span class="kw">let </span>response = client.post(<span class="kw-2">&amp;</span>path).json(<span class="kw-2">&amp;</span>params).send()<span class="question-mark">?</span>;
+        <span class="kw">let </span>response = client.post(path).json(<span class="kw-2">&amp;</span>params).send()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(response.text()<span class="question-mark">?</span>)
     }
 

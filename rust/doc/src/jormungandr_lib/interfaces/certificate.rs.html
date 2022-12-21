@@ -858,7 +858,7 @@
         <span class="comment">// jormungandr_lib::Certificate is only used in jcli so we don&#39;t
         </span><span class="prelude-val">Ok</span>(bech32::encode(
             CERTIFICATE_HRP,
-            <span class="kw-2">&amp;</span>bytes.to_base32(),
+            bytes.to_base32(),
             bech32::Variant::Bech32m,
         )<span class="question-mark">?</span>)
     }
@@ -884,7 +884,7 @@
         <span class="kw">let </span>bytes = property::Serialize::serialize_as_vec(<span class="kw-2">&amp;</span><span class="self">self</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(bech32::encode(
             SIGNED_CERTIFICATE_HRP,
-            <span class="kw-2">&amp;</span>bytes.to_base32(),
+            bytes.to_base32(),
             bech32::Variant::Bech32m,
         )<span class="question-mark">?</span>)
     }

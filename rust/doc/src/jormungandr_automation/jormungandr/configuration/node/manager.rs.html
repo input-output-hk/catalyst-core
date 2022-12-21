@@ -106,7 +106,7 @@
     }
 
     <span class="kw">fn </span>write_node_config(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-        <span class="kw">let </span><span class="kw-2">mut </span>output_file = File::create(<span class="kw-2">&amp;</span><span class="self">self</span>.node_config_path()).unwrap();
+        <span class="kw">let </span><span class="kw-2">mut </span>output_file = File::create(<span class="self">self</span>.node_config_path()).unwrap();
         serde_yaml::to_writer(<span class="kw-2">&amp;mut </span>output_file, <span class="kw-2">&amp;</span><span class="self">self</span>.node_config)
             .expect(<span class="string">&quot;cannot serialize node config&quot;</span>);
     }

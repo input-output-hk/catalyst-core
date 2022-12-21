@@ -446,6 +446,11 @@
 <span id="446">446</span>
 <span id="447">447</span>
 <span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module expose handy C compatible functions to reuse in the different
 //! C style bindings that we have (wallet-c, wallet-jni...)
 </span><span class="attribute">#[macro_use]
@@ -456,7 +461,9 @@
 <span class="kw">pub mod </span>vote;
 
 <span class="kw">use crate</span>::{Error, Proposal, <span class="prelude-ty">Result</span>, Wallet};
-<span class="kw">use </span>chain_impl_mockchain::{fragment::Fragment, value::Value, vote::Choice};
+<span class="kw">use </span>chain_impl_mockchain::{
+    account::SpendingCounterIncreasing, fragment::Fragment, value::Value, vote::Choice,
+};
 <span class="kw">use </span>std::convert::TryInto;
 
 <span class="kw">use </span>thiserror::Error;
@@ -614,13 +621,11 @@
     <span class="kw">let </span>wallet = <span class="macro">non_null!</span>(wallet);
     <span class="kw">let </span>spending_counters_out = <span class="macro">non_null_mut!</span>(spending_counters_ptr_out);
 
-    <span class="kw">let </span>counters = wallet.spending_counter().into_boxed_slice();
-    <span class="kw">let </span>len = counters.len();
+    <span class="kw">let </span>counters: Box&lt;[u32]&gt; = wallet.spending_counter().as_slice().into();
 
     <span class="kw">let </span>raw_ptr = Box::into_raw(counters);
 
     spending_counters_out.data = raw_ptr <span class="kw">as </span><span class="kw-2">*mut </span>u32;
-    spending_counters_out.len = len;
 
     Result::success()
 }
@@ -663,7 +668,6 @@
 <span class="attribute">#[repr(C)]
 </span><span class="kw">pub struct </span>SpendingCounters {
     <span class="kw">pub </span>data: <span class="kw-2">*mut </span>u32,
-    <span class="kw">pub </span>len: usize,
 }
 
 <span class="doccomment">/// update the wallet account state
@@ -693,7 +697,13 @@
 
     <span class="kw">let </span>value = Value(value);
 
-    <span class="kw">let </span>nonces = std::slice::from_raw_parts_mut(nonces.data, nonces.len).to_vec();
+    <span class="kw">let </span>nonces = <span class="kw">match </span>std::slice::from_raw_parts_mut(nonces.data, SpendingCounterIncreasing::LANES)
+        .try_into()
+        .map_err(|_e| Error::invalid_spending_counters())
+    {
+        <span class="prelude-val">Ok</span>(nonces) =&gt; nonces,
+        <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.into(),
+    };
 
     <span class="kw">match </span>wallet.set_state(value, nonces) {
         <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; Result::success(),
@@ -871,9 +881,9 @@
 /// This function is safe as long as the structure returned by this library is not modified.
 /// This function should only be called with a structure returned by this library.
 </span><span class="kw">pub unsafe fn </span>spending_counters_delete(spending_counters: SpendingCounters) {
-    <span class="kw">let </span>SpendingCounters { data, len } = spending_counters;
+    <span class="kw">let </span>SpendingCounters { data } = spending_counters;
     <span class="kw">if </span>!data.is_null() {
-        <span class="kw">let </span>data = std::slice::from_raw_parts_mut(data, len);
+        <span class="kw">let </span>data = std::slice::from_raw_parts_mut(data, SpendingCounterIncreasing::LANES);
         <span class="kw">let </span>data = Box::from_raw(data <span class="kw">as </span><span class="kw-2">*mut </span>[u32]);
         std::mem::drop(data);
     }

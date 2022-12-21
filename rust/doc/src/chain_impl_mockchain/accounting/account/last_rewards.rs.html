@@ -107,6 +107,8 @@
 <span id="107">107</span>
 <span id="108">108</span>
 <span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::date::Epoch;
 <span class="kw">use </span><span class="kw">crate</span>::value::Value;
 
@@ -124,18 +126,20 @@
     <span class="kw">pub </span>reward: Value,
 }
 
-<span class="kw">impl </span>LastRewards {
+<span class="kw">impl </span>Default <span class="kw">for </span>LastRewards {
     <span class="doccomment">/// Create an initial value of epoch=0 reward=0
     ///
     /// It is also safe as the &quot;uninitialized&quot; value, since
     /// epoch 0 doesn&#39;t have by construction any reward associated.
-    </span><span class="kw">pub fn </span>default() -&gt; <span class="self">Self </span>{
+    </span><span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         LastRewards {
             epoch: <span class="number">0</span>,
             reward: Value::zero(),
         }
     }
+}
 
+<span class="kw">impl </span>LastRewards {
     <span class="doccomment">/// Add some value to the last reward, if the epoch is the same, then the
     /// result is just added, however.account
     ///

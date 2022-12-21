@@ -48,6 +48,21 @@
 <span id="48">48</span>
 <span id="49">49</span>
 <span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_crypto::SecretKey;
 <span class="kw">use </span>chain_impl_mockchain::{
     account::SpendingCounter,
@@ -55,32 +70,47 @@
     header::BlockDate,
     transaction::{Input, Payload, Transaction},
 };
-<span class="kw">use </span>wallet::{EitherAccount, Settings};
+<span class="kw">use </span>std::{collections::HashMap, str::FromStr};
+<span class="kw">use </span>wallet::{AccountId, EitherAccount, Settings};
 
 <span class="kw">use </span><span class="kw">crate</span>::Error;
 
 <span class="kw">pub struct </span>TxBuilder&lt;P: Payload&gt; {
     builder: wallet::TransactionBuilder&lt;P&gt;,
+    inputs: HashMap&lt;AccountId, (Input, SpendingCounter)&gt;,
 }
 
 <span class="kw">impl</span>&lt;P: Payload&gt; TxBuilder&lt;P&gt; {
     <span class="kw">pub fn </span>new(settings: Settings, valid_until: BlockDate, payload: P) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>builder = wallet::TransactionBuilder::new(settings, payload, valid_until);
-        <span class="self">Self </span>{ builder }
+        <span class="self">Self </span>{
+            builder,
+            inputs: HashMap::new(),
+        }
     }
 
     <span class="kw">pub fn </span>build_tx(
         <span class="kw-2">mut </span><span class="self">self</span>,
-        account_bytes: <span class="kw-2">&amp;</span>[u8],
+        account_id_hex: String,
         spending_counter: SpendingCounter,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
+        <span class="kw">let </span>account_id = AccountId::from_str(<span class="kw-2">&amp;</span>account_id_hex)
+            .map_err(|e| Error::wallet_transaction().with(e))<span class="question-mark">?</span>;
+
+        <span class="comment">// It is needed to provide a 1 extra input as we are generating it later, but should take into account at this place.
+        </span><span class="kw">let </span>value = <span class="self">self</span>.builder.estimate_fee_with(<span class="number">1</span>, <span class="number">0</span>);
+        <span class="kw">let </span>input = Input::from_account_public_key(account_id.into(), value);
+        <span class="self">self</span>.inputs.insert(account_id, (input, spending_counter));
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>)
+    }
+
+    <span class="kw">pub fn </span>sign_tx(<span class="kw-2">mut </span><span class="self">self</span>, account_bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
         <span class="kw">let </span>account = EitherAccount::new_from_key(
             SecretKey::from_binary(account_bytes)
                 .map_err(|e| Error::wallet_transaction().with(e))<span class="question-mark">?</span>,
         );
-        <span class="comment">// It is needed to provide a 1 extra input as we are generating it later, but should take into account at this place.
-        </span><span class="kw">let </span>value = <span class="self">self</span>.builder.estimate_fee_with(<span class="number">1</span>, <span class="number">0</span>);
-        <span class="kw">let </span>input = Input::from_account_public_key(account.account_id().into(), value);
+
+        <span class="kw">let </span>(input, spending_counter) = <span class="self">self</span>.inputs.get(<span class="kw-2">&amp;</span>account.account_id()).ok_or_else(|| Error::invalid_input(<span class="string">&quot;Cannot find corresponded input to the provided account, make sure that you have correctly execute build_tx function first&quot;</span>))<span class="question-mark">?</span>.clone();
         <span class="kw">let </span>witness_builder = account.witness_builder(spending_counter);
         <span class="self">self</span>.builder.add_input(input, witness_builder);
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)

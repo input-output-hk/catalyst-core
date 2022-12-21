@@ -547,7 +547,7 @@
                 role,
             } = initial
             {
-                <span class="kw">let </span>funds = <span class="kw-2">*</span>funds <span class="kw">as </span>u64;
+                <span class="kw">let </span>funds = <span class="kw-2">*</span>funds;
 
                 <span class="kw">let </span><span class="kw-2">mut </span>tokens = HashMap::new();
                 tokens.insert(roles(role), funds);
@@ -588,7 +588,7 @@
                         <span class="kw">let </span>value: u64 =
                             threshold + rand.gen_range(GRACE_VALUE..=threshold - GRACE_VALUE);
                         templates.insert(
-                            WalletTemplateBuilder::new(<span class="kw-2">&amp;</span>wallet_alias)
+                            WalletTemplateBuilder::new(wallet_alias)
                                 .with(value)
                                 .with_token(roles(role), value)
                                 .discrimination(discrimination)
@@ -609,7 +609,7 @@
                         <span class="kw">let </span>value: u64 =
                             threshold - rand.gen_range(GRACE_VALUE..=threshold - GRACE_VALUE);
                         templates.insert(
-                            WalletTemplateBuilder::new(<span class="kw-2">&amp;</span>wallet_alias)
+                            WalletTemplateBuilder::new(wallet_alias)
                                 .with(value)
                                 .with_token(roles(role), value)
                                 .discrimination(discrimination)
@@ -626,9 +626,9 @@
                 } =&gt; {
                     templates.insert(
                         WalletTemplateBuilder::new(name)
-                            .with(<span class="kw-2">*</span>funds <span class="kw">as </span>u64)
+                            .with(<span class="kw-2">*</span>funds)
                             .discrimination(discrimination)
-                            .with_token(roles(role), (<span class="kw-2">*</span>funds) <span class="kw">as </span>u64)
+                            .with_token(roles(role), <span class="kw-2">*</span>funds)
                             .build(),
                         pin.to_string(),
                     );
@@ -645,7 +645,7 @@
                             <span class="macro">format!</span>(<span class="string">&quot;wallet_{}_around_{}&quot;</span>, around_level_index, threshold);
                         <span class="kw">let </span>value: u64 = rand.gen_range(level - GRACE_VALUE..=level + GRACE_VALUE);
                         templates.insert(
-                            WalletTemplateBuilder::new(<span class="kw-2">&amp;</span>wallet_alias)
+                            WalletTemplateBuilder::new(wallet_alias)
                                 .with(value)
                                 .discrimination(discrimination)
                                 .with_token(roles(role), value)

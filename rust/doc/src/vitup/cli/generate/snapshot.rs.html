@@ -234,7 +234,7 @@
         <span class="kw">let </span>genesis_yaml = deployment_tree.genesis_path();
 
         <span class="comment">//remove all files except qr codes and genesis
-        </span><span class="kw">for </span>entry <span class="kw">in </span>std::fs::read_dir(<span class="kw-2">&amp;</span>deployment_tree.root_path())<span class="question-mark">? </span>{
+        </span><span class="kw">for </span>entry <span class="kw">in </span>std::fs::read_dir(deployment_tree.root_path())<span class="question-mark">? </span>{
             <span class="kw">let </span>entry = entry<span class="question-mark">?</span>;
             <span class="kw">let </span>md = std::fs::metadata(entry.path()).unwrap();
             <span class="kw">if </span>md.is_dir() {
@@ -273,7 +273,7 @@
                 i += <span class="number">1</span>;
                 std::fs::rename(
                     path.clone(),
-                    std::path::Path::new(path.parent().unwrap()).join(<span class="kw-2">&amp;</span>new_file_name),
+                    std::path::Path::new(path.parent().unwrap()).join(new_file_name),
                 )<span class="question-mark">?</span>;
             }
             <span class="macro">println!</span>(<span class="string">&quot;Qr codes dumped into {:?}&quot;</span>, qr_codes);

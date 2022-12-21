@@ -927,8 +927,8 @@
             }
 
             <span class="kw">let </span>tcg = testing::TestCryptoGen::arbitrary(g);
-            <span class="kw">let </span><span class="kw-2">mut </span>rng = tcg.get_rng(<span class="number">0</span>);
-            <span class="kw">let </span>vrf_sk: SecretKey&lt;RistrettoGroup2HashDh&gt; = SecretKey::generate(<span class="kw-2">&amp;mut </span>rng);
+            <span class="kw">let </span>rng = tcg.get_rng(<span class="number">0</span>);
+            <span class="kw">let </span>vrf_sk: SecretKey&lt;RistrettoGroup2HashDh&gt; = SecretKey::generate(rng);
             GenesisPraosLeader {
                 vrf_public_key: vrf_sk.to_public(),
                 kes_public_key: PK_KES.clone(),

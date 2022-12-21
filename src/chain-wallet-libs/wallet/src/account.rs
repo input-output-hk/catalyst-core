@@ -2,7 +2,7 @@ use super::transaction::AccountWitnessBuilder;
 use crate::scheme::{on_tx_input_and_witnesses, on_tx_output};
 use crate::states::States;
 use chain_crypto::{Ed25519, Ed25519Extended, PublicKey, SecretKey};
-use chain_impl_mockchain::accounting::account::SpendingCounterIncreasing;
+use chain_impl_mockchain::accounting::account::{spending, SpendingCounterIncreasing};
 use chain_impl_mockchain::{
     account::SpendingCounter,
     fragment::{Fragment, FragmentId},
@@ -37,10 +37,10 @@ pub enum Error {
     NotEnoughFunds { current: Value, needed: Value },
     #[error("invalid lane for spending counter")]
     InvalidLane,
-    #[error("malformed spending counters")]
-    MalformedSpendingCounters,
     #[error("spending counter does not match current state")]
     NonMonotonicSpendingCounter,
+    #[error(transparent)]
+    SpendingCounters(#[from] spending::Error),
 }
 
 pub enum EitherAccount {
@@ -109,16 +109,19 @@ impl Wallet {
     ///
     /// TODO: change to a constructor/initializator?, or just make it so it resets the state
     ///
-    pub fn set_state(&mut self, value: Value, counters: Vec<SpendingCounter>) -> Result<(), Error> {
-        let counters = SpendingCounterIncreasing::new_from_counters(counters)
-            .ok_or(Error::MalformedSpendingCounters)?;
+    pub fn set_state(
+        &mut self,
+        value: Value,
+        counters: [SpendingCounter; SpendingCounterIncreasing::LANES],
+    ) -> Result<(), Error> {
+        let counters = SpendingCounterIncreasing::new_from_counters(counters)?;
 
         self.state = States::new(FragmentId::zero_hash(), State { value, counters });
 
         Ok(())
     }
 
-    pub fn spending_counter(&self) -> Vec<SpendingCounter> {
+    pub fn spending_counter(&self) -> [SpendingCounter; SpendingCounterIncreasing::LANES] {
         self.state
             .last_state()
             .state()

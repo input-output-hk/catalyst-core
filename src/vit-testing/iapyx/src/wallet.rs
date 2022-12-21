@@ -1,4 +1,5 @@
 use chain_addr::{AddressReadable, Discrimination};
+use chain_impl_mockchain::account::SpendingCounterIncreasing;
 use chain_impl_mockchain::{block::BlockDate, fragment::FragmentId};
 use hdkeygen::account::AccountId;
 use jormungandr_lib::interfaces::AccountIdentifier;
@@ -77,12 +78,12 @@ impl Wallet {
         self.inner.total_value()
     }
 
-    pub fn set_state(&mut self, value: Value, counter: Vec<u32>) {
+    pub fn set_state(&mut self, value: Value, counters: [u32; SpendingCounterIncreasing::LANES]) {
         //TODO map error instead of unwrapping
-        self.inner.set_state(value, counter).unwrap();
+        self.inner.set_state(value, counters).unwrap();
     }
 
-    pub fn spending_counter(&self) -> Vec<u32> {
+    pub fn spending_counter(&self) -> [u32; SpendingCounterIncreasing::LANES] {
         self.inner.spending_counter()
     }
 

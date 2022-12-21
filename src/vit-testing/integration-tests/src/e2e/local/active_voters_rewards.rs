@@ -12,7 +12,7 @@ use catalyst_toolbox::rewards::Threshold;
 use chain_impl_mockchain::block::BlockDate;
 use jormungandr_automation::testing::time;
 use jormungandr_lib::crypto::account::Identifier;
-use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
+use mainnet_lib::network::wallet_state::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
 use snapshot_trigger_service::config::JobParameters;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::VoteBlockchainTime;

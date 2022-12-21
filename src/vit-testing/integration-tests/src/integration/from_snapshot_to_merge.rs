@@ -9,7 +9,7 @@ use jormungandr_automation::jcli::JCli;
 use jormungandr_lib::crypto::hash::Hash;
 use jormungandr_lib::interfaces::TallyResult;
 use jormungandr_lib::interfaces::{Tally, VotePlanStatus};
-use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
+use mainnet_lib::network::wallet_state::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
 use snapshot_trigger_service::config::JobParameters;
 use std::path::Path;
 use std::str::FromStr;

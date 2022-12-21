@@ -11,7 +11,7 @@ use jormungandr_lib::interfaces::Initial::Token;
 use jormungandr_lib::interfaces::InitialToken;
 use jormungandr_lib::interfaces::InitialUTxO;
 use jormungandr_lib::interfaces::Value;
-use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
+use mainnet_lib::network::wallet_state::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
 use snapshot_trigger_service::config::JobParameters;
 use vitup::config::ConfigBuilder;
 use vitup::testing::vitup_setup;

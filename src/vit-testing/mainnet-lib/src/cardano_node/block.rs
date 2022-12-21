@@ -1,4 +1,4 @@
-use crate::Settings;
+use crate::cardano_node::Settings;
 use cardano_serialization_lib::crypto::{
     BlockHash, Ed25519Signature, KESSignature, KESVKey, PrivateKey, VRFCert, VRFVKey, Vkey,
 };

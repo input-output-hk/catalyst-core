@@ -1,19 +1,11 @@
 import asyncpg
 import dataclasses
-from typing import Any, List, Optional, Tuple, TypeVar
+from typing import Any, List, Optional, TypeVar
 
 from .models import Model
 
 
 M = TypeVar("M", bound=Model)
-
-
-def items(models: List[M]) -> Tuple[List[str], List[List[Any]]]:
-    if len(models) == 0:
-        raise Exception("No models")
-
-    field_names = [field.name for field in dataclasses.fields(models[0])]
-    return (field_names, [[getattr(m, f) for f in field_names] for m in models])
 
 
 async def insert_many(
@@ -24,7 +16,9 @@ async def insert_many(
     if len(models) == 0:
         return []
 
-    cols, vals = items(models)
+    # Extract field names and values for each field in each model
+    cols = [field.name for field in dataclasses.fields(models[0])]
+    vals = [[getattr(m, f) for f in cols] for m in models]
 
     # Creates a list for the placeholders for value params, e.g. ["($1, $2, $3)", "($4, $5, $6)"]
     val_nums = []

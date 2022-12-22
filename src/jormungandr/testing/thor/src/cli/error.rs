@@ -1,7 +1,7 @@
 use super::config::Alias;
 use crate::{FragmentSenderError, FragmentVerifierError};
 use chain_crypto::SecretKeyError;
-use chain_impl_mockchain::fragment::FragmentId;
+use chain_impl_mockchain::{accounting::account::spending, fragment::FragmentId};
 use jormungandr_automation::jormungandr::RestError;
 use jormungandr_lib::crypto::account::SigningKeyParseError;
 use thiserror::Error;
@@ -28,9 +28,8 @@ pub enum Error {
     Config(#[from] crate::cli::config::Error),
     #[error("cannot serialize secret key")]
     CannotrSerializeSecretKey,
-    #[error("cannot create spending counter")]
-    SpendingCounter,
-
+    #[error(transparent)]
+    SpendingCounterError(#[from] spending::Error),
     #[error("cannot read secret key")]
     CannotReadSecretKey,
     #[error("unknown alias: '{0}'")]

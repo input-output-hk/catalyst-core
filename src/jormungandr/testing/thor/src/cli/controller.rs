@@ -93,15 +93,16 @@ impl CliController {
         Ok(Wallet::Account(
             crate::wallet::account::Wallet::from_secret_key(
                 self.secret_key_for_wallet_state(password, &template)?,
-                SpendingCounterIncreasing::new_from_counters(
-                    template
-                        .spending_counters
-                        .iter()
-                        .cloned()
-                        .map(Into::into)
-                        .collect(),
-                )
-                .ok_or(Error::SpendingCounter)?,
+                SpendingCounterIncreasing::new_from_counters([
+                    template.spending_counters[0].into(),
+                    template.spending_counters[1].into(),
+                    template.spending_counters[2].into(),
+                    template.spending_counters[3].into(),
+                    template.spending_counters[4].into(),
+                    template.spending_counters[5].into(),
+                    template.spending_counters[6].into(),
+                    template.spending_counters[7].into(),
+                ])?,
                 template.discrimination(),
             ),
         ))
@@ -154,13 +155,17 @@ impl CliController {
                 VerifyExitStrategy::OnProcessed,
                 &node,
             )?;
-            self.wallets.wallet_mut()?.spending_counters = thor_wallet
-                .spending_counter()
-                .ok_or(Error::SpendingCounter)?
-                .get_valid_counters()
-                .into_iter()
-                .map(|x| x.into())
-                .collect();
+            let counters = thor_wallet.spending_counter()?.get_valid_counters();
+            self.wallets.wallet_mut()?.spending_counters = [
+                counters[0].into(),
+                counters[1].into(),
+                counters[2].into(),
+                counters[3].into(),
+                counters[4].into(),
+                counters[5].into(),
+                counters[6].into(),
+                counters[7].into(),
+            ];
         }
         Ok(check)
     }

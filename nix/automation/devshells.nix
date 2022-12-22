@@ -3,10 +3,12 @@
   cell,
 }: let
   inherit (inputs) nixpkgs std;
-  inherit (inputs.cells.lib.toolchains) rustToolchain;
+  inherit (inputs.cells.lib.toolchains) rustNightly;
   l = nixpkgs.lib // builtins;
 
   mkEnv = env: l.mapAttrsToList (name: value: {inherit name value;}) env;
+
+
 
   catalystCore = {...}: {
     name = nixpkgs.lib.mkForce "Catalyst Core";
@@ -19,13 +21,13 @@
         PROTOC_INCLUDE = "${protobuf}/include";
       };
     nixago = [
-      cell.configs.lefthook
+      # cell.configs.lefthook
       cell.configs.prettier
       cell.configs.treefmt
     ];
     packages = with nixpkgs; [
       gcc
-      rustToolchain
+      rustNightly
       pkg-config
       protobuf
       uniffi-bindgen

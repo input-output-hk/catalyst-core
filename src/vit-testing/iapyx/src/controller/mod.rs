@@ -206,7 +206,7 @@ impl Controller {
             .into_iter()
             .map(|(p, c)| {
                 self.wallet
-                    .set_state((*account_state.value()).into(), counters.clone());
+                    .set_state((*account_state.value()).into(), counters);
                 let tx = self
                     .wallet
                     .vote(

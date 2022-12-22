@@ -43,6 +43,7 @@ pub struct InMemoryDbSync {
     stakes: HashMap<Address, BigNum>,
     settings: Settings,
 }
+
 impl Debug for InMemoryDbSync {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.settings)

@@ -35,7 +35,7 @@ impl Wallet {
     /// Retrieve a wallet from a key used as utxo's
     ///
     /// You can also use this function to recover a wallet even after you have
-    /// transferred all the funds to the new format (see the [Self::convert] function).
+    /// transferred all the funds to the new format
     ///
     /// Parameters
     ///
@@ -103,7 +103,7 @@ impl Wallet {
 
     fn sign_transaction_impl<P: Payload>(
         &mut self,
-        settings: &Settings,
+        settings: Settings,
         valid_until: BlockDate,
         lane: u8,
         payload: P,
@@ -139,7 +139,7 @@ impl Wallet {
     /// This function outputs a fragment containing a signed transaction.
     pub fn sign_transaction(
         &mut self,
-        settings: &Settings,
+        settings: Settings,
         valid_until: BlockDate,
         lane: u8,
         certificate: Certificate,
@@ -183,7 +183,7 @@ impl Wallet {
             return Err(Error::wallet_vote_range());
         };
 
-        let mut builder = wallet::TransactionBuilder::new(&settings, payload, *valid_until);
+        let mut builder = wallet::TransactionBuilder::new(settings, payload, *valid_until);
 
         let value = builder.estimate_fee_with(1, 0);
 

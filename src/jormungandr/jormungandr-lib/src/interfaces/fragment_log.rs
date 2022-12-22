@@ -1,5 +1,8 @@
+use std::net::IpAddr;
+
 use crate::{crypto::hash::Hash, interfaces::BlockDate, time::SystemTime};
 use chain_impl_mockchain::key;
+
 use serde::{Deserialize, Serialize};
 
 /// identify the source of a fragment
@@ -10,9 +13,7 @@ pub enum FragmentOrigin {
     /// origins of the fragment and eventually blacklisting
     /// the senders from sending us more fragment (in case
     /// they are invalids or so)
-    ///
-    /// TODO: add the network identifier/IP Address
-    Network,
+    Network { addr: IpAddr },
     /// This marks the fragment is coming from the REST interface
     /// (a client wallet or another service).
     Rest,

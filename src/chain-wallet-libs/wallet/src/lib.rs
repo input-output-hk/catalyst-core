@@ -9,7 +9,7 @@ pub mod time;
 pub mod transaction;
 
 pub use self::{
-    account::{Wallet, MAX_LANES},
+    account::{EitherAccount, Wallet},
     blockchain::Settings,
     password::{Password, ScrubbedBytes},
     transaction::{AccountWitnessBuilder, TransactionBuilder},

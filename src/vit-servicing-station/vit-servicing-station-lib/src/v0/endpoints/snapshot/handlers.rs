@@ -49,6 +49,8 @@ pub struct RawSnapshotInput {
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     pub update_timestamp: i64,
     pub min_stake_threshold: Value,
+    #[serde(deserialize_with = "crate::utils::serde::deserialize_fraction_from_string")]
+    #[serde(serialize_with = "crate::utils::serde::serialize_fraction_to_string")]
     pub voting_power_cap: Fraction,
     pub direct_voters_group: Option<String>,
     pub representatives_group: Option<String>,

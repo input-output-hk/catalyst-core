@@ -8,6 +8,7 @@ use crate::{
 use chain_core::property::ReadError;
 use chain_network::{data as net_data, error::Error as NetworkError};
 use futures::prelude::*;
+
 use std::fmt::Debug;
 use tokio_util::sync::CancellationToken;
 

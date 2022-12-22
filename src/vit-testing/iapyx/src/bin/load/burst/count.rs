@@ -16,7 +16,7 @@ pub struct BurstCountIapyxLoadCommand {
     #[structopt(short = "a", long = "address", default_value = "127.0.0.1:8000")]
     pub address: String,
 
-    /// Amount of delay [miliseconds] between requests
+    /// Amount of delay (in miliseconds) between requests
     #[structopt(short = "d", long = "delay", default_value = "10000")]
     pub delay: u64,
 

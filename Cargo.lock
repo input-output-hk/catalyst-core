@@ -467,20 +467,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bip39"
-version = "0.8.1"
-dependencies = [
- "cryptoxide 0.4.2",
- "hex",
- "quickcheck",
- "quickcheck_macros",
- "rand 0.3.23",
- "thiserror",
- "unicode-normalization",
- "zeroize",
-]
-
-[[package]]
 name = "bit-set"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -549,6 +535,19 @@ dependencies = [
  "chain-time",
  "lru",
  "thiserror",
+]
+
+[[package]]
+name = "blockfrost"
+version = "0.2.1"
+source = "git+https://github.com/dkijania/blockfrost-rust.git#5702277a41e70259586935b0f740f81507057d29"
+dependencies = [
+ "futures",
+ "paste 1.0.10",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "toml",
 ]
 
 [[package]]
@@ -1012,7 +1011,7 @@ dependencies = [
 name = "chain-path-derivation"
 version = "0.8.1"
 dependencies = [
- "paste",
+ "paste 0.1.18",
  "quickcheck",
  "quickcheck_macros",
  "thiserror",
@@ -2811,7 +2810,6 @@ dependencies = [
 name = "hdkeygen"
 version = "0.8.1"
 dependencies = [
- "bip39",
  "cardano-legacy-address",
  "cbor_event",
  "chain-addr",
@@ -3221,8 +3219,6 @@ name = "imhamt"
 version = "0.1.0"
 dependencies = [
  "criterion",
- "jemalloc-ctl",
- "jemallocator",
  "proptest",
  "rustc_version",
  "test-strategy",
@@ -3399,7 +3395,6 @@ dependencies = [
  "netstat2",
  "rand 0.8.5",
  "rand_chacha 0.2.2",
- "registration-service",
  "serde",
  "serde_json",
  "snapshot-lib",
@@ -3553,38 +3548,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "jemalloc-ctl"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c502a5ff9dd2924f1ed32ba96e3b65735d837b4bfd978d3161b1702e66aca4b7"
-dependencies = [
- "jemalloc-sys",
- "libc",
- "paste",
-]
-
-[[package]]
-name = "jemalloc-sys"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d3b9f3f5c9b31aa0f5ed3260385ac205db665baa41d49bb8338008ae94ede45"
-dependencies = [
- "cc",
- "fs_extra",
- "libc",
-]
-
-[[package]]
-name = "jemallocator"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43ae63fcfc45e99ab3d1b29a46782ad679e98436c3169d15a167a1108a724b69"
-dependencies = [
- "jemalloc-sys",
- "libc",
-]
-
-[[package]]
 name = "job_scheduler_ng"
 version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3634,6 +3597,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "linked-hash-map",
+ "local-ip-address",
  "lru",
  "nix",
  "opentelemetry",
@@ -3827,7 +3791,6 @@ dependencies = [
 name = "jormungandrwallet"
 version = "0.8.1"
 dependencies = [
- "bip39",
  "chain-addr",
  "chain-impl-mockchain",
  "chain-ser",
@@ -4104,6 +4067,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f9f08d8963a6c613f4b1a78f4f4a4dbfadf8e6545b2d72861731e4858b8b47f"
 
 [[package]]
+name = "local-ip-address"
+version = "0.4.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9eab7f092fb08006040e656c2adce6670e6a516bea831a8b2b3d0fb24d4488f5"
+dependencies = [
+ "libc",
+ "neli",
+ "thiserror",
+ "windows-sys 0.42.0",
+]
+
+[[package]]
 name = "lock_api"
 version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4162,19 +4137,27 @@ version = "0.1.0"
 dependencies = [
  "assert_fs",
  "bech32 0.8.1",
+ "blockfrost",
  "cardano-serialization-lib",
  "chain-addr",
  "chain-crypto",
+ "chain-impl-mockchain",
+ "futures",
+ "futures-util",
  "hex",
  "jormungandr-lib",
+ "jortestkit",
  "lazy_static",
+ "pharos",
  "rand 0.8.5",
+ "rayon",
  "serde",
  "serde_json",
  "snapshot-lib",
  "tempdir",
  "thiserror",
  "thor",
+ "tokio",
 ]
 
 [[package]]
@@ -4184,11 +4167,13 @@ dependencies = [
  "assert_fs",
  "bech32 0.8.1",
  "cardano-serialization-lib",
+ "chain-impl-mockchain",
  "clap 4.0.29",
  "color-eyre",
  "futures",
  "futures-util",
  "hex",
+ "http-zipkin",
  "itertools",
  "job_scheduler_ng",
  "jormungandr-automation",
@@ -4196,6 +4181,7 @@ dependencies = [
  "jortestkit",
  "mainnet-lib",
  "prettytable-rs",
+ "scheduler-service-lib",
  "serde",
  "serde_json",
  "signals-handler",
@@ -4207,9 +4193,11 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "uuid 1.2.2",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
  "voting_tools_rs",
+ "warp",
 ]
 
 [[package]]
@@ -4529,6 +4517,16 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "tempfile",
+]
+
+[[package]]
+name = "neli"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9053554eb5dcb7e10d9cdab1206965bde870eed5d0d341532ca035e3ba221508"
+dependencies = [
+ "byteorder",
+ "libc",
 ]
 
 [[package]]
@@ -5068,6 +5066,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "paste"
+version = "1.0.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf1c2c742266c2f1041c914ba65355a83ae8747b05f208319784083583494b4b"
+
+[[package]]
 name = "paste-impl"
 version = "0.1.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5129,6 +5133,16 @@ checksum = "e6d5014253a1331579ce62aa67443b4a658c5e7dd03d4bc6d302b94474888143"
 dependencies = [
  "fixedbitset",
  "indexmap",
+]
+
+[[package]]
+name = "pharos"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e9567389417feee6ce15dd6527a8a1ecac205ef62c2932bcf3d9f6fc5b78b414"
+dependencies = [
+ "futures",
+ "rustc_version",
 ]
 
 [[package]]
@@ -5936,68 +5950,6 @@ name = "regex-syntax"
 version = "0.6.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "456c603be3e8d448b072f410900c09faf164fbce2d480456f50eea6e25f9c848"
-
-[[package]]
-name = "registration-service"
-version = "0.1.0"
-dependencies = [
- "assert_fs",
- "catalyst-toolbox",
- "chain-addr",
- "chain-crypto",
- "chrono",
- "futures",
- "image",
- "jormungandr-automation",
- "jormungandr-integration-tests",
- "jormungandr-lib",
- "jortestkit",
- "libmath",
- "mainnet-tools",
- "regex",
- "reqwest",
- "scheduler-service-lib",
- "serde",
- "serde_json",
- "serde_yaml",
- "signals-handler",
- "structopt",
- "thiserror",
- "tokio",
- "uuid 0.8.2",
- "walkdir",
- "warp",
-]
-
-[[package]]
-name = "registration-verify-service"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "catalyst-toolbox",
- "chain-addr",
- "chain-crypto",
- "chrono",
- "futures",
- "hex",
- "iapyx",
- "jormungandr-integration-tests",
- "jormungandr-lib",
- "jortestkit",
- "reqwest",
- "scheduler-service-lib",
- "serde",
- "serde_json",
- "serde_yaml",
- "signals-handler",
- "snapshot-trigger-service",
- "structopt",
- "thiserror",
- "tokio",
- "uuid 0.8.2",
- "walkdir",
- "warp",
-]
 
 [[package]]
 name = "remove_dir_all"
@@ -8347,7 +8299,6 @@ dependencies = [
 name = "wallet"
 version = "0.8.1"
 dependencies = [
- "bip39",
  "cardano-legacy-address",
  "cbor_event",
  "chain-addr",
@@ -8378,7 +8329,6 @@ name = "wallet-core"
 version = "0.8.1"
 dependencies = [
  "bech32 0.7.3",
- "bip39",
  "chain-addr",
  "chain-core",
  "chain-crypto",

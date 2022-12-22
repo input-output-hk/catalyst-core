@@ -42,7 +42,7 @@ pub fn decompress(input: &Path, output: &Path) -> Result<(), DecompressError> {
                 .ok_or_else(|| DecompressError::UnsafeFileName(file.name().to_owned()))?;
             let outpath = output.join(file_name);
             let mut outfile =
-                File::create(&outpath).map_err(DecompressError::CannotWriteOutputFile)?;
+                File::create(outpath).map_err(DecompressError::CannotWriteOutputFile)?;
             io::copy(&mut file, &mut outfile)?;
         }
         return Ok(());

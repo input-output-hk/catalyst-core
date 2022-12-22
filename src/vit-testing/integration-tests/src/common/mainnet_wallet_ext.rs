@@ -1,4 +1,4 @@
-use crate::common::MainnetWallet;
+use crate::common::CardanoWallet;
 use snapshot_lib::VoterHIR;
 use vitup::config::Block0Initial;
 
@@ -7,7 +7,7 @@ pub trait MainnetWalletExtension {
     fn as_voter_hir(&self, group: &str) -> VoterHIR;
 }
 
-impl MainnetWalletExtension for MainnetWallet {
+impl MainnetWalletExtension for CardanoWallet {
     fn as_initial_entry(&self) -> Block0Initial {
         Block0Initial::External {
             address: self.catalyst_address().to_string(),

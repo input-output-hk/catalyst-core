@@ -62,7 +62,7 @@ pub fn generate_qr_and_hashes<P: AsRef<Path>>(
             let sk = SecretKey::generate(rand::thread_rng());
             let qr = KeyQrCode::generate(sk.clone(), &pin_to_bytes(&zero_funds_pin));
             let img = qr.to_img();
-            let png = folder.join(&format!("zero_funds_{}_{}.png", i, zero_funds_pin));
+            let png = folder.join(format!("zero_funds_{}_{}.png", i, zero_funds_pin));
             trace!(
                 "[{}/{}] Qr code dumped to {:?}",
                 i + 1,

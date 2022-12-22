@@ -1009,7 +1009,7 @@ dependencies = [
 
 [[package]]
 name = "chain-path-derivation"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "paste 0.1.18",
  "quickcheck",
@@ -2872,7 +2872,7 @@ dependencies = [
 
 [[package]]
 name = "hdkeygen"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "cardano-legacy-address",
  "cbor_event",
@@ -7044,7 +7044,7 @@ checksum = "734676eb262c623cec13c3155096e08d1f8f29adce39ba17948b18dad1e54142"
 
 [[package]]
 name = "symmetric-cipher"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "cryptoxide 0.4.2",
  "rand 0.8.5",
@@ -8367,7 +8367,7 @@ dependencies = [
 
 [[package]]
 name = "wallet"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "cardano-legacy-address",
  "cbor_event",
@@ -8396,7 +8396,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-core"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "bech32 0.7.3",
  "chain-addr",
@@ -8417,7 +8417,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-wasm-js"
-version = "0.8.1"
+version = "0.8.2-test2"
 dependencies = [
  "bech32 0.7.3",
  "chain-core",

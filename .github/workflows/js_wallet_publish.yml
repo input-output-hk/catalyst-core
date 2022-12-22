@@ -65,11 +65,11 @@ jobs:
           wasm-pack build \
             -d pkg \
             --scope catalyst-core \
-            --out-name walletjs \
             --release --target ${{ matrix.target }} \
             bindings/wallet-wasm-js
           rm bindings/wallet-wasm-js/pkg/README.md
           cp bindings/wallet-wasm-js/package_README.md bindings/wallet-wasm-js/pkg/README.md
+          cat bindings/wallet-wasm-js/pkg/package.json
 
       - name: Pack wasm package
         run: |

@@ -3,7 +3,7 @@ use jormungandr_automation::{
     jormungandr::{explorer::configuration::ExplorerConfiguration, get_available_port, NodeAlias},
     utils::MultiaddrExtension,
 };
-use std::{collections::HashMap, path::Path};
+use std::collections::HashMap;
 
 pub fn generate_explorer(
     nodes: &HashMap<NodeAlias, NodeSetting>,
@@ -23,7 +23,7 @@ pub fn generate_explorer(
             .public_address
             .clone()
             .to_http_addr(),
-        logs_dir: Some(Path::new("C:\\work\\iohk\\logs.txt").to_path_buf()),
+        logs_dir: Default::default(),
         storage_dir: None,
         params: explorer_template.to_explorer_params(),
     })

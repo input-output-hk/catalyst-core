@@ -4,41 +4,48 @@ on:
   push:
     tags:
       - walletjs-*
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  initial_release:
-    name: Publish wasm package
-    runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-      version: ${{ steps.get_version.outputs.version }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+  # initial_release:
+  #   name: Publish wasm package
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+  #     version: ${{ steps.get_version.outputs.version }}
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: true
-          prerelease: false
+  #     - name: Create Release
+  #       id: create_release
+  #       uses: actions/create-release@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         tag_name: ${{ github.ref }}
+  #         release_name: Release ${{ github.ref }}
+  #         draft: true
+  #         prerelease: false
 
-      - name: Set version output
-        id: get_version
-        run: echo ::set-output name=version::``${GITHUB_REF#refs/tags/}``
+  #     - name: Set version output
+  #       id: get_version
+  #       run: echo ::set-output name=version::``${GITHUB_REF#refs/tags/}``
 
-  release_wasm:
-    name: Release wasm assets
-    needs: initial_release
+  release_wallet_js:
+    name: Release wallet js assets
+    # needs: initial_release
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        target: [nodejs, web, bundler]
+        target: [
+                nodejs, 
+                # web,
+                # bundler
+                ]
 
     steps:
       - uses: actions/checkout@v3

@@ -48,7 +48,7 @@ CREATE VIEW proposals AS SELECT
     proposal.funds AS proposal_funds,
     proposal.url AS proposal_url,
     proposal.files_url AS proposal_files_url,
-    proposal.impact_score AS impace_score,
+    proposal.impact_score  AS impact_score,
 
     proposal.proposer_name AS proposer_name,
     proposal.proposer_contact AS proposer_contact,

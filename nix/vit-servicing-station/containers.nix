@@ -7,18 +7,18 @@
   l = nixpkgs.lib // builtins;
 
   mkOCI = namespace: let
-    # TODO: fix git rev
     rev =
       if (inputs.self.rev != "not-a-commit")
       then inputs.self.rev
-      else "dirty";
+      else "";
   in
-    std.lib.ops.mkStandardOCI {
-      name = "${constants.registry}/vit-servicing-station-server";
-      tag = "${rev}-${namespace}";
-      operable = cell.operables."vit-servicing-station-server-${namespace}";
-      debug = true;
-    };
+    std.lib.ops.mkStandardOCI ({
+        name = "${constants.registry}/vit-servicing-station-server";
+        operable = cell.operables."vit-servicing-station-server-${namespace}";
+        debug = true;
+      }
+      # Default to using output hash as the tag if the repo is dirty
+      // l.optionalAttrs (rev != "") {tag = "${rev}-${namespace}";});
 in
   {}
   // lib.mapToNamespaces "vit-servicing-station-server" mkOCI

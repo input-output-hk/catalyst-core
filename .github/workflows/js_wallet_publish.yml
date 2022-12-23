@@ -4,9 +4,6 @@ on:
   push:
     tags:
       - walletjs-*
-  pull_request:
-    branches:
-      - main
 
 jobs:
   # initial_release:

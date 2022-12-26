@@ -33,6 +33,7 @@
       };
       address = "0.0.0.0:8080";
       service_version = "";
+      db_url = "";
     };
   in
     std.lib.ops.mkOperable {

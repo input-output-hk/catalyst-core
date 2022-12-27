@@ -20,6 +20,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  id-token: write
   contents: read
 
 concurrency:
@@ -27,6 +28,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  AWS_REGION: eu-central-1
+  AWS_ROLE_ARN: arn:aws:iam::432820653916:role/ci
   ECR_REGISTRY: 432820653916.dkr.ecr.eu-central-1.amazonaws.com
   S3_CACHE: s3://iog-catalyst-nix-cache?region=eu-central-1
 
@@ -40,7 +43,7 @@ jobs:
       group: ${{ github.workflow }}
     steps:
       - name: Standard Discovery
-        uses: divnix/std-action/discover@v0.0.2
+        uses: divnix/std-action/discover@main
         id: discovery
   build-packages:
     needs: discover
@@ -51,14 +54,17 @@ jobs:
     name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
     runs-on: ubuntu-latest
     steps:
-      - uses: divnix/std-action/run@v0.0.2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: divnix/std-action/run@main
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}
           json: ${{ toJSON(matrix.target) }}
           nix_key: ${{ secrets.NIX_SIGNING_KEY }}
-          s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           cache: ${{ env.S3_CACHE }}
   build-devshells:
     needs: discover
@@ -69,14 +75,17 @@ jobs:
     name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
     runs-on: ubuntu-latest
     steps:
-      - uses: divnix/std-action/run@v0.0.2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: divnix/std-action/run@main
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}
           json: ${{ toJSON(matrix.target) }}
           nix_key: ${{ secrets.NIX_SIGNING_KEY }}
-          s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           cache: ${{ env.S3_CACHE }}
   publish-containers:
     if: github.ref == 'refs/heads/main'
@@ -90,19 +99,18 @@ jobs:
     name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
     runs-on: ubuntu-latest
     steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
       - name: Configure Registry
         run: |
           aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin "${{ env.ECR_REGISTRY }}"
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: eu-central-1
-      - uses: divnix/std-action/run@v0.0.2
+      - uses: divnix/std-action/run@main
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}
           json: ${{ toJSON(matrix.target) }}
           nix_key: ${{ secrets.NIX_SIGNING_KEY }}
-          s3_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          s3_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           cache: ${{ env.S3_CACHE }}

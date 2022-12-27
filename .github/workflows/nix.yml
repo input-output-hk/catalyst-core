@@ -43,7 +43,7 @@ jobs:
       group: ${{ github.workflow }}
     steps:
       - name: Standard Discovery
-        uses: divnix/std-action/discover@hermetic-discovery
+        uses: divnix/std-action/discover
         id: discovery
   build-packages:
     needs: discover
@@ -59,7 +59,7 @@ jobs:
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      - uses: divnix/std-action/run@hermetic-discovery
+      - uses: divnix/std-action/run
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}
@@ -80,7 +80,7 @@ jobs:
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      - uses: divnix/std-action/run@hermetic-discovery
+      - uses: divnix/std-action/run
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}
@@ -111,7 +111,7 @@ jobs:
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      - uses: divnix/std-action/run@hermetic-discovery
+      - uses: divnix/std-action/run
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}

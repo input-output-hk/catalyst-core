@@ -59,7 +59,7 @@ jobs:
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      - uses: divnix/std-action/run@fix-key-path
+      - uses: divnix/std-action/run@main
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}
@@ -80,7 +80,7 @@ jobs:
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      - uses: divnix/std-action/run@fix-key-path
+      - uses: divnix/std-action/run@main
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}
@@ -111,7 +111,7 @@ jobs:
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      - uses: divnix/std-action/run@fix-key-path
+      - uses: divnix/std-action/run@main
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}

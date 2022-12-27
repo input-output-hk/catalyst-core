@@ -31,14 +31,18 @@ jobs:
         id: get_version
         run: echo ::set-output name=version::``${GITHUB_REF#refs/tags/}``
 
-  release_wasm:
-    name: Release wasm assets
+  release_wallet_js:
+    name: Release wallet js assets
     needs: initial_release
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        target: [nodejs, web, bundler]
+        target: [
+                nodejs, 
+                # web,
+                # bundler
+                ]
 
     steps:
       - uses: actions/checkout@v3
@@ -58,11 +62,11 @@ jobs:
           wasm-pack build \
             -d pkg \
             --scope catalyst-core \
-            --out-name walletjs \
             --release --target ${{ matrix.target }} \
             bindings/wallet-wasm-js
           rm bindings/wallet-wasm-js/pkg/README.md
           cp bindings/wallet-wasm-js/package_README.md bindings/wallet-wasm-js/pkg/README.md
+          cat bindings/wallet-wasm-js/pkg/package.json
 
       - name: Pack wasm package
         run: |

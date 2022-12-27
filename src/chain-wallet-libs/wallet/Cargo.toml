@@ -1,6 +1,6 @@
 [package]
 name = "wallet"
-version = "0.8.1"
+version = "0.8.3"
 authors = [
     "Nicolas Di Prima <nicolas@primetype.co.uk>",
     "Vincent Hanquez <vincent@typed.io>",

@@ -59,7 +59,8 @@ jobs:
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      - uses: divnix/std-action/run@main
+      # - uses: divnix/std-action/run@main
+      - uses: jmgilman/std-action/run@fix-typo
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}
@@ -80,7 +81,8 @@ jobs:
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      - uses: divnix/std-action/run@main
+      # - uses: divnix/std-action/run@main
+      - uses: jmgilman/std-action/run@fix-typo
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}
@@ -111,7 +113,8 @@ jobs:
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      - uses: divnix/std-action/run@main
+      # - uses: divnix/std-action/run@main
+      - uses: jmgilman/std-action/run@fix-typo
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}

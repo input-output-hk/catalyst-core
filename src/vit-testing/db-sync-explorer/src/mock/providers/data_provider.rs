@@ -19,7 +19,11 @@ pub struct Provider {
 
 impl Provider {
     pub fn from_ledger_and_db_sync(ledger: Ledger, db_sync: InMemoryDbSync) -> Self {
-        Provider { ledger, db_sync, ..Default::default() }
+        Provider {
+            ledger,
+            db_sync,
+            ..Default::default()
+        }
     }
 
     pub fn db_sync_content(&self) -> Result<String, serde_json::Error> {
@@ -79,20 +83,23 @@ impl DataProvider for Provider {
             .transaction_by_hash(&hash)
             .into_iter()
             .map(|(block, _tx)| {
-                let absolute_slot = from_bignum(&block.header().header_body().slot_bignum());
-                let block_date = BlockDate::from_absolute_slot_no(absolute_slot);
+                let absolute_slot = block
+                    .as_ref()
+                    .map(|block| from_bignum(&block.header().header_body().slot_bignum()));
+                let block_date = absolute_slot.map(BlockDate::from_absolute_slot_no);
                 TransactionConfirmation {
-                    epoch_no: Some(block_date.epoch().try_into().unwrap()),
-                    slot_no: Some(block_date.slot().into()),
-                    absolute_slot: Some(absolute_slot.try_into().unwrap()),
-                    block_no: Some(
+                    epoch_no: block_date.map(|block_date| block_date.epoch().try_into().unwrap()),
+                    slot_no: block_date.map(|block_date| block_date.slot().into()),
+                    absolute_slot: absolute_slot
+                        .map(|absolute_slot| absolute_slot.try_into().unwrap()),
+                    block_no: block.as_ref().map(|block| {
                         block
                             .header()
                             .header_body()
                             .block_number()
                             .try_into()
-                            .unwrap(),
-                    ),
+                            .unwrap()
+                    }),
                 }
             })
             .collect())

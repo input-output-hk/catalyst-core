@@ -39,6 +39,9 @@ pub enum HandleError {
 
     #[error("Serialization error")]
     Json(#[from] serde_json::Error),
+
+    #[error(transparent)]
+    Template(#[from] mainnet_lib::wallet_state::TemplateError),
 }
 
 impl HandleError {
@@ -56,6 +59,7 @@ impl HandleError {
             HandleError::Mock(_) => warp::http::StatusCode::SERVICE_UNAVAILABLE,
             HandleError::Json(_) => warp::http::StatusCode::SERVICE_UNAVAILABLE,
             HandleError::Deserialize(_) => warp::http::StatusCode::BAD_REQUEST,
+            HandleError::Template(_) => warp::http::StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 

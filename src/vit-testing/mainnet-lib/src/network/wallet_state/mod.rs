@@ -3,7 +3,7 @@ mod template;
 
 pub use builder::MainnetWalletStateBuilder;
 use std::fmt::{Debug, Formatter};
-pub use template::{build, build_default, Actor, Error as TemplateError};
+pub use template::{build, build_default, Actor, Error as TemplateError, ExternalProvider};
 
 use cardano_serialization_lib::address::Address;
 use cardano_serialization_lib::Transaction;
@@ -11,10 +11,14 @@ use jormungandr_lib::crypto::account::Identifier;
 
 /// Represents wallet candidate for registration. Defines wallet role (delegator/direct-voter/representative)
 pub struct MainnetWalletState {
-    pub(crate) rep: Option<Identifier>,
-    pub(crate) registration_tx: Option<Transaction>,
-    pub(crate) stake: u64,
-    pub(crate) stake_address: Address,
+    /// Possible identifier which define representative id
+    pub rep: Option<Identifier>,
+    /// Possible valid registration transaction
+    pub registration_tx: Option<Transaction>,
+    /// Ada amount account hold on snapshot time
+    pub stake: u64,
+    /// Stake address
+    pub stake_address: Address,
 }
 
 impl Debug for MainnetWalletState {

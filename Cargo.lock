@@ -3461,6 +3461,7 @@ dependencies = [
  "mainnet-lib",
  "mainnet-tools",
  "netstat2",
+ "num-traits",
  "rand 0.8.5",
  "rand_chacha 0.2.2",
  "serde",

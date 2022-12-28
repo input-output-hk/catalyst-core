@@ -13,9 +13,7 @@ pub async fn reset(
     let mock_config = context
         .config()
         .mock_config()
-        .ok_or_else(|| MockError::Internal(
-            "cannot retrieve mock configuration".to_string(),
-        ))
+        .ok_or_else(|| MockError::Internal("cannot retrieve mock configuration".to_string()))
         .map_err(HandleError::Mock)?;
     let (ledger, new_db_sync_instance) = reset_data(reset_request, mock_config.providers).await?;
     let data_provider = context.get_mock_data_provider_mut()?;

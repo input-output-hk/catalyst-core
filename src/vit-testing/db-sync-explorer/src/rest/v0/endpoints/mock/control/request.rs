@@ -1,4 +1,4 @@
-use crate::mock::Actor;
+use mainnet_lib::wallet_state::Actor;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]

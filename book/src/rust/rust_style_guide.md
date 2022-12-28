@@ -3,12 +3,24 @@
 - [Dependencies](#dependencies)
 - [Patterns to follow](#patterns-to-follow)
 - [Style Guide](#style-guide)
+  - [Whitespace](#whitespace)
+    - [Spaces](#spaces)
+    - [Line wrapping](#line-wrapping)
+    - [Alignment](#alignment)
+  - [Braces, semicolons, and commas](#braces-semicolons-and-commas)
+    - [Trailing commas](#trailing-commas)
   - [The Cargo.toml File](#the-cargotoml-file)
   - [Feature Selection](#feature-selection)
   - [Imports and Exports](#imports-and-exports)
+  - [Let binding](#let-binding)
+    - [Always separately bind RAII guards](#always-separately-bind-raii-guards)
+    - [Prefer conditional expressions to deferred initialization.](#prefer-conditional-expressions-to-deferred-initialization)
+    - [Use type annotations for clarification; prefer explicit generics when inference fails.](#use-type-annotations-for-clarification-prefer-explicit-generics-when-inference-fails)
+    - [Prefer immutable bindings.](#prefer-immutable-bindings)
   - [Traits](#traits)
     - [Defining Traits](#defining-traits)
     - [Implementing Traits](#implementing-traits)
+  - [Errors](#errors)
   - [Crate lib.rs Module](#crate-librs-module)
   - [Ignoring Compiler Warnings](#ignoring-compiler-warnings)
   - [Where Clauses](#where-clauses)
@@ -41,6 +53,178 @@ cargo fmt
 We are adopting the following style guide to keep code and documentation style consistent across all the code in the repository.
 We begin with the formatting style enforced by the `stable` version of `rustfmt`with the configuration specified in the `.rustfmt.toml` file.
 Beyond what rustfmt currently enforces, we have specified other rules below.
+
+#### Whitespace
+
+- Lines must not exceed 100 characters.
+- Use 4 spaces for indentation, not tabs.
+- No trailing whitespace at the end of lines or files.
+
+##### Spaces
+
+- Use spaces around binary operators, including the equals sign in attributes:
+
+```rust
+#[deprecated = "Use `bar` instead."]
+fn foo(a: uint, b: uint) -> uint {
+    a + b
+}
+```
+
+- Use a space after colons and commas:
+
+```rust
+fn foo(a: Bar);
+
+MyStruct { foo: 3, bar: 4 }
+
+foo(bar, baz);
+```
+
+- Use a space after the opening and before the closing brace for single line blocks or struct expressions:
+
+```rust
+spawn(proc() { do_something(); })
+
+Point { x: 0.1, y: 0.3 }
+```
+
+##### Line wrapping
+
+- For multiline function signatures, each new line should align with the first parameter. Multiple parameters per line are permitted:
+
+```rust
+fn bar(a: Bar, b: Bar,
+              c: Bar, d: Bar)
+              -> Bar {
+    ...
+}
+
+fn foo<T: This,
+       U: That>(
+       a: Bar,
+       b: Bar)
+       -> Baz {
+    ...
+}
+```
+- Multiline function invocations generally follow the same rule as for signatures. However, if the final argument begins a new block, the contents of the block may begin on a new line, indented one level:
+
+```rust
+fn foo_bar(a: Bar, b: Bar,
+           c: |Bar|) -> Bar {
+    ...
+}
+
+// Same line is fine:
+foo_bar(x, y, |z| { z.transpose(y) });
+
+// Indented body on new line is also fine:
+foo_bar(x, y, |z| {
+    z.quux();
+    z.rotate(x)
+})
+```
+
+##### Alignment
+
+Idiomatic code should not use extra whitespace in the middle of a line to provide alignment.
+
+```rust
+// Good
+struct Foo {
+    short: f64,
+    really_long: f64,
+}
+
+// Bad
+struct Bar {
+    short:       f64,
+    really_long: f64,
+}
+
+// Good
+let a = 0;
+let radius = 7;
+
+// Bad
+let b        = 0;
+let diameter = 7;
+```
+
+#### Braces, semicolons, and commas
+
+Opening braces always go on the same line.
+
+```rust
+fn foo() {
+    ...
+}
+
+fn bar(a: Bar, b: Bar,
+              c: Bar, d: Bar)
+              -> Bar {
+    ...
+}
+
+trait Bar {
+    fn baz(&self);
+}
+
+impl Bar for Baz {
+    fn baz(&self) {
+        ...
+    }
+}
+
+frob(|x| {
+    x.transpose()
+})
+```
+
+`match` arms get braces, except for single-line expressions.
+
+```rust
+match foo {
+    bar => baz,
+    quux => {
+        do_something();
+        do_something_else()
+    }
+}
+```
+
+`return` statements get semicolons.
+
+```rust
+fn foo() {
+    do_something();
+
+    if condition() {
+        return;
+    }
+
+    do_something_else();
+}
+```
+
+##### Trailing commas
+
+> Opossible rule: a trailing comma should be included whenever the closing delimiter appears on a separate line:
+
+```rust
+Foo { bar: 0, baz: 1 }
+
+Foo {
+    bar: 0,
+    baz: 1,
+}
+
+match a_thing {
+    None => 0,
+    Some(x) => 1,
+}
+```
 
 
 #### The Cargo.toml File
@@ -180,6 +364,91 @@ use {
 
 **NOTE**: All imports should occur at the top of any module, and a newline should be added between the last import and the first declared object.
 
+#### Let binding
+
+
+##### Always separately bind [RAII](https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization) guards
+
+
+>RAII stands for "Resource Acquisition is Initialisation". The essence of the pattern is that resource initialisation is done in the constructor of an object and finalisation in the destructor. This pattern is extended in Rust by using a RAII object as a guard of some resource and relying on the type system to ensure that access is always mediated by the guard object.
+
+Prefer
+
+```rust
+fn use_mutex(m: sync::mutex::Mutex<int>) {
+    let guard = m.lock();
+    do_work(guard);
+    drop(guard); // unlock the lock
+    // do other work
+}
+```
+over
+
+```rust
+fn use_mutex(m: sync::mutex::Mutex<int>) {
+    do_work(m.lock());
+    // do other work
+}
+```
+
+##### Prefer conditional expressions to deferred initialization.
+
+Prefer
+
+```rust
+let foo = match bar {
+    Baz  => 0,
+    Quux => 1
+};
+```
+
+Over
+
+```rust
+let foo;
+match bar {
+    Baz  => {
+        foo = 0;
+    }
+    Quux => {
+        foo = 1;
+    }
+}
+```
+
+unless the conditions for initialization are too complex to fit into a simple conditional expression.
+
+##### Use type annotations for clarification; prefer explicit generics when inference fails.
+
+Prefer
+
+```rust
+s.iter().map(|x| x * 2)
+        .collect::<Vec<_>>()
+```
+
+Over
+
+```rust
+let v: Vec<_> = s.iter().map(|x| x * 2)
+                        .collect();
+```
+
+When the type of a value might be unclear to the reader of the code, consider explicitly annotating it in a let.
+
+On the other hand, when the type is unclear to the compiler, prefer to specify the type by explicit generics instantiation, which is usually more clear.
+
+##### Prefer immutable bindings.
+
+Use mut bindings to signal the span during which a value is mutated:
+
+```rust
+let mut v = Vec::new();
+// push things onto v
+let v = v;
+// use v immutably henceforth
+```
+
 #### Traits
 
 ##### Defining Traits
@@ -265,6 +534,11 @@ impl Configuration {
     const ANOTHER_SPECIAL_CONSTANT: usize = 9876;
 }
 ```
+
+#### Errors
+
+TODO: - @minikin
+
 
 #### Crate lib.rs Module
 

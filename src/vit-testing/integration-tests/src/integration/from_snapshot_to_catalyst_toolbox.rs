@@ -3,7 +3,7 @@ use crate::common::snapshot_filter::SnapshotFilterSource;
 use crate::common::{CardanoWallet, RepsVoterAssignerSource};
 use assert_fs::TempDir;
 use fraction::Fraction;
-use mainnet_lib::network::wallet_state::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
+use mainnet_lib::{wallet_state::MainnetWalletStateBuilder, MainnetNetworkBuilder};
 use snapshot_lib::VoterHIR;
 use snapshot_trigger_service::config::JobParameters;
 use vitup::config::{DIRECT_VOTING_GROUP, REP_VOTING_GROUP};

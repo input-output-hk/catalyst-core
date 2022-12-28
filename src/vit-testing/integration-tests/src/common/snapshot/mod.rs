@@ -5,7 +5,6 @@ mod starter;
 mod voter_hirs_asserts;
 
 pub use controller::SnapshotServiceController;
-pub use result::SnapshotResult;
 pub use starter::SnapshotServiceStarter;
 pub use voter_hirs_asserts::RegistrationAsserts;
 

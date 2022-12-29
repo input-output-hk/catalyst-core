@@ -188,16 +188,36 @@ impl Serialize for HttpMethod {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct P2p {
-    /// The public address to which other peers may connect to
-    pub public_address: Multiaddr,
+    pub bootstrap: Bootstrap,
+
+    pub connection: Connection,
+
+    pub policy: Option<Policy>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub layers: Option<LayersConfig>,
+}
+
+/// Bootstrap contains meta data for initial startup
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Bootstrap {
+    /// the rendezvous points for the peer to connect to in order to initiate
+    /// the p2p discovery from.
+    pub trusted_peers: Vec<TrustedPeer>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_bootstrap_attempts: Option<usize>,
 
     /// File with the secret key used to advertise and authenticate the node
     #[serde(skip_serializing_if = "Option::is_none")]
     pub node_key_file: Option<PathBuf>,
+}
 
-    /// the rendezvous points for the peer to connect to in order to initiate
-    /// the p2p discovery from.
-    pub trusted_peers: Vec<TrustedPeer>,
+/// Miscellaneous network configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Connection {
+    /// The public address to which other peers may connect to
+    pub public_address: Multiaddr,
 
     /// Listen address.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -209,21 +229,17 @@ pub struct P2p {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub max_inbound_connections: Option<u32>,
 
+    /// Whether to allow non-public IP addresses in gossip
     pub allow_private_addresses: bool,
 
+    /// contains addrs of nodes which we can accept fragments from
     pub whitelist: Option<Vec<SocketAddr>>,
 
-    pub policy: Option<Policy>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub layers: Option<LayersConfig>,
-
+    /// interval to start gossiping with new nodes, changing the value will affect the bandwidth.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub gossip_interval: Option<Duration>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub max_bootstrap_attempts: Option<usize>,
-
+    /// If no gossip has been received in the last interval, try to connect to nodes that were previously known to this node
     #[serde(skip_serializing_if = "Option::is_none")]
     pub network_stuck_check: Option<Duration>,
 }
@@ -234,6 +250,7 @@ pub struct TopicsOfInterest {
     pub blocks: String,
 }
 
+/// policy module
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Policy {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -242,6 +259,7 @@ pub struct Policy {
     pub quarantine_whitelist: Option<Vec<Multiaddr>>,
 }
 
+/// Jörmungandr provides multiple additional layers to the poldercast default ones: the preferred list or the bottle in the sea.
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct LayersConfig {
@@ -308,7 +326,8 @@ pub struct NodeConfig {
 
 impl P2p {
     pub fn get_listen_addr(&self) -> Option<SocketAddr> {
-        self.listen
-            .or_else(|| multiaddr_utils::to_tcp_socket_addr(&self.public_address))
+        self.connection
+            .listen
+            .or_else(|| multiaddr_utils::to_tcp_socket_addr(&self.connection.public_address))
     }
 }

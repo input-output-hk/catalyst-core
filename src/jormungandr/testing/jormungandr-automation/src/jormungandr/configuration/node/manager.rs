@@ -45,19 +45,19 @@ impl ConfigurableNodeConfig for NodeConfigManager {
     }
 
     fn p2p_listen_address(&self) -> SocketAddr {
-        if let Some(address) = &self.node_config.p2p.listen {
+        if let Some(address) = &self.node_config.p2p.connection.listen {
             *address
         } else {
-            to_tcp_socket_addr(&self.node_config.p2p.public_address).unwrap()
+            to_tcp_socket_addr(&self.node_config.p2p.connection.public_address).unwrap()
         }
     }
 
     fn p2p_public_address(&self) -> Multiaddr {
-        self.node_config.p2p.public_address.clone()
+        self.node_config.p2p.connection.public_address.clone()
     }
 
     fn set_p2p_public_address(&mut self, address: Multiaddr) {
-        self.node_config.p2p.public_address = address;
+        self.node_config.p2p.connection.public_address = address;
     }
 
     fn rest_socket_addr(&self) -> SocketAddr {

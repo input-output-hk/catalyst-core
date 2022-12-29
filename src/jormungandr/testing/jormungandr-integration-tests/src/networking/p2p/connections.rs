@@ -97,7 +97,7 @@ pub fn node_trust_itself() {
     let config = network_controller.node_config(CLIENT).unwrap().p2p;
 
     let peer = TrustedPeer {
-        address: config.public_address,
+        address: config.connection.public_address,
         id: None,
     };
     network_controller

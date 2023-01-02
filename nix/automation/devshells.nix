@@ -34,6 +34,7 @@
       postgresql
       diesel-cli
       cargo-insta # snapshot testing lib
+      nodejs
     ];
   };
 in

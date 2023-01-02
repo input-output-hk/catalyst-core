@@ -12,6 +12,9 @@ mod e2e;
 #[cfg(test)]
 mod functional;
 
-/// Test api for internal tests as well for building mocks and varius testing utils
+/// Test api for internal tests as well for building mocks and various testing utils
 /// outside the project
 pub mod test_api;
+
+/// Test vectors for various CIPs
+pub mod vectors;

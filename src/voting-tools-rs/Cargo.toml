@@ -30,6 +30,8 @@ rust_decimal = { version = "1.26", features = ["serde", "db-postgres"] }
 mainnet-lib = { path = "../vit-testing/mainnet-lib"}
 cardano-serialization-lib = "11.0.0"
 
+rand = "0.8"
+
 [dev-dependencies]
 proptest = { workspace = true }
 test-strategy = "0.2"

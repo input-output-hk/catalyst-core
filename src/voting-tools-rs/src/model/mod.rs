@@ -14,8 +14,9 @@ pub enum Delegations {
     Delegated(Vec<(String, u32)>),
 }
 
+/// A registration on Cardano in either CIP-15 or CIP-36 format
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct RegoMetadata {
+pub struct Registration {
     #[serde(rename = "1")]
     pub delegations: Delegations,
     #[serde(rename = "2")]
@@ -55,7 +56,7 @@ pub struct RegoSignature {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Reg {
     pub tx_id: TxId,
-    pub metadata: RegoMetadata,
+    pub metadata: Registration,
     pub signature: RegoSignature,
 }
 

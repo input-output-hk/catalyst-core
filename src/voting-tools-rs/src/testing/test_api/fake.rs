@@ -1,6 +1,6 @@
 use crate::data_provider::DataProvider;
 use crate::model::{
-    Delegations, Reg, RegoMetadata, RegoSignature, RewardsAddr, Signature, SlotNo, StakeVKey, TxId,
+    Delegations, Reg, Registration, RegoSignature, RewardsAddr, Signature, SlotNo, StakeVKey, TxId,
     VotingPurpose,
 };
 use bigdecimal::{BigDecimal, FromPrimitive};
@@ -101,7 +101,7 @@ impl DataProvider for MockDbProvider {
 
                         Reg {
                             tx_id: TxId::from(tx_id),
-                            metadata: RegoMetadata {
+                            metadata: Registration {
                                 delegations,
                                 stake_vkey: StakeVKey(pub_key.to_hex()),
                                 rewards_addr: RewardsAddr(rewards_address.to_hex()),

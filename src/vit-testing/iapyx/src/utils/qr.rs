@@ -49,7 +49,7 @@ impl PinReadModeSettings {
     }
 }
 
-pub type Secret = chain_crypto::SecretKey<chain_crypto::Ed25519Extended>;
+pub type Secret = chain_crypto::SecretKey<Ed25519Extended>;
 
 pub trait SecretFromQrCode {
     fn from_file<P: AsRef<Path>>(qr: P, pin_read_mode: PinReadMode)

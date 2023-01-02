@@ -55,6 +55,7 @@ rayon = "1"
 bincode = "1.3.3"
 cocoon =  { git = "https://github.com/dkijania/cocoon.git" }
 vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib" }
+prettytable-rs = "0.10.0"
 
 [dependencies.reqwest]
 version = "0.11"

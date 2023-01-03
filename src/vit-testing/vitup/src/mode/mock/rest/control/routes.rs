@@ -154,7 +154,7 @@ pub async fn control_filter(
                     .or(pending)
                     .or(reset)
                     .or(update)
-                    .or(forget)
+                    .or(forget),
             )
             .boxed()
         };

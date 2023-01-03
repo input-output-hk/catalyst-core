@@ -151,11 +151,14 @@ impl LedgerState {
         self.ledger.active_vote_plans()
     }
 
-    pub fn set_status_for_recent_fragment(&mut self, fragment_strategy: FragmentRecieveStrategy) -> Option<jormungandr_lib::crypto::hash::Hash> {
+    pub fn set_status_for_recent_fragment(
+        &mut self,
+        fragment_strategy: FragmentRecieveStrategy,
+    ) -> Option<jormungandr_lib::crypto::hash::Hash> {
         let block_date = self.current_blockchain_age();
         if let Some(fragment_log) = self.fragment_logs.last_mut() {
             override_fragment_status(block_date, fragment_log, fragment_strategy);
-            Some(fragment_log.fragment_id().clone())
+            Some(*fragment_log.fragment_id())
         } else {
             None
         }

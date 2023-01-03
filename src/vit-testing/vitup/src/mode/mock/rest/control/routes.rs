@@ -155,7 +155,6 @@ pub async fn control_filter(
                     .or(reset)
                     .or(update)
                     .or(forget)
-                    .or(block_account),
             )
             .boxed()
         };
@@ -203,6 +202,7 @@ pub async fn control_filter(
                 .or(availability)
                 .or(set_error_code)
                 .or(fund)
+                .or(block_account)
                 .or(fragment_strategy)
                 .or(network_strategy)
                 .or(version)

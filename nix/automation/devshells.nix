@@ -3,7 +3,7 @@
   cell,
 }: let
   inherit (inputs) nixpkgs std;
-  inherit (inputs.cells.lib.toolchains) rustNightly;
+  inherit (inputs.cells.lib.toolchains) rustToolchain;
   l = nixpkgs.lib // builtins;
 
   mkEnv = env: l.mapAttrsToList (name: value: {inherit name value;}) env;
@@ -27,7 +27,8 @@
     ];
     packages = with nixpkgs; [
       gcc
-      rustNightly
+      # rustNightly
+      rustToolchain
       pkg-config
       protobuf
       uniffi-bindgen

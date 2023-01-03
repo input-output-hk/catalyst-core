@@ -254,7 +254,7 @@ impl Controller {
 
         spawn_params.override_settings(&mut config);
 
-        for peer in config.p2p.trusted_peers.iter_mut() {
+        for peer in config.p2p.bootstrap.trusted_peers.iter_mut() {
             peer.id = None;
         }
 

@@ -46,6 +46,7 @@ members = [
   "src/vit-testing/integration-tests",
   "src/vit-testing/mainnet-tools",
   "src/vit-testing/mainnet-lib",
+  "src/vit-testing/db-sync-explorer",
   "src/vit-testing/snapshot-trigger-service",
   "src/vit-testing/signals-handler",
   "src/vit-testing/scheduler-service-lib",

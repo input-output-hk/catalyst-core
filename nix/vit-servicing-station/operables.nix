@@ -33,6 +33,7 @@
       };
       address = "0.0.0.0:8080";
       service_version = "";
+      db_url = "";
     };
   in
     std.lib.ops.mkOperable {
@@ -55,7 +56,8 @@
           inherit package;
           args = {
             "--in-settings-file" = configFile;
-            "--service-version" = "3.4";
+            "--service-version" = "$VERSION";
+            "--db-url" = "$DB_URL";
           };
         };
     };

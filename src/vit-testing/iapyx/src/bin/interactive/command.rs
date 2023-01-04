@@ -7,20 +7,20 @@ use chain_impl_mockchain::block::BlockDate;
 use clap::Parser;
 use iapyx::ControllerBuilderError;
 use iapyx::ControllerError;
-use itertools::Itertools;
 use jcli_lib::key::read_bech32;
 use jormungandr_automation::jormungandr::RestError;
 use jormungandr_lib::crypto::hash::Hash;
-use jormungandr_lib::interfaces::AccountVotes;
+use jormungandr_lib::interfaces::{AccountVotes, FragmentStatus};
 use prettytable::{
-    format::{self, FormatBuilder, LinePosition, LineSeparator},
-    row, table, Table,
+    format::{FormatBuilder, LinePosition, LineSeparator},
+    row, Table,
 };
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::str::FromStr;
 use thiserror::Error;
 use thor::cli::{Alias, Connection};
+use url::Url;
 use valgrind::ProposalExtension;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use wallet_core::Choice;
@@ -80,7 +80,7 @@ impl IapyxCommand {
                         .default_alias()
                         .unwrap_or(&"undefined".to_string()),
                     wallet.address_readable()?.to_string(),
-                    wallet.id()?.to_string()
+                    wallet.id()?
                 ]);
                 table.printstd();
                 Ok(())
@@ -135,10 +135,18 @@ impl IapyxCommand {
             }
             IapyxCommand::Logs => {
                 let mut table = table();
-                table.set_titles(row!["id", "hash"]);
-                model.fragment_logs()?.iter().for_each(|(id, fragment_id)| {
-                    table.add_row(row![id, format!("{:?}", fragment_id)]);
-                });
+                table.set_titles(row!["id", "status"]);
+                model
+                    .fragment_logs()?
+                    .iter()
+                    .for_each(|(id, fragment_log)| {
+                        let compact = match fragment_log.status() {
+                            FragmentStatus::Pending => "pending".to_string(),
+                            FragmentStatus::Rejected { reason } => format!("rejected: {reason}"),
+                            FragmentStatus::InABlock { .. } => "in a block".to_string(),
+                        };
+                        table.add_row(row![id, compact]);
+                    });
                 table.printstd();
                 Ok(())
             }
@@ -213,7 +221,7 @@ impl Votes {
         if let Some(votes_history) = maybe_history_of_votes {
             if self.print_details {
                 let proposals = model.proposals(&self.voting_group)?;
-                table.set_titles(row!["vote plan", "proposal index", "proposal title"]);
+                table.set_titles(row!["vote plan", "proposals"]);
 
                 votes_history
                     .iter()
@@ -412,6 +420,10 @@ pub enum IapyxCommandError {
     Read(#[from] chain_core::property::ReadError),
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    #[error("Parsing command line failed")]
+    Cli(#[from] CliParserError),
+    #[error("Invalid regex")]
+    Regex(#[from] regex::Error),
 }
 
 #[derive(Parser, Debug)]
@@ -427,15 +439,28 @@ pub struct Connect {
     pub enable_debug: bool,
 }
 
+#[derive(Error, Debug)]
+pub enum CliParserError {
+    #[error("incorrect format of url. Tip: http(s)://address:port is acceptable")]
+    IncorrectFormatOfAddressUrl,
+}
+
 impl Connect {
     pub fn exec(&self, mut controller: CliController) -> Result<(), IapyxCommandError> {
+        Url::parse(&self.address).map_err(|_| CliParserError::IncorrectFormatOfAddressUrl)?;
+
         controller.update_connection(Connection {
             address: self.address.clone(),
             https: self.use_https,
             debug: self.enable_debug,
         });
-        controller.check_connection()?;
-        controller.save_config().map_err(Into::into)
+        if controller.check_connection().is_ok() {
+            println!("Connection succesfull.");
+            controller.save_config().map_err(Into::into)
+        } else {
+            eprintln!("Connection unsuccesfull.");
+            Ok(())
+        }
     }
 }
 
@@ -454,14 +479,7 @@ pub struct Proposals {
 impl Proposals {
     pub fn exec(self, model: CliController) -> Result<(), IapyxCommandError> {
         let mut table = table();
-        table.set_titles(row![
-            "index",
-            "proposal hash",
-            "title",
-            "summary",
-            "yes",
-            "no"
-        ]);
+        table.set_titles(row!["index", "title", "summary", "proposal hash",]);
 
         for (id, proposal) in model.proposals(&self.voting_group)?.iter().enumerate() {
             if let Some(limit) = self.limit {
@@ -471,17 +489,19 @@ impl Proposals {
             }
 
             if let Some(regex) = &self.regex {
-                if proposal.proposal.proposal_title.matches(regex).count() == 0 {
+                use regex::Regex;
+                let re = Regex::new(regex)?;
+
+                if !re.is_match(&proposal.proposal.proposal_title) {
                     continue;
                 }
             }
 
             table.add_row(row![
                 (id + 1),
-                proposal.chain_proposal_id_as_str(),
                 proposal.proposal.proposal_title,
                 proposal.proposal.proposal_summary,
-                proposal.proposal.chain_vote_options.0.values().join(",")
+                proposal.chain_proposal_id_as_str(),
             ]);
         }
         table.printstd();

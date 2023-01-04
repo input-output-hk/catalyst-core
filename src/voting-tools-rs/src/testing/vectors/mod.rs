@@ -1,24 +1,27 @@
-use cardano_serialization_lib::chain_crypto::ed25519;
-use rand::{Rng, RngCore, CryptoRng};
+use cardano_serialization_lib::chain_crypto::{bech32, ed25519, AsymmetricKey, Ed25519};
+pub use danger_rng::DangerRng;
+use rand::SeedableRng;
 
-/// A struct which wraps an RNG and declares that it is cryptographically secure
-///
-/// Warning - this will be accepted in cryptographically sensitive contexts, regardless of the
-/// security properties of the underlying RNG
-///
-/// TLDR: don't use this in prod code
-struct DangerCryptoRng<T: RngCore> {
-    inner: T,
+mod danger_rng;
+
+/// Generate a random cip_15 registration and associated signature
+pub fn generate_cip_15(mut rng: DangerRng) {
+    let voting_key = Ed25519::generate(&mut rng);
+    let staking_key = Ed25519::generate(&mut rng);
+    let payment_key = Ed25519::generate(&mut rng);
 }
 
-impl<T: RngCore> CryptoRng for DangerCryptoRng<T> {}
+const METADATA_FROM_CIP_15: &str = include_str!("metadata");
+const SIGNATURE_FROM_CIP_15: &str = include_str!("signature");
 
-use crate::model::{Registration, StakeVKey};
+#[test]
+fn cip_15_is_valid() {
+    let rng = DangerRng::from_seed([0; 32]);
+    let cip_15 = generate_cip_15(rng);
 
-pub fn generate_stake_key(rng: &mut impl Rng + CryptoRng) -> StakeVKey {
-    cardano_serialization_lib::StakeDelegation
+    panic!()
 }
 
-pub fn generate_registration(rng: &mut impl Rng + CryptoRng) -> Registration {
-    
+fn json_to_cbor_str(value: Value) -> String {
+
 }

@@ -36,7 +36,7 @@
 						"true"
 					]
 				},
-				"description": "Controls backend availability. By default it is set to true, and anyone can connect to mock (unless mock is configured with access tokan and client does not have it). This endpoint can alter mock behaviour and make it unvailable for all the call returning always an error code (predefined in error-codes endpoint)"
+				"description": "Controls backend availability. By default it is set to true, and anyone can connect to mock (unless mock is configured with access token and client does not have it). This endpoint can alter mock behaviour and make it unavailable for all the call returning always an error code (predefined in error-codes endpoint)"
 			},
 			"response": []
 		},
@@ -104,7 +104,7 @@
 						"500"
 					]
 				},
-				"description": "Sets return error code when mock is configurred as not available"
+				"description": "Sets return error code when mock is configured as not available"
 			},
 			"response": []
 		},
@@ -550,7 +550,7 @@
 						"reset"
 					]
 				},
-				"description": "Alters congestion statistics available when querying node/stats endpoint. Reverts statistics to default mechanisme. Congestion stats should now be based on actual data from mempool (mempool size/ last 3 block size etc.)"
+				"description": "Alters congestion statistics available when querying node/stats endpoint. Reverts statistics to default mechanism. Congestion stats should now be based on actual data from mempool (mempool size/ last 3 block size etc.)"
 			},
 			"response": []
 		},
@@ -688,7 +688,7 @@
 						"reject"
 					]
 				},
-				"description": "Alters staus of existing fragment in mempool to \\`reject\\`. There is a special keyword 'LAST' for modifiying last fragment instead of fragment with particular id."
+				"description": "Alters status of existing fragment in mempool to \\`reject\\`. There is a special keyword 'LAST' for modifying last fragment instead of fragment with particular id."
 			},
 			"response": []
 		},
@@ -724,7 +724,7 @@
 						"forget"
 					]
 				},
-				"description": "Removes fragment from mempool, like it was never sent. There is a special keyword 'LAST' for modifiying last fragment instead of fragment with particular id."
+				"description": "Removes fragment from mempool, like it was never sent. There is a special keyword 'LAST' for modifying last fragment instead of fragment with particular id."
 			},
 			"response": []
 		},
@@ -760,7 +760,7 @@
 						"accept"
 					]
 				},
-				"description": "Alters staus of existing fragment in mempool to \\`accept\\`, but it now modifies the ledger. There is a special keyword 'LAST' for modifiying last fragment instead of fragment with particular id."
+				"description": "Alters status of existing fragment in mempool to \\`accept\\`, but it now modifies the ledger. There is a special keyword 'LAST' for modifying last fragment instead of fragment with particular id."
 			},
 			"response": []
 		},
@@ -796,7 +796,7 @@
 						"pending"
 					]
 				},
-				"description": "Alters staus of existing fragment in mempool to \\`pending\\`. There is a special keyword 'LAST' for modifiying last fragment instead of fragment with particular id."
+				"description": "Alters status of existing fragment in mempool to \\`pending\\`. There is a special keyword 'LAST' for modifying last fragment instead of fragment with particular id."
 			},
 			"response": []
 		}

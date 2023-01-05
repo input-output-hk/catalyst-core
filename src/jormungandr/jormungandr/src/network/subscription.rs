@@ -23,6 +23,7 @@ use std::{
 
 use tracing_futures::Instrument;
 
+/// Conditionally filter gossip from non-public IP addresses
 fn filter_gossip_node(node: &Gossip, config: &Configuration) -> bool {
     if config.allow_private_addresses {
         node.has_valid_address()
@@ -144,6 +145,7 @@ impl BlockAnnouncementProcessor {
     }
 }
 
+/// Ingests inbound subscription stream, the node_id refers to the inbound peer
 #[must_use = "sinks do nothing unless polled"]
 pub struct FragmentProcessor {
     mbox: MessageBox<TransactionMsg>,
@@ -168,12 +170,14 @@ impl FragmentProcessor {
         }
     }
 
+    /// retrieves socket addr of inbound peer
     fn get_ingress_addr(&self) -> Option<std::net::SocketAddr> {
         let state = self.global_state.clone();
         let node_id = self.node_id;
         executor::block_on(state.peers.get_peer_addr(&node_id))
     }
 
+    /// signals interaction with peer has occurred, this context relates to exchanging fragments.
     fn refresh_stat(&mut self) {
         let state = self.global_state.clone();
         let node_id = self.node_id;
@@ -184,8 +188,6 @@ impl FragmentProcessor {
             }
         }
         .in_current_span();
-        // It's OK to overwrite a pending future because only the latest
-        // timestamp matters.
         self.pending_processing.start(fut);
     }
 }

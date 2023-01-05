@@ -13,6 +13,10 @@ async def insert_many(
     models: List[M],
     returning: Optional[str] = None
 ) -> List[Any]:
+    """
+    Batch inserts all models.
+    """
+
     if len(models) == 0:
         return []
 
@@ -44,6 +48,10 @@ async def insert_many(
 
 
 async def election_exists(conn: asyncpg.Connection, id: int) -> bool:
+    """
+    Checks whether a election exists with the given id.
+    """
+
     row = await conn.fetchrow("SELECT row_id FROM election WHERE row_id = $1", id)
     return row is not None
 
@@ -53,6 +61,10 @@ class VoteOptionsNotFound(Exception):
 
 
 async def get_vote_options_id(conn: asyncpg.Connection, challenge: str) -> int:
+    """
+    Gets the id of the vote option matching the given challenge.
+    """
+
     row = await conn.fetchrow("SELECT id FROM vote_options WHERE challenge = $1", challenge)
     if row is None:
         raise VoteOptionsNotFound()

@@ -25,6 +25,11 @@ class ExcludeUnknownFields:
 
 
 class Campaign(ExcludeUnknownFields):
+    """
+    Represents a campaign from IdeaScale.
+    (Contains only the fields that are used by the importer).
+    """
+
     id: int
     name: str
     description: str
@@ -34,16 +39,31 @@ class Campaign(ExcludeUnknownFields):
 
 
 class CampaignGroup(ExcludeUnknownFields):
+    """
+    Represents a campaign group from IdeaScale.
+    (Contains only the fields that are used by the importer).
+    """
+
     id: int
     name: str
     campaigns: List[Campaign]
 
 
 class IdeaAuthorInfo(ExcludeUnknownFields):
+    """
+    Represents an author info from IdeaScale.
+    (Contains only the fields that are used by the importer).
+    """
+
     name: str
 
 
 class Idea(ExcludeUnknownFields):
+    """
+    Represents an idea from IdeaScale.
+    (Contains only the fields that are used by the importer).
+    """
+
     id: int
     campaign_id: int
     title: str
@@ -58,6 +78,11 @@ class Idea(ExcludeUnknownFields):
 
 
 class Stage(ExcludeUnknownFields):
+    """
+    Represents a stage from IdeaScale.
+    (Contains only the fields that are used by the importer).
+    """
+
     id: int
     key: str
     label: str
@@ -65,6 +90,11 @@ class Stage(ExcludeUnknownFields):
 
 
 class Funnel(ExcludeUnknownFields):
+    """
+    Represents a funnel from IdeaScale.
+    (Contains only the fields that are used by the importer).
+    """
+
     id: int
     name: str
     stages: List[Stage]
@@ -79,6 +109,10 @@ FunnelSchema = marshmallow_dataclass.class_schema(Funnel)
 
 
 class RequestProgressObserver:
+    """
+    Observer used for displaying IdeaScale client's requests progresses.
+    """
+
     def __init__(self):
         self.inflight_requests = {}
         self.progress = rich.progress.Progress(
@@ -109,7 +143,11 @@ class RequestProgressObserver:
         self.inflight_requests.clear()
 
 
-class IdeaScale:
+class Client:
+    """
+    IdeaScale API client.
+    """
+
     API_URL = "https://cardano.ideascale.com/a/rest"
 
     def __init__(self, api_token: str):
@@ -118,6 +156,10 @@ class IdeaScale:
         self.request_progress_observer = RequestProgressObserver()
 
     async def campaigns(self, group_id: int) -> List[Campaign]:
+        """
+        Gets all campaigns from the campaign group with the given id.
+        """
+
         res = await self._get(f"/v1/campaigns/groups/{group_id}")
 
         campaigns: List[Campaign] = []
@@ -130,14 +172,29 @@ class IdeaScale:
         return campaigns
 
     async def campaign_groups(self) -> List[CampaignGroup]:
+        """
+        Gets all campaign groups.
+        """
+
         res = await self._get("/v1/campaigns/groups")
         return CampaignGroupSchema().load(res, many=True) or []
 
     async def campaign_ideas(self, campaign_id: int) -> List[Idea]:
+        """
+        Gets all ideas from the campaign with the given id.
+        """
+
         res = await self._get(f"/v1/campaigns/{campaign_id}/ideas")
         return IdeaSchema().load(res, many=True) or []
 
-    async def stage_ideas(self, stage_id: int, page_size: int = 50) -> List[Idea]:
+    async def stage_ideas(self, stage_id: int, page_size: int = 50, request_workers_count: int = 10) -> List[Idea]:
+        """
+        Gets all ideas from the stage with the given id.
+
+        Pages are requested concurrently until the latest one fails
+        which signals that that are no more pages left.
+        """
+
         class WorkerData:
             page: int = 0
             done: bool = False
@@ -160,18 +217,26 @@ class IdeaScale:
                     d.done = True
 
         d = WorkerData()
-        worker_tasks = [asyncio.create_task(worker(d)) for _ in range(10)]
+        worker_tasks = [asyncio.create_task(worker(d)) for _ in range(request_workers_count)]
         for task in worker_tasks:
             await task
 
         return d.ideas
 
     async def campaign_group_ideas(self, group_id: int) -> List[Idea]:
+        """
+        Gets all ideas from the campaigns that belong to the campaign group with the given id.
+        """
+
         campaigns = await self.campaigns(group_id)
         ideas = await asyncio.gather(*[self.campaign_ideas(c.id) for c in campaigns])
         return [i for campaign_ideas in ideas for i in campaign_ideas]
 
     async def funnel(self, funnel_id: int) -> Funnel:
+        """
+        Gets the funnel with the given id.
+        """
+
         funnel = FunnelSchema().load(await self._get(f"/v1/funnels/{funnel_id}"))
         if isinstance(funnel, Funnel):
             return funnel
@@ -179,7 +244,11 @@ class IdeaScale:
             raise BadResponse()
 
     async def _get(self, path: str) -> Mapping[str, Any] | Iterable[Mapping[str, Any]]:
-        url = f"{IdeaScale.API_URL}{path}"
+        """
+        Executes a GET request on IdeaScale API.
+        """
+
+        url = f"{Client.API_URL}{path}"
         headers = {"api_token": self.api_token}
 
         # Store request id
@@ -205,9 +274,3 @@ class IdeaScale:
                     return parsed_json
                 else:
                     raise GetFailed(r.status, r.reason, content)
-
-
-def client_with_progress(api_token: str) -> IdeaScale:
-    client = IdeaScale(api_token)
-
-    return client

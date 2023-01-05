@@ -6,6 +6,10 @@ DictOrList = TypeVar("DictOrList", Dict[str, Any], List[Any])
 
 
 def snake_case_keys(x: DictOrList):
+    """
+    Recursively transforms all dict keys to snake_case.
+    """
+
     if isinstance(x, dict):
         keys = list(x.keys())
         for k in keys:
@@ -18,4 +22,8 @@ def snake_case_keys(x: DictOrList):
 
 
 def snake_case(s: str) -> str:
+    """
+    Transforms a string to snake_case.
+    """
+
     return re.sub(r"([a-z])([A-Z])", r"\1_\2", s).lower()

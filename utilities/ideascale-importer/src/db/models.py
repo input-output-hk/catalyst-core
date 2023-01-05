@@ -3,6 +3,10 @@ from typing import Any, Mapping, Optional
 
 
 class Model:
+    """
+    Base class for all models.
+    """
+
     @staticmethod
     def table() -> str:
         raise NotImplementedError()
@@ -10,6 +14,10 @@ class Model:
 
 @dataclasses.dataclass
 class Challenge(Model):
+    """
+    Represents a database challenge.
+    """
+
     id: int
     election: int
     category: str
@@ -28,6 +36,10 @@ class Challenge(Model):
 
 @dataclasses.dataclass
 class Proposal(Model):
+    """
+    Represents a database proposal.
+    """
+
     id: int
     challenge: int
     title: str

@@ -6,6 +6,10 @@ FieldMapping = Union[str, List[str]]
 
 
 class ProposalsFieldsMappingConfig:
+    """
+    Represents the available configuration fields used in proposal fields mapping.
+    """
+
     proposer_url: FieldMapping
     proposer_relevant_experience: FieldMapping
     funds: FieldMapping
@@ -13,16 +17,29 @@ class ProposalsFieldsMappingConfig:
 
 
 class ProposalsConfig:
+    """
+    Represents the available configuration fields used in proposal processing.
+    """
+
     field_mappings: ProposalsFieldsMappingConfig
     extra_field_mappings: Mapping[str, FieldMapping]
 
 
 class ProposalsScoresCsvConfig:
+    """
+    Represents the available configuration fields used
+    when loading proposal scores from the CSV file.
+    """
+
     id_field: str
     score_field: str
 
 
 class Config:
+    """
+    Represents the available configuration fields.
+    """
+
     proposals: ProposalsConfig
     proposals_scores_csv: ProposalsScoresCsvConfig
 
@@ -33,7 +50,11 @@ ProposalsScoresCsvConfigSchema = marshmallow_dataclass.class_schema(ProposalsSco
 ConfigSchema = marshmallow_dataclass.class_schema(Config)
 
 
-def load(path: str) -> Config:
+def from_json_file(path: str) -> Config:
+    """
+    Loads configuration from a JSON file.
+    """
+
     with open(path) as f:
         config = ConfigSchema().loads(f.read())
         assert isinstance(config, Config)

@@ -41,7 +41,7 @@ class Importer:
         self.conn: asyncpg.Connection | None = None
 
         try:
-            self.config = config.load(config_path or "config.json")
+            self.config = config.from_json_file(config_path or "config.json")
         except Exception as e:
             raise ReadConfigException(repr(e)) from e
 
@@ -86,7 +86,7 @@ class Importer:
             console.print("\n[red]No election exists with the given id[/red]")
             return
 
-        client = ideascale.client_with_progress(self.api_token)
+        client = ideascale.Client(self.api_token)
 
         groups = []
         with client.request_progress_observer:

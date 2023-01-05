@@ -21,7 +21,7 @@ RUN  apt-get install -y build-essential pkg-config libssl-dev libpq-dev && \
 RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/catalyst-core && \
     cd catalyst-core && \
-	git checkout main
+	git checkout snapshot_create_mock
 
 RUN cd ${ENV_PREFIX}/catalyst-core/src/vit-testing/vitup && \
     ~/.cargo/bin/cargo install --locked --path . 

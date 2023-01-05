@@ -31,6 +31,7 @@ vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-
 cardano-serialization-lib = "11.1.0"
 scheduler-service-lib = { path = "../scheduler-service-lib"}
 tempdir = "0.3.7"
+num-traits = "0.2.15"
 job_scheduler_ng = "*"
 snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib", features=["proptest"] }
 snapshot-trigger-service = { path = "../snapshot-trigger-service" }

@@ -3,14 +3,14 @@ pub use crate::builders::{
     convert_to_blockchain_date, convert_to_human_date, generate_qr_and_hashes,
     VitVotePlanDefBuilder, WalletExtension,
 };
-use crate::config::date_format;
 use crate::config::Block0Initials;
-use crate::config::SnapshotInitials;
-use crate::config::{Config, Initials, VoteTime};
+use crate::config::{date_format, Initials};
+use crate::config::{Config, VoteTime};
 use chain_addr::Discrimination;
 use chain_impl_mockchain::fee::LinearFee;
 use jormungandr_lib::interfaces::CommitteeIdDef;
 use jormungandr_lib::interfaces::ConsensusLeaderId;
+use mainnet_lib::Initials as SnapshotInitials;
 use snapshot_lib::VoterHIR;
 use time::OffsetDateTime;
 

@@ -180,7 +180,7 @@ pub async fn control_filter(
 
             let reset = warp::path!("reset")
                 .and(warp::post())
-                .and(with_context.clone())
+                .and(with_context)
                 .and_then(command_congestion_reset);
 
             root.and(normal.or(jammed).or(moderate).or(reset)).boxed()
@@ -192,7 +192,6 @@ pub async fn control_filter(
             let create = warp::path!("create")
                 .and(warp::post())
                 .and(warp::body::json())
-                .and(with_context)
                 .and_then(command_create_snapshot);
 
             root.and(create).boxed()

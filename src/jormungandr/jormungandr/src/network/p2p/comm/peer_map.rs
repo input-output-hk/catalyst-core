@@ -176,8 +176,7 @@ impl PeerMap {
         self.map.clear()
     }
 
-    /// If the node id is found, it is rotated to the end of the list.
-    /// allowing for the identification of the peer which hasn't been used for the longest amount of time (least recently used).
+    /// returns most recent peer interaction metadata
     pub fn refresh_peer(&mut self, id: &NodeId) -> Option<&mut PeerStats> {
         self.map.get_refresh(id).map(|data| &mut data.stats)
     }

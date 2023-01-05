@@ -177,7 +177,7 @@ impl FragmentProcessor {
         executor::block_on(state.peers.get_peer_addr(&node_id))
     }
 
-    /// signals and updates interaction with peer in the context of exchanging fragments
+    /// signals interaction with peer has occurred, this context relates to exchanging fragments.
     fn refresh_stat(&mut self) {
         let state = self.global_state.clone();
         let node_id = self.node_id;

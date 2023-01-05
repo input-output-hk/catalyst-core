@@ -13,6 +13,15 @@ use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use wallet::Settings;
 use wallet_core::Choice;
 
+///  Vote request generator. Implements `RequestGenerator` interface which incorporates generator
+/// to load testing framework. Responsibility is to keep track of wallets under tests and prepare
+/// each time valid vote transaction whenever asked. There are two challenges:
+/// - keeping track of spending counter and increase it each time fragment is sent. Current limitation
+/// is a lack of recovery scenario when transaction is failed (no resend strategy or spending counter revert)
+/// - keeping track of valid proposals to vote. One can vote only once per proposal. Duplicated votes will
+/// result in failed transaction which can skew load test results. Therefore, we need to also know which
+/// proposals are eligible to vote on.  Having in mind internal structure of vote plan (voteplan can have many proposals)
+/// and requirement to send batch of votes may result in different proposals from different voteplan.
 pub struct WalletRequestGen {
     rand: OsRng,
     multi_controller: MultiController,
@@ -26,6 +35,11 @@ pub struct WalletRequestGen {
 }
 
 impl WalletRequestGen {
+    /// Creates new object
+    ///
+    /// # Errors
+    ///
+    /// On connectivity with backend issues
     pub fn new(
         multi_controller: MultiController,
         update_account_before_vote: bool,
@@ -63,6 +77,14 @@ impl WalletRequestGen {
         })
     }
 
+    /// Sends vote with random choice on behalf of random wallet. Having in mind account based model
+    /// in Jormungandr blockchain we need to carefully select wallet which sends transaction.
+    /// We should spread the use of wallets evenly to avoid inconsistency in spending-counter values.
+    /// This struct does not control how fast votes should be send so we need to avoid situation that
+    /// votes from account A will be send without prior confirmation of last vote sent from account A.
+    /// Therefore a simple rolling index is use which traverse from left to right of collection.
+    /// There is a silent assumption that collection is big enough to not cause mentioned problem
+    /// with spending counter inconsistency.
     pub fn random_vote(&mut self) -> Result<FragmentId, MultiControllerError> {
         let index = {
             self.wallet_index += 1;
@@ -78,7 +100,7 @@ impl WalletRequestGen {
             self.multi_controller
                 .update_wallet_state_if(index, &|wallet: &Wallet| {
                     wallet.spending_counter()[0] == 0
-                });
+                })?;
         }
 
         let counter = self.vote_cast_counter.advance_single(index).unwrap();

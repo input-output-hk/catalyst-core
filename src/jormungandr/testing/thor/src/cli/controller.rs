@@ -65,9 +65,7 @@ impl CliController {
         self.client
             .settings()
             .map(|_| ())
-            .map_err(|e| {
-                Error::Connection(self.wallets.connection().address, e)
-            })
+            .map_err(|e| Error::Connection(self.wallets.connection().address, e))
     }
 
     pub fn refresh_state(&mut self) -> Result<(), Error> {

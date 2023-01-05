@@ -4,15 +4,24 @@ use jortestkit::measurement::EfficiencyBenchmarkFinish;
 use thiserror::Error;
 use valgrind::VitStationRestClient;
 
+/// Servicing station load scenario. Basically responsible for generating load on static resources.
+/// All calls are read only, therefore logic is simple and no need to track state of state.
 pub struct ServicingStationLoad {
     config: ServicingStationLoadConfig,
 }
 
 impl ServicingStationLoad {
+    /// Creates new load scenario object
     pub fn new(config: ServicingStationLoadConfig) -> Self {
         Self { config }
     }
 
+    /// Start scenario
+    ///
+    /// # Errors
+    ///
+    /// On any connectivity issues or setup problem
+    ///
     pub fn start(self) -> Result<Vec<EfficiencyBenchmarkFinish>, Error> {
         let measurement_name = "servicing station load";
 
@@ -58,10 +67,13 @@ impl ServicingStationLoad {
     }
 }
 
+/// Servicing station errors
 #[derive(Error, Debug)]
 pub enum Error {
+    /// Configuration error
     #[error("configuration error")]
     ConfigurationError(#[from] crate::load::config::ServicingStationConfigError),
+    /// Rest api errors
     #[error("rest error")]
     RestError(#[from] valgrind::VitStationRestError),
 }

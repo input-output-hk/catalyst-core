@@ -7,22 +7,32 @@ use crate::NodeLoadError;
 use jortestkit::measurement::EfficiencyBenchmarkFinish;
 use thiserror::Error;
 
+/// Load scenario for node only calls.
+/// It uses `WalletRequestGen` or `BatchWalletRequestGen` based on configuration of requests per step
+/// setting.
 pub struct NodeLoad {
     config: NodeLoadConfig,
 }
 
 impl NodeLoad {
+    /// Creates new object
     pub fn new(config: NodeLoadConfig) -> Self {
         Self { config }
     }
 
+    /// Starts scenario
+    ///
+    /// # Errors
+    ///
+    /// On any error related with setup or lack of connectivity
+    ///
     pub fn start(self) -> Result<Option<EfficiencyBenchmarkFinish>, NodeLoadError> {
         let backend = self.config.address.clone();
 
         let mut multicontroller = self.config.build_multi_controller()?;
 
         if self.config.reuse_accounts_early {
-            multicontroller.update_wallets_state();
+            multicontroller.update_wallets_state()?;
         }
 
         let measurement_name = "iapyx load test";
@@ -61,14 +71,19 @@ impl NodeLoad {
     }
 }
 
+/// Errors for node load
 #[derive(Error, Debug)]
 pub enum Error {
+    /// Configuration error
     #[error("config error")]
     ConfigError(#[from] crate::load::config::NodeLoadConfigError),
+    /// Controller errors
     #[error("internal error")]
     MultiControllerError(#[from] MultiControllerError),
+    /// Requests generator error
     #[error("request gen error")]
     RequestGen(#[from] RequestGenError),
+    /// Status providers error
     #[error("request gen error")]
     StatusProvider(#[from] crate::load::StatusProviderError),
 }

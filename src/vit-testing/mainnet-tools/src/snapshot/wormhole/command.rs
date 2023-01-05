@@ -1,22 +1,18 @@
-use crate::snapshot_wormhole::Config;
+pub use crate::snapshot::wormhole::Config;
+use crate::snapshot::OutputsExtension;
 use color_eyre::eyre::Result;
 use job_scheduler_ng::{Job, JobScheduler};
 use jormungandr_automation::jormungandr::LogLevel;
 use jortestkit::prelude::WaitBuilder;
-use snapshot_lib::RawSnapshot;
-use snapshot_trigger_service::client::SnapshotResult;
 use snapshot_trigger_service::{client::rest::SnapshotRestClient, config::JobParameters};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::Duration;
 use structopt::StructOpt;
 use thiserror::Error;
 use tracing::{debug, error, info, instrument, level_filters::LevelFilter};
 use tracing_subscriber::FmtSubscriber;
-use vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
-use vit_servicing_station_tests::common::{
-    clients::RestClient, raw_snapshot::RawSnapshot as RawSnapshotRequest,
-};
+use vit_servicing_station_tests::common::clients::RestClient;
 use voting_tools_rs::Output;
 
 /// Main command
@@ -124,28 +120,12 @@ pub fn one_shot(config: &Config) -> Result<()> {
         snapshot_client.get_snapshot(snapshot_job_id, snapshot_params.tag.unwrap_or_default())?;
 
     let snapshot: Vec<Output> = serde_json::from_str(&snapshot_content)?;
-    let result = SnapshotResult::from_outputs(snapshot_jobs_status, snapshot)?;
+    let raw_snapshot = snapshot.try_into_raw_snapshot_request(config.parameters.clone())?;
     debug!("snapshot parsed.");
-
-    let raw_snapshot_input = RawSnapshotRequest {
-        tag: config.parameters.tag.clone(),
-        content: RawSnapshotInput {
-            snapshot: RawSnapshot::from(result.registrations().clone()),
-            update_timestamp: SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .expect("Time went backwards")
-                .as_secs()
-                .try_into()?,
-            min_stake_threshold: config.parameters.min_stake_threshold,
-            voting_power_cap: config.parameters.voting_power_cap,
-            direct_voters_group: config.parameters.direct_voters_group.clone(),
-            representatives_group: config.parameters.representatives_group.clone(),
-        },
-    };
 
     debug!("updating vit servicing station server...");
     let vit_ss_rest_client = RestClient::new(config.servicing_station.address.parse()?);
-    vit_ss_rest_client.put_raw_snapshot(&raw_snapshot_input)?;
+    vit_ss_rest_client.put_raw_snapshot(&raw_snapshot)?;
     info!("transfer done.");
     Ok(())
 }

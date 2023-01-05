@@ -30,9 +30,6 @@ mod exports {
         BlockDateFromCardanoAbsoluteSlotNo, Error as DbSyncError, InMemoryDbSync,
         SharedInMemoryDbSync,
     };
-    pub use crate::network::{
-        MainnetNetworkBuilder, MainnetWalletState, MainnetWalletStateBuilder,
-    };
     pub use crate::wallet::{
         CardanoWallet, GeneralTransactionMetadataInfo, JsonConversionError,
         RegistrationTransactionBuilder, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
@@ -42,4 +39,7 @@ mod exports {
 
     pub use crate::cardano_node::{Block0, BlockBuilder, TransactionBuilder};
     pub use crate::cardano_node::{InMemoryNode, Ledger, Settings};
+    pub use crate::network::{
+        wallet_state, Initials, MainnetNetworkBuilder, Parameters as SnapshotParameters,
+    };
 }

@@ -20,6 +20,7 @@ serde = { version = "1", features = ["derive"] }
 thiserror = "1.0"
 hex = "0.4"
 futures-util = "0.3.25"
+async-trait = "0.1.59"
 pharos = "0.5"
 bech32 = "0.8.1"
 rand = "0.8"

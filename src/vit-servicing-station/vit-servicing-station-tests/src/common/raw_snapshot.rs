@@ -1,8 +1,7 @@
-use std::convert::TryInto;
-
 use chain_impl_mockchain::testing::TestGen;
 use jormungandr_lib::interfaces::Value;
 use rand::Rng;
+use serde::{Deserialize, Serialize};
 use snapshot_lib::registration::{Delegations, VotingRegistration};
 use snapshot_lib::{voting_group::RepsVotersAssigner, Error, Snapshot};
 use snapshot_lib::{
@@ -10,10 +9,11 @@ use snapshot_lib::{
     CATALYST_VOTING_PURPOSE_TAG,
 };
 use snapshot_lib::{Fraction, SnapshotInfo};
+use std::convert::TryInto;
 use time::OffsetDateTime;
 use vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RawSnapshot {
     pub tag: String,
     pub content: RawSnapshotInput,

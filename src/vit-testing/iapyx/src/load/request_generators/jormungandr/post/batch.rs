@@ -97,7 +97,7 @@ impl BatchWalletRequestGen {
             self.multi_controller
                 .update_wallet_state_if(wallet_index, &|wallet: &Wallet| {
                     wallet.spending_counter()[0] == 0
-                });
+                })?;
         }
 
         let batch_size = self.batch_size;

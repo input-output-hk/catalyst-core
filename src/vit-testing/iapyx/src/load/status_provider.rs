@@ -5,11 +5,15 @@ use jortestkit::load::{Id, Status};
 use thiserror::Error;
 use valgrind::ValgrindClient;
 
+/// Responsible for providing information about status for given ids collection.
+/// It can work over a batch of ids by preparing request to Jormungandr V1 REST Api. Basically it query
+/// statues for given ids and prepare `Status` struct for each id
 pub struct VoteStatusProvider {
     backend: ValgrindClient,
 }
 
 impl VoteStatusProvider {
+    /// Creates object based on address and verbosity
     pub fn new(backend_address: String, debug: bool) -> Result<Self, Error> {
         let mut backend = ValgrindClient::new(backend_address, Default::default())?;
         if debug {
@@ -61,7 +65,7 @@ pub enum Error {
     #[error("controller error")]
     Controller(#[from] crate::ControllerError),
     #[error("pin read error")]
-    PinRead(#[from] crate::utils::qr::PinReadError),
+    PinRead(#[from] crate::utils::qr::Error),
     #[error("wallet time error")]
     WalletTime(#[from] wallet::time::Error),
 }

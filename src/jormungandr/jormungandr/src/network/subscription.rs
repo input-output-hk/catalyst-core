@@ -170,14 +170,14 @@ impl FragmentProcessor {
         }
     }
 
-    /// retrieves socket addr of inbound peer
+    /// Retrieves socket addr of inbound peer
     fn get_ingress_addr(&self) -> Option<std::net::SocketAddr> {
         let state = self.global_state.clone();
         let node_id = self.node_id;
         executor::block_on(state.peers.get_peer_addr(&node_id))
     }
 
-    /// signals interaction with peer has occurred, this context relates to exchanging fragments.
+    /// Signals interaction with peer has occurred, this context relates to exchanging fragments.
     fn refresh_stat(&mut self) {
         let state = self.global_state.clone();
         let node_id = self.node_id;

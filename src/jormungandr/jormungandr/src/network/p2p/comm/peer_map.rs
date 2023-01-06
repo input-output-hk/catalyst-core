@@ -176,7 +176,7 @@ impl PeerMap {
         self.map.clear()
     }
 
-    /// returns metadata of most recent peer interaction with given node
+    /// Returns metadata of most recent peer interaction with given node
     pub fn refresh_peer(&mut self, id: &NodeId) -> Option<&mut PeerStats> {
         self.map.get_refresh(id).map(|data| &mut data.stats)
     }
@@ -187,7 +187,7 @@ impl PeerMap {
             .map(|data| data.update_comm_status().comms())
     }
 
-    /// inserts peer and returns associated metadata
+    /// Inserts peer and returns associated metadata
     fn join_peer(&mut self, id: NodeId, remote_addr: Address) -> &mut PeerData {
         if !self.map.contains_key(&id) {
             self.evict_if_full();

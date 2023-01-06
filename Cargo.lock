@@ -519,6 +519,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "blake2"
+version = "0.10.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "46502ad458c9a52b69d4d4d32775c788b7a1b85e8bc9d482d92250fc0e3f8efe"
+dependencies = [
+ "digest 0.10.6",
+]
+
+[[package]]
 name = "block-buffer"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -937,7 +946,7 @@ version = "0.1.0"
 dependencies = [
  "aurora-bn",
  "base64",
- "blake2",
+ "blake2 0.9.1",
  "byte-slice-cast",
  "chain-core",
  "chain-ser",
@@ -1094,6 +1103,33 @@ dependencies = [
  "time 0.1.45",
  "wasm-bindgen",
  "winapi",
+]
+
+[[package]]
+name = "ciborium"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0c137568cc60b904a7724001b35ce2630fd00d5d84805fbb608ab89509d788f"
+dependencies = [
+ "ciborium-io",
+ "ciborium-ll",
+ "serde",
+]
+
+[[package]]
+name = "ciborium-io"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "346de753af073cc87b52b2083a506b38ac176a44cfb05497b622e27be899b369"
+
+[[package]]
+name = "ciborium-ll"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "213030a2b5a4e0c0892b6652260cf6ccac84827b83a85a534e178e3906c4cf1b"
+dependencies = [
+ "ciborium-io",
+ "half",
 ]
 
 [[package]]
@@ -8167,6 +8203,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "validity"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7740f46f84413eebf4fa22626ba2e283351aec05bf9075eb584f69893cf04c8d"
+
+[[package]]
 name = "valuable"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8406,7 +8448,9 @@ version = "0.1.0"
 dependencies = [
  "assert_fs",
  "bigdecimal",
+ "blake2 0.10.6",
  "cardano-serialization-lib",
+ "ciborium",
  "clap 4.0.29",
  "color-eyre",
  "diesel 2.0.2",
@@ -8425,14 +8469,15 @@ dependencies = [
  "rand_core 0.4.2",
  "rust_decimal",
  "serde",
- "serde_cbor",
  "serde_json",
  "serial_test",
  "tempdir",
  "test-strategy",
+ "thiserror",
  "tracing",
  "tracing-subscriber",
  "tracing-test",
+ "validity",
 ]
 
 [[package]]

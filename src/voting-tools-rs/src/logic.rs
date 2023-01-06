@@ -11,7 +11,8 @@ use color_eyre::eyre::{bail, eyre};
 use color_eyre::eyre::{Context, Result};
 use microtype::Microtype;
 
-use crate::model::{network_info, Delegations, Output, Reg, SlotNo, StakeVKey, TestnetMagic};
+use crate::model::{network_info, Output, Reg, SlotNo, StakeKeyHex, StakePubKey, TestnetMagic};
+use crate::VotingPowerSource;
 
 /// Calculate voting power info by querying a db-sync instance
 ///
@@ -42,7 +43,7 @@ pub fn voting_power(
 
     let stake_addrs = regs
         .iter()
-        .filter_map(|reg| get_stake_address(&reg.metadata.stake_vkey, &network_info).ok())
+        .filter_map(|reg| get_stake_address(&reg.metadata.stake_key, &network_info).ok())
         .collect::<Vec<_>>();
 
     let values = db.stake_values(&stake_addrs)?;
@@ -57,14 +58,14 @@ pub fn voting_power(
 
             debug!("registration on tx '{}' is valid", reg.tx_id);
 
-            let stake_addr = get_stake_address(&reg.metadata.stake_vkey, &network_info).ok()?;
+            let stake_addr = get_stake_address(&reg.metadata.stake_key, &network_info).ok()?;
             let voting_power = values.get(&stake_addr as &str)?.clone();
 
             let output = Output {
                 tx_id: reg.tx_id,
-                delegations: reg.metadata.delegations.clone(),
+                voting_power_source: reg.metadata.voting_power_source.clone(),
                 rewards_address: reg.metadata.rewards_addr.clone(),
-                stake_public_key: reg.metadata.stake_vkey.convert(),
+                stake_public_key: reg.metadata.stake_key.convert(),
                 voting_purpose: reg.metadata.purpose,
                 voting_power,
             };
@@ -78,7 +79,7 @@ pub fn voting_power(
 
 #[instrument]
 pub(crate) fn get_stake_address(
-    stake_vkey_hex: &StakeVKey,
+    stake_vkey_hex: &StakeKeyHex,
     network: &NetworkInfo,
 ) -> Result<String> {
     let stake_vkey_hex = stake_vkey_hex.trim_start_matches("0x");
@@ -104,7 +105,7 @@ impl Reg {
     /// Returns `Result` rather than `bool` to allow structured failures
     #[instrument]
     fn check_valid(&self) -> Result<()> {
-        let stake_vkey = self.metadata.stake_vkey.trim_start_matches("0x");
+        let stake_vkey = self.metadata.stake_key.trim_start_matches("0x");
         if stake_vkey.len() == 128 {
             // TODO: why is this bad? can we give a better error here?
             bail!("stake_vkey has length 128");
@@ -126,8 +127,8 @@ impl Reg {
 
         // Translate registration to Cardano metadata type so we can serialize it correctly
         let mut meta_map: MetadataMap = MetadataMap::new();
-        let delegations = match self.metadata.delegations.clone() {
-            Delegations::Delegated(delegations) => {
+        let delegations = match self.metadata.voting_power_source.clone() {
+            VotingPowerSource::Delegated(delegations) => {
                 let mut metadata_list = MetadataList::new();
                 for (delegation, weight) in delegations {
                     let mut inner_metadata_list = MetadataList::new();
@@ -144,7 +145,7 @@ impl Reg {
                 }
                 TransactionMetadatum::new_list(&metadata_list)
             }
-            Delegations::Legacy(k) => {
+            VotingPowerSource::Legacy(k) => {
                 let bytes = hex::decode(k.trim_start_matches("0x"))?;
                 TransactionMetadatum::new_bytes(bytes).map_err(|e| {
                     eyre!(format!(
@@ -186,7 +187,7 @@ impl Reg {
         let meta_bytes_hash = Blake2b256::new(&meta_bytes);
 
         // Get signature from rego
-        let sig_str = self.signature.signature.0.clone().split_off(2);
+        let sig_str = self.signature.inner.0.clone().split_off(2);
         let sig =
             Ed25519Signature::from_hex(&sig_str).map_err(|e| eyre!("invalid ed25519 sig: {e}"))?;
 

@@ -102,7 +102,7 @@ impl DataProvider for MockDbProvider {
                         Reg {
                             tx_id: TxId::from(tx_id),
                             metadata: Registration {
-                                delegations,
+                                voting_power_source,
                                 stake_vkey: StakeVKey(pub_key.to_hex()),
                                 rewards_addr: RewardsAddr(rewards_address.to_hex()),
                                 slot: SlotNo(

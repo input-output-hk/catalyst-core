@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use crate::model::Output;
-use crate::Delegations;
+use crate::VotingPowerSource;
 use bigdecimal::ToPrimitive;
 use cardano_serialization_lib::address::RewardAddress;
 use cardano_serialization_lib::crypto::PublicKey;
@@ -49,8 +49,8 @@ impl<'a> SnapshotOutputAssert<'a> {
     /// # Panics
     ///
     /// Panics on assertion failed
-    pub fn delegations(&self, delegations: &Delegations) {
-        assert_eq!(delegations, &self.output.delegations, "delegation target");
+    pub fn voting_power_source(&self, voting_power_source: &VotingPowerSource) {
+        assert_eq!(voting_power_source, &self.output.voting_power_source, "delegation target");
     }
 
     /// Asserts reward address field from [Output]

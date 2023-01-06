@@ -1,5 +1,4 @@
 use crate::test_api::{MockDbProvider, VerifiableSnapshotOutput};
-use crate::Delegations;
 use mainnet_lib::{CardanoWallet, MainnetNetworkBuilder, MainnetWalletStateBuilder};
 
 #[test]

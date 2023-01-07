@@ -7,25 +7,25 @@ CREATE VIEW funds AS SELECT
     this_fund.name AS fund_name,
     this_fund.description AS fund_goal,
 
-    EXTRACT (EPOCH FROM this_fund.registration_snapshot_time) AS registration_snapshot_time,
-    EXTRACT (EPOCH FROM next_fund.registration_snapshot_time) AS next_registration_snapshot_time,
+    EXTRACT (EPOCH FROM this_fund.registration_snapshot_time)::BIGINT AS registration_snapshot_time,
+    EXTRACT (EPOCH FROM next_fund.registration_snapshot_time)::BIGINT AS next_registration_snapshot_time,
 
     this_fund.voting_power_threshold AS voting_power_threshold,
 
-    EXTRACT (EPOCH FROM this_fund.start_time) AS fund_start_time,
-    EXTRACT (EPOCH FROM this_fund.end_time) AS fund_end_time,
-    EXTRACT (EPOCH FROM next_fund.start_time) AS next_fund_start_time,
+    EXTRACT (EPOCH FROM this_fund.start_time)::BIGINT AS fund_start_time,
+    EXTRACT (EPOCH FROM this_fund.end_time)::BIGINT AS fund_end_time,
+    EXTRACT (EPOCH FROM next_fund.start_time)::BIGINT AS next_fund_start_time,
 
-    EXTRACT (EPOCH FROM this_fund.insight_sharing_start) AS insight_sharing_start,
-    EXTRACT (EPOCH FROM this_fund.proposal_submission_start) AS proposal_submission_start,
-    EXTRACT (EPOCH FROM this_fund.refine_proposals_start) AS refine_proposals_start,
-    EXTRACT (EPOCH FROM this_fund.finalize_proposals_start) AS finalize_proposals_start,
-    EXTRACT (EPOCH FROM this_fund.proposal_assessment_start) AS proposal_assessment_start,
-    EXTRACT (EPOCH FROM this_fund.assessment_qa_start) AS assessment_qa_start,
-    EXTRACT (EPOCH FROM this_fund.snapshot_start) AS snapshot_start,
-    EXTRACT (EPOCH FROM this_fund.voting_start) AS voting_start,
-    EXTRACT (EPOCH FROM this_fund.voting_end) AS voting_end,
-    EXTRACT (EPOCH FROM this_fund.tallying_end) AS tallying_end,
+    EXTRACT (EPOCH FROM this_fund.insight_sharing_start)::BIGINT AS insight_sharing_start,
+    EXTRACT (EPOCH FROM this_fund.proposal_submission_start)::BIGINT AS proposal_submission_start,
+    EXTRACT (EPOCH FROM this_fund.refine_proposals_start)::BIGINT AS refine_proposals_start,
+    EXTRACT (EPOCH FROM this_fund.finalize_proposals_start)::BIGINT AS finalize_proposals_start,
+    EXTRACT (EPOCH FROM this_fund.proposal_assessment_start)::BIGINT AS proposal_assessment_start,
+    EXTRACT (EPOCH FROM this_fund.assessment_qa_start)::BIGINT AS assessment_qa_start,
+    EXTRACT (EPOCH FROM this_fund.snapshot_start)::BIGINT AS snapshot_start,
+    EXTRACT (EPOCH FROM this_fund.voting_start)::BIGINT AS voting_start,
+    EXTRACT (EPOCH FROM this_fund.voting_end)::BIGINT AS voting_end,
+    EXTRACT (EPOCH FROM this_fund.tallying_end)::BIGINT AS tallying_end,
 
     this_fund.extra->'url'->'results' AS results_url,
     this_fund.extra->'url'->'survey' AS survey_url
@@ -48,7 +48,7 @@ CREATE VIEW proposals AS SELECT
     proposal.funds AS proposal_funds,
     proposal.url AS proposal_url,
     proposal.files_url AS proposal_files_url,
-    proposal.impact_score  AS impact_score,
+    proposal.impact_score  AS proposal_impact_score,
 
     proposal.proposer_name AS proposer_name,
     proposal.proposer_contact AS proposer_contact,
@@ -57,7 +57,9 @@ CREATE VIEW proposals AS SELECT
 
     proposal.bb_proposal_id AS chain_proposal_id,
     proposal.bb_vote_options AS chain_vote_options,
-    proposal.challenge  AS challenge_id
+    proposal.challenge  AS challenge_id,
+
+    proposal.extra::TEXT AS extra
 FROM proposal
 INNER JOIN challenge ON challenge.row_id = proposal.challenge;
 
@@ -116,9 +118,9 @@ Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 CREATE VIEW voteplans AS SELECT
     voteplan.row_id AS id,
     voteplan.id AS chain_voteplan_id,
-    EXTRACT (EPOCH FROM election.voting_start) AS chain_vote_start_time,
-    EXTRACT (EPOCH FROM election.voting_end) AS chain_vote_end_time,
-    EXTRACT (EPOCH FROM election.tallying_end) AS chain_committee_end_time,
+    EXTRACT (EPOCH FROM election.voting_start)::BIGINT AS chain_vote_start_time,
+    EXTRACT (EPOCH FROM election.voting_end)::BIGINT AS chain_vote_end_time,
+    EXTRACT (EPOCH FROM election.tallying_end)::BIGINT AS chain_committee_end_time,
     voteplan.category AS chain_voteplan_payload,
     voteplan.encryption_key AS chain_vote_encryption_key,
     election.row_id AS fund_id,
@@ -313,7 +315,7 @@ SELECT
 FROM proposals p
 INNER JOIN proposals_voteplans pvp ON p.proposal_id = pvp.proposal_id
 INNER JOIN voteplans vp ON pvp.chain_voteplan_id = vp.chain_voteplan_id
-INNER JOIN challenges ch ON ch.id = p.challenge_id
+INNER JOIN challenges ch ON ch.internal_id = p.challenge_id
 INNER JOIN groups gr ON vp.token_identifier = gr.token_identifier
 LEFT JOIN proposal_simple_challenge psc
     ON p.proposal_id = psc.proposal_id

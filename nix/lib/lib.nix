@@ -71,6 +71,7 @@ in rec {
     nativeBuildInputs ? [],
     ...
   } @ args: let
+    args' = builtins.removeAttrs args ["pkgPath" "cargoOptions" "nativeBuildInputs"];
     rootPkgCargo = readTOML (inputs.self + "/Cargo.toml");
     pkgCargo = readTOML (inputs.self + "/src/" + pkgPath + "/Cargo.toml");
     inherit (pkgCargo.package) name version;
@@ -116,7 +117,7 @@ in rec {
           openssl
         ];
       }
-      // args);
+      // args');
 
   # Maps a function to all possible namespaces, returning results of the
   # function calls as an attribute set where the key is `{service}-{namespace}`

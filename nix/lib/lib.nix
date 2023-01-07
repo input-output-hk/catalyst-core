@@ -69,7 +69,8 @@ in rec {
     pkgPath,
     cargoOptions ? [],
     nativeBuildInputs ? [],
-  }: let
+    ...
+  } @ args: let
     rootPkgCargo = readTOML (inputs.self + "/Cargo.toml");
     pkgCargo = readTOML (inputs.self + "/src/" + pkgPath + "/Cargo.toml");
     inherit (pkgCargo.package) name version;
@@ -90,31 +91,32 @@ in rec {
       ]
       ++ nativeBuildInputs;
   in
-    naersk.buildPackage {
-      inherit name version;
+    naersk.buildPackage ({
+        inherit name version;
 
-      # We have to invoke cargo from within the member's directory
-      preBuild = "cd src/${pkgPath}";
+        # We have to invoke cargo from within the member's directory
+        preBuild = "cd src/${pkgPath}";
 
-      # The output artifacts are stored in the workspace root, failing to change
-      # back will result in naesrk failing to find the artifacts.
-      postBuild = "cd -";
+        # The output artifacts are stored in the workspace root, failing to change
+        # back will result in naesrk failing to find the artifacts.
+        postBuild = "cd -";
 
-      root = inputs.self;
-      src = mkDummySrc rootPkgCargo.workspace.members filteredSrc;
+        root = inputs.self;
+        src = mkDummySrc rootPkgCargo.workspace.members filteredSrc;
 
-      nativeBuildInputs = nativeBuildInputs';
+        nativeBuildInputs = nativeBuildInputs';
 
-      cargoBuildOptions = x: x ++ cargoOptions;
-      cargoTestOptions = x: x ++ cargoOptions;
+        cargoBuildOptions = x: x ++ cargoOptions;
+        cargoTestOptions = x: x ++ cargoOptions;
 
-      PROTOC = "${nixpkgs.protobuf}/bin/protoc";
-      PROTOC_INCLUDE = "${nixpkgs.protobuf}/include";
+        PROTOC = "${nixpkgs.protobuf}/bin/protoc";
+        PROTOC_INCLUDE = "${nixpkgs.protobuf}/include";
 
-      buildInputs = with nixpkgs; [
-        openssl
-      ];
-    };
+        buildInputs = with nixpkgs; [
+          openssl
+        ];
+      }
+      // args);
 
   # Maps a function to all possible namespaces, returning results of the
   # function calls as an attribute set where the key is `{service}-{namespace}`

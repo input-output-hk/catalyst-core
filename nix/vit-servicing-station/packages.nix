@@ -10,5 +10,10 @@
   mkSimplePkg = subPkg: lib.mkPackage {pkgPath = "${name}/${subPkg}";};
 in {
   vit-servicing-station-cli = mkSimplePkg "vit-servicing-station-cli";
-  vit-servicing-station-server = mkSimplePkg "vit-servicing-station-server";
+  vit-servicing-station-server = lib.mkPackage {
+    pkgPath = "${name}/vit-servicing-station-server";
+    postInstall = ''
+      cp -r src/vit-servicing-station/vit-servicing-station-lib/migrations/postgres $out/migrations
+    '';
+  };
 }

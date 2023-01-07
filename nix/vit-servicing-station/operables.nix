@@ -38,8 +38,9 @@
   in
     std.lib.ops.mkOperable {
       inherit package;
-      runtimeInputs = [
+      runtimeInputs = with nixpkgs; [
         artifacts'
+        diesel-cli
       ];
       runtimeScript = let
         configFile =
@@ -51,15 +52,21 @@
           ''
             cp $configPath $out
           '';
-      in
-        std.lib.ops.mkOperableScript {
-          inherit package;
-          args = {
-            "--in-settings-file" = configFile;
-            "--service-version" = "$VERSION";
-            "--db-url" = "$DB_URL";
-          };
-        };
+      in ''
+        echo ">>> Entering entrypoint script..."
+
+        if [[ -n "$MIGRATE" ]]; then
+          echo ">>> Running migrations..."
+          export DATABASE_URL="$DB_URL"
+          diesel migration run --migration-dir "${package}/migrations"
+        fi
+
+        echo ">>> Running servicing station..."
+        exec ${l.getExe package} \
+          --in-settings-file "${configFile}" \
+          --service-version "$VERSION" \
+          --db-url "$DB_URL"
+      '';
     };
 in
   {}

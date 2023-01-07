@@ -35,10 +35,15 @@
       service_version = "";
       db_url = "";
     };
+
+    diesel-cli = nixpkgs.diesel-cli.override {
+      sqliteSupport = false;
+      mysqlSupport = false;
+    };
   in
     std.lib.ops.mkOperable {
       inherit package;
-      runtimeInputs = with nixpkgs; [
+      runtimeInputs = [
         artifacts'
         diesel-cli
       ];

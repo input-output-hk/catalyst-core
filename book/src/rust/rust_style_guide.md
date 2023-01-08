@@ -226,6 +226,43 @@ match a_thing {
 }
 ```
 
+#### Comments
+
+Prefer line comments (`//`) to block comments (`/* ... */`).
+
+When using line comments there should be a single space after the opening sigil.
+
+When using single-line block comments there should be a single space after the
+opening sigil and before the closing sigil. Multi-line block comments should
+have a newline after the opening sigil and before the closing sigil.
+
+Prefer to put a comment on its own line. Where a comment follows code, there
+should be a single space before it. Where a block comment is inline, there
+should be surrounding whitespace as if it were an identifier or keyword. There
+should be no trailing whitespace after a comment or at the end of any line in a
+multi-line comment. Examples:
+
+```rust
+// A comment on an item.
+struct Foo { ... }
+
+fn foo() {} // A comment after an item.
+
+pub fn foo(/* a comment before an argument */ x: T) {...}
+```
+
+Comments should usually be complete sentences. Start with a capital letter, end
+with a period (`.`). An inline block comment may be treated as a note without
+punctuation.
+
+#### Doc comments
+
+Prefer line comments (`///`) to block comments (`/** ... */`).
+
+Prefer outer doc comments (`///` or `/** ... */`), only use inner doc comments
+(`//!` and `/*! ... */`) to write module-level or crate-level documentation.
+
+Doc comments should come before attributes.
 
 #### The Cargo.toml File
 

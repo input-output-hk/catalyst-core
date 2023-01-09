@@ -62,10 +62,8 @@ pub fn get_voting_key_saturation() {
             .voter_info
             .first()
             .unwrap()
-            .voting_power_saturation.voting_power_saturation;
+            .voting_power_saturation;
 
-        assert!(expected_voting_key_saturation == voting_key_saturation);
-
-        //assert_eq!(expected_voting_key_saturation, voting_key_saturation);
+        assert_eq!(expected_voting_key_saturation, voting_key_saturation);
     }
 }

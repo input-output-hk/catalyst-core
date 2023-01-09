@@ -68,7 +68,7 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
     let control = control_filter(context.clone(), control_root).await;
 
     let health = warp::path!("health")
-        .and(warp::get())
+        .and(warp::post())
         .and_then(health_handler)
         .boxed();
 

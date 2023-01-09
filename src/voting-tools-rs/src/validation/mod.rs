@@ -1,15 +1,14 @@
 use blake2::digest::{Update, VariableOutput};
 use cardano_serialization_lib::chain_crypto::ed25519::{Pub, Sig};
 use cardano_serialization_lib::chain_crypto::{
-    AsymmetricKey, AsymmetricPublicKey, Ed25519, Verification, VerificationAlgorithm,
+     AsymmetricPublicKey, Ed25519, VerificationAlgorithm,
 };
 use ciborium::cbor;
 
 use ciborium::value::Value as Cbor;
-use serde::Deserialize;
 use serde_json::Value;
 
-use crate::model::{Registration, SignedRegistration};
+use crate::data::{Registration, SignedRegistration};
 use crate::Signature;
 use error::ValidationError;
 use validity::Validate;
@@ -25,8 +24,8 @@ impl Validate for SignedRegistration {
             signature,
         } = self;
 
-        let signature = extract_signature(signature)?;
-
+        let bytes = registration_as_cbor(registration);
+        
         todo!()
     }
 }
@@ -58,6 +57,7 @@ impl Validate for SignedRegistration {
 //     Verification::Failed => false,
 // }
 // }
+
 
 const HASH_SIZE: usize = 32;
 
@@ -92,27 +92,15 @@ fn registration_as_cbor(
         nonce,
         purpose,
     }: Registration,
-) -> Option<Cbor> {
-    // we do this manually because it's not really a 1:1 conversion
-
-    let Value::Object(map) = json else { return None; };
-
-    let voting_key = hex::decode(map.get("1")?.as_str()?).ok()?;
-    let stake_pub = hex::decode(map.get("2")?.as_str()?).ok()?;
-    let reward_addr = hex::decode(map.get("3")?.as_str()?).ok()?;
-    let nonce: u64 = map.get("4")?.as_u64()?;
-
-    // assert_eq!(voting_key.len(), 32);
-    // assert_eq!(stake_pub.len(), 32);
-    // assert_eq!(reward_addr.len(), 64);
-
+) -> Cbor {
+    // we do this manually because it's not really a 1:1 conversion and serde can't handle integer
+    // keys
     cbor!({
         61284 => {
-            1 => voting_key,
-            2 => stake_pub,
-            3 => reward_addr,
+            1 => voting_power_source,
+            2 => stake_key,
+            3 => rewards_addr,
             4 => nonce,
         }
-    })
-    .ok()
+    }).unwrap()
 }

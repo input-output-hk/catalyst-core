@@ -3,6 +3,8 @@ use cardano_serialization_lib::{address::NetworkInfo, chain_crypto::ed25519::Pub
 use microtype::microtype;
 use serde::{Deserialize, Serialize};
 
+use crate::data::crypto::PublicKeyHex;
+
 /// The source of voting power for a given registration
 ///
 /// The voting power can either come from: 
@@ -95,6 +97,8 @@ pub struct Reg {
 
 // Create newtype wrappers for better type safety
 microtype! {
+
+
     #[derive(Debug, PartialEq, Clone)]
     #[string]
     pub String {

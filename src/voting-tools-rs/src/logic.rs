@@ -11,7 +11,9 @@ use color_eyre::eyre::{bail, eyre};
 use color_eyre::eyre::{Context, Result};
 use microtype::Microtype;
 
-use crate::model::{network_info, Output, Reg, SlotNo, StakeKeyHex, StakePubKey, TestnetMagic};
+use crate::data::{
+    network_info, Reg, SlotNo, SnapshotEntry, StakeKeyHex, StakePubKey, TestnetMagic,
+};
 use crate::VotingPowerSource;
 
 /// Calculate voting power info by querying a db-sync instance
@@ -35,7 +37,7 @@ pub fn voting_power(
     min_slot: Option<SlotNo>,
     max_slot: Option<SlotNo>,
     testnet_magic: Option<TestnetMagic>,
-) -> Result<Vec<Output>> {
+) -> Result<Vec<SnapshotEntry>> {
     let network_info = network_info(testnet_magic);
     let regs = db.vote_registrations(min_slot, max_slot)?;
 
@@ -61,7 +63,7 @@ pub fn voting_power(
             let stake_addr = get_stake_address(&reg.metadata.stake_key, &network_info).ok()?;
             let voting_power = values.get(&stake_addr as &str)?.clone();
 
-            let output = Output {
+            let output = SnapshotEntry {
                 tx_id: reg.tx_id,
                 voting_power_source: reg.metadata.voting_power_source.clone(),
                 rewards_address: reg.metadata.rewards_addr.clone(),
@@ -79,24 +81,17 @@ pub fn voting_power(
 
 #[instrument]
 pub(crate) fn get_stake_address(
-    stake_vkey_hex: &StakeKeyHex,
+    stake_key_hex: &StakeKeyHex,
     network: &NetworkInfo,
 ) -> Result<String> {
-    let stake_vkey_hex = stake_vkey_hex.trim_start_matches("0x");
-    // TODO support stake extended keys
-    if stake_vkey_hex.len() == 128 {
-        // TODO: why is this bad? can we give a better error here?
-        bail!("stake_vkey has length 128");
-    } else {
-        // Convert hex to public key
-        let hex = hex::decode(stake_vkey_hex)?;
-        let pub_key = PublicKey::from_bytes(&hex).map_err(|_| eyre!(""))?;
-        let cred = StakeCredential::from_keyhash(&pub_key.hash());
-        let stake_addr = RewardAddress::new(network.network_id(), &cred).to_address();
-        let stake_addr_bytes = stake_addr.to_bytes();
-        let stake_addr_bytes_hex = hex::encode(stake_addr_bytes);
-        Ok(stake_addr_bytes_hex)
-    }
+    // Convert hex to public key
+    let hex = hex::decode(stake_vkey_hex)?;
+    let pub_key = PublicKey::from_bytes(&hex).map_err(|_| eyre!(""))?;
+    let cred = StakeCredential::from_keyhash(&pub_key.hash());
+    let stake_addr = RewardAddress::new(network.network_id(), &cred).to_address();
+    let stake_addr_bytes = stake_addr.to_bytes();
+    let stake_addr_bytes_hex = hex::encode(stake_addr_bytes);
+    Ok(stake_addr_bytes_hex)
 }
 
 impl Reg {
@@ -170,7 +165,7 @@ impl Reg {
         );
         meta_map.insert(
             &TransactionMetadatum::new_int(&Int::new_i32(4)),
-            &TransactionMetadatum::new_int(&Int::new(&BigNum::from(self.metadata.slot.0))),
+            &TransactionMetadatum::new_int(&Int::new(&BigNum::from(self.metadata.nonce.0))),
         );
         meta_map.insert(
             &TransactionMetadatum::new_int(&Int::new_i32(5)),

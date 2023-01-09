@@ -1,8 +1,8 @@
-use crate::data_provider::DataProvider;
-use crate::model::{
-    Delegations, Reg, Registration, RegoSignature, RewardsAddr, Signature, SlotNo, StakeVKey, TxId,
-    VotingPurpose,
+use crate::data::{
+    Reg, Registration, RegoSignature, RewardsKeyHex, Signature, SlotNo, StakeVKey, TxId,
+    VotingPowerSource, VotingPurpose, StakeKeyHex,
 };
+use crate::data_provider::DataProvider;
 use bigdecimal::{BigDecimal, FromPrimitive};
 use cardano_serialization_lib::address::Address;
 use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey};
@@ -58,11 +58,11 @@ impl DataProvider for MockDbProvider {
                             r.get(&REGISTRATION_METADATA_SIGNATURE_LABEL).unwrap();
                         let signature_metadata_map = signature_metadata.as_map().unwrap();
 
-                        let delegations = {
+                        let voting_power_source = {
                             let metadata = metadata_map.get(&METADATUM_1).unwrap();
 
                             if let Ok(data) = metadata.as_bytes() {
-                                Delegations::Legacy(hex::encode(data))
+                                VotingPowerSource::Legacy(hex::encode(data))
                             } else {
                                 let mut delegations = vec![];
                                 let delgation_list = metadata.as_list().unwrap();
@@ -76,7 +76,7 @@ impl DataProvider for MockDbProvider {
                                     delegations.push((hex::encode(delegation), weight));
                                 }
 
-                                Delegations::Delegated(delegations)
+                                VotingPowerSource::Delegated(delegations)
                             }
                         };
 
@@ -86,6 +86,8 @@ impl DataProvider for MockDbProvider {
                             &metadata_map.get(&METADATUM_2).unwrap().as_bytes().unwrap(),
                         )
                         .unwrap();
+
+                        let stake_key = StakeKeyHex(pub_key.into());
                         let rewards_address = Address::from_bytes(
                             metadata_map.get(&METADATUM_3).unwrap().as_bytes().unwrap(),
                         )
@@ -103,7 +105,7 @@ impl DataProvider for MockDbProvider {
                             tx_id: TxId::from(tx_id),
                             metadata: Registration {
                                 voting_power_source,
-                                stake_vkey: StakeVKey(pub_key.to_hex()),
+                                stake_key: pub_key,
                                 rewards_addr: RewardsAddr(rewards_address.to_hex()),
                                 slot: SlotNo(
                                     u64::from_str(

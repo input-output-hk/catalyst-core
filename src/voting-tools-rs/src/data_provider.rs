@@ -1,4 +1,4 @@
-use crate::model::{Reg, SlotNo};
+use crate::data::{Reg, SlotNo};
 use bigdecimal::BigDecimal;
 use color_eyre::eyre::Result;
 use std::collections::HashMap;

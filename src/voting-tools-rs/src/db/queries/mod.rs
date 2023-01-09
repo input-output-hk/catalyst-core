@@ -1,6 +1,5 @@
 use crate::data_provider::DataProvider;
-use crate::model::Reg;
-use crate::model::SlotNo;
+use crate::data::{SlotNo, Reg};
 use crate::Db;
 use bigdecimal::BigDecimal;
 use std::collections::HashMap;

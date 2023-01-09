@@ -1,4 +1,4 @@
-use crate::test_api::{MockDbProvider, VerifiableSnapshotOutput};
+use crate::{test_api::{MockDbProvider, VerifiableSnapshotOutput}, VotingPowerSource};
 use mainnet_lib::{CardanoWallet, MainnetNetworkBuilder, MainnetWalletStateBuilder};
 
 #[test]
@@ -18,7 +18,7 @@ fn cip15_correctly_signed_before_snapshot() {
     let assertions = outputs[0].assert();
 
     assertions.voting_power(stake);
-    assertions.delegations(&Delegations::Legacy(
+    assertions.delegations(&VotingPowerSource::Legacy(
         alice_wallet.catalyst_public_key().to_hex(),
     ));
     assertions.reward_address(&alice_wallet.reward_address());
@@ -46,7 +46,7 @@ fn cip36_correctly_signed_before_snapshot() {
     let assertions = outputs[0].assert();
 
     assertions.voting_power(stake);
-    assertions.delegations(&Delegations::Delegated(vec![
+    assertions.delegations(&VotingPowerSource::Delegated(vec![
         (alice_wallet.catalyst_public_key().to_hex(), 1),
         (bob_wallet.catalyst_public_key().to_hex(), 1),
     ]));

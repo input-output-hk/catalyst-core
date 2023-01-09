@@ -1,7 +1,7 @@
 use crate::{db::inner::DbQuery, Db};
 
 use crate::db::schema::{block, tx, tx_metadata};
-use crate::model::{Reg, SlotNo};
+use crate::data::{Reg, SlotNo};
 use bigdecimal::{BigDecimal, FromPrimitive};
 use color_eyre::eyre::Result;
 use diesel::RunQueryDsl;

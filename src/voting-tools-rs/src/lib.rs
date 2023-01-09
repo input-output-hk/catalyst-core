@@ -24,7 +24,7 @@ mod data_provider;
 mod data;
 mod db;
 mod logic;
-mod model;
+// mod model;
 mod testing;
 mod validation;
 
@@ -35,7 +35,6 @@ mod exports {
     pub use crate::data_provider::DataProvider;
     pub use crate::db::{Conn, Db, DbConfig};
     pub use crate::logic::voting_power;
-    pub use crate::model::{Signature, SignatureHex, Output};
-    pub use crate::data::VotingPowerSource;
+    pub use crate::data::{VotingPowerSource, Signature, crypto::SignatureHex, SnapshotEntry};
     pub use crate::testing::*;
 }

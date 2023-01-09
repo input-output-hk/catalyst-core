@@ -2,13 +2,8 @@ use cardano_serialization_lib::chain_crypto::{SignatureError, PublicKeyError};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum ValidationError {
-    #[error("failed to parse json: {0}")]
-    InvalidJson(#[from] serde_json::Error),
-
-    #[error("invalid hex: {0}")]
-    InvalidHex(#[from] hex::FromHexError),
-
     #[error("failed to parse signature: {0}")]
     InvalidSignature(#[from] SignatureError),
 

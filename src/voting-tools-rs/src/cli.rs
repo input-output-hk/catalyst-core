@@ -1,4 +1,4 @@
-use crate::model::{DbHost, DbName, DbPass, DbUser, SlotNo, TestnetMagic};
+use crate::data::{DbHost, DbName, DbPass, DbUser, SlotNo, TestnetMagic};
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 

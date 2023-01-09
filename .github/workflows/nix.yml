@@ -3,20 +3,20 @@ name: Nix CI
 on:
   pull_request:
     paths:
-      - '.github/workflows/nix.yml'
-      - 'nix/**'
-      - 'src/**'
-      - 'Cargo.*'
-      - 'flake.*'
+      - ".github/workflows/nix.yml"
+      - "nix/**"
+      - "src/**"
+      - "Cargo.*"
+      - "flake.*"
   push:
     branches:
       - main
     paths:
-      - '.github/workflows/nix.yml'
-      - 'nix/**'
-      - 'src/**'
-      - 'Cargo.*'
-      - 'flake.*'
+      - ".github/workflows/nix.yml"
+      - "nix/**"
+      - "src/**"
+      - "Cargo.*"
+      - "flake.*"
   workflow_dispatch:
 
 permissions:
@@ -29,9 +29,9 @@ concurrency:
 
 env:
   AWS_REGION: eu-central-1
-  AWS_ROLE_ARN: arn:aws:iam::432820653916:role/ci
-  ECR_REGISTRY: 432820653916.dkr.ecr.eu-central-1.amazonaws.com
-  S3_CACHE: s3://iog-catalyst-nix-cache?region=eu-central-1
+  AWS_ROLE_ARN: arn:aws:iam::332405224602:role/ci
+  ECR_REGISTRY: 332405224602.dkr.ecr.eu-central-1.amazonaws.com
+  S3_CACHE: s3://iog-catalyst-nix?region=eu-central-1
 
 jobs:
   discover:

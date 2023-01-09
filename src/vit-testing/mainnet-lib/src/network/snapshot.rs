@@ -6,8 +6,6 @@ use snapshot_lib::Fraction;
 /// Root struct for defining snapshot template
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Initials {
-    /// snapshot tag
-    pub tag: String,
     /// snapshot content
     pub content: Vec<Actor>,
     /// parameters

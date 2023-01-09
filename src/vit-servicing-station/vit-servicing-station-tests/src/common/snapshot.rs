@@ -133,17 +133,17 @@ pub struct VotingPower {
     pub voting_power_saturation: f64,
 }
 
-impl PartialEq for VotingPower{
+impl PartialEq for VotingPower {
     fn eq(&self, other: &Self) -> bool {
-        self.voting_power == other.voting_power &&
-            self.voting_group == other.voting_group &&
-            self.delegations_power == other.delegations_power &&
-            self.delegations_count == other.delegations_count &&
-            self.voting_power_saturation == other.voting_power_saturation
+        self.voting_power == other.voting_power
+            && self.voting_group == other.voting_group
+            && self.delegations_power == other.delegations_power
+            && self.delegations_count == other.delegations_count
+            && self.voting_power_saturation == other.voting_power_saturation
     }
 }
 
-impl Eq for VotingPower{}
+impl Eq for VotingPower {}
 
 impl From<SnapshotInfo> for VotingPower {
     fn from(snapshot_info: SnapshotInfo) -> Self {
@@ -157,7 +157,7 @@ impl From<SnapshotInfo> for VotingPower {
             voting_group: snapshot_info.hir.voting_group,
             delegations_power,
             delegations_count: snapshot_info.contributions.len() as u64,
-            voting_power_saturation: 0 as f64
+            voting_power_saturation: 0 as f64,
         }
     }
 }

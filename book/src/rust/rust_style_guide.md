@@ -31,6 +31,7 @@ before submitting a PR
 We add the following preamble to all crates' `lib.rs`:
 ```rust
 #![warn(clippy::pedantic)]
+#![forbid(clippy::integer_arithmetic)]
 #![forbid(missing_docs)]
 #![forbid(unsafe_code)]
 #![allow(/* known bad lints outlined below */)]
@@ -42,6 +43,27 @@ We enable `#![forbid(missing_docs)]` for a couple of reasons:
 
 We enable `#![forbid(unsafe_code)]` to reinforce the fact that **unsafe code should not be mixed in with the rest of our code**.
 More details below.
+
+We enable `#![forbid(integer_arithmetic)]` to prevent you writing code like:
+```rust
+let x = 1;
+let y = 2;
+let z = x + y;
+```
+
+Why is this bad?
+
+Integer arithmetic may panic or behave in an unexpected way depending on build settings.
+In debug mode, overflows cause panics, but in release mode, they silently wrap. 
+In both modes, division by `0` panics.
+
+By forbidding integer arithmetic, you have to choose a behaviour, by writing either:
+ - `a.checked_add(b)` to return an `Option` that you can error-handle
+ - `a.saturating_add(b)` to return a + b, or the max value if an overflow occurred
+ - `a.wrapping_add(b)` to return a + b, wrapping around if an overflow occurred
+
+By being explicit, we prevent the developer from "simply not considering" how their code behaves in the presence of overflows.
+In a ledger application, silently wrapping could be catastrophic, so we really want to be explicit about what behaviour we expect.
 
 ### Exceptions for clippy
 
@@ -215,6 +237,7 @@ fn set_bar(&mut self, bar: Bar) {
 ```
 If this is a private member, don't bother with this comment. 
 If it's public, something like this is fine just to get clippy to shut up.
+But if it's at all unclear what's going on, try to use a more descriptive comment.
 
 ### Doctests
 

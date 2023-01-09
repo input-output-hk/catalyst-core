@@ -572,7 +572,7 @@
 
         spawn_params.override_settings(<span class="kw-2">&amp;mut </span>config);
 
-        <span class="kw">for </span>peer <span class="kw">in </span>config.p2p.trusted_peers.iter_mut() {
+        <span class="kw">for </span>peer <span class="kw">in </span>config.p2p.bootstrap.trusted_peers.iter_mut() {
             peer.id = <span class="prelude-val">None</span>;
         }
 

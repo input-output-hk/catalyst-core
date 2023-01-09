@@ -169,14 +169,14 @@
     convert_to_blockchain_date, convert_to_human_date, generate_qr_and_hashes,
     VitVotePlanDefBuilder, WalletExtension,
 };
-<span class="kw">use </span><span class="kw">crate</span>::config::date_format;
 <span class="kw">use </span><span class="kw">crate</span>::config::Block0Initials;
-<span class="kw">use </span><span class="kw">crate</span>::config::SnapshotInitials;
-<span class="kw">use </span><span class="kw">crate</span>::config::{Config, Initials, VoteTime};
+<span class="kw">use </span><span class="kw">crate</span>::config::{date_format, Initials};
+<span class="kw">use </span><span class="kw">crate</span>::config::{Config, VoteTime};
 <span class="kw">use </span>chain_addr::Discrimination;
 <span class="kw">use </span>chain_impl_mockchain::fee::LinearFee;
 <span class="kw">use </span>jormungandr_lib::interfaces::CommitteeIdDef;
 <span class="kw">use </span>jormungandr_lib::interfaces::ConsensusLeaderId;
+<span class="kw">use </span>mainnet_lib::Initials <span class="kw">as </span>SnapshotInitials;
 <span class="kw">use </span>snapshot_lib::VoterHIR;
 <span class="kw">use </span>time::OffsetDateTime;
 

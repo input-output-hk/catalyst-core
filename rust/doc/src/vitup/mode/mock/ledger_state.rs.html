@@ -482,6 +482,13 @@
 <span id="482">482</span>
 <span id="483">483</span>
 <span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_addr::Discrimination;
 <span class="kw">use </span>chain_core::property::Block;
 <span class="kw">use </span>chain_core::property::Fragment <span class="kw">as _</span>;
@@ -635,10 +642,17 @@
         <span class="self">self</span>.ledger.active_vote_plans()
     }
 
-    <span class="kw">pub fn </span>set_status_for_recent_fragment(<span class="kw-2">&amp;mut </span><span class="self">self</span>, fragment_strategy: FragmentRecieveStrategy) {
+    <span class="kw">pub fn </span>set_status_for_recent_fragment(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        fragment_strategy: FragmentRecieveStrategy,
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;jormungandr_lib::crypto::hash::Hash&gt; {
         <span class="kw">let </span>block_date = <span class="self">self</span>.current_blockchain_age();
-        <span class="kw">let </span>fragment_log = <span class="self">self</span>.fragment_logs.last_mut().unwrap();
-        override_fragment_status(block_date, fragment_log, fragment_strategy);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(fragment_log) = <span class="self">self</span>.fragment_logs.last_mut() {
+            override_fragment_status(block_date, fragment_log, fragment_strategy);
+            <span class="prelude-val">Some</span>(<span class="kw-2">*</span>fragment_log.fragment_id())
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
     }
 
     <span class="kw">pub fn </span>set_status_for_fragment_id(

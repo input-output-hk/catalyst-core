@@ -75,9 +75,6 @@
         BlockDateFromCardanoAbsoluteSlotNo, Error <span class="kw">as </span>DbSyncError, InMemoryDbSync,
         SharedInMemoryDbSync,
     };
-    <span class="kw">pub use </span><span class="kw">crate</span>::network::{
-        MainnetNetworkBuilder, MainnetWalletState, MainnetWalletStateBuilder,
-    };
     <span class="kw">pub use </span><span class="kw">crate</span>::wallet::{
         CardanoWallet, GeneralTransactionMetadataInfo, JsonConversionError,
         RegistrationTransactionBuilder, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
@@ -87,6 +84,9 @@
 
     <span class="kw">pub use </span><span class="kw">crate</span>::cardano_node::{Block0, BlockBuilder, TransactionBuilder};
     <span class="kw">pub use </span><span class="kw">crate</span>::cardano_node::{InMemoryNode, Ledger, Settings};
+    <span class="kw">pub use </span><span class="kw">crate</span>::network::{
+        wallet_state, Initials, MainnetNetworkBuilder, Parameters <span class="kw">as </span>SnapshotParameters,
+    };
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="mainnet_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

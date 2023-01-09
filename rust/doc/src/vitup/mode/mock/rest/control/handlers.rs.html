@@ -271,15 +271,17 @@
 <span id="271">271</span>
 <span id="272">272</span>
 <span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::config::{Config, SnapshotInitials};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::config::Config;
 <span class="kw">use </span><span class="kw">crate</span>::mode::mock::rest::reject::GeneralException;
 <span class="kw">use </span><span class="kw">crate</span>::mode::mock::{ContextLock, FragmentRecieveStrategy, LedgerState, NetworkCongestionMode};
 <span class="kw">use </span><span class="kw">crate</span>::mode::service::manager::file_lister::dump_json;
 <span class="kw">use </span>jortestkit::web::api_token::{APIToken, APITokenManager, TokenError};
+<span class="kw">use </span>mainnet_lib::wallet_state::{build_default, MainnetWalletState};
+<span class="kw">use </span>mainnet_lib::SnapshotParameters;
+<span class="kw">use </span>mainnet_tools::snapshot::MainnetWalletStateExtension;
 <span class="kw">use </span>tracing::{info, trace};
 <span class="kw">use </span>vit_servicing_station_lib::db::models::funds::Fund;
+<span class="kw">use </span>vit_servicing_station_lib::v0::errors::HandleError;
 <span class="kw">use </span>vit_servicing_station_lib::v0::result::HandlerResult;
 <span class="kw">use </span>warp::{Rejection, Reply};
 
@@ -344,7 +346,7 @@
     <span class="macro">info!</span>(<span class="string">&quot;update fragment id command&quot;</span>);
     <span class="kw">if </span>fragment_id.to_uppercase() == <span class="kw-2">*</span><span class="string">&quot;LAST&quot;</span>.to_string() {
         <span class="macro">trace!</span>(<span class="string">&quot;updating last fragment to {}&quot;</span>, fragment_strategy);
-        ledger_state.set_status_for_recent_fragment(fragment_strategy);
+        <span class="kw">let _ </span>= ledger_state.set_status_for_recent_fragment(fragment_strategy);
     } <span class="kw">else </span>{
         <span class="macro">trace!</span>(
             <span class="string">&quot;updating fragment with id &#39;{}&#39; to be: {}&quot;</span>,
@@ -514,22 +516,16 @@
 }
 
 <span class="kw">pub async fn </span>command_create_snapshot(
-    config: SnapshotInitials,
-    context: ContextLock,
+    config: mainnet_lib::Initials,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
-    <span class="kw">let </span>context_lock = context.read().unwrap();
-    <span class="kw">let </span>state = context_lock.state();
-
-    <span class="kw">let </span>voters_hirs = config
-        .as_voters_hirs(state.defined_wallets())
-        .map_err(|err| {
-            warp::reject::custom(GeneralException {
-                summary: err.to_string(),
-                code: <span class="number">500</span>,
-            })
-        })<span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>(HandlerResult(<span class="prelude-val">Ok</span>(voters_hirs)))
+    <span class="kw">let </span>states: Vec&lt;MainnetWalletState&gt; = build_default(config.content)
+        .<span class="kw">await
+        </span>.map_err(|e| HandleError::InternalError(e.to_string()))<span class="question-mark">?</span>;
+    <span class="macro">println!</span>(<span class="string">&quot;{:#?}&quot;</span>, states);
+    <span class="kw">let </span>request = states
+        .try_into_raw_snapshot_request(SnapshotParameters::default())
+        .map_err(|e| HandleError::InternalError(e.to_string()));
+    <span class="prelude-val">Ok</span>(HandlerResult(request))
 }
 
 <span class="kw">pub async fn </span>authorize_token(token: String, context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;(), Rejection&gt; {

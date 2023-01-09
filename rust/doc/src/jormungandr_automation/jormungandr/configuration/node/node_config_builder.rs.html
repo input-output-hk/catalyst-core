@@ -158,13 +158,18 @@
 <span id="158">158</span>
 <span id="159">159</span>
 <span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
 </pre><pre class="rust"><code><span class="attribute">#![allow(dead_code)]
 
 </span><span class="kw">use </span><span class="kw">crate</span>::jormungandr::get_available_port;
 <span class="kw">use </span>jormungandr_lib::{
     interfaces::{
-        Cors, JRpc, LayersConfig, Log, LogEntry, LogOutput, Mempool, NodeConfig, P2p, Policy, Rest,
-        Tls, TopicsOfInterest, TrustedPeer,
+        Bootstrap, Connection, Cors, JRpc, LayersConfig, Log, LogEntry, LogOutput, Mempool,
+        NodeConfig, P2p, Policy, Rest, Tls, TopicsOfInterest, TrustedPeer,
     },
     time::Duration,
 };
@@ -221,13 +226,22 @@
                 listen: <span class="macro">format!</span>(<span class="string">&quot;{}:{}&quot;</span>, DEFAULT_HOST, jrpc_port).parse().unwrap(),
             },
             p2p: P2p {
-                node_key_file: <span class="prelude-val">None</span>,
-                trusted_peers: <span class="macro">vec!</span>[],
-                public_address: grpc_public_address,
-                listen: <span class="prelude-val">None</span>,
-                max_inbound_connections: <span class="prelude-val">None</span>,
-                max_connections: <span class="prelude-val">None</span>,
-                allow_private_addresses: <span class="bool-val">true</span>,
+                bootstrap: Bootstrap {
+                    max_bootstrap_attempts: <span class="prelude-val">None</span>,
+                    trusted_peers: <span class="macro">vec!</span>[],
+                    node_key_file: <span class="prelude-val">None</span>,
+                },
+                connection: Connection {
+                    public_address: grpc_public_address,
+                    listen: <span class="prelude-val">None</span>,
+                    max_inbound_connections: <span class="prelude-val">None</span>,
+                    max_connections: <span class="prelude-val">None</span>,
+                    allow_private_addresses: <span class="bool-val">true</span>,
+                    gossip_interval: <span class="prelude-val">None</span>,
+                    network_stuck_check: <span class="prelude-val">None</span>,
+                    whitelist: <span class="prelude-val">None</span>,
+                },
+
                 policy: <span class="prelude-val">Some</span>(Policy {
                     quarantine_duration: <span class="prelude-val">Some</span>(Duration::new(<span class="number">1</span>, <span class="number">0</span>)),
                     quarantine_whitelist: <span class="prelude-val">None</span>,
@@ -239,10 +253,6 @@
                         blocks: String::from(<span class="string">&quot;high&quot;</span>),
                     }),
                 }),
-                gossip_interval: <span class="prelude-val">None</span>,
-                max_bootstrap_attempts: <span class="prelude-val">None</span>,
-                network_stuck_check: <span class="prelude-val">None</span>,
-                whitelist: <span class="prelude-val">None</span>,
             },
             mempool: <span class="prelude-val">Some</span>(Mempool::default()),
         }
@@ -266,17 +276,17 @@
     </span>}
 
     <span class="kw">pub fn </span>with_trusted_peers(<span class="kw-2">mut </span><span class="self">self</span>, trusted_peers: Vec&lt;TrustedPeer&gt;) -&gt; <span class="self">Self </span>{
-        <span class="self">self</span>.p2p.trusted_peers = trusted_peers;
+        <span class="self">self</span>.p2p.bootstrap.trusted_peers = trusted_peers;
         <span class="self">self
     </span>}
 
     <span class="kw">pub fn </span>with_public_address(<span class="kw-2">mut </span><span class="self">self</span>, public_address: String) -&gt; <span class="self">Self </span>{
-        <span class="self">self</span>.p2p.public_address = public_address.parse().unwrap();
+        <span class="self">self</span>.p2p.connection.public_address = public_address.parse().unwrap();
         <span class="self">self
     </span>}
 
     <span class="kw">pub fn </span>with_listen_address(<span class="kw-2">mut </span><span class="self">self</span>, listen_address: String) -&gt; <span class="self">Self </span>{
-        <span class="self">self</span>.p2p.listen = <span class="prelude-val">Some</span>(listen_address.parse().unwrap());
+        <span class="self">self</span>.p2p.connection.listen = <span class="prelude-val">Some</span>(listen_address.parse().unwrap());
         <span class="self">self
     </span>}
 
@@ -302,13 +312,13 @@
 
     <span class="kw">pub fn </span>build(<span class="kw-2">mut </span><span class="self">self</span>) -&gt; NodeConfig {
         <span class="comment">//remove id from trusted peers
-        </span><span class="kw">for </span>trusted_peer <span class="kw">in </span><span class="self">self</span>.p2p.trusted_peers.iter_mut() {
+        </span><span class="kw">for </span>trusted_peer <span class="kw">in </span><span class="self">self</span>.p2p.bootstrap.trusted_peers.iter_mut() {
             trusted_peer.id = <span class="prelude-val">None</span>;
         }
 
         NodeConfig {
-            bootstrap_from_trusted_peers: <span class="prelude-val">Some</span>(!<span class="self">self</span>.p2p.trusted_peers.is_empty()),
-            skip_bootstrap: <span class="prelude-val">Some</span>(<span class="self">self</span>.p2p.trusted_peers.is_empty()),
+            bootstrap_from_trusted_peers: <span class="prelude-val">Some</span>(!<span class="self">self</span>.p2p.bootstrap.trusted_peers.is_empty()),
+            skip_bootstrap: <span class="prelude-val">Some</span>(<span class="self">self</span>.p2p.bootstrap.trusted_peers.is_empty()),
             storage: <span class="self">self</span>.storage,
             log: <span class="self">self</span>.log,
             rest: <span class="self">self</span>.rest,

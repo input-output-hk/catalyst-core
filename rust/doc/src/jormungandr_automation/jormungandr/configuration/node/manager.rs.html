@@ -123,19 +123,19 @@
     }
 
     <span class="kw">fn </span>p2p_listen_address(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; SocketAddr {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(address) = <span class="kw-2">&amp;</span><span class="self">self</span>.node_config.p2p.listen {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(address) = <span class="kw-2">&amp;</span><span class="self">self</span>.node_config.p2p.connection.listen {
             <span class="kw-2">*</span>address
         } <span class="kw">else </span>{
-            to_tcp_socket_addr(<span class="kw-2">&amp;</span><span class="self">self</span>.node_config.p2p.public_address).unwrap()
+            to_tcp_socket_addr(<span class="kw-2">&amp;</span><span class="self">self</span>.node_config.p2p.connection.public_address).unwrap()
         }
     }
 
     <span class="kw">fn </span>p2p_public_address(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Multiaddr {
-        <span class="self">self</span>.node_config.p2p.public_address.clone()
+        <span class="self">self</span>.node_config.p2p.connection.public_address.clone()
     }
 
     <span class="kw">fn </span>set_p2p_public_address(<span class="kw-2">&amp;mut </span><span class="self">self</span>, address: Multiaddr) {
-        <span class="self">self</span>.node_config.p2p.public_address = address;
+        <span class="self">self</span>.node_config.p2p.connection.public_address = address;
     }
 
     <span class="kw">fn </span>rest_socket_addr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; SocketAddr {

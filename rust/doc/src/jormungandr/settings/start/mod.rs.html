@@ -354,6 +354,9 @@
 <span id="354">354</span>
 <span id="355">355</span>
 <span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
 </pre><pre class="rust"><code><span class="kw">pub mod </span>config;
 <span class="kw">pub mod </span>network;
 
@@ -616,15 +619,16 @@
             (config::P2pConfig::default(), Vec::new(), <span class="bool-val">false</span>, <span class="bool-val">false</span>)
         };
 
-    <span class="kw">if </span>p2p.trusted_peers.is_some() {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(peers) = p2p.trusted_peers.as_mut() {
+    <span class="kw">if </span>p2p.bootstrap.trusted_peers.is_some() {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(peers) = p2p.bootstrap.trusted_peers.as_mut() {
             peers.extend(command_arguments.trusted_peer.clone())
         }
     } <span class="kw">else if </span>!command_arguments.trusted_peer.is_empty() {
-        p2p.trusted_peers = <span class="prelude-val">Some</span>(command_arguments.trusted_peer.clone())
+        p2p.bootstrap.trusted_peers = <span class="prelude-val">Some</span>(command_arguments.trusted_peer.clone())
     }
 
     <span class="kw">let </span>trusted_peers = p2p
+        .bootstrap
         .trusted_peers
         .as_ref()
         .map_or_else(Vec::new, |peers| resolve_trusted_peers(peers));
@@ -642,23 +646,21 @@
         .transpose()<span class="question-mark">?
         </span>.unwrap_or_default();
 
-    <span class="comment">// TODO: do we want to check that we end up with a valid address?
-    // Is it possible for a node to specify no public address?
-    </span><span class="kw">let </span>config_addr = p2p.public_address;
+    <span class="kw">let </span>config_addr = p2p.connection.public_address;
     <span class="kw">let </span>public_address = command_arguments
         .public_address
         .clone()
         .or(config_addr)
         .and_then(|addr| multiaddr::to_tcp_socket_addr(<span class="kw-2">&amp;</span>addr));
 
-    <span class="kw">let </span>node_key = <span class="kw">match </span>p2p.node_key_file {
+    <span class="kw">let </span>node_key = <span class="kw">match </span>p2p.bootstrap.node_key_file {
         <span class="prelude-val">Some</span>(node_key_file) =&gt; {
             &lt;SigningKey&lt;Ed25519&gt;&gt;::from_bech32_str(<span class="kw-2">&amp;</span>std::fs::read_to_string(<span class="kw-2">&amp;</span>node_key_file)<span class="question-mark">?</span>)<span class="question-mark">?
         </span>}
         <span class="prelude-val">None </span>=&gt; SigningKey::generate(rand::thread_rng()),
     };
 
-    <span class="kw">let </span>p2p_listen_address = p2p.listen.as_ref();
+    <span class="kw">let </span>p2p_listen_address = p2p.connection.listen.as_ref();
     <span class="kw">let </span>listen_address = command_arguments
         .listen_address
         .as_ref()
@@ -677,23 +679,27 @@
             rings,
         },
         max_connections: p2p
+            .connection
             .max_connections
             .unwrap_or(network::DEFAULT_MAX_CONNECTIONS),
         max_client_connections: p2p
+            .connection
             .max_client_connections
             .unwrap_or(network::DEFAULT_MAX_CLIENT_CONNECTIONS),
         timeout: std::time::Duration::from_secs(<span class="number">15</span>),
-        allow_private_addresses: p2p.allow_private_addresses,
-        whitelist: p2p.whitelist,
+        allow_private_addresses: p2p.connection.allow_private_addresses,
+        whitelist: p2p.connection.whitelist,
         gossip_interval: p2p
+            .connection
             .gossip_interval
             .map(|d| d.into())
             .unwrap_or_else(|| std::time::Duration::from_secs(<span class="number">10</span>)),
         network_stuck_check: p2p
+            .connection
             .network_stuck_check
             .map(Into::into)
             .unwrap_or(<span class="kw">crate</span>::topology::DEFAULT_NETWORK_STUCK_INTERVAL),
-        max_bootstrap_attempts: p2p.max_bootstrap_attempts,
+        max_bootstrap_attempts: p2p.bootstrap.max_bootstrap_attempts,
         http_fetch_block0_service,
         bootstrap_from_trusted_peers,
         skip_bootstrap,

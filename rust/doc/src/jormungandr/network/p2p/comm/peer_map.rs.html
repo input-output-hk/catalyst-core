@@ -314,6 +314,8 @@
 <span id="314">314</span>
 <span id="315">315</span>
 <span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     metrics::{Metrics, MetricsBackend},
     network::{
@@ -492,7 +494,8 @@
         <span class="self">self</span>.map.clear()
     }
 
-    <span class="kw">pub fn </span>refresh_peer(<span class="kw-2">&amp;mut </span><span class="self">self</span>, id: <span class="kw-2">&amp;</span>NodeId) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>PeerStats&gt; {
+    <span class="doccomment">/// Returns metadata of most recent peer interaction with given node
+    </span><span class="kw">pub fn </span>refresh_peer(<span class="kw-2">&amp;mut </span><span class="self">self</span>, id: <span class="kw-2">&amp;</span>NodeId) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>PeerStats&gt; {
         <span class="self">self</span>.map.get_refresh(id).map(|data| <span class="kw-2">&amp;mut </span>data.stats)
     }
 
@@ -502,7 +505,8 @@
             .map(|data| data.update_comm_status().comms())
     }
 
-    <span class="kw">fn </span>ensure_peer(<span class="kw-2">&amp;mut </span><span class="self">self</span>, id: NodeId, remote_addr: Address) -&gt; <span class="kw-2">&amp;mut </span>PeerData {
+    <span class="doccomment">/// Inserts peer and returns associated metadata
+    </span><span class="kw">fn </span>join_peer(<span class="kw-2">&amp;mut </span><span class="self">self</span>, id: NodeId, remote_addr: Address) -&gt; <span class="kw-2">&amp;mut </span>PeerData {
         <span class="kw">if </span>!<span class="self">self</span>.map.contains_key(<span class="kw-2">&amp;</span>id) {
             <span class="self">self</span>.evict_if_full();
             <span class="self">self</span>.stats_counter.add_peer_connected_cnt(<span class="number">1</span>);
@@ -545,14 +549,14 @@
         remote_addr: Address,
         handle: ConnectHandle,
     ) -&gt; <span class="kw-2">&amp;mut </span>PeerComms {
-        <span class="kw">let </span>data = <span class="self">self</span>.ensure_peer(id, remote_addr);
+        <span class="kw">let </span>data = <span class="self">self</span>.join_peer(id, remote_addr);
         data.connecting = <span class="prelude-val">Some</span>(handle);
         data.update_comm_status().comms()
     }
 
     <span class="comment">// This is called when accepting client connections as a server
     </span><span class="kw">pub fn </span>add_client(<span class="kw-2">&amp;mut </span><span class="self">self</span>, id: NodeId, remote_addr: Address) -&gt; <span class="kw-2">&amp;mut </span>PeerComms {
-        <span class="kw">let </span>data = <span class="self">self</span>.ensure_peer(id, remote_addr);
+        <span class="kw">let </span>data = <span class="self">self</span>.join_peer(id, remote_addr);
         data.update_comm_status().comms()
     }
 

@@ -182,7 +182,6 @@
 <span id="182">182</span>
 <span id="183">183</span>
 <span id="184">184</span>
-<span id="185">185</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>blockchain;
 <span class="kw">mod </span>builder;
 <span class="kw">mod </span>initials;
@@ -206,8 +205,7 @@
 <span class="kw">pub use </span>certs::CertificatesBuilder;
 <span class="kw">use </span>chain_addr::Discrimination;
 <span class="kw">pub use </span>initials::{
-    Block0Initial, Block0Initials, Initials, Role, SnapshotError, SnapshotInitial,
-    SnapshotInitials, DIRECT_VOTING_GROUP, REP_VOTING_GROUP,
+    Block0Initial, Block0Initials, Initials, Role, DIRECT_VOTING_GROUP, REP_VOTING_GROUP,
 };
 <span class="kw">pub use </span>migrations::{Error <span class="kw">as </span>MigrationError, MigrationFilesBuilder};
 <span class="kw">use </span>serde::{Deserialize, Serialize};

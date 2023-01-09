@@ -66,8 +66,14 @@
 <span id="66">66</span>
 <span id="67">67</span>
 <span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::cardano_node::block::{Block0, BlockBuilder};
-<span class="kw">use </span><span class="kw">crate</span>::Settings;
+<span class="kw">use </span><span class="kw">crate</span>::cardano_node::Settings;
 <span class="kw">use </span>cardano_serialization_lib::{Block, Transaction};
 
 <span class="doccomment">/// Simulates cardano node behavior. Contains mempool of transactions as well as blockchain.
@@ -123,6 +129,12 @@
         <span class="self">self</span>.blocks.push(next_block.clone());
         <span class="self">self</span>.mempool.clear();
         <span class="prelude-val">Ok</span>(next_block)
+    }
+
+    <span class="doccomment">/// Retrieves blockchain in form of vector of blocks
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>blockchain(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[Block] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.blocks
     }
 }
 

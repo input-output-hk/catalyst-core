@@ -312,6 +312,25 @@
 <span id="312">312</span>
 <span id="313">313</span>
 <span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     crypto::key::Identifier,
     interfaces::config::{Log, Mempool},
@@ -502,16 +521,36 @@
 
 <span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize)]
 </span><span class="kw">pub struct </span>P2p {
-    <span class="doccomment">/// The public address to which other peers may connect to
-    </span><span class="kw">pub </span>public_address: Multiaddr,
+    <span class="kw">pub </span>bootstrap: Bootstrap,
+
+    <span class="kw">pub </span>connection: Connection,
+
+    <span class="kw">pub </span>policy: <span class="prelude-ty">Option</span>&lt;Policy&gt;,
+
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>layers: <span class="prelude-ty">Option</span>&lt;LayersConfig&gt;,
+}
+
+<span class="doccomment">/// Bootstrap contains meta data for initial startup
+</span><span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>Bootstrap {
+    <span class="doccomment">/// the rendezvous points for the peer to connect to in order to initiate
+    /// the p2p discovery from.
+    </span><span class="kw">pub </span>trusted_peers: Vec&lt;TrustedPeer&gt;,
+
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>max_bootstrap_attempts: <span class="prelude-ty">Option</span>&lt;usize&gt;,
 
     <span class="doccomment">/// File with the secret key used to advertise and authenticate the node
     </span><span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
     </span><span class="kw">pub </span>node_key_file: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
+}
 
-    <span class="doccomment">/// the rendezvous points for the peer to connect to in order to initiate
-    /// the p2p discovery from.
-    </span><span class="kw">pub </span>trusted_peers: Vec&lt;TrustedPeer&gt;,
+<span class="doccomment">/// Miscellaneous network configuration
+</span><span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>Connection {
+    <span class="doccomment">/// The public address to which other peers may connect to
+    </span><span class="kw">pub </span>public_address: Multiaddr,
 
     <span class="doccomment">/// Listen address.
     </span><span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
@@ -523,22 +562,18 @@
     <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
     </span><span class="kw">pub </span>max_inbound_connections: <span class="prelude-ty">Option</span>&lt;u32&gt;,
 
-    <span class="kw">pub </span>allow_private_addresses: bool,
+    <span class="doccomment">/// Whether to allow non-public IP addresses in gossip
+    </span><span class="kw">pub </span>allow_private_addresses: bool,
 
-    <span class="kw">pub </span>whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;SocketAddr&gt;&gt;,
+    <span class="doccomment">/// contains addrs of nodes which we can accept fragments from
+    </span><span class="kw">pub </span>whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;SocketAddr&gt;&gt;,
 
-    <span class="kw">pub </span>policy: <span class="prelude-ty">Option</span>&lt;Policy&gt;,
-
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
-    </span><span class="kw">pub </span>layers: <span class="prelude-ty">Option</span>&lt;LayersConfig&gt;,
-
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    <span class="doccomment">/// interval to start gossiping with new nodes, changing the value will affect the bandwidth.
+    </span><span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
     </span><span class="kw">pub </span>gossip_interval: <span class="prelude-ty">Option</span>&lt;Duration&gt;,
 
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
-    </span><span class="kw">pub </span>max_bootstrap_attempts: <span class="prelude-ty">Option</span>&lt;usize&gt;,
-
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    <span class="doccomment">/// If no gossip has been received in the last interval, try to connect to nodes that were previously known to this node
+    </span><span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
     </span><span class="kw">pub </span>network_stuck_check: <span class="prelude-ty">Option</span>&lt;Duration&gt;,
 }
 
@@ -548,7 +583,8 @@
     <span class="kw">pub </span>blocks: String,
 }
 
-<span class="attribute">#[derive(Debug, Serialize, Deserialize, Clone)]
+<span class="doccomment">/// policy module
+</span><span class="attribute">#[derive(Debug, Serialize, Deserialize, Clone)]
 </span><span class="kw">pub struct </span>Policy {
     <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
     </span><span class="kw">pub </span>quarantine_duration: <span class="prelude-ty">Option</span>&lt;Duration&gt;,
@@ -556,7 +592,8 @@
     </span><span class="kw">pub </span>quarantine_whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;Multiaddr&gt;&gt;,
 }
 
-<span class="attribute">#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+<span class="doccomment">/// Jörmungandr provides multiple additional layers to the poldercast default ones: the preferred list or the bottle in the sea.
+</span><span class="attribute">#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 </span><span class="kw">pub struct </span>LayersConfig {
     <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
@@ -622,8 +659,9 @@
 
 <span class="kw">impl </span>P2p {
     <span class="kw">pub fn </span>get_listen_addr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;SocketAddr&gt; {
-        <span class="self">self</span>.listen
-            .or_else(|| multiaddr_utils::to_tcp_socket_addr(<span class="kw-2">&amp;</span><span class="self">self</span>.public_address))
+        <span class="self">self</span>.connection
+            .listen
+            .or_else(|| multiaddr_utils::to_tcp_socket_addr(<span class="kw-2">&amp;</span><span class="self">self</span>.connection.public_address))
     }
 }
 </code></pre></div>

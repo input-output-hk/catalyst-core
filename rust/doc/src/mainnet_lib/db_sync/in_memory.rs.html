@@ -348,6 +348,8 @@
 <span id="348">348</span>
 <span id="349">349</span>
 <span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{Block0, InMemoryNode, CARDANO_MAINNET_SLOTS_PER_EPOCH};
 <span class="kw">use </span>cardano_serialization_lib::metadata::GeneralTransactionMetadata;
 <span class="kw">use </span>cardano_serialization_lib::utils::BigNum;
@@ -635,8 +637,10 @@
 
 <span class="attribute">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
+    <span class="kw">use </span><span class="kw">crate</span>::network::wallet_state::MainnetWalletStateBuilder;
+    <span class="kw">use </span><span class="kw">crate</span>::network::MainnetNetworkBuilder;
     <span class="kw">use crate</span>::{Block0, InMemoryNode};
-    <span class="kw">use crate</span>::{CardanoWallet, InMemoryDbSync, MainnetNetworkBuilder, MainnetWalletStateBuilder};
+    <span class="kw">use crate</span>::{CardanoWallet, InMemoryDbSync};
     <span class="kw">use </span>assert_fs::fixture::PathChild;
     <span class="kw">use </span>assert_fs::TempDir;
     <span class="kw">use </span>cardano_serialization_lib::utils::BigNum;

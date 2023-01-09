@@ -633,31 +633,31 @@
         }
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(public_address) = <span class="kw-2">&amp;</span><span class="self">self</span>.public_address {
-            node_config.p2p.public_address = public_address.clone();
+            node_config.p2p.connection.public_address = public_address.clone();
         }
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(max_inbound_connections) = <span class="kw-2">&amp;</span><span class="self">self</span>.max_inbound_connections {
-            node_config.p2p.max_inbound_connections = <span class="prelude-val">Some</span>(<span class="kw-2">*</span>max_inbound_connections);
+            node_config.p2p.connection.max_inbound_connections = <span class="prelude-val">Some</span>(<span class="kw-2">*</span>max_inbound_connections);
         }
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(allow_private_addresses) = <span class="kw-2">&amp;</span><span class="self">self</span>.allow_private_addresses {
-            node_config.p2p.allow_private_addresses = <span class="kw-2">*</span>allow_private_addresses;
+            node_config.p2p.connection.allow_private_addresses = <span class="kw-2">*</span>allow_private_addresses;
         }
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(whitelist) = <span class="kw-2">&amp;</span><span class="self">self</span>.whitelist {
-            node_config.p2p.whitelist = <span class="prelude-val">Some</span>(whitelist.clone());
+            node_config.p2p.connection.whitelist = <span class="prelude-val">Some</span>(whitelist.clone());
         }
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(max_connections) = <span class="kw-2">&amp;</span><span class="self">self</span>.max_connections {
-            node_config.p2p.max_connections = <span class="prelude-val">Some</span>(<span class="kw-2">*</span>max_connections);
+            node_config.p2p.connection.max_connections = <span class="prelude-val">Some</span>(<span class="kw-2">*</span>max_connections);
         }
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(listen_address_option) = <span class="kw-2">&amp;</span><span class="self">self</span>.listen_address {
-            node_config.p2p.listen = <span class="kw-2">*</span>listen_address_option;
+            node_config.p2p.connection.listen = <span class="kw-2">*</span>listen_address_option;
         }
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(trusted_peers) = <span class="kw-2">&amp;</span><span class="self">self</span>.trusted_peers {
-            node_config.p2p.trusted_peers = trusted_peers.clone();
+            node_config.p2p.bootstrap.trusted_peers = trusted_peers.clone();
         }
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(preferred_layer) = <span class="kw-2">&amp;</span><span class="self">self</span>.preferred_layer {
@@ -680,19 +680,19 @@
         }
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(node_key_file) = <span class="kw-2">&amp;</span><span class="self">self</span>.node_key_file {
-            node_config.p2p.node_key_file = <span class="prelude-val">Some</span>(node_key_file.clone());
+            node_config.p2p.bootstrap.node_key_file = <span class="prelude-val">Some</span>(node_key_file.clone());
         }
 
         <span class="kw">if </span><span class="self">self</span>.gossip_interval.is_some() {
-            node_config.p2p.gossip_interval = <span class="self">self</span>.gossip_interval;
+            node_config.p2p.connection.gossip_interval = <span class="self">self</span>.gossip_interval;
         }
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(max_bootstrap_attempts) = <span class="self">self</span>.max_bootstrap_attempts {
-            node_config.p2p.max_bootstrap_attempts = <span class="prelude-val">Some</span>(max_bootstrap_attempts);
+            node_config.p2p.bootstrap.max_bootstrap_attempts = <span class="prelude-val">Some</span>(max_bootstrap_attempts);
         }
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(network_stuck_check) = <span class="self">self</span>.network_stuck_check {
-            node_config.p2p.network_stuck_check = <span class="prelude-val">Some</span>(network_stuck_check);
+            node_config.p2p.connection.network_stuck_check = <span class="prelude-val">Some</span>(network_stuck_check);
         }
         node_config.mempool.as_mut().unwrap().persistent_log = <span class="self">self
             </span>.persistent_fragment_log

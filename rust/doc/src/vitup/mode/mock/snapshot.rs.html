@@ -272,13 +272,28 @@
 <span id="272">272</span>
 <span id="273">273</span>
 <span id="274">274</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::config::{SnapshotError, SnapshotInitials};
-<span class="kw">use </span>hersir::builder::Wallet;
-<span class="kw">use </span>jormungandr_lib::crypto::account::Identifier;
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+</pre><pre class="rust"><code><span class="kw">use </span>jormungandr_lib::crypto::account::Identifier;
+<span class="kw">use </span>mainnet_tools::snapshot::MainnetWalletStateExtension;
 <span class="kw">use </span>proptest::{arbitrary::Arbitrary, prelude::<span class="kw-2">*</span>, strategy::BoxedStrategy};
-<span class="kw">use </span>snapshot_lib::VoterHIR;
+<span class="kw">use </span>snapshot_lib::{Snapshot, VoterHIR};
 <span class="kw">use </span>std::collections::BTreeMap;
-<span class="kw">use </span>thor::WalletAlias;
 <span class="kw">use </span>vit_servicing_station_lib::db::models::snapshot::{Contribution, Voter};
 
 <span class="attribute">#[derive(Debug, Default)]
@@ -292,18 +307,31 @@
 
 <span class="kw">impl </span>VoterSnapshot {
     <span class="kw">pub fn </span>from_config_or_default(
-        wallets: Vec&lt;(WalletAlias, <span class="kw-2">&amp;</span>Wallet)&gt;,
-        initials: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;SnapshotInitials&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, SnapshotError&gt; {
+        initials: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;Initials&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, mainnet_tools::snapshot::Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>voters = <span class="macro">vec!</span>[];
         <span class="kw">let </span><span class="kw-2">mut </span>contributions = <span class="macro">vec!</span>[];
         <span class="kw">let </span><span class="kw-2">mut </span>snapshot_tags = BTreeMap::new();
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(initials) = initials {
             snapshot_tags.insert(initials.tag.to_string(), epoch_now());
-            <span class="kw">let </span>voter_hirs = initials.as_voters_hirs(wallets)<span class="question-mark">?</span>;
 
-            <span class="kw">for </span>voter_hir <span class="kw">in </span>voter_hirs {
+            <span class="kw">let </span>states: Vec&lt;MainnetWalletState&gt; =
+                block_on(build_default(initials.content.clone()))<span class="question-mark">?</span>;
+            <span class="kw">let </span>parameters = SnapshotParameters::default();
+            <span class="kw">let </span>snapshot = states.try_into_raw_snapshot_request(parameters.clone())<span class="question-mark">?</span>;
+
+            <span class="kw">let </span>snapshot = Snapshot::from_raw_snapshot(
+                snapshot.content.snapshot,
+                parameters.min_stake_threshold,
+                parameters.voting_power_cap,
+                <span class="kw-2">&amp;</span>|_vk: <span class="kw-2">&amp;</span>Identifier| String::new(),
+            )<span class="question-mark">?
+            </span>.to_full_snapshot_info();
+
+            <span class="kw">for </span>snapshot_info <span class="kw">in </span>snapshot {
+                <span class="kw">let </span>voter_hir = snapshot_info.hir;
+
                 voters.push(Voter {
                     voting_key: voter_hir.voting_key.to_bech32_str(),
                     voting_power: u64::from(voter_hir.voting_power) <span class="kw">as </span>i64,
@@ -311,13 +339,15 @@
                     snapshot_tag: initials.tag.to_string(),
                 });
 
-                contributions.push(Contribution {
-                    stake_public_key: <span class="string">&quot;mock&quot;</span>.to_string(),
-                    reward_address: <span class="string">&quot;mock&quot;</span>.to_string(),
-                    value: u64::from(voter_hir.voting_power) <span class="kw">as </span>i64,
-                    voting_key: voter_hir.voting_key.to_bech32_str(),
-                    voting_group: voter_hir.voting_group.to_string(),
-                    snapshot_tag: initials.tag.to_string(),
+                snapshot_info.contributions.iter().for_each(|contribution| {
+                    contributions.push(Contribution {
+                        stake_public_key: contribution.stake_public_key.as_str().to_string(),
+                        reward_address: contribution.reward_address.as_str().to_string(),
+                        value: contribution.value <span class="kw">as </span>i64,
+                        voting_key: voter_hir.voting_key.to_bech32_str(),
+                        voting_group: voter_hir.voting_group.to_string(),
+                        snapshot_tag: initials.tag.to_string(),
+                    });
                 });
             }
         }
@@ -465,7 +495,11 @@
     }
 }
 
+<span class="kw">use </span>futures::executor::block_on;
+<span class="kw">use </span>mainnet_lib::wallet_state::{build_default, MainnetWalletState};
+<span class="kw">use </span>mainnet_lib::{Initials, SnapshotParameters};
 <span class="kw">use </span>std::time::{SystemTime, UNIX_EPOCH};
+
 <span class="kw">fn </span>epoch_now() -&gt; i64 {
     <span class="kw">let </span>start = SystemTime::now();
     <span class="kw">let </span>since_the_epoch = start

@@ -203,9 +203,9 @@
     .map_err(|e| HandleError::InternalError(e.to_string()))<span class="question-mark">?
     </span>.to_full_snapshot_info();
 
-    <span class="prelude-val">Ok</span>(HandlerResult(
-        update_from_snapshot_info(tag, snapshot, input.update_timestamp, context).<span class="kw">await</span>,
-    ))
+    update_from_snapshot_info(tag, snapshot, input.update_timestamp, context).<span class="kw">await</span><span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(warp::reply())
 }
 
 <span class="attribute">#[tracing::instrument(skip(context, input), name = <span class="string">&quot;mock admin command received&quot;</span>)]

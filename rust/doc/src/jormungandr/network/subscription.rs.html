@@ -503,6 +503,8 @@
 <span id="503">503</span>
 <span id="504">504</span>
 <span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{buffer_sizes, convert::Decode, GlobalStateR};
 <span class="kw">use crate</span>::{
     blockcfg::Fragment,
@@ -528,7 +530,8 @@
 
 <span class="kw">use </span>tracing_futures::Instrument;
 
-<span class="kw">fn </span>filter_gossip_node(node: <span class="kw-2">&amp;</span>Gossip, config: <span class="kw-2">&amp;</span>Configuration) -&gt; bool {
+<span class="doccomment">/// Conditionally filter gossip from non-public IP addresses
+</span><span class="kw">fn </span>filter_gossip_node(node: <span class="kw-2">&amp;</span>Gossip, config: <span class="kw-2">&amp;</span>Configuration) -&gt; bool {
     <span class="kw">if </span>config.allow_private_addresses {
         node.has_valid_address()
     } <span class="kw">else </span>{
@@ -649,7 +652,8 @@
     }
 }
 
-<span class="attribute">#[must_use = <span class="string">&quot;sinks do nothing unless polled&quot;</span>]
+<span class="doccomment">/// Ingests inbound subscription stream, the node_id refers to the inbound peer
+</span><span class="attribute">#[must_use = <span class="string">&quot;sinks do nothing unless polled&quot;</span>]
 </span><span class="kw">pub struct </span>FragmentProcessor {
     mbox: MessageBox&lt;TransactionMsg&gt;,
     node_id: NodeId,
@@ -673,13 +677,15 @@
         }
     }
 
-    <span class="kw">fn </span>get_ingress_addr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;std::net::SocketAddr&gt; {
+    <span class="doccomment">/// Retrieves socket addr of inbound peer
+    </span><span class="kw">fn </span>get_ingress_addr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;std::net::SocketAddr&gt; {
         <span class="kw">let </span>state = <span class="self">self</span>.global_state.clone();
         <span class="kw">let </span>node_id = <span class="self">self</span>.node_id;
         executor::block_on(state.peers.get_peer_addr(<span class="kw-2">&amp;</span>node_id))
     }
 
-    <span class="kw">fn </span>refresh_stat(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+    <span class="doccomment">/// Signals interaction with peer has occurred, this context relates to exchanging fragments.
+    </span><span class="kw">fn </span>refresh_stat(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
         <span class="kw">let </span>state = <span class="self">self</span>.global_state.clone();
         <span class="kw">let </span>node_id = <span class="self">self</span>.node_id;
         <span class="kw">let </span>fut = <span class="kw">async move </span>{
@@ -689,9 +695,7 @@
             }
         }
         .in_current_span();
-        <span class="comment">// It&#39;s OK to overwrite a pending future because only the latest
-        // timestamp matters.
-        </span><span class="self">self</span>.pending_processing.start(fut);
+        <span class="self">self</span>.pending_processing.start(fut);
     }
 }
 

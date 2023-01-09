@@ -182,6 +182,20 @@
 <span id="182">182</span>
 <span id="183">183</span>
 <span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     network::p2p::Address,
     settings::{
@@ -250,6 +264,46 @@
 <span class="attribute">#[derive(Debug, Clone, Deserialize, Default)]
 #[serde(deny_unknown_fields)]
 </span><span class="kw">pub struct </span>P2pConfig {
+    <span class="kw">pub </span>bootstrap: Bootstrap,
+
+    <span class="kw">pub </span>connection: Connection,
+
+    <span class="doccomment">/// setting for the policy
+    </span><span class="attribute">#[serde(default)]
+    </span><span class="kw">pub </span>policy: QuarantineConfig,
+
+    <span class="doccomment">/// settings for the different custom layers
+    </span><span class="attribute">#[serde(default)]
+    </span><span class="kw">pub </span>layers: LayersConfig,
+}
+
+<span class="attribute">#[derive(Debug, Clone, Deserialize, Default)]
+#[serde(deny_unknown_fields)]
+</span><span class="kw">pub struct </span>Bootstrap {
+    <span class="doccomment">/// File with the secret key used to advertise and authenticate the node
+    </span><span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>node_key_file: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
+
+    <span class="doccomment">/// the rendezvous points for the peer to connect to in order to initiate
+    /// the p2p discovery from.
+    </span><span class="kw">pub </span>trusted_peers: <span class="prelude-ty">Option</span>&lt;Vec&lt;TrustedPeer&gt;&gt;,
+
+    <span class="doccomment">/// The number of times to retry bootstrapping from trusted peers. The default
+    /// value of None will result in the bootstrap process retrying indefinitely. A
+    /// value of zero will skip bootstrap all together -- even if trusted peers are
+    /// defined. If the node fails to bootstrap from any of the trusted peers and the
+    /// number of bootstrap retry attempts is exceeded, then the node will continue to
+    /// run without completing the bootstrap process. This will allow the node to act
+    /// as the first node in the p2p network (i.e. genesis node), or immediately begin
+    /// gossip with the trusted peers if any are defined.
+    </span><span class="attribute">#[serde(default)]
+    </span><span class="kw">pub </span>max_bootstrap_attempts: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+}
+
+<span class="doccomment">/// Start up connection configuration
+</span><span class="attribute">#[derive(Debug, Clone, Deserialize, Default)]
+#[serde(deny_unknown_fields)]
+</span><span class="kw">pub struct </span>Connection {
     <span class="doccomment">/// The public address to which other peers may connect to
     </span><span class="kw">pub </span>public_address: <span class="prelude-ty">Option</span>&lt;Multiaddr&gt;,
 
@@ -258,14 +312,6 @@
     /// The IP address can be specified as 0.0.0.0 or :: to listen on
     /// all network interfaces.
     </span><span class="kw">pub </span>listen: <span class="prelude-ty">Option</span>&lt;Address&gt;,
-
-    <span class="doccomment">/// File with the secret key used to advertise and authenticate the node
-    </span><span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
-    </span><span class="kw">pub </span>node_key_file: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
-
-    <span class="doccomment">/// the rendezvous points for the peer to connect to in order to initiate
-    /// the p2p discovery from.
-    </span><span class="kw">pub </span>trusted_peers: <span class="prelude-ty">Option</span>&lt;Vec&lt;TrustedPeer&gt;&gt;,
 
     <span class="doccomment">/// Limit on the number of simultaneous connections.
     /// If not specified, an internal default limit is used.
@@ -283,15 +329,8 @@
     </span><span class="attribute">#[serde(default)]
     </span><span class="kw">pub </span>allow_private_addresses: bool,
 
-    <span class="kw">pub </span>whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;SocketAddr&gt;&gt;,
-
-    <span class="doccomment">/// setting for the policy
-    </span><span class="attribute">#[serde(default)]
-    </span><span class="kw">pub </span>policy: QuarantineConfig,
-
-    <span class="doccomment">/// settings for the different custom layers
-    </span><span class="attribute">#[serde(default)]
-    </span><span class="kw">pub </span>layers: LayersConfig,
+    <span class="doccomment">/// contains addrs of nodes which we can accept fragments from
+    </span><span class="kw">pub </span>whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;SocketAddr&gt;&gt;,
 
     <span class="doccomment">/// interval to start gossiping with new nodes, changing the value will
     /// affect the bandwidth. The more often the node will gossip the more
@@ -308,17 +347,6 @@
     /// The default value is 5 min.
     </span><span class="attribute">#[serde(default)]
     </span><span class="kw">pub </span>network_stuck_check: <span class="prelude-ty">Option</span>&lt;Duration&gt;,
-
-    <span class="doccomment">/// The number of times to retry bootstrapping from trusted peers. The default
-    /// value of None will result in the bootstrap process retrying indefinitely. A
-    /// value of zero will skip bootstrap all together -- even if trusted peers are
-    /// defined. If the node fails to bootstrap from any of the trusted peers and the
-    /// number of bootstrap retry attempts is exceeded, then the node will continue to
-    /// run without completing the bootstrap process. This will allow the node to act
-    /// as the first node in the p2p network (i.e. genesis node), or immediately begin
-    /// gossip with the trusted peers if any are defined.
-    </span><span class="attribute">#[serde(default)]
-    </span><span class="kw">pub </span>max_bootstrap_attempts: <span class="prelude-ty">Option</span>&lt;usize&gt;,
 }
 
 <span class="attribute">#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]

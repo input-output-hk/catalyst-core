@@ -12,13 +12,13 @@
 </pre><pre class="rust"><code><span class="kw">mod </span>block;
 <span class="kw">mod </span>in_memory;
 <span class="kw">mod </span>ledger;
-<span class="kw">pub mod </span>settings;
+<span class="kw">mod </span>settings;
 <span class="kw">mod </span>transaction;
 
-<span class="kw">pub use </span><span class="kw">crate</span>::network::Settings;
 <span class="kw">pub use </span>block::{Block0, BlockBuilder};
 <span class="kw">pub use </span>in_memory::InMemoryNode;
 <span class="kw">pub use </span>ledger::Ledger;
+<span class="kw">pub use </span>settings::Settings;
 <span class="kw">pub use </span>transaction::TransactionBuilder;
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="mainnet_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

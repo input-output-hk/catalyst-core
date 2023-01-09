@@ -238,15 +238,10 @@
 <span id="238">238</span>
 <span id="239">239</span>
 <span id="240">240</span>
-<span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{snapshot::VoterSnapshot, Configuration <span class="kw">as </span>MockConfig, LedgerState};
 <span class="kw">use </span><span class="kw">crate</span>::builders::utils::SessionSettingsExtension;
 <span class="kw">use </span><span class="kw">crate</span>::builders::VitBackendSettingsBuilder;
 <span class="kw">use </span><span class="kw">crate</span>::config::Config;
-<span class="kw">use </span><span class="kw">crate</span>::config::SnapshotError;
 <span class="kw">use </span><span class="kw">crate</span>::mode::mock::NetworkCongestion;
 <span class="kw">use </span><span class="kw">crate</span>::mode::mock::NetworkCongestionMode;
 <span class="kw">use </span><span class="kw">crate</span>::mode::standard::VitController;
@@ -323,10 +318,7 @@
             version: VitVersion {
                 service_version: params.service.version,
             },
-            voters: VoterSnapshot::from_config_or_default(
-                controller.defined_wallets(),
-                <span class="kw-2">&amp;</span>params.initials.snapshot,
-            )<span class="question-mark">?</span>,
+            voters: VoterSnapshot::from_config_or_default(<span class="kw-2">&amp;</span>params.initials.snapshot)<span class="question-mark">?</span>,
             block0_bin: jortestkit::file::get_file_as_byte_vec(controller.block0_file())<span class="question-mark">?</span>,
             block_account_endpoint_counter: <span class="number">0</span>,
             controller,
@@ -484,7 +476,7 @@
     <span class="attribute">#[error(transparent)]
     </span>Io(<span class="attribute">#[from] </span>std::io::Error),
     <span class="attribute">#[error(transparent)]
-    </span>Snapshot(<span class="attribute">#[from] </span>SnapshotError),
+    </span>Snapshot(<span class="attribute">#[from] </span>mainnet_tools::snapshot::Error),
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="vitup" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -212,11 +212,10 @@
 <span id="212">212</span>
 <span id="213">213</span>
 <span id="214">214</span>
-</pre><pre class="rust"><code><span class="kw">use </span>std::convert::TryInto;
-
-<span class="kw">use </span>chain_impl_mockchain::testing::TestGen;
+</pre><pre class="rust"><code><span class="kw">use </span>chain_impl_mockchain::testing::TestGen;
 <span class="kw">use </span>jormungandr_lib::interfaces::Value;
 <span class="kw">use </span>rand::Rng;
+<span class="kw">use </span>serde::{Deserialize, Serialize};
 <span class="kw">use </span>snapshot_lib::registration::{Delegations, VotingRegistration};
 <span class="kw">use </span>snapshot_lib::{voting_group::RepsVotersAssigner, Error, Snapshot};
 <span class="kw">use </span>snapshot_lib::{
@@ -224,10 +223,11 @@
     CATALYST_VOTING_PURPOSE_TAG,
 };
 <span class="kw">use </span>snapshot_lib::{Fraction, SnapshotInfo};
+<span class="kw">use </span>std::convert::TryInto;
 <span class="kw">use </span>time::OffsetDateTime;
 <span class="kw">use </span>vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 
-<span class="attribute">#[derive(Debug, Clone)]
+<span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize)]
 </span><span class="kw">pub struct </span>RawSnapshot {
     <span class="kw">pub </span>tag: String,
     <span class="kw">pub </span>content: RawSnapshotInput,

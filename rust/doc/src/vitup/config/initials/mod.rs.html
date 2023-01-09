@@ -96,17 +96,11 @@
 <span id="96">96</span>
 <span id="97">97</span>
 <span id="98">98</span>
-<span id="99">99</span>
-<span id="100">100</span>
-<span id="101">101</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>block0;
-<span class="kw">mod </span>snapshot;
 
 <span class="kw">pub use </span>block0::{Initial <span class="kw">as </span>Block0Initial, Initials <span class="kw">as </span>Block0Initials};
+<span class="kw">use </span>mainnet_lib::Initials <span class="kw">as </span>SnapshotInitials;
 <span class="kw">use </span>serde::{de, Deserialize, Deserializer, Serialize, Serializer};
-<span class="kw">pub use </span>snapshot::{
-    Error <span class="kw">as </span>SnapshotError, Initial <span class="kw">as </span>SnapshotInitial, Initials <span class="kw">as </span>SnapshotInitials,
-};
 <span class="kw">use </span>std::fmt;
 <span class="kw">use </span>std::str::FromStr;
 <span class="kw">use </span>thiserror::Error;

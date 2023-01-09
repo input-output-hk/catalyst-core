@@ -471,7 +471,7 @@
     <span class="kw">let </span>control = control_filter(context.clone(), control_root).<span class="kw">await</span>;
 
     <span class="kw">let </span>health = <span class="macro">warp::path!</span>(<span class="string">&quot;health&quot;</span>)
-        .and(warp::get())
+        .and(warp::post())
         .and_then(health_handler)
         .boxed();
 

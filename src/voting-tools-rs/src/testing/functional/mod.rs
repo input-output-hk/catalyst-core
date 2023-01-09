@@ -1,6 +1,7 @@
 use crate::test_api::{MockDbProvider, VerifiableSnapshotOutput};
 use crate::Delegations;
-use mainnet_lib::{CardanoWallet, MainnetNetworkBuilder, MainnetWalletStateBuilder};
+use mainnet_lib::wallet_state::MainnetWalletStateBuilder;
+use mainnet_lib::{CardanoWallet, MainnetNetworkBuilder};
 
 #[test]
 fn cip15_correctly_signed_before_snapshot() {

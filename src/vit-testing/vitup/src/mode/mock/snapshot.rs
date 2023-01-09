@@ -1,10 +1,8 @@
-use crate::config::{SnapshotError, SnapshotInitials};
-use hersir::builder::Wallet;
 use jormungandr_lib::crypto::account::Identifier;
+use mainnet_tools::snapshot::MainnetWalletStateExtension;
 use proptest::{arbitrary::Arbitrary, prelude::*, strategy::BoxedStrategy};
-use snapshot_lib::VoterHIR;
+use snapshot_lib::{Snapshot, VoterHIR};
 use std::collections::BTreeMap;
-use thor::WalletAlias;
 use vit_servicing_station_lib::db::models::snapshot::{Contribution, Voter};
 
 #[derive(Debug, Default)]
@@ -18,18 +16,31 @@ pub struct VoterSnapshot {
 
 impl VoterSnapshot {
     pub fn from_config_or_default(
-        wallets: Vec<(WalletAlias, &Wallet)>,
-        initials: &Option<SnapshotInitials>,
-    ) -> Result<Self, SnapshotError> {
+        initials: &Option<Initials>,
+    ) -> Result<Self, mainnet_tools::snapshot::Error> {
         let mut voters = vec![];
         let mut contributions = vec![];
         let mut snapshot_tags = BTreeMap::new();
 
         if let Some(initials) = initials {
             snapshot_tags.insert(initials.tag.to_string(), epoch_now());
-            let voter_hirs = initials.as_voters_hirs(wallets)?;
 
-            for voter_hir in voter_hirs {
+            let states: Vec<MainnetWalletState> =
+                block_on(build_default(initials.content.clone()))?;
+            let parameters = SnapshotParameters::default();
+            let snapshot = states.try_into_raw_snapshot_request(parameters.clone())?;
+
+            let snapshot = Snapshot::from_raw_snapshot(
+                snapshot.content.snapshot,
+                parameters.min_stake_threshold,
+                parameters.voting_power_cap,
+                &|_vk: &Identifier| String::new(),
+            )?
+            .to_full_snapshot_info();
+
+            for snapshot_info in snapshot {
+                let voter_hir = snapshot_info.hir;
+
                 voters.push(Voter {
                     voting_key: voter_hir.voting_key.to_bech32_str(),
                     voting_power: u64::from(voter_hir.voting_power) as i64,
@@ -37,13 +48,15 @@ impl VoterSnapshot {
                     snapshot_tag: initials.tag.to_string(),
                 });
 
-                contributions.push(Contribution {
-                    stake_public_key: "mock".to_string(),
-                    reward_address: "mock".to_string(),
-                    value: u64::from(voter_hir.voting_power) as i64,
-                    voting_key: voter_hir.voting_key.to_bech32_str(),
-                    voting_group: voter_hir.voting_group.to_string(),
-                    snapshot_tag: initials.tag.to_string(),
+                snapshot_info.contributions.iter().for_each(|contribution| {
+                    contributions.push(Contribution {
+                        stake_public_key: contribution.stake_public_key.as_str().to_string(),
+                        reward_address: contribution.reward_address.as_str().to_string(),
+                        value: contribution.value as i64,
+                        voting_key: voter_hir.voting_key.to_bech32_str(),
+                        voting_group: voter_hir.voting_group.to_string(),
+                        snapshot_tag: initials.tag.to_string(),
+                    });
                 });
             }
         }
@@ -191,7 +204,11 @@ impl Arbitrary for ArbitraryVoterHIR {
     }
 }
 
+use futures::executor::block_on;
+use mainnet_lib::wallet_state::{build_default, MainnetWalletState};
+use mainnet_lib::{Initials, SnapshotParameters};
 use std::time::{SystemTime, UNIX_EPOCH};
+
 fn epoch_now() -> i64 {
     let start = SystemTime::now();
     let since_the_epoch = start

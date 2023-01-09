@@ -2,11 +2,24 @@ name: Build
 
 on:
   push:
-    branches: [ "main" ]
-    paths-ignore: ["README.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md"]
+    branches:
+    - main
+    paths-ignore:
+      - '**.md'
+      - 'src/**/**.md'
+      - 'Makefiles/**'
+      - 'nix/**'
+      - 'book/**'
   pull_request:
-    branches: [ "main" ]
-    paths-ignore: ["README.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md"]
+    branches:
+    - main
+    paths-ignore:
+       - '**.md'
+       - 'book/**'
+       - 'src/**/**.md'
+       - 'Makefiles/**'
+       - 'nix/**'
+       - 'book/**'
 
 env:
   CARGO_TERM_COLOR: always
@@ -15,6 +28,15 @@ env:
   CARGO_INCREMENTAL: 0
 
 jobs:
+  cancel:
+    name: 'Cancel Previous Runs'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: styfle/cancel-workflow-action@0.11.0
+        with:
+          access_token: ${{ github.token }}
+
   build_on_linux:
     name: Build Catalyst Core on Linux
     runs-on: ubuntu-latest
@@ -45,7 +67,7 @@ jobs:
       CARGO_FLAGS: --verbose --locked
     steps:
       - name: Checkout code on PR
-        #Workaround for the running out of disk space issue. See https://github.com/actions/runner-images/issues/1341
+        # Workaround for the running out of disk space issue. See https://github.com/actions/runner-images/issues/1341
         run: |
           mkdir C:\\${{ github.event.repository.name }}
           git clone -n -v --progress https://github.com/input-output-hk/${{ github.event.repository.name }}.git C:\\${{ github.event.repository.name }}

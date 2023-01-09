@@ -1,4 +1,4 @@
-use mainnet_tools::snapshot_wormhole::Command;
+use mainnet_tools::snapshot::wormhole::Command;
 use structopt::StructOpt;
 
 pub fn main() -> Result<(), color_eyre::Report> {

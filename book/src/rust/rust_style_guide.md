@@ -30,14 +30,18 @@ before submitting a PR
 
 We add the following preamble to all crates' `lib.rs`:
 ```rust
-#[warn(clippy::pedantic)]
-#[forbid(missing_docs)]
-#[allow(/* known bad lints outlined below */)]
+#![warn(clippy::pedantic)]
+#![forbid(missing_docs)]
+#![forbid(unsafe_code)]
+#![allow(/* known bad lints outlined below */)]
 ```
 
-We enable `#[forbid(missing_docs)]` for a couple of reasons:
+We enable `#![forbid(missing_docs)]` for a couple of reasons:
  - it forces developers to write doc comments for publicly exported items
  - it serves as a reminder that the item you're working on is part of your **public API**
+
+We enable `#![forbid(unsafe_code)]` to reinforce the fact that **unsafe code should not be mixed in with the rest of our code**.
+More details below.
 
 ### Exceptions for clippy
 
@@ -59,5 +63,167 @@ fn use_str(s: impl AsRef<str>) {
   println!("{s}");
 }
 ```
+Unfortunately, this has a few downsides:
+ - it increases compile times
+ - if used in a trait, it makes that trait not object-safe
+ - if the body of the function is large, it bloats binary size, which can hurt performance by increasing pressure on the instruction cache
+ - it makes type inference harder
 
+Now that's not to say you should never use generics.
+Of course, there are plenty of good reasons to use generics.
+But if the only reason to make your function generic is "slightly easier to use at the call-site", consider just using a plain reference/slice instead:
+```rust
+fn use_str(s: &str) {
+  println!("{s}");
+}
+```
+This does mean you may have to use `.as_ref()` at the call-site, but generally this is preferred compared to the downsides of using generics.
+
+Similar logic applies to `AsRef<Path>`, and a few other common types.
+The general principle is that a little bit of extra text at the call-site is usually worth the benefits from not having generic functions.
+
+### Abbreviations and naming things
+
+We should be careful with abbreviations.
+Similar to above, they do indeed shorten the code you write, but at the cost of some readability.
+It's important to balance the readability cost against the benefits of shorter code.
+
+Some guidelines for when to use abbreviations:
+ - if it's something you're going to type a lot, an abbreviation is probably the right choice (i.e. `s` is an OK name for a string in very string-heavy code)
+ - if it's a well known abbreviation, it's probably good (e.g. `ctx` for "context", `db` for "database")
+ - if it's ambiguous (i.e. it could be short for multiple things) either use the full word, or a longer abbreviation that isn't ambiguous
+ - remember that abbreviations are context sensitive (if I see `db` in a database library, it's probably "database". If I see it in an audio processing library it is probably "decibels").
+
+#### General advice around names
+
+ - avoid `foo.get_bar()`, instead just call it `foo.bar()`
+ - use `into_foo()` for conversions that *consume* the original data
+ - use `as_foo()` for conversions that convert borrowed data to borrowed data
+ - use `to_foo()` for conversions that are expensive
+ - use `into_inner()` for extracting a wrapped value
+
+
+## Type safety
+
+Rust has a powerful type system, so use it!
+
+Where possible, encode important information in the type system.
+For example, using `NonZeroU64` might make sense if it would be ridiculous for a number to be zero.
+Of course, you can go too far with this.
+Rust's type system is Turing-complete, but we don't want to write our whole program in the type system.
+
+### Use newtypes (a.k.a. microtypes)
+
+If you are handling email addresses, don't use `String`. 
+Instead, create a newtype wrapper with:
+```
+struct Email(String);
+```
+This prevents you from using a `Password` where you meant to use an `Email`, which catches more bugs at compile time.
+
+Consider using the `microtype` library to generate boilerplate:
+```rust
+#[string]
+String {
+  Email,
+  Username,
+  Address,
+  // etc...
+}
+```
+This generates `struct Email(String)`, `struct Username(String)`, etc. for you. 
+See the docs for more info.
+
+If your type is responsible for handling secret data, mark it `#[secret]` to:
+ - zeroize the memory on drop
+ - redact the `Debug` impl
+ - prevent serialization
+ - prevent use without `.expose_secret()`
+
+### Don't over-abstract
+
+In general, prefer plain functions over a struct + trait implementation.
+For example, instead of this:
+```rust
+// BAD
+trait GetBar {
+  fn bar(&self) -> &Bar;
+}
+
+impl GetBar for Foo {
+  fn bar(&self) -> &Bar {
+    &self.bar
+  }
+}
+```
+write this:
+```rust
+impl Foo {
+  fn bar(&self) -> &Bar {
+    &self.bar
+  }
+}
+```
+
+I.e., don't use a trait if you don't need it.
+
+A common reason why people do this is to mock out a particular function call for testing.
+This can be useful in a few select places (i.e. when you have to interact with the real world, so networking, clocks, randomness, etc), but it has some significant downsides:
+ - it means you're not actually testing this code. This might be fine for some types of code (e.g. database code), where it might be unreasonable to rely on a database for unit tests, but if your whole test suite is organized around this, your business logic won't actually get tested
+ - it forces you to use a trait, which have restrictions that plain functions don't have:
+   - it forces you into either generics or dynamic dispatch (often with a heap allocation if you don't want to play the lifetime game)
+   - you may now have to think about object safety, which can be very tricky for some APIs
+   - async functions are not properly supported
+   - it's not usable in a const context
+
+Some alternative patterns are:
+ - try to rewrite your test to avoid needing a mock
+ - if you know all the variants at compile time, consider using an enum
+ - swap out the implementation with conditional compilation
+
+## Unsafe code
+
+If you need unsafe code, put it in its own crate with a safe API.
+And really think hard about whether you **need** unsafe code.
+There are times when you absolutely do need it, but this project cares more about **correcntess** than performance.
+
+If you find yourself wanting to use `unsafe`, try the following:
+ - if you want to create bindings to a C/C++ library, try first searching on crates.io for a `_sys` crate, or see if there is a pure-Rust implementation
+ - if you want to create a cool data structure that requires unsafe:
+   - does it really need unsafe? 
+   - is it a doubly linked list? If so, have you got benchmarks that show that a `VecDeque` is insufficient? Something something cache-friendly...
+   - is there a suitable implementation on crates.io? 
+   - is this data structure really noticeably better than what we have in `std`?
+ - if you want to do a performance optimization (e.g. using `unreachable_unchecked()` to remove a bounds check), encode it in the type system, and put it in a separate crate with a safe API. If you can't do that, it's probably an indication that the mental model is also too complicated for a human to keep track of
+ - if you want to write a test that makes sure the code does the right thing "even in the presence of UB", just don't
+
+**All** unsafe code **must** be tested with Miri.
+
+## Docs
+
+As mentioned above, we should enable `#![deny(missing_docs)]` on all new code.
+But that doesn't mean we shouldn't document private items.
+Ideally, we'd document as much as possible.
+
+Of course, for tiny helper functions, or functions whose behaviour is obvious from looking don't need documentation.
+For example, this sort of comment doesn't add much:
+```rust
+/// Sets self.bar to equal bar
+fn set_bar(&mut self, bar: Bar) {
+  self.bar = bar;
+}
+```
+If this is a private member, don't bother with this comment. 
+If it's public, something like this is fine just to get clippy to shut up.
+
+### Doctests
+
+Try to use doctests.
+Especially for less obvious code, a small example can be really helpful.
+Humans learn by copying examples, so providing some can drastically reduce the amount of time a new contributor needs to become productive.
+
+If you need some setup for your tests that you don't want to render in docs, prefix the line with `#`.
+When combined with the `include` macro, this can lead to pretty concise but also powerful test setup.
+
+If you need some inspiration, check out the docstests for `diesel`.
 

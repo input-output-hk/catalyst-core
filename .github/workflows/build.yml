@@ -8,6 +8,8 @@ on:
       - '**.md'
       - 'src/**/**.md'
       - 'Makefiles/**'
+      - 'nix/**'
+      - 'book/**'
   pull_request:
     branches:
     - main
@@ -16,6 +18,8 @@ on:
        - 'book/**'
        - 'src/**/**.md'
        - 'Makefiles/**'
+       - 'nix/**'
+       - 'book/**'
 
 env:
   CARGO_TERM_COLOR: always

@@ -1,10 +1,14 @@
-use crate::config::{Config, SnapshotInitials};
+use crate::config::Config;
 use crate::mode::mock::rest::reject::GeneralException;
 use crate::mode::mock::{ContextLock, FragmentRecieveStrategy, LedgerState, NetworkCongestionMode};
 use crate::mode::service::manager::file_lister::dump_json;
 use jortestkit::web::api_token::{APIToken, APITokenManager, TokenError};
+use mainnet_lib::wallet_state::{build_default, MainnetWalletState};
+use mainnet_lib::SnapshotParameters;
+use mainnet_tools::snapshot::MainnetWalletStateExtension;
 use tracing::{info, trace};
 use vit_servicing_station_lib::db::models::funds::Fund;
+use vit_servicing_station_lib::v0::errors::HandleError;
 use vit_servicing_station_lib::v0::result::HandlerResult;
 use warp::{Rejection, Reply};
 
@@ -239,22 +243,16 @@ pub async fn command_forget(context: ContextLock) -> Result<impl Reply, Rejectio
 }
 
 pub async fn command_create_snapshot(
-    config: SnapshotInitials,
-    context: ContextLock,
+    config: mainnet_lib::Initials,
 ) -> Result<impl Reply, Rejection> {
-    let context_lock = context.read().unwrap();
-    let state = context_lock.state();
-
-    let voters_hirs = config
-        .as_voters_hirs(state.defined_wallets())
-        .map_err(|err| {
-            warp::reject::custom(GeneralException {
-                summary: err.to_string(),
-                code: 500,
-            })
-        })?;
-
-    Ok(HandlerResult(Ok(voters_hirs)))
+    let states: Vec<MainnetWalletState> = build_default(config.content)
+        .await
+        .map_err(|e| HandleError::InternalError(e.to_string()))?;
+    println!("{:#?}", states);
+    let request = states
+        .try_into_raw_snapshot_request(SnapshotParameters::default())
+        .map_err(|e| HandleError::InternalError(e.to_string()));
+    Ok(HandlerResult(request))
 }
 
 pub async fn authorize_token(token: String, context: ContextLock) -> Result<(), Rejection> {

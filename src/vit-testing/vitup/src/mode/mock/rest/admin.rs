@@ -69,9 +69,9 @@ pub async fn put_raw_snapshot(
     .map_err(|e| HandleError::InternalError(e.to_string()))?
     .to_full_snapshot_info();
 
-    Ok(HandlerResult(
-        update_from_snapshot_info(tag, snapshot, input.update_timestamp, context).await,
-    ))
+    update_from_snapshot_info(tag, snapshot, input.update_timestamp, context).await?;
+
+    Ok(warp::reply())
 }
 
 #[tracing::instrument(skip(context, input), name = "mock admin command received")]

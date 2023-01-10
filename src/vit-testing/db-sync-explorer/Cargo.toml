@@ -14,7 +14,7 @@ microtype = { version = "0.7.5", features = ["serde"] } # defining secrecy and d
 diesel =  { version = "2", features = ["postgres", "64-column-tables", "numeric", "serde_json", "r2d2"]} # connector lib
 diesel-derive-enum = "2.0.0-rc.0" #extension to diesel
 chrono = "0.4.23"
-tracing = "0.1"
+tracing.workspace = true
 bigdecimal = "0.3.0"
 warp = { version = "0.3.2", features = ["tls"] }
 vit-servicing-station-lib  = { path = "../../vit-servicing-station/vit-servicing-station-lib" }
@@ -25,8 +25,7 @@ thiserror = "1.0.37"
 http-zipkin = "0.3.0"
 jortestkit = { path = "../../jortestkit" }
 tokio = { version = "1.18.0", features = ["macros", "signal", "rt", "fs", "sync"] }
-tracing-subscriber = "0.3"
+tracing-subscriber.workspace = true
 clap = { version = "3.2", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-

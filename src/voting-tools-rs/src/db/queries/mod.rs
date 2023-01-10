@@ -1,5 +1,5 @@
 use crate::data_provider::DataProvider;
-use crate::data::{SlotNo, Reg};
+use crate::data::{SlotNo, Reg, SignedRegistration, StakeKeyHex};
 use crate::Db;
 use bigdecimal::BigDecimal;
 use std::collections::HashMap;
@@ -12,14 +12,14 @@ impl DataProvider for Db {
         &self,
         lower: Option<SlotNo>,
         upper: Option<SlotNo>,
-    ) -> color_eyre::Result<Vec<Reg>> {
+    ) -> color_eyre::Result<Vec<SignedRegistration>> {
         self.vote_registrations(lower, upper)
     }
 
-    fn stake_values<'a>(
+    fn stake_values(
         &self,
-        stake_addrs: &'a [String],
-    ) -> color_eyre::Result<HashMap<&'a str, BigDecimal>> {
+        stake_addrs: &[StakeKeyHex],
+    ) -> color_eyre::Result<HashMap<StakeKeyHex, BigDecimal>> {
         self.stake_values(stake_addrs)
     }
 }

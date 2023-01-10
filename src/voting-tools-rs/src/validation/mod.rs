@@ -1,15 +1,16 @@
 use blake2::digest::{Update, VariableOutput};
 use cardano_serialization_lib::chain_crypto::ed25519::{Pub, Sig};
 use cardano_serialization_lib::chain_crypto::{
-     AsymmetricPublicKey, Ed25519, VerificationAlgorithm,
+    AsymmetricPublicKey, Ed25519, Verification, VerificationAlgorithm,
 };
 use ciborium::cbor;
 
 use ciborium::value::Value as Cbor;
 use serde_json::Value;
 
-use crate::data::{Registration, SignedRegistration};
-use crate::Signature;
+use crate::data::crypto::PublicKeyHex;
+use crate::data::{Registration, SignedRegistration, StakeKeyHex};
+use crate::{Signature, SignatureHex};
 use error::ValidationError;
 use validity::Validate;
 
@@ -22,11 +23,21 @@ impl Validate for SignedRegistration {
         let SignedRegistration {
             registration,
             signature,
+            tx_id: _,
         } = self;
 
-        let bytes = registration_as_cbor(registration);
-        
-        todo!()
+        let StakeKeyHex(PublicKeyHex(key)) = registration.stake_key;
+        let Signature { inner: SignatureHex(signature) } = signature;
+
+        let cbor = registration_as_cbor(registration);
+        let bytes = cbor_to_bytes(cbor);
+        let hash_of_bytes = blake2b_256(&bytes);
+
+
+        match Ed25519::verify_bytes(&key, &signature, &hash_of_bytes) {
+            Verification::Success => Ok(()),
+            Verification::Failed => Err(ValidationError::InvalidSignature),
+        }
     }
 }
 
@@ -58,7 +69,6 @@ impl Validate for SignedRegistration {
 // }
 // }
 
-
 const HASH_SIZE: usize = 32;
 
 /// Simple helper function to compute the blake2b_256 hash of a byte slice
@@ -70,20 +80,6 @@ fn blake2b_256(bytes: &[u8]) -> [u8; HASH_SIZE] {
     buf
 }
 
-fn extract_signature(Signature { inner }: &Signature) -> Result<Sig, ValidationError> {
-    let sig = hex::decode(inner.as_str())?;
-    let sig = Ed25519::signature_from_bytes(&sig)?;
-    Ok(sig)
-}
-
-fn extract_key_from_registration(
-    Registration { stake_key, .. }: &Registration,
-) -> Result<Pub, ValidationError> {
-    let key = hex::decode(stake_key.as_str())?;
-    let key = Ed25519::public_from_binary(&key)?;
-    Ok(key)
-}
-
 fn registration_as_cbor(
     Registration {
         voting_power_source,
@@ -91,7 +87,7 @@ fn registration_as_cbor(
         rewards_addr,
         nonce,
         purpose,
-    }: Registration,
+    }: &Registration,
 ) -> Cbor {
     // we do this manually because it's not really a 1:1 conversion and serde can't handle integer
     // keys
@@ -102,5 +98,27 @@ fn registration_as_cbor(
             3 => rewards_addr,
             4 => nonce,
         }
-    }).unwrap()
+    })
+    .unwrap()
+}
+
+fn cbor_to_bytes(cbor: Cbor) -> Vec<u8> {
+    let mut bytes: Vec<u8> = vec![];
+    ciborium::ser::into_writer(&cbor, &mut bytes).unwrap();
+    bytes
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn can_serialize_cbor() {
+        let cbor = cbor!({
+            1 => "hello",
+            2 => 123,
+            3 => [1, 2, 3, 4],
+        });
+        cbor_to_bytes(cbor); // doesn't panic
+    }
 }

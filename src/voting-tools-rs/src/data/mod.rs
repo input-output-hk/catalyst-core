@@ -63,6 +63,9 @@ pub struct SignedRegistration {
     pub registration: Registration,
     /// The signature
     pub signature: Signature,
+
+    /// The id of the transaction that created this registration
+    pub tx_id: TxId,
 }
 
 /// Single output element of voting tools calculations
@@ -144,7 +147,6 @@ microtype! {
         TestnetMagic
     }
 }
-
 
 pub fn network_info(testnet_magic: Option<TestnetMagic>) -> NetworkInfo {
     match testnet_magic {

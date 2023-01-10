@@ -79,119 +79,121 @@ pub fn voting_power(
     Ok(reg_voting_power)
 }
 
-#[instrument]
-pub(crate) fn get_stake_address(
-    stake_key_hex: &StakeKeyHex,
-    network: &NetworkInfo,
-) -> Result<String> {
-    // Convert hex to public key
-    let hex = hex::decode(stake_vkey_hex)?;
-    let pub_key = PublicKey::from_bytes(&hex).map_err(|_| eyre!(""))?;
-    let cred = StakeCredential::from_keyhash(&pub_key.hash());
-    let stake_addr = RewardAddress::new(network.network_id(), &cred).to_address();
-    let stake_addr_bytes = stake_addr.to_bytes();
-    let stake_addr_bytes_hex = hex::encode(stake_addr_bytes);
-    Ok(stake_addr_bytes_hex)
-}
+// #[instrument]
+// pub(crate) fn get_stake_address(
+//     stake_key_hex: &StakeKeyHex,
+//     network: &NetworkInfo,
+// ) -> Result<String> {
+//     // Convert hex to public key
+//     let hex = hex::decode(stake_vkey_hex)?;
+//     let pub_key = PublicKey::from_bytes(&hex).map_err(|_| eyre!(""))?;
+//     let cred = StakeCredential::from_keyhash(&pub_key.hash());
+//     let stake_addr = RewardAddress::new(network.network_id(), &cred).to_address();
+//     let stake_addr_bytes = stake_addr.to_bytes();
+//     let stake_addr_bytes_hex = hex::encode(stake_addr_bytes);
+//     Ok(stake_addr_bytes_hex)
+// }
 
 impl Reg {
-    /// Checks if this registration is valid
-    ///
-    /// Returns `Result` rather than `bool` to allow structured failures
-    #[instrument]
-    fn check_valid(&self) -> Result<()> {
-        let stake_vkey = self.metadata.stake_key.trim_start_matches("0x");
-        if stake_vkey.len() == 128 {
-            // TODO: why is this bad? can we give a better error here?
-            bail!("stake_vkey has length 128");
-        }
-
-        let hex = hex::decode(stake_vkey).context("failed to decode hex")?;
-        let pub_key =
-            // this error doesn't impl `std::err::Error`
-            PublicKey::from_bytes(&hex).map_err(|e| eyre!("error decoding public key: {e}"))?;
-
-        // Get rewards address
-        let rewards_addr = self.metadata.rewards_addr.trim_start_matches("0x");
-        let rewards_addr: Address = Address::from_bytes(hex::decode(rewards_addr)?)
-            .map_err(|_| eyre!("invalid address"))?;
-
-        if RewardAddress::from_address(&rewards_addr).is_none() {
-            bail!("invalid reward address");
-        }
-
-        // Translate registration to Cardano metadata type so we can serialize it correctly
-        let mut meta_map: MetadataMap = MetadataMap::new();
-        let delegations = match self.metadata.voting_power_source.clone() {
-            VotingPowerSource::Delegated(delegations) => {
-                let mut metadata_list = MetadataList::new();
-                for (delegation, weight) in delegations {
-                    let mut inner_metadata_list = MetadataList::new();
-                    inner_metadata_list.add(
-                        &TransactionMetadatum::new_bytes(hex::decode(
-                            delegation.trim_start_matches("0x"),
-                        )?)
-                        .map_err(|e| eyre!(format!("cannot decode delegation key, due to: {e}")))?,
-                    );
-                    inner_metadata_list.add(&TransactionMetadatum::new_int(&Int::new(
-                        &BigNum::from(weight),
-                    )));
-                    metadata_list.add(&TransactionMetadatum::new_list(&inner_metadata_list));
-                }
-                TransactionMetadatum::new_list(&metadata_list)
-            }
-            VotingPowerSource::Legacy(k) => {
-                let bytes = hex::decode(k.trim_start_matches("0x"))?;
-                TransactionMetadatum::new_bytes(bytes).map_err(|e| {
-                    eyre!(format!(
-                        "cannot decode legacy delegation key, due to: {}",
-                        e
-                    ))
-                })?
-            }
-        };
-
-        meta_map.insert(
-            &TransactionMetadatum::new_int(&Int::new_i32(1)),
-            &delegations,
-        );
-        meta_map.insert(
-            &TransactionMetadatum::new_int(&Int::new_i32(2)),
-            &TransactionMetadatum::new_bytes(pub_key.as_bytes()).unwrap(),
-        );
-        meta_map.insert(
-            &TransactionMetadatum::new_int(&Int::new_i32(3)),
-            &TransactionMetadatum::new_bytes(rewards_addr.to_bytes()).unwrap(),
-        );
-        meta_map.insert(
-            &TransactionMetadatum::new_int(&Int::new_i32(4)),
-            &TransactionMetadatum::new_int(&Int::new(&BigNum::from(self.metadata.nonce.0))),
-        );
-        meta_map.insert(
-            &TransactionMetadatum::new_int(&Int::new_i32(5)),
-            &TransactionMetadatum::new_int(&Int::new(&BigNum::from(self.metadata.purpose.0))),
-        );
-
-        let mut meta = GeneralTransactionMetadata::new();
-        meta.insert(
-            &BigNum::from(61284u32),
-            &TransactionMetadatum::new_map(&meta_map),
-        );
-
-        let meta_bytes = meta.to_bytes();
-        let meta_bytes_hash = Blake2b256::new(&meta_bytes);
-
-        // Get signature from rego
-        let sig_str = self.signature.inner.0.clone().split_off(2);
-        let sig =
-            Ed25519Signature::from_hex(&sig_str).map_err(|e| eyre!("invalid ed25519 sig: {e}"))?;
-
-        match pub_key.verify(meta_bytes_hash.as_hash_bytes(), &sig) {
-            true => Ok(()),
-            false => Err(eyre!("signature verification failed")),
-        }
-    }
+    // /// Checks if this registration is valid
+    // ///
+    // /// Returns `Result` rather than `bool` to allow structured failures
+    // #[instrument]
+    // fn check_valid(&self) -> Result<()> {
+    //     let stake_vkey = self.metadata.stake_key.trim_start_matches("0x");
+    //     if stake_vkey.len() == 128 {
+    //         // TODO: why is this bad? can we give a better error here?
+    //         bail!("stake_vkey has length 128");
+    //     }
+    //
+    //     let hex = hex::decode(stake_vkey).context("failed to decode hex")?;
+    //     let pub_key =
+    //         // this error doesn't impl `std::err::Error`
+    //         PublicKey::from_bytes(&hex).map_err(|e| eyre!("error decoding public key: {e}"))?;
+    //
+    //     // Get rewards address
+    //     let rewards_addr = self.metadata.rewards_addr.trim_start_matches("0x");
+    //     let rewards_addr: Address = Address::from_bytes(hex::decode(rewards_addr)?)
+    //         .map_err(|_| eyre!("invalid address"))?;
+    //
+    //     if RewardAddress::from_address(&rewards_addr).is_none() {
+    //         bail!("invalid reward address");
+    //     }
+    //
+    //     // Translate registration to Cardano metadata type so we can serialize it correctly
+    //     let mut meta_map: MetadataMap = MetadataMap::new();
+    //     let delegations = match self.metadata.voting_power_source.clone() {
+    //         VotingPowerSource::Delegated(delegations) => {
+    //             let mut metadata_list = MetadataList::new();
+    //             for (delegation, weight) in delegations {
+    //                 let mut inner_metadata_list = MetadataList::new();
+    //                 inner_metadata_list.add(
+    //                     &TransactionMetadatum::new_bytes(hex::decode(
+    //                         delegation.trim_start_matches("0x"),
+    //                     )?)
+    //                     .map_err(|e| eyre!(format!("cannot decode delegation key, due to: {e}")))?,
+    //                 );
+    //                 inner_metadata_list.add(&TransactionMetadatum::new_int(&Int::new(
+    //                     &BigNum::from(weight),
+    //                 )));
+    //                 metadata_list.add(&TransactionMetadatum::new_list(&inner_metadata_list));
+    //             }
+    //             TransactionMetadatum::new_list(&metadata_list)
+    //         }
+    //         VotingPowerSource::Legacy(k) => {
+    //             let bytes = hex::decode(k.trim_start_matches("0x"))?;
+    //             TransactionMetadatum::new_bytes(bytes).map_err(|e| {
+    //                 eyre!(format!(
+    //                     "cannot decode legacy delegation key, due to: {}",
+    //                     e
+    //                 ))
+    //             })?
+    //         }
+    //     };
+    //
+    //     meta_map.insert(
+    //         &TransactionMetadatum::new_int(&Int::new_i32(1)),
+    //         &delegations,
+    //     );
+    //     meta_map.insert(
+    //         &TransactionMetadatum::new_int(&Int::new_i32(2)),
+    //         &TransactionMetadatum::new_bytes(pub_key.as_bytes()).unwrap(),
+    //     );
+    //     meta_map.insert(
+    //         &TransactionMetadatum::new_int(&Int::new_i32(3)),
+    //         &TransactionMetadatum::new_bytes(rewards_addr.to_bytes()).unwrap(),
+    //     );
+    //     meta_map.insert(
+    //         &TransactionMetadatum::new_int(&Int::new_i32(4)),
+    //         &TransactionMetadatum::new_int(&Int::new(&BigNum::from(self.metadata.nonce.0))),
+    //     );
+    //     meta_map.insert(
+    //         &TransactionMetadatum::new_int(&Int::new_i32(5)),
+    //         &TransactionMetadatum::new_int(&Int::new(&BigNum::from(self.metadata.purpose.0))),
+    //     );
+    //
+    //     let mut meta = GeneralTransactionMetadata::new();
+    //     meta.insert(
+    //         &BigNum::from(61284u32),
+    //         &TransactionMetadatum::new_map(&meta_map),
+    //     );
+    //
+    //     let meta_bytes = meta.to_bytes();
+    //     let meta_bytes_hash = Blake2b256::new(&meta_bytes);
+    //
+    //     // Get signature from rego
+    //     let sig_str = self.signature.inner.0.clone().split_off(2);
+    //     let sig =
+    //         Ed25519Signature::from_hex(&sig_str).map_err(|e| eyre!("invalid ed25519 sig: {e}"))?;
+    //
+    //     match pub_key.verify(meta_bytes_hash.as_hash_bytes(), &sig) {
+    //         true => Ok(()),
+    //         false => Err(eyre!("signature verification failed")),
+    //     }
+    // }
 }
+
+
 
 #[cfg(test)]
 mod tests {

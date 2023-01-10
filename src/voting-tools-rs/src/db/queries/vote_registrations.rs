@@ -1,7 +1,7 @@
 use crate::{db::inner::DbQuery, Db};
 
+use crate::data::{Reg, SignedRegistration, SlotNo};
 use crate::db::schema::{block, tx, tx_metadata};
-use crate::data::{Reg, SlotNo};
 use bigdecimal::{BigDecimal, FromPrimitive};
 use color_eyre::eyre::Result;
 use diesel::RunQueryDsl;
@@ -32,15 +32,14 @@ impl Db {
         &self,
         lower: Option<SlotNo>,
         upper: Option<SlotNo>,
-    ) -> Result<Vec<Reg>> {
+    ) -> Result<Vec<SignedRegistration>> {
         let lower = lower.unwrap_or(SlotNo(0)).into_i64()?;
         let upper = upper.unwrap_or(SlotNo(i64::MAX as u64)).into_i64()?;
         let q = query(lower, upper);
 
-        let results = self.exec(move |conn| q.load(conn))?;
-        let results = process(results);
+        let rows = self.exec(move |conn| q.load(conn))?;
 
-        Ok(results)
+        Ok(rows.into_iter().filter_map(convert_row).collect())
     }
 }
 
@@ -83,20 +82,17 @@ fn query(lower: i64, upper: i64) -> impl DbQuery<'static, Row> {
         .distinct_on(metadata_2)
 }
 
-fn process(rows: Vec<Row>) -> Vec<Reg> {
-    rows.into_iter()
-        .filter_map(|(tx_id, metadata, signature, _)| {
-            let tx_id = u64::try_from(tx_id).ok()?.into();
-            let metadata = serde_json::from_value(metadata?).ok()?;
-            let signature = serde_json::from_value(signature?).ok()?;
+/// Attempt to parse a row into a [`SignedRegistration`] struct
+fn convert_row((tx_id, metadata, signature, _slot_no): Row) -> Option<SignedRegistration> {
+    let tx_id = u64::try_from(tx_id).ok()?.into();
+    let registration = serde_json::from_value(metadata?).ok()?;
+    let signature = serde_json::from_value(signature?).ok()?;
 
-            Some(Reg {
-                tx_id,
-                metadata,
-                signature,
-            })
-        })
-        .collect()
+    Some(SignedRegistration {
+        tx_id,
+        registration,
+        signature,
+    })
 }
 
 #[cfg(test)]
@@ -123,19 +119,21 @@ mod tests {
     #[test]
     fn process_happy_path() {
         let rows = vec![(1, Some(good_meta()), Some(good_sig()), None)];
-        let regs = vec![Reg {
+        let regs = vec![SignedRegistration {
             tx_id: 1.into(),
-            metadata: from_value(good_meta()).unwrap(),
+            registration: from_value(good_meta()).unwrap(),
             signature: from_value(good_sig()).unwrap(),
         }];
 
-        assert_eq!(process(rows), regs);
+        let result: Vec<_> = rows.into_iter().filter_map(convert_row).collect();
+
+        assert_eq!(result, regs);
     }
 
     #[test]
     fn filters_bad_rows() {
         fn check(row: Row) {
-            assert!(process(vec![row]).is_empty());
+            assert!(convert_row(row).is_none());
         }
 
         // bad sig

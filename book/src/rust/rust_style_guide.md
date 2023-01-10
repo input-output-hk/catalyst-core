@@ -124,6 +124,18 @@ Some guidelines for when to use abbreviations:
  - use `to_foo()` for conversions that are expensive
  - use `into_inner()` for extracting a wrapped value
 
+## Pay attention to the public API of your crate
+
+Items (functions, modules, structs, etc) should be private by default.
+This is what Rust does anyways, but make sure you pay attention when marking something `pub`.
+
+Try to keep the public API of your crate as small as possible. 
+It should contain *only* the items needed to provide the functionality it's responsible for.
+
+A good "escape hatch" is to mark things as `pub(crate)`.
+This makes the item `pub` but *only within your crate*.
+This can be handy for "helper functions" that you want to use everywhere within your crate, but don't want to be available outside.
+
 
 ## Type safety
 
@@ -249,4 +261,98 @@ If you need some setup for your tests that you don't want to render in docs, pre
 When combined with the `include` macro, this can lead to pretty concise but also powerful test setup.
 
 If you need some inspiration, check out the docstests for `diesel`.
+
+## Write code as if it's going to be in a web server
+
+Write code as if it's going to end up being run in a web server. 
+This means a few things:
+ - **all** inputs are potentially malicious
+ - code should be usable as a library **without** going through a text interface (i.e. your library should expose a Rust API)
+
+## Error handling
+
+Error handling in Rust is complex, which represents the real-world complexity of error handling.
+
+Broadly speaking, there are two types of error:
+
+
+**Expected errors** are errors that are expected to occur during **normal operation** of the application.
+For example, even if your code has no bugs in it at all, you'd still expect to see network timeout errors, since that networking is inherently fallible.
+The exact error handling strategy may vary, but often involves returning a `Result`.
+
+**Unexpected errors** are errors that are not expected to occur.
+If they do occur, it represents a bug.
+These errors are handled by panicking.
+As much as possible, we try to make these cases impossible by construction by using the correct types for data.
+For example, imagine you have a struct that represents "a list with at least one element".
+You could write:
+```rust
+struct NonEmptyList<T> {
+  inner: Vec<T>,
+}
+
+impl<T> NonEmptyList<T> {
+  /// Doesn't need to be an Option<&T> because the list is guaranteed to have at least 1 element
+  fn first(&self) -> &T {
+    inner.get(0).expect("guaranteed to have at least 1 element")
+  }
+}
+```
+This would be *fine*, since it represents a bug if this panic is ever hit.
+But it would be better to write it like this:
+```rust
+struct NonEmptyList<T> {
+  head: T,
+  tail: Vec<T>,
+}
+
+impl<T> NonEmptyList<T> {
+  fn first(&self) -> &T {
+    &self.head
+  }
+}
+```
+This way, we're providing the compiler with more information about the invariants of our type, so we can eliminate the error at compile time.
+
+### Handling expected errors
+
+Well-behaved code doesn't panic.
+So if our response to encountering an *expected error* is to panic, our software is not well-behaved.
+
+Instead, we should use `Result<T, E>` to represent data that might be an error.
+But how do we pick `E`?
+
+There are two main choices for `E`:
+
+#### Use `thiserror` for recoverable errors
+
+In contexts where we may want to recover from errors, we should use a dedicated error type.
+We generate these with `thiserror`:
+```rust
+#[derive(Debug, Error)]
+enum FooError {
+  #[error("failed to bar")]
+  Bar,
+
+  #[error("failed to baz")]
+  Baz,
+}
+```
+This allows the user to write:
+```rust
+match try_foo() {
+  Ok(foo) => println!("got a foo: {foo}"),
+  Err(FooError::Bar) => eprintln!("failed to bar"),
+  Err(FooError::Baz) => eprintln!("failed to baz"),
+}
+```
+
+#### Use `thiserror` for unrecoverable errors
+
+In contexts where we don't want to recover from errors, use `Report` from the `color_eyre` crate.
+This is a trait object based error type which allows you to "fire and forget" an error.
+While technically *possible*, it's less ergonomic to recover from a `Result<T, Report>`, so only use this in contexts where the correct behaviour is "exit the program".
+This is commonly the case in CLI apps.
+
+**However**, even in CLI apps, it's good practice to split the logic into a `lib.rs` file (or modules) and have a separate binary.
 

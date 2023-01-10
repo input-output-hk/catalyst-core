@@ -16,7 +16,7 @@ assert_fs = "1.0"
 glob = "0.3.0"
 ctrlc = "3.2.1"
 walkdir = "2.3.1"
-csv = "1.1"
+csv = { workspace = true}
 itertools = "0.10.3"
 chain-core           = { path = "../../chain-libs/chain-core" }
 chain-crypto         = { path = "../../chain-libs/chain-crypto", features = [ "property-test-api" ] }

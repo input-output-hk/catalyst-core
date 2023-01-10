@@ -779,7 +779,7 @@ dependencies = [
  "chain-time",
  "chain-vote",
  "color-eyre",
- "csv",
+ "csv 1.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "fraction",
  "futures",
  "gag",
@@ -1397,7 +1397,7 @@ dependencies = [
  "cast",
  "clap 2.34.0",
  "criterion-plot",
- "csv",
+ "csv 1.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures",
  "itertools",
  "lazy_static",
@@ -1534,8 +1534,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "22813a6dc45b335f9bade10bf7271dc477e81113e89eb251a0bc2a8a81c536e1"
 dependencies = [
  "bstr 0.2.17",
- "csv-core",
+ "csv-core 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "itoa 0.4.8",
+ "ryu",
+ "serde",
+]
+
+[[package]]
+name = "csv"
+version = "1.1.6"
+source = "git+https://github.com/BurntSushi/rust-csv#41c71ed353a71526c52633d854466c1619dacae4"
+dependencies = [
+ "bstr 0.2.17",
+ "csv-core 0.1.10 (git+https://github.com/BurntSushi/rust-csv)",
+ "itoa 1.0.4",
  "ryu",
  "serde",
 ]
@@ -1545,6 +1557,14 @@ name = "csv-core"
 version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b2466559f260f48ad25fe6317b3c8dac77b5bdb5763ac7d9d6103530663bc90"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
+name = "csv-core"
+version = "0.1.10"
+source = "git+https://github.com/BurntSushi/rust-csv#41c71ed353a71526c52633d854466c1619dacae4"
 dependencies = [
  "memchr",
 ]
@@ -3188,7 +3208,7 @@ dependencies = [
  "cocoon",
  "console",
  "cryptoxide 0.4.2",
- "csv",
+ "csv 1.1.6 (git+https://github.com/BurntSushi/rust-csv)",
  "dialoguer",
  "dirs",
  "eccoxide 0.2.0",
@@ -3442,7 +3462,7 @@ dependencies = [
  "chain-impl-mockchain",
  "chain-ser",
  "chrono",
- "csv",
+ "csv 1.1.6 (git+https://github.com/BurntSushi/rust-csv)",
  "fraction",
  "hersir",
  "hex",
@@ -3871,7 +3891,7 @@ dependencies = [
  "bech32 0.8.1",
  "bytesize",
  "console",
- "csv",
+ "csv 1.1.6 (git+https://github.com/BurntSushi/rust-csv)",
  "custom_debug",
  "dialoguer",
  "flate2",
@@ -5465,7 +5485,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5f375cb74c23b51d23937ffdeb48b1fbf5b6409d4b9979c1418c1de58bc8f801"
 dependencies = [
  "atty",
- "csv",
+ "csv 1.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "encode_unicode 1.0.0",
  "lazy_static",
  "term",
@@ -8111,7 +8131,7 @@ name = "vit-servicing-station-cli"
 version = "0.3.4-dev"
 dependencies = [
  "base64",
- "csv",
+ "csv 1.1.6 (git+https://github.com/BurntSushi/rust-csv)",
  "diesel 1.4.8",
  "diesel_migrations 1.4.0",
  "r2d2",
@@ -8239,7 +8259,7 @@ dependencies = [
  "chain-time",
  "chain-vote",
  "console",
- "csv",
+ "csv 1.1.6 (git+https://github.com/BurntSushi/rust-csv)",
  "ctrlc",
  "custom_debug",
  "dialoguer",

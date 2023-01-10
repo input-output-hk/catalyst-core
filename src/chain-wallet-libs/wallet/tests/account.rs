@@ -9,7 +9,6 @@ use chain_impl_mockchain::{
     value::Value,
     vote::{Choice, Payload},
 };
-use wallet::MAX_LANES;
 
 const BLOCK0: &[u8] = include_bytes!("../../test-vectors/block0");
 const ACCOUNT_KEY: &str = include_str!("../../test-vectors/free_keys/key1.prv");
@@ -30,9 +29,16 @@ fn update_state_overrides_old() {
     account
         .set_state(
             Value(110),
-            (0..MAX_LANES)
-                .map(|lane| SpendingCounter::new(lane, 1))
-                .collect(),
+            [
+                SpendingCounter::new(0, 1).unwrap(),
+                SpendingCounter::new(1, 1).unwrap(),
+                SpendingCounter::new(2, 1).unwrap(),
+                SpendingCounter::new(3, 1).unwrap(),
+                SpendingCounter::new(4, 1).unwrap(),
+                SpendingCounter::new(5, 1).unwrap(),
+                SpendingCounter::new(6, 1).unwrap(),
+                SpendingCounter::new(7, 1).unwrap(),
+            ],
         )
         .unwrap();
 
@@ -70,7 +76,7 @@ fn cast_vote() {
         let cast = VoteCast::new(vote_plan_id.clone(), i, payload);
 
         let mut builder = wallet::TransactionBuilder::new(
-            &settings,
+            settings.clone(),
             cast.clone(),
             wallet::time::max_expiration_date(&settings, current_time).unwrap(),
         );

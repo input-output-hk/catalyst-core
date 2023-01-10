@@ -77,6 +77,14 @@ impl RestPathBuilder {
         format!("{}{}{}", self.address, "api/", "vit-version")
     }
 
+    pub fn search(&self) -> String {
+        self.path("search")
+    }
+
+    pub fn search_count(&self) -> String {
+        self.path("search_count")
+    }
+
     pub fn path(&self, path: &str) -> String {
         format!("{}{}{}", self.address, self.root, path)
     }

@@ -4,13 +4,12 @@ use crate::common::RepsVoterAssignerSource;
 use assert_fs::TempDir;
 use chain_addr::Discrimination;
 use fraction::Fraction;
-use mainnet_lib::MainnetWallet;
-use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
+use mainnet_lib::CardanoWallet;
+use mainnet_lib::{wallet_state::MainnetWalletStateBuilder, MainnetNetworkBuilder};
 use snapshot_trigger_service::config::JobParameters;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::Block0Initials;
 use vitup::config::ConfigBuilder;
-use vitup::config::SnapshotInitials;
 use vitup::testing::spawn_network;
 use vitup::testing::vitup_setup;
 
@@ -20,22 +19,19 @@ pub fn cip_36_support() {
     let voting_threshold = 1;
     let tag = Some("test".to_string());
 
-    let job_param = JobParameters {
-        slot_no: None,
-        tag: tag.clone(),
-    };
+    let job_param = JobParameters { slot_no: None, tag };
 
-    let alice = MainnetWallet::new(1_000);
-    let bob = MainnetWallet::new(1_000);
-    let clarice = MainnetWallet::new(1_000);
-    let dave = MainnetWallet::new(1_000);
+    let alice = CardanoWallet::new(1_000);
+    let bob = CardanoWallet::new(1_000);
+    let clarice = CardanoWallet::new(1_000);
+    let dave = CardanoWallet::new(1_000);
 
-    let (db_sync, reps) = MainnetNetworkBuilder::default()
+    let (db_sync, _node, reps) = MainnetNetworkBuilder::default()
         .with(alice.as_direct_voter())
         .with(bob.as_representative())
         .with(clarice.as_representative())
         .with(dave.as_delegator(vec![(&bob, 1u8), (&clarice, 1u8)]))
-        .build(&testing_directory);
+        .build();
 
     let snapshot_result = mock::do_snapshot(&db_sync, job_param, &testing_directory).unwrap();
 
@@ -50,10 +46,6 @@ pub fn cip_36_support() {
         .block0_initials(Block0Initials::new_from_external(
             snapshot_filter.to_voters_hirs(),
             Discrimination::Production,
-        ))
-        .snapshot_initials(SnapshotInitials::from_voters_hir(
-            snapshot_filter.to_voters_hirs(),
-            tag.unwrap_or_default(),
         ))
         .build();
 

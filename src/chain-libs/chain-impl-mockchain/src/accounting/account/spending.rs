@@ -1,10 +1,21 @@
 //! Spending strategies
-use super::LedgerError;
+#[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
+pub enum Error {
+    #[error("Spending credential invalid, expected {} got {} in lane {}", .expected.unlaned_counter(), .actual.unlaned_counter(), .actual.lane())]
+    SpendingCredentialInvalid {
+        expected: SpendingCounter,
+        actual: SpendingCounter,
+    },
+    #[error("Invalid lane value during the SpendingCountersIncreasingInitialization, expected: {0}, got: {1}")]
+    InvalidLaneValue(usize, usize),
+    #[error("Invalid lane: {0} or counter: {1}, expected lane < (1 << LANES_BITS), counter < (1 << UNLANES_BITS)")]
+    InvalidLaneOrCounter(usize, u32),
+}
 
 /// Simple strategy to spend from multiple increasing counters
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SpendingCounterIncreasing {
-    nexts: Vec<SpendingCounter>,
+    nexts: [SpendingCounter; Self::LANES],
 }
 
 // SpendingCounterIncreasing has extra invariants (e.g. nexts has 8 elements, each belongs to a different lane), so a derived implementation is not suitable
@@ -15,7 +26,7 @@ const LANES_BITS: usize = 3;
 const UNLANES_BITS: usize = 32 - LANES_BITS;
 
 impl SpendingCounterIncreasing {
-    /// number of parallel lanes of increasing counters
+    /// number of parallel lanes of increasing counters, equals to 8
     pub const LANES: usize = 1 << LANES_BITS;
 
     pub fn new_from_counter(set: SpendingCounter) -> Self {
@@ -24,36 +35,34 @@ impl SpendingCounterIncreasing {
         x
     }
 
-    pub fn new_from_counters(set: Vec<SpendingCounter>) -> Option<Self> {
-        if set.len() == Self::LANES {
-            for (i, i_set_value) in set.iter().enumerate() {
-                if i_set_value.lane() != i {
-                    return None;
-                }
+    pub fn new_from_counters(
+        nexts: [SpendingCounter; SpendingCounterIncreasing::LANES],
+    ) -> Result<Self, Error> {
+        for (i, i_set_value) in nexts.iter().enumerate() {
+            if i_set_value.lane() != i {
+                return Err(Error::InvalidLaneValue(i, i_set_value.lane()));
             }
-            Some(SpendingCounterIncreasing { nexts: set })
-        } else {
-            None
         }
+        Ok(SpendingCounterIncreasing { nexts })
     }
 
     pub fn get_valid_counter(&self) -> SpendingCounter {
         self.nexts[0]
     }
 
-    pub fn get_valid_counters(&self) -> Vec<SpendingCounter> {
-        self.nexts.clone()
+    pub fn get_valid_counters(&self) -> [SpendingCounter; Self::LANES] {
+        self.nexts
     }
 
     /// try to match the lane of the counter in argument, if it doesn't match
-    /// a ledger error reported.
+    /// an error reported.
     ///
     /// If the counter match succesfully, then the counter at this lane is incremented by one.
-    pub fn next_verify(&mut self, counter: SpendingCounter) -> Result<(), LedgerError> {
+    pub fn next_verify(&mut self, counter: SpendingCounter) -> Result<(), Error> {
         let actual_counter = self.nexts[counter.lane()];
 
         if actual_counter != counter {
-            Err(LedgerError::SpendingCredentialInvalid {
+            Err(Error::SpendingCredentialInvalid {
                 expected: actual_counter,
                 actual: counter,
             })
@@ -76,10 +85,16 @@ impl std::fmt::Display for SpendingCounterIncreasing {
 
 impl Default for SpendingCounterIncreasing {
     fn default() -> Self {
-        let mut nexts = Vec::new();
-        for i in 0..Self::LANES {
-            nexts.push(SpendingCounter::new(i, 0));
-        }
+        let nexts = [
+            SpendingCounter::new(0, 0).unwrap(),
+            SpendingCounter::new(1, 0).unwrap(),
+            SpendingCounter::new(2, 0).unwrap(),
+            SpendingCounter::new(3, 0).unwrap(),
+            SpendingCounter::new(4, 0).unwrap(),
+            SpendingCounter::new(5, 0).unwrap(),
+            SpendingCounter::new(6, 0).unwrap(),
+            SpendingCounter::new(7, 0).unwrap(),
+        ];
         SpendingCounterIncreasing { nexts }
     }
 }
@@ -98,7 +113,7 @@ impl Default for SpendingCounterIncreasing {
     any(test, feature = "property-test-api"),
     derive(test_strategy::Arbitrary)
 )]
-pub struct SpendingCounter(pub(crate) u32);
+pub struct SpendingCounter(u32);
 
 impl SpendingCounter {
     // on 32 bits: 0x1fff_ffff;
@@ -115,10 +130,14 @@ impl SpendingCounter {
         self.0 & Self::UNLANED_MASK
     }
 
-    pub fn new(lane: usize, counter: u32) -> Self {
-        assert!(lane < (1 << LANES_BITS));
-        assert!(counter < (1 << UNLANES_BITS));
-        SpendingCounter((lane << UNLANES_BITS) as u32 | (counter & Self::UNLANED_MASK))
+    pub fn new(lane: usize, counter: u32) -> Result<Self, Error> {
+        if lane < (1 << LANES_BITS) || counter < (1 << UNLANES_BITS) {
+            Ok(SpendingCounter(
+                (lane << UNLANES_BITS) as u32 | (counter & Self::UNLANED_MASK),
+            ))
+        } else {
+            Err(Error::InvalidLaneOrCounter(lane, counter))
+        }
     }
 
     pub fn zero() -> Self {
@@ -175,18 +194,17 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
     fn new_invalid_spending_counter() {
         let lane: usize = (1 << LANES_BITS) + 1;
         let counter: u32 = 1 << UNLANES_BITS;
-        SpendingCounter::new(lane, counter);
+        assert!(SpendingCounter::new(lane, counter).is_err());
     }
 
     #[quickcheck_macros::quickcheck]
     fn new_spending_counter(mut lane: usize, mut counter: u32) {
         lane %= 1 << LANES_BITS;
         counter %= 1 << UNLANES_BITS;
-        let sc = SpendingCounter::new(lane, counter);
+        let sc = SpendingCounter::new(lane, counter).unwrap();
 
         assert_eq!(lane, sc.lane());
         assert_eq!(counter, sc.unlaned_counter());
@@ -220,14 +238,14 @@ mod tests {
     #[should_panic]
     #[cfg(debug_assertions)]
     fn increment_counter_overflow_debug() {
-        let _ = SpendingCounter::new(8, u32::MAX).increment();
+        let _ = SpendingCounter::new(8, u32::MAX).unwrap().increment();
     }
 
     #[test]
     #[should_panic]
     #[cfg(debug_assertions)]
     pub fn increment_nth_overflow_debug() {
-        let _ = SpendingCounter::new(0, 1).increment_nth(u32::MAX);
+        let _ = SpendingCounter::new(0, 1).unwrap().increment_nth(u32::MAX);
     }
 
     #[quickcheck_macros::quickcheck]
@@ -242,22 +260,32 @@ mod tests {
 
     #[test]
     pub fn spending_counters_duplication() {
-        let counters = vec![SpendingCounter::zero(), SpendingCounter::zero()];
-        assert!(SpendingCounterIncreasing::new_from_counters(counters).is_none());
+        let counters = [
+            SpendingCounter::zero(),
+            SpendingCounter::zero(),
+            SpendingCounter::new(2, 0).unwrap(),
+            SpendingCounter::new(3, 0).unwrap(),
+            SpendingCounter::new(4, 0).unwrap(),
+            SpendingCounter::new(5, 0).unwrap(),
+            SpendingCounter::new(6, 0).unwrap(),
+            SpendingCounter::new(7, 0).unwrap(),
+        ];
+        assert!(SpendingCounterIncreasing::new_from_counters(counters).is_err());
     }
 
     #[test]
     pub fn spending_counters_incorrect_order() {
-        let counters = vec![SpendingCounter::new(1, 0), SpendingCounter::new(0, 0)];
-        assert!(SpendingCounterIncreasing::new_from_counters(counters).is_none());
-    }
-
-    #[test]
-    pub fn spending_counters_too_many_sub_counters() {
-        let counters = std::iter::from_fn(|| Some(SpendingCounter::zero()))
-            .take(SpendingCounterIncreasing::LANES + 1)
-            .collect();
-        assert!(SpendingCounterIncreasing::new_from_counters(counters).is_none());
+        let counters = [
+            SpendingCounter::new(1, 0).unwrap(),
+            SpendingCounter::new(0, 0).unwrap(),
+            SpendingCounter::new(2, 0).unwrap(),
+            SpendingCounter::new(3, 0).unwrap(),
+            SpendingCounter::new(4, 0).unwrap(),
+            SpendingCounter::new(5, 0).unwrap(),
+            SpendingCounter::new(6, 0).unwrap(),
+            SpendingCounter::new(7, 0).unwrap(),
+        ];
+        assert!(SpendingCounterIncreasing::new_from_counters(counters).is_err());
     }
 
     #[quickcheck_macros::quickcheck]
@@ -274,15 +302,14 @@ mod tests {
     #[test]
     pub fn spending_counter_increasing_wrong_counter() {
         let mut sc_increasing = SpendingCounterIncreasing::default();
-        let incorrect_sc = SpendingCounter::new(0, 100);
+        let incorrect_sc = SpendingCounter::new(0, 100).unwrap();
         assert!(sc_increasing.next_verify(incorrect_sc).is_err());
     }
 
     #[test]
-    #[should_panic]
     pub fn spending_counter_increasing_wrong_lane() {
         let mut sc_increasing = SpendingCounterIncreasing::default();
-        let incorrect_sc = SpendingCounter::new(SpendingCounterIncreasing::LANES, 1);
+        let incorrect_sc = SpendingCounter::new(SpendingCounterIncreasing::LANES, 1).unwrap();
         assert!(sc_increasing.next_verify(incorrect_sc).is_err());
     }
 
@@ -301,8 +328,8 @@ mod tests {
                     any::<SpendingCounter>()
                         .prop_map(|counter| Some(Self::new_from_counter(counter)))
                         .boxed(),
-                    any::<Vec<SpendingCounter>>()
-                        .prop_map(Self::new_from_counters)
+                    any::<[SpendingCounter; SpendingCounterIncreasing::LANES]>()
+                        .prop_map(|counters| Self::new_from_counters(counters).ok())
                         .boxed(),
                 ]
                 .prop_filter_map("must be valid spending counter set", |i| i)

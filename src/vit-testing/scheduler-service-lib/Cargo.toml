@@ -18,6 +18,7 @@ futures = "0.3.8"
 tokio = { version = "1.2", features = ["macros","rt","process"] }
 jortestkit = { path = "../../jortestkit" }
 serde_yaml = "0.8"
+tracing.workspace = true
 
 [dependencies.reqwest]
 version = "0.11"

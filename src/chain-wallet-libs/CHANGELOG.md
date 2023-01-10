@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.8.2]
+- Updated Javascript wallet bindings, initial version of CIP-62 specification API.
 - *breaking change*: wallet_spending_counter replaced by wallet_spending_counters
 - *breaking change*: wallet_set_state now takes an array of spending counters 
 - *breaking change*: wallet_vote now takes a lane as an argument

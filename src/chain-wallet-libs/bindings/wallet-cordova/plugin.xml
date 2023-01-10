@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" id="wallet-cordova-plugin" version="0.8.0-alpha1">
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" id="wallet-cordova-plugin" version="0.8.3">
     <name>Wallet Cordova Plugin</name>
     <description>Wallet Cordova Plugin</description>
     <license>MIT OR Apache-2.0 </license>

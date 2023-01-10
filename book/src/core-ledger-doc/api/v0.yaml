@@ -71,10 +71,12 @@ paths:
                     description: Current balance of this account
                     type: integer
                     minimum: 0
-                  counter:
-                    description: Number of transactions performed with this account
-                    type: integer
-                    minimum: 0
+                  counters:
+                    description: An array of corresponding spending counters to the account
+                    type: array
+                    items:
+                      description: Spending counter with the specified lane
+                      type: integer
                   tokens:
                     description: Current state of the token balances of this account
                     type: object
@@ -100,12 +102,12 @@ paths:
                         minimum: 0
                 required:
                   - value
-                  - counter
+                  - counters
               examples:
                 with_delegation:
                   value:
                     {
-                      'counter': 1,
+                      'counters': [1,73,0,123,9999,0,0,987654],
                       'delegation':
                         {
                           'pools':
@@ -123,7 +125,7 @@ paths:
                 without_delegation:
                   value:
                     {
-                      'counter': 0,
+                      'counters': [1,73,0,123,9999,0,0,987654],
                       'delegation': { 'pools': [] },
                       'last_rewards': { 'epoch': 0, 'reward': 0 },
                       'value': 1000,

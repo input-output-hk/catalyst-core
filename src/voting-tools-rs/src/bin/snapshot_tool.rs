@@ -3,7 +3,7 @@ use std::{fs::File, io::BufWriter};
 use clap::Parser;
 use color_eyre::Result;
 use mainnet_lib::InMemoryDbSync;
-use tracing::debug;
+use tracing::info;
 use voting_tools_rs::test_api::MockDbProvider;
 use voting_tools_rs::{voting_power, Args, DataProvider, Db, DbConfig, DryRunCommand};
 
@@ -36,7 +36,7 @@ fn main() -> Result<()> {
 
     let outputs = voting_power(Box::leak(db), min_slot_no, max_slot_no, testnet_magic)?;
 
-    debug!("calculated {} outputs", outputs.len());
+    info!("calculated {} outputs", outputs.len());
 
     let file = File::options().write(true).create(true).open(out_file)?;
     let writer = BufWriter::new(file);
@@ -56,7 +56,7 @@ fn get_data_provider(
     if let Some(dry_run) = maybe_dry_run {
         match dry_run {
             DryRunCommand::DryRun { mock_json_file } => Ok(Box::new(MockDbProvider::from(
-                InMemoryDbSync::restore(&mock_json_file)?,
+                InMemoryDbSync::restore(mock_json_file)?,
             ))),
         }
     } else {

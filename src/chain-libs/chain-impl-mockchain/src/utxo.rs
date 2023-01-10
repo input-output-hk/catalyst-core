@@ -360,7 +360,7 @@ mod tests {
         pub fn to_vec(&self) -> Vec<(TransactionIndex, Output<Address>)> {
             let mut outputs = Vec::with_capacity(self.utxos.len());
             for (key, value) in self.utxos.iter() {
-                outputs.push((*key as u8, value.clone()));
+                outputs.push((*key, value.clone()));
             }
             outputs
         }

@@ -1,0 +1,27 @@
+[package]
+name = "db-sync-explorer"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+color-eyre = "0.6"  # error handling
+voting_tools_rs = { path = "../../voting-tools-rs"} # db sync schema
+microtype = { version = "0.7.5", features = ["serde"] } # defining secrecy and db internals
+diesel =  { version = "2", features = ["postgres", "64-column-tables", "numeric", "serde_json", "r2d2"]} # connector lib
+diesel-derive-enum = "2.0.0-rc.0" #extension to diesel
+chrono = "0.4.23"
+tracing.workspace = true
+bigdecimal = "0.3.0"
+warp = { version = "0.3.2", features = ["tls"] }
+vit-servicing-station-lib  = { path = "../../vit-servicing-station/vit-servicing-station-lib" }
+futures-util = "0.3.25"
+thiserror = "1.0.37"
+http-zipkin = "0.3.0"
+jortestkit = { path = "../../jortestkit" }
+tokio = { version = "1.18.0", features = ["macros", "signal", "rt", "fs", "sync"] }
+tracing-subscriber.workspace = true
+clap = { version = "3.2", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

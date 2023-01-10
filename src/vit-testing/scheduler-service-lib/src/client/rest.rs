@@ -6,7 +6,9 @@ use serde::Serialize;
 use std::io::Write;
 use std::path::Path;
 use thiserror::Error;
+use tracing::debug;
 
+#[derive(Debug)]
 pub struct SchedulerRestClient {
     api_token: Option<String>,
     admin_token: Option<String>,
@@ -44,10 +46,15 @@ impl SchedulerRestClient {
 
     pub fn get<S: Into<String>>(&self, local_path: S) -> Result<String, Error> {
         let path = self.path(local_path);
-        println!("Calling: {}", path);
+        debug!("Calling: {}", path);
         let client = reqwest::blocking::Client::new();
         let request = self.set_header(client.get(&path));
-        request.send()?.text().map_err(Into::into)
+        let response = request.send()?;
+
+        if response.status() != 200 {
+            return Err(Error::UnexpectedResponse(response.text()?));
+        }
+        response.text().map_err(Into::into)
     }
 
     pub fn set_header(
@@ -75,7 +82,7 @@ impl SchedulerRestClient {
         let local_path = format!("api/job/files/get/{}", sub_location.into());
         let path = self.path(local_path);
         let client = reqwest::blocking::Client::new();
-        let request = self.set_header(client.get(&path));
+        let request = self.set_header(client.get(path));
         let bytes = request.send()?.bytes()?;
         let mut file = std::fs::File::create(&output)?;
         file.write_all(&bytes)?;
@@ -85,7 +92,7 @@ impl SchedulerRestClient {
     pub fn job_new<Request: Serialize>(&self, request: Request) -> Result<String, Error> {
         let client = reqwest::blocking::Client::new();
         let path = self.path("api/job/new");
-        println!("Calling: {}", path);
+        debug!("Calling: {}", path);
         let request_builder = self.set_header(client.post(&path));
         #[allow(clippy::single_char_pattern)]
         request_builder
@@ -106,7 +113,7 @@ impl SchedulerRestClient {
     }
 
     pub fn is_up(&self) -> bool {
-        if let Ok(response) = reqwest::blocking::get(&self.path("api/health")) {
+        if let Ok(response) = reqwest::blocking::get(self.path("api/health")) {
             return response.status() == reqwest::StatusCode::OK;
         }
         false

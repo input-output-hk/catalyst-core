@@ -19,6 +19,7 @@ use std::{
 #[derive(Clone, Debug, Deserialize)]
 pub struct SpawnParams {
     alias: NodeAlias,
+
     bootstrap_from_peers: Option<bool>,
     faketime: Option<FaketimeConfig>,
     gossip_interval: Option<Duration>,
@@ -28,6 +29,8 @@ pub struct SpawnParams {
     log_level: Option<LogLevel>,
     max_bootstrap_attempts: Option<usize>,
     max_connections: Option<u32>,
+    allow_private_addresses: Option<bool>,
+    whitelist: Option<Vec<SocketAddr>>,
     max_inbound_connections: Option<u32>,
     mempool: Option<Mempool>,
     network_stuck_check: Option<Duration>,
@@ -59,6 +62,8 @@ impl SpawnParams {
             log_level: None,
             max_bootstrap_attempts: None,
             max_connections: None,
+            allow_private_addresses: None,
+            whitelist: None,
             max_inbound_connections: None,
             mempool: None,
             network_stuck_check: None,
@@ -135,6 +140,16 @@ impl SpawnParams {
 
     pub fn max_connections(mut self, max_connections: u32) -> Self {
         self.max_connections = Some(max_connections);
+        self
+    }
+
+    pub fn allow_private_addresses(mut self, switch: bool) -> Self {
+        self.allow_private_addresses = Some(switch);
+        self
+    }
+
+    pub fn whitelist(mut self, nodes: Vec<SocketAddr>) -> Self {
+        self.whitelist = Some(nodes);
         self
     }
 
@@ -266,23 +281,31 @@ impl SpawnParams {
         }
 
         if let Some(public_address) = &self.public_address {
-            node_config.p2p.public_address = public_address.clone();
+            node_config.p2p.connection.public_address = public_address.clone();
         }
 
         if let Some(max_inbound_connections) = &self.max_inbound_connections {
-            node_config.p2p.max_inbound_connections = Some(*max_inbound_connections);
+            node_config.p2p.connection.max_inbound_connections = Some(*max_inbound_connections);
+        }
+
+        if let Some(allow_private_addresses) = &self.allow_private_addresses {
+            node_config.p2p.connection.allow_private_addresses = *allow_private_addresses;
+        }
+
+        if let Some(whitelist) = &self.whitelist {
+            node_config.p2p.connection.whitelist = Some(whitelist.clone());
         }
 
         if let Some(max_connections) = &self.max_connections {
-            node_config.p2p.max_connections = Some(*max_connections);
+            node_config.p2p.connection.max_connections = Some(*max_connections);
         }
 
         if let Some(listen_address_option) = &self.listen_address {
-            node_config.p2p.listen = *listen_address_option;
+            node_config.p2p.connection.listen = *listen_address_option;
         }
 
         if let Some(trusted_peers) = &self.trusted_peers {
-            node_config.p2p.trusted_peers = trusted_peers.clone();
+            node_config.p2p.bootstrap.trusted_peers = trusted_peers.clone();
         }
 
         if let Some(preferred_layer) = &self.preferred_layer {
@@ -305,19 +328,19 @@ impl SpawnParams {
         }
 
         if let Some(node_key_file) = &self.node_key_file {
-            node_config.p2p.node_key_file = Some(node_key_file.clone());
+            node_config.p2p.bootstrap.node_key_file = Some(node_key_file.clone());
         }
 
         if self.gossip_interval.is_some() {
-            node_config.p2p.gossip_interval = self.gossip_interval;
+            node_config.p2p.connection.gossip_interval = self.gossip_interval;
         }
 
         if let Some(max_bootstrap_attempts) = self.max_bootstrap_attempts {
-            node_config.p2p.max_bootstrap_attempts = Some(max_bootstrap_attempts);
+            node_config.p2p.bootstrap.max_bootstrap_attempts = Some(max_bootstrap_attempts);
         }
 
         if let Some(network_stuck_check) = self.network_stuck_check {
-            node_config.p2p.network_stuck_check = Some(network_stuck_check);
+            node_config.p2p.connection.network_stuck_check = Some(network_stuck_check);
         }
         node_config.mempool.as_mut().unwrap().persistent_log = self
             .persistent_fragment_log

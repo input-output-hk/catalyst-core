@@ -2,6 +2,7 @@ use super::{buffer_sizes, convert::Decode, GlobalStateR};
 use crate::{
     blockcfg::Fragment,
     intercom::{self, BlockMsg, TopologyMsg, TransactionMsg},
+    network::retrieve_local_ip,
     settings::start::network::Configuration,
     topology::{Gossip, NodeId},
     utils::async_msg::{self, MessageBox},
@@ -10,6 +11,7 @@ use chain_network::{
     data as net_data,
     error::{Code, Error},
 };
+use futures::executor;
 use futures::{future::BoxFuture, prelude::*, ready};
 use jormungandr_lib::interfaces::FragmentOrigin;
 use std::{
@@ -18,13 +20,15 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
+
 use tracing_futures::Instrument;
 
+/// Conditionally filter gossip from non-public IP addresses
 fn filter_gossip_node(node: &Gossip, config: &Configuration) -> bool {
     if config.allow_private_addresses {
         node.has_valid_address()
     } else {
-        node.is_global()
+        !node.is_global()
     }
 }
 
@@ -141,6 +145,7 @@ impl BlockAnnouncementProcessor {
     }
 }
 
+/// Ingests inbound subscription stream, the node_id refers to the inbound peer
 #[must_use = "sinks do nothing unless polled"]
 pub struct FragmentProcessor {
     mbox: MessageBox<TransactionMsg>,
@@ -165,6 +170,14 @@ impl FragmentProcessor {
         }
     }
 
+    /// Retrieves socket addr of inbound peer
+    fn get_ingress_addr(&self) -> Option<std::net::SocketAddr> {
+        let state = self.global_state.clone();
+        let node_id = self.node_id;
+        executor::block_on(state.peers.get_peer_addr(&node_id))
+    }
+
+    /// Signals interaction with peer has occurred, this context relates to exchanging fragments.
     fn refresh_stat(&mut self) {
         let state = self.global_state.clone();
         let node_id = self.node_id;
@@ -175,8 +188,6 @@ impl FragmentProcessor {
             }
         }
         .in_current_span();
-        // It's OK to overwrite a pending future because only the latest
-        // timestamp matters.
         self.pending_processing.start(fut);
     }
 }
@@ -301,7 +312,23 @@ impl Sink<net_data::Fragment> for FragmentProcessor {
             e
         })?;
         tracing::debug!(hash = %fragment.hash(), "received fragment");
-        self.buffered_fragments.push(fragment);
+
+        if let Some(whitelist) = &self.global_state.config.whitelist {
+            match self.get_ingress_addr() {
+                Some(ingress_addr) => {
+                    if whitelist.contains(&ingress_addr) {
+                        self.buffered_fragments.push(fragment);
+                    } else {
+                        tracing::info!("dropping fragments from {}", ingress_addr);
+                    }
+                }
+                None => tracing::warn!("unable to resolve address of ingress client"),
+            }
+        } else {
+            // if no whitelist config, normal behaviour, no filtering
+            self.buffered_fragments.push(fragment);
+        }
+
         Ok(())
     }
 
@@ -349,10 +376,21 @@ impl FragmentProcessor {
             &mut self.buffered_fragments,
             Vec::with_capacity(buffer_sizes::inbound::FRAGMENTS),
         );
+
+        let addr = match self.global_state.config.address() {
+            Some(addr) => FragmentOrigin::Network { addr: addr.ip() },
+            None => {
+                tracing::info!("node addr not present in config, reverting to local lookup");
+                FragmentOrigin::Network {
+                    addr: retrieve_local_ip(),
+                }
+            }
+        };
+
         let (reply_handle, _reply_future) = intercom::unary_reply();
         self.mbox
             .start_send(TransactionMsg::SendTransactions {
-                origin: FragmentOrigin::Network,
+                origin: addr,
                 fragments,
                 fail_fast: false,
                 reply_handle,
@@ -410,6 +448,7 @@ impl Sink<net_data::Gossip> for GossipProcessor {
         let state1 = self.global_state.clone();
         let mut mbox = self.mbox.clone();
         let node_id = self.node_id;
+
         let fut = future::join(
             async move {
                 let refreshed = state1.peers.refresh_peer_on_gossip(&node_id).await;

@@ -34,9 +34,9 @@ jormungandr-lib = { path = "../jormungandr-lib" }
 keynesis = "1.1"
 lazy_static = "1.4"
 linked-hash-map = "0.5"
-opentelemetry = { version = "0.18", features = ["rt-tokio"] }
-opentelemetry-otlp = "0.11.0"
-opentelemetry-semantic-conventions = "0.10.0"
+opentelemetry.workspace = true
+opentelemetry-otlp.workspace = true
+opentelemetry-semantic-conventions.workspace = true
 poldercast = "1.2"
 multiaddr = { package = "parity-multiaddr", version = "0.11" }
 rand = "0.8"
@@ -48,14 +48,14 @@ serde_yaml = "0.8"
 structopt = "^0.3"
 time = { version = "0.3", features = ["macros"] }
 thiserror = "1.0.30"
-tracing = "0.1"
-tracing-futures = "0.2"
+tracing.workspace = true
+tracing-futures.workspace = true
 tracing-gelf = { version = "0.6", optional = true }
 # TODO unpin this when cross for ARM targets is fixed: https://github.com/cross-rs/cross/pull/591
 tracing-journald = { version = "=0.2.0", optional = true }
-tracing-opentelemetry = "0.18.0"
-tracing-subscriber = { version = "0.3", features = ["fmt", "json", "time"] }
-tracing-appender = "0.2"
+tracing-opentelemetry.workspace = true
+tracing-subscriber = { workspace = true, features = ["fmt", "json", "time"] }
+tracing-appender.workspace = true
 tokio = { version = "^1.15", features = ["rt-multi-thread", "time", "sync", "rt", "signal", "test-util"] }
 tokio-stream = { version = "0.1.4", features = ["sync"] }
 tokio-util = { version = "0.6.0", features = ["time"] }
@@ -69,6 +69,7 @@ prometheus = { version = "0.13", optional = true }
 jsonrpsee-http-server = { version = "0.11.0" }
 jsonrpsee-core = { version = "0.11.0" }
 reqwest = { version = "0.11",  default-features = false, features = ["rustls-tls"] }
+local-ip-address = "0.4.9"
 
 [dev-dependencies]
 tokio = { version = "^1.15", features = ["full"] }

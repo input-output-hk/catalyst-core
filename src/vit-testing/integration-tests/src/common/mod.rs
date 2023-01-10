@@ -1,7 +1,6 @@
 mod assert;
 pub mod load;
 pub mod mainnet_wallet_ext;
-pub mod registration;
 mod reps;
 mod rewards;
 pub mod snapshot;
@@ -13,7 +12,7 @@ mod wallet;
 pub use reps::{empty_assigner, RepsVoterAssignerSource};
 
 pub use assert::*;
-pub use mainnet_lib::MainnetWallet;
+pub use mainnet_lib::CardanoWallet;
 pub use rewards::{funded_proposals, VotesRegistry};
 pub use snapshot_filter::SnapshotFilter;
 pub use static_data::SnapshotExtensions;

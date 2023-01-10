@@ -15,7 +15,7 @@ pub fn generate_qr(input: PathBuf, output: Option<PathBuf>, pin: QrPin) -> Resul
         .read(true)
         .write(false)
         .append(false)
-        .open(&input)
+        .open(input)
         .expect("Could not open input file.");
 
     let mut reader = BufReader::new(key_file);

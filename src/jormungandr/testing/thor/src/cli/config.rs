@@ -1,7 +1,7 @@
 use crate::wallet::discrimination::DiscriminationExtension;
 use chain_addr::{Address, AddressReadable, Discrimination, Kind};
 use chain_crypto::{bech32::Bech32, Ed25519, PublicKey};
-use chain_impl_mockchain::account::Identifier;
+use chain_impl_mockchain::account::{Identifier, SpendingCounterIncreasing};
 use jormungandr_automation::jormungandr::{JormungandrRest, RestSettings};
 use jormungandr_lib::crypto::hash::Hash;
 use serde::{Deserialize, Serialize};
@@ -77,7 +77,7 @@ pub struct Wallets {
 pub struct WalletState {
     pub pending_tx: Vec<Hash>,
     pub public_key: String,
-    pub spending_counters: Vec<u32>,
+    pub spending_counters: [u32; SpendingCounterIncreasing::LANES],
     //path to secret key in format of SecretKey struct
     pub secret_file: PathBuf,
     pub testing: bool,
@@ -146,7 +146,7 @@ impl ConfigManager {
         let config_file = self.config_file()?;
 
         if !config_file.exists() {
-            std::fs::create_dir_all(&app_dir)
+            std::fs::create_dir_all(app_dir)
                 .map_err(|_| Error::CannotCreateConfigFileFolder(config_file.to_path_buf()))?;
             let mut file = std::fs::File::create(&config_file)
                 .map_err(|_| Error::CannotCreateConfigFile(config_file.to_path_buf()))?;

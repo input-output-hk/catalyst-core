@@ -513,19 +513,18 @@ fn expired_fragment_should_be_rejected_by_passive_bft_node() {
 
     let leader = context.start_node(leader_dir).unwrap();
 
-    let passive = JormungandrBootstrapper::default()
-        .passive()
-        .with_node_config(
-            NodeConfigBuilder::default()
-                .with_trusted_peers(vec![leader.to_trusted_peer()])
-                .with_log_level("debug")
-                .build(),
-        )
-        .with_block0_hash(context.block0_config().to_block_hash())
-        .into_starter(passive_dir)
-        .unwrap()
-        .start()
-        .unwrap();
+    let passive = JormungandrBootstrapper::default_with_config(
+        NodeConfigBuilder::default()
+            .with_trusted_peers(vec![leader.to_trusted_peer()])
+            .with_log_level("debug")
+            .build(),
+    )
+    .passive()
+    .with_block0_hash(context.block0_config().to_block_hash())
+    .into_starter(passive_dir)
+    .unwrap()
+    .start()
+    .unwrap();
 
     let fragment_sender = FragmentSender::from_settings_with_setup(
         &passive.rest().settings().unwrap(),

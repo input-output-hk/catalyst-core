@@ -291,11 +291,7 @@ impl FragmentBuilder {
         choice: &Choice,
     ) -> Fragment {
         let inner_wallet = wallet.clone().into();
-        let vote_cast = VoteCast::new(
-            vote_plan.to_id(),
-            proposal_index as u8,
-            Payload::public(*choice),
-        );
+        let vote_cast = VoteCast::new(vote_plan.to_id(), proposal_index, Payload::public(*choice));
         self.fragment_factory
             .vote_cast(self.valid_until, &inner_wallet, vote_cast)
     }
@@ -333,7 +329,7 @@ impl FragmentBuilder {
 
         let vote_cast = VoteCast::new(
             vote_plan.to_id(),
-            proposal_index as u8,
+            proposal_index,
             Payload::Private {
                 encrypted_vote,
                 proof,

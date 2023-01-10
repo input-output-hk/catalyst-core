@@ -37,6 +37,9 @@ pub fn voting_power(
 ) -> Result<Vec<Output>> {
     let network_info = network_info(testnet_magic);
     let regs = db.vote_registrations(min_slot, max_slot)?;
+
+    debug!("found {} possible registrations", regs.len());
+
     let stake_addrs = regs
         .iter()
         .filter_map(|reg| get_stake_address(&reg.metadata.stake_vkey, &network_info).ok())
@@ -48,9 +51,11 @@ pub fn voting_power(
         .into_iter()
         .filter_map(|reg| {
             if let Err(e) = reg.check_valid() {
-                warn!("invalid reg: {e}");
+                warn!("invalid reg on tx: '{}': {e}", reg.tx_id);
                 return None;
             }
+
+            debug!("registration on tx '{}' is valid", reg.tx_id);
 
             let stake_addr = get_stake_address(&reg.metadata.stake_vkey, &network_info).ok()?;
             let voting_power = values.get(&stake_addr as &str)?.clone();
@@ -88,7 +93,7 @@ pub(crate) fn get_stake_address(
         let cred = StakeCredential::from_keyhash(&pub_key.hash());
         let stake_addr = RewardAddress::new(network.network_id(), &cred).to_address();
         let stake_addr_bytes = stake_addr.to_bytes();
-        let stake_addr_bytes_hex = hex::encode(&stake_addr_bytes);
+        let stake_addr_bytes_hex = hex::encode(stake_addr_bytes);
         Ok(stake_addr_bytes_hex)
     }
 }
@@ -130,9 +135,7 @@ impl Reg {
                         &TransactionMetadatum::new_bytes(hex::decode(
                             delegation.trim_start_matches("0x"),
                         )?)
-                        .map_err(|e| {
-                            eyre!(format!("cannot decode delegation key, due to: {}", e))
-                        })?,
+                        .map_err(|e| eyre!(format!("cannot decode delegation key, due to: {e}")))?,
                     );
                     inner_metadata_list.add(&TransactionMetadatum::new_int(&Int::new(
                         &BigNum::from(weight),
@@ -196,18 +199,18 @@ impl Reg {
 
 #[cfg(test)]
 mod tests {
-    use assert_fs::TempDir;
     use cardano_serialization_lib::metadata::{GeneralTransactionMetadata, MetadataJsonSchema};
 
     use crate::test_api::MockDbProvider;
     use crate::DataProvider;
-    use jormungandr_lib::interfaces::BlockDate;
-    use mainnet_lib::GeneralTransactionMetadataInfo;
-    use mainnet_lib::InMemoryDbSync;
+    use mainnet_lib::{
+        BlockBuilder, CardanoWallet, GeneralTransactionMetadataInfo, InMemoryDbSync,
+        TransactionBuilder,
+    };
 
     #[test]
     pub fn nami_wallet_tx() {
-        let temp_dir = TempDir::new().unwrap();
+        let cardano_wallet = CardanoWallet::new(1);
 
         let metadata_string = r#"{
             "61284":  {"1":[["0xf83870fde8c07e0552040cb4b005d63d58cd5f6450454f253844df7f76764a35",1]],"2":"0xebd231995f6bdbe6a1582625d1c291eed374fc7baab03feab6701ec21395180e","3":"0xe0b6d6e47f7d683a90bf4c638d337e95aaebcc9584188ca817a8691604","4":14150366,"5":0},
@@ -220,8 +223,14 @@ mod tests {
         )
         .unwrap();
 
-        let mut db_sync = InMemoryDbSync::new(&temp_dir);
-        db_sync.push_transaction(BlockDate::new(0, 0), root_metadata);
+        let transaction = TransactionBuilder::build_transaction_with_metadata(
+            &cardano_wallet.address().to_address(),
+            cardano_wallet.stake(),
+            &root_metadata,
+        );
+
+        let mut db_sync = InMemoryDbSync::default();
+        db_sync.on_block_propagation(&BlockBuilder::next_block(None, &vec![transaction]));
 
         let regs = MockDbProvider::from(db_sync)
             .vote_registrations(None, None)

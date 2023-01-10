@@ -8,7 +8,9 @@ pub mod time;
 pub mod vote;
 
 use crate::{Error, Proposal, Result, Wallet};
-use chain_impl_mockchain::{fragment::Fragment, value::Value, vote::Choice};
+use chain_impl_mockchain::{
+    account::SpendingCounterIncreasing, fragment::Fragment, value::Value, vote::Choice,
+};
 use std::convert::TryInto;
 
 use thiserror::Error;
@@ -166,13 +168,11 @@ pub unsafe fn wallet_spending_counters(
     let wallet = non_null!(wallet);
     let spending_counters_out = non_null_mut!(spending_counters_ptr_out);
 
-    let counters = wallet.spending_counter().into_boxed_slice();
-    let len = counters.len();
+    let counters: Box<[u32]> = wallet.spending_counter().as_slice().into();
 
     let raw_ptr = Box::into_raw(counters);
 
     spending_counters_out.data = raw_ptr as *mut u32;
-    spending_counters_out.len = len;
 
     Result::success()
 }
@@ -215,7 +215,6 @@ pub unsafe fn wallet_total_value(wallet: WalletPtr, total_out: *mut u64) -> Resu
 #[repr(C)]
 pub struct SpendingCounters {
     pub data: *mut u32,
-    pub len: usize,
 }
 
 /// update the wallet account state
@@ -245,7 +244,13 @@ pub unsafe fn wallet_set_state(wallet: WalletPtr, value: u64, nonces: SpendingCo
 
     let value = Value(value);
 
-    let nonces = std::slice::from_raw_parts_mut(nonces.data, nonces.len).to_vec();
+    let nonces = match std::slice::from_raw_parts_mut(nonces.data, SpendingCounterIncreasing::LANES)
+        .try_into()
+        .map_err(|_e| Error::invalid_spending_counters())
+    {
+        Ok(nonces) => nonces,
+        Err(e) => return e.into(),
+    };
 
     match wallet.set_state(value, nonces) {
         Ok(_) => Result::success(),
@@ -423,9 +428,9 @@ pub unsafe fn wallet_delete_proposal(proposal: ProposalPtr) {
 /// This function is safe as long as the structure returned by this library is not modified.
 /// This function should only be called with a structure returned by this library.
 pub unsafe fn spending_counters_delete(spending_counters: SpendingCounters) {
-    let SpendingCounters { data, len } = spending_counters;
+    let SpendingCounters { data } = spending_counters;
     if !data.is_null() {
-        let data = std::slice::from_raw_parts_mut(data, len);
+        let data = std::slice::from_raw_parts_mut(data, SpendingCounterIncreasing::LANES);
         let data = Box::from_raw(data as *mut [u32]);
         std::mem::drop(data);
     }

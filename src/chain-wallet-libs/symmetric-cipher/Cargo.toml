@@ -3,7 +3,7 @@ authors = ["Nicolas Di Prima <nicolas@primetype.co.uk>", "Vincent Hanquez <vince
 edition = "2018"
 license = "MIT OR Apache-2.0"
 name = "symmetric-cipher"
-version = "0.5.0"
+version = "0.8.3"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

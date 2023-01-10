@@ -3619,7 +3619,7 @@ checksum = "854c3036c710866ee61a7e1cd7f39988dd077d0d97ce5dd23b0a1f64f3fffb42"
 dependencies = [
  "chrono",
  "cron",
- "uuid 1.2.2",
+ "uuid",
 ]
 
 [[package]]
@@ -4259,7 +4259,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
- "uuid 1.2.2",
+ "uuid",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
  "voting_tools_rs",
@@ -6371,7 +6371,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing",
- "uuid 0.8.2",
+ "uuid",
  "walkdir",
  "warp",
 ]
@@ -6875,7 +6875,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing",
- "uuid 0.8.2",
+ "uuid",
  "voting_tools_rs",
  "walkdir",
  "warp",
@@ -8032,21 +8032,12 @@ checksum = "09cc8ee72d2a9becf2f2febe0205bbed8fc6615b7cb429ad062dc7b7ddd036a9"
 
 [[package]]
 name = "uuid"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
-dependencies = [
- "getrandom 0.2.8",
- "serde",
-]
-
-[[package]]
-name = "uuid"
 version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "422ee0de9031b5b948b97a8fc04e3aa35230001a722ddd27943e0be31564ce4c"
 dependencies = [
  "getrandom 0.2.8",
+ "serde",
 ]
 
 [[package]]
@@ -8303,7 +8294,7 @@ dependencies = [
  "tracing-appender",
  "tracing-subscriber",
  "url",
- "uuid 0.8.2",
+ "uuid",
  "valgrind",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",

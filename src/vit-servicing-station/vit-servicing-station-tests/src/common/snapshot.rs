@@ -139,7 +139,7 @@ impl PartialEq for VotingPower {
             && self.voting_group == other.voting_group
             && self.delegations_power == other.delegations_power
             && self.delegations_count == other.delegations_count
-            //&& self.voting_power_saturation == other.voting_power_saturation
+        //&& self.voting_power_saturation == other.voting_power_saturation
     }
 }
 

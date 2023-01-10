@@ -728,9 +728,9 @@ dependencies = [
 
 [[package]]
 name = "cardano-serialization-lib"
-version = "11.1.1"
+version = "11.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcaa9ea0a848f7219becefb243acf75cd99880fb9199d8eabd96aebd93abde9d"
+checksum = "e0850b05eab185a58c65e705b254074d47ac89e5dc54dd596a412753524397f5"
 dependencies = [
  "bech32 0.7.3",
  "cbor_event",
@@ -1051,7 +1051,7 @@ dependencies = [
 name = "chain-vote"
 version = "0.1.0"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if 0.1.10",
  "chain-core",
  "chain-crypto",
  "const_format",

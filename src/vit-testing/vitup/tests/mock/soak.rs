@@ -17,7 +17,6 @@ pub fn run_mock_with_restarts_for_15_minutes() {
     let configuration = Configuration {
         port: 10000,
         working_dir: temp_dir.child("mock").path().to_path_buf(),
-        ideascale: false,
         protocol: Default::default(),
         token: None,
         local: true,

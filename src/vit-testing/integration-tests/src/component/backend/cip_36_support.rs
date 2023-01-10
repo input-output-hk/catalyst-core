@@ -19,10 +19,7 @@ pub fn cip_36_support() {
     let voting_threshold = 1;
     let tag = Some("test".to_string());
 
-    let job_param = JobParameters {
-        slot_no: None,
-        tag: tag.clone(),
-    };
+    let job_param = JobParameters { slot_no: None, tag };
 
     let alice = CardanoWallet::new(1_000);
     let bob = CardanoWallet::new(1_000);

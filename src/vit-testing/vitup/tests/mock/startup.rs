@@ -13,7 +13,6 @@ pub fn start_mock() {
     let configuration = Configuration {
         port: 10000,
         working_dir: temp_dir.child("mock").path().to_path_buf(),
-        ideascale: false,
         protocol: Default::default(),
         token: None,
         local: true,

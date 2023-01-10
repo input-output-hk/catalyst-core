@@ -8,7 +8,6 @@ use thiserror::Error;
 pub struct Configuration {
     pub port: u16,
     pub token: Option<String>,
-    pub ideascale: bool,
     #[serde(alias = "working-dir")]
     pub working_dir: PathBuf,
     #[serde(default)]

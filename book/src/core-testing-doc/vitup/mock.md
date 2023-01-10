@@ -9,11 +9,18 @@ Mock is also capable of controlling more backend aspect than normal deployment (
 Note: it is recommended to run command from `vit-testing/vitup` folder (then no explicit paths are required to be provided).
 Configuration file example is available under `vit-testing/vitup/example/mock/config.yaml`
 
+
+
 ### Start
 
 `vitup start mock --config example\mock\config.yaml`
 
+
 #### Admin rest commands
+
+For full api specs please visit:
+
+* [Mock REST API V0](../../api/vit-testing-mock-v0.md)
 
 ##### List Files
 
@@ -247,6 +254,9 @@ curl --location --request POST 'http://{mock_address}/api/control/command/reset'
   "version":"3.6"
 }'
 ```
+
+see [data generation guide](../data_generation/reset.md) for more details
+
 ##### Health
 
 Checks if mock is up

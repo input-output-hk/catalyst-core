@@ -73,7 +73,7 @@ pub fn update_fragment_id(
     info!("update fragment id command");
     if fragment_id.to_uppercase() == *"LAST".to_string() {
         trace!("updating last fragment to {}", fragment_strategy);
-        ledger_state.set_status_for_recent_fragment(fragment_strategy);
+        let _ = ledger_state.set_status_for_recent_fragment(fragment_strategy);
     } else {
         trace!(
             "updating fragment with id '{}' to be: {}",

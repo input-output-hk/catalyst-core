@@ -23,7 +23,7 @@ impl VoterSnapshot {
         let mut snapshot_tags = BTreeMap::new();
 
         if let Some(initials) = initials {
-            snapshot_tags.insert(initials.tag.to_string(), epoch_now());
+            snapshot_tags.insert(initials.parameters.tag.to_string(), epoch_now());
 
             let states: Vec<MainnetWalletState> =
                 block_on(build_default(initials.content.clone()))?;
@@ -45,7 +45,7 @@ impl VoterSnapshot {
                     voting_key: voter_hir.voting_key.to_bech32_str(),
                     voting_power: u64::from(voter_hir.voting_power) as i64,
                     voting_group: voter_hir.voting_group.to_string(),
-                    snapshot_tag: initials.tag.to_string(),
+                    snapshot_tag: initials.parameters.tag.to_string(),
                 });
 
                 snapshot_info.contributions.iter().for_each(|contribution| {
@@ -55,7 +55,7 @@ impl VoterSnapshot {
                         value: contribution.value as i64,
                         voting_key: voter_hir.voting_key.to_bech32_str(),
                         voting_group: voter_hir.voting_group.to_string(),
-                        snapshot_tag: initials.tag.to_string(),
+                        snapshot_tag: initials.parameters.tag.to_string(),
                     });
                 });
             }

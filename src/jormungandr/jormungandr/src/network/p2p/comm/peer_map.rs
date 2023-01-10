@@ -176,6 +176,7 @@ impl PeerMap {
         self.map.clear()
     }
 
+    /// Returns metadata of most recent peer interaction with given node
     pub fn refresh_peer(&mut self, id: &NodeId) -> Option<&mut PeerStats> {
         self.map.get_refresh(id).map(|data| &mut data.stats)
     }
@@ -186,7 +187,8 @@ impl PeerMap {
             .map(|data| data.update_comm_status().comms())
     }
 
-    fn ensure_peer(&mut self, id: NodeId, remote_addr: Address) -> &mut PeerData {
+    /// Inserts peer and returns associated metadata
+    fn join_peer(&mut self, id: NodeId, remote_addr: Address) -> &mut PeerData {
         if !self.map.contains_key(&id) {
             self.evict_if_full();
             self.stats_counter.add_peer_connected_cnt(1);
@@ -229,14 +231,14 @@ impl PeerMap {
         remote_addr: Address,
         handle: ConnectHandle,
     ) -> &mut PeerComms {
-        let data = self.ensure_peer(id, remote_addr);
+        let data = self.join_peer(id, remote_addr);
         data.connecting = Some(handle);
         data.update_comm_status().comms()
     }
 
     // This is called when accepting client connections as a server
     pub fn add_client(&mut self, id: NodeId, remote_addr: Address) -> &mut PeerComms {
-        let data = self.ensure_peer(id, remote_addr);
+        let data = self.join_peer(id, remote_addr);
         data.update_comm_status().comms()
     }
 

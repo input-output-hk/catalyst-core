@@ -1,0 +1,65 @@
+import dataclasses
+from typing import Any, Mapping, Optional
+
+
+class Model:
+    """
+    Base class for all models.
+    """
+
+    @staticmethod
+    def table() -> str:
+        raise NotImplementedError()
+
+
+@dataclasses.dataclass
+class Challenge(Model):
+    """
+    Represents a database challenge.
+    """
+
+    id: int
+    election: int
+    category: str
+    title: str
+    description: str
+    rewards_currency: Optional[str]
+    rewards_total: Optional[int]
+    proposers_rewards: Optional[int]
+    vote_options: Optional[int]
+    extra: Optional[Mapping[str, Any]]
+
+    @staticmethod
+    def table() -> str:
+        return "challenge"
+
+
+@dataclasses.dataclass
+class Proposal(Model):
+    """
+    Represents a database proposal.
+    """
+
+    id: int
+    challenge: int
+    title: str
+    summary: str
+    public_key: str
+    funds: int
+    url: str
+    files_url: str
+    impact_score: Optional[float]
+
+    extra: Optional[Mapping[str, str]]
+
+    proposer_name: str
+    proposer_contact: str
+    proposer_url: str
+    proposer_relevant_experience: str
+
+    bb_proposal_id: Optional[bytes]
+    bb_vote_options: Optional[str]
+
+    @staticmethod
+    def table() -> str:
+        return "proposal"

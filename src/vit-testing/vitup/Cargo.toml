@@ -70,9 +70,9 @@ json = "0.12.4"
 image = "0.23"
 base64 = "0.13"
 uuid = { workspace = true }
-tracing-subscriber = { version = "0.3", features= ["std", "env-filter"] }
-tracing = "0.1"
-tracing-appender = "0.2"
+tracing-subscriber = { workspace = true, features= ["std", "env-filter"] }
+tracing.workspace = true
+tracing-appender.workspace = true
 hyper = { version = "0.14.17", features = ["server"] }
 rustls = "0.20.4"
 rustls-pemfile = "1"

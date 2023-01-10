@@ -36,8 +36,8 @@ job_scheduler_ng = "*"
 snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib", features=["proptest"] }
 snapshot-trigger-service = { path = "../snapshot-trigger-service" }
 clap = { version = "4", features = ["derive"] }
-tracing = "0.1"
-tracing-subscriber = "0.3"
+tracing.workspace = true
+tracing-subscriber.workspace = true
 warp = "0.3.3"
 futures-util = "0.3.25"
 

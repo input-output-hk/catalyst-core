@@ -13,7 +13,12 @@ Configuration file example is available under `vit-testing/vitup/example/mock/co
 
 `vitup start mock --config example\mock\config.yaml`
 
+
 #### Admin rest commands
+
+For full api specs please visit:
+
+* [Mock REST API V0](../../api/vit-testing-mock-v0.md)
 
 ##### List Files
 

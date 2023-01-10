@@ -30,9 +30,13 @@ jormungandr-automation = { path = "../../jormungandr/testing/jormungandr-automat
 thor = { path = "../../jormungandr/testing/thor" }
 hersir = { path = "../../jormungandr/testing/hersir" }
 jortestkit = { path = "../../jortestkit" }
+mainnet-lib = { path = "../mainnet-lib" }
+mainnet-tools = { path = "../mainnet-tools" }
 vit-servicing-station-tests = { path = "../../vit-servicing-station/vit-servicing-station-tests" }
 vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib" }
+voting_tools_rs = { path = "../../voting-tools-rs" }
 catalyst-toolbox = { path = "../../catalyst-toolbox/catalyst-toolbox" }
+snapshot-trigger-service = { path = "../snapshot-trigger-service" }
 snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib" }
 valgrind = { path = "../valgrind" }
 poldercast = "1"

@@ -1,5 +1,5 @@
 use crate::cardano_node::block::{Block0, BlockBuilder};
-use crate::Settings;
+use crate::cardano_node::Settings;
 use cardano_serialization_lib::{Block, Transaction};
 
 /// Simulates cardano node behavior. Contains mempool of transactions as well as blockchain.
@@ -55,6 +55,12 @@ impl Ledger {
         self.blocks.push(next_block.clone());
         self.mempool.clear();
         Ok(next_block)
+    }
+
+    /// Retrieves blockchain in form of vector of blocks
+    #[must_use]
+    pub fn blockchain(&self) -> &[Block] {
+        &self.blocks
     }
 }
 

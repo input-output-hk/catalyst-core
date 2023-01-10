@@ -55,6 +55,10 @@ members = [
 
 [workspace.dependencies]
 proptest = { git = "https://github.com/input-output-hk/proptest.git" }
+uuid = { version = "1", features = ["v4", "serde"] }
+# we use this branch because it uses v1 of `itoa`, but the latest crates.io release doesn't
+csv = { git = "https://github.com/BurntSushi/rust-csv" }
+cfg-if = "1"
 
 # Observability tools to instrument, generate, collect, and export telemetry data. 
 opentelemetry = { version = "0.18", features = ["rt-tokio"] }

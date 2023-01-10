@@ -44,8 +44,6 @@
 <span id="44">44</span>
 <span id="45">45</span>
 <span id="46">46</span>
-<span id="47">47</span>
-<span id="48">48</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::network::wallet_state::Actor;
 <span class="kw">use </span>jormungandr_lib::interfaces::Value;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
@@ -54,8 +52,6 @@
 <span class="doccomment">/// Root struct for defining snapshot template
 </span><span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 </span><span class="kw">pub struct </span>Initials {
-    <span class="doccomment">/// snapshot tag
-    </span><span class="kw">pub </span>tag: String,
     <span class="doccomment">/// snapshot content
     </span><span class="kw">pub </span>content: Vec&lt;Actor&gt;,
     <span class="doccomment">/// parameters

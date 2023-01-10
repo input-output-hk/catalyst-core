@@ -37,7 +37,6 @@
 <span id="37">37</span>
 <span id="38">38</span>
 <span id="39">39</span>
-<span id="40">40</span>
 </pre><pre class="rust"><code><span class="kw">use </span>serde::{Deserialize, Serialize};
 <span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>std::path::PathBuf;
@@ -48,7 +47,6 @@
 </span><span class="kw">pub struct </span>Configuration {
     <span class="kw">pub </span>port: u16,
     <span class="kw">pub </span>token: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="kw">pub </span>ideascale: bool,
     <span class="attribute">#[serde(alias = <span class="string">&quot;working-dir&quot;</span>)]
     </span><span class="kw">pub </span>working_dir: PathBuf,
     <span class="attribute">#[serde(default)]

@@ -314,7 +314,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>snapshot_tags = BTreeMap::new();
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(initials) = initials {
-            snapshot_tags.insert(initials.tag.to_string(), epoch_now());
+            snapshot_tags.insert(initials.parameters.tag.to_string(), epoch_now());
 
             <span class="kw">let </span>states: Vec&lt;MainnetWalletState&gt; =
                 block_on(build_default(initials.content.clone()))<span class="question-mark">?</span>;
@@ -336,7 +336,7 @@
                     voting_key: voter_hir.voting_key.to_bech32_str(),
                     voting_power: u64::from(voter_hir.voting_power) <span class="kw">as </span>i64,
                     voting_group: voter_hir.voting_group.to_string(),
-                    snapshot_tag: initials.tag.to_string(),
+                    snapshot_tag: initials.parameters.tag.to_string(),
                 });
 
                 snapshot_info.contributions.iter().for_each(|contribution| {
@@ -346,7 +346,7 @@
                         value: contribution.value <span class="kw">as </span>i64,
                         voting_key: voter_hir.voting_key.to_bech32_str(),
                         voting_group: voter_hir.voting_group.to_string(),
-                        snapshot_tag: initials.tag.to_string(),
+                        snapshot_tag: initials.parameters.tag.to_string(),
                     });
                 });
             }

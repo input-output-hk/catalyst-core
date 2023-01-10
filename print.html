@@ -4873,344 +4873,45 @@ Initial purpose is to provide simple localhost backend for catalyst voting app. 
 <p><code>vitup start quick</code></p>
 <p>default endpoint will be exposed at <code>0.0.0.0:80</code> all data dumped to <code>.\catalyst</code></p>
 <footer id="open-on-gh">Found a bug? <a href="https://github.com/input-output-hk/catalyst-core/edit/main/book/src/core-testing-doc/vitup/introduction.md">Edit this page on GitHub.</a></footer><div style="break-before: page; page-break-before: always;"></div><h2 id="configuration-9"><a class="header" href="#configuration-9">Configuration</a></h2>
-<p>This section describe configuration file which can be passed as argument when starting vitup or in some cases send to already running environments in order to restart them with new settings</p>
-<h3 id="initials"><a class="header" href="#initials">Initials</a></h3>
-<h4 id="block0"><a class="header" href="#block0">block0</a></h4>
-<p>Allows to provide initial addresses/voters which addresses would be put in block0.
-Supported syntax:</p>
-<h5 id="above-threshold"><a class="header" href="#above-threshold">above threshold</a></h5>
-<p>Amount of wallets which receive more than value defined in <code>static_data.voting_power</code> parameter</p>
-<p>Example: </p>
-<pre><code>{
-	&quot;above_threshold&quot;:30,
-    &quot;pin&quot;:&quot;1234&quot;
-}
-</code></pre>
-<p>Pin would be set globally for all 30 addresses </p>
-<h5 id="below-threshold"><a class="header" href="#below-threshold">below threshold</a></h5>
-<p>Amount of wallets which receive less than value defined in <code>static_data.voting_power</code> parameter </p>
-<p>Example: </p>
-<pre><code>{
-	&quot;below_threshold&quot;:30,
-    &quot;pin&quot;:&quot;1234&quot;
-}
-</code></pre>
-<p>Pin would be set globally for all 30 addresses </p>
-<h5 id="around-level"><a class="header" href="#around-level">around level</a></h5>
-<p>Amount of wallets which have funds around defined level</p>
-<p>Example: </p>
-<pre><code>{
-	&quot;count&quot;:30,
-    &quot;level&quot;:1000,
-    &quot;pin&quot;:&quot;1234&quot;
-}
-</code></pre>
-<h5 id="zero-funds"><a class="header" href="#zero-funds">zero funds</a></h5>
-<p>Amount of wallets which won’t have any funds in block0</p>
-<p>Example: </p>
-<pre><code>{
-	&quot;zero_funds&quot;:30,
-    &quot;pin&quot;:&quot;1234&quot;
-}
-</code></pre>
-<h5 id="named-wallet"><a class="header" href="#named-wallet">named wallet</a></h5>
-<p>Wallet with custom pin and arbitrary funds amount,</p>
-<p>Example: </p>
-<pre><code>      {
-        &quot;name&quot;:&quot;darek&quot;,
-        &quot;funds&quot;:8000,
-        &quot;pin&quot;:&quot;1111&quot;         
-      },
-</code></pre>
-<h5 id="external-wallet"><a class="header" href="#external-wallet">external wallet</a></h5>
-<p>Wallet with address and pin. For users who already generated address outside vitup.</p>
-<p>Example: </p>
-<pre><code>      {
-        &quot;address&quot;:&quot;ca1qknqa67aflzndy0rvkmxhd3gvccme5637qch53kfh0slzkfgv5nwyq4hxu4&quot;,
-        &quot;funds&quot;:8000     
-      },
-</code></pre>
-<h4 id="snapshot"><a class="header" href="#snapshot">snapshot</a></h4>
-<p>Allows to provide initial addresses/voters which addresses would be put in initial snapshot.
-Supported syntax:</p>
-<h5 id="random"><a class="header" href="#random">random</a></h5>
-<p>Some number of random wallets which receive specified amount of voting power</p>
-<p>Example: </p>
-<pre><code>  {
-    &quot;count&quot;: 2,
-    &quot;level&quot;: 5000
-  },
-</code></pre>
-<h5 id="external"><a class="header" href="#external">external</a></h5>
-<p>A single entry with specified voting key and voting power</p>
-<p>Example: </p>
-<pre><code>  {
-    &quot;key&quot;:&quot;3877098d14e80c62c071a1d82e3df0eb9a6cd339a5f66e9ec338274fdcd9d0f4&quot;,
-    &quot;funds&quot;:300
+<p>Configuration file example is available under <code>src/vit-testing/vitup/example/mock/config.yaml</code>
+This section describe configuration file which can be passed as argument for <code>vitup start mock</code> command:</p>
+<p>pub struct Configuration {</p>
+<p>pub ideascale: bool,</p>
+<p>pub protocol: valgrind::Protocol,
+#[serde(default)]
+pub local: bool,
+}</p>
+<ul>
+<li>
+<p><code>port</code>: port on which registration-service will be exposed,</p>
+</li>
+<li>
+<p><code>token</code>: token limiting access to environment. Must be provided in header <code>API-Token</code> for each request</p>
+</li>
+<li>
+<p><code>working-dir</code>: path to folder which artifacts will be dumped (qr-code etc.),</p>
+</li>
+<li>
+<p><code>protocol</code>: optional parameter if service shoudl be exposed through https. Then two sub-parameters need to be defined <code> key_path</code> and <code>cert_path</code> like in an example below:</p>
+<pre><code>  &quot;protocol&quot;: {
+    &quot;key_path&quot;: &quot;./resources/tls/server.key&quot;,
+    &quot;cert_path&quot;: &quot;./resources/tls/server.crt&quot;
   }
 </code></pre>
-<h5 id="named"><a class="header" href="#named">named</a></h5>
-<p>A single entry with specified alias from block0 and optional voting power. If voting power is not defined it would be taken from block0 section. If vitup cannot find alias it will produce an error</p>
-<p>Example: </p>
-<pre><code>  {
-    &quot;name&quot;: &quot;darek&quot;,
-    &quot;funds&quot;: 100
-  },
-</code></pre>
-<h3 id="vote-plan"><a class="header" href="#vote-plan">vote plan</a></h3>
-<h5 id="vote-time"><a class="header" href="#vote-time">vote time</a></h5>
-<p>Below parameters describe how long vote would be active, for how long users can vote and when tally period would begin.</p>
-<p>In cardano time is divided into epochs which consists of slots. There are 2 parameters that defines how long epoch should last, slot_duration and slots_per_epoch with equation:
-<code>epoch_duration = slot_duration * slots_per_epoch</code>.</p>
-<p>For example, for given:</p>
-<pre><code>slot_duration = 2
-slots_per_epoch = 10
-</code></pre>
-<p>then epoch will lasts 20 seconds.</p>
-<p>vote_start, vote_tally, tally_end - describe 2 vote phases: </p>
-<ul>
-<li>from vote_start to vote_tally : casting vote period, where we gather votes.</li>
-<li>from vote_tally to tally_end: tallying vote period, where we gather voting results.</li>
+<p>NOTE: certificates in resources folder are self-signed</p>
+</li>
 </ul>
-<p>Sll above parameters are expressed in epochs. Be aware that <code>slot_duration</code> and <code>slots_per_epoch</code> have influence on time voting phase would start.
-For example if we would like to start vote in 5 minutes, allow users to case vote for 20 minutes and give 1 hour for tally operation our setup would be like below:</p>
-<pre><code>&quot;vote_start&quot;:1,
-&quot;vote_tally&quot;:4,
-&quot;tally_end&quot;:20,
-&quot;slots_per_epoch&quot;:60,
-</code></pre>
-<p>See <a href="https://input-output-hk.github.io/jormungandr/concepts/blockchain.html">jormungandr docs</a> for more information.</p>
-<p>NOTE: <code>slot_duration</code> is defined in <code>blockchain</code> section of configuration file</p>
-<h5 id="private-2"><a class="header" href="#private-2">private</a></h5>
-<p>If true, then voting is private otherwise public. This parameters basically controls if votes choices are encrypted or not.</p>
-<h6 id="representatives_vote_plan"><a class="header" href="#representatives_vote_plan">representatives_vote_plan</a></h6>
-<p>TBD, currently not used</p>
-<h4 id="example-3"><a class="header" href="#example-3">example</a></h4>
-<pre><code> &quot;vote_plan&quot;: {
-        &quot;vote_time&quot;: {
-            &quot;vote_start&quot;: 13,
-            &quot;tally_start&quot;: 98,
-            &quot;tally_end&quot;: 140,
-            &quot;slots_per_epoch&quot;: 3600        
-        },
-        &quot;private&quot;: true,
-        &quot;representatives_vote_plan&quot;: false
-    },
-  },
-</code></pre>
-<h5 id="blockchain-2"><a class="header" href="#blockchain-2">blockchain</a></h5>
-<p>Set of parameters which controls blockchain related configuration.</p>
-<p>See <a href="https://input-output-hk.github.io/jormungandr/advanced/01_the_genesis_block.html">jormungandr docs</a> for more information.</p>
-<h5 id="slot_duration"><a class="header" href="#slot_duration">slot_duration</a></h5>
-<p>Describes how frequent block are produces by network. Slot duration is expressed in seconds. Cannot be longer that 128.</p>
-<h5 id="block_content_max_size"><a class="header" href="#block_content_max_size">block_content_max_size</a></h5>
-<p>Describes how big a single block can be. Larger blocks can hold more transactions which results in faster transactions processing, however it put more requirements on space and network throughput.</p>
-<h5 id="block0_time"><a class="header" href="#block0_time">block0_time</a></h5>
-<p>Optional parameter which defines start time of block0. It is useful when one want to defined voting phases that ends and starts precisely in required time. Otherwise block0_time is equal to current time when running vitup</p>
-<h6 id="tx_max_expiry_epochs"><a class="header" href="#tx_max_expiry_epochs">tx_max_expiry_epochs</a></h6>
-<p>Optional parameter which defines what is the maximum duration (expressed in epochs) of transaction timeout.
-Usually it is equal to 1.</p>
-<h6 id="consensus_leader_ids"><a class="header" href="#consensus_leader_ids">consensus_leader_ids</a></h6>
-<p>Allows to override randomly generated consensus leaders ids.
-Useful when we have our own pre-generated leaders keys for nodes.</p>
-<h5 id="linear_fees"><a class="header" href="#linear_fees">linear_fees</a></h5>
-<p>Transactions fees which defined cost of transaction or vote.</p>
-<ul>
-<li>constant - constant fee added to each transaction</li>
-<li>coefficient - coefficient of each transaction output</li>
-<li>certificate - cost of sending certificate.</li>
-</ul>
-<p><code>constant + transaction.output * coefficient + certificate</code></p>
 <p>Example:</p>
-<pre><code>  &quot;linear_fees&quot;: {
-    &quot;constant&quot;: 1,
-    &quot;coefficient&quot;: 1,
-    &quot;certificate&quot;: 2
-  },
-</code></pre>
-<p>Above configuration will result in:</p>
-<p>For transaction with 1 input and 1 output
-<code>1 +  1 * 1 + 0 = 2</code></p>
-<p>For vote
-<code>1 + 0 * 1 + 2 = 3</code></p>
-<h5 id="committees"><a class="header" href="#committees">committees</a></h5>
-<p>Committee is a wallet that is capable of tallying voting results.
-This setting allows to use predefined committee rather than generate random by vitup.</p>
-<h3 id="data"><a class="header" href="#data">data</a></h3>
-<p>Section describes static data used for voting. Mostly defines parameters for <a href="https://github.com/input-output-hk/vit-servicing-station">servicing station</a></p>
-<h4 id="current-fund"><a class="header" href="#current-fund">current fund</a></h4>
-<p>Current fund related settings:</p>
-<h5 id="options"><a class="header" href="#options">options</a></h5>
-<p>Defines options available for voters. Should be expressed as coma-separated values. For example:</p>
-<p><code>options: &quot;yes,no&quot;</code></p>
-<h5 id="proposals"><a class="header" href="#proposals">proposals</a></h5>
-<p>Number of proposals available for voting</p>
-<h5 id="challenges"><a class="header" href="#challenges">challenges</a></h5>
-<p>Number of challenges available for voting. Challenge is a container for proposals for the same domain</p>
-<h5 id="reviews"><a class="header" href="#reviews">reviews</a></h5>
-<p>Number of reviews for proposals</p>
-<h5 id="voting_power"><a class="header" href="#voting_power">voting_power</a></h5>
-<p>Threshold for voting participation, expressed in ADA</p>
-<h5 id="fund_name"><a class="header" href="#fund_name">fund_name</a></h5>
-<p>Name of fund</p>
-<h5 id="fund_id"><a class="header" href="#fund_id">fund_id</a></h5>
-<p>Id of the fund. This parameter also controls behavior of catalyst voting app. If it’s changed between two funds, voting app will refresh it state.</p>
-<h5 id="dates"><a class="header" href="#dates">dates</a></h5>
-<h6 id="proposal_submission_start"><a class="header" href="#proposal_submission_start">proposal_submission_start</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal submission start datetime. </p>
-<h6 id="insight_sharing_start"><a class="header" href="#insight_sharing_start">insight_sharing_start</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal insight sharing start datetime. </p>
-<h6 id="refine_proposals_start"><a class="header" href="#refine_proposals_start">refine_proposals_start</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal refinement start datetime. </p>
-<h6 id="finalize_proposals_start"><a class="header" href="#finalize_proposals_start">finalize_proposals_start</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal finalization start datetime. </p>
-<h6 id="proposal_assessment_start"><a class="header" href="#proposal_assessment_start">proposal_assessment_start</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal assessment start datetime. </p>
-<h6 id="assessment_qa_start"><a class="header" href="#assessment_qa_start">assessment_qa_start</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal assessment qa start datetime. </p>
-<h6 id="snapshot_time"><a class="header" href="#snapshot_time">snapshot_time</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines snapshot datetime.</p>
-<h6 id="next_vote_start_time"><a class="header" href="#next_vote_start_time">next_vote_start_time</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines what is the date of next voting. This data will be shown to users after current voting will ends.</p>
-<h6 id="next_snapshot_time"><a class="header" href="#next_snapshot_time">next_snapshot_time</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines next snapshot datetime. This data will be shown to users after current voting will ends.</p>
-<h4 id="next-funds"><a class="header" href="#next-funds">next funds</a></h4>
-<p>Limited subset of settings comparing to <code>current_fund</code> section for next funds</p>
-<h5 id="fund_name-1"><a class="header" href="#fund_name-1">fund_name</a></h5>
-<p>Name of fund</p>
-<h5 id="fund_id-1"><a class="header" href="#fund_id-1">fund_id</a></h5>
-<p>Id of the fund. This parameter also controls behavior of catalyst voting app. If it’s changed between two funds, voting app will refresh it state.</p>
-<h5 id="dates-1"><a class="header" href="#dates-1">dates</a></h5>
-<h6 id="proposal_submission_start-1"><a class="header" href="#proposal_submission_start-1">proposal_submission_start</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal submission start datetime. </p>
-<h6 id="insight_sharing_start-1"><a class="header" href="#insight_sharing_start-1">insight_sharing_start</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal insight sharing start datetime. </p>
-<h6 id="refine_proposals_start-1"><a class="header" href="#refine_proposals_start-1">refine_proposals_start</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal refinement start datetime. </p>
-<h6 id="finalize_proposals_start-1"><a class="header" href="#finalize_proposals_start-1">finalize_proposals_start</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal finalization start datetime. </p>
-<h6 id="proposal_assessment_start-1"><a class="header" href="#proposal_assessment_start-1">proposal_assessment_start</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal assessment start datetime. </p>
-<h6 id="assessment_qa_start-1"><a class="header" href="#assessment_qa_start-1">assessment_qa_start</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines proposal assessment qa start datetime. </p>
-<h6 id="snapshot_time-1"><a class="header" href="#snapshot_time-1">snapshot_time</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines snapshot datetime. </p>
-<h6 id="next_vote_start_time-1"><a class="header" href="#next_vote_start_time-1">next_vote_start_time</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines what is the date of next voting. This data will be shown to users after current voting will ends.</p>
-<h6 id="next_snapshot_time-1"><a class="header" href="#next_snapshot_time-1">next_snapshot_time</a></h6>
-<p>Data in <a href="https://datatracker.ietf.org/doc/html/rfc3339#section-5.6">rfc3339</a> format. Defines next snapshot datetime. </p>
-<h3 id="service"><a class="header" href="#service">service</a></h3>
-<p>Service related settings</p>
-<p>NOTE: this section is ignored when only generating data using vitup. </p>
-<h5 id="version"><a class="header" href="#version">version</a></h5>
-<p>Control version of backend. Manipulating this parameter we can tell voting app to force user to self-update application.</p>
-<h5 id="https"><a class="header" href="#https">https</a></h5>
-<p>Controls protocol over which vitup is available for client</p>
-<h3 id="full-example"><a class="header" href="#full-example">Full Example:</a></h3>
-<pre><code>{
-   &quot;initials&quot;:{
-      &quot;snapshot&quot;:{
-         &quot;tag&quot;:&quot;daily&quot;,
-         &quot;content&quot;:[
-            {
-               &quot;count&quot;:2,
-               &quot;level&quot;:1234
-            },
-            {
-               &quot;name&quot;:&quot;alice&quot;
-            },
-            {
-               &quot;name&quot;:&quot;bob&quot;,
-               &quot;funds&quot;:10001
-            }
-         ]
-      },
-      &quot;block0&quot;:[
-         {
-            &quot;above_threshold&quot;:10,
-            &quot;pin&quot;:&quot;1234&quot;
-         },
-         {
-            &quot;name&quot;:&quot;alice&quot;,
-            &quot;pin&quot;:&quot;1234&quot;,
-            &quot;funds&quot;:10000
-         },
-         {
-            &quot;name&quot;:&quot;bob&quot;,
-            &quot;pin&quot;:&quot;1234&quot;,
-            &quot;funds&quot;:10000
-         },
-         {
-            &quot;zero_funds&quot;:10,
-            &quot;pin&quot;:&quot;1234&quot;
-         }
-      ]
-   },
-   &quot;vote_plan&quot;:{
-      &quot;vote_time&quot;:{
-         &quot;vote_start&quot;:0,
-         &quot;tally_start&quot;:134,
-         &quot;tally_end&quot;:234,
-         &quot;slots_per_epoch&quot;:3600
-      },
-      &quot;private&quot;:true
-   },
-   &quot;blockchain&quot;:{
-      &quot;slot_duration&quot;:4,
-      &quot;block_content_max_size&quot;:20971520,
-      &quot;linear_fees&quot;:{
-         &quot;constant&quot;:0,
-         &quot;coefficient&quot;:0,
-         &quot;certificate&quot;:0
-      }
-   },
-   &quot;data&quot;:{
-      &quot;current_fund&quot;:{
-         &quot;options&quot;:&quot;yes,no&quot;,
-         &quot;proposals&quot;:1134,
-         &quot;challenges&quot;:23,
-         &quot;reviews&quot;:7045,
-         &quot;voting_power&quot;:450,
-         &quot;fund_name&quot;:&quot;Fund9&quot;,
-         &quot;fund_id&quot;:9,
-         &quot;dates&quot;:{
-            &quot;insight_sharing_start&quot;:&quot;2022-05-01T12:00:00Z&quot;,
-            &quot;proposal_submission_start&quot;:&quot;2022-05-02T12:00:00Z&quot;,
-            &quot;refine_proposals_start&quot;:&quot;2022-05-03T12:00:00Z&quot;,
-            &quot;finalize_proposals_start&quot;:&quot;2022-05-04T12:00:00Z&quot;,
-            &quot;proposal_assessment_start&quot;:&quot;2022-05-04T12:00:00Z&quot;,
-            &quot;assessment_qa_start&quot;:&quot;2022-05-05T12:00:00Z&quot;,
-            &quot;snapshot_time&quot;:&quot;2022-05-07T12:00:00Z&quot;,
-            &quot;next_snapshot_time&quot;:&quot;2023-05-07T12:00:00Z&quot;,
-            &quot;next_vote_start_time&quot;:&quot;2022-07-14T12:00:00Z&quot;
-         }
-      },
-      &quot;next_funds&quot;:[
-         {
-            &quot;fund_name&quot;:&quot;Fund10&quot;,
-            &quot;fund_id&quot;:10,
-            &quot;dates&quot;:{
-               &quot;insight_sharing_start&quot;:&quot;2023-05-01T12:00:00Z&quot;,
-               &quot;proposal_submission_start&quot;:&quot;2023-05-02T12:00:00Z&quot;,
-               &quot;refine_proposals_start&quot;:&quot;2023-05-03T12:00:00Z&quot;,
-               &quot;finalize_proposals_start&quot;:&quot;2023-05-04T12:00:00Z&quot;,
-               &quot;proposal_assessment_start&quot;:&quot;2023-05-04T12:00:00Z&quot;,
-               &quot;assessment_qa_start&quot;:&quot;2023-05-05T12:00:00Z&quot;,
-               &quot;snapshot_time&quot;:&quot;2023-05-07T12:00:00Z&quot;,
-               &quot;voting_start&quot;:&quot;2023-07-14T12:00:00Z&quot;,
-               &quot;voting_tally_end&quot;:&quot;2023-07-14T12:00:00Z&quot;,
-               &quot;voting_tally_start&quot;:&quot;2023-07-14T12:00:00Z&quot;,
-               &quot;next_snapshot_time&quot;:&quot;2023-07-07T12:00:00Z&quot;,
-               &quot;next_vote_start_time&quot;:&quot;2023-07-14T12:00:00Z&quot;
-            }
-         }
-      ]
-   },
-   &quot;version&quot;:&quot;3.8&quot;
+<pre><code class="language-yaml">{
+  &quot;port&quot;: 8080,
+  &quot;working-dir&quot;: &quot;./mock&quot;,
+  &quot;protocol&quot;: {
+    &quot;key_path&quot;: &quot;./resources/tls/server.key&quot;,
+    &quot;cert_path&quot;: &quot;./resources/tls/server.crt&quot;
+  }
 }
 </code></pre>
-<footer id="open-on-gh">Found a bug? <a href="https://github.com/input-output-hk/catalyst-core/edit/main/book/src/core-testing-doc/vitup/configuration.md">Edit this page on GitHub.</a></footer><div style="break-before: page; page-break-before: always;"></div><h2 id="data-generation"><a class="header" href="#data-generation">Data generation</a></h2>
-<p>TBD</p>
+<footer id="open-on-gh">Found a bug? <a href="https://github.com/input-output-hk/catalyst-core/edit/main/book/src/core-testing-doc/vitup/configuration.md">Edit this page on GitHub.</a></footer><div style="break-before: page; page-break-before: always;"></div><h1 id="data-generation"><a class="header" href="#data-generation">Data Generation</a></h1>
 <footer id="open-on-gh">Found a bug? <a href="https://github.com/input-output-hk/catalyst-core/edit/main/book/src/core-testing-doc/vitup/data_generation.md">Edit this page on GitHub.</a></footer><div style="break-before: page; page-break-before: always;"></div><h3 id="configuration-modes"><a class="header" href="#configuration-modes">Configuration modes</a></h3>
 <p>In order to take out the burden of providing entire configuration vitup has two configuration modes:</p>
 <ul>
@@ -5553,6 +5254,7 @@ and ultimately can be translated to some time of unavailability.</p>
   &quot;version&quot;:&quot;3.6&quot;
 }'
 </code></pre>
+<p>see <a href="core-testing-doc/vitup/../data_generation/reset.html">data generation guide</a> for more details</p>
 <h5 id="health-1"><a class="header" href="#health-1">Health</a></h5>
 <p>Checks if mock is up</p>
 <pre><code>curl --location --request POST 'http://{mock_address}/api/control/health'
@@ -5845,7 +5547,7 @@ Country: US
 <p><a class="admonition-anchor-link" href="example-enhanced-markup.html#admonition-dont-click-me"></a></p>
 </summary>
 <div>
-<pre><svg viewBox="-8 -8 457.3828125 473.359375" aria-labelledby="chart-title-mermaid-1673261796611 chart-desc-mermaid-1673261796611" role="img" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" width="457.3828125" id="mermaid-1673261796611"><title id="chart-title-mermaid-1673261796611"/><desc id="chart-desc-mermaid-1673261796611"/><style>#mermaid-1673261796611 {font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#000000;}#mermaid-1673261796611 .error-icon{fill:#552222;}#mermaid-1673261796611 .error-text{fill:#552222;stroke:#552222;}#mermaid-1673261796611 .edge-thickness-normal{stroke-width:2px;}#mermaid-1673261796611 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-1673261796611 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-1673261796611 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-1673261796611 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-1673261796611 .marker{fill:#000000;stroke:#000000;}#mermaid-1673261796611 .marker.cross{stroke:#000000;}#mermaid-1673261796611 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#mermaid-1673261796611 .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#000000;}#mermaid-1673261796611 .cluster-label text{fill:#333;}#mermaid-1673261796611 .cluster-label span{color:#333;}#mermaid-1673261796611 .label text,#mermaid-1673261796611 span{fill:#000000;color:#000000;}#mermaid-1673261796611 .node rect,#mermaid-1673261796611 .node circle,#mermaid-1673261796611 .node ellipse,#mermaid-1673261796611 .node polygon,#mermaid-1673261796611 .node path{fill:#cde498;stroke:#13540c;stroke-width:1px;}#mermaid-1673261796611 .node .label{text-align:center;}#mermaid-1673261796611 .node.clickable{cursor:pointer;}#mermaid-1673261796611 .arrowheadPath{fill:green;}#mermaid-1673261796611 .edgePath .path{stroke:#000000;stroke-width:2.0px;}#mermaid-1673261796611 .flowchart-link{stroke:#000000;fill:none;}#mermaid-1673261796611 .edgeLabel{background-color:#e8e8e8;text-align:center;}#mermaid-1673261796611 .edgeLabel rect{opacity:0.5;background-color:#e8e8e8;fill:#e8e8e8;}#mermaid-1673261796611 .cluster rect{fill:#cdffb2;stroke:#6eaa49;stroke-width:1px;}#mermaid-1673261796611 .cluster text{fill:#333;}#mermaid-1673261796611 .cluster span{color:#333;}#mermaid-1673261796611 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(78.1578947368, 58.4615384615%, 84.5098039216%);border:1px solid #6eaa49;border-radius:2px;pointer-events:none;z-index:100;}#mermaid-1673261796611 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker orient="auto" markerHeight="12" markerWidth="12" markerUnits="userSpaceOnUse" refY="5" refX="10" viewBox="0 0 10 10" class="marker flowchart" id="flowchart-pointEnd"><path style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 0 0 L 10 5 L 0 10 z"/></marker><marker orient="auto" markerHeight="12" markerWidth="12" markerUnits="userSpaceOnUse" refY="5" refX="0" viewBox="0 0 10 10" class="marker flowchart" id="flowchart-pointStart"><path style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 0 5 L 10 10 L 10 0 z"/></marker><marker orient="auto" markerHeight="11" markerWidth="11" markerUnits="userSpaceOnUse" refY="5" refX="11" viewBox="0 0 10 10" class="marker flowchart" id="flowchart-circleEnd"><circle style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" r="5" cy="5" cx="5"/></marker><marker orient="auto" markerHeight="11" markerWidth="11" markerUnits="userSpaceOnUse" refY="5" refX="-1" viewBox="0 0 10 10" class="marker flowchart" id="flowchart-circleStart"><circle style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" r="5" cy="5" cx="5"/></marker><marker orient="auto" markerHeight="11" markerWidth="11" markerUnits="userSpaceOnUse" refY="5.2" refX="12" viewBox="0 0 11 11" class="marker cross flowchart" id="flowchart-crossEnd"><path style="stroke-width: 2; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 1,1 l 9,9 M 10,1 l -9,9"/></marker><marker orient="auto" markerHeight="11" markerWidth="11" markerUnits="userSpaceOnUse" refY="5.2" refX="-1" viewBox="0 0 11 11" class="marker cross flowchart" id="flowchart-crossStart"><path style="stroke-width: 2; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 1,1 l 9,9 M 10,1 l -9,9"/></marker><g class="root"><g class="clusters"/><g class="edgePaths"><path marker-end="url(#flowchart-pointEnd)" style="fill:none;" class="edge-thickness-normal edge-pattern-solid flowchart-link LS-A LE-B" id="L-A-B-0" d="M231.453125,34L231.453125,39.75C231.453125,45.5,231.453125,57,231.453125,68.5C231.453125,80,231.453125,91.5,231.453125,97.25L231.453125,103"/><path marker-end="url(#flowchart-pointEnd)" style="fill:none;" class="edge-thickness-normal edge-pattern-solid flowchart-link LS-B LE-C" id="L-B-C-0" d="M231.453125,137L231.453125,141.16666666666666C231.453125,145.33333333333334,231.453125,153.66666666666666,231.53645833333334,162.08333333333334C231.61979166666666,170.5,231.78645833333334,179,231.86979166666666,183.25L231.953125,187.5"/><path marker-end="url(#flowchart-pointEnd)" style="fill:none;" class="edge-thickness-normal edge-pattern-solid flowchart-link LS-C LE-D" id="L-C-D-0" d="M177.11858107878342,319.02483107878345L158.00767173231952,332.24725506565284C138.89676238585562,345.4696790525223,100.67494369292781,371.9145270262611,81.56403434646391,389.30361767979724C62.453125,406.6927083333333,62.453125,415.0260416666667,62.453125,419.1927083333333L62.453125,423.359375"/><path marker-end="url(#flowchart-pointEnd)" style="fill:none;" class="edge-thickness-normal edge-pattern-solid flowchart-link LS-C LE-E" id="L-C-E-0" d="M231.953125,373.859375L231.86979166666666,377.9427083333333C231.78645833333334,382.0260416666667,231.61979166666666,390.1927083333333,231.53645833333334,398.4427083333333C231.453125,406.6927083333333,231.453125,415.0260416666667,231.453125,419.1927083333333L231.453125,423.359375"/><path marker-end="url(#flowchart-pointEnd)" style="fill:none;" class="edge-thickness-normal edge-pattern-solid flowchart-link LS-C LE-F" id="L-C-F-0" d="M284.68721328012913,321.12528671987087L301.4958548167743,333.9976347665591C318.30449635341944,346.8699828132473,351.9217794267097,372.6146789066236,368.73042096335485,389.65369361997847C385.5390625,406.6927083333333,385.5390625,415.0260416666667,385.5390625,419.1927083333333L385.5390625,423.359375"/></g><g class="edgeLabels"><g transform="translate(231.453125, 68.5)" class="edgeLabel"><g transform="translate(-31.7109375, -9.5)" class="label"><foreignObject height="19" width="63.421875"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="edgeLabel">Can help</span></div></foreignObject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignObject height="0" width="0"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignObject height="0" width="0"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignObject height="0" width="0"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignObject height="0" width="0"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="edgeLabel"></span></div></foreignObject></g></g></g><g class="nodes"><g transform="translate(231.453125, 17)" id="flowchart-A-20" class="node default default"><rect height="34" width="68.6875" y="-17" x="-34.34375" ry="0" rx="0" style="" class="basic label-container"/><g transform="translate(-26.84375, -9.5)" style="" class="label"><foreignObject height="19" width="53.6875"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="nodeLabel">Anyone</span></div></foreignObject></g></g><a transform="translate(231.453125, 120)" xlink:href="https://github.com/input-output-hk/catalyst-core"><g id="flowchart-B-21" class="node default clickable"><rect height="34" width="419.859375" y="-17" x="-209.9296875" ry="5" rx="5" style="" class="basic label-container"/><g transform="translate(-202.4296875, -9.5)" style="" class="label"><foreignObject height="19" width="404.859375"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="nodeLabel">Go to https://github.com/input-output-hk/catalyst-core</span></div></foreignObject></g></g></a><g transform="translate(231.453125, 280.1796875)" id="flowchart-C-23" class="node default default"><polygon style="" transform="translate(-93.1796875,93.1796875)" class="label-container" points="93.1796875,0 186.359375,-93.1796875 93.1796875,-186.359375 0,-93.1796875"/><g transform="translate(-68.6796875, -9.5)" style="" class="label"><foreignObject height="19" width="137.359375"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="nodeLabel">How to contribute?</span></div></foreignObject></g></g><g transform="translate(62.453125, 440.359375)" id="flowchart-D-25" class="node default default"><rect height="34" width="124.90625" y="-17" x="-62.453125" ry="0" rx="0" style="" class="basic label-container"/><g transform="translate(-54.953125, -9.5)" style="" class="label"><foreignObject height="19" width="109.90625"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="nodeLabel">Reporting bugs</span></div></foreignObject></g></g><g transform="translate(231.453125, 440.359375)" id="flowchart-E-27" class="node default default"><rect height="34" width="113.09375" y="-17" x="-56.546875" ry="0" rx="0" style="" class="basic label-container"/><g transform="translate(-49.046875, -9.5)" style="" class="label"><foreignObject height="19" width="98.09375"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="nodeLabel">Sharing ideas</span></div></foreignObject></g></g><g transform="translate(385.5390625, 440.359375)" id="flowchart-F-29" class="node default default"><rect height="34" width="95.078125" y="-17" x="-47.5390625" ry="0" rx="0" style="" class="basic label-container"/><g transform="translate(-40.0390625, -9.5)" style="" class="label"><foreignObject height="19" width="80.078125"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="nodeLabel">Advocating</span></div></foreignObject></g></g></g></g></g></svg></pre>
+<pre><svg viewBox="-8 -8 457.3828125 473.359375" aria-labelledby="chart-title-mermaid-1673341847499 chart-desc-mermaid-1673341847499" role="img" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" width="457.3828125" id="mermaid-1673341847499"><title id="chart-title-mermaid-1673341847499"/><desc id="chart-desc-mermaid-1673341847499"/><style>#mermaid-1673341847499 {font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#000000;}#mermaid-1673341847499 .error-icon{fill:#552222;}#mermaid-1673341847499 .error-text{fill:#552222;stroke:#552222;}#mermaid-1673341847499 .edge-thickness-normal{stroke-width:2px;}#mermaid-1673341847499 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-1673341847499 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-1673341847499 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-1673341847499 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-1673341847499 .marker{fill:#000000;stroke:#000000;}#mermaid-1673341847499 .marker.cross{stroke:#000000;}#mermaid-1673341847499 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#mermaid-1673341847499 .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#000000;}#mermaid-1673341847499 .cluster-label text{fill:#333;}#mermaid-1673341847499 .cluster-label span{color:#333;}#mermaid-1673341847499 .label text,#mermaid-1673341847499 span{fill:#000000;color:#000000;}#mermaid-1673341847499 .node rect,#mermaid-1673341847499 .node circle,#mermaid-1673341847499 .node ellipse,#mermaid-1673341847499 .node polygon,#mermaid-1673341847499 .node path{fill:#cde498;stroke:#13540c;stroke-width:1px;}#mermaid-1673341847499 .node .label{text-align:center;}#mermaid-1673341847499 .node.clickable{cursor:pointer;}#mermaid-1673341847499 .arrowheadPath{fill:green;}#mermaid-1673341847499 .edgePath .path{stroke:#000000;stroke-width:2.0px;}#mermaid-1673341847499 .flowchart-link{stroke:#000000;fill:none;}#mermaid-1673341847499 .edgeLabel{background-color:#e8e8e8;text-align:center;}#mermaid-1673341847499 .edgeLabel rect{opacity:0.5;background-color:#e8e8e8;fill:#e8e8e8;}#mermaid-1673341847499 .cluster rect{fill:#cdffb2;stroke:#6eaa49;stroke-width:1px;}#mermaid-1673341847499 .cluster text{fill:#333;}#mermaid-1673341847499 .cluster span{color:#333;}#mermaid-1673341847499 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(78.1578947368, 58.4615384615%, 84.5098039216%);border:1px solid #6eaa49;border-radius:2px;pointer-events:none;z-index:100;}#mermaid-1673341847499 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker orient="auto" markerHeight="12" markerWidth="12" markerUnits="userSpaceOnUse" refY="5" refX="10" viewBox="0 0 10 10" class="marker flowchart" id="flowchart-pointEnd"><path style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 0 0 L 10 5 L 0 10 z"/></marker><marker orient="auto" markerHeight="12" markerWidth="12" markerUnits="userSpaceOnUse" refY="5" refX="0" viewBox="0 0 10 10" class="marker flowchart" id="flowchart-pointStart"><path style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 0 5 L 10 10 L 10 0 z"/></marker><marker orient="auto" markerHeight="11" markerWidth="11" markerUnits="userSpaceOnUse" refY="5" refX="11" viewBox="0 0 10 10" class="marker flowchart" id="flowchart-circleEnd"><circle style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" r="5" cy="5" cx="5"/></marker><marker orient="auto" markerHeight="11" markerWidth="11" markerUnits="userSpaceOnUse" refY="5" refX="-1" viewBox="0 0 10 10" class="marker flowchart" id="flowchart-circleStart"><circle style="stroke-width: 1; stroke-dasharray: 1, 0;" class="arrowMarkerPath" r="5" cy="5" cx="5"/></marker><marker orient="auto" markerHeight="11" markerWidth="11" markerUnits="userSpaceOnUse" refY="5.2" refX="12" viewBox="0 0 11 11" class="marker cross flowchart" id="flowchart-crossEnd"><path style="stroke-width: 2; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 1,1 l 9,9 M 10,1 l -9,9"/></marker><marker orient="auto" markerHeight="11" markerWidth="11" markerUnits="userSpaceOnUse" refY="5.2" refX="-1" viewBox="0 0 11 11" class="marker cross flowchart" id="flowchart-crossStart"><path style="stroke-width: 2; stroke-dasharray: 1, 0;" class="arrowMarkerPath" d="M 1,1 l 9,9 M 10,1 l -9,9"/></marker><g class="root"><g class="clusters"/><g class="edgePaths"><path marker-end="url(#flowchart-pointEnd)" style="fill:none;" class="edge-thickness-normal edge-pattern-solid flowchart-link LS-A LE-B" id="L-A-B-0" d="M231.453125,34L231.453125,39.75C231.453125,45.5,231.453125,57,231.453125,68.5C231.453125,80,231.453125,91.5,231.453125,97.25L231.453125,103"/><path marker-end="url(#flowchart-pointEnd)" style="fill:none;" class="edge-thickness-normal edge-pattern-solid flowchart-link LS-B LE-C" id="L-B-C-0" d="M231.453125,137L231.453125,141.16666666666666C231.453125,145.33333333333334,231.453125,153.66666666666666,231.53645833333334,162.08333333333334C231.61979166666666,170.5,231.78645833333334,179,231.86979166666666,183.25L231.953125,187.5"/><path marker-end="url(#flowchart-pointEnd)" style="fill:none;" class="edge-thickness-normal edge-pattern-solid flowchart-link LS-C LE-D" id="L-C-D-0" d="M177.11858107878342,319.02483107878345L158.00767173231952,332.24725506565284C138.89676238585562,345.4696790525223,100.67494369292781,371.9145270262611,81.56403434646391,389.30361767979724C62.453125,406.6927083333333,62.453125,415.0260416666667,62.453125,419.1927083333333L62.453125,423.359375"/><path marker-end="url(#flowchart-pointEnd)" style="fill:none;" class="edge-thickness-normal edge-pattern-solid flowchart-link LS-C LE-E" id="L-C-E-0" d="M231.953125,373.859375L231.86979166666666,377.9427083333333C231.78645833333334,382.0260416666667,231.61979166666666,390.1927083333333,231.53645833333334,398.4427083333333C231.453125,406.6927083333333,231.453125,415.0260416666667,231.453125,419.1927083333333L231.453125,423.359375"/><path marker-end="url(#flowchart-pointEnd)" style="fill:none;" class="edge-thickness-normal edge-pattern-solid flowchart-link LS-C LE-F" id="L-C-F-0" d="M284.68721328012913,321.12528671987087L301.4958548167743,333.9976347665591C318.30449635341944,346.8699828132473,351.9217794267097,372.6146789066236,368.73042096335485,389.65369361997847C385.5390625,406.6927083333333,385.5390625,415.0260416666667,385.5390625,419.1927083333333L385.5390625,423.359375"/></g><g class="edgeLabels"><g transform="translate(231.453125, 68.5)" class="edgeLabel"><g transform="translate(-31.7109375, -9.5)" class="label"><foreignObject height="19" width="63.421875"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="edgeLabel">Can help</span></div></foreignObject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignObject height="0" width="0"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignObject height="0" width="0"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignObject height="0" width="0"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel"><g transform="translate(0, 0)" class="label"><foreignObject height="0" width="0"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="edgeLabel"></span></div></foreignObject></g></g></g><g class="nodes"><g transform="translate(231.453125, 17)" id="flowchart-A-20" class="node default default"><rect height="34" width="68.6875" y="-17" x="-34.34375" ry="0" rx="0" style="" class="basic label-container"/><g transform="translate(-26.84375, -9.5)" style="" class="label"><foreignObject height="19" width="53.6875"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="nodeLabel">Anyone</span></div></foreignObject></g></g><a transform="translate(231.453125, 120)" xlink:href="https://github.com/input-output-hk/catalyst-core"><g id="flowchart-B-21" class="node default clickable"><rect height="34" width="419.859375" y="-17" x="-209.9296875" ry="5" rx="5" style="" class="basic label-container"/><g transform="translate(-202.4296875, -9.5)" style="" class="label"><foreignObject height="19" width="404.859375"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="nodeLabel">Go to https://github.com/input-output-hk/catalyst-core</span></div></foreignObject></g></g></a><g transform="translate(231.453125, 280.1796875)" id="flowchart-C-23" class="node default default"><polygon style="" transform="translate(-93.1796875,93.1796875)" class="label-container" points="93.1796875,0 186.359375,-93.1796875 93.1796875,-186.359375 0,-93.1796875"/><g transform="translate(-68.6796875, -9.5)" style="" class="label"><foreignObject height="19" width="137.359375"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="nodeLabel">How to contribute?</span></div></foreignObject></g></g><g transform="translate(62.453125, 440.359375)" id="flowchart-D-25" class="node default default"><rect height="34" width="124.90625" y="-17" x="-62.453125" ry="0" rx="0" style="" class="basic label-container"/><g transform="translate(-54.953125, -9.5)" style="" class="label"><foreignObject height="19" width="109.90625"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="nodeLabel">Reporting bugs</span></div></foreignObject></g></g><g transform="translate(231.453125, 440.359375)" id="flowchart-E-27" class="node default default"><rect height="34" width="113.09375" y="-17" x="-56.546875" ry="0" rx="0" style="" class="basic label-container"/><g transform="translate(-49.046875, -9.5)" style="" class="label"><foreignObject height="19" width="98.09375"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="nodeLabel">Sharing ideas</span></div></foreignObject></g></g><g transform="translate(385.5390625, 440.359375)" id="flowchart-F-29" class="node default default"><rect height="34" width="95.078125" y="-17" x="-47.5390625" ry="0" rx="0" style="" class="basic label-container"/><g transform="translate(-40.0390625, -9.5)" style="" class="label"><foreignObject height="19" width="80.078125"><div style="display: inline-block; white-space: nowrap;" xmlns="http://www.w3.org/1999/xhtml"><span class="nodeLabel">Advocating</span></div></foreignObject></g></g></g></g></g></svg></pre>
 </div>
 </details>
 <footer id="open-on-gh">Found a bug? <a href="https://github.com/input-output-hk/catalyst-core/edit/main/book/src/example-enhanced-markup.md">Edit this page on GitHub.</a></footer><div style="break-before: page; page-break-before: always;"></div><!-- omit in toc -->

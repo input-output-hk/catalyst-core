@@ -62,8 +62,8 @@ gag = "1"
 vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib" }
 snapshot-lib = { path = "../snapshot-lib" }
 fraction = "0.12"
-tracing = "0.1"
-tracing-subscriber = "0.3"
+tracing.workspace = true
+tracing-subscriber.workspace = true
 
 [dev-dependencies]
 rand_chacha = "0.3"

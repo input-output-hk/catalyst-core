@@ -32,5 +32,5 @@ in rec {
     l.flatten (l.map (event: mkNamespaces event) events);
 
   # The OCI registry we are pushing to
-  registry = "432820653916.dkr.ecr.eu-central-1.amazonaws.com";
+  registry = "332405224602.dkr.ecr.eu-central-1.amazonaws.com";
 }

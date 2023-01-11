@@ -1,6 +1,7 @@
+use crate::common::snapshot::result::Error;
+use crate::common::snapshot::SnapshotResult;
 use jortestkit::prelude::Wait;
 use snapshot_trigger_service::client::rest::SnapshotRestClient;
-use snapshot_trigger_service::client::{Error, SnapshotResult};
 use snapshot_trigger_service::config::Configuration;
 use snapshot_trigger_service::config::JobParameters;
 use std::process::Child;

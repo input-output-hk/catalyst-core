@@ -1,5 +1,6 @@
 use clap::Parser;
 use std::path::PathBuf;
+use vit_servicing_station_lib::server::settings::LogLevel;
 
 #[derive(Debug, Parser)]
 #[non_exhaustive]
@@ -9,4 +10,10 @@ pub struct Args {
     /// configuration file
     #[clap(long)]
     pub config: PathBuf,
+
+    #[structopt(long = "token")]
+    pub token: Option<String>,
+
+    #[structopt(long = "log-level", default_value = "INFO")]
+    pub log_level: LogLevel,
 }

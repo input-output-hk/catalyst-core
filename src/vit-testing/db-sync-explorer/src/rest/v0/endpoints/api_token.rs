@@ -5,18 +5,11 @@ use warp::{Filter, Rejection};
 pub async fn api_token_filter(
     context: SharedContext,
 ) -> impl Filter<Extract = (), Error = Rejection> + Clone {
-    let is_token_enabled = context.read().await.token().is_some();
-
-    if is_token_enabled {
-        warp::header::header(API_TOKEN_HEADER)
-            .and(warp::any().map(move || context.clone()))
-            .and_then(authorize_token)
-            .and(warp::any())
-            .untuple_one()
-            .boxed()
-    } else {
-        warp::any().boxed()
-    }
+    warp::header::header(API_TOKEN_HEADER)
+        .and(warp::any().map(move || context.clone()))
+        .and_then(authorize_token)
+        .and(warp::any())
+        .untuple_one()
 }
 
 pub async fn authorize_token(token: String, context: SharedContext) -> Result<(), Rejection> {

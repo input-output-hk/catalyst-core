@@ -1,9 +1,11 @@
 pub mod context;
+mod data_provider;
 pub mod endpoints;
 pub mod errors;
 pub mod result;
 
-pub use context::{new_shared_context, Context, SharedContext};
+pub use context::{new_shared_real_context, Context, SharedContext};
+pub use data_provider::DataProvider;
 use warp::{Filter, Rejection, Reply};
 
 const V0_REQUEST_TRACE_NAME: &str = "v0_request";

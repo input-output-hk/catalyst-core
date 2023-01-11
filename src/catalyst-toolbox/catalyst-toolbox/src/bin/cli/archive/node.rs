@@ -1,10 +1,10 @@
 use catalyst_toolbox::archive::node::generate_archive_files;
 use color_eyre::Report;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(Debug, StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Debug, Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Node {
     /// The path to the Jormungandr database to dump transactions from.
     jormungandr_database: PathBuf,

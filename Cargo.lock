@@ -778,6 +778,7 @@ dependencies = [
  "chain-storage",
  "chain-time",
  "chain-vote",
+ "clap 4.0.29",
  "color-eyre",
  "csv",
  "fraction",
@@ -811,7 +812,6 @@ dependencies = [
  "serde_yaml",
  "snapshot-lib",
  "sscanf",
- "structopt",
  "symmetric-cipher",
  "test-strategy",
  "thiserror",
@@ -1152,7 +1152,15 @@ dependencies = [
  "once_cell",
  "strsim 0.10.0",
  "termcolor",
- "terminal_size 0.2.3",
+]
+
+[[package]]
+name = "clap_complete"
+version = "4.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "10861370d2ba66b0f5989f83ebf35db6421713fd92351790e7fdd6c36774c56b"
+dependencies = [
+ "clap 4.0.29",
 ]
 
 [[package]]
@@ -1312,7 +1320,7 @@ dependencies = [
  "encode_unicode 0.3.6",
  "lazy_static",
  "libc",
- "terminal_size 0.1.17",
+ "terminal_size",
  "unicode-width",
  "winapi",
 ]
@@ -2268,6 +2276,7 @@ dependencies = [
  "chain-ser",
  "chain-time",
  "chain-vote",
+ "clap 4.0.29",
  "futures",
  "futures-channel",
  "futures-util",
@@ -2286,7 +2295,6 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_yaml",
- "structopt",
  "thiserror",
  "thor",
  "tokio",
@@ -3590,6 +3598,7 @@ dependencies = [
  "chain-time",
  "chain-vote",
  "clap 4.0.29",
+ "clap_complete",
  "ed25519-bip32 0.4.1",
  "gtmpl",
  "hex",
@@ -3606,7 +3615,6 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "serde_yaml",
- "structopt",
  "thiserror",
  "versionisator",
 ]
@@ -7171,16 +7179,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "terminal_size"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb20089a8ba2b69debd491f8d2d023761cbf196e999218c591fa1e7e15a21907"
-dependencies = [
- "rustix",
- "windows-sys 0.42.0",
-]
-
-[[package]]
 name = "termtree"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8060,6 +8058,7 @@ dependencies = [
  "chain-ser",
  "chain-time",
  "chain-vote",
+ "clap 4.0.29",
  "hex",
  "hyper",
  "itertools",
@@ -8070,7 +8069,6 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
- "structopt",
  "thiserror",
  "tokio",
  "url",

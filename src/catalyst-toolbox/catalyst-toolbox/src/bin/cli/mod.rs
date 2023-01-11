@@ -11,49 +11,60 @@ mod stats;
 mod vote_check;
 
 use color_eyre::Report;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Cli {
     /// display full version details (software version, source version, targets and compiler used)
-    #[structopt(long = "full-version")]
+    #[clap(long = "full-version")]
     full_version: bool,
 
     /// display the sources version, allowing to check the source's hash used to compile this executable.
     /// this option is useful for scripting retrieving the logs of the version of this application.
-    #[structopt(long = "source-version")]
+    #[clap(long = "source-version")]
     source_version: bool,
 
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     command: Option<CatalystCommand>,
 }
 
 #[allow(clippy::large_enum_variant)]
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum CatalystCommand {
     /// Rewards related operations
+    #[clap(subcommand)]
     Rewards(rewards::Rewards),
     /// Send push notification to pushwoosh service
+    #[clap(subcommand)]
     Push(notifications::PushNotifications),
     /// Tally recovery utility
+    #[clap(subcommand)]
     Recover(recovery::Recover),
     /// Download, compare and get stats from sentry and persistent fragment logs
+    #[clap(subcommand)]
     Logs(logs::Logs),
     /// Generate qr codes
+    #[clap(subcommand)]
     QrCode(kedqr::QrCodeCmd),
     /// Interact with the Ideascale API
+    #[clap(subcommand)]
     Ideascale(ideascale::Ideascale),
     /// Advisor reviews related operations
+    #[clap(subcommand)]
     Reviews(advisor_reviews::Reviews),
     /// Dump information related to catalyst fund
+    #[clap(subcommand)]
     Archive(archive::Archive),
     /// Validate catalyst elections
+    #[clap(subcommand)]
     VoteCheck(vote_check::VoteCheck),
     /// Prints voting statistics
+    #[clap(subcommand)]
     Stats(stats::Stats),
     /// Process raw registrations to produce initial blockchain setup
+    #[clap(subcommand)]
     Snapshot(snapshot::SnapshotCmd),
 }
 

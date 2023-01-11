@@ -1,7 +1,7 @@
 use jormungandr_lib::crypto::hash::Hash;
 use serde::{Deserialize, Serialize};
 use std::{path::PathBuf, str::FromStr};
-use structopt::StructOpt;
+use clap::Parser;
 
 use color_eyre::{eyre::eyre, Report};
 
@@ -36,40 +36,40 @@ pub enum NotFundedReason {
     ApprovalThreshold,
 }
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct ProposerRewards {
-    #[structopt(long = "output-file")]
+    #[clap(long = "output-file")]
     pub output: PathBuf,
 
-    #[structopt(long = "block0-path")]
+    #[clap(long = "block0-path")]
     pub block0: PathBuf,
 
-    #[structopt(default_value = "0.01")]
-    #[structopt(long)]
+    #[clap(default_value = "0.01")]
+    #[clap(long)]
     pub total_stake_threshold: f64,
 
-    #[structopt(default_value = "1.15")]
-    #[structopt(long)]
+    #[clap(default_value = "1.15")]
+    #[clap(long)]
     pub approval_threshold: f64,
 
-    #[structopt(default_value = "csv")]
-    #[structopt(long)]
+    #[clap(default_value = "csv")]
+    #[clap(long)]
     pub output_format: OutputFormat,
 
-    #[structopt(long = "proposals-path")]
+    #[clap(long = "proposals-path")]
     pub proposals: Option<PathBuf>,
-    #[structopt(long = "excluded-proposals-path")]
+    #[clap(long = "excluded-proposals-path")]
     pub excluded_proposals: Option<PathBuf>,
-    #[structopt(long = "active-voteplan-path")]
+    #[clap(long = "active-voteplan-path")]
     pub active_voteplans: Option<PathBuf>,
-    #[structopt(long = "challenges-path")]
+    #[clap(long = "challenges-path")]
     pub challenges: Option<PathBuf>,
 
-    #[structopt(default_value = "https://servicing-station.vit.iohk.io")]
+    #[clap(default_value = "https://servicing-station.vit.iohk.io")]
     pub vit_station_url: String,
 
-    #[structopt(long = "committee-keys-path")]
+    #[clap(long = "committee-keys-path")]
     pub committee_keys: Option<PathBuf>,
 }
 

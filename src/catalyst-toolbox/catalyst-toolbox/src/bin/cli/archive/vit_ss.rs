@@ -1,11 +1,11 @@
 use catalyst_toolbox::archive::vit_ss::generate_archive_files;
 use color_eyre::Report;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 use tokio::runtime::Runtime;
 
-#[derive(Debug, StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Debug, Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct VitSS {
     /// The path to the vit servicing station database to dump data from.
     vit_ss_database: String,

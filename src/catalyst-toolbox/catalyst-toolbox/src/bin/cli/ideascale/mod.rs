@@ -9,9 +9,9 @@ use color_eyre::Report;
 use itertools::Itertools;
 use jcli_lib::utils::io as io_utils;
 use jormungandr_lib::interfaces::VotePrivacy;
-use std::{collections::HashSet, ffi::OsStr};
+use std::{collections::HashSet, ffi::OsStr, convert::Infallible};
 
-use structopt::StructOpt;
+use clap::Parser;
 
 use catalyst_toolbox::http::default_http_client;
 
@@ -19,75 +19,72 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 pub enum Ideascale {
     Import(Import),
     Filter(Filter),
 }
 
-// We need this type because structopt uses Vec<String> as a special type, so it is not compatible
-// with custom parsers feature.
-type Filters = Vec<String>;
 
-#[derive(Debug, StructOpt)]
-#[structopt(rename_all = "kebab")]
+#[derive(Debug, Parser)]
+#[clap(rename_all = "kebab")]
 pub struct Import {
     /// Fund number id
-    #[structopt(long)]
+    #[clap(long)]
     fund: usize,
 
     /// Fund goal explanation
-    #[structopt(long)]
+    #[clap(long)]
     fund_goal: String,
 
     /// Stage label: stage identifiers that links to assessments scores in ideascale
-    #[structopt(long, default_value = "Assess")]
+    #[clap(long, default_value = "Assess")]
     stage_label: String,
 
     /// ideascale API token
-    #[structopt(long, env = "IDEASCALE_API_TOKEN")]
+    #[clap(long, env = "IDEASCALE_API_TOKEN")]
     api_token: String,
 
     /// Fund approval threshold setting
-    #[structopt(long)]
+    #[clap(long)]
     threshold: i64,
 
     /// either "public" or "private"
-    #[structopt(long)]
+    #[clap(long)]
     chain_vote_type: VotePrivacy,
 
     /// Path to folder where fund, challenges and proposals json files will be dumped
-    #[structopt(long)]
+    #[clap(long)]
     output_dir: PathBuf,
 
     /// Path to proposal scores csv file
-    #[structopt(long)]
+    #[clap(long)]
     scores: Option<PathBuf>,
 
     /// Path to proposal scores csv file
-    #[structopt(long)]
+    #[clap(long)]
     sponsors: Option<PathBuf>,
 
     /// Path to json or json like file containing tag configuration for ideascale custom fields
-    #[structopt(long)]
+    #[clap(long)]
     tags: Option<PathBuf>,
 
     /// Path to json or json like file containing list of excluded proposal ids
-    #[structopt(long)]
+    #[clap(long)]
     excluded_proposals: Option<PathBuf>,
 
     /// Ideascale stages list,
-    #[structopt(long, parse(from_str=parse_from_csv), default_value = "Governance phase;Assess QA")]
-    stages_filters: Filters,
+    #[clap(long, value_parser = parse_from_csv, default_value = "Governance phase;Assess QA")]
+    stages_filters: Vec<String>,
 }
 
-#[derive(Debug, StructOpt)]
-#[structopt(rename_all = "kebab")]
+#[derive(Debug, Parser)]
+#[clap(rename_all = "kebab")]
 pub struct Filter {
-    #[structopt(long)]
+    #[clap(long)]
     input: PathBuf,
 
-    #[structopt(long)]
+    #[clap(long)]
     output: Option<PathBuf>,
 }
 
@@ -259,8 +256,8 @@ fn read_json_from_file<T: DeserializeOwned>(file_path: &Path) -> Result<T, Repor
     Ok(serde_json::from_reader(reader)?)
 }
 
-fn parse_from_csv(s: &str) -> Filters {
-    s.split(';').map(|x| x.to_string()).collect()
+fn parse_from_csv(s: &str) -> Result<Vec<String>, Infallible> {
+    Ok(s.split(';').map(|x| x.to_string()).collect())
 }
 
 fn read_scores_file(path: &Option<PathBuf>) -> Result<Scores, Report> {

@@ -1,6 +1,6 @@
 use crate::jcli_lib::utils::io;
 use std::{io::Write, path::PathBuf};
-use structopt::StructOpt;
+use clap::Parser;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -12,10 +12,10 @@ pub enum Error {
     },
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct OutputFile {
     /// output the key to the given file or to stdout if not provided
-    #[structopt(name = "OUTPUT_FILE")]
+    #[clap(name = "OUTPUT_FILE")]
     output: Option<PathBuf>,
 }
 

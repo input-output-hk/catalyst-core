@@ -9,33 +9,33 @@ use jcli_lib::jcli_lib::block::Common;
 
 use snapshot_lib::registration::MainnetRewardAddress;
 use snapshot_lib::SnapshotInfo;
-use structopt::StructOpt;
+use clap::Parser;
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct VotersRewards {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     common: Common,
     /// Reward (in LOVELACE) to be distributed
-    #[structopt(long)]
+    #[clap(long)]
     total_rewards: u64,
 
     /// Path to a json encoded list of `SnapshotInfo`
-    #[structopt(long)]
+    #[clap(long)]
     snapshot_info_path: PathBuf,
 
     /// Path to a json-encoded list of VotePlanStatusFull to consider for voters
     /// participation in the election.
     /// This can be retrived from the v1/vote/active/plans/full endpoint exposed
     /// by a Jormungandr node.
-    #[structopt(long)]
+    #[clap(long)]
     votes_count_path: PathBuf,
 
     /// Number of global votes required to be able to receive voter rewards
-    #[structopt(long, default_value)]
+    #[clap(long, default_value)]
     vote_threshold: u64,
 }
 

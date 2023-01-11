@@ -2,12 +2,13 @@ mod compare;
 mod sentry;
 
 use color_eyre::Report;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Debug, Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Logs {
     /// Operate over sentry logs
+    #[clap(subcommand)]
     Sentry(sentry::SentryLogs),
     /// Compare Sentry and Persistent fragment logs
     Compare(compare::Compare),

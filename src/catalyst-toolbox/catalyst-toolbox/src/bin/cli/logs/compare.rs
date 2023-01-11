@@ -8,15 +8,15 @@ use jormungandr_lib::interfaces::{
 };
 use serde::de::DeserializeOwned;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Debug, Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Compare {
-    #[structopt(long)]
+    #[clap(long)]
     sentry_logs: PathBuf,
 
-    #[structopt(long)]
+    #[clap(long)]
     permanent_logs: PathBuf,
 }
 

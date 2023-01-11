@@ -4,44 +4,44 @@ use color_eyre::Report;
 use jcli_lib::jcli_lib::block::Common;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::AccountVotes};
 use snapshot_lib::{registration::MainnetRewardAddress, SnapshotInfo};
-use structopt::StructOpt;
+use clap::Parser;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
 use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct DrepsRewards {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     common: Common,
     /// Reward (in dollars) to be distributed proportionally to delegated stake with respect to total stake.
     /// The total amount will only be awarded if dreps control all of the stake.
-    #[structopt(long)]
+    #[clap(long)]
     total_rewards: u64,
 
     /// Path to a json encoded list of `SnapshotInfo`
-    #[structopt(long)]
+    #[clap(long)]
     snapshot_info_path: PathBuf,
 
     /// Path to a json-encoded list of proposal every user has voted for.
     /// This can be retrived from the v1/account-votes-all endpoint exposed
     /// by a Jormungandr node.
-    #[structopt(long)]
+    #[clap(long)]
     votes_count_path: PathBuf,
 
     /// Number of global votes required to be able to receive voter rewards
-    #[structopt(long, default_value)]
+    #[clap(long, default_value)]
     vote_threshold: u64,
 
     /// Path to a json-encoded map from challenge id to an optional required threshold
     /// per-challenge in order to receive rewards.
-    #[structopt(long)]
+    #[clap(long)]
     per_challenge_threshold: Option<PathBuf>,
 
     /// Path to the list of proposals active in this election.
     /// Can be obtained from /api/v0/proposals.
-    #[structopt(long)]
+    #[clap(long)]
     proposals: PathBuf,
 }
 

@@ -8,28 +8,28 @@ use chain_impl_mockchain::block::Block;
 use chain_ser::packer::Codec;
 use color_eyre::Report;
 use jormungandr_lib::interfaces::{Block0Configuration, Initial};
-use std::path::{Path, PathBuf};
-use structopt::StructOpt;
+use std::{path::{Path, PathBuf}, str::FromStr};
+use clap::Parser;
 use url::Url;
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct InfoForQrCodeCmd {
     /// Path to file containing img or payload.
-    #[structopt(short, long, parse(from_os_str))]
+    #[clap(short, long, value_parser = PathBuf::from_str)]
     input: PathBuf,
 
     /// Pin code. 4-digit number is used on Catalyst.
-    #[structopt(short, long, parse(try_from_str))]
+    #[clap(short, long, value_parser = PathBuf::from_str)]
     pin: QrPin,
 
     /// Blockchain block0. Can be either url of local file path
-    #[structopt(long = "block0")]
+    #[clap(long = "block0")]
     pub block0: Option<String>,
 
     /// Set the discrimination type to testing (default is production).
-    #[structopt(short, long)]
+    #[clap(short, long)]
     pub testing: bool,
 
-    #[structopt(flatten)]
+    #[clap(short, long, value_parser = QrCodeOpts::from_str)]
     opts: QrCodeOpts,
 }
 

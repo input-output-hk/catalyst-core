@@ -7,10 +7,10 @@ use archive::ArchiveCommand;
 use color_eyre::Report;
 use live::LiveStatsCommand;
 use snapshot::SnapshotCommand;
-use structopt::StructOpt;
+use clap::Parser;
 use voters::VotersCommand;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Stats {
     Voters(VotersCommand),
     Live(LiveStatsCommand),

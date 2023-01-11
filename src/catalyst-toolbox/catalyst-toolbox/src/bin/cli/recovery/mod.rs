@@ -2,10 +2,10 @@ mod tally;
 mod votes;
 
 use color_eyre::Report;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Recover {
     Tally(tally::ReplayCli),
     VotesPrintout(votes::VotesPrintout),

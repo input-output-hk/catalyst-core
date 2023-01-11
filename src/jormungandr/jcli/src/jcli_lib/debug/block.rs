@@ -5,12 +5,12 @@ use std::{
     io::{BufRead, BufReader},
     path::PathBuf,
 };
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct Block {
     /// file containing hex-encoded message. If not provided, it will be read from stdin.
-    #[structopt(short, long)]
+    #[clap(short, long)]
     input: Option<PathBuf>,
 }
 

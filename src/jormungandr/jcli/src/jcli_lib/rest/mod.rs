@@ -6,12 +6,12 @@ use crate::jcli_lib::utils::{io::ReadYamlError, output_format};
 use chain_core::property::{ReadError, WriteError};
 pub use config::RestArgs;
 use hex::FromHexError;
-use structopt::StructOpt;
+use clap::Parser
 use thiserror::Error;
 
 /// Send request to node REST API
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Rest {
     /// API version 0
     V0(v0::V0),

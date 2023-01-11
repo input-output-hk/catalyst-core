@@ -1,11 +1,11 @@
 use color_eyre::Report;
-use structopt::StructOpt;
+use clap::Parser;
 
 mod node;
 mod vit_ss;
 
-#[derive(Debug, StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Debug, Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Archive {
     Node(node::Node),
     VitSS(vit_ss::VitSS),

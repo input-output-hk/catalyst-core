@@ -6,24 +6,24 @@ use catalyst_toolbox::kedqr::QrPin;
 use color_eyre::Report;
 pub use img::{save_secret_from_qr, secret_from_qr};
 pub use payload::{decode_payload, secret_from_payload};
-use std::path::PathBuf;
-use structopt::StructOpt;
+use std::{path::PathBuf, str::FromStr};
+use clap::Parser;
 
 /// QCode CLI toolkit
-#[derive(Debug, PartialEq, Eq, StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Debug, PartialEq, Eq, Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct DecodeQrCodeCmd {
     /// Path to file containing img or payload.
-    #[structopt(short, long, parse(from_os_str))]
+    #[clap(short, long, value_parser = PathBuf::from_str)]
     input: PathBuf,
     /// Path to file to save secret output, if not provided console output will be attempted.
-    #[structopt(short, long, parse(from_os_str))]
+    #[clap(short, long, value_parser = PathBuf::from_str)]
     output: Option<PathBuf>,
     /// Pin code. 4-digit number is used on Catalyst.
-    #[structopt(short, long, parse(try_from_str))]
+    #[clap(short, long, value_parser = QrPin::from_str)]
     pin: QrPin,
 
-    #[structopt(flatten)]
+    #[clap(short, long, value_parser = QrCodeOpts::from_str)]
     opts: QrCodeOpts,
 }
 
@@ -35,3 +35,4 @@ impl DecodeQrCodeCmd {
         }
     }
 }
+

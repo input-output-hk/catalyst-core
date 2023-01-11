@@ -16,11 +16,11 @@ use jormungandr_lib::{
     crypto::{account::Identifier, hash::Hash},
     interfaces::AccountVotes,
 };
-use structopt::StructOpt;
+use clap::Parser;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Rewards {
     /// Calculate rewards for voters base on their stake
     Voters(voters::VotersRewards),

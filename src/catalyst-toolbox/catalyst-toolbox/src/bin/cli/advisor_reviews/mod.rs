@@ -7,29 +7,29 @@ use jcli_lib::utils::io::open_file_write;
 use std::fmt;
 use std::path::PathBuf;
 use std::str::FromStr;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum OutputFormat {
     Csv,
     Json,
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub enum Reviews {
     Export(Export),
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct Export {
     /// Path to vca aggregated file
-    #[structopt(long)]
+    #[clap(long)]
     from: PathBuf,
     /// Output file
-    #[structopt(long)]
+    #[clap(long)]
     to: PathBuf,
     /// Output format either csv or json
-    #[structopt(long, default_value = "csv")]
+    #[clap(long, default_value = "csv")]
     format: OutputFormat,
 }
 

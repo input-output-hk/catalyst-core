@@ -2,10 +2,10 @@ mod download;
 mod stats;
 
 use color_eyre::Report;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Debug, Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum SentryLogs {
     /// Download logs from sentry
     Download(download::Download),

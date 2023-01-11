@@ -6,17 +6,17 @@ use chain_crypto::{Ed25519, PublicKey};
 use chain_impl_mockchain::certificate::{self, Certificate};
 use jormungandr_lib::interfaces::ConfigParams;
 use std::{io::BufRead, path::PathBuf};
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct UpdateProposal {
     /// the proposer ID.
-    #[structopt(name = "PROPOSER_ID", parse(try_from_str = parse_pub_key))]
+    #[clap(name = "PROPOSER_ID", value_parser = parse_pub_key::<Ed25519>)]
     proposer_id: PublicKey<Ed25519>,
 
     /// the file path to the config file defining the config param changes
     /// If omitted it will be read from the standard input.
-    #[structopt(name = "CONFIG_FILE")]
+    #[clap(name = "CONFIG_FILE")]
     config_file: Option<PathBuf>,
 
     /// print the output signed certificate in the given file, if no file given

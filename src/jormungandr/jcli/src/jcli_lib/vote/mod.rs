@@ -7,7 +7,7 @@ use crate::{
     rest,
 };
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 use thiserror::Error;
 
 mod committee;
@@ -89,8 +89,8 @@ pub enum Error {
     MergeError(#[from] tally::merge_results::Error),
 }
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Vote {
     /// Create committee member keys
     Committee(committee::Committee),

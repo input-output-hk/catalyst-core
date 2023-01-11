@@ -8,15 +8,30 @@ use jortestkit::measurement::EfficiencyBenchmarkFinish;
 use thiserror::Error;
 use valgrind::{VitStationRestClient, VitStationRestError};
 
+/// Struct responsible to simulate real user calls send to Catalyst Backend.
+/// It uses combination of request generators with given proportions defined in settings.
+/// The idea is that if properly configured it can simulate REST API calls which will be generated
+/// from user using mobile apps. Usually users can be divided in 3 categories:
+/// - Browser - not voting at all, just generating load on static data
+/// - Fast voter - many votes, small amount of static data request
+/// - Indecisive voter - small amount of votes, many requests to static data
+/// - All in voter - big batches of votes
 pub struct ArtificialUserLoad {
     config: ArtificialUserLoadConfig,
 }
 
 impl ArtificialUserLoad {
+    /// Creates new object based on configuration
+    #[must_use]
     pub fn new(config: ArtificialUserLoadConfig) -> Self {
         Self { config }
     }
 
+    /// Starts load based on configuration
+    ///
+    /// # Errors
+    ///
+    /// On any load related issue like lack of connectivity or data preparation problem
     pub fn start(self) -> Result<Vec<EfficiencyBenchmarkFinish>, Error> {
         let measurement_name = "artificial user load";
 
@@ -24,7 +39,7 @@ impl ArtificialUserLoad {
         let mut multi_controller = self.config.vote.build_multi_controller()?;
 
         if self.config.vote.reuse_accounts_early {
-            multi_controller.update_wallets_state();
+            multi_controller.update_wallets_state()?;
         }
 
         let node_client = multi_controller.backend().node_client();
@@ -101,14 +116,19 @@ impl ArtificialUserLoad {
     }
 }
 
+/// Generator errors
 #[derive(Error, Debug)]
 pub enum Error {
+    /// Loading configuration
     #[error("configuration error")]
     LoadConfig(#[from] crate::load::config::NodeLoadConfigError),
+    /// Building configuration
     #[error("configuration error")]
     ServicingConfig(#[from] crate::load::config::ServicingStationConfigError),
+    /// Rest api errors
     #[error("rest error")]
     Rest(#[from] VitStationRestError),
+    /// Controller errors
     #[error("controller error")]
     MultiController(#[from] crate::load::MultiControllerError),
 }

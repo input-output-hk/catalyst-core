@@ -97,7 +97,7 @@ impl CliController {
         let key_bytes = Vec::<u8>::from_base32(&data_u5)?;
 
         let mut wallet = Wallet::recover_from_utxo(&key_bytes.try_into().unwrap())?;
-        wallet.set_state(Value(template.value), template.spending_counters);
+        wallet.set_state(Value(template.value), template.spending_counters)?;
 
         let settings = self.backend_client.node_client().settings()?;
         Ok(Controller {
@@ -196,6 +196,8 @@ pub enum Error {
     Wallet(#[from] iapyx::WalletError),
     #[error(transparent)]
     Read(#[from] chain_core::property::ReadError),
+    #[error(transparent)]
+    WalletCore(#[from] wallet_core::Error),
 }
 
 impl From<cocoon::Error> for Error {

@@ -40,7 +40,7 @@ mod value;
 mod vote;
 
 pub use self::{
-    account_identifier::AccountIdentifier,
+    account_identifier::{AccountIdentifier, ParseAccountIdentifierError},
     account_state::AccountState,
     address::Address,
     block0_configuration::*,

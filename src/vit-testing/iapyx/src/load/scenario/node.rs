@@ -16,6 +16,7 @@ pub struct NodeLoad {
 
 impl NodeLoad {
     /// Creates new object
+    #[must_use]
     pub fn new(config: NodeLoadConfig) -> Self {
         Self { config }
     }

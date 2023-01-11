@@ -16,6 +16,7 @@ use wallet::Settings;
 use wallet_core::Choice;
 
 unsafe impl Send for Wallet {}
+use jormungandr_automation::testing::vit::VoteCastCounterError;
 use std::convert::TryInto;
 
 /// Responsible for controlling more than one wallet at one time. Useful for load scenario or wallets
@@ -33,10 +34,13 @@ impl MultiController {
     ///
     /// On backend connectivity issues or parsing qr problems
     ///
+    /// # Panics
+    ///
+    /// On internal error when exposing secret key
     pub fn recover_from_qrs<P: AsRef<Path>>(
         wallet_backend_address: &str,
         qrs: &[P],
-        pin_mode: PinReadModeSettings,
+        pin_mode: &PinReadModeSettings,
         backend_settings: RestSettings,
     ) -> Result<Self, MultiControllerError> {
         let mut backend =
@@ -61,6 +65,10 @@ impl MultiController {
     /// # Errors
     ///
     /// On backend connectivity issues or parsing qr problems
+    ///
+    /// # Panics
+    ///
+    /// On single wallet recover error
     ///
     pub fn recover_from_sks<P: AsRef<Path>>(
         proxy_address: &str,
@@ -127,7 +135,10 @@ impl MultiController {
     ///
     pub fn update_wallet_state(&mut self, wallet_index: usize) -> Result<(), MultiControllerError> {
         let backend = self.backend().clone();
-        let wallet = self.wallets.get_mut(wallet_index).unwrap();
+        let wallet = self
+            .wallets
+            .get_mut(wallet_index)
+            .ok_or(MultiControllerError::NotEnoughWallets)?;
         let account_state = backend.account_state(wallet.id())?;
         wallet
             .set_state((*account_state.value()).into(), account_state.counters())
@@ -146,7 +157,10 @@ impl MultiController {
         wallet_index: usize,
         predicate: &dyn Fn(&Wallet) -> bool,
     ) -> Result<(), MultiControllerError> {
-        let wallet = self.wallets.get_mut(wallet_index).unwrap();
+        let wallet = self
+            .wallets
+            .get_mut(wallet_index)
+            .ok_or(MultiControllerError::NotEnoughWallets)?;
         if predicate(wallet) {
             self.update_wallet_state(wallet_index)?;
         }
@@ -166,7 +180,10 @@ impl MultiController {
         choice: Choice,
         valid_until: BlockDate,
     ) -> Result<FragmentId, MultiControllerError> {
-        let wallet = self.wallets.get_mut(wallet_index).unwrap();
+        let wallet = self
+            .wallets
+            .get_mut(wallet_index)
+            .ok_or(MultiControllerError::NotEnoughWallets)?;
         let tx = wallet.vote(
             self.settings.clone(),
             &proposal.clone().into_wallet_proposal(),
@@ -187,6 +204,10 @@ impl MultiController {
     ///
     /// On connection issues
     ///
+    /// # Panics
+    ///
+    /// On connection problem
+    ///
     pub fn votes_batch(
         &mut self,
         wallet_index: usize,
@@ -194,7 +215,10 @@ impl MultiController {
         votes_data: Vec<(&FullProposalInfo, Choice)>,
         valid_until: &BlockDate,
     ) -> Result<Vec<FragmentId>, MultiControllerError> {
-        let wallet = self.wallets.get_mut(wallet_index).unwrap();
+        let wallet = self
+            .wallets
+            .get_mut(wallet_index)
+            .ok_or(MultiControllerError::NotEnoughWallets)?;
         let account_state = self.backend.account_state(wallet.id())?;
 
         let mut counters = account_state.counters();
@@ -228,7 +252,7 @@ impl MultiController {
     /// Confirms all transactions for all wallets. Confirms means loose interest in tracking their statuses.
     /// This method should be call when we are sure our transactions all in final states (in block or failed).
     pub fn confirm_all_transactions(&mut self) {
-        for wallet in self.wallets.iter_mut() {
+        for wallet in &mut self.wallets {
             wallet.confirm_all_transactions();
         }
     }
@@ -236,12 +260,13 @@ impl MultiController {
     /// Confirms all transactions for wallet. Confirms means loose interest in tracking their statuses.
     /// This method should be call when we are sure our transactions all in final states (in block or failed).
     pub fn confirm_transaction(&mut self, fragment_id: FragmentId) {
-        for wallet in self.wallets.iter_mut() {
+        for wallet in &mut self.wallets {
             wallet.confirm_transaction(fragment_id);
         }
     }
 
     /// Wallet counts
+    #[must_use]
     pub fn wallet_count(&self) -> usize {
         self.wallets.len()
     }
@@ -277,4 +302,19 @@ pub enum MultiControllerError {
     /// Internal wallet core errors
     #[error(transparent)]
     WalletCore(#[from] wallet_core::Error),
+    /// Not enough proposals
+    #[error("not enough wallets")]
+    NotEnoughWallets,
+    /// Not enough votes
+    #[error("not enough votes to cast")]
+    NoMoreVotesToVote,
+    /// Randomizing choices failed
+    #[error("cannot choose next random choice")]
+    RandomChoiceFailed,
+    /// Missing proposal
+    #[error("missing proposal with id: {0}")]
+    MissingProposal(usize),
+    /// Missing proposal
+    #[error(transparent)]
+    VotesCastRegister(#[from] VoteCastCounterError),
 }

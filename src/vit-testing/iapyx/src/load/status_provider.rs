@@ -3,7 +3,7 @@ use jormungandr_lib::interfaces::FragmentStatus;
 use jortestkit::load::RequestStatusProvider;
 use jortestkit::load::{Id, Status};
 use thiserror::Error;
-use valgrind::ValgrindClient;
+use valgrind::{ValgrindClient, ValgrindSettings};
 
 /// Responsible for providing information about status for given ids collection.
 /// It can work over a batch of ids by preparing request to Jormungandr V1 REST Api. Basically it query
@@ -14,8 +14,12 @@ pub struct VoteStatusProvider {
 
 impl VoteStatusProvider {
     /// Creates object based on address and verbosity
+    ///
+    /// # Errors
+    ///
+    /// On connectivity issues
     pub fn new(backend_address: String, debug: bool) -> Result<Self, Error> {
-        let mut backend = ValgrindClient::new(backend_address, Default::default())?;
+        let mut backend = ValgrindClient::new(backend_address, ValgrindSettings::default())?;
         if debug {
             backend.enable_logs();
         } else {
@@ -29,7 +33,7 @@ impl RequestStatusProvider for VoteStatusProvider {
     fn get_statuses(&self, ids: &[Id]) -> Vec<Status> {
         match self
             .backend
-            .fragments_statuses(ids.iter().map(|id| id.to_string()).collect())
+            .fragments_statuses(ids.iter().map(ToString::to_string).collect())
         {
             Ok(fragments_statuses) => fragments_statuses
                 .iter()

@@ -64,13 +64,16 @@ impl ControllerBuilder {
     /// On incorrect format of private key (it should be bech32), problem with reading file or
     /// parsing wallet crypto material
     ///
+    ///
     pub fn with_wallet_from_secret_file<P: AsRef<Path>>(
         mut self,
         private_key: P,
     ) -> Result<Self, Error> {
         let (_, data, _) = read_bech32(&private_key.as_ref().to_path_buf())?;
         let key_bytes = Vec::<u8>::from_base32(&data)?;
-        let data: [u8; 64] = key_bytes.try_into().unwrap();
+        let data: [u8; 64] = key_bytes
+            .try_into()
+            .map_err(|_| Error::InvalidSecretKeyLength)?;
         self.wallet = Some(Wallet::recover_from_utxo(&data)?);
         Ok(self)
     }
@@ -87,7 +90,11 @@ impl ControllerBuilder {
         private_key: SecretKey<Ed25519Extended>,
     ) -> Result<Self, Error> {
         self.wallet = Some(Wallet::recover_from_utxo(
-            &private_key.leak_secret().as_ref().try_into().unwrap(),
+            &private_key
+                .leak_secret()
+                .as_ref()
+                .try_into()
+                .map_err(|_| Error::CannotLeakSecret)?,
         )?);
         Ok(self)
     }
@@ -99,6 +106,10 @@ impl ControllerBuilder {
     /// On incorrect qr code, problem with reading file or
     /// parsing wallet crypto material
     ///
+    /// # Panics
+    ///
+    /// In unlikely event of 10 not fit in u8 type
+    #[allow(clippy::cast_possible_truncation)]
     pub fn with_wallet_from_qr_file<P: AsRef<Path>>(
         mut self,
         qr: P,
@@ -112,11 +123,14 @@ impl ControllerBuilder {
         let secret = KeyQrCode::decode(img, &bytes)
             .unwrap()
             .get(0)
-            .unwrap()
+            .ok_or(Error::NoSecretKeyEncoded)?
             .clone()
             .leak_secret();
         self.wallet = Some(Wallet::recover_from_utxo(
-            secret.as_ref().try_into().unwrap(),
+            secret
+                .as_ref()
+                .try_into()
+                .map_err(|_| Error::InvalidSecretKeyLength)?,
         )?);
         Ok(self)
     }
@@ -209,4 +223,13 @@ pub enum Error {
     /// Key
     #[error(transparent)]
     Key(#[from] jcli_lib::key::Error),
+    /// No secret key exposed
+    #[error("no secret key exposed")]
+    NoSecretKeyEncoded,
+    /// Cannot leak secret
+    #[error("cannot leak secret key from qr code structure")]
+    CannotLeakSecret,
+    /// Cannot leak secret
+    #[error("invalid secret key length")]
+    InvalidSecretKeyLength,
 }

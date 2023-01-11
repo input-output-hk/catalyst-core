@@ -40,6 +40,7 @@ impl WalletRequestGen {
     /// # Errors
     ///
     /// On connectivity with backend issues
+    #[allow(clippy::cast_possible_truncation)]
     pub fn new(
         multi_controller: MultiController,
         update_account_before_vote: bool,
@@ -53,7 +54,7 @@ impl WalletRequestGen {
             .chain_vote_options
             .0
             .values()
-            .cloned()
+            .copied()
             .collect();
 
         let vote_cast_counter = VoteCastCounter::new(
@@ -85,6 +86,10 @@ impl WalletRequestGen {
     /// Therefore a simple rolling index is use which traverse from left to right of collection.
     /// There is a silent assumption that collection is big enough to not cause mentioned problem
     /// with spending counter inconsistency.
+    ///
+    /// # Errors
+    ///
+    ///
     pub fn random_vote(&mut self) -> Result<FragmentId, MultiControllerError> {
         let index = {
             self.wallet_index += 1;
@@ -103,13 +108,23 @@ impl WalletRequestGen {
                 })?;
         }
 
-        let counter = self.vote_cast_counter.advance_single(index).unwrap();
-
+        let counter = self.vote_cast_counter.advance_single(index)?;
+        let index = usize::from(
+            counter
+                .first()
+                .ok_or(MultiControllerError::NoMoreVotesToVote)?
+                .first(),
+        );
         let proposal = self
             .proposals
-            .get(counter.first().unwrap().first() as usize)
-            .unwrap();
-        let choice = Choice::new(*self.options.choose(&mut self.rand).unwrap());
+            .get(index)
+            .ok_or(MultiControllerError::MissingProposal(index))?;
+        let choice = Choice::new(
+            *self
+                .options
+                .choose(&mut self.rand)
+                .ok_or(MultiControllerError::RandomChoiceFailed)?,
+        );
         self.multi_controller.vote(
             index,
             proposal,

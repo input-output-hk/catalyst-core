@@ -7,7 +7,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-uuid = { version = "0.8", features = ["serde","v4"] }
+uuid = { workspace = true }
 chrono = { version = "0.4", features = ["serde"] }
 walkdir = "2.3.1"
 structopt = "0.3"
@@ -28,7 +28,7 @@ tokio = { version = "1.2", features = ["macros","rt","process"] }
 serde_json = "1.0"
 serde_yaml = "0.8"
 signals-handler = { path = "../signals-handler" }
-tracing = "0.1"
+tracing.workspace = true
 
 [dependencies.reqwest]
 version = "0.11"

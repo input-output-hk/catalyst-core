@@ -1,0 +1,9 @@
+{
+	"address": "127.0.0.1:8080",
+	"db": {
+		"name": "preprod",
+		"user": "piotr",
+		"password": "Zaq123edc",
+		"host": "44.197.192.237"
+	}
+}

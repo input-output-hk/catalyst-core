@@ -254,6 +254,7 @@ pub(super) struct TransactionStruct {
     pub(super) sz: usize,
     pub(super) nb_inputs: u8,
     pub(super) nb_outputs: u8,
+    // TODO: remove this
     pub(super) valid_until: BlockDate,
     pub(super) inputs: usize,
     pub(super) outputs: usize,

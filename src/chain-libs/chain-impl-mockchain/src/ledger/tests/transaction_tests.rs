@@ -2,11 +2,10 @@
 
 use crate::{
     accounting::account::{LedgerError::NonExistent, SpendingCounter},
-    date::BlockDate,
     ledger::{
         self,
-        check::{TxValidityError, TxVerifyError},
-        Error::{Account, InvalidTransactionValidity, TransactionMalformed},
+        check::TxVerifyError,
+        Error::{Account, TransactionMalformed},
     },
     testing::{
         data::{AddressData, AddressDataValue},
@@ -41,74 +40,7 @@ pub fn transaction_fail_when_255_outputs() {
             expected: 254,
             actual: 255
         }),
-        test_ledger.apply_transaction(fragment, BlockDate::first())
-    );
-}
-
-#[test]
-pub fn transaction_fail_when_validity_out_of_range() {
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
-        .faucet_value(Value(1000))
-        .build()
-        .expect("cannot build test ledger");
-
-    let receiver = AddressData::utxo(Discrimination::Test);
-    let output = Output {
-        address: receiver.address,
-        value: Value(1),
-    };
-    let outputs = [output];
-
-    let valid_until = Some(BlockDate {
-        epoch: 10,
-        slot_id: 50,
-    });
-
-    let fragment = TestTxBuilder::new(test_ledger.block0_hash)
-        .move_to_outputs_from_faucet_with_validity(&mut test_ledger, valid_until, &outputs)
-        .get_fragment();
-
-    assert_err!(
-        InvalidTransactionValidity(TxValidityError::TransactionExpired),
-        test_ledger.apply_transaction(
-            fragment,
-            BlockDate {
-                epoch: 10,
-                slot_id: 51,
-            }
-        )
-    );
-}
-
-#[test]
-pub fn transaction_fail_when_validity_too_far() {
-    const MAX_EXPIRY_EPOCHS: u8 = 5;
-
-    let mut test_ledger = LedgerBuilder::from_config(
-        ConfigBuilder::new().with_transaction_max_expiry_epochs(MAX_EXPIRY_EPOCHS),
-    )
-    .faucet_value(Value(1000))
-    .build()
-    .expect("cannot build test ledger");
-
-    let receiver = AddressData::utxo(Discrimination::Test);
-    let output = Output {
-        address: receiver.address,
-        value: Value(1),
-    };
-
-    let valid_until = BlockDate {
-        epoch: MAX_EXPIRY_EPOCHS as u32 + 1,
-        slot_id: 0,
-    };
-
-    let fragment = TestTxBuilder::new(test_ledger.block0_hash)
-        .move_to_outputs_from_faucet_with_validity(&mut test_ledger, Some(valid_until), &[output])
-        .get_fragment();
-
-    assert_err!(
-        InvalidTransactionValidity(TxValidityError::TransactionValidForTooLong),
-        test_ledger.apply_transaction(fragment, BlockDate::first())
+        test_ledger.apply_transaction(fragment)
     );
 }
 
@@ -125,11 +57,11 @@ pub fn duplicated_account_transaction() {
         .move_from_faucet(&mut test_ledger, &receiver.address, Value(100))
         .get_fragment();
     let fragment2 = fragment.clone();
-    let result = test_ledger.apply_transaction(fragment, BlockDate::first());
+    let result = test_ledger.apply_transaction(fragment);
 
     match result {
         Err(err) => panic!("first transaction should be succesful but {}", err),
-        Ok(_) => match test_ledger.apply_transaction(fragment2, BlockDate::first()) {
+        Ok(_) => match test_ledger.apply_transaction(fragment2) {
             Err(ledger::Error::Account(crate::account::LedgerError::SpendingCounterError(
                 crate::accounting::account::spending::Error::SpendingCredentialInvalid {
                     expected,
@@ -160,7 +92,7 @@ pub fn transaction_nonexisting_account_input() {
 
     assert_err!(
         Account(NonExistent),
-        test_ledger.apply_transaction(fragment, BlockDate::first())
+        test_ledger.apply_transaction(fragment)
     );
 }
 
@@ -179,9 +111,7 @@ pub fn transaction_with_incorrect_account_spending_counter() {
         .move_from_faucet(&mut test_ledger, &receiver.into(), Value(1000))
         .get_fragment();
     assert!(
-        test_ledger
-            .apply_transaction(fragment, BlockDate::first())
-            .is_err(),
+        test_ledger.apply_transaction(fragment).is_err(),
         "first transaction should be successful"
     );
 }
@@ -199,14 +129,10 @@ pub fn repeated_account_transaction() {
     let fragment = TestTxBuilder::new(test_ledger.block0_hash)
         .move_all_funds(&mut test_ledger, &faucet, &receiver)
         .get_fragment();
-    assert!(test_ledger
-        .apply_transaction(fragment, BlockDate::first())
-        .is_ok());
+    assert!(test_ledger.apply_transaction(fragment).is_ok());
     faucet.confirm_transaction().unwrap();
     let fragment = TestTxBuilder::new(test_ledger.block0_hash)
         .move_all_funds(&mut test_ledger, &faucet, &receiver)
         .get_fragment();
-    assert!(test_ledger
-        .apply_transaction(fragment, BlockDate::first())
-        .is_err());
+    assert!(test_ledger.apply_transaction(fragment).is_err());
 }

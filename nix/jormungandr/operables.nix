@@ -14,6 +14,7 @@
   in
     std.lib.ops.mkOperable {
       inherit package;
+      debugInputs = lib.containerCommonDebug;
       # TODO: Remove all the bitte stuff
       runtimeScript = ''
         ulimit -n 1024

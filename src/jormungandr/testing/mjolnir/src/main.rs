@@ -1,6 +1,6 @@
 use mjolnir::Mjolnir;
 use std::error::Error;
-use structopt::StructOpt;
+use clap::Parser;
 
 fn main() {
     Mjolnir::from_args().exec().unwrap_or_else(report_error)

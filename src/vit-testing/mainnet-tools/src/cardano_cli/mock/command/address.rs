@@ -2,9 +2,9 @@ use crate::cardano_cli::mock::command::write_to_file_or_println;
 use crate::cardano_cli::mock::fake;
 use std::io;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Address {
     Build(BuildCommand),
 }
@@ -17,27 +17,27 @@ impl Address {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct BuildCommand {
-    #[structopt(long = "payment-verification-key")]
+    #[clap(long = "payment-verification-key")]
     pub payment_verification_key: Option<String>,
 
-    #[structopt(long = "payment-verification-key-file")]
+    #[clap(long = "payment-verification-key-file")]
     pub payment_verification_key_file: Option<PathBuf>,
 
-    #[structopt(long = "stake-verification-key")]
+    #[clap(long = "stake-verification-key")]
     pub stake_verification_key: Option<String>,
 
-    #[structopt(long = "stake-verification-key-file")]
+    #[clap(long = "stake-verification-key-file")]
     pub stake_verification_key_file: Option<PathBuf>,
 
-    #[structopt(long = "testnet-magic")]
+    #[clap(long = "testnet-magic")]
     pub testnet_magic: Option<u32>,
 
-    #[structopt(long = "mainnet")]
+    #[clap(long = "mainnet")]
     pub mainnet: bool,
 
-    #[structopt(long = "out-file")]
+    #[clap(long = "out-file")]
     pub out_file: Option<PathBuf>,
 }
 

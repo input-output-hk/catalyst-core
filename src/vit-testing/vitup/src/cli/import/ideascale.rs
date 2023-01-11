@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::{fs::File, path::PathBuf};
-use structopt::StructOpt;
+use clap::Parser;
 use thiserror::Error;
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
+#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub enum ImportFromIdeascaleFormatCommand {
     Scores(ImportScores),
     Proposals(ImportProposals),
@@ -27,12 +27,12 @@ impl ImportFromIdeascaleFormatCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ImportProposals {
-    #[structopt(long = "input")]
+    #[clap(long = "input")]
     pub input: PathBuf,
 
-    #[structopt(
+    #[clap(
         long = "output",
         default_value = "../resources/external/challenges.json"
     )]
@@ -51,12 +51,12 @@ impl ImportProposals {
         Ok(())
     }
 }
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ImportChallenges {
-    #[structopt(long = "input")]
+    #[clap(long = "input")]
     pub input: PathBuf,
 
-    #[structopt(
+    #[clap(
         long = "output",
         default_value = "../resources/external/proposals.json"
     )]
@@ -75,18 +75,18 @@ impl ImportChallenges {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ImportScores {
-    #[structopt(long = "input")]
+    #[clap(long = "input")]
     pub input: PathBuf,
 
-    #[structopt(
+    #[clap(
         long = "proposals",
         default_value = "../resources/external/proposals.json"
     )]
     pub proposals: PathBuf,
 
-    #[structopt(long = "format", short = "f")]
+    #[clap(long = "format", short = "f")]
     pub format: Format,
 }
 
@@ -174,12 +174,12 @@ pub struct InputScores {
     pub rating_given: String,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ImportReviews {
-    #[structopt(long = "input")]
+    #[clap(long = "input")]
     pub input: PathBuf,
 
-    #[structopt(long = "output")]
+    #[clap(long = "output")]
     pub output: PathBuf,
 }
 

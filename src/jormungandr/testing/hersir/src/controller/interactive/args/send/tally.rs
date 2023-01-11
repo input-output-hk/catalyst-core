@@ -1,14 +1,14 @@
 use super::UserInteractionController;
 use crate::{controller::Error, style};
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct VoteTally {
-    #[structopt(short = "c", long = "committee")]
+    #[clap(short = 'c', long = "committee")]
     pub committee: String,
-    #[structopt(short = "p", long = "vote-plan")]
+    #[clap(short = 'p', long = "vote-plan")]
     pub vote_plan: String,
-    #[structopt(short = "v", long = "via")]
+    #[clap(short = 'v', long = "via")]
     pub via: String,
 }
 

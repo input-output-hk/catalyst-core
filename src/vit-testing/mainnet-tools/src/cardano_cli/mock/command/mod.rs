@@ -2,7 +2,7 @@ use color_eyre::Report;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 
 mod address;
 mod query;
@@ -15,7 +15,7 @@ pub use stake_address::StakeAddress;
 pub use transaction::Transaction;
 
 /// Wrapper around cardano CLI commands
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Command {
     /// Query commands
     Query(Query),

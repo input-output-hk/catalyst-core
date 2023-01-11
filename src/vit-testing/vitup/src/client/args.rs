@@ -4,18 +4,18 @@ use crate::client::rest::VitupRest;
 use crate::config::Config;
 use crate::Result;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 use thor::PersistentLogViewer;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct VitupClientCommand {
-    #[structopt(short, long, env = "VIT_TOKEN")]
+    #[clap(short, long, env = "VIT_TOKEN")]
     token: Option<String>,
 
-    #[structopt(short, long, env = "VIT_ENDPOINT")]
+    #[clap(short, long, env = "VIT_ENDPOINT")]
     endpoint: String,
 
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     command: Command,
 }
 
@@ -38,7 +38,7 @@ impl VitupClientCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Command {
     /// disruption
     Disruption(DisruptionCommand),
@@ -48,7 +48,7 @@ pub enum Command {
     Utils(UtilsCommand),
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum DisruptionCommand {
     /// start backend from scratch
     Logs(LogsCommand),
@@ -68,7 +68,7 @@ impl DisruptionCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum LogsCommand {
     /// start backend from scratch
     Clear,
@@ -88,7 +88,7 @@ impl LogsCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum FilesCommand {
     List,
 }
@@ -104,7 +104,7 @@ impl FilesCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum ControlCommand {
     Reset,
     SetUnavailable,
@@ -143,19 +143,19 @@ impl ControlCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct SetFundIdCommand {
-    #[structopt(long = "fund-id")]
+    #[clap(long = "fund-id")]
     fund_id: u32,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct SetErrorCodeCommand {
-    #[structopt(long = "code")]
+    #[clap(long = "code")]
     code: u16,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum FragmentsCommand {
     Reject,
     Hold,
@@ -174,7 +174,7 @@ impl FragmentsCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum MockCommand {
     /// files commands
     Files(MockFilesCommand),
@@ -186,7 +186,7 @@ pub enum MockCommand {
     Status,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum MockStartCommand {
     /// start custom
     Custom(MockStartCustomCommand),
@@ -209,9 +209,9 @@ impl MockStartCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct MockStartCustomCommand {
-    #[structopt(short = "p", long = "params")]
+    #[clap(short = "p", long = "params")]
     params: std::path::PathBuf,
 }
 
@@ -224,7 +224,7 @@ impl MockStartCustomCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum MockFilesCommand {
     List,
 }
@@ -260,7 +260,7 @@ impl MockCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum UtilsCommand {
     /// persistent log comamnds
     PersistentLog(PersistentLogCommand),
@@ -274,7 +274,7 @@ impl UtilsCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum PersistentLogCommand {
     /// persistent log commands
     Count(CountPersistentLogCommand),
@@ -288,10 +288,10 @@ impl PersistentLogCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct CountPersistentLogCommand {
     /// count commands  
-    #[structopt(long = "folder")]
+    #[clap(long = "folder")]
     pub folder: PathBuf,
 }
 

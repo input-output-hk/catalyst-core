@@ -1,9 +1,9 @@
 use crate::controller::{Error, UserInteractionController};
 use jormungandr_automation::jormungandr::explorer::configuration::ExplorerParams;
 use jortestkit::prelude::InteractiveCommandError;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Explorer {
     /// Sends transaction
     Tip(ExplorerTip),
@@ -17,9 +17,9 @@ impl Explorer {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ExplorerTip {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: String,
 }
 

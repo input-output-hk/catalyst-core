@@ -2,10 +2,10 @@ mod ideascale;
 
 pub use ideascale::{Error as ImportError, ImportFromIdeascaleFormatCommand};
 
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
+#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub enum ImportCommand {
     Ideascale(ImportFromIdeascaleFormatCommand),
 }

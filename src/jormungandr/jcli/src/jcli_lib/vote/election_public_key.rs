@@ -1,21 +1,21 @@
 use crate::jcli_lib::vote::{Error, OutputFile};
 use chain_crypto::bech32::Bech32;
 use std::io::Write as _;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct ElectionPublicKey {
     /// Keys of all committee members
-    #[structopt(
-        parse(try_from_str = chain_vote::committee::MemberPublicKey::try_from_bech32_str),
+    #[clap(
+        value_parser = chain_vote::committee::MemberPublicKey::try_from_bech32_str,
         required = true,
-        short = "k",
+        short = 'k',
         long = "keys"
     )]
     member_keys: Vec<chain_vote::committee::MemberPublicKey>,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output_file: OutputFile,
 }
 

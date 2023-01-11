@@ -2,18 +2,18 @@ use indicatif::{HumanDuration, MultiProgress, ProgressBar, ProgressStyle};
 use std::fmt;
 use std::thread;
 use std::time::Instant;
-use structopt::StructOpt;
+use clap::Parser;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use thiserror::Error;
 use valgrind::{Error as ValgrindError, ValgrindClient};
 use vit_servicing_station_lib::utils::datetime::unix_timestamp_to_datetime;
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
+#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct DeploymentValidateCommand {
     /// target address
-    #[structopt(long = "address")]
+    #[clap(long = "address")]
     pub address: String,
 }
 

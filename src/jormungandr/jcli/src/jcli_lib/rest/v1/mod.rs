@@ -6,6 +6,7 @@ use clap::Parser;
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]
 pub enum V1 {
+    #[clap(subcommand)]
     Vote(vote::Vote),
 }
 

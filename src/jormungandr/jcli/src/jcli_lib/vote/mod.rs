@@ -93,10 +93,12 @@ pub enum Error {
 #[clap(rename_all = "kebab-case")]
 pub enum Vote {
     /// Create committee member keys
+    #[clap(subcommand)]
     Committee(committee::Committee),
     /// Build the election public key from committee member keys
     ElectionKey(election_public_key::ElectionPublicKey),
     /// Perform decryption of private voting tally
+    #[clap(subcommand)]
     Tally(tally::Tally),
 }
 
@@ -111,8 +113,9 @@ impl Vote {
 }
 
 // FIXME: Duplicated with key.rs
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct Seed([u8; 32]);
+
 impl std::str::FromStr for Seed {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {

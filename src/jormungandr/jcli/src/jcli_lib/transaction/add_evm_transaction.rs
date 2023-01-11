@@ -1,11 +1,11 @@
 use crate::jcli_lib::transaction::{common, Error};
 use jormungandr_lib::interfaces::EvmTransaction;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser, Debug)]
+#[clap(rename_all = "kebab-case")]
 pub struct AddEvmTransaction {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub common: common::CommonTransaction,
 
     /// hex encoded evm transaction

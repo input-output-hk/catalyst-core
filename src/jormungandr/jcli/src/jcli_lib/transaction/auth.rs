@@ -3,15 +3,15 @@ use crate::jcli_lib::{
     transaction::{common, Error},
 };
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Auth {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub common: common::CommonTransaction,
     /// path to the file with the signing key
-    #[structopt(short = "k", long = "key")]
+    #[clap(short = 'k', long = "key")]
     pub signing_keys: Vec<PathBuf>,
 }
 

@@ -1,8 +1,8 @@
 use std::error::Error;
-use structopt::StructOpt;
+use clap::Parser;
 
 fn main() {
-    jcli_lib::JCli::from_args()
+    jcli_lib::JCli::parse()
         .exec()
         .unwrap_or_else(report_error)
 }

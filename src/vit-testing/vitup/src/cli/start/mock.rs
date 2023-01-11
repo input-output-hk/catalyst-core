@@ -3,22 +3,22 @@ use crate::mode::mock::{farm, read_config, start_rest_server, Configuration, Con
 use jormungandr_automation::jormungandr::LogLevel;
 use std::sync::{Mutex, RwLock};
 use std::{path::PathBuf, sync::Arc};
-use structopt::StructOpt;
+use clap::Parser;
 use thiserror::Error;
 use tracing::subscriber::SetGlobalDefaultError;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct MockStartCommandArgs {
-    #[structopt(long = "token")]
+    #[clap(long = "token")]
     pub token: Option<String>,
 
-    #[structopt(long = "config")]
+    #[clap(long = "config")]
     pub config: PathBuf,
 
-    #[structopt(long = "params")]
+    #[clap(long = "params")]
     pub params: Option<PathBuf>,
 
-    #[structopt(long = "log-level", default_value = "INFO")]
+    #[clap(long = "log-level", default_value = "INFO")]
     pub log_level: LogLevel,
 }
 
@@ -47,11 +47,11 @@ impl MockStartCommandArgs {
     }
 }
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
+#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct MockFarmCommand {
     /// path to config file
-    #[structopt(long = "config", short = "c")]
+    #[clap(long = "config", short = "c")]
     pub config: PathBuf,
 }
 

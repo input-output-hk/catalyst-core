@@ -1,7 +1,7 @@
 mod load;
 
 use load::IapyxLoadCommand;
-use structopt::StructOpt;
+use clap::Parser;
 
 pub fn main() {
     IapyxLoadCommand::from_args().exec().unwrap();

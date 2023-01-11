@@ -25,7 +25,6 @@ pub enum V0 {
     #[clap(subcommand)]
     Account(account::Account),
     /// Block operations
-    #[clap(subcommand)]
     Block(block::Block),
     /// Node leaders operations
     #[clap(subcommand)]
@@ -58,7 +57,6 @@ pub enum V0 {
     #[clap(subcommand)]
     Tip(tip::Tip),
     /// UTXO information
-    #[clap(subcommand)]
     Utxo(utxo::Utxo),
     /// System diagnostic information
     #[clap(subcommand)]

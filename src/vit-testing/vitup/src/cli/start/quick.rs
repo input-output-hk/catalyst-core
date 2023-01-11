@@ -15,32 +15,32 @@ use jormungandr_automation::jormungandr::LogLevel;
 use jortestkit::prelude::read_file;
 use std::path::PathBuf;
 use std::str::FromStr;
-use structopt::StructOpt;
+use clap::Parser;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
+#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct QuickStartCommandArgs {
     /// path or name of the jormungandr node to test
-    #[structopt(long = "jormungandr", default_value = "jormungandr")]
+    #[clap(long = "jormungandr", default_value = "jormungandr")]
     pub jormungandr: PathBuf,
 
     /// path or name of the jcli to test
-    #[structopt(long = "jcli", default_value = "jcli")]
+    #[clap(long = "jcli", default_value = "jcli")]
     pub jcli: PathBuf,
 
     /// set a directory in which the tests will be run, allowing every details
     /// to be save persistently. By default it will create temporary directories
     /// and will delete the files and documents
-    #[structopt(long = "root-dir", default_value = "./catalyst")]
+    #[clap(long = "root-dir", default_value = "./catalyst")]
     pub testing_directory: PathBuf,
 
     /// level for all nodes
-    #[structopt(long = "log-level", default_value = "info")]
+    #[clap(long = "log-level", default_value = "info")]
     pub log_level: String,
 
     /// how many addresses to generate
-    #[structopt(long = "initials")]
+    #[clap(long = "initials")]
     pub initials: Option<usize>,
 
     /// json file which define funds for each account
@@ -49,59 +49,59 @@ pub struct QuickStartCommandArgs {
     ///   "8000",
     ///   "10000",
     /// }
-    #[structopt(long = "block-initials-mapping", conflicts_with = "initials")]
+    #[clap(long = "block-initials-mapping", conflicts_with = "initials")]
     pub initials_mapping: Option<PathBuf>,
 
     /// vote start epoch of vote plan
-    #[structopt(long = "vote-start-epoch", default_value = "1")]
+    #[clap(long = "vote-start-epoch", default_value = "1")]
     pub vote_start_epoch: u32,
 
     /// vote start epoch of vote plan
-    #[structopt(long = "tally-start-epoch", default_value = "2")]
+    #[clap(long = "tally-start-epoch", default_value = "2")]
     pub tally_start_epoch: u32,
 
     /// vote tally end epoch of vote plan
-    #[structopt(long = "tally-end-epoch", default_value = "3")]
+    #[clap(long = "tally-end-epoch", default_value = "3")]
     pub tally_end_epoch: u32,
 
-    #[structopt(long = "vote-start-timestamp", conflicts_with = "vote_start_epoch")]
+    #[clap(long = "vote-start-timestamp", conflicts_with = "vote_start_epoch")]
     pub vote_start_timestamp: Option<String>,
 
     /// vote start epoch of vote plan
-    #[structopt(long = "tally-start-timestamp", conflicts_with = "vote_start_epoch")]
+    #[clap(long = "tally-start-timestamp", conflicts_with = "vote_start_epoch")]
     pub tally_start_timestamp: Option<String>,
 
     /// vote tally end epoch of vote plan
-    #[structopt(long = "tally-end-timestamp", conflicts_with = "vote_start_epoch")]
+    #[clap(long = "tally-end-timestamp", conflicts_with = "vote_start_epoch")]
     pub tally_end_timestamp: Option<String>,
 
     /// vote tally end epoch of vote plan
-    #[structopt(long = "next-vote-timestamp")]
+    #[clap(long = "next-vote-timestamp")]
     pub next_vote_timestamp: Option<String>,
 
     /// snapshot timestamp
-    #[structopt(long = "snapshot-timestamp")]
+    #[clap(long = "snapshot-timestamp")]
     pub snapshot_timestamp: Option<String>,
 
     /// slot duration
-    #[structopt(long = "slot-duration", default_value = "20")]
+    #[clap(long = "slot-duration", default_value = "20")]
     pub slot_duration: u8,
 
     /// slots in epoch
-    #[structopt(long = "slots-in-epoch", default_value = "60")]
+    #[clap(long = "slots-in-epoch", default_value = "60")]
     pub slots_in_epoch: u32,
 
     /// proposals number
-    #[structopt(long = "proposals", default_value = "10")]
+    #[clap(long = "proposals", default_value = "10")]
     pub proposals: u32,
 
     /// voting power threshold for participating in voting
-    #[structopt(long = "voting-power", default_value = "8000")]
+    #[clap(long = "voting-power", default_value = "8000")]
     pub voting_power: u64,
 
     /// interactive mode introduce easy way to interact with backend
     /// is capable of quering logs, sending transactions (e.g. tallying), etc.,
-    #[structopt(
+    #[clap(
         long = "mode",
         default_value = "Endless",
         parse(from_str = parse_mode_from_str)
@@ -109,29 +109,29 @@ pub struct QuickStartCommandArgs {
     pub mode: Mode,
 
     /// endopint in format: 127.0.0.1:80
-    #[structopt(long = "endpoint", default_value = "0.0.0.0:8080")]
+    #[clap(long = "endpoint", default_value = "0.0.0.0:8080")]
     pub endpoint: String,
 
     /// switch to private voting type
-    #[structopt(long = "private")]
+    #[clap(long = "private")]
     pub private: bool,
 
     /// use https mode for backend
-    #[structopt(long = "https")]
+    #[clap(long = "https")]
     pub https: bool,
 
     /// switch to private voting type
-    #[structopt(long = "version", default_value = "2.0")]
+    #[clap(long = "version", default_value = "2.0")]
     pub version: String,
 
     /// token, only applicable if service mode is used
-    #[structopt(long = "token")]
+    #[clap(long = "token")]
     pub token: Option<String>,
 
-    #[structopt(long = "snapshot")]
+    #[clap(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
 
-    #[structopt(long = "vitup-log-level", default_value = "LogLevel::INFO")]
+    #[clap(long = "vitup-log-level", default_value = "LogLevel::INFO")]
     pub vitup_log_level: LogLevel,
 }
 

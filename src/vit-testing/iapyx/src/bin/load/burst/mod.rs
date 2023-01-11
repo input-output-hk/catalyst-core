@@ -4,9 +4,9 @@ mod duration;
 use crate::load::IapyxLoadCommandError;
 pub use count::BurstCountIapyxLoadCommand;
 pub use duration::BurstDurationIapyxLoadCommand;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum BurstIapyxLoadCommand {
     /// Duration based load. Defines how much time load should run
     Duration(BurstDurationIapyxLoadCommand),

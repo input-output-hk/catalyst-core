@@ -12,29 +12,29 @@ use jortestkit::prelude::read_file;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
+#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct SnapshotCommandArgs {
     /// Careful! directory would be removed before export
-    #[structopt(long = "root-dir", default_value = "./data")]
+    #[clap(long = "root-dir", default_value = "./data")]
     pub output_directory: PathBuf,
 
     /// how many addresses to generate
-    #[structopt(long = "count")]
+    #[clap(long = "count")]
     pub initials: Option<usize>,
 
-    #[structopt(long = "initials", conflicts_with = "count")]
+    #[clap(long = "initials", conflicts_with = "count")]
     pub initials_mapping: Option<PathBuf>,
 
-    #[structopt(long = "global-pin", default_value = "1234")]
+    #[clap(long = "global-pin", default_value = "1234")]
     pub global_pin: String,
 
-    #[structopt(long = "skip-qr-generation")]
+    #[clap(long = "skip-qr-generation")]
     pub skip_qr_generation: bool,
 
-    #[structopt(long = "log-level", default_value = "LogLevel::INFO")]
+    #[clap(long = "log-level", default_value = "LogLevel::INFO")]
     pub log_level: LogLevel,
 }
 

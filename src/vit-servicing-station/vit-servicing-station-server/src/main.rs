@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use opentelemetry_otlp::WithExportConfig;
-use structopt::StructOpt;
+use clap::Parser;
 use tracing::{error, info};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::filter::LevelFilter;
@@ -131,7 +131,7 @@ fn config_tracing(
 #[tokio::main]
 async fn main() -> ApplicationExitCode {
     // load settings from command line (defaults to env variables)
-    let mut settings: ServiceSettings = ServiceSettings::from_args();
+    let mut settings: ServiceSettings = ServiceSettings::parse();
 
     // load settings from file if specified
     if let Some(settings_file) = &settings.in_settings_file {

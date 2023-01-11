@@ -3,9 +3,9 @@ use crate::Result;
 use hersir::controller::interactive::args::describe::{
     DescribeNodes, DescribeTopology, DescribeVotePlans, DescribeWallets,
 };
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Describe {
     /// Prints available wallets with aliases
     /// that can be used
@@ -50,9 +50,9 @@ impl Describe {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct DescribeVitStations {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = "a", long = "alias")]
     pub alias: Option<String>,
 }
 
@@ -69,9 +69,9 @@ impl DescribeVitStations {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct DescribeAll {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = "a", long = "alias")]
     pub alias: Option<String>,
 }
 
@@ -89,9 +89,9 @@ impl DescribeAll {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct DescribeWalletProxies {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = "a", long = "alias")]
     pub alias: Option<String>,
 }
 

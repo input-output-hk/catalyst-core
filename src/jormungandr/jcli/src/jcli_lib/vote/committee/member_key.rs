@@ -5,56 +5,57 @@ use chain_vote::committee::{
 };
 use rand::rngs::OsRng;
 use rand_chacha::{rand_core::SeedableRng, ChaCha20Rng};
-use std::{convert::TryInto, io::Write, path::PathBuf};
-use structopt::StructOpt;
+use std::{convert::TryInto, io::Write, path::PathBuf, str::FromStr};
+use clap::Parser;
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct Generate {
     /// threshold number of the committee members sufficient for
     /// decrypting the tally
-    #[structopt(long, short, name = "THRESHOLD", parse(try_from_str))]
+    #[clap(long, short, name = "THRESHOLD", value_parser = usize::from_str)]
     threshold: usize,
 
     /// the common reference string
-    #[structopt(long, name = "Crs")]
+    #[clap(long, name = "Crs")]
     crs: String,
 
     /// communication keys of all committee members
-    #[structopt(long, short, name = "COMMUNICATION_KEYS",
-        parse(try_from_str = MemberCommunicationPublicKey::try_from_bech32_str),
+    #[clap(long, short, name = "COMMUNICATION_KEYS",
+        value_parser = MemberCommunicationPublicKey::try_from_bech32_str,
         required = true,
     )]
     keys: Vec<MemberCommunicationPublicKey>,
 
     /// index of the committee member this key is generated for
-    #[structopt(long, short, name = "INDEX", parse(try_from_str))]
+    #[clap(long, short, name = "INDEX", value_parser = u64::from_str)]
     index: u64,
 
     /// optional seed to generate the key, for the same entropy the same key
     /// will be generated (32 bytes in hexadecimal). This seed will be fed to
     /// ChaChaRNG and allow pseudo random key generation. Do not use if you
     /// are not sure.
-    #[structopt(long = "seed", short = "s", name = "SEED", parse(try_from_str))]
+    #[clap(long = "seed", short = 's', name = "SEED", value_parser = Seed::from_str)]
     seed: Option<Seed>,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output_file: OutputFile,
 }
 
-#[derive(StructOpt)]
+
+#[derive(Parser)]
 pub struct ToPublic {
     /// The file with the private key to extract the public key from.
     /// If no value passed, the private key will be read from the
     /// standard input.
-    #[structopt(long = "input")]
+    #[clap(long = "input")]
     input_key: Option<PathBuf>,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output_file: OutputFile,
 }
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum MemberKey {
     /// generate a private key
     Generate(Generate),

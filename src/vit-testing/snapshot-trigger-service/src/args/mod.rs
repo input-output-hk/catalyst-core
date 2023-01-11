@@ -7,14 +7,14 @@ use crate::{
 use scheduler_service_lib::{spawn_scheduler, ManagerService, WrappedPoisonError};
 use std::sync::Mutex;
 use std::{path::PathBuf, sync::Arc};
-use structopt::StructOpt;
+use clap::Parser;
 use thiserror::Error;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct TriggerServiceCommand {
-    #[structopt(long = "token")]
+    #[clap(long = "token")]
     pub token: Option<String>,
-    #[structopt(long = "config")]
+    #[clap(long = "config")]
     pub config: PathBuf,
 }
 

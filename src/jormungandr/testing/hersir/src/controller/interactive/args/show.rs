@@ -2,10 +2,10 @@ use crate::controller::{do_for_all_alias, UserInteractionController};
 use jormungandr_automation::jormungandr::{
     BackwardCompatibleRest, FragmentNode, JormungandrLogger, LogLevel,
 };
-use structopt::StructOpt;
+use clap::Parser;
 use yaml_rust::Yaml;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Show {
     /// Prints which nodes are upp
     Status(ShowStatus),
@@ -26,48 +26,48 @@ pub enum Show {
     VotePlans(ActiveVotePlans),
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ShowNodeStats {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ShowLogs {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 
-    #[structopt(short = "e", long = "only-errors")]
+    #[clap(short = 'e', long = "only-errors")]
     pub only_errors: bool,
 
-    #[structopt(short = "c", long = "contains")]
+    #[clap(short = 'c', long = "contains")]
     pub contains: Option<String>,
 
-    #[structopt(short = "t", long = "tail")]
+    #[clap(short = 't', long = "tail")]
     pub tail: Option<usize>,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ShowFragmentCount {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ShowFragments {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ShowBlockHeight {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ActiveVotePlans {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 
@@ -83,15 +83,15 @@ impl ActiveVotePlans {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ShowPeerStats {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ShowStatus {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 

@@ -1,6 +1,6 @@
 use super::SchedulerRestClient;
 use serde::de::DeserializeOwned;
-use structopt::StructOpt;
+use clap::Parser;
 use thiserror::Error;
 
 pub struct HealthCommand;
@@ -15,10 +15,10 @@ impl HealthCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct StatusCommand {
     /// job id
-    #[structopt(short, long)]
+    #[clap(short, long)]
     job_id: String,
 }
 
@@ -31,7 +31,7 @@ impl StatusCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum FilesCommand {
     List,
 }

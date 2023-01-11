@@ -3,9 +3,9 @@ use crate::cardano_cli::mock::fake;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum StakeAddress {
     Build(BuildCommand),
     RegisterCertificate(RegistrationCertificateCommand),
@@ -20,21 +20,21 @@ impl StakeAddress {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct BuildCommand {
-    #[structopt(long = "stake-verification-key")]
+    #[clap(long = "stake-verification-key")]
     pub stake_verification_key: Option<String>,
 
-    #[structopt(long = "stake-verification-key-file")]
+    #[clap(long = "stake-verification-key-file")]
     pub stake_verification_key_file: Option<PathBuf>,
 
-    #[structopt(long = "testnet-magic")]
+    #[clap(long = "testnet-magic")]
     pub testnet_magic: Option<u32>,
 
-    #[structopt(long = "mainnet")]
+    #[clap(long = "mainnet")]
     pub mainnet: bool,
 
-    #[structopt(long = "out-file")]
+    #[clap(long = "out-file")]
     pub out_file: Option<PathBuf>,
 }
 
@@ -46,12 +46,12 @@ impl BuildCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct RegistrationCertificateCommand {
-    #[structopt(long = "stake-verification-key-file")]
+    #[clap(long = "stake-verification-key-file")]
     pub stake_verification_key_file: PathBuf,
 
-    #[structopt(long = "out-file")]
+    #[clap(long = "out-file")]
     pub out_file: PathBuf,
 }
 

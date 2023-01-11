@@ -7,18 +7,18 @@ use chain_evm::ethereum_types::H160;
 use chain_impl_mockchain::certificate::{Certificate, EvmMapping};
 use jormungandr_lib::interfaces::Certificate as CertificateType;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser, Debug)]
+#[clap(rename_all = "kebab-case")]
 pub struct EvmMapCmd {
     /// jormungandr account id
-    #[structopt(name = "ACCOUNT_KEY", parse(try_from_str = parse_pub_key))]
+    #[clap(name = "ACCOUNT_KEY", parse(try_from_str = parse_pub_key))]
     account_id: PublicKey<Ed25519>,
     /// hex encoded H160 address
     evm_address: H160,
     /// write the output to the given file or print it to the standard output if not defined
-    #[structopt(short = "o", long = "output")]
+    #[clap(short = "o", long = "output")]
     output: Option<PathBuf>,
 }
 

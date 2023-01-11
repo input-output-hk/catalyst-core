@@ -11,7 +11,7 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 use thiserror::Error;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
@@ -20,27 +20,27 @@ use vit_servicing_station_tests::common::data::{
 };
 use vit_servicing_station_tests::common::data::{ChallengeTemplate, FundTemplate, ReviewTemplate};
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
+#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct IdeascaleValidateCommand {
     /// proposals import json
-    #[structopt(long = "output", default_value = "./validate/output")]
+    #[clap(long = "output", default_value = "./validate/output")]
     pub output: PathBuf,
 
     /// input folder
-    #[structopt(name = "INPUT")]
+    #[clap(name = "INPUT")]
     pub input: PathBuf,
 
     /// prefix
-    #[structopt(long = "prefix")]
+    #[clap(long = "prefix")]
     pub prefix: Option<String>,
 
     /// should i fix data is possible
-    #[structopt(long = "fix")]
+    #[clap(long = "fix")]
     pub fix: bool,
 
     /// should i fix data is possible
-    #[structopt(long = "mail", default_value = "")]
+    #[clap(long = "mail", default_value = "")]
     pub mail_replacement: String,
 }
 

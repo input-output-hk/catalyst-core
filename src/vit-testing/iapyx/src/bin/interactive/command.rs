@@ -12,7 +12,7 @@ use jormungandr_lib::crypto::hash::Hash;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::str::FromStr;
-use structopt::StructOpt;
+use clap::Parser;
 use thiserror::Error;
 use thor::cli::{Alias, Connection};
 use valgrind::ProposalExtension;
@@ -23,7 +23,7 @@ use wallet_core::Choice;
 ///
 /// Command line wallet for testing Catalyst
 ///
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum IapyxCommand {
     /// Sets node rest API address. Verifies connection on set.
     Connect(Connect),
@@ -126,18 +126,18 @@ impl IapyxCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct Votes {
     /// Id of input vote plan
-    #[structopt(long = "vote-plan-id")]
+    #[clap(long = "vote-plan-id")]
     pub vote_plan_id: Option<String>,
     /// Index of vote plan
-    #[structopt(long = "vote-plan-index", conflicts_with = "vote-plan-id")]
+    #[clap(long = "vote-plan-index", conflicts_with = "vote-plan-id")]
     pub vote_plan_index: Option<usize>,
     /// Print title, otherwise only id would be print out
-    #[structopt(long = "print-title")]
+    #[clap(long = "print-title")]
     pub print_proposal_title: bool,
-    #[structopt(default_value = "direct", long)]
+    #[clap(default_value = "direct", long)]
     pub voting_group: String,
 }
 
@@ -218,7 +218,7 @@ impl Votes {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Vote {
     /// Send single vote
     Single(SingleVote),
@@ -235,24 +235,24 @@ impl Vote {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct SingleVote {
     /// Choice, usually 'yes' or 'no'
-    #[structopt(short = "c", long = "choice")]
+    #[clap(short = "c", long = "choice")]
     pub choice: String,
     /// Proposal id of target proposal. It can be obtained from `iapyx proposals` command
-    #[structopt(short = "i", long = "id")]
+    #[clap(short = "i", long = "id")]
     pub proposal_id: String,
     /// Transaction expiry fixed time
-    #[structopt(long = "valid-until-fixed")]
+    #[clap(long = "valid-until-fixed")]
     pub valid_until_fixed: Option<BlockDate>,
     /// Transaction expiry shifted time
-    #[structopt(long = "valid-until-shift", conflicts_with = "valid-until-fixed")]
+    #[clap(long = "valid-until-shift", conflicts_with = "valid-until-fixed")]
     pub valid_until_shift: Option<BlockDate>,
     /// Pin
-    #[structopt(long, short)]
+    #[clap(long, short)]
     pub pin: String,
-    #[structopt(default_value = "direct", long)]
+    #[clap(default_value = "direct", long)]
     pub voting_group: String,
 }
 
@@ -281,21 +281,21 @@ impl SingleVote {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct BatchOfVotes {
     /// Choice, usually 'yes' or 'no'
-    #[structopt(short = "c", long = "choices")]
+    #[clap(short = "c", long = "choices")]
     pub choices: String,
     /// Transaction expiry time
-    #[structopt(long)]
+    #[clap(long)]
     pub valid_until_fixed: Option<BlockDate>,
     /// Transaction expiry time
-    #[structopt(long, conflicts_with = "valid-until-fixed")]
+    #[clap(long, conflicts_with = "valid-until-fixed")]
     pub valid_until_shift: Option<BlockDate>,
     /// Pin
-    #[structopt(long, short)]
+    #[clap(long, short)]
     pub pin: String,
-    #[structopt(default_value = "direct", long)]
+    #[clap(default_value = "direct", long)]
     pub voting_group: String,
 }
 
@@ -375,16 +375,16 @@ pub enum IapyxCommandError {
     Io(#[from] std::io::Error),
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct Connect {
     /// Backend address. For example `https://catalyst.io/api`
-    #[structopt(name = "ADDRESS")]
+    #[clap(name = "ADDRESS")]
     pub address: String,
     /// Uses https for sending fragments
-    #[structopt(short = "s", long = "https")]
+    #[clap(short = "s", long = "https")]
     pub use_https: bool,
     /// Printing additional information
-    #[structopt(short = "d", long = "enable-debug")]
+    #[clap(short = "d", long = "enable-debug")]
     pub enable_debug: bool,
 }
 
@@ -400,15 +400,15 @@ impl Connect {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct Proposals {
     /// Show only ids
-    #[structopt(short = "i")]
+    #[clap(short = "i")]
     pub only_ids: bool,
     /// Limit output entries
-    #[structopt(short, long)]
+    #[clap(short, long)]
     pub limit: Option<usize>,
-    #[structopt(default_value = "direct", long)]
+    #[clap(default_value = "direct", long)]
     pub voting_group: String,
 }
 impl Proposals {
@@ -438,72 +438,72 @@ impl Proposals {
         Ok(())
     }
 }
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Wallets {
     /// Recover wallet funds from mnemonic
     Use {
-        #[structopt(name = "ALIAS")]
+        #[clap(name = "ALIAS")]
         alias: Alias,
     },
     /// Recover wallet funds from qr code
     Import {
-        #[structopt(short, long)]
+        #[clap(short, long)]
         alias: Alias,
 
-        #[structopt(subcommand)]
+        #[clap(subcommand)]
         cmd: WalletAddSubcommand,
     },
     /// Delete wallet with alias
     Delete {
-        #[structopt(name = "ALIAS")]
+        #[clap(name = "ALIAS")]
         alias: Alias,
     },
     /// List already imported wallets
     List,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum WalletAddSubcommand {
     /// Recover wallet funds from mnemonic
     Secret {
         /// Path to secret file
-        #[structopt(name = "SECRET")]
+        #[clap(name = "SECRET")]
         secret: PathBuf,
 
         /// Pin to protect you wallet.
-        #[structopt(short, long)]
+        #[clap(short, long)]
         pin: String,
 
         /// If true testing discrimination is used, otherwise production
-        #[structopt(short, long)]
+        #[clap(short, long)]
         testing: bool,
     },
     /// Recover wallet funds from qr code
     QR {
         /// Path to qr file
-        #[structopt(name = "QR")]
+        #[clap(name = "QR")]
         qr: PathBuf,
 
         /// Pin to protect you wallet.
-        #[structopt(short, long)]
+        #[clap(short, long)]
         pin: String,
 
         /// If true testing discrimination is used, otherwise production
-        #[structopt(short, long)]
+        #[clap(short, long)]
         testing: bool,
     },
     /// recover wallet funds from hash
     Hash {
         /// Path to file with payload
-        #[structopt(name = "Hash")]
+        #[clap(name = "Hash")]
         hash: PathBuf,
 
         /// Pin to protect you wallet.
-        #[structopt(short, long)]
+        #[clap(short, long)]
         pin: String,
 
         /// If true testing discrimination is used, otherwise production
-        #[structopt(short, long)]
+        #[clap(short, long)]
         testing: bool,
     },
 }

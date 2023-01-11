@@ -5,9 +5,9 @@ mod tx_only;
 use crate::mjolnir_lib::MjolnirError;
 pub use adversary::Adversary;
 pub use all::AllFragments;
-use structopt::StructOpt;
+use clap::Parser;
 pub use tx_only::TxOnly;
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Standard {
     /// Put load on endpoint using transaction fragments only.
     TxOnly(tx_only::TxOnly),

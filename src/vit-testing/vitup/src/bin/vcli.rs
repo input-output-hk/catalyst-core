@@ -1,4 +1,4 @@
-use structopt::StructOpt;
+use clap::Parser;
 use vitup::client::args::VitupClientCommand;
 use vitup::Result;
 

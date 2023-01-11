@@ -14,12 +14,12 @@ use diff::DiffCommand;
 use generate::DataCommandArgs;
 use import::ImportCommand;
 use start::QuickStartCommandArgs;
-use structopt::StructOpt;
+use clap::Parser;
 pub use validate::Error as ValidateError;
 use validate::ValidateCommand;
 
 #[allow(clippy::large_enum_variant)]
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum VitCliCommand {
     /// Starts catalyst backend
     Start(StartCommand),
@@ -48,7 +48,7 @@ impl VitCliCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum StartCommand {
     /// start backend from scratch
     Quick(QuickStartCommandArgs),
@@ -73,7 +73,7 @@ impl StartCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum GenerateCommand {
     /// generate qrs
     Qr(QrCommandArgs),

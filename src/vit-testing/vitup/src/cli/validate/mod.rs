@@ -7,11 +7,11 @@ use deployment::CheckError;
 use deployment::DeploymentValidateCommand;
 pub use ideascale::Error as IdeascaleError;
 use ideascale::IdeascaleValidateCommand;
-use structopt::StructOpt;
+use clap::Parser;
 use thiserror::Error;
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
+#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub enum ValidateCommand {
     Ideascale(IdeascaleValidateCommand),
     Deployment(DeploymentValidateCommand),

@@ -8,31 +8,31 @@ use jortestkit::prelude::read_file;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 use valgrind::ValgrindClient;
 use vit_servicing_station_tests::common::startup::server::ServerBootstrapper;
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
+#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct DiffCommand {
     /// Local environment to compare
-    #[structopt(short = "l", long = "local", default_value = "./data/")]
+    #[clap(short = "l", long = "local", default_value = "./data/")]
     pub local: PathBuf,
 
     /// Vit servicing station server binary
-    #[structopt(long = "vit-station", default_value = "vit-servicing-station-server")]
+    #[clap(long = "vit-station", default_value = "vit-servicing-station-server")]
     pub vit_station: PathBuf,
 
     /// Target environment to compare
-    #[structopt(short = "t", long = "target")]
+    #[clap(short = "t", long = "target")]
     pub target: String,
 
     /// Output file. If not defined it will output to stdout
-    #[structopt(short = "o", long = "output")]
+    #[clap(short = "o", long = "output")]
     pub output: Option<PathBuf>,
 
     /// Apply coloring during diff
-    #[structopt(short = "c", long = "color")]
+    #[clap(short = "c", long = "color")]
     pub color: bool,
 }
 

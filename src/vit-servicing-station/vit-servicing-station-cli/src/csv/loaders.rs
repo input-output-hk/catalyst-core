@@ -12,7 +12,7 @@ use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::{fs, io};
-use structopt::StructOpt;
+use clap::Parser;
 use thiserror::Error;
 use vit_servicing_station_lib::db;
 use vit_servicing_station_lib::db::models::goals::InsertGoal;
@@ -41,14 +41,14 @@ pub enum Error {
     #[error(transparent)]
     Diesel(#[from] diesel::result::Error),
 }
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Parser)]
 pub struct LoadCmd {
     /// Additional import settings
-    #[structopt(long = "additional-settings")]
+    #[clap(long = "additional-settings")]
     settings: Option<PathBuf>,
 
     /// URL of the vit-servicing-station database to interact with
-    #[structopt(long = "db-url")]
+    #[clap(long = "db-url")]
     db_url: String,
 
     /// Path to the csv containing funds information
@@ -56,39 +56,39 @@ pub struct LoadCmd {
     ///
     /// Also the first fund being the current one, which means previous funds should not be
     /// included. This restriction may be lifted in the future.
-    #[structopt(long = "funds")]
+    #[clap(long = "funds")]
     funds: PathBuf,
 
     /// Path to the csv containing voteplans information
-    #[structopt(long = "voteplans")]
+    #[clap(long = "voteplans")]
     voteplans: PathBuf,
 
     /// Path to the csv containing proposals information
-    #[structopt(long = "proposals")]
+    #[clap(long = "proposals")]
     proposals: PathBuf,
 
     /// Path to the csv containing challenges information
-    #[structopt(long = "challenges")]
+    #[clap(long = "challenges")]
     challenges: PathBuf,
 
     /// Path to the csv containing advisor reviews information
-    #[structopt(long = "reviews")]
+    #[clap(long = "reviews")]
     reviews: PathBuf,
 
     /// Path to the csv containing goals information
-    #[structopt(long = "goals")]
+    #[clap(long = "goals")]
     goals: Option<PathBuf>,
 
     /// Path to the csv containing goals information
-    #[structopt(long = "groups")]
+    #[clap(long = "groups")]
     groups: Option<PathBuf>,
 
     /// Path to the folder containing csv with votes information
-    #[structopt(long = "votes")]
+    #[clap(long = "votes")]
     votes: Option<PathBuf>,
 }
 
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Parser)]
 pub enum CsvDataCmd {
     /// Loads data into db
     Load(LoadCmd),

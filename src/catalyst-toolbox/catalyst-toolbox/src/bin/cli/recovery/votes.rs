@@ -16,29 +16,29 @@ use std::collections::HashMap;
 use std::io::Write;
 use std::iter::IntoIterator;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 
 use super::set_verbosity;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct VotesPrintout {
     /// Path to the block0 binary file
-    #[structopt(long)]
+    #[clap(long)]
     block0_path: PathBuf,
 
     /// Path to the folder containing the log files used for the tally reconstruction
-    #[structopt(long)]
+    #[clap(long)]
     logs_path: PathBuf,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output: OutputFile,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output_format: OutputFormat,
 
     /// Verbose mode (-v, -vv, -vvv, etc)
-    #[structopt(short = "v", long = "verbose", parse(from_occurrences))]
+    #[clap(short = "v", long = "verbose", parse(from_occurrences))]
     verbose: usize,
 }
 

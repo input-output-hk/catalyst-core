@@ -3,26 +3,26 @@ use catalyst_toolbox::stats::voters::calculate_active_wallet_distribution;
 use color_eyre::Report;
 use std::ops::Range;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 use thiserror::Error;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ActiveVotersCommand {
-    #[structopt(long = "support-lovelace")]
+    #[clap(long = "support-lovelace")]
     pub support_lovelace: bool,
-    #[structopt(long = "block0")]
+    #[clap(long = "block0")]
     pub block0: String,
-    #[structopt(long = "threshold")]
+    #[clap(long = "threshold")]
     pub threshold: u64,
-    #[structopt(long = "votes-count-file")]
+    #[clap(long = "votes-count-file")]
     pub votes_count_path: PathBuf,
-    #[structopt(long = "votes-count-levels")]
+    #[clap(long = "votes-count-levels")]
     pub votes_count_levels: Option<PathBuf>,
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     pub command: Command,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Command {
     Count,
     Ada,

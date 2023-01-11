@@ -10,7 +10,7 @@ use jortestkit::prelude::ConsoleWriter;
 use jortestkit::prelude::InteractiveCommandError;
 use jortestkit::prelude::InteractiveCommandExec;
 use std::ffi::OsStr;
-use structopt::{clap::AppSettings, StructOpt};
+use clap::{clap::AppSettings, Parser};
 
 pub struct VitInteractiveCommandExec {
     pub vit_controller: VitUserInteractionController,
@@ -68,8 +68,8 @@ impl InteractiveCommandExec for VitInteractiveCommandExec {
     }
 }
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = AppSettings::NoBinaryName)]
+#[derive(Parser, Debug)]
+#[clap(setting = AppSettings::NoBinaryName)]
 pub enum VitInteractiveCommand {
     // Prints nodes related data, like stats,fragments etc.
     Show(show::Show),

@@ -1,5 +1,5 @@
 use mainnet_tools::snapshot::wormhole::Command;
-use structopt::StructOpt;
+use clap::Parser;
 
 pub fn main() -> Result<(), color_eyre::Report> {
     color_eyre::install()?;

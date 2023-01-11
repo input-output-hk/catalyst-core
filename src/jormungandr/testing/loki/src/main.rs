@@ -3,10 +3,10 @@ use chain_impl_mockchain::block::Block;
 use jormungandr_lib::interfaces::NodeSecret;
 use loki::{args::Args, error::Error, process::AdversaryNodeBuilder, rest::AdversaryRest};
 use std::{fs::File, io::BufReader};
-use structopt::StructOpt;
+use clap::Parser;
 
 fn main() {
-    let args = Args::from_args();
+    let args = Args::parse();
 
     if let Err(e) = launch(&args) {
         eprintln!("{}", e);

@@ -36,65 +36,47 @@ use thiserror::Error;
 pub enum Transaction {
     /// create a new staging transaction. The transaction is initially
     /// empty.
-    #[clap(subcommand)]
     New(new::New),
     /// add UTxO input to the transaction
-    #[clap(subcommand)]
     AddInput(add_input::AddInput),
     /// add Account input to the transaction
-    #[clap(subcommand)]
     AddAccount(add_account::AddAccount),
     /// add output to the transaction
-    #[clap(subcommand)]
     AddOutput(add_output::AddOutput),
     /// add output to the finalized transaction
-    #[clap(subcommand)]
     AddWitness(add_witness::AddWitness),
     /// set a transaction expiration date
-    #[clap(subcommand)]
     SetExpiryDate(set_expiry_date::SetExpiryDate),
     /// set a certificate to the Transaction. If there is already
     /// an evm transaction in the transaction it will be reset.
     /// If there is already an extra certificate in the transaction
     /// it will be replaced with the new one.
-    #[clap(subcommand)]
     AddCertificate(add_certificate::AddCertificate),
     /// set a evm transaction to the Transaction. If there is already
     /// an extra certificate in the transaction it will be reset.
     /// If there is already an evm transaction in the transaction
     /// it will be replaced with the new one.
-    #[clap(subcommand)]
     AddEvmTransaction(add_evm_transaction::AddEvmTransaction),
     /// Lock a transaction and start adding witnesses
-    #[clap(subcommand)]
     Finalize(finalize::Finalize),
     /// Finalize the transaction
-    #[clap(subcommand)]
     Seal(seal::Seal),
     /// get the Fragment ID from the given 'sealed' transaction
-    #[clap(subcommand)]
     FragmentId(common::CommonTransaction),
     /// DEPRECATED: use 'data-for-witness' instead
-    #[clap(subcommand)]
     Id(common::CommonTransaction),
     /// get the data to sign from the given transaction
     /// (if the transaction is edited, the returned value will change)
-    #[clap(subcommand)]
     DataForWitness(common::CommonTransaction),
     /// display the info regarding a given transaction
-    #[clap(subcommand)]
     Info(info::Info),
     /// create witnesses
-    #[clap(subcommand)]
     MakeWitness(mk_witness::MkWitness),
     /// make auth
-    #[clap(subcommand)]
     Auth(auth::Auth),
     /// get the message format out of a sealed transaction
-    #[clap(subcommand)]
     ToMessage(common::CommonTransaction),
     /// send a transaction from one account to another (simplified method)
-    #[clap(subcommand)]
     MakeTransaction(simplified::MakeTransaction),
 }
 

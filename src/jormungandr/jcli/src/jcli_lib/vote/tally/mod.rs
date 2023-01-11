@@ -4,10 +4,10 @@ pub(crate) mod merge_results;
 
 use super::Error;
 pub use merge_results::MergedVotePlan;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Tally {
     /// Create a decryption share for private voting tally.
     ///

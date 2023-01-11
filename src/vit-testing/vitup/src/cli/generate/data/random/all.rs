@@ -7,23 +7,23 @@ use crate::Result;
 use hersir::config::SessionSettings;
 use jormungandr_automation::jormungandr::LogLevel;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
+#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct AllRandomDataCommandArgs {
     /// Careful! directory would be removed before export
-    #[structopt(long = "output", default_value = "./data")]
+    #[clap(long = "output", default_value = "./data")]
     pub output_directory: PathBuf,
 
     /// how many qr to generate
-    #[structopt(long = "config")]
+    #[clap(long = "config")]
     pub config: PathBuf,
 
-    #[structopt(long = "snapshot")]
+    #[clap(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
 
-    #[structopt(long = "log-level", default_value = "LogLevel::INFO")]
+    #[clap(long = "log-level", default_value = "LogLevel::INFO")]
     pub log_level: LogLevel,
 }
 

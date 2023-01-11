@@ -4,8 +4,8 @@ use jortestkit::{
     load::{ConfigurationBuilder, Monitor},
     prelude::{parse_progress_bar_mode_from_str, ProgressBarMode},
 };
-use std::time::Duration;
-use structopt::StructOpt;
+use std::{time::Duration, convert::Infallible};
+use clap::Parser;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -14,36 +14,40 @@ pub enum ExplorerLoadCommandError {
     ClientError(#[from] MjolnirError),
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ExplorerLoadCommand {
     /// Number of threads
-    #[structopt(short = "c", long = "count", default_value = "3")]
+    #[clap(short = 'c', long = "count", default_value = "3")]
     pub count: usize,
     /// Endpoint address in format:
     /// 127.0.0.1:80
-    #[structopt(short = "e", long = "endpoint")]
+    #[clap(short = 'e', long = "endpoint")]
     pub endpoint: String,
 
     /// Amount of delay (in milliseconds) between sync attempts
-    #[structopt(long = "delay", default_value = "50")]
+    #[clap(long = "delay", default_value = "50")]
     pub delay: u64,
 
     /// Load duration
-    #[structopt(short = "d", long = "duration")]
+    #[clap(short = 'd', long = "duration")]
     pub duration: u64,
 
     /// Show progress
-    #[structopt(
+    #[clap(
         long = "progress-bar-mode",
-        short = "b",
+        short = 'b',
         default_value = "Monitor",
-        parse(from_str = parse_progress_bar_mode_from_str)
+        value_parser = parse_progress_bar,
     )]
     progress_bar_mode: ProgressBarMode,
 
     /// Prints post load measurements
-    #[structopt(short = "m", long = "measure")]
+    #[clap(short = 'm', long = "measure")]
     pub measure: bool,
+}
+
+fn parse_progress_bar(s: &str) -> Result<ProgressBarMode, Infallible> {
+    Ok(parse_progress_bar_mode_from_str(s))
 }
 
 impl ExplorerLoadCommand {

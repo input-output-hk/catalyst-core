@@ -1,18 +1,19 @@
 use gtmpl::Value as GtmplValue;
 use serde_json::{Map as JsonMap, Number as JsonNumber, Value as JsonValue};
-use std::fmt::{self, Display, Formatter};
-use structopt::StructOpt;
+use std::{fmt::{self, Display, Formatter}, str::FromStr, convert::Infallible};
+use clap::Parser;
 use thiserror::Error;
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct OutputFormat {
     /// Format of output data. Possible values: json, yaml.
     /// Any other value is treated as a custom format using values from output data structure.
     /// Syntax is Go text template: <https://golang.org/pkg/text/template/>.
-    #[structopt(long = "output-format", default_value = "yaml", parse(from_str))]
+    #[clap(long = "output-format", default_value = "yaml", value_parser = FormatVariant::from_str)]
     format: FormatVariant,
 }
 
+#[derive(Debug, Clone)]
 pub enum FormatVariant {
     Yaml,
     Json,
@@ -32,6 +33,13 @@ impl<'a> From<&'a str> for FormatVariant {
             "json" => FormatVariant::Json,
             _ => FormatVariant::Custom(format.to_string()),
         }
+    }
+}
+
+impl FromStr for FormatVariant {
+    type Err = Infallible;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(s))
     }
 }
 

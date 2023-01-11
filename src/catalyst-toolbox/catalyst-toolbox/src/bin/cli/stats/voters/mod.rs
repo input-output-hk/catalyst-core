@@ -4,9 +4,9 @@ mod initials;
 use active::ActiveVotersCommand;
 use color_eyre::Report;
 use initials::InitialVotersCommand;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum VotersCommand {
     Initials(InitialVotersCommand),
     Active(ActiveVotersCommand),

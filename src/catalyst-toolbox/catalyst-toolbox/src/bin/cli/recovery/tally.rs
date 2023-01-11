@@ -10,34 +10,34 @@ use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 use std::path::PathBuf;
 
 use reqwest::Url;
-use structopt::StructOpt;
+use clap::Parser;
 
 use super::set_verbosity;
 
 /// Recover the tally from fragment log files and the initial preloaded block0 binary file.
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab")]
 pub struct ReplayCli {
     /// Path to the block0 binary file
-    #[structopt(long, conflicts_with = "block0-url")]
+    #[clap(long, conflicts_with = "block0-url")]
     block0_path: Option<PathBuf>,
 
     /// Url to a block0 endpoint
-    #[structopt(long)]
+    #[clap(long)]
     block0_url: Option<Url>,
 
     /// Path to the folder containing the log files used for the tally reconstruction
-    #[structopt(long)]
+    #[clap(long)]
     logs_path: PathBuf,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output: OutputFile,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output_format: OutputFormat,
 
     /// Verbose mode (-v, -vv, -vvv, etc)
-    #[structopt(short = "v", long = "verbose", parse(from_occurrences))]
+    #[clap(short = "v", long = "verbose", parse(from_occurrences))]
     verbose: usize,
 }
 

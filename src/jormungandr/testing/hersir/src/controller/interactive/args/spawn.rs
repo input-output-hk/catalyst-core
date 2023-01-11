@@ -8,9 +8,9 @@ use jormungandr_automation::jormungandr::{
 };
 use jortestkit::console::InteractiveCommandError;
 use std::time::Duration;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Spawn {
     Passive(SpawnPassiveNode),
     Leader(SpawnLeaderNode),
@@ -25,15 +25,15 @@ impl Spawn {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct SpawnPassiveNode {
-    #[structopt(short = "s", long = "storage")]
+    #[clap(short = 's', long = "storage")]
     pub storage: bool,
-    #[structopt(short = "l", long = "legacy")]
+    #[clap(short = 'l', long = "legacy")]
     pub legacy: Option<String>,
-    #[structopt(short = "w", long = "wait")]
+    #[clap(short = 'w', long = "wait")]
     pub wait: bool,
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: String,
 }
 
@@ -50,15 +50,15 @@ impl SpawnPassiveNode {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct SpawnLeaderNode {
-    #[structopt(short = "s", long = "storage")]
+    #[clap(short = 's', long = "storage")]
     pub storage: bool,
-    #[structopt(short = "l", long = "legacy")]
+    #[clap(short = 'l', long = "legacy")]
     pub legacy: Option<String>,
-    #[structopt(short = "w", long = "wait")]
+    #[clap(short = 'w', long = "wait")]
     pub wait: bool,
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: String,
 }
 

@@ -3,25 +3,25 @@ use rand::RngCore;
 use rand_core::OsRng;
 use std::io::Write;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
+#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct RandomScoresDataCommandArgs {
     /// Careful! directory would be removed before export
-    #[structopt(long = "output", default_value = "./proposals.json")]
+    #[clap(long = "output", default_value = "./proposals.json")]
     pub output_file: PathBuf,
 
-    #[structopt(
+    #[clap(
         long = "proposals",
         default_value = "../resources/external/proposals.json"
     )]
     pub proposals: PathBuf,
 
-    #[structopt(long = "min", default_value = "100")]
+    #[clap(long = "min", default_value = "100")]
     pub minimal_score: u32,
 
-    #[structopt(long = "max", default_value = "499")]
+    #[clap(long = "max", default_value = "499")]
     pub maximal_score: u32,
 }
 

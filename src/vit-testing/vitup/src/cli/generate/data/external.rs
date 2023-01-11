@@ -6,49 +6,49 @@ use crate::Result;
 use hersir::config::SessionSettings;
 use jormungandr_automation::jormungandr::LogLevel;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Parser;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
+#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct ExternalDataCommandArgs {
     /// Careful! directory would be removed before export
-    #[structopt(long = "output", default_value = "./data")]
+    #[clap(long = "output", default_value = "./data")]
     pub output_directory: PathBuf,
 
     /// configuration
-    #[structopt(long = "config")]
+    #[clap(long = "config")]
     pub config: PathBuf,
 
     /// proposals import json
-    #[structopt(
+    #[clap(
         long = "proposals",
         default_value = "../resources/external/proposals.json"
     )]
     pub proposals: PathBuf,
 
     /// challenges import json
-    #[structopt(
+    #[clap(
         long = "challenges",
         default_value = "../resources/external/challenges.json"
     )]
     pub challenges: PathBuf,
 
     /// funds import json
-    #[structopt(long = "funds", default_value = "../resources/external/funds.json")]
+    #[clap(long = "funds", default_value = "../resources/external/funds.json")]
     pub funds: PathBuf,
 
     /// reviews import json
-    #[structopt(long = "reviews", default_value = "../resources/external/reviews.json")]
+    #[clap(long = "reviews", default_value = "../resources/external/reviews.json")]
     pub reviews: PathBuf,
 
-    #[structopt(long = "snapshot")]
+    #[clap(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
 
-    #[structopt(long = "skip-qr-generation")]
+    #[clap(long = "skip-qr-generation")]
     pub skip_qr_generation: bool,
 
-    #[structopt(long = "log-level", default_value = "LogLevel::INFO")]
+    #[clap(long = "log-level", default_value = "LogLevel::INFO")]
     pub log_level: LogLevel,
 }
 

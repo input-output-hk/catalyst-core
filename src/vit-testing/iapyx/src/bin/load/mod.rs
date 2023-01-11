@@ -32,6 +32,7 @@ pub enum IapyxLoadCommandError {
 #[derive(Parser, Debug)]
 pub enum IapyxLoadCommand {
     /// Load which targets blockchain calls only
+    #[clap(subcommand)]
     NodeOnly(NodeOnlyLoadCommand),
     /// Load which targets static data only
     StaticOnly(StaticOnlyLoadCommand),
@@ -52,7 +53,7 @@ impl IapyxLoadCommand {
 #[derive(Parser, Debug)]
 pub struct ArtificialLoadCommand {
     /// Path to configuration file
-    #[clap(short = "c", long = "config")]
+    #[clap(short = 'c', long = "config")]
     config: PathBuf,
 }
 
@@ -67,7 +68,7 @@ impl ArtificialLoadCommand {
 #[derive(Parser, Debug)]
 pub struct StaticOnlyLoadCommand {
     /// Path to configuration file
-    #[clap(short = "c", long = "config")]
+    #[clap(short = 'c', long = "config")]
     config: PathBuf,
 }
 
@@ -82,8 +83,10 @@ impl StaticOnlyLoadCommand {
 #[derive(Parser, Debug)]
 pub enum NodeOnlyLoadCommand {
     /// Bursts mode. Sends votes in batches and then wait x seconds
+    #[clap(subcommand)]
     Burst(BurstIapyxLoadCommand),
     /// Constant load. Sends votes with x votes per second speed.
+    #[clap(subcommand)]
     Const(ConstIapyxLoadCommand),
 }
 

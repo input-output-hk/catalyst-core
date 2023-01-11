@@ -10,7 +10,7 @@ use jortestkit::prelude::ConsoleWriter;
 use jortestkit::prelude::InteractiveCommandError;
 use jortestkit::prelude::InteractiveCommandExec;
 use std::ffi::OsStr;
-use clap::{clap::AppSettings, Parser};
+use clap::Parser;
 
 pub struct VitInteractiveCommandExec {
     pub vit_controller: VitUserInteractionController,
@@ -41,7 +41,7 @@ impl InteractiveCommandExec for VitInteractiveCommandExec {
         tokens: Vec<String>,
         console: ConsoleWriter,
     ) -> std::result::Result<(), InteractiveCommandError> {
-        match VitInteractiveCommand::from_iter_safe(&mut tokens.iter().map(OsStr::new)) {
+        match VitInteractiveCommand::try_parse_from(&mut tokens.iter().map(OsStr::new)) {
             Ok(interactive) => {
                 if let Err(err) = {
                     match interactive {
@@ -69,16 +69,19 @@ impl InteractiveCommandExec for VitInteractiveCommandExec {
 }
 
 #[derive(Parser, Debug)]
-#[clap(setting = AppSettings::NoBinaryName)]
 pub enum VitInteractiveCommand {
     // Prints nodes related data, like stats,fragments etc.
+    #[clap(subcommand)]
     Show(show::Show),
     /// Sends Explorer queries
+    #[clap(subcommand)]
     Explorer(explorer::Explorer),
     /// Exit interactive mode
     Exit,
     /// Prints wallets, nodes which can be used. Draw topology
+    #[clap(subcommand)]
     Describe(describe::Describe),
     /// send fragments
+    #[clap(subcommand)]
     Send(send::Send),
 }

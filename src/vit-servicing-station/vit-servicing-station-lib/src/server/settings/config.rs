@@ -533,7 +533,7 @@ mod test {
     #[test]
     fn merge_settings() {
         let default = ServiceSettings::default();
-        let other_settings = ServiceSettings::from_iter(&[
+        let other_settings = ServiceSettings::parse_from(&[
             "test",
             "--address",
             "127.0.0.1:8080",

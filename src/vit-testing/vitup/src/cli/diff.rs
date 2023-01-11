@@ -13,10 +13,9 @@ use valgrind::ValgrindClient;
 use vit_servicing_station_tests::common::startup::server::ServerBootstrapper;
 
 #[derive(Parser, Debug)]
-#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct DiffCommand {
     /// Local environment to compare
-    #[clap(short = "l", long = "local", default_value = "./data/")]
+    #[clap(short = 'l', long = "local", default_value = "./data/")]
     pub local: PathBuf,
 
     /// Vit servicing station server binary
@@ -24,15 +23,15 @@ pub struct DiffCommand {
     pub vit_station: PathBuf,
 
     /// Target environment to compare
-    #[clap(short = "t", long = "target")]
+    #[clap(short = 't', long = "target")]
     pub target: String,
 
     /// Output file. If not defined it will output to stdout
-    #[clap(short = "o", long = "output")]
+    #[clap(short = 'o', long = "output")]
     pub output: Option<PathBuf>,
 
     /// Apply coloring during diff
-    #[clap(short = "c", long = "color")]
+    #[clap(short = 'c', long = "color")]
     pub color: bool,
 }
 

@@ -8,8 +8,10 @@ mod standard;
 #[derive(Parser, Debug)]
 pub enum FragmentLoadCommand {
     /// sends fragments using batch endpoint
+    #[clap(subcommand)]
     Batch(batch::Batch),
     /// sends fragments in single manner
+    #[clap(subcommand)]
     Standard(standard::Standard),
 }
 

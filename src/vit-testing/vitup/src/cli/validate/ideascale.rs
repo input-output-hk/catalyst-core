@@ -21,7 +21,6 @@ use vit_servicing_station_tests::common::data::{
 use vit_servicing_station_tests::common::data::{ChallengeTemplate, FundTemplate, ReviewTemplate};
 
 #[derive(Parser, Debug)]
-#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct IdeascaleValidateCommand {
     /// proposals import json
     #[clap(long = "output", default_value = "./validate/output")]

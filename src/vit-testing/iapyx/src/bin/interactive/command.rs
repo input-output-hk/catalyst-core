@@ -46,12 +46,14 @@ pub enum IapyxCommand {
     /// Prints pending or already sent fragments statuses
     Statuses,
     /// Sends votes to backend
+    #[clap(subcommand)]
     Vote(Vote),
     /// Prints history of votes
     Votes(Votes),
     /// Prints pending transactions (not confirmed)
     PendingTransactions,
     /// Allows to manage wallets: add/remove/select operations
+    #[clap(subcommand)]
     Wallets(Wallets),
 }
 
@@ -238,10 +240,10 @@ impl Vote {
 #[derive(Parser, Debug)]
 pub struct SingleVote {
     /// Choice, usually 'yes' or 'no'
-    #[clap(short = "c", long = "choice")]
+    #[clap(short = 'c', long = "choice")]
     pub choice: String,
     /// Proposal id of target proposal. It can be obtained from `iapyx proposals` command
-    #[clap(short = "i", long = "id")]
+    #[clap(short = 'i', long = "id")]
     pub proposal_id: String,
     /// Transaction expiry fixed time
     #[clap(long = "valid-until-fixed")]
@@ -284,7 +286,7 @@ impl SingleVote {
 #[derive(Parser, Debug)]
 pub struct BatchOfVotes {
     /// Choice, usually 'yes' or 'no'
-    #[clap(short = "c", long = "choices")]
+    #[clap(short = 'c', long = "choices")]
     pub choices: String,
     /// Transaction expiry time
     #[clap(long)]
@@ -381,10 +383,10 @@ pub struct Connect {
     #[clap(name = "ADDRESS")]
     pub address: String,
     /// Uses https for sending fragments
-    #[clap(short = "s", long = "https")]
+    #[clap(short = 's', long = "https")]
     pub use_https: bool,
     /// Printing additional information
-    #[clap(short = "d", long = "enable-debug")]
+    #[clap(short = 'd', long = "enable-debug")]
     pub enable_debug: bool,
 }
 
@@ -403,7 +405,7 @@ impl Connect {
 #[derive(Parser, Debug)]
 pub struct Proposals {
     /// Show only ids
-    #[clap(short = "i")]
+    #[clap(short = 'i')]
     pub only_ids: bool,
     /// Limit output entries
     #[clap(short, long)]

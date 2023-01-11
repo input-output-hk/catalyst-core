@@ -14,6 +14,7 @@ pub enum Standard {
     /// Put load on endpoint using all supported fragment types
     All(all::AllFragments),
     /// Put load on endpoint using invalid fragments
+    #[clap(subcommand)]
     Adversary(adversary::Adversary),
 }
 

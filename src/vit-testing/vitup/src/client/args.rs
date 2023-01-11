@@ -41,20 +41,26 @@ impl VitupClientCommand {
 #[derive(Parser, Debug)]
 pub enum Command {
     /// disruption
+    #[clap(subcommand)]
     Disruption(DisruptionCommand),
     /// mock
+    #[clap(subcommand)]
     Mock(MockCommand),
     /// utils
+    #[clap(subcommand)]
     Utils(UtilsCommand),
 }
 
 #[derive(Parser, Debug)]
 pub enum DisruptionCommand {
     /// start backend from scratch
+    #[clap(subcommand)]
     Logs(LogsCommand),
     /// start advanced backend from scratch
+    #[clap(subcommand)]
     Files(FilesCommand),
-    // start mock env
+    /// start mock env
+    #[clap(subcommand)]
     Control(ControlCommand),
 }
 
@@ -111,6 +117,7 @@ pub enum ControlCommand {
     SetErrorCode(SetErrorCodeCommand),
     SetAvailable,
     SetFundId(SetFundIdCommand),
+    #[clap(subcommand)]
     Fragments(FragmentsCommand),
     Health,
 }
@@ -177,8 +184,10 @@ impl FragmentsCommand {
 #[derive(Parser, Debug)]
 pub enum MockCommand {
     /// files commands
+    #[clap(subcommand)]
     Files(MockFilesCommand),
     /// start commands
+    #[clap(subcommand)]
     Start(MockStartCommand),
     /// stop command
     Stop,
@@ -211,7 +220,7 @@ impl MockStartCommand {
 
 #[derive(Parser, Debug)]
 pub struct MockStartCustomCommand {
-    #[clap(short = "p", long = "params")]
+    #[clap(short = 'p', long = "params")]
     params: std::path::PathBuf,
 }
 
@@ -263,6 +272,7 @@ impl MockCommand {
 #[derive(Parser, Debug)]
 pub enum UtilsCommand {
     /// persistent log comamnds
+    #[clap(subcommand)]
     PersistentLog(PersistentLogCommand),
 }
 

@@ -10,16 +10,16 @@ use clap::Parser;
 
 #[derive(Parser, Debug)]
 pub struct ArchiveCommand {
-    #[clap(long = "csv", required_unless = "folder")]
+    #[clap(long = "csv", required_unless_present_all = ["folder"])]
     pub csv: Option<PathBuf>,
 
-    #[clap(long = "folder", required_unless = "csv")]
+    #[clap(long = "folder", required_unless_present_all = ["csv"])]
     pub folder: Option<PathBuf>,
 
     #[clap(long = "output")]
     pub output: Option<PathBuf>,
 
-    #[clap(short = "d", long = "distribution")]
+    #[clap(short = 'd', long = "distribution")]
     pub calculate_distribution: bool,
 
     #[clap(subcommand)]
@@ -81,7 +81,7 @@ pub enum Command {
 
 #[derive(Parser, Debug)]
 pub struct BatchSizeByCaster {
-    #[clap(short = "s", long = "slots-in-epoch")]
+    #[clap(short = 's', long = "slots-in-epoch")]
     pub slots_in_epoch: u32,
 }
 

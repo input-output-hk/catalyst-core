@@ -35,7 +35,7 @@ pub struct VotersRewards {
     votes_count_path: PathBuf,
 
     /// Number of global votes required to be able to receive voter rewards
-    #[clap(long, default_value)]
+    #[clap(long, default_value = "0")]
     vote_threshold: u64,
 }
 

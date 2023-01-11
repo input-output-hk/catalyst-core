@@ -42,7 +42,7 @@ pub struct AdversaryAll {
         long = "progress-bar-mode",
         short = 'b',
         default_value = "Monitor",
-        parse(from_str = parse_progress_bar_mode_from_str)
+        value_parser = parse_progress_bar_mode_from_str
     )]
     progress_bar_mode: ProgressBarMode,
 
@@ -60,7 +60,7 @@ pub struct AdversaryAll {
     valid_until: Option<BlockDate>,
 
     /// Transaction time to live (can be negative e.g. ~4.2)
-    #[clap(short = 't', long= "ttl", default_value = "1.0", parse(try_from_str = parse_shift))]
+    #[clap(short = 't', long= "ttl", default_value = "1.0", value_parser = parse_shift)]
     ttl: (BlockDate, bool),
 
     /// Set the discrimination type to testing (default is production).

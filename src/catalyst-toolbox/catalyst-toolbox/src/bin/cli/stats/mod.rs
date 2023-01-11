@@ -12,6 +12,7 @@ use voters::VotersCommand;
 
 #[derive(Parser, Debug)]
 pub enum Stats {
+    #[clap(subcommand)]
     Voters(VotersCommand),
     Live(LiveStatsCommand),
     Archive(ArchiveCommand),

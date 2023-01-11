@@ -10,15 +10,14 @@ use std::io::Write;
 use clap::Parser;
 
 #[derive(Parser, Debug)]
-#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct CommitteeIdCommandArgs {
-    #[clap(short = "a", long = "address")]
+    #[clap(short = 'a', long = "address")]
     pub address: Option<String>,
 
-    #[clap(short = "p", long = "public_key", conflicts_with = "address")]
+    #[clap(short = 'p', long = "public_key", conflicts_with = "address")]
     pub public_key: Option<String>,
 
-    #[clap(short = "t", long = "testing")]
+    #[clap(short = 't', long = "testing")]
     pub testing: bool,
 }
 

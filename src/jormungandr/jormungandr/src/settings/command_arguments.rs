@@ -88,7 +88,7 @@ pub struct CommandLine {
     #[clap(
         long = "log-level",
         value_parser = log_level_parse,
-        possible_values = &LOG_FILTER_LEVEL_POSSIBLE_VALUES
+        value_names = &*LOG_FILTER_LEVEL_POSSIBLE_VALUES
     )]
     pub log_level: Option<LevelFilter>,
 

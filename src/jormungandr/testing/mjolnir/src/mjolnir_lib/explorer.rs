@@ -4,7 +4,7 @@ use jortestkit::{
     load::{ConfigurationBuilder, Monitor},
     prelude::{parse_progress_bar_mode_from_str, ProgressBarMode},
 };
-use std::{time::Duration, convert::Infallible};
+use std::time::Duration;
 use clap::Parser;
 use thiserror::Error;
 
@@ -37,7 +37,7 @@ pub struct ExplorerLoadCommand {
         long = "progress-bar-mode",
         short = 'b',
         default_value = "Monitor",
-        value_parser = parse_progress_bar,
+        value_parser = parse_progress_bar_mode_from_str,
     )]
     progress_bar_mode: ProgressBarMode,
 
@@ -46,9 +46,6 @@ pub struct ExplorerLoadCommand {
     pub measure: bool,
 }
 
-fn parse_progress_bar(s: &str) -> Result<ProgressBarMode, Infallible> {
-    Ok(parse_progress_bar_mode_from_str(s))
-}
 
 impl ExplorerLoadCommand {
     pub fn exec(&self) -> Result<(), ExplorerLoadCommandError> {

@@ -35,8 +35,10 @@ pub enum Command {
     /// check if snapshot service is up
     Health,
     /// retrieve files from snapshot (snapshot outcome etc.)
+    #[clap(subcommand)]
     Files(FilesCommand),
     /// job related commands
+    #[clap(subcommand)]
     Job(JobCommand),
 }
 

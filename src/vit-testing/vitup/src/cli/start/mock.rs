@@ -48,10 +48,9 @@ impl MockStartCommandArgs {
 }
 
 #[derive(Parser, Debug)]
-#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct MockFarmCommand {
     /// path to config file
-    #[clap(long = "config", short = "c")]
+    #[clap(long = "config", short = 'c')]
     pub config: PathBuf,
 }
 

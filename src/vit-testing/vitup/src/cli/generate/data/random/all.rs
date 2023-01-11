@@ -10,7 +10,6 @@ use std::path::PathBuf;
 use clap::Parser;
 
 #[derive(Parser, Debug)]
-#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct AllRandomDataCommandArgs {
     /// Careful! directory would be removed before export
     #[clap(long = "output", default_value = "./data")]

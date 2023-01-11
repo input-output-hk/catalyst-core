@@ -52,7 +52,7 @@ impl Describe {
 
 #[derive(Parser, Debug)]
 pub struct DescribeVitStations {
-    #[clap(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 
@@ -71,7 +71,7 @@ impl DescribeVitStations {
 
 #[derive(Parser, Debug)]
 pub struct DescribeAll {
-    #[clap(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 
@@ -91,7 +91,7 @@ impl DescribeAll {
 
 #[derive(Parser, Debug)]
 pub struct DescribeWalletProxies {
-    #[clap(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 

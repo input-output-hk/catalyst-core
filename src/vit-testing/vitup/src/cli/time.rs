@@ -4,7 +4,6 @@ use std::path::PathBuf;
 use clap::Parser;
 
 #[derive(Parser, Debug)]
-#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct TimeCommand {
     /// Path to configuration file
     #[clap(long = "config")]

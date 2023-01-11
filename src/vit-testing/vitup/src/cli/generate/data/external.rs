@@ -10,7 +10,6 @@ use clap::Parser;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 
 #[derive(Parser, Debug)]
-#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct ExternalDataCommandArgs {
     /// Careful! directory would be removed before export
     #[clap(long = "output", default_value = "./data")]

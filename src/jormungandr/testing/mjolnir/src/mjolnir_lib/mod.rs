@@ -37,6 +37,7 @@ pub enum MjolnirCommand {
     /// Explorer load
     Explorer(explorer::ExplorerLoadCommand),
     /// Fragment load
+    #[clap(subcommand)]
     Fragment(fragment::FragmentLoadCommand),
     /// Rest load
     Rest(rest::RestLoadCommand),

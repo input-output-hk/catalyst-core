@@ -13,7 +13,6 @@ use clap::Parser;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 
 #[derive(Parser, Debug)]
-#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct AdvancedStartCommandArgs {
     /// path or name of the jormungandr node to test
     #[clap(long = "jormungandr", default_value = "jormungandr")]
@@ -37,7 +36,7 @@ pub struct AdvancedStartCommandArgs {
     #[clap(
         long = "mode",
         default_value = "Endless",
-        parse(from_str = parse_mode_from_str)
+        value_parser = parse_mode_from_str
     )]
     pub mode: Mode,
 

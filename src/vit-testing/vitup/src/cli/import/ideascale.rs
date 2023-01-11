@@ -4,7 +4,6 @@ use std::{fs::File, path::PathBuf};
 use clap::Parser;
 use thiserror::Error;
 #[derive(Parser, Debug)]
-#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub enum ImportFromIdeascaleFormatCommand {
     Scores(ImportScores),
     Proposals(ImportProposals),
@@ -86,7 +85,7 @@ pub struct ImportScores {
     )]
     pub proposals: PathBuf,
 
-    #[clap(long = "format", short = "f")]
+    #[clap(long = "format", short = 'f')]
     pub format: Format,
 }
 

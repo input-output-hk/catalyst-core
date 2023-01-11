@@ -38,7 +38,7 @@ pub struct VotesPrintout {
     output_format: OutputFormat,
 
     /// Verbose mode (-v, -vv, -vvv, etc)
-    #[clap(short = "v", long = "verbose", parse(from_occurrences))]
+    #[clap(short = 'v', long = "verbose", action = clap::ArgAction::Count)]
     verbose: usize,
 }
 

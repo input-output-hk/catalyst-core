@@ -17,11 +17,11 @@ pub enum RestLoadCommandError {
 #[derive(Parser, Debug)]
 pub struct RestLoadCommand {
     /// Number of threads
-    #[clap(short = "c", long = "count", default_value = "3")]
+    #[clap(short = 'c', long = "count", default_value = "3")]
     pub count: usize,
     /// Address in format:
     /// http://127.0.0.1:8002/api/
-    #[clap(short = "e", long = "endpoint")]
+    #[clap(short = 'e', long = "endpoint")]
     pub endpoint: String,
 
     /// Amount of delay (in milliseconds) between sync attempts
@@ -29,20 +29,20 @@ pub struct RestLoadCommand {
     pub delay: u64,
 
     /// Amount of delay (in seconds) between sync attempts
-    #[clap(short = "d", long = "duration")]
+    #[clap(short = 'd', long = "duration")]
     pub duration: u64,
 
     /// Show progress bar
     #[clap(
         long = "progress-bar-mode",
-        short = "b",
+        short = 'b',
         default_value = "Monitor",
-        parse(from_str = parse_progress_bar_mode_from_str)
+        value_parser = parse_progress_bar_mode_from_str
     )]
     progress_bar_mode: ProgressBarMode,
 
     /// Prints post load measurements
-    #[clap(short = "m", long = "measure")]
+    #[clap(short = 'm', long = "measure")]
     pub measure: bool,
 }
 

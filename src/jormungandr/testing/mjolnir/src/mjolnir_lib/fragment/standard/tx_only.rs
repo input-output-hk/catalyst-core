@@ -16,12 +16,12 @@ use thor::{BlockDateGenerator, DiscriminationExtension, FragmentSenderSetup, Wal
 #[derive(Parser, Debug)]
 pub struct TxOnly {
     /// Number of threads
-    #[clap(short = "c", long = "count", default_value = "3")]
+    #[clap(short = 'c', long = "count", default_value = "3")]
     pub count: usize,
 
     /// address in format:
     /// /ip4/54.193.75.55/tcp/3000
-    #[clap(short = "a", long = "address")]
+    #[clap(short = 'a', long = "address")]
     pub endpoint: String,
 
     /// amount of delay [milliseconds] between sync attempts
@@ -29,33 +29,33 @@ pub struct TxOnly {
     pub delay: u64,
 
     /// amount of delay [seconds] between sync attempts
-    #[clap(short = "d", long = "duration")]
+    #[clap(short = 'd', long = "duration")]
     pub duration: u64,
 
     // show progress
     #[clap(
         long = "progress-bar-mode",
-        short = "b",
+        short = 'b',
         default_value = "Monitor",
-        parse(from_str = parse_progress_bar_mode_from_str)
+        value_parser = parse_progress_bar_mode_from_str
     )]
     progress_bar_mode: ProgressBarMode,
 
-    #[clap(short = "m", long = "measure")]
+    #[clap(short = 'm', long = "measure")]
     pub measure: bool,
 
-    #[clap(long = "key", short = "k")]
+    #[clap(long = "key", short = 'k')]
     faucet_key_file: PathBuf,
 
-    #[clap(long = "spending-counter", short = "s")]
+    #[clap(long = "spending-counter", short = 's')]
     faucet_spending_counter: u32,
 
     /// Transaction validity deadline (inclusive)
-    #[clap(short = "v", long = "valid-until", conflicts_with = "ttl")]
+    #[clap(short = 'v', long = "valid-until", conflicts_with = "ttl")]
     valid_until: Option<BlockDate>,
 
     /// Transaction time to live (can be negative e.g. ~4.2)
-    #[clap(short = "t", long= "ttl", default_value = "1.0", parse(try_from_str = parse_shift))]
+    #[clap(short = 't', long= "ttl", default_value = "1.0", value_parser = parse_shift)]
     ttl: (BlockDate, bool),
 
     /// Set the discrimination type to testing (default is production).

@@ -11,7 +11,6 @@ use clap::Parser;
 use thiserror::Error;
 
 #[derive(Parser, Debug)]
-#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub enum ValidateCommand {
     Ideascale(IdeascaleValidateCommand),
     Deployment(DeploymentValidateCommand),

@@ -58,13 +58,11 @@ pub enum CatalystCommand {
     #[clap(subcommand)]
     Archive(archive::Archive),
     /// Validate catalyst elections
-    #[clap(subcommand)]
     VoteCheck(vote_check::VoteCheck),
     /// Prints voting statistics
     #[clap(subcommand)]
     Stats(stats::Stats),
     /// Process raw registrations to produce initial blockchain setup
-    #[clap(subcommand)]
     Snapshot(snapshot::SnapshotCmd),
 }
 

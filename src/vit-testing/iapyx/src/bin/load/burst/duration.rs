@@ -11,19 +11,19 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 pub struct BurstDurationIapyxLoadCommand {
     /// Prints nodes related data, like stats,fragments etc.
-    #[clap(short = "t", long = "threads", default_value = "3")]
+    #[clap(short = 't', long = "threads", default_value = "3")]
     pub threads: usize,
     /// Address in format:
     /// 127.0.0.1:8000
-    #[clap(short = "a", long = "address", default_value = "127.0.0.1:8000")]
+    #[clap(short = 'a', long = "address", default_value = "127.0.0.1:8000")]
     pub address: String,
 
     /// Amount of delay (in miliseconds) between requests
-    #[clap(short = "d", long = "delay", default_value = "10000")]
+    #[clap(short = 'd', long = "delay", default_value = "10000")]
     pub delay: u64,
 
     /// Number of votes sent in single batch
-    #[clap(short = "b", long = "batch-size", default_value = "100")]
+    #[clap(short = 'b', long = "batch-size", default_value = "100")]
     pub batch_size: usize,
 
     /// Use v1 endpoint for sending votes
@@ -35,11 +35,11 @@ pub struct BurstDurationIapyxLoadCommand {
     pub duration: u64,
 
     /// Qr codes source folder
-    #[clap(short = "q", long = "qr-codes-folder")]
+    #[clap(short = 'q', long = "qr-codes-folder")]
     pub qr_codes_folder: Option<PathBuf>,
 
     /// Secrets source folder
-    #[clap(short = "s", long = "secrets-folder")]
+    #[clap(short = 's', long = "secrets-folder")]
     pub secrets_folder: Option<PathBuf>,
 
     /// Global pin for all qr codes
@@ -51,7 +51,7 @@ pub struct BurstDurationIapyxLoadCommand {
     pub read_pin_from_filename: bool,
 
     /// Use https for sending fragments
-    #[clap(short = "h", long = "https")]
+    #[clap(short = 'h', long = "https")]
     pub use_https: bool,
 
     /// Print additional information
@@ -78,7 +78,7 @@ pub struct BurstDurationIapyxLoadCommand {
     #[clap(
         long = "progress-bar-mode",
         default_value = "Monitor",
-        parse(from_str = parse_progress_bar_mode_from_str)
+        value_parser = parse_progress_bar_mode_from_str
     )]
     progress_bar_mode: ProgressBarMode,
 

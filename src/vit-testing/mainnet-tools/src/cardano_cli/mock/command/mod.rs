@@ -18,12 +18,16 @@ pub use transaction::Transaction;
 #[derive(Parser, Debug)]
 pub enum Command {
     /// Query commands
+    #[clap(subcommand)]
     Query(Query),
     /// Address related commands
+    #[clap(subcommand)]
     Address(Address),
     /// Stake address related commands
+    #[clap(subcommand)]
     StakeAddress(StakeAddress),
     /// Transaction commands
+    #[clap(subcommand)]
     Transaction(Transaction),
 }
 

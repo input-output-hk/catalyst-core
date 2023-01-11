@@ -7,7 +7,7 @@ use clap::Parser;
 pub async fn main() -> Result<(), Report> {
     std::env::set_var("RUST_BACKTRACE", "full");
 
-    let cli_future = tokio::task::spawn_blocking(|| MockCommand::from_args().exec())
+    let cli_future = tokio::task::spawn_blocking(|| MockCommand::parse().exec())
         .map(|res| res.expect("CLI command failed for an unknown reason"))
         .fuse();
 

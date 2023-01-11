@@ -11,16 +11,16 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 pub struct ConstDurationIapyxLoadCommand {
     /// Prints nodes related data, like stats,fragments etc.
-    #[clap(short = "t", long = "threads", default_value = "3")]
+    #[clap(short = 't', long = "threads", default_value = "3")]
     pub threads: usize,
 
     /// Address in format:
     /// 127.0.0.1:8000
-    #[clap(short = "a", long = "address", default_value = "127.0.0.1:8000")]
+    #[clap(short = 'a', long = "address", default_value = "127.0.0.1:8000")]
     pub address: String,
 
     /// Amount of delay (in miliseconds) between requests
-    #[clap(short = "d", long = "delay", default_value = "10000")]
+    #[clap(short = 'd', long = "delay", default_value = "10000")]
     pub delay: u64,
 
     /// Duration of scenario in seconds
@@ -28,11 +28,11 @@ pub struct ConstDurationIapyxLoadCommand {
     pub duration: u64,
 
     /// Qr codes source folder
-    #[clap(short = "q", long = "qr-codes-folder")]
+    #[clap(short = 'q', long = "qr-codes-folder")]
     pub qr_codes_folder: Option<PathBuf>,
 
     /// Secrets source folder
-    #[clap(short = "s", long = "secrets-folder")]
+    #[clap(short = 's', long = "secrets-folder")]
     pub secrets_folder: Option<PathBuf>,
 
     /// Global pin for all qr codes
@@ -44,7 +44,7 @@ pub struct ConstDurationIapyxLoadCommand {
     pub read_pin_from_filename: bool,
 
     /// Use https for sending fragments
-    #[clap(short = "h", long = "https")]
+    #[clap(short = 'h', long = "https")]
     pub use_https: bool,
 
     /// Print additional information
@@ -64,15 +64,15 @@ pub struct ConstDurationIapyxLoadCommand {
     pub status_pace: u64,
 
     /// Pass criteria
-    #[clap(short = "c", long = "criterion")]
+    #[clap(short = 'c', long = "criterion")]
     pub criterion: Option<u8>,
 
     /// Show progress. Available are (Monitor,Standard,None)
     #[clap(
         long = "progress-bar-mode",
-        short = "b",
+        short = 'b',
         default_value = "Monitor",
-        parse(from_str = parse_progress_bar_mode_from_str)
+        value_parser = parse_progress_bar_mode_from_str
     )]
     progress_bar_mode: ProgressBarMode,
 

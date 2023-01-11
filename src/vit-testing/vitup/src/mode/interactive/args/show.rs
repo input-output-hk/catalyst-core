@@ -47,7 +47,7 @@ impl Show {
 
 #[derive(Parser, Debug)]
 pub struct ShowStatus {
-    #[clap(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 
@@ -71,7 +71,7 @@ impl ShowStatus {
 
 #[derive(Parser, Debug)]
 pub struct VoteTimeStatus {
-    #[clap(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 

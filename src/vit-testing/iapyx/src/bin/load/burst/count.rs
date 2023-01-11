@@ -9,31 +9,31 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 pub struct BurstCountIapyxLoadCommand {
     /// Prints nodes related data, like stats,fragments etc.
-    #[clap(short = "t", long = "threads", default_value = "3")]
+    #[clap(short = 't', long = "threads", default_value = "3")]
     pub threads: usize,
     /// Address in format:
     /// 127.0.0.1:8000
-    #[clap(short = "a", long = "address", default_value = "127.0.0.1:8000")]
+    #[clap(short = 'a', long = "address", default_value = "127.0.0.1:8000")]
     pub address: String,
 
     /// Amount of delay (in miliseconds) between requests
-    #[clap(short = "d", long = "delay", default_value = "10000")]
+    #[clap(short = 'd', long = "delay", default_value = "10000")]
     pub delay: u64,
 
     /// Number of votes sent in single batch
-    #[clap(short = "b", long = "batch-size", default_value = "100")]
+    #[clap(short = 'b', long = "batch-size", default_value = "100")]
     pub batch_size: usize,
 
     /// How many requests per thread should be sent
-    #[clap(short = "n", long = "bursts-count")]
+    #[clap(short = 'n', long = "bursts-count")]
     pub count: u32,
 
     /// Qr codes source folder
-    #[clap(short = "q", long = "qr-codes-folder")]
+    #[clap(short = 'q', long = "qr-codes-folder")]
     pub qr_codes_folder: Option<PathBuf>,
 
     /// Secrets source folder
-    #[clap(short = "s", long = "secrets-folder")]
+    #[clap(short = 's', long = "secrets-folder")]
     pub secrets_folder: Option<PathBuf>,
 
     /// Global pin for all qr codes
@@ -45,7 +45,7 @@ pub struct BurstCountIapyxLoadCommand {
     pub read_pin_from_filename: bool,
 
     /// Use https for sending fragments
-    #[clap(short = "h", long = "https")]
+    #[clap(short = 'h', long = "https")]
     pub use_https: bool,
 
     /// Print additional information
@@ -65,7 +65,7 @@ pub struct BurstCountIapyxLoadCommand {
     pub status_pace: u64,
 
     /// Pass criteria
-    #[clap(short = "c", long = "criterion")]
+    #[clap(short = 'c', long = "criterion")]
     pub criterion: Option<u8>,
 
     /// Use v1 endpoint for sending votes
@@ -76,7 +76,7 @@ pub struct BurstCountIapyxLoadCommand {
     #[clap(
         long = "progress-bar-mode",
         default_value = "Monitor",
-        parse(from_str = parse_progress_bar_mode_from_str)
+        value_parser = parse_progress_bar_mode_from_str
     )]
     progress_bar_mode: ProgressBarMode,
 

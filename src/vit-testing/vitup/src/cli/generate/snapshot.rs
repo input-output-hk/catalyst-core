@@ -15,7 +15,6 @@ use std::path::PathBuf;
 use clap::Parser;
 
 #[derive(Parser, Debug)]
-#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct SnapshotCommandArgs {
     /// Careful! directory would be removed before export
     #[clap(long = "root-dir", default_value = "./data")]

@@ -8,6 +8,7 @@ pub use tx_only::TxOnly;
 pub enum Batch {
     /// Prints nodes related data, like stats,fragments etc.
     TxOnly(tx_only::TxOnly),
+    #[clap(subcommand)]
     Adversary(adversary::Adversary),
 }
 

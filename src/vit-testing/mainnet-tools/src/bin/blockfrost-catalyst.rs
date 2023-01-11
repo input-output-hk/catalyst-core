@@ -6,7 +6,7 @@ use clap::Parser;
 
 #[tokio::main]
 async fn main() -> Result<(), CatalystBlockFrostApiError> {
-    let params = Command::from_args();
+    let params = Command::parse();
 
     let api = CatalystBlockFrostApi::new()?;
     let registrations = api.list_registrations_for_address(&params.address).await?;

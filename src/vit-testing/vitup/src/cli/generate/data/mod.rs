@@ -17,6 +17,7 @@ pub enum DataCommandArgs {
     /// generate data from external data
     Import(ExternalDataCommandArgs),
     /// generate random data
+    #[clap(subcommand)]
     Random(RandomDataCommandArgs),
     /// generate data for performance tests
     Perf(PerfDataCommandArgs),

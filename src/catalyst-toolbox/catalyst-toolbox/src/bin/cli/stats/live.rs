@@ -16,7 +16,7 @@ pub struct LiveStatsCommand {
     #[clap(
         long = "progress-bar-mode",
         default_value = "Monitor",
-        parse(from_str = parse_progress_bar_mode_from_str)
+        value_parser = parse_progress_bar_mode_from_str
     )]
     pub console: ProgressBarMode,
     #[clap(long = "logger")]

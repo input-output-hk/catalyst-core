@@ -10,7 +10,6 @@ use valgrind::{Error as ValgrindError, ValgrindClient};
 use vit_servicing_station_lib::utils::datetime::unix_timestamp_to_datetime;
 
 #[derive(Parser, Debug)]
-#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct DeploymentValidateCommand {
     /// target address
     #[clap(long = "address")]

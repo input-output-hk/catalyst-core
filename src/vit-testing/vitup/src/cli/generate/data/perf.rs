@@ -12,7 +12,6 @@ use std::path::PathBuf;
 use clap::Parser;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 #[derive(Parser, Debug)]
-#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct PerfDataCommandArgs {
     /// Careful! directory would be removed before export
     #[clap(long = "output", default_value = "./perf")]
@@ -53,10 +52,10 @@ pub struct PerfDataCommandArgs {
     #[clap(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
 
-    #[clap(short = "p", long = "parts", default_value = "1")]
+    #[clap(short = 'p', long = "parts", default_value = "1")]
     pub parts: usize,
 
-    #[clap(short = "s", long = "single", default_value = "0")]
+    #[clap(short = 's', long = "single", default_value = "0")]
     pub single: usize,
 
     #[clap(long = "log-level", default_value = "LogLevel::INFO")]

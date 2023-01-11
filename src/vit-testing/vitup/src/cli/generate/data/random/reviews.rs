@@ -6,7 +6,6 @@ use clap::Parser;
 use vit_servicing_station_tests::common::data::ProposalTemplate;
 
 #[derive(Parser, Debug)]
-#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct RandomReviewsDataCommandArgs {
     /// Careful! directory would be removed before export
     #[clap(long = "output", default_value = "./reviews.json")]

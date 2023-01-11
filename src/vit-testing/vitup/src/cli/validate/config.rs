@@ -4,7 +4,6 @@ use clap::Parser;
 use thiserror::Error;
 
 #[derive(Parser, Debug)]
-#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct ConfigValidateCommand {
     /// target config
     #[clap(name = "CONFIG")]

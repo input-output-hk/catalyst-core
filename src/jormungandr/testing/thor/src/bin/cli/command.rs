@@ -31,6 +31,7 @@ pub enum Command {
     /// Prints pending transactions (not confirmed)
     PendingTransactions,
     /// Allows to manage wallets: add/remove/select operations
+    #[clap(subcommand)]
     Wallets(Wallets),
 }
 
@@ -107,11 +108,11 @@ pub struct Connect {
     pub address: String,
 
     /// uses https for sending fragments
-    #[clap(short = "s", long = "https")]
+    #[clap(short = 's', long = "https")]
     pub use_https: bool,
 
     /// uses https for sending fragments
-    #[clap(short = "d", long = "enable-debug")]
+    #[clap(short = 'd', long = "enable-debug")]
     pub enable_debug: bool,
 }
 

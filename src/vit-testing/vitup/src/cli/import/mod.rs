@@ -5,8 +5,8 @@ pub use ideascale::{Error as ImportError, ImportFromIdeascaleFormatCommand};
 use clap::Parser;
 
 #[derive(Parser, Debug)]
-#[clap(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub enum ImportCommand {
+    #[clap(subcommand)]
     Ideascale(ImportFromIdeascaleFormatCommand),
 }
 

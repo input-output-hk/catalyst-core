@@ -2964,6 +2964,7 @@ dependencies = [
  "chain-crypto",
  "chain-impl-mockchain",
  "chain-vote",
+ "clap 4.0.29",
  "ctrlc",
  "custom_debug",
  "hex",
@@ -2981,7 +2982,6 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "slave-pool",
- "structopt",
  "thiserror",
  "thor",
  "yaml-rust",
@@ -3193,6 +3193,7 @@ dependencies = [
  "chain-time",
  "chain-vote",
  "chrono",
+ "clap 4.0.29",
  "cocoon",
  "console",
  "cryptoxide 0.4.2",
@@ -3220,7 +3221,6 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "snapshot-lib",
- "structopt",
  "thiserror",
  "thor",
  "tokio",
@@ -3657,6 +3657,7 @@ dependencies = [
  "chain-storage",
  "chain-time",
  "chain-vote",
+ "clap 2.34.0",
  "criterion",
  "futures",
  "hex",
@@ -3688,7 +3689,6 @@ dependencies = [
  "serde_json",
  "serde_with",
  "serde_yaml",
- "structopt",
  "thiserror",
  "time 0.3.17",
  "tokio",
@@ -3725,6 +3725,7 @@ dependencies = [
  "chain-storage",
  "chain-time",
  "chain-vote",
+ "clap 4.0.29",
  "custom_debug",
  "flate2",
  "fs_extra",
@@ -3755,7 +3756,6 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "serde_yaml",
- "structopt",
  "strum",
  "sysinfo",
  "tar",
@@ -4178,6 +4178,7 @@ dependencies = [
  "chain-core",
  "chain-crypto",
  "chain-impl-mockchain",
+ "clap 4.0.29",
  "custom_debug",
  "jormungandr-automation",
  "jormungandr-lib",
@@ -4187,7 +4188,6 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_yaml",
- "structopt",
  "thiserror",
  "thor",
  "tokio",
@@ -4261,7 +4261,6 @@ dependencies = [
  "signals-handler",
  "snapshot-lib",
  "snapshot-trigger-service",
- "structopt",
  "tempdir",
  "thiserror",
  "tokio",
@@ -4483,6 +4482,7 @@ dependencies = [
  "chain-storage",
  "chain-time",
  "chain-vote",
+ "clap 4.0.29",
  "indicatif",
  "jormungandr-automation",
  "jormungandr-lib",
@@ -4490,7 +4490,6 @@ dependencies = [
  "loki",
  "rand 0.8.5",
  "rand_core 0.6.4",
- "structopt",
  "thiserror",
  "thor",
  "tokio",
@@ -6369,13 +6368,13 @@ name = "scheduler-service-lib"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "clap 4.0.29",
  "futures",
  "jortestkit",
  "reqwest",
  "serde",
  "serde_json",
  "serde_yaml",
- "structopt",
  "thiserror",
  "tokio",
  "tracing",
@@ -6868,6 +6867,7 @@ dependencies = [
  "catalyst-toolbox",
  "chain-addr",
  "chrono",
+ "clap 4.0.29",
  "futures",
  "jormungandr-lib",
  "jortestkit",
@@ -6879,7 +6879,6 @@ dependencies = [
  "serde_yaml",
  "signals-handler",
  "snapshot-lib",
- "structopt",
  "thiserror",
  "tokio",
  "tracing",
@@ -6989,30 +6988,6 @@ version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bafede0d0a2f21910f36d47b1558caae3076ed80f6f3ad0fc85a91e6ba7e5938"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "structopt"
-version = "0.3.26"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c6b5c64445ba8094a6ab0c3cd2ad323e07171012d9c98b0b15651daf1787a10"
-dependencies = [
- "clap 2.34.0",
- "lazy_static",
- "structopt-derive",
-]
-
-[[package]]
-name = "structopt-derive"
-version = "0.4.18"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dcb5ae327f9cc13b68763b5749770cb9e048a99bd9dfdfa58d0cf05d5f64afe0"
-dependencies = [
- "heck 0.3.3",
- "proc-macro-error",
  "proc-macro2",
  "quote",
  "syn",
@@ -7243,6 +7218,7 @@ dependencies = [
  "chain-crypto",
  "chain-impl-mockchain",
  "chain-vote",
+ "clap 4.0.29",
  "cocoon",
  "custom_debug",
  "dirs",
@@ -7256,7 +7232,6 @@ dependencies = [
  "rand_core 0.6.4",
  "serde",
  "serde_yaml",
- "structopt",
  "thiserror",
  "time 0.3.17",
 ]
@@ -8118,6 +8093,7 @@ name = "vit-servicing-station-cli"
 version = "0.3.4-dev"
 dependencies = [
  "base64",
+ "clap 4.0.29",
  "csv",
  "diesel 1.4.8",
  "diesel_migrations 1.4.0",
@@ -8125,7 +8101,6 @@ dependencies = [
  "rand 0.7.3",
  "serde",
  "serde_json",
- "structopt",
  "tempfile",
  "thiserror",
  "time 0.3.17",
@@ -8140,6 +8115,7 @@ dependencies = [
  "async-trait",
  "base64",
  "chain-ser",
+ "clap 4.0.29",
  "diesel 1.4.8",
  "diesel_migrations 1.4.0",
  "dotenv",
@@ -8157,7 +8133,6 @@ dependencies = [
  "serde_json",
  "simplelog",
  "snapshot-lib",
- "structopt",
  "strum",
  "strum_macros",
  "tempfile",
@@ -8175,11 +8150,11 @@ dependencies = [
 name = "vit-servicing-station-server"
 version = "0.3.4-dev"
 dependencies = [
+ "clap 4.0.29",
  "log",
  "opentelemetry",
  "opentelemetry-otlp",
  "opentelemetry-semantic-conventions",
- "structopt",
  "thiserror",
  "tokio",
  "tracing",
@@ -8202,6 +8177,7 @@ dependencies = [
  "chain-addr",
  "chain-crypto",
  "chain-impl-mockchain",
+ "clap 4.0.29",
  "diesel 1.4.8",
  "diesel_migrations 1.4.0",
  "dyn-clone",
@@ -8222,7 +8198,6 @@ dependencies = [
  "serde",
  "serde_json",
  "snapshot-lib",
- "structopt",
  "tempfile",
  "thiserror",
  "time 0.3.17",
@@ -8245,6 +8220,7 @@ dependencies = [
  "chain-impl-mockchain",
  "chain-time",
  "chain-vote",
+ "clap 4.0.29",
  "console",
  "csv",
  "ctrlc",
@@ -8287,7 +8263,6 @@ dependencies = [
  "slave-pool",
  "snapshot-lib",
  "snapshot-trigger-service",
- "structopt",
  "strum",
  "strum_macros",
  "tempdir",

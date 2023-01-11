@@ -16,42 +16,58 @@ mod utxo;
 mod vote;
 
 use crate::jcli_lib::rest::Error;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum V0 {
     /// Account operations
+    #[clap(subcommand)]
     Account(account::Account),
     /// Block operations
+    #[clap(subcommand)]
     Block(block::Block),
     /// Node leaders operations
+    #[clap(subcommand)]
     Leaders(leaders::Leaders),
     /// Message sending
+    #[clap(subcommand)]
     Message(message::Message),
     /// Network information
+    #[clap(subcommand)]
     Network(network::Network),
     /// Node information
+    #[clap(subcommand)]
     Node(node::Node),
     /// Node settings
+    #[clap(subcommand)]
     Settings(settings::Settings),
     /// Stake information
+    #[clap(subcommand)]
     Stake(stake::Stake),
     /// Stake pool operations
+    #[clap(subcommand)]
     StakePool(stake_pool::StakePool),
     /// Stake pools operations
+    #[clap(subcommand)]
     StakePools(stake_pools::StakePools),
     /// Shutdown node
+    #[clap(subcommand)]
     Shutdown(shutdown::Shutdown),
     /// Blockchain tip information
+    #[clap(subcommand)]
     Tip(tip::Tip),
     /// UTXO information
+    #[clap(subcommand)]
     Utxo(utxo::Utxo),
     /// System diagnostic information
+    #[clap(subcommand)]
     Diagnostic(diagnostic::Diagnostic),
     /// Rewards information
+    #[clap(subcommand)]
     Rewards(rewards::Rewards),
     /// Vote related operations
+    #[clap(subcommand)]
     Vote(vote::Vote),
 }
 

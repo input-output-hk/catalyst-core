@@ -1,10 +1,10 @@
 mod vote;
 
 use crate::jcli_lib::rest::Error;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum V1 {
     Vote(vote::Vote),
 }

@@ -50,12 +50,14 @@ impl Controller {
     }
 
     /// Gets account
+    #[must_use]
     pub fn account(&self, discrimination: chain_addr::Discrimination) -> chain_addr::Address {
         self.wallet.account(discrimination)
     }
 
     /// Gets account identifier. This is something different that account method since we are not
     /// retrieving entire object but only the identifier which helps of find records in blockchain
+    #[must_use]
     pub fn id(&self) -> AccountId {
         self.wallet.id()
     }
@@ -65,6 +67,10 @@ impl Controller {
     /// # Errors
     ///
     /// On connection issues
+    ///
+    /// # Panics
+    ///
+    /// On internal error in which vec does not hold transaction
     ///
     pub fn send_fragment(&self, transaction: &[u8]) -> Result<FragmentId, ControllerError> {
         self.send_fragments(vec![transaction.to_vec()])
@@ -99,10 +105,11 @@ impl Controller {
     /// Confirms transaction by it id. This means to remove it from pending transaction collection and as a result
     /// remove trace needed to track their status in node
     pub fn confirm_transaction(&mut self, id: FragmentId) {
-        self.wallet.confirm_transaction(id)
+        self.wallet.confirm_transaction(id);
     }
 
     /// Unconfirmed collection of transactions (which statuses we still want to track)
+    #[must_use]
     pub fn pending_transactions(&self) -> Vec<FragmentId> {
         self.wallet.pending_transactions()
     }
@@ -119,7 +126,7 @@ impl Controller {
     ) -> Result<(), ControllerError> {
         let mut limit = 60;
         loop {
-            let ids: Vec<FragmentId> = self.pending_transactions().to_vec();
+            let ids: Vec<FragmentId> = self.pending_transactions().clone();
 
             if limit <= 0 {
                 return Err(ControllerError::TransactionsWerePendingForTooLong { fragments: ids });
@@ -129,8 +136,8 @@ impl Controller {
                 return Ok(());
             }
 
-            let fragment_logs = self.backend.fragment_logs().unwrap();
-            for id in ids.iter() {
+            let fragment_logs = self.backend.fragment_logs()?;
+            for id in &ids {
                 if let Some(fragment) = fragment_logs.get(id) {
                     match fragment.status() {
                         FragmentStatus::Rejected { .. } => {
@@ -139,17 +146,17 @@ impl Controller {
                         FragmentStatus::InABlock { .. } => {
                             self.confirm_transaction(*id);
                         }
-                        _ => (),
+                        FragmentStatus::Pending => (),
                     };
                 }
             }
 
             if ids.is_empty() {
                 return Ok(());
-            } else {
-                std::thread::sleep(pace);
-                limit += 1;
             }
+
+            std::thread::sleep(pace);
+            limit += 1;
         }
     }
 
@@ -159,6 +166,7 @@ impl Controller {
     }
 
     /// gets total value ada
+    #[must_use]
     pub fn total_value(&self) -> Value {
         self.wallet.total_value()
     }
@@ -220,7 +228,7 @@ impl Controller {
     ///
     pub fn vote_for(
         &mut self,
-        voteplan_id: String,
+        voteplan_id: &str,
         proposal_index: u32,
         choice: u8,
     ) -> Result<FragmentId, ControllerError> {
@@ -230,13 +238,15 @@ impl Controller {
             .chain_vote_plans
             .iter()
             .find(|vp| voteplan_id == vp.chain_voteplan_id)
-            .unwrap();
+            .ok_or_else(|| ControllerError::MissingVoteplan(voteplan_id.to_owned()))?;
 
         let group = funds
             .groups
             .iter()
             .find(|g| g.token_identifier == voteplan.token_identifier)
-            .unwrap();
+            .ok_or_else(|| {
+                ControllerError::MissingGroupForToken(voteplan.token_identifier.clone())
+            })?;
 
         let proposals = self.get_proposals(&group.group_id)?;
 
@@ -244,7 +254,7 @@ impl Controller {
             .iter()
             .find(|x| {
                 x.voteplan.chain_voteplan_id == voteplan_id
-                    && x.voteplan.chain_proposal_index == proposal_index as i64
+                    && x.voteplan.chain_proposal_index == i64::from(proposal_index)
             })
             .ok_or(ControllerError::CannotFindProposal {
                 vote_plan_name: voteplan_id.to_string(),
@@ -281,6 +291,9 @@ impl Controller {
     ///
     /// On connection issues
     ///
+    /// # Panics
+    ///
+    /// On internal error when updating wallet
     pub fn votes_batch(
         &mut self,
         votes_data: Vec<(&FullProposalInfo, Choice)>,
@@ -321,7 +334,7 @@ impl Controller {
     ///
     /// On connection issues
     pub fn get_proposals(&mut self, group: &str) -> Result<Vec<FullProposalInfo>, ControllerError> {
-        Ok(self.backend.proposals(group)?.to_vec())
+        Ok(self.backend.proposals(group)?)
     }
 
     /// Gets fragment logs from node
@@ -414,4 +427,10 @@ pub enum ControllerError {
     ///Internal wallet errors
     #[error(transparent)]
     WalletCore(#[from] wallet_core::Error),
+    ///Internal wallet errors
+    #[error("cannot find voteplan with id: {0}")]
+    MissingVoteplan(String),
+    ///Internal wallet errors
+    #[error("missing group for token identifier: {0}")]
+    MissingGroupForToken(String),
 }

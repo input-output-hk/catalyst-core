@@ -12,6 +12,7 @@ pub struct ServicingStationLoad {
 
 impl ServicingStationLoad {
     /// Creates new load scenario object
+    #[must_use]
     pub fn new(config: ServicingStationLoadConfig) -> Self {
         Self { config }
     }

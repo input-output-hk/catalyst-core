@@ -64,11 +64,13 @@ impl Wallet {
     }
 
     /// Get account object
+    #[must_use]
     pub fn account(&self, discrimination: Discrimination) -> chain_addr::Address {
         self.inner.account(discrimination)
     }
 
     /// Get account id
+    #[must_use]
     pub fn id(&self) -> AccountId {
         self.inner.id()
     }
@@ -77,7 +79,7 @@ impl Wallet {
     /// remove trace needed to track their status in node
     pub fn confirm_all_transactions(&mut self) {
         for id in self.pending_transactions() {
-            self.confirm_transaction(id)
+            self.confirm_transaction(id);
         }
     }
 
@@ -89,6 +91,7 @@ impl Wallet {
     }
 
     /// Unconfirmed collection of transactions (which statuses we still want to track)
+    #[must_use]
     pub fn pending_transactions(&self) -> Vec<FragmentId> {
         self.pending_txs.clone()
     }
@@ -101,6 +104,7 @@ impl Wallet {
     }
 
     /// total ada wallet holds
+    #[must_use]
     pub fn total_value(&self) -> Value {
         self.inner.total_value()
     }
@@ -119,6 +123,7 @@ impl Wallet {
     }
 
     /// Gets spending counters
+    #[must_use]
     pub fn spending_counter(&self) -> [u32; SpendingCounterIncreasing::LANES] {
         self.inner.spending_counter()
     }

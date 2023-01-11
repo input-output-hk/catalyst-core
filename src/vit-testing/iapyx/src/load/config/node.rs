@@ -8,6 +8,7 @@ use std::path::PathBuf;
 use thiserror::Error;
 
 /// Node Load configuration struct. It defines all aspects of load run.
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Config {
     /// Inner configuration which controls common settings like grace period or step delay
@@ -57,6 +58,7 @@ pub struct Config {
 
 impl Config {
     /// Gets rest settings
+    #[must_use]
     pub fn rest_settings(&self) -> RestSettings {
         RestSettings {
             enable_debug: self.debug,
@@ -71,10 +73,13 @@ impl Config {
     ///
     /// On error reading qr or secret files
     ///
+    /// # Panics
+    ///
+    /// On internal os error when extracting path from directory for specific qr code
     pub fn build_multi_controller(&self) -> Result<MultiController, Error> {
         if let Some(qr_codes) = &self.qr_codes_folder {
             let qr_codes: Vec<PathBuf> = std::fs::read_dir(qr_codes)
-                .map_err(|_| Error::CannotReadQrs(qr_codes.to_path_buf()))?
+                .map_err(|_| Error::CannotReadQrs(qr_codes.clone()))?
                 .into_iter()
                 .map(|x| x.unwrap().path())
                 .collect();
@@ -82,7 +87,7 @@ impl Config {
             MultiController::recover_from_qrs(
                 &self.address,
                 &qr_codes,
-                PinReadModeSettings {
+                &PinReadModeSettings {
                     from_filename: self.read_pin_from_filename,
                     global_pin: self.global_pin.clone(),
                 },

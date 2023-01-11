@@ -3,7 +3,12 @@
 //! but directly operates on API level
 #![forbid(missing_docs)]
 #![warn(clippy::pedantic)]
-
+#![allow(
+    clippy::module_name_repetitions,
+    clippy::match_bool,
+    clippy::bool_assert_comparison,
+    clippy::derive_partial_eq_without_eq
+)]
 extern crate prettytable;
 extern crate rand;
 

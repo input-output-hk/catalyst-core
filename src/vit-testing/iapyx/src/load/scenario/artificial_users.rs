@@ -22,6 +22,7 @@ pub struct ArtificialUserLoad {
 
 impl ArtificialUserLoad {
     /// Creates new object based on configuration
+    #[must_use]
     pub fn new(config: ArtificialUserLoadConfig) -> Self {
         Self { config }
     }

@@ -71,15 +71,31 @@ pub type Secret = chain_crypto::SecretKey<Ed25519Extended>;
 /// Trait for converting qr code into secret key
 pub trait SecretFromQrCode {
     /// Convert to secret from qr code file
+    ///
+    /// # Errors
+    ///
+    /// On incorrect format
     fn from_file<P: AsRef<Path>>(qr: P, pin_read_mode: PinReadMode) -> Result<Secret, Error>;
 
     /// Convert to secret from bytes
+    ///
+    /// # Errors
+    ///
+    /// On illegal bytes length
     fn from_bytes(bytes: Vec<u8>, pin_read_mode: PinReadMode) -> Result<Secret, Error>;
 
     /// Convert secret to bech32 format
+    ///
+    /// # Errors
+    ///
+    /// On converting to bech32 error
     fn to_bech32(self) -> Result<String, Error>;
 
     /// Convert from qr code payload
+    ///
+    /// # Errors
+    ///
+    /// Read from payload file
     fn from_payload_file<P: AsRef<Path>>(
         payload_file: P,
         pin_read_mode: PinReadMode,
@@ -118,9 +134,13 @@ impl SecretFromQrCode for Secret {
 }
 
 /// Reads qr codes from paths
+///
+/// # Panics
+///
+/// When stop at fail is true and there is an error when reading qr code
 pub fn read_qrs<P: AsRef<Path>>(
     qrs: &[P],
-    pin_read_mode: PinReadModeSettings,
+    pin_read_mode: &PinReadModeSettings,
     stop_at_fail: bool,
 ) -> Vec<Secret> {
     let mut secrets = Vec::new();
@@ -150,9 +170,10 @@ pub fn read_qrs<P: AsRef<Path>>(
             }
         };
 
-        let result = match stop_at_fail {
-            true => Ok(KeyQrCode::decode(img, &pin.password).unwrap()),
-            false => std::panic::catch_unwind(|| KeyQrCode::decode(img, &pin.password).unwrap()),
+        let result = if stop_at_fail {
+            Ok(KeyQrCode::decode(img, &pin.password).unwrap())
+        } else {
+            std::panic::catch_unwind(|| KeyQrCode::decode(img, &pin.password).unwrap())
         };
         let secret = match result {
             Ok(secret) => secret,

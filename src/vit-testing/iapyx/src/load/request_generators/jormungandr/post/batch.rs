@@ -51,7 +51,7 @@ impl BatchWalletRequestGen {
             .chain_vote_options
             .0
             .values()
-            .cloned()
+            .copied()
             .collect();
 
         let vote_cast_counter = VoteCastCounter::new(
@@ -59,7 +59,7 @@ impl BatchWalletRequestGen {
             vote_plans
                 .iter()
                 .filter(|v| voting_groups_vote_plans_ids.contains(&v.id.to_string()))
-                .map(|v| (v.id.into(), v.proposals.len() as u8))
+                .map(|v| (v.id.into(), proposals.len().try_into().unwrap()))
                 .collect(),
         );
 
@@ -110,11 +110,11 @@ impl BatchWalletRequestGen {
 
         let mut proposals = Vec::new();
 
-        for item in counter.iter() {
+        for item in &counter {
             for i in item.range() {
                 match self.proposals.iter().find(|x| {
                     x.voteplan.chain_voteplan_id == item.id().to_string()
-                        && (x.voteplan.chain_proposal_index % u8::MAX as i64) == i as i64
+                        && (x.voteplan.chain_proposal_index % i64::from(u8::MAX)) == i as i64
                 }) {
                     Some(proposal) => {
                         println!("vote on: {}/{}", proposal.voteplan.chain_voteplan_id, i);

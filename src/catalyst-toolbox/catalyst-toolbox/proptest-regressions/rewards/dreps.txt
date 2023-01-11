@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+xx 2722fd3b21e5ba88294770bb807c10d9218b0532aeedeebc1fc9f53f3b6b51f9 # shrinks to input = _TestPerCategoryThresholdArgs { raw_snapshot: RawSnapshot([VotingRegistration { stake_public_key: "0000000000000000000000000000000000000000000000000000000000000000", voting_power: Value(Value(1)), reward_address: "stake1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqvxjcwq", delegations: New([(Identifier(Identifier(3b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da29)), 0)]), voting_purpose: 0 }]) }

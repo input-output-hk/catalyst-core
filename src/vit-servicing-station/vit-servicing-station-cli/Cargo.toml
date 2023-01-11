@@ -12,7 +12,7 @@ clap = { workspace = true }
 
 base64 = "0.13"
 time = "0.3"
-csv = "1.1"
+csv = { workspace = true }
 diesel = "1.4"
 rand = "0.7.3"
 r2d2 = "0.8"

@@ -8,8 +8,7 @@ edition = "2021"
 
 [dependencies]
 clap = { workspace = true }
-
-uuid = { version = "0.8", features = ["serde","v4"] }
+uuid = { workspace = true }
 chrono = { version = "0.4", features = ["serde"] }
 walkdir = "2.3.1"
 scheduler-service-lib = { path = "../scheduler-service-lib"}

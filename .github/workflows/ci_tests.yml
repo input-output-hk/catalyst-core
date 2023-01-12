@@ -52,13 +52,14 @@ jobs:
       - name: Install deps
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-
-      - name: Run Catalyst core tests
-        uses: actions-rs/toolchain@v1
+      - uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
-      - run: |
+      - name: Build Catalyst Core tests
+        run:
           cargo build -p vit-servicing-station-cli -p vit-servicing-station-server -p jcli -p jormungandr -p explorer
+      - name: Run Catalyst Core tests
+        run:
           cargo nextest run --profile ci
 
   wallet-js-binding:

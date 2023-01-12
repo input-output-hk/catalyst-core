@@ -30,6 +30,13 @@ Please also list any relevant details for your test configuration
 * Toolchain:
 * SDK:
 
+**List of new dependecies**: _if applicable_
+
+Provide a list of newly added dependencies in this PR, with the description of what are they doing and why do we need them.
+
+- Crate A: description
+- Crate B: description
+
 ## Checklist:
 
 - [ ] My code follows the style guidelines of this project

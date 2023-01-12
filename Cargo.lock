@@ -8428,7 +8428,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-wasm-js"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "bech32 0.7.3",
  "chain-core",

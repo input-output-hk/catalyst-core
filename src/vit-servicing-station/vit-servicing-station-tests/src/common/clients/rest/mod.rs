@@ -8,7 +8,7 @@ pub use search::SearchRequestBuilder;
 
 use crate::common::clients::rest::path::RestPathBuilder;
 use crate::common::raw_snapshot::RawSnapshot;
-use crate::common::snapshot::{Snapshot, VoterInfo};
+use crate::common::snapshot::{Snapshot, VoterInfo, DelegatorInfo};
 use hyper::StatusCode;
 use logger::RestClientLogger;
 use reqwest::blocking::Response;
@@ -129,6 +129,14 @@ impl RestClient {
 
     pub fn voter_info(&self, tag: &str, key: &str) -> Result<VoterInfo, Error> {
         let response = self.raw.voter_info(tag, key)?;
+        self.verify_status_code(&response)?;
+        let content = response.text()?;
+        self.raw.log_text(&content);
+        serde_json::from_str(&content).map_err(Error::CannotDeserialize)
+    }
+
+    pub fn delegator_info(&self, tag: &str, key: &str) -> Result<DelegatorInfo, Error> {
+        let response = self.raw.delegator_info(tag, key)?;
         self.verify_status_code(&response)?;
         let content = response.text()?;
         self.raw.log_text(&content);

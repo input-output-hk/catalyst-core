@@ -8,6 +8,7 @@ use chain_core::{
 use chain_impl_mockchain::{
     account::SpendingCounter, block::Block, fragment::Fragment, vote::Payload,
 };
+use clap::Parser;
 use color_eyre::Report;
 use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 use jormungandr_lib::interfaces::load_persistent_fragments_logs_from_folder_path;
@@ -16,7 +17,6 @@ use std::collections::HashMap;
 use std::io::Write;
 use std::iter::IntoIterator;
 use std::path::PathBuf;
-use clap::Parser;
 
 use super::set_verbosity;
 

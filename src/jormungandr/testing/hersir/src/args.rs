@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use clap::Parser;
+use std::path::PathBuf;
 
 ///
 /// Hersir is a command line tool that lets you deploy a network of Jormungandr nodes

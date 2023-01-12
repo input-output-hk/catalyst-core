@@ -1,6 +1,6 @@
 use crate::config::read_config;
-use std::path::PathBuf;
 use clap::Parser;
+use std::path::PathBuf;
 use thiserror::Error;
 
 #[derive(Parser, Debug)]

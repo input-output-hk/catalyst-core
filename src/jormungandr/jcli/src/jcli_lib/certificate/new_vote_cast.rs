@@ -7,9 +7,9 @@ use chain_impl_mockchain::{
     certificate::{Certificate, VoteCast, VotePlanId},
     vote::{Choice, Payload},
 };
+use clap::Parser;
 use rand_chacha::rand_core::SeedableRng;
 use std::path::PathBuf;
-use clap::Parser;
 
 #[derive(Parser)]
 pub struct PublicVoteCast {

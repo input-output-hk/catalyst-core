@@ -2,6 +2,7 @@ mod burst;
 mod constant;
 
 use burst::BurstIapyxLoadCommand;
+use clap::Parser;
 use constant::ConstIapyxLoadCommand;
 use iapyx::ArtificialUserLoad;
 use iapyx::MultiControllerError;
@@ -10,7 +11,6 @@ use iapyx::ServicingStationLoad;
 pub use jortestkit::console::progress_bar::{parse_progress_bar_mode_from_str, ProgressBarMode};
 use jortestkit::load::Monitor;
 use std::path::PathBuf;
-use clap::Parser;
 use thiserror::Error;
 
 #[derive(Error, Debug)]

@@ -5,12 +5,12 @@ use crate::jcli_lib::{
 use chain_impl_mockchain::certificate::{
     Certificate, DecryptedPrivateTally, DecryptedPrivateTallyProposal, VotePlanId, VoteTally,
 };
+use clap::Parser;
 use jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{PrivateTallyState, Tally},
 };
 use std::{convert::TryInto, path::PathBuf};
-use clap::Parser;
 
 /// create a vote tally certificate
 ///

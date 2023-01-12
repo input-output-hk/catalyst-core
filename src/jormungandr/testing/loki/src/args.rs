@@ -1,5 +1,5 @@
-use std::{net::SocketAddr, path::PathBuf, str::FromStr};
 use clap::Parser;
+use std::{net::SocketAddr, path::PathBuf, str::FromStr};
 
 #[derive(Parser, Debug)]
 #[clap(rename_all = "kebab")]

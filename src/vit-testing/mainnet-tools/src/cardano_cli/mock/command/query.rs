@@ -1,8 +1,8 @@
 use crate::cardano_cli::mock::command::write_to_file_or_println;
 use crate::cardano_cli::mock::fake;
+use clap::Parser;
 use std::io::Error;
 use std::path::PathBuf;
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 pub enum Query {

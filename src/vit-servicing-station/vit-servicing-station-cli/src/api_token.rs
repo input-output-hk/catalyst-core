@@ -1,9 +1,9 @@
 use crate::db_utils::{backup_db_file, restore_db_file};
 use crate::{db_utils::db_file_exists, task::ExecTask};
+use clap::Parser;
 use rand::Rng;
 use std::collections::HashSet;
 use std::io;
-use clap::Parser;
 use thiserror::Error;
 use time::{Duration, OffsetDateTime};
 use vit_servicing_station_lib::{

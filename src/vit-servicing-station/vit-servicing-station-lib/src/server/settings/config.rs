@@ -360,9 +360,9 @@ pub fn dump_settings_to_file(
 #[cfg(test)]
 mod test {
     use super::*;
+    use clap::Parser;
     use std::net::SocketAddr;
     use std::str::FromStr;
-    use clap::Parser;
     use tempfile;
 
     #[test]
@@ -443,7 +443,7 @@ mod test {
 
     #[test]
     fn load_settings_from_cli() {
-        let settings: ServiceSettings = ServiceSettings::parse_from(&[
+        let settings: ServiceSettings = ServiceSettings::parse_from([
             "test",
             "--address",
             "127.0.0.1:3030",
@@ -503,7 +503,7 @@ mod test {
         );
         set_var(VIT_SERVICE_VERSION_ENV_VARIABLE, "v0.2.0");
 
-        let settings: ServiceSettings = ServiceSettings::parse_from(&[
+        let settings: ServiceSettings = ServiceSettings::parse_from([
             "test",
             "--address",
             "127.0.0.1:3030",
@@ -533,7 +533,7 @@ mod test {
     #[test]
     fn merge_settings() {
         let default = ServiceSettings::default();
-        let other_settings = ServiceSettings::parse_from(&[
+        let other_settings = ServiceSettings::parse_from([
             "test",
             "--address",
             "127.0.0.1:8080",

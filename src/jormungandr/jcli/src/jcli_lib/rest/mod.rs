@@ -4,9 +4,9 @@ pub mod v1;
 
 use crate::jcli_lib::utils::{io::ReadYamlError, output_format};
 use chain_core::property::{ReadError, WriteError};
+use clap::Parser;
 pub use config::RestArgs;
 use hex::FromHexError;
-use clap::Parser;
 use thiserror::Error;
 
 /// Send request to node REST API

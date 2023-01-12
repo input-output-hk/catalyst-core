@@ -2,8 +2,8 @@ use crate::jcli_lib::{
     certificate::read_input,
     transaction::{common, Error},
 };
-use std::path::PathBuf;
 use clap::Parser;
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

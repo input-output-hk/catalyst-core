@@ -5,8 +5,8 @@ use crate::jcli_lib::{
 use bech32::{self, FromBase32 as _};
 use chain_core::{packer::Codec, property::DeserializeFromSlice};
 use chain_impl_mockchain::transaction::Witness;
-use std::path::PathBuf;
 use clap::Parser;
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

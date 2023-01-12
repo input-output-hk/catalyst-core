@@ -9,12 +9,12 @@ use chain_impl_mockchain::{
     rewards,
 };
 use chain_time::DurationSeconds;
+use clap::Parser;
 use jormungandr_lib::interfaces::{AccountIdentifier, Ratio, Value};
 use std::{
     num::{NonZeroU64, NonZeroU8},
     path::PathBuf,
 };
-use clap::Parser;
 
 /// create the stake pool registration certificate.
 ///

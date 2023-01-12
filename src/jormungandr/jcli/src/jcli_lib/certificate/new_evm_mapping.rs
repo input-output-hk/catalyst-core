@@ -5,9 +5,9 @@ use crate::jcli_lib::{
 use chain_crypto::{Ed25519, PublicKey};
 use chain_evm::ethereum_types::H160;
 use chain_impl_mockchain::certificate::{Certificate, EvmMapping};
+use clap::Parser;
 use jormungandr_lib::interfaces::Certificate as CertificateType;
 use std::path::PathBuf;
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 #[clap(rename_all = "kebab-case")]

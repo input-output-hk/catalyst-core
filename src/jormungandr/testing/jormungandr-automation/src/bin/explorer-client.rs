@@ -1,6 +1,6 @@
+use clap::Parser;
 use jormungandr_automation::jormungandr::{explorer::Explorer, ExplorerError};
 use std::{env, error::Error as _};
-use clap::Parser;
 
 fn main() {
     Command::parse().exec().unwrap_or_else(report_error)

@@ -6,9 +6,9 @@ use crate::{
         LOG_FILTER_LEVEL_POSSIBLE_VALUES,
     },
 };
+use clap::Parser;
 use multiaddr::Multiaddr;
 use std::{net::SocketAddr, path::PathBuf, str::FromStr};
-use clap::Parser;
 use tracing::level_filters::LevelFilter;
 
 fn trusted_peer_from_json(json: &str) -> Result<TrustedPeer, serde_json::Error> {
@@ -80,9 +80,7 @@ pub struct JRpcArguments {
 }
 
 #[derive(Parser, Debug)]
-#[clap(
-    name = "jormungandr",
-)]
+#[clap(name = "jormungandr")]
 pub struct CommandLine {
     /// Set log messages minimum severity. If not configured anywhere, defaults to "info".
     #[clap(

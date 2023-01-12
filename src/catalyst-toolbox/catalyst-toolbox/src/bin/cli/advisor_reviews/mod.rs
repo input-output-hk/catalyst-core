@@ -1,13 +1,13 @@
 use catalyst_toolbox::utils;
 use catalyst_toolbox::vca_reviews::read_vca_reviews_aggregated_file;
 
+use clap::Parser;
 use color_eyre::eyre::bail;
 use color_eyre::Report;
 use jcli_lib::utils::io::open_file_write;
 use std::fmt;
 use std::path::PathBuf;
 use std::str::FromStr;
-use clap::Parser;
 
 #[derive(Debug, Clone)]
 pub enum OutputFormat {

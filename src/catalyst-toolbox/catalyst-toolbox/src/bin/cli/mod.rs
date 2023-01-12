@@ -10,8 +10,8 @@ mod snapshot;
 mod stats;
 mod vote_check;
 
-use color_eyre::Report;
 use clap::Parser;
+use color_eyre::Report;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

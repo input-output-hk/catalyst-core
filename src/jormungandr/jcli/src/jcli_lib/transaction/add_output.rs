@@ -1,7 +1,7 @@
 use crate::jcli_lib::transaction::{common, Error};
 use chain_impl_mockchain::transaction::Output;
-use jormungandr_lib::interfaces;
 use clap::Parser;
+use jormungandr_lib::interfaces;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

@@ -4,6 +4,7 @@ use crate::jcli_lib::utils::{
     OutputFormat,
 };
 use chain_vote::tally::{batch_decrypt, EncryptedTally};
+use clap::Parser;
 use jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{PrivateTallyState, Tally},
@@ -11,7 +12,6 @@ use jormungandr_lib::{
 use rayon::prelude::*;
 use serde::Serialize;
 use std::{convert::TryInto, path::PathBuf};
-use clap::Parser;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

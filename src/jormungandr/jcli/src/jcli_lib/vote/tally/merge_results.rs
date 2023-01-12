@@ -1,4 +1,5 @@
 use crate::jcli_lib::utils::{io, OutputFormat};
+use clap::Parser;
 use jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{PrivateTallyState, Tally, VotePlanId, VotePlanStatus},
@@ -9,7 +10,6 @@ use std::{
     ops::Range,
     path::PathBuf,
 };
-use clap::Parser;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {

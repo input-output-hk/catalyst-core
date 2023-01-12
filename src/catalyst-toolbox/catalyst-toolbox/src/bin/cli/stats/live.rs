@@ -1,9 +1,9 @@
 use catalyst_toolbox::stats::live::{start, Harvester, Settings};
+use clap::Parser;
 use color_eyre::Report;
 use jortestkit::console::ProgressBarMode;
 use jortestkit::prelude::parse_progress_bar_mode_from_str;
 use std::path::PathBuf;
-use clap::Parser;
 
 /// Commands connect to desired backend and query endpoint with some interval.
 /// It can dump result to to console in a progress mode/standard printout or file.

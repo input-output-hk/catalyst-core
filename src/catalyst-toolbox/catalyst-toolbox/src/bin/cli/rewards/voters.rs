@@ -7,9 +7,9 @@ use color_eyre::{Report, Result};
 use jcli_lib::block::open_output;
 use jcli_lib::jcli_lib::block::Common;
 
+use clap::Parser;
 use snapshot_lib::registration::MainnetRewardAddress;
 use snapshot_lib::SnapshotInfo;
-use clap::Parser;
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};

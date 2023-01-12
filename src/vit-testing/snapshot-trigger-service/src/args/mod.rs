@@ -4,10 +4,10 @@ use crate::{
     config::{read_config, Configuration},
     Context,
 };
+use clap::Parser;
 use scheduler_service_lib::{spawn_scheduler, ManagerService, WrappedPoisonError};
 use std::sync::Mutex;
 use std::{path::PathBuf, sync::Arc};
-use clap::Parser;
 use thiserror::Error;
 
 #[derive(Parser, Debug)]

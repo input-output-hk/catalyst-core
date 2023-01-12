@@ -1,8 +1,8 @@
 use crate::jcli_lib::certificate::{weighted_pool_ids::WeightedPoolIds, write_cert, Error};
 use chain_impl_mockchain::certificate::{Certificate, OwnerStakeDelegation as Delegation};
+use clap::Parser;
 use jormungandr_lib::interfaces::Certificate as CertificateType;
 use std::{convert::TryInto, path::PathBuf};
-use clap::Parser;
 
 #[derive(Parser)]
 pub struct OwnerStakeDelegation {

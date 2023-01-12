@@ -1,9 +1,9 @@
 use crate::Result;
+use clap::Parser;
 use rand::RngCore;
 use rand_core::OsRng;
 use std::io::Write;
 use std::path::PathBuf;
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 pub struct RandomScoresDataCommandArgs {

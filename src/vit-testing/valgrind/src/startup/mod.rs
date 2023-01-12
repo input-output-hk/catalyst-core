@@ -1,9 +1,9 @@
 mod server;
 
+use clap::Parser;
 use serde::{Deserialize, Serialize};
 use server::{Error as ProxyServerError, ProxyServerStub};
 use std::path::PathBuf;
-use clap::Parser;
 use thiserror::Error;
 
 #[derive(Error, Debug)]

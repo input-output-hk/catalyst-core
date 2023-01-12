@@ -4,9 +4,9 @@ use catalyst_toolbox::logs::sentry::{
 use color_eyre::Report;
 use jcli_lib::utils::io::open_file_read;
 
+use clap::Parser;
 use regex::Regex;
 use std::path::PathBuf;
-use clap::Parser;
 
 #[derive(Debug, Parser)]
 #[clap(rename_all = "kebab-case")]

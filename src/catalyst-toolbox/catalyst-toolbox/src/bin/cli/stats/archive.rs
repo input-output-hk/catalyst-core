@@ -2,11 +2,11 @@ use catalyst_toolbox::{
     stats::archive::{load_from_csv, load_from_folder, ArchiveStats},
     utils::csv::dump_to_csv_or_print,
 };
+use clap::Parser;
 use color_eyre::Report;
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::path::PathBuf;
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 pub struct ArchiveCommand {

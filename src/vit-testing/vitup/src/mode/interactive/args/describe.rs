@@ -1,9 +1,9 @@
 use super::super::{VitInteractiveCommandExec, VitUserInteractionController};
 use crate::Result;
+use clap::Parser;
 use hersir::controller::interactive::args::describe::{
     DescribeNodes, DescribeTopology, DescribeVotePlans, DescribeWallets,
 };
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 pub enum Describe {

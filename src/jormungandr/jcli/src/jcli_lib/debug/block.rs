@@ -1,11 +1,11 @@
 use crate::jcli_lib::{debug::Error, utils::io};
 use chain_core::{packer::Codec, property::Deserialize as _};
 use chain_impl_mockchain::block::Block as BlockMock;
+use clap::Parser;
 use std::{
     io::{BufRead, BufReader},
     path::PathBuf,
 };
-use clap::Parser;
 
 #[derive(Parser)]
 pub struct Block {

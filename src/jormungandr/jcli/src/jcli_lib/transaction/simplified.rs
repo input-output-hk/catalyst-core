@@ -15,11 +15,11 @@ use chain_crypto::{Ed25519, Ed25519Extended, PublicKey, SecretKey};
 use chain_impl_mockchain::{
     account::SpendingCounter, fee::FeeAlgorithm, key::EitherEd25519SecretKey, transaction::Output,
 };
+use clap::Parser;
 use jormungandr_lib::{interfaces, interfaces::SettingsDto};
 use rand::{rngs::OsRng, SeedableRng};
 use rand_chacha::ChaChaRng;
 use std::path::PathBuf;
-use clap::Parser;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

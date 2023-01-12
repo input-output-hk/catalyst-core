@@ -6,10 +6,10 @@ pub mod fragment;
 pub mod generators;
 pub mod rest;
 
+use clap::Parser;
 pub use error::MjolnirError;
 use jortestkit::{load::Monitor, prelude::ProgressBarMode};
 use std::error::Error;
-use clap::Parser;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

@@ -15,9 +15,9 @@ use chain_impl_mockchain::{
         TxBuilderState,
     },
 };
+use clap::Parser;
 use jormungandr_lib::interfaces;
 use std::{convert::TryInto, path::PathBuf};
-use clap::Parser;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

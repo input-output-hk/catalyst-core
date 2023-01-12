@@ -7,14 +7,15 @@ use chain_impl_mockchain::{
     block::Block,
     ledger::{self, Ledger},
 };
+use clap::Parser;
 use jormungandr_lib::interfaces::{
     block0_configuration_documented_example, Block0Configuration, Block0ConfigurationError,
 };
 use std::{
     io::{BufRead, Write},
-    path::PathBuf, str::FromStr,
+    path::PathBuf,
+    str::FromStr,
 };
-use clap::Parser;
 use thiserror::Error;
 
 #[allow(clippy::large_enum_variant)]

@@ -1,6 +1,6 @@
+use clap::Parser;
 use futures::future::FutureExt;
 use mainnet_tools::voter_registration::Command;
-use clap::Parser;
 
 #[tokio::main]
 pub async fn main() -> Result<(), mainnet_tools::voter_registration::Error> {

@@ -23,13 +23,13 @@ use crate::jcli_lib::utils::{
 };
 use chain_impl_mockchain::{block::BlockDate, certificate::DecryptedPrivateTallyError};
 use chain_vote::UnitVectorInitializationError;
+use clap::Parser;
 use jormungandr_lib::interfaces::{self, CertificateFromBech32Error, CertificateFromStrError};
 use std::{
     fmt::Display,
     io::{BufRead, BufReader, Write},
     path::{Path, PathBuf},
 };
-use clap::Parser;
 use thiserror::Error;
 
 #[derive(Debug, Error)]

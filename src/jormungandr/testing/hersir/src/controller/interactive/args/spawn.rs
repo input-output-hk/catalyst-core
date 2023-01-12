@@ -3,12 +3,12 @@ use crate::{
     controller::{Error, UserInteractionController},
     style,
 };
+use clap::Parser;
 use jormungandr_automation::jormungandr::{
     download_last_n_releases, LeadershipMode, PersistenceMode, StartupVerificationMode, Version,
 };
 use jortestkit::console::InteractiveCommandError;
 use std::time::Duration;
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 pub enum Spawn {

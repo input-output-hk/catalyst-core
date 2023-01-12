@@ -4,6 +4,7 @@ use crate::builders::VitBackendSettingsBuilder;
 use crate::config::Block0Initials;
 use crate::config::ConfigBuilder;
 use crate::Result;
+use clap::Parser;
 use hersir::config::SessionSettings;
 use jormungandr_automation::jormungandr::LogLevel;
 use jormungandr_automation::testing::block0::read_genesis_yaml;
@@ -12,7 +13,6 @@ use jortestkit::prelude::read_file;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::path::PathBuf;
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 pub struct SnapshotCommandArgs {

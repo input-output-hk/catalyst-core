@@ -1,9 +1,9 @@
 mod block;
 mod message;
 use chain_core::property::ReadError;
+use clap::Parser;
 use hex::FromHexError;
 use std::path::PathBuf;
-use clap::Parser;
 use thiserror::Error;
 
 #[derive(Parser)]

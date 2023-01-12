@@ -6,9 +6,9 @@ use chain_impl_mockchain::{
     certificate::{self, Certificate},
     vote::PayloadType,
 };
+use clap::Parser;
 use jormungandr_lib::interfaces::VotePlan;
 use std::path::PathBuf;
-use clap::Parser;
 
 /// create a vote plan certificate
 ///

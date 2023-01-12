@@ -6,10 +6,13 @@ use chain_core::property::Deserialize;
 use chain_crypto::{Ed25519Extended, SecretKey};
 use chain_impl_mockchain::block::Block;
 use chain_ser::packer::Codec;
+use clap::Parser;
 use color_eyre::Report;
 use jormungandr_lib::interfaces::{Block0Configuration, Initial};
-use std::{path::{Path, PathBuf}, str::FromStr};
-use clap::Parser;
+use std::{
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 use url::Url;
 #[derive(Parser, Debug)]
 pub struct InfoForQrCodeCmd {

@@ -1,6 +1,6 @@
 use crate::jcli_lib::transaction::{common, Error};
-use jormungandr_lib::interfaces::Certificate;
 use clap::Parser;
+use jormungandr_lib::interfaces::Certificate;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

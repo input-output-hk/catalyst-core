@@ -11,8 +11,8 @@ use catalyst_toolbox::notifications::{
 use color_eyre::Report;
 use jcli_lib::utils::io;
 
-use reqwest::Url;
 use clap::Parser;
+use reqwest::Url;
 use time::OffsetDateTime;
 
 use std::io::Read;

@@ -3,8 +3,8 @@ use crate::client::rest::VitupDisruptionRestClient;
 use crate::client::rest::VitupRest;
 use crate::config::Config;
 use crate::Result;
-use std::path::PathBuf;
 use clap::Parser;
+use std::path::PathBuf;
 use thor::PersistentLogViewer;
 
 #[derive(Parser, Debug)]

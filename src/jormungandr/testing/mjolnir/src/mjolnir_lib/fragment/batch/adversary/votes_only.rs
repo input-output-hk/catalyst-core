@@ -4,6 +4,7 @@ use crate::{
 };
 use chain_addr::Discrimination;
 use chain_impl_mockchain::block::BlockDate;
+use clap::Parser;
 use jormungandr_automation::{
     jormungandr::RemoteJormungandrBuilder,
     testing::block0::{get_block, Block0ConfigurationExtension},
@@ -14,7 +15,6 @@ use jortestkit::{
     prelude::{parse_progress_bar_mode_from_str, ProgressBarMode},
 };
 use std::{path::PathBuf, str::FromStr, time::Duration};
-use clap::Parser;
 use thor::{
     BlockDateGenerator, DiscriminationExtension, FragmentSender, FragmentSenderSetup, Wallet,
 };

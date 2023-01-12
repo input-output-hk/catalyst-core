@@ -2,9 +2,9 @@ mod count;
 mod duration;
 
 use crate::load::IapyxLoadCommandError;
+use clap::Parser;
 pub use count::ConstantCountIapyxLoadCommand;
 pub use duration::ConstDurationIapyxLoadCommand;
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 pub enum ConstIapyxLoadCommand {

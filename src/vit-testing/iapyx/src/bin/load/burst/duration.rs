@@ -1,12 +1,12 @@
 use crate::load::build_monitor;
 use crate::load::IapyxLoadCommandError;
+use clap::Parser;
 use iapyx::NodeLoad;
 use iapyx::NodeLoadConfig;
 pub use jortestkit::console::progress_bar::{parse_progress_bar_mode_from_str, ProgressBarMode};
 use jortestkit::load::ConfigurationBuilder;
 use std::path::PathBuf;
 use std::time::Duration;
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 pub struct BurstDurationIapyxLoadCommand {

@@ -6,6 +6,7 @@ use crate::{
 };
 use chain_addr::Discrimination;
 use chain_impl_mockchain::block::BlockDate;
+use clap::Parser;
 use jormungandr_automation::jormungandr::RemoteJormungandrBuilder;
 use jormungandr_lib::crypto::hash::Hash;
 use jortestkit::{
@@ -14,7 +15,6 @@ use jortestkit::{
 };
 use loki::{AdversaryFragmentSender, AdversaryFragmentSenderSetup};
 use std::{path::PathBuf, str::FromStr, time::Duration};
-use clap::Parser;
 use thor::{
     BlockDateGenerator, DiscriminationExtension, FragmentSender, FragmentSenderSetup, Wallet,
 };

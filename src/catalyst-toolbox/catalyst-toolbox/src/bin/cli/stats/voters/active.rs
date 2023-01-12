@@ -1,9 +1,9 @@
 use catalyst_toolbox::stats::distribution::Stats;
 use catalyst_toolbox::stats::voters::calculate_active_wallet_distribution;
+use clap::Parser;
 use color_eyre::Report;
 use std::ops::Range;
 use std::path::PathBuf;
-use clap::Parser;
 use thiserror::Error;
 
 #[derive(Parser, Debug)]

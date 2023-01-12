@@ -1,7 +1,7 @@
+use clap::Parser;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::{fs::File, path::PathBuf};
-use clap::Parser;
 use thiserror::Error;
 #[derive(Parser, Debug)]
 pub enum ImportFromIdeascaleFormatCommand {

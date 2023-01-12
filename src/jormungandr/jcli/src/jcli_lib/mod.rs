@@ -9,8 +9,8 @@ pub mod vote;
 
 pub mod utils;
 
-use std::error::Error;
 use clap::Parser;
+use std::error::Error;
 
 /// Jormungandr CLI toolkit
 #[derive(Parser)]

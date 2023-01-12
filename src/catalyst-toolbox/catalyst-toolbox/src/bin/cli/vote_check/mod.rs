@@ -1,6 +1,6 @@
+use clap::Parser;
 use color_eyre::eyre::bail;
 use color_eyre::Report;
-use clap::Parser;
 
 use catalyst_toolbox::vote_check::CheckNode;
 

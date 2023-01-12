@@ -1,7 +1,7 @@
 use crate::controller::{Error, UserInteractionController};
+use clap::Parser;
 use jormungandr_automation::jormungandr::explorer::configuration::ExplorerParams;
 use jortestkit::prelude::InteractiveCommandError;
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 pub enum Explorer {

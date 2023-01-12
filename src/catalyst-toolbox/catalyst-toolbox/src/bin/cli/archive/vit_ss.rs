@@ -1,7 +1,7 @@
 use catalyst_toolbox::archive::vit_ss::generate_archive_files;
+use clap::Parser;
 use color_eyre::Report;
 use std::path::PathBuf;
-use clap::Parser;
 use tokio::runtime::Runtime;
 
 #[derive(Debug, Parser)]

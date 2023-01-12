@@ -1,8 +1,8 @@
 use crate::builders::ReviewGenerator;
 use crate::Result;
+use clap::Parser;
 use std::io::Write;
 use std::path::PathBuf;
-use clap::Parser;
 use vit_servicing_station_tests::common::data::ProposalTemplate;
 
 #[derive(Parser, Debug)]

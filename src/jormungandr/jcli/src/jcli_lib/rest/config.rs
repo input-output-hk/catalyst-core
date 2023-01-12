@@ -1,10 +1,10 @@
 use bytes::Bytes;
+use clap::Parser;
 use reqwest::{
     blocking::{Client, RequestBuilder},
     Url,
 };
 use std::path::PathBuf;
-use clap::Parser;
 use thiserror::Error;
 
 #[derive(Parser, Clone)]

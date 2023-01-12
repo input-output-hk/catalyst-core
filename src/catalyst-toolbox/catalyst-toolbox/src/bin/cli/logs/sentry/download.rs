@@ -4,8 +4,8 @@ use jcli_lib::utils::io::open_file_write;
 
 use std::path::PathBuf;
 
-use std::str::FromStr;
 use clap::Parser;
+use std::str::FromStr;
 use time::OffsetDateTime;
 use url::Url;
 

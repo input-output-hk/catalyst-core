@@ -2,9 +2,9 @@ mod active;
 mod initials;
 
 use active::ActiveVotersCommand;
+use clap::Parser;
 use color_eyre::Report;
 use initials::InitialVotersCommand;
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 pub enum VotersCommand {

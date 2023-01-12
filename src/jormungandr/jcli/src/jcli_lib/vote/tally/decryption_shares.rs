@@ -5,12 +5,12 @@ use crate::jcli_lib::utils::{
 };
 use chain_crypto::bech32::Bech32;
 use chain_vote::tally::{EncryptedTally, OpeningVoteKey};
+use clap::Parser;
 use jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{PrivateTallyState, Tally},
 };
 use std::{convert::TryFrom, path::PathBuf};
-use clap::Parser;
 
 /// Create decryption shares for all proposals in a vote plan.
 ///

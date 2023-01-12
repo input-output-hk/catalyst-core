@@ -11,8 +11,8 @@ use chain_impl_mockchain::{
     key::EitherEd25519SecretKey,
     transaction::{TransactionSignDataHash, Witness},
 };
-use std::{io::Write, path::PathBuf, str::FromStr};
 use clap::Parser;
+use std::{io::Write, path::PathBuf, str::FromStr};
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

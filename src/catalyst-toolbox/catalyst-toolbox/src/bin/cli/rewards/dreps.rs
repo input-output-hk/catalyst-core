@@ -1,10 +1,10 @@
 use catalyst_toolbox::rewards::voters::calc_voter_rewards;
 use catalyst_toolbox::rewards::{Rewards, Threshold};
+use clap::Parser;
 use color_eyre::Report;
 use jcli_lib::jcli_lib::block::Common;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::AccountVotes};
 use snapshot_lib::{registration::MainnetRewardAddress, SnapshotInfo};
-use clap::Parser;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
 use std::collections::{BTreeMap, HashMap};

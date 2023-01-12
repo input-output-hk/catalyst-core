@@ -7,9 +7,9 @@ use chain_impl_mockchain::{
     certificate::{Certificate, StakeDelegation as Delegation},
     transaction::UnspecifiedAccountIdentifier,
 };
+use clap::Parser;
 use jormungandr_lib::interfaces::Certificate as CertificateType;
 use std::{convert::TryInto, path::PathBuf};
-use clap::Parser;
 
 #[derive(Parser)]
 pub struct StakeDelegation {

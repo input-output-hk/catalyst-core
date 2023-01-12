@@ -2,6 +2,7 @@ mod args;
 mod controller;
 
 pub use args::{describe, show};
+use clap::Parser;
 pub use controller::VitUserInteractionController;
 use hersir::controller::interactive::args::explorer;
 use hersir::controller::interactive::args::send;
@@ -10,7 +11,6 @@ use jortestkit::prelude::ConsoleWriter;
 use jortestkit::prelude::InteractiveCommandError;
 use jortestkit::prelude::InteractiveCommandExec;
 use std::ffi::OsStr;
-use clap::Parser;
 
 pub struct VitInteractiveCommandExec {
     pub vit_controller: VitUserInteractionController,

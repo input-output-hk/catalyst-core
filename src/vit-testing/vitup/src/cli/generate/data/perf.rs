@@ -4,12 +4,12 @@ use crate::builders::VitBackendSettingsBuilder;
 use crate::config::read_config;
 use crate::mode::standard::generate_database;
 use crate::Result;
+use clap::Parser;
 use glob::glob;
 use hersir::config::SessionSettings;
 use jormungandr_automation::jormungandr::LogLevel;
 use std::path::Path;
 use std::path::PathBuf;
-use clap::Parser;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 #[derive(Parser, Debug)]
 pub struct PerfDataCommandArgs {

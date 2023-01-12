@@ -1,7 +1,7 @@
 use crate::jcli_lib::transaction::{staging::Staging, Error};
 use chain_impl_mockchain::fee::{LinearFee, PerCertificateFee, PerVoteCertificateFee};
-use std::{num::NonZeroU64, path::PathBuf};
 use clap::Parser;
+use std::{num::NonZeroU64, path::PathBuf};
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

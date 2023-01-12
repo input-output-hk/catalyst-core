@@ -1,8 +1,8 @@
 use cardano_serialization_lib::metadata::MetadataJsonSchema;
+use clap::Parser;
 use mainnet_lib::{
     CatalystBlockFrostApi, CatalystBlockFrostApiError, GeneralTransactionMetadataInfo,
 };
-use clap::Parser;
 
 #[tokio::main]
 async fn main() -> Result<(), CatalystBlockFrostApiError> {

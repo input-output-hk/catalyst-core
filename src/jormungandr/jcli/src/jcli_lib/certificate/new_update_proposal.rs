@@ -4,9 +4,9 @@ use crate::jcli_lib::{
 };
 use chain_crypto::{Ed25519, PublicKey};
 use chain_impl_mockchain::certificate::{self, Certificate};
+use clap::Parser;
 use jormungandr_lib::interfaces::ConfigParams;
 use std::{io::BufRead, path::PathBuf};
-use clap::Parser;
 
 #[derive(Parser)]
 pub struct UpdateProposal {

@@ -1,4 +1,4 @@
-use std::{fmt, convert::Infallible};
+use std::{convert::Infallible, fmt};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum ProgressBarMode {
@@ -7,7 +7,9 @@ pub enum ProgressBarMode {
     None,
 }
 
-pub fn parse_progress_bar_mode_from_str(progress_bar_mode: &str) -> Result<ProgressBarMode, Infallible> {
+pub fn parse_progress_bar_mode_from_str(
+    progress_bar_mode: &str,
+) -> Result<ProgressBarMode, Infallible> {
     let progress_bar_mode_lowercase: &str = &progress_bar_mode.to_lowercase();
     let result = match progress_bar_mode_lowercase {
         "standard" => ProgressBarMode::Standard,

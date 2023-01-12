@@ -5,8 +5,8 @@ mod verify;
 
 use std::str::FromStr;
 
-use color_eyre::{Report, eyre::bail};
 use clap::Parser;
+use color_eyre::{eyre::bail, Report};
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

@@ -3,11 +3,11 @@ mod payload;
 
 use crate::cli::kedqr::QrCodeOpts;
 use catalyst_toolbox::kedqr::QrPin;
+use clap::Parser;
 use color_eyre::Report;
 pub use img::generate_qr;
 pub use payload::generate_payload;
 use std::{path::PathBuf, str::FromStr};
-use clap::Parser;
 
 /// QCode CLI toolkit
 #[derive(Debug, PartialEq, Eq, Parser)]

@@ -3,8 +3,8 @@ use crate::{
     transaction::staging::Staging,
 };
 use chain_impl_mockchain::transaction::OutputPolicy;
-use jormungandr_lib::interfaces;
 use clap::Parser;
+use jormungandr_lib::interfaces;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

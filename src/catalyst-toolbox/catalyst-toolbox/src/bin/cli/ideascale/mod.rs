@@ -9,7 +9,7 @@ use color_eyre::Report;
 use itertools::Itertools;
 use jcli_lib::utils::io as io_utils;
 use jormungandr_lib::interfaces::VotePrivacy;
-use std::{collections::HashSet, ffi::OsStr, convert::Infallible};
+use std::{collections::HashSet, convert::Infallible, ffi::OsStr};
 
 use clap::Parser;
 
@@ -24,7 +24,6 @@ pub enum Ideascale {
     Import(Import),
     Filter(Filter),
 }
-
 
 #[derive(Debug, Parser)]
 #[clap(rename_all = "kebab")]

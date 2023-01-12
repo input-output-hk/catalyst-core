@@ -1,6 +1,6 @@
 use super::SchedulerRestClient;
-use serde::de::DeserializeOwned;
 use clap::Parser;
+use serde::de::DeserializeOwned;
 use thiserror::Error;
 
 pub struct HealthCommand;

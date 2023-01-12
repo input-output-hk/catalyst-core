@@ -1,7 +1,7 @@
+use clap::Parser;
 use jormungandr_lib::crypto::hash::Hash;
 use serde::{Deserialize, Serialize};
 use std::{path::PathBuf, str::FromStr};
-use clap::Parser;
 
 use color_eyre::{eyre::eyre, Report};
 

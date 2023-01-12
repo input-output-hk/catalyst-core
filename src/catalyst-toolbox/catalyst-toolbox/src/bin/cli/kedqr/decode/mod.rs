@@ -3,11 +3,11 @@ mod payload;
 
 use crate::cli::kedqr::QrCodeOpts;
 use catalyst_toolbox::kedqr::QrPin;
+use clap::Parser;
 use color_eyre::Report;
 pub use img::{save_secret_from_qr, secret_from_qr};
 pub use payload::{decode_payload, secret_from_payload};
 use std::{path::PathBuf, str::FromStr};
-use clap::Parser;
 
 /// QCode CLI toolkit
 #[derive(Debug, PartialEq, Eq, Parser)]
@@ -35,4 +35,3 @@ impl DecodeQrCodeCmd {
         }
     }
 }
-

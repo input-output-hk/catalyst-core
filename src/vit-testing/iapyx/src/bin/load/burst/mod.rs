@@ -2,9 +2,9 @@ mod count;
 mod duration;
 
 use crate::load::IapyxLoadCommandError;
+use clap::Parser;
 pub use count::BurstCountIapyxLoadCommand;
 pub use duration::BurstDurationIapyxLoadCommand;
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 pub enum BurstIapyxLoadCommand {

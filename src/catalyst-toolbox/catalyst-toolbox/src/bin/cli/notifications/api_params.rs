@@ -1,5 +1,5 @@
-use reqwest::Url;
 use clap::Parser;
+use reqwest::Url;
 
 pub const DEFAULT_PUSHWOOSH_API_URL: &str = "https://cp.pushwoosh.com/json/1.3/";
 

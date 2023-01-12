@@ -1,8 +1,8 @@
 use crate::client::rest::SnapshotRestClient;
 use crate::config::JobParameters;
 use crate::ContextState;
-use scheduler_service_lib::{CliError, FilesCommand, HealthCommand};
 use clap::Parser;
+use scheduler_service_lib::{CliError, FilesCommand, HealthCommand};
 use thiserror::Error;
 
 #[derive(Parser, Debug)]

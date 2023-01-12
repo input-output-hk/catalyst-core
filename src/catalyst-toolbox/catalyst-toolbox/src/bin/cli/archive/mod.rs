@@ -1,5 +1,5 @@
-use color_eyre::Report;
 use clap::Parser;
+use color_eyre::Report;
 
 mod node;
 mod vit_ss;

@@ -3,8 +3,8 @@ mod decryption_shares;
 pub(crate) mod merge_results;
 
 use super::Error;
-pub use merge_results::MergedVotePlan;
 use clap::Parser;
+pub use merge_results::MergedVotePlan;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

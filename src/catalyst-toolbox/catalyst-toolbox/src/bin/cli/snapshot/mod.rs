@@ -1,3 +1,4 @@
+use clap::Parser;
 use color_eyre::Report;
 use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 use jormungandr_lib::interfaces::Value;
@@ -10,7 +11,6 @@ use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use std::str::FromStr;
-use clap::Parser;
 
 /// Process raw registrations into blockchain initials
 #[derive(Parser)]

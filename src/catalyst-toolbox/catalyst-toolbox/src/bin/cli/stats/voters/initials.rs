@@ -1,7 +1,7 @@
 use catalyst_toolbox::stats::distribution::Stats;
 use catalyst_toolbox::stats::voters::calculate_wallet_distribution;
-use color_eyre::Report;
 use clap::Parser;
+use color_eyre::Report;
 
 #[derive(Parser, Debug)]
 pub struct InitialVotersCommand {

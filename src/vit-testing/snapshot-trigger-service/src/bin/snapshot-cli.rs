@@ -1,7 +1,7 @@
 use snapshot_trigger_service::client::args::{Error, TriggerServiceCliCommand};
 
-use futures::future::FutureExt;
 use clap::Parser;
+use futures::future::FutureExt;
 
 #[tokio::main]
 pub async fn main() -> Result<(), Error> {

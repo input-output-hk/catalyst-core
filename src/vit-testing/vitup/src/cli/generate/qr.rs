@@ -4,11 +4,11 @@ use crate::builders::VitBackendSettingsBuilder;
 use crate::config::ConfigBuilder;
 use crate::config::Initials;
 use crate::Result;
+use clap::Parser;
 use hersir::config::SessionSettings;
 use jormungandr_automation::jormungandr::LogLevel;
 use jortestkit::prelude::read_file;
 use std::path::PathBuf;
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 pub struct QrCommandArgs {

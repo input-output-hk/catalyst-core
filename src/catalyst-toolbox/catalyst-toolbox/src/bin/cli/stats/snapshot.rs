@@ -1,10 +1,10 @@
 use catalyst_toolbox::stats::distribution::Stats;
 use catalyst_toolbox::stats::snapshot::read_initials;
 use catalyst_toolbox::stats::voters::calculate_wallet_distribution_from_initials;
+use clap::Parser;
 use color_eyre::Report;
 use jormungandr_lib::interfaces::Initial;
 use std::path::PathBuf;
-use clap::Parser;
 #[derive(Parser, Debug)]
 pub struct SnapshotCommand {
     #[clap(long = "support-lovelace")]

@@ -1,8 +1,8 @@
 mod download;
 mod stats;
 
-use color_eyre::Report;
 use clap::Parser;
+use color_eyre::Report;
 
 #[derive(Debug, Parser)]
 #[clap(rename_all = "kebab-case")]

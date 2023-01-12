@@ -1,6 +1,6 @@
 use super::fake;
-use std::path::PathBuf;
 use clap::Parser;
+use std::path::PathBuf;
 use thiserror::Error;
 
 pub const PATH_TO_DYNAMIC_CONTENT: &str = "VOTER_REGISTRATION_DYNAMIC_CONTENT";

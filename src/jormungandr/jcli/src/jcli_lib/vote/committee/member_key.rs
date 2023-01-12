@@ -3,10 +3,10 @@ use chain_crypto::bech32::Bech32;
 use chain_vote::committee::{
     MemberCommunicationPublicKey, MemberPublicKey, MemberSecretKey, MemberState,
 };
+use clap::Parser;
 use rand::rngs::OsRng;
 use rand_chacha::{rand_core::SeedableRng, ChaCha20Rng};
 use std::{convert::TryInto, io::Write, path::PathBuf, str::FromStr};
-use clap::Parser;
 
 #[derive(Parser)]
 pub struct Generate {
@@ -40,7 +40,6 @@ pub struct Generate {
     #[clap(flatten)]
     output_file: OutputFile,
 }
-
 
 #[derive(Parser)]
 pub struct ToPublic {

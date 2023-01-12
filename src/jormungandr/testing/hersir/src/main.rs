@@ -1,5 +1,5 @@
-use hersir::{args::Args, spawn};
 use clap::Parser;
+use hersir::{args::Args, spawn};
 
 fn main() {
     let args = Args::parse();

@@ -1,12 +1,12 @@
 use catalyst_toolbox::community_advisors::models::VeteranRankingRow;
 use catalyst_toolbox::rewards::veterans::{self, VcaRewards, VeteranAdvisorIncentive};
 use catalyst_toolbox::utils::csv;
+use clap::Parser;
 use color_eyre::eyre::{bail, eyre};
 use color_eyre::Report;
 use rust_decimal::{prelude::*, Decimal};
 use serde::Serialize;
 use std::path::PathBuf;
-use clap::Parser;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

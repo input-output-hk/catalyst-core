@@ -1,7 +1,7 @@
 use crate::jcli_lib::vote::{Error, OutputFile};
 use chain_crypto::bech32::Bech32;
-use std::io::Write as _;
 use clap::Parser;
+use std::io::Write as _;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

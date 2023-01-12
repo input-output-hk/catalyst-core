@@ -1,7 +1,7 @@
 use crate::cli::command::Error;
+use clap::Parser;
 use jcli_lib::key::read_bech32;
 use std::path::PathBuf;
-use clap::Parser;
 use thor::cli::{Alias, CliController};
 
 #[derive(Parser, Debug)]

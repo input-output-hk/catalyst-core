@@ -1,7 +1,7 @@
 mod cli;
 
-use cli::command::Command;
 use clap::Parser;
+use cli::command::Command;
 use thor::cli::CliController;
 
 pub fn main() {

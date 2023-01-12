@@ -1,5 +1,5 @@
 use hersir::config::SessionMode;
-use std::{fmt, convert::Infallible};
+use std::{convert::Infallible, fmt};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Mode {

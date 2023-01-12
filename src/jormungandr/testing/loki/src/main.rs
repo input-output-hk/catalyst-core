@@ -1,9 +1,9 @@
 use chain_core::{packer::Codec, property::Deserialize};
 use chain_impl_mockchain::block::Block;
+use clap::Parser;
 use jormungandr_lib::interfaces::NodeSecret;
 use loki::{args::Args, error::Error, process::AdversaryNodeBuilder, rest::AdversaryRest};
 use std::{fs::File, io::BufReader};
-use clap::Parser;
 
 fn main() {
     let args = Args::parse();

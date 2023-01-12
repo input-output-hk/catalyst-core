@@ -1,9 +1,9 @@
 use crate::builders::utils::logger;
 use crate::mode::mock::{farm, read_config, start_rest_server, Configuration, Context};
+use clap::Parser;
 use jormungandr_automation::jormungandr::LogLevel;
 use std::sync::{Mutex, RwLock};
 use std::{path::PathBuf, sync::Arc};
-use clap::Parser;
 use thiserror::Error;
 use tracing::subscriber::SetGlobalDefaultError;
 

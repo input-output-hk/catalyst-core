@@ -11,12 +11,12 @@ use catalyst_toolbox::{
     http::default_http_client,
     rewards::{proposers as proposers_lib, VoteCount},
 };
+use clap::Parser;
 use color_eyre::{eyre::eyre, Report};
 use jormungandr_lib::{
     crypto::{account::Identifier, hash::Hash},
     interfaces::AccountVotes,
 };
-use clap::Parser;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
 #[derive(Parser)]

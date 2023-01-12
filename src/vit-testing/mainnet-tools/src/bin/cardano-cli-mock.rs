@@ -1,7 +1,7 @@
+use clap::Parser;
 use color_eyre::Report;
 use futures::future::FutureExt;
 use mainnet_tools::cardano_cli::MockCommand;
-use clap::Parser;
 
 #[tokio::main]
 pub async fn main() -> Result<(), Report> {

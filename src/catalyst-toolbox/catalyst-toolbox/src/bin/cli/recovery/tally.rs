@@ -9,8 +9,8 @@ use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 
 use std::path::PathBuf;
 
-use reqwest::Url;
 use clap::Parser;
+use reqwest::Url;
 
 use super::set_verbosity;
 

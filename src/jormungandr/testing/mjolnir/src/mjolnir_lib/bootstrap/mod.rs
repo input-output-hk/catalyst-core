@@ -2,11 +2,11 @@ mod config;
 mod scenario;
 
 use crate::mjolnir_lib::MjolnirError;
+use clap::Parser;
 use config::{ClientLoadConfig, PassiveBootstrapLoad, ScenarioType};
 use jormungandr_automation::jormungandr::grpc::JormungandrClient;
 use jormungandr_lib::crypto::hash::Hash;
 use std::path::PathBuf;
-use clap::Parser;
 use thiserror::Error;
 
 #[derive(Error, Debug)]

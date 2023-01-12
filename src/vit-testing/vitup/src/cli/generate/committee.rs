@@ -4,10 +4,10 @@ use chain_crypto::bech32::Bech32;
 use chain_crypto::Ed25519;
 use chain_crypto::PublicKey;
 use chain_impl_mockchain::vote::CommitteeId;
+use clap::Parser;
 use jormungandr_lib::interfaces::CommitteeIdDef;
 use std::io::stdout;
 use std::io::Write;
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 pub struct CommitteeIdCommandArgs {

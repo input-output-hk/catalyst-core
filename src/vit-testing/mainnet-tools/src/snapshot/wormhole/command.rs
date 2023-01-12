@@ -1,5 +1,6 @@
 pub use crate::snapshot::wormhole::Config;
 use crate::snapshot::OutputsExtension;
+use clap::Parser;
 use color_eyre::eyre::Result;
 use job_scheduler_ng::{Job, JobScheduler};
 use jormungandr_automation::jormungandr::LogLevel;
@@ -8,7 +9,6 @@ use snapshot_trigger_service::{client::rest::SnapshotRestClient, config::JobPara
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::time::Duration;
-use clap::Parser;
 use thiserror::Error;
 use tracing::{debug, error, info, instrument, level_filters::LevelFilter};
 use tracing_subscriber::FmtSubscriber;

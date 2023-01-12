@@ -1,11 +1,11 @@
 use crate::{generators::RestRequestGen, mjolnir_lib::MjolnirError};
+use clap::Parser;
 use jormungandr_automation::jormungandr::JormungandrRest;
 use jortestkit::{
     load::{ConfigurationBuilder, Monitor},
     prelude::{parse_progress_bar_mode_from_str, ProgressBarMode},
 };
 use std::time::Duration;
-use clap::Parser;
 use thiserror::Error;
 
 #[derive(Error, Debug)]

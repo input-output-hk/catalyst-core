@@ -6,8 +6,8 @@ use crate::{
     },
     rest,
 };
-use std::path::PathBuf;
 use clap::Parser;
+use std::path::PathBuf;
 use thiserror::Error;
 
 mod committee;

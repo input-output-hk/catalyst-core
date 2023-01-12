@@ -1,6 +1,6 @@
 use crate::jcli_lib::utils::io;
-use std::{io::Write, path::PathBuf};
 use clap::Parser;
+use std::{io::Write, path::PathBuf};
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {

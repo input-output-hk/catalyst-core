@@ -1,7 +1,11 @@
+use clap::Parser;
 use gtmpl::Value as GtmplValue;
 use serde_json::{Map as JsonMap, Number as JsonNumber, Value as JsonValue};
-use std::{fmt::{self, Display, Formatter}, str::FromStr, convert::Infallible};
-use clap::Parser;
+use std::{
+    convert::Infallible,
+    fmt::{self, Display, Formatter},
+    str::FromStr,
+};
 use thiserror::Error;
 
 #[derive(Parser)]

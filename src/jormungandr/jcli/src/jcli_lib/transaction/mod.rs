@@ -26,8 +26,8 @@ use crate::{
 };
 use chain_core::property::{ReadError, Serialize as _, WriteError};
 use chain_impl_mockchain as chain;
-use std::path::PathBuf;
 use clap::Parser;
+use std::path::PathBuf;
 use thiserror::Error;
 
 #[allow(clippy::large_enum_variant)]

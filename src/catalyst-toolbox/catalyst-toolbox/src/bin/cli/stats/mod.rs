@@ -4,10 +4,10 @@ mod snapshot;
 mod voters;
 
 use archive::ArchiveCommand;
+use clap::Parser;
 use color_eyre::Report;
 use live::LiveStatsCommand;
 use snapshot::SnapshotCommand;
-use clap::Parser;
 use voters::VotersCommand;
 
 #[derive(Parser, Debug)]

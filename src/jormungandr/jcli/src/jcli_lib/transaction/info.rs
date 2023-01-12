@@ -4,10 +4,10 @@ use crate::jcli_lib::{
 };
 use chain_addr::AddressReadable;
 use chain_impl_mockchain::transaction::{Balance, UnspecifiedAccountIdentifier};
+use clap::Parser;
 use jormungandr_lib::{crypto::hash::Hash, interfaces::TransactionInputType};
 use serde_json::json;
 use std::{io::Write, path::PathBuf};
-use clap::Parser;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

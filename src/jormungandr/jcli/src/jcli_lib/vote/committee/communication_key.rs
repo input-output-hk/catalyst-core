@@ -1,10 +1,10 @@
 use crate::jcli_lib::vote::{Error, OutputFile, Seed};
 use chain_crypto::bech32::Bech32;
 use chain_vote::MemberCommunicationKey;
+use clap::Parser;
 use rand::rngs::OsRng;
 use rand_chacha::{rand_core::SeedableRng, ChaCha20Rng};
 use std::{io::Write, path::PathBuf, str::FromStr};
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 pub struct Generate {

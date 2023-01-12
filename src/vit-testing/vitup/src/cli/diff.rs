@@ -1,6 +1,7 @@
 use crate::builders::utils::DeploymentTree;
 use crate::Result;
 use assert_fs::TempDir;
+use clap::Parser;
 use diffy::create_patch;
 use diffy::PatchFormatter;
 use jormungandr_automation::testing::block0::decode_block0;
@@ -8,7 +9,6 @@ use jortestkit::prelude::read_file;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use clap::Parser;
 use valgrind::ValgrindClient;
 use vit_servicing_station_tests::common::startup::server::ServerBootstrapper;
 

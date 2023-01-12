@@ -1,8 +1,8 @@
 mod tally;
 mod votes;
 
-use color_eyre::Report;
 use clap::Parser;
+use color_eyre::Report;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

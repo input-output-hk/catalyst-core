@@ -1,8 +1,8 @@
 use crate::controller::{do_for_all_alias, UserInteractionController};
+use clap::Parser;
 use jormungandr_automation::jormungandr::{
     BackwardCompatibleRest, FragmentNode, JormungandrLogger, LogLevel,
 };
-use clap::Parser;
 use yaml_rust::Yaml;
 
 #[derive(Parser, Debug)]

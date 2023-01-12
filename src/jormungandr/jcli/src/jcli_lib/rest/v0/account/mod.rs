@@ -2,8 +2,8 @@ use crate::jcli_lib::{
     rest::{Error, RestArgs},
     utils::{AccountId, OutputFormat},
 };
-use jormungandr_lib::interfaces::AccountState;
 use clap::Parser;
+use jormungandr_lib::interfaces::AccountState;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

@@ -7,8 +7,8 @@ use chain_core::{
     property::{DeserializeFromSlice as _, Serialize},
 };
 use chain_impl_mockchain::fragment::Fragment;
-use std::path::PathBuf;
 use clap::Parser;
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

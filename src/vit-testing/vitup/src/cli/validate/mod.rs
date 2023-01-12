@@ -2,12 +2,12 @@ mod config;
 mod deployment;
 mod ideascale;
 
+use clap::Parser;
 use config::ConfigValidateCommand;
 use deployment::CheckError;
 use deployment::DeploymentValidateCommand;
 pub use ideascale::Error as IdeascaleError;
 use ideascale::IdeascaleValidateCommand;
-use clap::Parser;
 use thiserror::Error;
 
 #[derive(Parser, Debug)]

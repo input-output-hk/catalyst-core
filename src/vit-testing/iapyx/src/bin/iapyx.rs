@@ -1,7 +1,7 @@
 mod interactive;
 
-use interactive::{CliController, IapyxCommand};
 use clap::Parser;
+use interactive::{CliController, IapyxCommand};
 
 pub fn main() {
     let controller = CliController::new().unwrap();

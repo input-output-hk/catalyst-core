@@ -1,7 +1,7 @@
 use catalyst_toolbox::archive::node::generate_archive_files;
+use clap::Parser;
 use color_eyre::Report;
 use std::path::PathBuf;
-use clap::Parser;
 
 #[derive(Debug, Parser)]
 #[clap(rename_all = "kebab-case")]

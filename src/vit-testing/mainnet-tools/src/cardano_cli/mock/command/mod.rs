@@ -1,8 +1,8 @@
+use clap::Parser;
 use color_eyre::Report;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use clap::Parser;
 
 mod address;
 mod query;

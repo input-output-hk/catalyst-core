@@ -1,9 +1,9 @@
 use crate::cardano_cli::mock::command::write_to_file_or_println;
 use crate::cardano_cli::mock::fake;
+use clap::Parser;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 pub enum StakeAddress {

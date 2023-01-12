@@ -1,5 +1,6 @@
 use crate::db_utils::{backup_db_file, restore_db_file};
 use crate::{db_utils::db_file_exists, task::ExecTask};
+use clap::Parser;
 use csv::Trim;
 use diesel::{Insertable, QueryDsl, RunQueryDsl};
 use serde::de::DeserializeOwned;
@@ -12,7 +13,6 @@ use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::{fs, io};
-use clap::Parser;
 use thiserror::Error;
 use vit_servicing_station_lib::db;
 use vit_servicing_station_lib::db::models::goals::InsertGoal;

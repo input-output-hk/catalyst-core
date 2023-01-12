@@ -1,6 +1,6 @@
 use crate::jcli_lib::transaction::{common, Error};
-use jormungandr_lib::interfaces::EvmTransaction;
 use clap::Parser;
+use jormungandr_lib::interfaces::EvmTransaction;
 
 #[derive(Parser, Debug)]
 #[clap(rename_all = "kebab-case")]

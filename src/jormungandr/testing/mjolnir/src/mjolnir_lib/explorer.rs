@@ -1,11 +1,11 @@
 use crate::{generators::ExplorerRequestGen, mjolnir_lib::MjolnirError};
+use clap::Parser;
 use jormungandr_automation::jormungandr::Explorer;
 use jortestkit::{
     load::{ConfigurationBuilder, Monitor},
     prelude::{parse_progress_bar_mode_from_str, ProgressBarMode},
 };
 use std::time::Duration;
-use clap::Parser;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -45,7 +45,6 @@ pub struct ExplorerLoadCommand {
     #[clap(short = 'm', long = "measure")]
     pub measure: bool,
 }
-
 
 impl ExplorerLoadCommand {
     pub fn exec(&self) -> Result<(), ExplorerLoadCommandError> {

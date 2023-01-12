@@ -2,8 +2,8 @@ use crate::jcli_lib::{
     rest::{Error, RestArgs},
     utils::OutputFormat,
 };
-use jormungandr_lib::interfaces::SettingsDto;
 use clap::Parser;
+use jormungandr_lib::interfaces::SettingsDto;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

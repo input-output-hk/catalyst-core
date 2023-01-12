@@ -9,13 +9,13 @@ use crate::config::{
 use crate::mode::spawn::{spawn_network, NetworkSpawnParams};
 use crate::{error::Error, Result};
 use chain_addr::Discrimination;
+use clap::Parser;
 use hersir::config::SessionSettings;
 use hersir::utils::print_intro;
 use jormungandr_automation::jormungandr::LogLevel;
 use jortestkit::prelude::read_file;
 use std::path::PathBuf;
 use std::str::FromStr;
-use clap::Parser;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 
 #[derive(Parser, Debug)]

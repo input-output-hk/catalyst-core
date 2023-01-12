@@ -1,6 +1,6 @@
+use clap::Parser;
 use mjolnir::Mjolnir;
 use std::error::Error;
-use clap::Parser;
 
 fn main() {
     Mjolnir::parse().exec().unwrap_or_else(report_error)

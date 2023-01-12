@@ -2,8 +2,8 @@ use crate::jcli_lib::certificate::{write_cert, Error};
 use chain_crypto::Blake2b256;
 use chain_impl_mockchain::certificate::{Certificate, PoolRetirement};
 use chain_time::DurationSeconds;
-use std::path::PathBuf;
 use clap::Parser;
+use std::path::PathBuf;
 
 /// retire the given stake pool ID From the blockchain
 ///

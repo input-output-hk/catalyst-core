@@ -1,8 +1,8 @@
+use clap::Parser;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar, ProgressStyle};
 use std::fmt;
 use std::thread;
 use std::time::Instant;
-use clap::Parser;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use thiserror::Error;

@@ -4,8 +4,8 @@ use crate::jcli_lib::{
 };
 use chain_crypto::{Ed25519, PublicKey};
 use chain_impl_mockchain::certificate::{self, Certificate, UpdateProposalId};
-use std::path::PathBuf;
 use clap::Parser;
+use std::path::PathBuf;
 
 #[derive(Parser)]
 pub struct UpdateVote {

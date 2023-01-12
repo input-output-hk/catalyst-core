@@ -16,9 +16,9 @@ impl Db {
     ///
     /// This query is detailed in <../design/stake_value_processing.md>
     #[instrument]
-    pub fn stake_values<'a>(
+    pub fn stake_values>(
         &self,
-        stake_addrs: &'a [String],
+        stake_addrs: &[Stake],
     ) -> Result<HashMap<&'a str, BigDecimal>> {
         let rows = stake_addrs.iter().map(|addr| {
             let result = self.exec(|conn| query(addr).load(conn))?;

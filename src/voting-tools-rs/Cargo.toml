@@ -26,8 +26,8 @@ bigdecimal = { version = "0.3", features = ["serde"] }
 
 hex = "0.4"
 
-tracing = "0.1"
-tracing-subscriber = "0.3"
+tracing.workspace = true
+tracing-subscriber.workspace = true
 rust_decimal = { version = "1.26", features = ["serde", "db-postgres"] }
 
 mainnet-lib = { path = "../vit-testing/mainnet-lib"}
@@ -46,7 +46,7 @@ test-strategy = "0.2"
 serial_test = "0.9"
 assert_fs = "1.0.7"
 tempdir = "0.3"
-tracing-test = "0.2"
+tracing-test.workspace = true
 insta = { version = "1", features = ["json"] }
 postgres = "0.19"  # just to create the reference db in case it doesn't already exist
 diesel_migrations="2"

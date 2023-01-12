@@ -150,7 +150,9 @@ impl RewardsAddr {
 pub fn network_info(testnet_magic: Option<TestnetMagic>) -> NetworkInfo {
     match testnet_magic {
         None => NetworkInfo::mainnet(),
-        Some(TestnetMagic(magic)) => NetworkInfo::new(NetworkInfo::testnet().network_id(), magic),
+        Some(TestnetMagic(magic)) => {
+            NetworkInfo::new(NetworkInfo::testnet_preview().network_id(), magic)
+        }
     }
 }
 

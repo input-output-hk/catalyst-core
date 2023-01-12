@@ -1,11 +1,8 @@
 mod block0;
-mod snapshot;
 
 pub use block0::{Initial as Block0Initial, Initials as Block0Initials};
+use mainnet_lib::Initials as SnapshotInitials;
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
-pub use snapshot::{
-    Error as SnapshotError, Initial as SnapshotInitial, Initials as SnapshotInitials,
-};
 use std::fmt;
 use std::str::FromStr;
 use thiserror::Error;

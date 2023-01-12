@@ -39,8 +39,8 @@ jobs:
       fail-fast: false
       matrix:
         target: [
-                nodejs, 
-                # web,
+                # nodejs, 
+                web,
                 # bundler
                 ]
 

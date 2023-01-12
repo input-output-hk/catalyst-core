@@ -16,8 +16,8 @@ pub struct TxBuilder<P: Payload> {
 }
 
 impl<P: Payload> TxBuilder<P> {
-    pub fn new(settings: Settings, valid_until: BlockDate, payload: P) -> Self {
-        let builder = wallet::TransactionBuilder::new(settings, payload, valid_until);
+    pub fn new(settings: Settings, payload: P) -> Self {
+        let builder = wallet::TransactionBuilder::new(settings, payload, BlockDate::first());
         Self {
             builder,
             inputs: HashMap::new(),

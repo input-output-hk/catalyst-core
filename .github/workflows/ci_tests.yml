@@ -55,12 +55,12 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
-      - name: Build Catalyst Core tests
+      - name: Build Catalyst Core artifacts
         run:
-          cargo build -p vit-servicing-station-cli -p vit-servicing-station-server -p jcli -p jormungandr -p explorer
+          cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
       - name: Run Catalyst Core tests
         run:
-          cargo nextest run -E "not (package(jormungandr-integration-tests) + package(vitup))" --profile ci
+          cargo nextest run -E "not package(jormungandr-integration-tests)" --profile ci
 
   wallet-js-binding:
     name: Wallet JS Binding Tests

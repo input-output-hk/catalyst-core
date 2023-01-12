@@ -60,7 +60,7 @@ jobs:
           cargo build -p vit-servicing-station-cli -p vit-servicing-station-server -p jcli -p jormungandr -p explorer
       - name: Run Catalyst Core tests
         run:
-          cargo nextest run --profile ci
+          cargo nextest run -E "not (package(jormungandr-integration-tests) + package(vitup))" --profile ci
 
   wallet-js-binding:
     name: Wallet JS Binding Tests

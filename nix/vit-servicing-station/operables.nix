@@ -41,6 +41,7 @@
       runtimeInputs = [
         artifacts'
       ];
+      debugInputs = lib.containerCommonDebug;
       runtimeScript = let
         configFile =
           nixpkgs.runCommand "vit-ss-config-${namespace}"

@@ -17,6 +17,8 @@
         operable = cell.operables."vit-servicing-station-server-${namespace}";
         debug = true;
       }
+      # Include common container setup
+      // lib.containerCommon
       # Default to using output hash as the tag if the repo is dirty
       // l.optionalAttrs (rev != "") {tag = "${rev}-${namespace}";});
 in

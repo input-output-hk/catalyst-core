@@ -20,7 +20,7 @@ smoke = "^0.2.1"
 criterion = "0.3"
 
 [build-dependencies]
-cfg-if = { workspace = true }
+cfg-if = "*"
 
 
 [[bench]]

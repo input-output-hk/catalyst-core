@@ -15,55 +15,49 @@
     std.lib.ops.mkOperable {
       inherit package;
       debugInputs = lib.containerCommonDebug;
-      # TODO: Remove all the bitte stuff
+      runtimeInputs = with nixpkgs; [
+        remarshal
+      ];
       runtimeScript = ''
-        ulimit -n 1024
-        nodeConfig="$NOMAD_TASK_DIR/node-config.json"
-        runConfig="$NOMAD_TASK_DIR/running.json"
-        runYaml="$NOMAD_TASK_DIR/running.yaml"
-        chmod u+rwx -R "$NOMAD_TASK_DIR" || true
-        function convert () {
-          chmod u+rwx -R "$NOMAD_TASK_DIR" || true
-          cp "$nodeConfig" "$runConfig"
-          remarshal --if json --of yaml "$runConfig" > "$runYaml"
-        }
-        if [ "$RESET" = "true" ]; then
-          echo "RESET is given, will start from scratch..."
-          rm -rf "$STORAGE_DIR"
-        elif [ -d "$STORAGE_DIR" ]; then
-          echo "$STORAGE_DIR found, not restoring from backup..."
-        else
-          echo "$STORAGE_DIR not found, restoring backup..."
-          restic restore latest \
-            --verbose=5 \
-            --no-lock \
-            --tag "$NAMESPACE" \
-            --target / \
-          || echo "couldn't restore backup, continue startup procedure..."
+        echo ">>> Entering entrypoint script..."
+
+        # Verify the storage path exists
+        if [[ ! -d "$STORAGE_PATH" ]]; then
+          echo "ERROR: storage path does not exist at: $STORAGE_PATH";
+          echo ">>> Aborting..."
+          exit 1
         fi
-        set +x
-        echo "waiting for $REQUIRED_PEER_COUNT peers"
-        until [ "$(jq -e -r '.p2p.trusted_peers | length' < "$nodeConfig" || echo 0)" -ge "$REQUIRED_PEER_COUNT" ]; do
-          sleep 1
-        done
-        set -x
-        convert
-        if [ -n "$PRIVATE" ]; then
-          echo "Running with node with secrets..."
-          exec ${l.getExe package} \
-            --storage "$STORAGE_DIR" \
-            --config "$NOMAD_TASK_DIR/running.yaml" \
-            --genesis-block "${artifacts'}/block0.bin" \
-            --secret "$NOMAD_SECRETS_DIR/bft-secret.yaml" \
-            "$@" || true
-        else
-          echo "Running with follower node..."
-          exec ${l.getExe package} \
-            --storage "$STORAGE_DIR" \
-            --config "$NOMAD_TASK_DIR/running.yaml" \
-            --genesis-block "${artifacts'}/block0.bin" \
-            "$@" || true
+
+        # Verify config is present
+        if [[ ! -f "$NODE_CONFIG_PATH" ]]; then
+          echo "ERROR: node configuration is absent at: $NODE_CONFIG_PATH"
+          echo ">>> Aborting..."
+          exit 1
         fi
+
+        echo ">>> Using the following parameters:"
+        echo "Storage path: $STORAGE_PATH"
+        echo "Node config: $NODE_CONFIG_PATH"
+        echo "Genesis block: ${artifacts'}/block0.bin"
+
+        args+=()
+        args+=("--storage" "$STORAGE_PATH")
+        args+=("--config" "$NODE_CONFIG_PATH")
+        args+=("--genesis-block" "${artifacts'}/block0.bin")
+
+        if [[ -n "''${LEADER:=}" ]]; then
+          echo ">>> Configuring node as leader..."
+          if [[ ! -f "$BFT_PATH" ]]; then
+            echo "ERROR: BFT is absent at: $BFT_PATH"
+            echo ">>> Aborting..."
+            exit 1
+          fi
+
+          echo ">>> Using BFT at: $BFT_PATH"
+          args+=("--secret" "$BFT_PATH")
+        fi
+
+        exec ${l.getExe package} "''${args[@]}"
       '';
     };
 in

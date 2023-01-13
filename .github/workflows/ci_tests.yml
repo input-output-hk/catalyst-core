@@ -1,4 +1,4 @@
-name: CI-Test
+name: CI-Tests
 
 on:
   push:
@@ -36,177 +36,56 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
-  vit_servicing_station:
-    name: Vit Servicing Station Tests
+  build-tests-artifacts:
+    name: Build test artifacts
     runs-on: ubuntu-latest
-    env:
-      CARGO_FLAGS: --verbose --locked
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
       - uses: Swatinem/rust-cache@v2
-      - name: Install Nextest
-        run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+        with:
+          shared-key: "v0-test"
+      - name: Install nextest
+        uses: taiki-e/install-action@nextest
       - name: Install deps
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+      - name: Build tests
+        run: cargo nextest run --no-run
 
-      - name: Run vit-ss tests
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
-      - run: |
-          cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
-          cargo nextest run \
-            -p vit-servicing-station-cli \
-            -p vit-servicing-station-lib \
-            -p vit-servicing-station-tests \
-            -p vit-servicing-station-server \
-            --profile ci
-
-  catalyst_toolbox:
-    name: Catalyst Toolbox Tests
+  catalyst-core-tests:
+    name: Catalyst Core Tests
     runs-on: ubuntu-latest
+    needs: build-tests-artifacts
     env:
       CARGO_FLAGS: --verbose --locked
+    strategy:
+      matrix:
+        partition: [1, 2]
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
       - uses: Swatinem/rust-cache@v2
-      - name: Install Nextest
-        run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+        with:
+          shared-key: "v0-test"
+      - name: Install nextest
+        uses: taiki-e/install-action@nextest
       - name: Install deps
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-
-      - name: Run catalyst-toolbox tests
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
-      - run: cargo nextest run -p catalyst-toolbox -p snapshot-lib --profile ci
-
-  voting_tools:
-    name: Voting Tools Tests
-    runs-on: ubuntu-latest
-    env:
-      CARGO_FLAGS: --verbose --locked
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - uses: Swatinem/rust-cache@v2
-      - name: Install Nextest
-        run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
-      - name: Install deps
+      - name: Run Catalyst Core tests
         run:
-          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-
-      - name: Run voting-tools tests
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
-      - run: cargo nextest run -p voting_tools_rs --profile ci
-
-  chain-libs:
-    name: Chain Libs Tests
-    runs-on: ubuntu-latest
-    env:
-      CARGO_FLAGS: --verbose --locked
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - uses: Swatinem/rust-cache@v2
-      - name: Install Nextest
-        run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
-      - name: Install deps
-        run:
-          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-
-      - name: Run chain-libs tests
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
-      - run: cargo nextest run -p "chain-*" --profile ci
-
-  jormungandr:
-    name: Jormungandr Tests
-    runs-on: ubuntu-latest
-    env:
-      CARGO_FLAGS: --verbose --locked
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - uses: Swatinem/rust-cache@v2
-      - name: Install Nextest
-        run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
-      - name: Install deps
-        run:
-          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-
-      - name: Run jormungandr tests
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
-      - run: cargo nextest run -p jormungandr --profile ci
-
-  jormungandr-integration:
-    name: Jormungandr Integration Tests
-    runs-on: ubuntu-latest
-    env:
-      CARGO_FLAGS: --verbose --locked
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - uses: Swatinem/rust-cache@v2
-      - name: Install Nextest
-        run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
-      - name: Install deps
-        run:
-          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-
-      - name: Run jormungandr-integration tests
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
-      - run: |
-           cargo build -p jcli -p jormungandr -p explorer
-           cargo nextest run -p jormungandr-integration-tests --profile ci
-
-  jcli:
-    name: Jcli Tests
-    runs-on: ubuntu-latest
-    env:
-      CARGO_FLAGS: --verbose --locked
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - uses: Swatinem/rust-cache@v2
-      - name: Install Nextest
-        run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
-      - name: Install deps
-        run:
-          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-
-      - name: Run jcli tests
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
-      - run: |
-           cargo build -p jcli
-           cargo nextest run -p jcli --profile ci
+          cargo nextest run -E "not (package(jormungandr-integration-tests) + package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) + test(multi_voteplan_ok_private))" --partition count:${{ matrix.partition }}/2 --profile ci
 
   wallet-js-binding:
     name: Wallet JS Binding Tests

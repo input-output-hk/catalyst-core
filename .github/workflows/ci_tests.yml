@@ -79,9 +79,6 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
-      - name: Build Catalyst Core artifacts
-        run:
-          cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
       - name: Run Catalyst Core tests
         run:
           cargo nextest run -E "not (package(jormungandr-integration-tests) + package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) + test(multi_voteplan_ok_private))" \

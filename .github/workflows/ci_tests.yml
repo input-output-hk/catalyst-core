@@ -41,6 +41,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CARGO_FLAGS: --verbose --locked
+    strategy:
+      matrix:
+        partition: [1, 2]
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -60,7 +63,8 @@ jobs:
           cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
       - name: Run Catalyst Core tests
         run:
-          cargo nextest run -E "not (package(jormungandr-integration-tests) + package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) + test(multi_voteplan_ok_private))" --profile ci
+          cargo nextest run -E "not (package(jormungandr-integration-tests) + package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) + test(multi_voteplan_ok_private))" \
+          --partition count:${{ matrix.partition }}/2 --profile ci
 
   wallet-js-binding:
     name: Wallet JS Binding Tests

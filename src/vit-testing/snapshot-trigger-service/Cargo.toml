@@ -7,7 +7,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-uuid = { workspace = true }
+uuid = { version = "0.8", features = ["serde","v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 walkdir = "2.3.1"
 structopt = "0.3"

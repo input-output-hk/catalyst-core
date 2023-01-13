@@ -54,7 +54,7 @@ jobs:
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
       - name: Build tests
-        run: cargo nextest --no-run
+        run: cargo nextest run --no-run
 
   catalyst-core-tests:
     name: Catalyst Core Tests

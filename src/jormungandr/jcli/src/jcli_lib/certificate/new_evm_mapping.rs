@@ -18,7 +18,7 @@ pub struct EvmMapCmd {
     /// hex encoded H160 address
     evm_address: H160,
     /// write the output to the given file or print it to the standard output if not defined
-    #[clap(short = "o", long = "output")]
+    #[clap(short = 'o', long = "output")]
     output: Option<PathBuf>,
 }
 

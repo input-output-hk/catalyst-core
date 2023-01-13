@@ -96,3 +96,10 @@ impl JCliCommand {
         Ok(())
     }
 }
+
+#[test]
+fn cli_test() {
+    use clap::CommandFactory;
+
+    JCli::command().debug_assert()
+}

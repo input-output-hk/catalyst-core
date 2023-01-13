@@ -10,8 +10,8 @@ use thiserror::Error;
 #[derive(Parser, Clone)]
 pub struct RestArgs {
     /// node API address. Must always have `http://` or `https://` prefix.
-    /// E.g. `-h http://127.0.0.1`, `--host https://node.com:8443/cardano/api`
-    #[clap(short, long, env = "JORMUNGANDR_RESTAPI_URL")]
+    /// E.g. `--host http://127.0.0.1`, `--host https://node.com:8443/cardano/api`
+    #[clap(long, env = "JORMUNGANDR_RESTAPI_URL")]
     pub host: Url,
     /// print additional debug information to stderr.
     /// The output format is intentionally undocumented and unstable

@@ -48,6 +48,8 @@ jobs:
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
       - uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: "v0-test"
       - name: Install nextest
         uses: taiki-e/install-action@nextest
       - name: Install deps
@@ -64,7 +66,7 @@ jobs:
       CARGO_FLAGS: --verbose --locked
     strategy:
       matrix:
-        partition: [1, 2, 3, 4]
+        partition: [1, 2]
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -74,6 +76,8 @@ jobs:
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
       - uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: "v0-test"
       - name: Install nextest
         uses: taiki-e/install-action@nextest
       - name: Install deps
@@ -82,7 +86,7 @@ jobs:
       - name: Run Catalyst Core tests
         run:
           cargo nextest run -E "not (package(jormungandr-integration-tests) + package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) + test(multi_voteplan_ok_private))" \
-          --partition count:${{ matrix.partition }}/4 --profile ci
+          --partition count:${{ matrix.partition }}/2 --profile ci
 
   wallet-js-binding:
     name: Wallet JS Binding Tests

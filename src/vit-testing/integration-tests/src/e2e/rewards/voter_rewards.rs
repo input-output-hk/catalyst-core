@@ -28,7 +28,7 @@ pub fn voters_reward_happy_path() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
 
     let threshold = 1;
-    let total_rewards= 1000u32;
+    let total_rewards = 1000u32;
     let stake = 10_000;
 
     let alice_wallet = MainnetWallet::new(stake);
@@ -74,7 +74,7 @@ pub fn voters_reward_happy_path() {
         network_params,
         &mut template_generator,
     )
-        .unwrap();
+    .unwrap();
 
     let mut alice = iapyx_from_mainnet(&alice_wallet, &wallet_proxy).unwrap();
     let mut bob = iapyx_from_mainnet(&bob_wallet, &wallet_proxy).unwrap();
@@ -162,8 +162,17 @@ pub fn voters_reward_happy_path() {
     // this keeps failing due to proposals[0].proposal.chain_proposal_id.len() = 64
     let vote_threshold = Threshold::new(
         threshold,
-        vit_station.challenges().unwrap().iter().map(|x| (x.id, x.proposers_rewards as usize)).collect(),
-        proposals.into_iter().map(|mut p| p.proposal.chain_proposal_id = hex::decode(p.proposal.chain_proposal_id))).unwrap();
+        vit_station
+            .challenges()
+            .unwrap()
+            .iter()
+            .map(|x| (x.id, x.proposers_rewards as usize))
+            .collect(),
+        proposals
+            .into_iter()
+            .map(|mut p| p.proposal.chain_proposal_id = hex::decode(p.proposal.chain_proposal_id)),
+    )
+    .unwrap();
 
     let records = calc_voter_rewards(
         account_votes_count,
@@ -171,7 +180,7 @@ pub fn voters_reward_happy_path() {
         vote_threshold,
         total_rewards.into(),
     )
-        .unwrap();
+    .unwrap();
 
     println!("{:?}", records);
 

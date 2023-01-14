@@ -53,6 +53,8 @@ jobs:
       - name: Install deps
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+      - run:
+          cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
       - name: Build and archive tests
         run: cargo nextest archive --archive-file nextest-archive.tar.zst
       - uses: actions/cache@v3

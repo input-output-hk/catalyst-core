@@ -8,7 +8,7 @@ pub use search::SearchRequestBuilder;
 
 use crate::common::clients::rest::path::RestPathBuilder;
 use crate::common::raw_snapshot::RawSnapshot;
-use crate::common::snapshot::{Snapshot, VoterInfo, DelegatorInfo};
+use crate::common::snapshot::{DelegatorInfo, Snapshot, VoterInfo};
 use hyper::StatusCode;
 use logger::RestClientLogger;
 use reqwest::blocking::Response;

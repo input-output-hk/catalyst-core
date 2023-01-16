@@ -3,14 +3,16 @@ mod history;
 
 use self::{epoch::Epoch, history::History};
 use crate::jcli_lib::rest::Error;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(name = "rewards", rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(name = "rewards", rename_all = "kebab-case")]
 pub enum Rewards {
     /// Rewards distribution history one or more epochs starting from the last one
+    #[clap(subcommand)]
     History(History),
     /// Rewards distribution for a specific epoch
+    #[clap(subcommand)]
     Epoch(Epoch),
 }
 

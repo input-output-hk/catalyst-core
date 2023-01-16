@@ -1,15 +1,17 @@
 use crate::mjolnir_lib::MjolnirError;
-use structopt::StructOpt;
+use clap::Parser;
 use thiserror::Error;
 
 mod batch;
 mod standard;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum FragmentLoadCommand {
     /// sends fragments using batch endpoint
+    #[clap(subcommand)]
     Batch(batch::Batch),
     /// sends fragments in single manner
+    #[clap(subcommand)]
     Standard(standard::Standard),
 }
 

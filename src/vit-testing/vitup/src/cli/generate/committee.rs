@@ -4,21 +4,20 @@ use chain_crypto::bech32::Bech32;
 use chain_crypto::Ed25519;
 use chain_crypto::PublicKey;
 use chain_impl_mockchain::vote::CommitteeId;
+use clap::Parser;
 use jormungandr_lib::interfaces::CommitteeIdDef;
 use std::io::stdout;
 use std::io::Write;
-use structopt::StructOpt;
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
 pub struct CommitteeIdCommandArgs {
-    #[structopt(short = "a", long = "address")]
+    #[clap(short = 'a', long = "address")]
     pub address: Option<String>,
 
-    #[structopt(short = "p", long = "public_key", conflicts_with = "address")]
+    #[clap(short = 'p', long = "public_key", conflicts_with = "address")]
     pub public_key: Option<String>,
 
-    #[structopt(short = "t", long = "testing")]
+    #[clap(short = 't', long = "testing")]
     pub testing: bool,
 }
 

@@ -1,3 +1,4 @@
+use clap::Parser;
 use color_eyre::Report;
 use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 use jormungandr_lib::interfaces::Value;
@@ -9,37 +10,37 @@ use snapshot_lib::{
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use std::str::FromStr;
 
 /// Process raw registrations into blockchain initials
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct SnapshotCmd {
     /// Path to the file containing all CIP-15 compatible registrations in json format.
-    #[structopt(short, long, parse(from_os_str))]
+    #[clap(short, long, value_parser = PathBuf::from_str)]
     snapshot: PathBuf,
     /// Registrations voting power threshold for eligibility
-    #[structopt(short, long)]
+    #[clap(short, long)]
     min_stake_threshold: Value,
 
     /// Voter group to assign direct voters to.
     /// If empty, defaults to "voter"
-    #[structopt(short, long)]
+    #[clap(short, long)]
     direct_voters_group: Option<String>,
 
     /// Voter group to assign representatives to.
     /// If empty, defaults to "rep"
-    #[structopt(long)]
+    #[clap(long)]
     representatives_group: Option<String>,
 
     /// Voting power cap for each account
-    #[structopt(short, long)]
+    #[clap(short, long)]
     voting_power_cap: Fraction,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output: OutputFile,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output_format: OutputFormat,
 }
 

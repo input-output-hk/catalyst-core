@@ -5,30 +5,30 @@ use crate::jcli_lib::utils::{
 };
 use chain_crypto::bech32::Bech32;
 use chain_vote::tally::{EncryptedTally, OpeningVoteKey};
+use clap::Parser;
 use jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{PrivateTallyState, Tally},
 };
 use std::{convert::TryFrom, path::PathBuf};
-use structopt::StructOpt;
 
 /// Create decryption shares for all proposals in a vote plan.
 ///
 /// The decryption share data will be printed in hexadecimal encoding
 /// on standard output.
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct TallyGenerateVotePlanDecryptionShares {
     /// The path to json-encoded vote plan to decrypt. If this parameter is not
     /// specified, the vote plan will be read from standard input.
-    #[structopt(long)]
+    #[clap(long)]
     vote_plan: Option<PathBuf>,
     /// The id of the vote plan to decrypt.
     /// Can be left unspecified if there is only one vote plan in the input
-    #[structopt(long)]
+    #[clap(long)]
     vote_plan_id: Option<Hash>,
     /// The path to bech32-encoded decryption key.
-    #[structopt(long)]
+    #[clap(long)]
     key: PathBuf,
 }
 
@@ -37,8 +37,8 @@ pub struct TallyGenerateVotePlanDecryptionShares {
 ///
 /// The data will be printed in hexadecimal encoding
 /// on standard output.
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct MergeShares {
     /// The path to the shares to merge
     shares: Vec<PathBuf>,

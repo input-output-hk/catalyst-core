@@ -1,38 +1,38 @@
 use crate::jcli_lib::vote::{Error, OutputFile, Seed};
 use chain_crypto::bech32::Bech32;
 use chain_vote::MemberCommunicationKey;
+use clap::Parser;
 use rand::rngs::OsRng;
 use rand_chacha::{rand_core::SeedableRng, ChaCha20Rng};
-use std::{io::Write, path::PathBuf};
-use structopt::StructOpt;
+use std::{io::Write, path::PathBuf, str::FromStr};
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct Generate {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output_file: OutputFile,
 
     /// optional seed to generate the key, for the same entropy the same key
     /// will be generated (32 bytes in hexadecimal). This seed will be fed to
     /// ChaChaRNG and allow pseudo random key generation. Do not use if you
     /// are not sure.
-    #[structopt(long = "seed", short = "s", name = "SEED", parse(try_from_str))]
+    #[clap(long = "seed", short = 's', name = "SEED", value_parser = Seed::from_str)]
     seed: Option<Seed>,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ToPublic {
     /// The file with the private key to extract the public key from.
     /// If no value passed, the private key will be read from the
     /// standard input.
-    #[structopt(long = "input")]
+    #[clap(long = "input")]
     input_key: Option<PathBuf>,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output_file: OutputFile,
 }
 
-#[derive(StructOpt, Debug)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser, Debug)]
+#[clap(rename_all = "kebab-case")]
 pub enum CommunicationKey {
     /// generate a private key
     Generate(Generate),

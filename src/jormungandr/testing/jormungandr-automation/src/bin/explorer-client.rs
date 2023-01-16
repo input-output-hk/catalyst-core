@@ -1,9 +1,9 @@
+use clap::Parser;
 use jormungandr_automation::jormungandr::{explorer::Explorer, ExplorerError};
 use std::{env, error::Error as _};
-use structopt::StructOpt;
 
 fn main() {
-    Command::from_args().exec().unwrap_or_else(report_error)
+    Command::parse().exec().unwrap_or_else(report_error)
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -24,30 +24,29 @@ fn report_error(error: Error) {
     std::process::exit(1)
 }
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Command {
     /// display full version details (software version, source version, targets and compiler used)
-    #[structopt(long = "full-version")]
+    #[clap(long = "full-version")]
     full_version: bool,
 
     /// display the sources version, allowing to check the source's hash used to compile this executable.
     /// this option is useful for scripting retrieving the logs of the version of this application.
-    #[structopt(long = "source-version")]
+    #[clap(long = "source-version")]
     source_version: bool,
 
     /// explorer address
-    #[structopt(long = "address")]
+    #[clap(long = "address")]
     address: String,
 
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     command: Option<ExplorerClientCommand>,
 }
 
-#[allow(clippy::large_enum_variant)]
 /// Explorer Client CLI toolkit
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum ExplorerClientCommand {
     /// Get last block
     LastBlock,

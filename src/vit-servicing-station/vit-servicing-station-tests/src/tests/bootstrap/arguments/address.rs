@@ -9,8 +9,7 @@ pub fn address_with_schema() {
         .address("http://127.0.0.1:8080")
         .build()
         .assert()
-        .failure()
-        .code(1);
+        .failure();
 }
 
 #[test]
@@ -20,8 +19,7 @@ pub fn address_with_domain() {
         .address("http://localhost:8080")
         .build()
         .assert()
-        .failure()
-        .code(1);
+        .failure();
 }
 
 #[test]

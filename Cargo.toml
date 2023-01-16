@@ -54,7 +54,7 @@ members = [
 ]
 
 [workspace.dependencies]
-proptest = { git = "https://github.com/input-output-hk/proptest.git" }
+proptest = { git = "https://github.com/proptest-rs/proptest.git" }
 
 # Observability tools to instrument, generate, collect, and export telemetry data. 
 opentelemetry = { version = "0.18", features = ["rt-tokio"] }

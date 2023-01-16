@@ -15,6 +15,19 @@ pub fn import_new_snapshot() {
     let rest_client = server.rest_client_with_token(&data.token_hash());
 
     let snapshot = Snapshot::default();
+    //add more contributions to voters
+    let snap_updater = SnapshotUpdater::from(snapshot.clone());
+    let contributions = snapshot
+        .content
+        .snapshot
+        .first()
+        .unwrap()
+        .contributions
+        .clone();
+    let voting_key = &snapshot.content.snapshot.last().unwrap().hir.voting_key;
+    let snapshot = snap_updater
+        .add_contributions_to_voter(contributions, voting_key)
+        .build();
 
     rest_client.put_snapshot_info(&snapshot).unwrap();
 
@@ -40,6 +53,28 @@ pub fn import_new_snapshot() {
             "wrong timestamp for entry idx: {}",
             idx
         );
+        for contribution in entry.contributions.iter() {
+            let delegator_info = rest_client
+                .delegator_info(&snapshot.tag, &contribution.stake_public_key)
+                .unwrap();
+            assert!(delegator_info
+                .dreps
+                .contains(&entry.hir.voting_key.to_hex()),
+                "delegator doesnt contain entry idx: {}",
+                idx
+            );
+            assert!(delegator_info
+                .voting_groups
+                .contains(&entry.hir.voting_group),
+                "delegator doesnt contain voting group of entry idx: {}",
+                idx);
+            assert_eq!(
+                delegator_info.last_updated,
+                snapshot.content.update_timestamp,
+                "wrong timestamp for entry idx: {}",
+                idx
+            );
+        }
     }
 }
 
@@ -78,6 +113,7 @@ pub fn reimport_with_empty_snapshot() {
         );
     }
 }
+
 #[test]
 pub fn replace_snapshot_with_tag() {
     let temp_dir = TempDir::new().unwrap();

@@ -90,11 +90,6 @@ documentation comment.
       extra config under normal circumstances.
 * `jrpc:` - Optional.
 
-    #[serde(default)]
-    pub leadership: Leadership,
-
-    pub rest: Option<Rest>,
-
     pub jrpc: Option<JRpc>,
 
     #[serde(default)]

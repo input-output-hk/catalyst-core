@@ -57,20 +57,22 @@ pub fn import_new_snapshot() {
             let delegator_info = rest_client
                 .delegator_info(&snapshot.tag, &contribution.stake_public_key)
                 .unwrap();
-            assert!(delegator_info
-                .dreps
-                .contains(&entry.hir.voting_key.to_hex()),
+            assert!(
+                delegator_info
+                    .dreps
+                    .contains(&entry.hir.voting_key.to_hex()),
                 "delegator doesnt contain entry idx: {}",
                 idx
             );
-            assert!(delegator_info
-                .voting_groups
-                .contains(&entry.hir.voting_group),
+            assert!(
+                delegator_info
+                    .voting_groups
+                    .contains(&entry.hir.voting_group),
                 "delegator doesnt contain voting group of entry idx: {}",
-                idx);
+                idx
+            );
             assert_eq!(
-                delegator_info.last_updated,
-                snapshot.content.update_timestamp,
+                delegator_info.last_updated, snapshot.content.update_timestamp,
                 "wrong timestamp for entry idx: {}",
                 idx
             );
@@ -111,6 +113,26 @@ pub fn reimport_with_empty_snapshot() {
             "wrong timestamp for entry idx: {}",
             idx
         );
+        for contribution in entry.contributions.iter() {
+            let delegator_info = rest_client
+                .delegator_info(&snapshot.tag, &contribution.stake_public_key)
+                .unwrap();
+            assert!(
+                delegator_info.dreps.is_empty(),
+                "expected empty data for entry idx: {}",
+                idx
+            );
+            assert!(
+                delegator_info.voting_groups.is_empty(),
+                "expected empty data for entry idx: {}",
+                idx
+            );
+            assert_eq!(
+                delegator_info.last_updated, empty_snapshot.content.update_timestamp,
+                "wrong timestamp for entry idx: {}",
+                idx
+            );
+        }
     }
 }
 
@@ -127,9 +149,11 @@ pub fn replace_snapshot_with_tag() {
     let second_snapshot = SnapshotBuilder::default()
         .with_timestamp(first_snapshot.content.update_timestamp + 1)
         .build();
-
     rest_client.put_snapshot_info(&second_snapshot).unwrap();
+
     for (idx, entry) in first_snapshot.content.snapshot.iter().enumerate() {
+        println!("{:#?}", entry);
+
         let voter_info = rest_client
             .voter_info(&first_snapshot.tag, &entry.hir.voting_key.to_hex())
             .unwrap();
@@ -160,6 +184,31 @@ pub fn replace_snapshot_with_tag() {
             "wrong timestamp for entry idx: {}",
             idx
         );
+
+        for contribution in entry.contributions.iter() {
+            let delegator_info = rest_client
+                .delegator_info(&second_snapshot.tag, &contribution.stake_public_key)
+                .unwrap();
+            assert!(
+                delegator_info
+                    .dreps
+                    .contains(&entry.hir.voting_key.to_hex()),
+                "delegator doesnt contain entry idx: {}",
+                idx
+            );
+            assert!(
+                delegator_info
+                    .voting_groups
+                    .contains(&entry.hir.voting_group),
+                "delegator doesnt contain voting group of entry idx: {}",
+                idx
+            );
+            assert_eq!(
+                delegator_info.last_updated, second_snapshot.content.update_timestamp,
+                "wrong timestamp for entry idx: {}",
+                idx
+            );
+        }
     }
 }
 
@@ -196,6 +245,31 @@ pub fn import_snapshots_with_different_tags() {
             idx
         );
 
+        for contribution in entry.contributions.iter() {
+            let delegator_info = rest_client
+                .delegator_info(&first_snapshot.tag, &contribution.stake_public_key)
+                .unwrap();
+            assert!(
+                delegator_info
+                    .dreps
+                    .contains(&entry.hir.voting_key.to_hex()),
+                "delegator doesnt contain entry idx: {}",
+                idx
+            );
+            assert!(
+                delegator_info
+                    .voting_groups
+                    .contains(&entry.hir.voting_group),
+                "delegator doesnt contain voting group of entry idx: {}",
+                idx
+            );
+            assert_eq!(
+                delegator_info.last_updated, first_snapshot.content.update_timestamp,
+                "wrong timestamp for entry idx: {}",
+                idx
+            );
+        }
+
         let voter_info = rest_client
             .voter_info(&second_snapshot.tag, &entry.hir.voting_key.to_hex())
             .unwrap();
@@ -210,6 +284,31 @@ pub fn import_snapshots_with_different_tags() {
             "wrong timestamp for entry idx: {}",
             idx
         );
+
+        for contribution in entry.contributions.iter() {
+            let delegator_info = rest_client
+                .delegator_info(&second_snapshot.tag, &contribution.stake_public_key)
+                .unwrap();
+            assert!(
+                delegator_info
+                    .dreps
+                    .contains(&entry.hir.voting_key.to_hex()),
+                "delegator doesnt contain entry idx: {}",
+                idx
+            );
+            assert!(
+                delegator_info
+                    .voting_groups
+                    .contains(&entry.hir.voting_group),
+                "delegator doesnt contain voting group of entry idx: {}",
+                idx
+            );
+            assert_eq!(
+                delegator_info.last_updated, second_snapshot.content.update_timestamp,
+                "wrong timestamp for entry idx: {}",
+                idx
+            );
+        }
     }
 }
 
@@ -259,6 +358,26 @@ pub fn import_big_snapshot() {
     );
     assert_eq!(
         snapshot.content.update_timestamp, voter_info.last_updated,
+        "wrong timestamp for entry idx"
+    );
+    let contribution = entry.contributions[0].clone();
+    let delegator_info = rest_client
+        .delegator_info(&snapshot.tag, &contribution.stake_public_key)
+        .unwrap();
+    assert!(
+        delegator_info
+            .dreps
+            .contains(&entry.hir.voting_key.to_hex()),
+        "delegator doesnt contain entry idx"
+    );
+    assert!(
+        delegator_info
+            .voting_groups
+            .contains(&entry.hir.voting_group),
+        "delegator doesnt contain voting group of entry idx"
+    );
+    assert_eq!(
+        delegator_info.last_updated, snapshot.content.update_timestamp,
         "wrong timestamp for entry idx"
     );
 }

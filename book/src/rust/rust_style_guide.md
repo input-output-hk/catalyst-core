@@ -73,7 +73,6 @@ These lints are disabled:
  - `clippy::derive_partial_eq_without_eq` - warns when deriving `PartialEq` and not `Eq`. This is a semver hazard. Deriving `Eq` is a stronger semver guarantee than just `PartialEq`, and shouldn't be the default.
  - `clippy::missing_panics_doc` - this lint warns when a function might panic, but the docs don't have a `panics` section. This lint is buggy, and doesn't correctly identify all panics. You should still add panic docs if a function is **intended to panic** under some conditions. If a panic may occur, but you'd consider it a bug if it did, don't document it. We disable this lint because it creates a false sense of security.
 
-
 ## Guidelines
 
 ### Prefer references over generics
@@ -101,7 +100,7 @@ fn use_str(s: &str) {
 ```
 This does mean you may have to use `.as_ref()` at the call-site, but generally this is preferred compared to the downsides of using generics.
 
-Similar logic applies to `AsRef<Path>`, and a few other common types.
+Similar logic applies to `AsRef<Path>`, `Into<String>`, and a few other common types.
 The general principle is that a little bit of extra text at the call-site is usually worth the benefits from not having generic functions.
 
 ### Abbreviations and naming things
@@ -251,6 +250,8 @@ If this is a private member, don't bother with this comment.
 If it's public, something like this is fine just to get clippy to shut up.
 But if it's at all unclear what's going on, try to use a more descriptive comment.
 
+If adding a dependency, add a comment explaining what the dependency does.
+
 ### Doctests
 
 Try to use doctests.
@@ -347,7 +348,7 @@ match try_foo() {
 }
 ```
 
-#### Use `thiserror` for unrecoverable errors
+#### Use `color_eyre` for unrecoverable errors
 
 In contexts where we don't want to recover from errors, use `Report` from the `color_eyre` crate.
 This is a trait object based error type which allows you to "fire and forget" an error.

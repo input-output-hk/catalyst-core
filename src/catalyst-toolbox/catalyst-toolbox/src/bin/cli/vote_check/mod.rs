@@ -1,6 +1,6 @@
+use clap::Parser;
 use color_eyre::eyre::bail;
 use color_eyre::Report;
-use structopt::StructOpt;
 
 use catalyst_toolbox::vote_check::CheckNode;
 
@@ -8,28 +8,29 @@ use jormungandr_lib::interfaces::VotePlanStatus;
 
 use std::fs::File;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 /// Verify that your votes were correctly tallied.
 ///
 /// Requires Jormungandr to be installed in the system
-#[derive(Debug, PartialEq, Eq, StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Debug, PartialEq, Eq, Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct VoteCheck {
     /// Path to folder containing the full blockchain history saved in Jormungandr
     /// storage format.
-    #[structopt(short, long, parse(from_os_str))]
+    #[clap(short, long, value_parser = PathBuf::from_str)]
     blockchain: PathBuf,
     /// Genesis block hash
-    #[structopt(short, long)]
+    #[clap(short, long)]
     genesis_block_hash: String,
     /// Ids of the transactions to check
-    #[structopt(short, long)]
+    #[clap(short, long)]
     transactions: Vec<String>,
     /// Path to the expected results of the election, in Json format as returned by the /vote/active/plans endpoint
-    #[structopt(short, long)]
+    #[clap(short, long)]
     expected_results: PathBuf,
     /// Path to the Jormungandr binary. If not provided, will look for 'jormungandr' in PATH
-    #[structopt(short, long)]
+    #[clap(short, long)]
     jormungandr_bin: Option<PathBuf>,
 }
 

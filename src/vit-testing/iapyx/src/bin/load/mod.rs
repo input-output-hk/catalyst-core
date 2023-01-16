@@ -2,6 +2,7 @@ mod burst;
 mod constant;
 
 use burst::BurstIapyxLoadCommand;
+use clap::Parser;
 use constant::ConstIapyxLoadCommand;
 use iapyx::ArtificialUserLoad;
 use iapyx::MultiControllerError;
@@ -10,7 +11,6 @@ use iapyx::ServicingStationLoad;
 pub use jortestkit::console::progress_bar::{parse_progress_bar_mode_from_str, ProgressBarMode};
 use jortestkit::load::Monitor;
 use std::path::PathBuf;
-use structopt::StructOpt;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -29,9 +29,10 @@ pub enum IapyxLoadCommandError {
     Io(#[from] std::io::Error),
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum IapyxLoadCommand {
     /// Load which targets blockchain calls only
+    #[clap(subcommand)]
     NodeOnly(NodeOnlyLoadCommand),
     /// Load which targets static data only
     StaticOnly(StaticOnlyLoadCommand),
@@ -49,10 +50,10 @@ impl IapyxLoadCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ArtificialLoadCommand {
     /// Path to configuration file
-    #[structopt(short = "c", long = "config")]
+    #[clap(short = 'c', long = "config")]
     config: PathBuf,
 }
 
@@ -64,10 +65,10 @@ impl ArtificialLoadCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct StaticOnlyLoadCommand {
     /// Path to configuration file
-    #[structopt(short = "c", long = "config")]
+    #[clap(short = 'c', long = "config")]
     config: PathBuf,
 }
 
@@ -79,11 +80,13 @@ impl StaticOnlyLoadCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum NodeOnlyLoadCommand {
     /// Bursts mode. Sends votes in batches and then wait x seconds
+    #[clap(subcommand)]
     Burst(BurstIapyxLoadCommand),
     /// Constant load. Sends votes with x votes per second speed.
+    #[clap(subcommand)]
     Const(ConstIapyxLoadCommand),
 }
 

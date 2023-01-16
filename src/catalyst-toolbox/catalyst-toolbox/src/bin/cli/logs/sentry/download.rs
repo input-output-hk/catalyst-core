@@ -4,48 +4,49 @@ use jcli_lib::utils::io::open_file_write;
 
 use std::path::PathBuf;
 
+use clap::Parser;
 use std::str::FromStr;
-use structopt::StructOpt;
 use time::OffsetDateTime;
 use url::Url;
 
 const DATE_TIME_TAG: &str = "dateCreated";
 
+#[derive(Debug, Clone, Copy)]
 pub enum Mode {
     Full,
     Latest,
 }
 
-#[derive(StructOpt)]
+#[derive(Debug, Parser)]
 pub struct DateFilter {
     // Optional [From, To] date range, start
-    #[structopt(long, parse(try_from_str = parse_datetime_from_rfc3339))]
+    #[clap(long, value_parser = parse_datetime_from_rfc3339)]
     from: Option<OffsetDateTime>,
     // Optional [From, To] date range, end
-    #[structopt(long, parse( try_from_str = parse_datetime_from_rfc3339))]
+    #[clap(long, value_parser = parse_datetime_from_rfc3339)]
     to: Option<OffsetDateTime>,
 }
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Debug, Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Download {
     /// Sentry logs url
-    #[structopt(long)]
+    #[clap(long)]
     url: Url,
 
     /// Sentry access token
-    #[structopt(long)]
+    #[clap(long)]
     token: String,
 
     /// Path to the ouput file, will be overwritten if exists.
-    #[structopt(long)]
+    #[clap(long)]
     out: PathBuf,
 
     /// Choose between latest logs or full logs download
-    #[structopt(long, default_value = "latest")]
+    #[clap(long, default_value = "latest")]
     mode: Mode,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     dates: DateFilter,
 }
 

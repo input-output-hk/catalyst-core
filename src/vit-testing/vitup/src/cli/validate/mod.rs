@@ -2,16 +2,15 @@ mod config;
 mod deployment;
 mod ideascale;
 
+use clap::Parser;
 use config::ConfigValidateCommand;
 use deployment::CheckError;
 use deployment::DeploymentValidateCommand;
 pub use ideascale::Error as IdeascaleError;
 use ideascale::IdeascaleValidateCommand;
-use structopt::StructOpt;
 use thiserror::Error;
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
 pub enum ValidateCommand {
     Ideascale(IdeascaleValidateCommand),
     Deployment(DeploymentValidateCommand),

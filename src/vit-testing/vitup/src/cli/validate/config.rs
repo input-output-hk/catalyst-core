@@ -1,13 +1,12 @@
 use crate::config::read_config;
+use clap::Parser;
 use std::path::PathBuf;
-use structopt::StructOpt;
 use thiserror::Error;
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
 pub struct ConfigValidateCommand {
     /// target config
-    #[structopt(name = "CONFIG")]
+    #[clap(name = "CONFIG")]
     pub config: PathBuf,
 }
 

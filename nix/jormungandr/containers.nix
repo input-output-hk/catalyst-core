@@ -14,10 +14,11 @@
   in
     std.lib.ops.mkStandardOCI ({
         name = "${constants.registry}/jormungandr";
-        tag = "${rev}-${namespace}";
         operable = cell.operables."jormungandr-${namespace}";
         debug = true;
       }
+      # Include common container setup
+      // lib.containerCommon
       # Default to using output hash as the tag if the repo is dirty
       // l.optionalAttrs (rev != "") {tag = "${rev}-${namespace}";});
 in

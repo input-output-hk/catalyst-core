@@ -1,21 +1,47 @@
 use std::path::Path;
+use std::str::FromStr;
 
 use clap::Parser;
 use color_eyre::Result;
-use db_sync_explorer::{connect, rest, Args, Config};
+use db_sync_explorer::{connect, rest, Args, Config, Db, MockProvider, Provider};
+use tracing::level_filters::LevelFilter;
+use tracing_subscriber::FmtSubscriber;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     color_eyre::install()?;
-    tracing_subscriber::fmt().init();
 
-    let Args { config, .. } = Args::parse();
+    let Args {
+        config,
+        log_level,
+        token,
+        ..
+    } = Args::parse();
 
-    let configuration: Config = read_config(&config)?;
-    let db_pool = connect(configuration.db)?;
+    let subscriber = FmtSubscriber::builder()
+        .with_file(false)
+        .with_target(false)
+        .with_max_level(LevelFilter::from_str(&log_level.to_string()).expect("invalid log level"))
+        .finish();
 
+    tracing::subscriber::set_global_default(subscriber)?;
+
+    let mut configuration: Config = read_config(&config)?;
     let address = configuration.address;
-    let context = rest::v0::context::new_shared_context(db_pool, configuration.token);
+
+    if token.is_some() {
+        configuration.token = token;
+    }
+
+    let context = match &configuration.db {
+        Db::Db(config) => {
+            let db_pool = connect(config.clone())?;
+            rest::v0::context::new_shared_real_context(Provider(db_pool), configuration)
+        }
+        Db::Mock(_config) => {
+            rest::v0::context::new_shared_mocked_context(MockProvider::default(), configuration)
+        }
+    };
 
     let app = rest::v0::filter(context).await;
 

@@ -1,16 +1,16 @@
 use crate::jcli_lib::certificate::{weighted_pool_ids::WeightedPoolIds, write_cert, Error};
 use chain_impl_mockchain::certificate::{Certificate, OwnerStakeDelegation as Delegation};
+use clap::Parser;
 use jormungandr_lib::interfaces::Certificate as CertificateType;
 use std::{convert::TryInto, path::PathBuf};
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct OwnerStakeDelegation {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pool_ids: WeightedPoolIds,
 
     /// write the output to the given file or print it to the standard output if not defined
-    #[structopt(short = "o", long = "output")]
+    #[clap(short = 'o', long = "output")]
     output: Option<PathBuf>,
 }
 

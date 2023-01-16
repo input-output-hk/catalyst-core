@@ -1,3 +1,4 @@
+use cardano_serialization_lib::error::DeserializeError;
 use thiserror::Error;
 use warp::{reply::Response, Rejection, Reply};
 
@@ -15,6 +16,9 @@ pub enum HandleError {
     #[error("Unauthorized token")]
     UnauthorizedToken,
 
+    #[error("Deserialize transaction")]
+    Deserialize(#[from] DeserializeError),
+
     #[error("Connection")]
     Database(#[from] diesel::result::Error),
 
@@ -29,6 +33,15 @@ pub enum HandleError {
 
     #[error("Request interrupted")]
     Join(#[from] tokio::task::JoinError),
+
+    #[error("Mock")]
+    Mock(#[from] crate::mock::Error),
+
+    #[error("Serialization error")]
+    Json(#[from] serde_json::Error),
+
+    #[error(transparent)]
+    Template(#[from] mainnet_lib::wallet_state::TemplateError),
 }
 
 impl HandleError {
@@ -43,6 +56,10 @@ impl HandleError {
             HandleError::DatabaseInconsistency(_) => warp::http::StatusCode::SERVICE_UNAVAILABLE,
             HandleError::Database(_) => warp::http::StatusCode::SERVICE_UNAVAILABLE,
             HandleError::Join(_) => warp::http::StatusCode::SERVICE_UNAVAILABLE,
+            HandleError::Mock(_) => warp::http::StatusCode::SERVICE_UNAVAILABLE,
+            HandleError::Json(_) => warp::http::StatusCode::SERVICE_UNAVAILABLE,
+            HandleError::Deserialize(_) => warp::http::StatusCode::BAD_REQUEST,
+            HandleError::Template(_) => warp::http::StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 

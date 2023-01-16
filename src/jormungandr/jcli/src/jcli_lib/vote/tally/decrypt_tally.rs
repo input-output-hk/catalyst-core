@@ -4,6 +4,7 @@ use crate::jcli_lib::utils::{
     OutputFormat,
 };
 use chain_vote::tally::{batch_decrypt, EncryptedTally};
+use clap::Parser;
 use jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{PrivateTallyState, Tally},
@@ -11,29 +12,28 @@ use jormungandr_lib::{
 use rayon::prelude::*;
 use serde::Serialize;
 use std::{convert::TryInto, path::PathBuf};
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct TallyVotePlanWithAllShares {
     /// The path to json-encoded vote plan to decrypt. If this parameter is not
     /// specified, the vote plan will be read from the standard
     /// input.
-    #[structopt(long)]
+    #[clap(long)]
     vote_plan: Option<PathBuf>,
     /// The id of the vote plan to decrypt.
     /// Can be left unspecified if there is only one vote plan in the input
-    #[structopt(long)]
+    #[clap(long)]
     vote_plan_id: Option<Hash>,
     /// The minimum number of shares needed for decryption
-    #[structopt(long, default_value = "3")]
+    #[clap(long, default_value = "3")]
     threshold: usize,
     /// The path to a JSON file containing decryption shares necessary to decrypt
     /// the vote plan. If this parameter is not specified, the shares will be read
     /// from the standard input.
-    #[structopt(long)]
+    #[clap(long)]
     shares: Option<PathBuf>,
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output_format: OutputFormat,
 }
 

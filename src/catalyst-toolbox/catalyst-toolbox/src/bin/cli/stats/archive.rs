@@ -2,27 +2,27 @@ use catalyst_toolbox::{
     stats::archive::{load_from_csv, load_from_folder, ArchiveStats},
     utils::csv::dump_to_csv_or_print,
 };
+use clap::Parser;
 use color_eyre::Report;
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ArchiveCommand {
-    #[structopt(long = "csv", required_unless = "folder")]
+    #[clap(long = "csv", required_unless_present_all = ["folder"])]
     pub csv: Option<PathBuf>,
 
-    #[structopt(long = "folder", required_unless = "csv")]
+    #[clap(long = "folder", required_unless_present_all = ["csv"])]
     pub folder: Option<PathBuf>,
 
-    #[structopt(long = "output")]
+    #[clap(long = "output")]
     pub output: Option<PathBuf>,
 
-    #[structopt(short = "d", long = "distribution")]
+    #[clap(short = 'd', long = "distribution")]
     pub calculate_distribution: bool,
 
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     pub command: Command,
 }
 
@@ -72,16 +72,16 @@ impl ArchiveCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Command {
     VotesByCaster,
     VotesBySlot,
     BatchSizeByCaster(BatchSizeByCaster),
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct BatchSizeByCaster {
-    #[structopt(short = "s", long = "slots-in-epoch")]
+    #[clap(short = 's', long = "slots-in-epoch")]
     pub slots_in_epoch: u32,
 }
 

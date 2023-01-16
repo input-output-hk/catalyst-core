@@ -6,22 +6,22 @@ use chain_impl_mockchain::{
     certificate::{self, Certificate},
     vote::PayloadType,
 };
+use clap::Parser;
 use jormungandr_lib::interfaces::VotePlan;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
 /// create a vote plan certificate
 ///
 /// the vote plan configuration data needs to be provided
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct VotePlanRegistration {
     /// the file containing the vote plan configuration (YAML). If no file
     /// provided, it will be read from the standard input
     pub input: Option<PathBuf>,
 
     /// write the output to the given file or print it to the standard output if not defined
-    #[structopt(long = "output")]
+    #[clap(long = "output")]
     pub output: Option<PathBuf>,
 }
 

@@ -8,6 +8,7 @@ edition = "2021"
 
 [dependencies]
 base64 = "0.12.1"
+num-traits = "0.2.15"
 jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
 jormungandr-automation = { path = "../../jormungandr/testing/jormungandr-automation" }
 thor = { path = "../../jormungandr/testing/thor" }

@@ -6,10 +6,13 @@ use async_trait::async_trait;
 use cardano_serialization_lib::address::Address;
 use rand::Rng;
 
+/// Trait for retrieving information about address registrations from network
 #[async_trait]
 pub trait ExternalProvider {
+    /// Error which can be returned on any issue with retrieving information
     type Error;
 
+    /// Downloads `MainnetWalletState` from network
     async fn download_state_from_network(
         &self,
         actors: &[Actor],

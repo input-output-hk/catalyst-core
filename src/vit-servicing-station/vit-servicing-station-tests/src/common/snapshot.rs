@@ -225,8 +225,8 @@ impl SnapshotUpdater {
             .snapshot
             .iter_mut()
             .find(|entry| entry.hir.voting_key == *voting_key);
-        if voter.is_some() {
-            voter.unwrap().contributions.extend(contributions)
+        if let Some(voter) = voter {
+            voter.contributions.extend(contributions)
         }
         self
     }

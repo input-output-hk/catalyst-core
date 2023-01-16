@@ -19,7 +19,7 @@ describe("Inplace signing vote cast certificate tests", function () {
       2,
       8
     );
-    let vote = new wallet.Vote(proposal, 0, new wallet.BlockDate(0, 1), 1, 1);
+    let vote = new wallet.Vote(proposal, 0, undefined, 1, 1);
     let tx_builders = wallet.signVotes(
       [vote],
       settings,
@@ -41,7 +41,7 @@ describe("Inplace signing vote cast certificate tests", function () {
       8,
       "bed88887abe0a84f64691fe0bdfa3daf1a6cd697a13f07ae07588910ce39c927"
     );
-    let vote = new wallet.Vote(proposal, 0, new wallet.BlockDate(0, 1), 1, 1);
+    let vote = new wallet.Vote(proposal, 0, undefined, 1, 1);
     let tx_builders = wallet.signVotes(
       [vote],
       settings,

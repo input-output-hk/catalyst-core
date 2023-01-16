@@ -36,7 +36,6 @@ export class Vote {
   ) {
     this.proposal = proposal;
     this.choice = choice;
-    this.expiration = expiration;
     this.spendingCounter = spendingCounter;
     this.spendingCounterLane = spendingCounterLane;
   }
@@ -73,8 +72,6 @@ export function signVotes(votes, settings, accountId, privateKey) {
 
     let builder = wasm.VoteCastTxBuilder.new(
       settings.settings,
-      vote.expiration.epoch,
-      vote.expiration.slot,
       voteCast
     );
     let tx_builder = builder.build_tx(

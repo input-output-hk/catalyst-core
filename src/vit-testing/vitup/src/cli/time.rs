@@ -1,13 +1,12 @@
 use crate::config::read_config;
 use crate::Result;
+use clap::Parser;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
 pub struct TimeCommand {
     /// Path to configuration file
-    #[structopt(long = "config")]
+    #[clap(long = "config")]
     pub config: PathBuf,
 }
 

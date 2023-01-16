@@ -2,7 +2,7 @@ use crate::api_token::{ApiTokenCmd, Error as ApiTokenError};
 use crate::csv::loaders::{CsvDataCmd, Error as CsvDataError};
 use crate::init_db::{Db, Error as DbError};
 use crate::task::ExecTask;
-use structopt::StructOpt;
+use clap::Parser;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -15,13 +15,16 @@ pub enum Error {
     Db(#[from] DbError),
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub enum CliApp {
     /// API token related operations
+    #[clap(subcommand)]
     ApiToken(ApiTokenCmd),
     /// CSV data loaders
+    #[clap(subcommand)]
     CsvData(CsvDataCmd),
     /// DB related operations
+    #[clap(subcommand)]
     Db(Db),
 }
 

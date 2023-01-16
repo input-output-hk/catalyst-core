@@ -2,23 +2,24 @@ use crate::jcli_lib::{
     rest::{Error, RestArgs},
     utils::OutputFormat,
 };
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Leaders {
     /// Leadership log operations
+    #[clap(subcommand)]
     Logs(GetLogs),
 }
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum GetLogs {
     /// Get leadership log
     Get {
-        #[structopt(flatten)]
+        #[clap(flatten)]
         args: RestArgs,
-        #[structopt(flatten)]
+        #[clap(flatten)]
         output_format: OutputFormat,
     },
 }

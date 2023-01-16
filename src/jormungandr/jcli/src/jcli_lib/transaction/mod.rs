@@ -26,18 +26,17 @@ use crate::{
 };
 use chain_core::property::{ReadError, Serialize as _, WriteError};
 use chain_impl_mockchain as chain;
+use clap::Parser;
 use std::path::PathBuf;
-use structopt::StructOpt;
 use thiserror::Error;
 
 #[allow(clippy::large_enum_variant)]
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Transaction {
     /// create a new staging transaction. The transaction is initially
     /// empty.
     New(new::New),
-
     /// add UTxO input to the transaction
     AddInput(add_input::AddInput),
     /// add Account input to the transaction

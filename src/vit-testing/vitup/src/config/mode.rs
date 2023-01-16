@@ -1,5 +1,5 @@
 use hersir::config::SessionMode;
-use std::fmt;
+use std::{convert::Infallible, fmt};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Mode {
@@ -9,14 +9,16 @@ pub enum Mode {
     Monitor,
 }
 
-pub fn parse_mode_from_str(mode: &str) -> Mode {
+pub fn parse_mode_from_str(mode: &str) -> Result<Mode, Infallible> {
     let mode_lowercase: &str = &mode.to_lowercase();
-    match mode_lowercase {
+    let mode = match mode_lowercase {
         "service" => Mode::Service,
         "interactive" => Mode::Interactive,
         "monitor" => Mode::Monitor,
         _ => Mode::Standard,
-    }
+    };
+
+    Ok(mode)
 }
 
 impl fmt::Display for Mode {

@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate diesel;
 #[macro_use]
-extern crate structopt;
+extern crate clap;
 
 pub mod db;
 pub mod server;

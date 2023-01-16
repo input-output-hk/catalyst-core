@@ -58,7 +58,6 @@ export class Proposal {
 export class Vote {
   proposal: Proposal;
   choice: number;
-  expiration: BlockDate;
   spendingCounter: number;
   spendingCounterLane: number;
 
@@ -67,7 +66,7 @@ export class Vote {
    *
    * @param {Proposal} proposal
    * @param {number} choice choosen vote plan option
-   * @param {BlockDate} expiration expiration date of vote transaction
+   * @param {BlockDate} expiration expiration date of vote transaction (deprecated param)
    * @param {number} spendingCounter
    * @param {number} spendingCounterLane
    * @returns {Vote}

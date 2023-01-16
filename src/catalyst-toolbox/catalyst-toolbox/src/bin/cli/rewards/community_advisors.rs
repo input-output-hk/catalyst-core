@@ -17,60 +17,60 @@ use catalyst_toolbox::community_advisors::models::{
     AdvisorReviewRow, ApprovedProposalRow, ProposalStatus,
 };
 use catalyst_toolbox::utils::csv::dump_data_to_csv;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(Debug, Deserialize, StructOpt)]
+#[derive(Debug, Deserialize, Parser)]
 pub struct FundSettingOpt {
     /// % ratio, range in [0, 100]
-    #[structopt(long = "rewards-ratio")]
+    #[clap(long = "rewards-ratio")]
     proposal_ratio: u8,
     /// % ratio, range in [0, 100]
-    #[structopt(long = "bonus-ratio")]
+    #[clap(long = "bonus-ratio")]
     bonus_ratio: u8,
     /// total amount of funds to be rewarded (integer value)
-    #[structopt(long = "funds")]
+    #[clap(long = "funds")]
     total: u64,
 }
 
-#[derive(Debug, Deserialize, StructOpt)]
+#[derive(Debug, Deserialize, Parser)]
 pub struct ProposalRewardsSlotsOpt {
     /// excellent reviews amount of rewards tickets
-    #[structopt(long)]
+    #[clap(long)]
     excellent_slots: u64,
     /// good reviews amount of rewards tickets
-    #[structopt(long)]
+    #[clap(long)]
     good_slots: u64,
     /// maximum number of excellent reviews being rewarded per proposal
-    #[structopt(long)]
+    #[clap(long)]
     max_excellent_reviews: u64,
     /// maximum number of good reviews being rewarded per proposal
-    #[structopt(long)]
+    #[clap(long)]
     max_good_reviews: u64,
 }
 
-#[derive(Debug, Deserialize, StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Debug, Deserialize, Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct CommunityAdvisors {
-    #[structopt(long = "assessments")]
+    #[clap(long = "assessments")]
     assessments_path: PathBuf,
 
-    #[structopt(long = "proposals")]
+    #[clap(long = "proposals")]
     approved_proposals_path: PathBuf,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     fund_settings: FundSettingOpt,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     rewards_slots: ProposalRewardsSlotsOpt,
 
-    #[structopt(long)]
+    #[clap(long)]
     output: PathBuf,
 
-    #[structopt(long)]
+    #[clap(long)]
     seed: String,
 
     /// Output bonus rewards per proposal in a separate file
-    #[structopt(long)]
+    #[clap(long)]
     proposal_bonus_output: Option<PathBuf>,
 }
 

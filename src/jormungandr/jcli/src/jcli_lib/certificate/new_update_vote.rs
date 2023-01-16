@@ -4,17 +4,17 @@ use crate::jcli_lib::{
 };
 use chain_crypto::{Ed25519, PublicKey};
 use chain_impl_mockchain::certificate::{self, Certificate, UpdateProposalId};
+use clap::Parser;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct UpdateVote {
     /// the Proposal ID of the proposal.
-    #[structopt(name = "PROPOSAL_ID")]
+    #[clap(name = "PROPOSAL_ID")]
     proposal_id: UpdateProposalId,
 
     /// the voter ID.
-    #[structopt(name = "VOTER_ID", parse(try_from_str = parse_pub_key))]
+    #[clap(name = "VOTER_ID", value_parser = parse_pub_key::<Ed25519>)]
     voter_id: PublicKey<Ed25519>,
 
     /// print the output signed certificate in the given file, if no file given

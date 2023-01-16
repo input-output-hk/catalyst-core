@@ -3,9 +3,9 @@ use crate::{
     style,
 };
 use chain_impl_mockchain::certificate::VotePlan;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Describe {
     /// Prints available wallets with aliases
     /// that can be used
@@ -33,9 +33,9 @@ impl Describe {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct DescribeTopology {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 
@@ -59,9 +59,9 @@ impl DescribeTopology {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct DescribeWallets {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 
@@ -81,9 +81,9 @@ impl DescribeWallets {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct DescribeVotePlans {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 
@@ -110,9 +110,9 @@ impl DescribeVotePlans {
         Ok(())
     }
 }
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct DescribeNodes {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 
@@ -126,9 +126,9 @@ impl DescribeNodes {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct DescribeAll {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 

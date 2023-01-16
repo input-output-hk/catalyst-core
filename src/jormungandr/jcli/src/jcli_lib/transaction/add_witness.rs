@@ -5,13 +5,13 @@ use crate::jcli_lib::{
 use bech32::{self, FromBase32 as _};
 use chain_core::{packer::Codec, property::DeserializeFromSlice};
 use chain_impl_mockchain::transaction::Witness;
+use clap::Parser;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct AddWitness {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub common: common::CommonTransaction,
 
     pub witness: PathBuf,

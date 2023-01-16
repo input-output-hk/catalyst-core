@@ -10,13 +10,14 @@ pub use random::{
     AllRandomDataCommandArgs, RandomReviewsDataCommandArgs, RandomScoresDataCommandArgs,
 };
 
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum DataCommandArgs {
     /// generate data from external data
     Import(ExternalDataCommandArgs),
     /// generate random data
+    #[clap(subcommand)]
     Random(RandomDataCommandArgs),
     /// generate data for performance tests
     Perf(PerfDataCommandArgs),
@@ -32,7 +33,7 @@ impl DataCommandArgs {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum RandomDataCommandArgs {
     /// generate all random data
     All(AllRandomDataCommandArgs),

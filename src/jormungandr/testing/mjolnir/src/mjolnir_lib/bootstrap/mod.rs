@@ -2,11 +2,11 @@ mod config;
 mod scenario;
 
 use crate::mjolnir_lib::MjolnirError;
+use clap::Parser;
 use config::{ClientLoadConfig, PassiveBootstrapLoad, ScenarioType};
 use jormungandr_automation::jormungandr::grpc::JormungandrClient;
 use jormungandr_lib::crypto::hash::Hash;
 use std::path::PathBuf;
-use structopt::StructOpt;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -18,32 +18,32 @@ pub enum ClientLoadCommandError {
     ClientError(#[from] MjolnirError),
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ClientLoadCommand {
     /// Number of threads
-    #[structopt(short = "c", long = "count", default_value = "3")]
+    #[clap(short = 'c', long = "count", default_value = "3")]
     pub count: u32,
     /// address in format:
     /// /ip4/54.193.75.55/tcp/3000
-    #[structopt(short = "a", long = "address")]
+    #[clap(short = 'a', long = "address")]
     pub address: String,
 
     /// amount of delay (in seconds) between sync attempts
-    #[structopt(short = "p", long = "pace", default_value = "2")]
+    #[clap(short = 'p', long = "pace", default_value = "2")]
     pub pace: u64,
 
-    #[structopt(short = "d", long = "storage")]
+    #[clap(short = 'd', long = "storage")]
     pub initial_storage: Option<PathBuf>,
 
     /// amount of delay (in seconds) between sync attempts
-    #[structopt(short = "r", long = "duration")]
+    #[clap(short = 'r', long = "duration")]
     pub duration: Option<u64>,
 
     /// amount of delay (in seconds) between sync attempts
-    #[structopt(short = "n", long = "iterations")]
+    #[clap(short = 'n', long = "iterations")]
     pub sync_iteration: Option<u32>,
 
-    #[structopt(short = "m", long = "measure")]
+    #[clap(short = 'm', long = "measure")]
     pub measure: bool,
 }
 

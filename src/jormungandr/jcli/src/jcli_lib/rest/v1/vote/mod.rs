@@ -5,30 +5,30 @@ use crate::{
     },
     utils::AccountId,
 };
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct AccountVotes {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     args: RestArgs,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output_format: OutputFormat,
 
     /// Account id to filter votes.
     /// An Account ID either in the form of an address of kind account, or an account public key.
-    #[structopt(short, long, parse(try_from_str = AccountId::try_from_str))]
+    #[clap(short, long, value_parser = AccountId::try_from_str)]
     account_id: AccountId,
 
     /// Id of the voteplan for which we want to list proposals
     /// the account voted for
-    #[structopt(short, long)]
+    #[clap(short, long)]
     vote_plan_id: Option<String>,
 }
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Vote {
     /// Get numbers of proposals within a vote plan a given user has voted for
     AccountVotes(AccountVotes),

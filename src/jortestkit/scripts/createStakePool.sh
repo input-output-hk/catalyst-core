@@ -34,7 +34,7 @@ TAX_RATIO="$3"
 ACCOUNT_SK="$4"
 
 REST_URL="http://127.0.0.1:${REST_PORT}/api"
-BLOCK0_HASH=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'block0Hash:' | sed -e 's/^[[:space:]]*//' | sed -e 's/block0Hash: //')
+BLOCK0_HASH=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'block0Hash:' | sed -e 's/^[[:space:]]*//' | sed -e 's/block0Hash: //')
 
 ACCOUNT_PK=$(echo ${ACCOUNT_SK} | $CLI key to-public)
 ACCOUNT_ADDR=$($CLI address account ${ADDRTYPE} ${ACCOUNT_PK})

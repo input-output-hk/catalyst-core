@@ -1,9 +1,8 @@
 use crate::common::get_available_port;
-use crate::common::snapshot::SnapshotServiceStarter;
+use crate::common::snapshot::{SnapshotResult, SnapshotServiceStarter};
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
 use mainnet_lib::{DbSyncError, InMemoryDbSync};
-use snapshot_trigger_service::client::SnapshotResult;
 use snapshot_trigger_service::config::{
     ConfigurationBuilder, JobParameters, NetworkType, VotingToolsParams,
 };
@@ -50,5 +49,5 @@ pub enum Error {
     #[error(transparent)]
     SnapshotIntegration(#[from] crate::common::snapshot::Error),
     #[error(transparent)]
-    SnapshotClient(#[from] snapshot_trigger_service::client::Error),
+    Snapshot(#[from] crate::common::snapshot::result::Error),
 }

@@ -1,9 +1,9 @@
+use clap::Parser;
 use mjolnir::Mjolnir;
 use std::error::Error;
-use structopt::StructOpt;
 
 fn main() {
-    Mjolnir::from_args().exec().unwrap_or_else(report_error)
+    Mjolnir::parse().exec().unwrap_or_else(report_error)
 }
 
 fn report_error(error: Box<dyn Error>) {

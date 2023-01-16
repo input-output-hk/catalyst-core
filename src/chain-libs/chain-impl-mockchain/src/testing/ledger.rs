@@ -515,14 +515,14 @@ pub struct TestLedger {
 }
 
 impl TestLedger {
-    pub fn apply_transaction(&mut self, fragment: Fragment, date: BlockDate) -> Result<(), Error> {
+    pub fn apply_transaction(&mut self, fragment: Fragment) -> Result<(), Error> {
         let fragment_id = fragment.hash();
         match fragment {
             Fragment::Transaction(tx) => {
                 match self
                     .ledger
                     .clone()
-                    .apply_transaction(&fragment_id, &tx.as_slice(), date)
+                    .apply_transaction(&fragment_id, &tx.as_slice())
                 {
                     Err(err) => Err(err),
                     Ok((ledger, _)) => {

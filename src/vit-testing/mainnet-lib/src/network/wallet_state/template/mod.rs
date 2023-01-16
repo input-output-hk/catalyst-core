@@ -7,7 +7,7 @@ use crate::CardanoWallet;
 pub use actor::{delegator, registration, representative, Actor};
 pub use arbitrary::{generate_arbitrary_delegator, Error as ArbitraryError};
 use chain_crypto::PublicKeyFromStrError;
-use external_providers::{DummyExternalProvider, ExternalProvider};
+pub use external_providers::{DummyExternalProvider, ExternalProvider};
 use jormungandr_lib::crypto::account::Identifier;
 
 /// Builds collection of `MainnetWalletState` structs based on default configuration

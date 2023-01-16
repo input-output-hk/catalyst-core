@@ -15,21 +15,21 @@ pub struct Meta {
 #[derive(QueryableByName, Debug, Serialize, Deserialize, Clone)]
 pub struct BehindDuration {
     #[diesel(sql_type = Timestamp)]
-    behind_by: SystemTime,
+    pub behind_by: SystemTime,
 }
 
 #[derive(QueryableByName, Debug, Serialize, Deserialize, Clone)]
 pub struct Progress {
     #[diesel(sql_type = Numeric)]
-    sync_percentage: BigDecimal,
+    pub sync_percentage: BigDecimal,
 }
 
 #[derive(Debug, Serialize)]
 pub struct TransactionConfirmation {
-    epoch_no: Option<i32>,
-    slot_no: Option<i64>,
-    absolute_slot: Option<i32>,
-    block_no: Option<i32>,
+    pub epoch_no: Option<i32>,
+    pub slot_no: Option<i64>,
+    pub absolute_slot: Option<i32>,
+    pub block_no: Option<i32>,
 }
 
 impl From<TransactionConfirmationRow> for TransactionConfirmation {

@@ -1,9 +1,9 @@
 use crate::db_utils::{backup_db_file, restore_db_file};
 use crate::{db_utils::db_file_exists, task::ExecTask};
+use clap::Parser;
 use rand::Rng;
 use std::collections::HashSet;
 use std::io;
-use structopt::StructOpt;
 use thiserror::Error;
 use time::{Duration, OffsetDateTime};
 use vit_servicing_station_lib::{
@@ -36,27 +36,27 @@ pub enum Error {
     Io(#[from] std::io::Error),
 }
 
-#[derive(Debug, PartialEq, Eq, StructOpt)]
+#[derive(Debug, PartialEq, Eq, Parser)]
 pub enum ApiTokenCmd {
     /// Add provided tokens to database. If --tokens is not provided the binary will read them from the `stdin`
     Add {
         /// List of tokens in URL safe base64. If --tokens is not provided the binary will read them from the `stdin`
-        #[structopt(long = "tokens")]
+        #[clap(long = "tokens")]
         tokens: Option<Vec<String>>,
 
         /// URL of the vit-servicing-station database to interact with
-        #[structopt(long = "db-url")]
+        #[clap(long = "db-url")]
         db_url: String,
     },
 
     /// Generate API tokens, URL safe base64 encoded.
     Generate {
         /// Number of tokens to generate
-        #[structopt(long = "n", default_value = "1")]
+        #[clap(long = "n", default_value = "1")]
         n: usize,
 
         /// Size of the token
-        #[structopt(long = "size", default_value = "10")]
+        #[clap(long = "size", default_value = "10")]
         size: usize,
     },
 }

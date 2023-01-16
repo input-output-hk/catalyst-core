@@ -1,16 +1,16 @@
 use crate::jcli_lib::rest::Error;
-use structopt::StructOpt;
+use clap::Parser;
 
 mod next_id;
 mod subcommand;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Block {
     /// ID of the block
     block_id: String,
 
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     subcommand: subcommand::Subcommand,
 }
 

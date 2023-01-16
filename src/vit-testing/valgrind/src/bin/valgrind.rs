@@ -1,4 +1,4 @@
-use structopt::StructOpt;
+use clap::Parser;
 use valgrind::{Protocol, ValigrindStartupCommand};
 use warp::http::StatusCode;
 use warp::Filter;
@@ -6,7 +6,7 @@ use warp_reverse_proxy::reverse_proxy_filter;
 
 #[tokio::main]
 async fn main() {
-    let server_stub = ValigrindStartupCommand::from_args().build().unwrap();
+    let server_stub = ValigrindStartupCommand::parse().build().unwrap();
 
     let api = warp::path!("api" / ..);
 

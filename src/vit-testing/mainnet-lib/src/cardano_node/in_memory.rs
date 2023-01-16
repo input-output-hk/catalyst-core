@@ -1,4 +1,4 @@
-use crate::cardano_node::block::Block0;
+use crate::cardano_node::Block0;
 use crate::cardano_node::Settings;
 use crate::Ledger;
 use cardano_serialization_lib::{Block, Transaction};

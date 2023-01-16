@@ -3,11 +3,13 @@ mod encode;
 mod info;
 mod verify;
 
-use color_eyre::Report;
-use structopt::StructOpt;
+use std::str::FromStr;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+use clap::Parser;
+use color_eyre::{eyre::bail, Report};
+
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum QrCodeCmd {
     /// Encode qr code
     Encode(encode::EncodeQrCodeCmd),
@@ -31,9 +33,20 @@ impl QrCodeCmd {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Debug, Clone, PartialEq, Eq, Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum QrCodeOpts {
     Img,
     Payload,
+}
+
+impl FromStr for QrCodeOpts {
+    type Err = Report;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "img" => Ok(Self::Img),
+            "payload" => Ok(Self::Payload),
+            other => bail!("unknown QrCodeOpts: {other}"),
+        }
+    }
 }

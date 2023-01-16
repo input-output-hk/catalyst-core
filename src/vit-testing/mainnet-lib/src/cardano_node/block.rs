@@ -10,6 +10,7 @@ use cardano_serialization_lib::{
 };
 
 /// Block0 representation
+#[derive(Clone)]
 pub struct Block0 {
     /// Block containing transactions
     pub block: Block,

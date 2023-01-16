@@ -7,19 +7,19 @@ use chain_core::{
     property::{DeserializeFromSlice as _, Serialize},
 };
 use chain_impl_mockchain::fragment::Fragment;
+use clap::Parser;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Message {
     /// Post message. Prints id for posted message
     Post {
-        #[structopt(flatten)]
+        #[clap(flatten)]
         args: RestArgs,
         /// File containing hex-encoded message.
         /// If not provided, message will be read from stdin.
-        #[structopt(short, long)]
+        #[clap(short, long)]
         file: Option<PathBuf>,
     },
 
@@ -27,9 +27,9 @@ pub enum Message {
     /// on pending transaction, rejected transaction and or when a transaction
     /// has been added in a block
     Logs {
-        #[structopt(flatten)]
+        #[clap(flatten)]
         args: RestArgs,
-        #[structopt(flatten)]
+        #[clap(flatten)]
         output_format: OutputFormat,
     },
 }

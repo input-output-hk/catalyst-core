@@ -4,17 +4,18 @@ use chain_impl_mockchain::{
     account::{DelegationRatio, DelegationType},
     accounting::account::DELEGATION_RATIO_MAX_DECLS,
 };
+use clap::Parser;
 use std::{convert::TryFrom, error::Error as StdError, str::FromStr};
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct WeightedPoolIds {
     /// hex-encoded stake pool IDs and their numeric weights in format "pool_id:weight".
     /// If weight is not provided, it defaults to 1.
-    #[structopt(name = "STAKE_POOL_IDS", required = true)]
+    #[clap(name = "STAKE_POOL_IDS", required = true, value_parser = WeightedPoolId::from_str)]
     pool_ids: Vec<WeightedPoolId>,
 }
 
+#[derive(Debug, Clone)]
 struct WeightedPoolId {
     pool_id: Blake2b256,
     weight: u8,
@@ -63,7 +64,7 @@ fn delegation_ratio_sum(pool_ids: &[WeightedPoolId]) -> Result<u8, Error> {
 }
 
 impl FromStr for WeightedPoolId {
-    type Err = Box<dyn StdError>;
+    type Err = Box<dyn StdError + Send + Sync + 'static>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut split = s.splitn(2, ':');

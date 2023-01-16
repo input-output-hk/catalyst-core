@@ -45,6 +45,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cache"
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
@@ -76,6 +78,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cache"
       - uses: actions/cache@v3
         with:
           path: nextest-archive.tar.zst

@@ -55,11 +55,16 @@ jobs:
       - name: Install deps
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+      - run:
+          cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
       - name: Build and archive tests
         run: cargo nextest archive --archive-file nextest-archive.tar.zst
       - uses: actions/cache@v3
         with:
-          path: nextest-archive.tar.zst
+          path: |
+            nextest-archive.tar.zst
+            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-cli.exe
+            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-server.exe
           key: "some-key"
 
 
@@ -80,7 +85,10 @@ jobs:
           shared-key: "cache1"
       - uses: actions/cache@v3
         with:
-          path: nextest-archive.tar.zst
+          path: |
+            nextest-archive.tar.zst
+            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-cli.exe
+            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-server.exe
           key: "some-key"
       - uses: actions-rs/toolchain@v1
         with:
@@ -90,8 +98,6 @@ jobs:
       - name: Install deps
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-      - run:
-          cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
       - name: Run Catalyst Core tests
         run:
           cargo nextest run -E "not (package(jormungandr-integration-tests) + package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) + test(multi_voteplan_ok_private))" --archive-file nextest-archive.tar.zst --extract-to "/home/runner/work/catalyst-core-fork/catalyst-core-fork" --extract-overwrite --partition count:${{ matrix.partition }}/10 --profile ci

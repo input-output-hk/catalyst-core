@@ -88,9 +88,8 @@ documentation comment.
       the provided list is empty, all preflight requests will be rejected.
       Default should be a value which allows cors to work without requiring
       extra config under normal circumstances.
-* `jrpc:` - Optional.
-
-    pub jrpc: Option<JRpc>,
+  * `jrpc` - Optional. No idea what this does yet???  TODO: Document it and defaults.
+  * `p2p` - Peer to Peer config.
 
     #[serde(default)]
     pub p2p: P2pConfig,

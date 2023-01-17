@@ -48,7 +48,7 @@ property-test-api = [
         "rand_chacha",
         "ed25519-bip32"]
 with-bench = ["criterion","property-test-api"]
-evm = ["chain-evm", "proptest/evm"]
+evm = ["chain-evm"]
 
 [dev-dependencies]
 quickcheck = "0.9"

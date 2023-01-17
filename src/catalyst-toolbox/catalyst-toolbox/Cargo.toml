@@ -14,6 +14,8 @@ test = false
 bench = false
 
 [dependencies]
+clap = { workspace = true }
+
 assert_fs = "1"
 bech32 = "0.8.1"
 csv = "1.1"
@@ -45,7 +47,6 @@ governor = { version = "0.4", features = ["std", "jitter"], default-features = f
 regex = "1.5"
 serde = "1.0"
 serde_json = "1.0"
-structopt = "0.3"
 serde_yaml = "0.8.17"
 sscanf = "0.1"
 color-eyre = "0.6"
@@ -62,8 +63,8 @@ gag = "1"
 vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib" }
 snapshot-lib = { path = "../snapshot-lib" }
 fraction = "0.12"
-tracing = "0.1"
-tracing-subscriber = "0.3"
+tracing.workspace = true
+tracing-subscriber.workspace = true
 
 [dev-dependencies]
 rand_chacha = "0.3"

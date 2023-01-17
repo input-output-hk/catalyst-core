@@ -19,7 +19,7 @@ ADDRTYPE="--testing"
 TIMEOUT_NO_OF_BLOCKS=200
 
 getTip() {
-  echo $($CLI rest v0 tip get -h "${REST_URL}")
+  echo $($CLI rest v0 tip get --host "${REST_URL}")
 }
 
 waitNewBlockCreated() {
@@ -68,12 +68,12 @@ REST_PORT="$3"
 SOURCE_SK="$4"
 
 REST_URL="http://127.0.0.1:${REST_PORT}/api"
-BLOCK0_HASH=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'block0Hash:' | sed -e 's/^[[:space:]]*//' | sed -e 's/block0Hash: //')
-FEE_CONSTANT=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'constant:' | sed -e 's/^[[:space:]]*//' | sed -e 's/constant: //')
-FEE_COEFFICIENT=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'coefficient:' | sed -e 's/^[[:space:]]*//' | sed -e 's/coefficient: //')
-MAX_TXS_PER_BLOCK=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'maxTxsPerBlock:' | sed -e 's/^[[:space:]]*//' | sed -e 's/maxTxsPerBlock: //')
-SLOT_DURATION=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'slotDuration:' | sed -e 's/^[[:space:]]*//' | sed -e 's/slotDuration: //')
-SLOTS_PER_EPOCH=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'slotsPerEpoch:' | sed -e 's/^[[:space:]]*//' | sed -e 's/slotsPerEpoch: //')
+BLOCK0_HASH=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'block0Hash:' | sed -e 's/^[[:space:]]*//' | sed -e 's/block0Hash: //')
+FEE_CONSTANT=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'constant:' | sed -e 's/^[[:space:]]*//' | sed -e 's/constant: //')
+FEE_COEFFICIENT=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'coefficient:' | sed -e 's/^[[:space:]]*//' | sed -e 's/coefficient: //')
+MAX_TXS_PER_BLOCK=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'maxTxsPerBlock:' | sed -e 's/^[[:space:]]*//' | sed -e 's/maxTxsPerBlock: //')
+SLOT_DURATION=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'slotDuration:' | sed -e 's/^[[:space:]]*//' | sed -e 's/slotDuration: //')
+SLOTS_PER_EPOCH=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'slotsPerEpoch:' | sed -e 's/^[[:space:]]*//' | sed -e 's/slotsPerEpoch: //')
 
 echo "================Send Money================="
 echo "DESTINATION_ADDRESS: ${DESTINATION_ADDRESS}"
@@ -102,7 +102,7 @@ echo "## Sending ${RED}${DESTINATION_AMOUNT}${WHITE} to ${BLUE}${DESTINATION_ADD
 $CLI address info "${DESTINATION_ADDRESS}"
 
 # TODO we should do this in one call to increase the atomicity, but otherwise
-SOURCE_COUNTER=$($CLI rest v0 account get "${SOURCE_ADDR}" -h "${REST_URL}" | grep '^counter:' | sed -e 's/counter: //')
+SOURCE_COUNTER=$($CLI rest v0 account get "${SOURCE_ADDR}" --host "${REST_URL}" | grep '^counter:' | sed -e 's/counter: //')
 
 # the source account is going to pay for the fee ... so calculate how much
 # FEE_COEFFICIENT should be multiplied witht the no of (INPUTS + OUTPUTS) - we use only 1 Source and 1 Destination
@@ -145,7 +145,7 @@ $CLI transaction info --fee-constant ${FEE_CONSTANT} --fee-coefficient ${FEE_COE
 
 echo " ##7. Finalize the transaction and send it"
 $CLI transaction seal --staging "${STAGING_FILE}"
-$CLI transaction to-message --staging "${STAGING_FILE}" | $CLI rest v0 message post -h "${REST_URL}"
+$CLI transaction to-message --staging "${STAGING_FILE}" | $CLI rest v0 message post --host "${REST_URL}"
 
 echo " ##8. Remove the temporary files"
 rm ${STAGING_FILE} ${WITNESS_SECRET_FILE} ${WITNESS_OUTPUT_FILE}
@@ -153,6 +153,6 @@ rm ${STAGING_FILE} ${WITNESS_SECRET_FILE} ${WITNESS_OUTPUT_FILE}
 waitNewBlockCreated
 
 echo " ##9. Check the account's balance"
-$CLI rest v0 account get ${DESTINATION_ADDRESS} -h ${REST_URL}
+$CLI rest v0 account get ${DESTINATION_ADDRESS} --host ${REST_URL}
 
 exit 0

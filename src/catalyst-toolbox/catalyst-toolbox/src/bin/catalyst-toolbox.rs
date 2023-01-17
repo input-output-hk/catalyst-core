@@ -1,10 +1,10 @@
-use structopt::StructOpt;
+use clap::Parser;
 
 pub mod cli;
 
 fn main() -> color_eyre::Result<()> {
     tracing_subscriber::fmt().init();
     color_eyre::install()?;
-    cli::Cli::from_args().exec()?;
+    cli::Cli::parse().exec()?;
     Ok(())
 }

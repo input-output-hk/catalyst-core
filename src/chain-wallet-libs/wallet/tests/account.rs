@@ -4,7 +4,6 @@ use self::utils::State;
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::{
     account::SpendingCounter,
-    accounting::account::SpendingCounterIncreasing,
     certificate::VoteCast,
     fragment::Fragment,
     value::Value,
@@ -30,9 +29,16 @@ fn update_state_overrides_old() {
     account
         .set_state(
             Value(110),
-            (0..SpendingCounterIncreasing::LANES)
-                .map(|lane| SpendingCounter::new(lane, 1).unwrap())
-                .collect(),
+            [
+                SpendingCounter::new(0, 1).unwrap(),
+                SpendingCounter::new(1, 1).unwrap(),
+                SpendingCounter::new(2, 1).unwrap(),
+                SpendingCounter::new(3, 1).unwrap(),
+                SpendingCounter::new(4, 1).unwrap(),
+                SpendingCounter::new(5, 1).unwrap(),
+                SpendingCounter::new(6, 1).unwrap(),
+                SpendingCounter::new(7, 1).unwrap(),
+            ],
         )
         .unwrap();
 

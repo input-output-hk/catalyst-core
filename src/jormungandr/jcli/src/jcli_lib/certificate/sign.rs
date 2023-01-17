@@ -15,23 +15,23 @@ use chain_impl_mockchain::{
         TxBuilderState,
     },
 };
+use clap::Parser;
 use jormungandr_lib::interfaces;
 use std::{convert::TryInto, path::PathBuf};
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Sign {
     /// path to the file with the signing key
-    #[structopt(short = "k", long = "key")]
+    #[clap(short = 'k', long = "key")]
     pub signing_keys: Vec<PathBuf>,
     /// get the certificate to sign from the given file. If no file
     /// provided, it will be read from the standard input
-    #[structopt(short = "c", long = "certificate")]
+    #[clap(short = 'c', long = "certificate")]
     pub input: Option<PathBuf>,
     /// write the signed certificate into the given file. If no file
     /// provided it will be written into the standard output
-    #[structopt(short = "o", long = "output")]
+    #[clap(short = 'o', long = "output")]
     pub output: Option<PathBuf>,
 }
 

@@ -1,12 +1,12 @@
 use crate::jcli_lib::rest::{Error, RestArgs};
-use structopt::StructOpt;
+use clap::Parser;
 
 /// Shutdown node
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Shutdown {
     Post {
-        #[structopt(flatten)]
+        #[clap(flatten)]
         args: RestArgs,
     },
 }

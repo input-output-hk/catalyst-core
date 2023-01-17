@@ -43,6 +43,7 @@ pub struct InMemoryDbSync {
     stakes: HashMap<Address, BigNum>,
     settings: Settings,
 }
+
 impl Debug for InMemoryDbSync {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.settings)
@@ -284,8 +285,10 @@ pub enum Error {
 
 #[cfg(test)]
 mod tests {
+    use crate::network::wallet_state::MainnetWalletStateBuilder;
+    use crate::network::MainnetNetworkBuilder;
     use crate::{Block0, InMemoryNode};
-    use crate::{CardanoWallet, InMemoryDbSync, MainnetNetworkBuilder, MainnetWalletStateBuilder};
+    use crate::{CardanoWallet, InMemoryDbSync};
     use assert_fs::fixture::PathChild;
     use assert_fs::TempDir;
     use cardano_serialization_lib::utils::BigNum;

@@ -1,15 +1,15 @@
 use crate::cli::command::Error;
 use chain_addr::AddressReadable;
-use structopt::StructOpt;
+use clap::Parser;
 use thor::cli::CliController;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct SendCommand {
     // pin
-    #[structopt(long, short)]
+    #[clap(long, short)]
     pub wait: bool,
 
-    #[structopt(subcommand)] // Note that we mark a field as a subcommand
+    #[clap(subcommand)] // Note that we mark a field as a subcommand
     cmd: SendSubCommand,
 }
 
@@ -21,23 +21,23 @@ impl SendCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum SendSubCommand {
     Tx(Tx),
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct Tx {
     /// address in bech32 format
-    #[structopt(long)]
+    #[clap(long)]
     pub address: AddressReadable,
 
     /// ada to send
-    #[structopt(long)]
+    #[clap(long)]
     pub ada: u64,
 
     // pin
-    #[structopt(long, short)]
+    #[clap(long, short)]
     pub pin: String,
 }
 

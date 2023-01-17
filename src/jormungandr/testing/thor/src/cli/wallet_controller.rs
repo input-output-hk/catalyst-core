@@ -135,7 +135,7 @@ impl WalletController {
                 secret_file,
                 pending_tx: Vec::new(),
                 testing,
-                spending_counters: vec![
+                spending_counters: [
                     0, 536870912, 1073741824, 1610612736, 2147483648, 2684354560, 3221225472,
                     3758096384,
                 ],

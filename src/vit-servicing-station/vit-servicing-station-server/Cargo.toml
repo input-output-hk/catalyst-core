@@ -8,16 +8,16 @@ edition = "2018"
 
 [dependencies]
 log = "0.4.11"
-opentelemetry = { version = "0.18", features = ["rt-tokio"] }
-opentelemetry-otlp = "0.11.0"
-opentelemetry-semantic-conventions = "0.10.0"
-structopt = "0.3.14"
+opentelemetry.workspace = true
+opentelemetry-otlp.workspace = true
+opentelemetry-semantic-conventions.workspace = true
+clap = { workspace = true }
 thiserror = "1.0.37"
 tokio = { version = "^1.0", features = ["macros", "rt-multi-thread"] }
-tracing = "0.1.21"
-tracing-futures = "0.2.4"
-tracing-subscriber = { version = "0.3", features=["fmt"] }
-tracing-appender = "0.2"
-tracing-opentelemetry = "0.18.0"
+tracing.workspace = true
+tracing-futures.workspace = true
+tracing-subscriber = { workspace = true, features=["fmt"] }
+tracing-appender.workspace = true
+tracing-opentelemetry.workspace = true
 url = "2"
 vit-servicing-station-lib = { path = "../vit-servicing-station-lib" }

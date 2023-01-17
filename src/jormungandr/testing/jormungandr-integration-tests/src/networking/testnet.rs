@@ -96,44 +96,39 @@ impl TestnetConfig {
     }
 
     pub fn make_leader_config(&self, temp_dir: &TempDir) -> JormungandrParams {
-        JormungandrBootstrapper::default()
-            .with_block0_hash(self.block0_hash())
-            .with_node_config(
-                NodeConfigBuilder::default()
-                    .with_storage(temp_dir.child("storage").to_path_buf())
-                    .with_log(Log(LogEntry {
-                        format: "json".to_string(),
-                        level: "info".to_string(),
-                        output: LogOutput::File(temp_dir.child("leader.log").path().to_path_buf()),
-                    }))
-                    .with_trusted_peers(self.trusted_peers.clone())
-                    .with_public_address(format!(
-                        "/ip4/{}/tcp/{}",
-                        self.public_ip, self.public_port
-                    ))
-                    .build(),
-            )
-            .build(temp_dir)
-            .unwrap()
+        JormungandrBootstrapper::default_with_config(
+            NodeConfigBuilder::default()
+                .with_storage(temp_dir.child("storage").to_path_buf())
+                .with_log(Log(LogEntry {
+                    format: "json".to_string(),
+                    level: "info".to_string(),
+                    output: LogOutput::File(temp_dir.child("leader.log").path().to_path_buf()),
+                }))
+                .with_trusted_peers(self.trusted_peers.clone())
+                .with_public_address(format!("/ip4/{}/tcp/{}", self.public_ip, self.public_port))
+                .build(),
+        )
+        .with_block0_hash(self.block0_hash())
+        .build(temp_dir)
+        .unwrap()
     }
 
     pub fn make_passive_config(&self, temp_dir: &TempDir) -> JormungandrParams {
-        JormungandrBootstrapper::default()
-            .passive()
-            .with_block0_hash(self.block0_hash())
-            .with_node_config(
-                NodeConfigBuilder::default()
-                    .with_storage(temp_dir.child("storage").to_path_buf())
-                    .with_log(Log(LogEntry {
-                        format: "json".to_string(),
-                        level: "info".to_string(),
-                        output: LogOutput::File(temp_dir.child("passive.log").path().to_path_buf()),
-                    }))
-                    .with_trusted_peers(self.trusted_peers.clone())
-                    .build(),
-            )
-            .build(temp_dir)
-            .unwrap()
+        JormungandrBootstrapper::default_with_config(
+            NodeConfigBuilder::default()
+                .with_storage(temp_dir.child("storage").to_path_buf())
+                .with_log(Log(LogEntry {
+                    format: "json".to_string(),
+                    level: "info".to_string(),
+                    output: LogOutput::File(temp_dir.child("passive.log").path().to_path_buf()),
+                }))
+                .with_trusted_peers(self.trusted_peers.clone())
+                .build(),
+        )
+        .passive()
+        .with_block0_hash(self.block0_hash())
+        .build(temp_dir)
+        .unwrap()
     }
 
     pub fn make_passive_legacy_config(
@@ -213,15 +208,14 @@ fn bootstrap_current(testnet_config: TestnetConfig, network_alias: &str) {
     )
     .print();
 
-    let config = JormungandrBootstrapper::default()
-        .with_block0_hash(testnet_config.block0_hash())
-        .with_node_config(
-            NodeConfigBuilder::default()
-                .with_trusted_peers(vec![jormungandr_from_storage.to_trusted_peer()])
-                .build(),
-        )
-        .build(&temp_dir)
-        .unwrap();
+    let config = JormungandrBootstrapper::default_with_config(
+        NodeConfigBuilder::default()
+            .with_trusted_peers(vec![jormungandr_from_storage.to_trusted_peer()])
+            .build(),
+    )
+    .with_block0_hash(testnet_config.block0_hash())
+    .build(&temp_dir)
+    .unwrap();
 
     let _jormungandr_from_local_trusted_peer = Starter::default()
         .config(config)
@@ -250,15 +244,14 @@ fn bootstrap_legacy(testnet_config: TestnetConfig, network_prefix: &str) {
         .start()
         .unwrap();
 
-    let config = JormungandrBootstrapper::default()
-        .with_block0_hash(testnet_config.block0_hash())
-        .with_node_config(
-            NodeConfigBuilder::default()
-                .with_trusted_peers(vec![legacy_jormungandr.to_trusted_peer()])
-                .build(),
-        )
-        .build(&temp_dir)
-        .unwrap();
+    let config = JormungandrBootstrapper::default_with_config(
+        NodeConfigBuilder::default()
+            .with_trusted_peers(vec![legacy_jormungandr.to_trusted_peer()])
+            .build(),
+    )
+    .with_block0_hash(testnet_config.block0_hash())
+    .build(&temp_dir)
+    .unwrap();
 
     // bootstrap latest node from legacy node peer
     let new_jormungandr_from_local_trusted_peer = Starter::default()

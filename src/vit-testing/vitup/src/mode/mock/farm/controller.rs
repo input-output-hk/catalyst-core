@@ -54,7 +54,6 @@ impl MockBootstrap {
             configuration: Configuration {
                 port: get_available_port(),
                 token: None,
-                ideascale: false,
                 working_dir: PathBuf::new(),
                 protocol: valgrind::Protocol::Http,
                 local: false,

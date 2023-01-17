@@ -1,10 +1,10 @@
 use crate::cardano_cli::mock::command::write_to_file_or_println;
 use crate::cardano_cli::mock::fake;
+use clap::Parser;
 use std::io::Error;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Query {
     Utxo(UTxOCommand),
     Tip(TipCommand),
@@ -21,15 +21,15 @@ impl Query {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ProtocolParametersCommand {
-    #[structopt(long = "testnet-magic")]
+    #[clap(long = "testnet-magic")]
     pub testnet_magic: Option<u32>,
 
-    #[structopt(long = "mainnet")]
+    #[clap(long = "mainnet")]
     pub mainnet: bool,
 
-    #[structopt(long = "out-file")]
+    #[clap(long = "out-file")]
     pub out_file: Option<PathBuf>,
 }
 
@@ -48,15 +48,15 @@ impl ProtocolParametersCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct TipCommand {
-    #[structopt(long = "testnet-magic")]
+    #[clap(long = "testnet-magic")]
     pub testnet_magic: Option<u32>,
 
-    #[structopt(long = "mainnet")]
+    #[clap(long = "mainnet")]
     pub mainnet: bool,
 
-    #[structopt(long = "out-file")]
+    #[clap(long = "out-file")]
     pub out_file: Option<PathBuf>,
 }
 
@@ -66,18 +66,18 @@ impl TipCommand {
         write_to_file_or_println(self.out_file, &serde_json::to_string(&tip).unwrap())
     }
 }
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct UTxOCommand {
-    #[structopt(long = "address")]
+    #[clap(long = "address")]
     pub address: String,
 
-    #[structopt(long = "testnet-magic")]
+    #[clap(long = "testnet-magic")]
     pub testnet_magic: Option<u32>,
 
-    #[structopt(long = "mainnet")]
+    #[clap(long = "mainnet")]
     pub mainnet: bool,
 
-    #[structopt(long = "out-file")]
+    #[clap(long = "out-file")]
     pub out_file: Option<PathBuf>,
 }
 

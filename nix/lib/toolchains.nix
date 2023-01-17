@@ -1,9 +1,11 @@
-{
-  inputs,
-  cell,
-}: let
+{ inputs
+, cell
+,
+}:
+let
   inherit (inputs) nixpkgs rust-overlay;
-in rec {
+in
+rec {
   naersk = nixpkgs.callPackage inputs.naersk {
     cargo = rustToolchain;
     rustc = rustToolchain;
@@ -11,7 +13,9 @@ in rec {
   rust-bin =
     (nixpkgs.appendOverlays [
       (import rust-overlay)
-    ])
-    .rust-bin;
+    ]).rust-bin;
   rustToolchain = rust-bin.fromRustupToolchainFile (inputs.self + "/rust-toolchain");
+  rustNightly = rust-bin.selectLatestNightlyWith (toolchain: toolchain.default.override {
+    extensions = [ "rustfmt" "rust-src" "miri" ];
+  });
 }

@@ -1,6 +1,6 @@
 use super::wallet::Wallets;
 use crate::cli::send::SendCommand;
-use structopt::StructOpt;
+use clap::Parser;
 use thiserror::Error;
 use thor::cli::{CliController, Connection};
 
@@ -8,7 +8,7 @@ use thor::cli::{CliController, Connection};
 ///
 /// Command line wallet for testing Jormungandr
 ///
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Command {
     /// Sets node rest API address. Verifies connection on set.
     Connect(Connect),
@@ -31,6 +31,7 @@ pub enum Command {
     /// Prints pending transactions (not confirmed)
     PendingTransactions,
     /// Allows to manage wallets: add/remove/select operations
+    #[clap(subcommand)]
     Wallets(Wallets),
 }
 
@@ -101,17 +102,17 @@ impl Command {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct Connect {
-    #[structopt(name = "ADDRESS")]
+    #[clap(name = "ADDRESS")]
     pub address: String,
 
     /// uses https for sending fragments
-    #[structopt(short = "s", long = "https")]
+    #[clap(short = 's', long = "https")]
     pub use_https: bool,
 
     /// uses https for sending fragments
-    #[structopt(short = "d", long = "enable-debug")]
+    #[clap(short = 'd', long = "enable-debug")]
     pub enable_debug: bool,
 }
 

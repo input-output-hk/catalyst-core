@@ -4,46 +4,46 @@ use catalyst_toolbox::logs::sentry::{
 use color_eyre::Report;
 use jcli_lib::utils::io::open_file_read;
 
+use clap::Parser;
 use regex::Regex;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Debug, Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Scans {
     /// Report total successful scans
-    #[structopt(long)]
+    #[clap(long)]
     scans_ok: bool,
 
     /// Report total malformed QRs
-    #[structopt(long)]
+    #[clap(long)]
     malformed_qr: bool,
 }
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Debug, Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Matches {
-    #[structopt(long, requires("re"))]
+    #[clap(long, requires("re"))]
     key: Option<String>,
-    #[structopt(long)]
+    #[clap(long)]
     re: Option<Regex>,
 }
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Debug, Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Stats {
     /// Path to the input file
-    #[structopt(long)]
+    #[clap(long)]
     file: PathBuf,
 
     /// Report all default stats, overrides single stats options
-    #[structopt(long)]
+    #[clap(long)]
     all: bool,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     scans: Scans,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     matches: Matches,
 }
 

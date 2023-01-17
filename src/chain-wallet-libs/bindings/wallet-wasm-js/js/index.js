@@ -1,14 +1,13 @@
-const wasm = require("wallet-wasm-js");
+import wasm from "wallet-wasm-js";
 
-class BlockDate {
+export class BlockDate {
   constructor(epoch, slot) {
     this.epoch = epoch;
     this.slot = slot;
   }
 }
-module.exports.BlockDate = BlockDate;
 
-class Settings {
+export class Settings {
   constructor(json) {
     this.settings = wasm.Settings.from_json(json);
   }
@@ -17,9 +16,8 @@ class Settings {
     return this.settings.to_json();
   }
 }
-module.exports.Settings = Settings;
 
-class Proposal {
+export class Proposal {
   constructor(votePlan, voteOptions, proposalIndex, voteEncKey) {
     this.votePlan = votePlan;
     this.voteOptions = voteOptions;
@@ -27,9 +25,8 @@ class Proposal {
     this.voteEncKey = voteEncKey;
   }
 }
-module.exports.Proposal = Proposal;
 
-class Vote {
+export class Vote {
   constructor(
     proposal,
     choice,
@@ -39,15 +36,13 @@ class Vote {
   ) {
     this.proposal = proposal;
     this.choice = choice;
-    this.expiration = expiration;
     this.spendingCounter = spendingCounter;
     this.spendingCounterLane = spendingCounterLane;
   }
 }
-module.exports.Vote = Vote;
 
-function signVotes(votes, settings, privateKey) {
-  let fragments = [];
+export function signVotes(votes, settings, accountId, privateKey) {
+  let tx_builders = [];
   for (let i = 0; i < votes.length; i++) {
     let vote = votes[i];
     let voteCast;
@@ -77,15 +72,17 @@ function signVotes(votes, settings, privateKey) {
 
     let builder = wasm.VoteCastTxBuilder.new(
       settings.settings,
-      vote.expiration.epoch,
-      vote.expiration.slot,
       voteCast
     );
-    let fragment = builder
-      .build_tx(privateKey, vote.spendingCounter, vote.spendingCounterLane)
-      .finalize_tx();
-    fragments.push(fragment);
+    let tx_builder = builder.build_tx(
+      accountId,
+      vote.spendingCounter,
+      vote.spendingCounterLane
+    );
+    if (privateKey != undefined) {
+      tx_builder = tx_builder.sign_tx(privateKey);
+    }
+    tx_builders.push(tx_builder);
   }
-  return fragments;
+  return tx_builders;
 }
-module.exports.signVotes = signVotes;

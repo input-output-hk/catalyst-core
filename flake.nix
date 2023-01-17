@@ -75,7 +75,7 @@
   nixConfig = {
     extra-substituters = [
       "https://cache.iog.io"
-      "https://iog-catalyst-cache.s3.eu-central-1.amazonaws.com"
+      "https://iog-catalyst-nix.s3.eu-central-1.amazonaws.com"
     ];
     extra-trusted-public-keys = [
       "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="

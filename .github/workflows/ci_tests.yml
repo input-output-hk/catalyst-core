@@ -59,8 +59,7 @@ jobs:
         id: cache-tests
         uses: actions/cache@v3
         with:
-          path: |
-            nextest-archive.tar.zst
+          path: nextest-archive.tar.zst
           #/home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-cli*
           #/home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-server*
           key: "some-key"
@@ -102,8 +101,7 @@ jobs:
       - name: Cache tests artifacts
         uses: actions/cache@v3
         with:
-          path: |
-            nextest-archive.tar.zst
+          path: nextest-archive.tar.zst
           #/home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-cli*
           #/home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-server*
           key: "some-key"

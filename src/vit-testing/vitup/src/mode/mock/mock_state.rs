@@ -217,7 +217,7 @@ impl MockState {
                 peer_total_cnt: 2,
                 tx_recv_cnt: network_congestion_data.received_fragments_count as u64,
                 mempool_usage_ratio: network_congestion_data.mempool_usage_ratio,
-                mempool_total_size: network_congestion_data.mempool_total_size,
+                mempool_tx_count: network_congestion_data.mempool_tx_count,
                 tx_rejected_cnt: network_congestion_data.rejected_fragments_count as u64,
                 votes_cast: network_congestion_data.received_fragments_count as u64,
                 uptime: Some(uptime),

@@ -44,30 +44,36 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: actions-rs/toolchain@v1
+
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
-      - uses: Swatinem/rust-cache@v2
+
+      - name: Cache rust
+        uses: Swatinem/rust-cache@v2
         with:
           shared-key: "cache1"
-      - uses: actions/cache@v3
+
+      - name: Cache tests artifacts
+        uses: actions/cache@v3
         with:
           path: |
             nextest-archive.tar.zst
-            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-cli*
-            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-server*
+          #/home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-cli*
+          #/home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-server*
           key: "some-key"
+
       - name: Install nextest
         uses: taiki-e/install-action@nextest
+
       - name: Install deps
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-      - run:
-          cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
+
       - name: Build and archive tests
+        if: steps.cache-tests-artifacts.outputs.cache-hit != 'true'
         run: cargo nextest archive --archive-file nextest-archive.tar.zst
-
-
 
   catalyst-core-tests:
     name: Catalyst Core Tests
@@ -81,24 +87,36 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: actions-rs/toolchain@v1
+
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
-      - uses: Swatinem/rust-cache@v2
+
+      - name: Cache rust
+        uses: Swatinem/rust-cache@v2
         with:
           shared-key: "cache1"
-      - uses: actions/cache@v3
+
+      - name: Cache tests artifacts
+        uses: actions/cache@v3
         with:
           path: |
             nextest-archive.tar.zst
-            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-cli*
-            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-server*
-          key: "some-key"
+          #/home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-cli*
+          #/home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-server*
+            key: "some-key"
+
       - name: Install nextest
         uses: taiki-e/install-action@nextest
+
       - name: Install deps
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+
+      - run:
+          cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
+
       - name: Run Catalyst Core tests
         run:
           cargo nextest run -E "not (package(jormungandr-integration-tests) + package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) + test(multi_voteplan_ok_private))" --archive-file nextest-archive.tar.zst --extract-to "/home/runner/work/catalyst-core-fork/catalyst-core-fork" --extract-overwrite --partition count:${{ matrix.partition }}/10 --profile ci

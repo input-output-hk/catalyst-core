@@ -107,6 +107,7 @@ F-4QxU3FrbH7qg
 ```
 
 It can be combined with two (optional) arguments:
+
 - `--n` number of tokens to generate
 - `--size` length (in **bytes**) of the tokens
 

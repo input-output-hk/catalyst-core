@@ -9,7 +9,9 @@ pub struct Configuration {
 pub ideascale: bool,
 
 pub protocol: valgrind::Protocol,
+
 # [serde(default)]
+
 pub local: bool,
 }
 

@@ -114,4 +114,3 @@ or, in case you only have the yaml file
 ```sh
 jcli genesis encode --input genesis.yaml | jcli genesis hash
 ```
-

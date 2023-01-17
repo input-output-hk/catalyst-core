@@ -94,7 +94,7 @@ jobs:
           cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
       - name: Run Catalyst Core tests
         run:
-          cargo nextest run -E "not (package(jormungandr-integration-tests) + package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) + test(multi_voteplan_ok_private))" --archive-file nextest-archive.tar.zst --partition count:${{ matrix.partition }}/10 --profile ci
+          cargo nextest run -E "not (package(jormungandr-integration-tests) + package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) + test(multi_voteplan_ok_private))" --archive-file nextest-archive.tar.zst --extract-to "/home/runner/work/catalyst-core-fork/catalyst-core-fork" --partition count:${{ matrix.partition }}/10 --profile ci
 
   wallet-js-binding:
     name: Wallet JS Binding Tests

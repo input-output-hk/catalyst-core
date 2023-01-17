@@ -55,10 +55,8 @@ jobs:
       - name: Install deps
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-      - run:
-          cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
       - name: Build and archive tests
-        run: cargo nextest run --no-run --locked
+        run: cargo nextest run archive --archive-file nextest-archive.tar.zst
       - uses: actions/cache@v3
         with:
           path: nextest-archive.tar.zst
@@ -92,11 +90,11 @@ jobs:
       - name: Install deps
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-      - name: Build and archive tests
-        run: cargo nextest run --no-run
+      - run:
+          cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
       - name: Run Catalyst Core tests
         run:
-          cargo nextest run -E "not (package(jormungandr-integration-tests) + package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) + test(multi_voteplan_ok_private))" --partition count:${{ matrix.partition }}/10 --profile ci
+          cargo nextest run -E "not (package(jormungandr-integration-tests) + package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) + test(multi_voteplan_ok_private))" --archive-file nextest-archive.tar.zst --partition count:${{ matrix.partition }}/10 --profile ci
 
   wallet-js-binding:
     name: Wallet JS Binding Tests

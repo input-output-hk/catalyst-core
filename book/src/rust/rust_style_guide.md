@@ -1,15 +1,37 @@
-# Rust Style Guide
+# 🦀 Rust Style Guide
 
 This guide is intended to be a set of guidelines, not hard rules.
-These represent the "default" for Rust code.
+These represent the *default* for Rust code.
 Exceptions can (and sometimes should) be made, but they should have a comment explaining what is special about this code that means the rule shouldn't apply here.
+
+- [🦀 Rust Style Guide](#-rust-style-guide)
+  - [Toolchain](#toolchain)
+  - [Basic Rules](#basic-rules)
+    - [Creating a new crate](#creating-a-new-crate)
+    - [Exceptions for clippy](#exceptions-for-clippy)
+  - [Guidelines](#guidelines)
+    - [Prefer references over generics](#prefer-references-over-generics)
+    - [Abbreviations and naming things](#abbreviations-and-naming-things)
+      - [General advice around names](#general-advice-around-names)
+  - [Pay attention to the public API of your crate](#pay-attention-to-the-public-api-of-your-crate)
+  - [Type safety](#type-safety)
+    - [Use newtypes (a.k.a. microtypes)](#use-newtypes-aka-microtypes)
+    - [Don't over-abstract](#dont-over-abstract)
+  - [Unsafe code](#unsafe-code)
+  - [Docs](#docs)
+    - [Doctests](#doctests)
+  - [Write code as if it's going to be in a web server](#write-code-as-if-its-going-to-be-in-a-web-server)
+  - [Error handling](#error-handling)
+    - [Handling expected errors](#handling-expected-errors)
+      - [Use `thiserror` for recoverable errors](#use-thiserror-for-recoverable-errors)
+      - [Use `color_eyre` for unrecoverable errors](#use-color_eyre-for-unrecoverable-errors)
+
 
 ## Toolchain
 
-We use the latest stable version of Rust.
+We use **the latest stable version** of Rust.
 You can get an up-to-date toolchain by running `nix develop`.
 If you're not a Nix user, make sure you have the correct versions.
-
 
 ## Basic Rules
 
@@ -128,7 +150,7 @@ Some guidelines for when to use abbreviations:
 Items (functions, modules, structs, etc) should be private by default.
 This is what Rust does anyways, but make sure you pay attention when marking something `pub`.
 
-Try to keep the public API of your crate as small as possible. 
+Try to keep the public API of your crate as small as possible.
 It should contain *only* the items needed to provide the functionality it's responsible for.
 
 A good "escape hatch" is to mark things as `pub(crate)`.
@@ -147,9 +169,9 @@ Rust's type system is Turing-complete, but we don't want to write our whole prog
 
 ### Use newtypes (a.k.a. microtypes)
 
-If you are handling email addresses, don't use `String`. 
+If you are handling email addresses, don't use `String`.
 Instead, create a newtype wrapper with:
-```
+```rs
 struct Email(String);
 ```
 This prevents you from using a `Password` where you meant to use an `Email`, which catches more bugs at compile time.
@@ -191,6 +213,7 @@ impl GetBar for Foo {
 ```
 write this:
 ```rust
+// GOOD
 impl Foo {
   fn bar(&self) -> &Bar {
     &self.bar
@@ -218,14 +241,14 @@ Some alternative patterns are:
 
 If you need unsafe code, put it in its own crate with a safe API.
 And really think hard about whether you **need** unsafe code.
-There are times when you absolutely do need it, but this project cares more about **correcntess** than performance.
+There are times when you absolutely do need it, but this project cares more about **correctness** than performance.
 
 If you find yourself wanting to use `unsafe`, try the following:
  - if you want to create bindings to a C/C++ library, try first searching on crates.io for a `_sys` crate, or see if there is a pure-Rust implementation
  - if you want to create a cool data structure that requires unsafe:
-   - does it really need unsafe? 
+   - does it really need unsafe?
    - is it a doubly linked list? If so, have you got benchmarks that show that a `VecDeque` is insufficient? Something something cache-friendly...
-   - is there a suitable implementation on crates.io? 
+   - is there a suitable implementation on crates.io?
    - is this data structure really noticeably better than what we have in `std`?
  - if you want to do a performance optimization (e.g. using `unreachable_unchecked()` to remove a bounds check), encode it in the type system, and put it in a separate crate with a safe API. If you can't do that, it's probably an indication that the mental model is also too complicated for a human to keep track of
  - if you want to write a test that makes sure the code does the right thing "even in the presence of UB", just don't
@@ -265,7 +288,7 @@ If you need some inspiration, check out the docstests for `diesel`.
 
 ## Write code as if it's going to be in a web server
 
-Write code as if it's going to end up being run in a web server. 
+Write code as if it's going to end up being run in a web server.
 This means a few things:
  - **all** inputs are potentially malicious
  - code should be usable as a library **without** going through a text interface (i.e. your library should expose a Rust API)

@@ -44,12 +44,19 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: "cache1"
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cache1"
+      - uses: actions/cache@v3
+        with:
+          path: |
+            nextest-archive.tar.zst
+            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-cli.exe
+            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-server.exe
+          key: "some-key"
       - name: Install nextest
         uses: taiki-e/install-action@nextest
       - name: Install deps
@@ -59,13 +66,7 @@ jobs:
           cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
       - name: Build and archive tests
         run: cargo nextest archive --archive-file nextest-archive.tar.zst
-      - uses: actions/cache@v3
-        with:
-          path: |
-            nextest-archive.tar.zst
-            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-cli.exe
-            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-server.exe
-          key: "some-key"
+
 
 
   catalyst-core-tests:
@@ -80,6 +81,9 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "cache1"
@@ -90,9 +94,6 @@ jobs:
             /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-cli.exe
             /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-server.exe
           key: "some-key"
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
       - name: Install nextest
         uses: taiki-e/install-action@nextest
       - name: Install deps

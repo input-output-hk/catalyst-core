@@ -1,6 +1,5 @@
 use crate::{
     blockcfg::ApplyBlockLedger,
-    blockchain::{Ref, Tip},
     fragment::{
         selection::{
             FragmentSelectionAlgorithm, FragmentSelectionAlgorithmParams, FragmentSelectionResult,
@@ -41,7 +40,6 @@ pub struct Pool {
     pool: internal::Pool,
     network_msg_box: MessageBox<NetworkMsg>,
     persistent_log: Option<BufWriter<File>>,
-    tip: Tip,
     metrics: Metrics,
 }
 
@@ -57,7 +55,6 @@ impl Pool {
         logs: Logs,
         network_msg_box: MessageBox<NetworkMsg>,
         persistent_log: Option<File>,
-        tip: Tip,
         metrics: Metrics,
     ) -> Self {
         Pool {
@@ -66,7 +63,6 @@ impl Pool {
             network_msg_box,
             persistent_log: persistent_log
                 .map(|file| BufWriter::with_capacity(DEFAULT_BUF_SIZE, file)),
-            tip,
             metrics,
         }
     }
@@ -269,21 +265,6 @@ impl Pool {
         self.update_metrics();
     }
 
-    pub async fn remove_expired_txs(&mut self) {
-        let tip = self.tip.get_ref().await;
-        let block_date = get_current_block_date(&tip);
-        let fragment_ids = self.pool.remove_expired_txs(block_date);
-        self.metrics.add_tx_rejected_cnt(fragment_ids.len());
-        self.logs.modify_all(
-            fragment_ids,
-            FragmentStatus::Rejected {
-                reason: "fragment expired".to_string(),
-            },
-            block_date.into(),
-        );
-        self.update_metrics();
-    }
-
     fn update_metrics(&self) {
         let mempool_usage_ratio = match self.pool.max_entries() {
             // a little arbitrary, but you could say the mempool is indeed full and it
@@ -294,21 +275,6 @@ impl Pool {
         self.metrics.set_mempool_usage_ratio(mempool_usage_ratio);
         self.metrics
             .set_mempool_total_size(self.pool.total_size_bytes());
-    }
-}
-
-fn get_current_block_date(tip: &Ref) -> BlockDate {
-    let time = std::time::SystemTime::now();
-    let era = tip.epoch_leadership_schedule().era();
-    let epoch_position = tip
-        .time_frame()
-        .slot_at(&time)
-        .and_then(|slot| era.from_slot_to_era(slot))
-        .expect("the current time and blockchain state should produce a valid blockchain date");
-    let block_date: BlockDate = epoch_position.into();
-    BlockDate {
-        slot_id: block_date.slot_id + 1,
-        ..block_date
     }
 }
 
@@ -342,32 +308,11 @@ fn is_transaction_valid<E>(tx: &Transaction<E>) -> bool {
     tx.verify_possibly_balanced().is_ok()
 }
 
-fn get_transaction_expiry_date(fragment: &Fragment) -> Option<BlockDate> {
-    match fragment {
-        Fragment::Initial(_) => None,
-        Fragment::OldUtxoDeclaration(_) => None,
-        Fragment::Evm(_) => None,
-        Fragment::Transaction(tx) => Some(tx.as_slice().valid_until()),
-        Fragment::OwnerStakeDelegation(tx) => Some(tx.as_slice().valid_until()),
-        Fragment::StakeDelegation(tx) => Some(tx.as_slice().valid_until()),
-        Fragment::PoolRegistration(tx) => Some(tx.as_slice().valid_until()),
-        Fragment::PoolRetirement(tx) => Some(tx.as_slice().valid_until()),
-        Fragment::PoolUpdate(tx) => Some(tx.as_slice().valid_until()),
-        Fragment::UpdateProposal(tx) => Some(tx.as_slice().valid_until()),
-        Fragment::UpdateVote(tx) => Some(tx.as_slice().valid_until()),
-        Fragment::VotePlan(tx) => Some(tx.as_slice().valid_until()),
-        Fragment::VoteCast(tx) => Some(tx.as_slice().valid_until()),
-        Fragment::VoteTally(tx) => Some(tx.as_slice().valid_until()),
-        Fragment::MintToken(tx) => Some(tx.as_slice().valid_until()),
-        Fragment::EvmMapping(tx) => Some(tx.as_slice().valid_until()),
-    }
-}
-
 pub(super) mod internal {
     use super::*;
     use std::{
         cmp::Ordering,
-        collections::{BTreeSet, HashMap},
+        collections::HashMap,
         hash::{Hash, Hasher},
         ptr,
     };
@@ -531,7 +476,6 @@ pub(super) mod internal {
 
     pub struct Pool {
         entries: IndexedDeqeue<FragmentId, Fragment>,
-        timeout_queue: BTreeSet<TimeoutQueueItem>,
         max_entries: usize,
         total_size_bytes: usize,
     }
@@ -540,9 +484,6 @@ pub(super) mod internal {
         pub fn new(max_entries: usize) -> Self {
             Pool {
                 entries: IndexedDeqeue::new(),
-                // Using BTreeSet is a nasty hack so that we are able to to efficiently remove items
-                // out of their order in a queue. BinaryHeap does not allow that.
-                timeout_queue: BTreeSet::new(),
                 max_entries,
                 total_size_bytes: 0,
             }
@@ -561,7 +502,6 @@ pub(super) mod internal {
                         false
                     } else {
                         self.total_size_bytes += fragment.serialized_size();
-                        self.timeout_queue_insert(fragment, *id);
                         self.entries.push_front(*id, fragment.clone());
                         true
                     }
@@ -574,7 +514,6 @@ pub(super) mod internal {
             for fragment_id in fragment_ids {
                 let maybe_fragment = self.entries.remove(fragment_id);
                 if let Some(fragment) = maybe_fragment {
-                    self.timeout_queue_remove(&fragment, *fragment_id);
                     self.total_size_bytes -= fragment.serialized_size();
                 }
             }
@@ -582,7 +521,6 @@ pub(super) mod internal {
 
         pub fn remove_oldest(&mut self) -> Option<(Fragment, FragmentId)> {
             let (id, fragment) = self.entries.pop_back().map(|(id, value)| (id, value))?;
-            self.timeout_queue_remove(&fragment, id);
             self.total_size_bytes -= fragment.serialized_size();
             Some((fragment, id))
         }
@@ -592,54 +530,9 @@ pub(super) mod internal {
             fragments: impl IntoIterator<Item = (Fragment, FragmentId)>,
         ) {
             for (fragment, id) in fragments.into_iter() {
-                self.timeout_queue_insert(&fragment, id);
                 self.total_size_bytes += fragment.serialized_size();
                 self.entries.push_back(id, fragment);
             }
-        }
-
-        fn timeout_queue_insert(&mut self, fragment: &Fragment, id: FragmentId) {
-            if let Some(valid_until) = get_transaction_expiry_date(fragment) {
-                let item = TimeoutQueueItem { valid_until, id };
-                self.timeout_queue.insert(item);
-            }
-        }
-
-        fn timeout_queue_remove(&mut self, fragment: &Fragment, id: FragmentId) {
-            if let Some(valid_until) = get_transaction_expiry_date(fragment) {
-                let item = TimeoutQueueItem { valid_until, id };
-                self.timeout_queue.remove(&item);
-            }
-        }
-
-        pub fn remove_expired_txs(&mut self, block_date: BlockDate) -> Vec<FragmentId> {
-            let to_remove: Vec<_> = self
-                .timeout_queue
-                .iter()
-                .take_while(|x| x.valid_until < block_date)
-                .cloned()
-                .collect();
-            for item in &to_remove {
-                self.timeout_queue.remove(item);
-                if let Some(fragment) = self.entries.remove(&item.id) {
-                    self.total_size_bytes -= fragment.serialized_size();
-                }
-            }
-            to_remove.into_iter().map(|x| x.id).collect()
-            // TODO convert to something like this when .first() and .pop_first() are stabilized. This does not have unnecessary clones.
-            // https://github.com/rust-lang/rust/issues/62924
-            // loop {
-            //     if let Some(item) = self.timeout_queue.first() {
-            //         if item.valid_until < block_date {
-            //             break;
-            //         }
-            //     } else {
-            //         break;
-            //     }
-
-            //     let item = self.timeout_queue.pop_first().unwrap();
-            //     self.entries.remove(&item.id);
-            // }
         }
 
         pub fn len(&self) -> usize {
@@ -715,6 +608,7 @@ pub(super) mod internal {
             TestResult::from_bool(pool.remove_oldest().is_none())
         }
 
+        // TODO update
         #[test]
         fn expired_transactions_are_removed() {
             let mut pool = Pool::new(1);
@@ -734,20 +628,6 @@ pub(super) mod internal {
             pool.insert_all([(tx.clone(), tx.id())]);
 
             assert_eq!(pool.entries.len(), 1, "Fragment should be in pool");
-
-            pool.remove_expired_txs(BlockDate {
-                epoch: 0,
-                slot_id: 1,
-            });
-
-            assert_eq!(pool.entries.len(), 1, "Fragment has not expired yet");
-
-            pool.remove_expired_txs(BlockDate {
-                epoch: 0,
-                slot_id: 2,
-            });
-
-            assert_eq!(pool.entries.len(), 0, "Expired fragment should be removed");
         }
     }
 }

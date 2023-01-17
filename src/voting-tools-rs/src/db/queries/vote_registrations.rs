@@ -3,7 +3,7 @@ use crate::{db::inner::DbQuery, Db};
 use crate::data::{Reg, SignedRegistration, SlotNo};
 use crate::db::schema::{block, tx, tx_metadata};
 use bigdecimal::{BigDecimal, FromPrimitive};
-use color_eyre::eyre::Result;
+use color_eyre::eyre::{eyre, Result};
 use diesel::RunQueryDsl;
 use diesel::{
     BoolExpressionMethods, ExpressionMethods, JoinOnDsl, PgAnyJsonExpressionMethods,
@@ -33,8 +33,14 @@ impl Db {
         lower: Option<SlotNo>,
         upper: Option<SlotNo>,
     ) -> Result<Vec<SignedRegistration>> {
-        let lower = lower.unwrap_or(SlotNo(0)).into_i64()?;
-        let upper = upper.unwrap_or(SlotNo(i64::MAX as u64)).into_i64()?;
+        let lower = lower
+            .unwrap_or(SlotNo(0))
+            .into_i64()
+            .ok_or_else(|| eyre!("invalid i64"))?;
+        let upper = upper
+            .unwrap_or(SlotNo(i64::MAX as u64))
+            .into_i64()
+            .ok_or_else(|| eyre!("invalid i64"))?;
         let q = query(lower, upper);
 
         let rows = self.exec(move |conn| q.load(conn))?;

@@ -15,7 +15,8 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 /// Mock db provider based on [`InMemoryDbSync`] struct from [`mainnet_lib`] project.
-/// In essence struct keep data in memory and provides query for voting tools logic
+/// 
+/// This struct simulates a real db-sync instance, but keeps data in memory in a struct
 #[derive(Debug)]
 pub struct MockDbProvider {
     db_sync_instance: InMemoryDbSync,
@@ -106,7 +107,7 @@ impl DataProvider for MockDbProvider {
                             metadata: Registration {
                                 voting_power_source,
                                 stake_key: pub_key,
-                                rewards_addr: RewardsAddr(rewards_address.to_hex()),
+                                rewards_address: RewardsAddr(rewards_address.to_hex()),
                                 slot: SlotNo(
                                     u64::from_str(
                                         &metadata_map
@@ -118,7 +119,7 @@ impl DataProvider for MockDbProvider {
                                     )
                                     .unwrap(),
                                 ),
-                                purpose: VotingPurpose(0),
+                                voting_purpose: VotingPurpose(0),
                             },
                             signature: RegoSignature {
                                 signature: Signature(format!("0x{}", sig.to_hex())),

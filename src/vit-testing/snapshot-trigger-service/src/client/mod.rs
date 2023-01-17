@@ -7,11 +7,11 @@ use crate::config::JobParameters;
 use crate::ContextState;
 use jormungandr_lib::crypto::account::Identifier;
 use jortestkit::prelude::WaitBuilder;
-use num_traits::cast::ToPrimitive;
+use num_traits::ToPrimitive;
 use snapshot_lib::registration::{Delegations as VotingDelegations, VotingRegistration};
 use std::fmt::Debug;
 use tracing::{debug, instrument};
-use voting_tools_rs::{Delegations, Output};
+use voting_tools_rs::{SnapshotEntry, VotingPowerSource};
 
 #[instrument(fields(
     snapshot_token = snapshot_token.clone().into(),
@@ -92,11 +92,11 @@ pub struct SnapshotResult {
 }
 
 impl SnapshotResult {
-    pub fn from_outputs(status: ContextState, snapshot: Vec<Output>) -> Result<Self, Error> {
+    pub fn from_outputs(status: ContextState, snapshot: Vec<SnapshotEntry>) -> Result<Self, Error> {
         let mut voting_registrations = vec![];
         for output in snapshot {
             voting_registrations.push(VotingRegistration {
-                stake_public_key: output.stake_public_key.to_string(),
+                stake_public_key: output.stake_key.to_string(),
                 voting_power: output
                     .voting_power
                     .to_u64()
@@ -105,16 +105,16 @@ impl SnapshotResult {
                     })?
                     .into(),
                 reward_address: output.rewards_address.to_string(),
-                delegations: match output.delegations {
-                    Delegations::Legacy(legacy) => VotingDelegations::Legacy(
-                        Identifier::from_hex(legacy.trim_start_matches("0x"))
+                delegations: match output.voting_power_source {
+                    VotingPowerSource::Legacy(legacy) => VotingDelegations::Legacy(
+                        Identifier::from_hex(&legacy.to_hex())
                             .map_err(|e| CannotConvertFromOutput(e.to_string()))?,
                     ),
-                    Delegations::Delegated(delegated) => {
+                    VotingPowerSource::Delegated(delegated) => {
                         let mut new = vec![];
                         for (key, weight) in delegated {
                             new.push((
-                                Identifier::from_hex(key.trim_start_matches("0x"))
+                                Identifier::from_hex(&key.to_hex())
                                     .map_err(|e| CannotConvertFromOutput(e.to_string()))?,
                                 weight,
                             ));

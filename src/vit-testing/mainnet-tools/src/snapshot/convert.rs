@@ -27,7 +27,7 @@ impl MainnetWalletStateExtension for Vec<MainnetWalletState> {
             )
             .build();
         let db = MockDbProvider::from(db_sync);
-        let outputs = voting_tools_rs::voting_power(&db, None, None, None).unwrap();
+        let outputs = voting_tools_rs::voting_power(&db, None, None).unwrap();
         outputs.try_into_raw_snapshot_request(parameters)
     }
 }

@@ -1,5 +1,4 @@
 use bigdecimal::BigDecimal;
-use cardano_serialization_lib::{address::NetworkInfo, chain_crypto::ed25519::Pub};
 use microtype::microtype;
 use serde::{Deserialize, Serialize};
 
@@ -31,14 +30,14 @@ pub struct Registration {
     #[serde(rename = "2")]
     pub stake_key: StakeKeyHex,
     #[serde(rename = "3")]
-    pub rewards_addr: RewardsKeyHex,
+    pub rewards_address: RewardsKeyHex,
     // note, this must be monotonically increasing. Typically, the current slot
     // number is used
     #[serde(rename = "4")]
     pub nonce: Nonce,
     #[serde(rename = "5")]
     #[serde(default)]
-    pub purpose: VotingPurpose,
+    pub voting_purpose: VotingPurpose,
 }
 
 /// A signature for a registration as defined in CIP-15
@@ -46,6 +45,9 @@ pub struct Registration {
 /// This is compatible with CIP-36 registrations
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Signature {
+    /// The actual signature
+    ///
+    /// CIP-15 specifies this must be a field, so an extra layer of nesting is required
     #[serde(rename = "1")]
     pub inner: SignatureHex,
 }
@@ -78,9 +80,13 @@ pub struct SnapshotEntry {
     pub rewards_address: RewardsKeyHex,
 
     /// Stake public key
-    pub stake_public_key: StakePubKey,
+    pub stake_key: StakeKeyHex,
 
     /// Voting power expressed in ada
+    ///
+    /// This is computed from `voting_power_source`
+    ///
+    /// If
     pub voting_power: BigDecimal,
 
     /// Voting purpose
@@ -102,7 +108,7 @@ pub struct Reg {
 // Create newtype wrappers for better type safety
 microtype! {
 
-    #[derive(Debug, Clone, PartialEq)]
+    #[derive(Debug, Clone, PartialEq, Eq, Hash)]
     pub PublicKeyHex {
         StakeKeyHex,
         RewardsKeyHex,
@@ -140,24 +146,11 @@ microtype! {
         VotingPurpose,
         TxId,
     }
-
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
-    #[int]
-    pub u32 {
-        TestnetMagic
-    }
-}
-
-pub fn network_info(testnet_magic: Option<TestnetMagic>) -> NetworkInfo {
-    match testnet_magic {
-        None => NetworkInfo::mainnet(),
-        Some(TestnetMagic(magic)) => NetworkInfo::new(NetworkInfo::testnet().network_id(), magic),
-    }
 }
 
 impl SlotNo {
-    pub fn into_i64(self) -> color_eyre::eyre::Result<i64> {
-        Ok(self.0.try_into()?)
+    pub fn into_i64(self) -> Option<i64> {
+        self.0.try_into().ok()
     }
 }
 #[cfg(test)]

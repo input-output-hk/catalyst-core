@@ -73,5 +73,15 @@ tracing-subscriber = "0.3.16"
 tracing-opentelemetry = "0.18.0"
 tracing-test = "0.2.3"
 
+# extensions for iterators
+itertools = "0.10"
+
+# platform-independenent directory finding (e.g. home_dir() for `/home/<user>` on linux, `C:\Users\<user>` on windows)
+dirs = "4"
+
+# time-related utilities
+chrono = { version = "0.4", features = ["serde"] }
+
+
 [patch.crates-io]
 cryptoxide = { git = "https://github.com/typed-io/cryptoxide.git" }

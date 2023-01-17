@@ -36,7 +36,6 @@ pub fn voting_power(
     db: &dyn DataProvider,
     min_slot: Option<SlotNo>,
     max_slot: Option<SlotNo>,
-    testnet_magic: Option<TestnetMagic>,
 ) -> Result<Vec<SnapshotEntry>> {
     let network_info = network_info(testnet_magic);
     let regs = db.vote_registrations(min_slot, max_slot)?;
@@ -67,7 +66,7 @@ pub fn voting_power(
                 tx_id: reg.tx_id,
                 voting_power_source: reg.metadata.voting_power_source.clone(),
                 rewards_address: reg.metadata.rewards_addr.clone(),
-                stake_public_key: reg.metadata.stake_key.convert(),
+                stake_key: reg.metadata.stake_key.convert(),
                 voting_purpose: reg.metadata.purpose,
                 voting_power,
             };

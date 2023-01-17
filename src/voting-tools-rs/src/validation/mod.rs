@@ -11,10 +11,10 @@ use serde_json::Value;
 use crate::data::crypto::PublicKeyHex;
 use crate::data::{Registration, SignedRegistration, StakeKeyHex};
 use crate::{Signature, SignatureHex};
-use error::ValidationError;
 use validity::Validate;
 
 mod error;
+pub use error::ValidationError;
 
 impl Validate for SignedRegistration {
     type Error = ValidationError;
@@ -26,7 +26,7 @@ impl Validate for SignedRegistration {
             tx_id: _,
         } = self;
 
-        let StakeKeyHex(PublicKeyHex(key)) = registration.stake_key;
+        let StakeKeyHex(PublicKeyHex(key)) = &registration.stake_key;
         let Signature { inner: SignatureHex(signature) } = signature;
 
         let cbor = registration_as_cbor(registration);
@@ -84,9 +84,9 @@ fn registration_as_cbor(
     Registration {
         voting_power_source,
         stake_key,
-        rewards_addr,
+        rewards_address: rewards_addr,
         nonce,
-        purpose,
+        voting_purpose: purpose,
     }: &Registration,
 ) -> Cbor {
     // we do this manually because it's not really a 1:1 conversion and serde can't handle integer
@@ -118,7 +118,7 @@ mod tests {
             1 => "hello",
             2 => 123,
             3 => [1, 2, 3, 4],
-        });
+        }).unwrap();
         cbor_to_bytes(cbor); // doesn't panic
     }
 }

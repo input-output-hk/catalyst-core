@@ -1,4 +1,4 @@
-use cardano_serialization_lib::chain_crypto::{SignatureError, PublicKeyError};
+use serde::Serialize;
 use thiserror::Error;
 
 #[derive(Debug, Error)]

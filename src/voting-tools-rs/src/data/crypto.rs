@@ -1,6 +1,6 @@
 //! Types for cryptographic information used in the catalyst registration process
 
-use core::fmt::{Debug, Formatter};
+use core::fmt::{Debug, Display, Formatter};
 
 use proptest::{
     arbitrary::StrategyFor,
@@ -14,15 +14,25 @@ use cardano_serialization_lib::chain_crypto::{
     AsymmetricPublicKey, Ed25519, VerificationAlgorithm,
 };
 
+/// Helper macro to write Debug and Display impls
+macro_rules! fmt_impl {
+    ($trait:ident, $t:ty) => {
+        impl $trait for $t {
+            fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+                f.write_str(&hex::encode(self.0.as_ref()))
+            }
+        }
+    };
+}
+
+// we don't use `microtype` here because basically all the impls are custom
+
 /// An ED25519 public key, which serializes and deserializes to/from a hex string
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct PublicKeyHex(pub Pub);
 
-impl Debug for PublicKeyHex {
-    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
-        f.write_str(&hex::encode(self.0.as_ref()))
-    }
-}
+fmt_impl!(Debug, PublicKeyHex);
+fmt_impl!(Display, PublicKeyHex);
 
 impl Serialize for PublicKeyHex {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -73,6 +83,15 @@ impl Arbitrary for PublicKeyHex {
     }
 }
 
+impl PublicKeyHex {
+    pub fn to_hex(&self) -> String {
+        hex::encode(self.0.as_ref())
+    }
+}
+
+fmt_impl!(Debug, SignatureHex);
+fmt_impl!(Display, SignatureHex);
+
 /// An ED25519 signature that serializes and deserializes to/from a hex string
 #[derive(Clone)]
 pub struct SignatureHex(pub Sig);
@@ -80,12 +99,6 @@ pub struct SignatureHex(pub Sig);
 impl PartialEq for SignatureHex {
     fn eq(&self, other: &Self) -> bool {
         self.0.as_ref() == other.0.as_ref()
-    }
-}
-
-impl Debug for SignatureHex {
-    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
-        f.write_str(&hex::encode(self.0.as_ref()))
     }
 }
 
@@ -135,6 +148,27 @@ impl Arbitrary for SignatureHex {
 
     fn arbitrary_with((): Self::Parameters) -> Self::Strategy {
         any::<[u8; 64]>().prop_map(|bytes| Self(Ed25519::signature_from_bytes(&bytes).unwrap()))
+    }
+}
+
+impl SignatureHex {
+    /// Convert this to the hex representation (without leading "0x")
+    ///
+    /// ```
+    /// # use voting_tools_rs::SignatureHex;
+    /// let bytes = [0; 64];
+    /// let sig = SignatureHex::from_bytes([0; 64]);
+    ///
+    /// assert_eq!(sig.to_string, "0".repeat(128));
+    /// ```
+    pub fn to_hex(&self) -> String {
+        hex::encode(self.0.as_ref())
+    }
+
+    /// Create a signature from a byte array
+    pub fn from_bytes(bytes: [u8; 64]) -> Self {
+        // .unwrap() here is fine because it only panics if bytes.len() != 64
+        Self(Ed25519::signature_from_bytes(&bytes).unwrap())  
     }
 }
 #[cfg(test)]

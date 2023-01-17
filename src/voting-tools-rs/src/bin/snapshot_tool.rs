@@ -33,8 +33,7 @@ fn main() -> Result<()> {
     };
 
     let db = get_data_provider(db_config, dry_run)?;
-
-    let outputs = voting_power(Box::leak(db), min_slot_no, max_slot_no, testnet_magic)?;
+    let outputs = voting_power(&db, min_slot_no, max_slot_no)?;
 
     info!("calculated {} outputs", outputs.len());
 

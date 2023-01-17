@@ -1,4 +1,4 @@
-use crate::data::{DbHost, DbName, DbPass, DbUser, SlotNo, TestnetMagic};
+use crate::data::{DbHost, DbName, DbPass, DbUser, SlotNo};
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
@@ -8,10 +8,6 @@ use std::path::PathBuf;
 #[clap(about = "Create a voting power snapshot")]
 /// CLI arguments for snapshot tool
 pub struct Args {
-    /// Optional testnet magic. If not provided, mainnet is used
-    #[clap(long)]
-    pub testnet_magic: Option<TestnetMagic>,
-
     /// Name of the cardano-db-sync database
     #[clap(long, default_value = "cexplorer")]
     pub db: DbName,
@@ -91,7 +87,6 @@ mod tests {
         assert_eq!(
             args,
             Args {
-                testnet_magic: None,
                 db: "db_name".into(),
                 db_user: "db_user".into(),
                 db_host: "localhost".into(),
@@ -110,7 +105,6 @@ mod tests {
         let args = Args::parse_from(["binary_name", "-o", "some/path"]);
 
         assert_eq!(args.out_file, PathBuf::from("some/path"));
-        assert_eq!(args.testnet_magic, None);
         assert_eq!(args.pretty, false);
     }
 }

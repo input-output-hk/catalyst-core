@@ -17,9 +17,28 @@ pub trait DataProvider: Debug {
     ) -> Result<Vec<SignedRegistration>>;
 
     /// Retrieves stakes values for given array of addresses
-    ///
-    /// # Errors
-    ///
-    /// Returns error on reading data issue
-    fn stake_values(&self, stake_addrs: &[StakeKeyHex]) -> Result<HashMap<StakeKeyHex, BigDecimal>>;
+    fn stake_values(&self, stake_addrs: &[StakeKeyHex])
+        -> Result<HashMap<StakeKeyHex, BigDecimal>>;
+}
+
+// Since we only need &self for all methods, we can implement DataProvider for any shared reference
+// to a data provider
+impl<T> DataProvider for &T
+where
+    T: DataProvider,
+{
+    fn vote_registrations(
+        &self,
+        lower: Option<SlotNo>,
+        upper: Option<SlotNo>,
+    ) -> Result<Vec<SignedRegistration>> {
+        T::vote_registrations(self, lower, upper)
+    }
+
+    fn stake_values(
+        &self,
+        stake_addrs: &[StakeKeyHex],
+    ) -> Result<HashMap<StakeKeyHex, BigDecimal>> {
+        T::stake_values(self, stake_addrs)
+    }
 }

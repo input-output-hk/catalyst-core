@@ -56,6 +56,7 @@ jobs:
           shared-key: "cache1"
 
       - name: Cache tests artifacts
+        id: cache-tests
         uses: actions/cache@v3
         with:
           path: |
@@ -72,7 +73,7 @@ jobs:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
       - name: Build and archive tests
-        if: steps.cache-tests-artifacts.outputs.cache-hit != 'true'
+        if: steps.cache-tests.outputs.cache-hit != 'true'
         run: cargo nextest archive --archive-file nextest-archive.tar.zst
 
   catalyst-core-tests:

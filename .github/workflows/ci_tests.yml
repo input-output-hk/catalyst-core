@@ -105,7 +105,7 @@ jobs:
             nextest-archive.tar.zst
           #/home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-cli*
           #/home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-server*
-            key: "some-key"
+          key: "some-key"
 
       - name: Install nextest
         uses: taiki-e/install-action@nextest

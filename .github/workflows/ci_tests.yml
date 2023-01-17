@@ -58,7 +58,7 @@ jobs:
       - run:
           cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
       - name: Build and archive tests
-        run: cargo nextest archive --archive-file nextest-archive.tar.zst
+        run: cargo nextest run --no-run --locked
       - uses: actions/cache@v3
         with:
           path: nextest-archive.tar.zst
@@ -71,7 +71,7 @@ jobs:
     needs: build-tests-artifacts
     strategy:
       matrix:
-        partition: [1, 2, 3, 4]
+        partition: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -94,7 +94,7 @@ jobs:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
       - name: Run Catalyst Core tests
         run:
-          cargo nextest run -E "not (package(jormungandr-integration-tests) + package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) + test(multi_voteplan_ok_private))" --partition count:${{ matrix.partition }}/4 --profile ci
+          cargo nextest run -E "not (package(jormungandr-integration-tests) + package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) + test(multi_voteplan_ok_private))" --partition count:${{ matrix.partition }}/10 --profile ci
 
   wallet-js-binding:
     name: Wallet JS Binding Tests

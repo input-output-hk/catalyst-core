@@ -12,7 +12,7 @@ pub struct MockStartCommandArgs {
     #[clap(long = "token")]
     pub token: Option<String>,
 
-    #[clap(long = "config")]
+    #[clap(long = "config", env = "VITUP_CONF_PATH")]
     pub config: PathBuf,
 
     #[clap(long = "params")]

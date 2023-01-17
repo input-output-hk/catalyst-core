@@ -1,0 +1,27 @@
+services:
+  snapshot-service:
+    image: dkijania/snapshot-service:latest
+    ports:
+      - 8090:8080
+    environment:
+      - TESTNET_MAGIC=1
+      - DB_NAME=preprod
+      - DB_USER=admin
+      - DB_PASS=pass
+      - DB_HOST=dbsync
+  backend-mock:
+    image: dkijania/catalyst-backend-mock:latest
+    ports:
+      - 8080:8080
+  snapshot-service-wormhole:
+    image: dkijania/snapshot-service-wormhole:latest
+    environment:
+      - SNAPSHOT_ADDRESS=http://snapshot-service:8080
+      - SERVICING_STATION_ADDRESS=http://backend-mock:8080
+      - MIN_STAKE_THRESHOLD=500
+      - VOTING_POWER_CAP=1,2
+      - DIRECT_GROUP=direct
+      - REP_GROUP=rep
+    depends_on:
+      - snapshot-service
+      - backend-mock

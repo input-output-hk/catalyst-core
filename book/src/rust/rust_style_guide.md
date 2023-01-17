@@ -1,15 +1,37 @@
-# Rust Style Guide
+# 🦀 Rust Style Guide
 
 This guide is intended to be a set of guidelines, not hard rules.
-These represent the "default" for Rust code.
+These represent the *default* for Rust code.
 Exceptions can (and sometimes should) be made, however:
 
 * They should have a comment explaining what is special about this code which means the rule shouldn't apply here.
 * Exceptions should be highlighted in the PR and discussed with the team.
 
+* [🦀 Rust Style Guide](#-rust-style-guide)
+  * [Toolchain](#toolchain)
+  * [Basic Rules](#basic-rules)
+    * [Creating a new crate](#creating-a-new-crate)
+    * [Exceptions for clippy](#exceptions-for-clippy)
+  * [Guidelines](#guidelines)
+    * [Prefer references over generics](#prefer-references-over-generics)
+    * [Abbreviations and naming things](#abbreviations-and-naming-things)
+      * [General advice around names](#general-advice-around-names)
+  * [Pay attention to the public API of your crate](#pay-attention-to-the-public-api-of-your-crate)
+  * [Type safety](#type-safety)
+    * [Use newtypes (a.k.a. microtypes)](#use-newtypes-aka-microtypes)
+    * [Don't over-abstract](#dont-over-abstract)
+  * [Unsafe code](#unsafe-code)
+  * [Docs](#docs)
+    * [Doctests](#doctests)
+  * [Write code as if it's going to be in a web server](#write-code-as-if-its-going-to-be-in-a-web-server)
+  * [Error handling](#error-handling)
+    * [Handling expected errors](#handling-expected-errors)
+      * [Use `thiserror` for recoverable errors](#use-thiserror-for-recoverable-errors)
+      * [Use `color_eyre` for unrecoverable errors](#use-color_eyre-for-unrecoverable-errors)
+
 ## Toolchain
 
-We use the latest stable version of Rust.
+We use **the latest stable version** of Rust.
 You can get an up-to-date toolchain by running `nix develop`.
 If you're not a Nix user, make sure you have the correct versions.
 
@@ -178,7 +200,7 @@ Rust's type system is Turing-complete, but we don't want to write our whole prog
 If you are handling email addresses, don't use `String`.
 Instead, create a newtype wrapper with:
 
-```
+```rs
 struct Email(String);
 ```
 
@@ -227,6 +249,7 @@ impl GetBar for Foo {
 write this:
 
 ```rust
+// GOOD
 impl Foo {
   fn bar(&self) -> &Bar {
     &self.bar
@@ -256,7 +279,7 @@ Some alternative patterns are:
 
 If you need unsafe code, put it in its own crate with a safe API.
 And really think hard about whether you **need** unsafe code.
-There are times when you absolutely do need it, but this project cares more about **correcntess** than performance.
+There are times when you absolutely do need it, but this project cares more about **correctness** than performance.
 
 If you find yourself wanting to use `unsafe`, try the following:
 

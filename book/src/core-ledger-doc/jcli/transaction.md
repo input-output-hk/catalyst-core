@@ -59,7 +59,7 @@ The options are:
 
 - `--output-format <format>`        - Format of output data. Possible values: json, yaml.
                                       Any other value is treated as a custom format using values from output data structure.
-                                      Syntax is Go text template: https://golang.org/pkg/text/template/. (default: yaml)
+                                      Syntax is Go text template: <https://golang.org/pkg/text/template/>. (default: yaml)
 
 - `--output <output>`               - write the info in the given file or print it to the standard output
 

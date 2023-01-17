@@ -115,4 +115,3 @@ or, in case you only have the yaml file
 jcli genesis encode --input genesis.yaml | jcli genesis hash
 ```
 
-[`Ed25519`]: ../jcli/key.md

@@ -9,12 +9,9 @@ Mock is also capable of controlling more backend aspect than normal deployment (
 Note: it is recommended to run command from `vit-testing/vitup` folder (then no explicit paths are required to be provided).
 Configuration file example is available under `vit-testing/vitup/example/mock/config.yaml`
 
-
-
 ### Start
 
 `vitup start mock --config example\mock\config.yaml`
-
 
 #### Admin rest commands
 
@@ -112,7 +109,6 @@ curl --location --request POST 'http://{mock_address}/api/control/command/fragme
 
 ##### Hold all Fragments
 
-
 Makes mock to hold  all further fragments sent to environment
 
 ```
@@ -121,12 +117,12 @@ curl --location --request POST 'http://{mock_address}/api/control/command/fragme
 
 ##### Reset Fragment strategy
 
-
 Makes mock to validate all further fragments sent to environment
 
 ```
 curl --location --request POST 'http://{mock_address}/api/control/command/fragments/reset'
 ```
+
 ##### Make backend unavailable
 
 Mock will reject all connections (returns 500)
@@ -136,7 +132,6 @@ curl --location --request POST 'http://{mock_address}/api/control/command/availa
 ```
 
 ##### Make backend available
-
 
 Mock will accept all connections
 
@@ -156,7 +151,7 @@ curl --location --request POST 'http://{mock_address}/api/control/command/block-
 
 ##### Make account endpoint available
 
-Mock will reset account endpoint unavailability 
+Mock will reset account endpoint unavailability
 
 ```
 curl --location --request POST 'http://{mock_address}/api/control/command/block-account/reset'
@@ -269,14 +264,11 @@ curl --location --request POST 'http://{mock_address}/api/control/health'
 
 Mock stores record of each request send to it. This endpoint gets all logs from mock
 
-
 ```
 curl --location --request POST 'http://{mock_address}/api/control/logs/get'
 ```
 
-
 #### Admin cli
-
 
 Admin CLI is an alternative for all above calls, available under vitup project.
 

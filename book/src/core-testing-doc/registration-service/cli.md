@@ -2,10 +2,10 @@
 
 Registration CLI is cli utility tool which help to interact with registration service.
 
-
 ## Build & Install
 
 In order to build iapyx in main project folder run:
+
 ```
 cd registration-service
 cargo build
@@ -19,7 +19,7 @@ The simplest usage example is available by using commands:
 * register new job:
 `registration-cli job new   --payment-skey payment.skey --payment-vkey payment.vkey  --stake-skey stake.skey --stake-vkey stake.vkey --endpoint https://{ADDRESS}`
 
-NOTE: response of the above call should return `job-id` which should be used in next call 
+NOTE: response of the above call should return `job-id` which should be used in next call
 
 NOTE: see [cardano cli guide](https://developers.cardano.org/docs/stake-pool-course/handbook/keys-addresses/) for information how to create payment and stake files.
 

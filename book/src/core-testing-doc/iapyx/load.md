@@ -5,6 +5,7 @@ Iapyx-load is a load cli & api project which operates on catalyst backend.
 ## Build & Install
 
 In order to build iapyx-load in main project folder run:
+
 ```
 cd testing/iapyx
 cargo build
@@ -23,10 +24,12 @@ Available load types:
 * simulation    - Load with simulate real user case (both blockchain and static data in some relation)
 
 Also `node-only` load provides two load characteristic:
-* bursts        - Bursts mode. Sends votes in batches and then wait x seconds 
+
+* bursts        - Bursts mode. Sends votes in batches and then wait x seconds
 * const        - Constant load. Sends votes with x votes per second speed
- 
+
 And two scenario types:
+
 * duration      - Duration based load. Defines how much time load should run
 * count         - Requests count based load. Defines how many requests load should sent in total
 

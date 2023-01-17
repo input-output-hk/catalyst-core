@@ -11,6 +11,7 @@ In order to run test vit-servicing-station-server need to be installed or prebui
 ### Start tests
 
 In order to build vit-servicing-station in main project folder run:
+
 ```
 cd vit-servicing-station-tests
 cargo test
@@ -28,16 +29,19 @@ cargo test
 ```
 
 ### How to run performance tests
+
 ```
 cd vit-servicing-station-tests
 cargo test --features non-functional
 ```
 
 ### How to run endurance tests
+
 ```
 cd vit-servicing-station-tests
 cargo test --features soak,non-functional
 ```
 
 ### Frequency
+
 Functional tests are run on each PR. Performance and testnet integration tests are run nightly

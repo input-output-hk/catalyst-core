@@ -30,9 +30,9 @@ jcli certificate new stake-pool-retirement \
 
 where:
 
-- `retirement.cert`                                                             - write the output of to the `retirement.cert`
-- `--retirement-time 0 `                                                        - `0` means as soon as possible. Which is until the next following epoch.
-- `--pool-id ea830e5d9647af89a5e9a4d4089e6e855891a533316adf4a42b7bf1372389b74`  - hex-encoded stake pool ID.
+* `retirement.cert`                                                             - write the output of to the `retirement.cert`
+* `--retirement-time 0`                                                        - `0` means as soon as possible. Which is until the next following epoch.
+* `--pool-id ea830e5d9647af89a5e9a4d4089e6e855891a533316adf4a42b7bf1372389b74`  - hex-encoded stake pool ID.
 
 ### submitting to a node
 

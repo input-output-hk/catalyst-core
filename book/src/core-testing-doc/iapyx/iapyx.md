@@ -7,6 +7,7 @@ WARNING: main purpose of the wallet is testing. Do NOT use it on production.
 ## Build & Install
 
 In order to build iapyx in main project folder run:
+
 ```
 cd iapyx
 cargo build
@@ -18,7 +19,6 @@ cargo install --path . --force
 ### CLI
 
 Iapyx can be used as a wallet cli. It is capable of sending votes or pull data from node. The simplest usage example is available by using commands:
-
 
 * register new wallet based on qr code:
 `iapyx wallets import qr qr_file.png --pin 1234`

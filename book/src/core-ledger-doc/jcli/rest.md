@@ -12,7 +12,7 @@ Many CLI commands have common arguments:
 The output format is intentionally undocumented and unstable
 - `--output-format <format>` - Format of output data. Possible values: json, yaml, default yaml.
 Any other value is treated as a custom format using values from output data structure.
-Syntax is Go text template: https://golang.org/pkg/text/template/.
+Syntax is Go text template: <https://golang.org/pkg/text/template/>.
 
 ## Node stats
 

@@ -1,10 +1,11 @@
-# Snapshot trigger service 
+# Snapshot trigger service
 
 Service which operates on top of [voting tools](https://github.com/input-output-hk/voting-tools) and is a interface improvement which expose voting tools as a REST service.
 
 ## build
 
 In order to build snapshot-trigger-service in main project folder run:
+
 ```
 cd snapshot-trigger-service
 cargo build
@@ -19,9 +20,10 @@ The simplest configuration is available by using command:
 
 See [config](./configuration.md) for more details.
 
-### Usage 
+### Usage
 
 In order to start new job one need to send POST request like below:
+
 ```
 curl --location --request POST 'https://snapshot.io/api/job/new' \
 --header 'API-Token: ...' \
@@ -35,8 +37,8 @@ curl --location --request POST 'https://snapshot.io/api/job/new' \
 Response will contains job status:
 `b0b7b774-7263-4dce-a97d-c167169c8f27`
 
-
 Then query for job status:
+
 ```
 curl --location --request GET 'https://snapshot.io/api/job/status/b0b7b774-7263-4dce-a97d-c167169c8f27' \
 --header 'API-Token: ...'
@@ -50,6 +52,7 @@ curl --location --request GET 'https://snapshot.io/api/job/files/get/b0b7b774-72
 ```
 
 which has form:
+
 ```
 {
     "initial": [

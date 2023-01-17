@@ -5,6 +5,7 @@ Loki is an adversary node implementation and api which operates on jormungandr n
 ## Build & Install
 
 In order to build hersir in main project folder run:
+
 ```
 cd testing/loki
 cargo build
@@ -15,7 +16,6 @@ cargo install --path . --force
 
 Loki can be used bootstrap using cli:
 
-
 ```
 loki --genesis-block block0.bin --listen-address 127.0.0.1:8080 -s secret.yaml
 ```
@@ -25,6 +25,7 @@ where:
 `genesis-block` - Path to the genesis block (the block0) of the blockchain
 `listen-address` - Specifies the address the node will listen
 `secret` - Set the secret node config (in YAML format). Example:
+
 ```
 ---
 bft:
@@ -46,11 +47,12 @@ where:
 
 `address` - address of "victim" node,
 `parent` - Parent block. Possible values:
+
 * `tip` - current tip of "victim" node,
 * `block0` - block0,
 * `{Hash}` - arbitrary parent block which hash is provided in request
 
-#### Other possible operations:
+#### Other possible operations
 
 * `/invalid_hash` - Sends block with invalid hash,
 * `/invalid_signature` - Sends block with invalid by wrong leader signature,

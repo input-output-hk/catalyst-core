@@ -5,10 +5,12 @@ Valgrind is a Rest API project which is simplified proxy solution for catalyst b
 ## build
 
 In main project folder run:
+
 ```
 cd valgrind
 cargo build
 ```
+
 and install:
 
 `cargo install --path .`

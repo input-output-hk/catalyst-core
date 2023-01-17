@@ -7,6 +7,7 @@ WARNING: main purpose of the wallet is testing. Do NOT use it on production.
 ## Build & Install
 
 In order to build hersir in main project folder run:
+
 ```
 cd testing/hersir
 cargo build
@@ -18,7 +19,6 @@ cargo install --path . --force
 ### CLI
 
 Thor can be used as a wallet cli. It is capable of sending transactions or pull data from node. The simplest usage example is available by using commands:
-
 
 * register new wallet based on secret key:
 `thor wallets import --alias darek --password 1234 secret.file`

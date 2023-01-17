@@ -9,16 +9,14 @@ This section describe configuration file which can be passed as argument when st
 - `cert`: path to certificate (for enabling https). Optional,
 - `key`: path certificate key (for enabling https). Optional,
 
-
 Example:
 
 ```yaml
    "address": "127.0.0.1:8000",
-	"vit-address": "127.0.0.1:3030",
-	"node-address": "127.0.0.1:8080",
-	"block0-path": "./block0.bin",
-	"cert": "certificate.cert",
-	"key": "certificate.key",
+ "vit-address": "127.0.0.1:3030",
+ "node-address": "127.0.0.1:8080",
+ "block0-path": "./block0.bin",
+ "cert": "certificate.cert",
+ "key": "certificate.key",
 "
 ```
-

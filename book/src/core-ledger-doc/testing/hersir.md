@@ -6,6 +6,7 @@ Hersir is a cli & api project capable of bootstrapping local jormungandr network
 ## build & install
 
 In order to build hersir in main project folder run:
+
 ```
 cd testing/hersir
 cargo build
@@ -51,9 +52,10 @@ blockchain:
 #### nodes
 
 * spawn_params
-  *  `alias:` string (mandatory) - reference name of the node. Example: "alias",
-  *  `bootstrap_from_peers:` bool (optional) - should node bootstrap from trusted peers. By default it is auto-evaluated: If node doesn't have any trusted peers it won't bootstrap from peers,
-  *  `faketime:` custom (optional) - inject fake time settings. For example:
+  * `alias:` string (mandatory) - reference name of the node. Example: "alias",
+  * `bootstrap_from_peers:` bool (optional) - should node bootstrap from trusted peers. By default it is auto-evaluated: If node doesn't have any trusted peers it won't bootstrap from peers,
+  * `faketime:` custom (optional) - inject fake time settings. For example:
+
       ```
         faketime:  {
             /// Clock drift (1 = no drift, 2 = double speed)
@@ -62,29 +64,33 @@ blockchain:
             offset: 2,
         }
       ```
-  *  `gossip_interval:` time (optional) - node gossip interval with the rest of the network. Format: `number unit`. For example: `10 s`,
-  *  `jormungandr:` path (optional) - path to jormungandr node executable,
-  *  `leadership_mode:` enum (optional) - node leadership mode. Possible values:
-     * `passive` - node won't be able to produce blocks,
-     * `leader` - node will be able to mint blocks,
-  *  `listen_address:` string (optional) - override listen address for node. Example: `/ip4/127.0.0.1/tcp/10005`,
-  *  `log_level:` enum (optional) - log level, Possible values: (info/warn/error/debug/trace)
-  *  `max_bootstrap_attempts:` number (optional) - maximum number of bootstrap attempt before abandon,
-  *  `max_connections:` number (optional) - max connection node will create with other nodes,
-  *  `max_inbound_connections:` number (optional) - max inbound connection that node will accept,
-  *  `mempool:` custom (optional) - mempool configuration. Example:
+
+  * `gossip_interval:` time (optional) - node gossip interval with the rest of the network. Format: `number unit`. For example: `10 s`,
+  * `jormungandr:` path (optional) - path to jormungandr node executable,
+  * `leadership_mode:` enum (optional) - node leadership mode. Possible values:
+    * `passive` - node won't be able to produce blocks,
+    * `leader` - node will be able to mint blocks,
+  * `listen_address:` string (optional) - override listen address for node. Example: `/ip4/127.0.0.1/tcp/10005`,
+  * `log_level:` enum (optional) - log level, Possible values: (info/warn/error/debug/trace)
+  * `max_bootstrap_attempts:` number (optional) - maximum number of bootstrap attempt before abandon,
+  * `max_connections:` number (optional) - max connection node will create with other nodes,
+  * `max_inbound_connections:` number (optional) - max inbound connection that node will accept,
+  * `mempool:` custom (optional) - mempool configuration. Example:
+
         ```
         mempool:
             pool_max_entries: 100000
             log_max_entries: 100000
         ```
-  *  `network_stuck_check:` time (optional) - check interval which node use to verify blockchain advanced. Format: `number unit`. For example: `10 s`,
-  *  `node_key_file:` path (optional) - path to node network key,
-  *  `persistence_mode:` enum (optional) - set persistence mode. Possible values:
-     * `inmemory` - everything is kept in node memory. If node restarts, all history is gone,
-     * `persistence` - node uses local storage to preserve current state,
-  *  `persistent_fragment_log:` path (optional) - persistent fragment log serializes every fragment node receives via REST api,
-  *  `policy:` custom (optional) - defines nodes quarantine configuration. Example:
+
+  * `network_stuck_check:` time (optional) - check interval which node use to verify blockchain advanced. Format: `number unit`. For example: `10 s`,
+  * `node_key_file:` path (optional) - path to node network key,
+  * `persistence_mode:` enum (optional) - set persistence mode. Possible values:
+    * `inmemory` - everything is kept in node memory. If node restarts, all history is gone,
+    * `persistence` - node uses local storage to preserve current state,
+  * `persistent_fragment_log:` path (optional) - persistent fragment log serializes every fragment node receives via REST api,
+  * `policy:` custom (optional) - defines nodes quarantine configuration. Example:
+
         ```
          policy:
             quarantine_duration: 30m
@@ -93,7 +99,9 @@ blockchain:
               - "/ip4/13.230.48.191/tcp/3000"
               - "/ip4/18.196.168.220/tcp/3000"
         ```
-  *  `preferred_layer:` custom (optional) - defines preferences in gossiping. Example:
+
+  * `preferred_layer:` custom (optional) - defines preferences in gossiping. Example:
+
         ```
           layers:
             preferred_list:
@@ -106,17 +114,21 @@ blockchain:
                 - address: "/ip4/18.196.168.220/tcp/3000"
                   id: 74a9949645cdb06d0358da127e897cbb0a7b92a1d9db8e70
         ```
-  *  `public_address:` String (optional)- override public address for node. Example: `/ip4/127.0.0.1/tcp/10005`,
-  *  `skip_bootstrap:` bool (optional) - skips node bootstrap step,
-  *  `topics_of_interest:` custom (optional) - topics of interests describe how eager node will fetch blocks or transactions:
+
+  * `public_address:` String (optional)- override public address for node. Example: `/ip4/127.0.0.1/tcp/10005`,
+  * `skip_bootstrap:` bool (optional) - skips node bootstrap step,
+  * `topics_of_interest:` custom (optional) - topics of interests describe how eager node will fetch blocks or transactions:
+
       ```
       topics_of_interest:
         blocks: normal # Default is normal - set to high for stakepool
         messages: low  # Default is low    - set to high for stakepool
       ```
-  *  `verbose:` bool (optional) - enable verbose mode, which prints additional information,
 
-*  `trusted_peers:` List (optional) - list of trusted peers. Example:
+  * `verbose:` bool (optional) - enable verbose mode, which prints additional information,
+
+* `trusted_peers:` List (optional) - list of trusted peers. Example:
+
     ```
         trusted_peers:
           - leader
@@ -134,6 +146,7 @@ blockchain:
 * `external_committees:` list (optional) - list of committees to be included in block0,
 * `external_consensus_leader_ids:` list (optional) - list of external leaders id (apart from already defined nodes),
 * `external_wallets:` list (optional) - list of external wallets. Example:
+
 ```
   external_wallets:
       - alias: Alice
@@ -141,6 +154,7 @@ blockchain:
         value: 1000000000
         tokens: {}
 ```
+
 * `kes_update_speed:` number (optional) - the speed to update the KES Key in seconds,
 * `linear_fee:` custom (optional) - fee calculations settings,
 * `slot_duration:` number (optional) - The slot duration, in seconds, is the time between the creation of 2 blocks,

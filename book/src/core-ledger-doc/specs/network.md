@@ -1,6 +1,6 @@
 # Network
 
-> Bringing Ouroboros to the people
+> Bringing Ouroboros to the people
 
 ---
 
@@ -10,7 +10,7 @@ This document highlights the requirements we wish to apply to a decentralised
 network applied to cardano blockchain. Then we will discuss the possible
 solutions we can provide in a timely manner and the tradeoff we will need to
 make.
-
+
 # Design decisions guidelines
 
 This is a main of general guidelines for the design decision in this document,
@@ -24,7 +24,7 @@ and to judge the merit of solutions:
   prevent a peer from working (e.g. unbounded resources usage)
 * **Simplicity**: we need to easily implement the protocol for any platforms or
   environment that will matter for our users.
-
+
 # Node-to-Node communication
 
 This section describes the communication between 2 different peers on the
@@ -58,10 +58,12 @@ This is a general high level list of what information will need to be exchanged:
       stream from different Hash in this list of Block;
   * State: tip_hash, storage
   * Pseudocode (executed by Alice):
+
     ```rust
     sync():
       bob.get_headers(alice.tip)
     ```
+
 * Alice wants to propagate a transaction to Bob
   * Alice send the transaction hash to Bob
   * Bob replies whether it want to hear more
@@ -242,7 +244,7 @@ to a node to received events. <font color="red">**TBD**</font>
 
 Another solution would be use use libp2p which also implements NAT Traversals
 and already has solutions for this.
-
+
 # Peer-to-Peer network
 
 This section describes the construction of the network topology between nodes
@@ -313,6 +315,7 @@ we have a system of reports that handles the state of known peers.
 Following such reports, at the moment based only on connectivity status, peers may move into quarantine or other less restrictive impairements.
 
 In the current system, a peer can be in any of these 4 states:
+
 * Available: the peer is known to the current node and can be picked up by poldercast layers for gossip and propagation of messages. This is the state in which new peers joining the topology via gossip end up.
 * Trusted: the last handshake between the peer and this node was successfull. For these kind of nodes we are a little more forgiving with reports and failures.
 
@@ -321,11 +324,9 @@ In the current system, a peer can be in any of these 4 states:
 * Unknown: the peer is not known to the current node.
   > Actually, due to limitations of the poldercast library, this may mean that there are some traces of the peer in the profiles maintained by the current node but it cannot be picked up by poldercast layers for gossip or propagation. For all purposes but last resort connection attempts (see next paragraph), these two cases are essentially the same.
 
-
 Since a diagram is often easier to understand than a bunch of sentences, these are the transitions between states in the current implementation, with details about avoiding network partition removed (see next paragraph).
 
 ![](./quarantine.png)
-
 
 ### Avoid network partitions
 
@@ -335,8 +336,7 @@ For this reason, we send a manual (i.e. not part of poldercast protocol) optimis
 
 Another measure in place is a sort of a last resort attempt: if the node did not receive any incoming gossip for the last X minutes (tweakable in the config file), we try to contact again any node that is not quarantined and for which we have any trace left in the system (this is where nodes that were artificially forgotten by the system come into play).
 
-
-### Part to look into:
+### Part to look into
 
 Privacy. Possibly [Dandelion] tech
 
@@ -422,7 +422,6 @@ would introduce itself to the network with its certificate. The certificate
 is then associated to this node and would be propagated via gossiping to the
 network.
 
-
 # In relation to Ouroboros Genesis
 
 Each participants in the protocol need:
@@ -438,7 +437,6 @@ block requires:
 
 Considering the perfect network, it allow to calculate how many sequential hops, a block can hope to reach at a maximum bound.
 
-[proto]: ../../../proto
 [PolderCast]: https://hal.inria.fr/hal-01555561/document
 [Vicinity]: https://research.vu.nl/en/publications/epidemic-based-self-organization-in-peer-to-peer-systems
 [Cyclon]: https://link.springer.com/article/10.1007/s10922-005-4441-x

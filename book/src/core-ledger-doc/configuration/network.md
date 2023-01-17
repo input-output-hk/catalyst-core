@@ -24,7 +24,7 @@ p2p:
 
 In order to enable TLS there must be provided certificate and private key files.
 
-#### `jcli` TLS requirements.
+#### `jcli` TLS requirements
 
 Note that `jormungandr` itself does not have any specific requirements for TLS certificates and you
 may give whatever you want including self-signed certificates as long as you do not intend to use
@@ -146,7 +146,7 @@ This is a special list that allows to connect multiple nodes together without re
 on the auto peer discovery. All entries in the preferred list are also whitelisted
 automatically, so they cannot be quarantined.
 
-##### configuration:
+##### configuration
 
 - `view_max`: this is the number of entries to show in the view each round
   the layer will **randomly** select up to `view_max` entries from the whole
@@ -160,7 +160,7 @@ are down, unreachable or not operated anymore.
 **COMPATIBILITY NOTE**: in near future the peer list will be only a list of addresses and the **ID**
 part will not be necessary.
 
-##### Example:
+##### Example
 
 ```yaml
 p2p:
@@ -206,4 +206,3 @@ blocks: high
 ```
 
 [multiaddr]: https://github.com/multiformats/multiaddr
-[`jcli key`]: ../jcli/key.md

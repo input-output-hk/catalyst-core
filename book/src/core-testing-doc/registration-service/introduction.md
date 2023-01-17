@@ -1,10 +1,11 @@
-# Registration service 
+# Registration service
 
 Registration service is REST service purely for test purposes which is capable to interact with [voter registration cli](https://github.com/input-output-hk/voting-tools/tree/master/registration), [cardano cli](https://github.com/input-output-hk/cardano-node/tree/master/cardano-cli) and [vit-kedqr](https://github.com/input-output-hk/vit-kedqr).
 
 ## build
 
 In order to build iapyx in main project folder run:
+
 ```
 cd registration-service
 cargo build

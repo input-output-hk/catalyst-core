@@ -17,6 +17,7 @@ Before approaching Jormungandr testing we need to first remind ourselves a simpl
 ### Prerequisites
 
 In order to run test integration tests below components need to be installed or prebuild:
+
 - [vit-servicing-station-server|https://github.com/input-output-hk/vit-servicing-station/tree/master/vit-servicing-station-server]
 - [jormungandr|https://github.com/input-output-hk/jormungandr/tree/master/jormungandr]
 - [valgrind|https://github.com/input-output-hk/vit-testing/tree/master/valgrdin]
@@ -24,6 +25,7 @@ In order to run test integration tests below components need to be installed or 
 ### Start tests
 
 In order to build jormungandr-automation in main project folder run:
+
 ```
 cd testing
 cargo test
@@ -44,22 +46,26 @@ cargo test
 ```
 
 ### How to run testnet functional tests
+
 ```
 cd integration-tests
 cargo test --features testnet-tests
 ```
 
 ### How to run load tests
+
 ```
 cd integration-tests
 cargo test non_functional::load --features load-tests
 ```
 
 ### How to run network endurance tests
+
 ```
 cd testing/jormungandr-integration-tests
 cargo test non_functional::soak  --features soak-tests
 ```
 
 ### Frequency
+
 Functional tests are run on each PR. Performance and testnet integration tests are run nightly

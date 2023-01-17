@@ -78,7 +78,6 @@ Representative with just and voting key. Can be used for already existing wallet
 - `rep_name` - alias
 - `voting_key` - voting key in hex
 
-
 ##### external delegator
 
 Delegator with just an address. Can be used for already existing wallet in the network
@@ -88,13 +87,14 @@ Delegator with just an address. Can be used for already existing wallet in the n
 
 ##### pre-generated delegator
 
-Delegator with just an address. Can be used for already existing wallet in the network. 
+Delegator with just an address. Can be used for already existing wallet in the network.
 Generated delegator will set up new mainnet wallet
 
 `name` - alias
 
 `registration`: registration definition which can be used to describe to which representative delegator delegates his voting power.
                 Field need to define slot at which delegation occurs and distribution. Example:
+
 ```yaml
 ...
   "registration": {
@@ -104,6 +104,6 @@ Generated delegator will set up new mainnet wallet
 ...
 ```
 
-Above example divides voting power into 3 parts and assign 1/3 to clarice and 2/3 to alice 
+Above example divides voting power into 3 parts and assign 1/3 to clarice and 2/3 to alice
 
 `ada` - ada amount

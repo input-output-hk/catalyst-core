@@ -38,7 +38,7 @@ Example:
     "parameters": {
         "min_stake_threshold": 500,
         "voting_power_cap": {
-		    "Rational": ["Plus",[1,2]]
+      "Rational": ["Plus",[1,2]]
         },
         "direct_voters_group": "direct",
         "representatives_group": "rep"

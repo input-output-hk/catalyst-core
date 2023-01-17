@@ -8,6 +8,7 @@ to decrypt and certify the tally.
 ## Creating committee keys
 
 ### Private
+
 Please refer to `jcli votes committee --help` for help with the committee related cli operations and specification of arguments.
 
 In this example we will be using 3 kind of keys for the private vote and tallying.
@@ -31,6 +32,7 @@ jcli votes committee communication-key to-public --input ./comm.sk > ./comm.pk
 ```shell
 jcli votes committee member-key generate --threshold 3 --crs "$crs" --index 0 --keys pk1 pk2 pk3 > ./member.sk
 ```
+
 Where `pkX` are each of the committee communication public keys in bech32 format.
 The order of the keys shall be the same for every member invoking the command,
 and the `--index` parameter provides the 0-based index of the member this key
@@ -43,8 +45,8 @@ We can also easily get its public representation as before:
 jcli votes committee member-key to-public --input ./member.sk ./member.pk
 ```
 
-
 #### Election public key
+
 This key (*public*) is the key **every vote** should be encrypted with.
 
 ```shell
@@ -58,12 +60,11 @@ within the [voteplan certificate](#creating-a-vote-plan).
 jcli rest v0 vote active plans > voteplan.json
 ```
 
-
-
 ## Creating a vote plan
 
 We need to provide a vote plan definition file to generate a new voteplan certificate.
 That file should be a `yaml` (or json) with the following format:
+
 ```yaml
 {
   "payload_type": "private",
@@ -92,7 +93,9 @@ That file should be a `yaml` (or json) with the following format:
   ]
 }
 ```
+
 Where:
+
 * payload_type is either *public* or *private*
 * commitee_public_keys is only needed for private voting, can be empty for public.
 
@@ -108,6 +111,7 @@ To generate a vote cast transaction firstly you need to generate vote-cast certi
 Note that a valid vote cast transaction should have only one input with the corresponding account of the voter, zero outputs and 1 corresponding witness.
 
 Example (`voter.sk` contains a private key of the voter):
+
 ```
 genesis_block_hash=$(jcli genesis hash < block0.bin)
 vote_plan_id=$(jcli rest v0 vote active plans get --output-format json|jq '.[0].id')
@@ -155,31 +159,36 @@ jcli rest v0 message post --file vote-tally.fragment
 ```
 
 ### Private
+
 To tally private votes, all committee members are needed.
 The process is similar to the public one, but we need to issue different certificates.
 
 First, we need to retrieve vote plans info:
+
 ```shell
 jcli rest v0 vote active plans > active_plans.json
 ```
+
 If there is more than one vote plan in the file, we also need to provide the id of the vote plan we are interested in to following commands. We can get the id of the first vote plan with:
+
 ```shell
 ...
 vote_plan_id=$(cat active_plans.json |jq '.[0].id')
 ...
 ```
+
 Each committee member needs to generate their shares for the vote plan, which we will use later to decrypt the tally.
 
 ```shell
 jcli votes tally decryption-shares --vote-plan active_plans.json --vote-plan-id $"vote_plan_id" --key member.sk --output-format json
 ```
+
 Then, the committee members need to exchange their shares (only one full set of shares is needed).
 Once all shares are available, we need to merge them in a single file with the following command (needed even if there is only one set of shares):
 
 ```shell
 jcli votes tally merge-shares  share_file1 share_file2 ... > merged_shares.json
 ```
-
 
 With the merged shares file, we are finally able to process the final tally result as follows:
 

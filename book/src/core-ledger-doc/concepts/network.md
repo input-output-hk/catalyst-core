@@ -127,7 +127,6 @@ A connectivity report against those nodes will make them transition to the possi
 contact level, while a successful connection attempt will promote them again to
 trusted.
 
-
 The changes from one level to another is best effort only. Applying the policy
 may be costly so the node applies the policy only on the node it is interested
 about (a gossip update or when reporting an issue against a node). This

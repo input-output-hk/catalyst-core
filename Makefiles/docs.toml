@@ -1,45 +1,39 @@
 # Our docs are in mdbook format, so install that tool
 # See
 [tasks.install-mdbook]
-script_runner = "@shell"
-script = '''
-cargo binstall --no-confirm mdbook
-'''
+install_crate = { crate_name = "mdbook", binary = "mdbook", test_arg = "--help" }
+
 
 # We can use any diagram supported by kroki
 # See: https://lib.rs/crates/mdbook-kroki-preprocessor
 #    : https://kroki.io/
 [tasks.install-mdbook-kroki]
-script_runner = "@shell"
-script = '''
-cargo binstall --no-confirm mdbook-kroki-preprocessor 
-'''
+install_crate = { crate_name = "mdbook-kroki-preprocessor", binary = "mdbook-kroki-preprocessor", test_arg = "--help" }
+
+# We check all links
+# See: https://github.com/Michael-F-Bryan/mdbook-linkcheck
+[tasks.install-mdbook-linkcheck]
+install_crate = { crate_name = "mdbook-linkcheck", binary = "mdbook-linkcheck", test_arg = "--help" }
 
 # We can use Admonish markup, so install that tool
 # See: https://lib.rs/crates/mdbook-admonish
 [tasks.install-mdbook-admonish]
+install_crate = { crate_name = "mdbook-admonish", binary = "mdbook-admonish", test_arg = "--help" }
 script_runner = "@shell"
 script = '''
-cargo binstall --no-confirm mdbook-admonish
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
-mdbook-admonish install --css-dir book/src/assets/css/
+mdbook-admonish install --css-dir src/assets/css/
 '''
 
 # We can make our own regex preprocessing templates
 # See: https://lib.rs/crates/mdbook-regex
 [tasks.install-mdbook-regex]
-script_runner = "@shell"
-script = '''
-cargo binstall --no-confirm mdbook-regex
-'''
+install_crate = { crate_name = "mdbook-regex", binary = "mdbook-regex", test_arg = "--help" }
 
 # Automatically adds an "Edit this file on GitHub" to each page
 # See: https://lib.rs/crates/mdbook-open-on-gh
 [tasks.install-mdbook-open-on-gh]
-script_runner = "@shell"
-script = '''
-cargo binstall --no-confirm mdbook-open-on-gh
-'''
+install_crate = { crate_name = "mdbook-open-on-gh", binary = "mdbook-open-on-gh", test_arg = "--help" }
 
 
 [tasks.install-docs-prereqs]
@@ -48,11 +42,35 @@ run_task = { name = [
         "install-mdbook-kroki",
         "install-mdbook-regex",
         "install-mdbook-admonish",
-        "install-mdbook-open-on-gh"
+        "install-mdbook-open-on-gh",
+        "install-mdbook-linkcheck"
     ], parallel = true }
 dependencies = [
     "install-mdbook",
 ]
+
+# Force linkcheck to error not warn
+[tasks.force-linkcheck-error]
+workspace = false
+category = "docs"
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+cp book.toml book.original.toml
+cat book.original.toml
+# modify the book.toml here.
+'''
+
+# Recover book.toml back to its original state.
+[tasks.cleanup-linkcheck-error]
+workspace = false
+category = "docs"
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+cp book.original.toml book.toml
+rm book.original.toml
+'''
 
 # Build the RUST src documentation
 # We need to remove the debug and .rust* files otherwise they
@@ -81,7 +99,7 @@ cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 mdbook serve --open
 '''
 
-# Build and serve a live view of the POC Documentation
+# Build the Documentation only
 [tasks.build-mdbook]
 workspace = false
 category = "docs"
@@ -96,7 +114,24 @@ mdbook build
 
 [tasks.build-docs]
 workspace = false
+category = "docs"
 dependencies = [
-    "build-rust-docs",
     "build-mdbook"
 ]
+
+[tasks.build-docs-linkcheck]
+workspace = false
+category = "docs"
+dependencies = [
+    "force-linkcheck-error",
+    "build-mdbook",
+    "cleanup-linkcheck-error"
+]
+
+[tasks.docs-lint]
+workspace = false
+script_runner = "@shell"
+script = '''
+echo Suggest running markdown lint manually because it varies between platforms.
+echo Recommended CLI: https://github.com/DavidAnson/markdownlint-cli2
+'''

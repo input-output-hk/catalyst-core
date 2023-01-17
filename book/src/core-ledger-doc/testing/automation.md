@@ -5,6 +5,7 @@ Incubator of all testing apis for the node and jcli:
 ## build
 
 In order to build jormungandr-automation in main project folder run:
+
 ```
 cd testing/jormungandr-automation
 cargo build

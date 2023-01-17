@@ -4,7 +4,7 @@ This section describe configuration file which can be passed as argument when st
 
 ### Initials
 
-#### snapshot 
+#### snapshot
 
 Allows to provide initial voters and representatives which whose will be available in initial snapshot.
 
@@ -23,10 +23,11 @@ Example:
 
 ```
 {
-	"above_threshold":30,
+ "above_threshold":30,
     "pin":"1234"
 }
 ```
+
 Pin would be set globally for all 30 addresses
 
 ##### below threshold
@@ -37,10 +38,11 @@ Example:
 
 ```
 {
-	"below_threshold":30,
+ "below_threshold":30,
     "pin":"1234"
 }
 ```
+
 Pin would be set globally for all 30 addresses
 
 ##### around level
@@ -48,9 +50,10 @@ Pin would be set globally for all 30 addresses
 Amount of wallets which have funds around defined level
 
 Example:
+
 ```
 {
-	"count":30,
+ "count":30,
     "level":1000,
     "pin":"1234"
 }
@@ -61,9 +64,10 @@ Example:
 Amount of wallets which won't have any funds in block0
 
 Example:
+
 ```
 {
-	"zero_funds":30,
+ "zero_funds":30,
     "pin":"1234"
 }
 ```
@@ -73,6 +77,7 @@ Example:
 Wallet with custom pin and arbitrary funds amount,
 
 Example:
+
 ```
       {
         "name":"darek",
@@ -86,6 +91,7 @@ Example:
 Wallet with address and pin. For users who already generated address outside vitup.
 
 Example:
+
 ```
       {
         "address":"ca1qknqa67aflzndy0rvkmxhd3gvccme5637qch53kfh0slzkfgv5nwyq4hxu4",
@@ -147,6 +153,7 @@ In cardano time is divided into epochs which consists of slots. There are 2 para
 `epoch_duration = slot_duration * slots_per_epoch`.
 
 For example, for given:
+
 ```
 slot_duration = 2
 slots_per_epoch = 10
@@ -155,17 +162,20 @@ slots_per_epoch = 10
 then epoch will lasts 20 seconds.
 
 vote_start, vote_tally, tally_end - describe 2 vote phases:
+
 - from vote_start to vote_tally : casting vote period, where we gather votes.
 - from vote_tally to tally_end: tallying vote period, where we gather voting results.
 
 Sll above parameters are expressed in epochs. Be aware that `slot_duration` and `slots_per_epoch` have influence on time voting phase would start.
 For example if we would like to start vote in 5 minutes, allow users to case vote for 20 minutes and give 1 hour for tally operation our setup would be like below:
+
 ```
 "vote_start":1,
 "vote_tally":4,
 "tally_end":20,
 "slots_per_epoch":60,
 ```
+
 See [jormungandr docs](https://input-output-hk.github.io/jormungandr/concepts/blockchain.html) for more information.
 
 NOTE: `slot_duration` is defined in `blockchain` section of configuration file
@@ -177,7 +187,6 @@ If true, then voting is private otherwise public. This parameters basically cont
 ###### representatives_vote_plan
 
 TBD, currently not used
-
 
 #### example
 
@@ -210,9 +219,11 @@ Describes how frequent block are produces by network. Slot duration is expressed
 Describes how big a single block can be. Larger blocks can hold more transactions which results in faster transactions processing, however it put more requirements on space and network throughput.
 
 ##### block0_time
+
 Optional parameter which defines start time of block0. It is useful when one want to defined voting phases that ends and starts precisely in required time. Otherwise block0_time is equal to current time when running vitup
 
 ###### tx_max_expiry_epochs
+
 Optional parameter which defines what is the maximum duration (expressed in epochs) of transaction timeout.
 Usually it is equal to 1.
 
@@ -224,6 +235,7 @@ Useful when we have our own pre-generated leaders keys for nodes.
 ##### linear_fees
 
 Transactions fees which defined cost of transaction or vote.
+
 - constant - constant fee added to each transaction
 - coefficient - coefficient of each transaction output
 - certificate - cost of sending certificate.
@@ -239,6 +251,7 @@ Example:
     "certificate": 2
   },
 ```
+
 Above configuration will result in:
 
 For transaction with 1 input and 1 output
@@ -256,11 +269,9 @@ This setting allows to use predefined committee rather than generate random by v
 
 Section describes static data used for voting. Mostly defines parameters for [servicing station](https://github.com/input-output-hk/vit-servicing-station)
 
-
 #### current fund
 
 Current fund related settings:
-
 
 ##### options
 
@@ -394,8 +405,7 @@ Control version of backend. Manipulating this parameter we can tell voting app t
 
 Controls protocol over which vitup is available for client
 
-
-### Full Example:
+### Full Example
 
 ```
 {

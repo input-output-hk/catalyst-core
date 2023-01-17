@@ -45,7 +45,6 @@ TODO:
 
 ## Development
 
-
 ### Development Environment (NIX Shell)
 
 This is the **preferred** development environment.

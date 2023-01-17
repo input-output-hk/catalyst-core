@@ -21,6 +21,7 @@ In order to run test jormungandr & jcli need to be installed or prebuild.
 ### Start tests
 
 In order to build jormungandr-automation in main project folder run:
+
 ```
 cd testing
 cargo test
@@ -48,41 +49,47 @@ cargo test jcli
 ```
 
 ### How to run single node functional tests
+
 ```
 cd testing/jormungandr-integration-tests
 cargo test jormungandr
 ```
 
 ### How to run single node performance tests
+
 ```
 cd testing/jormungandr-integration-tests
 cargo test jormungandr::non_functional --features sanity,non-functional
 ```
 
 ### How to run single node endurance tests
+
 ```
 cd testing/jormungandr-integration-tests
 cargo test jormungandr::non_functional --features soak,non-functional
 ```
 
-
 ### How to run network functional tests
+
 ```
 cd testing/jormungandr-integration-tests
 cargo test jormungandr::network --features network
 ```
 
 ### How to run network performance tests
+
 ```
 cd testing/jormungandr-integration-tests
 cargo test jormungandr::non_functional::network --features sanity,non-functional
 ```
 
 ### How to run network endurance tests
+
 ```
 cd testing/jormungandr-integration-tests
 cargo test jormungandr::non_functional::network --features soak,non-functional
 ```
 
 ### Frequency
+
 Functional tests are run on each PR. Performance and testnet integration tests are run nightly

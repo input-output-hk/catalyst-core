@@ -5,6 +5,7 @@ Mjolnir is a load cli & api project which operates on jormungandr node.
 ## Build & Install
 
 In order to build mjolnir in main project folder run:
+
 ```
 cd testing/mjolnir
 cargo build

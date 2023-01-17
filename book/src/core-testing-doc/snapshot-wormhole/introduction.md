@@ -5,10 +5,12 @@ Snapshot wormhole is a specialized Rest client API project with builtin schedule
 ## build
 
 In main project folder run:
+
 ```
 cd vit-testing/snapshot-wormhole
 cargo build
 ```
+
 and install:
 
 `cargo install --path .`
@@ -26,7 +28,7 @@ which will perform a single job of snapshot-trigger-service -> vit-servicing-sta
 See [config](./configuration.md) for configuration file details.
 
 ### run modes
- 
+
 Two modes are available:
 
 - one-shot - ends program after single job is done,
@@ -48,6 +50,7 @@ The scheduling format is as follows:
 ```
 
 For example, to schedule each run  per 15 minutes starting from now:
+
 ```
 snapshot-wormhole --config wormhole-config.json schedule --cron * 4/60 * * * *" --eagerly
 ```

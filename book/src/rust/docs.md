@@ -1,5 +1,7 @@
 # Rust Documentation
 
+<!-- markdownlint-disable no-inline-html -->
+
 <a href="./doc/bip39/index.html">./doc/bip39/index.html</a><br>
 <a href="./doc/blockchain/index.html">./doc/blockchain/index.html</a><br>
 <a href="./doc/cardano_cli_mock/index.html">./doc/cardano_cli_mock/index.html</a><br>
@@ -66,3 +68,5 @@
 <a href="./doc/wallet/index.html">./doc/wallet/index.html</a><br>
 <a href="./doc/wallet_core/index.html">./doc/wallet_core/index.html</a><br>
 <a href="./doc/wallet_js/index.html">./doc/wallet_js/index.html</a><br>
+
+<!-- markdownlint-enable no-inline-html -->

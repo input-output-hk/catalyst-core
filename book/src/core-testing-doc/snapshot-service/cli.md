@@ -2,10 +2,10 @@
 
 Registration CLI is cli utility tool which help to interact with registration service.
 
-
 ## Build & Install
 
 In order to build registration-service in main project folder run:
+
 ```
 cd registration-service
 cargo build

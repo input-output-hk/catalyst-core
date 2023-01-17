@@ -1,11 +1,12 @@
 # vitup
 
-Vitup is a cli project which is capable to bootstrap catalyst backend which can be exercised by various tools. 
-Initial purpose is to provide simple localhost backend for catalyst voting app. 
+Vitup is a cli project which is capable to bootstrap catalyst backend which can be exercised by various tools.
+Initial purpose is to provide simple localhost backend for catalyst voting app.
 
 ## build
 
 before building vitup all dependencies need to be installed.
+
 - valgrind
 - jormungandr
 - vit-servicing-station

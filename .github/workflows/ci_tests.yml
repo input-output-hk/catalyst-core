@@ -56,7 +56,7 @@ jobs:
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
       - name: Build and archive tests
-        run: cargo nextest run archive --archive-file nextest-archive.tar.zst
+        run: cargo nextest archive --archive-file nextest-archive.tar.zst
       - uses: actions/cache@v3
         with:
           path: nextest-archive.tar.zst

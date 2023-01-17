@@ -54,8 +54,8 @@ jobs:
         with:
           path: |
             nextest-archive.tar.zst
-            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-cli.exe
-            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-server.exe
+            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-cli*
+            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-server*
           key: "some-key"
       - name: Install nextest
         uses: taiki-e/install-action@nextest
@@ -91,8 +91,8 @@ jobs:
         with:
           path: |
             nextest-archive.tar.zst
-            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-cli.exe
-            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-server.exe
+            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-cli*
+            /home/runner/work/catalyst-core-fork/catalyst-core-fork/target/debug/vit-servicing-station-server*
           key: "some-key"
       - name: Install nextest
         uses: taiki-e/install-action@nextest

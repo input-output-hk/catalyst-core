@@ -1,10 +1,14 @@
 # jormungandr-integration-tests
 
-Integration test is a container project for all jormungandr & jcli tests. Tests are validating node correctness, stability and interaction with database/rest api. Also there are non-functional tests which verify node durability and reliability
+Integration test is a container project for all jormungandr & jcli tests.
+Tests are validating node correctness, stability and interaction with database/rest api.
+Also there are non-functional tests which verify node durability and reliability.
 
 ## Architecture of tests
 
-Jormungandr tests architecture relies on test pyramid approach, where most of the effort is put into until and api level and small amount of tests on E2E. Thanks to that we can create fast and reliable tests.
+Jormungandr tests architecture relies on test pyramid approach.
+Most of the effort is put into until and api level and small amount of tests on E2E.
+Thanks to that we can create fast and reliable tests.
 
 ![Testing architecture](./graphs/testing-architecture.svg)
 
@@ -22,7 +26,7 @@ In order to run test jormungandr & jcli need to be installed or prebuild.
 
 In order to build jormungandr-automation in main project folder run:
 
-```
+```sh
 cd testing
 cargo test
 ```
@@ -36,56 +40,56 @@ Below diagram is a good overview:
 
 ### How to run all functional tests
 
-```
+```sh
 cd testing/jormungandr-integration-tests
 cargo test jormungandr --features network
 ```
 
 ### How to run jcli only functional tests
 
-```
+```sh
 cd testing/jormungandr-integration-tests
 cargo test jcli
 ```
 
 ### How to run single node functional tests
 
-```
+```sh
 cd testing/jormungandr-integration-tests
 cargo test jormungandr
 ```
 
 ### How to run single node performance tests
 
-```
+```sh
 cd testing/jormungandr-integration-tests
 cargo test jormungandr::non_functional --features sanity,non-functional
 ```
 
 ### How to run single node endurance tests
 
-```
+```sh
 cd testing/jormungandr-integration-tests
 cargo test jormungandr::non_functional --features soak,non-functional
 ```
 
 ### How to run network functional tests
 
-```
+```sh
 cd testing/jormungandr-integration-tests
 cargo test jormungandr::network --features network
 ```
 
 ### How to run network performance tests
 
-```
+```sh
 cd testing/jormungandr-integration-tests
 cargo test jormungandr::non_functional::network --features sanity,non-functional
 ```
 
 ### How to run network endurance tests
 
-```
+```sh
 cd testing/jormungandr-integration-tests
 cargo test jormungandr::non_functional::network --features soak,non-functional
 ```

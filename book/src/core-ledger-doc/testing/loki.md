@@ -6,7 +6,7 @@ Loki is an adversary node implementation and api which operates on jormungandr n
 
 In order to build hersir in main project folder run:
 
-```
+```sh
 cd testing/loki
 cargo build
 cargo install --path . --force
@@ -16,7 +16,7 @@ cargo install --path . --force
 
 Loki can be used bootstrap using cli:
 
-```
+```sh
 loki --genesis-block block0.bin --listen-address 127.0.0.1:8080 -s secret.yaml
 ```
 
@@ -26,7 +26,7 @@ where:
 `listen-address` - Specifies the address the node will listen
 `secret` - Set the secret node config (in YAML format). Example:
 
-```
+```yaml
 ---
 bft:
     signing_key: ed25519_sk1w2tyr7e2w26w5vxv65xf36kpvcsach8rcdmlmrhg3rjzeumjnzyqvdvwfa
@@ -34,7 +34,7 @@ bft:
 
 Then utilizing rest interface of loki node one can send some invalid GRPC messages to rest of the network:
 
-```
+```sh
 curl --location --request POST 'http://127.0.0.1:8080/invalid_fragment' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -52,7 +52,7 @@ where:
 * `block0` - block0,
 * `{Hash}` - arbitrary parent block which hash is provided in request
 
-#### Other possible operations
+### Other possible operations
 
 * `/invalid_hash` - Sends block with invalid hash,
 * `/invalid_signature` - Sends block with invalid by wrong leader signature,
@@ -63,7 +63,7 @@ where:
 
 Loki also provides API for performing adversary operations, like sending invalid fragments:
 
-```
+```rust
     use loki::{AdversaryFragmentSender, AdversaryFragmentSenderSetup};
 
     let mut sender = ...

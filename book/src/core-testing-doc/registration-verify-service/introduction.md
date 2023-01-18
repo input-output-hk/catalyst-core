@@ -1,12 +1,13 @@
 # Registration service
 
-Registration service is REST service purely for test purposes which is capable to interact with [voter registration cli](https://github.com/input-output-hk/voting-tools/tree/master/registration), [cardano cli](https://github.com/input-output-hk/cardano-node/tree/master/cardano-cli) and [vit-kedqr](https://github.com/input-output-hk/vit-kedqr).
+Registration service is REST service purely for test purposes.
+It is capable to interact with [voter registration cli], [cardano cli] and [vit-kedqr].
 
 ## build
 
 In order to build registration-verify-service in main project folder run:
 
-```
+```sh
 cd registration-verify-service
 cargo build
 cargo install --path . --force
@@ -55,3 +56,7 @@ Example:
         .unwrap();
     println!("{:?}", registration_jobs_status);
 ```
+
+[voter registration cli]: https://github.com/input-output-hk/voting-tools/tree/master/registration
+[cardano cli]: https://github.com/input-output-hk/cardano-node/tree/master/cardano-cli
+[vit-kedqr]: https://github.com/input-output-hk/vit-kedqr

@@ -6,7 +6,7 @@ Iapyx-load is a load cli & api project which operates on catalyst backend.
 
 In order to build iapyx-load in main project folder run:
 
-```
+```text
 cd testing/iapyx
 cargo build
 cargo install --path . --force
@@ -37,7 +37,7 @@ Simplest load configuration is to use node-only load with below parameters:
 
 `iapyx-load node-only const count --help`
 
-```
+```text
 USAGE:
     iapyx-load.exe node-only const count [FLAGS] [OPTIONS] --requests-per-thread <count>
 
@@ -69,7 +69,7 @@ OPTIONS:
 
 Iapyx load main purpose is to serve as load api:
 
-```
+```text
 use iapyx::{NodeLoad, NodeLoadConfig};
 use jortestkit::{
     load::{ConfigurationBuilder, Monitor},
@@ -80,7 +80,7 @@ use jortestkit::{
 
     let no_of_threads = 10;
     let no_of_wallets = 40_000;
-   
+
     let mut qr_codes_folder = Path::new("qr-codes");
 
     let config = ConfigurationBuilder::duration(parameters.calculate_vote_duration())
@@ -118,7 +118,7 @@ use jortestkit::{
 
 Full list of commands is available on `mjolnir --help` command.
 
-```
+```text
 mjolnir 0.1.0
 Jormungandr Load CLI toolkit
 

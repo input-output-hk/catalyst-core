@@ -1,10 +1,14 @@
 # integration-tests
 
-Integration test is a container project for all catalyst e2e and integration tests. Tests are validating network correctness, stability. Also there are non-functional tests which verify node durability and reliability
+Integration test is a container project for all catalyst e2e and integration tests.
+Tests are validating network correctness, stability.
+Also there are non-functional tests which verify node durability and reliability
 
 ## Architecture of tests
 
-Integration tests architecture relies on test pyramid approach, where most of the effort is put into component and integration level and finally small amount of tests on E2E. Thanks to that we can create fast and reliable tests.
+Integration tests architecture relies on test pyramid approach.
+Where most of the effort is put into component and integration level and finally small amount of tests on E2E.
+Thanks to that we can create fast and reliable tests.
 
 ![Testing architecture](./graphs/testing-architecture.svg)
 
@@ -26,7 +30,7 @@ In order to run test integration tests below components need to be installed or 
 
 In order to build jormungandr-automation in main project folder run:
 
-```
+```sh
 cd testing
 cargo test
 ```
@@ -40,28 +44,28 @@ Below diagram is a good overview:
 
 ### How to run all functional tests
 
-```
+```sh
 cd integration-tests
 cargo test
 ```
 
 ### How to run testnet functional tests
 
-```
+```sh
 cd integration-tests
 cargo test --features testnet-tests
 ```
 
 ### How to run load tests
 
-```
+```sh
 cd integration-tests
 cargo test non_functional::load --features load-tests
 ```
 
 ### How to run network endurance tests
 
-```
+```sh
 cd testing/jormungandr-integration-tests
 cargo test non_functional::soak  --features soak-tests
 ```

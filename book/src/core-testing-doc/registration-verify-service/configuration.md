@@ -1,4 +1,4 @@
-## Configuration
+# Configuration
 
 This section describe configuration file which can be passed as argument for registration verify service:
 
@@ -14,7 +14,7 @@ This section describe configuration file which can be passed as argument for reg
 - `initial-snapshot-job-id`: initial job id from snapshot service that will be used when starting service
 Example:
 
-```yaml
+```json
     "port": 8080,
     "jcli": "jcli",
  "snapshot-token": "3568b599a65557b2a2e",

@@ -86,7 +86,7 @@ For example:
 
 ### The options to set
 
-```
+```sh
 --tax-limit <TAX_LIMIT>
     The maximum tax value the stake pool will take.
 

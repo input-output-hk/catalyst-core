@@ -8,7 +8,7 @@ WARNING: main purpose of the wallet is testing. Do NOT use it on production.
 
 In order to build iapyx in main project folder run:
 
-```
+```sh
 cd iapyx
 cargo build
 cargo install --path . --force
@@ -18,7 +18,9 @@ cargo install --path . --force
 
 ### CLI
 
-Iapyx can be used as a wallet cli. It is capable of sending votes or pull data from node. The simplest usage example is available by using commands:
+Iapyx can be used as a wallet cli.
+It is capable of sending votes or pull data from node.
+The simplest usage example is available by using commands:
 
 * register new wallet based on qr code:
 `iapyx wallets import qr qr_file.png --pin 1234`
@@ -39,11 +41,11 @@ Iapyx can be used as a wallet cli. It is capable of sending votes or pull data f
 
 Iapyx can be used as api in order to perform voting operations from the code:
 
-```
+```rust
 
     let wallet_proxy = spawn_network(...);
     let secret_file_path = Path::new("wallet_alice");
-   
+
 
     let mut alice = iapyx::ControllerBuilder::default()
         .with_backend_from_client(wallet_proxy.client())?
@@ -74,7 +76,7 @@ The purpose of this configuration is to store wallet lists as well as secret key
 
 Full list of commands is available on `iapyx --help` command.
 
-```
+```text
 iapyx 0.0.1
 Command line wallet for testing Catalyst
 

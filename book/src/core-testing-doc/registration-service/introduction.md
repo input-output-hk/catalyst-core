@@ -1,12 +1,16 @@
 # Registration service
 
-Registration service is REST service purely for test purposes which is capable to interact with [voter registration cli](https://github.com/input-output-hk/voting-tools/tree/master/registration), [cardano cli](https://github.com/input-output-hk/cardano-node/tree/master/cardano-cli) and [vit-kedqr](https://github.com/input-output-hk/vit-kedqr).
+Registration service is REST service purely for test purposes which is capable to interact with:
+
+* [voter registration cli]
+* [cardano cli]
+* [vit-kedqr]
 
 ## build
 
 In order to build iapyx in main project folder run:
 
-```
+```sh
 cd registration-service
 cargo build
 cargo install --path . --force
@@ -32,7 +36,7 @@ See [cli](./cli.md) for more details.
 
 Example:
 
-```
+```rust
     use registration_service::{
         client::rest::RegistrationRestClient, context::State, request::Request,
     };
@@ -44,7 +48,7 @@ Example:
     let payment_skey = Path::new("stake.skey");
     let payment_skey = Path::new("stake.vkey");
     let payment_skey = Path::new("vote.skey");
-    
+
     let registration_client =
         RegistrationRestClient::new_with_token(registration_token, registration_address);
 
@@ -76,4 +80,9 @@ Example:
         .unwrap();
 ```
 
-NOTE: see [cardano cli guide](https://developers.cardano.org/docs/stake-pool-course/handbook/keys-addresses/) for information how to create payment and stake files.
+NOTE: see [cardano cli guide](https://developers.cardano.org/docs/stake-pool-course/handbook/keys-addresses/).
+This details information how to create payment and stake files.
+
+[voter registration cli]: https://github.com/input-output-hk/voting-tools/tree/master/registration
+[cardano cli]: https://github.com/input-output-hk/cardano-node/tree/master/cardano-cli
+[vit-kedqr]: https://github.com/input-output-hk/vit-kedqr

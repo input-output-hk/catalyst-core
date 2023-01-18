@@ -31,7 +31,8 @@ jcli certificate new stake-pool-retirement \
 where:
 
 * `retirement.cert`                                                             - write the output of to the `retirement.cert`
-* `--retirement-time 0`                                                        - `0` means as soon as possible. Which is until the next following epoch.
+* `--retirement-time 0`                                                        - `0` means as soon as possible.
+  Which is until the next following epoch.
 * `--pool-id ea830e5d9647af89a5e9a4d4089e6e855891a533316adf4a42b7bf1372389b74`  - hex-encoded stake pool ID.
 
 ### submitting to a node
@@ -55,6 +56,7 @@ jcli transaction auth --key owner_key.prv --staging tx
 The `--fee-certificate` flag indicates the cost of adding a certificate, used for computing the fees, it can be omitted if it is zero.
 
 **Important !**
-Please be sure that you have sufficient amount of owners signatures in order to retire stake pool. At least half of owners singatures (which were provided when registering stake pool) are required to sign retirement certificate.
+Please be sure that you have sufficient amount of owners signatures in order to retire stake pool.
+At least half of owners singatures (which were provided when registering stake pool) are required to sign retirement certificate.
 
 See [here](../jcli/transaction.md) for more documentation on transaction creation.

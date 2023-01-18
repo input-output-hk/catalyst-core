@@ -1,4 +1,4 @@
-## Configuration
+# Configuration
 
 This section describe configuration file which can be passed as argument for registration service:
 
@@ -15,7 +15,7 @@ This section describe configuration file which can be passed as argument for reg
 
 Example:
 
-```yaml
+```json
   "port": 8080,
  "jcli": "jcli",
  "result-dir": "/persist",

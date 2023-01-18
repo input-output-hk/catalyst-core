@@ -8,7 +8,7 @@ WARNING: main purpose of the wallet is testing. Do NOT use it on production.
 
 In order to build hersir in main project folder run:
 
-```
+```sh
 cd testing/hersir
 cargo build
 cargo install --path . --force
@@ -18,7 +18,8 @@ cargo install --path . --force
 
 ### CLI
 
-Thor can be used as a wallet cli. It is capable of sending transactions or pull data from node. The simplest usage example is available by using commands:
+Thor can be used as a wallet cli. It is capable of sending transactions or pull data from node.
+The simplest usage example is available by using commands:
 
 * register new wallet based on secret key:
 `thor wallets import --alias darek --password 1234 secret.file`
@@ -39,7 +40,7 @@ Thor can be used as a wallet cli. It is capable of sending transactions or pull 
 
 Thor also allows you to use it as Api to perform any wallet operations from the code:
 
-```
+```rust
     use thor::{Wallet, FragmentSender, FragmentSenderSetup, FragmentVerifier};
 
     let receiver = thor::Wallet::default();
@@ -68,7 +69,7 @@ The purpose of this configuration is to store wallet lists as well as secret key
 
 Full list of commands is available on `thor --help` command.
 
-```
+```text
 thor 0.1.0
 Command line wallet for testing Jormungandr
 

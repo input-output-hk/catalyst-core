@@ -6,7 +6,7 @@ Mjolnir is a load cli & api project which operates on jormungandr node.
 
 In order to build mjolnir in main project folder run:
 
-```
+```sh
 cd testing/mjolnir
 cargo build
 cargo install --path . --force
@@ -26,7 +26,7 @@ It has couple of different load types:
 
 Simplest load configuration is to use rest load with below parameters:
 
-```
+```text
 Rest load
 
 USAGE:
@@ -49,7 +49,7 @@ OPTIONS:
 
 Mjolnir main purpose is to serve load api:
 
-```
+```rust
 use jortestkit::load::{self, ConfigurationBuilder as LoadConfigurationBuilder, Monitor};
 use std::time::Duration;
 
@@ -73,7 +73,8 @@ use std::time::Duration;
         .status_pace(Duration::from_secs(1_000))
         .build();
 
-    // initialize load in sync manner (duration of each request is calculated by time difference between receiving response and sending request )
+    // initialize load in sync manner
+    // (duration of each request is calculated by time difference between receiving response and sending request )
     let stats = load::start_sync(request, config, "Jormungandr rest load test");
 
     // finally some way to assert expected correctness, like percentage of successful requests
@@ -84,7 +85,7 @@ use std::time::Duration;
 
 Full list of commands is available on `mjolnir --help` command.
 
-```
+```sh
 mjolnir 0.1.0
 Jormungandr Load CLI toolkit
 

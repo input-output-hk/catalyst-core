@@ -18,7 +18,7 @@ ADDRTYPE="--testing"
 TIMEOUT_NO_OF_BLOCKS=200
 
 getTip() {
-  echo $($CLI rest v0 tip get -h "${REST_URL}")
+  echo $($CLI rest v0 tip get --host "${REST_URL}")
 }
 
 waitNewBlockCreated() {
@@ -65,14 +65,14 @@ REST_PORT="$2"
 ACCOUNT_SK="$3"
 
 REST_URL="http://127.0.0.1:${REST_PORT}/api"
-BLOCK0_HASH=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'block0Hash:' | sed -e 's/^[[:space:]]*//' | sed -e 's/block0Hash: //')
-FEE_CONSTANT=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'constant:' | sed -e 's/^[[:space:]]*//' | sed -e 's/constant: //')
-FEE_COEFFICIENT=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'coefficient:' | sed -e 's/^[[:space:]]*//' | sed -e 's/coefficient: //')
-FEE_CERTIFICATE=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'certificate:' | sed -e 's/^[[:space:]]*//' | sed -e 's/certificate: //')
-FEE_CERTIFICATE_POOL_REGISTRATION=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'certificate_pool_registration:' | sed -e 's/^[[:space:]]*//' | sed -e 's/certificate_pool_registration: //')
-FEE_CERTIFICATE_STAKE_DELEGATION=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'certificate_stake_delegation:' | sed -e 's/^[[:space:]]*//' | sed -e 's/certificate_stake_delegation: //')
-SLOT_DURATION=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'slotDuration:' | sed -e 's/^[[:space:]]*//' | sed -e 's/slotDuration: //')
-SLOTS_PER_EPOCH=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'slotsPerEpoch:' | sed -e 's/^[[:space:]]*//' | sed -e 's/slotsPerEpoch: //')
+BLOCK0_HASH=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'block0Hash:' | sed -e 's/^[[:space:]]*//' | sed -e 's/block0Hash: //')
+FEE_CONSTANT=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'constant:' | sed -e 's/^[[:space:]]*//' | sed -e 's/constant: //')
+FEE_COEFFICIENT=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'coefficient:' | sed -e 's/^[[:space:]]*//' | sed -e 's/coefficient: //')
+FEE_CERTIFICATE=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'certificate:' | sed -e 's/^[[:space:]]*//' | sed -e 's/certificate: //')
+FEE_CERTIFICATE_POOL_REGISTRATION=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'certificate_pool_registration:' | sed -e 's/^[[:space:]]*//' | sed -e 's/certificate_pool_registration: //')
+FEE_CERTIFICATE_STAKE_DELEGATION=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'certificate_stake_delegation:' | sed -e 's/^[[:space:]]*//' | sed -e 's/certificate_stake_delegation: //')
+SLOT_DURATION=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'slotDuration:' | sed -e 's/^[[:space:]]*//' | sed -e 's/slotDuration: //')
+SLOTS_PER_EPOCH=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'slotsPerEpoch:' | sed -e 's/^[[:space:]]*//' | sed -e 's/slotsPerEpoch: //')
 
 echo "================DELEGATE ACCOUNT================="
 echo "REST_PORT:        ${REST_PORT}"
@@ -114,7 +114,7 @@ $CLI certificate sign \
     --key ${ACCOUNT_SK_FILE} \
     --output ${SIGNED_CERTIFICATE_FILE}
 
-ACCOUNT_COUNTER=$( $CLI rest v0 account get "${ACCOUNT_ADDR}" -h "${REST_URL}" | grep '^counter:' | sed -e 's/counter: //' )
+ACCOUNT_COUNTER=$( $CLI rest v0 account get "${ACCOUNT_ADDR}" --host "${REST_URL}" | grep '^counter:' | sed -e 's/counter: //' )
 ACCOUNT_AMOUNT=$((${FEE_CONSTANT} + ${FEE_COEFFICIENT} + ${FEE_CERTIFICATE_STAKE_DELEGATION}))
 
 echo " ##2. Create the offline delegation transaction for the Account address"
@@ -156,7 +156,7 @@ echo " ##10. Auth the transactions"
 $CLI transaction auth --key ${WITNESS_SECRET_FILE} --staging "${STAGING_FILE}"
 
 echo " ##11. Encode and send the transaction"
-$CLI transaction to-message --staging "${STAGING_FILE}" | $CLI rest v0 message post -h "${REST_URL}"
+$CLI transaction to-message --staging "${STAGING_FILE}" | $CLI rest v0 message post --host "${REST_URL}"
 
 waitNewBlockCreated
 
@@ -165,7 +165,7 @@ echo " Account delegation signed certificate: $(cat ${SIGNED_CERTIFICATE_FILE})"
 echo "=================================================="
 
 echo " ##10. Check the account's delegation status"
-$CLI rest v0 account get ${ACCOUNT_ADDR} -h ${REST_URL}
+$CLI rest v0 account get ${ACCOUNT_ADDR} --host ${REST_URL}
 
 rm ${STAGING_FILE} ${ACCOUNT_SK_FILE} ${CERTIFICATE_FILE} ${SIGNED_CERTIFICATE_FILE} ${WITNESS_SECRET_FILE} ${WITNESS_OUTPUT_FILE}
 

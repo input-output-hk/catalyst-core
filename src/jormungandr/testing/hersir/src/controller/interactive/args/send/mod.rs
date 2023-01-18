@@ -4,11 +4,11 @@ mod tx;
 
 use crate::controller::{Error, UserInteractionController};
 use cast::CastVote;
-use structopt::StructOpt;
+use clap::Parser;
 use tally::VoteTally;
 use tx::SendTransaction;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Send {
     /// Sends transaction
     Tx(SendTransaction),

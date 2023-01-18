@@ -4,29 +4,29 @@ use crate::jcli_lib::{
 };
 use chain_addr::AddressReadable;
 use chain_impl_mockchain::transaction::{Balance, UnspecifiedAccountIdentifier};
+use clap::Parser;
 use jormungandr_lib::{crypto::hash::Hash, interfaces::TransactionInputType};
 use serde_json::json;
 use std::{io::Write, path::PathBuf};
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Info {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     common: common::CommonTransaction,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     fee: common::CommonFees,
 
     /// write the info in the given file or print it to the standard output
-    #[structopt(long = "output")]
+    #[clap(long = "output")]
     output: Option<PathBuf>,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output_format: OutputFormat,
 
     /// set the address prefix to use when displaying the addresses
-    #[structopt(long = "prefix", default_value = "ca")]
+    #[clap(long = "prefix", default_value = "ca")]
     address_prefix: String,
 }
 

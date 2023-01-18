@@ -13,9 +13,7 @@ use crate::{
     utils::async_msg::MessageBox,
 };
 use chain_core::{packer::Codec, property::Serialize};
-use chain_impl_mockchain::{
-    block::BlockDate, fragment::Contents, setting::Settings, transaction::Transaction,
-};
+use chain_impl_mockchain::{block::BlockDate, fragment::Contents, transaction::Transaction};
 use futures::{channel::mpsc::SendError, sink::SinkExt};
 use jormungandr_lib::{
     interfaces::{
@@ -100,27 +98,10 @@ impl Pool {
         &mut self,
         fragment: &Fragment,
         id: FragmentId,
-        ledger_settings: &Settings,
-        block_date: BlockDate,
     ) -> Result<(), FragmentRejectionReason> {
         if self.logs.exists(id) {
             tracing::debug!("fragment is already logged");
             return Err(FragmentRejectionReason::FragmentAlreadyInLog);
-        }
-
-        if let Some(valid_until) = get_transaction_expiry_date(fragment) {
-            use chain_impl_mockchain::ledger::check::{valid_transaction_date, TxValidityError};
-            match valid_transaction_date(ledger_settings, valid_until, block_date) {
-                Ok(_) => {}
-                Err(TxValidityError::TransactionExpired) => {
-                    tracing::debug!("fragment is expired at the time of receiving");
-                    return Err(FragmentRejectionReason::FragmentExpired);
-                }
-                Err(TxValidityError::TransactionValidForTooLong) => {
-                    tracing::debug!("fragment is valid for too long");
-                    return Err(FragmentRejectionReason::FragmentValidForTooLong);
-                }
-            }
         }
 
         if !is_fragment_valid(fragment) {
@@ -167,19 +148,10 @@ impl Pool {
             (el, id)
         });
 
-        let tip = self.tip.get_ref().await;
-        let ledger = tip.ledger();
-        let ledger_settings = ledger.settings();
-        let block_date = get_current_block_date(&tip);
-
         for (fragment, id) in fragments.by_ref() {
             let span = tracing::debug_span!("pool_incoming_fragment", fragment_id=?id);
 
-            match self
-                .filter_fragment(&fragment, id, ledger_settings, block_date)
-                .instrument(span)
-                .await
-            {
+            match self.filter_fragment(&fragment, id).instrument(span).await {
                 Err(reason @ FragmentRejectionReason::FragmentInvalid) => {
                     rejected.push(RejectedFragmentInfo { id, reason });
                     if fail_fast {

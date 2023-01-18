@@ -2,12 +2,13 @@ mod adversary;
 mod tx_only;
 
 use crate::mjolnir_lib::MjolnirError;
-use structopt::StructOpt;
+use clap::Parser;
 pub use tx_only::TxOnly;
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Batch {
     /// Prints nodes related data, like stats,fragments etc.
     TxOnly(tx_only::TxOnly),
+    #[clap(subcommand)]
     Adversary(adversary::Adversary),
 }
 

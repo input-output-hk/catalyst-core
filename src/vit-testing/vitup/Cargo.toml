@@ -52,7 +52,7 @@ rand_chacha = "0.3"
 tempdir = "0.3.7"
 diffy = "0.2.1"
 regex = "1.4"
-structopt = "0.3"
+clap = { workspace = true }
 thiserror = "1.0"
 warp-reverse-proxy = "0.3.2"
 hex = "0.4"

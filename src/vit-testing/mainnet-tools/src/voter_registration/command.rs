@@ -1,25 +1,25 @@
 use super::fake;
+use clap::Parser;
 use std::path::PathBuf;
-use structopt::StructOpt;
 use thiserror::Error;
 
 pub const PATH_TO_DYNAMIC_CONTENT: &str = "VOTER_REGISTRATION_DYNAMIC_CONTENT";
 
 /// Voter registration mock. It can return correctly formatted but faked response similar to
 /// Haskel voter registration CLI: <https://github.com/input-output-hk/voting-tools/tree/master/registration>
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct Command {
     /// Rewards address in bech32
-    #[structopt(long = "rewards-address")]
+    #[clap(long = "rewards-address")]
     pub rewards_address: String,
     /// Path to catalyst voting key file in bech32
-    #[structopt(long = "vote-public-key-file")]
+    #[clap(long = "vote-public-key-file")]
     pub vote_public_key_file: PathBuf,
     /// Path to cardano stake signing key file in bech32
-    #[structopt(long = "stake-signing-key-file")]
+    #[clap(long = "stake-signing-key-file")]
     pub stake_signing_key_file: PathBuf,
     /// Slot number which will be used as a nonce
-    #[structopt(long = "slot-no")]
+    #[clap(long = "slot-no")]
     pub slot_no: u32,
 }
 

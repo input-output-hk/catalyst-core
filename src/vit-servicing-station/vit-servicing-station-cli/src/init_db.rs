@@ -1,5 +1,5 @@
 use crate::task::ExecTask;
-use structopt::StructOpt;
+use clap::Parser;
 use thiserror::Error;
 use vit_servicing_station_lib::db::{
     load_db_connection_pool, migrations::initialize_db_with_migration, Error as DbPoolError,
@@ -17,12 +17,12 @@ pub enum Error {
     ),
 }
 
-#[derive(Debug, PartialEq, Eq, StructOpt)]
+#[derive(Debug, PartialEq, Eq, Parser)]
 pub enum Db {
     /// Initialize a DB with the proper migrations, DB file is created if not exists.
     Init {
         /// URL of the vit-servicing-station database to interact with
-        #[structopt(long = "db-url")]
+        #[clap(long = "db-url")]
         db_url: String,
     },
 }

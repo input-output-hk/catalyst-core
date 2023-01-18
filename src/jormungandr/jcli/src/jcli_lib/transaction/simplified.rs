@@ -15,53 +15,53 @@ use chain_crypto::{Ed25519, Ed25519Extended, PublicKey, SecretKey};
 use chain_impl_mockchain::{
     account::SpendingCounter, fee::FeeAlgorithm, key::EitherEd25519SecretKey, transaction::Output,
 };
+use clap::Parser;
 use jormungandr_lib::{interfaces, interfaces::SettingsDto};
 use rand::{rngs::OsRng, SeedableRng};
 use rand_chacha::ChaChaRng;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct MakeTransaction {
     /// the account to debit the funds from
-    #[structopt(name = "ACCOUNT")]
+    #[clap(name = "ACCOUNT")]
     pub sender_account: interfaces::Address,
 
     /// the value
-    #[structopt(name = "VALUE")]
+    #[clap(name = "VALUE")]
     pub value: interfaces::Value,
 
     /// the account to send funds to
-    #[structopt(long)]
+    #[clap(long)]
     pub receiver: Option<interfaces::Address>,
 
-    #[structopt(long)]
+    #[clap(long)]
     pub block0_hash: String,
 
-    #[structopt(long)]
+    #[clap(long)]
     pub valid_until: interfaces::BlockDate,
 
     /// the file path to the file to read the signing key from.
     /// If omitted it will be read from the standard input.
-    #[structopt(long)]
+    #[clap(long)]
     pub secret: Option<PathBuf>,
 
     /// Set the change in the given address
-    #[structopt(long)]
+    #[clap(long)]
     pub change: Option<interfaces::Address>,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub common: common::CommonTransaction,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     rest_args: RestArgs,
 
     // force transaction without requesting for confirmation
-    #[structopt(long)]
+    #[clap(long)]
     force: bool,
 
-    #[structopt(long)]
+    #[clap(long)]
     post: bool,
 }
 

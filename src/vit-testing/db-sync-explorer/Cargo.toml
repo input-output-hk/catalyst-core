@@ -26,6 +26,6 @@ http-zipkin = "0.3.0"
 jortestkit = { path = "../../jortestkit" }
 tokio = { version = "1.18.0", features = ["macros", "signal", "rt", "fs", "sync"] }
 tracing-subscriber.workspace = true
-clap = { version = "3.2", features = ["derive"] }
+clap = { workspace = true }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

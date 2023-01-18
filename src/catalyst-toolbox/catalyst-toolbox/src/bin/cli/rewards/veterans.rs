@@ -1,15 +1,15 @@
 use catalyst_toolbox::community_advisors::models::VeteranRankingRow;
 use catalyst_toolbox::rewards::veterans::{self, VcaRewards, VeteranAdvisorIncentive};
 use catalyst_toolbox::utils::csv;
+use clap::Parser;
 use color_eyre::eyre::{bail, eyre};
 use color_eyre::Report;
 use rust_decimal::{prelude::*, Decimal};
 use serde::Serialize;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct VeteransRewards {
     /// Reviews csv file path
     from: PathBuf,
@@ -18,48 +18,48 @@ pub struct VeteransRewards {
     to: PathBuf,
 
     /// Reward to be distributed (integer value)
-    #[structopt(long = "total-rewards")]
+    #[clap(long = "total-rewards")]
     total_rewards: Decimal,
 
     /// Minimum number of rankings for each vca to be considered for reputation and rewards
     /// distribution
-    #[structopt(long)]
+    #[clap(long)]
     min_rankings: usize,
 
     /// Cutoff for monetary rewards: ranking more reviews than this limit will not result in more rewards
-    #[structopt(long)]
+    #[clap(long)]
     max_rankings_rewards: usize,
 
     /// Cutoff for reputation: ranking more reviews than this limit will not result in more reputation awarded
-    #[structopt(long)]
+    #[clap(long)]
     max_rankings_reputation: usize,
 
     /// Agreement rate cutoff list for rewards. These are expected to be provided in descending
     /// order (numerically speaking). The first cutoff that is lower or equal than the computed
     /// agreement rate for each vca is used to select the corresponding modifier (the one that is
     /// in the same position).
-    #[structopt(long, required = true)]
+    #[clap(long, required = true)]
     rewards_agreement_rate_cutoffs: Vec<Decimal>,
 
     /// Cutoff multipliers for rewards: Expected the same number of values than
     /// rewards_agreement_rate_cutoff. The order of these matters, and is expected to be in a 1 to
     /// 1 correspondence with the ones provided in rewards_agreement_rate_cutoffs, meaning than if
     /// the first cutoff is selected then the first modifier is used.
-    #[structopt(long, required = true)]
+    #[clap(long, required = true)]
     rewards_agreement_rate_modifiers: Vec<Decimal>,
 
     /// Agreement rate cutoff list for reputation. These are expected to be provided in descending
     /// order (numerically speaking). The first cutoff that is lower or equal than the computed
     /// agreement rate for each vca is used to select the corresponding modifier (the one that is in
     /// the same position).
-    #[structopt(long, required = true)]
+    #[clap(long, required = true)]
     reputation_agreement_rate_cutoffs: Vec<Decimal>,
 
     /// Cutoff multipliers for reputation: Expected the same number of values than
     /// rewards_agreement_rate_cutoff. The order of these matters, and is expected to be in a 1 to
     /// 1 correspondence with the ones provided in reputation_agreement_rate_cutoffs, meaning than
     /// if the first cutoff is selected then the first modifier is used.
-    #[structopt(long, required = true)]
+    #[clap(long, required = true)]
     reputation_agreement_rate_modifiers: Vec<Decimal>,
 }
 

@@ -14,7 +14,6 @@ use chain_crypto::{
     bech32::Bech32, digest::Error as DigestError, hash::Error as HashError, Blake2b256, PublicKey,
     PublicKeyFromStrError,
 };
-///jhsgdjjas
 use chain_impl_mockchain::{
     account::{AccountAlg, Identifier},
     fragment::{Fragment, FragmentId},

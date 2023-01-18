@@ -376,28 +376,6 @@ pub(super) mod internal {
             }
         }
 
-        fn push_back(&mut self, key: K, value: V) {
-            let mut entry = Box::new(IndexedDequeueEntry {
-                key,
-                value,
-                prev: self.tail,
-                next: ptr::null_mut(),
-            });
-            if let Some(tail) = unsafe { self.tail.as_mut() } {
-                tail.next = &mut *entry;
-            } else {
-                self.head = &mut *entry;
-            }
-            self.tail = &mut *entry;
-            if self
-                .index
-                .insert(IndexedDequeueKeyRef(&entry.key), entry)
-                .is_some()
-            {
-                panic!("inserted an already existing key");
-            }
-        }
-
         fn pop_back(&mut self) -> Option<(K, V)> {
             let tail = unsafe { self.tail.as_mut() }?;
             self.tail = tail.prev;
@@ -530,16 +508,6 @@ pub(super) mod internal {
             let (id, fragment) = self.entries.pop_back().map(|(id, value)| (id, value))?;
             self.total_size_bytes -= fragment.serialized_size();
             Some((fragment, id))
-        }
-
-        pub fn return_to_pool(
-            &mut self,
-            fragments: impl IntoIterator<Item = (Fragment, FragmentId)>,
-        ) {
-            for (fragment, id) in fragments.into_iter() {
-                self.total_size_bytes += fragment.serialized_size();
-                self.entries.push_back(id, fragment);
-            }
         }
 
         pub fn len(&self) -> usize {

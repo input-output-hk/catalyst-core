@@ -17,6 +17,7 @@ use wallet_core::Choice;
 
 unsafe impl Send for Wallet {}
 use jormungandr_automation::testing::vit::VoteCastCounterError;
+use jormungandr_lib::interfaces::VotePlanId;
 use std::convert::TryInto;
 
 /// Responsible for controlling more than one wallet at one time. Useful for load scenario or wallets
@@ -317,4 +318,7 @@ pub enum MultiControllerError {
     /// Missing proposal
     #[error(transparent)]
     VotesCastRegister(#[from] VoteCastCounterError),
+    /// Too many proposals
+    #[error("invalid proposals length for voteplan with id: ({0}) by design it should be more than 128 proposals in single vote plan")]
+    InvalidProposalsLen(VotePlanId),
 }

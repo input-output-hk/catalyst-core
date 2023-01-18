@@ -54,14 +54,23 @@ impl BatchWalletRequestGen {
             .copied()
             .collect();
 
-        let vote_cast_counter = VoteCastCounter::new(
-            multi_controller.wallet_count(),
-            vote_plans
-                .iter()
-                .filter(|v| voting_groups_vote_plans_ids.contains(&v.id.to_string()))
-                .map(|v| (v.id.into(), proposals.len().try_into().unwrap()))
-                .collect(),
-        );
+        let mut vote_plans_registry = Vec::new();
+
+        for v in vote_plans
+            .iter()
+            .filter(|v| voting_groups_vote_plans_ids.contains(&v.id.to_string()))
+        {
+            vote_plans_registry.push((
+                v.id.into(),
+                proposals
+                    .len()
+                    .try_into()
+                    .map_err(|_| MultiControllerError::InvalidProposalsLen(v.id))?,
+            ));
+        }
+
+        let vote_cast_counter =
+            VoteCastCounter::new(multi_controller.wallet_count(), vote_plans_registry);
 
         Ok(Self {
             batch_size,

@@ -182,7 +182,8 @@ pub struct Votes {
     pub vote_plan_index: Option<usize>,
     /// Print title, otherwise only id would be print out
     #[clap(long = "print-details")]
-    pub print_details: bool,    #[clap(default_value = "direct", long)]
+    pub print_details: bool,
+    #[clap(default_value = "direct", long)]
     pub voting_group: String,
 }
 
@@ -470,7 +471,8 @@ pub struct Proposals {
     #[clap(short, long)]
     pub regex: Option<String>,
     #[clap(short, long)]
-    pub sort: Option<String>,    /// Limit output entries
+    pub sort: Option<String>,
+    /// Limit output entries
     #[clap(short, long)]
     pub limit: Option<usize>,
     #[clap(default_value = "direct", long)]

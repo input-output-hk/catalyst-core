@@ -9,7 +9,6 @@
     clippy::bool_assert_comparison,
     clippy::derive_partial_eq_without_eq
 )]
-extern crate prettytable;
 extern crate rand;
 
 mod controller;

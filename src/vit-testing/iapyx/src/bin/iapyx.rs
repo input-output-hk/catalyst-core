@@ -1,8 +1,8 @@
 mod interactive;
 
+use clap::Parser;
 use interactive::{CliController, IapyxCommand, IapyxCommandError};
 use std::error::Error;
-use clap::Parser;
 
 pub fn main() {
     exec().unwrap_or_else(report_error)

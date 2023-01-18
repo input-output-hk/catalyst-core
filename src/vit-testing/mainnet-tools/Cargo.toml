@@ -37,8 +37,8 @@ snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib", features=["propte
 snapshot-trigger-service = { path = "../snapshot-trigger-service" }
 tracing.workspace = true
 tracing-subscriber.workspace = true
+prettytable-rs.workspace = true
 warp = "0.3.3"
 futures-util = "0.3.25"
 
 assert_fs = "1.0"
-prettytable-rs = "0.10.0"

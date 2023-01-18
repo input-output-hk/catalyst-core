@@ -5,10 +5,12 @@ mod starter;
 mod voter_hirs_asserts;
 
 use crate::common::snapshot::result::{do_snapshot as do_snapshot_internal, SnapshotResult};
-pub use controller::SnapshotServiceController;
 use snapshot_trigger_service::config::JobParameters;
-pub use starter::SnapshotServiceStarter;
 use thiserror::Error;
+
+pub use controller::SnapshotServiceController;
+pub use result::SnapshotResult;
+pub use starter::SnapshotServiceStarter;
 pub use voter_hirs_asserts::RegistrationAsserts;
 
 pub fn do_snapshot(job_params: JobParameters) -> Result<SnapshotResult, result::Error> {

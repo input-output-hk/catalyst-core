@@ -1,6 +1,7 @@
 use catalyst_toolbox::logs::compare::{compare_logs, LogCmpStats};
 use catalyst_toolbox::logs::sentry::{RawLog, SentryFragmentLog};
 use chain_core::property::Fragment;
+use clap::Parser;
 use color_eyre::Report;
 use jcli_lib::utils::io;
 use jormungandr_lib::interfaces::{
@@ -8,15 +9,14 @@ use jormungandr_lib::interfaces::{
 };
 use serde::de::DeserializeOwned;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Debug, Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Compare {
-    #[structopt(long)]
+    #[clap(long)]
     sentry_logs: PathBuf,
 
-    #[structopt(long)]
+    #[clap(long)]
     permanent_logs: PathBuf,
 }
 

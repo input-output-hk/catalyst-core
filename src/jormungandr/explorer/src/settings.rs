@@ -1,9 +1,9 @@
 use crate::logging::{LogFormat, LogOutput, LogSettings};
+use clap::Parser;
 use jormungandr_lib::interfaces::{Cors, Tls};
 use lazy_static::lazy_static;
 use serde::{de, de::Error as _, Deserialize, Deserializer, Serialize, Serializer};
-use std::{fs::File, net::SocketAddr, path::PathBuf};
-use structopt::StructOpt;
+use std::{fs::File, net::SocketAddr, path::PathBuf, str::FromStr};
 use thiserror::Error;
 use tonic::transport::Uri;
 use tracing::metadata::LevelFilter;
@@ -52,7 +52,7 @@ pub struct Settings {
 
 impl Settings {
     pub fn load() -> Result<Settings, Error> {
-        let cmd = CommandLine::from_args();
+        let cmd = CommandLine::parse();
         let file: Config = cmd
             .config
             .as_ref()
@@ -145,41 +145,40 @@ impl Settings {
     }
 }
 
-#[derive(Debug, StructOpt)]
-#[structopt(name = "config")]
+#[derive(Debug, Parser)]
+#[clap(name = "config")]
 struct CommandLine {
-    #[structopt(long)]
+    #[clap(long)]
     pub node: Option<Uri>,
-    #[structopt(long)]
+    #[clap(long)]
     pub binding_address: Option<SocketAddr>,
-    #[structopt(long)]
+    #[clap(long)]
     pub address_bech32_prefix: Option<String>,
-    #[structopt(long)]
+    #[clap(long)]
     pub query_depth_limit: Option<usize>,
-    #[structopt(long)]
+    #[clap(long)]
     pub query_complexity_limit: Option<usize>,
 
     pub config: Option<PathBuf>,
     /// Set log messages minimum severity. If not configured anywhere, defaults to "info".
-    #[structopt(
+    #[clap(
         long = "log-level",
-        parse(try_from_str = log_level_parse),
-        possible_values = &LOG_FILTER_LEVEL_POSSIBLE_VALUES
+        value_parser = log_level_parse,
     )]
     pub log_level: Option<LevelFilter>,
 
     /// Set format of the log emitted. Can be "json" or "plain".
     /// If not configured anywhere, defaults to "plain".
-    #[structopt(long = "log-format", parse(try_from_str))]
+    #[clap(long = "log-format", value_parser = LogFormat::from_str)]
     pub log_format: Option<LogFormat>,
 
     /// Set format of the log emitted. Can be "stdout", "stderr" or a file path preceeded by '@' (e.g. @./explorer.log).
     /// If not configured anywhere, defaults to "stderr".
-    #[structopt(long = "log-output", parse(try_from_str))]
+    #[clap(long = "log-output", value_parser = LogOutput::from_str)]
     pub log_output: Option<LogOutput>,
 
     /// Enable the OTLP trace data exporter and set the collector's GRPC endpoint.
-    #[structopt(long)]
+    #[clap(long)]
     pub log_trace_collector_endpoint: Option<Url>,
 }
 

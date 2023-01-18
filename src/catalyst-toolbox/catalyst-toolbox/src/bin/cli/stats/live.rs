@@ -1,27 +1,27 @@
 use catalyst_toolbox::stats::live::{start, Harvester, Settings};
+use clap::Parser;
 use color_eyre::Report;
 use jortestkit::console::ProgressBarMode;
 use jortestkit::prelude::parse_progress_bar_mode_from_str;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
 /// Commands connect to desired backend and query endpoint with some interval.
 /// It can dump result to to console in a progress mode/standard printout or file.
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct LiveStatsCommand {
-    #[structopt(long = "endpoint")]
+    #[clap(long = "endpoint")]
     pub endpoint: String,
-    #[structopt(long = "interval")]
+    #[clap(long = "interval")]
     pub interval: u64,
-    #[structopt(
+    #[clap(
         long = "progress-bar-mode",
         default_value = "Monitor",
-        parse(from_str = parse_progress_bar_mode_from_str)
+        value_parser = parse_progress_bar_mode_from_str
     )]
     pub console: ProgressBarMode,
-    #[structopt(long = "logger")]
+    #[clap(long = "logger")]
     pub file: Option<PathBuf>,
-    #[structopt(long = "duration")]
+    #[clap(long = "duration")]
     pub duration: u64,
 }
 

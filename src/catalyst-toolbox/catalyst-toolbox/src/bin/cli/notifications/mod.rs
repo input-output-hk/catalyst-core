@@ -1,12 +1,13 @@
 mod api_params;
 mod send;
 
+use clap::Parser;
 use color_eyre::Report;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum PushNotifications {
+    #[clap(subcommand)]
     Send(send::SendNotification),
 }
 

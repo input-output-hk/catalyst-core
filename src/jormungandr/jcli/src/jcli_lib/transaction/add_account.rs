@@ -1,19 +1,19 @@
 use crate::jcli_lib::transaction::{common, Error};
+use clap::Parser;
 use jormungandr_lib::interfaces;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct AddAccount {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub common: common::CommonTransaction,
 
     /// the account to debit the funds from
-    #[structopt(name = "ACCOUNT")]
+    #[clap(name = "ACCOUNT")]
     pub account: interfaces::Address,
 
     /// the value
-    #[structopt(name = "VALUE")]
+    #[clap(name = "VALUE")]
     pub value: interfaces::Value,
 }
 

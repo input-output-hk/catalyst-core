@@ -6,10 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-structopt = "0.3.26"
+clap = { workspace = true }
+
 serde_json = "1.0.86"
 serde = { version = "1", features = ["derive"] }
-uuid = { workspace = true }
+uuid = { version = "0.8", features = ["serde","v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 thiserror = "1.0"
 walkdir = "2.3.1"

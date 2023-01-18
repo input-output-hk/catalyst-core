@@ -1,16 +1,17 @@
 use super::next_id::NextId;
 use crate::jcli_lib::rest::{Error, RestArgs};
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Subcommand {
     /// Get block
     Get {
-        #[structopt(flatten)]
+        #[clap(flatten)]
         args: RestArgs,
     },
     /// Get block descendant ID
+    #[clap(subcommand)]
     NextId(NextId),
 }
 

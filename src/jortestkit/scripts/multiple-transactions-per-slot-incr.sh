@@ -32,13 +32,13 @@ SOURCE_SK=$3
 
 REST_URL="http://127.0.0.1:${REST_PORT}/api"
 
-FEE_CONSTANT=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'constant:' | sed -e 's/^[[:space:]]*//' | sed -e 's/constant: //')
-FEE_COEFFICIENT=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'coefficient:' | sed -e 's/^[[:space:]]*//' | sed -e 's/coefficient: //')
-FEE_CERTIFICATE=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'certificate:' | sed -e 's/^[[:space:]]*//' | sed -e 's/certificate: //')
-BLOCK0_HASH=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'block0Hash:' | sed -e 's/^[[:space:]]*//' | sed -e 's/block0Hash: //')
-MAX_TXS_PER_BLOCK=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'maxTxsPerBlock:' | sed -e 's/^[[:space:]]*//' | sed -e 's/maxTxsPerBlock: //')
-SLOT_DURATION=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'slotDuration:' | sed -e 's/^[[:space:]]*//' | sed -e 's/slotDuration: //')
-SLOTS_PER_EPOCH=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'slotsPerEpoch:' | sed -e 's/^[[:space:]]*//' | sed -e 's/slotsPerEpoch: //')
+FEE_CONSTANT=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'constant:' | sed -e 's/^[[:space:]]*//' | sed -e 's/constant: //')
+FEE_COEFFICIENT=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'coefficient:' | sed -e 's/^[[:space:]]*//' | sed -e 's/coefficient: //')
+FEE_CERTIFICATE=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'certificate:' | sed -e 's/^[[:space:]]*//' | sed -e 's/certificate: //')
+BLOCK0_HASH=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'block0Hash:' | sed -e 's/^[[:space:]]*//' | sed -e 's/block0Hash: //')
+MAX_TXS_PER_BLOCK=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'maxTxsPerBlock:' | sed -e 's/^[[:space:]]*//' | sed -e 's/maxTxsPerBlock: //')
+SLOT_DURATION=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'slotDuration:' | sed -e 's/^[[:space:]]*//' | sed -e 's/slotDuration: //')
+SLOTS_PER_EPOCH=$($CLI rest v0 settings get --host "${REST_URL}" | grep 'slotsPerEpoch:' | sed -e 's/^[[:space:]]*//' | sed -e 's/slotsPerEpoch: //')
 
 ### COLORS
 if [ ${COLORS} -eq 1 ]; then
@@ -56,7 +56,7 @@ fi
 ### HELPERS
 
 getTip() {
-    echo $($CLI rest v0 tip get -h "${REST_URL}")
+    echo $($CLI rest v0 tip get --host "${REST_URL}")
 }
 
 waitNewBlockCreated() {
@@ -78,15 +78,15 @@ waitNewBlockCreated() {
 }
 
 getAccountValue() {
-    echo $($CLI rest v0 account get $1 -h "${REST_URL}" | grep 'value: ' | awk -F'value: ' '{print $2}')
+    echo $($CLI rest v0 account get $1 --host "${REST_URL}" | grep 'value: ' | awk -F'value: ' '{print $2}')
 }
 
 getNoOfMinedTransactions() {
-    echo $($CLI rest v0 message logs -h "${REST_URL}" | tr ' ' '\n' | grep 'InABlock:' | wc -l)
+    echo $($CLI rest v0 message logs --host "${REST_URL}" | tr ' ' '\n' | grep 'InABlock:' | wc -l)
 }
 
 getTotalNoOfMesageLogs() {
-    echo $($CLI rest v0 message logs -h "${REST_URL}" | tr ' ' '\n' | grep 'fragment_id:' | wc -l)
+    echo $($CLI rest v0 message logs --host "${REST_URL}" | tr ' ' '\n' | grep 'fragment_id:' | wc -l)
 }
 
 compareBalances() {
@@ -127,7 +127,7 @@ sendMoney() {
 
     # Finalize the transaction and send it
     $CLI transaction seal --staging "${STAGING_FILE}"
-    tx_hash=$($CLI transaction to-message --staging "${STAGING_FILE}" | $CLI rest v0 message post -h "${REST_URL}")
+    tx_hash=$($CLI transaction to-message --staging "${STAGING_FILE}" | $CLI rest v0 message post --host "${REST_URL}")
 
     echo "${DST_ADDR}: ${SOURCE_COUNTER}: ${tx_hash}" >> ${TX_HISTORY}
     rm -f ${STAGING_FILE} ${SRC_WITNESS_SECRET_FILE} ${SRC_WITNESS_OUTPUT_FILE}
@@ -142,7 +142,7 @@ SOURCE_PK=$(echo ${SOURCE_SK} | $CLI key to-public)
 SRC_ADDR=$($CLI address account ${ADDRTYPE} ${SOURCE_PK})
 
 SRC_BALANCE_INIT=$(getAccountValue ${SRC_ADDR})
-SOURCE_COUNTER=$( $CLI rest v0 account get "${SRC_ADDR}" -h "${REST_URL}" | grep '^counter:' | sed -e 's/counter: //' )
+SOURCE_COUNTER=$( $CLI rest v0 account get "${SRC_ADDR}" --host "${REST_URL}" | grep '^counter:' | sed -e 's/counter: //' )
 echo "------------------------------------------------------"
 echo "SOURCE_SK         : ${SOURCE_SK}"
 echo "SOURCE_PK         : ${SOURCE_PK}"

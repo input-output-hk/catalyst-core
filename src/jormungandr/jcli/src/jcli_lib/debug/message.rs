@@ -1,16 +1,16 @@
 use crate::jcli_lib::{debug::Error, utils::io};
 use chain_core::{packer::Codec, property::DeserializeFromSlice as _};
 use chain_impl_mockchain::fragment::Fragment as MockFragment;
+use clap::Parser;
 use std::{
     io::{BufRead, BufReader},
     path::PathBuf,
 };
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct Message {
     /// file containing hex-encoded message. If not provided, it will be read from stdin.
-    #[structopt(short, long)]
+    #[clap(short, long)]
     input: Option<PathBuf>,
 }
 

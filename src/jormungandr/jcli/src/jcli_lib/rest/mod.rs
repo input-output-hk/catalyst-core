@@ -4,18 +4,20 @@ pub mod v1;
 
 use crate::jcli_lib::utils::{io::ReadYamlError, output_format};
 use chain_core::property::{ReadError, WriteError};
+use clap::Parser;
 pub use config::RestArgs;
 use hex::FromHexError;
-use structopt::StructOpt;
 use thiserror::Error;
 
 /// Send request to node REST API
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Rest {
     /// API version 0
+    #[clap(subcommand)]
     V0(v0::V0),
     /// API version 1
+    #[clap(subcommand)]
     V1(v1::V1),
 }
 

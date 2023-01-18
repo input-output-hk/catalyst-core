@@ -477,6 +477,17 @@ paths:
 components:
   schemas:
     Fund:
+      description: 'Note, ANY date-time formatted field in this API may report:
+
+        "1970-01-01T00:00:00Z" 
+        
+        Which is The unix Epoch.        
+        This date is to be interpreted that the date-time for the event the 
+        field represents is not yet known.
+
+        The UI may either not display anything for this field, or TBD or an 
+        equivalent message.'
+
       properties:
         id:
           type: integer
@@ -1066,6 +1077,16 @@ components:
     NextFundInfo:
       properties:
         next:
+          description: 'Note, ANY date-time formatted field in this API may report:
+
+            "1970-01-01T00:00:00Z" 
+            
+            Which is The unix Epoch.        
+            This date is to be interpreted that the date-time for the event the 
+            field represents is not yet known.
+
+            The UI may either not display anything for this field, or TBD or an 
+            equivalent message.'
           properties:
             id:
               type: integer

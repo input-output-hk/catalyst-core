@@ -26,6 +26,7 @@ extern crate diesel;
 mod cli;
 mod data_provider;
 mod data;
+mod error;
 mod db;
 // mod logic;
 // mod model;

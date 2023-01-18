@@ -7002,6 +7002,7 @@ dependencies = [
  "chain-addr",
  "chrono",
  "futures",
+ "hex",
  "jormungandr-lib",
  "jortestkit",
  "num-traits",

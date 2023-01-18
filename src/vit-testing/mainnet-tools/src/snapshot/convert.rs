@@ -104,7 +104,7 @@ impl OutputExtension for SnapshotEntry {
                     Error::CannotConvertFromOutput("cannot extract voting power".to_string())
                 })?
                 .into(),
-            reward_address: self.rewards_address.to_string(),
+            reward_address: hex::encode(&self.rewards_address.0),
             delegations: match self.voting_power_source {
                 VotingPowerSource::Legacy(legacy) => VotingDelegations::Legacy(
                     Identifier::from_hex(&legacy.to_hex())

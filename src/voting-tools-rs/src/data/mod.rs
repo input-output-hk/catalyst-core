@@ -77,7 +77,7 @@ pub struct SnapshotEntry {
     pub voting_power_source: VotingPowerSource,
 
     /// Mainnet rewards address
-    pub rewards_address: RewardsKeyHex,
+    pub rewards_address: RewardsAddress,
 
     /// Stake public key
     pub stake_key: StakeKeyHex,

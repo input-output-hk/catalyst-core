@@ -63,7 +63,7 @@ impl<'a> SnapshotOutputAssert<'a> {
     pub fn reward_address(&self, reward_address: &RewardAddress) {
         assert_eq!(
             reward_address.to_address().to_hex(),
-            self.output.rewards_address.to_string(),
+            hex::encode(&self.output.rewards_address.0),
             "different rewards address"
         );
     }

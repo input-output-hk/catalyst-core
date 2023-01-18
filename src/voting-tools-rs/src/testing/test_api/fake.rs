@@ -1,6 +1,6 @@
 use crate::data::crypto::PublicKeyHex;
 use crate::data::{
-    Nonce, Reg, Registration, RewardsKeyHex, Signature, SignedRegistration, SlotNo, StakeKeyHex,
+    Nonce, Reg, Registration, RewardsAddress, Signature, SignedRegistration, SlotNo, StakeKeyHex,
     TxId, VotingKeyHex, VotingPowerSource, VotingPurpose,
 };
 use crate::data_provider::DataProvider;
@@ -105,9 +105,7 @@ impl DataProvider for MockDbProvider {
                             registration: Registration {
                                 voting_power_source,
                                 stake_key,
-                                rewards_address: RewardsKeyHex(PublicKeyHex::from_bytes(
-                                    rewards_address.to_bytes().try_into().unwrap(),
-                                )),
+                                rewards_address: RewardsAddress(rewards_address.to_bytes()),
                                 nonce: Nonce(
                                     u64::from_str(
                                         &metadata_map

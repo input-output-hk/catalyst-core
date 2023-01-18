@@ -104,7 +104,7 @@ impl SnapshotResult {
                         CannotConvertFromOutput("cannot extract voting power".to_string())
                     })?
                     .into(),
-                reward_address: output.rewards_address.to_string(),
+                reward_address: hex::encode(&output.rewards_address.0),
                 delegations: match output.voting_power_source {
                     VotingPowerSource::Legacy(legacy) => VotingDelegations::Legacy(
                         Identifier::from_hex(&legacy.to_hex())

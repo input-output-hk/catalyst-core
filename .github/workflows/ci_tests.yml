@@ -109,10 +109,6 @@ jobs:
       - name: Install nextest
         uses: taiki-e/install-action@nextest
 
-      - name: Install deps
-        run:
-          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-
       - run:
           cargo build -p vit-servicing-station-cli -p vit-servicing-station-server
 
@@ -175,5 +171,5 @@ jobs:
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
           components: rustfmt, clippy
-          
+
       - run: scripts/check-fmt.sh

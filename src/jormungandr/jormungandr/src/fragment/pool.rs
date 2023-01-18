@@ -589,7 +589,7 @@ pub(super) mod internal {
                 .map(|(_, id)| id)
                 .collect::<HashSet<_>>()
                 .len()
-                != 5
+                != 8
             {
                 return TestResult::discard();
             }

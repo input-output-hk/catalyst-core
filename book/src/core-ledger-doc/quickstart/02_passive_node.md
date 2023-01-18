@@ -44,7 +44,16 @@ Description of the fields:
 - `storage`: (optional) Path to the storage. If omitted, the
   blockchain is stored in memory only.
 - `log`: (optional) Logging configuration:
-  - `level`: log messages minimum severity. If not configured anywhere, defaults to "info". Possible values: "off", "critical", "error", "warn", "info", "debug", "trace".
+  - `level`: log messages minimum severity.
+    If not configured anywhere, defaults to "info".
+    Possible values:
+    - "off"
+    - "critical"
+    - "error"
+    - "warn"
+    - "info"
+    - "debug"
+    - "trace"
   - `format`: Log output format, `plain` or `json`.
   - `output`: Log output destination. Possible values are:
     - `stdout`: standard output
@@ -101,7 +110,8 @@ Description of the fields:
 jormungandr --config config.yaml --genesis-block-hash 'abcdef987654321....'
 ```
 
-The 'abcdef987654321....' part refers to the hash of the genesis, that should be given to you from one of the peers in the network you are connecting to.
+The 'abcdef987654321....' part refers to the hash of the genesis.
+This should be given to you from one of the peers in the network you are connecting to.
 
 In case you have the genesis file (for example `block-0.bin`, because you are creating the network) you can get this hash with `jcli`.
 

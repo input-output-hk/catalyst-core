@@ -1,3 +1,4 @@
+<!-- markdownlint-disable no-inline-html first-line-h1 -->
 <!-- We embed the API Docs directly with RAW HTML. -->
 
 <!-- 1. Close the Div amd Main that mdBook creates for us. -->

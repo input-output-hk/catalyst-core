@@ -17,7 +17,7 @@ The account accumulate moneys and its stake power is directly represented by the
 
 For example:
 
-```
+```text
 
     A - Account with 30$ => Account A has stake of 30
     B - Account with 0$ => Account B has no stake
@@ -36,7 +36,7 @@ UTXO are represented by two kind of addresses:
 
 For example with the following utxos:
 
-```
+```text
     UTXO1 60$ (single address) => has stake of 0
 
     UTXO2 50$ (group address A) \
@@ -62,7 +62,7 @@ change over time with a publication of a new delegation certificate.
 
 Delegation certificate are a simple declaration statement in the form of:
 
-```
+```text
     Account 'A' delegate to Stake Pool 'Z'
 ```
 

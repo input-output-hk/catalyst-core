@@ -88,6 +88,11 @@ documentation comment.
       the provided list is empty, all preflight requests will be rejected.
       Default should be a value which allows cors to work without requiring
       extra config under normal circumstances.
+
+```text
+
+STILL TODO
+
   * `jrpc` - Optional. No idea what this does yet???  TODO: Document it and defaults.
   * `p2p` - Peer to Peer config.
 
@@ -111,3 +116,4 @@ documentation comment.
     pub skip_bootstrap: bool,
 
     pub block_hard_deadline: Option<u32>,
+```

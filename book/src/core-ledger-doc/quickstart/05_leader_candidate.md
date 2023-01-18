@@ -16,7 +16,8 @@ There are some differences depending if you are connecting to a network running 
 
 #### Registering a stake pool
 
-In order to be able to generate blocks in an existing genesis network, a [registered stake pool](../stake_pool/registering_stake_pool.md) is needed.
+In order to be able to generate blocks in an existing genesis network,
+a [registered stake pool](../stake_pool/registering_stake_pool.md) is needed.
 
 #### Creating the secrets file
 
@@ -33,19 +34,19 @@ genesis:
   node_id: Content of stake_pool.id file
 ```
 
-#### Starting the node
+#### Starting the Genesis node
 
 ```sh
 jormungandr --genesis-block-hash asdf1234... --config config.yaml --secret node_secret.yaml
 ```
 
-_The 'asdf1234...' part should be the actual block0 hash of the network_
+_The 'asdf1234...' part should be the actual block0 hash of the network._
 
 ### Connecting to a BFT blockchain
 
 In order to generate blocks, the node should be registered as a slot leader in the network and started in the following way.
 
-## The secret file
+#### The secret file
 
 Put secret key in a yaml file, e.g. `node_secret.yaml` as follows:
 
@@ -56,10 +57,10 @@ bft:
 
 where signing_key is a private key associated to the public id of a slot leader.
 
-### Starting the node
+#### Starting the BFT node
 
 ```sh
 jormungandr --genesis-block asdf1234... --config node.config --secret node_secret.yaml
 ```
 
-_The 'asdf1234...' part should be the actual block0 hash of the network_
+_The 'asdf1234...' part should be the actual block0 hash of the network._

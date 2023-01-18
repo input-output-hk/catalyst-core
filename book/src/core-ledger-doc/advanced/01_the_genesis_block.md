@@ -1,5 +1,8 @@
 # genesis file
 
+<!-- markdownlint-disable line-length -->
+<!-- Big tables are breaking the line length TODO: Fix this individually. -->
+
 The genesis file is the file that allows you to create a new blockchain
 from block 0. It lays out the different parameters of your blockchain:
 the initial utxo, the start time, the slot duration time, etc...
@@ -79,9 +82,12 @@ initial:
 
 ### `fund` and `legacy_fund` format
 
-| variant   | format | description                                                                                                                    |
-| :-------- | :----- | :----------------------------------------------------------------------------------------------------------------------------- |
-| `address` | string | can be a [single address](../jcli/address.md#address-for-utxo) or an [account address](../jcli/address.md#address-for-account) |
-| `value`   | number | assigned value                                                                                                                 |
+| variant   | format | description  |
+| :-------- | :----- | :--------- |
+| `address` | string | can be a [single address] or an [account address] |
+| `value`   | number | assigned value |
 
 `legacy_fund` differs only in address format, which is legacy Cardano
+
+[single address]: ../jcli/address.md#address-for-utxo
+[account address]: ../jcli/address.md#address-for-account

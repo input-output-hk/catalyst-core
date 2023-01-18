@@ -81,7 +81,8 @@ initial_funds:
 
 ### Starting the node
 
-Now, to start the node and be able to generate new blocks, you have to put your pool's private keys and id in a file and start the node with the `--secret filename` parameter.
+Now, to start the node and be able to generate new blocks, you have to put your pool's private keys and id in a file.
+Then start the node with the `--secret filename` parameter.
 
 ---
 
@@ -102,7 +103,7 @@ And you could start the node with this command
 jormungandr --genesis-block block-0.bin --config config.yaml --secret poolsecret.yaml
 ```
 
-# Test script
+## Test script
 
 There is a script [here](https://github.com/input-output-hk/jormungandr/blob/master/scripts/bootstrap.py)
 that can be used to bootstrap a test node with a pre-set faucet and stake pool and can be used as an

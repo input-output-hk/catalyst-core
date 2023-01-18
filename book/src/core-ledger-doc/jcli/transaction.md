@@ -64,8 +64,10 @@ The options are:
 - `--output <output>`               - write the info in the given file or print it to the standard output
 
 - `--staging <staging-file>`        - place where the transaction is going to be saved during its staging phase.
-                                      If a file is given, the transaction will be read from this file and modification will be written into this same file.
-                                      If no file is given, the transaction will be read from the standard input and will be rendered in the standard output.
+                                      If a file is given, the transaction will be read from this file and modification
+                                      will be written into this same file.
+                                      If no file is given, the transaction will be read from the standard input and will
+                                      be rendered in the standard output.
 
 YAML printed on success
 
@@ -97,9 +99,10 @@ sign_data_hash: 26be0b8bd7e34efffb769864f00d7c4aab968760f663a7e0b3ce213c4b21651b
 status: sealed      # transaction status, can be "balancing", "finalizing", "sealed" or "authed"
 ```
 
-# Examples
+## Examples
 
-The following example focuses on using an utxo as input, the few differences when transfering from an account will be pointed out when necessary.
+The following example focuses on using an utxo as input, the few differences when transfering from an account
+will be pointed out when necessary.
 Also, the simplified `make-transaction` command in  `jcli`  covers all this process. For more information run:
 
 ```sh
@@ -129,7 +132,8 @@ jcli transaction new --staging tx
 
 ## Add input
 
-For the input, we need to reference the utxo with the **UTXO's transaction ID** and **UTXO'S output index** fields and we need to specify how many coins there are with the **associated value** field.
+For the input, we need to reference the utxo with the **UTXO's transaction ID** and **UTXO'S output index** fields.
+We also need to specify how many coins there are with the **associated value** field.
 
 ### Example - UTXO address as Input
 
@@ -155,11 +159,13 @@ jcli transaction add-output ca1qvnr5pvt9e5p009strshxndrsx5etcentslp2rwj6csm8sfk2
 
 ## Add fee and change address
 
-We want to get the change in the same address that we are sending from (the *associated address* of the utxo). We also specify how to compute the fees.
+We want to get the change in the same address that we are sending from (the *associated address* of the utxo).
+We also specify how to compute the fees.
 You can leave out the `--fee-constant 5 --fee-coefficient 2` part if those are both 0.
 
 ```sh
-jcli transaction finalize ca1q09u0nxmnfg7af8ycuygx57p5xgzmnmgtaeer9xun7hly6mlgt3pjyknplu --fee-constant 5 --fee-coefficient 2 --staging tx
+jcli transaction finalize ca1q09u0nxmnfg7af8ycuygx57p5xgzmnmgtaeer9xun7hly6mlgt3pjyknplu --fee-constant 5 \
+  --fee-coefficient 2 --staging tx
 ```
 
 Now, if you run
@@ -205,7 +211,11 @@ For signing the transaction, you need:
   1. `sign_data_hash` value from `jcli transaction info --staging tx`  or
   2. `jcli transaction data-for-witness --staging tx`
 
-The genesis' hash is needed for ensuring that the transaction cannot be re-used in another blockchain and for security concerns on offline transaction signing, as we are signing the transaction for the specific blockchain started by this block0 hash.
+The genesis' hash is needed for ensuring that the transaction:
+
+- cannot be re-used in another blockchain
+- and for security concerns on offline transaction signing, as we are signing the transaction for the specific blockchain
+  started by this block0 hash.
 
 First we need to get the hash of the transaction we are going to sign.
 
@@ -222,19 +232,22 @@ You should see something like this (the value may be different since it depends 
 The following command takes the private key in the *key.prv* file and creates a witness in a file named *witness* in the current directory.
 
 ```sh
-jcli transaction make-witness --genesis-block-hash abcdef987654321... --type utxo 0df39a87d3f18a188b40ba8c203f85f37af665df229fb4821e477f6998864273 witness key.prv
+jcli transaction make-witness --genesis-block-hash abcdef987654321... \
+  --type utxo 0df39a87d3f18a188b40ba8c203f85f37af665df229fb4821e477f6998864273 witness key.prv
 ```
 
 ---
 
 #### Account input
 
-When using an account as input, the command takes `account` as the type and an additional parameter: `--account-spending-counter`, that should be increased every time the account is used as input.
+When using an account as input, the command takes `account` as the type and an additional parameter:
+`--account-spending-counter`, that should be increased every time the account is used as input.
 
 e.g.
 
 ```sh
-jcli transaction make-witness --genesis-block-hash abcdef987654321... --type account --account-spending-counter 0 0df39a87d3f18a188b40ba8c203f85f37af665df229fb4821e477f6998864273 witness key.prv
+jcli transaction make-witness --genesis-block-hash abcdef987654321... --type account --account-spending-counter 0 \
+  0df39a87d3f18a188b40ba8c203f85f37af665df229fb4821e477f6998864273 witness key.prv
 ```
 
 ### Add witness

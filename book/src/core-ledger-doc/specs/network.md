@@ -4,14 +4,14 @@
 
 ---
 
-# Introduction
+## Introduction
 
 This document highlights the requirements we wish to apply to a decentralised
 network applied to cardano blockchain. Then we will discuss the possible
 solutions we can provide in a timely manner and the tradeoff we will need to
 make.
 
-# Design decisions guidelines
+## Design decisions guidelines
 
 This is a main of general guidelines for the design decision in this document,
 and to judge the merit of solutions:
@@ -25,13 +25,13 @@ and to judge the merit of solutions:
 * **Simplicity**: we need to easily implement the protocol for any platforms or
   environment that will matter for our users.
 
-# Node-to-Node communication
+## Node-to-Node communication
 
 This section describes the communication between 2 different peers on the
 network. It involves synchronous queries with the context of the local state
 and remote state.
 
-## General Functionality
+### General Functionality
 
 This is a general high level list of what information will need to be exchanged:
 
@@ -41,9 +41,9 @@ This is a general high level list of what information will need to be exchanged:
 * Asynchronous messages for state propagation (transactions, blocks, ..)
 * P2P messages (See P2P Communication)
 
-## Design
+### Design
 
-### User Stories
+#### User Stories
 
 * Alice wants to synchronise its local state from Bob from Alice's Tip:
   * Alice downloads Block Headers from Bob (starting from Alice's Tip);
@@ -74,7 +74,7 @@ This is a general high level list of what information will need to be exchanged:
   * Alice sends the Block to Bob if Bob agrees
 * Alice want to exchange peers with Bob
 
-### High Level Messages
+#### High Level Messages
 
 We model everything so that we don't need any network state machine. Everything
 is stateless for
@@ -146,7 +146,7 @@ The protobuf files describing these methods are available in the
 
 [chain-libs-gh]: https://github.com/input-output-hk/chain-libs/
 
-### Pseudocode chain sync algorithm
+#### Pseudocode chain sync algorithm
 
 ```rust
 struct State {
@@ -214,7 +214,7 @@ sync(state, server, dest_tip, dest_tip_length) {
 }
 ```
 
-### Choice of wire Technology
+#### Choice of wire Technology
 
 We don't rely on any specific wire protocol, and only require that the wire
 protocol allow the transfer of the high level messages in a bidirectional way.
@@ -232,27 +232,27 @@ Connections and bidirectional subscription channels can be left open
 (especially for clients behind NAT), although we
 can cycle connections with a simple RCU-like system.
 
-# Node-to-Client communication
+## Node-to-Client communication
 
 Client are different from the node, in the sense that they may not be reachable
 by other peers directly.
 
 However we might consider non reachable clients to keep an open connections
-to a node to received events. <font color="red">**TBD**</font>
+to a node to received events. **TBD**
 
 * `ReceiveNext : () -> Event`
 
 Another solution would be use use libp2p which also implements NAT Traversals
 and already has solutions for this.
 
-# Peer-to-Peer network
+## Peer-to-Peer network
 
 This section describes the construction of the network topology between nodes
 participating in the protocol. It will describes the requirements necessary
 to propagate the most efficiently the Communication Messages to the nodes of
 the topology.
 
-## Definitions
+### Definitions
 
 * **Communication Messages**: the message that are necessary to be sent through
   the network (node-to-node and node-to-client) as defined above;
@@ -260,7 +260,7 @@ the topology.
 * **Node** or **Peer**: an instance running the protocol;
 * **Link**: a connection between 2 peers in the topology;
 
-## Functionalities
+### Functionalities
 
 * A node can join the network at any moment;
 * A node can leave the network at any moment;
@@ -270,7 +270,7 @@ the topology.
 * A node can challenge another node utilising the VRF in order to authentify
   the remote node is a specific stake owner/gatherer.
 
-## Messages
+### Messages
 
 * **RingGossip**: NodeProfileDetails * RING_GOSSIP_MAX_SIZE;
 * **VicinityGossip**: NodeProfileDetails * VICINITY_GOSSIP_MAX_SIZE;
@@ -283,7 +283,7 @@ A node profile contains:
 * Node’s topics (set of what the node is known to be interested into);
 * Node’s connected IDs
 
-## Design
+### Communications Design
 
 The requirements to join and leave the network at any moment, to discover and
 change the links and to relay messages are all handled by [PolderCast].
@@ -291,7 +291,7 @@ Implementing [PolderCast] provides a good support to handle churn, fast relaying
 and quick stabilisation of the network. The paper proposes 3 modules: Rings,
 [Vicinity] and [Cyclon].
 
-### Our addition: The preferred nodes
+#### Our addition: The preferred nodes
 
 We propose to extend the number of modules with a 4th one. This module is static and entirely defined in the config file.
 
@@ -307,7 +307,7 @@ This 4th module will provide the following features:
 * Static / configured list of trusted parties (automatically whitelisted for quarantine)
 * Metrics measurement related to stability TBD
 
-### Reports and Quarantine
+#### Reports and Quarantine
 
 In order to facilitate the handling of unreachable nodes or of misbehaving ones
 we have a system of reports that handles the state of known peers.
@@ -316,33 +316,47 @@ Following such reports, at the moment based only on connectivity status, peers m
 
 In the current system, a peer can be in any of these 4 states:
 
-* Available: the peer is known to the current node and can be picked up by poldercast layers for gossip and propagation of messages. This is the state in which new peers joining the topology via gossip end up.
-* Trusted: the last handshake between the peer and this node was successfull. For these kind of nodes we are a little more forgiving with reports and failures.
+* Available: the peer is known to the current node and can be picked up by poldercast layers for gossip and propagation of messages.
+  This is the state in which new peers joining the topology via gossip end up.
+* Trusted: the last handshake between the peer and this node was successfull.
+  For these kind of nodes we are a little more forgiving with reports and failures.
 
-* Quarantined: the peer has (possibly several) failed handshake attempts. We will not attempt to contact it again for some time even if we receive new gossip.
+* Quarantined: the peer has (possibly several) failed handshake attempts.
+  We will not attempt to contact it again for some time even if we receive new gossip.
 
 * Unknown: the peer is not known to the current node.
-  > Actually, due to limitations of the poldercast library, this may mean that there are some traces of the peer in the profiles maintained by the current node but it cannot be picked up by poldercast layers for gossip or propagation. For all purposes but last resort connection attempts (see next paragraph), these two cases are essentially the same.
+  > Actually, due to limitations of the poldercast library, this may mean that there are some traces of the peer in the profiles
+  maintained by the current node but it cannot be picked up by poldercast layers for gossip or propagation.
+  For all purposes but last resort connection attempts (see next paragraph), these two cases are essentially the same.
 
-Since a diagram is often easier to understand than a bunch of sentences, these are the transitions between states in the current implementation, with details about avoiding network partition removed (see next paragraph).
+Since a diagram is often easier to understand than a bunch of sentences,
+these are the transitions between states in the current implementation,
+with details about avoiding network partition removed (see next paragraph).
 
-![](./quarantine.png)
+![Quarantine](./quarantine.png)
 
-### Avoid network partitions
+#### Avoid network partitions
 
 An important property of the p2p network is resilience to outages. We must avoid creating partitions in the network as much as possible.
 
-For this reason, we send a manual (i.e. not part of poldercast protocol) optimistic gossip message to all nodes that were reported  after the report expired. If this message fails to be delivered, no further action will be taken agains that peer to avoid cycling it back and forth from quarantine indefinitely. If instead the message is delivered correctly, we successfully prevented a possible partition :).
+For this reason, we send a manual (i.e. not part of poldercast protocol)
+optimistic gossip message to all nodes that were reported after the report expired.
+If this message fails to be delivered, no further action will be taken against
+that peer to avoid cycling it back and forth from quarantine indefinitely.
+If instead the message is delivered correctly, we successfully prevented a possible partition :).
 
-Another measure in place is a sort of a last resort attempt: if the node did not receive any incoming gossip for the last X minutes (tweakable in the config file), we try to contact again any node that is not quarantined and for which we have any trace left in the system (this is where nodes that were artificially forgotten by the system come into play).
+Another measure in place is a sort of a last resort attempt:
+if the node did not receive any incoming gossip for the last X minutes (tweakable in the config file),
+we try to contact again any node that is not quarantined and for which we have any trace left in the system
+(this is where nodes that were artificially forgotten by the system come into play).
 
-### Part to look into
+#### Part to look into
 
 Privacy. Possibly [Dandelion] tech
 
-# Adversarial models considered
+## Adversarial models considered
 
-## Adversarial forks
+### Adversarial forks
 
 We consider an adversary whose goal is to isolate from the network nodes with
 stake. The impact of such successful attack would prevent block creation. Such
@@ -374,7 +388,7 @@ synchronisation and validation.
     consensus protocol will organise itself in a collection of stakepools that
     have the resources (and the incentive) to keep suck bloom filter.
 
-## Flooding attack
+### Flooding attack
 
 We consider an adversary whose goal is to disrupt or interrupt the p2p message
 propagation. The event propagation mechanism of the pub/sub part of the p2p
@@ -396,7 +410,7 @@ may be quickly added to the ledger.
   network with the gossiping messages as they do not require instant
   propagation of the gossips.
 
-## Anonymity Against distributed adversaries
+### Anonymity Against distributed adversaries
 
 We consider an adversary whose goal is to deanonymize users by linking their
 transactions to their IP addresses. This model is analysed in [Dandelion].
@@ -409,7 +423,7 @@ this adversary model.
   are too arbitrary ([Vicinity] or [Cyclon]) to determined the original sender
   of a transaction;
 
-# Man in the middle
+## Man in the middle
 
 We consider an adversary that could intercept the communication between two
 nodes. Such adversary could:
@@ -422,7 +436,7 @@ would introduce itself to the network with its certificate. The certificate
 is then associated to this node and would be propagated via gossiping to the
 network.
 
-# In relation to Ouroboros Genesis
+## In relation to Ouroboros Genesis
 
 Each participants in the protocol need:
 

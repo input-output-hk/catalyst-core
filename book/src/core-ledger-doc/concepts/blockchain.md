@@ -34,7 +34,7 @@ The blockchain is the general set of rules and the blocks that are periodically 
 Some of the rules and settings, can be changed dynamically in the system by updates,
 while some other are hardcoded in the genesis block (first block of the blockchain).
 
-```
+```text
     +-------+      +-------+
     |Genesis+<-----+Block 1+<--- ....
     |Header |      |Header |
@@ -93,7 +93,7 @@ and also the most frequent one.
 Transaction is composed of inputs and outputs; On one side, the inputs represent
 coins being spent, and on the other side the outputs represent coins being received.
 
-```
+```text
     Inputs         Alice (80$)        Bob (20$)
                         \             /
                          \           /

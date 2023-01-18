@@ -51,15 +51,20 @@ cover but you want to describe it, please do.
 
 This field is not very well documented, except for a line in `book/src/core-vitss-doc/api/v0.yaml` that describes it as:
 
+```text
     > Identifier of the proposal on the blockchain.
+```
 
-Internally, the identifier is of type `ExternalProposalId` (`src/chain-libs/chain-impl-mockchain/src/certificate/vote_plan.rs`) which is an alias type for `DigestOf<Blake2b256, _>`, from the `chain_crypto` crate. This is undocumented.
+Internally, the identifier is of type `ExternalProposalId` (`src/chain-libs/chain-impl-mockchain/src/certificate/vote_plan.rs`).
+This is an alias type for `DigestOf<Blake2b256, _>`, from the `chain_crypto` crate. This is undocumented.
 
 The `ExternalProposalId` is sent through the wire and csv files as a 64-character hex-encoded string.
 
-The `catalyst-toolbox` binary decodes this hex string, and converts it into a valid `ExternalProposalId` so that the underlying `[u8; 32]` can be extracted, hashed and used in logic related to rewards thresholds, votes, and dreps.
+The `catalyst-toolbox` binary decodes this hex string, and converts it into a valid `ExternalProposalId`.
+So that the underlying `[u8; 32]` can be extracted, hashed and used in logic related to rewards thresholds, votes, and dreps.
 
-There is an arbitrary snapshot generator used in `vit-servicing-station-tests` that creates valid `ExternalProposalId` from a randomized `[u8; 32]` array that is used in integration tests found in `vit-testing`.
+There is an arbitrary snapshot generator used in `vit-servicing-station-tests`.
+It creates valid `ExternalProposalId` from a randomized `[u8; 32]` array that is used in integration tests found in `vit-testing`.
 
 ## Stefano Cunego
 
@@ -69,28 +74,39 @@ There is an arbitrary snapshot generator used in `vit-servicing-station-tests` t
 
 ### `Spending Counters`
 
-Spending counter associated to an account. Every time the owner is spending from an account, the counter is incremented. This features is similar to the Ethereum `nonce` field in the block and prevents from the replay attack.
+Spending counter associated to an account. Every time the owner is spending from an account, the counter is incremented.
+This features is similar to the Ethereum `nonce` field in the block and prevents from the replay attack.
 
-```
+```rust
 pub struct SpendingCounter(pub(crate) u32);
 ```
 
-As it was said before every account associated with the a current state of the Spending Counter, or to be more precised to an array of 8 Spending counters.
+As it was said before every account associated with the a current state of the Spending Counter.
+Or to be more precised to an array of 8 Spending counters.
 
-```
+```rust
 pub struct SpendingCounterIncreasing {
     nexts: Vec<SpendingCounter>,
 }
 ```
 
-Each spending counter differes with each other with the specified `lane` bits which are a first 3 bits of the original Spending counter value. Spending counter structure:
+Each spending counter differers with each other.
+The specified `lane` bits are a first 3 bits of the original Spending counter value.
+Spending counter structure:
 
-```
+```text
 (001)[lane] (00000 00000000 00000000 00000001){counter}
 (00100000 00000000 00000000 00000001){whole Spending Counter}
 ```
 
-With such approach user can generate up to 8 transactions with the specified different lanes and correspoding counters and submit it into the blockchain with no mater on the transaction processing order. So incrementing of the counter will be done in "parallel" for each lane. That is the only difference with the original Ethereum approach with `nonce` (counter in our implementation), where for each transaction you should specify an exact value and submits transaction in the exact order.
+With such approach user can:
+
+* generate up to 8 transactions with the specified different lanes and corresponding counters
+* submit it into the blockchain with no matter on the transaction processing order.
+
+So incrementing of the counter will be done in "parallel" for each lane.
+That is the only difference with the original Ethereum approach with `nonce` (counter in our implementation).
+Where for each transaction you should specify an exact value and submits transaction in the exact order.
 
 ## Cameron Mcloughlin
 

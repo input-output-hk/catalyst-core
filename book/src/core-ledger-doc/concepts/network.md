@@ -135,11 +135,15 @@ And it also makes sure that only the nodes of interest are up to date. However
 it is possible for the node to choose, at a convenient time, to policy the whole
 p2p database. This is not enforced by the protocol.
 
-| Disposition | Description                                                                                                                                                                             |
-| :---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| available   | Node is available for the p2p topology for view selection and gossips.                                                                                                                  |
-| quarantined | Node is not available for the p2p topology for view selection or gossips. After a certain amount of time, if the node is still being gossiped about, it will be moved to available.     |
+<!-- markdownlint-disable line-length -->
+<!-- Can't break lines in tables, so long lines are necessary. -->
+
+| Disposition | Description  |
+| :---------- | :------ |
+| available   | Node is available for the p2p topology for view selection and gossips.  |
+| quarantined | Node is not available for the p2p topology for view selection or gossips. After a certain amount of time, if the node is still being gossiped about, it will be moved to available. |
 | forgotten   | A node forgotten is simply removed from the whole p2p database. However, if the node is still being gossiped about it will be added back as available and the process will start again. |
+<!-- markdownlint-enable line-length -->
 
 [Poldercast]: https://hal.inria.fr/hal-01555561/document
 [`gRPC`]: https://www.grpc.io

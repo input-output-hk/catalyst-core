@@ -107,12 +107,21 @@ jcli certificate new vote-plan voteplan_def.json --output voteplan.certificate
 
 ## Casting votes
 
-To generate a vote cast transaction firstly you need to generate vote-cast certificate following [this instructions](certificate.md#L93). Storing it into the 'vote-cast.certificate` now you can generate a transaction following [this intructions](transaction.md).
-Note that a valid vote cast transaction should have only one input with the corresponding account of the voter, zero outputs and 1 corresponding witness.
+To generate a vote cast transaction:
+
+1. firstly you need to generate vote-cast certificate following [this instructions](certificate.md#L93).
+2. Storing it into the 'vote-cast.certificate`
+3. now you can generate a transaction following [this intructions](transaction.md).
+
+Note that a valid vote cast transaction MUST have only:
+
+* one input with the corresponding account of the voter
+* zero outputs
+* 1 corresponding witness.
 
 Example (`voter.sk` contains a private key of the voter):
 
-```
+```sh
 genesis_block_hash=$(jcli genesis hash < block0.bin)
 vote_plan_id=$(jcli rest v0 vote active plans get --output-format json|jq '.[0].id')
 voter_addr=$(jcli address account $(jcli key to-public < voter.sk))
@@ -150,7 +159,8 @@ jcli transaction add-account "$committee_addr" 0 --staging vote-tally.staging
 jcli transaction add-certificate $(< vote-tally.certificate) --staging vote-tally.staging
 jcli transaction finalize --staging vote-tally.staging
 jcli transaction data-for-witness --staging vote-tally.staging > vote-tally.witness-data
-jcli transaction make-witness --genesis-block-hash "$genesis_block_hash" --type account --account-spending-counter "$committee_addr_counter" $(< vote-tally.witness-data) vote-tally.witness committee.sk
+jcli transaction make-witness --genesis-block-hash "$genesis_block_hash" --type account --account-spending-counter \
+  "$committee_addr_counter" $(< vote-tally.witness-data) vote-tally.witness committee.sk
 jcli transaction add-witness --staging vote-tally.staging vote-tally.witness
 jcli transaction seal --staging vote-tally.staging
 jcli transaction auth --staging vote-tally.staging --key committee.sk
@@ -158,7 +168,7 @@ jcli transaction to-message --staging vote-tally.staging > vote-tally.fragment
 jcli rest v0 message post --file vote-tally.fragment
 ```
 
-### Private
+### Private vote plan
 
 To tally private votes, all committee members are needed.
 The process is similar to the public one, but we need to issue different certificates.
@@ -169,7 +179,8 @@ First, we need to retrieve vote plans info:
 jcli rest v0 vote active plans > active_plans.json
 ```
 
-If there is more than one vote plan in the file, we also need to provide the id of the vote plan we are interested in to following commands. We can get the id of the first vote plan with:
+If there is more than one vote plan in the file, we also need to provide the id of the vote plan we are interested in.
+We can get the id of the first vote plan with:
 
 ```shell
 ...
@@ -184,7 +195,8 @@ jcli votes tally decryption-shares --vote-plan active_plans.json --vote-plan-id 
 ```
 
 Then, the committee members need to exchange their shares (only one full set of shares is needed).
-Once all shares are available, we need to merge them in a single file with the following command (needed even if there is only one set of shares):
+Once all shares are available, we need to merge them in a single file with the following command
+(needed even if there is only one set of shares):
 
 ```shell
 jcli votes tally merge-shares  share_file1 share_file2 ... > merged_shares.json

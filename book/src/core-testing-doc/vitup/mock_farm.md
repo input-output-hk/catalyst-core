@@ -1,9 +1,10 @@
 
-## Mock Farm
+# Mock Farm
 
-Mock farm is a simple extension for mock service. It allows to run more that one mock at once and give more control to user in term of starting and stopping particular mock instance.
+Mock farm is a simple extension for mock service.
+It allows to run more that one mock at once and give more control to user in term of starting and stopping particular mock instance.
 
-### Configuration
+## Configuration
 
 This section describe configuration file which can be passed as argument for snapshot service:
 
@@ -17,11 +18,11 @@ This section describe configuration file which can be passed as argument for sna
 Note: it is recommended to run command from `vit-testing/vitup` folder (then no explicit paths are required to be provided).
 Configuration file example is available under `vit-testing/vitup/example/mock-farm/config.yaml`
 
-### Start
+## Start
 
 `vitup start mock-farm --config example\mock\mock-farm\config.yaml`
 
-### Documentation
+## Documentation
 
 - [OpenApi](../api/vitup/mock-farm/v0.yaml)
 - [Requests collection](../api/vitup/mock-farm/postman_collection.json)

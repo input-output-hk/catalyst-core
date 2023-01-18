@@ -1,51 +1,52 @@
 
-## Mock
+# Mock
 
-For developer convenience an in-memory backend is available. Idea is the same as above but env is more lightweight and does not spawn jormungandr or vit-servicing-station.
+For developer convenience an in-memory backend is available.
+Idea is the same as above but env is more lightweight and does not spawn jormungandr or vit-servicing-station.
 Mock is also capable of controlling more backend aspect than normal deployment (cut off the connections, rejects all fragments.
 
-### Configuration
+## Configuration
 
 Note: it is recommended to run command from `vit-testing/vitup` folder (then no explicit paths are required to be provided).
 Configuration file example is available under `vit-testing/vitup/example/mock/config.yaml`
 
-### Start
+## Start
 
 `vitup start mock --config example\mock\config.yaml`
 
-#### Admin rest commands
+### Admin rest commands
 
 For full api specs please visit:
 
 * [Mock REST API V0](../../api/vit-testing-mock-v0.md)
 
-##### List Files
+#### List Files
 
-```
+```sh
 curl --location --request GET 'http://{mock_address}/api/control/files/list'
 ```
 
-##### Get File
+#### Get File
 
-```
+```sh
 curl --location --request GET 'http://{mock_address}/api/control/files/get/{path_to_file}'
 ```
 
-##### Health
+#### Health
 
-```
+```sh
 curl --location --request GET 'http://{mock_address}/api/health'
 ```
 
-##### Change Fund Id
+#### Change Fund Id
 
-```
+```sh
 curl --location --request POST 'http://{mock_address}/api/control/command/fund/id/{new_fund_id}'
 ```
 
-##### Add new fund
+#### Add new fund
 
-```
+```sh
 curl --location --request PUT 'http://{mock_address}/api/control/command/fund/update' \
 --header 'Content-Type: application/json' \
 --data-raw '
@@ -91,88 +92,89 @@ curl --location --request PUT 'http://{mock_address}/api/control/command/fund/up
 '
 ```
 
-##### Accept all Fragments
+#### Accept all Fragments
 
 Makes mock to accept all further fragments sent to environment
 
-```
+```sh
 curl --location --request POST 'http://{mock_address}/api/control/command/fragments/accept'
 ```
 
-##### Reject all Fragments
+#### Reject all Fragments
 
 Makes mock to reject all further fragments sent to environment
 
-```
+```sh
 curl --location --request POST 'http://{mock_address}/api/control/command/fragments/reject'
 ```
 
-##### Hold all Fragments
+#### Hold all Fragments
 
 Makes mock to hold  all further fragments sent to environment
 
-```
+```sh
 curl --location --request POST 'http://{mock_address}/api/control/command/fragments/pending'
 ```
 
-##### Reset Fragment strategy
+#### Reset Fragment strategy
 
 Makes mock to validate all further fragments sent to environment
 
-```
+```sh
 curl --location --request POST 'http://{mock_address}/api/control/command/fragments/reset'
 ```
 
-##### Make backend unavailable
+#### Make backend unavailable
 
 Mock will reject all connections (returns 500)
 
-```
+```sh
 curl --location --request POST 'http://{mock_address}/api/control/command/available/false'
 ```
 
-##### Make backend available
+#### Make backend available
 
 Mock will accept all connections
 
-```
+```sh
 curl --location --request POST 'http://{mock_address}/api/control/command/available/true'
 ```
 
-##### Make account endpoint unavailable
+#### Make account endpoint unavailable
 
 Mock will reject n calls to account endpoint and as a result voting app won't receive voting power for some time.
 This endpoint assume that one who changes block-account endpoint knows what is the frequency of calls from client
 and ultimately can be translated to some time of unavailability.
 
-```
+```sh
 curl --location --request POST 'http://{mock_address}/api/control/command/block-account/{number_of_calls_to_reject}'
 ```
 
-##### Make account endpoint available
+#### Make account endpoint available
 
 Mock will reset account endpoint unavailability
 
-```
+```sh
 curl --location --request POST 'http://{mock_address}/api/control/command/block-account/reset'
 ```
 
-##### Add new voters snapshot for specific tag
+#### Add new voters snapshot for specific tag
 
 Add (or overwrite) voters snapshot for this particular tag
 
-```
+```sh
 curl --location --request POST 'http://{mock_address}/api/control/command/snapshot/add/{tag}' \
 --header 'Content-Type: application/json' \
 --data-raw '
   [{"voting_group":"direct","voting_key":"241799302733178aca5c0beaa7a43d054cafa36ca5f929edd46313d49e6a0fd5","voting_power":10131166116863755484},{"voting_group":"dreps","voting_key":"0e3fe9b3e4098759df6f7b44bd9b962a53e4b7b821d50bb72cbcdf1ff7f669f8","voting_power":9327154517439309883}]'
 ```
 
-##### Add new voters snapshot for specific tag
+#### Create new voters snapshot for specific tag
 
-Create snapshot json which can be uploaded to mock by using `../snapshot/add` command. See [mock configuration](./configuration.md) for more details. Example:
+Create snapshot json which can be uploaded to mock by using `../snapshot/add` command.
+See [mock configuration](./configuration.md) for more details. Example:
 
-```
+```sh
 curl --location --request POST 'http://{mock_address}/api/control/command/snapshot/create' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -194,17 +196,17 @@ curl --location --request POST 'http://{mock_address}/api/control/command/snapsh
 }'
 ```
 
-##### Reset environment
+#### Reset environment
 
 Resets environment data
 
-```
+```sh
 curl --location --request POST 'http://{mock_address}/api/control/command/reset' \
 --header 'Content-Type: application/json' \
---data-raw '{ 
+--data-raw '{
   "initials": {
     "block0": [
-      { 
+      {
         "above_threshold": 10,
         "pin": "1234"
       },
@@ -241,7 +243,7 @@ curl --location --request POST 'http://{mock_address}/api/control/command/reset'
     "next_vote_start_time": "2022-04-11T11:00:00Z",
     "proposals": 936,
     "challenges": 25,
-    "reviews": 5190,    
+    "reviews": 5190,
     "voting_power": 450,
     "fund_name": "Fund7",
     "fund_id": 6
@@ -252,28 +254,28 @@ curl --location --request POST 'http://{mock_address}/api/control/command/reset'
 
 see [data generation guide](../data_generation/reset.md) for more details
 
-##### Health
+#### Control Health
 
 Checks if mock is up
 
-```
+```sh
 curl --location --request POST 'http://{mock_address}/api/control/health'
 ```
 
-##### Logs
+#### Logs
 
 Mock stores record of each request send to it. This endpoint gets all logs from mock
 
-```
+```sh
 curl --location --request POST 'http://{mock_address}/api/control/logs/get'
 ```
 
-#### Admin cli
+### Admin cli
 
 Admin CLI is an alternative for all above calls, available under vitup project.
 
 example:
 
-```
+```sh
 vitup-cli --endpoint {mock} disruption control health
 ```

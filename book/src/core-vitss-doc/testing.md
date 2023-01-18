@@ -1,6 +1,8 @@
 # vit-servicing-station-tests
 
-Vit servicing station tests project is a container project vit-servicing-station tests. Tests are validating server correctness, stability and interaction with database/rest api. Also there are non-functional tests which verify node durability and reliability
+Vit servicing station tests project is a container project vit-servicing-station tests.
+Tests are validating server correctness, stability and interaction with database/rest api.
+Also there are non-functional tests which verify node durability and reliability
 
 ## Quick start
 
@@ -12,7 +14,7 @@ In order to run test vit-servicing-station-server need to be installed or prebui
 
 In order to build vit-servicing-station in main project folder run:
 
-```
+```sh
 cd vit-servicing-station-tests
 cargo test
 ```
@@ -23,21 +25,21 @@ Test are categories based on application/layer and property under test (function
 
 ### How to run all functional tests
 
-```
+```sh
 cd vit-servicing-station-tests
-cargo test 
+cargo test
 ```
 
 ### How to run performance tests
 
-```
+```sh
 cd vit-servicing-station-tests
 cargo test --features non-functional
 ```
 
 ### How to run endurance tests
 
-```
+```sh
 cd vit-servicing-station-tests
 cargo test --features soak,non-functional
 ```

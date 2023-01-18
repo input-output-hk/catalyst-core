@@ -22,19 +22,23 @@ The following steps can lead to irrecoverable data corruption.
 This will take a while, go and grab a drink of water.
 ```
 
+<!-- markdownlint-disable no-inline-html -->
 ```admonish tip title="_Referencing_ and <i>dereferencing</i>"
 The opposite of *referencing* by using `&` is *dereferencing*, which is
 accomplished with the <span style="color: hotpink">dereference operator</span>, `*`.
 ```
+<!-- markdownlint-enable no-inline-html -->
 
+<!-- markdownlint-disable code-fence-style -->
 ~~~admonish bug
 This syntax won't work in Python 3:
 ```python
 print "Hello, world!"
 ```
 ~~~
+<!-- markdownlint-disable code-fence-style -->
 
-### Example Rendered Diagrams
+## Example Rendered Diagrams
 
 ```kroki-plantuml
 @startuml

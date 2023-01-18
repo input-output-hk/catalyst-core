@@ -184,8 +184,10 @@ impl Pool {
 
         let mut fragments = filtered_fragments.into_iter();
         let new_fragments = self.pool.insert_all(fragments.by_ref());
-        let count = new_fragments.len();
-        tracing::debug!("{} of the received fragments were added to the pool", count);
+        tracing::debug!(
+            "{} of the received fragments were added to the pool",
+            new_fragments.len()
+        );
         let fragment_logs: Vec<_> = new_fragments
             .iter()
             .map(move |(_, id)| FragmentLog::new(*id, origin))
@@ -494,19 +496,24 @@ pub(super) mod internal {
             &mut self,
             fragments: impl IntoIterator<Item = (Fragment, FragmentId)>,
         ) -> Vec<(Fragment, FragmentId)> {
-            let max_fragments = self.max_entries - self.entries.len();
             fragments
                 .into_iter()
                 .filter(|(fragment, id)| {
                     if self.entries.contains(id) {
                         false
                     } else {
+                        if self.entries.len() >= self.max_entries && self.entries.len() != 0 {
+                            // Remove an oldest entry from the pool
+                            let (_, fragment) = self.entries.pop_back().expect("entry must exist");
+                            self.total_size_bytes -= fragment.serialized_size();
+                        }
                         self.total_size_bytes += fragment.serialized_size();
                         self.entries.push_front(*id, fragment.clone());
                         true
                     }
                 })
-                .take(max_fragments)
+                // Truncate overflowing fragments
+                .take(self.max_entries)
                 .collect()
         }
 
@@ -552,15 +559,14 @@ pub(super) mod internal {
     mod tests {
         use super::*;
         use chain_core::property::Fragment as _;
-        use chain_impl_mockchain::transaction::TxBuilder;
         use quickcheck::TestResult;
         use quickcheck_macros::quickcheck;
         use std::collections::HashSet;
 
         #[quickcheck]
-        fn overflowing_pool_should_reject_new_fragments(
+        fn overflowing_pool_should_remove_oldest_fragments(
             fragments1_in: (Fragment, Fragment, Fragment),
-            fragments2_in: (Fragment, Fragment),
+            fragments2_in: (Fragment, Fragment, Fragment, Fragment, Fragment),
         ) -> TestResult {
             let fragments1 = vec![
                 (fragments1_in.0.clone(), fragments1_in.0.id()),
@@ -568,9 +574,13 @@ pub(super) mod internal {
                 (fragments1_in.2.clone(), fragments1_in.2.id()),
             ];
             let fragments2 = vec![
+                // duplicated fragment
                 (fragments1_in.2.clone(), fragments1_in.2.id()),
                 (fragments2_in.0.clone(), fragments2_in.0.id()),
                 (fragments2_in.1.clone(), fragments2_in.1.id()),
+                (fragments2_in.2.clone(), fragments2_in.2.id()),
+                (fragments2_in.3.clone(), fragments2_in.3.id()),
+                (fragments2_in.4.clone(), fragments2_in.4.id()),
             ];
 
             if fragments1
@@ -584,12 +594,17 @@ pub(super) mod internal {
                 return TestResult::discard();
             }
 
-            let fragments2_expected = vec![(fragments2_in.0.clone(), fragments2_in.0.id())];
-            let final_expected = vec![
-                (fragments1_in.0.clone(), fragments1_in.0.id()),
-                (fragments1_in.1.clone(), fragments1_in.1.id()),
-                (fragments1_in.2.clone(), fragments1_in.2.id()),
+            let fragments2_expected = vec![
                 (fragments2_in.0.clone(), fragments2_in.0.id()),
+                (fragments2_in.1.clone(), fragments2_in.1.id()),
+                (fragments2_in.2.clone(), fragments2_in.2.id()),
+                (fragments2_in.3.clone(), fragments2_in.3.id()),
+            ];
+            let final_expected = vec![
+                (fragments2_in.0.clone(), fragments2_in.0.id()),
+                (fragments2_in.1.clone(), fragments2_in.1.id()),
+                (fragments2_in.2.clone(), fragments2_in.2.id()),
+                (fragments2_in.3.clone(), fragments2_in.3.id()),
             ];
             let mut pool = Pool::new(4);
             assert_eq!(fragments1, pool.insert_all(fragments1.clone()));
@@ -606,28 +621,6 @@ pub(super) mod internal {
                 assert_eq!(expected, pool.remove_oldest().unwrap());
             }
             TestResult::from_bool(pool.remove_oldest().is_none())
-        }
-
-        // TODO update
-        #[test]
-        fn expired_transactions_are_removed() {
-            let mut pool = Pool::new(1);
-
-            let tx = Fragment::Transaction(
-                TxBuilder::new()
-                    .set_nopayload()
-                    .set_expiry_date(BlockDate {
-                        epoch: 0,
-                        slot_id: 1,
-                    })
-                    .set_ios(&[], &[])
-                    .set_witnesses(&[])
-                    .set_payload_auth(&()),
-            );
-
-            pool.insert_all([(tx.clone(), tx.id())]);
-
-            assert_eq!(pool.entries.len(), 1, "Fragment should be in pool");
         }
     }
 }

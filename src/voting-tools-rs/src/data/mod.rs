@@ -22,7 +22,7 @@ pub enum VotingPowerSource {
     Delegated(Vec<(VotingKeyHex, u32)>),
 }
 
-/// A registration on Cardano in either CIP-15 or CIP-36 format
+/// A catalyst registration on Cardano in either CIP-15 or CIP-36 format
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Registration {
     #[serde(rename = "1")]
@@ -30,7 +30,7 @@ pub struct Registration {
     #[serde(rename = "2")]
     pub stake_key: StakeKeyHex,
     #[serde(rename = "3")]
-    pub rewards_address: RewardsKeyHex,
+    pub rewards_address: RewardsAddress,
     // note, this must be monotonically increasing. Typically, the current slot
     // number is used
     #[serde(rename = "4")]
@@ -99,7 +99,7 @@ pub struct SnapshotEntry {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Reg {
+pub struct Reg { 
     pub tx_id: TxId,
     pub metadata: Registration,
     pub signature: Signature,
@@ -111,7 +111,6 @@ microtype! {
     #[derive(Debug, Clone, PartialEq, Eq, Hash)]
     pub PublicKeyHex {
         StakeKeyHex,
-        RewardsKeyHex,
         VotingKeyHex,
     }
 
@@ -141,26 +140,28 @@ microtype! {
     pub u64 {
         #[cfg_attr(test, derive(test_strategy::Arbitrary))]
         Nonce,
+        /// A slot number
         #[cfg_attr(test, derive(test_strategy::Arbitrary))]
         SlotNo,
         VotingPurpose,
         TxId,
     }
+
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub Vec<u8> {
+        /// A rewards address in a catalyst registation
+        ///
+        /// This type deliberately does not enforce a particular format for addresses, since the
+        /// spec only requires this field to be a byte array, with no other constraints
+        RewardsAddress,
+    }
 }
 
 impl SlotNo {
+    /// Attempt to convert this to an `i64`
+    ///
+    /// Returns none if the underlying `u64` doesn't fit into an `i64`
     pub fn into_i64(self) -> Option<i64> {
         self.0.try_into().ok()
-    }
-}
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    use serde_json::json;
-
-    #[test]
-    fn voting_power_source_wire_format() {
-        let legacy = json!("");
     }
 }

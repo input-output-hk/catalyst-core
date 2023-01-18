@@ -5,14 +5,15 @@ use color_eyre::Result;
 use mainnet_lib::InMemoryDbSync;
 use tracing::info;
 use voting_tools_rs::test_api::MockDbProvider;
-use voting_tools_rs::{voting_power, Args, DataProvider, Db, DbConfig, DryRunCommand};
+use voting_tools_rs::{
+    voting_power, Args, Db, DbConfig, DryRunCommand, SlotNo, SnapshotEntry,
+};
 
 fn main() -> Result<()> {
     color_eyre::install()?;
     tracing_subscriber::fmt().init();
 
     let Args {
-        testnet_magic,
         db,
         db_user,
         db_host,
@@ -32,8 +33,7 @@ fn main() -> Result<()> {
         password: db_pass,
     };
 
-    let db = get_data_provider(db_config, dry_run)?;
-    let outputs = voting_power(&db, min_slot_no, max_slot_no)?;
+    let outputs = load(db_config, dry_run, min_slot_no, max_slot_no)?;
 
     info!("calculated {} outputs", outputs.len());
 
@@ -48,17 +48,20 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn get_data_provider(
+fn load(
     real_db_config: DbConfig,
-    maybe_dry_run: Option<DryRunCommand>,
-) -> Result<Box<dyn DataProvider>> {
-    if let Some(dry_run) = maybe_dry_run {
-        match dry_run {
-            DryRunCommand::DryRun { mock_json_file } => Ok(Box::new(MockDbProvider::from(
-                InMemoryDbSync::restore(mock_json_file)?,
-            ))),
+    dry_run: Option<DryRunCommand>,
+    min_slot: Option<SlotNo>,
+    max_slot: Option<SlotNo>,
+) -> Result<Vec<SnapshotEntry>> {
+    match dry_run {
+        Some(DryRunCommand::DryRun { mock_json_file }) => {
+            let db = MockDbProvider::from(InMemoryDbSync::restore(mock_json_file)?);
+            voting_power(db, min_slot, max_slot)
         }
-    } else {
-        Ok(Box::new(Db::connect(real_db_config)?))
+        None => {
+            let db = Db::connect(real_db_config)?;
+            voting_power(db, min_slot, max_slot)
+        }
     }
 }

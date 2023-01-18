@@ -188,24 +188,12 @@ impl InMemoryDbSync {
     #[must_use]
     pub fn query_voting_transactions_with_bounds(
         &self,
-        lower: Option<u64>,
-        upper: Option<u64>,
+        lower: u64,
+        upper: u64,
     ) -> HashMap<BlockNo, Vec<GeneralTransactionMetadata>> {
         self.metadata()
             .into_iter()
-            .filter(|(block_no, _)| {
-                if let Some(result) = lower.map(|x| x > u64::from(*block_no)) {
-                    if result {
-                        return false;
-                    }
-                }
-                if let Some(result) = upper.map(|x| x < u64::from(*block_no)) {
-                    if result {
-                        return false;
-                    }
-                }
-                true
-            })
+            .filter(|(block_no, _)| lower <= u64::from(*block_no) && u64::from(*block_no) <= upper)
             .collect()
     }
 

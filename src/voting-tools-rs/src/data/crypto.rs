@@ -84,17 +84,31 @@ impl Arbitrary for PublicKeyHex {
 }
 
 impl PublicKeyHex {
+    /// Convert this to the hex representation (without leading "0x")
+    ///
+    /// ```
+    /// # use voting_tools_rs::PublicKeyHex;
+    /// let sig = PublicKeyHex::from_bytes([0; 32]);
+    ///
+    /// assert_eq!(sig.to_string, "0".repeat(64));
+    /// ```
     pub fn to_hex(&self) -> String {
         hex::encode(self.0.as_ref())
     }
-}
 
-fmt_impl!(Debug, SignatureHex);
-fmt_impl!(Display, SignatureHex);
+    /// Create a signature from a byte array
+    pub fn from_bytes(bytes: [u8; 32]) -> Self {
+        // .unwrap() here is fine because it only panics if bytes.len() != 32
+        Self(Ed25519::public_from_binary(&bytes).unwrap())
+    }
+}
 
 /// An ED25519 signature that serializes and deserializes to/from a hex string
 #[derive(Clone)]
 pub struct SignatureHex(pub Sig);
+
+fmt_impl!(Debug, SignatureHex);
+fmt_impl!(Display, SignatureHex);
 
 impl PartialEq for SignatureHex {
     fn eq(&self, other: &Self) -> bool {
@@ -156,7 +170,6 @@ impl SignatureHex {
     ///
     /// ```
     /// # use voting_tools_rs::SignatureHex;
-    /// let bytes = [0; 64];
     /// let sig = SignatureHex::from_bytes([0; 64]);
     ///
     /// assert_eq!(sig.to_string, "0".repeat(128));
@@ -168,9 +181,10 @@ impl SignatureHex {
     /// Create a signature from a byte array
     pub fn from_bytes(bytes: [u8; 64]) -> Self {
         // .unwrap() here is fine because it only panics if bytes.len() != 64
-        Self(Ed25519::signature_from_bytes(&bytes).unwrap())  
+        Self(Ed25519::signature_from_bytes(&bytes).unwrap())
     }
 }
+
 #[cfg(test)]
 mod tests {
     use proptest::prop_assert_eq;
@@ -178,6 +192,17 @@ mod tests {
     use test_strategy::proptest;
 
     use super::*;
+
+    #[test]
+    fn can_parse_cip15_vectors() {
+        fn check_key(s: &str) {
+            assert!(serde_json::from_value::<PublicKeyHex>(json!(s)).is_ok());
+        }
+
+        check_key("0036ef3e1f0d3f5989e2d155ea54bdb2a72c4c456ccb959af4c94868f473f5a0");
+        check_key("86870efc99c453a873a16492ce87738ec79a0ebd064379a62e2c9cf4e119219e");
+        // check_key("e0ae3a0a7aeda4aea522e74e4fe36759fca80789a613a58a4364f6ecef");
+    }
 
     #[test]
     fn public_key_hex_fails_if_wrong_length() {

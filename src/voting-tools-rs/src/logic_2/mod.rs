@@ -39,6 +39,9 @@ pub fn voting_power(
     min_slot: Option<SlotNo>,
     max_slot: Option<SlotNo>,
 ) -> Result<Vec<SnapshotEntry>> {
+    let min_slot = min_slot.unwrap_or(SlotNo(0));
+    let max_slot = max_slot.unwrap_or(SlotNo(u64::try_from(i64::MAX).unwrap()));
+
     let registrations = db.vote_registrations(min_slot, max_slot)?;
 
     let (valid_registrations, validation_errors): (Vec<_>, Vec<_>) = registrations

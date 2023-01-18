@@ -1,4 +1,4 @@
-use crate::data::{Reg, SignedRegistration, SlotNo, StakeKeyHex};
+use crate::data::{SignedRegistration, SlotNo, StakeKeyHex};
 use bigdecimal::BigDecimal;
 use color_eyre::eyre::Result;
 use std::collections::HashMap;
@@ -12,8 +12,8 @@ pub trait DataProvider: Debug {
     /// If either slot number is `None`, they are ignored
     fn vote_registrations(
         &self,
-        lower: Option<SlotNo>,
-        upper: Option<SlotNo>,
+        lower: SlotNo,
+        upper: SlotNo,
     ) -> Result<Vec<SignedRegistration>>;
 
     /// Retrieves stakes values for given array of addresses
@@ -29,8 +29,8 @@ where
 {
     fn vote_registrations(
         &self,
-        lower: Option<SlotNo>,
-        upper: Option<SlotNo>,
+        lower: SlotNo,
+        upper: SlotNo,
     ) -> Result<Vec<SignedRegistration>> {
         T::vote_registrations(self, lower, upper)
     }

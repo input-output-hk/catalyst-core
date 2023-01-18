@@ -40,6 +40,6 @@ mod exports {
     pub use crate::data_provider::DataProvider;
     pub use crate::db::{Conn, Db, DbConfig};
     pub use crate::logic_2::voting_power;
-    pub use crate::data::{VotingPowerSource, Signature, crypto::SignatureHex, SnapshotEntry};
+    pub use crate::data::{SlotNo, VotingPowerSource, Signature, crypto::SignatureHex, SnapshotEntry};
     pub use crate::testing::*;
 }

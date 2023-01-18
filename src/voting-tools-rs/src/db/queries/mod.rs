@@ -10,8 +10,8 @@ mod vote_registrations;
 impl DataProvider for Db {
     fn vote_registrations(
         &self,
-        lower: Option<SlotNo>,
-        upper: Option<SlotNo>,
+        lower: SlotNo,
+        upper: SlotNo,
     ) -> color_eyre::Result<Vec<SignedRegistration>> {
         self.vote_registrations(lower, upper)
     }

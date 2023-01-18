@@ -1,10 +1,3 @@
-// This module contains framework-independent implementations of REST API
-// methods. The convention is the following:
-//
-// - Everything returns Result<T, Error>
-// - When the Ok type is Option<T> - None should be converted to 404
-// - All errors should be processed on the framework  integration side. Usually
-//   they are 400 or 500.
 use crate::{
     blockchain::StorageError,
     diagnostic::Diagnostic,
@@ -21,6 +14,7 @@ use chain_crypto::{
     bech32::Bech32, digest::Error as DigestError, hash::Error as HashError, Blake2b256, PublicKey,
     PublicKeyFromStrError,
 };
+///jhsgdjjas
 use chain_impl_mockchain::{
     account::{AccountAlg, Identifier},
     fragment::{Fragment, FragmentId},

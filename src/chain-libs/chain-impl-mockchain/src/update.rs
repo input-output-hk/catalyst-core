@@ -11,6 +11,7 @@ pub struct UpdateState {
 }
 
 impl UpdateState {
+    //trallallall
     pub fn new() -> Self {
         UpdateState {
             proposals: Hamt::new(),
@@ -25,8 +26,6 @@ impl UpdateState {
         cur_date: BlockDate,
     ) -> Result<Self, Error> {
         let proposer_id = proposal.proposer_id();
-
-        // Only proposal.changes() validation without mutating of the 'settings' variable
         settings.try_apply(proposal.changes())?;
 
         if !settings.bft_leaders.contains(proposer_id) {

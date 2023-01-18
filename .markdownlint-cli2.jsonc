@@ -1,0 +1,8 @@
+{
+    "globs": [
+        "book/src/**/*.md"
+    ],
+    "ignores": [
+        "book/src/rust/**"
+    ]
+}

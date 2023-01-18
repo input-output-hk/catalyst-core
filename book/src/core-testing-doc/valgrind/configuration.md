@@ -1,4 +1,4 @@
-## Configuration
+# Configuration
 
 This section describe configuration file which can be passed as argument when starting valgrind:
 

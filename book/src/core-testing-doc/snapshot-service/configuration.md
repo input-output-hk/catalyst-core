@@ -1,4 +1,4 @@
-## Configuration
+# Configuration
 
 This section describe configuration file which can be passed as argument for snapshot service:
 
@@ -20,7 +20,7 @@ This section describe configuration file which can be passed as argument for sna
 
 Example:
 
-```yaml
+```json
  "port": 8080,
  "result-dir": "/persist/snapshot",
  "voting-tools": {

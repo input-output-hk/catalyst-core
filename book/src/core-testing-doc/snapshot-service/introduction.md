@@ -1,12 +1,13 @@
 # Snapshot trigger service
 
-Service which operates on top of [voting tools](https://github.com/input-output-hk/voting-tools) and is a interface improvement which expose voting tools as a REST service.
+Service which operates on top of [voting tools](https://github.com/input-output-hk/voting-tools).
+It is a interface improvement which expose voting tools as a REST service.
 
 ## build
 
 In order to build snapshot-trigger-service in main project folder run:
 
-```
+```sh
 cd snapshot-trigger-service
 cargo build
 cargo install --path . --force
@@ -24,7 +25,7 @@ See [config](./configuration.md) for more details.
 
 In order to start new job one need to send POST request like below:
 
-```
+```sh
 curl --location --request POST 'https://snapshot.io/api/job/new' \
 --header 'API-Token: ...' \
 --header 'Content-Type: application/json' \
@@ -39,21 +40,21 @@ Response will contains job status:
 
 Then query for job status:
 
-```
+```sh
 curl --location --request GET 'https://snapshot.io/api/job/status/b0b7b774-7263-4dce-a97d-c167169c8f27' \
 --header 'API-Token: ...'
 ```
 
 and finally fetch snapshot:
 
-```
+```sh
 curl --location --request GET 'https://snapshot.io/api/job/files/get/b0b7b774-7263-4dce-a97d-c167169c8f27/snapshot.json' \
 --header 'API-Token: ...'
 ```
 
 which has form:
 
-```
+```json
 {
     "initial": [
         {
@@ -81,7 +82,7 @@ See [cli](./cli.md) for more details.
 
 Example:
 
-```
+```rust
     use snapshot_trigger_service::{
         client::rest::SnapshotRestClient,
         config::JobParameters,

@@ -1,12 +1,13 @@
 # snapshot wormhole
 
-Snapshot wormhole is a specialized Rest client API project with builtin scheduler for transfering snapshot result file from snapshot-trigger-service to vit-servicing-station service
+Snapshot wormhole is a specialized Rest client API project.
+It has a builtin scheduler for transfering snapshot result file from snapshot-trigger-service to vit-servicing-station service.
 
 ## build
 
 In main project folder run:
 
-```
+```sh
 cd vit-testing/snapshot-wormhole
 cargo build
 ```
@@ -36,7 +37,7 @@ Two modes are available:
 
 #### one-shot
 
-This mode can be helpful for debugging or testing purposes to verify if our configuration is correct and services are available.  
+This mode can be helpful for debugging or testing purposes to verify if our configuration is correct and services are available.
 
 #### schedule
 
@@ -44,14 +45,14 @@ Start scheduler based on input cron string. We are using custom cron string whic
 
 The scheduling format is as follows:
 
- ```
-| sec | min | hour | day of month | month | day of week | year | 
-|  *  |  *  |   *  |      *       |   *   |      *      |   *  | 
+ ```cron
+| sec | min | hour | day of month | month | day of week | year |
+|  *  |  *  |   *  |      *       |   *   |      *      |   *  |
 ```
 
 For example, to schedule each run  per 15 minutes starting from now:
 
-```
+```sh
 snapshot-wormhole --config wormhole-config.json schedule --cron * 4/60 * * * *" --eagerly
 ```
 

@@ -1,9 +1,9 @@
-## Configuration
+# Configuration
 
 This section describe configuration section which can be passed as argument when starting vitup or
  send to already running environments in order to restart them through rest api.
 
-### Example
+## Example
 
 ```json
 {
@@ -26,7 +26,7 @@ This section describe configuration section which can be passed as argument when
                     ["alice",1]
                 ],
                 "slotno": 0
-            },            
+            },
             "ada": 1000
         },
          {
@@ -36,7 +36,7 @@ This section describe configuration section which can be passed as argument when
                     ["clarice",1]
                 ],
                 "slotno": 0
-            },            
+            },
             "ada": 1000
         }
     ]
@@ -45,7 +45,7 @@ This section describe configuration section which can be passed as argument when
 
 Below more detailed explanation for each section element
 
-### parameters
+## parameters
 
 Snapshot parameters used when importing it to servicing station or mock.
 
@@ -55,37 +55,37 @@ Snapshot parameters used when importing it to servicing station or mock.
 - `direct_voters_group` - Name of direct registration holders
 - `representatives_group` - Name of delegated registrations holders (representatives)
 
-### content
+## content
 
 Main content of snapshot
 
-#### actor
+### actor
 
 For user convenience we allow untagged definition of actor. Actor can be representative or direct voter with some data.
 Depending on fields role is dynamically defined and user can focus only on scenario description
 
-##### pre-generated representative
+#### pre-generated representative
 
 This variant will create new unique wallet with given ada amount
 
 - `rep_name` - alias
 - `ada` - voting power amount
 
-##### external representative
+#### external representative
 
 Representative with just and voting key. Can be used for already existing wallet
 
 - `rep_name` - alias
 - `voting_key` - voting key in hex
 
-##### external delegator
+#### external delegator
 
 Delegator with just an address. Can be used for already existing wallet in the network
 
 - `name` - alias
 - `address` - address in hex
 
-##### pre-generated delegator
+#### pre-generated delegator
 
 Delegator with just an address. Can be used for already existing wallet in the network.
 Generated delegator will set up new mainnet wallet

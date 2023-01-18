@@ -6,7 +6,7 @@ Registration CLI is cli utility tool which help to interact with registration se
 
 In order to build registration-service in main project folder run:
 
-```
+```sh
 cd registration-service
 cargo build
 cargo install --path . --force
@@ -30,7 +30,7 @@ NOTE: response of the above call should return `job-id` which should be used in 
 
 Full list of commands is available on `snapshot-cli --help` command.
 
-```
+```text
 snapshot-trigger-service 0.1.0
 
 USAGE:

@@ -32,11 +32,11 @@ See [cli](./cli.md) for more details.
 
 Example:
 
-```
+```rust
     use registration_verify_service::client::rest::RegistrationVerifyRestClient;
 
     ...
-    
+
     let registration_verify_client =
         RegistrationVerifyRestClient::new_with_token(registration_token, registration_address);
 

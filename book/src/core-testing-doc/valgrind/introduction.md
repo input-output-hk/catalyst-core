@@ -6,7 +6,7 @@ Valgrind is a Rest API project which is simplified proxy solution for catalyst b
 
 In main project folder run:
 
-```
+```sh
 cd valgrind
 cargo build
 ```
@@ -27,7 +27,7 @@ By default valgrind will be exposed at `127.0.0.1:8000`
 
 Valgrind project provides also API for interacting with proxy server. Usage example:
 
-```
+```rust
     use valgrind::client::{ValgrindClient,ValgrindSettings};
 
 

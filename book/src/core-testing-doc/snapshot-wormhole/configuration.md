@@ -1,21 +1,21 @@
-## Configuration
+# Configuration
 
 This section describe configuration file which can be passed as argument when starting snapshot-wormhole:
 
-### snapshot service
+## snapshot service
 
 This section describe snapshot trigger service connection:
 
 - `address`: snapshot trigger REST api address,
 - `token`: optional access token,
 
-### servicing station service
+## servicing station service
 
 This section describe servicing station service connection:
 
 - `address`: servicing station service REST api address,,
 
-### parameters
+## parameters
 
 This section defines snapshot import parameters when applying snapshot to vit servicing station
 
@@ -26,7 +26,7 @@ This section defines snapshot import parameters when applying snapshot to vit se
 
 Example:
 
-```yaml
+```json
 {
     "snapshot_service": {
         "address": "http://127.0.0.1:9090",

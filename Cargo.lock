@@ -4706,6 +4706,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "nonempty"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aeaf4ad7403de93e699c191202f017118df734d3850b01e13a3a8b2e6953d3c9"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "nonzero_ext"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8207,9 +8216,9 @@ dependencies = [
 
 [[package]]
 name = "validity"
-version = "0.1.2"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7740f46f84413eebf4fa22626ba2e283351aec05bf9075eb584f69893cf04c8d"
+checksum = "77e2bf1771922026fbeedab38cf635e48b80f2c98ac11c54e84a0570ae1178e7"
 
 [[package]]
 name = "valuable"
@@ -8471,6 +8480,7 @@ dependencies = [
  "jormungandr-lib",
  "mainnet-lib",
  "microtype",
+ "nonempty",
  "once_cell",
  "postgres",
  "proptest",

@@ -3,71 +3,80 @@ use cardano_serialization_lib::chain_crypto::ed25519::{Pub, Sig};
 use cardano_serialization_lib::chain_crypto::{
     AsymmetricPublicKey, Ed25519, Verification, VerificationAlgorithm,
 };
+use cardano_serialization_lib::NetworkId;
 use ciborium::cbor;
 
 use ciborium::value::Value as Cbor;
-use serde_json::Value;
 
 use crate::data::crypto::PublicKeyHex;
-use crate::data::{Registration, SignedRegistration, StakeKeyHex};
-use crate::{Signature, SignatureHex};
+use crate::data::{Registration, SignedRegistration, StakeKeyHex, VotingPurpose};
+use crate::error::RegistrationError;
+use crate::{DataProvider, Signature, SignatureHex, VotingPowerSource};
 use validity::Validate;
 
-mod error;
-pub use error::ValidationError;
+/// Helper macro that calls a function that returns `Result<(), RegistrationError>`, and pushes it
+/// to `errors` if it errors, and does nothing if it succeeds
+macro_rules! handle {
+    ($errors:expr, $f:expr) => {
+        match $f {
+            Ok(()) => {}
+            Err(e) => $errors.push(e),
+        }
+    };
+}
+
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct ValidationCtx<'a> {
+    pub db: &'a dyn DataProvider,
+    /// Used for validating addresses
+    pub network_id: NetworkId,
+    pub expected_voting_purpose: VotingPurpose,
+}
 
 impl Validate for SignedRegistration {
-    type Error = ValidationError;
+    type Context<'a> = ValidationCtx<'a>;
+    type Error = RegistrationError;
 
-    fn is_valid(&self) -> Result<(), Self::Error> {
+    fn is_valid(&self, ctx: Self::Context<'_>) -> Result<(), Self::Error> {
         let SignedRegistration {
             registration,
             signature,
             tx_id: _,
         } = self;
 
+        // don't use with_capacity here, we want to avoid allocating in the happy path (i.e. no
+        // errors)
+        let mut errs = vec![];
+
+        handle!(
+            errs,
+            validate_voting_power(&registration.voting_power_source)
+        );
+
         let StakeKeyHex(PublicKeyHex(key)) = &registration.stake_key;
-        let Signature { inner: SignatureHex(signature) } = signature;
+        let Signature {
+            inner: SignatureHex(signature),
+        } = signature;
 
         let cbor = registration_as_cbor(registration);
         let bytes = cbor_to_bytes(cbor);
         let hash_of_bytes = blake2b_256(&bytes);
 
-
         match Ed25519::verify_bytes(&key, &signature, &hash_of_bytes) {
             Verification::Success => Ok(()),
-            Verification::Failed => Err(ValidationError::InvalidSignature),
+            Verification::Failed => Err(RegistrationError::MismatchedSignature),
         }
     }
 }
 
-// /// Validates whether a signature is valid for a given metadata
-// ///
-// /// ```
-// /// # use serde_json::json;
-// /// let metadata = json!({
-// ///     "1": ""
-// /// })
-// /// ```
-// pub fn validate(metadata: Value, signature: Value) -> bool {
-// let Some(sig) = extract_signature(signature) else { return false; };
-// let Some(key) = extract_key_from_metadata(metadata.clone()) else { return false; };
-//
-// let Some(cbor) = json_to_cbor(metadata) else { return false; };
-// let mut bytes = Vec::<u8>::new();
-//
-// match ciborium::ser::into_writer(&cbor, &mut bytes) {
-//     Ok(()) => {}
-//     Err(_) => return false,
-// };
-//
-// let hash = blake2b_256(&bytes);
-//
-// match Ed25519::verify_bytes(&key, &sig, &hash) {
-//     Verification::Success => true,
-//     Verification::Failed => false,
-// }
-// }
+fn validate_voting_power(source: &VotingPowerSource) -> Result<(), RegistrationError> {
+    match source {
+        VotingPowerSource::Delegated(vec) if vec.len() == 0 => {
+            Err(RegistrationError::EmptyDelegations)
+        }
+        _ => Ok(()),
+    }
+}
 
 const HASH_SIZE: usize = 32;
 
@@ -110,6 +119,8 @@ fn cbor_to_bytes(cbor: Cbor) -> Vec<u8> {
 
 #[cfg(test)]
 mod tests {
+    use crate::data::TxId;
+
     use super::*;
 
     #[test]
@@ -118,7 +129,28 @@ mod tests {
             1 => "hello",
             2 => 123,
             3 => [1, 2, 3, 4],
-        }).unwrap();
+        })
+        .unwrap();
         cbor_to_bytes(cbor); // doesn't panic
+    }
+
+    fn good_registration() -> SignedRegistration {
+        // let signed_registration = SignedRegistration {
+        //     tx_id: TxId(1),
+        //     registration: Registration {
+        //         voting_power_source: VotingPowerSource::Delegated(vec![]),
+        //
+        //     }
+        //     signature: todo!(),
+        //
+        // };
+
+        todo!()
+    }
+
+    #[test]
+    fn fails_if_empty_delegations() {
+        let mut reg = good_registration();
+        reg.registration.voting_power_source = VotingPowerSource::Delegated(vec![]);
     }
 }

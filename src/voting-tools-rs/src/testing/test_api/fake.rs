@@ -1,6 +1,6 @@
 use crate::data::crypto::PublicKeyHex;
 use crate::data::{
-    Nonce, Reg, Registration, RewardsAddress, Signature, SignedRegistration, SlotNo, StakeKeyHex,
+    Nonce, Registration, RewardsAddress, Signature, SignedRegistration, SlotNo, StakeKeyHex,
     TxId, VotingKeyHex, VotingPowerSource, VotingPurpose,
 };
 use crate::data_provider::DataProvider;

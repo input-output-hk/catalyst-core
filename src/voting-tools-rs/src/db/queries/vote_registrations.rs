@@ -1,6 +1,6 @@
 use crate::{db::inner::DbQuery, Db};
 
-use crate::data::{Reg, SignedRegistration, SlotNo};
+use crate::data::{SignedRegistration, SlotNo};
 use crate::db::schema::{block, tx, tx_metadata};
 use bigdecimal::{BigDecimal, FromPrimitive};
 use color_eyre::eyre::{eyre, Result};

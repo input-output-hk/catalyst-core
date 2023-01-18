@@ -98,13 +98,6 @@ pub struct SnapshotEntry {
     pub tx_id: TxId,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Reg { 
-    pub tx_id: TxId,
-    pub metadata: Registration,
-    pub signature: Signature,
-}
-
 // Create newtype wrappers for better type safety
 microtype! {
 

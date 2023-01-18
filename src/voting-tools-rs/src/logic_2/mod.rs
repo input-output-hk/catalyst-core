@@ -7,6 +7,7 @@ use std::{
 
 use crate::{
     data::{Registration, SignedRegistration, SlotNo, StakeKeyHex},
+    error::InvalidRegistration,
     validation::ValidationError,
     DataProvider, SnapshotEntry,
 };
@@ -21,8 +22,8 @@ mod tests;
 
 /// Calculate voting power info by querying a db-sync instance
 ///
-/// Invalid registrations are silently ignored (e.g. if they contain bad/null JSON metadata, if
-/// they have invalid signatures, etc).
+/// Returns a tuple containing the successful snapshot entries, as well as any registrations which
+/// failed verification in some way (along with some reason why they failed).
 ///
 /// If provided, `min_slot` and `max_slot` can  be used to constrain the time period to query. If
 /// `None` they default to:
@@ -38,7 +39,7 @@ pub fn voting_power(
     db: impl DataProvider,
     min_slot: Option<SlotNo>,
     max_slot: Option<SlotNo>,
-) -> Result<Vec<SnapshotEntry>> {
+) -> Result<(Vec<SnapshotEntry>, Vec<InvalidRegistration>)> {
     let min_slot = min_slot.unwrap_or(SlotNo(0));
     let max_slot = max_slot.unwrap_or(SlotNo(u64::try_from(i64::MAX).unwrap()));
 
@@ -49,15 +50,16 @@ pub fn voting_power(
         .map(Validate::validate)
         .partition_result();
 
-    show_error_warning(&validation_errors)?;
 
     let addrs = stake_addrs(&valid_registrations);
     let voting_powers = db.stake_values(&addrs)?;
 
-    valid_registrations
+    let snapshot = valid_registrations
         .into_iter()
         .map(|reg| convert_to_snapshot_entry(reg, &voting_powers))
-        .collect()
+        .collect();
+
+
 }
 
 fn stake_addrs(registrations: &[Valid<SignedRegistration>]) -> Vec<StakeKeyHex> {

@@ -260,9 +260,13 @@ impl Foo {
 I.e., don't use a trait if you don't need it.
 
 A common reason why people do this is to mock out a particular function call for testing.
-This can be useful in a few select places (i.e. when you have to interact with the real world, so networking, clocks, randomness, etc), but it has some significant downsides:
+This can be useful in a few select places, such as interacting with the real world.
+Eg, networking, clocks, randomness, etc. However, it has some significant downsides.
 
-* it means you're not actually testing this code. This might be fine for some types of code (e.g. database code), where it might be unreasonable to rely on a database for unit tests, but if your whole test suite is organized around this, your business logic won't actually get tested
+* it means you're not actually testing this code.
+  This might be fine for some types of code (e.g. database code).
+  It might be unreasonable to rely on a database for unit tests.
+  However, if your whole test suite is organized around this, your business logic won't get tested.
 * it forces you to use a trait, which have restrictions that plain functions don't have:
   * it forces you into either generics or dynamic dispatch (often with a heap allocation if you don't want to play the lifetime game)
   * you may now have to think about object safety, which can be very tricky for some APIs
@@ -283,13 +287,17 @@ There are times when you absolutely do need it, but this project cares more abou
 
 If you find yourself wanting to use `unsafe`, try the following:
 
-* if you want to create bindings to a C/C++ library, try first searching on crates.io for a `_sys` crate, or see if there is a pure-Rust implementation
+* if you want to create bindings to a C/C++ library:
+  * First, see if there is a pure-Rust implementation.
+  * Otherwise, search on crates.io for a `_sys` crate.
 * if you want to create a cool data structure that requires unsafe:
   * does it really need unsafe?
   * is it a doubly linked list? If so, have you got benchmarks that show that a `VecDeque` is insufficient? Something something cache-friendly...
   * is there a suitable implementation on crates.io?
   * is this data structure really noticeably better than what we have in `std`?
-* if you want to do a performance optimization (e.g. using `unreachable_unchecked()` to remove a bounds check), encode it in the type system, and put it in a separate crate with a safe API. If you can't do that, it's probably an indication that the mental model is also too complicated for a human to keep track of
+* if you want to do a performance optimization (e.g. using `unreachable_unchecked()` to remove a bounds check):
+  * Encode it in the type system, and put it in a separate crate with a safe API.
+  * If you can't do that, it's probably an indication that the mental model is also too complicated for a human to keep track of.
 * if you want to write a test that makes sure the code does the right thing "even in the presence of UB", just don't
 
 **All** unsafe code **must** be tested with Miri.
@@ -342,7 +350,7 @@ Error handling in Rust is complex, which represents the real-world complexity of
 Broadly speaking, there are two types of error:
 
 **Expected errors** are errors that are expected to occur during **normal operation** of the application.
-For example, even if your code has no bugs in it at all, you'd still expect to see network timeout errors, since that networking is inherently fallible.
+For example, in bug free code, it would still be expected to see network timeout errors, since that networking is inherently fallible.
 The exact error handling strategy may vary, but often involves returning a `Result`.
 
 **Unexpected errors** are errors that are not expected to occur.
@@ -381,7 +389,8 @@ impl<T> NonEmptyList<T> {
 }
 ```
 
-This way, we're providing the compiler with more information about the invariants of our type, so we can eliminate the error at compile time.
+This provides the compiler with more information about the invariants of our type.
+This allows us to eliminate the error at compile time.
 
 ### Handling expected errors
 
@@ -423,7 +432,8 @@ match try_foo() {
 
 In contexts where we don't want to recover from errors, use `Report` from the `color_eyre` crate.
 This is a trait object based error type which allows you to "fire and forget" an error.
-While technically *possible*, it's less ergonomic to recover from a `Result<T, Report>`, so only use this in contexts where the correct behaviour is "exit the program".
+While technically *possible*, it's less ergonomic to recover from a `Result<T, Report>`.
+Therefore, only use this in contexts where the correct behaviour is "exit the program".
 This is commonly the case in CLI apps.
 
 **However**, even in CLI apps, it's good practice to split the logic into a `lib.rs` file (or modules) and have a separate binary.

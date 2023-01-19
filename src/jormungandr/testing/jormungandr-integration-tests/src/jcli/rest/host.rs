@@ -8,7 +8,7 @@ pub fn test_correct_error_is_returned_for_incorrect_host_syntax() {
 
     jcli.rest().v0().tip_expect_fail(
         incorrect_host,
-        "Invalid value for '--host <host>': relative URL without a base",
+        "Invalid value 'not_a_correct_syntax' for '--host <HOST>': relative URL without a base",
     );
 }
 

@@ -77,7 +77,7 @@ pub struct StakePoolRegistration {
     #[clap(
         long = "kes-key",
         name = "KES_KEY",
-        value_parser = parse_pub_key::<Ed25519>,
+        value_parser = parse_pub_key::<SumEd25519_12>,
     )]
     pub kes_key: PublicKey<SumEd25519_12>,
 
@@ -85,7 +85,7 @@ pub struct StakePoolRegistration {
     #[clap(
         long = "vrf-key",
         name = "VRF_KEY",
-        value_parser = parse_pub_key::<Ed25519>,
+        value_parser = parse_pub_key::<RistrettoGroup2HashDh>,
     )]
     pub vrf_key: PublicKey<RistrettoGroup2HashDh>,
 

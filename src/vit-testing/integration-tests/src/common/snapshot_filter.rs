@@ -1,4 +1,4 @@
-use crate::common::snapshot::SnapshotResult;
+use crate::common::snapshot::result::SnapshotResult;
 use crate::common::RepsVoterAssignerSource;
 use chain_addr::Discrimination;
 use fraction::Fraction;

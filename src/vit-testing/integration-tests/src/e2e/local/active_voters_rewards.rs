@@ -152,7 +152,10 @@ pub fn voters_with_at_least_one_vote() {
     )
     .unwrap();
 
-    println!("{:?}", records);
+    println!("Alice address and conversion");
+
+    println!("{:#?}", alice_wallet.reward_address().to_address());
+    println!("{:#?}", alice_wallet.reward_address().to_address().to_hex());
 
     assert_eq!(
         records

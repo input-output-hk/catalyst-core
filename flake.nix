@@ -2,7 +2,9 @@
   description = "Governance Voting Center";
   inputs = {
     ## Nixpkgs ##
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    # Jor: d89d7af1ba23bd8a5341d00bdd862e8e9a808f56
+    # Vit: 5f43d8b088d3771274bcfb69d3c7435b1121ac88
+    nixpkgs.url = "github:nixos/nixpkgs/5f43d8b088d3771274bcfb69d3c7435b1121ac88";
 
     ## Std ##
     std.url = "github:divnix/std";

@@ -233,7 +233,7 @@ pub struct Connection {
     pub allow_private_addresses: bool,
 
     /// contains addrs of nodes which we can accept fragments from
-    pub whitelist: Option<Vec<SocketAddr>>,
+    pub whitelist: Option<Vec<Multiaddr>>,
 
     /// interval to start gossiping with new nodes, changing the value will affect the bandwidth.
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -3,6 +3,7 @@ use crate::{
     network::p2p::Address,
     topology::{layers::LayersConfig, NodeId, QuarantineConfig},
 };
+use ::multiaddr::Multiaddr;
 use chain_crypto::Ed25519;
 use jormungandr_lib::{crypto::key::SigningKey, multiaddr};
 use std::{net::SocketAddr, str, time::Duration};
@@ -85,7 +86,7 @@ pub struct Configuration {
     /// Whether to allow non-public IP addresses in gossip
     pub allow_private_addresses: bool,
 
-    pub whitelist: Option<Vec<SocketAddr>>,
+    pub whitelist: Option<Vec<Multiaddr>>,
 
     pub gossip_interval: Duration,
 

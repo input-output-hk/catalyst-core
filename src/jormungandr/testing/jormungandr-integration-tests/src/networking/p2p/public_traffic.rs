@@ -143,7 +143,14 @@ pub fn test_public_node_cannot_publish() {
         .get_listen_addr()
         .unwrap();
 
-    let whitelist = vec![internal_node_addr, internal_node_2_addr, gateway_addr];
+    let whitelist = vec![internal_node_addr, internal_node_2_addr, gateway_addr]
+        .into_iter()
+        .map(|a| {
+            let mut ma = Multiaddr::from(a.ip());
+            ma.push(multiaddr::Protocol::Tcp(a.port()));
+            ma
+        })
+        .collect::<Vec<_>>();
 
     println!("whitelist {:?}", whitelist);
 
@@ -278,7 +285,14 @@ pub fn test_public_node_synced_with_internal() {
         .get_listen_addr()
         .unwrap();
 
-    let whitelist = vec![internal_node_addr, internal_node_2_addr, gateway_addr];
+    let whitelist = vec![internal_node_addr, internal_node_2_addr, gateway_addr]
+        .into_iter()
+        .map(|a| {
+            let mut ma = Multiaddr::from(a.ip());
+            ma.push(multiaddr::Protocol::Tcp(a.port()));
+            ma
+        })
+        .collect::<Vec<_>>();
 
     println!("whitelist {:?}", whitelist);
 

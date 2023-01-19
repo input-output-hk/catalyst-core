@@ -30,7 +30,7 @@ pub struct SpawnParams {
     max_bootstrap_attempts: Option<usize>,
     max_connections: Option<u32>,
     allow_private_addresses: Option<bool>,
-    whitelist: Option<Vec<SocketAddr>>,
+    whitelist: Option<Vec<Multiaddr>>,
     max_inbound_connections: Option<u32>,
     mempool: Option<Mempool>,
     network_stuck_check: Option<Duration>,
@@ -148,7 +148,7 @@ impl SpawnParams {
         self
     }
 
-    pub fn whitelist(mut self, nodes: Vec<SocketAddr>) -> Self {
+    pub fn whitelist(mut self, nodes: Vec<Multiaddr>) -> Self {
         self.whitelist = Some(nodes);
         self
     }

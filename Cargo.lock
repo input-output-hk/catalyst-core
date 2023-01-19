@@ -3407,7 +3407,6 @@ version = "0.1.0"
 dependencies = [
  "assert_cmd",
  "assert_fs",
- "base64 0.12.3",
  "catalyst-toolbox",
  "cfg-if 1.0.0",
  "chain-addr",
@@ -8125,7 +8124,6 @@ dependencies = [
  "diesel_migrations 1.4.0",
  "dyn-clone",
  "fake",
- "hex",
  "hyper",
  "itertools",
  "jormungandr-lib",

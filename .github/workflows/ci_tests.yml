@@ -181,7 +181,7 @@ jobs:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
       - run: |
            cargo build -p jcli -p jormungandr -p explorer
-           cargo nextest run -p jormungandr-integration-tests --profile ci
+           cargo nextest run -p jormungandr-integration-tests --test-threads=1 --profile ci
 
   jcli:
     name: Jcli Tests

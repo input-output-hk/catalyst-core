@@ -10,11 +10,11 @@
         "template" : "<details>\n<summary>${title}</summary>\n<div class='collapsed'>\n${content}\n</div>\n</details>"
     },
     {
-        "title"   : "Force mermaid diagrams to use the same theme.",
+        "title"   : "Allow background color of kroki diagram to be forced to a color.",
         "usage"   : [
-            "```kroki-mermaid"
+            "```kroki-<diagram type> on <color>"
         ],
-        "pattern" : "^```kroki-mermaid\n``",
-        "template" : "```kroki-mermaid\n%%{init: {'theme':'forest'}}%%\n"
+        "pattern" : "```kroki-(?P<diagram>\\S+)[^\\S\\r\\n]+on[^\\S\\r\\n]+(?P<color>\\S+)([^(\\r\\n|\\r|\\n)]*)(\\r\\n|\\r|\\n)(?P<content>(?s:.)*?)```",
+        "template" : "<div style=\"background-color:${color}\">\n\n```kroki-${diagram}\n${content}\n```\n</div>"
     }
 ]

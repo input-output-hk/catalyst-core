@@ -5,7 +5,7 @@ use jormungandr_automation::jcli::JCli;
 pub fn test_account_address_made_of_incorrect_ed25519_extended_key() {
     let jcli: JCli = Default::default();
 
-    let private_key = jcli.key().generate("ed25519Extended");
+    let private_key = jcli.key().generate("ed25519-extended");
     println!("private key: {}", &private_key);
 
     let mut public_key = jcli.key().convert_to_public_string(&private_key);
@@ -26,7 +26,7 @@ pub fn test_account_address_made_of_incorrect_ed25519_extended_key() {
 pub fn test_account_address_made_of_ed25519_extended_key() {
     let jcli: JCli = Default::default();
 
-    let private_key = jcli.key().generate("ed25519Extended");
+    let private_key = jcli.key().generate("ed25519-extended");
     println!("private key: {}", &private_key);
 
     let public_key = jcli.key().convert_to_public_string(&private_key);

@@ -8,17 +8,17 @@ pub fn test_key_from_bytes_ed25519() {
 
 #[test]
 pub fn test_key_from_bytes_curve25519_2hashdh() {
-    transform_key_to_bytes_and_back("RistrettoGroup2HashDh");
+    transform_key_to_bytes_and_back("ristretto-group2-hash-dh");
 }
 
 #[test]
 pub fn test_key_from_bytes_sumed25519_12() {
-    transform_key_to_bytes_and_back("sumed25519_12");
+    transform_key_to_bytes_and_back("sum-ed25519-12");
 }
 
 #[test]
 pub fn test_key_from_bytes_ed25510bip32() {
-    transform_key_to_bytes_and_back("Ed25519Bip32");
+    transform_key_to_bytes_and_back("ed25519-bip32");
 }
 
 fn transform_key_to_bytes_and_back(key_type: &str) {
@@ -46,7 +46,7 @@ pub fn test_from_bytes_for_invalid_key() {
     byte_key_file.write_str(
         "ed25519e_sk1kp80gevhccz8cnst6x97rmlc9n5fls2nmcqcjfn65vdktt0wy9f3zcf76hp7detq9sz8cmhlcyzw5h3ralf98rdwl4wcwcgaaqna3pgz9qgk0").unwrap();
     jcli.key().convert_from_bytes_string_expect_fail(
-        "ed25519Extended",
+        "ed25519-extended",
         byte_key_file.path(),
         "Odd number of digits",
     );
@@ -59,8 +59,8 @@ pub fn test_from_bytes_for_unknown_key() {
     byte_key_file.write_str(
         "ed25519e_sk1kp80gevhccz8cnst6x97rmlc9n5fls2nmcqcjfn65vdktt0wy9f3zcf76hp7detq9sz8cmhlcyzw5h3ralf98rdwl4wcwcgaaqna3pgz9qgk0").unwrap();
     jcli.key().convert_from_bytes_string_expect_fail(
-        "ed25519Exten",
+        "ed25519-exten",
         byte_key_file.path(),
-        "Invalid value for '--type <key-type>':",
+        "'ed25519-exten' isn't a valid value for '--type <KEY_TYPE>'",
     );
 }

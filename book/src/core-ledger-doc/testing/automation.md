@@ -16,7 +16,7 @@ Api that can be used to run jcli executable underneath and is capable to assert 
 
 ```
     let jcli: JCli = Default::default();
-    let private_key = jcli.key().generate("Ed25519Extended");
+    let private_key = jcli.key().generate("ed25519-extended");
     let public_key = jcli.key().convert_to_public_string(&private_key);
 ```
 

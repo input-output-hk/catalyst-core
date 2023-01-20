@@ -64,7 +64,7 @@
 <span class="kw">use </span>chain_impl_mockchain::account;
 <span class="kw">use </span>thiserror::Error;
 
-<span class="attribute">#[derive(Debug)]
+<span class="attribute">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>AccountId {
     account: account::Identifier,
 }

@@ -73,24 +73,26 @@
 <span id="73">73</span>
 <span id="74">74</span>
 <span id="75">75</span>
+<span id="76">76</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::jcli_lib::certificate::Error;
 <span class="kw">use </span>chain_crypto::Blake2b256;
 <span class="kw">use </span>chain_impl_mockchain::{
     account::{DelegationRatio, DelegationType},
     accounting::account::DELEGATION_RATIO_MAX_DECLS,
 };
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>std::{convert::TryFrom, error::Error <span class="kw">as </span>StdError, str::FromStr};
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>WeightedPoolIds {
     <span class="doccomment">/// hex-encoded stake pool IDs and their numeric weights in format &quot;pool_id:weight&quot;.
     /// If weight is not provided, it defaults to 1.
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;STAKE_POOL_IDS&quot;</span>, required = <span class="bool-val">true</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;STAKE_POOL_IDS&quot;</span>, required = <span class="bool-val">true</span>, value_parser = WeightedPoolId::from_str)]
     </span>pool_ids: Vec&lt;WeightedPoolId&gt;,
 }
 
-<span class="kw">struct </span>WeightedPoolId {
+<span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">struct </span>WeightedPoolId {
     pool_id: Blake2b256,
     weight: u8,
 }
@@ -138,7 +140,7 @@
 }
 
 <span class="kw">impl </span>FromStr <span class="kw">for </span>WeightedPoolId {
-    <span class="kw">type </span><span class="prelude-val">Err </span>= Box&lt;<span class="kw">dyn </span>StdError&gt;;
+    <span class="kw">type </span><span class="prelude-val">Err </span>= Box&lt;<span class="kw">dyn </span>StdError + Send + Sync + <span class="lifetime">&#39;static</span>&gt;;
 
     <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>split = s.splitn(<span class="number">2</span>, <span class="string">&#39;:&#39;</span>);

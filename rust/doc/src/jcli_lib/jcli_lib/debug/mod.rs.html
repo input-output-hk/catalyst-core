@@ -42,13 +42,13 @@
 </pre><pre class="rust"><code><span class="kw">mod </span>block;
 <span class="kw">mod </span>message;
 <span class="kw">use </span>chain_core::property::ReadError;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>hex::FromHexError;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>Debug {
     <span class="doccomment">/// Decode hex-encoded message and display its content
     </span>Message(message::Message),

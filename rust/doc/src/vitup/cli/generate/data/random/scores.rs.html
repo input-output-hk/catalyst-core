@@ -48,31 +48,29 @@
 <span id="48">48</span>
 <span id="49">49</span>
 <span id="50">50</span>
-<span id="51">51</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::Result;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>rand::RngCore;
 <span class="kw">use </span>rand_core::OsRng;
 <span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>RandomScoresDataCommandArgs {
     <span class="doccomment">/// Careful! directory would be removed before export
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;output&quot;</span>, default_value = <span class="string">&quot;./proposals.json&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;output&quot;</span>, default_value = <span class="string">&quot;./proposals.json&quot;</span>)]
     </span><span class="kw">pub </span>output_file: PathBuf,
 
-    <span class="attribute">#[structopt(
+    <span class="attribute">#[clap(
         long = <span class="string">&quot;proposals&quot;</span>,
         default_value = <span class="string">&quot;../resources/external/proposals.json&quot;
     </span>)]
     </span><span class="kw">pub </span>proposals: PathBuf,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;min&quot;</span>, default_value = <span class="string">&quot;100&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;min&quot;</span>, default_value = <span class="string">&quot;100&quot;</span>)]
     </span><span class="kw">pub </span>minimal_score: u32,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;max&quot;</span>, default_value = <span class="string">&quot;499&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;max&quot;</span>, default_value = <span class="string">&quot;499&quot;</span>)]
     </span><span class="kw">pub </span>maximal_score: u32,
 }
 

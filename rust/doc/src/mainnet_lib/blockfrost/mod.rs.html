@@ -99,10 +99,15 @@
 <span id="99">99</span>
 <span id="100">100</span>
 <span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::wallet::GeneralTransactionMetadataInfo;
 <span class="kw">use crate</span>::{REGISTRATION_METADATA_IDX, REGISTRATION_SIGNATURE_METADATA_IDX};
 <span class="kw">use </span>blockfrost::{load, AddressTransaction, BlockFrostApi, BlockFrostSettings};
 <span class="kw">use </span>cardano_serialization_lib::address::Address;
+<span class="kw">use </span>cardano_serialization_lib::error::JsError;
 <span class="kw">use </span>cardano_serialization_lib::metadata::{GeneralTransactionMetadata, MetadataJsonSchema};
 
 <span class="doccomment">/// Wrapper on Blockfrost api tailored for catalyst needs
@@ -199,6 +204,9 @@
     <span class="doccomment">/// Json conversion error
     </span><span class="attribute">#[error(<span class="string">&quot;blockfrost&quot;</span>)]
     </span>JsonConversion(<span class="attribute">#[from] </span><span class="kw">crate</span>::JsonConversionError),
+    <span class="doccomment">/// Cardano serialization lib error
+    </span><span class="attribute">#[error(<span class="string">&quot;cardano serialization lib&quot;</span>)]
+    </span>CardanoSerialization(<span class="attribute">#[from] </span>JsError),
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="mainnet_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

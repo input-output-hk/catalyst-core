@@ -27,14 +27,14 @@
 <span id="27">27</span>
 <span id="28">28</span>
 </pre><pre class="rust"><code><span class="kw">use </span>cardano_serialization_lib::metadata::MetadataJsonSchema;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>mainnet_lib::{
     CatalystBlockFrostApi, CatalystBlockFrostApiError, GeneralTransactionMetadataInfo,
 };
-<span class="kw">use </span>structopt::StructOpt;
 
 <span class="attribute">#[tokio::main]
 </span><span class="kw">async fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), CatalystBlockFrostApiError&gt; {
-    <span class="kw">let </span>params = Command::from_args();
+    <span class="kw">let </span>params = Command::parse();
 
     <span class="kw">let </span>api = CatalystBlockFrostApi::new()<span class="question-mark">?</span>;
     <span class="kw">let </span>registrations = api.list_registrations_for_address(<span class="kw-2">&amp;</span>params.address).<span class="kw">await</span><span class="question-mark">?</span>;
@@ -49,9 +49,9 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>Command {
-    <span class="attribute">#[structopt(env = <span class="string">&quot;ADDRESS&quot;</span>)]
+    <span class="attribute">#[clap(env = <span class="string">&quot;ADDRESS&quot;</span>)]
     </span><span class="kw">pub </span>address: String,
 }
 </code></pre></div>

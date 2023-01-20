@@ -51,6 +51,7 @@
 <span id="51">51</span>
 <span id="52">52</span>
 <span id="53">53</span>
+<span id="54">54</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>external;
 <span class="kw">mod </span>perf;
 <span class="kw">mod </span>random;
@@ -63,13 +64,14 @@
     AllRandomDataCommandArgs, RandomReviewsDataCommandArgs, RandomScoresDataCommandArgs,
 };
 
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>DataCommandArgs {
     <span class="doccomment">/// generate data from external data
     </span>Import(ExternalDataCommandArgs),
     <span class="doccomment">/// generate random data
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Random(RandomDataCommandArgs),
     <span class="doccomment">/// generate data for performance tests
     </span>Perf(PerfDataCommandArgs),
@@ -85,7 +87,7 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>RandomDataCommandArgs {
     <span class="doccomment">/// generate all random data
     </span>All(AllRandomDataCommandArgs),

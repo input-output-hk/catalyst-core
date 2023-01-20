@@ -471,7 +471,6 @@
 <span id="471">471</span>
 <span id="472">472</span>
 <span id="473">473</span>
-<span id="474">474</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::jcli_lib::utils::{
     io,
     output_file::{<span class="self">self</span>, OutputFile},
@@ -483,6 +482,7 @@
     RistrettoGroup2HashDh, SecretKey, Signature, SigningAlgorithm, SumEd25519_12, Verification,
     VerificationAlgorithm,
 };
+<span class="kw">use </span>clap::{Parser, ValueEnum};
 <span class="kw">use </span>ed25519_bip32::{DerivationError, DerivationScheme};
 <span class="kw">use </span>hex::FromHexError;
 <span class="kw">use </span>rand::{rngs::OsRng, SeedableRng};
@@ -490,8 +490,8 @@
 <span class="kw">use </span>std::{
     io::{Read, Write},
     path::{Path, PathBuf},
+    str::FromStr,
 };
-<span class="kw">use </span>structopt::{clap::arg_enum, StructOpt};
 <span class="kw">use </span>thiserror::Error;
 
 <span class="attribute">#[derive(Debug, Error)]
@@ -535,8 +535,8 @@
     },
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(name = <span class="string">&quot;genesis&quot;</span>, rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser, Debug)]
+#[clap(name = <span class="string">&quot;genesis&quot;</span>, rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>Key {
     <span class="doccomment">/// generate a private key
     </span>Generate(Generate),
@@ -554,125 +554,123 @@
     </span>Derive(Derive),
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>FromBytes {
     <span class="doccomment">/// Type of a private key
     ///
     /// supported values are: ed25519, ed25519bip32, ed25519extended, curve25519_2hashdh or sumed25519_12
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;type&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;type&quot;</span>)]
     </span>key_type: GenPrivKeyType,
 
     <span class="doccomment">/// retrieve the private key from the given bytes
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;INPUT_BYTES&quot;</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;INPUT_BYTES&quot;</span>)]
     </span>input_bytes: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>output_file: OutputFile,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;public&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;public&quot;</span>)]
     </span>public_key: bool,
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>ToBytes {
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>output_file: OutputFile,
 
     <span class="doccomment">/// path to the private key to serialize in bytes
     /// Or read from the standard input
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;INPUT_FILE&quot;</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;INPUT_FILE&quot;</span>)]
     </span>input_key: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>Generate {
     <span class="doccomment">/// Type of a private key
     ///
     /// supported values are: ed25519, ed25519bip32, ed25519extended, curve25519_2hashdh or sumed25519_12
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;type&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;type&quot;</span>)]
     </span>key_type: GenPrivKeyType,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>output_file: OutputFile,
 
     <span class="doccomment">/// optional seed to generate the key, for the same entropy the same key
     /// will be generated (32 bytes in hexadecimal). This seed will be fed to
     /// ChaChaRNG and allow pseudo random key generation. Do not use if you
     /// are not sure.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;seed&quot;</span>, short = <span class="string">&quot;s&quot;</span>, name = <span class="string">&quot;SEED&quot;</span>, parse(try_from_str))]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;seed&quot;</span>, short = <span class="string">&#39;s&#39;</span>, name = <span class="string">&quot;SEED&quot;</span>, value_parser = Seed::from_str)]
     </span>seed: <span class="prelude-ty">Option</span>&lt;Seed&gt;,
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>ToPublic {
     <span class="doccomment">/// the source private key to extract the public key from
     ///
     /// if no value passed, the private key will be read from the
     /// standard input
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;input&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;input&quot;</span>)]
     </span>input_key: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>output_file: OutputFile,
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>Sign {
     <span class="doccomment">/// path to file with bech32-encoded secret key
     ///
     /// supported key formats are: ed25519, ed25519bip32, ed25519extended and sumed25519_12
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;secret-key&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;secret-key&quot;</span>)]
     </span>secret_key: PathBuf,
 
     <span class="doccomment">/// path to file to write signature into, if no value is passed, standard output will be used
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;output&quot;</span>, short = <span class="string">&quot;o&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;output&quot;</span>, short = <span class="string">&#39;o&#39;</span>)]
     </span>output: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// path to file with data to sign, if no value is passed, standard input will be used
     </span>data: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>Verify {
     <span class="doccomment">/// path to file with bech32-encoded public key
     ///
     /// supported key formats are: ed25519, ed25519bip32 and sumed25519_12
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;public-key&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;public-key&quot;</span>)]
     </span>public_key: PathBuf,
 
     <span class="doccomment">/// path to file with signature
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;signature&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;signature&quot;</span>)]
     </span>signature: PathBuf,
 
     <span class="doccomment">/// path to file with signed data, if no value is passed, standard input will be used
     </span>data: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>Derive {
     <span class="doccomment">/// the ed25519bip32 parent key to derive a child key from
     ///
     /// if no value passed, the parent key will be read from the
     /// standard input
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;input&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;input&quot;</span>)]
     </span>parent_key: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// the index of child key
     </span>index: u32,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>child_key: OutputFile,
 }
 
-<span class="macro">arg_enum! </span>{
-    <span class="attribute">#[derive(StructOpt, Debug)]
-    </span><span class="kw">pub enum </span>GenPrivKeyType {
-        Ed25519,
-        Ed25519Bip32,
-        Ed25519Extended,
-        SumEd25519_12,
-        RistrettoGroup2HashDh,
-    }
+<span class="attribute">#[derive(Debug, Clone, ValueEnum)]
+</span><span class="kw">pub enum </span>GenPrivKeyType {
+    Ed25519,
+    Ed25519Bip32,
+    Ed25519Extended,
+    SumEd25519_12,
+    RistrettoGroup2HashDh,
 }
 
 <span class="kw">impl </span>Key {
@@ -929,7 +927,7 @@
     <span class="prelude-val">Ok</span>(public.to_bech32_str())
 }
 
-<span class="attribute">#[derive(Debug)]
+<span class="attribute">#[derive(Debug, Clone, Copy)]
 </span><span class="kw">struct </span>Seed([u8; <span class="number">32</span>]);
 
 <span class="kw">impl </span>std::str::FromStr <span class="kw">for </span>Seed {

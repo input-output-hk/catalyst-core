@@ -107,8 +107,6 @@
 <span id="107">107</span>
 <span id="108">108</span>
 <span id="109">109</span>
-<span id="110">110</span>
-<span id="111">111</span>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_impl_mockchain::fragment::FragmentId;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
 <span class="kw">use </span>serde_with::{serde_as, DisplayFromStr};
@@ -123,8 +121,6 @@
     FragmentInvalid,
     PreviousFragmentInvalid,
     PoolOverflow,
-    FragmentExpired,
-    FragmentValidForTooLong,
 }
 
 <span class="doccomment">/// Information about a fragment rejected by the mempool. This is different from being rejected by

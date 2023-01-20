@@ -206,10 +206,10 @@
 <span id="206">206</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db_utils::{backup_db_file, restore_db_file};
 <span class="kw">use crate</span>::{db_utils::db_file_exists, task::ExecTask};
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>rand::Rng;
 <span class="kw">use </span>std::collections::HashSet;
 <span class="kw">use </span>std::io;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">use </span>time::{Duration, OffsetDateTime};
 <span class="kw">use </span>vit_servicing_station_lib::{
@@ -242,27 +242,27 @@
     </span>Io(<span class="attribute">#[from] </span>std::io::Error),
 }
 
-<span class="attribute">#[derive(Debug, PartialEq, Eq, StructOpt)]
+<span class="attribute">#[derive(Debug, PartialEq, Eq, Parser)]
 </span><span class="kw">pub enum </span>ApiTokenCmd {
     <span class="doccomment">/// Add provided tokens to database. If --tokens is not provided the binary will read them from the `stdin`
     </span>Add {
         <span class="doccomment">/// List of tokens in URL safe base64. If --tokens is not provided the binary will read them from the `stdin`
-        </span><span class="attribute">#[structopt(long = <span class="string">&quot;tokens&quot;</span>)]
+        </span><span class="attribute">#[clap(long = <span class="string">&quot;tokens&quot;</span>)]
         </span>tokens: <span class="prelude-ty">Option</span>&lt;Vec&lt;String&gt;&gt;,
 
         <span class="doccomment">/// URL of the vit-servicing-station database to interact with
-        </span><span class="attribute">#[structopt(long = <span class="string">&quot;db-url&quot;</span>)]
+        </span><span class="attribute">#[clap(long = <span class="string">&quot;db-url&quot;</span>)]
         </span>db_url: String,
     },
 
     <span class="doccomment">/// Generate API tokens, URL safe base64 encoded.
     </span>Generate {
         <span class="doccomment">/// Number of tokens to generate
-        </span><span class="attribute">#[structopt(long = <span class="string">&quot;n&quot;</span>, default_value = <span class="string">&quot;1&quot;</span>)]
+        </span><span class="attribute">#[clap(long = <span class="string">&quot;n&quot;</span>, default_value = <span class="string">&quot;1&quot;</span>)]
         </span>n: usize,
 
         <span class="doccomment">/// Size of the token
-        </span><span class="attribute">#[structopt(long = <span class="string">&quot;size&quot;</span>, default_value = <span class="string">&quot;10&quot;</span>)]
+        </span><span class="attribute">#[clap(long = <span class="string">&quot;size&quot;</span>, default_value = <span class="string">&quot;10&quot;</span>)]
         </span>size: usize,
     },
 }

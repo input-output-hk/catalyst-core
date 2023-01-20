@@ -57,22 +57,22 @@
     certificate::{<span class="self">self</span>, Certificate},
     vote::PayloadType,
 };
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::interfaces::VotePlan;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 
 <span class="doccomment">/// create a vote plan certificate
 ///
 /// the vote plan configuration data needs to be provided
-</span><span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+</span><span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>VotePlanRegistration {
     <span class="doccomment">/// the file containing the vote plan configuration (YAML). If no file
     /// provided, it will be read from the standard input
     </span><span class="kw">pub </span>input: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// write the output to the given file or print it to the standard output if not defined
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;output&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;output&quot;</span>)]
     </span><span class="kw">pub </span>output: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 

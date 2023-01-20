@@ -156,7 +156,7 @@ cargo build
 <h2 id="jcli-testing-api"><a class="header" href="#jcli-testing-api">jcli testing api</a></h2>
 <p>Api that can be used to run jcli executable underneath and is capable to assert outcome of command. It can work with already installed jcli (using PATH variable) or custom path. For Example:</p>
 <pre><code>    let jcli: JCli = Default::default();
-    let private_key = jcli.key().generate(&quot;Ed25519Extended&quot;);
+    let private_key = jcli.key().generate(&quot;ed25519-extended&quot;);
     let public_key = jcli.key().convert_to_public_string(&amp;private_key);
 </code></pre>
 <h2 id="jormungandr-testing-api"><a class="header" href="#jormungandr-testing-api">jormungandr testing api</a></h2>

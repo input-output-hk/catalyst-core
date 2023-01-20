@@ -318,6 +318,10 @@
 <span id="318">318</span>
 <span id="319">319</span>
 <span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
 </pre><pre class="rust"><code><span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
 </span><span class="kw">mod </span>new_evm_mapping;
 <span class="kw">mod </span>new_owner_stake_delegation;
@@ -343,13 +347,13 @@
 };
 <span class="kw">use </span>chain_impl_mockchain::{block::BlockDate, certificate::DecryptedPrivateTallyError};
 <span class="kw">use </span>chain_vote::UnitVectorInitializationError;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::interfaces::{<span class="self">self</span>, CertificateFromBech32Error, CertificateFromStrError};
 <span class="kw">use </span>std::{
     fmt::Display,
     io::{BufRead, BufReader, Write},
     path::{Path, PathBuf},
 };
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 
 <span class="attribute">#[derive(Debug, Error)]
@@ -445,23 +449,25 @@
 }
 
 <span class="attribute">#[allow(clippy::large_enum_variant)]
-#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>Certificate {
     <span class="doccomment">/// Build certificate
+    </span><span class="attribute">#[clap(subcommand)]
     </span>New(NewArgs),
     <span class="doccomment">/// Sign a certificate. You can call this command multiple
     /// times to add multiple signatures if this is required.
     </span>Sign(sign::Sign),
     <span class="doccomment">/// Output information encoded into the certificate
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Show(show::ShowArgs),
     <span class="doccomment">/// Print certificate
     </span>Print(PrintArgs),
 }
 
 <span class="attribute">#[allow(clippy::large_enum_variant)]
-#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>NewArgs {
     <span class="doccomment">/// create the stake pool registration certificate.
     ///
@@ -491,33 +497,35 @@
     <span class="doccomment">/// create a new vote plan certificate
     </span>VotePlan(new_vote_plan::VotePlanRegistration),
     <span class="doccomment">/// create a new vote tally certificate
+    </span><span class="attribute">#[clap(subcommand)]
     </span>VoteTally(new_vote_tally::VoteTallyRegistration),
     <span class="doccomment">/// create a new update vote certificate
     </span>UpdateVote(new_update_vote::UpdateVote),
     <span class="doccomment">/// create a new update proposal certificate
     </span>UpdateProposal(new_update_proposal::UpdateProposal),
     <span class="doccomment">/// create a vote cast certificate
+    </span><span class="attribute">#[clap(subcommand)]
     </span>VoteCast(new_vote_cast::VoteCastCmd),
     <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
     </span><span class="doccomment">/// create an EVM address mapping certificate
     </span>EvmMapping(new_evm_mapping::EvmMapCmd),
 }
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>PrintArgs {
     <span class="doccomment">/// get the certificate to sign from the given file. If no file
     /// provided, it will be read from the standard input
     </span><span class="kw">pub </span>input: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>StakeDelegationArgs {
-    <span class="attribute">#[structopt(name = <span class="string">&quot;PUBLIC_KEY&quot;</span>)]
+    <span class="attribute">#[clap(name = <span class="string">&quot;PUBLIC_KEY&quot;</span>)]
     </span><span class="kw">pub </span>key: String,
-    <span class="attribute">#[structopt(name = <span class="string">&quot;POOL_ID&quot;</span>)]
+    <span class="attribute">#[clap(name = <span class="string">&quot;POOL_ID&quot;</span>)]
     </span><span class="kw">pub </span>pool_id: String,
-    <span class="attribute">#[structopt(name = <span class="string">&quot;SIGNING_KEY&quot;</span>)]
+    <span class="attribute">#[clap(name = <span class="string">&quot;SIGNING_KEY&quot;</span>)]
     </span><span class="kw">pub </span>private_key: PathBuf,
 }
 

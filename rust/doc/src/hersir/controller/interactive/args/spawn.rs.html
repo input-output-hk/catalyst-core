@@ -150,14 +150,14 @@
     controller::{Error, UserInteractionController},
     style,
 };
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_automation::jormungandr::{
     download_last_n_releases, LeadershipMode, PersistenceMode, StartupVerificationMode, Version,
 };
 <span class="kw">use </span>jortestkit::console::InteractiveCommandError;
 <span class="kw">use </span>std::time::Duration;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>Spawn {
     Passive(SpawnPassiveNode),
     Leader(SpawnLeaderNode),
@@ -172,15 +172,15 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>SpawnPassiveNode {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;s&quot;</span>, long = <span class="string">&quot;storage&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;s&#39;</span>, long = <span class="string">&quot;storage&quot;</span>)]
     </span><span class="kw">pub </span>storage: bool,
-    <span class="attribute">#[structopt(short = <span class="string">&quot;l&quot;</span>, long = <span class="string">&quot;legacy&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;l&#39;</span>, long = <span class="string">&quot;legacy&quot;</span>)]
     </span><span class="kw">pub </span>legacy: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[structopt(short = <span class="string">&quot;w&quot;</span>, long = <span class="string">&quot;wait&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;w&#39;</span>, long = <span class="string">&quot;wait&quot;</span>)]
     </span><span class="kw">pub </span>wait: bool,
-    <span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;alias&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;alias&quot;</span>)]
     </span><span class="kw">pub </span>alias: String,
 }
 
@@ -197,15 +197,15 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>SpawnLeaderNode {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;s&quot;</span>, long = <span class="string">&quot;storage&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;s&#39;</span>, long = <span class="string">&quot;storage&quot;</span>)]
     </span><span class="kw">pub </span>storage: bool,
-    <span class="attribute">#[structopt(short = <span class="string">&quot;l&quot;</span>, long = <span class="string">&quot;legacy&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;l&#39;</span>, long = <span class="string">&quot;legacy&quot;</span>)]
     </span><span class="kw">pub </span>legacy: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[structopt(short = <span class="string">&quot;w&quot;</span>, long = <span class="string">&quot;wait&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;w&#39;</span>, long = <span class="string">&quot;wait&quot;</span>)]
     </span><span class="kw">pub </span>wait: bool,
-    <span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;alias&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;alias&quot;</span>)]
     </span><span class="kw">pub </span>alias: String,
 }
 

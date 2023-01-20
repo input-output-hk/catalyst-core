@@ -301,24 +301,34 @@
 <span id="301">301</span>
 <span id="302">302</span>
 <span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::client::rest::VitupAdminRestClient;
 <span class="kw">use </span><span class="kw">crate</span>::client::rest::VitupDisruptionRestClient;
 <span class="kw">use </span><span class="kw">crate</span>::client::rest::VitupRest;
 <span class="kw">use </span><span class="kw">crate</span>::config::Config;
 <span class="kw">use </span><span class="kw">crate</span>::Result;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thor::PersistentLogViewer;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>VitupClientCommand {
-    <span class="attribute">#[structopt(short, long, env = <span class="string">&quot;VIT_TOKEN&quot;</span>)]
+    <span class="attribute">#[clap(short, long, env = <span class="string">&quot;VIT_TOKEN&quot;</span>)]
     </span>token: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
-    <span class="attribute">#[structopt(short, long, env = <span class="string">&quot;VIT_ENDPOINT&quot;</span>)]
+    <span class="attribute">#[clap(short, long, env = <span class="string">&quot;VIT_ENDPOINT&quot;</span>)]
     </span>endpoint: String,
 
-    <span class="attribute">#[structopt(subcommand)]
+    <span class="attribute">#[clap(subcommand)]
     </span>command: Command,
 }
 
@@ -341,23 +351,29 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>Command {
     <span class="doccomment">/// disruption
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Disruption(DisruptionCommand),
     <span class="doccomment">/// mock
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Mock(MockCommand),
     <span class="doccomment">/// utils
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Utils(UtilsCommand),
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>DisruptionCommand {
     <span class="doccomment">/// start backend from scratch
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Logs(LogsCommand),
     <span class="doccomment">/// start advanced backend from scratch
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Files(FilesCommand),
-    <span class="comment">// start mock env
+    <span class="doccomment">/// start mock env
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Control(ControlCommand),
 }
 
@@ -371,7 +387,7 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>LogsCommand {
     <span class="doccomment">/// start backend from scratch
     </span>Clear,
@@ -391,7 +407,7 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>FilesCommand {
     List,
 }
@@ -407,14 +423,15 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>ControlCommand {
     Reset,
     SetUnavailable,
     SetErrorCode(SetErrorCodeCommand),
     SetAvailable,
     SetFundId(SetFundIdCommand),
-    Fragments(FragmentsCommand),
+    <span class="attribute">#[clap(subcommand)]
+    </span>Fragments(FragmentsCommand),
     Health,
 }
 
@@ -446,19 +463,19 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>SetFundIdCommand {
-    <span class="attribute">#[structopt(long = <span class="string">&quot;fund-id&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;fund-id&quot;</span>)]
     </span>fund_id: u32,
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>SetErrorCodeCommand {
-    <span class="attribute">#[structopt(long = <span class="string">&quot;code&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;code&quot;</span>)]
     </span>code: u16,
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>FragmentsCommand {
     Reject,
     Hold,
@@ -477,11 +494,13 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>MockCommand {
     <span class="doccomment">/// files commands
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Files(MockFilesCommand),
     <span class="doccomment">/// start commands
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Start(MockStartCommand),
     <span class="doccomment">/// stop command
     </span>Stop,
@@ -489,7 +508,7 @@
     </span>Status,
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>MockStartCommand {
     <span class="doccomment">/// start custom
     </span>Custom(MockStartCustomCommand),
@@ -512,9 +531,9 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>MockStartCustomCommand {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;p&quot;</span>, long = <span class="string">&quot;params&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;p&#39;</span>, long = <span class="string">&quot;params&quot;</span>)]
     </span>params: std::path::PathBuf,
 }
 
@@ -527,7 +546,7 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>MockFilesCommand {
     List,
 }
@@ -563,9 +582,10 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>UtilsCommand {
     <span class="doccomment">/// persistent log comamnds
+    </span><span class="attribute">#[clap(subcommand)]
     </span>PersistentLog(PersistentLogCommand),
 }
 
@@ -577,7 +597,7 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>PersistentLogCommand {
     <span class="doccomment">/// persistent log commands
     </span>Count(CountPersistentLogCommand),
@@ -591,10 +611,10 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>CountPersistentLogCommand {
     <span class="doccomment">/// count commands  
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;folder&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;folder&quot;</span>)]
     </span><span class="kw">pub </span>folder: PathBuf,
 }
 

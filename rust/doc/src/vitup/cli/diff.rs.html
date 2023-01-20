@@ -125,10 +125,10 @@
 <span id="125">125</span>
 <span id="126">126</span>
 <span id="127">127</span>
-<span id="128">128</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::DeploymentTree;
 <span class="kw">use </span><span class="kw">crate</span>::Result;
 <span class="kw">use </span>assert_fs::TempDir;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>diffy::create_patch;
 <span class="kw">use </span>diffy::PatchFormatter;
 <span class="kw">use </span>jormungandr_automation::testing::block0::decode_block0;
@@ -136,31 +136,29 @@
 <span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>valgrind::ValgrindClient;
 <span class="kw">use </span>vit_servicing_station_tests::common::startup::server::ServerBootstrapper;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>DiffCommand {
     <span class="doccomment">/// Local environment to compare
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;l&quot;</span>, long = <span class="string">&quot;local&quot;</span>, default_value = <span class="string">&quot;./data/&quot;</span>)]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;l&#39;</span>, long = <span class="string">&quot;local&quot;</span>, default_value = <span class="string">&quot;./data/&quot;</span>)]
     </span><span class="kw">pub </span>local: PathBuf,
 
     <span class="doccomment">/// Vit servicing station server binary
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;vit-station&quot;</span>, default_value = <span class="string">&quot;vit-servicing-station-server&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;vit-station&quot;</span>, default_value = <span class="string">&quot;vit-servicing-station-server&quot;</span>)]
     </span><span class="kw">pub </span>vit_station: PathBuf,
 
     <span class="doccomment">/// Target environment to compare
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;t&quot;</span>, long = <span class="string">&quot;target&quot;</span>)]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;t&#39;</span>, long = <span class="string">&quot;target&quot;</span>)]
     </span><span class="kw">pub </span>target: String,
 
     <span class="doccomment">/// Output file. If not defined it will output to stdout
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;o&quot;</span>, long = <span class="string">&quot;output&quot;</span>)]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;o&#39;</span>, long = <span class="string">&quot;output&quot;</span>)]
     </span><span class="kw">pub </span>output: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// Apply coloring during diff
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;c&quot;</span>, long = <span class="string">&quot;color&quot;</span>)]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;c&#39;</span>, long = <span class="string">&quot;color&quot;</span>)]
     </span><span class="kw">pub </span>color: bool,
 }
 

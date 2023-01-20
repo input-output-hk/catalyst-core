@@ -37,11 +37,14 @@
 <span id="37">37</span>
 <span id="38">38</span>
 <span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::api_token::{ApiTokenCmd, Error <span class="kw">as </span>ApiTokenError};
 <span class="kw">use </span><span class="kw">crate</span>::csv::loaders::{CsvDataCmd, Error <span class="kw">as </span>CsvDataError};
 <span class="kw">use </span><span class="kw">crate</span>::init_db::{Db, Error <span class="kw">as </span>DbError};
 <span class="kw">use </span><span class="kw">crate</span>::task::ExecTask;
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>thiserror::Error;
 
 <span class="attribute">#[derive(Error, Debug)]
@@ -54,13 +57,16 @@
     </span>Db(<span class="attribute">#[from] </span>DbError),
 }
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub enum </span>CliApp {
     <span class="doccomment">/// API token related operations
+    </span><span class="attribute">#[clap(subcommand)]
     </span>ApiToken(ApiTokenCmd),
     <span class="doccomment">/// CSV data loaders
+    </span><span class="attribute">#[clap(subcommand)]
     </span>CsvData(CsvDataCmd),
     <span class="doccomment">/// DB related operations
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Db(Db),
 }
 

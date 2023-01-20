@@ -44,21 +44,21 @@
     certificate::{Certificate, StakeDelegation <span class="kw">as </span>Delegation},
     transaction::UnspecifiedAccountIdentifier,
 };
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::interfaces::Certificate <span class="kw">as </span>CertificateType;
 <span class="kw">use </span>std::{convert::TryInto, path::PathBuf};
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>StakeDelegation {
     <span class="doccomment">/// the public key used in the stake key registration
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;STAKE_KEY&quot;</span>, parse(try_from_str = parse_pub_key))]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;STAKE_KEY&quot;</span>, value_parser = parse_pub_key::&lt;Ed25519&gt;)]
     </span>stake_id: PublicKey&lt;Ed25519&gt;,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>pool_ids: WeightedPoolIds,
 
     <span class="doccomment">/// write the output to the given file or print it to the standard output if not defined
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;o&quot;</span>, long = <span class="string">&quot;output&quot;</span>)]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;o&#39;</span>, long = <span class="string">&quot;output&quot;</span>)]
     </span>output: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 

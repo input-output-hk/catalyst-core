@@ -80,38 +80,38 @@
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::jcli_lib::vote::{Error, OutputFile, Seed};
 <span class="kw">use </span>chain_crypto::bech32::Bech32;
 <span class="kw">use </span>chain_vote::MemberCommunicationKey;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>rand::rngs::OsRng;
 <span class="kw">use </span>rand_chacha::{rand_core::SeedableRng, ChaCha20Rng};
-<span class="kw">use </span>std::{io::Write, path::PathBuf};
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>std::{io::Write, path::PathBuf, str::FromStr};
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>Generate {
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>output_file: OutputFile,
 
     <span class="doccomment">/// optional seed to generate the key, for the same entropy the same key
     /// will be generated (32 bytes in hexadecimal). This seed will be fed to
     /// ChaChaRNG and allow pseudo random key generation. Do not use if you
     /// are not sure.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;seed&quot;</span>, short = <span class="string">&quot;s&quot;</span>, name = <span class="string">&quot;SEED&quot;</span>, parse(try_from_str))]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;seed&quot;</span>, short = <span class="string">&#39;s&#39;</span>, name = <span class="string">&quot;SEED&quot;</span>, value_parser = Seed::from_str)]
     </span>seed: <span class="prelude-ty">Option</span>&lt;Seed&gt;,
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>ToPublic {
     <span class="doccomment">/// The file with the private key to extract the public key from.
     /// If no value passed, the private key will be read from the
     /// standard input.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;input&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;input&quot;</span>)]
     </span>input_key: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>output_file: OutputFile,
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser, Debug)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>CommunicationKey {
     <span class="doccomment">/// generate a private key
     </span>Generate(Generate),

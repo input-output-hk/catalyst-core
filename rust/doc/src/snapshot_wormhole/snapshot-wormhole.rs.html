@@ -5,12 +5,12 @@
 <span id="5">5</span>
 <span id="6">6</span>
 <span id="7">7</span>
-</pre><pre class="rust"><code><span class="kw">use </span>mainnet_tools::snapshot::wormhole::Command;
-<span class="kw">use </span>structopt::StructOpt;
+</pre><pre class="rust"><code><span class="kw">use </span>clap::Parser;
+<span class="kw">use </span>mainnet_tools::snapshot::wormhole::Command;
 
 <span class="kw">pub fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), color_eyre::Report&gt; {
     color_eyre::install()<span class="question-mark">?</span>;
-    Command::from_args().exec()
+    Command::parse().exec()
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="snapshot_wormhole" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

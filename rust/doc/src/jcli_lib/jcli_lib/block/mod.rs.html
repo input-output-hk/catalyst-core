@@ -164,6 +164,7 @@
 <span id="164">164</span>
 <span id="165">165</span>
 <span id="166">166</span>
+<span id="167">167</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::jcli_lib::utils::io;
 <span class="kw">use </span>chain_core::{
     packer::Codec,
@@ -173,14 +174,15 @@
     block::Block,
     ledger::{<span class="self">self</span>, Ledger},
 };
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::interfaces::{
     block0_configuration_documented_example, Block0Configuration, Block0ConfigurationError,
 };
 <span class="kw">use </span>std::{
     io::{BufRead, Write},
     path::PathBuf,
+    str::FromStr,
 };
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 
 <span class="attribute">#[allow(clippy::large_enum_variant)]
@@ -254,8 +256,8 @@
 }
 
 <span class="doccomment">/// create block 0 of the blockchain (i.e. the genesis block)
-</span><span class="attribute">#[derive(StructOpt)]
-#[structopt(name = <span class="string">&quot;genesis&quot;</span>, rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+</span><span class="attribute">#[derive(Parser)]
+#[clap(name = <span class="string">&quot;genesis&quot;</span>, rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>Genesis {
     <span class="doccomment">/// Create a default Genesis file with appropriate documentation
     /// to help creating the YAML file
@@ -273,13 +275,13 @@
     </span>Hash(Input),
 }
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>Input {
     <span class="doccomment">/// the file path to the genesis file defining the block 0
     ///
     /// If not available the command will expect to read the configuration from
     /// the standard input.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;input&quot;</span>, parse(from_os_str), name = <span class="string">&quot;FILE_INPUT&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;input&quot;</span>, value_parser = PathBuf::from_str, name = <span class="string">&quot;FILE_INPUT&quot;</span>)]
     </span><span class="kw">pub </span>input_file: <span class="prelude-ty">Option</span>&lt;std::path::PathBuf&gt;,
 }
 
@@ -305,16 +307,16 @@
     Block::deserialize(<span class="kw-2">&amp;mut </span>Codec::new(block_reader)).map_err(Error::BlockFileCorrupted)
 }
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>Common {
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span><span class="kw">pub </span>input: Input,
 
     <span class="doccomment">/// the file path to the block to create
     ///
     /// If not available the command will expect to write the block to
     /// to the standard output
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;output&quot;</span>, parse(from_os_str), name = <span class="string">&quot;FILE_OUTPUT&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;output&quot;</span>, value_parser = PathBuf::from_str, name = <span class="string">&quot;FILE_OUTPUT&quot;</span>)]
     </span><span class="kw">pub </span>output_file: <span class="prelude-ty">Option</span>&lt;std::path::PathBuf&gt;,
 }
 

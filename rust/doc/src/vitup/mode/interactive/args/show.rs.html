@@ -141,12 +141,12 @@
 <span id="141">141</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::VitInteractiveCommandExec;
 <span class="kw">use </span>chain_impl_mockchain::block::BlockDate;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>hersir::controller::interactive::args::show::ShowStatus <span class="kw">as </span>BasicShowStatus;
 <span class="kw">use </span>jormungandr_lib::interfaces::BlockchainConfiguration;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>time::OffsetDateTime;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>Show {
     <span class="doccomment">/// Prints which nodes are upp
     </span>Status(ShowStatus),
@@ -186,9 +186,9 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>ShowStatus {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;alias&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;alias&quot;</span>)]
     </span><span class="kw">pub </span>alias: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
@@ -210,9 +210,9 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>VoteTimeStatus {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;alias&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;alias&quot;</span>)]
     </span><span class="kw">pub </span>alias: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 

@@ -42,11 +42,11 @@
 <span id="42">42</span>
 <span id="43">43</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::controller::{Error, UserInteractionController};
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_automation::jormungandr::explorer::configuration::ExplorerParams;
 <span class="kw">use </span>jortestkit::prelude::InteractiveCommandError;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>Explorer {
     <span class="doccomment">/// Sends transaction
     </span>Tip(ExplorerTip),
@@ -60,9 +60,9 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>ExplorerTip {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;alias&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;alias&quot;</span>)]
     </span><span class="kw">pub </span>alias: String,
 }
 

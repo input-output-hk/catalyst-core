@@ -227,8 +227,8 @@
 <span class="kw">use </span>std::path::{Path, PathBuf};
 <span class="kw">use </span>std::str::FromStr;
 
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>opentelemetry_otlp::WithExportConfig;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>tracing::{error, info};
 <span class="kw">use </span>tracing_appender::non_blocking::WorkerGuard;
 <span class="kw">use </span>tracing_subscriber::filter::LevelFilter;
@@ -356,7 +356,7 @@
 <span class="attribute">#[tokio::main]
 </span><span class="kw">async fn </span>main() -&gt; ApplicationExitCode {
     <span class="comment">// load settings from command line (defaults to env variables)
-    </span><span class="kw">let </span><span class="kw-2">mut </span>settings: ServiceSettings = ServiceSettings::from_args();
+    </span><span class="kw">let </span><span class="kw-2">mut </span>settings: ServiceSettings = ServiceSettings::parse();
 
     <span class="comment">// load settings from file if specified
     </span><span class="kw">if let </span><span class="prelude-val">Some</span>(settings_file) = <span class="kw-2">&amp;</span>settings.in_settings_file {

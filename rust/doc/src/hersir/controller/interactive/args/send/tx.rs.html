@@ -34,17 +34,17 @@
 <span id="34">34</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::UserInteractionController;
 <span class="kw">use crate</span>::{controller::Error, style};
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>SendTransaction {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;f&quot;</span>, long = <span class="string">&quot;from&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;f&#39;</span>, long = <span class="string">&quot;from&quot;</span>)]
     </span><span class="kw">pub </span>from: String,
-    <span class="attribute">#[structopt(short = <span class="string">&quot;t&quot;</span>, long = <span class="string">&quot;to&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;t&#39;</span>, long = <span class="string">&quot;to&quot;</span>)]
     </span><span class="kw">pub </span>to: String,
-    <span class="attribute">#[structopt(short = <span class="string">&quot;v&quot;</span>, long = <span class="string">&quot;via&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;v&#39;</span>, long = <span class="string">&quot;via&quot;</span>)]
     </span><span class="kw">pub </span>via: String,
-    <span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;ada&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;ada&quot;</span>)]
     </span><span class="kw">pub </span>ada: <span class="prelude-ty">Option</span>&lt;u64&gt;,
 }
 

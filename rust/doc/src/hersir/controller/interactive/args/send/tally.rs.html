@@ -27,15 +27,15 @@
 <span id="27">27</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::UserInteractionController;
 <span class="kw">use crate</span>::{controller::Error, style};
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>VoteTally {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;c&quot;</span>, long = <span class="string">&quot;committee&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;c&#39;</span>, long = <span class="string">&quot;committee&quot;</span>)]
     </span><span class="kw">pub </span>committee: String,
-    <span class="attribute">#[structopt(short = <span class="string">&quot;p&quot;</span>, long = <span class="string">&quot;vote-plan&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;p&#39;</span>, long = <span class="string">&quot;vote-plan&quot;</span>)]
     </span><span class="kw">pub </span>vote_plan: String,
-    <span class="attribute">#[structopt(short = <span class="string">&quot;v&quot;</span>, long = <span class="string">&quot;via&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;v&#39;</span>, long = <span class="string">&quot;via&quot;</span>)]
     </span><span class="kw">pub </span>via: String,
 }
 

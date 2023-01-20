@@ -23,17 +23,15 @@
 <span id="23">23</span>
 <span id="24">24</span>
 <span id="25">25</span>
-<span id="26">26</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::config::read_config;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>ConfigValidateCommand {
     <span class="doccomment">/// target config
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;CONFIG&quot;</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;CONFIG&quot;</span>)]
     </span><span class="kw">pub </span>config: PathBuf,
 }
 

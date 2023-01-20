@@ -19,16 +19,20 @@
 <span id="19">19</span>
 <span id="20">20</span>
 <span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{committees::Committees, plans::Plans};
 <span class="kw">use </span><span class="kw">crate</span>::jcli_lib::rest::Error;
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>Active {
     <span class="doccomment">/// Committee members
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Committees(Committees),
     <span class="doccomment">/// Active vote plans
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Plans(Plans),
 }
 

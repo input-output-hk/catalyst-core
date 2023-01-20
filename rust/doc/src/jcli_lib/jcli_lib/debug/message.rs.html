@@ -32,16 +32,16 @@
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::jcli_lib::{debug::Error, utils::io};
 <span class="kw">use </span>chain_core::{packer::Codec, property::DeserializeFromSlice <span class="kw">as _</span>};
 <span class="kw">use </span>chain_impl_mockchain::fragment::Fragment <span class="kw">as </span>MockFragment;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>std::{
     io::{BufRead, BufReader},
     path::PathBuf,
 };
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>Message {
     <span class="doccomment">/// file containing hex-encoded message. If not provided, it will be read from stdin.
-    </span><span class="attribute">#[structopt(short, long)]
+    </span><span class="attribute">#[clap(short, long)]
     </span>input: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 

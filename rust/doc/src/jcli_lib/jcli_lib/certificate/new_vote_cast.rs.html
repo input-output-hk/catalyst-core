@@ -115,58 +115,58 @@
     certificate::{Certificate, VoteCast, VotePlanId},
     vote::{Choice, Payload},
 };
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>rand_chacha::rand_core::SeedableRng;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>PublicVoteCast {
     <span class="doccomment">/// the vote plan identified on the blockchain
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;vote-plan-id&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;vote-plan-id&quot;</span>)]
     </span>vote_plan_id: VotePlanId,
 
     <span class="doccomment">/// the number of proposal in the vote plan you vote for
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;proposal-index&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;proposal-index&quot;</span>)]
     </span>proposal_index: u8,
 
     <span class="doccomment">/// the number of choice within the proposal you vote for
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;choice&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;choice&quot;</span>)]
     </span>choice: u8,
 
     <span class="doccomment">/// write the output to the given file or print it to the standard output if not defined
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;output&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;output&quot;</span>)]
     </span>output: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>PrivateVoteCast {
     <span class="doccomment">/// the vote plan identified on the blockchain
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;vote-plan-id&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;vote-plan-id&quot;</span>)]
     </span>vote_plan_id: VotePlanId,
 
     <span class="doccomment">/// the number of proposal in the vote plan you vote for
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;proposal-index&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;proposal-index&quot;</span>)]
     </span>proposal_index: u8,
 
     <span class="doccomment">/// size of voting options
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;options-size&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;options-size&quot;</span>)]
     </span>options: usize,
 
     <span class="doccomment">/// the number of choice within the proposal you vote for
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;choice&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;choice&quot;</span>)]
     </span>choice: u8,
 
     <span class="doccomment">/// key to encrypt the vote with
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;key-path&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;key-path&quot;</span>)]
     </span>election_key_path: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// write the output to the given file or print it to the standard output if not defined
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;output&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;output&quot;</span>)]
     </span>output: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 
 <span class="doccomment">/// create a vote cast certificate
-</span><span class="attribute">#[derive(StructOpt)]
+</span><span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub enum </span>VoteCastCmd {
     Public(PublicVoteCast),
     Private(PrivateVoteCast),

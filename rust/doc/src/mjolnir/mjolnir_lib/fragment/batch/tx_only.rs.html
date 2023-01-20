@@ -120,6 +120,7 @@
 };
 <span class="kw">use </span>chain_addr::Discrimination;
 <span class="kw">use </span>chain_impl_mockchain::block::BlockDate;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_automation::jormungandr::RemoteJormungandrBuilder;
 <span class="kw">use </span>jormungandr_lib::crypto::hash::Hash;
 <span class="kw">use </span>jortestkit::{
@@ -127,55 +128,54 @@
     prelude::{parse_progress_bar_mode_from_str, ProgressBarMode},
 };
 <span class="kw">use </span>std::{path::PathBuf, str::FromStr, time::Duration};
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thor::{BlockDateGenerator, DiscriminationExtension, FragmentSenderSetup, Wallet};
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>TxOnly {
     <span class="doccomment">/// Number of threads
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;c&quot;</span>, long = <span class="string">&quot;count&quot;</span>, default_value = <span class="string">&quot;3&quot;</span>)]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;c&#39;</span>, long = <span class="string">&quot;count&quot;</span>, default_value = <span class="string">&quot;3&quot;</span>)]
     </span><span class="kw">pub </span>count: usize,
 
     <span class="doccomment">/// address in format:
     /// /ip4/54.193.75.55/tcp/3000
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;e&quot;</span>, long = <span class="string">&quot;endpoint&quot;</span>)]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;e&#39;</span>, long = <span class="string">&quot;endpoint&quot;</span>)]
     </span><span class="kw">pub </span>endpoint: String,
 
     <span class="doccomment">/// amount of delay [milliseconds] between sync attempts
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;delay&quot;</span>, default_value = <span class="string">&quot;50&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;delay&quot;</span>, default_value = <span class="string">&quot;50&quot;</span>)]
     </span><span class="kw">pub </span>delay: u64,
 
     <span class="doccomment">/// amount of delay [seconds] between sync attempts
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;d&quot;</span>, long = <span class="string">&quot;duration&quot;</span>)]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;d&#39;</span>, long = <span class="string">&quot;duration&quot;</span>)]
     </span><span class="kw">pub </span>duration: u64,
 
     <span class="comment">// show progress
-    </span><span class="attribute">#[structopt(
+    </span><span class="attribute">#[clap(
         long = <span class="string">&quot;progress-bar-mode&quot;</span>,
-        short = <span class="string">&quot;b&quot;</span>,
+        short = <span class="string">&#39;b&#39;</span>,
         default_value = <span class="string">&quot;Monitor&quot;</span>,
-        parse(from_str = parse_progress_bar_mode_from_str)
+        value_parser = parse_progress_bar_mode_from_str
     )]
     </span>progress_bar_mode: ProgressBarMode,
 
-    <span class="attribute">#[structopt(short = <span class="string">&quot;m&quot;</span>, long = <span class="string">&quot;measure&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;m&#39;</span>, long = <span class="string">&quot;measure&quot;</span>)]
     </span><span class="kw">pub </span>measure: bool,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;key&quot;</span>, short = <span class="string">&quot;k&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;key&quot;</span>, short = <span class="string">&#39;k&#39;</span>)]
     </span>faucet_key_file: PathBuf,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;spending-counter&quot;</span>, short = <span class="string">&quot;s&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;spending-counter&quot;</span>, short = <span class="string">&#39;s&#39;</span>)]
     </span>faucet_spending_counter: u32,
 
     <span class="doccomment">/// Transaction validity deadline (inclusive)
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;v&quot;</span>, long = <span class="string">&quot;valid-until&quot;</span>, conflicts_with = <span class="string">&quot;ttl&quot;</span>)]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;v&#39;</span>, long = <span class="string">&quot;valid-until&quot;</span>, conflicts_with = <span class="string">&quot;ttl&quot;</span>)]
     </span>valid_until: <span class="prelude-ty">Option</span>&lt;BlockDate&gt;,
 
     <span class="doccomment">/// Transaction time to live (can be negative e.g. ~4.2)
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;t&quot;</span>, long= <span class="string">&quot;ttl&quot;</span>, default_value = <span class="string">&quot;1.0&quot;</span>, parse(try_from_str = parse_shift))]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;t&#39;</span>, long= <span class="string">&quot;ttl&quot;</span>, default_value = <span class="string">&quot;1.0&quot;</span>, value_parser = parse_shift)]
     </span>ttl: (BlockDate, bool),
 
     <span class="doccomment">/// Set the discrimination type to testing (default is production).
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;testing&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;testing&quot;</span>)]
     </span>testing: bool,
 }
 

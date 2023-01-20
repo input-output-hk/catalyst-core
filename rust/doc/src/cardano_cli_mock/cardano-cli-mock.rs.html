@@ -13,16 +13,16 @@
 <span id="13">13</span>
 <span id="14">14</span>
 <span id="15">15</span>
-</pre><pre class="rust"><code><span class="kw">use </span>color_eyre::Report;
+</pre><pre class="rust"><code><span class="kw">use </span>clap::Parser;
+<span class="kw">use </span>color_eyre::Report;
 <span class="kw">use </span>futures::future::FutureExt;
 <span class="kw">use </span>mainnet_tools::cardano_cli::MockCommand;
-<span class="kw">use </span>structopt::StructOpt;
 
 <span class="attribute">#[tokio::main]
 </span><span class="kw">pub async fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), Report&gt; {
     std::env::set_var(<span class="string">&quot;RUST_BACKTRACE&quot;</span>, <span class="string">&quot;full&quot;</span>);
 
-    <span class="kw">let </span>cli_future = tokio::task::spawn_blocking(|| MockCommand::from_args().exec())
+    <span class="kw">let </span>cli_future = tokio::task::spawn_blocking(|| MockCommand::parse().exec())
         .map(|res| res.expect(<span class="string">&quot;CLI command failed for an unknown reason&quot;</span>))
         .fuse();
 

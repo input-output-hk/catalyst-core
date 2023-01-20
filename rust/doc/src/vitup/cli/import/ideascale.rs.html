@@ -214,14 +214,12 @@
 <span id="214">214</span>
 <span id="215">215</span>
 <span id="216">216</span>
-<span id="217">217</span>
-</pre><pre class="rust"><code><span class="kw">use </span>serde::{Deserialize, Serialize};
+</pre><pre class="rust"><code><span class="kw">use </span>clap::Parser;
+<span class="kw">use </span>serde::{Deserialize, Serialize};
 <span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::{fs::File, path::PathBuf};
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>ImportFromIdeascaleFormatCommand {
     Scores(ImportScores),
     Proposals(ImportProposals),
@@ -244,12 +242,12 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>ImportProposals {
-    <span class="attribute">#[structopt(long = <span class="string">&quot;input&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;input&quot;</span>)]
     </span><span class="kw">pub </span>input: PathBuf,
 
-    <span class="attribute">#[structopt(
+    <span class="attribute">#[clap(
         long = <span class="string">&quot;output&quot;</span>,
         default_value = <span class="string">&quot;../resources/external/challenges.json&quot;
     </span>)]
@@ -268,12 +266,12 @@
         <span class="prelude-val">Ok</span>(())
     }
 }
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>ImportChallenges {
-    <span class="attribute">#[structopt(long = <span class="string">&quot;input&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;input&quot;</span>)]
     </span><span class="kw">pub </span>input: PathBuf,
 
-    <span class="attribute">#[structopt(
+    <span class="attribute">#[clap(
         long = <span class="string">&quot;output&quot;</span>,
         default_value = <span class="string">&quot;../resources/external/proposals.json&quot;
     </span>)]
@@ -292,18 +290,18 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>ImportScores {
-    <span class="attribute">#[structopt(long = <span class="string">&quot;input&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;input&quot;</span>)]
     </span><span class="kw">pub </span>input: PathBuf,
 
-    <span class="attribute">#[structopt(
+    <span class="attribute">#[clap(
         long = <span class="string">&quot;proposals&quot;</span>,
         default_value = <span class="string">&quot;../resources/external/proposals.json&quot;
     </span>)]
     </span><span class="kw">pub </span>proposals: PathBuf,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;format&quot;</span>, short = <span class="string">&quot;f&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;format&quot;</span>, short = <span class="string">&#39;f&#39;</span>)]
     </span><span class="kw">pub </span>format: Format,
 }
 
@@ -391,12 +389,12 @@
     <span class="kw">pub </span>rating_given: String,
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>ImportReviews {
-    <span class="attribute">#[structopt(long = <span class="string">&quot;input&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;input&quot;</span>)]
     </span><span class="kw">pub </span>input: PathBuf,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;output&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;output&quot;</span>)]
     </span><span class="kw">pub </span>output: PathBuf,
 }
 

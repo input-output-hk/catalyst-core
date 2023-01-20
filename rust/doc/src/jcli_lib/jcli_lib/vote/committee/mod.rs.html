@@ -21,18 +21,22 @@
 <span id="21">21</span>
 <span id="22">22</span>
 <span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>communication_key;
 <span class="kw">mod </span>member_key;
 
 <span class="kw">use </span><span class="kw">super</span>::Error;
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>Committee {
     <span class="doccomment">/// commands for managing committee member communication keys
+    </span><span class="attribute">#[clap(subcommand)]
     </span>CommunicationKey(communication_key::CommunicationKey),
     <span class="doccomment">/// commands for managing committee member stake keys
+    </span><span class="attribute">#[clap(subcommand)]
     </span>MemberKey(member_key::MemberKey),
 }
 

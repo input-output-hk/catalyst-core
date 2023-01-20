@@ -34,28 +34,26 @@
 <span id="34">34</span>
 <span id="35">35</span>
 <span id="36">36</span>
-<span id="37">37</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::ReviewGenerator;
 <span class="kw">use </span><span class="kw">crate</span>::Result;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>vit_servicing_station_tests::common::data::ProposalTemplate;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>RandomReviewsDataCommandArgs {
     <span class="doccomment">/// Careful! directory would be removed before export
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;output&quot;</span>, default_value = <span class="string">&quot;./reviews.json&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;output&quot;</span>, default_value = <span class="string">&quot;./reviews.json&quot;</span>)]
     </span><span class="kw">pub </span>output_file: PathBuf,
 
-    <span class="attribute">#[structopt(
+    <span class="attribute">#[clap(
         long = <span class="string">&quot;proposals&quot;</span>,
         default_value = <span class="string">&quot;../resources/external/proposals.json&quot;
     </span>)]
     </span><span class="kw">pub </span>proposals: PathBuf,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;assessors-per-proposal-count&quot;</span>, default_value = <span class="string">&quot;3&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;assessors-per-proposal-count&quot;</span>, default_value = <span class="string">&quot;3&quot;</span>)]
     </span><span class="kw">pub </span>assessors_per_proposal_count: u32,
 }
 

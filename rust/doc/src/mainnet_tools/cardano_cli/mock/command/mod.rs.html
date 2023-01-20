@@ -55,11 +55,15 @@
 <span id="55">55</span>
 <span id="56">56</span>
 <span id="57">57</span>
-</pre><pre class="rust"><code><span class="kw">use </span>color_eyre::Report;
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+</pre><pre class="rust"><code><span class="kw">use </span>clap::Parser;
+<span class="kw">use </span>color_eyre::Report;
 <span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 
 <span class="kw">mod </span>address;
 <span class="kw">mod </span>query;
@@ -72,15 +76,19 @@
 <span class="kw">pub use </span>transaction::Transaction;
 
 <span class="doccomment">/// Wrapper around cardano CLI commands
-</span><span class="attribute">#[derive(StructOpt, Debug)]
+</span><span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>Command {
     <span class="doccomment">/// Query commands
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Query(Query),
     <span class="doccomment">/// Address related commands
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Address(Address),
     <span class="doccomment">/// Stake address related commands
+    </span><span class="attribute">#[clap(subcommand)]
     </span>StakeAddress(StakeAddress),
     <span class="doccomment">/// Transaction commands
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Transaction(Transaction),
 }
 

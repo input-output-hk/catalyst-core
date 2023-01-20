@@ -151,69 +151,67 @@
 <span id="151">151</span>
 <span id="152">152</span>
 <span id="153">153</span>
-<span id="154">154</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::SessionSettingsExtension;
 <span class="kw">use </span><span class="kw">crate</span>::builders::utils::{logger, DeploymentTree};
 <span class="kw">use </span><span class="kw">crate</span>::builders::VitBackendSettingsBuilder;
 <span class="kw">use </span><span class="kw">crate</span>::config::read_config;
 <span class="kw">use </span><span class="kw">crate</span>::mode::standard::generate_database;
 <span class="kw">use </span><span class="kw">crate</span>::Result;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>glob::glob;
 <span class="kw">use </span>hersir::config::SessionSettings;
 <span class="kw">use </span>jormungandr_automation::jormungandr::LogLevel;
 <span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>PerfDataCommandArgs {
     <span class="doccomment">/// Careful! directory would be removed before export
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;output&quot;</span>, default_value = <span class="string">&quot;./perf&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;output&quot;</span>, default_value = <span class="string">&quot;./perf&quot;</span>)]
     </span><span class="kw">pub </span>output_directory: PathBuf,
 
     <span class="doccomment">/// configuration
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;config&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;config&quot;</span>)]
     </span><span class="kw">pub </span>config: PathBuf,
 
     <span class="doccomment">/// proposals import json
-    </span><span class="attribute">#[structopt(
+    </span><span class="attribute">#[clap(
         long = <span class="string">&quot;proposals&quot;</span>,
         default_value = <span class="string">&quot;../../catalyst-resources/ideascale/fund5/proposals.json&quot;
     </span>)]
     </span><span class="kw">pub </span>proposals: PathBuf,
 
     <span class="doccomment">/// challenges import json
-    </span><span class="attribute">#[structopt(
+    </span><span class="attribute">#[clap(
         long = <span class="string">&quot;challenges&quot;</span>,
         default_value = <span class="string">&quot;../../catalyst-resources/ideascale/fund5/challenges.json&quot;
     </span>)]
     </span><span class="kw">pub </span>challenges: PathBuf,
 
     <span class="doccomment">/// funds import json
-    </span><span class="attribute">#[structopt(
+    </span><span class="attribute">#[clap(
         long = <span class="string">&quot;funds&quot;</span>,
         default_value = <span class="string">&quot;../../catalyst-resources/ideascale/fund5/funds.json&quot;
     </span>)]
     </span><span class="kw">pub </span>funds: PathBuf,
 
     <span class="doccomment">/// reviews import json
-    </span><span class="attribute">#[structopt(
+    </span><span class="attribute">#[clap(
         long = <span class="string">&quot;reviews&quot;</span>,
         default_value = <span class="string">&quot;../../catalyst-resources/ideascale/fund5/reviews.json&quot;
     </span>)]
     </span><span class="kw">pub </span>reviews: PathBuf,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;snapshot&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;snapshot&quot;</span>)]
     </span><span class="kw">pub </span>snapshot: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
-    <span class="attribute">#[structopt(short = <span class="string">&quot;p&quot;</span>, long = <span class="string">&quot;parts&quot;</span>, default_value = <span class="string">&quot;1&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;p&#39;</span>, long = <span class="string">&quot;parts&quot;</span>, default_value = <span class="string">&quot;1&quot;</span>)]
     </span><span class="kw">pub </span>parts: usize,
 
-    <span class="attribute">#[structopt(short = <span class="string">&quot;s&quot;</span>, long = <span class="string">&quot;single&quot;</span>, default_value = <span class="string">&quot;0&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;s&#39;</span>, long = <span class="string">&quot;single&quot;</span>, default_value = <span class="string">&quot;0&quot;</span>)]
     </span><span class="kw">pub </span>single: usize,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;LogLevel::INFO&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;LogLevel::INFO&quot;</span>)]
     </span><span class="kw">pub </span>log_level: LogLevel,
 }
 

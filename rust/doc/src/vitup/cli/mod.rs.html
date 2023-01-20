@@ -95,6 +95,11 @@
 <span id="95">95</span>
 <span id="96">96</span>
 <span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
 </pre><pre class="rust"><code><span class="kw">pub mod </span>diff;
 <span class="kw">pub mod </span>generate;
 <span class="kw">pub mod </span>import;
@@ -107,26 +112,30 @@
 <span class="kw">use </span><span class="kw">crate</span>::cli::start::AdvancedStartCommandArgs;
 <span class="kw">use </span><span class="kw">crate</span>::cli::start::{MockFarmCommand, MockStartCommandArgs};
 <span class="kw">use </span><span class="kw">crate</span>::Result;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>diff::DiffCommand;
 <span class="kw">use </span>generate::DataCommandArgs;
 <span class="kw">use </span>import::ImportCommand;
 <span class="kw">use </span>start::QuickStartCommandArgs;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">pub use </span>validate::Error <span class="kw">as </span>ValidateError;
 <span class="kw">use </span>validate::ValidateCommand;
 
 <span class="attribute">#[allow(clippy::large_enum_variant)]
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>VitCliCommand {
     <span class="doccomment">/// Starts catalyst backend
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Start(StartCommand),
     <span class="doccomment">/// Generates fund data
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Generate(GenerateCommand),
     <span class="doccomment">/// Prints differences between new deployment and target env
     </span>Diff(DiffCommand),
     <span class="doccomment">/// Validates static ideascale data
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Validate(ValidateCommand),
     <span class="doccomment">/// Import data
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Import(ImportCommand),
     <span class="doccomment">/// Convert time defined in config to UTC
     </span>Time(TimeCommand),
@@ -145,7 +154,7 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>StartCommand {
     <span class="doccomment">/// start backend from scratch
     </span>Quick(QuickStartCommandArgs),
@@ -170,11 +179,12 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>GenerateCommand {
     <span class="doccomment">/// generate qrs
     </span>Qr(QrCommandArgs),
     <span class="doccomment">/// generate data only
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Data(DataCommandArgs),
     <span class="doccomment">/// generate snapshot data only
     </span>Snapshot(SnapshotCommandArgs),

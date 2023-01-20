@@ -33,11 +33,11 @@
 
 <span class="kw">use </span><span class="kw">crate</span>::controller::{Error, UserInteractionController};
 <span class="kw">use </span>cast::CastVote;
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>tally::VoteTally;
 <span class="kw">use </span>tx::SendTransaction;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>Send {
     <span class="doccomment">/// Sends transaction
     </span>Tx(SendTransaction),

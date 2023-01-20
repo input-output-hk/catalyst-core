@@ -30,22 +30,22 @@
 <span id="30">30</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::jcli_lib::vote::{Error, OutputFile};
 <span class="kw">use </span>chain_crypto::bech32::Bech32;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>std::io::Write <span class="kw">as _</span>;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>ElectionPublicKey {
     <span class="doccomment">/// Keys of all committee members
-    </span><span class="attribute">#[structopt(
-        parse(try_from_str = chain_vote::committee::MemberPublicKey::try_from_bech32_str),
+    </span><span class="attribute">#[clap(
+        value_parser = chain_vote::committee::MemberPublicKey::try_from_bech32_str,
         required = <span class="bool-val">true</span>,
-        short = <span class="string">&quot;k&quot;</span>,
+        short = <span class="string">&#39;k&#39;</span>,
         long = <span class="string">&quot;keys&quot;
     </span>)]
     </span>member_keys: Vec&lt;chain_vote::committee::MemberPublicKey&gt;,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>output_file: OutputFile,
 }
 

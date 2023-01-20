@@ -83,30 +83,30 @@
     },
     utils::AccountId,
 };
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>AccountVotes {
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>args: RestArgs,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>output_format: OutputFormat,
 
     <span class="doccomment">/// Account id to filter votes.
     /// An Account ID either in the form of an address of kind account, or an account public key.
-    </span><span class="attribute">#[structopt(short, long, parse(try_from_str = AccountId::try_from_str))]
+    </span><span class="attribute">#[clap(short, long, value_parser = AccountId::try_from_str)]
     </span>account_id: AccountId,
 
     <span class="doccomment">/// Id of the voteplan for which we want to list proposals
     /// the account voted for
-    </span><span class="attribute">#[structopt(short, long)]
+    </span><span class="attribute">#[clap(short, long)]
     </span>vote_plan_id: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>Vote {
     <span class="doccomment">/// Get numbers of proposals within a vote plan a given user has voted for
     </span>AccountVotes(AccountVotes),

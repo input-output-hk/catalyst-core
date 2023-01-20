@@ -26,6 +26,7 @@
 <span id="26">26</span>
 <span id="27">27</span>
 <span id="28">28</span>
+<span id="29">29</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>adversary;
 <span class="kw">mod </span>all;
 <span class="kw">mod </span>tx_only;
@@ -33,15 +34,16 @@
 <span class="kw">use </span><span class="kw">crate</span>::mjolnir_lib::MjolnirError;
 <span class="kw">pub use </span>adversary::Adversary;
 <span class="kw">pub use </span>all::AllFragments;
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">pub use </span>tx_only::TxOnly;
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>Standard {
     <span class="doccomment">/// Put load on endpoint using transaction fragments only.
     </span>TxOnly(tx_only::TxOnly),
     <span class="doccomment">/// Put load on endpoint using all supported fragment types
     </span>All(all::AllFragments),
     <span class="doccomment">/// Put load on endpoint using invalid fragments
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Adversary(adversary::Adversary),
 }
 

@@ -25,10 +25,10 @@
 <span class="kw">mod </span>vote_plan_id;
 
 <span class="kw">use </span><span class="kw">crate</span>::jcli_lib::certificate::Error;
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Subcommand;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Subcommand)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>ShowArgs {
     <span class="doccomment">/// get the stake pool id from the given stake pool registration certificate
     </span>StakePoolId(stake_pool_id::GetStakePoolId),

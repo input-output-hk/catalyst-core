@@ -17,17 +17,15 @@
 <span id="17">17</span>
 <span id="18">18</span>
 <span id="19">19</span>
-<span id="20">20</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::config::read_config;
 <span class="kw">use </span><span class="kw">crate</span>::Result;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>TimeCommand {
     <span class="doccomment">/// Path to configuration file
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;config&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;config&quot;</span>)]
     </span><span class="kw">pub </span>config: PathBuf,
 }
 

@@ -121,55 +121,55 @@
 <span class="kw">use </span>chain_impl_mockchain::certificate::{
     Certificate, DecryptedPrivateTally, DecryptedPrivateTallyProposal, VotePlanId, VoteTally,
 };
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{PrivateTallyState, Tally},
 };
 <span class="kw">use </span>std::{convert::TryInto, path::PathBuf};
-<span class="kw">use </span>structopt::StructOpt;
 
 <span class="doccomment">/// create a vote tally certificate
 ///
 /// voteplan id needs to be provided
-</span><span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+</span><span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>VoteTallyRegistration {
     Public(PublicTally),
     Private(PrivateTally),
 }
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>PublicTally {
     <span class="doccomment">/// vote plan id
     ///
     /// the vote plan identifier on the blockchain
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;vote-plan-id&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;vote-plan-id&quot;</span>)]
     </span><span class="kw">pub </span>id: VotePlanId,
 
     <span class="doccomment">/// write the output to the given file or print it to the standard output if not defined
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;output&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;output&quot;</span>)]
     </span><span class="kw">pub </span>output: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>PrivateTally {
     <span class="doccomment">/// path to the json file containing the tally shares
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>shares: PathBuf,
 
     <span class="doccomment">/// path to the json file containing the vote plan result
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>vote_plan: PathBuf,
 
     <span class="doccomment">/// The id of the vote plan to include in the certificate.
     /// Can be left unspecified if there is only one vote plan in the input
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>vote_plan_id: <span class="prelude-ty">Option</span>&lt;Hash&gt;,
 
     <span class="doccomment">/// write the output to the given file or print it to the standard output if not defined
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>output: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 

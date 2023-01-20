@@ -182,6 +182,7 @@
 <span id="182">182</span>
 </pre><pre class="rust"><code><span class="kw">pub use </span><span class="kw">crate</span>::snapshot::wormhole::Config;
 <span class="kw">use </span><span class="kw">crate</span>::snapshot::OutputsExtension;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>color_eyre::eyre::Result;
 <span class="kw">use </span>job_scheduler_ng::{Job, JobScheduler};
 <span class="kw">use </span>jormungandr_automation::jormungandr::LogLevel;
@@ -190,7 +191,6 @@
 <span class="kw">use </span>std::path::{Path, PathBuf};
 <span class="kw">use </span>std::str::FromStr;
 <span class="kw">use </span>std::time::Duration;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">use </span>tracing::{debug, error, info, instrument, level_filters::LevelFilter};
 <span class="kw">use </span>tracing_subscriber::FmtSubscriber;
@@ -198,17 +198,17 @@
 <span class="kw">use </span>voting_tools_rs::Output;
 
 <span class="doccomment">/// Main command
-</span><span class="attribute">#[derive(StructOpt, Debug)]
+</span><span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>Command {
     <span class="doccomment">/// Path to configuration file
-    </span><span class="attribute">#[structopt(short, long)]
+    </span><span class="attribute">#[clap(short, long)]
     </span><span class="kw">pub </span>config: PathBuf,
 
     <span class="doccomment">/// Log level
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;INFO&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;INFO&quot;</span>)]
     </span><span class="kw">pub </span>log_level: LogLevel,
 
-    <span class="attribute">#[structopt(subcommand)]
+    <span class="attribute">#[clap(subcommand)]
     </span>cmd: Operation,
 }
 
@@ -226,7 +226,7 @@
 ///              sec   min   hour   day of month   month   day of week   year
 ///
 ///              *     *     *      *              *       *             *
-</span><span class="attribute">#[derive(StructOpt, Debug)]
+</span><span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>Operation {
     <span class="doccomment">/// run single job
     </span>OneShot,
@@ -318,14 +318,14 @@
 }
 
 <span class="doccomment">/// Run job in a schedule mode.
-</span><span class="attribute">#[derive(StructOpt, Debug)]
+</span><span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>Schedule {
     <span class="doccomment">/// Cron string defining frequency of jobs
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>cron: String,
 
     <span class="doccomment">/// If set to true, job will be run immediately.
-    </span><span class="attribute">#[structopt(short, long)]
+    </span><span class="attribute">#[clap(short, long)]
     </span><span class="kw">pub </span>eagerly: bool,
 }
 

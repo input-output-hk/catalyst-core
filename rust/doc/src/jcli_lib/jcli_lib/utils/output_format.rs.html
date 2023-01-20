@@ -99,22 +99,39 @@
 <span id="99">99</span>
 <span id="100">100</span>
 <span id="101">101</span>
-</pre><pre class="rust"><code><span class="kw">use </span>gtmpl::Value <span class="kw">as </span>GtmplValue;
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+</pre><pre class="rust"><code><span class="kw">use </span>clap::Parser;
+<span class="kw">use </span>gtmpl::Value <span class="kw">as </span>GtmplValue;
 <span class="kw">use </span>serde_json::{Map <span class="kw">as </span>JsonMap, Number <span class="kw">as </span>JsonNumber, Value <span class="kw">as </span>JsonValue};
-<span class="kw">use </span>std::fmt::{<span class="self">self</span>, Display, Formatter};
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>std::{
+    convert::Infallible,
+    fmt::{<span class="self">self</span>, Display, Formatter},
+    str::FromStr,
+};
 <span class="kw">use </span>thiserror::Error;
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>OutputFormat {
     <span class="doccomment">/// Format of output data. Possible values: json, yaml.
     /// Any other value is treated as a custom format using values from output data structure.
     /// Syntax is Go text template: &lt;https://golang.org/pkg/text/template/&gt;.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;output-format&quot;</span>, default_value = <span class="string">&quot;yaml&quot;</span>, parse(from_str))]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;output-format&quot;</span>, default_value = <span class="string">&quot;yaml&quot;</span>, value_parser = FormatVariant::from_str)]
     </span>format: FormatVariant,
 }
 
-<span class="kw">pub enum </span>FormatVariant {
+<span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub enum </span>FormatVariant {
     Yaml,
     Json,
     Custom(String),
@@ -133,6 +150,13 @@
             <span class="string">&quot;json&quot; </span>=&gt; FormatVariant::Json,
             <span class="kw">_ </span>=&gt; FormatVariant::Custom(format.to_string()),
         }
+    }
+}
+
+<span class="kw">impl </span>FromStr <span class="kw">for </span>FormatVariant {
+    <span class="kw">type </span><span class="prelude-val">Err </span>= Infallible;
+    <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span>::from(s))
     }
 }
 

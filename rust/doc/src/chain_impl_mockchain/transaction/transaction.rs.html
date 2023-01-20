@@ -554,6 +554,7 @@
 <span id="554">554</span>
 <span id="555">555</span>
 <span id="556">556</span>
+<span id="557">557</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::builder::{SetAuthData, TxBuilder, TxBuilderState};
 <span class="kw">use </span><span class="kw">super</span>::element::{Balance, BalanceError, TransactionSignDataHash};
 <span class="kw">use </span><span class="kw">super</span>::input::{Input, INPUT_SIZE};
@@ -810,7 +811,8 @@
     <span class="kw">pub</span>(<span class="kw">super</span>) sz: usize,
     <span class="kw">pub</span>(<span class="kw">super</span>) nb_inputs: u8,
     <span class="kw">pub</span>(<span class="kw">super</span>) nb_outputs: u8,
-    <span class="kw">pub</span>(<span class="kw">super</span>) valid_until: BlockDate,
+    <span class="comment">// TODO: remove this
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) valid_until: BlockDate,
     <span class="kw">pub</span>(<span class="kw">super</span>) inputs: usize,
     <span class="kw">pub</span>(<span class="kw">super</span>) outputs: usize,
     <span class="kw">pub</span>(<span class="kw">super</span>) witnesses: usize,

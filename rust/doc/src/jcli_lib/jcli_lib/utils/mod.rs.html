@@ -57,24 +57,24 @@
 <span class="kw">pub mod </span>vote;
 
 <span class="kw">pub use </span><span class="self">self</span>::{account_id::AccountId, output_format::OutputFormat};
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>thiserror::Error;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(name = <span class="string">&quot;utils&quot;</span>, rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(name = <span class="string">&quot;utils&quot;</span>, rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>Utils {
     <span class="doccomment">/// convert a bech32 with hrp n into a bech32 with prefix m
     </span>Bech32Convert(Bech32ConvertArgs),
 }
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>Bech32ConvertArgs {
     <span class="doccomment">/// the bech32 you want to convert
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;FROM_BECH32&quot;</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;FROM_BECH32&quot;</span>)]
     </span>from_bech32: String,
 
     <span class="doccomment">/// the new bech32 hrp you want to use
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;NEW_PREFIX&quot;</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;NEW_PREFIX&quot;</span>)]
     </span>new_hrp: String,
 }
 

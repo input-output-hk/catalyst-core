@@ -36,23 +36,15 @@
 <span id="36">36</span>
 <span id="37">37</span>
 <span id="38">38</span>
-<span id="39">39</span>
-<span id="40">40</span>
-<span id="41">41</span>
-<span id="42">42</span>
-<span id="43">43</span>
-<span id="44">44</span>
-<span id="45">45</span>
-<span id="46">46</span>
 </pre><pre class="rust"><code><span class="kw">pub mod </span>args;
 <span class="kw">mod </span>command;
 <span class="kw">mod </span>controller;
 
+<span class="kw">use </span>clap::Parser;
 <span class="kw">pub use </span>command::InteractiveCommand;
 <span class="kw">pub use </span>controller::{do_for_all_alias, UserInteractionController};
 <span class="kw">pub use </span>jortestkit::prelude::{ConsoleWriter, InteractiveCommandError, InteractiveCommandExec};
 <span class="kw">use </span>std::ffi::OsStr;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">pub struct </span>JormungandrInteractiveCommandExec {
     <span class="kw">pub </span>controller: UserInteractionController,
 }
@@ -63,29 +55,21 @@
         tokens: Vec&lt;String&gt;,
         console: ConsoleWriter,
     ) -&gt; std::result::Result&lt;(), InteractiveCommandError&gt; {
-        <span class="kw">match </span>InteractiveCommand::from_iter_safe(<span class="kw-2">&amp;mut </span>tokens.iter().map(OsStr::new)) {
-            <span class="prelude-val">Ok</span>(interactive) =&gt; {
-                <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = {
-                    <span class="kw">match </span>interactive {
-                        InteractiveCommand::Show(show) =&gt; {
-                            show.exec(<span class="kw-2">&amp;mut </span><span class="self">self</span>.controller);
-                            <span class="prelude-val">Ok</span>(())
-                        }
-                        InteractiveCommand::Spawn(spawn) =&gt; spawn.exec(<span class="kw-2">&amp;mut </span><span class="self">self</span>.controller),
-                        InteractiveCommand::Exit =&gt; <span class="prelude-val">Ok</span>(()),
-                        InteractiveCommand::Describe(describe) =&gt; {
-                            describe.exec(<span class="kw-2">&amp;mut </span><span class="self">self</span>.controller)
-                        }
-                        InteractiveCommand::Send(send) =&gt; send.exec(<span class="kw-2">&amp;mut </span><span class="self">self</span>.controller),
-                        InteractiveCommand::Explorer(explorer) =&gt; {
-                            explorer.exec(<span class="kw-2">&amp;mut </span><span class="self">self</span>.controller)
-                        }
-                    }
-                } {
-                    console.format_error(InteractiveCommandError::UserError(err.to_string()));
+        <span class="kw">let </span>interactive = InteractiveCommand::parse_from(<span class="kw-2">&amp;mut </span>tokens.iter().map(OsStr::new));
+        <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = {
+            <span class="kw">match </span>interactive {
+                InteractiveCommand::Show(show) =&gt; {
+                    show.exec(<span class="kw-2">&amp;mut </span><span class="self">self</span>.controller);
+                    <span class="prelude-val">Ok</span>(())
                 }
+                InteractiveCommand::Spawn(spawn) =&gt; spawn.exec(<span class="kw-2">&amp;mut </span><span class="self">self</span>.controller),
+                InteractiveCommand::Exit =&gt; <span class="prelude-val">Ok</span>(()),
+                InteractiveCommand::Describe(describe) =&gt; describe.exec(<span class="kw-2">&amp;mut </span><span class="self">self</span>.controller),
+                InteractiveCommand::Send(send) =&gt; send.exec(<span class="kw-2">&amp;mut </span><span class="self">self</span>.controller),
+                InteractiveCommand::Explorer(explorer) =&gt; explorer.exec(<span class="kw-2">&amp;mut </span><span class="self">self</span>.controller),
             }
-            <span class="prelude-val">Err</span>(err) =&gt; console.show_help(InteractiveCommandError::UserError(err.to_string())),
+        } {
+            console.format_error(InteractiveCommandError::UserError(err.to_string()));
         }
         <span class="prelude-val">Ok</span>(())
     }

@@ -33,6 +33,20 @@
 <span id="33">33</span>
 <span id="34">34</span>
 <span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::rest::v0::context::SharedContext;
 <span class="kw">use </span>warp::filters::BoxedFilter;
 <span class="kw">use </span>warp::{Filter, Rejection, Reply};
@@ -40,6 +54,7 @@
 <span class="kw">mod </span>api_token;
 <span class="kw">mod </span>health;
 <span class="kw">mod </span>meta;
+<span class="kw">mod </span>mock;
 <span class="kw">mod </span>sync;
 <span class="kw">mod </span>tx;
 
@@ -59,14 +74,27 @@
     <span class="kw">let </span>meta_root = <span class="macro">warp::path!</span>(<span class="string">&quot;meta&quot; </span>/ ..);
     <span class="kw">let </span>meta_filter = meta::filter(meta_root.boxed(), context.clone()).<span class="kw">await</span>;
 
-    <span class="kw">let </span>api_token_filter = <span class="kw">if </span>context.read().<span class="kw">await</span>.token().is_some() {
+    <span class="kw">let </span>mock_root = <span class="macro">warp::path!</span>(<span class="string">&quot;mock&quot; </span>/ ..);
+    <span class="kw">let </span>mock_filter = mock::filter(mock_root.boxed(), context.clone()).<span class="kw">await</span>;
+
+    <span class="kw">let </span>is_token_enabled = context.read().<span class="kw">await</span>.token().is_some();
+
+    <span class="kw">let </span>api_token_filter = <span class="kw">if </span>is_token_enabled {
         api_token::api_token_filter(context).<span class="kw">await</span>.boxed()
     } <span class="kw">else </span>{
         warp::any().boxed()
     };
 
-    root.and(api_token_filter.and(sync_filter.or(health_filter).or(tx_filter).or(meta_filter)))
-        .boxed()
+    root.and(
+        api_token_filter.and(
+            sync_filter
+                .or(health_filter)
+                .or(tx_filter)
+                .or(meta_filter)
+                .or(mock_filter),
+        ),
+    )
+    .boxed()
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="db_sync_explorer" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -16,22 +16,22 @@
 <span id="16">16</span>
 <span id="17">17</span>
 <span id="18">18</span>
-</pre><pre class="rust"><code><span class="kw">use </span>std::{net::SocketAddr, path::PathBuf};
-<span class="kw">use </span>structopt::StructOpt;
+</pre><pre class="rust"><code><span class="kw">use </span>clap::Parser;
+<span class="kw">use </span>std::{net::SocketAddr, path::PathBuf, str::FromStr};
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(rename_all = <span class="string">&quot;kebab&quot;</span>)]
+<span class="attribute">#[derive(Parser, Debug)]
+#[clap(rename_all = <span class="string">&quot;kebab&quot;</span>)]
 </span><span class="kw">pub struct </span>Args {
     <span class="doccomment">/// Path to the genesis block (the block0) of the blockchain
-    </span><span class="attribute">#[structopt(long, short, parse(try_from_str))]
+    </span><span class="attribute">#[clap(long, short, value_parser = PathBuf::from_str)]
     </span><span class="kw">pub </span>genesis_block: PathBuf,
 
     <span class="doccomment">/// Set the secret node config (in YAML format).
-    </span><span class="attribute">#[structopt(long, short, parse(from_os_str))]
+    </span><span class="attribute">#[clap(long, short, value_parser = PathBuf::from_str)]
     </span><span class="kw">pub </span>secret: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// Specifies the address the node will listen.
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;listen-address&quot;</span>)]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;listen-address&quot;</span>)]
     </span><span class="kw">pub </span>listen_address: <span class="prelude-ty">Option</span>&lt;SocketAddr&gt;,
 }
 </code></pre></div>

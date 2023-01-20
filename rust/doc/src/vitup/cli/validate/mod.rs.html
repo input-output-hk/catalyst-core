@@ -36,21 +36,19 @@
 <span id="36">36</span>
 <span id="37">37</span>
 <span id="38">38</span>
-<span id="39">39</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>config;
 <span class="kw">mod </span>deployment;
 <span class="kw">mod </span>ideascale;
 
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>config::ConfigValidateCommand;
 <span class="kw">use </span>deployment::CheckError;
 <span class="kw">use </span>deployment::DeploymentValidateCommand;
 <span class="kw">pub use </span>ideascale::Error <span class="kw">as </span>IdeascaleError;
 <span class="kw">use </span>ideascale::IdeascaleValidateCommand;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>ValidateCommand {
     Ideascale(IdeascaleValidateCommand),
     Deployment(DeploymentValidateCommand),

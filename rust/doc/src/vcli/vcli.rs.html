@@ -6,13 +6,13 @@
 <span id="6">6</span>
 <span id="7">7</span>
 <span id="8">8</span>
-</pre><pre class="rust"><code><span class="kw">use </span>structopt::StructOpt;
+</pre><pre class="rust"><code><span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>vitup::client::args::VitupClientCommand;
 <span class="kw">use </span>vitup::Result;
 
 <span class="attribute">#[tokio::main]
 </span><span class="kw">pub async fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    VitupClientCommand::from_args().exec()
+    VitupClientCommand::parse().exec()
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="vcli" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

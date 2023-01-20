@@ -35,17 +35,17 @@
 };
 <span class="kw">use </span>chain_crypto::{Ed25519, PublicKey};
 <span class="kw">use </span>chain_impl_mockchain::certificate::{<span class="self">self</span>, Certificate, UpdateProposalId};
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>UpdateVote {
     <span class="doccomment">/// the Proposal ID of the proposal.
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;PROPOSAL_ID&quot;</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;PROPOSAL_ID&quot;</span>)]
     </span>proposal_id: UpdateProposalId,
 
     <span class="doccomment">/// the voter ID.
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;VOTER_ID&quot;</span>, parse(try_from_str = parse_pub_key))]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;VOTER_ID&quot;</span>, value_parser = parse_pub_key::&lt;Ed25519&gt;)]
     </span>voter_id: PublicKey&lt;Ed25519&gt;,
 
     <span class="doccomment">/// print the output signed certificate in the given file, if no file given

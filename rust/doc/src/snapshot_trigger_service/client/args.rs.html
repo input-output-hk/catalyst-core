@@ -119,24 +119,26 @@
 <span id="119">119</span>
 <span id="120">120</span>
 <span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::client::rest::SnapshotRestClient;
 <span class="kw">use </span><span class="kw">crate</span>::config::JobParameters;
 <span class="kw">use </span><span class="kw">crate</span>::ContextState;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>scheduler_service_lib::{CliError, FilesCommand, HealthCommand};
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>TriggerServiceCliCommand {
     <span class="doccomment">/// access token, which is necessary to perform client operations
-    </span><span class="attribute">#[structopt(short, long, env = <span class="string">&quot;SNAPSHOT_TOKEN&quot;</span>)]
+    </span><span class="attribute">#[clap(short, long, env = <span class="string">&quot;SNAPSHOT_TOKEN&quot;</span>)]
     </span>token: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
     <span class="doccomment">/// snapshot endpoint
-    </span><span class="attribute">#[structopt(short, long, env = <span class="string">&quot;SNAPSHOT_ENDPOINT&quot;</span>)]
+    </span><span class="attribute">#[clap(short, long, env = <span class="string">&quot;SNAPSHOT_ENDPOINT&quot;</span>)]
     </span>endpoint: String,
 
-    <span class="attribute">#[structopt(subcommand)]
+    <span class="attribute">#[clap(subcommand)]
     </span>command: Command,
 }
 
@@ -151,13 +153,15 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>Command {
     <span class="doccomment">/// check if snapshot service is up
     </span>Health,
     <span class="doccomment">/// retrieve files from snapshot (snapshot outcome etc.)
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Files(FilesCommand),
     <span class="doccomment">/// job related commands
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Job(JobCommand),
 }
 
@@ -171,7 +175,7 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>JobCommand {
     <span class="doccomment">/// start new job
     </span>New(NewJobCommand),
@@ -194,10 +198,10 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>StatusCommand {
     <span class="doccomment">/// job id
-    </span><span class="attribute">#[structopt(short, long)]
+    </span><span class="attribute">#[clap(short, long)]
     </span>job_id: String,
 }
 
@@ -207,13 +211,13 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>NewJobCommand {
     <span class="doccomment">/// slot no
-    </span><span class="attribute">#[structopt(short, long)]
+    </span><span class="attribute">#[clap(short, long)]
     </span>slot_no: <span class="prelude-ty">Option</span>&lt;u64&gt;,
     <span class="doccomment">/// tag
-    </span><span class="attribute">#[structopt(short, long)]
+    </span><span class="attribute">#[clap(short, long)]
     </span>tag: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 

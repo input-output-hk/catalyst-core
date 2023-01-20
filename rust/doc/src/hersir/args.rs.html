@@ -14,20 +14,20 @@
 <span id="14">14</span>
 <span id="15">15</span>
 <span id="16">16</span>
-</pre><pre class="rust"><code><span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
+</pre><pre class="rust"><code><span class="kw">use </span>clap::Parser;
+<span class="kw">use </span>std::path::PathBuf;
 
 <span class="doccomment">///
 /// Hersir is a command line tool that lets you deploy a network of Jormungandr nodes
 ///
-</span><span class="attribute">#[derive(StructOpt)]
+</span><span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>Args {
     <span class="doccomment">/// Path to config file
-    </span><span class="attribute">#[structopt(long, short)]
+    </span><span class="attribute">#[clap(long, short)]
     </span><span class="kw">pub </span>config: PathBuf,
 
     <span class="doccomment">/// Enable verbose mode
-    </span><span class="attribute">#[structopt(long, short)]
+    </span><span class="attribute">#[clap(long, short)]
     </span><span class="kw">pub </span>verbose: bool,
 }
 </code></pre></div>

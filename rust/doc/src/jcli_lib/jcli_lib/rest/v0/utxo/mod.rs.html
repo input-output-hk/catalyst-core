@@ -55,10 +55,10 @@
     rest::{Error, RestArgs},
     utils::OutputFormat,
 };
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>Utxo {
     <span class="doccomment">/// hex-encoded ID of the transaction fragment
     </span>fragment_id: String,
@@ -66,19 +66,19 @@
     <span class="doccomment">/// index of the transaction output
     </span>output_index: u8,
 
-    <span class="attribute">#[structopt(subcommand)]
+    <span class="attribute">#[clap(subcommand)]
     </span>subcommand: Subcommand,
 }
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">enum </span>Subcommand {
     <span class="doccomment">/// Get UTxO details
     </span>Get {
-        <span class="attribute">#[structopt(flatten)]
+        <span class="attribute">#[clap(flatten)]
         </span>output_format: OutputFormat,
 
-        <span class="attribute">#[structopt(flatten)]
+        <span class="attribute">#[clap(flatten)]
         </span>args: RestArgs,
     },
 }

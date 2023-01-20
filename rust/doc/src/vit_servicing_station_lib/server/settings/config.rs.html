@@ -578,67 +578,67 @@
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>DB_URL_DEFAULT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;./db/database.sqlite3&quot;</span>;
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>BLOCK0_PATH_DEFAULT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;./resources/v0/block0.bin&quot;</span>;
 
-<span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt)]
+<span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Parser)]
 #[serde(deny_unknown_fields)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>ServiceSettings {
     <span class="doccomment">/// Load settings from file
     </span><span class="attribute">#[serde(skip)]
-    #[structopt(long)]
+    #[clap(long)]
     </span><span class="kw">pub </span>in_settings_file: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
     <span class="doccomment">/// Dump current settings to file
     </span><span class="attribute">#[serde(skip)]
-    #[structopt(long)]
+    #[clap(long)]
     </span><span class="kw">pub </span>out_settings_file: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
     <span class="doccomment">/// Server binding address
-    </span><span class="attribute">#[structopt(long, default_value = ADDRESS_DEFAULT)]
+    </span><span class="attribute">#[clap(long, default_value = ADDRESS_DEFAULT)]
     </span><span class="kw">pub </span>address: SocketAddr,
 
     <span class="attribute">#[serde(default)]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     </span><span class="kw">pub </span>tls: Tls,
 
     <span class="attribute">#[serde(default)]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     </span><span class="kw">pub </span>cors: Cors,
 
     <span class="doccomment">/// Database url
-    </span><span class="attribute">#[structopt(long, env = DATABASE_URL, default_value = DB_URL_DEFAULT)]
+    </span><span class="attribute">#[clap(long, env = DATABASE_URL, default_value = DB_URL_DEFAULT)]
     </span><span class="kw">pub </span>db_url: String,
 
     <span class="doccomment">/// block0 static file path
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>block0_path: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
     <span class="doccomment">/// archive block0 static file path
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>block0_paths: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// Enable API Tokens feature
     </span><span class="attribute">#[serde(default)]
-    #[structopt(long)]
+    #[clap(long)]
     </span><span class="kw">pub </span>enable_api_tokens: bool,
 
     <span class="attribute">#[serde(default)]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     </span><span class="kw">pub </span>log: Log,
 
-    <span class="attribute">#[structopt(long, env = VIT_SERVICE_VERSION_ENV_VARIABLE)]
+    <span class="attribute">#[clap(long, env = VIT_SERVICE_VERSION_ENV_VARIABLE)]
     </span><span class="kw">pub </span>service_version: String,
 }
 
-<span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt, Default)]
+<span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Parser, Default)]
 #[serde(deny_unknown_fields)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>Tls {
     <span class="doccomment">/// Path to server X.509 certificate chain file, must be PEM-encoded and contain at least 1 item
-    </span><span class="attribute">#[structopt(long, env = TLS_CERT_FILE)]
+    </span><span class="attribute">#[clap(long, env = TLS_CERT_FILE)]
     </span><span class="kw">pub </span>cert_file: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
     <span class="doccomment">/// Path to server private key file, must be PKCS8 with single PEM-encoded, unencrypted key
-    </span><span class="attribute">#[structopt(long, env = TLS_PRIVATE_KEY_FILE)]
+    </span><span class="attribute">#[clap(long, env = TLS_PRIVATE_KEY_FILE)]
     </span><span class="kw">pub </span>priv_key_file: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
@@ -648,16 +648,16 @@
 <span class="attribute">#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>AllowedOrigins(Vec&lt;CorsOrigin&gt;);
 
-<span class="attribute">#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq, StructOpt)]
+<span class="attribute">#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq, Parser)]
 #[serde(deny_unknown_fields)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>Cors {
     <span class="doccomment">/// If none provided, echos request origin
     </span><span class="attribute">#[serde(default)]
-    #[structopt(long, env = CORS_ALLOWED_ORIGINS, parse(try_from_str = parse_allowed_origins))]
+    #[clap(long, env = CORS_ALLOWED_ORIGINS, value_parser = parse_allowed_origins)]
     </span><span class="kw">pub </span>allowed_origins: <span class="prelude-ty">Option</span>&lt;AllowedOrigins&gt;,
     <span class="doccomment">/// If none provided, CORS responses won&#39;t be cached
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>max_age_secs: <span class="prelude-ty">Option</span>&lt;u64&gt;,
 }
 
@@ -672,20 +672,20 @@
     Trace,
 }
 
-<span class="attribute">#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt)]
+<span class="attribute">#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq, Parser)]
 #[serde(deny_unknown_fields)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>Log {
     <span class="doccomment">/// Output log file path
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>log_output_path: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// Application logging level
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>log_level: <span class="prelude-ty">Option</span>&lt;LogLevel&gt;,
 
     <span class="doccomment">/// Enable the OTLP trace data exporter and set the collector&#39;s GRPC endpoint
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;log-trace-collector-endpoint&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;log-trace-collector-endpoint&quot;</span>)]
     </span><span class="kw">pub </span>trace_collector_endpoint: <span class="prelude-ty">Option</span>&lt;url::Url&gt;,
 }
 
@@ -920,9 +920,9 @@
 <span class="attribute">#[cfg(test)]
 </span><span class="kw">mod </span>test {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span>clap::Parser;
     <span class="kw">use </span>std::net::SocketAddr;
     <span class="kw">use </span>std::str::FromStr;
-    <span class="kw">use </span>structopt::StructOpt;
     <span class="kw">use </span>tempfile;
 
     <span class="attribute">#[test]
@@ -1003,7 +1003,7 @@
 
     <span class="attribute">#[test]
     </span><span class="kw">fn </span>load_settings_from_cli() {
-        <span class="kw">let </span>settings: ServiceSettings = ServiceSettings::from_iter(<span class="kw-2">&amp;</span>[
+        <span class="kw">let </span>settings: ServiceSettings = ServiceSettings::parse_from([
             <span class="string">&quot;test&quot;</span>,
             <span class="string">&quot;--address&quot;</span>,
             <span class="string">&quot;127.0.0.1:3030&quot;</span>,
@@ -1063,7 +1063,7 @@
         );
         set_var(VIT_SERVICE_VERSION_ENV_VARIABLE, <span class="string">&quot;v0.2.0&quot;</span>);
 
-        <span class="kw">let </span>settings: ServiceSettings = ServiceSettings::from_iter(<span class="kw-2">&amp;</span>[
+        <span class="kw">let </span>settings: ServiceSettings = ServiceSettings::parse_from([
             <span class="string">&quot;test&quot;</span>,
             <span class="string">&quot;--address&quot;</span>,
             <span class="string">&quot;127.0.0.1:3030&quot;</span>,
@@ -1093,7 +1093,7 @@
     <span class="attribute">#[test]
     </span><span class="kw">fn </span>merge_settings() {
         <span class="kw">let </span>default = ServiceSettings::default();
-        <span class="kw">let </span>other_settings = ServiceSettings::from_iter(<span class="kw-2">&amp;</span>[
+        <span class="kw">let </span>other_settings = ServiceSettings::parse_from([
             <span class="string">&quot;test&quot;</span>,
             <span class="string">&quot;--address&quot;</span>,
             <span class="string">&quot;127.0.0.1:8080&quot;</span>,

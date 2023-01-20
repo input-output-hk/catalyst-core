@@ -107,6 +107,7 @@
     OutputFormat,
 };
 <span class="kw">use </span>chain_vote::tally::{batch_decrypt, EncryptedTally};
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{PrivateTallyState, Tally},
@@ -114,29 +115,28 @@
 <span class="kw">use </span>rayon::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>serde::Serialize;
 <span class="kw">use </span>std::{convert::TryInto, path::PathBuf};
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>TallyVotePlanWithAllShares {
     <span class="doccomment">/// The path to json-encoded vote plan to decrypt. If this parameter is not
     /// specified, the vote plan will be read from the standard
     /// input.
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span>vote_plan: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
     <span class="doccomment">/// The id of the vote plan to decrypt.
     /// Can be left unspecified if there is only one vote plan in the input
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span>vote_plan_id: <span class="prelude-ty">Option</span>&lt;Hash&gt;,
     <span class="doccomment">/// The minimum number of shares needed for decryption
-    </span><span class="attribute">#[structopt(long, default_value = <span class="string">&quot;3&quot;</span>)]
+    </span><span class="attribute">#[clap(long, default_value = <span class="string">&quot;3&quot;</span>)]
     </span>threshold: usize,
     <span class="doccomment">/// The path to a JSON file containing decryption shares necessary to decrypt
     /// the vote plan. If this parameter is not specified, the shares will be read
     /// from the standard input.
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span>shares: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>output_format: OutputFormat,
 }
 

@@ -1175,7 +1175,7 @@
                 fragment_replayer.confirm_fragment(<span class="kw-2">&amp;</span>fragment);
             }
             <span class="prelude-val">Err</span>((
-                err @ Error::LedgerError(ledger::Error::VotePlan(<span class="kw">_</span>) | ledger::Error::InvalidTransactionValidity(<span class="kw">_</span>) | ledger::Error::Account(LedgerError::ValueError(
+                err @ Error::LedgerError(ledger::Error::VotePlan(<span class="kw">_</span>) | ledger::Error::Account(LedgerError::ValueError(
                     ValueError::NegativeAmount,
                 )))
                 | err @ Error::ValidationError(<span class="kw">_</span>)

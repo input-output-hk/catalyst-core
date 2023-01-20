@@ -24,17 +24,17 @@
 <span id="24">24</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::jcli_lib::certificate::{weighted_pool_ids::WeightedPoolIds, write_cert, Error};
 <span class="kw">use </span>chain_impl_mockchain::certificate::{Certificate, OwnerStakeDelegation <span class="kw">as </span>Delegation};
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::interfaces::Certificate <span class="kw">as </span>CertificateType;
 <span class="kw">use </span>std::{convert::TryInto, path::PathBuf};
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>OwnerStakeDelegation {
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>pool_ids: WeightedPoolIds,
 
     <span class="doccomment">/// write the output to the given file or print it to the standard output if not defined
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;o&quot;</span>, long = <span class="string">&quot;output&quot;</span>)]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;o&#39;</span>, long = <span class="string">&quot;output&quot;</span>)]
     </span>output: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 

@@ -154,9 +154,6 @@
 <span id="154">154</span>
 <span id="155">155</span>
 <span id="156">156</span>
-<span id="157">157</span>
-<span id="158">158</span>
-<span id="159">159</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     blockcfg::HeaderHash,
     settings::{
@@ -165,96 +162,93 @@
         LOG_FILTER_LEVEL_POSSIBLE_VALUES,
     },
 };
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>multiaddr::Multiaddr;
-<span class="kw">use </span>std::{net::SocketAddr, path::PathBuf};
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>std::{net::SocketAddr, path::PathBuf, str::FromStr};
 <span class="kw">use </span>tracing::level_filters::LevelFilter;
 
 <span class="kw">fn </span>trusted_peer_from_json(json: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;TrustedPeer, serde_json::Error&gt; {
     serde_json::from_str(json)
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>StartArguments {
     <span class="doccomment">/// Path to the blockchain pool storage directory
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;storage&quot;</span>, parse(from_os_str))]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;storage&quot;</span>, value_parser = PathBuf::from_str)]
     </span><span class="kw">pub </span>storage: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// Set the node config (in YAML format) to use as general configuration
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;config&quot;</span>, parse(from_os_str))]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;config&quot;</span>, value_parser = PathBuf::from_str)]
     </span><span class="kw">pub </span>node_config: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// Set the secret node config (in YAML format).
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;secret&quot;</span>, parse(from_os_str))]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;secret&quot;</span>, value_parser = PathBuf::from_str)]
     </span><span class="kw">pub </span>secret: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// Path to the genesis block (the block0) of the blockchain
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;genesis-block&quot;</span>, parse(try_from_str))]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;genesis-block&quot;</span>, value_parser = PathBuf::from_str)]
     </span><span class="kw">pub </span>block_0_path: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// set a trusted peer in the multiformat format (e.g.: &#39;/ip4/192.168.0.1/tcp/8029&#39;)
     ///
     /// This is the trusted peer the node will connect to initially to download the initial
     /// block0 and fast fetch missing blocks since last start of the node.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;trusted-peer&quot;</span>, parse(try_from_str = trusted_peer_from_json))]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;trusted-peer&quot;</span>, value_parser = trusted_peer_from_json)]
     </span><span class="kw">pub </span>trusted_peer: Vec&lt;TrustedPeer&gt;,
 
     <span class="doccomment">/// set the genesis block hash (the hash of the block0) so we can retrieve the
     /// genesis block (and the blockchain configuration) from the existing storage
     /// or from the network.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;genesis-block-hash&quot;</span>, parse(try_from_str))]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;genesis-block-hash&quot;</span>, value_parser = HeaderHash::from_str)]
     </span><span class="kw">pub </span>block_0_hash: <span class="prelude-ty">Option</span>&lt;HeaderHash&gt;,
 
     <span class="doccomment">/// Enable the Prometheus metrics exporter.
     </span><span class="attribute">#[cfg(feature = <span class="string">&quot;prometheus-metrics&quot;</span>)]
-    #[structopt(long = <span class="string">&quot;enable-prometheus&quot;</span>)]
+    #[clap(long = <span class="string">&quot;enable-prometheus&quot;</span>)]
     </span><span class="kw">pub </span>prometheus_enabled: bool,
 
     <span class="doccomment">/// The address to listen from and accept connection from. This is the
     /// public address that will be distributed to other peers of the network.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;public-address&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;public-address&quot;</span>)]
     </span><span class="kw">pub </span>public_address: <span class="prelude-ty">Option</span>&lt;Multiaddr&gt;,
 
     <span class="doccomment">/// Specifies the address the node will listen to to receive p2p connection.
     /// Can be left empty and the node will listen to whatever value was given
     /// to `public_address`.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;listen-address&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;listen-address&quot;</span>)]
     </span><span class="kw">pub </span>listen_address: <span class="prelude-ty">Option</span>&lt;SocketAddr&gt;,
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>RestArguments {
     <span class="doccomment">/// REST API listening address.
     /// If not configured anywhere, defaults to REST API being disabled
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;rest-listen&quot;</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;rest-listen&quot;</span>)]
     </span><span class="kw">pub </span>listen: <span class="prelude-ty">Option</span>&lt;SocketAddr&gt;,
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>JRpcArguments {
     <span class="doccomment">/// JRPC API listening address.
     /// If not configured anywhere, defaults to JRPC API being disabled
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;jrpc-listen&quot;</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;jrpc-listen&quot;</span>)]
     </span><span class="kw">pub </span>listen: <span class="prelude-ty">Option</span>&lt;SocketAddr&gt;,
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(
-    name = <span class="string">&quot;jormungandr&quot;</span>,
-    setting = structopt::clap::AppSettings::ColoredHelp
-)]
+<span class="attribute">#[derive(Parser, Debug)]
+#[clap(name = <span class="string">&quot;jormungandr&quot;</span>)]
 </span><span class="kw">pub struct </span>CommandLine {
     <span class="doccomment">/// Set log messages minimum severity. If not configured anywhere, defaults to &quot;info&quot;.
-    </span><span class="attribute">#[structopt(
+    </span><span class="attribute">#[clap(
         long = <span class="string">&quot;log-level&quot;</span>,
-        parse(try_from_str = log_level_parse),
-        possible_values = <span class="kw-2">&amp;</span>LOG_FILTER_LEVEL_POSSIBLE_VALUES
+        value_parser = log_level_parse,
+        value_names = <span class="kw-2">&amp;*</span>LOG_FILTER_LEVEL_POSSIBLE_VALUES
     )]
     </span><span class="kw">pub </span>log_level: <span class="prelude-ty">Option</span>&lt;LevelFilter&gt;,
 
     <span class="doccomment">/// Set format of the log emitted. Can be &quot;json&quot; or &quot;plain&quot;.
     /// If not configured anywhere, defaults to &quot;plain&quot;.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;log-format&quot;</span>, parse(try_from_str))]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;log-format&quot;</span>, value_parser = LogFormat::from_str)]
     </span><span class="kw">pub </span>log_format: <span class="prelude-ty">Option</span>&lt;LogFormat&gt;,
 
     <span class="doccomment">/// Set where the log will be emitted. Can be &quot;stdout&quot;, &quot;stderr&quot;,
@@ -262,40 +256,40 @@
     /// or &quot;journald&quot; (linux with systemd only, must be enabled during compilation).
     ///
     /// If not configured anywhere, defaults to &quot;stderr&quot;
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;log-output&quot;</span>, parse(try_from_str))]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;log-output&quot;</span>, value_parser = LogOutput::from_str)]
     </span><span class="kw">pub </span>log_output: <span class="prelude-ty">Option</span>&lt;LogOutput&gt;,
 
     <span class="doccomment">/// Enable the OTLP trace data exporter and set the collector&#39;s GRPC endpoint.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;log-trace-collector-endpoint&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;log-trace-collector-endpoint&quot;</span>)]
     </span><span class="kw">pub </span>trace_collector_endpoint: <span class="prelude-ty">Option</span>&lt;url::Url&gt;,
 
     <span class="doccomment">/// report all the rewards in the reward distribution history
     ///
     /// NOTE: this will slowdown the epoch transition computation and will add
     /// add a lot of items for in-memory operations, this is not recommended to set
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;rewards-report-all&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;rewards-report-all&quot;</span>)]
     </span><span class="kw">pub </span>rewards_report_all: bool,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span><span class="kw">pub </span>rest_arguments: RestArguments,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span><span class="kw">pub </span>jrpc_arguments: JRpcArguments,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span><span class="kw">pub </span>start_arguments: StartArguments,
 
     <span class="doccomment">/// display full version details (software version, source version, targets and compiler used)
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;full-version&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;full-version&quot;</span>)]
     </span><span class="kw">pub </span>full_version: bool,
 
     <span class="doccomment">/// display the sources version, allowing to check the source&#39;s hash used to compile this executable.
     /// this option is useful for scripting retrieving the logs of the version of this application.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;source-version&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;source-version&quot;</span>)]
     </span><span class="kw">pub </span>source_version: bool,
 
     <span class="doccomment">/// Initialize the storage and exit, useful to check that the storage has been set up correctly.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;storage-check&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;storage-check&quot;</span>)]
     </span><span class="kw">pub </span>storage_check: bool,
 }
 
@@ -307,7 +301,7 @@
     /// the process.
     ///
     </span><span class="kw">pub fn </span>load() -&gt; <span class="self">Self </span>{
-        <span class="self">Self</span>::from_args()
+        <span class="self">Self</span>::parse()
     }
 }
 

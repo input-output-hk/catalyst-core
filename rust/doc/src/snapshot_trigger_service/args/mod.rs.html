@@ -66,17 +66,17 @@
     config::{read_config, Configuration},
     Context,
 };
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>scheduler_service_lib::{spawn_scheduler, ManagerService, WrappedPoisonError};
 <span class="kw">use </span>std::sync::Mutex;
 <span class="kw">use </span>std::{path::PathBuf, sync::Arc};
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>TriggerServiceCommand {
-    <span class="attribute">#[structopt(long = <span class="string">&quot;token&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;token&quot;</span>)]
     </span><span class="kw">pub </span>token: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[structopt(long = <span class="string">&quot;config&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;config&quot;</span>)]
     </span><span class="kw">pub </span>config: PathBuf,
 }
 

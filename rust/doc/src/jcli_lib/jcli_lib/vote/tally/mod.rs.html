@@ -44,11 +44,11 @@
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>merge_results;
 
 <span class="kw">use </span><span class="kw">super</span>::Error;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">pub use </span>merge_results::MergedVotePlan;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>Tally {
     <span class="doccomment">/// Create a decryption share for private voting tally.
     ///

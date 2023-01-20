@@ -240,53 +240,53 @@
 <span class="kw">use </span>chain_impl_mockchain::{
     account::SpendingCounter, fee::FeeAlgorithm, key::EitherEd25519SecretKey, transaction::Output,
 };
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::{interfaces, interfaces::SettingsDto};
 <span class="kw">use </span>rand::{rngs::OsRng, SeedableRng};
 <span class="kw">use </span>rand_chacha::ChaChaRng;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>MakeTransaction {
     <span class="doccomment">/// the account to debit the funds from
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;ACCOUNT&quot;</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;ACCOUNT&quot;</span>)]
     </span><span class="kw">pub </span>sender_account: interfaces::Address,
 
     <span class="doccomment">/// the value
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;VALUE&quot;</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;VALUE&quot;</span>)]
     </span><span class="kw">pub </span>value: interfaces::Value,
 
     <span class="doccomment">/// the account to send funds to
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>receiver: <span class="prelude-ty">Option</span>&lt;interfaces::Address&gt;,
 
-    <span class="attribute">#[structopt(long)]
+    <span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>block0_hash: String,
 
-    <span class="attribute">#[structopt(long)]
+    <span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>valid_until: interfaces::BlockDate,
 
     <span class="doccomment">/// the file path to the file to read the signing key from.
     /// If omitted it will be read from the standard input.
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>secret: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// Set the change in the given address
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>change: <span class="prelude-ty">Option</span>&lt;interfaces::Address&gt;,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span><span class="kw">pub </span>common: common::CommonTransaction,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>rest_args: RestArgs,
 
     <span class="comment">// force transaction without requesting for confirmation
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span>force: bool,
 
-    <span class="attribute">#[structopt(long)]
+    <span class="attribute">#[clap(long)]
     </span>post: bool,
 }
 

@@ -2963,29 +2963,10 @@
 <span id="2963">2963</span>
 <span id="2964">2964</span>
 <span id="2965">2965</span>
-<span id="2966">2966</span>
-<span id="2967">2967</span>
-<span id="2968">2968</span>
-<span id="2969">2969</span>
-<span id="2970">2970</span>
-<span id="2971">2971</span>
-<span id="2972">2972</span>
-<span id="2973">2973</span>
-<span id="2974">2974</span>
-<span id="2975">2975</span>
-<span id="2976">2976</span>
-<span id="2977">2977</span>
-<span id="2978">2978</span>
-<span id="2979">2979</span>
-<span id="2980">2980</span>
-<span id="2981">2981</span>
-<span id="2982">2982</span>
-<span id="2983">2983</span>
-<span id="2984">2984</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Mockchain ledger. Ledger exists in order to update the
 //! current state and verify transactions.
 
-</span><span class="kw">use </span><span class="kw">super</span>::check::{<span class="self">self</span>, TxValidityError, TxVerifyError};
+</span><span class="kw">use </span><span class="kw">super</span>::check::{<span class="self">self</span>, TxVerifyError};
 <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
 </span><span class="kw">use </span><span class="kw">super</span>::evm;
 <span class="kw">use </span><span class="kw">super</span>::governance::{Governance, ParametersGovernanceAction, TreasuryGovernanceAction};
@@ -3185,9 +3166,9 @@
     },
     <span class="attribute">#[error(<span class="string">&quot;Transaction malformed&quot;</span>)]
     </span>TransactionMalformed(<span class="attribute">#[from] </span>TxVerifyError),
-    <span class="attribute">#[error(<span class="string">&quot;Invalid transaction expiry date&quot;</span>)]
-    </span>InvalidTransactionValidity(<span class="attribute">#[from] </span>TxValidityError),
-    <span class="attribute">#[error(<span class="string">&quot;Error while computing the fees&quot;</span>)]
+    <span class="comment">// #[error(&quot;Invalid transaction expiry date&quot;)]
+    // InvalidTransactionValidity(#[from] TxValidityError),
+    </span><span class="attribute">#[error(<span class="string">&quot;Error while computing the fees&quot;</span>)]
     </span>FeeCalculationError(<span class="attribute">#[from] </span>ValueError),
     <span class="attribute">#[error(<span class="string">&quot;Praos active slot coefficient invalid: {error}&quot;</span>)]
     </span>PraosActiveSlotsCoeffInvalid { error: ActiveSlotsCoeffError },
@@ -3865,16 +3846,14 @@
             Fragment::OldUtxoDeclaration(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(Error::Block0OnlyFragmentReceived),
             Fragment::Transaction(tx) =&gt; {
                 <span class="kw">let </span>tx = tx.as_slice();
-                <span class="kw">let </span>(new_ledger_, _fee) =
-                    new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx, block_date)<span class="question-mark">?</span>;
+                <span class="kw">let </span>(new_ledger_, _fee) = new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx)<span class="question-mark">?</span>;
                 new_ledger = new_ledger_;
             }
             Fragment::OwnerStakeDelegation(tx) =&gt; {
                 <span class="kw">let </span>tx = tx.as_slice();
                 <span class="comment">// this is a lightweight check, do this early to avoid doing any unnecessary computation
                 </span>check::valid_stake_owner_delegation_transaction(<span class="kw-2">&amp;</span>tx)<span class="question-mark">?</span>;
-                <span class="kw">let </span>(new_ledger_, _fee) =
-                    new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx, block_date)<span class="question-mark">?</span>;
+                <span class="kw">let </span>(new_ledger_, _fee) = new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx)<span class="question-mark">?</span>;
 
                 <span class="comment">// we&#39;ve just verified that this is a valid transaction (i.e. contains 1 input and 1 witness)
                 </span><span class="kw">let </span>(account_id, witness) = <span class="kw">match </span>tx.inputs().iter().next().unwrap().to_enum() {
@@ -3915,14 +3894,12 @@
                     <span class="kw">return </span><span class="prelude-val">Err</span>(Error::StakeDelegationSignatureFailed);
                 }
 
-                <span class="kw">let </span>(new_ledger_, _fee) =
-                    new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx, block_date)<span class="question-mark">?</span>;
+                <span class="kw">let </span>(new_ledger_, _fee) = new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx)<span class="question-mark">?</span>;
                 new_ledger = new_ledger_.apply_stake_delegation(<span class="kw-2">&amp;</span>payload)<span class="question-mark">?</span>;
             }
             Fragment::PoolRegistration(tx) =&gt; {
                 <span class="kw">let </span>tx = tx.as_slice();
-                <span class="kw">let </span>(new_ledger_, _fee) =
-                    new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx, block_date)<span class="question-mark">?</span>;
+                <span class="kw">let </span>(new_ledger_, _fee) = new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx)<span class="question-mark">?</span>;
                 new_ledger = new_ledger_.apply_pool_registration_signcheck(
                     <span class="kw-2">&amp;</span>tx.payload().into_payload(),
                     <span class="kw-2">&amp;</span>tx.transaction_binding_auth_data(),
@@ -3932,8 +3909,7 @@
             Fragment::PoolRetirement(tx) =&gt; {
                 <span class="kw">let </span>tx = tx.as_slice();
 
-                <span class="kw">let </span>(new_ledger_, _fee) =
-                    new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx, block_date)<span class="question-mark">?</span>;
+                <span class="kw">let </span>(new_ledger_, _fee) = new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx)<span class="question-mark">?</span>;
                 new_ledger = new_ledger_.apply_pool_retirement(
                     <span class="kw-2">&amp;</span>tx.payload().into_payload(),
                     <span class="kw-2">&amp;</span>tx.transaction_binding_auth_data(),
@@ -3943,8 +3919,7 @@
             Fragment::PoolUpdate(tx) =&gt; {
                 <span class="kw">let </span>tx = tx.as_slice();
 
-                <span class="kw">let </span>(new_ledger_, _fee) =
-                    new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx, block_date)<span class="question-mark">?</span>;
+                <span class="kw">let </span>(new_ledger_, _fee) = new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx)<span class="question-mark">?</span>;
                 new_ledger = new_ledger_.apply_pool_update(
                     <span class="kw-2">&amp;</span>tx.payload().into_payload(),
                     <span class="kw-2">&amp;</span>tx.transaction_binding_auth_data(),
@@ -3953,8 +3928,7 @@
             }
             Fragment::UpdateProposal(tx) =&gt; {
                 <span class="kw">let </span>tx = tx.as_slice();
-                <span class="kw">let </span>(new_ledger_, _fee) =
-                    new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx, block_date)<span class="question-mark">?</span>;
+                <span class="kw">let </span>(new_ledger_, _fee) = new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx)<span class="question-mark">?</span>;
                 new_ledger = new_ledger_.apply_update_proposal(
                     fragment_id,
                     tx.payload().into_payload(),
@@ -3965,8 +3939,7 @@
             }
             Fragment::UpdateVote(tx) =&gt; {
                 <span class="kw">let </span>tx = tx.as_slice();
-                <span class="kw">let </span>(new_ledger_, _fee) =
-                    new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx, block_date)<span class="question-mark">?</span>;
+                <span class="kw">let </span>(new_ledger_, _fee) = new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx)<span class="question-mark">?</span>;
                 new_ledger = new_ledger_.apply_update_vote(
                     <span class="kw-2">&amp;</span>tx.payload().into_payload(),
                     <span class="kw-2">&amp;</span>tx.transaction_binding_auth_data(),
@@ -3975,8 +3948,7 @@
             }
             Fragment::VotePlan(tx) =&gt; {
                 <span class="kw">let </span>tx = tx.as_slice();
-                <span class="kw">let </span>(new_ledger_, _fee) =
-                    new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx, block_date)<span class="question-mark">?</span>;
+                <span class="kw">let </span>(new_ledger_, _fee) = new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx)<span class="question-mark">?</span>;
                 new_ledger = new_ledger_.apply_vote_plan(
                     <span class="kw-2">&amp;</span>tx,
                     block_date,
@@ -3988,8 +3960,7 @@
                 <span class="kw">let </span>tx = tx.as_slice();
                 <span class="comment">// this is a lightweight check, do this early to avoid doing any unnecessary computation
                 </span>check::valid_vote_cast(<span class="kw-2">&amp;</span>tx)<span class="question-mark">?</span>;
-                <span class="kw">let </span>(new_ledger_, _fee) =
-                    new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx, block_date)<span class="question-mark">?</span>;
+                <span class="kw">let </span>(new_ledger_, _fee) = new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx)<span class="question-mark">?</span>;
 
                 <span class="comment">// we&#39;ve just verified that this is a valid transaction (i.e. contains 1 input and 1 witness)
                 </span><span class="kw">let </span>account_id = <span class="kw">match </span>tx
@@ -4014,8 +3985,7 @@
             Fragment::VoteTally(tx) =&gt; {
                 <span class="kw">let </span>tx = tx.as_slice();
 
-                <span class="kw">let </span>(new_ledger_, _fee) =
-                    new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx, block_date)<span class="question-mark">?</span>;
+                <span class="kw">let </span>(new_ledger_, _fee) = new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx)<span class="question-mark">?</span>;
 
                 new_ledger = new_ledger_.apply_vote_tally(
                     <span class="kw-2">&amp;</span>tx.payload().into_payload(),
@@ -4026,8 +3996,7 @@
             Fragment::MintToken(tx) =&gt; {
                 <span class="kw">let </span>tx = tx.as_slice();
 
-                <span class="kw">let </span>(new_ledger_, _fee) =
-                    new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx, block_date)<span class="question-mark">?</span>;
+                <span class="kw">let </span>(new_ledger_, _fee) = new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx)<span class="question-mark">?</span>;
 
                 new_ledger = new_ledger_.mint_token(tx.payload().into_payload())<span class="question-mark">?</span>;
             }
@@ -4050,8 +4019,7 @@
                 <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
                 </span>{
                     <span class="kw">let </span>tx = _tx.as_slice();
-                    (new_ledger, <span class="kw">_</span>) =
-                        new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx, block_date)<span class="question-mark">?</span>;
+                    (new_ledger, <span class="kw">_</span>) = new_ledger.apply_transaction(<span class="kw-2">&amp;</span>fragment_id, <span class="kw-2">&amp;</span>tx)<span class="question-mark">?</span>;
 
                     new_ledger = new_ledger.apply_map_accounts(
                         <span class="kw-2">&amp;</span>tx.payload().into_payload(),
@@ -4073,14 +4041,12 @@
         <span class="kw-2">mut </span><span class="self">self</span>,
         fragment_id: <span class="kw-2">&amp;</span>FragmentId,
         tx: <span class="kw-2">&amp;</span>TransactionSlice&lt;<span class="lifetime">&#39;a</span>, Extra&gt;,
-        cur_date: BlockDate,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="self">Self</span>, Value), Error&gt;
     <span class="kw">where
         </span>Extra: Payload,
         LinearFee: FeeAlgorithm,
     {
         check::valid_transaction_ios_number(tx)<span class="question-mark">?</span>;
-        check::valid_transaction_date(<span class="kw-2">&amp;</span><span class="self">self</span>.settings, tx.valid_until(), cur_date)<span class="question-mark">?</span>;
         <span class="kw">let </span>fee = calculate_fee(tx, <span class="kw-2">&amp;</span><span class="self">self</span>.settings.linear_fees);
         tx.verify_strictly_balanced(fee)<span class="question-mark">?</span>;
         <span class="self">self </span>= <span class="self">self</span>.apply_tx_inputs(tx)<span class="question-mark">?</span>;
@@ -5569,9 +5535,7 @@
         <span class="kw">let </span>tx = builder_tx.set_witnesses(<span class="kw-2">&amp;</span>witnesses).set_payload_auth(<span class="kw-2">&amp;</span>());
 
         <span class="kw">let </span>fragment = TestTx::new(tx).get_fragment();
-        <span class="macro">assert!</span>(test_ledger
-            .apply_transaction(fragment, BlockDate::first())
-            .is_err());
+        <span class="macro">assert!</span>(test_ledger.apply_transaction(fragment).is_err());
     }
 
     <span class="attribute">#[test]
@@ -5597,7 +5561,7 @@
         );
         <span class="macro">println!</span>(
             <span class="string">&quot;{:?}&quot;</span>,
-            test_ledger.apply_transaction(test_tx.get_fragment(), BlockDate::first())
+            test_ledger.apply_transaction(test_tx.get_fragment())
         );
         TestResult::error(<span class="string">&quot;&quot;</span>);
     }
@@ -5624,7 +5588,7 @@
             <span class="kw-2">&amp;</span>[receiver],
         );
         <span class="macro">assert!</span>(test_ledger
-            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
+            .apply_transaction(test_tx.get_fragment())
             .is_err());
     }
 
@@ -5658,7 +5622,7 @@
         );
 
         <span class="macro">assert!</span>(test_ledger
-            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
+            .apply_transaction(test_tx.get_fragment())
             .is_err());
     }
 
@@ -5679,7 +5643,7 @@
             <span class="kw-2">&amp;</span>reciever,
         );
         <span class="macro">assert!</span>(test_ledger
-            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
+            .apply_transaction(test_tx.get_fragment())
             .is_ok());
         LedgerStateVerifier::new(test_ledger.into())
             .pots()
@@ -5729,7 +5693,7 @@
             .and_then(|balance| balance - fee);
         <span class="kw">match </span>(
             balance_res,
-            test_ledger.apply_transaction(test_tx.get_fragment(), BlockDate::first()),
+            test_ledger.apply_transaction(test_tx.get_fragment()),
         ) {
             (<span class="prelude-val">Ok</span>(balance), <span class="prelude-val">Ok</span>(<span class="kw">_</span>)) =&gt; TestResult::from_bool(balance == Value::zero()),
             (<span class="prelude-val">Err</span>(err), <span class="prelude-val">Ok</span>(<span class="kw">_</span>)) =&gt; TestResult::error(<span class="macro">format!</span>(
@@ -5768,7 +5732,7 @@
         <span class="kw">let </span>tx = tx_builder.set_witnesses(<span class="kw-2">&amp;</span>witnesses).set_payload_auth(<span class="kw-2">&amp;</span>());
         <span class="kw">let </span>test_tx = TestTx::new(tx);
         <span class="macro">assert!</span>(test_ledger
-            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
+            .apply_transaction(test_tx.get_fragment())
             .is_err());
     }
 
@@ -5787,7 +5751,7 @@
         );
 
         <span class="macro">assert!</span>(test_ledger
-            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
+            .apply_transaction(test_tx.get_fragment())
             .is_err());
     }
 
@@ -5810,9 +5774,7 @@
         <span class="kw">let </span>fragment = TestTxBuilder::new(test_ledger.block0_hash)
             .move_all_funds(<span class="kw-2">&amp;mut </span>test_ledger, <span class="kw-2">&amp;</span>faucet, <span class="kw-2">&amp;</span>reciever)
             .get_fragment();
-        <span class="macro">assert!</span>(test_ledger
-            .apply_transaction(fragment, BlockDate::first())
-            .is_ok());
+        <span class="macro">assert!</span>(test_ledger.apply_transaction(fragment).is_ok());
 
         LedgerStateVerifier::new(test_ledger.into())
             .address_has_expected_balance(reciever.into(), Value(<span class="number">1</span>))
@@ -5849,7 +5811,7 @@
         <span class="kw">let </span>test_tx = TestTx::new(tx);
 
         <span class="macro">assert!</span>(test_ledger
-            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
+            .apply_transaction(test_tx.get_fragment())
             .is_err());
     }
 
@@ -5875,7 +5837,7 @@
         <span class="kw">let </span>tx = tx_builder.set_witnesses(<span class="kw-2">&amp;</span>[witness]).set_payload_auth(<span class="kw-2">&amp;</span>());
         <span class="kw">let </span>test_tx = TestTx::new(tx);
         <span class="macro">assert!</span>(test_ledger
-            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
+            .apply_transaction(test_tx.get_fragment())
             .is_err());
     }
 
@@ -5905,7 +5867,7 @@
         <span class="kw">let </span>test_tx = TestTx::new(tx);
 
         <span class="macro">assert!</span>(test_ledger
-            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
+            .apply_transaction(test_tx.get_fragment())
             .is_err());
     }
 
@@ -5935,7 +5897,7 @@
         <span class="kw">let </span>test_tx = TestTx::new(tx);
 
         <span class="macro">assert!</span>(test_ledger
-            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
+            .apply_transaction(test_tx.get_fragment())
             .is_err());
     }
 
@@ -5962,7 +5924,7 @@
         <span class="kw">let </span>tx = tx_builder.set_witnesses(<span class="kw-2">&amp;</span>[witness]).set_payload_auth(<span class="kw-2">&amp;</span>());
         <span class="kw">let </span>test_tx = TestTx::new(tx);
         <span class="macro">assert!</span>(test_ledger
-            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
+            .apply_transaction(test_tx.get_fragment())
             .is_err());
     }
 }

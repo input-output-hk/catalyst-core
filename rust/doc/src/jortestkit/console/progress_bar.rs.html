@@ -21,7 +21,11 @@
 <span id="21">21</span>
 <span id="22">22</span>
 <span id="23">23</span>
-</pre><pre class="rust"><code><span class="kw">use </span>std::fmt;
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+</pre><pre class="rust"><code><span class="kw">use </span>std::{convert::Infallible, fmt};
 
 <span class="attribute">#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 </span><span class="kw">pub enum </span>ProgressBarMode {
@@ -30,13 +34,17 @@
     <span class="prelude-val">None</span>,
 }
 
-<span class="kw">pub fn </span>parse_progress_bar_mode_from_str(progress_bar_mode: <span class="kw-2">&amp;</span>str) -&gt; ProgressBarMode {
+<span class="kw">pub fn </span>parse_progress_bar_mode_from_str(
+    progress_bar_mode: <span class="kw-2">&amp;</span>str,
+) -&gt; <span class="prelude-ty">Result</span>&lt;ProgressBarMode, Infallible&gt; {
     <span class="kw">let </span>progress_bar_mode_lowercase: <span class="kw-2">&amp;</span>str = <span class="kw-2">&amp;</span>progress_bar_mode.to_lowercase();
-    <span class="kw">match </span>progress_bar_mode_lowercase {
+    <span class="kw">let </span>result = <span class="kw">match </span>progress_bar_mode_lowercase {
         <span class="string">&quot;standard&quot; </span>=&gt; ProgressBarMode::Standard,
         <span class="string">&quot;none&quot; </span>=&gt; ProgressBarMode::None,
         <span class="kw">_ </span>=&gt; ProgressBarMode::Monitor,
-    }
+    };
+
+    <span class="prelude-val">Ok</span>(result)
 }
 
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>ProgressBarMode {

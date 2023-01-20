@@ -48,16 +48,16 @@
     transaction::staging::Staging,
 };
 <span class="kw">use </span>chain_impl_mockchain::transaction::OutputPolicy;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::interfaces;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>Finalize {
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span><span class="kw">pub </span>common: common::CommonTransaction,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span><span class="kw">pub </span>fee: common::CommonFees,
 
     <span class="doccomment">/// Set the change in the given address

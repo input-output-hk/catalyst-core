@@ -450,7 +450,6 @@
 <span id="450">450</span>
 <span id="451">451</span>
 <span id="452">452</span>
-<span id="453">453</span>
 </pre><pre class="rust"><code><span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
 </span><span class="kw">use </span><span class="kw">crate</span>::certificate::EvmMapping;
 <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
@@ -460,7 +459,6 @@
         DecryptedPrivateTally, ExternalProposalId, MintToken, Proposal, UpdateProposal, UpdateVote,
         VoteCast, VotePlan, VoteTally,
     },
-    date::BlockDate,
     fee::LinearFee,
     key::Hash,
     ledger::Error <span class="kw">as </span>LedgerError,
@@ -574,7 +572,7 @@
         <span class="kw">let </span>transaction = <span class="self">self
             </span>.fragment_factory
             .transaction(from, to, test_ledger, funds);
-        test_ledger.apply_transaction(transaction, BlockDate::first())
+        test_ledger.apply_transaction(transaction)
     }
 
     <span class="kw">pub fn </span>register(

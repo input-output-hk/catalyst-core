@@ -95,30 +95,30 @@
 };
 <span class="kw">use </span>chain_crypto::bech32::Bech32;
 <span class="kw">use </span>chain_vote::tally::{EncryptedTally, OpeningVoteKey};
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{PrivateTallyState, Tally},
 };
 <span class="kw">use </span>std::{convert::TryFrom, path::PathBuf};
-<span class="kw">use </span>structopt::StructOpt;
 
 <span class="doccomment">/// Create decryption shares for all proposals in a vote plan.
 ///
 /// The decryption share data will be printed in hexadecimal encoding
 /// on standard output.
-</span><span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+</span><span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>TallyGenerateVotePlanDecryptionShares {
     <span class="doccomment">/// The path to json-encoded vote plan to decrypt. If this parameter is not
     /// specified, the vote plan will be read from standard input.
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span>vote_plan: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
     <span class="doccomment">/// The id of the vote plan to decrypt.
     /// Can be left unspecified if there is only one vote plan in the input
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span>vote_plan_id: <span class="prelude-ty">Option</span>&lt;Hash&gt;,
     <span class="doccomment">/// The path to bech32-encoded decryption key.
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span>key: PathBuf,
 }
 
@@ -127,8 +127,8 @@
 ///
 /// The data will be printed in hexadecimal encoding
 /// on standard output.
-</span><span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+</span><span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>MergeShares {
     <span class="doccomment">/// The path to the shares to merge
     </span>shares: Vec&lt;PathBuf&gt;,

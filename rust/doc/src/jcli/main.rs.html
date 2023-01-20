@@ -14,15 +14,11 @@
 <span id="14">14</span>
 <span id="15">15</span>
 <span id="16">16</span>
-<span id="17">17</span>
-<span id="18">18</span>
-</pre><pre class="rust"><code><span class="kw">use </span>std::error::Error;
-<span class="kw">use </span>structopt::StructOpt;
+</pre><pre class="rust"><code><span class="kw">use </span>clap::Parser;
+<span class="kw">use </span>std::error::Error;
 
 <span class="kw">fn </span>main() {
-    jcli_lib::JCli::from_args()
-        .exec()
-        .unwrap_or_else(report_error)
+    jcli_lib::JCli::parse().exec().unwrap_or_else(report_error)
 }
 
 <span class="kw">fn </span>report_error(error: Box&lt;<span class="kw">dyn </span>Error&gt;) {

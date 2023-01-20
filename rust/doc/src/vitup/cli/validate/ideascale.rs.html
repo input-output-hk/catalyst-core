@@ -451,7 +451,6 @@
 <span id="451">451</span>
 <span id="452">452</span>
 <span id="453">453</span>
-<span id="454">454</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::build_current_fund;
 <span class="kw">use </span><span class="kw">crate</span>::builders::utils::DeploymentTree;
 <span class="kw">use </span><span class="kw">crate</span>::config::Config;
@@ -459,13 +458,13 @@
 <span class="kw">use </span>chain_impl_mockchain::testing::scenario::template::ProposalDefBuilder;
 <span class="kw">use </span>chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 <span class="kw">use </span>chain_impl_mockchain::testing::scenario::template::VotePlanDefBuilder;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>serde_json::Value;
 <span class="kw">use </span>std::collections::LinkedList;
 <span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">use </span>vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 <span class="kw">use </span>vit_servicing_station_tests::common::data::ValidVotePlanParameters;
@@ -474,27 +473,26 @@
 };
 <span class="kw">use </span>vit_servicing_station_tests::common::data::{ChallengeTemplate, FundTemplate, ReviewTemplate};
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>IdeascaleValidateCommand {
     <span class="doccomment">/// proposals import json
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;output&quot;</span>, default_value = <span class="string">&quot;./validate/output&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;output&quot;</span>, default_value = <span class="string">&quot;./validate/output&quot;</span>)]
     </span><span class="kw">pub </span>output: PathBuf,
 
     <span class="doccomment">/// input folder
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;INPUT&quot;</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;INPUT&quot;</span>)]
     </span><span class="kw">pub </span>input: PathBuf,
 
     <span class="doccomment">/// prefix
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;prefix&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;prefix&quot;</span>)]
     </span><span class="kw">pub </span>prefix: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
     <span class="doccomment">/// should i fix data is possible
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;fix&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;fix&quot;</span>)]
     </span><span class="kw">pub </span>fix: bool,
 
     <span class="doccomment">/// should i fix data is possible
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;mail&quot;</span>, default_value = <span class="string">&quot;&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;mail&quot;</span>, default_value = <span class="string">&quot;&quot;</span>)]
     </span><span class="kw">pub </span>mail_replacement: String,
 }
 

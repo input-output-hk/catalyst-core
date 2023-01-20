@@ -56,24 +56,28 @@
 <span id="56">56</span>
 <span id="57">57</span>
 <span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>config;
 <span class="kw">pub mod </span>v0;
 <span class="kw">pub mod </span>v1;
 
 <span class="kw">use </span><span class="kw">crate</span>::jcli_lib::utils::{io::ReadYamlError, output_format};
 <span class="kw">use </span>chain_core::property::{ReadError, WriteError};
+<span class="kw">use </span>clap::Parser;
 <span class="kw">pub use </span>config::RestArgs;
 <span class="kw">use </span>hex::FromHexError;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 
 <span class="doccomment">/// Send request to node REST API
-</span><span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+</span><span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>Rest {
     <span class="doccomment">/// API version 0
+    </span><span class="attribute">#[clap(subcommand)]
     </span>V0(v0::V0),
     <span class="doccomment">/// API version 1
+    </span><span class="attribute">#[clap(subcommand)]
     </span>V1(v1::V1),
 }
 

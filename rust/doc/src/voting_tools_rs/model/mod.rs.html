@@ -119,6 +119,8 @@
 <span id="119">119</span>
 <span id="120">120</span>
 <span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
 </pre><pre class="rust"><code><span class="kw">use </span>bigdecimal::BigDecimal;
 <span class="kw">use </span>cardano_serialization_lib::address::NetworkInfo;
 <span class="kw">use </span>microtype::microtype;
@@ -231,7 +233,9 @@
 <span class="kw">pub fn </span>network_info(testnet_magic: <span class="prelude-ty">Option</span>&lt;TestnetMagic&gt;) -&gt; NetworkInfo {
     <span class="kw">match </span>testnet_magic {
         <span class="prelude-val">None </span>=&gt; NetworkInfo::mainnet(),
-        <span class="prelude-val">Some</span>(TestnetMagic(magic)) =&gt; NetworkInfo::new(NetworkInfo::testnet().network_id(), magic),
+        <span class="prelude-val">Some</span>(TestnetMagic(magic)) =&gt; {
+            NetworkInfo::new(NetworkInfo::testnet_preview().network_id(), magic)
+        }
     }
 }
 

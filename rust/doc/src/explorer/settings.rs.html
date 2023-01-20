@@ -243,13 +243,12 @@
 <span id="243">243</span>
 <span id="244">244</span>
 <span id="245">245</span>
-<span id="246">246</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::logging::{LogFormat, LogOutput, LogSettings};
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::interfaces::{Cors, Tls};
 <span class="kw">use </span>lazy_static::lazy_static;
 <span class="kw">use </span>serde::{de, de::Error <span class="kw">as _</span>, Deserialize, Deserializer, Serialize, Serializer};
-<span class="kw">use </span>std::{fs::File, net::SocketAddr, path::PathBuf};
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>std::{fs::File, net::SocketAddr, path::PathBuf, str::FromStr};
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">use </span>tonic::transport::Uri;
 <span class="kw">use </span>tracing::metadata::LevelFilter;
@@ -298,7 +297,7 @@
 
 <span class="kw">impl </span>Settings {
     <span class="kw">pub fn </span>load() -&gt; <span class="prelude-ty">Result</span>&lt;Settings, Error&gt; {
-        <span class="kw">let </span>cmd = CommandLine::from_args();
+        <span class="kw">let </span>cmd = CommandLine::parse();
         <span class="kw">let </span>file: Config = cmd
             .config
             .as_ref()
@@ -391,41 +390,40 @@
     }
 }
 
-<span class="attribute">#[derive(Debug, StructOpt)]
-#[structopt(name = <span class="string">&quot;config&quot;</span>)]
+<span class="attribute">#[derive(Debug, Parser)]
+#[clap(name = <span class="string">&quot;config&quot;</span>)]
 </span><span class="kw">struct </span>CommandLine {
-    <span class="attribute">#[structopt(long)]
+    <span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>node: <span class="prelude-ty">Option</span>&lt;Uri&gt;,
-    <span class="attribute">#[structopt(long)]
+    <span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>binding_address: <span class="prelude-ty">Option</span>&lt;SocketAddr&gt;,
-    <span class="attribute">#[structopt(long)]
+    <span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>address_bech32_prefix: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[structopt(long)]
+    <span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>query_depth_limit: <span class="prelude-ty">Option</span>&lt;usize&gt;,
-    <span class="attribute">#[structopt(long)]
+    <span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>query_complexity_limit: <span class="prelude-ty">Option</span>&lt;usize&gt;,
 
     <span class="kw">pub </span>config: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
     <span class="doccomment">/// Set log messages minimum severity. If not configured anywhere, defaults to &quot;info&quot;.
-    </span><span class="attribute">#[structopt(
+    </span><span class="attribute">#[clap(
         long = <span class="string">&quot;log-level&quot;</span>,
-        parse(try_from_str = log_level_parse),
-        possible_values = <span class="kw-2">&amp;</span>LOG_FILTER_LEVEL_POSSIBLE_VALUES
+        value_parser = log_level_parse,
     )]
     </span><span class="kw">pub </span>log_level: <span class="prelude-ty">Option</span>&lt;LevelFilter&gt;,
 
     <span class="doccomment">/// Set format of the log emitted. Can be &quot;json&quot; or &quot;plain&quot;.
     /// If not configured anywhere, defaults to &quot;plain&quot;.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;log-format&quot;</span>, parse(try_from_str))]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;log-format&quot;</span>, value_parser = LogFormat::from_str)]
     </span><span class="kw">pub </span>log_format: <span class="prelude-ty">Option</span>&lt;LogFormat&gt;,
 
     <span class="doccomment">/// Set format of the log emitted. Can be &quot;stdout&quot;, &quot;stderr&quot; or a file path preceeded by &#39;@&#39; (e.g. @./explorer.log).
     /// If not configured anywhere, defaults to &quot;stderr&quot;.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;log-output&quot;</span>, parse(try_from_str))]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;log-output&quot;</span>, value_parser = LogOutput::from_str)]
     </span><span class="kw">pub </span>log_output: <span class="prelude-ty">Option</span>&lt;LogOutput&gt;,
 
     <span class="doccomment">/// Enable the OTLP trace data exporter and set the collector&#39;s GRPC endpoint.
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>log_trace_collector_endpoint: <span class="prelude-ty">Option</span>&lt;Url&gt;,
 }
 

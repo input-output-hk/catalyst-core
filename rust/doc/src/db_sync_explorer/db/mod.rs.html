@@ -11,9 +11,12 @@
 <span id="11">11</span>
 <span id="12">12</span>
 <span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>config;
 <span class="kw">mod </span>connector;
 <span class="kw">mod </span>model;
+<span class="kw">mod </span>provider;
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>query;
 <span class="kw">pub mod </span>schema;
 <span class="kw">pub mod </span>types;
@@ -23,6 +26,7 @@
 <span class="kw">pub use </span>model::{
     BehindDuration, Meta, Progress, TransactionConfirmation, TransactionConfirmationRow,
 };
+<span class="kw">pub use </span>provider::Provider;
 <span class="kw">pub use </span>query::behind;
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="db_sync_explorer" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

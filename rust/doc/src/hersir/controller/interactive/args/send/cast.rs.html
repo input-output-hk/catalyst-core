@@ -59,24 +59,24 @@
 <span id="59">59</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::UserInteractionController;
 <span class="kw">use crate</span>::{controller::Error, style};
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>CastVote {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;w&quot;</span>, long = <span class="string">&quot;wallet&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;w&#39;</span>, long = <span class="string">&quot;wallet&quot;</span>)]
     </span><span class="kw">pub </span>wallet: String,
-    <span class="attribute">#[structopt(short = <span class="string">&quot;p&quot;</span>, long = <span class="string">&quot;vote-plan&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;p&#39;</span>, long = <span class="string">&quot;vote-plan&quot;</span>)]
     </span><span class="kw">pub </span>vote_plan: String,
-    <span class="attribute">#[structopt(short = <span class="string">&quot;v&quot;</span>, long = <span class="string">&quot;via&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;v&#39;</span>, long = <span class="string">&quot;via&quot;</span>)]
     </span><span class="kw">pub </span>via: String,
 
-    <span class="attribute">#[structopt(short = <span class="string">&quot;i&quot;</span>, long = <span class="string">&quot;idx&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;i&#39;</span>, long = <span class="string">&quot;idx&quot;</span>)]
     </span><span class="kw">pub </span>proposal_index: <span class="prelude-ty">Option</span>&lt;usize&gt;,
 
-    <span class="attribute">#[structopt(short = <span class="string">&quot;d&quot;</span>, long = <span class="string">&quot;id&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;d&#39;</span>, long = <span class="string">&quot;id&quot;</span>)]
     </span><span class="kw">pub </span>proposal_id: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
-    <span class="attribute">#[structopt(short = <span class="string">&quot;c&quot;</span>, long = <span class="string">&quot;choice&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;c&#39;</span>, long = <span class="string">&quot;choice&quot;</span>)]
     </span><span class="kw">pub </span>choice: u8,
 }
 

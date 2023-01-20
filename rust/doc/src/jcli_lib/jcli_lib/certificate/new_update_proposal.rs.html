@@ -50,19 +50,19 @@
 };
 <span class="kw">use </span>chain_crypto::{Ed25519, PublicKey};
 <span class="kw">use </span>chain_impl_mockchain::certificate::{<span class="self">self</span>, Certificate};
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::interfaces::ConfigParams;
 <span class="kw">use </span>std::{io::BufRead, path::PathBuf};
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>UpdateProposal {
     <span class="doccomment">/// the proposer ID.
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;PROPOSER_ID&quot;</span>, parse(try_from_str = parse_pub_key))]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;PROPOSER_ID&quot;</span>, value_parser = parse_pub_key::&lt;Ed25519&gt;)]
     </span>proposer_id: PublicKey&lt;Ed25519&gt;,
 
     <span class="doccomment">/// the file path to the config file defining the config param changes
     /// If omitted it will be read from the standard input.
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;CONFIG_FILE&quot;</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;CONFIG_FILE&quot;</span>)]
     </span>config_file: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// print the output signed certificate in the given file, if no file given

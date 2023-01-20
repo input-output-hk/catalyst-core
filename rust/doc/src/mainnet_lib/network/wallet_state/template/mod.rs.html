@@ -144,7 +144,7 @@
 <span class="kw">pub use </span>actor::{delegator, registration, representative, Actor};
 <span class="kw">pub use </span>arbitrary::{generate_arbitrary_delegator, Error <span class="kw">as </span>ArbitraryError};
 <span class="kw">use </span>chain_crypto::PublicKeyFromStrError;
-<span class="kw">use </span>external_providers::{DummyExternalProvider, ExternalProvider};
+<span class="kw">pub use </span>external_providers::{DummyExternalProvider, ExternalProvider};
 <span class="kw">use </span>jormungandr_lib::crypto::account::Identifier;
 
 <span class="doccomment">/// Builds collection of `MainnetWalletState` structs based on default configuration

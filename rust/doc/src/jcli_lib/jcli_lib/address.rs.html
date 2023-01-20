@@ -171,11 +171,11 @@
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::jcli_lib::utils::key_parser::parse_pub_key;
 <span class="kw">use </span>chain_addr::{AddressReadable, Discrimination, Kind};
 <span class="kw">use </span>chain_crypto::{bech32::Bech32 <span class="kw">as _</span>, AsymmetricPublicKey, Ed25519, PublicKey};
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>thiserror::Error;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(name = <span class="string">&quot;address&quot;</span>, rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(name = <span class="string">&quot;address&quot;</span>, rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>Address {
     <span class="doccomment">/// Display the content and info of a bech32 formatted address.
     </span>Info(InfoArgs),
@@ -188,48 +188,48 @@
     </span>Account(AccountArgs),
 }
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>InfoArgs {
     <span class="doccomment">/// An address, in bech32 format, to display the content
     /// and info that can be extracted from.
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;ADDRESS&quot;</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;ADDRESS&quot;</span>)]
     </span>address: AddressReadable,
 }
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>DiscriminationData {
     <span class="doccomment">/// Set the discrimination type to testing (default is production).
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;testing&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;testing&quot;</span>)]
     </span>testing: bool,
 
     <span class="doccomment">/// Set the prefix to use to describe the address. This is only available
     /// on the human readable representation of the address and will not be
     /// used or checked by the node.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;prefix&quot;</span>, default_value = <span class="string">&quot;ca&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;prefix&quot;</span>, default_value = <span class="string">&quot;ca&quot;</span>)]
     </span>prefix: String,
 }
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>SingleArgs {
     <span class="doccomment">/// A public key in bech32 encoding with the key type prefix.
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;PUBLIC_KEY&quot;</span>, parse(try_from_str = parse_pub_key))]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;PUBLIC_KEY&quot;</span>, value_parser = parse_pub_key::&lt;Ed25519&gt;)]
     </span>key: PublicKey&lt;Ed25519&gt;,
 
     <span class="doccomment">/// A public key in bech32 encoding with the key type prefix.
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;DELEGATION_KEY&quot;</span>, parse(try_from_str = parse_pub_key))]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;DELEGATION_KEY&quot;</span>, value_parser = parse_pub_key::&lt;Ed25519&gt;)]
     </span>delegation: <span class="prelude-ty">Option</span>&lt;PublicKey&lt;Ed25519&gt;&gt;,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>discrimination_data: DiscriminationData,
 }
 
-<span class="attribute">#[derive(StructOpt)]
+<span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>AccountArgs {
     <span class="doccomment">/// A public key in bech32 encoding with the key type prefix.
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;PUBLIC_KEY&quot;</span>, parse(try_from_str = parse_pub_key))]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;PUBLIC_KEY&quot;</span>, value_parser = parse_pub_key::&lt;Ed25519&gt;)]
     </span>key: PublicKey&lt;Ed25519&gt;,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>discrimination_data: DiscriminationData,
 }
 

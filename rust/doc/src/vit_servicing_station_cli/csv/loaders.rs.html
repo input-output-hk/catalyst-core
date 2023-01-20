@@ -415,6 +415,7 @@
 <span id="415">415</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db_utils::{backup_db_file, restore_db_file};
 <span class="kw">use crate</span>::{db_utils::db_file_exists, task::ExecTask};
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>csv::Trim;
 <span class="kw">use </span>diesel::{Insertable, QueryDsl, RunQueryDsl};
 <span class="kw">use </span>serde::de::DeserializeOwned;
@@ -427,7 +428,6 @@
 <span class="kw">use </span>std::path::{Path, PathBuf};
 <span class="kw">use </span>std::str::FromStr;
 <span class="kw">use </span>std::{fs, io};
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">use </span>vit_servicing_station_lib::db;
 <span class="kw">use </span>vit_servicing_station_lib::db::models::goals::InsertGoal;
@@ -456,14 +456,14 @@
     <span class="attribute">#[error(transparent)]
     </span>Diesel(<span class="attribute">#[from] </span>diesel::result::Error),
 }
-<span class="attribute">#[derive(Debug, Eq, PartialEq, StructOpt)]
+<span class="attribute">#[derive(Debug, Eq, PartialEq, Parser)]
 </span><span class="kw">pub struct </span>LoadCmd {
     <span class="doccomment">/// Additional import settings
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;additional-settings&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;additional-settings&quot;</span>)]
     </span>settings: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// URL of the vit-servicing-station database to interact with
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;db-url&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;db-url&quot;</span>)]
     </span>db_url: String,
 
     <span class="doccomment">/// Path to the csv containing funds information
@@ -471,39 +471,39 @@
     ///
     /// Also the first fund being the current one, which means previous funds should not be
     /// included. This restriction may be lifted in the future.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;funds&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;funds&quot;</span>)]
     </span>funds: PathBuf,
 
     <span class="doccomment">/// Path to the csv containing voteplans information
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;voteplans&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;voteplans&quot;</span>)]
     </span>voteplans: PathBuf,
 
     <span class="doccomment">/// Path to the csv containing proposals information
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;proposals&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;proposals&quot;</span>)]
     </span>proposals: PathBuf,
 
     <span class="doccomment">/// Path to the csv containing challenges information
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;challenges&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;challenges&quot;</span>)]
     </span>challenges: PathBuf,
 
     <span class="doccomment">/// Path to the csv containing advisor reviews information
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;reviews&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;reviews&quot;</span>)]
     </span>reviews: PathBuf,
 
     <span class="doccomment">/// Path to the csv containing goals information
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;goals&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;goals&quot;</span>)]
     </span>goals: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// Path to the csv containing goals information
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;groups&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;groups&quot;</span>)]
     </span>groups: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// Path to the folder containing csv with votes information
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;votes&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;votes&quot;</span>)]
     </span>votes: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 
-<span class="attribute">#[derive(Debug, Eq, PartialEq, StructOpt)]
+<span class="attribute">#[derive(Debug, Eq, PartialEq, Parser)]
 </span><span class="kw">pub enum </span>CsvDataCmd {
     <span class="doccomment">/// Loads data into db
     </span>Load(LoadCmd),

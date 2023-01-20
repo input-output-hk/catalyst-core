@@ -36,8 +36,10 @@
 <span id="36">36</span>
 <span id="37">37</span>
 <span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
 </pre><pre class="rust"><code><span class="kw">use </span>hersir::config::SessionMode;
-<span class="kw">use </span>std::fmt;
+<span class="kw">use </span>std::{convert::Infallible, fmt};
 
 <span class="attribute">#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 </span><span class="kw">pub enum </span>Mode {
@@ -47,14 +49,16 @@
     Monitor,
 }
 
-<span class="kw">pub fn </span>parse_mode_from_str(mode: <span class="kw-2">&amp;</span>str) -&gt; Mode {
+<span class="kw">pub fn </span>parse_mode_from_str(mode: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Mode, Infallible&gt; {
     <span class="kw">let </span>mode_lowercase: <span class="kw-2">&amp;</span>str = <span class="kw-2">&amp;</span>mode.to_lowercase();
-    <span class="kw">match </span>mode_lowercase {
+    <span class="kw">let </span>mode = <span class="kw">match </span>mode_lowercase {
         <span class="string">&quot;service&quot; </span>=&gt; Mode::Service,
         <span class="string">&quot;interactive&quot; </span>=&gt; Mode::Interactive,
         <span class="string">&quot;monitor&quot; </span>=&gt; Mode::Monitor,
         <span class="kw">_ </span>=&gt; Mode::Standard,
-    }
+    };
+
+    <span class="prelude-val">Ok</span>(mode)
 }
 
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>Mode {

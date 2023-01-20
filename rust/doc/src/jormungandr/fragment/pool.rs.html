@@ -751,34 +751,6 @@
 <span id="751">751</span>
 <span id="752">752</span>
 <span id="753">753</span>
-<span id="754">754</span>
-<span id="755">755</span>
-<span id="756">756</span>
-<span id="757">757</span>
-<span id="758">758</span>
-<span id="759">759</span>
-<span id="760">760</span>
-<span id="761">761</span>
-<span id="762">762</span>
-<span id="763">763</span>
-<span id="764">764</span>
-<span id="765">765</span>
-<span id="766">766</span>
-<span id="767">767</span>
-<span id="768">768</span>
-<span id="769">769</span>
-<span id="770">770</span>
-<span id="771">771</span>
-<span id="772">772</span>
-<span id="773">773</span>
-<span id="774">774</span>
-<span id="775">775</span>
-<span id="776">776</span>
-<span id="777">777</span>
-<span id="778">778</span>
-<span id="779">779</span>
-<span id="780">780</span>
-<span id="781">781</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     blockcfg::ApplyBlockLedger,
     blockchain::{Ref, Tip},
@@ -794,9 +766,7 @@
     utils::async_msg::MessageBox,
 };
 <span class="kw">use </span>chain_core::{packer::Codec, property::Serialize};
-<span class="kw">use </span>chain_impl_mockchain::{
-    block::BlockDate, fragment::Contents, setting::Settings, transaction::Transaction,
-};
+<span class="kw">use </span>chain_impl_mockchain::{block::BlockDate, fragment::Contents, transaction::Transaction};
 <span class="kw">use </span>futures::{channel::mpsc::SendError, sink::SinkExt};
 <span class="kw">use </span>jormungandr_lib::{
     interfaces::{
@@ -881,27 +851,10 @@
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         fragment: <span class="kw-2">&amp;</span>Fragment,
         id: FragmentId,
-        ledger_settings: <span class="kw-2">&amp;</span>Settings,
-        block_date: BlockDate,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), FragmentRejectionReason&gt; {
         <span class="kw">if </span><span class="self">self</span>.logs.exists(id) {
             <span class="macro">tracing::debug!</span>(<span class="string">&quot;fragment is already logged&quot;</span>);
             <span class="kw">return </span><span class="prelude-val">Err</span>(FragmentRejectionReason::FragmentAlreadyInLog);
-        }
-
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(valid_until) = get_transaction_expiry_date(fragment) {
-            <span class="kw">use </span>chain_impl_mockchain::ledger::check::{valid_transaction_date, TxValidityError};
-            <span class="kw">match </span>valid_transaction_date(ledger_settings, valid_until, block_date) {
-                <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; {}
-                <span class="prelude-val">Err</span>(TxValidityError::TransactionExpired) =&gt; {
-                    <span class="macro">tracing::debug!</span>(<span class="string">&quot;fragment is expired at the time of receiving&quot;</span>);
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(FragmentRejectionReason::FragmentExpired);
-                }
-                <span class="prelude-val">Err</span>(TxValidityError::TransactionValidForTooLong) =&gt; {
-                    <span class="macro">tracing::debug!</span>(<span class="string">&quot;fragment is valid for too long&quot;</span>);
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(FragmentRejectionReason::FragmentValidForTooLong);
-                }
-            }
         }
 
         <span class="kw">if </span>!is_fragment_valid(fragment) {
@@ -948,19 +901,10 @@
             (el, id)
         });
 
-        <span class="kw">let </span>tip = <span class="self">self</span>.tip.get_ref().<span class="kw">await</span>;
-        <span class="kw">let </span>ledger = tip.ledger();
-        <span class="kw">let </span>ledger_settings = ledger.settings();
-        <span class="kw">let </span>block_date = get_current_block_date(<span class="kw-2">&amp;</span>tip);
-
         <span class="kw">for </span>(fragment, id) <span class="kw">in </span>fragments.by_ref() {
             <span class="kw">let </span>span = <span class="macro">tracing::debug_span!</span>(<span class="string">&quot;pool_incoming_fragment&quot;</span>, fragment_id=<span class="question-mark">?</span>id);
 
-            <span class="kw">match </span><span class="self">self
-                </span>.filter_fragment(<span class="kw-2">&amp;</span>fragment, id, ledger_settings, block_date)
-                .instrument(span)
-                .<span class="kw">await
-            </span>{
+            <span class="kw">match </span><span class="self">self</span>.filter_fragment(<span class="kw-2">&amp;</span>fragment, id).instrument(span).<span class="kw">await </span>{
                 <span class="prelude-val">Err</span>(reason @ FragmentRejectionReason::FragmentInvalid) =&gt; {
                     rejected.push(RejectedFragmentInfo { id, reason });
                     <span class="kw">if </span>fail_fast {

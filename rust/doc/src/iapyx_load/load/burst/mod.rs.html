@@ -26,11 +26,11 @@
 <span class="kw">mod </span>duration;
 
 <span class="kw">use </span><span class="kw">crate</span>::load::IapyxLoadCommandError;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">pub use </span>count::BurstCountIapyxLoadCommand;
 <span class="kw">pub use </span>duration::BurstDurationIapyxLoadCommand;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>BurstIapyxLoadCommand {
     <span class="doccomment">/// Duration based load. Defines how much time load should run
     </span>Duration(BurstDurationIapyxLoadCommand),

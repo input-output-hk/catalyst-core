@@ -91,28 +91,27 @@
 <span id="91">91</span>
 <span id="92">92</span>
 <span id="93">93</span>
-<span id="94">94</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::logger;
 <span class="kw">use </span><span class="kw">crate</span>::mode::mock::{farm, read_config, start_rest_server, Configuration, Context};
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_automation::jormungandr::LogLevel;
 <span class="kw">use </span>std::sync::{Mutex, RwLock};
 <span class="kw">use </span>std::{path::PathBuf, sync::Arc};
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">use </span>tracing::subscriber::SetGlobalDefaultError;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>MockStartCommandArgs {
-    <span class="attribute">#[structopt(long = <span class="string">&quot;token&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;token&quot;</span>)]
     </span><span class="kw">pub </span>token: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;config&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;config&quot;</span>)]
     </span><span class="kw">pub </span>config: PathBuf,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;params&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;params&quot;</span>)]
     </span><span class="kw">pub </span>params: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;INFO&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;INFO&quot;</span>)]
     </span><span class="kw">pub </span>log_level: LogLevel,
 }
 
@@ -141,11 +140,10 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>MockFarmCommand {
     <span class="doccomment">/// path to config file
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;config&quot;</span>, short = <span class="string">&quot;c&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;config&quot;</span>, short = <span class="string">&#39;c&#39;</span>)]
     </span><span class="kw">pub </span>config: PathBuf,
 }
 

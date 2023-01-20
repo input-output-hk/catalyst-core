@@ -8,21 +8,15 @@
 <span id="8">8</span>
 <span id="9">9</span>
 <span id="10">10</span>
-<span id="11">11</span>
-<span id="12">12</span>
-<span id="13">13</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::rest::v0::context::SharedContext;
 <span class="kw">use </span><span class="kw">crate</span>::rest::v0::errors::HandleError;
-<span class="kw">use crate</span>::{db, TransactionConfirmation};
+<span class="kw">use </span><span class="kw">crate</span>::TransactionConfirmation;
 
 <span class="kw">pub async fn </span>get_tx_by_hash(
     hash: String,
     context: SharedContext,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;TransactionConfirmation&gt;, HandleError&gt; {
-    <span class="kw">let </span>pool = <span class="kw-2">&amp;</span>context.read().<span class="kw">await</span>.db_connection_pool;
-    db::query::hash(hash, pool)
-        .<span class="kw">await
-        </span>.map(|x| x.into_iter().map(Into::into).collect())
-}
+    context.read().<span class="kw">await</span>.provider().get_tx_by_hash(hash).<span class="kw">await
+</span>}
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../../../" data-current-crate="db_sync_explorer" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

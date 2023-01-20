@@ -184,23 +184,21 @@
 <span id="184">184</span>
 <span id="185">185</span>
 <span id="186">186</span>
-<span id="187">187</span>
-</pre><pre class="rust"><code><span class="kw">use </span>indicatif::{HumanDuration, MultiProgress, ProgressBar, ProgressStyle};
+</pre><pre class="rust"><code><span class="kw">use </span>clap::Parser;
+<span class="kw">use </span>indicatif::{HumanDuration, MultiProgress, ProgressBar, ProgressStyle};
 <span class="kw">use </span>std::fmt;
 <span class="kw">use </span>std::thread;
 <span class="kw">use </span>std::time::Instant;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>strum::IntoEnumIterator;
 <span class="kw">use </span>strum_macros::EnumIter;
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">use </span>valgrind::{Error <span class="kw">as </span>ValgrindError, ValgrindClient};
 <span class="kw">use </span>vit_servicing_station_lib::utils::datetime::unix_timestamp_to_datetime;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>DeploymentValidateCommand {
     <span class="doccomment">/// target address
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;address&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;address&quot;</span>)]
     </span><span class="kw">pub </span>address: String,
 }
 

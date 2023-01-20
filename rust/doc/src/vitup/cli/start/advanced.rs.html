@@ -144,7 +144,6 @@
 <span id="144">144</span>
 <span id="145">145</span>
 <span id="146">146</span>
-<span id="147">147</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::logger;
 <span class="kw">use </span><span class="kw">crate</span>::config::mode::{parse_mode_from_str, Mode};
 <span class="kw">use </span><span class="kw">crate</span>::config::read_config;
@@ -152,86 +151,85 @@
 <span class="kw">use </span><span class="kw">crate</span>::mode::spawn::{spawn_network, NetworkSpawnParams};
 <span class="kw">use crate</span>::{error::Error, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>chain_addr::Discrimination;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>hersir::config::SessionSettings;
 <span class="kw">use </span>jormungandr_automation::jormungandr::LogLevel;
 <span class="kw">use </span>std::path::PathBuf;
 <span class="kw">use </span>std::str::FromStr;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>AdvancedStartCommandArgs {
     <span class="doccomment">/// path or name of the jormungandr node to test
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;jormungandr&quot;</span>, default_value = <span class="string">&quot;jormungandr&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;jormungandr&quot;</span>, default_value = <span class="string">&quot;jormungandr&quot;</span>)]
     </span><span class="kw">pub </span>jormungandr: PathBuf,
 
     <span class="doccomment">/// path or name of the jcli to test
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;jcli&quot;</span>, default_value = <span class="string">&quot;jcli&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;jcli&quot;</span>, default_value = <span class="string">&quot;jcli&quot;</span>)]
     </span><span class="kw">pub </span>jcli: PathBuf,
 
     <span class="doccomment">/// set a directory in which the tests will be run, allowing every details
     /// to be save persistently. By default it will create temporary directories
     /// and will delete the files and documents
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;root-dir&quot;</span>, default_value = <span class="string">&quot;./catalyst&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;root-dir&quot;</span>, default_value = <span class="string">&quot;./catalyst&quot;</span>)]
     </span><span class="kw">pub </span>testing_directory: PathBuf,
     <span class="doccomment">/// level for all nodes
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;info&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;info&quot;</span>)]
     </span><span class="kw">pub </span>log_level: String,
 
     <span class="doccomment">/// interactive mode introduce easy way to interact with backend
     /// is capable of quering logs, sending transactions (e.g. tallying), etc.,
-    </span><span class="attribute">#[structopt(
+    </span><span class="attribute">#[clap(
         long = <span class="string">&quot;mode&quot;</span>,
         default_value = <span class="string">&quot;Endless&quot;</span>,
-        parse(from_str = parse_mode_from_str)
+        value_parser = parse_mode_from_str
     )]
     </span><span class="kw">pub </span>mode: Mode,
 
     <span class="doccomment">/// endopint in format: 127.0.0.1:80
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;endpoint&quot;</span>, default_value = <span class="string">&quot;0.0.0.0:80&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;endpoint&quot;</span>, default_value = <span class="string">&quot;0.0.0.0:80&quot;</span>)]
     </span><span class="kw">pub </span>endpoint: String,
 
     <span class="doccomment">/// token, only applicable if service mode is used
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;token&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;token&quot;</span>)]
     </span><span class="kw">pub </span>token: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
     <span class="doccomment">/// how many qr to generate
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;config&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;config&quot;</span>)]
     </span><span class="kw">pub </span>config: PathBuf,
 
     <span class="doccomment">/// proposals import json
-    </span><span class="attribute">#[structopt(
+    </span><span class="attribute">#[clap(
         long = <span class="string">&quot;proposals&quot;</span>,
         default_value = <span class="string">&quot;../../catalyst-resources/ideascale/fund6/proposals.json&quot;
     </span>)]
     </span><span class="kw">pub </span>proposals: PathBuf,
 
     <span class="doccomment">/// challenges import json
-    </span><span class="attribute">#[structopt(
+    </span><span class="attribute">#[clap(
         long = <span class="string">&quot;challenges&quot;</span>,
         default_value = <span class="string">&quot;../../catalyst-resources/ideascale/fund6/challenges.json&quot;
     </span>)]
     </span><span class="kw">pub </span>challenges: PathBuf,
 
     <span class="doccomment">/// challenges import json
-    </span><span class="attribute">#[structopt(
+    </span><span class="attribute">#[clap(
         long = <span class="string">&quot;reviews&quot;</span>,
         default_value = <span class="string">&quot;../../catalyst-resources/ideascale/fund6/reviews.json&quot;
     </span>)]
     </span><span class="kw">pub </span>reviews: PathBuf,
 
     <span class="doccomment">/// funds import json
-    </span><span class="attribute">#[structopt(
+    </span><span class="attribute">#[clap(
         long = <span class="string">&quot;funds&quot;</span>,
         default_value = <span class="string">&quot;../../catalyst-resources/ideascale/fund6/funds.json&quot;
     </span>)]
     </span><span class="kw">pub </span>funds: PathBuf,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;snapshot&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;snapshot&quot;</span>)]
     </span><span class="kw">pub </span>snapshot: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;vitup-log-level&quot;</span>, default_value = <span class="string">&quot;LogLevel::INFO&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;vitup-log-level&quot;</span>, default_value = <span class="string">&quot;LogLevel::INFO&quot;</span>)]
     </span><span class="kw">pub </span>vitup_log_level: LogLevel,
 }
 

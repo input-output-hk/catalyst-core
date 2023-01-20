@@ -139,6 +139,7 @@
 <span id="139">139</span>
 <span id="140">140</span>
 <span id="141">141</span>
+<span id="142">142</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::jcli_lib::{
     transaction::Error,
     utils::{io, key_parser::read_ed25519_secret_key_from_file},
@@ -152,14 +153,14 @@
     key::EitherEd25519SecretKey,
     transaction::{TransactionSignDataHash, Witness},
 };
-<span class="kw">use </span>std::{io::Write, path::PathBuf};
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
+<span class="kw">use </span>std::{io::Write, path::PathBuf, str::FromStr};
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>MkWitness {
     <span class="doccomment">/// the Transaction ID of the witness to sign
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;TRANSACTION_ID&quot;</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;TRANSACTION_ID&quot;</span>)]
     </span><span class="kw">pub </span>sign_data_hash: TransactionSignDataHash,
 
     <span class="doccomment">/// the file path to the file to write the witness in.
@@ -167,22 +168,22 @@
     </span><span class="kw">pub </span>output: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// the type of witness to build: account, UTxO or Legacy UtxO
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;type&quot;</span>, parse(try_from_str))]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;type&quot;</span>, value_parser = WitnessType::from_str)]
     </span><span class="kw">pub </span>witness_type: WitnessType,
 
     <span class="doccomment">/// the hash of the block0, the first block of the blockchain
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;genesis-block-hash&quot;</span>, parse(try_from_str))]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;genesis-block-hash&quot;</span>, value_parser = HeaderId::from_str)]
     </span><span class="kw">pub </span>genesis_block_hash: HeaderId,
 
     <span class="doccomment">/// value is mandatory if `--type=account`. It is the counter value for
     /// every time the account is being utilized.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;account-spending-counter&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;account-spending-counter&quot;</span>)]
     </span><span class="kw">pub </span>account_spending_counter: <span class="prelude-ty">Option</span>&lt;u32&gt;,
 
     <span class="doccomment">/// lane to use for the spending counter. Each lane has an independent
     /// spending counter value.
     /// If unsure, leave blank and lane 0 will be used
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span><span class="kw">pub </span>account_spending_counter_lane: <span class="prelude-ty">Option</span>&lt;usize&gt;,
 
     <span class="doccomment">/// the file path to the file to read the signing key from.
@@ -190,7 +191,8 @@
     </span><span class="kw">pub </span>secret: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 
-<span class="kw">pub enum </span>WitnessType {
+<span class="attribute">#[derive(Debug, Clone, Copy)]
+</span><span class="kw">pub enum </span>WitnessType {
     UTxO,
     OldUTxO,
     Account,

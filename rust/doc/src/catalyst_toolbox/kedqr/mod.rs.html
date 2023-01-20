@@ -152,7 +152,7 @@
 
 <span class="kw">pub const </span>PIN_LENGTH: usize = <span class="number">4</span>;
 
-<span class="attribute">#[derive(Debug, PartialEq, Eq)]
+<span class="attribute">#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>QrPin {
     <span class="kw">pub </span>password: [u8; <span class="number">4</span>],
 }

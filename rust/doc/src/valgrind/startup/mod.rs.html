@@ -115,10 +115,10 @@
 <span id="115">115</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>server;
 
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
 <span class="kw">use </span>server::{Error <span class="kw">as </span>ProxyServerError, ProxyServerStub};
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 
 <span class="attribute">#[derive(Error, Debug)]
@@ -135,24 +135,24 @@
     </span>Io(<span class="attribute">#[from] </span>std::io::Error),
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>ValigrindStartupCommand {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;address&quot;</span>, default_value = <span class="string">&quot;127.0.0.1:8000&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;address&quot;</span>, default_value = <span class="string">&quot;127.0.0.1:8000&quot;</span>)]
     </span><span class="kw">pub </span>address: String,
 
-    <span class="attribute">#[structopt(short = <span class="string">&quot;v&quot;</span>, long = <span class="string">&quot;vit-address&quot;</span>, default_value = <span class="string">&quot;127.0.0.1:3030&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;v&#39;</span>, long = <span class="string">&quot;vit-address&quot;</span>, default_value = <span class="string">&quot;127.0.0.1:3030&quot;</span>)]
     </span><span class="kw">pub </span>vit_address: String,
 
-    <span class="attribute">#[structopt(short = <span class="string">&quot;n&quot;</span>, long = <span class="string">&quot;node-address&quot;</span>, default_value = <span class="string">&quot;127.0.0.1:8080&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;n&#39;</span>, long = <span class="string">&quot;node-address&quot;</span>, default_value = <span class="string">&quot;127.0.0.1:8080&quot;</span>)]
     </span><span class="kw">pub </span>node_address: String,
 
-    <span class="attribute">#[structopt(short = <span class="string">&quot;b&quot;</span>, long = <span class="string">&quot;block0&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;b&#39;</span>, long = <span class="string">&quot;block0&quot;</span>)]
     </span><span class="kw">pub </span>block0_path: PathBuf,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;cert&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;cert&quot;</span>)]
     </span><span class="kw">pub </span>cert_path: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;key&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;key&quot;</span>)]
     </span><span class="kw">pub </span>key_path: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 

@@ -239,7 +239,6 @@
 <span id="239">239</span>
 <span id="240">240</span>
 <span id="241">241</span>
-<span id="242">242</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::logger;
 <span class="kw">pub use </span><span class="kw">crate</span>::builders::{VitBackendSettingsBuilder, FOLLOWER, LEADER_1, LEADER_2, LEADER_3};
 <span class="kw">use </span><span class="kw">crate</span>::config::read_voter_hirs;
@@ -251,38 +250,37 @@
 <span class="kw">use </span><span class="kw">crate</span>::mode::spawn::{spawn_network, NetworkSpawnParams};
 <span class="kw">use crate</span>::{error::Error, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>chain_addr::Discrimination;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>hersir::config::SessionSettings;
 <span class="kw">use </span>hersir::utils::print_intro;
 <span class="kw">use </span>jormungandr_automation::jormungandr::LogLevel;
 <span class="kw">use </span>jortestkit::prelude::read_file;
 <span class="kw">use </span>std::path::PathBuf;
 <span class="kw">use </span>std::str::FromStr;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>QuickStartCommandArgs {
     <span class="doccomment">/// path or name of the jormungandr node to test
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;jormungandr&quot;</span>, default_value = <span class="string">&quot;jormungandr&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;jormungandr&quot;</span>, default_value = <span class="string">&quot;jormungandr&quot;</span>)]
     </span><span class="kw">pub </span>jormungandr: PathBuf,
 
     <span class="doccomment">/// path or name of the jcli to test
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;jcli&quot;</span>, default_value = <span class="string">&quot;jcli&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;jcli&quot;</span>, default_value = <span class="string">&quot;jcli&quot;</span>)]
     </span><span class="kw">pub </span>jcli: PathBuf,
 
     <span class="doccomment">/// set a directory in which the tests will be run, allowing every details
     /// to be save persistently. By default it will create temporary directories
     /// and will delete the files and documents
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;root-dir&quot;</span>, default_value = <span class="string">&quot;./catalyst&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;root-dir&quot;</span>, default_value = <span class="string">&quot;./catalyst&quot;</span>)]
     </span><span class="kw">pub </span>testing_directory: PathBuf,
 
     <span class="doccomment">/// level for all nodes
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;info&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;info&quot;</span>)]
     </span><span class="kw">pub </span>log_level: String,
 
     <span class="doccomment">/// how many addresses to generate
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;initials&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;initials&quot;</span>)]
     </span><span class="kw">pub </span>initials: <span class="prelude-ty">Option</span>&lt;usize&gt;,
 
     <span class="doccomment">/// json file which define funds for each account
@@ -291,89 +289,89 @@
     ///   &quot;8000&quot;,
     ///   &quot;10000&quot;,
     /// }
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;block-initials-mapping&quot;</span>, conflicts_with = <span class="string">&quot;initials&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;block-initials-mapping&quot;</span>, conflicts_with = <span class="string">&quot;initials&quot;</span>)]
     </span><span class="kw">pub </span>initials_mapping: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// vote start epoch of vote plan
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;vote-start-epoch&quot;</span>, default_value = <span class="string">&quot;1&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;vote-start-epoch&quot;</span>, default_value = <span class="string">&quot;1&quot;</span>)]
     </span><span class="kw">pub </span>vote_start_epoch: u32,
 
     <span class="doccomment">/// vote start epoch of vote plan
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;tally-start-epoch&quot;</span>, default_value = <span class="string">&quot;2&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;tally-start-epoch&quot;</span>, default_value = <span class="string">&quot;2&quot;</span>)]
     </span><span class="kw">pub </span>tally_start_epoch: u32,
 
     <span class="doccomment">/// vote tally end epoch of vote plan
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;tally-end-epoch&quot;</span>, default_value = <span class="string">&quot;3&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;tally-end-epoch&quot;</span>, default_value = <span class="string">&quot;3&quot;</span>)]
     </span><span class="kw">pub </span>tally_end_epoch: u32,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;vote-start-timestamp&quot;</span>, conflicts_with = <span class="string">&quot;vote_start_epoch&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;vote-start-timestamp&quot;</span>, conflicts_with = <span class="string">&quot;vote_start_epoch&quot;</span>)]
     </span><span class="kw">pub </span>vote_start_timestamp: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
     <span class="doccomment">/// vote start epoch of vote plan
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;tally-start-timestamp&quot;</span>, conflicts_with = <span class="string">&quot;vote_start_epoch&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;tally-start-timestamp&quot;</span>, conflicts_with = <span class="string">&quot;vote_start_epoch&quot;</span>)]
     </span><span class="kw">pub </span>tally_start_timestamp: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
     <span class="doccomment">/// vote tally end epoch of vote plan
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;tally-end-timestamp&quot;</span>, conflicts_with = <span class="string">&quot;vote_start_epoch&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;tally-end-timestamp&quot;</span>, conflicts_with = <span class="string">&quot;vote_start_epoch&quot;</span>)]
     </span><span class="kw">pub </span>tally_end_timestamp: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
     <span class="doccomment">/// vote tally end epoch of vote plan
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;next-vote-timestamp&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;next-vote-timestamp&quot;</span>)]
     </span><span class="kw">pub </span>next_vote_timestamp: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
     <span class="doccomment">/// snapshot timestamp
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;snapshot-timestamp&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;snapshot-timestamp&quot;</span>)]
     </span><span class="kw">pub </span>snapshot_timestamp: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
     <span class="doccomment">/// slot duration
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;slot-duration&quot;</span>, default_value = <span class="string">&quot;20&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;slot-duration&quot;</span>, default_value = <span class="string">&quot;20&quot;</span>)]
     </span><span class="kw">pub </span>slot_duration: u8,
 
     <span class="doccomment">/// slots in epoch
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;slots-in-epoch&quot;</span>, default_value = <span class="string">&quot;60&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;slots-in-epoch&quot;</span>, default_value = <span class="string">&quot;60&quot;</span>)]
     </span><span class="kw">pub </span>slots_in_epoch: u32,
 
     <span class="doccomment">/// proposals number
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;proposals&quot;</span>, default_value = <span class="string">&quot;10&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;proposals&quot;</span>, default_value = <span class="string">&quot;10&quot;</span>)]
     </span><span class="kw">pub </span>proposals: u32,
 
     <span class="doccomment">/// voting power threshold for participating in voting
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;voting-power&quot;</span>, default_value = <span class="string">&quot;8000&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;voting-power&quot;</span>, default_value = <span class="string">&quot;8000&quot;</span>)]
     </span><span class="kw">pub </span>voting_power: u64,
 
     <span class="doccomment">/// interactive mode introduce easy way to interact with backend
     /// is capable of quering logs, sending transactions (e.g. tallying), etc.,
-    </span><span class="attribute">#[structopt(
+    </span><span class="attribute">#[clap(
         long = <span class="string">&quot;mode&quot;</span>,
         default_value = <span class="string">&quot;Endless&quot;</span>,
-        parse(from_str = parse_mode_from_str)
+        value_parser = parse_mode_from_str
     )]
     </span><span class="kw">pub </span>mode: Mode,
 
     <span class="doccomment">/// endopint in format: 127.0.0.1:80
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;endpoint&quot;</span>, default_value = <span class="string">&quot;0.0.0.0:8080&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;endpoint&quot;</span>, default_value = <span class="string">&quot;0.0.0.0:8080&quot;</span>)]
     </span><span class="kw">pub </span>endpoint: String,
 
     <span class="doccomment">/// switch to private voting type
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;private&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;private&quot;</span>)]
     </span><span class="kw">pub </span>private: bool,
 
     <span class="doccomment">/// use https mode for backend
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;https&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;https&quot;</span>)]
     </span><span class="kw">pub </span>https: bool,
 
     <span class="doccomment">/// switch to private voting type
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;version&quot;</span>, default_value = <span class="string">&quot;2.0&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;version&quot;</span>, default_value = <span class="string">&quot;2.0&quot;</span>)]
     </span><span class="kw">pub </span>version: String,
 
     <span class="doccomment">/// token, only applicable if service mode is used
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;token&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;token&quot;</span>)]
     </span><span class="kw">pub </span>token: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;snapshot&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;snapshot&quot;</span>)]
     </span><span class="kw">pub </span>snapshot: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;vitup-log-level&quot;</span>, default_value = <span class="string">&quot;LogLevel::INFO&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;vitup-log-level&quot;</span>, default_value = <span class="string">&quot;LogLevel::INFO&quot;</span>)]
     </span><span class="kw">pub </span>vitup_log_level: LogLevel,
 }
 

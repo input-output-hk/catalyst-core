@@ -109,12 +109,12 @@
 <span id="109">109</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::{VitInteractiveCommandExec, VitUserInteractionController};
 <span class="kw">use </span><span class="kw">crate</span>::Result;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>hersir::controller::interactive::args::describe::{
     DescribeNodes, DescribeTopology, DescribeVotePlans, DescribeWallets,
 };
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>Describe {
     <span class="doccomment">/// Prints available wallets with aliases
     /// that can be used
@@ -159,9 +159,9 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>DescribeVitStations {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;alias&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;alias&quot;</span>)]
     </span><span class="kw">pub </span>alias: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
@@ -178,9 +178,9 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>DescribeAll {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;alias&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;alias&quot;</span>)]
     </span><span class="kw">pub </span>alias: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
@@ -198,9 +198,9 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>DescribeWalletProxies {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;alias&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;alias&quot;</span>)]
     </span><span class="kw">pub </span>alias: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 

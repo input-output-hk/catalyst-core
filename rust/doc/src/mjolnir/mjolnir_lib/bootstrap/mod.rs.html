@@ -87,11 +87,11 @@
 <span class="kw">mod </span>scenario;
 
 <span class="kw">use </span><span class="kw">crate</span>::mjolnir_lib::MjolnirError;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>config::{ClientLoadConfig, PassiveBootstrapLoad, ScenarioType};
 <span class="kw">use </span>jormungandr_automation::jormungandr::grpc::JormungandrClient;
 <span class="kw">use </span>jormungandr_lib::crypto::hash::Hash;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 
 <span class="attribute">#[derive(Error, Debug)]
@@ -103,32 +103,32 @@
     </span>ClientError(<span class="attribute">#[from] </span>MjolnirError),
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>ClientLoadCommand {
     <span class="doccomment">/// Number of threads
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;c&quot;</span>, long = <span class="string">&quot;count&quot;</span>, default_value = <span class="string">&quot;3&quot;</span>)]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;c&#39;</span>, long = <span class="string">&quot;count&quot;</span>, default_value = <span class="string">&quot;3&quot;</span>)]
     </span><span class="kw">pub </span>count: u32,
     <span class="doccomment">/// address in format:
     /// /ip4/54.193.75.55/tcp/3000
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;address&quot;</span>)]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;address&quot;</span>)]
     </span><span class="kw">pub </span>address: String,
 
     <span class="doccomment">/// amount of delay (in seconds) between sync attempts
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;p&quot;</span>, long = <span class="string">&quot;pace&quot;</span>, default_value = <span class="string">&quot;2&quot;</span>)]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;p&#39;</span>, long = <span class="string">&quot;pace&quot;</span>, default_value = <span class="string">&quot;2&quot;</span>)]
     </span><span class="kw">pub </span>pace: u64,
 
-    <span class="attribute">#[structopt(short = <span class="string">&quot;d&quot;</span>, long = <span class="string">&quot;storage&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;d&#39;</span>, long = <span class="string">&quot;storage&quot;</span>)]
     </span><span class="kw">pub </span>initial_storage: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
     <span class="doccomment">/// amount of delay (in seconds) between sync attempts
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;r&quot;</span>, long = <span class="string">&quot;duration&quot;</span>)]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;r&#39;</span>, long = <span class="string">&quot;duration&quot;</span>)]
     </span><span class="kw">pub </span>duration: <span class="prelude-ty">Option</span>&lt;u64&gt;,
 
     <span class="doccomment">/// amount of delay (in seconds) between sync attempts
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;n&quot;</span>, long = <span class="string">&quot;iterations&quot;</span>)]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;n&#39;</span>, long = <span class="string">&quot;iterations&quot;</span>)]
     </span><span class="kw">pub </span>sync_iteration: <span class="prelude-ty">Option</span>&lt;u32&gt;,
 
-    <span class="attribute">#[structopt(short = <span class="string">&quot;m&quot;</span>, long = <span class="string">&quot;measure&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;m&#39;</span>, long = <span class="string">&quot;measure&quot;</span>)]
     </span><span class="kw">pub </span>measure: bool,
 }
 

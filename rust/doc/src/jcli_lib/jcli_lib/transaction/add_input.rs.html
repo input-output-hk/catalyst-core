@@ -94,25 +94,25 @@
 <span id="94">94</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::jcli_lib::transaction::{common, Error};
 <span class="kw">use </span>chain_impl_mockchain::{fragment::FragmentId, transaction::TransactionIndex};
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::interfaces;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>AddInput {
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span><span class="kw">pub </span>common: common::CommonTransaction,
 
     <span class="doccomment">/// the Transaction ID which contains the credited funds to utilise.
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;TRANSACTION_ID&quot;</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;TRANSACTION_ID&quot;</span>)]
     </span><span class="kw">pub </span>transaction_id: FragmentId,
 
     <span class="doccomment">/// the output index where the credited funds to utilise are.
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;INDEX&quot;</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;INDEX&quot;</span>)]
     </span><span class="kw">pub </span>index: TransactionIndex,
 
     <span class="doccomment">/// the value
-    </span><span class="attribute">#[structopt(name = <span class="string">&quot;VALUE&quot;</span>)]
+    </span><span class="attribute">#[clap(name = <span class="string">&quot;VALUE&quot;</span>)]
     </span><span class="kw">pub </span>value: interfaces::Value,
 }
 

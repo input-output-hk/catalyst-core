@@ -59,8 +59,8 @@
 <span id="59">59</span>
 <span id="60">60</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::SchedulerRestClient;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>serde::de::DeserializeOwned;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 
 <span class="kw">pub struct </span>HealthCommand;
@@ -75,10 +75,10 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>StatusCommand {
     <span class="doccomment">/// job id
-    </span><span class="attribute">#[structopt(short, long)]
+    </span><span class="attribute">#[clap(short, long)]
     </span>job_id: String,
 }
 
@@ -91,7 +91,7 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>FilesCommand {
     List,
 }

@@ -145,9 +145,9 @@
     style,
 };
 <span class="kw">use </span>chain_impl_mockchain::certificate::VotePlan;
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>Describe {
     <span class="doccomment">/// Prints available wallets with aliases
     /// that can be used
@@ -175,9 +175,9 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>DescribeTopology {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;alias&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;alias&quot;</span>)]
     </span><span class="kw">pub </span>alias: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
@@ -201,9 +201,9 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>DescribeWallets {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;alias&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;alias&quot;</span>)]
     </span><span class="kw">pub </span>alias: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
@@ -223,9 +223,9 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>DescribeVotePlans {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;alias&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;alias&quot;</span>)]
     </span><span class="kw">pub </span>alias: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
@@ -252,9 +252,9 @@
         <span class="prelude-val">Ok</span>(())
     }
 }
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>DescribeNodes {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;alias&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;alias&quot;</span>)]
     </span><span class="kw">pub </span>alias: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
@@ -268,9 +268,9 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>DescribeAll {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;alias&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;alias&quot;</span>)]
     </span><span class="kw">pub </span>alias: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 

@@ -239,27 +239,27 @@
 <span id="239">239</span>
 <span id="240">240</span>
 </pre><pre class="rust"><code><span class="kw">use </span>bytes::Bytes;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>reqwest::{
     blocking::{Client, RequestBuilder},
     Url,
 };
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 
-<span class="attribute">#[derive(StructOpt, Clone)]
+<span class="attribute">#[derive(Parser, Clone)]
 </span><span class="kw">pub struct </span>RestArgs {
     <span class="doccomment">/// node API address. Must always have `http://` or `https://` prefix.
-    /// E.g. `-h http://127.0.0.1`, `--host https://node.com:8443/cardano/api`
-    </span><span class="attribute">#[structopt(short, long, env = <span class="string">&quot;JORMUNGANDR_RESTAPI_URL&quot;</span>)]
+    /// E.g. `--host http://127.0.0.1`, `--host https://node.com:8443/cardano/api`
+    </span><span class="attribute">#[clap(long, env = <span class="string">&quot;JORMUNGANDR_RESTAPI_URL&quot;</span>)]
     </span><span class="kw">pub </span>host: Url,
     <span class="doccomment">/// print additional debug information to stderr.
     /// The output format is intentionally undocumented and unstable
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span>debug: bool,
     <span class="doccomment">/// An optional TLS root certificate to be used in a case when the
     /// certificate CA is not present within the webpki certificate bundle.
-    </span><span class="attribute">#[structopt(long, name = <span class="string">&quot;PATH&quot;</span>, env = <span class="string">&quot;JORMUNGANDR_TLS_CERT_PATH&quot;</span>)]
+    </span><span class="attribute">#[clap(long, name = <span class="string">&quot;PATH&quot;</span>, env = <span class="string">&quot;JORMUNGANDR_TLS_CERT_PATH&quot;</span>)]
     </span>tls_cert_path: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 

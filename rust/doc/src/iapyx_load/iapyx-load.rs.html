@@ -8,11 +8,11 @@
 <span id="8">8</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>load;
 
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>load::IapyxLoadCommand;
-<span class="kw">use </span>structopt::StructOpt;
 
 <span class="kw">pub fn </span>main() {
-    IapyxLoadCommand::from_args().exec().unwrap();
+    IapyxLoadCommand::parse().exec().unwrap();
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="iapyx_load" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

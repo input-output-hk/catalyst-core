@@ -91,8 +91,19 @@
 <span id="91">91</span>
 <span id="92">92</span>
 <span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
 </pre><pre class="rust"><code><span class="kw">pub mod </span>address;
-<span class="kw">pub mod </span>auto_completion;
 <span class="kw">pub mod </span>block;
 <span class="kw">pub mod </span>certificate;
 <span class="kw">pub mod </span>debug;
@@ -103,50 +114,57 @@
 
 <span class="kw">pub mod </span>utils;
 
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>std::error::Error;
-<span class="kw">use </span>structopt::StructOpt;
 
 <span class="doccomment">/// Jormungandr CLI toolkit
-</span><span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+</span><span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>JCli {
     <span class="doccomment">/// display full version details (software version, source version, targets and compiler used)
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;full-version&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;full-version&quot;</span>)]
     </span>full_version: bool,
 
     <span class="doccomment">/// display the sources version, allowing to check the source&#39;s hash used to compile this executable.
     /// this option is useful for scripting retrieving the logs of the version of this application.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;source-version&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;source-version&quot;</span>)]
     </span>source_version: bool,
 
-    <span class="attribute">#[structopt(subcommand)]
+    <span class="attribute">#[clap(subcommand)]
     </span>command: <span class="prelude-ty">Option</span>&lt;JCliCommand&gt;,
 }
 
 <span class="attribute">#[allow(clippy::large_enum_variant)]
 </span><span class="doccomment">/// Jormungandr CLI toolkit
-</span><span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+</span><span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>JCliCommand {
     <span class="doccomment">/// Key Generation
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Key(key::Key),
     <span class="doccomment">/// Address tooling and helper
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Address(address::Address),
     <span class="doccomment">/// Block tooling and helper
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Genesis(block::Genesis),
     <span class="doccomment">/// Send request to node REST API
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Rest(rest::Rest),
     <span class="doccomment">/// Build and view offline transaction
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Transaction(transaction::Transaction),
     <span class="doccomment">/// Debug tools for developers
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Debug(debug::Debug),
     <span class="doccomment">/// Certificate generation tool
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Certificate(certificate::Certificate),
-    <span class="doccomment">/// Auto completion
-    </span>AutoCompletion(auto_completion::AutoCompletion),
     <span class="doccomment">/// Utilities that perform specialized tasks
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Utils(utils::Utils),
     <span class="doccomment">/// Vote related operations
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Votes(vote::Vote),
 }
 
@@ -177,12 +195,18 @@
             Transaction(transaction) =&gt; transaction.exec()<span class="question-mark">?</span>,
             Debug(debug) =&gt; debug.exec()<span class="question-mark">?</span>,
             Certificate(certificate) =&gt; certificate.exec()<span class="question-mark">?</span>,
-            AutoCompletion(auto_completion) =&gt; auto_completion.exec::&lt;<span class="self">Self</span>&gt;()<span class="question-mark">?</span>,
             Utils(utils) =&gt; utils.exec()<span class="question-mark">?</span>,
             Votes(vote) =&gt; vote.exec()<span class="question-mark">?</span>,
         };
         <span class="prelude-val">Ok</span>(())
     }
+}
+
+<span class="attribute">#[test]
+</span><span class="kw">fn </span>cli_test() {
+    <span class="kw">use </span>clap::CommandFactory;
+
+    JCli::command().debug_assert()
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="jcli_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

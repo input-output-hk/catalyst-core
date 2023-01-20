@@ -17,23 +17,31 @@
 <span id="17">17</span>
 <span id="18">18</span>
 <span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::args::{describe, explorer, send, show, spawn};
-<span class="kw">use </span>structopt::{clap::AppSettings, StructOpt};
+<span class="kw">use </span>clap::Parser;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(setting = AppSettings::NoBinaryName)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>InteractiveCommand {
     <span class="doccomment">/// Prints nodes related data, like stats,fragments etc.
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Show(show::Show),
     <span class="doccomment">/// Spawn leader or passive node (also legacy)
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Spawn(spawn::Spawn),
     <span class="doccomment">/// Sends Explorer queries
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Explorer(explorer::Explorer),
     <span class="doccomment">/// Exit interactive mode
     </span>Exit,
     <span class="doccomment">/// Prints wallets, nodes which can be used. Draw topology
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Describe(describe::Describe),
     <span class="doccomment">/// send fragments
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Send(send::Send),
 }
 </code></pre></div>

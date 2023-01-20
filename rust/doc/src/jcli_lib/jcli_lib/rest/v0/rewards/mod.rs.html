@@ -22,19 +22,23 @@
 <span id="22">22</span>
 <span id="23">23</span>
 <span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>epoch;
 <span class="kw">mod </span>history;
 
 <span class="kw">use </span><span class="self">self</span>::{epoch::Epoch, history::History};
 <span class="kw">use </span><span class="kw">crate</span>::jcli_lib::rest::Error;
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(name = <span class="string">&quot;rewards&quot;</span>, rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(name = <span class="string">&quot;rewards&quot;</span>, rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>Rewards {
     <span class="doccomment">/// Rewards distribution history one or more epochs starting from the last one
+    </span><span class="attribute">#[clap(subcommand)]
     </span>History(History),
     <span class="doccomment">/// Rewards distribution for a specific epoch
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Epoch(Epoch),
 }
 

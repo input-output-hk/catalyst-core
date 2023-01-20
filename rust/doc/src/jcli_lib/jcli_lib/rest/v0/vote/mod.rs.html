@@ -20,18 +20,20 @@
 <span id="20">20</span>
 <span id="21">21</span>
 <span id="22">22</span>
+<span id="23">23</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>active;
 <span class="kw">mod </span>committees;
 <span class="kw">mod </span>plans;
 
 <span class="kw">use </span><span class="self">self</span>::active::Active;
 <span class="kw">use </span><span class="kw">crate</span>::jcli_lib::rest::Error;
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(name = <span class="string">&quot;active&quot;</span>, rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(name = <span class="string">&quot;active&quot;</span>, rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>Vote {
     <span class="doccomment">/// Active vote related operations
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Active(Active),
 }
 

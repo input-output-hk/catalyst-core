@@ -78,13 +78,12 @@
 <span id="78">78</span>
 <span id="79">79</span>
 <span id="80">80</span>
-<span id="81">81</span>
-</pre><pre class="rust"><code><span class="kw">use </span>jormungandr_automation::jormungandr::{explorer::Explorer, ExplorerError};
+</pre><pre class="rust"><code><span class="kw">use </span>clap::Parser;
+<span class="kw">use </span>jormungandr_automation::jormungandr::{explorer::Explorer, ExplorerError};
 <span class="kw">use </span>std::{env, error::Error <span class="kw">as _</span>};
-<span class="kw">use </span>structopt::StructOpt;
 
 <span class="kw">fn </span>main() {
-    Command::from_args().exec().unwrap_or_else(report_error)
+    Command::parse().exec().unwrap_or_else(report_error)
 }
 
 <span class="attribute">#[derive(thiserror::Error, Debug)]
@@ -105,30 +104,29 @@
     std::process::exit(<span class="number">1</span>)
 }
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>Command {
     <span class="doccomment">/// display full version details (software version, source version, targets and compiler used)
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;full-version&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;full-version&quot;</span>)]
     </span>full_version: bool,
 
     <span class="doccomment">/// display the sources version, allowing to check the source&#39;s hash used to compile this executable.
     /// this option is useful for scripting retrieving the logs of the version of this application.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;source-version&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;source-version&quot;</span>)]
     </span>source_version: bool,
 
     <span class="doccomment">/// explorer address
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;address&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;address&quot;</span>)]
     </span>address: String,
 
-    <span class="attribute">#[structopt(subcommand)]
+    <span class="attribute">#[clap(subcommand)]
     </span>command: <span class="prelude-ty">Option</span>&lt;ExplorerClientCommand&gt;,
 }
 
-<span class="attribute">#[allow(clippy::large_enum_variant)]
-</span><span class="doccomment">/// Explorer Client CLI toolkit
-</span><span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="doccomment">/// Explorer Client CLI toolkit
+</span><span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>ExplorerClientCommand {
     <span class="doccomment">/// Get last block
     </span>LastBlock,

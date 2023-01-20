@@ -42,24 +42,24 @@
 <span class="kw">use </span>chain_crypto::Blake2b256;
 <span class="kw">use </span>chain_impl_mockchain::certificate::{Certificate, PoolRetirement};
 <span class="kw">use </span>chain_time::DurationSeconds;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 
 <span class="doccomment">/// retire the given stake pool ID From the blockchain
 ///
 /// by doing so all remaining stake delegated to this stake pool will
 /// become pending and will need to be re-delegated.
-</span><span class="attribute">#[derive(StructOpt)]
+</span><span class="attribute">#[derive(Parser)]
 </span><span class="kw">pub struct </span>StakePoolRetirement {
     <span class="doccomment">/// set the 32bytes (in hexadecimal) of the Stake Pool identifier
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;pool-id&quot;</span>, name = <span class="string">&quot;POOL_ID&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;pool-id&quot;</span>, name = <span class="string">&quot;POOL_ID&quot;</span>)]
     </span>pool_id: Blake2b256,
 
     <span class="doccomment">/// start retirement
     ///
     /// This state when the stake pool retirement becomes effective in seconds since
     /// the block0 start time.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;retirement-time&quot;</span>, name = <span class="string">&quot;SECONDS-SINCE-START&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;retirement-time&quot;</span>, name = <span class="string">&quot;SECONDS-SINCE-START&quot;</span>)]
     </span><span class="kw">pub </span>retirement_time: u64,
 
     <span class="doccomment">/// print the output signed certificate in the given file, if no file given

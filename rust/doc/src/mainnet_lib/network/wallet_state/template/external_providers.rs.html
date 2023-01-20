@@ -46,6 +46,9 @@
 <span id="46">46</span>
 <span id="47">47</span>
 <span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::Actor;
 <span class="kw">use </span><span class="kw">crate</span>::network::wallet_state::template::Error;
 <span class="kw">use </span><span class="kw">crate</span>::wallet_state::MainnetWalletState;
@@ -54,11 +57,14 @@
 <span class="kw">use </span>cardano_serialization_lib::address::Address;
 <span class="kw">use </span>rand::Rng;
 
-<span class="attribute">#[async_trait]
+<span class="doccomment">/// Trait for retrieving information about address registrations from network
+</span><span class="attribute">#[async_trait]
 </span><span class="kw">pub trait </span>ExternalProvider {
-    <span class="kw">type </span>Error;
+    <span class="doccomment">/// Error which can be returned on any issue with retrieving information
+    </span><span class="kw">type </span>Error;
 
-    <span class="kw">async fn </span>download_state_from_network(
+    <span class="doccomment">/// Downloads `MainnetWalletState` from network
+    </span><span class="kw">async fn </span>download_state_from_network(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         actors: <span class="kw-2">&amp;</span>[Actor],
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;MainnetWalletState&gt;, <span class="self">Self</span>::Error&gt;;

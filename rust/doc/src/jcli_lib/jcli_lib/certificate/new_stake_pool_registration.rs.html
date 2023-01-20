@@ -166,12 +166,12 @@
     rewards,
 };
 <span class="kw">use </span>chain_time::DurationSeconds;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::interfaces::{AccountIdentifier, Ratio, Value};
 <span class="kw">use </span>std::{
     num::{NonZeroU64, NonZeroU8},
     path::PathBuf,
 };
-<span class="kw">use </span>structopt::StructOpt;
 
 <span class="doccomment">/// create the stake pool registration certificate.
 ///
@@ -188,20 +188,20 @@
 ///
 /// Delegators will then receive a share of the remaining rewards: `Y - T`.
 ///
-</span><span class="attribute">#[derive(Debug, StructOpt)]
+</span><span class="attribute">#[derive(Debug, Parser)]
 </span><span class="kw">pub struct </span>StakePoolRegistration {
     <span class="doccomment">/// management threshold
     ///
     /// This is the number of owners keys that are required to update the stake
     /// pools parameter (the tax, update the keys, the threshold itsef...).
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;management-threshold&quot;</span>, name = <span class="string">&quot;THRESHOLD&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;management-threshold&quot;</span>, name = <span class="string">&quot;THRESHOLD&quot;</span>)]
     </span><span class="kw">pub </span>management_threshold: NonZeroU8,
 
     <span class="doccomment">/// start validity
     ///
     /// This state when the stake pool registration becomes effective in seconds since
     /// the block0 start time.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;start-validity&quot;</span>, name = <span class="string">&quot;SECONDS-SINCE-START&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;start-validity&quot;</span>, name = <span class="string">&quot;SECONDS-SINCE-START&quot;</span>)]
     </span><span class="kw">pub </span>start_validity: u64,
 
     <span class="doccomment">/// public key of the owner(s)
@@ -211,10 +211,10 @@
     ///
     /// Owner will receive a share of the fixed and ratio tax too. unless a reward
     /// account is specified for the stake pool.
-    </span><span class="attribute">#[structopt(
+    </span><span class="attribute">#[clap(
         long = <span class="string">&quot;owner&quot;</span>,
         name = <span class="string">&quot;OWNER_KEY&quot;</span>,
-        parse(try_from_str = parse_pub_key),
+        value_parser = parse_pub_key::&lt;Ed25519&gt;,
         required = <span class="bool-val">true
     </span>)]
     </span><span class="kw">pub </span>owners: Vec&lt;PublicKey&lt;Ed25519&gt;&gt;,
@@ -223,26 +223,26 @@
     ///
     /// Owners can allow an operator to update some or all of the stake pool parameters.
     /// Different operators can have different permissions.
-    </span><span class="attribute">#[structopt(
+    </span><span class="attribute">#[clap(
         long = <span class="string">&quot;operator&quot;</span>,
         name = <span class="string">&quot;OPERATOR_KEY&quot;</span>,
-        parse(try_from_str = parse_pub_key)
+        value_parser = parse_pub_key::&lt;Ed25519&gt;,
     )]
     </span><span class="kw">pub </span>operators: Vec&lt;PublicKey&lt;Ed25519&gt;&gt;,
 
     <span class="doccomment">/// Public key of the block signing key
-    </span><span class="attribute">#[structopt(
+    </span><span class="attribute">#[clap(
         long = <span class="string">&quot;kes-key&quot;</span>,
         name = <span class="string">&quot;KES_KEY&quot;</span>,
-        parse(try_from_str = parse_pub_key)
+        value_parser = parse_pub_key::&lt;SumEd25519_12&gt;,
     )]
     </span><span class="kw">pub </span>kes_key: PublicKey&lt;SumEd25519_12&gt;,
 
     <span class="doccomment">/// public key of the VRF key
-    </span><span class="attribute">#[structopt(
+    </span><span class="attribute">#[clap(
         long = <span class="string">&quot;vrf-key&quot;</span>,
         name = <span class="string">&quot;VRF_KEY&quot;</span>,
-        parse(try_from_str = parse_pub_key)
+        value_parser = parse_pub_key::&lt;RistrettoGroup2HashDh&gt;,
     )]
     </span><span class="kw">pub </span>vrf_key: PublicKey&lt;RistrettoGroup2HashDh&gt;,
 
@@ -250,28 +250,28 @@
     ///
     /// For example, a stake pool may set this value to cover their fixed operation
     /// costs.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;tax-fixed&quot;</span>, name = <span class="string">&quot;TAX_VALUE&quot;</span>, default_value = <span class="string">&quot;0&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;tax-fixed&quot;</span>, name = <span class="string">&quot;TAX_VALUE&quot;</span>, default_value = <span class="string">&quot;0&quot;</span>)]
     </span><span class="kw">pub </span>tax_fixed: Value,
 
     <span class="doccomment">/// The percentage take of the stake pool.
     ///
     /// Once the `tax-fixed` has been take, this is the percentage the stake pool will
     /// take for themselves.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;tax-ratio&quot;</span>, name = <span class="string">&quot;TAX_RATIO&quot;</span>, default_value = <span class="string">&quot;0/1&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;tax-ratio&quot;</span>, name = <span class="string">&quot;TAX_RATIO&quot;</span>, default_value = <span class="string">&quot;0/1&quot;</span>)]
     </span><span class="kw">pub </span>tax_ratio: Ratio,
 
     <span class="doccomment">/// The maximum tax value the stake pool will take.
     ///
     /// This will set the maximum the stake pool value will reserve for themselves from
     /// the `--tax-ratio` (excluding `--tax-fixed`).
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;tax-limit&quot;</span>, name = <span class="string">&quot;TAX_LIMIT&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;tax-limit&quot;</span>, name = <span class="string">&quot;TAX_LIMIT&quot;</span>)]
     </span><span class="kw">pub </span>tax_limit: <span class="prelude-ty">Option</span>&lt;NonZeroU64&gt;,
 
     <span class="doccomment">/// the account to reward the stake pool tax too
     ///
     /// If this value is set, instead of distributing the rewards to the owners
     /// the rewards will be distributed to this account.
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;reward-account&quot;</span>, name = <span class="string">&quot;REWARD_ACCOUNT&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;reward-account&quot;</span>, name = <span class="string">&quot;REWARD_ACCOUNT&quot;</span>)]
     </span><span class="kw">pub </span>reward_account: <span class="prelude-ty">Option</span>&lt;AccountIdentifier&gt;,
 
     <span class="doccomment">/// print the output signed certificate in the given file, if no file given

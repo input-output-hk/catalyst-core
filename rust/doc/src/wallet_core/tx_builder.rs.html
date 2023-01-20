@@ -81,8 +81,8 @@
 }
 
 <span class="kw">impl</span>&lt;P: Payload&gt; TxBuilder&lt;P&gt; {
-    <span class="kw">pub fn </span>new(settings: Settings, valid_until: BlockDate, payload: P) -&gt; <span class="self">Self </span>{
-        <span class="kw">let </span>builder = wallet::TransactionBuilder::new(settings, payload, valid_until);
+    <span class="kw">pub fn </span>new(settings: Settings, payload: P) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>builder = wallet::TransactionBuilder::new(settings, payload, BlockDate::first());
         <span class="self">Self </span>{
             builder,
             inputs: HashMap::new(),

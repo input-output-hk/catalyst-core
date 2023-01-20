@@ -41,16 +41,16 @@
     certificate::read_input,
     transaction::{common, Error},
 };
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>Auth {
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span><span class="kw">pub </span>common: common::CommonTransaction,
     <span class="doccomment">/// path to the file with the signing key
-    </span><span class="attribute">#[structopt(short = <span class="string">&quot;k&quot;</span>, long = <span class="string">&quot;key&quot;</span>)]
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;k&#39;</span>, long = <span class="string">&quot;key&quot;</span>)]
     </span><span class="kw">pub </span>signing_keys: Vec&lt;PathBuf&gt;,
 }
 

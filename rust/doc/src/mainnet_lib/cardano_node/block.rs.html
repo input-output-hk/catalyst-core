@@ -115,6 +115,7 @@
 <span id="115">115</span>
 <span id="116">116</span>
 <span id="117">117</span>
+<span id="118">118</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::cardano_node::Settings;
 <span class="kw">use </span>cardano_serialization_lib::crypto::{
     BlockHash, Ed25519Signature, KESSignature, KESVKey, PrivateKey, VRFCert, VRFVKey, Vkey,
@@ -127,6 +128,7 @@
 };
 
 <span class="doccomment">/// Block0 representation
+</span><span class="attribute">#[derive(Clone)]
 </span><span class="kw">pub struct </span>Block0 {
     <span class="doccomment">/// Block containing transactions
     </span><span class="kw">pub </span>block: Block,

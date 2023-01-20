@@ -30,13 +30,6 @@
 <span id="30">30</span>
 <span id="31">31</span>
 <span id="32">32</span>
-<span id="33">33</span>
-<span id="34">34</span>
-<span id="35">35</span>
-<span id="36">36</span>
-<span id="37">37</span>
-<span id="38">38</span>
-<span id="39">39</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::rest::v0::context::SharedContext;
 <span class="kw">use </span>jortestkit::web::api_token::{APIToken, APITokenManager, TokenError, API_TOKEN_HEADER};
 <span class="kw">use </span>warp::{Filter, Rejection};
@@ -44,18 +37,11 @@
 <span class="kw">pub async fn </span>api_token_filter(
     context: SharedContext,
 ) -&gt; <span class="kw">impl </span>Filter&lt;Extract = (), Error = Rejection&gt; + Clone {
-    <span class="kw">let </span>is_token_enabled = context.read().<span class="kw">await</span>.token().is_some();
-
-    <span class="kw">if </span>is_token_enabled {
-        warp::header::header(API_TOKEN_HEADER)
-            .and(warp::any().map(<span class="kw">move </span>|| context.clone()))
-            .and_then(authorize_token)
-            .and(warp::any())
-            .untuple_one()
-            .boxed()
-    } <span class="kw">else </span>{
-        warp::any().boxed()
-    }
+    warp::header::header(API_TOKEN_HEADER)
+        .and(warp::any().map(<span class="kw">move </span>|| context.clone()))
+        .and_then(authorize_token)
+        .and(warp::any())
+        .untuple_one()
 }
 
 <span class="kw">pub async fn </span>authorize_token(token: String, context: SharedContext) -&gt; <span class="prelude-ty">Result</span>&lt;(), Rejection&gt; {

@@ -89,11 +89,11 @@
 <span id="89">89</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::cardano_cli::mock::command::write_to_file_or_println;
 <span class="kw">use </span><span class="kw">crate</span>::cardano_cli::mock::fake;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>std::io::Error;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>Query {
     Utxo(UTxOCommand),
     Tip(TipCommand),
@@ -110,15 +110,15 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>ProtocolParametersCommand {
-    <span class="attribute">#[structopt(long = <span class="string">&quot;testnet-magic&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;testnet-magic&quot;</span>)]
     </span><span class="kw">pub </span>testnet_magic: <span class="prelude-ty">Option</span>&lt;u32&gt;,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;mainnet&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;mainnet&quot;</span>)]
     </span><span class="kw">pub </span>mainnet: bool,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;out-file&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;out-file&quot;</span>)]
     </span><span class="kw">pub </span>out_file: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 
@@ -137,15 +137,15 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>TipCommand {
-    <span class="attribute">#[structopt(long = <span class="string">&quot;testnet-magic&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;testnet-magic&quot;</span>)]
     </span><span class="kw">pub </span>testnet_magic: <span class="prelude-ty">Option</span>&lt;u32&gt;,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;mainnet&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;mainnet&quot;</span>)]
     </span><span class="kw">pub </span>mainnet: bool,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;out-file&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;out-file&quot;</span>)]
     </span><span class="kw">pub </span>out_file: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 
@@ -155,18 +155,18 @@
         write_to_file_or_println(<span class="self">self</span>.out_file, <span class="kw-2">&amp;</span>serde_json::to_string(<span class="kw-2">&amp;</span>tip).unwrap())
     }
 }
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>UTxOCommand {
-    <span class="attribute">#[structopt(long = <span class="string">&quot;address&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;address&quot;</span>)]
     </span><span class="kw">pub </span>address: String,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;testnet-magic&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;testnet-magic&quot;</span>)]
     </span><span class="kw">pub </span>testnet_magic: <span class="prelude-ty">Option</span>&lt;u32&gt;,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;mainnet&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;mainnet&quot;</span>)]
     </span><span class="kw">pub </span>mainnet: bool,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;out-file&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;out-file&quot;</span>)]
     </span><span class="kw">pub </span>out_file: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 

@@ -57,33 +57,31 @@
 <span id="57">57</span>
 <span id="58">58</span>
 <span id="59">59</span>
-<span id="60">60</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::SessionSettingsExtension;
 <span class="kw">use </span><span class="kw">crate</span>::builders::utils::{logger, DeploymentTree};
 <span class="kw">use </span><span class="kw">crate</span>::builders::VitBackendSettingsBuilder;
 <span class="kw">use </span><span class="kw">crate</span>::config::read_config;
 <span class="kw">use </span><span class="kw">crate</span>::mode::standard::generate_random_database;
 <span class="kw">use </span><span class="kw">crate</span>::Result;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>hersir::config::SessionSettings;
 <span class="kw">use </span>jormungandr_automation::jormungandr::LogLevel;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>AllRandomDataCommandArgs {
     <span class="doccomment">/// Careful! directory would be removed before export
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;output&quot;</span>, default_value = <span class="string">&quot;./data&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;output&quot;</span>, default_value = <span class="string">&quot;./data&quot;</span>)]
     </span><span class="kw">pub </span>output_directory: PathBuf,
 
     <span class="doccomment">/// how many qr to generate
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;config&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;config&quot;</span>)]
     </span><span class="kw">pub </span>config: PathBuf,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;snapshot&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;snapshot&quot;</span>)]
     </span><span class="kw">pub </span>snapshot: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;LogLevel::INFO&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;LogLevel::INFO&quot;</span>)]
     </span><span class="kw">pub </span>log_level: LogLevel,
 }
 

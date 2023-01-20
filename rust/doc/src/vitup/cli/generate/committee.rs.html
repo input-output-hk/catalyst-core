@@ -53,28 +53,26 @@
 <span id="53">53</span>
 <span id="54">54</span>
 <span id="55">55</span>
-<span id="56">56</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::Result;
 <span class="kw">use </span>chain_addr::AddressReadable;
 <span class="kw">use </span>chain_crypto::bech32::Bech32;
 <span class="kw">use </span>chain_crypto::Ed25519;
 <span class="kw">use </span>chain_crypto::PublicKey;
 <span class="kw">use </span>chain_impl_mockchain::vote::CommitteeId;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::interfaces::CommitteeIdDef;
 <span class="kw">use </span>std::io::stdout;
 <span class="kw">use </span>std::io::Write;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>CommitteeIdCommandArgs {
-    <span class="attribute">#[structopt(short = <span class="string">&quot;a&quot;</span>, long = <span class="string">&quot;address&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;address&quot;</span>)]
     </span><span class="kw">pub </span>address: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
-    <span class="attribute">#[structopt(short = <span class="string">&quot;p&quot;</span>, long = <span class="string">&quot;public_key&quot;</span>, conflicts_with = <span class="string">&quot;address&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;p&#39;</span>, long = <span class="string">&quot;public_key&quot;</span>, conflicts_with = <span class="string">&quot;address&quot;</span>)]
     </span><span class="kw">pub </span>public_key: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
-    <span class="attribute">#[structopt(short = <span class="string">&quot;t&quot;</span>, long = <span class="string">&quot;testing&quot;</span>)]
+    <span class="attribute">#[clap(short = <span class="string">&#39;t&#39;</span>, long = <span class="string">&quot;testing&quot;</span>)]
     </span><span class="kw">pub </span>testing: bool,
 }
 

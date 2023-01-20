@@ -39,18 +39,18 @@
     rest::{Error, RestArgs},
     utils::OutputFormat,
 };
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>StakePool {
     <span class="doccomment">/// Get stake pool details
     </span>Get {
-        <span class="attribute">#[structopt(flatten)]
+        <span class="attribute">#[clap(flatten)]
         </span>args: RestArgs,
         <span class="doccomment">/// hex-encoded pool ID
         </span>pool_id: String,
-        <span class="attribute">#[structopt(flatten)]
+        <span class="attribute">#[clap(flatten)]
         </span>output_format: OutputFormat,
     },
 }

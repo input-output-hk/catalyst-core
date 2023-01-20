@@ -63,27 +63,27 @@
 <span id="63">63</span>
 <span id="64">64</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::fake;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 
 <span class="kw">pub const </span>PATH_TO_DYNAMIC_CONTENT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;VOTER_REGISTRATION_DYNAMIC_CONTENT&quot;</span>;
 
 <span class="doccomment">/// Voter registration mock. It can return correctly formatted but faked response similar to
 /// Haskel voter registration CLI: &lt;https://github.com/input-output-hk/voting-tools/tree/master/registration&gt;
-</span><span class="attribute">#[derive(StructOpt, Debug)]
+</span><span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>Command {
     <span class="doccomment">/// Rewards address in bech32
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;rewards-address&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;rewards-address&quot;</span>)]
     </span><span class="kw">pub </span>rewards_address: String,
     <span class="doccomment">/// Path to catalyst voting key file in bech32
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;vote-public-key-file&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;vote-public-key-file&quot;</span>)]
     </span><span class="kw">pub </span>vote_public_key_file: PathBuf,
     <span class="doccomment">/// Path to cardano stake signing key file in bech32
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;stake-signing-key-file&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;stake-signing-key-file&quot;</span>)]
     </span><span class="kw">pub </span>stake_signing_key_file: PathBuf,
     <span class="doccomment">/// Slot number which will be used as a nonce
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;slot-no&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;slot-no&quot;</span>)]
     </span><span class="kw">pub </span>slot_no: u32,
 }
 

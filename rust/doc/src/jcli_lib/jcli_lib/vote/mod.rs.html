@@ -127,6 +127,9 @@
 <span id="127">127</span>
 <span id="128">128</span>
 <span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     jcli_lib::utils::{
         key_parser,
@@ -135,8 +138,8 @@
     },
     rest,
 };
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 <span class="kw">use </span>thiserror::Error;
 
 <span class="kw">mod </span>committee;
@@ -218,14 +221,16 @@
     </span>MergeError(<span class="attribute">#[from] </span>tally::merge_results::Error),
 }
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>Vote {
     <span class="doccomment">/// Create committee member keys
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Committee(committee::Committee),
     <span class="doccomment">/// Build the election public key from committee member keys
     </span>ElectionKey(election_public_key::ElectionPublicKey),
     <span class="doccomment">/// Perform decryption of private voting tally
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Tally(tally::Tally),
 }
 
@@ -240,8 +245,9 @@
 }
 
 <span class="comment">// FIXME: Duplicated with key.rs
-</span><span class="attribute">#[derive(Debug)]
+</span><span class="attribute">#[derive(Debug, Clone, Copy)]
 </span><span class="kw">struct </span>Seed([u8; <span class="number">32</span>]);
+
 <span class="kw">impl </span>std::str::FromStr <span class="kw">for </span>Seed {
     <span class="kw">type </span><span class="prelude-val">Err </span>= Error;
     <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {

@@ -120,13 +120,13 @@
 <span id="120">120</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::cardano_cli::mock::command::write_to_file_or_println;
 <span class="kw">use </span><span class="kw">crate</span>::cardano_cli::mock::fake;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::io;
 <span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>Transaction {
     Id(IdCommand),
     Sign(SignCommand),
@@ -151,9 +151,9 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>IdCommand {
-    <span class="attribute">#[structopt(long = <span class="string">&quot;tx-file&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;tx-file&quot;</span>)]
     </span><span class="kw">pub </span>tx_file: PathBuf,
 }
 
@@ -163,21 +163,21 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>SignCommand {
-    <span class="attribute">#[structopt(long = <span class="string">&quot;tx-body-file&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;tx-body-file&quot;</span>)]
     </span><span class="kw">pub </span>tx_body_file: PathBuf,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;signing-key-file&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;signing-key-file&quot;</span>)]
     </span><span class="kw">pub </span>signing_key_file: PathBuf,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;testnet-magic&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;testnet-magic&quot;</span>)]
     </span><span class="kw">pub </span>testnet_magic: <span class="prelude-ty">Option</span>&lt;u32&gt;,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;mainnet&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;mainnet&quot;</span>)]
     </span><span class="kw">pub </span>mainnet: bool,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;out-file&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;out-file&quot;</span>)]
     </span><span class="kw">pub </span>out_file: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 }
 
@@ -187,15 +187,15 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>SubmitCommand {
-    <span class="attribute">#[structopt(long = <span class="string">&quot;tx-file&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;tx-file&quot;</span>)]
     </span><span class="kw">pub </span>tx_body_file: PathBuf,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;testnet-magic&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;testnet-magic&quot;</span>)]
     </span><span class="kw">pub </span>testnet_magic: <span class="prelude-ty">Option</span>&lt;u32&gt;,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;mainnet&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;mainnet&quot;</span>)]
     </span><span class="kw">pub </span>mainnet: bool,
 }
 
@@ -205,30 +205,30 @@
     }
 }
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>BuildCommand {
-    <span class="attribute">#[structopt(long = <span class="string">&quot;mainnet&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;mainnet&quot;</span>)]
     </span><span class="kw">pub </span>mainnet: bool,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;testnet-magic&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;testnet-magic&quot;</span>)]
     </span><span class="kw">pub </span>testnet_magic: <span class="prelude-ty">Option</span>&lt;u32&gt;,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;tx-in&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;tx-in&quot;</span>)]
     </span><span class="kw">pub </span>tx_in: String,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;change-address&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;change-address&quot;</span>)]
     </span><span class="kw">pub </span>change_address: String,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;certificate-file&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;certificate-file&quot;</span>)]
     </span><span class="kw">pub </span>certificate_file: PathBuf,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;protocol-params-file&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;protocol-params-file&quot;</span>)]
     </span><span class="kw">pub </span>protocol_params_file: PathBuf,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;out-file&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;out-file&quot;</span>)]
     </span><span class="kw">pub </span>out_file: PathBuf,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;witness-override&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;witness-override&quot;</span>)]
     </span><span class="kw">pub </span>witness_override: u32,
 }
 

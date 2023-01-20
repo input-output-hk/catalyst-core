@@ -4,7 +4,7 @@
 <span id="4">4</span>
 <span id="5">5</span>
 <span id="6">6</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::rest::v0::context::SharedContext;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::rest::v0::SharedContext;
 <span class="kw">use </span>warp::{Rejection, Reply};
 
 <span class="kw">pub async fn </span>check_health(_context: SharedContext) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {

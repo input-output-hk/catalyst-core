@@ -27,11 +27,11 @@
 <span class="kw">mod </span>task;
 
 <span class="kw">use </span>app::<span class="kw-2">*</span>;
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>task::ExecTask;
 
 <span class="kw">fn </span>main() {
-    <span class="kw">let </span>app = CliApp::from_args();
+    <span class="kw">let </span>app = CliApp::parse();
     <span class="kw">match </span>app.exec() {
         <span class="prelude-val">Ok</span>(()) =&gt; (),
         <span class="prelude-val">Err</span>(e) =&gt; {

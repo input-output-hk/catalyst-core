@@ -104,29 +104,29 @@
 };
 <span class="kw">use </span>chain_addr::AddressReadable;
 <span class="kw">use </span>chain_impl_mockchain::transaction::{Balance, UnspecifiedAccountIdentifier};
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::{crypto::hash::Hash, interfaces::TransactionInputType};
 <span class="kw">use </span>serde_json::json;
 <span class="kw">use </span>std::{io::Write, path::PathBuf};
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>Info {
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>common: common::CommonTransaction,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>fee: common::CommonFees,
 
     <span class="doccomment">/// write the info in the given file or print it to the standard output
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;output&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;output&quot;</span>)]
     </span>output: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>output_format: OutputFormat,
 
     <span class="doccomment">/// set the address prefix to use when displaying the addresses
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;prefix&quot;</span>, default_value = <span class="string">&quot;ca&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;prefix&quot;</span>, default_value = <span class="string">&quot;ca&quot;</span>)]
     </span>address_prefix: String,
 }
 

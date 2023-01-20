@@ -46,7 +46,7 @@
 <span id="46">46</span>
 <span id="47">47</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::task::ExecTask;
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">use </span>vit_servicing_station_lib::db::{
     load_db_connection_pool, migrations::initialize_db_with_migration, Error <span class="kw">as </span>DbPoolError,
@@ -64,12 +64,12 @@
     ),
 }
 
-<span class="attribute">#[derive(Debug, PartialEq, Eq, StructOpt)]
+<span class="attribute">#[derive(Debug, PartialEq, Eq, Parser)]
 </span><span class="kw">pub enum </span>Db {
     <span class="doccomment">/// Initialize a DB with the proper migrations, DB file is created if not exists.
     </span>Init {
         <span class="doccomment">/// URL of the vit-servicing-station database to interact with
-        </span><span class="attribute">#[structopt(long = <span class="string">&quot;db-url&quot;</span>)]
+        </span><span class="attribute">#[clap(long = <span class="string">&quot;db-url&quot;</span>)]
         </span>db_url: String,
     },
 }

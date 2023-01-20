@@ -151,13 +151,13 @@
 <span id="151">151</span>
 <span id="152">152</span>
 <span id="153">153</span>
-<span id="154">154</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::SessionSettingsExtension;
 <span class="kw">use </span><span class="kw">crate</span>::builders::utils::{logger, DeploymentTree};
 <span class="kw">use </span><span class="kw">crate</span>::builders::VitBackendSettingsBuilder;
 <span class="kw">use </span><span class="kw">crate</span>::config::Block0Initials;
 <span class="kw">use </span><span class="kw">crate</span>::config::ConfigBuilder;
 <span class="kw">use </span><span class="kw">crate</span>::Result;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>hersir::config::SessionSettings;
 <span class="kw">use </span>jormungandr_automation::jormungandr::LogLevel;
 <span class="kw">use </span>jormungandr_automation::testing::block0::read_genesis_yaml;
@@ -166,29 +166,27 @@
 <span class="kw">use </span>serde::{Deserialize, Serialize};
 <span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub struct </span>SnapshotCommandArgs {
     <span class="doccomment">/// Careful! directory would be removed before export
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;root-dir&quot;</span>, default_value = <span class="string">&quot;./data&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;root-dir&quot;</span>, default_value = <span class="string">&quot;./data&quot;</span>)]
     </span><span class="kw">pub </span>output_directory: PathBuf,
 
     <span class="doccomment">/// how many addresses to generate
-    </span><span class="attribute">#[structopt(long = <span class="string">&quot;count&quot;</span>)]
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;count&quot;</span>)]
     </span><span class="kw">pub </span>initials: <span class="prelude-ty">Option</span>&lt;usize&gt;,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;initials&quot;</span>, conflicts_with = <span class="string">&quot;count&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;initials&quot;</span>, conflicts_with = <span class="string">&quot;count&quot;</span>)]
     </span><span class="kw">pub </span>initials_mapping: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;global-pin&quot;</span>, default_value = <span class="string">&quot;1234&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;global-pin&quot;</span>, default_value = <span class="string">&quot;1234&quot;</span>)]
     </span><span class="kw">pub </span>global_pin: String,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;skip-qr-generation&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;skip-qr-generation&quot;</span>)]
     </span><span class="kw">pub </span>skip_qr_generation: bool,
 
-    <span class="attribute">#[structopt(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;LogLevel::INFO&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;log-level&quot;</span>, default_value = <span class="string">&quot;LogLevel::INFO&quot;</span>)]
     </span><span class="kw">pub </span>log_level: LogLevel,
 }
 

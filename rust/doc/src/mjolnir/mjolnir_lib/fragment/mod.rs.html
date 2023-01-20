@@ -27,18 +27,22 @@
 <span id="27">27</span>
 <span id="28">28</span>
 <span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::mjolnir_lib::MjolnirError;
-<span class="kw">use </span>structopt::StructOpt;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>thiserror::Error;
 
 <span class="kw">mod </span>batch;
 <span class="kw">mod </span>standard;
 
-<span class="attribute">#[derive(StructOpt, Debug)]
+<span class="attribute">#[derive(Parser, Debug)]
 </span><span class="kw">pub enum </span>FragmentLoadCommand {
     <span class="doccomment">/// sends fragments using batch endpoint
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Batch(batch::Batch),
     <span class="doccomment">/// sends fragments in single manner
+    </span><span class="attribute">#[clap(subcommand)]
     </span>Standard(standard::Standard),
 }
 

@@ -84,19 +84,19 @@
     property::{DeserializeFromSlice <span class="kw">as _</span>, Serialize},
 };
 <span class="kw">use </span>chain_impl_mockchain::fragment::Fragment;
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="kw">use </span>structopt::StructOpt;
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>Message {
     <span class="doccomment">/// Post message. Prints id for posted message
     </span>Post {
-        <span class="attribute">#[structopt(flatten)]
+        <span class="attribute">#[clap(flatten)]
         </span>args: RestArgs,
         <span class="doccomment">/// File containing hex-encoded message.
         /// If not provided, message will be read from stdin.
-        </span><span class="attribute">#[structopt(short, long)]
+        </span><span class="attribute">#[clap(short, long)]
         </span>file: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
     },
 
@@ -104,9 +104,9 @@
     /// on pending transaction, rejected transaction and or when a transaction
     /// has been added in a block
     </span>Logs {
-        <span class="attribute">#[structopt(flatten)]
+        <span class="attribute">#[clap(flatten)]
         </span>args: RestArgs,
-        <span class="attribute">#[structopt(flatten)]
+        <span class="attribute">#[clap(flatten)]
         </span>output_format: OutputFormat,
     },
 }

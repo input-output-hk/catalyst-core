@@ -314,6 +314,7 @@
 <span id="314">314</span>
 <span id="315">315</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::jcli_lib::utils::{io, OutputFormat};
+<span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{PrivateTallyState, Tally, VotePlanId, VotePlanStatus},
@@ -324,7 +325,6 @@
     ops::Range,
     path::PathBuf,
 };
-<span class="kw">use </span>structopt::StructOpt;
 
 <span class="attribute">#[derive(Debug, thiserror::Error)]
 </span><span class="kw">pub enum </span>Error {
@@ -334,16 +334,16 @@
     </span>PrivacyMismatch,
 }
 
-<span class="attribute">#[derive(StructOpt)]
-#[structopt(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+<span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub struct </span>MergeVotePlan {
     <span class="doccomment">/// The path to json-encoded list of voteplans to merge. If this parameter is not specified, it
     /// will be read from the standard input. Voteplans must be already decrypted before merging.
     /// Two voteplans in the list will be merged if they have ALL the same proposals according to
     /// the proposal (external) id.
-    </span><span class="attribute">#[structopt(long)]
+    </span><span class="attribute">#[clap(long)]
     </span>vote_plans: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
-    <span class="attribute">#[structopt(flatten)]
+    <span class="attribute">#[clap(flatten)]
     </span>output_format: OutputFormat,
 }
 

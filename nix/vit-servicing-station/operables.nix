@@ -22,13 +22,6 @@ in {
         exit 1
       fi
 
-      # Verify the database connection details exists
-      if [[ -z "$DB_URL" ]]; then
-        echo "ERROR: must supply database connection URL";
-        echo ">>> Aborting..."
-        exit 1
-      fi
-
       # Allow overriding vit-servicing-station-server binary
       BIN_PATH=''${BIN_PATH:=${l.getExe package}}
 
@@ -38,7 +31,6 @@ in {
       args+=()
       args+=("--in-settings-file" "$CONFIG_PATH")
       args+=("--service-version" "$VERSION")
-      args+=("--db-url" "$DB_URL")
 
       echo ">>> Running servicing station..."
       exec "$BIN_PATH" "''${args[@]}"

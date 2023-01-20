@@ -138,7 +138,7 @@ pub fn voters_with_at_least_one_vote() {
         account_votes_count,
         snapshot.snapshot().to_full_snapshot_info(),
         Threshold::new(
-            1_000_000,
+            1,
             vit_station
                 .challenges()
                 .unwrap()
@@ -154,11 +154,10 @@ pub fn voters_with_at_least_one_vote() {
 
     println!("Alice address and conversion");
 
-    println!("{:#?}", alice_wallet.reward_address().to_address());
-    println!("{:#?}", alice_wallet.reward_address().to_address().to_hex());
+    //println!("{:#?}", alice_wallet.reward_address().to_address());
     println!("{:#?}", alice_wallet.reward_address().to_address().to_hex());
 
-    println!("Records lenght:");
+    println!("Records length:");
     println!("{:#?}", records.len());
     println!("Records:");
     println!("{:#?}", records);

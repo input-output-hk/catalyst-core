@@ -13,7 +13,7 @@ impl NodeCommand {
         self.command
             .arg("stats")
             .arg("get")
-            .arg("-h")
+            .arg("--host")
             .arg(host.into());
         self
     }

@@ -4,11 +4,11 @@ There are multiple type of key for multiple use cases.
 
 |         type         | usage                                                                    |
 | :------------------: | :----------------------------------------------------------------------- |
-|      `Ed25519`       | Signing algorithm for Ed25519 algorithm                                  |
-|    `Ed25519Bip32`    | Related to the HDWallet, Ed25519 Extended with chain code for derivation |
-|  `Ed25519Extended`   | Related to `Ed25519Bip32` without the chain code                         |
-|   `SumEd25519_12`    | For stake pool, necessary for the KES                                    |
-| `RistrettoGroup2HashDh` | For stake pool, necessary for the VRF                                    |
+|      `ed25519`       | Signing algorithm for Ed25519 algorithm                                  |
+|    `ed25519-bip32`    | Related to the HDWallet, Ed25519 Extended with chain code for derivation |
+|  `ed25519-extended`   | Related to `Ed25519Bip32` without the chain code                         |
+|   `sum-ed25519-12`    | For stake pool, necessary for the KES                                    |
+| `ristretto-group2-hash-dh` | For stake pool, necessary for the VRF                                    |
 
 There is a command line parameter to generate this keys:
 
@@ -26,7 +26,7 @@ ed25519_pk1z2ffur59cq7t806nc9y2g64wa60pg5m6e9cmrhxz9phppaxk5d4sn8nsqg
 
 ## Signing data
 
-Sign data with private key. Supported key formats are: ed25519, ed25519bip32, ed25519extended and
+Sign data with private key. Supported key formats are: ed25519, ed25519-bip32, ed25519-extended and
 sumed25519_12.
 
 ```sh

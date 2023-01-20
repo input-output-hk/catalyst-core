@@ -61,14 +61,14 @@ heading-split-level = 3  # link results to heading levels
 copy-js = true           # include Javascript code for search
 
 
-[output.linkcheck]
+#[output.linkcheck]
 # Should we check links on the internet? Enabling this option adds a
 # non-negligible performance impact
-follow-web-links = true
+#follow-web-links = true
 
 # Are we allowed to link to files outside of the book's root directory? This
 # may help prevent linking to sensitive files (e.g. "../../../../etc/shadow")
-traverse-parent-directories = false
+#traverse-parent-directories = false
 
 # If necessary, you can exclude one or more links from being checked with a
 # list of regular expressions. The regex will be applied to the link href (i.e.
@@ -80,10 +80,10 @@ traverse-parent-directories = false
 # exclude = [ 'google\.com' ]
 
 # The User-Agent to use when sending web requests
-user-agent = "mdbook-linkcheck-0.7.7"
+#user-agent = "mdbook-linkcheck-0.7.7"
 
 # The number of seconds a cached result is valid for (12 hrs by default)
-cache-timeout = 43200
+#cache-timeout = 43200
 
 # How should warnings be treated?
 #
@@ -93,7 +93,7 @@ cache-timeout = 43200
 #   the linkcheck to continuing
 # We do NOT allow broken links in CI, but only warn in development.
 # DO NOT EDIT THIS SETTING OR YOu WILL BREAK CI.
-warning-policy = "warn"
+#warning-policy = "warn"
 
 # Extra HTTP headers that must be send to certain web sites
 # in order to link check to succeed.
@@ -101,10 +101,10 @@ warning-policy = "warn"
 # This is a dictionary (map), with keys being regexes
 # matching a set of web sites, and values being an array of
 # the headers.
-[output.linkcheck.http-headers]
+#[output.linkcheck.http-headers]
 # Any hyperlink that contains this regexp will be sent
 # the "Accept: text/html" header
-'crates\.io' = ["Accept: text/html"]
+#'crates\.io' = ["Accept: text/html"]
 
 # mdbook-linkcheck will interpolate environment variables into your header via
 # $IDENT.

@@ -5,7 +5,7 @@ use crate::common::iapyx_from_mainnet;
 use crate::common::mainnet_wallet_ext::MainnetWalletExtension;
 use crate::common::snapshot::mock;
 use crate::common::snapshot_filter::SnapshotFilterSource;
-use crate::common::MainnetWallet;
+use crate::common::CardanoWallet;
 use assert_fs::TempDir;
 use catalyst_toolbox::rewards::voters::calc_voter_rewards;
 use catalyst_toolbox::rewards::Threshold;
@@ -13,7 +13,7 @@ use chain_impl_mockchain::block::BlockDate;
 use jormungandr_automation::testing::time;
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::crypto::hash::Hash;
-use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
+use mainnet_lib::{wallet_state::MainnetWalletStateBuilder, MainnetNetworkBuilder};
 use snapshot_trigger_service::config::JobParameters;
 use valgrind::ProposalExtension;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
@@ -31,15 +31,15 @@ pub fn voters_reward_happy_path() {
     let total_rewards = 1000u32;
     let stake = 10_000;
 
-    let alice_wallet = MainnetWallet::new(stake);
-    let bob_wallet = MainnetWallet::new(stake);
-    let clarice_wallet = MainnetWallet::new(stake);
+    let alice_wallet = CardanoWallet::new(stake);
+    let bob_wallet = CardanoWallet::new(stake);
+    let clarice_wallet = CardanoWallet::new(stake);
 
-    let (db_sync, _) = MainnetNetworkBuilder::default()
+    let (db_sync, _node, _reps) = MainnetNetworkBuilder::default()
         .with(alice_wallet.as_direct_voter())
         .with(bob_wallet.as_direct_voter())
         .with(clarice_wallet.as_direct_voter())
-        .build(&testing_directory);
+        .build();
 
     let snapshot = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
         .unwrap()

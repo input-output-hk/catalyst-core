@@ -156,6 +156,12 @@ pub fn voters_with_at_least_one_vote() {
 
     println!("{:#?}", alice_wallet.reward_address().to_address());
     println!("{:#?}", alice_wallet.reward_address().to_address().to_hex());
+    println!("{:#?}", alice_wallet.reward_address().to_address().to_hex());
+
+    println!("Records lenght:");
+    println!("{:#?}", records.len());
+    println!("Records:");
+    println!("{:#?}", records);
 
     assert_eq!(
         records

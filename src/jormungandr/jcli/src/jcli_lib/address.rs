@@ -1,11 +1,11 @@
 use crate::jcli_lib::utils::key_parser::parse_pub_key;
 use chain_addr::{AddressReadable, Discrimination, Kind};
 use chain_crypto::{bech32::Bech32 as _, AsymmetricPublicKey, Ed25519, PublicKey};
-use structopt::StructOpt;
+use clap::Parser;
 use thiserror::Error;
 
-#[derive(StructOpt)]
-#[structopt(name = "address", rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(name = "address", rename_all = "kebab-case")]
 pub enum Address {
     /// Display the content and info of a bech32 formatted address.
     Info(InfoArgs),
@@ -18,48 +18,48 @@ pub enum Address {
     Account(AccountArgs),
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct InfoArgs {
     /// An address, in bech32 format, to display the content
     /// and info that can be extracted from.
-    #[structopt(name = "ADDRESS")]
+    #[clap(name = "ADDRESS")]
     address: AddressReadable,
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct DiscriminationData {
     /// Set the discrimination type to testing (default is production).
-    #[structopt(long = "testing")]
+    #[clap(long = "testing")]
     testing: bool,
 
     /// Set the prefix to use to describe the address. This is only available
     /// on the human readable representation of the address and will not be
     /// used or checked by the node.
-    #[structopt(long = "prefix", default_value = "ca")]
+    #[clap(long = "prefix", default_value = "ca")]
     prefix: String,
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct SingleArgs {
     /// A public key in bech32 encoding with the key type prefix.
-    #[structopt(name = "PUBLIC_KEY", parse(try_from_str = parse_pub_key))]
+    #[clap(name = "PUBLIC_KEY", value_parser = parse_pub_key::<Ed25519>)]
     key: PublicKey<Ed25519>,
 
     /// A public key in bech32 encoding with the key type prefix.
-    #[structopt(name = "DELEGATION_KEY", parse(try_from_str = parse_pub_key))]
+    #[clap(name = "DELEGATION_KEY", value_parser = parse_pub_key::<Ed25519>)]
     delegation: Option<PublicKey<Ed25519>>,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     discrimination_data: DiscriminationData,
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct AccountArgs {
     /// A public key in bech32 encoding with the key type prefix.
-    #[structopt(name = "PUBLIC_KEY", parse(try_from_str = parse_pub_key))]
+    #[clap(name = "PUBLIC_KEY", value_parser = parse_pub_key::<Ed25519>)]
     key: PublicKey<Ed25519>,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     discrimination_data: DiscriminationData,
 }
 

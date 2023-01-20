@@ -1,16 +1,16 @@
 use super::UserInteractionController;
 use crate::{controller::Error, style};
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct SendTransaction {
-    #[structopt(short = "f", long = "from")]
+    #[clap(short = 'f', long = "from")]
     pub from: String,
-    #[structopt(short = "t", long = "to")]
+    #[clap(short = 't', long = "to")]
     pub to: String,
-    #[structopt(short = "v", long = "via")]
+    #[clap(short = 'v', long = "via")]
     pub via: String,
-    #[structopt(short = "a", long = "ada")]
+    #[clap(short = 'a', long = "ada")]
     pub ada: Option<u64>,
 }
 

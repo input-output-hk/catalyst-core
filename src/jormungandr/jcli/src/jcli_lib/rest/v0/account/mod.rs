@@ -2,20 +2,20 @@ use crate::jcli_lib::{
     rest::{Error, RestArgs},
     utils::{AccountId, OutputFormat},
 };
+use clap::Parser;
 use jormungandr_lib::interfaces::AccountState;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Account {
     /// Get account state
     Get {
-        #[structopt(flatten)]
+        #[clap(flatten)]
         args: RestArgs,
-        #[structopt(flatten)]
+        #[clap(flatten)]
         output_format: OutputFormat,
         /// An Account ID either in the form of an address of kind account, or an account public key
-        #[structopt(parse(try_from_str = AccountId::try_from_str))]
+        #[clap(value_parser = AccountId::try_from_str)]
         account_id: AccountId,
     },
 }

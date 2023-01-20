@@ -1,4 +1,5 @@
 use crate::jcli_lib::utils::{io, OutputFormat};
+use clap::Parser;
 use jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{PrivateTallyState, Tally, VotePlanId, VotePlanStatus},
@@ -9,7 +10,6 @@ use std::{
     ops::Range,
     path::PathBuf,
 };
-use structopt::StructOpt;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -19,16 +19,16 @@ pub enum Error {
     PrivacyMismatch,
 }
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct MergeVotePlan {
     /// The path to json-encoded list of voteplans to merge. If this parameter is not specified, it
     /// will be read from the standard input. Voteplans must be already decrypted before merging.
     /// Two voteplans in the list will be merged if they have ALL the same proposals according to
     /// the proposal (external) id.
-    #[structopt(long)]
+    #[clap(long)]
     vote_plans: Option<PathBuf>,
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output_format: OutputFormat,
 }
 

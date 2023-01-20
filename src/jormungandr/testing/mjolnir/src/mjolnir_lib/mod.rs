@@ -6,37 +6,38 @@ pub mod fragment;
 pub mod generators;
 pub mod rest;
 
+use clap::Parser;
 pub use error::MjolnirError;
 use jortestkit::{load::Monitor, prelude::ProgressBarMode};
 use std::error::Error;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Mjolnir {
     /// display full version details (software version, source version, targets and compiler used)
-    #[structopt(long = "full-version")]
+    #[clap(long = "full-version")]
     full_version: bool,
 
     /// display the sources version, allowing to check the source's hash used to compile this executable.
     /// this option is useful for scripting retrieving the logs of the version of this application.
-    #[structopt(long = "source-version")]
+    #[clap(long = "source-version")]
     source_version: bool,
 
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     command: Option<MjolnirCommand>,
 }
 
 #[allow(clippy::large_enum_variant)]
 /// Jormungandr Load CLI toolkit
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum MjolnirCommand {
     /// Passive Nodes bootstrap
     Passive(bootstrap::ClientLoadCommand),
     /// Explorer load
     Explorer(explorer::ExplorerLoadCommand),
     /// Fragment load
+    #[clap(subcommand)]
     Fragment(fragment::FragmentLoadCommand),
     /// Rest load
     Rest(rest::RestLoadCommand),

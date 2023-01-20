@@ -1,11 +1,11 @@
 use crate::{generators::RestRequestGen, mjolnir_lib::MjolnirError};
+use clap::Parser;
 use jormungandr_automation::jormungandr::JormungandrRest;
 use jortestkit::{
     load::{ConfigurationBuilder, Monitor},
     prelude::{parse_progress_bar_mode_from_str, ProgressBarMode},
 };
 use std::time::Duration;
-use structopt::StructOpt;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -14,35 +14,35 @@ pub enum RestLoadCommandError {
     ClientError(#[from] MjolnirError),
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct RestLoadCommand {
     /// Number of threads
-    #[structopt(short = "c", long = "count", default_value = "3")]
+    #[clap(short = 'c', long = "count", default_value = "3")]
     pub count: usize,
     /// Address in format:
     /// http://127.0.0.1:8002/api/
-    #[structopt(short = "e", long = "endpoint")]
+    #[clap(short = 'e', long = "endpoint")]
     pub endpoint: String,
 
     /// Amount of delay (in milliseconds) between sync attempts
-    #[structopt(long = "delay", default_value = "50")]
+    #[clap(long = "delay", default_value = "50")]
     pub delay: u64,
 
     /// Amount of delay (in seconds) between sync attempts
-    #[structopt(short = "d", long = "duration")]
+    #[clap(short = 'd', long = "duration")]
     pub duration: u64,
 
     /// Show progress bar
-    #[structopt(
+    #[clap(
         long = "progress-bar-mode",
-        short = "b",
+        short = 'b',
         default_value = "Monitor",
-        parse(from_str = parse_progress_bar_mode_from_str)
+        value_parser = parse_progress_bar_mode_from_str
     )]
     progress_bar_mode: ProgressBarMode,
 
     /// Prints post load measurements
-    #[structopt(short = "m", long = "measure")]
+    #[clap(short = 'm', long = "measure")]
     pub measure: bool,
 }
 

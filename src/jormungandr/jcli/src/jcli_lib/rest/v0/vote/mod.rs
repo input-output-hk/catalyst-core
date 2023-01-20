@@ -4,12 +4,13 @@ mod plans;
 
 use self::active::Active;
 use crate::jcli_lib::rest::Error;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(name = "active", rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(name = "active", rename_all = "kebab-case")]
 pub enum Vote {
     /// Active vote related operations
+    #[clap(subcommand)]
     Active(Active),
 }
 

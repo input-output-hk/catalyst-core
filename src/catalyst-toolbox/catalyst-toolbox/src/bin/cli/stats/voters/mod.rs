@@ -2,11 +2,11 @@ mod active;
 mod initials;
 
 use active::ActiveVotersCommand;
+use clap::Parser;
 use color_eyre::Report;
 use initials::InitialVotersCommand;
-use structopt::StructOpt;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum VotersCommand {
     Initials(InitialVotersCommand),
     Active(ActiveVotersCommand),

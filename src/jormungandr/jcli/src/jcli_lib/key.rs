@@ -9,6 +9,7 @@ use chain_crypto::{
     RistrettoGroup2HashDh, SecretKey, Signature, SigningAlgorithm, SumEd25519_12, Verification,
     VerificationAlgorithm,
 };
+use clap::{Parser, ValueEnum};
 use ed25519_bip32::{DerivationError, DerivationScheme};
 use hex::FromHexError;
 use rand::{rngs::OsRng, SeedableRng};
@@ -16,8 +17,8 @@ use rand_chacha::ChaChaRng;
 use std::{
     io::{Read, Write},
     path::{Path, PathBuf},
+    str::FromStr,
 };
-use structopt::{clap::arg_enum, StructOpt};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -61,8 +62,8 @@ pub enum Error {
     },
 }
 
-#[derive(StructOpt, Debug)]
-#[structopt(name = "genesis", rename_all = "kebab-case")]
+#[derive(Parser, Debug)]
+#[clap(name = "genesis", rename_all = "kebab-case")]
 pub enum Key {
     /// generate a private key
     Generate(Generate),
@@ -80,125 +81,123 @@ pub enum Key {
     Derive(Derive),
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct FromBytes {
     /// Type of a private key
     ///
     /// supported values are: ed25519, ed25519bip32, ed25519extended, curve25519_2hashdh or sumed25519_12
-    #[structopt(long = "type")]
+    #[clap(long = "type")]
     key_type: GenPrivKeyType,
 
     /// retrieve the private key from the given bytes
-    #[structopt(name = "INPUT_BYTES")]
+    #[clap(name = "INPUT_BYTES")]
     input_bytes: Option<PathBuf>,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output_file: OutputFile,
 
-    #[structopt(long = "public")]
+    #[clap(long = "public")]
     public_key: bool,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ToBytes {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output_file: OutputFile,
 
     /// path to the private key to serialize in bytes
     /// Or read from the standard input
-    #[structopt(name = "INPUT_FILE")]
+    #[clap(name = "INPUT_FILE")]
     input_key: Option<PathBuf>,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct Generate {
     /// Type of a private key
     ///
     /// supported values are: ed25519, ed25519bip32, ed25519extended, curve25519_2hashdh or sumed25519_12
-    #[structopt(long = "type")]
+    #[clap(long = "type")]
     key_type: GenPrivKeyType,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output_file: OutputFile,
 
     /// optional seed to generate the key, for the same entropy the same key
     /// will be generated (32 bytes in hexadecimal). This seed will be fed to
     /// ChaChaRNG and allow pseudo random key generation. Do not use if you
     /// are not sure.
-    #[structopt(long = "seed", short = "s", name = "SEED", parse(try_from_str))]
+    #[clap(long = "seed", short = 's', name = "SEED", value_parser = Seed::from_str)]
     seed: Option<Seed>,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ToPublic {
     /// the source private key to extract the public key from
     ///
     /// if no value passed, the private key will be read from the
     /// standard input
-    #[structopt(long = "input")]
+    #[clap(long = "input")]
     input_key: Option<PathBuf>,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     output_file: OutputFile,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct Sign {
     /// path to file with bech32-encoded secret key
     ///
     /// supported key formats are: ed25519, ed25519bip32, ed25519extended and sumed25519_12
-    #[structopt(long = "secret-key")]
+    #[clap(long = "secret-key")]
     secret_key: PathBuf,
 
     /// path to file to write signature into, if no value is passed, standard output will be used
-    #[structopt(long = "output", short = "o")]
+    #[clap(long = "output", short = 'o')]
     output: Option<PathBuf>,
 
     /// path to file with data to sign, if no value is passed, standard input will be used
     data: Option<PathBuf>,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct Verify {
     /// path to file with bech32-encoded public key
     ///
     /// supported key formats are: ed25519, ed25519bip32 and sumed25519_12
-    #[structopt(long = "public-key")]
+    #[clap(long = "public-key")]
     public_key: PathBuf,
 
     /// path to file with signature
-    #[structopt(long = "signature")]
+    #[clap(long = "signature")]
     signature: PathBuf,
 
     /// path to file with signed data, if no value is passed, standard input will be used
     data: Option<PathBuf>,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct Derive {
     /// the ed25519bip32 parent key to derive a child key from
     ///
     /// if no value passed, the parent key will be read from the
     /// standard input
-    #[structopt(long = "input")]
+    #[clap(long = "input")]
     parent_key: Option<PathBuf>,
 
     /// the index of child key
     index: u32,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     child_key: OutputFile,
 }
 
-arg_enum! {
-    #[derive(StructOpt, Debug)]
-    pub enum GenPrivKeyType {
-        Ed25519,
-        Ed25519Bip32,
-        Ed25519Extended,
-        SumEd25519_12,
-        RistrettoGroup2HashDh,
-    }
+#[derive(Debug, Clone, ValueEnum)]
+pub enum GenPrivKeyType {
+    Ed25519,
+    Ed25519Bip32,
+    Ed25519Extended,
+    SumEd25519_12,
+    RistrettoGroup2HashDh,
 }
 
 impl Key {
@@ -455,7 +454,7 @@ fn bytes_to_pub_key<K: AsymmetricPublicKey>(bytes: &[u8]) -> Result<String, Erro
     Ok(public.to_bech32_str())
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct Seed([u8; 32]);
 
 impl std::str::FromStr for Seed {

@@ -2,18 +2,18 @@ use crate::jcli_lib::{
     rest::{Error, RestArgs},
     utils::OutputFormat,
 };
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum StakePool {
     /// Get stake pool details
     Get {
-        #[structopt(flatten)]
+        #[clap(flatten)]
         args: RestArgs,
         /// hex-encoded pool ID
         pool_id: String,
-        #[structopt(flatten)]
+        #[clap(flatten)]
         output_format: OutputFormat,
     },
 }

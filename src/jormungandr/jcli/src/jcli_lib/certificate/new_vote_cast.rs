@@ -7,58 +7,58 @@ use chain_impl_mockchain::{
     certificate::{Certificate, VoteCast, VotePlanId},
     vote::{Choice, Payload},
 };
+use clap::Parser;
 use rand_chacha::rand_core::SeedableRng;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct PublicVoteCast {
     /// the vote plan identified on the blockchain
-    #[structopt(long = "vote-plan-id")]
+    #[clap(long = "vote-plan-id")]
     vote_plan_id: VotePlanId,
 
     /// the number of proposal in the vote plan you vote for
-    #[structopt(long = "proposal-index")]
+    #[clap(long = "proposal-index")]
     proposal_index: u8,
 
     /// the number of choice within the proposal you vote for
-    #[structopt(long = "choice")]
+    #[clap(long = "choice")]
     choice: u8,
 
     /// write the output to the given file or print it to the standard output if not defined
-    #[structopt(long = "output")]
+    #[clap(long = "output")]
     output: Option<PathBuf>,
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct PrivateVoteCast {
     /// the vote plan identified on the blockchain
-    #[structopt(long = "vote-plan-id")]
+    #[clap(long = "vote-plan-id")]
     vote_plan_id: VotePlanId,
 
     /// the number of proposal in the vote plan you vote for
-    #[structopt(long = "proposal-index")]
+    #[clap(long = "proposal-index")]
     proposal_index: u8,
 
     /// size of voting options
-    #[structopt(long = "options-size")]
+    #[clap(long = "options-size")]
     options: usize,
 
     /// the number of choice within the proposal you vote for
-    #[structopt(long = "choice")]
+    #[clap(long = "choice")]
     choice: u8,
 
     /// key to encrypt the vote with
-    #[structopt(long = "key-path")]
+    #[clap(long = "key-path")]
     election_key_path: Option<PathBuf>,
 
     /// write the output to the given file or print it to the standard output if not defined
-    #[structopt(long = "output")]
+    #[clap(long = "output")]
     output: Option<PathBuf>,
 }
 
 /// create a vote cast certificate
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub enum VoteCastCmd {
     Public(PublicVoteCast),
     Private(PrivateVoteCast),

@@ -5,55 +5,55 @@ use crate::jcli_lib::{
 use chain_impl_mockchain::certificate::{
     Certificate, DecryptedPrivateTally, DecryptedPrivateTallyProposal, VotePlanId, VoteTally,
 };
+use clap::Parser;
 use jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{PrivateTallyState, Tally},
 };
 use std::{convert::TryInto, path::PathBuf};
-use structopt::StructOpt;
 
 /// create a vote tally certificate
 ///
 /// voteplan id needs to be provided
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum VoteTallyRegistration {
     Public(PublicTally),
     Private(PrivateTally),
 }
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct PublicTally {
     /// vote plan id
     ///
     /// the vote plan identifier on the blockchain
-    #[structopt(long = "vote-plan-id")]
+    #[clap(long = "vote-plan-id")]
     pub id: VotePlanId,
 
     /// write the output to the given file or print it to the standard output if not defined
-    #[structopt(long = "output")]
+    #[clap(long = "output")]
     pub output: Option<PathBuf>,
 }
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct PrivateTally {
     /// path to the json file containing the tally shares
-    #[structopt(long)]
+    #[clap(long)]
     pub shares: PathBuf,
 
     /// path to the json file containing the vote plan result
-    #[structopt(long)]
+    #[clap(long)]
     pub vote_plan: PathBuf,
 
     /// The id of the vote plan to include in the certificate.
     /// Can be left unspecified if there is only one vote plan in the input
-    #[structopt(long)]
+    #[clap(long)]
     pub vote_plan_id: Option<Hash>,
 
     /// write the output to the given file or print it to the standard output if not defined
-    #[structopt(long)]
+    #[clap(long)]
     pub output: Option<PathBuf>,
 }
 

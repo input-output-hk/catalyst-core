@@ -2,29 +2,30 @@ use crate::cli::kedqr::decode::secret_from_payload;
 use crate::cli::kedqr::decode::secret_from_qr;
 use crate::cli::kedqr::QrCodeOpts;
 use catalyst_toolbox::kedqr::PinReadMode;
+use clap::Parser;
 use color_eyre::eyre::Context;
 use color_eyre::Report;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use std::str::FromStr;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct VerifyQrCodeCmd {
-    #[structopt(long = "folder", required_unless = "file")]
+    #[clap(long = "folder", required_unless_present_all = ["file"])]
     pub folder: Option<PathBuf>,
 
-    #[structopt(long = "file", required_unless = "folder")]
+    #[clap(long = "file", required_unless_present_all = ["folder"])]
     pub file: Option<PathBuf>,
 
-    #[structopt(short, long, default_value = "1234")]
+    #[clap(short, long, default_value = "1234")]
     pub pin: String,
 
-    #[structopt(long = "pin-from-file")]
+    #[clap(long = "pin-from-file")]
     pub read_pin_from_filename: bool,
 
-    #[structopt(short = "s", long = "stop-at-fail")]
+    #[clap(short = 's', long = "stop-at-fail")]
     pub stop_at_fail: bool,
 
-    #[structopt(flatten)]
+    #[clap(short, long, value_parser = QrCodeOpts::from_str)]
     opts: QrCodeOpts,
 }
 

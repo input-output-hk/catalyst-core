@@ -23,13 +23,13 @@ use crate::jcli_lib::utils::{
 };
 use chain_impl_mockchain::{block::BlockDate, certificate::DecryptedPrivateTallyError};
 use chain_vote::UnitVectorInitializationError;
+use clap::Parser;
 use jormungandr_lib::interfaces::{self, CertificateFromBech32Error, CertificateFromStrError};
 use std::{
     fmt::Display,
     io::{BufRead, BufReader, Write},
     path::{Path, PathBuf},
 };
-use structopt::StructOpt;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -125,23 +125,25 @@ pub enum Error {
 }
 
 #[allow(clippy::large_enum_variant)]
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Certificate {
     /// Build certificate
+    #[clap(subcommand)]
     New(NewArgs),
     /// Sign a certificate. You can call this command multiple
     /// times to add multiple signatures if this is required.
     Sign(sign::Sign),
     /// Output information encoded into the certificate
+    #[clap(subcommand)]
     Show(show::ShowArgs),
     /// Print certificate
     Print(PrintArgs),
 }
 
 #[allow(clippy::large_enum_variant)]
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum NewArgs {
     /// create the stake pool registration certificate.
     ///
@@ -171,33 +173,35 @@ pub enum NewArgs {
     /// create a new vote plan certificate
     VotePlan(new_vote_plan::VotePlanRegistration),
     /// create a new vote tally certificate
+    #[clap(subcommand)]
     VoteTally(new_vote_tally::VoteTallyRegistration),
     /// create a new update vote certificate
     UpdateVote(new_update_vote::UpdateVote),
     /// create a new update proposal certificate
     UpdateProposal(new_update_proposal::UpdateProposal),
     /// create a vote cast certificate
+    #[clap(subcommand)]
     VoteCast(new_vote_cast::VoteCastCmd),
     #[cfg(feature = "evm")]
     /// create an EVM address mapping certificate
     EvmMapping(new_evm_mapping::EvmMapCmd),
 }
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct PrintArgs {
     /// get the certificate to sign from the given file. If no file
     /// provided, it will be read from the standard input
     pub input: Option<PathBuf>,
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct StakeDelegationArgs {
-    #[structopt(name = "PUBLIC_KEY")]
+    #[clap(name = "PUBLIC_KEY")]
     pub key: String,
-    #[structopt(name = "POOL_ID")]
+    #[clap(name = "POOL_ID")]
     pub pool_id: String,
-    #[structopt(name = "SIGNING_KEY")]
+    #[clap(name = "SIGNING_KEY")]
     pub private_key: PathBuf,
 }
 

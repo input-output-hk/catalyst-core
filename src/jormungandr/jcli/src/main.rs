@@ -1,10 +1,8 @@
+use clap::Parser;
 use std::error::Error;
-use structopt::StructOpt;
 
 fn main() {
-    jcli_lib::JCli::from_args()
-        .exec()
-        .unwrap_or_else(report_error)
+    jcli_lib::JCli::parse().exec().unwrap_or_else(report_error)
 }
 
 fn report_error(error: Box<dyn Error>) {

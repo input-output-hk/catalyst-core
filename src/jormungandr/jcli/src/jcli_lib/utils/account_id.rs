@@ -4,7 +4,7 @@ use chain_crypto::{Ed25519, PublicKey};
 use chain_impl_mockchain::account;
 use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AccountId {
     account: account::Identifier,
 }

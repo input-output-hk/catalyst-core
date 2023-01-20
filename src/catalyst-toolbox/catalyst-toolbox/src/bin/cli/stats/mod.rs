@@ -4,14 +4,15 @@ mod snapshot;
 mod voters;
 
 use archive::ArchiveCommand;
+use clap::Parser;
 use color_eyre::Report;
 use live::LiveStatsCommand;
 use snapshot::SnapshotCommand;
-use structopt::StructOpt;
 use voters::VotersCommand;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Stats {
+    #[clap(subcommand)]
     Voters(VotersCommand),
     Live(LiveStatsCommand),
     Archive(ArchiveCommand),

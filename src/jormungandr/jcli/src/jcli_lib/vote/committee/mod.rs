@@ -2,14 +2,16 @@ mod communication_key;
 mod member_key;
 
 use super::Error;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Committee {
     /// commands for managing committee member communication keys
+    #[clap(subcommand)]
     CommunicationKey(communication_key::CommunicationKey),
     /// commands for managing committee member stake keys
+    #[clap(subcommand)]
     MemberKey(member_key::MemberKey),
 }
 

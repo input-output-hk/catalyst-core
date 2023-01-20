@@ -25,6 +25,7 @@ env:
   RUSTFLAGS: -D warnings
   RUST_BACKTRACE: 1
   CARGO_INCREMENTAL: 0
+  CARGO_FLAGS: --verbose --locked
 
 jobs:
   cancel:
@@ -44,49 +45,125 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: actions-rs/toolchain@v1
+
+      - name: Install rust toolchain
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
-      - uses: Swatinem/rust-cache@v2
+
+      - name: Cache rust
+        uses: Swatinem/rust-cache@v2
         with:
-          shared-key: "v0-test"
+          shared-key: "test_cache"
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
       - name: Install nextest
         uses: taiki-e/install-action@nextest
+
       - name: Install deps
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-      - name: Build tests
-        run: cargo nextest run --no-run
+
+      - name: Build extra deps
+        run:
+          cargo build -p vit-servicing-station-cli -p vit-servicing-station-server -p jcli -p jormungandr -p explorer
+
+      - name: Build and archive tests
+        run: cargo nextest archive --archive-file nextest-archive.tar.zst
+
+      - name: Save external dependencies
+        uses: actions/cache/save@v3
+        with:
+          path: |
+                  target/debug/vit-servicing-station-cli
+                  target/debug/vit-servicing-station-server
+                  target/debug/jcli
+                  target/debug/jormungandr
+                  target/debug/explorer
+          key: deps-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Save test archive
+        uses: actions/cache/save@v3
+        with:
+          path: nextest-archive.tar.zst
+          key: nextest-archive-${{ github.run_id }}-${{ github.run_attempt }}
 
   catalyst-core-tests:
     name: Catalyst Core Tests
     runs-on: ubuntu-latest
     needs: build-tests-artifacts
-    env:
-      CARGO_FLAGS: --verbose --locked
     strategy:
       matrix:
-        partition: [1, 2]
+        partition: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: actions-rs/toolchain@v1
+
+      - name: Install rust toolchain
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
-      - uses: Swatinem/rust-cache@v2
+
+      - name: Cache rust
+        uses: Swatinem/rust-cache@v2
         with:
-          shared-key: "v0-test"
+          shared-key: "test_cache"
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Restore test archive
+        uses: actions/cache/restore@v3
+        with:
+          path: nextest-archive.tar.zst
+          key: nextest-archive-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Restore external dependencies
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+                  target/debug/vit-servicing-station-cli
+                  target/debug/vit-servicing-station-server
+                  target/debug/jcli
+                  target/debug/jormungandr
+                  target/debug/explorer
+          key: deps-${{ github.run_id }}-${{ github.run_attempt }}
+
       - name: Install nextest
         uses: taiki-e/install-action@nextest
-      - name: Install deps
+
+      - name: Install dependencies
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+
       - name: Run Catalyst Core tests
-        run:
-          cargo nextest run -E "not (package(jormungandr-integration-tests) + package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) + test(multi_voteplan_ok_private))" \
-          --partition count:${{ matrix.partition }}/2 --profile ci
+        run: |
+          cargo nextest run \
+          -E "not (package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) + test(multi_voteplan_ok_private))" \
+          --archive-file nextest-archive.tar.zst --extract-to "/home/runner/work/catalyst-core-fork/catalyst-core-fork" \
+          --extract-overwrite --partition count:${{ matrix.partition }}/10 --profile ci
+
+  cleanup-cache:
+    name: Clean up run cache
+    runs-on: ubuntu-latest
+    needs: catalyst-core-tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Clean up archive and deps cache
+        run: |
+          gh extension install actions/gh-actions-cache
+          ## Setting this to not fail the workflow while deleting cache keys.
+          set +e
+          echo "Deleting caches..."
+          gh actions-cache delete nextest-archive-${{ github.run_id }}-${{ github.run_attempt }} --confirm
+          gh actions-cache delete deps-${{ github.run_id }}-${{ github.run_attempt }} --confirm
+          echo "Done"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   wallet-js-binding:
     name: Wallet JS Binding Tests
@@ -128,13 +205,21 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: Swatinem/rust-cache@v2
-      - name: Install deps
+
+      - name: Cache rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "test_cache"
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Install dependencies
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+
       - name: Clippy and fmt
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
           components: rustfmt, clippy
+
       - run: scripts/check-fmt.sh

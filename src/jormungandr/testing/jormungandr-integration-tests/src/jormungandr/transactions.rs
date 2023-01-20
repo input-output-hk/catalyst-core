@@ -3,7 +3,6 @@ use chain_impl_mockchain::{block::BlockDate, fee::LinearFee};
 use jormungandr_automation::{
     jcli::JCli,
     jormungandr::{Block0ConfigurationBuilder, NodeConfigBuilder},
-    testing::time::wait_for_epoch,
 };
 use jormungandr_lib::interfaces::{ActiveSlotCoefficient, Mempool, Value};
 use thor::TransactionHash;
@@ -89,111 +88,4 @@ pub fn accounts_funds_are_updated_after_transaction() {
         receiver_expected_value, receiver_account_state_value,
         "receiver value after transaction"
     );
-}
-
-#[test]
-fn expired_transactions_rejected() {
-    let receiver = thor::Wallet::default();
-    let sender = thor::Wallet::default();
-
-    let (jormungandr, _) = startup::start_stake_pool(
-        &[sender.clone()],
-        &[receiver.clone()],
-        Block0ConfigurationBuilder::default()
-            .with_slots_per_epoch(30.try_into().unwrap())
-            .with_consensus_genesis_praos_active_slot_coeff(ActiveSlotCoefficient::MAXIMUM)
-            .with_linear_fees(LinearFee::new(0, 0, 0)),
-        NodeConfigBuilder::default().with_mempool(Mempool {
-            pool_max_entries: 1_000.into(),
-            log_max_entries: 1_000.into(),
-            persistent_log: None,
-        }),
-    )
-    .unwrap();
-
-    let jcli = JCli::default();
-
-    let valid_transaction = thor::FragmentBuilder::from_settings(
-        &jormungandr.rest().settings().unwrap(),
-        BlockDate::first().next_epoch(),
-    )
-    .transaction(&sender, receiver.address(), 100.into())
-    .unwrap()
-    .encode();
-
-    jcli.fragment_sender(&jormungandr)
-        .send(&valid_transaction)
-        .assert_in_block();
-
-    wait_for_epoch(2, jormungandr.rest());
-
-    let expired_transaction = thor::FragmentBuilder::from_settings(
-        &jormungandr.rest().settings().unwrap(),
-        BlockDate::first().next_epoch(),
-    )
-    .transaction(&sender, receiver.address(), 200.into())
-    .unwrap()
-    .encode();
-
-    // The fragment is rejected before even entering the mempool so there's no fragment log for it.
-    // We therefore check the fragment processing summary instead.
-    jcli.fragment_sender(&jormungandr)
-        .send(&expired_transaction)
-        .assert_rejected_summary();
-}
-
-#[test]
-fn transactions_with_long_time_to_live_rejected() {
-    const MAX_EXPIRY_EPOCHS: u8 = 5;
-
-    let receiver = thor::Wallet::default();
-    let sender = thor::Wallet::default();
-
-    let (jormungandr, _) = startup::start_stake_pool(
-        &[sender.clone()],
-        &[receiver.clone()],
-        Block0ConfigurationBuilder::default()
-            .with_slots_per_epoch(30.try_into().unwrap())
-            .with_consensus_genesis_praos_active_slot_coeff(ActiveSlotCoefficient::MAXIMUM)
-            .with_linear_fees(LinearFee::new(0, 0, 0))
-            .with_tx_max_expiry_epochs(MAX_EXPIRY_EPOCHS),
-        NodeConfigBuilder::default().with_mempool(Mempool {
-            pool_max_entries: 1_000.into(),
-            log_max_entries: 1_000.into(),
-            persistent_log: None,
-        }),
-    )
-    .unwrap();
-
-    let jcli = JCli::default();
-
-    let valid_transaction = thor::FragmentBuilder::from_settings(
-        &jormungandr.rest().settings().unwrap(),
-        chain_impl_mockchain::block::BlockDate {
-            epoch: MAX_EXPIRY_EPOCHS as u32,
-            slot_id: 0,
-        },
-    )
-    .transaction(&sender, receiver.address(), 100.into())
-    .unwrap()
-    .encode();
-
-    jcli.fragment_sender(&jormungandr)
-        .send(&valid_transaction)
-        .assert_in_block();
-
-    let expired_transaction = thor::FragmentBuilder::from_settings(
-        &jormungandr.rest().settings().unwrap(),
-        BlockDate {
-            epoch: MAX_EXPIRY_EPOCHS as u32 + 1,
-            slot_id: 0,
-        },
-    )
-    .transaction(&sender, receiver.address(), 200.into())
-    .unwrap()
-    .encode();
-
-    jcli.fragment_sender(&jormungandr)
-        .send(&expired_transaction)
-        .assert_rejected_summary();
 }

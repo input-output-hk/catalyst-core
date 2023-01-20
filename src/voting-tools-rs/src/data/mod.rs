@@ -1,10 +1,19 @@
+use std::ffi::OsString;
+
 use bigdecimal::BigDecimal;
+use clap::builder::OsStr;
+use hex::FromHexError;
 use microtype::microtype;
 use serde::{Deserialize, Serialize};
 
-use self::crypto::{PublicKeyHex, SignatureHex};
-
-pub mod crypto;
+mod bytes;
+mod arbitrary;
+mod crypto;
+pub use crypto::{PublicKeyHex, SignatureHex};
+pub mod hex_bytes;
+mod network_id;
+pub use network_id::NetworkId;
+use test_strategy::Arbitrary;
 
 /// The source of voting power for a given registration
 ///
@@ -15,11 +24,23 @@ pub mod crypto;
 #[serde(untagged)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum VotingPowerSource {
-    /// Direct voting. String should contain catalyst identifier
-    Legacy(VotingKeyHex),
+    /// Direct voting
+    ///
+    /// Voting power is based on the staked ada of the given key
+    Direct(VotingKeyHex),
 
-    /// Delegated one. Collection of catalyst identifiers joined it weights
+    /// Delegated voting
+    ///
+    /// Voting power is based on the staked ada of the delegated keys
     Delegated(Vec<(VotingKeyHex, u32)>),
+}
+
+impl VotingPowerSource {
+    /// Create a direct voting power source from a hex string representing a voting key
+    #[inline]
+    pub fn direct_from_hex(s: &str) -> Result<Self, FromHexError> {
+        Ok(Self::Direct(PublicKeyHex::from_hex(s)?.into()))
+    }
 }
 
 /// A catalyst registration on Cardano in either CIP-15 or CIP-36 format
@@ -70,7 +91,7 @@ pub struct SignedRegistration {
     pub tx_id: TxId,
 }
 
-/// Single output element of voting tools calculations
+/// Single element in a snapshot
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct SnapshotEntry {
     /// Registration content
@@ -85,8 +106,6 @@ pub struct SnapshotEntry {
     /// Voting power expressed in ada
     ///
     /// This is computed from `voting_power_source`
-    ///
-    /// If
     pub voting_power: BigDecimal,
 
     /// Voting purpose
@@ -128,19 +147,17 @@ microtype! {
         DbPass,
     }
 
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default)]
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default, Arbitrary)]
     #[int]
     pub u64 {
-        #[cfg_attr(test, derive(test_strategy::Arbitrary))]
         Nonce,
         /// A slot number
-        #[cfg_attr(test, derive(test_strategy::Arbitrary))]
         SlotNo,
         VotingPurpose,
         TxId,
     }
 
-    #[derive(Debug, Clone, PartialEq, Eq)]
+    #[derive(Debug, Clone, PartialEq, Eq, Arbitrary)]
     pub Vec<u8> {
         /// A rewards address in a catalyst registation
         ///
@@ -150,11 +167,37 @@ microtype! {
     }
 }
 
+impl VotingPurpose {
+    /// The voting purpose for catalyst registrations
+    pub const CATALYST: VotingPurpose = VotingPurpose(0);
+}
+
+impl From<VotingPurpose> for OsStr {
+    fn from(purpose: VotingPurpose) -> Self {
+        OsStr::from(OsString::from(purpose.to_string()))
+    }
+}
+
 impl SlotNo {
     /// Attempt to convert this to an `i64`
     ///
     /// Returns none if the underlying `u64` doesn't fit into an `i64`
     pub fn into_i64(self) -> Option<i64> {
         self.0.try_into().ok()
+    }
+}
+
+impl RewardsAddress {
+    /// Decode a [`RewardsAddress`] from a hex string
+    ///
+    /// Errors if the string is not valid hex
+    ///
+    /// ```
+    /// # use crate::data::RewardsAddress;
+    /// let address = RewardsAddress::from_hex("0000").unwrap();
+    /// assert_eq!(address.0, vec![0, 0]);
+    /// ```
+    pub fn from_hex(s: &str) -> Result<Self, FromHexError> {
+        Ok(Self(hex::decode(s)?))
     }
 }

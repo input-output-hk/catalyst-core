@@ -16,5 +16,5 @@
 /// outside the project
 pub mod test_api;
 //
-// /// Test vectors for various CIPs
-// pub mod vectors;
+/// Test vectors for various CIPs
+pub mod vectors;

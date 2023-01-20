@@ -6,7 +6,7 @@ use mainnet_lib::InMemoryDbSync;
 use tracing::info;
 use voting_tools_rs::test_api::MockDbProvider;
 use voting_tools_rs::{
-    voting_power, Args, Db, DbConfig, DryRunCommand, SlotNo, SnapshotEntry,
+    voting_power, Args, Db, DbConfig, DryRunCommand, SnapshotEntry, VotingPowerArgs,
 };
 
 fn main() -> Result<()> {
@@ -18,11 +18,13 @@ fn main() -> Result<()> {
         db_user,
         db_host,
         db_pass,
-        min_slot_no,
-        max_slot_no,
+        min_slot,
+        max_slot,
         out_file,
         pretty,
         dry_run,
+        network_id,
+        expected_voting_purpose,
         ..
     } = Args::parse();
 
@@ -33,7 +35,14 @@ fn main() -> Result<()> {
         password: db_pass,
     };
 
-    let outputs = load(db_config, dry_run, min_slot_no, max_slot_no)?;
+    let args = VotingPowerArgs {
+        min_slot,
+        max_slot,
+        network_id,
+        expected_voting_purpose,
+    };
+
+    let outputs = load(db_config, dry_run, args)?;
 
     info!("calculated {} outputs", outputs.len());
 
@@ -51,17 +60,18 @@ fn main() -> Result<()> {
 fn load(
     real_db_config: DbConfig,
     dry_run: Option<DryRunCommand>,
-    min_slot: Option<SlotNo>,
-    max_slot: Option<SlotNo>,
+    args: VotingPowerArgs,
 ) -> Result<Vec<SnapshotEntry>> {
-    match dry_run {
+    let (result, _) = match dry_run {
         Some(DryRunCommand::DryRun { mock_json_file }) => {
             let db = MockDbProvider::from(InMemoryDbSync::restore(mock_json_file)?);
-            voting_power(db, min_slot, max_slot)
+            voting_power(db, args)
         }
         None => {
             let db = Db::connect(real_db_config)?;
-            voting_power(db, min_slot, max_slot)
+            voting_power(db, args)
         }
-    }
+    }?;
+
+    Ok(result)
 }

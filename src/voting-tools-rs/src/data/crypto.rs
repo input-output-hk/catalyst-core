@@ -2,6 +2,7 @@
 
 use core::fmt::{Debug, Display, Formatter};
 
+use hex::FromHexError;
 use proptest::{
     arbitrary::StrategyFor,
     prelude::{any, Arbitrary},
@@ -13,6 +14,8 @@ use cardano_serialization_lib::chain_crypto::{
     ed25519::{Pub, Sig},
     AsymmetricPublicKey, Ed25519, VerificationAlgorithm,
 };
+
+use super::NetworkId;
 
 /// Helper macro to write Debug and Display impls
 macro_rules! fmt_impl {
@@ -92,14 +95,57 @@ impl PublicKeyHex {
     ///
     /// assert_eq!(sig.to_string, "0".repeat(64));
     /// ```
+    #[inline]
     pub fn to_hex(&self) -> String {
         hex::encode(self.0.as_ref())
     }
 
+    /// Create a signature from a string slice containing hex bytes
+    ///
+    /// Will return an error if the string contains invalid hex, or doesn't contain exactly 64
+    /// characters
+    ///
+    /// ```
+    /// # use voting_tools_rs::PublicKeyHex;
+    /// let key = PublicKeyHex::from_str("0".repeat(64)).unwrap();
+    /// assert_eq!(key, PublicKeyHex::from_bytes([0; 32]));
+    /// ```
+    #[inline]
+    pub fn from_hex(s: &str) -> Result<Self, FromHexError> {
+        let mut buf = [0; 32];
+        hex::decode_to_slice(s, &mut buf)?;
+        Ok(Self::from_bytes(buf))
+    }
+
     /// Create a signature from a byte array
+    #[inline]
     pub fn from_bytes(bytes: [u8; 32]) -> Self {
         // .unwrap() here is fine because it only panics if bytes.len() != 32
         Self(Ed25519::public_from_binary(&bytes).unwrap())
+    }
+
+    /// Get the type (i.e. the top 4 bits of the leading byte)
+    #[inline]
+    pub fn ty(&self) -> u8 {
+        self.0.as_ref()[0] >> 4
+    }
+
+    /// The network tag (0 = testnet, 1 = mainnet)
+    ///
+    /// Returns `None` if this is a byron/bootstrap address
+    #[inline]
+    pub fn network_id(&self) -> Option<NetworkId> {
+        if self.ty() == 0b1000 {
+            return None;
+        }
+
+        let lower_bits = self.0.as_ref()[0] & 0b00001111;
+
+        match lower_bits {
+            0 => Some(NetworkId::Testnet),
+            1 => Some(NetworkId::Mainnet),
+            _ => None,
+        }
     }
 }
 
@@ -183,6 +229,22 @@ impl SignatureHex {
         // .unwrap() here is fine because it only panics if bytes.len() != 64
         Self(Ed25519::signature_from_bytes(&bytes).unwrap())
     }
+
+    /// Create a signature from a hex string
+    ///
+    /// Returns an error if the string is invalid hex, or if it is not 128 characters long
+    ///
+    /// ```
+    /// # use voting_tools_rs::SignatureHex;
+    /// let sig = SignatureHex::from_str("0".repeat(128));
+    /// assert_eq!(sig, SignatureHex::from_bytes([0; 64]));
+    /// ```
+    pub fn from_hex(s: &str) -> Result<Self, FromHexError> {
+        dbg!(s.len());
+        let mut bytes = [0; 64];
+        hex::decode_to_slice(s, &mut bytes)?;
+        Ok(Self::from_bytes(bytes))
+    }
 }
 
 #[cfg(test)]
@@ -201,7 +263,6 @@ mod tests {
 
         check_key("0036ef3e1f0d3f5989e2d155ea54bdb2a72c4c456ccb959af4c94868f473f5a0");
         check_key("86870efc99c453a873a16492ce87738ec79a0ebd064379a62e2c9cf4e119219e");
-        // check_key("e0ae3a0a7aeda4aea522e74e4fe36759fca80789a613a58a4364f6ecef");
     }
 
     #[test]

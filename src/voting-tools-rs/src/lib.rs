@@ -6,11 +6,9 @@
 //! produce similar outputs. Malformed registrations are silently ignored.
 
 #![warn(clippy::pedantic)]
-
 #![forbid(missing_docs)]
 #![forbid(unsafe_code)]
 #![forbid(clippy::integer_arithmetic)]
-
 #![allow(
     clippy::module_name_repetitions,
     clippy::match_bool,
@@ -24,23 +22,23 @@ extern crate tracing;
 extern crate diesel;
 
 mod cli;
-mod data_provider;
 mod data;
-mod error;
+mod data_provider;
 mod db;
+mod error;
 // mod logic;
 // mod model;
+mod logic_2;
 mod testing;
 mod validation;
-mod logic_2;
 
 // this export style forces us to be explicit about what is in the public API
 pub use exports::*;
 mod exports {
-    pub use crate::cli::{Args, DryRunCommand};
+    pub use crate::cli::{show_error_warning, Args, DryRunCommand};
+    pub use crate::data::{Signature, SignatureHex, SlotNo, SnapshotEntry, VotingPowerSource};
     pub use crate::data_provider::DataProvider;
     pub use crate::db::{Conn, Db, DbConfig};
-    pub use crate::logic_2::voting_power;
-    pub use crate::data::{SlotNo, VotingPowerSource, Signature, crypto::SignatureHex, SnapshotEntry};
+    pub use crate::logic_2::{voting_power, VotingPowerArgs};
     pub use crate::testing::*;
 }

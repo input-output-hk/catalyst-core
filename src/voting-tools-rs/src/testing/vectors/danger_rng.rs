@@ -1,4 +1,4 @@
-use rand::{rngs::StdRng, thread_rng, Rng, RngCore, SeedableRng};
+use rand::{rngs::StdRng, RngCore, SeedableRng};
 use rand_core::CryptoRng;
 
 /// A struct which wraps an RNG and declares that it is cryptographically secure

@@ -106,7 +106,7 @@ impl SnapshotResult {
                     .into(),
                 reward_address: hex::encode(&output.rewards_address.0),
                 delegations: match output.voting_power_source {
-                    VotingPowerSource::Legacy(legacy) => VotingDelegations::Legacy(
+                    VotingPowerSource::Direct(legacy) => VotingDelegations::Legacy(
                         Identifier::from_hex(&legacy.to_hex())
                             .map_err(|e| CannotConvertFromOutput(e.to_string()))?,
                     ),

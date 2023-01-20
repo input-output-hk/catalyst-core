@@ -1,7 +1,7 @@
-use crate::data::crypto::PublicKeyHex;
+use crate::data::PublicKeyHex;
 use crate::data::{
-    Nonce, Registration, RewardsAddress, Signature, SignedRegistration, SlotNo, StakeKeyHex,
-    TxId, VotingKeyHex, VotingPowerSource, VotingPurpose,
+    Nonce, Registration, RewardsAddress, Signature, SignedRegistration, SlotNo, StakeKeyHex, TxId,
+    VotingKeyHex, VotingPowerSource, VotingPurpose,
 };
 use crate::data_provider::DataProvider;
 use crate::SignatureHex;
@@ -53,7 +53,7 @@ impl DataProvider for MockDbProvider {
                             let metadata = metadata_map.get(&METADATUM_1).unwrap();
 
                             if let Ok(data) = metadata.as_bytes() {
-                                VotingPowerSource::Legacy(
+                                VotingPowerSource::Direct(
                                     PublicKeyHex::from_bytes(data.try_into().unwrap()).into(),
                                 )
                             } else {
@@ -61,8 +61,6 @@ impl DataProvider for MockDbProvider {
                                 let delgation_list = metadata.as_list().unwrap();
                                 for i in 0..delgation_list.len() {
                                     let inner_list = delgation_list.get(i).as_list().unwrap();
-
-                                    let key = inner_list.get(0).as_bytes().unwrap();
 
                                     let delegation = inner_list.get(0).as_bytes().unwrap();
                                     let delegation =

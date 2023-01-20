@@ -2,10 +2,10 @@ use nonempty::NonEmpty;
 use serde_json::Value;
 use thiserror::Error;
 
-use crate::data::{SignedRegistration, VotingPurpose};
+use crate::data::{NetworkId, SignedRegistration, VotingPurpose};
 
 /// An error encountered during parsing and validation of a Catalyst registration
-#[derive(Debug, Error)]
+#[derive(Debug, Error, PartialEq, Eq)]
 pub enum RegistrationError {
     /// The registration couldn't be parsed from json -> struct
     #[error(
@@ -29,11 +29,26 @@ pub enum RegistrationError {
         actual: VotingPurpose,
     },
 
-    #[error("the signature, public key, and payload were well-formed, but the signature was not valid for this payload")]
-    MismatchedSignature,
+    #[error(
+        "the signature, public key, and payload were well-formed, but the signature was not valid for this payload, cbor hash bytes: {}", 
+        hex::encode(hash_bytes),
+    )]
+    MismatchedSignature { hash_bytes: [u8; 32] },
 
     #[error("the list of delegations was empty")]
     EmptyDelegations,
+
+    #[error(
+        "stake key has wrong network id, expected {expected}, actual {}", 
+        actual.map(|id| id.to_string()).unwrap_or("None".to_string()),
+    )]
+    StakeKeyWrongNetwork {
+        expected: NetworkId,
+        actual: Option<NetworkId>,
+    },
+
+    #[error("stake key has wrong type: {0}, expected 14 or 15")]
+    StakeKeyWrongType(u8),
 }
 
 /// A registration that failed validation, along with the error
@@ -43,6 +58,7 @@ pub enum RegistrationError {
 ///
 /// `registration` is an `Option` because some errors prevent us from even generating a
 /// [`SignedRegistration`] struct
+#[derive(Debug)]
 pub struct InvalidRegistration {
     pub registration: Option<SignedRegistration>,
     pub errors: NonEmpty<RegistrationError>,

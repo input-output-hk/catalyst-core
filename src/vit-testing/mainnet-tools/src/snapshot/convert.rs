@@ -27,7 +27,7 @@ impl MainnetWalletStateExtension for Vec<MainnetWalletState> {
             )
             .build();
         let db = MockDbProvider::from(db_sync);
-        let outputs = voting_tools_rs::voting_power(&db, None, None).unwrap();
+        let (outputs, _errs) = voting_tools_rs::voting_power(&db, VotingPowerArgs::default()).unwrap();
         outputs.try_into_raw_snapshot_request(parameters)
     }
 }
@@ -81,7 +81,7 @@ use num_traits::ToPrimitive;
 use snapshot_lib::registration::{Delegations as VotingDelegations, VotingRegistration};
 use vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 use voting_tools_rs::test_api::MockDbProvider;
-use voting_tools_rs::{SnapshotEntry, VotingPowerSource};
+use voting_tools_rs::{SnapshotEntry, VotingPowerSource, VotingPowerArgs};
 
 /// Extensions for voting tools `Output` struct
 pub trait OutputExtension {
@@ -106,7 +106,7 @@ impl OutputExtension for SnapshotEntry {
                 .into(),
             reward_address: hex::encode(&self.rewards_address.0),
             delegations: match self.voting_power_source {
-                VotingPowerSource::Legacy(legacy) => VotingDelegations::Legacy(
+                VotingPowerSource::Direct(legacy) => VotingDelegations::Legacy(
                     Identifier::from_hex(&legacy.to_hex())
                         .expect("to_hex() always returns valid hex"),
                 ),

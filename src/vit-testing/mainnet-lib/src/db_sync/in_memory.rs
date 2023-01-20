@@ -59,6 +59,16 @@ impl InMemoryDbSync {
         db_sync
     }
 
+    /// Create an empty instance
+    pub fn empty() -> Self {
+        InMemoryDbSync {
+            transactions: HashMap::new(),
+            blocks: vec![],
+            stakes: HashMap::new(),
+            settings: Settings::default(),
+        }
+    }
+
     /// Connects to Cardano mock node using simple observer/observable mechanism
     ///
     /// # Panics

@@ -693,6 +693,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bytekind"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "proptest 1.0.0 (git+https://github.com/proptest-rs/proptest)",
+ "serde",
+ "unarray",
+]
+
+[[package]]
 name = "bytemuck"
 version = "1.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -819,7 +829,7 @@ dependencies = [
  "jortestkit",
  "once_cell",
  "predicates",
- "proptest",
+ "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest.git)",
  "qrcode",
  "quircs",
  "rand 0.8.5",
@@ -904,7 +914,7 @@ dependencies = [
  "chain-core",
  "chain-crypto",
  "cryptoxide 0.4.2",
- "proptest",
+ "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest.git)",
  "quickcheck",
  "test-strategy",
 ]
@@ -929,7 +939,7 @@ dependencies = [
  "ed25519-dalek",
  "generic-array",
  "hex",
- "proptest",
+ "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest.git)",
  "quickcheck",
  "rand 0.8.5",
  "rand_core 0.6.4",
@@ -959,7 +969,7 @@ dependencies = [
  "imhamt",
  "libsecp256k1",
  "num",
- "proptest",
+ "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest.git)",
  "quickcheck",
  "rand 0.7.3",
  "ripemd",
@@ -990,7 +1000,7 @@ dependencies = [
  "hex",
  "imhamt",
  "lazy_static",
- "proptest",
+ "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest.git)",
  "quickcheck",
  "quickcheck_macros",
  "rand 0.8.5",
@@ -1060,7 +1070,7 @@ version = "0.1.0"
 dependencies = [
  "chain-core",
  "chain-ser",
- "proptest",
+ "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest.git)",
  "quickcheck",
  "test-strategy",
 ]
@@ -3346,7 +3356,7 @@ name = "imhamt"
 version = "0.1.0"
 dependencies = [
  "criterion",
- "proptest",
+ "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest.git)",
  "rustc_version",
  "test-strategy",
  "thiserror",
@@ -4106,6 +4116,12 @@ name = "libc"
 version = "0.2.139"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "201de327520df007757c1f0adce6e827fe8562fbc28bfd9c15571c66ca1f5f79"
+
+[[package]]
+name = "libm"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "348108ab3fba42ec82ff6e9564fc4ca0247bdccdc68dd8af9764bbc79c3c8ffb"
 
 [[package]]
 name = "libmath"
@@ -4868,6 +4884,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "578ede34cf02f8924ab9447f50c28075b4d3e5b269972345e7e0372b38c6cdcd"
 dependencies = [
  "autocfg 1.1.0",
+ "libm",
 ]
 
 [[package]]
@@ -5654,6 +5671,26 @@ dependencies = [
  "regex-syntax",
  "rusty-fork",
  "tempfile",
+]
+
+[[package]]
+name = "proptest"
+version = "1.0.0"
+source = "git+https://github.com/proptest-rs/proptest#00f29af8e8138d4f58e592a1362bec1715733a41"
+dependencies = [
+ "bit-set",
+ "bitflags",
+ "byteorder",
+ "lazy_static",
+ "num-traits",
+ "quick-error 2.0.1",
+ "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "rand_xorshift 0.3.0",
+ "regex-syntax",
+ "rusty-fork",
+ "tempfile",
+ "unarray",
 ]
 
 [[package]]
@@ -6990,7 +7027,7 @@ dependencies = [
  "graphql_client",
  "hex",
  "jormungandr-lib",
- "proptest",
+ "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest.git)",
  "reqwest",
  "rust_decimal",
  "rust_decimal_macros",
@@ -7046,7 +7083,7 @@ dependencies = [
 name = "sparse-array"
 version = "0.1.0"
 dependencies = [
- "proptest",
+ "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest.git)",
  "test-strategy",
 ]
 
@@ -8059,6 +8096,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "unarray"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eaea85b334db583fe3274d12b4cd1880032beab409c0d774be044d4480ab9a94"
+
+[[package]]
 name = "unicase"
 version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8216,9 +8259,9 @@ dependencies = [
 
 [[package]]
 name = "validity"
-version = "0.2.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "77e2bf1771922026fbeedab38cf635e48b80f2c98ac11c54e84a0570ae1178e7"
+checksum = "49a5d03e387f17eeeebf89cf7fffe31b059e7c284169c52541e62387675a348f"
 
 [[package]]
 name = "valuable"
@@ -8411,7 +8454,7 @@ dependencies = [
  "netstat2",
  "path-slash",
  "poldercast",
- "proptest",
+ "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest.git)",
  "quickcheck",
  "quickcheck_macros",
  "rand 0.8.5",
@@ -8465,6 +8508,7 @@ dependencies = [
  "assert_fs",
  "bigdecimal",
  "blake2 0.10.6",
+ "bytekind",
  "cardano-serialization-lib",
  "chrono",
  "ciborium",
@@ -8483,7 +8527,7 @@ dependencies = [
  "nonempty",
  "once_cell",
  "postgres",
- "proptest",
+ "proptest 1.0.0 (git+https://github.com/input-output-hk/proptest.git)",
  "rand 0.6.5",
  "rand_chacha 0.3.1",
  "rand_core 0.4.2",

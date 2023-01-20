@@ -1,24 +1,19 @@
-use std::{
-    collections::HashMap,
-    fs::File,
-    io::{BufWriter, Write},
-    path::PathBuf,
-};
+use std::collections::HashMap;
 
 use crate::{
     data::{Registration, SignedRegistration, SlotNo, StakeKeyHex},
     error::InvalidRegistration,
-    validation::ValidationError,
+    validation::ValidationCtx,
     DataProvider, SnapshotEntry,
 };
 use bigdecimal::BigDecimal;
-use chrono::Utc;
 use color_eyre::eyre::{eyre, Result};
 use itertools::Itertools;
-use validity::{Valid, Validate};
+use nonempty::nonempty;
+use validity::{Failure, Valid, Validate};
 
-#[cfg(test)]
-mod tests;
+mod args;
+pub use args::VotingPowerArgs;
 
 /// Calculate voting power info by querying a db-sync instance
 ///
@@ -37,19 +32,34 @@ mod tests;
 /// Returns an error if either of `lower` or `upper` doesn't fit in an `i64`
 pub fn voting_power(
     db: impl DataProvider,
-    min_slot: Option<SlotNo>,
-    max_slot: Option<SlotNo>,
+    VotingPowerArgs {
+        min_slot,
+        max_slot,
+        network_id,
+        expected_voting_purpose,
+    }: VotingPowerArgs,
 ) -> Result<(Vec<SnapshotEntry>, Vec<InvalidRegistration>)> {
     let min_slot = min_slot.unwrap_or(SlotNo(0));
     let max_slot = max_slot.unwrap_or(SlotNo(u64::try_from(i64::MAX).unwrap()));
 
+    let validation_ctx = ValidationCtx {
+        db: &db,
+        network_id,
+        expected_voting_purpose,
+    };
+
+    let validate = |reg: SignedRegistration| {
+        reg.validate_with(validation_ctx.clone())
+            .map_err(|Failure { value, error }| InvalidRegistration {
+                registration: Some(value),
+                errors: nonempty![error],
+            })
+    };
+
     let registrations = db.vote_registrations(min_slot, max_slot)?;
 
-    let (valid_registrations, validation_errors): (Vec<_>, Vec<_>) = registrations
-        .into_iter()
-        .map(Validate::validate)
-        .partition_result();
-
+    let (valid_registrations, validation_errors): (Vec<_>, Vec<_>) =
+        registrations.into_iter().map(validate).partition_result();
 
     let addrs = stake_addrs(&valid_registrations);
     let voting_powers = db.stake_values(&addrs)?;
@@ -57,9 +67,9 @@ pub fn voting_power(
     let snapshot = valid_registrations
         .into_iter()
         .map(|reg| convert_to_snapshot_entry(reg, &voting_powers))
-        .collect();
+        .collect::<Result<_, _>>()?;
 
-
+    Ok((snapshot, validation_errors))
 }
 
 fn stake_addrs(registrations: &[Valid<SignedRegistration>]) -> Vec<StakeKeyHex> {
@@ -104,39 +114,4 @@ fn convert_to_snapshot_entry(
         voting_purpose,
         tx_id,
     })
-}
-
-/// If there are errors, we want to notify the user, but it's not really actionable, so we provide
-/// the option to silence the error via env var
-fn show_error_warning(errors: &[ValidationError]) -> Result<()> {
-    let num_errs = errors.len();
-
-    if num_errs == 0 || std::env::var("VOTING_TOOL_SUPPRESS_WARNINGS").unwrap() == "1" {
-        return Ok(());
-    }
-
-    warn!("{num_errs} rows generated errors, set `VOTING_TOOL_SUPPRESS_WARNINGS=1 to suppress this warning");
-
-    let path = error_log_file()?;
-    let file = File::create(&path)?;
-    let mut writer = BufWriter::new(file);
-
-    for e in errors {
-        writeln!(&mut writer, "{e}")?;
-    }
-
-    warn!("error logs have been written to {}", path.to_string_lossy());
-
-    Ok(())
-}
-
-fn error_log_file() -> Result<PathBuf> {
-    let home_dir = dirs::home_dir().expect("no home dir found to write logs");
-    let error_dir = home_dir.join(".voting_tool_logs");
-    std::fs::create_dir_all(&error_dir)?;
-
-    let now = Utc::now();
-    let log_file = error_dir.join(now.format("%Y-%m-%d--%H-%M-%S").to_string());
-
-    Ok(log_file)
 }

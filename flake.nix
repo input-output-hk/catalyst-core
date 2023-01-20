@@ -2,9 +2,7 @@
   description = "Governance Voting Center";
   inputs = {
     ## Nixpkgs ##
-    # Jor: d89d7af1ba23bd8a5341d00bdd862e8e9a808f56
-    # Vit: 5f43d8b088d3771274bcfb69d3c7435b1121ac88
-    nixpkgs.url = "github:nixos/nixpkgs/5f43d8b088d3771274bcfb69d3c7435b1121ac88";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
     ## Std ##
     std.url = "github:divnix/std";
@@ -77,7 +75,7 @@
   nixConfig = {
     extra-substituters = [
       "https://cache.iog.io"
-      "https://iog-catalyst-nix-cache.s3.eu-central-1.amazonaws.com"
+      "https://iog-catalyst-nix.s3.eu-central-1.amazonaws.com"
     ];
     extra-trusted-public-keys = [
       "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="

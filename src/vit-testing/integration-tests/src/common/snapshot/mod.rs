@@ -1,10 +1,10 @@
 mod controller;
 pub mod mock;
-mod result;
+pub mod result;
 mod starter;
 mod voter_hirs_asserts;
 
-use crate::common::snapshot::result::do_snapshot as do_snapshot_internal;
+use crate::common::snapshot::result::{do_snapshot as do_snapshot_internal, SnapshotResult};
 pub use controller::SnapshotServiceController;
 use snapshot_trigger_service::config::JobParameters;
 pub use starter::SnapshotServiceStarter;

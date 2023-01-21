@@ -6,12 +6,10 @@ on:
     - cron: '5 0 * * *'
 
 env:
-  RUST_LATEST_STABLE_VERSION: 1.65
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -D warnings
   RUST_BACKTRACE: 1
   CARGO_INCREMENTAL: 0
-  CARGO_FLAGS: --verbose --locked
 
 concurrency:
   group: ${{ github.sha }}
@@ -22,24 +20,25 @@ jobs:
     name: Unit Tests
     runs-on: ubuntu-latest
     needs: [integration-tests]
+    env:
+      CARGO_FLAGS: --verbose --locked
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install rust toolchain
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cov"
+          save-if: "true"
+
+      - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}} # it says it can read the rust-toolchain file, but it fails if we omit this
+          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
           components: llvm-tools-preview
 
-      - name: Cache rust
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: "test_cache"
-          save-if: ${{ github.ref == 'refs/heads/main' }}
-
-      - name: Install nextest
-        uses: taiki-e/install-action@nextest
+      - name: Install cargo-nextest
+        run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
 
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
@@ -92,24 +91,25 @@ jobs:
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
+    env:
+      CARGO_FLAGS: --verbose --locked
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install rust toolchain
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "cov"
+          save-if: "true"
+
+      - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}} # it says it can read the rust-toolchain file, but it fails if we omit this
+          toolchain: "1.65"  # it says it can read the rust-toolchain file, but it fails if we omit this
           components: llvm-tools-preview
 
-      - name: Cache rust
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: "test_cache"
-          save-if: ${{ github.ref == 'refs/heads/main' }}
-
-      - name: Install nextest
-        uses: taiki-e/install-action@nextest
+      - name: Install cargo-nextest
+        run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
 
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov

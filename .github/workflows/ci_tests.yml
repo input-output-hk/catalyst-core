@@ -163,8 +163,10 @@ jobs:
 
       - name: Run Catalyst Core tests
         run: |
+          ## removing test ui_test because of bug https://github.com/rust-lang/cargo/issues/10352
           cargo nextest run \
-          -E "not (package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) + test(multi_voteplan_ok_private))" \
+          -E "not (package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) \
+          + test(multi_voteplan_ok_private) + test(ui_test))" \
           --archive-file nextest-archive.tar.zst --extract-to "/home/runner/work/catalyst-core/catalyst-core" \
           --extract-overwrite --partition hash:${{ matrix.partition }}/10 --profile ci
 

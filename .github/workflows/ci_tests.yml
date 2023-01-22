@@ -167,7 +167,7 @@ jobs:
           cargo nextest run \
           -E "not (package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) \
           + test(multi_voteplan_ok_private) + test(ui_test))" \
-          --archive-file nextest-archive.tar.zst --extract-to "/home/runner/work/catalyst-core/catalyst-core" \
+          --archive-file nextest-archive.tar.zst --extract-to ${{ github.workspace }} \
           --extract-overwrite --partition hash:${{ matrix.partition }}/10 --profile ci
 
   cleanup-cache:

@@ -236,7 +236,7 @@ jobs:
       - name: Cache rust
         uses: Swatinem/rust-cache@v2
         with:
-          shared-key: "test_cache"
+          shared-key: "build_cache"
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Install dependencies

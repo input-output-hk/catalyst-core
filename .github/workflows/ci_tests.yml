@@ -176,6 +176,7 @@ jobs:
     permissions:
       actions: write
     needs: catalyst-core-tests
+    if: always()
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

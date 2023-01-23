@@ -1,6 +1,6 @@
 use crate::startup::SingleNodeTestBootstrapper;
 use assert_fs::{fixture::PathChild, TempDir};
-use chain_core::property::{FromStr, Serialize};
+use chain_core::property::FromStr;
 use chain_crypto::Ed25519;
 use chain_impl_mockchain::{
     block::BlockDate,
@@ -579,7 +579,7 @@ fn pending_transaction_stats() {
     let stats = leader.rest().stats().unwrap().stats.unwrap();
 
     assert_eq!(stats.mempool_usage_ratio, 0.0);
-    assert_eq!(stats.mempool_total_size, 0);
+    assert_eq!(stats.mempool_tx_count, 0);
 
     let fragment_builder = FragmentBuilder::try_from_with_setup(
         &leader,
@@ -590,7 +590,6 @@ fn pending_transaction_stats() {
     )
     .unwrap();
 
-    let mut pending_size = 0;
     let mut pending_cnt = 0;
 
     for i in 0..10 {
@@ -598,7 +597,6 @@ fn pending_transaction_stats() {
             .transaction(&alice, bob.address(), i.into())
             .unwrap();
 
-        pending_size += transaction.serialized_size();
         pending_cnt += 1;
 
         let status =
@@ -612,7 +610,7 @@ fn pending_transaction_stats() {
             pending_cnt as f64 / mempool_max_entries as f64,
             stats.mempool_usage_ratio
         );
-        assert_eq!(pending_size, stats.mempool_total_size as usize);
+        assert_eq!(pending_cnt, stats.mempool_tx_count);
     }
 }
 

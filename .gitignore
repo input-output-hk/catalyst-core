@@ -88,6 +88,7 @@ book/html
 book/src/rust/debug
 book/src/rust/doc
 book/src/rust/.rust*
+book/tmp
 
 /vendor
 

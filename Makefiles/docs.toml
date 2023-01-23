@@ -22,7 +22,7 @@ install_crate = { crate_name = "mdbook-admonish", binary = "mdbook-admonish", te
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
-mdbook-admonish install --css-dir src/assets/css/
+mdbook-admonish install --css-dir book/src/assets/css/
 '''
 
 # We can make our own regex preprocessing templates
@@ -35,6 +35,16 @@ install_crate = { crate_name = "mdbook-regex", binary = "mdbook-regex", test_arg
 [tasks.install-mdbook-open-on-gh]
 install_crate = { crate_name = "mdbook-open-on-gh", binary = "mdbook-open-on-gh", test_arg = "--help" }
 
+# Automatically creates the summary page (man what a chore)
+# See: https://lib.rs/crates/mdbook-fs-summary
+[tasks.install-mdbook-fs-summary]
+install_crate = { crate_name = "mdbook-fs-summary", binary = "mdbook-fs-summary", test_arg = "--help" }
+
+# Automatically checks spelling in rust files.
+# See: https://github.com/drahnr/cargo-spellcheck
+[tasks.install-cargo-spellcheck]
+install_crate = { crate_name = "cargo-spellcheck", binary = "cargo-spellcheck", test_arg = "--help" }
+
 
 [tasks.install-docs-prereqs]
 workspace = false
@@ -43,10 +53,12 @@ run_task = { name = [
         "install-mdbook-regex",
         "install-mdbook-admonish",
         "install-mdbook-open-on-gh",
-        "install-mdbook-linkcheck"
+        "install-mdbook-linkcheck",
+        "install-mdbook-fs-summary",
+        "install-cargo-spellcheck"
     ], parallel = true }
 dependencies = [
-    "install-mdbook",
+    "install-mdbook"
 ]
 
 # Force linkcheck to error not warn
@@ -81,9 +93,8 @@ category = "docs"
 script_runner = "@shell" 
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
-cargo doc --workspace --target-dir book/src/rust/ --no-deps
-rm -rf book/src/rust/debug
-rm -rf book/src/rust/.rust*
+cargo doc --workspace --target-dir book/tmp/rust --no-deps
+./utilities/mdbook-rust-doc/mdbook-rust-doc.py --page book/src/06_rust_api/rust_api.md --rustdoc book/tmp/rust/doc --md-relative-path rust
 '''
 
 # Build and serve a live view of the POC Documentation
@@ -110,6 +121,7 @@ script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 mdbook build
+cp -a book/tmp/rust/doc book/html/06_rust_api/rust
 '''
 
 [tasks.build-docs]

@@ -1,16 +1,16 @@
 name: GitHub Pages
 
 on: [push, pull_request]
-    paths:
-      - book/src/**
-      - **.md
-      - LICENSE-APACHE
-      - LICENSE-MIT
-      - src/jormungandr/jormungandr-lib/src/interfaces/block0_configuration/BLOCKCHAIN_CONFIGURATION_DOCUMENTED_EXAMPLE.yaml
-      - src/jormungandr/jormungandr-lib/src/interfaces/CONFIG_PARAMS_DOCUMENTED_EXAMPLE.yaml
-      - book.toml
-      - Makefile.toml
-      - Makefiles/docs.toml
+  paths:
+    - book/src/**
+    - **.md
+    - LICENSE-APACHE
+    - LICENSE-MIT
+    - src/jormungandr/jormungandr-lib/src/interfaces/block0_configuration/BLOCKCHAIN_CONFIGURATION_DOCUMENTED_EXAMPLE.yaml
+    - src/jormungandr/jormungandr-lib/src/interfaces/CONFIG_PARAMS_DOCUMENTED_EXAMPLE.yaml
+    - book.toml
+    - Makefile.toml
+    - Makefiles/docs.toml
 
 jobs:
   deploy:

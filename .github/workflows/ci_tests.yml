@@ -29,7 +29,7 @@ env:
 
 jobs:
   cancel:
-    name: 'Cancel previous runs'
+    name: Cancel previous runs
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
@@ -162,8 +162,8 @@ jobs:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
       - name: Run Catalyst Core tests
+        ## removing test ui_test because of bug https://github.com/rust-lang/cargo/issues/10352
         run: |
-          ## removing test ui_test because of bug https://github.com/rust-lang/cargo/issues/10352
           cargo nextest run \
           -E "not (package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) \
           + test(multi_voteplan_ok_private) + test(ui_test))" \

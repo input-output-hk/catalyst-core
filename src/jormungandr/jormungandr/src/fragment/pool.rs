@@ -185,8 +185,8 @@ impl Pool {
         let mut fragments = filtered_fragments.into_iter();
         let new_fragments = self.pool.insert_all(fragments.by_ref());
         tracing::debug!(
-            "{} of the received fragments were added to the pool",
-            new_fragments.len()
+            count = %new_fragments.len(),
+            "received fragments were added to the pool"
         );
         let fragment_logs: Vec<_> = new_fragments
             .iter()

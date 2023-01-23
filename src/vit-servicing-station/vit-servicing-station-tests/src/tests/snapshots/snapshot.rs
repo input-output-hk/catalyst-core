@@ -152,8 +152,6 @@ pub fn replace_snapshot_with_tag() {
     rest_client.put_snapshot_info(&second_snapshot).unwrap();
 
     for (idx, entry) in first_snapshot.content.snapshot.iter().enumerate() {
-        println!("{:#?}", entry);
-
         let voter_info = rest_client
             .voter_info(&first_snapshot.tag, &entry.hir.voting_key.to_hex())
             .unwrap();

@@ -8,7 +8,7 @@ pub mod backends;
 pub trait MetricsBackend {
     fn add_tx_recv_cnt(&self, count: usize);
     fn set_mempool_usage_ratio(&self, ratio: f64);
-    fn set_mempool_total_size(&self, size: usize);
+    fn set_mempool_tx_count(&self, size: usize);
     fn add_tx_rejected_cnt(&self, count: usize);
     fn add_block_recv_cnt(&self, count: usize);
     fn add_peer_connected_cnt(&self, count: usize);
@@ -69,7 +69,7 @@ impl MetricsBackend for Metrics {
     metrics_count_method!(add_tx_recv_cnt);
     metrics_count_method!(add_tx_rejected_cnt);
     metrics_method!(set_mempool_usage_ratio, f64);
-    metrics_count_method!(set_mempool_total_size);
+    metrics_count_method!(set_mempool_tx_count);
     metrics_count_method!(add_block_recv_cnt);
     metrics_count_method!(add_peer_connected_cnt);
     metrics_count_method!(sub_peer_connected_cnt);

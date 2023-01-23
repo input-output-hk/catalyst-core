@@ -275,8 +275,7 @@ impl Pool {
             n => self.pool.len() as f64 / n as f64,
         };
         self.metrics.set_mempool_usage_ratio(mempool_usage_ratio);
-        self.metrics
-            .set_mempool_total_size(self.pool.total_size_bytes());
+        self.metrics.set_mempool_tx_count(self.pool.len());
     }
 }
 
@@ -457,7 +456,6 @@ pub(super) mod internal {
     pub struct Pool {
         entries: IndexedDeqeue<FragmentId, Fragment>,
         max_entries: usize,
-        total_size_bytes: usize,
     }
 
     impl Pool {
@@ -465,7 +463,6 @@ pub(super) mod internal {
             Pool {
                 entries: IndexedDeqeue::new(),
                 max_entries,
-                total_size_bytes: 0,
             }
         }
 
@@ -482,10 +479,8 @@ pub(super) mod internal {
                     } else {
                         if self.entries.len() >= self.max_entries && self.entries.len() != 0 {
                             // Remove an oldest entry from the pool
-                            let (_, fragment) = self.entries.pop_back().expect("entry must exist");
-                            self.total_size_bytes -= fragment.serialized_size();
+                            self.entries.pop_back().expect("entry must exist");
                         }
-                        self.total_size_bytes += fragment.serialized_size();
                         self.entries.push_front(*id, fragment.clone());
                         true
                     }
@@ -497,25 +492,16 @@ pub(super) mod internal {
 
         pub fn remove_all<'a>(&mut self, fragment_ids: impl IntoIterator<Item = &'a FragmentId>) {
             for fragment_id in fragment_ids {
-                let maybe_fragment = self.entries.remove(fragment_id);
-                if let Some(fragment) = maybe_fragment {
-                    self.total_size_bytes -= fragment.serialized_size();
-                }
+                self.entries.remove(fragment_id);
             }
         }
 
         pub fn remove_oldest(&mut self) -> Option<(Fragment, FragmentId)> {
-            let (id, fragment) = self.entries.pop_back().map(|(id, value)| (id, value))?;
-            self.total_size_bytes -= fragment.serialized_size();
-            Some((fragment, id))
+            self.entries.pop_back().map(|(id, value)| (value, id))
         }
 
         pub fn len(&self) -> usize {
             self.entries.len()
-        }
-
-        pub fn total_size_bytes(&self) -> usize {
-            self.total_size_bytes
         }
 
         pub fn max_entries(&self) -> usize {
@@ -576,13 +562,6 @@ pub(super) mod internal {
             ];
             let mut pool = Pool::new(4);
             assert_eq!(fragments1, pool.insert_all(fragments1.clone()));
-            assert_eq!(
-                pool.total_size_bytes,
-                fragments1
-                    .iter()
-                    .map(|(f, _)| f.serialized_size())
-                    .sum::<usize>()
-            );
 
             assert_eq!(fragments2_expected, pool.insert_all(fragments2));
             for expected in final_expected.into_iter() {

@@ -1,6 +1,5 @@
 use crate::common::get_available_port;
-use crate::common::snapshot::SnapshotServiceStarter;
-use crate::common::snapshot::result::SnapshotResult;
+use crate::common::snapshot::{result::SnapshotResult, SnapshotServiceStarter};
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
 use mainnet_lib::{DbSyncError, InMemoryDbSync};

@@ -1,0 +1,23 @@
+
+<style>
+    /*Keyword value/name of color*/
+    .div-1 {
+        background-color: white;
+    }
+
+    /*Hexadecimal value*/
+    .div-2 {
+       background-color: #FF0000;
+    }
+
+    /*RGB value*/
+    .div-3 {
+     background-color: rgb(255,0,0);
+    }
+
+</style>
+
+<div bgcolor="blue">
+
+
+</div>

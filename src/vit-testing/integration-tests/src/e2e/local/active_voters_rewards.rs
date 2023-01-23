@@ -84,9 +84,15 @@ pub fn voters_with_at_least_one_vote() {
 
     alice.vote_for(vote_plan.id(), 0, Vote::Yes as u8).unwrap();
 
-    bob.vote_for(vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+    alice.vote_for(vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+
+    alice.vote_for(vote_plan.id(), 2, Vote::Yes as u8).unwrap();
 
     bob.vote_for(vote_plan.id(), 0, Vote::Yes as u8).unwrap();
+
+    bob.vote_for(vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+
+    bob.vote_for(vote_plan.id(), 2, Vote::Yes as u8).unwrap();
 
     let target_date = BlockDate {
         epoch: 1,
@@ -143,12 +149,12 @@ pub fn voters_with_at_least_one_vote() {
                 .challenges()
                 .unwrap()
                 .iter()
-                .map(|x| (x.id, x.proposers_rewards as usize))
+                .map(|x| (x.id, 0 as usize))
                 .collect(),
             proposals,
         )
         .unwrap(),
-        1_000_000u32.into(),
+        100u32.into(),
     )
     .unwrap();
 

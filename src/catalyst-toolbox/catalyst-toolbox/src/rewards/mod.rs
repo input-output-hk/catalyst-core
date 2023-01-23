@@ -79,6 +79,8 @@ impl Threshold {
             return false;
         }
 
+        println!("Threshold::filter: self.per_challenge.len() = {:?}", &self.per_challenge.len());
+
         for (challenge, threshold) in &self.per_challenge {
             let votes_in_challenges = self
                 .proposals_per_challenge
@@ -91,10 +93,12 @@ impl Threshold {
             println!("Threshold::filter: threshold = {:?}", *threshold);
 
             if votes_in_challenges < *threshold {
+                println!("Threshold::filter: RESULT: FALSE");
                 return false;
             }
         }
 
+        println!("Threshold::filter: RESULT: TRUE");
         true
     }
 }

@@ -303,7 +303,7 @@ catalyst-toolbox qr-code --input <input> --pin <pin>
 ```
 
 The `--input` option value should give path to a file containing an
-ed25519extended voting key in the Bech32 text format.
+ed25519-extended voting key in the Bech32 text format.
 The PIN code used to encrypt and decrypt the key is given with the `--pin`
 option.
 

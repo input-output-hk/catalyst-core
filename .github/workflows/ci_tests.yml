@@ -29,7 +29,7 @@ env:
 
 jobs:
   cancel:
-    name: 'Cancel Previous Runs'
+    name: 'Cancel previous runs'
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
@@ -57,11 +57,11 @@ jobs:
           shared-key: "test_cache"
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
-      - name: Install deps
+      - name: Install dependencies
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
-      - name: Build extra deps
+      - name: Build external dependencies
         run:
           cargo build -p vit-servicing-station-cli -p vit-servicing-station-server -p jcli -p jormungandr -p explorer
 
@@ -100,7 +100,7 @@ jobs:
       - name: Install nextest
         uses: taiki-e/install-action@nextest
 
-      - name: Install deps
+      - name: Install dependencies
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
@@ -114,7 +114,7 @@ jobs:
           key: nextest-archive-${{ github.run_id }}-${{ github.run_attempt }}
 
   catalyst-core-tests:
-    name: Catalyst Core Tests
+    name: Catalyst Core tests
     runs-on: ubuntu-latest
     needs: [build-tests-artifacts, build-test-dependencies]
     strategy:

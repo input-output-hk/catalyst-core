@@ -30,7 +30,7 @@ pub struct NodeStats {
     pub peer_total_cnt: usize,
     pub tx_recv_cnt: u64,
     pub mempool_usage_ratio: f64,
-    pub mempool_total_size: u64,
+    pub mempool_tx_count: u64,
     pub tx_rejected_cnt: u64,
     pub votes_cast: u64,
     pub uptime: Option<u64>,

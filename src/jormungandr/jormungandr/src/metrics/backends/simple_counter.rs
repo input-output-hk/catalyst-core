@@ -28,7 +28,7 @@ pub struct SimpleCounter {
     // to re-use an AtomicU64 for the porpose
     // seems like unneded complexity for this case
     mempool_usage_ratio: RwLock<f64>,
-    mempool_total_size: AtomicUsize,
+    mempool_tx_count: AtomicUsize,
     votes_cast: AtomicU64,
     block_recv_cnt: AtomicUsize,
     slot_start_time: AtomicU64,
@@ -88,8 +88,8 @@ impl SimpleCounter {
             peer_total_cnt,
             tx_recv_cnt: self.tx_recv_cnt.load(Ordering::Relaxed).try_into().unwrap(),
             mempool_usage_ratio: *self.mempool_usage_ratio.read().unwrap(),
-            mempool_total_size: self
-                .mempool_total_size
+            mempool_tx_count: self
+                .mempool_tx_count
                 .load(Ordering::Relaxed)
                 .try_into()
                 .unwrap(),
@@ -110,7 +110,7 @@ impl Default for SimpleCounter {
             tx_recv_cnt: Default::default(),
             tx_rejected_cnt: Default::default(),
             mempool_usage_ratio: Default::default(),
-            mempool_total_size: Default::default(),
+            mempool_tx_count: Default::default(),
             votes_cast: Default::default(),
             block_recv_cnt: Default::default(),
             slot_start_time: Default::default(),
@@ -140,8 +140,8 @@ impl MetricsBackend for SimpleCounter {
         *self.mempool_usage_ratio.write().unwrap() = ratio;
     }
 
-    fn set_mempool_total_size(&self, size: usize) {
-        self.mempool_total_size.store(size, Ordering::Relaxed);
+    fn set_mempool_tx_count(&self, size: usize) {
+        self.mempool_tx_count.store(size, Ordering::Relaxed);
     }
 
     fn add_block_recv_cnt(&self, count: usize) {

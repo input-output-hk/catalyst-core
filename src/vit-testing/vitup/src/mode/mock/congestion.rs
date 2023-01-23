@@ -46,7 +46,7 @@ impl NetworkCongestion {
             mempool_usage_ratio: percentage,
             rejected_fragments_count: (max_fragment_count as f64 * percentage / 2.0) as usize
                 * mock_state.ledger().absolute_slot_count() as usize,
-            mempool_total_size: (block_max_size as f64 * percentage) as u64,
+            mempool_tx_count: (max_fragment_count as f64 * percentage) as u64,
             block_content_size_avg: percentage,
         }
     }
@@ -74,7 +74,7 @@ impl NetworkCongestion {
                         .iter()
                         .filter(|x| x.is_rejected())
                         .count(),
-                    mempool_total_size: self.fragments_total_size(pending_fragments_count) as u64,
+                    mempool_tx_count: pending_fragments_count as u64,
                     block_content_size_avg: self.fragments_total_size((0..=2).fold(
                         0usize,
                         |sum, val| {
@@ -132,6 +132,6 @@ pub struct NetworkCongestionData {
     pub received_fragments_count: usize,
     pub mempool_usage_ratio: f64,
     pub rejected_fragments_count: usize,
-    pub mempool_total_size: u64,
+    pub mempool_tx_count: u64,
     pub block_content_size_avg: f64,
 }

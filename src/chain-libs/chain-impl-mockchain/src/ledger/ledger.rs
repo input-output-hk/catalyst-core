@@ -994,7 +994,7 @@ impl Ledger {
             Fragment::VoteCast(tx) => {
                 let tx = tx.as_slice();
                 // this is a lightweight check, do this early to avoid doing any unnecessary computation
-                check::valid_vote_cast(&tx)?;
+                check::valid_vote_cast_tx_slice(&tx)?;
                 let (new_ledger_, _fee) = new_ledger.apply_transaction(&fragment_id, &tx)?;
 
                 // we've just verified that this is a valid transaction (i.e. contains 1 input and 1 witness)
@@ -2131,7 +2131,7 @@ mod tests {
     }
 
     #[test]
-    fn test_input_account_wrong_value() {
+    fn test_input_single_account_verify_with_value_greater_than_initial_value_is_err() {
         let account = AddressData::account(Discrimination::Test);
         let initial_value = Value(100);
         let value_to_sub = Value(110);

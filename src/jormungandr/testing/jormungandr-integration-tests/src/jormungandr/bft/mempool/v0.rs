@@ -13,11 +13,13 @@ pub fn test_mempool_pool_max_entries_limit() {
     let temp_dir = TempDir::new().unwrap();
 
     let receiver = thor::Wallet::default();
-    let mut sender = thor::Wallet::default();
+    let mut sender1 = thor::Wallet::default();
+    let mut sender2 = thor::Wallet::default();
 
     let leader_block0_config = Block0ConfigurationBuilder::default()
         .with_utxos(vec![
-            sender.to_initial_fund(100),
+            sender1.to_initial_fund(100),
+            sender2.to_initial_fund(100),
             receiver.to_initial_fund(100),
         ])
         // Use a long slot time to avoid producing a block
@@ -45,14 +47,18 @@ pub fn test_mempool_pool_max_entries_limit() {
 
     let verifier = jormungandr
         .correct_state_verifier()
-        .record_address_state(vec![&sender.address(), &receiver.address()]);
-
-    let mempool_check = fragment_sender
-        .send_transaction(&mut sender, &receiver, &jormungandr, 1.into())
-        .unwrap();
+        .record_address_state(vec![
+            &sender1.address(),
+            &sender2.address(),
+            &receiver.address(),
+        ]);
 
     fragment_sender
-        .send_transaction(&mut sender, &receiver, &jormungandr, 1.into())
+        .send_transaction(&mut sender1, &receiver, &jormungandr, 1.into())
+        .unwrap();
+
+    let mempool_check = fragment_sender
+        .send_transaction(&mut sender2, &receiver, &jormungandr, 1.into())
         .unwrap();
 
     // Wait until the fragment enters the mempool
@@ -67,7 +73,7 @@ pub fn test_mempool_pool_max_entries_limit() {
     jormungandr
         .correct_state_verifier()
         .fragment_logs()
-        .assert_size(1)
+        .assert_size(2)
         .assert_contains_only(mempool_check.fragment_id());
 
     FragmentVerifier::wait_and_verify_is_in_block(
@@ -78,7 +84,7 @@ pub fn test_mempool_pool_max_entries_limit() {
     .unwrap();
 
     verifier
-        .value_moved_between_addresses(&sender.address(), &receiver.address(), 1.into())
+        .value_moved_between_addresses(&sender2.address(), &receiver.address(), 1.into())
         .unwrap();
 }
 

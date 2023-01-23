@@ -13,11 +13,8 @@ use hersir::{
     config::{BlockchainConfiguration, SpawnParams, WalletTemplateBuilder},
 };
 use jormungandr_automation::{
-    jormungandr::{
-        Block0ConfigurationBuilder, FragmentNode, JormungandrBootstrapper, MemPoolCheck,
-        NodeConfigBuilder,
-    },
-    testing::{block0::Block0ConfigurationExtension, keys::create_new_key_pair, time},
+    jormungandr::{Block0ConfigurationBuilder, FragmentNode, MemPoolCheck, NodeConfigBuilder},
+    testing::{keys::create_new_key_pair, time},
 };
 use jormungandr_lib::interfaces::{
     BlockDate as BlockDateDto, InitialToken, InitialUTxO, Mempool, PersistentLog, SlotDuration,

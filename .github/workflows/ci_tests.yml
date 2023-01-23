@@ -173,6 +173,8 @@ jobs:
   cleanup-cache:
     name: Clean up run cache
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
     needs: catalyst-core-tests
     steps:
       - name: Checkout code

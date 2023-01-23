@@ -318,29 +318,29 @@ pub(super) mod internal {
         ptr,
     };
 
-    /// Doubly-linked queue with the possibility to remove elements from the middle of the list by
+    /// Queue with the possibility to remove elements from the middle of the list by
     /// their keys.
-    struct IndexedDeqeue<K, V> {
-        head: *mut IndexedDequeueEntry<K, V>,
-        tail: *mut IndexedDequeueEntry<K, V>,
+    struct IndexedQueue<K, V> {
+        head: *mut IndexedQueueEntry<K, V>,
+        tail: *mut IndexedQueueEntry<K, V>,
 
-        index: HashMap<IndexedDequeueKeyRef<K>, Box<IndexedDequeueEntry<K, V>>>,
+        index: HashMap<IndexedQueueKeyRef<K>, Box<IndexedQueueEntry<K, V>>>,
     }
 
-    struct IndexedDequeueEntry<K, V> {
+    struct IndexedQueueEntry<K, V> {
         key: K,
         value: V,
 
-        prev: *mut IndexedDequeueEntry<K, V>,
-        next: *mut IndexedDequeueEntry<K, V>,
+        prev: *mut IndexedQueueEntry<K, V>,
+        next: *mut IndexedQueueEntry<K, V>,
     }
 
     /// A wrapper around the pointer to the key of the queue element. This wrapper forwards the
     /// implementations of `Eq` and `Hash` to `K`. This is required becuase by default the
     /// implementations of `Eq` and `Hash` from the pointer itself will be used.
-    struct IndexedDequeueKeyRef<K>(*const K);
+    struct IndexedQueueKeyRef<K>(*const K);
 
-    impl<K, V> IndexedDeqeue<K, V>
+    impl<K, V> IndexedQueue<K, V>
     where
         K: Eq + Hash,
     {
@@ -354,7 +354,7 @@ pub(super) mod internal {
         }
 
         fn push_front(&mut self, key: K, value: V) {
-            let mut entry = Box::new(IndexedDequeueEntry {
+            let mut entry = Box::new(IndexedQueueEntry {
                 key,
                 value,
                 prev: ptr::null_mut(),
@@ -368,7 +368,7 @@ pub(super) mod internal {
             self.head = &mut *entry;
             if self
                 .index
-                .insert(IndexedDequeueKeyRef(&entry.key), entry)
+                .insert(IndexedQueueKeyRef(&entry.key), entry)
                 .is_some()
             {
                 panic!("inserted an already existing key");
@@ -383,12 +383,12 @@ pub(super) mod internal {
             } else {
                 self.head = ptr::null_mut();
             }
-            let entry = self.index.remove(&IndexedDequeueKeyRef(&tail.key)).unwrap();
+            let entry = self.index.remove(&IndexedQueueKeyRef(&tail.key)).unwrap();
             Some((entry.key, entry.value))
         }
 
         fn remove(&mut self, key: &K) -> Option<V> {
-            let entry = self.index.remove(&IndexedDequeueKeyRef(key))?;
+            let entry = self.index.remove(&IndexedQueueKeyRef(key))?;
             if let Some(prev) = unsafe { entry.prev.as_mut() } {
                 prev.next = entry.next;
             } else {
@@ -407,25 +407,25 @@ pub(super) mod internal {
         }
 
         fn contains(&self, key: &K) -> bool {
-            self.index.contains_key(&IndexedDequeueKeyRef(key))
+            self.index.contains_key(&IndexedQueueKeyRef(key))
         }
     }
 
-    unsafe impl<K: Send, V: Send> Send for IndexedDeqeue<K, V> {}
-    unsafe impl<K: Sync, V: Sync> Sync for IndexedDeqeue<K, V> {}
+    unsafe impl<K: Send, V: Send> Send for IndexedQueue<K, V> {}
+    unsafe impl<K: Sync, V: Sync> Sync for IndexedQueue<K, V> {}
 
-    unsafe impl<K: Send, V: Send> Send for IndexedDequeueEntry<K, V> {}
-    unsafe impl<K: Send> Send for IndexedDequeueKeyRef<K> {}
+    unsafe impl<K: Send, V: Send> Send for IndexedQueueEntry<K, V> {}
+    unsafe impl<K: Send> Send for IndexedQueueKeyRef<K> {}
 
-    impl<K: PartialEq> PartialEq for IndexedDequeueKeyRef<K> {
-        fn eq(&self, other: &IndexedDequeueKeyRef<K>) -> bool {
+    impl<K: PartialEq> PartialEq for IndexedQueueKeyRef<K> {
+        fn eq(&self, other: &IndexedQueueKeyRef<K>) -> bool {
             unsafe { (*self.0).eq(&*other.0) }
         }
     }
 
-    impl<K: PartialEq> Eq for IndexedDequeueKeyRef<K> {}
+    impl<K: PartialEq> Eq for IndexedQueueKeyRef<K> {}
 
-    impl<K: Hash> Hash for IndexedDequeueKeyRef<K> {
+    impl<K: Hash> Hash for IndexedQueueKeyRef<K> {
         fn hash<H: Hasher>(&self, state: &mut H) {
             unsafe { (*self.0).hash(state) }
         }
@@ -454,14 +454,14 @@ pub(super) mod internal {
     }
 
     pub struct Pool {
-        entries: IndexedDeqeue<FragmentId, Fragment>,
+        entries: IndexedQueue<FragmentId, Fragment>,
         max_entries: usize,
     }
 
     impl Pool {
         pub fn new(max_entries: usize) -> Self {
             Pool {
-                entries: IndexedDeqeue::new(),
+                entries: IndexedQueue::new(),
                 max_entries,
             }
         }

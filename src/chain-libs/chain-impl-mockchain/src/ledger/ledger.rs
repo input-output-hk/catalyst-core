@@ -1835,10 +1835,28 @@ fn input_single_account_verify<'a>(
     spending_counter: account::SpendingCounter,
     value: Value,
 ) -> Result<account::Ledger, Error> {
-    // .remove_value() check if there's enough value and if not, returns a Err.
-    let new_ledger = ledger.remove_value(account, spending_counter, value)?;
-    ledger = new_ledger;
+    // Remove value from the account before proceeding
+    let updated_ledger = ledger.remove_value(account, spending_counter, value)?;
+    ledger = single_account_witness_verify(
+        updated_ledger,
+        block0_hash,
+        sign_data_hash,
+        account,
+        witness,
+        spending_counter,
+    )?;
+    Ok(ledger)
+}
 
+fn single_account_witness_verify<'a>(
+    ledger: account::Ledger,
+    block0_hash: &HeaderId,
+    sign_data_hash: &TransactionSignDataHash,
+    account: &account::Identifier,
+    witness: &'a account::Witness,
+    spending_counter: account::SpendingCounter,
+) -> Result<account::Ledger, Error> {
+    // Remove value from the account before proceeding
     let tidsc = WitnessAccountData::new(block0_hash, sign_data_hash, spending_counter);
     let verified = witness.verify(account.as_ref(), &tidsc);
     if verified == chain_crypto::Verification::Failed {
@@ -1860,8 +1878,27 @@ fn input_multi_account_verify<'a>(
     value: Value,
 ) -> Result<multisig::Ledger, Error> {
     // .remove_value() check if there's enough value and if not, returns a Err.
-    let (new_ledger, declaration) = ledger.remove_value(account, spending_counter, value)?;
+    let updated_ledger = ledger.remove_value(account, spending_counter, value)?;
+    ledger = multi_account_witness_verify(
+        updated_ledger,
+        block0_hash,
+        sign_data_hash,
+        account,
+        witness,
+        spending_counter,
+    )?;
+    Ok(ledger)
+}
 
+fn multi_account_witness_verify<'a>(
+    ledger: multisig::Ledger,
+    block0_hash: &HeaderId,
+    sign_data_hash: &TransactionSignDataHash,
+    account: &multisig::Identifier,
+    witness: &'a multisig::Witness,
+    spending_counter: account::SpendingCounter,
+) -> Result<multisig::Ledger, Error> {
+    let declaration = ledger.get_identfier_declaration(account)?;
     let data_to_verify = WitnessMultisigData::new(block0_hash, sign_data_hash, spending_counter);
     if !witness.verify(declaration, &data_to_verify) {
         return Err(Error::MultisigInvalidSignature {
@@ -1869,7 +1906,6 @@ fn input_multi_account_verify<'a>(
             witness: Witness::Multisig(spending_counter, witness.clone()),
         });
     }
-    ledger = new_ledger;
     Ok(ledger)
 }
 

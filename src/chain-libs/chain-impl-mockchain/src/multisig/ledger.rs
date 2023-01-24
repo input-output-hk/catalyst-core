@@ -113,21 +113,26 @@ impl Ledger {
         identifier: &Identifier,
         spending_counter: SpendingCounter,
         value: Value,
-    ) -> Result<(Self, &Declaration), LedgerError> {
+    ) -> Result<Self, LedgerError> {
+        let new_accts = self
+            .accounts
+            .remove_value(identifier, spending_counter, value)?;
+        Ok(Self {
+            accounts: new_accts,
+            declarations: self.declarations.clone(),
+        })
+    }
+
+    /// Gets the `&Declaration` for the given `&Identifier`.
+    pub(crate) fn get_identfier_declaration(
+        &self,
+        identifier: &Identifier,
+    ) -> Result<&Declaration, LedgerError> {
         let decl = self
             .declarations
             .lookup(identifier)
             .ok_or(LedgerError::DoesntExist)?;
-        let new_accts = self
-            .accounts
-            .remove_value(identifier, spending_counter, value)?;
-        Ok((
-            Self {
-                accounts: new_accts,
-                declarations: self.declarations.clone(),
-            },
-            decl,
-        ))
+        Ok(decl)
     }
 
     /// Set the delegation of an account in this ledger

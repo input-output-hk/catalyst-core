@@ -2,10 +2,10 @@ use serde_json::{json, Value};
 
 use crate::{
     data::{
-        Nonce, PublicKeyHex, Registration, RewardsAddress, SignedRegistration, StakeKeyHex, TxId,
+        Nonce, PubKey, Registration, RewardsAddress, SignedRegistration, StakeKeyHex, TxId,
         VotingPurpose,
     },
-    Signature, SignatureHex, VotingPowerSource,
+    Signature, Sig, VotingPowerSource,
 };
 
 /// CIP-15 test vector voting key
@@ -25,13 +25,13 @@ pub fn vector() -> SignedRegistration {
         tx_id: TxId(1), // not provided in the test vector
         registration: Registration {
             voting_power_source: VotingPowerSource::direct_from_hex(VOTING_KEY).unwrap(),
-            stake_key: StakeKeyHex(PublicKeyHex::from_hex(STAKE_KEY).unwrap()),
+            stake_key: StakeKeyHex(PubKey::from_hex(STAKE_KEY).unwrap()),
             rewards_address: RewardsAddress::from_hex(REWARD_ADDRESS).unwrap(),
             nonce: Nonce(NONCE),
             voting_purpose: VotingPurpose::CATALYST,
         },
         signature: Signature {
-            inner: SignatureHex::from_hex(SIGNATURE).unwrap(),
+            inner: Sig::from_hex(SIGNATURE).unwrap(),
         },
     }
 }

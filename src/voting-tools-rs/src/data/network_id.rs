@@ -1,5 +1,5 @@
-use core::str::FromStr;
 use core::fmt::Display;
+use core::str::FromStr;
 
 use thiserror::Error;
 
@@ -33,4 +33,3 @@ impl FromStr for NetworkId {
 #[derive(Debug, Error)]
 #[error("unknown variant: {0}")]
 pub struct NetworkInfoFromStrError(String);
-

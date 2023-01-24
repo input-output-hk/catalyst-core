@@ -54,7 +54,7 @@ pub struct Args {
     pub dry_run: Option<DryRunCommand>,
 
     /// The network to validate signatures against
-    #[clap(long)]
+    #[clap(long, default_value = NetworkId::Mainnet)]
     pub network_id: NetworkId,
 
     /// The voting purpose to use in queries
@@ -136,7 +136,7 @@ mod tests {
             "-p",
             "--expected-voting-purpose",
             "0",
-            "--network-info",
+            "--network-id",
             "mainnet",
         ]);
 

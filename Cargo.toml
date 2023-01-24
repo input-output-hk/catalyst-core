@@ -63,7 +63,7 @@ cfg-if = "1"
 
 
 # representing byte buffers while being generic over serde implementations
-bytekind = { path = "../../projects/bytekind", features = ["proptest"] }
+bytekind = "0.1.4"
 
 # provides `NonEmpty` which is like a `Vec` but guarantees it is non-empty
 nonempty = { version = "0.8", features = ["serialize"] }

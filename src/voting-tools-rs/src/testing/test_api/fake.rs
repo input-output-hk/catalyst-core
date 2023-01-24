@@ -1,10 +1,10 @@
-use crate::data::PublicKeyHex;
+use crate::data::PubKey;
 use crate::data::{
     Nonce, Registration, RewardsAddress, Signature, SignedRegistration, SlotNo, StakeKeyHex, TxId,
     VotingKeyHex, VotingPowerSource, VotingPurpose,
 };
 use crate::data_provider::DataProvider;
-use crate::SignatureHex;
+use crate::Sig;
 use bigdecimal::{BigDecimal, FromPrimitive};
 use cardano_serialization_lib::address::Address;
 use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey};
@@ -13,7 +13,7 @@ use mainnet_lib::{
     InMemoryDbSync, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
     REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
 };
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::str::FromStr;
 
 /// Mock db provider based on [`InMemoryDbSync`] struct from [`mainnet_lib`] project.
@@ -53,22 +53,21 @@ impl DataProvider for MockDbProvider {
                             let metadata = metadata_map.get(&METADATUM_1).unwrap();
 
                             if let Ok(data) = metadata.as_bytes() {
-                                VotingPowerSource::Direct(
-                                    PublicKeyHex::from_bytes(data.try_into().unwrap()).into(),
-                                )
+                                let bytes: [u8; 32] = data.try_into().unwrap();
+                                VotingPowerSource::Direct(PubKey(bytes.into()).into())
                             } else {
-                                let mut delegations = vec![];
+                                let mut delegations = BTreeMap::new();
                                 let delgation_list = metadata.as_list().unwrap();
                                 for i in 0..delgation_list.len() {
                                     let inner_list = delgation_list.get(i).as_list().unwrap();
 
                                     let delegation = inner_list.get(0).as_bytes().unwrap();
                                     let delegation =
-                                        PublicKeyHex::from_bytes(delegation.try_into().unwrap());
+                                        PubKey::from_bytes(delegation.try_into().unwrap());
                                     let weight = inner_list.get(1).as_int().unwrap();
                                     let weight =
                                         u32::from_i32(weight.as_i32_or_fail().unwrap()).unwrap();
-                                    delegations.push((VotingKeyHex(delegation), weight));
+                                    delegations.insert(VotingKeyHex(delegation), weight.into());
                                 }
 
                                 VotingPowerSource::Delegated(delegations)
@@ -82,9 +81,8 @@ impl DataProvider for MockDbProvider {
                         )
                         .unwrap();
 
-                        let stake_key = StakeKeyHex(PublicKeyHex::from_bytes(
-                            pub_key.as_bytes().try_into().unwrap(),
-                        ));
+                        let stake_key =
+                            StakeKeyHex(PubKey::from_bytes(pub_key.as_bytes().try_into().unwrap()));
                         let rewards_address = Address::from_bytes(
                             metadata_map.get(&METADATUM_3).unwrap().as_bytes().unwrap(),
                         )
@@ -118,7 +116,7 @@ impl DataProvider for MockDbProvider {
                                 voting_purpose: VotingPurpose(0),
                             },
                             signature: Signature {
-                                inner: SignatureHex::from_bytes(sig.to_bytes().try_into().unwrap()),
+                                inner: Sig::from_bytes(sig.to_bytes().try_into().unwrap()),
                             },
                         }
                     })
@@ -140,7 +138,7 @@ impl DataProvider for MockDbProvider {
                 let big_num = self
                     .db_sync_instance
                     .stakes()
-                    .get(&addr.to_hex())
+                    .get(&hex::encode(addr))
                     .unwrap_or(&BigNum::zero())
                     .to_string();
                 (addr.clone(), BigDecimal::from_str(&big_num).unwrap())

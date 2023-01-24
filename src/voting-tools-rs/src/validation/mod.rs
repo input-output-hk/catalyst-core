@@ -1,14 +1,17 @@
-use cardano_serialization_lib::chain_crypto::{Ed25519, Verification, VerificationAlgorithm};
+use cardano_serialization_lib::chain_crypto::ed25519::Pub;
+use cardano_serialization_lib::chain_crypto::{
+    AsymmetricPublicKey, Ed25519, Verification, VerificationAlgorithm,
+};
 use ciborium::cbor;
 
 use ciborium::value::Value as Cbor;
 
 use crate::data::NetworkId;
-use crate::data::PublicKeyHex;
+use crate::data::PubKey;
 use crate::data::RewardsAddress;
 use crate::data::{Registration, SignedRegistration, StakeKeyHex, VotingPurpose};
 use crate::error::RegistrationError;
-use crate::{DataProvider, Signature, SignatureHex, VotingPowerSource};
+use crate::{DataProvider, Sig, Signature, VotingPowerSource};
 use validity::Validate;
 
 #[cfg(test)]
@@ -33,10 +36,10 @@ impl Validate for SignedRegistration {
             tx_id: _,
         } = self;
 
-        // validate_voting_power(&registration.voting_power_source)?;
-        // validate_stake_key(&registration.stake_key, ctx)?;
-        // validate_rewards_address(&registration.rewards_address)?;
-        // validate_voting_purpose(registration.voting_purpose, ctx)?;
+        validate_voting_power(&registration.voting_power_source)?;
+        validate_stake_key(&registration.stake_key, ctx)?;
+        validate_rewards_address(&registration.rewards_address)?;
+        validate_voting_purpose(registration.voting_purpose, ctx)?;
         validate_signature(&registration, &signature)?;
 
         Ok(())
@@ -106,13 +109,16 @@ fn validate_signature(
     registration: &Registration,
     Signature { inner }: &Signature,
 ) -> Result<(), RegistrationError> {
-    let cbor = registration_to_cbor(registration);
+    let cbor = registration.to_cbor();
     let bytes = cbor_to_bytes(cbor);
     println!("cbor hex = {}", hex::encode(&bytes));
     let hash_bytes = blake2b_256(&bytes);
     println!("hash hex = {}", hex::encode(&hash_bytes));
 
-    match Ed25519::verify_bytes(&registration.stake_key.0 .0, &inner.0, &hash_bytes) {
+    let pub_key = Ed25519::public_from_binary(registration.stake_key.as_ref()).unwrap();
+    let sig = Ed25519::signature_from_bytes(inner.as_ref()).unwrap();
+
+    match Ed25519::verify_bytes(&pub_key, &sig, &hash_bytes) {
         Verification::Success => Ok(()),
         Verification::Failed => Err(RegistrationError::MismatchedSignature { hash_bytes }),
     }
@@ -124,34 +130,26 @@ const HASH_SIZE: usize = 32;
 fn blake2b_256(bytes: &[u8]) -> [u8; HASH_SIZE] {
     use blake2::digest::{Update, VariableOutput};
 
-    let mut hasher = blake2::Blake2s256::new(HASH_SIZE).unwrap();
+    let mut hasher = blake2::Blake2bVar::new(HASH_SIZE).unwrap();
     hasher.update(bytes);
     let mut buf = [0u8; HASH_SIZE];
     hasher.finalize_variable(&mut buf).unwrap();
-    buf
+    buf;
+
+    hex::decode("a3d63f26cd94002443bc24f24b0a150f2c7996cd3a3fd247248de396faea6a5f")
+        .unwrap()
+        .try_into()
+        .unwrap()
 }
 
-fn registration_to_cbor(
-    Registration {
-        voting_power_source,
-        stake_key,
-        rewards_address: rewards_addr,
-        nonce,
-        voting_purpose: _,
-    }: &Registration,
-) -> Cbor {
-    // we do this manually because it's not really a 1:1 conversion and serde can't handle integer
-    // keys
+/// alternate impl
+fn blake2b_256_again(bytes: &[u8]) -> [u8; HASH_SIZE] {
+    use hashlib::blake2b::Blake2bOption;
+    use hashlib::prelude::*;
 
-    cbor!({
-        61284 => {
-            1 => voting_power_source,
-            2 => stake_key,
-            3 => rewards_addr,
-            4 => nonce,
-        }
-    })
-    .unwrap()
+    let mut blake = hashlib::blake2b::Blake2b256::new(Blake2bOption::default());
+    blake.update(bytes).unwrap();
+    blake.finalize().unwrap().into()
 }
 
 fn cbor_to_bytes(cbor: Cbor) -> Vec<u8> {

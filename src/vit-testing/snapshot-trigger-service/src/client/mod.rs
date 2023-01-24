@@ -116,7 +116,9 @@ impl SnapshotResult {
                             new.push((
                                 Identifier::from_hex(&key.to_hex())
                                     .map_err(|e| CannotConvertFromOutput(e.to_string()))?,
-                                weight,
+                                weight.to_u32().expect(
+                                    "this tool only expects voting powers that fit into a u32",
+                                ),
                             ));
                         }
                         VotingDelegations::New(new)

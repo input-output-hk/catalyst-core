@@ -14,6 +14,8 @@ nonempty = { workspace = true }
 validity = { workspace = true }
 bytekind = { workspace = true }
 
+hashlib = "0.1"
+
 color-eyre = "0.6"  # error handling
 clap = { version = "4", features = ["derive", "string"] }
 

@@ -11,7 +11,7 @@ use proptest::{
 use serde::{de::Visitor, Deserialize, Serialize, Serializer};
 
 use cardano_serialization_lib::chain_crypto::{
-    ed25519::{Pub, Sig},
+    ed25519::{Pub},
     AsymmetricPublicKey, Ed25519, VerificationAlgorithm,
 };
 
@@ -32,12 +32,12 @@ macro_rules! fmt_impl {
 
 /// An ED25519 public key, which serializes and deserializes to/from a hex string
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct PublicKeyHex(pub Pub);
+pub struct PubKey(pub Pub);
 
-fmt_impl!(Debug, PublicKeyHex);
-fmt_impl!(Display, PublicKeyHex);
+fmt_impl!(Debug, PubKey);
+fmt_impl!(Display, PubKey);
 
-impl Serialize for PublicKeyHex {
+impl Serialize for PubKey {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -47,7 +47,7 @@ impl Serialize for PublicKeyHex {
     }
 }
 
-impl<'de> Deserialize<'de> for PublicKeyHex {
+impl<'de> Deserialize<'de> for PubKey {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -77,7 +77,7 @@ impl<'de> Deserialize<'de> for PublicKeyHex {
     }
 }
 
-impl Arbitrary for PublicKeyHex {
+impl Arbitrary for PubKey {
     type Parameters = ();
     type Strategy = Map<StrategyFor<[u8; 32]>, fn([u8; 32]) -> Self>;
 
@@ -86,7 +86,7 @@ impl Arbitrary for PublicKeyHex {
     }
 }
 
-impl PublicKeyHex {
+impl PubKey {
     /// Convert this to the hex representation (without leading "0x")
     ///
     /// ```
@@ -151,18 +151,18 @@ impl PublicKeyHex {
 
 /// An ED25519 signature that serializes and deserializes to/from a hex string
 #[derive(Clone)]
-pub struct SignatureHex(pub Sig);
+pub struct Sig(pub ());
 
-fmt_impl!(Debug, SignatureHex);
-fmt_impl!(Display, SignatureHex);
+fmt_impl!(Debug, Sig);
+fmt_impl!(Display, Sig);
 
-impl PartialEq for SignatureHex {
+impl PartialEq for Sig {
     fn eq(&self, other: &Self) -> bool {
         self.0.as_ref() == other.0.as_ref()
     }
 }
 
-impl Serialize for SignatureHex {
+impl Serialize for Sig {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -172,7 +172,7 @@ impl Serialize for SignatureHex {
     }
 }
 
-impl<'de> Deserialize<'de> for SignatureHex {
+impl<'de> Deserialize<'de> for Sig {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -202,7 +202,7 @@ impl<'de> Deserialize<'de> for SignatureHex {
     }
 }
 
-impl Arbitrary for SignatureHex {
+impl Arbitrary for Sig {
     type Parameters = ();
     type Strategy = Map<StrategyFor<[u8; 64]>, fn([u8; 64]) -> Self>;
 
@@ -211,7 +211,7 @@ impl Arbitrary for SignatureHex {
     }
 }
 
-impl SignatureHex {
+impl Sig {
     /// Convert this to the hex representation (without leading "0x")
     ///
     /// ```
@@ -258,7 +258,7 @@ mod tests {
     #[test]
     fn can_parse_cip15_vectors() {
         fn check_key(s: &str) {
-            assert!(serde_json::from_value::<PublicKeyHex>(json!(s)).is_ok());
+            assert!(serde_json::from_value::<PubKey>(json!(s)).is_ok());
         }
 
         check_key("0036ef3e1f0d3f5989e2d155ea54bdb2a72c4c456ccb959af4c94868f473f5a0");
@@ -271,20 +271,20 @@ mod tests {
         let string = hex::encode(&bytes);
         let json_string = serde_json::to_string(&json!(string)).unwrap();
 
-        assert!(serde_json::from_str::<PublicKeyHex>(&json_string).is_err());
+        assert!(serde_json::from_str::<PubKey>(&json_string).is_err());
 
         let bytes = [0u8; 33];
         let string = hex::encode(&bytes);
         let json_string = serde_json::to_string(&json!(string)).unwrap();
 
-        assert!(serde_json::from_str::<PublicKeyHex>(&json_string).is_err());
+        assert!(serde_json::from_str::<PubKey>(&json_string).is_err());
     }
 
     #[proptest]
-    fn public_key_hex_serializes_deserializes_round_trip(key: PublicKeyHex) {
+    fn public_key_hex_serializes_deserializes_round_trip(key: PubKey) {
         let json = json!(key);
         let string = serde_json::to_string(&json).unwrap();
-        let key_again: PublicKeyHex = serde_json::from_str(&string).unwrap();
+        let key_again: PubKey = serde_json::from_str(&string).unwrap();
 
         prop_assert_eq!(key, key_again);
     }
@@ -295,20 +295,20 @@ mod tests {
         let string = hex::encode(&bytes);
         let json_string = serde_json::to_string(&json!(string)).unwrap();
 
-        assert!(serde_json::from_str::<SignatureHex>(&json_string).is_err());
+        assert!(serde_json::from_str::<Sig>(&json_string).is_err());
 
         let bytes = [0u8; 65];
         let string = hex::encode(&bytes);
         let json_string = serde_json::to_string(&json!(string)).unwrap();
 
-        assert!(serde_json::from_str::<SignatureHex>(&json_string).is_err());
+        assert!(serde_json::from_str::<Sig>(&json_string).is_err());
     }
 
     #[proptest]
-    fn signature_hex_serializes_deserializes_round_trip(sig: SignatureHex) {
+    fn signature_hex_serializes_deserializes_round_trip(sig: Sig) {
         let json = json!(sig);
         let string = serde_json::to_string(&json).unwrap();
-        let sig_again: SignatureHex = serde_json::from_str(&string).unwrap();
+        let sig_again: Sig = serde_json::from_str(&string).unwrap();
 
         prop_assert_eq!(sig, sig_again);
     }

@@ -6,7 +6,7 @@
 //! produce similar outputs. Malformed registrations are silently ignored.
 
 #![warn(clippy::pedantic)]
-#![forbid(missing_docs)]
+// #![forbid(missing_docs)]
 #![forbid(unsafe_code)]
 #![forbid(clippy::integer_arithmetic)]
 #![allow(
@@ -36,7 +36,7 @@ mod validation;
 pub use exports::*;
 mod exports {
     pub use crate::cli::{show_error_warning, Args, DryRunCommand};
-    pub use crate::data::{Signature, SignatureHex, SlotNo, SnapshotEntry, VotingPowerSource};
+    pub use crate::data::{Signature, Sig, SlotNo, SnapshotEntry, VotingPowerSource};
     pub use crate::data_provider::DataProvider;
     pub use crate::db::{Conn, Db, DbConfig};
     pub use crate::logic_2::{voting_power, VotingPowerArgs};

@@ -22,7 +22,8 @@ impl Db {
         stake_addrs: &[StakeKeyHex],
     ) -> Result<HashMap<StakeKeyHex, BigDecimal>> {
         let rows = stake_addrs.iter().map(|addr| {
-            let result = self.exec(|conn| query(addr.to_hex()).load(conn))?;
+            let hex = hex::encode(addr.0);
+            let result = self.exec(|conn| query(hex).load(conn))?;
             // this clone is actually a copy, it's only needed because the underlying Ed25519 type
             // doesn't implement `Copy` even though it's just a byte array
             Ok::<_, Report>((addr.clone(), result))

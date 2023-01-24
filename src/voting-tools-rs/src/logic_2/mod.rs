@@ -97,12 +97,9 @@ fn convert_to_snapshot_entry(
         ..
     } = registration.into_inner();
 
-    let voting_power = voting_powers.get(&stake_key).ok_or_else(|| {
-        eyre!(
-            "no voting power available for stake key: {}",
-            stake_key.to_hex()
-        )
-    })?;
+    let voting_power = voting_powers
+        .get(&stake_key)
+        .ok_or_else(|| eyre!("no voting power available for stake key: {}", stake_key))?;
 
     let voting_power = voting_power.clone();
 

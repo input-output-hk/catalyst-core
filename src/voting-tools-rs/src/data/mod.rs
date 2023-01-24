@@ -1,15 +1,18 @@
-use std::ffi::OsString;
+use std::{collections::BTreeMap, ffi::OsString};
 
 use bigdecimal::BigDecimal;
+use bytekind::HexString;
 use clap::builder::OsStr;
 use hex::FromHexError;
 use microtype::microtype;
 use serde::{Deserialize, Serialize};
 
-mod bytes;
 mod arbitrary;
-mod crypto;
-pub use crypto::{PublicKeyHex, SignatureHex};
+mod cbor;
+// mod crypto;
+pub use crypto2::{PubKey, Sig};
+mod crypto2;
+// pub use crypto::{PubKey, Sig};
 pub mod hex_bytes;
 mod network_id;
 pub use network_id::NetworkId;
@@ -32,14 +35,16 @@ pub enum VotingPowerSource {
     /// Delegated voting
     ///
     /// Voting power is based on the staked ada of the delegated keys
-    Delegated(Vec<(VotingKeyHex, u32)>),
+    Delegated(BTreeMap<VotingKeyHex, BigDecimal>),
 }
 
 impl VotingPowerSource {
     /// Create a direct voting power source from a hex string representing a voting key
     #[inline]
     pub fn direct_from_hex(s: &str) -> Result<Self, FromHexError> {
-        Ok(Self::Direct(PublicKeyHex::from_hex(s)?.into()))
+        let mut bytes = [0; 32];
+        hex::decode_to_slice(s, &mut bytes)?;
+        Ok(Self::Direct(PubKey(bytes.into()).into()))
     }
 }
 
@@ -70,7 +75,7 @@ pub struct Signature {
     ///
     /// CIP-15 specifies this must be a field, so an extra layer of nesting is required
     #[serde(rename = "1")]
-    pub inner: SignatureHex,
+    pub inner: Sig,
 }
 
 /// A Catalyst registration in either CIP-15 or CIP-36 format, along with its signature
@@ -119,11 +124,10 @@ pub struct SnapshotEntry {
 
 // Create newtype wrappers for better type safety
 microtype! {
-
-    #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-    pub PublicKeyHex {
-        StakeKeyHex,
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    pub PubKey<HexString> {
         VotingKeyHex,
+        StakeKeyHex,
     }
 
 
@@ -178,6 +182,15 @@ impl From<VotingPurpose> for OsStr {
     }
 }
 
+impl From<NetworkId> for OsStr {
+    fn from(id: NetworkId) -> Self {
+        OsStr::from(match id {
+            NetworkId::Mainnet => "mainnet",
+            NetworkId::Testnet => "testnet",
+        })
+    }
+}
+
 impl SlotNo {
     /// Attempt to convert this to an `i64`
     ///
@@ -201,3 +214,22 @@ impl RewardsAddress {
         Ok(Self(hex::decode(s)?))
     }
 }
+
+macro_rules! hex_impls {
+    ($t:ty) => {
+        impl core::fmt::Display for $t {
+            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                write!(f, "0x{}", hex::encode(&self.0))
+            }
+        }
+
+        impl AsRef<[u8]> for $t {
+            fn as_ref(&self) -> &[u8] {
+                self.0.as_ref()
+            }
+        }
+    };
+}
+
+hex_impls!(VotingKeyHex);
+hex_impls!(StakeKeyHex);

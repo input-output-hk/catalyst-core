@@ -1,4 +1,4 @@
-# Getting started 
+# Getting started
 
 The javascript documentation for this module can be generated with jsdoc by
 running:
@@ -37,7 +37,6 @@ for requirements specific to the platform you are going to be developing for.
 
 Additionally, python3 is required to run the helper scripts.
 
-
 `jcli` is required to generate the genesis file that it is used in
 the test-vectors, installation instructions can be found in the [jormungandr's
 repository](https://github.com/input-output-hk/jormungandr). It's recommended
@@ -51,7 +50,6 @@ compatible.
 - [cross](https://github.com/cross-rs/cross) is currently used for building the
 native libraries for Android.
 - [uniffi-bindgen](https://github.com/mozilla/uniffi-rs). The version must be the same one that is used in the `wallet-uniffi` crate. This can be found [here](../wallet-uniffi/Cargo.toml).
-
 
 ### iOS
 
@@ -97,7 +95,7 @@ package.
 The *tests* directory contains a Cordova plugin with [js
 tests](tests/src/main.js), we use
 [cordova-plugin-test-framework](https://github.com/apache/cordova-plugin-test-framework)
-as a test harness. 
+as a test harness.
 
 The [test.py](scripts/test.py) script can be used to build
 the plugin and setup the test harness. For example, the following command will

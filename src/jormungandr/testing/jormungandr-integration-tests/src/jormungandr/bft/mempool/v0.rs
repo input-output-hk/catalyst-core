@@ -187,7 +187,7 @@ pub fn test_mempool_log_max_entries_only_one_fragment() {
     let fragment_sender =
         FragmentSender::from_settings_with_setup(&settings, FragmentSenderSetup::no_verify());
 
-    let first_fragment = fragment_sender
+    let _first_fragment = fragment_sender
         .send_transaction(&mut sender1, &receiver, &jormungandr, 1.into())
         .unwrap();
 

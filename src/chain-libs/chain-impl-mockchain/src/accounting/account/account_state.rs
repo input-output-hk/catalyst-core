@@ -174,6 +174,23 @@ impl<Extra: Clone> AccountState<Extra> {
         Ok(Some(r))
     }
 
+    /// Spends value from an account state, and returns the new state.
+    ///
+    /// Note that this *also* increments the counter, but does not fail if the
+    /// given counter fails to match the current one. However, it does throw
+    /// a warning.
+    pub(crate) fn spend_unchecked(
+        &self,
+        counter: SpendingCounter,
+        v: Value,
+    ) -> Result<Option<Self>, LedgerError> {
+        let new_value = (self.value - v)?;
+        let mut r = self.clone();
+        r.spending.next_unchecked(counter);
+        r.value = new_value;
+        Ok(Some(r))
+    }
+
     /// Add a value to a token in an account state
     ///
     /// Only error if value is overflowing

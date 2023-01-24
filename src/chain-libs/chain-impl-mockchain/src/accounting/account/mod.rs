@@ -189,6 +189,22 @@ impl<ID: Clone + Eq + Hash, Extra: Clone> Ledger<ID, Extra> {
             .map_err(|e| e.into())
     }
 
+    /// Subtract value from an existing account without spending counter check.
+    ///
+    /// If the account doesn't exist, or if the value deduction would become negative,
+    /// it throws a `LedgerError`.
+    pub(crate) fn remove_value_with_no_spending_counter_check(
+        &self,
+        identifier: &ID,
+        counter: SpendingCounter,
+        value: Value,
+    ) -> Result<Self, LedgerError> {
+        self.0
+            .update(identifier, |st| st.spend_unchecked(counter, value))
+            .map(Ledger)
+            .map_err(|e| e.into())
+    }
+
     pub fn get_total_value(&self) -> Result<Value, ValueError> {
         let values = self
             .0

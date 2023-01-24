@@ -162,6 +162,13 @@ pub enum Block0Error {
 pub type OutputOldAddress = Output<legacy::OldAddress>;
 pub type OutputAddress = Output<Address>;
 
+// Indicates whether account verification deduces the fee value from the account.
+// This is used, for example, for VoteCast transactions.
+enum FeeDeductionMode {
+    Enabled,
+    Disabled,
+}
+
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum Error {
@@ -995,7 +1002,8 @@ impl Ledger {
                 let tx = tx.as_slice();
                 // this is a lightweight check, do this early to avoid doing any unnecessary computation
                 check::valid_vote_cast_tx_slice(&tx)?;
-                let (new_ledger_, _fee) = new_ledger.apply_transaction(&fragment_id, &tx)?;
+                let (new_ledger_, _fee) =
+                    new_ledger.apply_transaction_for_vote_cast(&fragment_id, &tx)?;
 
                 // we've just verified that this is a valid transaction (i.e. contains 1 input and 1 witness)
                 let account_id = match tx
@@ -1072,10 +1080,11 @@ impl Ledger {
         Ok(new_ledger)
     }
 
-    pub fn apply_transaction<'a, Extra>(
+    fn execute_apply_transaction<'a, Extra>(
         mut self,
         fragment_id: &FragmentId,
         tx: &TransactionSlice<'a, Extra>,
+        fee_deduction: FeeDeductionMode,
     ) -> Result<(Self, Value), Error>
     where
         Extra: Payload,
@@ -1084,10 +1093,41 @@ impl Ledger {
         check::valid_transaction_ios_number(tx)?;
         let fee = calculate_fee(tx, &self.settings.linear_fees);
         tx.verify_strictly_balanced(fee)?;
-        self = self.apply_tx_inputs(tx)?;
+        self = self.apply_tx_inputs(tx, fee_deduction)?;
         self = self.apply_tx_outputs(*fragment_id, tx.outputs())?;
         self = self.apply_tx_fee(fee)?;
         Ok((self, fee))
+    }
+
+    /// Applies transaction to the account ledger by validating and verifying
+    /// inputs and outputs, as well as deducing the fee value from the related
+    /// account id.
+    pub fn apply_transaction<'a, Extra>(
+        self,
+        fragment_id: &FragmentId,
+        tx: &TransactionSlice<'a, Extra>,
+    ) -> Result<(Self, Value), Error>
+    where
+        Extra: Payload,
+        LinearFee: FeeAlgorithm,
+    {
+        let result = self.execute_apply_transaction(fragment_id, tx, FeeDeductionMode::Enabled)?;
+        Ok(result)
+    }
+
+    // Applies vote cast transaction to the account ledger by validating and verifying
+    // inputs and outputs WITHOUT deducing the fee.
+    fn apply_transaction_for_vote_cast<'a, Extra>(
+        self,
+        fragment_id: &FragmentId,
+        tx: &TransactionSlice<'a, Extra>,
+    ) -> Result<(Self, Value), Error>
+    where
+        Extra: Payload,
+        LinearFee: FeeAlgorithm,
+    {
+        let result = self.execute_apply_transaction(fragment_id, tx, FeeDeductionMode::Disabled)?;
+        Ok(result)
     }
 
     pub fn apply_update(mut self, update: &UpdateProposal) -> Result<Self, Error> {
@@ -1521,6 +1561,7 @@ impl Ledger {
     fn apply_tx_inputs<Extra: Payload>(
         mut self,
         tx: &TransactionSlice<Extra>,
+        fee_deduction: FeeDeductionMode,
     ) -> Result<Self, Error> {
         let sign_data_hash = tx.transaction_sign_data_hash();
         for (input, witness) in tx.inputs_and_witnesses().iter() {
@@ -1535,26 +1576,46 @@ impl Ledger {
                             witness,
                             spending_counter,
                         ) => {
-                            self.accounts = input_single_account_verify(
-                                self.accounts,
-                                &self.static_params.block0_initial_hash,
-                                &sign_data_hash,
-                                &account_id,
-                                witness,
-                                spending_counter,
-                                value,
-                            )?
+                            self.accounts = match fee_deduction {
+                                FeeDeductionMode::Enabled => input_single_account_verify(
+                                    self.accounts,
+                                    &self.static_params.block0_initial_hash,
+                                    &sign_data_hash,
+                                    &account_id,
+                                    witness,
+                                    spending_counter,
+                                    value,
+                                )?,
+                                FeeDeductionMode::Disabled => single_account_witness_verify(
+                                    self.accounts,
+                                    &self.static_params.block0_initial_hash,
+                                    &sign_data_hash,
+                                    &account_id,
+                                    witness,
+                                    spending_counter,
+                                )?,
+                            };
                         }
                         MatchingIdentifierWitness::Multi(account_id, witness, spending_counter) => {
-                            self.multisig = input_multi_account_verify(
-                                self.multisig,
-                                &self.static_params.block0_initial_hash,
-                                &sign_data_hash,
-                                &account_id,
-                                witness,
-                                spending_counter,
-                                value,
-                            )?
+                            self.multisig = match fee_deduction {
+                                FeeDeductionMode::Enabled => input_multi_account_verify(
+                                    self.multisig,
+                                    &self.static_params.block0_initial_hash,
+                                    &sign_data_hash,
+                                    &account_id,
+                                    witness,
+                                    spending_counter,
+                                    value,
+                                )?,
+                                FeeDeductionMode::Disabled => multi_account_witness_verify(
+                                    self.multisig,
+                                    &self.static_params.block0_initial_hash,
+                                    &sign_data_hash,
+                                    &account_id,
+                                    witness,
+                                    spending_counter,
+                                )?,
+                            };
                         }
                     }
                 }

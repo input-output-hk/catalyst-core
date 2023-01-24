@@ -13,7 +13,7 @@ This state is updated atomically, along with:
 * The staked ADA database
 * The registration database
 
-This ensures that the DB is always in-sync with discreet minted blocks on the block-chain.
+This ensures that the DB is always in-sync with discrete minted blocks on the block-chain.
 The DB NEVER store a partial block update.
 
 * Data

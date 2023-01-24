@@ -59,8 +59,9 @@ Generation:
 
 1. Generate 16, 20, 24, 28, 32 bytes (128 bits to 256 bits in 32 bits increment) as seed, from high quality random.
 2. UX:
-  * Encode the bytes to mnemonics either in BIP39 and EME, or both.
-  * Display to the user for safe keeping (recovery, etc).
+
+* Encode the bytes to mnemonics either in BIP39 and EME, or both.
+* Display to the user for safe keeping (recovery, etc).
 
 Recovery:
 
@@ -135,8 +136,8 @@ The algorithm for master key generation:
     masterKeyGeneration(seed, password) {
         data := PBKDF2(kdf=HMAC-SHA512, iter=4096,
                        salt=seed,
-		       password=password,
-		       outputLen=96);
+         password=password,
+         outputLen=96);
         masterKey := tweakBits(data);
     }
 
@@ -150,7 +151,6 @@ The algorithm for master key generation:
         data[31] &= 0b00011111;
         data[31] |= 0b01000000;
     }
-
 
 ```
 TODO add test vectors of seed+password to output
@@ -209,4 +209,3 @@ BIP44 is defined related to utxo, but we add another change constant of 2
 to generate reusable accounts for a given bip44 account.
 
     root/H(44) / H(COIN_TYPE) / H(ACCOUNT) / S(2) / S(ACCOUNT-INDEX)
-

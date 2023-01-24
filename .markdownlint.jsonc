@@ -1,0 +1,21 @@
+{
+    // markdownlint JSON(C) configuration for Catalyst Standards
+    // Do not individually set markdown lint rules in standards documents.
+  
+    // Default state for all rules
+    "default": true,
+
+    // Code fences should be backtick style.
+    "MD048": {
+        "style": "backtick"
+    },
+
+    // Lines shouldn't be bigger than this.
+    // Use 1 sentence per line and they should never need to be.
+    // If 1 sentence is bigger than this rewrite it, its too long.
+    // If its complaining about embedded HTML, reformat it, or wrap it with an ignore.
+    "MD013": {
+        "line_length": 132
+    }
+
+}

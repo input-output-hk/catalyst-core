@@ -29,7 +29,7 @@ within the declared voting period.
 
 The format of the log entries is bincode serialization of a Rust structure
 containing the unsigned integer timestamp in seconds since the Unix epoch,
-and the fragment serialized in the binary blockchain format: 
+and the fragment serialized in the binary blockchain format:
 
 ```rust
 pub struct FragmentLogEntry {
@@ -100,12 +100,12 @@ is low enough to ignore such occurrences.
 To simplify the logic, the recovery tool only processes fragments of
 these kinds:
 
-- Ballot (VoteCast) transactions with one account input and no outputs.
-- Plain value transfer transactions with one account input and one account
+* Ballot (VoteCast) transactions with one account input and no outputs.
+* Plain value transfer transactions with one account input and one account
   output. The recovery tool updates the voting power with the results of
   the transfer and adds the output accounts.
-- VoteTally transactions, processed as a signal to reveal the tally results.
-- EncryptedVoteTally transactions, processed as a signal to add together
+* VoteTally transactions, processed as a signal to reveal the tally results.
+* EncryptedVoteTally transactions, processed as a signal to add together
   private votes.
 
 Other kinds of fragments are not expected to be submitted by voting users

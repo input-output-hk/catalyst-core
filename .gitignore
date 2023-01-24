@@ -85,9 +85,8 @@ $RECYCLE.BIN/
 
 # Other
 book/html
-book/src/rust/debug
-book/src/rust/doc
-book/src/rust/.rust*
+book/src/06_rust_api/rust_api.md
+book/tmp
 
 /vendor
 

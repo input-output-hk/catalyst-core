@@ -1,4 +1,5 @@
 # iapyx
+
 Test wallet based on rust chain-wallet-libs.
 
 ## Install from Source
@@ -42,12 +43,11 @@ This will install 3 tools:
 * `iapyx-qr`: a command line tool to help you validate your qr code;
 * `iapyx-load`: a command line tool use in load tests scenarios;
 
-
-## iapyx-cli: 
+## iapyx-cli
 
 command line tool to perform operations on wallet (recover,voting etc). Has almost full capability of voting like Voting app.
 
-## iapyx-load: 
+## iapyx-load
 
 load tool for generating load over backend
 
@@ -55,16 +55,17 @@ example:
 `cargo run --bin iapyx-load -- --address 127.0.0.1:8000 --pace 100 --progress-bar-mode monitor --threads 4 -- mnemonics .\mnemonics.txt`
 
 Where mnemonics.txt should have format like:
+
 ```
 town lift follow more chronic lunch weird uniform earth census proof cave gap fancy topic year leader phrase state circle cloth reward dish survey act punch bounce
 neck bulb teach illegal try monitor claw rival amount boring provide village rival draft stone
 ```
 
-## iapyx-qr:
+## iapyx-qr
 
 Utility tool for qr operations (validation etc.).
 
-### Validate qr:
+### Validate qr
 
 In order to validate QR code you need to download it to an image fiel and crop in a way that qr code takes entire image space.
 
@@ -91,8 +92,7 @@ thread 'main' panicked at 'called `Result::unwrap()` on an `Err` value: PinError
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ```
 
-
-If qr code is invalid you should expect 
+If qr code is invalid you should expect
 
 ```
 iapyx-qr check-address --pin 7777 --qr invalid_qr_code.png

@@ -173,11 +173,11 @@ impl<ID: Clone + Eq + Hash, Extra: Clone> Ledger<ID, Extra> {
             .map(Ledger)
     }
 
-    /// Subtract value from an existing account with spending counter check.
+    /// Spend value from an existing account.
     ///
-    /// If the account doesn't exist, or if the spending counter does not match,
-    /// or if the value deduction would become negative, it throws a `LedgerError`.
-    pub fn remove_value(
+    /// If the account doesn't exist, or if the value is too much to spend,
+    /// or if the spending counter doesn't match, it throws a `LedgerError`.
+    pub fn spend(
         &self,
         identifier: &ID,
         counter: SpendingCounter,
@@ -189,11 +189,11 @@ impl<ID: Clone + Eq + Hash, Extra: Clone> Ledger<ID, Extra> {
             .map_err(|e| e.into())
     }
 
-    /// Subtract value from an existing account without spending counter check.
+    /// Spend value from an existing account without spending counter check.
     ///
-    /// If the account doesn't exist, or if the value deduction would become negative,
+    /// If the account doesn't exist, or if the value is too much to spend,
     /// it throws a `LedgerError`.
-    pub(crate) fn remove_value_with_no_spending_counter_check(
+    pub(crate) fn spend_with_no_counter_check(
         &self,
         identifier: &ID,
         counter: SpendingCounter,
@@ -610,7 +610,7 @@ mod tests {
         }
 
         // remove value from account
-        ledger = match ledger.remove_value(&account_id, spending_counter, value) {
+        ledger = match ledger.spend(&account_id, spending_counter, value) {
             Ok(ledger) => ledger,
             Err(err) => {
                 return TestResult::error(format!(
@@ -639,7 +639,7 @@ mod tests {
         }
 
         // removes all funds from account
-        ledger = match ledger.remove_value(&account_id, spending_counter, value_before_reward) {
+        ledger = match ledger.spend(&account_id, spending_counter, value_before_reward) {
             Ok(ledger) => ledger,
             Err(err) => {
                 return TestResult::error(format!(
@@ -691,7 +691,7 @@ mod tests {
     }
 
     #[quickcheck]
-    pub fn ledger_total_value_is_correct_after_remove_value(
+    pub fn ledger_total_value_is_correct_after_spend(
         id: Identifier,
         account_state: AccountState<()>,
         value_to_remove: Value,
@@ -700,7 +700,7 @@ mod tests {
         ledger = ledger
             .add_account(id.clone(), account_state.value(), ())
             .unwrap();
-        let result = ledger.remove_value(&id, SpendingCounter::zero(), value_to_remove);
+        let result = ledger.spend(&id, SpendingCounter::zero(), value_to_remove);
         let expected_result = account_state.value() - value_to_remove;
         match (result, expected_result) {
             (Err(_), Err(_)) => verify_total_value(ledger, account_state.value()),

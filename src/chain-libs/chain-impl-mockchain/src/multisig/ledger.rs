@@ -107,25 +107,28 @@ impl Ledger {
         self.declarations.iter()
     }
 
-    /// If the account doesn't exist, or that the value would become negative, errors out.
-    pub fn remove_value(
+    /// Spend value from an existing account.
+    ///
+    /// If the account doesn't exist, or if the value is too much to spend,
+    /// or if the spending counter doesn't match, it throws a `LedgerError`.
+    pub fn spend(
         &self,
         identifier: &Identifier,
         counter: SpendingCounter,
         value: Value,
     ) -> Result<Self, LedgerError> {
-        let new_accts = self.accounts.remove_value(identifier, counter, value)?;
+        let new_accts = self.accounts.spend(identifier, counter, value)?;
         Ok(Self {
             accounts: new_accts,
             declarations: self.declarations.clone(),
         })
     }
 
-    /// Subtract value from an existing account without spending counter check.
+    /// Spend value from an existing account without spending counter check.
     ///
-    /// If the account doesn't exist, or if the value deduction would become negative,
+    /// If the account doesn't exist, or if the value is too much to spend,
     /// it throws a `LedgerError`.
-    pub(crate) fn remove_value_with_no_spending_counter_check(
+    pub(crate) fn spend_with_no_counter_check(
         &self,
         identifier: &Identifier,
         counter: SpendingCounter,
@@ -133,7 +136,7 @@ impl Ledger {
     ) -> Result<Self, LedgerError> {
         let new_accts = self
             .accounts
-            .remove_value_with_no_spending_counter_check(identifier, counter, value)?;
+            .spend_with_no_counter_check(identifier, counter, value)?;
         Ok(Self {
             accounts: new_accts,
             declarations: self.declarations.clone(),

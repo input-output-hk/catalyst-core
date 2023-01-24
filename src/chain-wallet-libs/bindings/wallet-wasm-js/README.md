@@ -13,7 +13,7 @@ See the `Wallet` class for a starting point in the API documentation.
 wasm-pack build -d pkg
 ```
 
-Use the `--target` option to select the target environment for the package. 
+Use the `--target` option to select the target environment for the package.
 
 For a quicker, but unoptimized build:
 
@@ -31,6 +31,7 @@ jsdoc pkg -c ../../jsdoc.json -d pkg/doc -R README.md
 ```
 
 ## Tests
+
 ```
 wasm-pack test <target>
 ```

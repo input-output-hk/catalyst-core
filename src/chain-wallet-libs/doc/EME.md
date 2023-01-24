@@ -20,8 +20,8 @@ The following apply to wallet key seed:
 
 * 2 bits : master key derivation version.
   * Version 0: use the scheme defined below
-* 3 bits : mnemonic size (invalid=0b000,12=0b001, 15=0b010, 18=0b011, 21=0b100, 24=0b101, and by extension: 27=0b110, 30=0b111) 
-* 4 bits : checksum of the first 2 words (22bits) 0b1111. How is it computed ? 
+* 3 bits : mnemonic size (invalid=0b000,12=0b001, 15=0b010, 18=0b011, 21=0b100, 24=0b101, and by extension: 27=0b110, 30=0b111)
+* 4 bits : checksum of the first 2 words (22bits) 0b1111. How is it computed ?
 
 The mnemonic size allows after the words to determine the number of words are
 expected for this instance. This can be used for the UI either during the
@@ -36,4 +36,3 @@ scheme.
 ```
 TODO test vectors
 ```
-

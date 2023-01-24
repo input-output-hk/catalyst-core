@@ -125,20 +125,6 @@ pub struct VoterInfo {
     pub voter_info: Vec<VotingPower>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct DelegatorInfo {
-    pub dreps: Vec<String>,
-    pub voting_groups: Vec<String>,
-    /// Timestamp for the latest update in voter info in the current snapshot
-    #[serde(
-        deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_unix_timestamp_from_rfc3339"
-    )]
-    #[serde(
-        serialize_with = "vit_servicing_station_lib::utils::serde::serialize_unix_timestamp_as_rfc3339"
-    )]
-    pub last_updated: i64,
-}
-
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct VotingPower {
     pub voting_power: u64,

@@ -5,10 +5,11 @@ mod search;
 
 pub use raw::RestClient as RawRestClient;
 pub use search::SearchRequestBuilder;
+use vit_servicing_station_lib::v0::endpoints::snapshot::DelegatorInfo;
 
 use crate::common::clients::rest::path::RestPathBuilder;
 use crate::common::raw_snapshot::RawSnapshot;
-use crate::common::snapshot::{DelegatorInfo, Snapshot, VoterInfo};
+use crate::common::snapshot::{Snapshot, VoterInfo};
 use hyper::StatusCode;
 use logger::RestClientLogger;
 use reqwest::blocking::Response;

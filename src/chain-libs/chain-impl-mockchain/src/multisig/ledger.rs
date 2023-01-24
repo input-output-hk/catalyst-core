@@ -111,12 +111,29 @@ impl Ledger {
     pub fn remove_value(
         &self,
         identifier: &Identifier,
-        spending_counter: SpendingCounter,
+        counter: SpendingCounter,
+        value: Value,
+    ) -> Result<Self, LedgerError> {
+        let new_accts = self.accounts.remove_value(identifier, counter, value)?;
+        Ok(Self {
+            accounts: new_accts,
+            declarations: self.declarations.clone(),
+        })
+    }
+
+    /// Subtract value from an existing account without spending counter check.
+    ///
+    /// If the account doesn't exist, or if the value deduction would become negative,
+    /// it throws a `LedgerError`.
+    pub(crate) fn remove_value_with_no_spending_counter_check(
+        &self,
+        identifier: &Identifier,
+        counter: SpendingCounter,
         value: Value,
     ) -> Result<Self, LedgerError> {
         let new_accts = self
             .accounts
-            .remove_value(identifier, spending_counter, value)?;
+            .remove_value_with_no_spending_counter_check(identifier, counter, value)?;
         Ok(Self {
             accounts: new_accts,
             declarations: self.declarations.clone(),
@@ -124,7 +141,7 @@ impl Ledger {
     }
 
     /// Gets the `&Declaration` for the given `&Identifier`.
-    pub(crate) fn get_identfier_declaration(
+    pub(crate) fn get_declaration_by_id(
         &self,
         identifier: &Identifier,
     ) -> Result<&Declaration, LedgerError> {

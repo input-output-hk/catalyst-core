@@ -57,7 +57,6 @@ The first byte is encoded as such:
          |
           \__ discrimination
 
-
 Discrimininant bit is defined as:
 
 * TestNet type of address : 0x1

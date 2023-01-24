@@ -28,7 +28,6 @@ This is the general progress
 | Security audit   | 0%             |
 | Perf improvement | 1%             |
 
-
 Ledger
 ------
 

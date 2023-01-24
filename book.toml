@@ -14,13 +14,16 @@ create-missing = false # DO NOT create missing files.
 clean-paths = false
 
 [preprocessor.regex]
-patterns = "./book/src/assets/patterns/patterns.json"
+patterns = "./book/templates/patterns.json"
 after = ["fs-summary"] # Because ALL other preprocessors run AFTER regex, no need to specify in all.
 before = [ # Make sure regex pre-processing happens before any other pre-processing.
     "kroki-preprocessor",
     "admonish",
-    "open-on-gh"
+    "open-on-gh",
+    "template"
 ]
+
+[preprocessor.template]
 
 [preprocessor.kroki-preprocessor]
 

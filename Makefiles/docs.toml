@@ -45,6 +45,16 @@ install_crate = { crate_name = "mdbook-fs-summary", binary = "mdbook-fs-summary"
 [tasks.install-cargo-spellcheck]
 install_crate = { crate_name = "cargo-spellcheck", binary = "cargo-spellcheck", test_arg = "--help" }
 
+# Make a Page TOC on the RHS 
+# See: https://crates.io/crates/mdbook-theme
+[tasks.install-mdbook-theme]
+install_crate = { crate_name = "mdbook-theme", binary = "mdbook-theme", test_arg = "--help" }
+
+# Allow the use of templates
+# See: https://crates.io/crates/mdbook-template
+[tasks.install-mdbook-template]
+install_crate = { crate_name = "mdbook-template", binary = "mdbook-template", test_arg = "--help" }
+
 
 [tasks.install-docs-prereqs]
 workspace = false
@@ -55,6 +65,8 @@ run_task = { name = [
         "install-mdbook-open-on-gh",
         "install-mdbook-linkcheck",
         "install-mdbook-fs-summary",
+        "install-mdbook-theme",
+        "install-mdbook-template",
         "install-cargo-spellcheck"
     ], parallel = true }
 dependencies = [

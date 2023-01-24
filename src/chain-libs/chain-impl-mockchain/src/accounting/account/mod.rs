@@ -173,17 +173,18 @@ impl<ID: Clone + Eq + Hash, Extra: Clone> Ledger<ID, Extra> {
             .map(Ledger)
     }
 
-    /// Subtract value to an existing account.
+    /// Subtract value from an existing account with spending counter check.
     ///
-    /// If the account doesn't exist, or that the value would become negative, errors out.
+    /// If the account doesn't exist, or if the spending counter does not match,
+    /// or if the value deduction would become negative, it throws a `LedgerError`.
     pub fn remove_value(
         &self,
         identifier: &ID,
-        spending: SpendingCounter,
+        counter: SpendingCounter,
         value: Value,
     ) -> Result<Self, LedgerError> {
         self.0
-            .update(identifier, |st| st.sub(spending, value))
+            .update(identifier, |st| st.spend(counter, value))
             .map(Ledger)
             .map_err(|e| e.into())
     }

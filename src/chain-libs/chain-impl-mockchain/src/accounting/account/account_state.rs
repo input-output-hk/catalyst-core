@@ -162,11 +162,11 @@ impl<Extra: Clone> AccountState<Extra> {
         Ok(st)
     }
 
-    /// Subtract a value from an account state, and return the new state.
+    /// Spends value from an account state, and returns the new state.
     ///
-    /// Note that this *also* increment the counter, as this function would be usually call
-    /// for spending.
-    pub fn sub(&self, spending: SpendingCounter, v: Value) -> Result<Option<Self>, LedgerError> {
+    /// Note that this *also* increments the counter, as this function is usually
+    /// used for spending.
+    pub fn spend(&self, spending: SpendingCounter, v: Value) -> Result<Option<Self>, LedgerError> {
         let new_value = (self.value - v)?;
         let mut r = self.clone();
         r.spending.next_verify(spending)?;
@@ -226,7 +226,7 @@ mod tests {
         account_state.spending = SpendingCounterIncreasing::new_from_counter(counter);
         assert_eq!(
             should_sub_fail(account_state.clone(), sub_value),
-            account_state.sub(counter, sub_value).is_err(),
+            account_state.spend(counter, sub_value).is_err(),
         )
     }
 
@@ -385,7 +385,7 @@ mod tests {
                 }
                 ArbitraryAccountStateOp::Sub(value) => {
                     let should_fail = should_sub_fail(account_state.clone(), value);
-                    match (should_fail, account_state.sub(counter, value)) {
+                    match (should_fail, account_state.spend(counter, value)) {
                         (false, Ok(account_state)) => {
                             strategy.next_verify(counter).expect("success");
                             counter = counter.increment();
@@ -399,8 +399,8 @@ mod tests {
                             }
                         }
                         (true, Err(_)) => account_state,
-                        (false,  Err(err)) => panic!("Operation {}: unexpected sub operation failure. Expected success but got: {:?}",op_counter,err),
-                        (true, Ok(account_state)) => panic!("Operation {}: unexpected sub operation success. Expected failure but got: success. AccountState: {:?}",op_counter, &account_state),
+                        (false,  Err(err)) => panic!("Operation {}: unexpected spend operation failure. Expected success but got: {:?}",op_counter,err),
+                        (true, Ok(account_state)) => panic!("Operation {}: unexpected spend operation success. Expected failure but got: success. AccountState: {:?}",op_counter, &account_state),
                     }
                 }
                 ArbitraryAccountStateOp::Delegate(stake_pool_id) => {

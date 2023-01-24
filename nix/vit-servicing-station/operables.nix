@@ -3,7 +3,6 @@
   cell,
 }: let
   inherit (inputs) nixpkgs std;
-  inherit (inputs.cells.artifacts) artifacts;
   inherit (inputs.cells.lib) lib;
   l = nixpkgs.lib // builtins;
 

@@ -1,18 +1,16 @@
-use cardano_serialization_lib::chain_crypto::ed25519::Pub;
 use cardano_serialization_lib::chain_crypto::{
     AsymmetricPublicKey, Ed25519, Verification, VerificationAlgorithm,
 };
-use ciborium::cbor;
-
 use ciborium::value::Value as Cbor;
 
 use crate::data::NetworkId;
-use crate::data::PubKey;
 use crate::data::RewardsAddress;
 use crate::data::{Registration, SignedRegistration, StakeKeyHex, VotingPurpose};
 use crate::error::RegistrationError;
-use crate::{DataProvider, Sig, Signature, VotingPowerSource};
+use crate::{DataProvider, Signature, VotingPowerSource};
 use validity::Validate;
+
+mod hash;
 
 #[cfg(test)]
 mod tests;
@@ -112,7 +110,7 @@ fn validate_signature(
     let cbor = registration.to_cbor();
     let bytes = cbor_to_bytes(cbor);
     println!("cbor hex = {}", hex::encode(&bytes));
-    let hash_bytes = blake2b_256(&bytes);
+    let hash_bytes = hash::hash(&bytes);
     println!("hash hex = {}", hex::encode(&hash_bytes));
 
     let pub_key = Ed25519::public_from_binary(registration.stake_key.as_ref()).unwrap();
@@ -122,34 +120,6 @@ fn validate_signature(
         Verification::Success => Ok(()),
         Verification::Failed => Err(RegistrationError::MismatchedSignature { hash_bytes }),
     }
-}
-
-const HASH_SIZE: usize = 32;
-
-/// Simple helper function to compute the blake2b_256 hash of a byte slice
-fn blake2b_256(bytes: &[u8]) -> [u8; HASH_SIZE] {
-    use blake2::digest::{Update, VariableOutput};
-
-    let mut hasher = blake2::Blake2bVar::new(HASH_SIZE).unwrap();
-    hasher.update(bytes);
-    let mut buf = [0u8; HASH_SIZE];
-    hasher.finalize_variable(&mut buf).unwrap();
-    buf;
-
-    hex::decode("a3d63f26cd94002443bc24f24b0a150f2c7996cd3a3fd247248de396faea6a5f")
-        .unwrap()
-        .try_into()
-        .unwrap()
-}
-
-/// alternate impl
-fn blake2b_256_again(bytes: &[u8]) -> [u8; HASH_SIZE] {
-    use hashlib::blake2b::Blake2bOption;
-    use hashlib::prelude::*;
-
-    let mut blake = hashlib::blake2b::Blake2b256::new(Blake2bOption::default());
-    blake.update(bytes).unwrap();
-    blake.finalize().unwrap().into()
 }
 
 fn cbor_to_bytes(cbor: Cbor) -> Vec<u8> {

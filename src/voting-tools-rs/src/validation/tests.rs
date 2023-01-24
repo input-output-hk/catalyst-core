@@ -37,31 +37,7 @@ fn can_serialize_cbor() {
 
 // taken from the cip 15 test vector
 const HASH_BYTES_HEX: &str = "a3d63f26cd94002443bc24f24b0a150f2c7996cd3a3fd247248de396faea6a5f";
-const METADATA_CBOR_HEX_BYTES: &str = "a119ef64a401982000183618ef183e181f0d183f1859188918e218d1185518ea185418bd18b218a7182c184c1845186c18cb1895189a18f418c91848186818f4187318f518a0029820188618870e18fc189918c4185318a8187318a11864189218ce18871873188e18c7189a0e18bd061843187918a6182e182c189c18f418e118191821189e03981d18e018ae183a0a187a18ed18a418ae18a5182218e7184e184f18e31867185918fc18a807188918a61318a5188a1843186418f618ec18ef041904d2";
-
-#[test]
-fn blake2b_256_works() {
-    let bytes = hex::decode(METADATA_CBOR_HEX_BYTES).unwrap();
-    let hash = blake2b_256(&bytes);
-    let hash_hex = hex::encode(&hash);
-
-    assert_eq!(hash_hex, HASH_BYTES_HEX);
-}
-
-#[test]
-fn cip15_test_vector_hashes_correctly() {
-    let SignedRegistration { registration, .. } = cip15::vector();
-    let cbor = registration.to_cbor();
-    let cbor_bytes = cbor_to_bytes(cbor);
-    let cbor_bytes_hex = hex::encode(&cbor_bytes);
-
-    assert_eq!(cbor_bytes_hex, METADATA_CBOR_HEX_BYTES);
-
-    let hash = blake2b_256(&cbor_bytes);
-    let cbor_hex = hex::encode(&hash);
-
-    assert_eq!(cbor_hex, HASH_BYTES_HEX);
-}
+const METADATA_CBOR_HEX_BYTES: &str = "a119ef64a40158200036ef3e1f0d3f5989e2d155ea54bdb2a72c4c456ccb959af4c94868f473f5a002582086870efc99c453a873a16492ce87738ec79a0ebd064379a62e2c9cf4e119219e03581de0ae3a0a7aeda4aea522e74e4fe36759fca80789a613a58a4364f6ecef041904d2";
 
 #[test]
 fn fails_if_empty_delegations() {

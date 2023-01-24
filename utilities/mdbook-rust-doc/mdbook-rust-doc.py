@@ -9,6 +9,7 @@ import subprocess
 import json
 
 from pathlib import Path
+from string import punctuation
 
 
 def is_dir(dir):
@@ -89,7 +90,8 @@ def output_dep_package(package, all_packages, offset, html):
     if name_path in html:
         docs_path = html[name_path]
 
-    output_string = f"{' '*offset}- [{package['name']}]({docs_path}){description}\n"
+    output_string = f"{' '*offset}- [{package['name']}]({docs_path}){description}".strip().strip(punctuation)
+    output_string += "\n"
     
     if "dependencies" in package:
         for dep in package["dependencies"]:
@@ -108,13 +110,17 @@ def generate_mdbook_rustdoc(args):
     tl_packages, all_packages = index_packages(meta)
 
     md_file = "# Rust API Documentation and Packages\n\n"
+    md_file += "<!-- markdownlint-disable line-length -->\n\n"
 
     for package in tl_packages:
         real_package = all_packages[package]
-        md_file += f"## {real_package['name']} {package_description(real_package)}\n\n"
+        md_file += f"## {real_package['name']} {package_description(real_package)}".strip().strip(punctuation)
+        md_file += "\n\n"
         md_file += output_dep_package(all_packages[package], all_packages, 0, html)
         md_file += "\n"
         
+    # End with 1 trailing newline.
+    md_file = md_file.strip() + "\n"
         
     args.page.write_text(md_file)
 

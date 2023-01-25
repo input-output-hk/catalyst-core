@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # Simple program to create an index for rust doc documentation, to be embedded inside an md-book
-# We do not use any non-standard packages, so this script should "just work" if
+# We do not use any non-standard packages, so this script should "just work" if Python 3 is installed.
 
 import argparse
 import sys
-import os
 import subprocess
 import json
 

@@ -3,6 +3,7 @@
 This tool generates voting power info from a db-sync instance.
 
 Example usage:
+
 ```
 snapshot-tool --db postgres --db-user postgres --db-host localhost --out-file output.json
 ```
@@ -22,6 +23,7 @@ Database tests perform predefined queries against a test database. If the result
 There are also "reference database tests", which populate a mock database with fake data, run queries against them, and check the results. These do not require the preset test data, as the correct data is created in the test.
 
 Once you have this database set up, create a file at `<project_root>/test_db.json`, which contains credentials to connect to this database, for example:
+
 ```json
 {
   "host": "localhost",
@@ -30,6 +32,7 @@ Once you have this database set up, create a file at `<project_root>/test_db.jso
   "password": "password"
 }
 ```
+
 (Note, password is optional).
 
 From there, running `cargo test` will run database tests as well as regular tests. If tests pass, great!

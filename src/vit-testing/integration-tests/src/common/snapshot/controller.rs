@@ -3,8 +3,8 @@ use snapshot_trigger_service::client::rest::SnapshotRestClient;
 use snapshot_trigger_service::client::{Error, SnapshotResult};
 use snapshot_trigger_service::config::Configuration;
 use snapshot_trigger_service::config::JobParameters;
-use voting_tools_rs::SnapshotEntry;
 use std::process::Child;
+use voting_tools_rs::SnapshotEntry;
 
 pub struct SnapshotServiceController {
     child: Child,

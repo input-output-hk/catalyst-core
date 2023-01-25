@@ -18,8 +18,6 @@ mod utils;
 pub use inner::{Conn, Db};
 use serde::Deserialize;
 
-
-
 /// Information required to connect to a database
 #[derive(Debug, Clone, Deserialize)]
 pub struct DbConfig {

@@ -1,9 +1,7 @@
 use serde_json::{json, Value};
 
 use crate::{
-    data::{
-        Nonce, PubKey, Registration, RewardsAddress, SignedRegistration, StakeKeyHex, TxId,
-    },
+    data::{Nonce, PubKey, Registration, RewardsAddress, SignedRegistration, StakeKeyHex, TxId},
     Sig, Signature, VotingPowerSource,
 };
 

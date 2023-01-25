@@ -1,5 +1,5 @@
+use crate::data::{SignedRegistration, SlotNo, StakeKeyHex};
 use crate::data_provider::DataProvider;
-use crate::data::{SlotNo, SignedRegistration, StakeKeyHex};
 use crate::Db;
 use bigdecimal::BigDecimal;
 use std::collections::HashMap;

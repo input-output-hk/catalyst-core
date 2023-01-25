@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PUBLISH_DOCS: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      TEST_DOCS: ${{ github.event_name == 'push' && github.ref == 'refs/heads/docs' }}
     permissions:
       contents: write
     concurrency:
@@ -35,7 +36,7 @@ jobs:
           args: make build-docs
 
       - name: Deploy
-        if: ${{ env.PUBLISH_DOCS }}
+        if: ${{ env.PUBLISH_DOCS || env.TEST_DOCS }}
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

@@ -81,15 +81,18 @@ sidebar-width            = "450px"
 #turn-off = false
 
 [output.html]
-theme          = "book/src/assets/theme"
+theme          = "book/assets/theme"
 additional-css = [
-    "./book/src/assets/css/mdbook-admonish.css",
-    "./book/src/assets/css/open-in.css",
-    "./book/src/assets/theme/pagetoc.css"
+    "./book/assets/css/mdbook-admonish.css",
+    "./book/assets/css/open-in.css",
+    "./book/assets/theme/pagetoc.css",
+    "./book/assets/theme/css/chrome.css",
+    "./book/assets/theme/css/general.css",
+    "./book/assets/theme/css/variables.css"
 ]
 
 additional-js = [
-    "./book/src/assets/theme/pagetoc.js"
+    "./book/assets/theme/pagetoc.js"
 ]
 
 # Required: Your repository URL used in the link.

@@ -19,6 +19,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      PUBLISH_DOCS: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     permissions:
       contents: write
     concurrency:
@@ -33,8 +35,8 @@ jobs:
           args: make build-docs
 
       - name: Deploy
+        if: ${{ env.PUBLISH_DOCS }}
         uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./book/html

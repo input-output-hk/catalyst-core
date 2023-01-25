@@ -48,18 +48,10 @@ impl VoteCastTxBuilder {
     ///
     /// The `account` parameter gives the Ed25519Extended private key
     /// of the account.
-    pub fn build_tx(
-        mut self,
-        hex_account_id: String,
-        counter: u32,
-        lane: usize,
-    ) -> Result<VoteCastTxBuilder, JsValue> {
+    pub fn build_tx(mut self, hex_account_id: String) -> Result<VoteCastTxBuilder, JsValue> {
         self.0 = self
             .0
-            .build_tx(
-                hex_account_id,
-                SpendingCounter::new(lane, counter).map_err(|e| JsValue::from(e.to_string()))?,
-            )
+            .build_tx(hex_account_id, SpendingCounter::zero())
             .map_err(|e| JsValue::from(e.to_string()))?;
         Ok(self)
     }

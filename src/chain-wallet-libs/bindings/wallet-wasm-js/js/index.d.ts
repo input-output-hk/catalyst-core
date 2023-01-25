@@ -58,26 +58,15 @@ export class Proposal {
 export class Vote {
   proposal: Proposal;
   choice: number;
-  spendingCounter: number;
-  spendingCounterLane: number;
 
   /**
    * Vote constructor
    *
    * @param {Proposal} proposal
    * @param {number} choice choosen vote plan option
-   * @param {BlockDate} expiration expiration date of vote transaction (deprecated param)
-   * @param {number} spendingCounter
-   * @param {number} spendingCounterLane
    * @returns {Vote}
    */
-  constructor(
-    proposal: Proposal,
-    choice: number,
-    expiration: BlockDate,
-    spendingCounter: number,
-    spendingCounterLane: number
-  ): Vote;
+  constructor(proposal: Proposal, choice: number): Vote;
 }
 
 /**

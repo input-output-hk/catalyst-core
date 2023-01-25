@@ -44,10 +44,7 @@ fn filter_active_addresses(
     snapshot_info: Vec<SnapshotInfo>,
     threshold: Threshold,
 ) -> Vec<SnapshotInfo> {
-    println!("filter_active_address::threshold total:");
-    println!("{:#?}", threshold.total);
-
-    let return_value = snapshot_info
+    snapshot_info
         .into_iter()
         .filter(|v| {
             if let Some(votes) = vote_count.get(&v.hir.voting_key) {
@@ -56,12 +53,7 @@ fn filter_active_addresses(
                 threshold.filter(&HashSet::new())
             }
         })
-        .collect();
-
-    println!("filter_active_address::return value:");
-    println!("{:#?}", return_value);
-
-    return return_value;
+        .collect()
 }
 
 pub fn account_hex_to_address(
@@ -124,11 +116,6 @@ pub fn calc_voter_rewards(
         return Err(Error::MultipleEntries);
     }
     let active_addresses = filter_active_addresses(vote_count, voters, vote_threshold);
-
-    println!("calc_voter_rewards::active addresses len:");
-    println!("{:#?}", active_addresses.len());
-    println!("calc_voter_rewards::active addresses:");
-    println!("{:#?}", active_addresses);
 
     let mut total_active_stake = 0u64;
     let mut stake_per_voter = HashMap::new();

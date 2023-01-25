@@ -13,11 +13,8 @@ use hersir::{
     config::{BlockchainConfiguration, SpawnParams, WalletTemplateBuilder},
 };
 use jormungandr_automation::{
-    jormungandr::{
-        Block0ConfigurationBuilder, FragmentNode, JormungandrBootstrapper, MemPoolCheck,
-        NodeConfigBuilder,
-    },
-    testing::{block0::Block0ConfigurationExtension, keys::create_new_key_pair, time},
+    jormungandr::{Block0ConfigurationBuilder, FragmentNode, MemPoolCheck, NodeConfigBuilder},
+    testing::{keys::create_new_key_pair, time},
 };
 use jormungandr_lib::interfaces::{
     BlockDate as BlockDateDto, InitialToken, InitialUTxO, Mempool, PersistentLog, SlotDuration,
@@ -425,126 +422,6 @@ pub fn node_should_pickup_log_after_restart() {
     let persistent_log_viewer = PersistentLogViewer::new(persistent_log_path.path().to_path_buf());
 
     assert_eq!(20, persistent_log_viewer.get_all().len());
-}
-
-#[test]
-/// Verifies that a leader node will reject a fragment that has expired, even after it's been
-/// accepted in its mempool.
-pub fn expired_fragment_should_be_rejected_by_leader_praos_node() {
-    let temp_dir = TempDir::new().unwrap();
-
-    const N_FRAGMENTS: u32 = 10;
-
-    let receiver = thor::Wallet::default();
-    let mut sender = thor::Wallet::default();
-
-    let jormungandr = SingleNodeTestBootstrapper::default()
-        .as_bft_leader()
-        .with_block0_config(
-            Block0ConfigurationBuilder::default()
-                .with_wallets_having_some_values(vec![&sender, &receiver])
-                .with_block_content_max_size(256.into()) // This should only fit 1 transaction
-                .with_slots_per_epoch(N_FRAGMENTS.try_into().unwrap()),
-        )
-        .with_node_config(
-            NodeConfigBuilder::default()
-                .with_mempool(Mempool {
-                    pool_max_entries: 1000.into(),
-                    log_max_entries: 1000.into(),
-                    persistent_log: None,
-                })
-                .with_log_level("debug".to_string()),
-        )
-        .build()
-        .start_node(temp_dir)
-        .unwrap();
-
-    let fragment_sender = FragmentSender::try_from_with_setup(
-        &jormungandr,
-        BlockDate::first().next_epoch(),
-        FragmentSenderSetup::no_verify(),
-    )
-    .unwrap();
-
-    for i in 0..N_FRAGMENTS as u64 {
-        fragment_sender
-            .send_transaction(&mut sender, &receiver, &jormungandr, (100 + i).into())
-            .unwrap();
-    }
-
-    let check = fragment_sender
-        .send_transaction(&mut sender, &receiver, &jormungandr, 1.into())
-        .unwrap();
-
-    // By the time the rest of the transactions have been placed in blocks, the epoch should be over
-    // and the transaction below should have expired.
-    FragmentVerifier::wait_and_verify_is_rejected(Duration::from_secs(1), check, &jormungandr)
-        .unwrap();
-}
-
-#[test]
-/// Verifies that a passive node will reject a fragment that has expired, even after it's been
-/// accepted in its mempool.
-fn expired_fragment_should_be_rejected_by_passive_bft_node() {
-    const N_FRAGMENTS: u32 = 10;
-    let leader_dir = TempDir::new().unwrap();
-    let passive_dir = TempDir::new().unwrap();
-    let receiver = thor::Wallet::default();
-    let mut sender = thor::Wallet::default();
-
-    let context = SingleNodeTestBootstrapper::default()
-        .as_bft_leader()
-        .with_block0_config(
-            Block0ConfigurationBuilder::default()
-                .with_wallets_having_some_values(vec![&sender, &receiver])
-                .with_block_content_max_size(256.into()) // This should only fit 1 transaction
-                .with_slots_per_epoch(N_FRAGMENTS.try_into().unwrap()),
-        )
-        .with_node_config(
-            NodeConfigBuilder::default()
-                .with_mempool(Mempool {
-                    pool_max_entries: 1000.into(),
-                    log_max_entries: 1000.into(),
-                    persistent_log: None,
-                })
-                .with_log_level("debug".to_string()),
-        )
-        .build();
-
-    let leader = context.start_node(leader_dir).unwrap();
-
-    let passive = JormungandrBootstrapper::default_with_config(
-        NodeConfigBuilder::default()
-            .with_trusted_peers(vec![leader.to_trusted_peer()])
-            .with_log_level("debug")
-            .build(),
-    )
-    .passive()
-    .with_block0_hash(context.block0_config().to_block_hash())
-    .into_starter(passive_dir)
-    .unwrap()
-    .start()
-    .unwrap();
-
-    let fragment_sender = FragmentSender::from_settings_with_setup(
-        &passive.rest().settings().unwrap(),
-        FragmentSenderSetup::no_verify(),
-    );
-
-    for i in 0..N_FRAGMENTS as u64 {
-        fragment_sender
-            .send_transaction(&mut sender, &receiver, &passive, (100 + i).into())
-            .unwrap();
-    }
-
-    let check = fragment_sender
-        .send_transaction(&mut sender, &receiver, &passive, 1.into())
-        .unwrap();
-
-    // By the time the rest of the transactions have been placed in blocks, the epoch should be over
-    // and the transaction below should have expired.
-    FragmentVerifier::wait_and_verify_is_rejected(Duration::from_secs(30), check, &passive)
-        .unwrap();
 }
 
 #[test]

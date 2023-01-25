@@ -21,13 +21,13 @@ use vitup::config::{Role, DIRECT_VOTING_GROUP};
 use vitup::testing::spawn_network;
 use vitup::testing::vitup_setup;
 
-const CHALLENGES_COUNT:usize = 1;
-const PROPOSALS_COUNT:u32 = 3;
-const VOTE_THRESHOLD_PER_CHALLENGE:u32 = 1;
-const VOTE_THRESHOLD_PER_VOTER:usize = 1;
-const TOTAL_REWARD:u32 = 100;
-const EXPECTED_REWARD:u32 = 50;
-const STAKE:u64 = 10_000;
+const CHALLENGES_COUNT: usize = 1;
+const PROPOSALS_COUNT: u32 = 3;
+const VOTE_THRESHOLD_PER_CHALLENGE: u32 = 1;
+const VOTE_THRESHOLD_PER_VOTER: usize = 1;
+const TOTAL_REWARD: u32 = 100;
+const EXPECTED_REWARD: u32 = 50;
+const STAKE: u64 = 10_000;
 
 #[test]
 pub fn voter_rewards_happy_path() {
@@ -78,7 +78,7 @@ pub fn voter_rewards_happy_path() {
         network_params,
         &mut template_generator,
     )
-        .unwrap();
+    .unwrap();
 
     let mut alice = iapyx_from_mainnet(&alice_wallet, &wallet_proxy).unwrap();
     let mut bob = iapyx_from_mainnet(&bob_wallet, &wallet_proxy).unwrap();
@@ -161,10 +161,10 @@ pub fn voter_rewards_happy_path() {
                 .collect(),
             proposals,
         )
-            .unwrap(),
+        .unwrap(),
         TOTAL_REWARD.into(),
     )
-        .unwrap();
+    .unwrap();
 
     assert_eq!(
         records
@@ -184,5 +184,7 @@ pub fn voter_rewards_happy_path() {
         &EXPECTED_REWARD.into()
     );
 
-    assert!(!records.iter().any(|(x, _y)| **x == clarice_wallet.reward_address().to_address().to_hex()));
+    assert!(!records
+        .iter()
+        .any(|(x, _y)| **x == clarice_wallet.reward_address().to_address().to_hex()));
 }

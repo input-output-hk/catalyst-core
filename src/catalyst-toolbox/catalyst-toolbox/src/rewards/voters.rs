@@ -44,7 +44,6 @@ fn filter_active_addresses(
     snapshot_info: Vec<SnapshotInfo>,
     threshold: Threshold,
 ) -> Vec<SnapshotInfo> {
-
     println!("filter_active_address::threshold total:");
     println!("{:#?}", threshold.total);
 

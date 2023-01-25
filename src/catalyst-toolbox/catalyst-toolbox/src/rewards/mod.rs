@@ -71,7 +71,6 @@ impl Threshold {
     }
 
     fn filter(&self, votes: &HashSet<Hash>) -> bool {
-
         println!("Threshold::filter: votes.len() = {:?}", votes.len());
 
         if votes.len() < self.total {
@@ -79,7 +78,10 @@ impl Threshold {
             return false;
         }
 
-        println!("Threshold::filter: self.per_challenge.len() = {:?}", &self.per_challenge.len());
+        println!(
+            "Threshold::filter: self.per_challenge.len() = {:?}",
+            &self.per_challenge.len()
+        );
 
         for (challenge, threshold) in &self.per_challenge {
             let votes_in_challenges = self
@@ -89,7 +91,10 @@ impl Threshold {
                 .unwrap_or_default();
 
             println!("Threshold::filter: challenge = {:?}", *challenge);
-            println!("Threshold::filter: votes_in_challenges = {:?}", votes_in_challenges);
+            println!(
+                "Threshold::filter: votes_in_challenges = {:?}",
+                votes_in_challenges
+            );
             println!("Threshold::filter: threshold = {:?}", *threshold);
 
             if votes_in_challenges < *threshold {

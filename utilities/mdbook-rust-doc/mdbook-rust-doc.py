@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 # Simple program to create an index for rust doc documentation, to be embedded inside an md-book
-# We do not use any non-standard packages, so this script should "just work" if
+# We do not use any non-standard packages, so this script should "just work" if Python 3 is installed.
 
 import argparse
 import sys
-import os
 import subprocess
 import json
 
 from pathlib import Path
-from string import punctuation
 
+punctuation = r"""!"#$%&'*+,-./:;<=>?@[\]^_`{|}~"""
 
 def is_dir(dir):
     """Check if the directory is a directory."""
@@ -90,7 +89,7 @@ def output_dep_package(package, all_packages, offset, html):
     if name_path in html:
         docs_path = html[name_path]
 
-    output_string = f"{' '*offset}- [{package['name']}]({docs_path}){description}".strip().strip(punctuation)
+    output_string = f"{' '*offset}- [{package['name']}]({docs_path}){description}".rstrip().rstrip(punctuation)
     output_string += "\n"
     
     if "dependencies" in package:
@@ -114,7 +113,7 @@ def generate_mdbook_rustdoc(args):
 
     for package in tl_packages:
         real_package = all_packages[package]
-        md_file += f"## {real_package['name']} {package_description(real_package)}".strip().strip(punctuation)
+        md_file += f"## {real_package['name']} {package_description(real_package)}".rstrip().rstrip(punctuation)
         md_file += "\n\n"
         md_file += output_dep_package(all_packages[package], all_packages, 0, html)
         md_file += "\n"

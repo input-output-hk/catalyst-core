@@ -3,11 +3,9 @@ use cardano_serialization_lib::chain_crypto::{
 };
 use ciborium::value::Value as Cbor;
 
-use crate::data::NetworkId;
-use crate::data::RewardsAddress;
-use crate::data::{Registration, SignedRegistration, StakeKeyHex, VotingPurpose};
+use crate::data::{NetworkId, Registration, SignedRegistration, StakeKeyHex, VotingPurpose};
 use crate::error::RegistrationError;
-use crate::{DataProvider, Signature, VotingPowerSource};
+use crate::{Signature, VotingPowerSource};
 use validity::Validate;
 
 mod hash;
@@ -16,15 +14,27 @@ mod hash;
 mod tests;
 
 #[derive(Clone, Copy)]
-pub struct ValidationCtx<'a> {
-    pub db: &'a dyn DataProvider,
-    /// Used for validating addresses
+#[non_exhaustive]
+pub struct ValidationCtx {
     pub network_id: NetworkId,
     pub expected_voting_purpose: VotingPurpose,
+    pub validate_key_type: bool,
+    pub validate_network_id: bool,
+}
+
+impl Default for ValidationCtx {
+    fn default() -> Self {
+        Self {
+            network_id: NetworkId::Mainnet,
+            expected_voting_purpose: VotingPurpose::CATALYST,
+            validate_key_type: true,
+            validate_network_id: true,
+        }
+    }
 }
 
 impl Validate for SignedRegistration {
-    type Context<'a> = ValidationCtx<'a>;
+    type Context<'a> = ValidationCtx;
     type Error = RegistrationError;
 
     fn is_valid(&self, ctx: Self::Context<'_>) -> Result<(), Self::Error> {
@@ -36,9 +46,8 @@ impl Validate for SignedRegistration {
 
         validate_voting_power(&registration.voting_power_source)?;
         validate_stake_key(&registration.stake_key, ctx)?;
-        validate_rewards_address(&registration.rewards_address)?;
         validate_voting_purpose(registration.voting_purpose, ctx)?;
-        validate_signature(&registration, &signature)?;
+        validate_signature(registration, signature)?;
 
         Ok(())
     }
@@ -47,7 +56,7 @@ impl Validate for SignedRegistration {
 /// Delegated voting power must have at least one delegation
 fn validate_voting_power(source: &VotingPowerSource) -> Result<(), RegistrationError> {
     match source {
-        VotingPowerSource::Delegated(vec) if vec.len() == 0 => {
+        VotingPowerSource::Delegated(delegations) if delegations.is_empty() => {
             Err(RegistrationError::EmptyDelegations)
         }
         _ => Ok(()),
@@ -59,25 +68,23 @@ fn validate_stake_key(
     stake_address: &StakeKeyHex,
     ctx: ValidationCtx,
 ) -> Result<(), RegistrationError> {
-    match stake_address.ty() {
-        14 | 15 => {}
-        i => return Err(RegistrationError::StakeKeyWrongType(i)),
+    if ctx.validate_key_type {
+        match stake_address.ty() {
+            14 | 15 => {}
+            i => return Err(RegistrationError::StakeKeyWrongType(i)),
+        }
     }
 
-    let network_id = stake_address.network_id();
-    if Some(ctx.network_id) != stake_address.network_id() {
-        return Err(RegistrationError::StakeKeyWrongNetwork {
-            expected: ctx.network_id,
-            actual: network_id,
-        });
+    if ctx.validate_network_id {
+        let network_id = stake_address.network_id();
+        if Some(ctx.network_id) != stake_address.network_id() {
+            return Err(RegistrationError::StakeKeyWrongNetwork {
+                expected: ctx.network_id,
+                actual: network_id,
+            });
+        }
     }
 
-    Ok(())
-}
-
-/// We don't perform validation (other than type safety) on rewards addresses due to historical
-/// registrations using MIR transfer addresses
-fn validate_rewards_address(_: &RewardsAddress) -> Result<(), RegistrationError> {
     Ok(())
 }
 
@@ -85,10 +92,14 @@ fn validate_rewards_address(_: &RewardsAddress) -> Result<(), RegistrationError>
 ///
 /// In practice, this shouldn't usually occur, since queries should filter based on voting purpose.
 /// However, we leave this check in so that buggy queries don't lead to incorrect snapshots
+///
+/// If the purpose is `None`, validation always succeeds
 fn validate_voting_purpose(
-    purpose: VotingPurpose,
+    purpose: Option<VotingPurpose>,
     ctx: ValidationCtx,
 ) -> Result<(), RegistrationError> {
+    let Some(purpose) = purpose else { return Ok(()) };
+
     if purpose != ctx.expected_voting_purpose {
         return Err(RegistrationError::IncorrectVotingPurpose {
             expected: ctx.expected_voting_purpose,
@@ -108,10 +119,8 @@ fn validate_signature(
     Signature { inner }: &Signature,
 ) -> Result<(), RegistrationError> {
     let cbor = registration.to_cbor();
-    let bytes = cbor_to_bytes(cbor);
-    println!("cbor hex = {}", hex::encode(&bytes));
+    let bytes = cbor_to_bytes(&cbor);
     let hash_bytes = hash::hash(&bytes);
-    println!("hash hex = {}", hex::encode(&hash_bytes));
 
     let pub_key = Ed25519::public_from_binary(registration.stake_key.as_ref()).unwrap();
     let sig = Ed25519::signature_from_bytes(inner.as_ref()).unwrap();
@@ -122,8 +131,8 @@ fn validate_signature(
     }
 }
 
-fn cbor_to_bytes(cbor: Cbor) -> Vec<u8> {
+fn cbor_to_bytes(cbor: &Cbor) -> Vec<u8> {
     let mut bytes: Vec<u8> = vec![];
-    ciborium::ser::into_writer(&cbor, &mut bytes).unwrap();
+    ciborium::ser::into_writer(cbor, &mut bytes).unwrap();
     bytes
 }

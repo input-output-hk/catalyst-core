@@ -60,6 +60,7 @@ impl InMemoryDbSync {
     }
 
     /// Create an empty instance
+    #[must_use]
     pub fn empty() -> Self {
         InMemoryDbSync {
             transactions: HashMap::new(),

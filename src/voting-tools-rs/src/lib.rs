@@ -6,14 +6,15 @@
 //! produce similar outputs. Malformed registrations are silently ignored.
 
 #![warn(clippy::pedantic)]
-// #![forbid(missing_docs)]
-#![forbid(unsafe_code)]
-#![forbid(clippy::integer_arithmetic)]
+#![deny(missing_docs)]
+#![deny(unsafe_code)]
+#![deny(clippy::integer_arithmetic)]
 #![allow(
     clippy::module_name_repetitions,
     clippy::match_bool,
     clippy::bool_assert_comparison,
-    clippy::derive_partial_eq_without_eq
+    clippy::derive_partial_eq_without_eq,
+    clippy::missing_panics_doc,
 )]
 
 #[macro_use]
@@ -36,7 +37,7 @@ mod validation;
 pub use exports::*;
 mod exports {
     pub use crate::cli::{show_error_warning, Args, DryRunCommand};
-    pub use crate::data::{Signature, Sig, SlotNo, SnapshotEntry, VotingPowerSource};
+    pub use crate::data::{Signature, Sig, SlotNo, SnapshotEntry, VotingPowerSource, VotingPurpose};
     pub use crate::data_provider::DataProvider;
     pub use crate::db::{Conn, Db, DbConfig};
     pub use crate::logic_2::{voting_power, VotingPowerArgs};

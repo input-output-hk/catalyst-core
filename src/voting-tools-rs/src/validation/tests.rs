@@ -1,14 +1,10 @@
 use std::collections::BTreeMap;
 
+use ciborium::cbor;
 use mainnet_lib::InMemoryDbSync;
-use test_strategy::proptest;
 use validity::Failure;
 
-use crate::{
-    data::{RewardsAddress, TxId},
-    test_api::MockDbProvider,
-    vectors::cip15,
-};
+use crate::{data::PubKey, test_api::MockDbProvider, vectors::cip15};
 
 use super::*;
 
@@ -16,11 +12,10 @@ fn make_db() -> MockDbProvider {
     MockDbProvider::from(InMemoryDbSync::empty())
 }
 
-fn default_context(db: &MockDbProvider) -> ValidationCtx {
+fn test_ctx() -> ValidationCtx {
     ValidationCtx {
-        db,
         network_id: NetworkId::Testnet, // makes bit twiddling easier, since it's all 0s
-        expected_voting_purpose: VotingPurpose::CATALYST,
+        ..ValidationCtx::default()
     }
 }
 
@@ -32,17 +27,12 @@ fn can_serialize_cbor() {
         3 => [1, 2, 3, 4],
     })
     .unwrap();
-    cbor_to_bytes(cbor); // doesn't panic
+    cbor_to_bytes(&cbor); // doesn't panic
 }
-
-// taken from the cip 15 test vector
-const HASH_BYTES_HEX: &str = "a3d63f26cd94002443bc24f24b0a150f2c7996cd3a3fd247248de396faea6a5f";
-const METADATA_CBOR_HEX_BYTES: &str = "a119ef64a40158200036ef3e1f0d3f5989e2d155ea54bdb2a72c4c456ccb959af4c94868f473f5a002582086870efc99c453a873a16492ce87738ec79a0ebd064379a62e2c9cf4e119219e03581de0ae3a0a7aeda4aea522e74e4fe36759fca80789a613a58a4364f6ecef041904d2";
 
 #[test]
 fn fails_if_empty_delegations() {
-    let db = make_db();
-    let ctx = default_context(&db);
+    let ctx = test_ctx();
 
     let mut reg = cip15::vector();
     reg.registration.voting_power_source = VotingPowerSource::Delegated(BTreeMap::new());
@@ -53,12 +43,11 @@ fn fails_if_empty_delegations() {
 
 #[test]
 fn fails_if_stake_key_invalid_type() {
-    let db = make_db();
-    let ctx = default_context(&db);
+    let ctx = test_ctx();
 
     let mut reg = cip15::vector();
     let stake_key_bytes = [0; 32];
-    reg.registration.stake_key = StakeKeyHex(PubKey::from_bytes(stake_key_bytes));
+    reg.registration.stake_key = StakeKeyHex(PubKey(stake_key_bytes));
 
     let Failure { error, .. } = reg.validate_with(ctx).unwrap_err();
     assert_eq!(error, RegistrationError::StakeKeyWrongType(0))
@@ -66,8 +55,7 @@ fn fails_if_stake_key_invalid_type() {
 
 #[test]
 fn fails_if_stake_key_wrong_network_id() {
-    let db = make_db();
-    let mut ctx = default_context(&db);
+    let mut ctx = test_ctx();
 
     ctx.network_id = NetworkId::Mainnet;
 
@@ -76,7 +64,7 @@ fn fails_if_stake_key_wrong_network_id() {
     let mut bytes = [0; 32];
     bytes[0] = leading_byte;
 
-    reg.registration.stake_key = StakeKeyHex(PubKey::from_bytes(bytes));
+    reg.registration.stake_key = StakeKeyHex(PubKey(bytes));
 
     let Failure { error, .. } = reg.validate_with(ctx).unwrap_err();
 
@@ -91,8 +79,12 @@ fn fails_if_stake_key_wrong_network_id() {
 
 #[test]
 fn cip15_test_vector_succeeds() {
-    let db = make_db();
-    let ctx = default_context(&db);
+    let mut ctx = test_ctx();
+
+    // the cip 15 test vector contains an invalid key, since it is type 8, so we disable some
+    // checks
+    ctx.validate_key_type = false;
+    ctx.validate_network_id = false;
 
     let reg = cip15::vector();
 

@@ -1,27 +1,11 @@
-use super::*;
+use super::RewardsAddress;
 use proptest::{arbitrary::StrategyFor, prelude::*, strategy::Map};
 
-/// A registration with the private key for the stake key
-struct RegistrationAndKey {
-    pub registration: Registration,
-}
-
-/// Inputs to the strategy for generating arbitrary registrations
-type Inputs = (RewardsAddress, Nonce);
-
-impl Arbitrary for SignedRegistration {
+impl Arbitrary for RewardsAddress {
     type Parameters = ();
-    type Strategy = Map<StrategyFor<Inputs>, fn(Inputs) -> Self>;
-    fn arbitrary_with((): Self::Parameters) -> Self::Strategy {
-        any::<Inputs>().prop_map(|(rewards_address, nonce)| {
-            generate_signed_registration(rewards_address, nonce)
-        })
-    }
-}
+    type Strategy = Map<StrategyFor<Vec<u8>>, fn(Vec<u8>) -> Self>;
 
-fn generate_signed_registration(
-    rewards_address: RewardsAddress,
-    nonce: Nonce,
-) -> SignedRegistration {
-    todo!()
+    fn arbitrary_with((): Self::Parameters) -> Self::Strategy {
+        any::<Vec<u8>>().prop_map(|vec| RewardsAddress(vec.into()))
+    }
 }

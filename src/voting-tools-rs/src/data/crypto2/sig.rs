@@ -1,35 +1,57 @@
-use bytekind::{ByteArray, Format, Plain};
 use serde::{Deserialize, Serialize};
 use test_strategy::Arbitrary;
 
 /// An ED25519 signature
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Arbitrary, Serialize, Deserialize)]
-#[serde(bound = "ByteArray<F, 64>: Serialize + for<'a> Deserialize<'a>")]
-pub struct Sig<F: Format = Plain>(pub ByteArray<F, 64>);
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Arbitrary)]
+pub struct Sig(pub [u8; 64]);
 
-impl<F: Format> core::fmt::Debug for Sig<F> {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("Sig").field(&self.0).finish()
+impl Serialize for Sig {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let s = hex::encode(self); // TODO: stack allocate this string into a [u8; 128]
+        String::serialize(&s, serializer)
     }
 }
 
-impl<F: Format> Sig<F> {
-    pub fn to_bytes(&self) -> [u8; 64] {
-        *self.0.as_ref()
+impl<'de> Deserialize<'de> for Sig {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        let mut bytes = [0; 64];
+        hex::decode_to_slice(&s, &mut bytes).map_err(<D::Error as serde::de::Error>::custom)?;
+        Ok(Self(bytes))
     }
+}
 
-    pub fn from_bytes(bytes: [u8; 64]) -> Self {
-        Self(bytes.into())
-    }
-
+impl Sig {
+    /// Create a public key from a string slice containing hex bytes
+    ///
+    /// Will return an error if the string contains invalid hex, or doesn't contain exactly 32
+    /// characters
+    ///
+    /// ```
+    /// # use voting_tools_rs::Sig;
+    /// let key = Sig::from_hex("0".repeat(64)).unwrap();
+    /// assert_eq!(key, Sig([0; 32]));
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `s` is not a hex string representing an array of 64 bytes (i.e. a
+    /// string with 128 chars)
     pub fn from_hex(hex: &str) -> Result<Self, hex::FromHexError> {
         let mut bytes = [0; 64];
         hex::decode_to_slice(hex, &mut bytes)?;
-        Ok(Self(bytes.into()))
+        Ok(Self(bytes))
     }
 }
 
-impl<F: Format> AsRef<[u8]> for Sig<F> {
+impl AsRef<[u8]> for Sig {
+    #[inline]
     fn as_ref(&self) -> &[u8] {
         self.0.as_ref()
     }

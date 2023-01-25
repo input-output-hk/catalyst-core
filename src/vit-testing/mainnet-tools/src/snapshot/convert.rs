@@ -82,7 +82,7 @@ use num_traits::ToPrimitive;
 use snapshot_lib::registration::{Delegations as VotingDelegations, VotingRegistration};
 use vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 use voting_tools_rs::test_api::MockDbProvider;
-use voting_tools_rs::{SnapshotEntry, VotingPowerArgs, VotingPowerSource};
+use voting_tools_rs::{SnapshotEntry, VotingPowerArgs, VotingPowerSource, VotingPurpose};
 
 /// Extensions for voting tools `Output` struct
 pub trait OutputExtension {
@@ -125,7 +125,7 @@ impl OutputExtension for SnapshotEntry {
                     VotingDelegations::New(new)
                 }
             },
-            voting_purpose: *self.voting_purpose,
+            voting_purpose: *self.voting_purpose.unwrap_or(VotingPurpose::CATALYST),
         })
     }
 }

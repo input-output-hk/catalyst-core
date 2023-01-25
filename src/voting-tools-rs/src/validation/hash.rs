@@ -2,7 +2,7 @@ use blake2::{digest::typenum::U32, Blake2b, Digest};
 
 pub(crate) const BLAKE_2B_256_HASH_SIZE: usize = 256 / 8;
 
-/// Helper function to generate the blake2b_256 hash of a byte slice
+/// Helper function to generate the `blake2b_256` hash of a byte slice
 pub(crate) fn hash(bytes: &[u8]) -> [u8; BLAKE_2B_256_HASH_SIZE] {
     type Blake2b256 = Blake2b<U32>;
 

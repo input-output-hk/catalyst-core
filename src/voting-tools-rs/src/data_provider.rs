@@ -6,17 +6,24 @@ use std::fmt::Debug;
 
 /// Abstraction trait over data provider for voting tools. This approach can allow various data sources
 /// for registration queries like standard db sync database or in memory one including mocks.
+///
 pub trait DataProvider: Debug {
     /// Get all vote registrations and signatures between two slot numbers
     ///
     /// If either slot number is `None`, they are ignored
-    fn vote_registrations(
-        &self,
-        lower: SlotNo,
-        upper: SlotNo,
-    ) -> Result<Vec<SignedRegistration>>;
+    ///
+    /// # Errors
+    ///
+    /// This function returns an error if a database error occurs. The exact details of any error will
+    /// depend on the database implementation
+    fn vote_registrations(&self, lower: SlotNo, upper: SlotNo) -> Result<Vec<SignedRegistration>>;
 
     /// Retrieves stakes values for given array of addresses
+    ///
+    /// # Errors
+    ///
+    /// This function returns an error if a database error occurs. The exact details of any error will
+    /// depend on the database implementation
     fn stake_values(&self, stake_addrs: &[StakeKeyHex])
         -> Result<HashMap<StakeKeyHex, BigDecimal>>;
 }
@@ -27,11 +34,7 @@ impl<T> DataProvider for &T
 where
     T: DataProvider,
 {
-    fn vote_registrations(
-        &self,
-        lower: SlotNo,
-        upper: SlotNo,
-    ) -> Result<Vec<SignedRegistration>> {
+    fn vote_registrations(&self, lower: SlotNo, upper: SlotNo) -> Result<Vec<SignedRegistration>> {
         T::vote_registrations(self, lower, upper)
     }
 

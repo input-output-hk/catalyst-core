@@ -39,17 +39,22 @@ pub fn voting_power(
         expected_voting_purpose,
     }: VotingPowerArgs,
 ) -> Result<(Vec<SnapshotEntry>, Vec<InvalidRegistration>)> {
-    let min_slot = min_slot.unwrap_or(SlotNo(0));
-    let max_slot = max_slot.unwrap_or(SlotNo(u64::try_from(i64::MAX).unwrap()));
+    const ABS_MIN_SLOT: SlotNo = SlotNo(0);
+    const ABS_MAX_SLOT: SlotNo = SlotNo(i64::MAX as u64);
 
-    let validation_ctx = ValidationCtx {
-        db: &db,
+    let min_slot = min_slot.unwrap_or(ABS_MIN_SLOT);
+    let max_slot = max_slot.unwrap_or(ABS_MAX_SLOT);
+
+    let ctx = ValidationCtx::default();
+
+    let ctx = ValidationCtx {
         network_id,
         expected_voting_purpose,
+        ..ctx
     };
 
     let validate = |reg: SignedRegistration| {
-        reg.validate_with(validation_ctx.clone())
+        reg.validate_with(ctx)
             .map_err(|Failure { value, error }| InvalidRegistration {
                 registration: Some(value),
                 errors: nonempty![error],
@@ -75,8 +80,7 @@ pub fn voting_power(
 fn stake_addrs(registrations: &[Valid<SignedRegistration>]) -> Vec<StakeKeyHex> {
     registrations
         .iter()
-        .map(|reg| &reg.registration.stake_key)
-        .cloned()
+        .map(|reg| reg.registration.stake_key)
         .collect()
 }
 

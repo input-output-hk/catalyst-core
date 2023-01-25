@@ -11,7 +11,7 @@ use num_traits::ToPrimitive;
 use snapshot_lib::registration::{Delegations as VotingDelegations, VotingRegistration};
 use std::fmt::Debug;
 use tracing::{debug, instrument};
-use voting_tools_rs::{SnapshotEntry, VotingPowerSource};
+use voting_tools_rs::{SnapshotEntry, VotingPowerSource, VotingPurpose};
 
 #[instrument(fields(
     snapshot_token = snapshot_token.clone().into(),
@@ -124,7 +124,7 @@ impl SnapshotResult {
                         VotingDelegations::New(new)
                     }
                 },
-                voting_purpose: *output.voting_purpose,
+                voting_purpose: *output.voting_purpose.unwrap_or(VotingPurpose::CATALYST),
             });
         }
 

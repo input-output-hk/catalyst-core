@@ -1,4 +1,3 @@
-use bytekind::{ByteArray, Format, Plain};
 use serde::{Deserialize, Serialize};
 use test_strategy::Arbitrary;
 
@@ -6,63 +5,69 @@ use crate::data::NetworkId;
 
 /// An ED25519 public key
 ///
-/// A `PubKey` is fundamentally just a `[u8; N]` with some extra type information. In particular,
-/// it is generic over some `F` which implements [`Format`]. By specifying this parameter, you can
-/// customize the serialize implementations
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary, Serialize, Deserialize)]
-#[serde(bound = "ByteArray<F, 32>: Serialize + for<'a> Deserialize<'a>")]
-pub struct PubKey<F: Format = Plain>(pub ByteArray<F, 32>);
+/// This is a wrapper around `[u8; 32]`, with serde impls that serialize to/from a hex string
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
+pub struct PubKey(pub [u8; 32]);
 
-impl<F: Format> core::fmt::Debug for PubKey<F> {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("PubKey").field(&self.0).finish()
+impl Serialize for PubKey {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let s = hex::encode(self); // TODO: stack allocate this string into a [u8; 64]
+        String::serialize(&s, serializer)
     }
 }
 
-impl<F: Format> PubKey<F> {
-    pub fn to_bytes(&self) -> [u8; 32] {
-        *self.0.as_ref()
+impl<'de> Deserialize<'de> for PubKey {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        let mut bytes = [0; 32];
+        hex::decode_to_slice(&s, &mut bytes).map_err(<D::Error as serde::de::Error>::custom)?;
+        Ok(Self(bytes))
     }
+}
 
-    pub fn from_bytes(bytes: [u8; 32]) -> Self {
-        Self(bytes.into())
-    }
-
+impl PubKey {
     /// Convert this to the hex representation (without leading "0x")
     ///
     /// ```
-    /// # use voting_tools_rs::PublicKeyHex;
-    /// let sig = PublicKeyHex::from_bytes([0; 32]);
+    /// # use voting_tools_rs::PubKey;
+    /// let sig = PubKey::from_bytes([0; 32]);
     ///
     /// assert_eq!(sig.to_string, "0".repeat(64));
     /// ```
     #[inline]
-    pub fn to_hex(&self) -> String {
-        hex::encode(&self.0)
+    pub fn to_hex(self) -> String {
+        hex::encode(self.0)
     }
 
-    /// Create a signature from a string slice containing hex bytes
+    /// Create a public key from a string slice containing hex bytes
     ///
-    /// Will return an error if the string contains invalid hex, or doesn't contain exactly 64
+    /// Will return an error if the string contains invalid hex, or doesn't contain exactly 32
     /// characters
     ///
     /// ```
-    /// # use voting_tools_rs::PublicKeyHex;
-    /// let key = PublicKeyHex::from_str("0".repeat(64)).unwrap();
-    /// assert_eq!(key, PublicKeyHex::from_bytes([0; 32]));
+    /// # use voting_tools_rs::PubKey;
+    /// let key = PubKey::from_str("0".repeat(64)).unwrap();
+    /// assert_eq!(key, PubKey::from_bytes([0; 32]));
     /// ```
     #[inline]
     pub fn from_hex(hex: &str) -> Result<Self, hex::FromHexError> {
         let mut bytes = [0; 32];
         hex::decode_to_slice(hex, &mut bytes)?;
-        Ok(Self(bytes.into()))
+        Ok(Self(bytes))
     }
 
     /// Get the type (i.e. the top 4 bits of the leading byte)
     #[inline]
     pub fn ty(&self) -> u8 {
         let bytes: &[u8] = self.0.as_ref();
-        bytes[0] >> 4
+        // first byte, shift the top 4 bits to the bottom 4 bits
+        bytes[0].wrapping_shr(4)
     }
 
     /// The network tag (0 = testnet, 1 = mainnet)
@@ -75,7 +80,7 @@ impl<F: Format> PubKey<F> {
         }
 
         let bytes: &[u8] = self.0.as_ref();
-        let lower_bits = bytes[0] & 0b00001111;
+        let lower_bits = bytes[0] & 0b0000_1111;
 
         match lower_bits {
             0 => Some(NetworkId::Testnet),
@@ -85,8 +90,30 @@ impl<F: Format> PubKey<F> {
     }
 }
 
-impl<F: Format> AsRef<[u8]> for PubKey<F> {
+impl AsRef<[u8]> for PubKey {
     fn as_ref(&self) -> &[u8] {
         self.0.as_ref()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::{from_value, json, to_value};
+
+    use super::*;
+
+    #[test]
+    fn can_deserialize_str() {
+        #[derive(Deserialize, Serialize)]
+        struct Foo {
+            foo: PubKey,
+        }
+
+        let json = json!({"foo": "0".repeat(64)});
+        let foo: Foo = from_value(json.clone()).unwrap();
+        assert_eq!(foo.foo.0, [0; 32]);
+
+        let json_again = to_value(&foo).unwrap();
+        assert_eq!(json, json_again);
     }
 }

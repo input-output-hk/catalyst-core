@@ -40,7 +40,7 @@ pub enum RegistrationError {
 
     #[error(
         "stake key has wrong network id, expected {expected}, actual {}", 
-        actual.map(|id| id.to_string()).unwrap_or("None".to_string()),
+        actual.map(|id| id.to_string()).unwrap_or_else(|| "None".to_string()),
     )]
     StakeKeyWrongNetwork {
         expected: NetworkId,

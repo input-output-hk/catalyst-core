@@ -6,7 +6,7 @@ use bigdecimal::ToPrimitive;
 use cardano_serialization_lib::address::RewardAddress;
 use cardano_serialization_lib::crypto::PublicKey;
 
-/// Allows [SnapshotEntry] struct to be assertable
+/// Allows [`SnapshotEntry`] struct to be assertable
 pub trait VerifiableSnapshotOutput {
     /// returns assertion struct
     fn assert(&self) -> SnapshotOutputAssert;
@@ -18,19 +18,19 @@ impl VerifiableSnapshotOutput for SnapshotEntry {
     }
 }
 
-/// Fluent api for [SnapshotEntry] assertions
+/// Fluent api for [`SnapshotEntry`] assertions
 pub struct SnapshotOutputAssert<'a> {
     output: &'a SnapshotEntry,
 }
 
 impl<'a> SnapshotOutputAssert<'a> {
-    /// Creates new instance based on [SnapshotEntry] reference
+    /// Creates new instance based on [`SnapshotEntry`] reference
     #[must_use]
     pub fn new(output: &'a SnapshotEntry) -> Self {
         Self { output }
     }
 
-    /// Asserts expected voting power field from [SnapshotEntry]
+    /// Asserts expected voting power field from [`SnapshotEntry`]
     /// # Panics
     ///
     /// Panics on assertion failed
@@ -45,7 +45,7 @@ impl<'a> SnapshotOutputAssert<'a> {
         );
     }
 
-    /// Asserts delegations address field from [SnapshotEntry]
+    /// Asserts delegations address field from [`SnapshotEntry`]
     /// # Panics
     ///
     /// Panics on assertion failed
@@ -56,7 +56,7 @@ impl<'a> SnapshotOutputAssert<'a> {
         );
     }
 
-    /// Asserts reward address field from [SnapshotEntry]
+    /// Asserts reward address field from [`SnapshotEntry`]
     /// # Panics
     ///
     /// Panics on assertion failed
@@ -68,7 +68,7 @@ impl<'a> SnapshotOutputAssert<'a> {
         );
     }
 
-    /// Asserts stake public key field from [SnapshotEntry]
+    /// Asserts stake public key field from [`SnapshotEntry`]
     /// # Panics
     ///
     /// Panics on assertion failed

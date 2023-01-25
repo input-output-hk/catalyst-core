@@ -76,6 +76,10 @@ pub enum DryRunCommand {
 
 /// If there are errors, we want to notify the user, but it's not really actionable, so we provide
 /// the option to silence the error via env var
+///
+/// # Errors
+///
+/// Errors if there are any IO errors writing logs
 pub fn show_error_warning(errors: &[InvalidRegistration]) -> Result<()> {
     let num_errs = errors.len();
 

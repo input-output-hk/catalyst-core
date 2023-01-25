@@ -27,7 +27,8 @@ impl Db {
     ///
     /// # Errors
     ///
-    /// Returns an error if either of `lower` or `upper` doesn't fit in an `i64`
+    /// Returns an error if either of `lower` or `upper` doesn't fit in an `i64`, or if a
+    /// database-specific error occurs
     pub fn vote_registrations(
         &self,
         lower: SlotNo,
@@ -89,9 +90,9 @@ fn convert_row((tx_id, metadata, signature, _slot_no): Row) -> Option<SignedRegi
     let signature = serde_json::from_value(signature?).ok()?;
 
     Some(SignedRegistration {
-        tx_id,
         registration,
         signature,
+        tx_id,
     })
 }
 

@@ -3,9 +3,8 @@ use serde_json::{json, Value};
 use crate::{
     data::{
         Nonce, PubKey, Registration, RewardsAddress, SignedRegistration, StakeKeyHex, TxId,
-        VotingPurpose,
     },
-    Signature, Sig, VotingPowerSource,
+    Sig, Signature, VotingPowerSource,
 };
 
 /// CIP-15 test vector voting key
@@ -20,6 +19,7 @@ pub const SIGNATURE: &str = "6c2312cd49067ecf0920df7e067199c55b3faef4ec0bce1bd2c
 pub const NONCE: u64 = 1234;
 
 /// The full CIP-15 test vector
+#[must_use]
 pub fn vector() -> SignedRegistration {
     SignedRegistration {
         tx_id: TxId(1), // not provided in the test vector
@@ -28,7 +28,7 @@ pub fn vector() -> SignedRegistration {
             stake_key: StakeKeyHex(PubKey::from_hex(STAKE_KEY).unwrap()),
             rewards_address: RewardsAddress::from_hex(REWARD_ADDRESS).unwrap(),
             nonce: Nonce(NONCE),
-            voting_purpose: VotingPurpose::CATALYST,
+            voting_purpose: None,
         },
         signature: Signature {
             inner: Sig::from_hex(SIGNATURE).unwrap(),
@@ -37,6 +37,7 @@ pub fn vector() -> SignedRegistration {
 }
 
 /// The json we expect to get from db-sync corresponding to the CIP-15 test vector
+#[must_use]
 pub fn vector_json() -> Value {
     json!({
         "61284": {

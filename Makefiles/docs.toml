@@ -133,7 +133,12 @@ script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 mdbook build
+# It would be much better to embed the rust docs into the mdbook before the mdbook is built
+# But the current summary generator breaks when we do this.  So do it into the html for now
+# until the summary generator can be replaced.
 cp -a book/tmp/rust/doc book/html/06_rust_api/rust
+# This lock file prevents the docs being deployed by github actions.
+rm -f book/html/06_rust_api/rust/.lock
 '''
 
 [tasks.build-docs]

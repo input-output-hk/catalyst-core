@@ -348,7 +348,7 @@ impl FragmentProcessor {
 
                         tracing::debug!("fragments messagebox ready, fetching peer address");
 
-                        let fut = self.global_state.peers.get_peer_addr(self.node_id.clone());
+                        let fut = self.global_state.peers.get_peer_addr(self.node_id);
 
                         (
                             FragmentProcessorSendFragmentsState::GetIngressAddress { fut },
@@ -424,9 +424,11 @@ impl FragmentProcessor {
                     cx.waker().wake_by_ref();
                     match res {
                         Ok(lookup) => {
+                            // Resolved names come in as absolute FQDN.
+                            // We strip that because hostnames are not specified that way.
                             let resolved_hostnames = lookup
                                 .iter()
-                                .map(|name| name.to_string().trim_end_matches(".").to_string())
+                                .map(|name| name.to_string().trim_end_matches('.').to_string())
                                 .collect::<Vec<_>>();
 
                             tracing::debug!(names = ?resolved_hostnames, "resolved DNS names for peer");

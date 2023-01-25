@@ -321,7 +321,7 @@ impl SpawnParams {
         }
 
         if let Some(dns_server_name) = &self.dns_server_address {
-            node_config.p2p.connection.dns_server_address = Some(dns_server_name.clone());
+            node_config.p2p.connection.dns_server_address = Some(*dns_server_name);
         }
 
         if let Some(preferred_layer) = &self.preferred_layer {

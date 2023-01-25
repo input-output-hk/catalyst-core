@@ -14,7 +14,7 @@ use chain_network::{
 };
 use futures::{
     channel::mpsc,
-    lock::{Mutex, MutexLockFuture},
+    lock::{Mutex, OwnedMutexLockFuture},
     prelude::*,
     stream,
 };
@@ -25,6 +25,7 @@ use std::{
     mem,
     net::SocketAddr,
     pin::Pin,
+    sync::Arc,
     task::{Context, Poll},
     time::SystemTime,
 };
@@ -465,23 +466,44 @@ pub struct PeerInfo {
     pub stats: PeerStats,
 }
 
+/// Future for executing async address lookup
+/// for the given node id from [Peers].
+pub struct GetNodeAddress {
+    node_id: NodeId,
+    lock_fut: OwnedMutexLockFuture<PeerMap>,
+}
+
+impl Future for GetNodeAddress {
+    type Output = Option<SocketAddr>;
+
+    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        let mut peer_map = futures::ready!(self.lock_fut.poll_unpin(cx));
+
+        Poll::Ready(
+            peer_map
+                .peer_comms(&self.node_id)
+                .map(|peer| peer.remote_addr()),
+        )
+    }
+}
+
 /// The collection of currently connected peer nodes.
 ///
 /// This object uses internal locking and is shared between
 /// all network connection tasks.
 pub struct Peers {
-    mutex: Mutex<PeerMap>,
+    mutex: Arc<Mutex<PeerMap>>,
 }
 
 impl Peers {
     pub fn new(capacity: usize, stats_counter: Metrics) -> Self {
         Peers {
-            mutex: Mutex::new(PeerMap::new(capacity, stats_counter)),
+            mutex: Arc::new(Mutex::new(PeerMap::new(capacity, stats_counter))),
         }
     }
 
-    fn inner(&self) -> MutexLockFuture<PeerMap> {
-        self.mutex.lock()
+    fn inner(&self) -> OwnedMutexLockFuture<PeerMap> {
+        self.mutex.clone().lock_owned()
     }
 
     pub async fn clear(&self) {
@@ -666,9 +688,11 @@ impl Peers {
         }
     }
 
-    pub async fn get_peer_addr(&self, peer: &NodeId) -> Option<SocketAddr> {
-        let mut map = self.inner().await;
-        map.peer_comms(peer).map(|peer| peer.remote_addr())
+    pub fn get_peer_addr(&self, node_id: NodeId) -> GetNodeAddress {
+        GetNodeAddress {
+            node_id,
+            lock_fut: self.inner(),
+        }
     }
 
     pub async fn refresh_peer_on_gossip(&self, peer: &NodeId) -> bool {

@@ -52,6 +52,10 @@ use tracing_futures::Instrument;
 fn start() -> Result<(), start_up::Error> {
     let initialized_node = initialize_node()?;
 
+    if let Some(whitelist) = initialized_node.settings.network.whitelist.as_ref() {
+        tracing::info!("Whitelisted addresses {:?}", whitelist);
+    }
+
     let bootstrapped_node = bootstrap(initialized_node)?;
 
     start_services(bootstrapped_node)
@@ -173,12 +177,15 @@ fn start_services(bootstrapped_node: BootstrappedNode) -> Result<(), start_up::E
     }
 
     // FIXME: reduce state sharing across services
-    let network_state = Arc::new(network::GlobalState::new(
-        bootstrapped_node.block0_hash,
-        bootstrapped_node.settings.network.clone(),
-        stats_counter.clone(),
-        span!(Level::TRACE, "task", kind = "network"),
-    ));
+    let network_state = Arc::new(
+        network::GlobalState::new(
+            bootstrapped_node.block0_hash,
+            bootstrapped_node.settings.network.clone(),
+            stats_counter.clone(),
+            span!(Level::TRACE, "task", kind = "network"),
+        )
+        .map_err(start_up::Error::GlobalState)?,
+    );
 
     {
         let fragment_msgbox = fragment_msgbox.clone();

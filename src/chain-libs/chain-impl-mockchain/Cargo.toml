@@ -32,6 +32,7 @@ rand_chacha = { version = "0.3", optional = true }
 criterion = { version = "0.3.0", optional = true }
 rand = "0.8"
 cryptoxide = "0.4"
+tracing.workspace = true
 
 [features]
 property-test-api = [

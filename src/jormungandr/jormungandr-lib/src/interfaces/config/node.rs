@@ -242,6 +242,9 @@ pub struct Connection {
     /// If no gossip has been received in the last interval, try to connect to nodes that were previously known to this node
     #[serde(skip_serializing_if = "Option::is_none")]
     pub network_stuck_check: Option<Duration>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dns_server_address: Option<SocketAddr>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

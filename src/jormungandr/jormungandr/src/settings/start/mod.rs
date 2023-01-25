@@ -341,6 +341,7 @@ fn generate_network(
             .map(Into::into)
             .unwrap_or(crate::topology::DEFAULT_NETWORK_STUCK_INTERVAL),
         max_bootstrap_attempts: p2p.bootstrap.max_bootstrap_attempts,
+        dns_server_address: p2p.connection.dns_server_address,
         http_fetch_block0_service,
         bootstrap_from_trusted_peers,
         skip_bootstrap,

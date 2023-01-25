@@ -46,6 +46,8 @@ pub struct SpawnParams {
     version: Option<Version>,
     #[serde(default)]
     verbose: bool,
+    #[serde(default)]
+    dns_server_address: Option<SocketAddr>,
 }
 
 impl SpawnParams {
@@ -77,6 +79,7 @@ impl SpawnParams {
             trusted_peers: None,
             version: None,
             verbose: false,
+            dns_server_address: None,
         }
     }
 
@@ -260,6 +263,15 @@ impl SpawnParams {
         &self.jormungandr
     }
 
+    pub fn with_dns_server_address(mut self, addr: SocketAddr) -> Self {
+        self.dns_server_address = Some(addr);
+        self
+    }
+
+    pub fn dns_server_address(&self) -> Option<&SocketAddr> {
+        self.dns_server_address.as_ref()
+    }
+
     pub fn override_settings(&self, node_config: &mut NodeConfig) {
         if let Some(topics_of_interest) = &self.topics_of_interest {
             if let Some(ref mut config) = node_config.p2p.layers {
@@ -306,6 +318,10 @@ impl SpawnParams {
 
         if let Some(trusted_peers) = &self.trusted_peers {
             node_config.p2p.bootstrap.trusted_peers = trusted_peers.clone();
+        }
+
+        if let Some(dns_server_name) = &self.dns_server_address {
+            node_config.p2p.connection.dns_server_address = Some(dns_server_name.clone());
         }
 
         if let Some(preferred_layer) = &self.preferred_layer {

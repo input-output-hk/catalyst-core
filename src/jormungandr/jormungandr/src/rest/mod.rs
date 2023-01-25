@@ -98,6 +98,8 @@ async fn setup_cors<App>(
     App: Filter<Error = warp::Rejection> + Clone + Send + Sync + 'static,
     App::Extract: warp::Reply,
 {
+    tracing::info!(listen_address = %config.listen, "listening for REST API requests");
+
     if let Some(cors_config) = config.cors {
         let allowed_origins: Vec<&str> = cors_config
             .allowed_origins

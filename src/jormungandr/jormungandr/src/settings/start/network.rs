@@ -101,6 +101,8 @@ pub struct Configuration {
     pub skip_bootstrap: bool,
 
     pub http_fetch_block0_service: Vec<String>,
+
+    pub dns_server_address: Option<Address>,
 }
 
 /// Trusted peer with DNS address resolved.

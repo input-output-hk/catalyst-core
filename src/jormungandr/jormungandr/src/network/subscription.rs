@@ -1,4 +1,4 @@
-use super::{buffer_sizes, convert::Decode, GlobalStateR};
+use super::{buffer_sizes, convert::Decode, p2p::comm::GetNodeAddress, GlobalStateR};
 use crate::{
     blockcfg::Fragment,
     intercom::{self, BlockMsg, TopologyMsg, TransactionMsg},
@@ -11,16 +11,15 @@ use chain_network::{
     data as net_data,
     error::{Code, Error},
 };
-use futures::executor;
 use futures::{future::BoxFuture, prelude::*, ready};
 use jormungandr_lib::interfaces::FragmentOrigin;
 use std::{
     error::Error as _,
     mem,
+    net::SocketAddr,
     pin::Pin,
     task::{Context, Poll},
 };
-
 use tracing_futures::Instrument;
 
 /// Conditionally filter gossip from non-public IP addresses
@@ -145,53 +144,6 @@ impl BlockAnnouncementProcessor {
     }
 }
 
-/// Ingests inbound subscription stream, the node_id refers to the inbound peer
-#[must_use = "sinks do nothing unless polled"]
-pub struct FragmentProcessor {
-    mbox: MessageBox<TransactionMsg>,
-    node_id: NodeId,
-    global_state: GlobalStateR,
-    buffered_fragments: Vec<Fragment>,
-    pending_processing: PendingProcessing,
-}
-
-impl FragmentProcessor {
-    pub(super) fn new(
-        mbox: MessageBox<TransactionMsg>,
-        node_id: NodeId,
-        global_state: GlobalStateR,
-    ) -> Self {
-        FragmentProcessor {
-            mbox,
-            node_id,
-            global_state,
-            buffered_fragments: Vec::with_capacity(buffer_sizes::inbound::FRAGMENTS),
-            pending_processing: PendingProcessing::default(),
-        }
-    }
-
-    /// Retrieves socket addr of inbound peer
-    fn get_ingress_addr(&self) -> Option<std::net::SocketAddr> {
-        let state = self.global_state.clone();
-        let node_id = self.node_id;
-        executor::block_on(state.peers.get_peer_addr(&node_id))
-    }
-
-    /// Signals interaction with peer has occurred, this context relates to exchanging fragments.
-    fn refresh_stat(&mut self) {
-        let state = self.global_state.clone();
-        let node_id = self.node_id;
-        let fut = async move {
-            let refreshed = state.peers.refresh_peer_on_fragment(&node_id).await;
-            if !refreshed {
-                tracing::debug!("received fragment from node that is not in the peer map",);
-            }
-        }
-        .in_current_span();
-        self.pending_processing.start(fut);
-    }
-}
-
 pub enum Direction {
     Server,
     Client,
@@ -253,11 +205,16 @@ impl Sink<net_data::Header> for BlockAnnouncementProcessor {
             );
             e
         })?;
+
+        tracing::debug!(hash = %header.hash(), "received block announcement");
+
         let node_id = self.node_id;
         self.mbox
             .start_send(BlockMsg::AnnouncedBlock(Box::new(header), node_id))
             .map_err(handle_mbox_error)?;
+
         self.refresh_stat();
+
         Ok(())
     }
 
@@ -288,6 +245,336 @@ impl Sink<net_data::Header> for BlockAnnouncementProcessor {
     }
 }
 
+/// Future returned by trust-dns-resolver reverse lookup.
+type ReverseDnsLookupFuture = Pin<
+    Box<
+        dyn Future<
+                Output = Result<
+                    trust_dns_resolver::lookup::ReverseLookup,
+                    trust_dns_resolver::error::ResolveError,
+                >,
+            > + Send,
+    >,
+>;
+
+/// Possible states for [FragmentProcessor]::poll_send_fragments.
+enum FragmentProcessorSendFragmentsState {
+    /// Wait for the message box to have capacity
+    /// to send at least one fragment.
+    WaitingMessageBox,
+    /// Fetch the address of the inbound peer from which the [FragmentProcessor]
+    /// is receiving fragments from.
+    GetIngressAddress { fut: GetNodeAddress },
+    /// Executes a reverse DNS lookup query on the inbound peer address.
+    ReverseLookup {
+        ingress_addr: SocketAddr,
+        fut: ReverseDnsLookupFuture,
+    },
+    /// Checks the inbound peer address and (if resolved to any) resolved hostnames
+    /// against the configured whitelist and sends fragments to the fragments task.
+    SendFragments {
+        ingress_addr: SocketAddr,
+        resolved_hostnames: Vec<String>,
+    },
+}
+
+impl std::fmt::Display for FragmentProcessorSendFragmentsState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let state_name = match self {
+            FragmentProcessorSendFragmentsState::WaitingMessageBox => "WaitingMessageBox",
+            FragmentProcessorSendFragmentsState::GetIngressAddress { .. } => "GetIngressAddress",
+            FragmentProcessorSendFragmentsState::ReverseLookup { .. } => "ReverseLookup",
+            FragmentProcessorSendFragmentsState::SendFragments { .. } => "SendFragments",
+        };
+
+        write!(f, "{}", state_name)
+    }
+}
+
+/// Ingests inbound subscription stream, the node_id refers to the inbound peer
+#[must_use = "sinks do nothing unless polled"]
+pub struct FragmentProcessor {
+    mbox: MessageBox<TransactionMsg>,
+    node_id: NodeId,
+    global_state: GlobalStateR,
+    buffered_fragments: Vec<Fragment>,
+    pending_processing: PendingProcessing,
+    send_fragments_state: FragmentProcessorSendFragmentsState,
+}
+
+impl FragmentProcessor {
+    pub(super) fn new(
+        mbox: MessageBox<TransactionMsg>,
+        node_id: NodeId,
+        global_state: GlobalStateR,
+    ) -> Self {
+        FragmentProcessor {
+            mbox,
+            node_id,
+            global_state,
+            buffered_fragments: Vec::with_capacity(buffer_sizes::inbound::FRAGMENTS),
+            pending_processing: PendingProcessing::default(),
+            send_fragments_state: FragmentProcessorSendFragmentsState::WaitingMessageBox,
+        }
+    }
+
+    /// Signals interaction with peer has occurred, this context relates to exchanging fragments.
+    fn refresh_stat(&mut self) {
+        let state = self.global_state.clone();
+        let node_id = self.node_id;
+        let fut = async move {
+            let refreshed = state.peers.refresh_peer_on_fragment(&node_id).await;
+            if !refreshed {
+                tracing::debug!("received fragment from node that is not in the peer map",);
+            }
+        }
+        .in_current_span();
+        self.pending_processing.start(fut);
+    }
+
+    /// Sends fragments to the fragments task.
+    fn poll_send_fragments(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Error>> {
+        let st = std::mem::replace(
+            &mut self.send_fragments_state,
+            FragmentProcessorSendFragmentsState::WaitingMessageBox,
+        );
+        tracing::debug!(current_state = %st, "starting poll_send_fragments");
+
+        let (next_st, ret) = match st {
+            FragmentProcessorSendFragmentsState::WaitingMessageBox => {
+                match ready!(self.mbox.poll_ready(cx)) {
+                    Ok(_) => {
+                        cx.waker().wake_by_ref();
+
+                        tracing::debug!("fragments messagebox ready, fetching peer address");
+
+                        let fut = self.global_state.peers.get_peer_addr(self.node_id.clone());
+
+                        (
+                            FragmentProcessorSendFragmentsState::GetIngressAddress { fut },
+                            Poll::Pending,
+                        )
+                    }
+                    Err(e) => {
+                        tracing::error!(reason = %e, "error sending fragments for processing");
+
+                        (
+                            FragmentProcessorSendFragmentsState::WaitingMessageBox,
+                            Poll::Ready(Err(Error::new(Code::Internal, e))),
+                        )
+                    }
+                }
+            }
+            FragmentProcessorSendFragmentsState::GetIngressAddress { mut fut } => {
+                match fut.poll_unpin(cx) {
+                    Poll::Ready(addr) => match addr {
+                        Some(ingress_addr) => {
+                            cx.waker().wake_by_ref();
+
+                            tracing::debug!(
+                                ingress_address = %ingress_addr,
+                                node_id = %self.node_id,
+                                "got ingress address for peer"
+                            );
+
+                            // Clone the reference counted global state and move it into a async block
+                            // so we can satisfy the 'static lifetime requirement for the reverse lookup future.
+                            let global_state = self.global_state.clone();
+                            let fut = async move {
+                                global_state
+                                    .dns_resolver
+                                    .reverse_lookup(ingress_addr.ip())
+                                    .await
+                            }
+                            .boxed();
+
+                            (
+                                FragmentProcessorSendFragmentsState::ReverseLookup {
+                                    ingress_addr,
+                                    fut,
+                                },
+                                Poll::Pending,
+                            )
+                        }
+                        None => {
+                            self.clear_buffered_fragments();
+
+                            tracing::warn!(
+                                node_id = %self.node_id,
+                                "dropping fragments from peer: unable to get address of ingress client"
+                            );
+
+                            (
+                                FragmentProcessorSendFragmentsState::WaitingMessageBox,
+                                Poll::Ready(Ok(())),
+                            )
+                        }
+                    },
+                    Poll::Pending => (
+                        FragmentProcessorSendFragmentsState::GetIngressAddress { fut },
+                        Poll::Pending,
+                    ),
+                }
+            }
+            FragmentProcessorSendFragmentsState::ReverseLookup {
+                ingress_addr,
+                mut fut,
+            } => match fut.poll_unpin(cx) {
+                Poll::Ready(res) => {
+                    cx.waker().wake_by_ref();
+                    match res {
+                        Ok(lookup) => {
+                            let resolved_hostnames = lookup
+                                .iter()
+                                .map(|name| name.to_string().trim_end_matches(".").to_string())
+                                .collect::<Vec<_>>();
+
+                            tracing::debug!(names = ?resolved_hostnames, "resolved DNS names for peer");
+
+                            (
+                                FragmentProcessorSendFragmentsState::SendFragments {
+                                    ingress_addr,
+                                    resolved_hostnames,
+                                },
+                                Poll::Pending,
+                            )
+                        }
+                        Err(e) => {
+                            tracing::error!(
+                                node_id = %self.node_id,
+                                address = %ingress_addr,
+                                error = ?e,
+                                "failed to execute reverse DNS lookup for address"
+                            );
+
+                            (
+                                FragmentProcessorSendFragmentsState::SendFragments {
+                                    ingress_addr,
+                                    resolved_hostnames: Vec::new(),
+                                },
+                                Poll::Pending,
+                            )
+                        }
+                    }
+                }
+                Poll::Pending => (
+                    FragmentProcessorSendFragmentsState::ReverseLookup { ingress_addr, fut },
+                    Poll::Pending,
+                ),
+            },
+            FragmentProcessorSendFragmentsState::SendFragments {
+                ingress_addr,
+                resolved_hostnames,
+            } => {
+                let should_send = match self.global_state.config.whitelist.as_ref() {
+                    Some(whitelist) => {
+                        tracing::debug!(
+                            "whitelist configured, checking whether fragments should be sent"
+                        );
+
+                        whitelist.iter().any(|ma| {
+                            match ma.iter().next() {
+                                Some(multiaddr::Protocol::Ip4(addr)) => addr == ingress_addr.ip(),
+                                Some(multiaddr::Protocol::Ip6(addr)) => addr == ingress_addr.ip(),
+                                Some(multiaddr::Protocol::Dns4(fqdn))
+                                | Some(multiaddr::Protocol::Dns6(fqdn)) => {
+                                    tracing::debug!(resolved_hostnames = ?resolved_hostnames, fqdn = %fqdn, "checking whitelist for domain");
+
+                                    resolved_hostnames.iter().any(|x| x == &fqdn)
+                                }
+                                _ => {
+                                    // In this case the whitelisted multiaddr is invalid
+                                    // so consider it as not matching anything
+                                    tracing::error!(multiaddr = %ma, "Invalid entry in whitelist");
+                                    false
+                                }
+                            }
+                        })
+                    }
+                    None => {
+                        tracing::debug!("no whitelist configured, bypassing check");
+
+                        true
+                    }
+                };
+
+                if should_send {
+                    let fragments = self.clear_buffered_fragments();
+
+                    let addr = match self.global_state.config.address() {
+                        Some(addr) => FragmentOrigin::Network { addr: addr.ip() },
+                        None => {
+                            tracing::info!(
+                                "node addr not present in config, reverting to local lookup"
+                            );
+                            FragmentOrigin::Network {
+                                addr: retrieve_local_ip(),
+                            }
+                        }
+                    };
+
+                    let (reply_handle, _reply_future) = intercom::unary_reply();
+                    self.mbox
+                        .start_send(TransactionMsg::SendTransactions {
+                            origin: addr,
+                            fragments,
+                            fail_fast: false,
+                            reply_handle,
+                        })
+                        .map_err(|e| {
+                            tracing::error!(
+                                reason = %e,
+                                "failed to send fragments to the fragment task"
+                            );
+                            Error::new(Code::Internal, e)
+                        })?;
+                    self.refresh_stat();
+
+                    tracing::debug!("processed fragments from peer");
+
+                    (
+                        FragmentProcessorSendFragmentsState::WaitingMessageBox,
+                        Poll::Ready(Ok(())),
+                    )
+                } else {
+                    self.clear_buffered_fragments();
+
+                    tracing::info!(address = %ingress_addr, "dropping fragments from peer");
+
+                    (
+                        FragmentProcessorSendFragmentsState::WaitingMessageBox,
+                        Poll::Ready(Ok(())),
+                    )
+                }
+            }
+        };
+
+        self.send_fragments_state = next_st;
+        ret
+    }
+
+    fn poll_flush_mbox(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Error>> {
+        Pin::new(&mut self.mbox).poll_flush(cx).map_err(|e| {
+            tracing::error!(
+                reason = %e,
+                "communication channel to the fragment task failed"
+            );
+            Error::new(Code::Internal, e)
+        })
+    }
+
+    fn poll_complete_refresh_stat(&mut self, cx: &mut Context<'_>) -> Poll<()> {
+        self.pending_processing.poll_complete(cx)
+    }
+
+    fn clear_buffered_fragments(&mut self) -> Vec<Fragment> {
+        mem::replace(
+            &mut self.buffered_fragments,
+            Vec::with_capacity(buffer_sizes::inbound::FRAGMENTS),
+        )
+    }
+}
+
 impl Sink<net_data::Fragment> for FragmentProcessor {
     type Error = Error;
 
@@ -313,38 +600,27 @@ impl Sink<net_data::Fragment> for FragmentProcessor {
         })?;
         tracing::debug!(hash = %fragment.hash(), "received fragment");
 
-        if let Some(whitelist) = &self.global_state.config.whitelist {
-            match self.get_ingress_addr() {
-                Some(ingress_addr) => {
-                    if whitelist.contains(&ingress_addr) {
-                        self.buffered_fragments.push(fragment);
-                    } else {
-                        tracing::info!("dropping fragments from {}", ingress_addr);
-                    }
-                }
-                None => tracing::warn!("unable to resolve address of ingress client"),
-            }
-        } else {
-            // if no whitelist config, normal behaviour, no filtering
-            self.buffered_fragments.push(fragment);
-        }
+        self.buffered_fragments.push(fragment);
 
         Ok(())
     }
 
     fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Error>> {
-        loop {
-            if self.buffered_fragments.is_empty() {
-                match self.poll_complete_refresh_stat(cx) {
-                    Poll::Pending => {
-                        ready!(self.poll_flush_mbox(cx))?;
-                        return Poll::Pending;
-                    }
-                    Poll::Ready(()) => return self.poll_flush_mbox(cx),
-                }
+        if self.buffered_fragments.is_empty() {
+            if self.pending_processing.complete() {
+                tracing::debug!("flushing fragments messagebox");
+                self.poll_flush_mbox(cx)
             } else {
-                ready!(self.poll_send_fragments(cx))?;
+                tracing::debug!("waiting pending processing before flushing fragments messagebox");
+                let _ = self.poll_complete_refresh_stat(cx);
+
+                Poll::Pending
             }
+        } else {
+            tracing::debug!("flushing buffered fragments to messagebox");
+            ready!(self.poll_send_fragments(cx))?;
+
+            Poll::Pending
         }
     }
 
@@ -363,61 +639,6 @@ impl Sink<net_data::Fragment> for FragmentProcessor {
                 ready!(self.poll_send_fragments(cx))?;
             }
         }
-    }
-}
-
-impl FragmentProcessor {
-    fn poll_send_fragments(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Error>> {
-        ready!(self.mbox.poll_ready(cx)).map_err(|e| {
-            tracing::debug!(reason = %e, "error sending fragments for processing");
-            Error::new(Code::Internal, e)
-        })?;
-        let fragments = mem::replace(
-            &mut self.buffered_fragments,
-            Vec::with_capacity(buffer_sizes::inbound::FRAGMENTS),
-        );
-
-        let addr = match self.global_state.config.address() {
-            Some(addr) => FragmentOrigin::Network { addr: addr.ip() },
-            None => {
-                tracing::info!("node addr not present in config, reverting to local lookup");
-                FragmentOrigin::Network {
-                    addr: retrieve_local_ip(),
-                }
-            }
-        };
-
-        let (reply_handle, _reply_future) = intercom::unary_reply();
-        self.mbox
-            .start_send(TransactionMsg::SendTransactions {
-                origin: addr,
-                fragments,
-                fail_fast: false,
-                reply_handle,
-            })
-            .map_err(|e| {
-                tracing::error!(
-                    reason = %e,
-                    "failed to send fragments to the fragment task"
-                );
-                Error::new(Code::Internal, e)
-            })?;
-        self.refresh_stat();
-        Poll::Ready(Ok(()))
-    }
-
-    fn poll_flush_mbox(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Error>> {
-        Pin::new(&mut self.mbox).poll_flush(cx).map_err(|e| {
-            tracing::error!(
-                reason = %e,
-                "communication channel to the fragment task failed"
-            );
-            Error::new(Code::Internal, e)
-        })
-    }
-
-    fn poll_complete_refresh_stat(&mut self, cx: &mut Context<'_>) -> Poll<()> {
-        self.pending_processing.poll_complete(cx)
     }
 }
 
@@ -503,5 +724,9 @@ impl PendingProcessing {
             self.0 = None;
         }
         Poll::Ready(())
+    }
+
+    fn complete(&self) -> bool {
+        self.0.is_none()
     }
 }

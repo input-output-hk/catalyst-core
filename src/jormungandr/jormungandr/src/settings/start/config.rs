@@ -149,6 +149,11 @@ pub struct Connection {
     /// The default value is 5 min.
     #[serde(default)]
     pub network_stuck_check: Option<Duration>,
+
+    /// If given, specifies the address of the DNS server to connect to
+    /// for executing DNS lookups.
+    #[serde(default)]
+    pub dns_server_address: Option<Address>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]

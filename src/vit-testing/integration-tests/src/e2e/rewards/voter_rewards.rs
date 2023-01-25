@@ -12,10 +12,8 @@ use catalyst_toolbox::rewards::Threshold;
 use chain_impl_mockchain::block::BlockDate;
 use jormungandr_automation::testing::time;
 use jormungandr_lib::crypto::account::Identifier;
-use jormungandr_lib::crypto::hash::Hash;
 use mainnet_lib::{wallet_state::MainnetWalletStateBuilder, MainnetNetworkBuilder};
 use snapshot_trigger_service::config::JobParameters;
-use valgrind::ProposalExtension;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::VoteBlockchainTime;
 use vitup::config::{Block0Initials, ConfigBuilder};
@@ -23,17 +21,21 @@ use vitup::config::{Role, DIRECT_VOTING_GROUP};
 use vitup::testing::spawn_network;
 use vitup::testing::vitup_setup;
 
+const CHALLENGES_COUNT:usize = 1;
+const PROPOSALS_COUNT:u32 = 3;
+const VOTE_THRESHOLD_PER_CHALLENGE:u32 = 1;
+const VOTE_THRESHOLD_PER_VOTER:usize = 1;
+const TOTAL_REWARD:u32 = 100;
+const EXPECTED_REWARD:u32 = 50;
+const STAKE:u64 = 10_000;
+
 #[test]
-pub fn voters_reward_happy_path() {
+pub fn voter_rewards_happy_path() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
 
-    let threshold = 1;
-    let total_rewards = 1000u32;
-    let stake = 10_000;
-
-    let alice_wallet = CardanoWallet::new(stake);
-    let bob_wallet = CardanoWallet::new(stake);
-    let clarice_wallet = CardanoWallet::new(stake);
+    let alice_wallet = CardanoWallet::new(STAKE);
+    let bob_wallet = CardanoWallet::new(STAKE);
+    let clarice_wallet = CardanoWallet::new(STAKE);
 
     let (db_sync, _node, _reps) = MainnetNetworkBuilder::default()
         .with(alice_wallet.as_direct_voter())
@@ -51,6 +53,7 @@ pub fn voters_reward_happy_path() {
         tally_end: 2,
         slots_per_epoch: 30,
     };
+
     let config = ConfigBuilder::default()
         .block0_initials(Block0Initials(vec![
             alice_wallet.as_initial_entry(),
@@ -59,8 +62,9 @@ pub fn voters_reward_happy_path() {
         ]))
         .vote_timing(vote_timing.into())
         .slot_duration_in_seconds(2)
-        .proposals_count(3)
-        .voting_power(100)
+        .challenges_count(CHALLENGES_COUNT)
+        .proposals_count(PROPOSALS_COUNT)
+        .voting_power(STAKE)
         .private(false)
         .build();
 
@@ -68,13 +72,17 @@ pub fn voters_reward_happy_path() {
     let (mut controller, vit_parameters, network_params) =
         vitup_setup(&config, testing_directory.path().to_path_buf()).unwrap();
 
+    println!("Vit parameters challenges count: {:#?}", vit_parameters.current_fund.challenges_count);
+
     let (nodes, vit_station, wallet_proxy) = spawn_network(
         &mut controller,
         vit_parameters,
         network_params,
         &mut template_generator,
     )
-    .unwrap();
+        .unwrap();
+
+    println!("number of challenges: {:#?}", vit_station.challenges().unwrap().len());
 
     let mut alice = iapyx_from_mainnet(&alice_wallet, &wallet_proxy).unwrap();
     let mut bob = iapyx_from_mainnet(&bob_wallet, &wallet_proxy).unwrap();
@@ -88,9 +96,15 @@ pub fn voters_reward_happy_path() {
 
     alice.vote_for(vote_plan.id(), 0, Vote::Yes as u8).unwrap();
 
-    bob.vote_for(vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+    alice.vote_for(vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+
+    alice.vote_for(vote_plan.id(), 2, Vote::Yes as u8).unwrap();
 
     bob.vote_for(vote_plan.id(), 0, Vote::Yes as u8).unwrap();
+
+    bob.vote_for(vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+
+    bob.vote_for(vote_plan.id(), 2, Vote::Yes as u8).unwrap();
 
     let target_date = BlockDate {
         epoch: 1,
@@ -98,7 +112,7 @@ pub fn voters_reward_happy_path() {
     };
     time::wait_for_date(target_date.into(), nodes[0].rest());
 
-    let mut proposals = vit_station.proposals(DIRECT_VOTING_GROUP).unwrap();
+    let proposals = vit_station.proposals(DIRECT_VOTING_GROUP).unwrap();
 
     let account_votes_count = nodes[0]
         .rest()
@@ -138,51 +152,33 @@ pub fn voters_reward_happy_path() {
         })
         .collect();
 
-    //println!("{:#?}", proposals);
-
-    //println!("{:?}", proposals.len());
-
-    println!("{:?}", proposals[0].proposal.chain_proposal_id);
-
-    println!("{:?}", proposals[0].proposal.chain_proposal_id.len());
-
-    let hex = hex::decode(&proposals[0].proposal.chain_proposal_id);
-
-    println!("{:?}", hex);
-
-    //println!("{:?}", hex.len());
-
-    //println!("{:?}", <[u8; 32]>::try_from(proposals[0].clone().proposal.chain_proposal_id).unwrap());
-
-    // solve Threshold creation, but probably is creating incoherent data?
-    /*for proposal in &mut proposals {
-        proposal.proposal.chain_proposal_id.truncate(32);
-    }*/
-
-    // this keeps failing due to proposals[0].proposal.chain_proposal_id.len() = 64
-    let vote_threshold = Threshold::new(
-        threshold,
-        vit_station
-            .challenges()
-            .unwrap()
-            .iter()
-            .map(|x| (x.id, x.proposers_rewards as usize))
-            .collect(),
-        proposals
-            .into_iter()
-            .map(|mut p| p.proposal.chain_proposal_id = hex::decode(p.proposal.chain_proposal_id)),
-    )
-    .unwrap();
-
     let records = calc_voter_rewards(
         account_votes_count,
         snapshot.snapshot().to_full_snapshot_info(),
-        vote_threshold,
-        total_rewards.into(),
+        Threshold::new(
+            VOTE_THRESHOLD_PER_VOTER,
+            vit_station
+                .challenges()
+                .unwrap()
+                .iter()
+                .map(|x| (x.id, VOTE_THRESHOLD_PER_CHALLENGE as usize))
+                .collect(),
+            proposals,
+        )
+            .unwrap(),
+        TOTAL_REWARD.into(),
     )
-    .unwrap();
+        .unwrap();
 
-    println!("{:?}", records);
+    println!("Alice address and conversion");
+
+    //println!("{:#?}", alice_wallet.reward_address().to_address());
+    println!("{:#?}", alice_wallet.reward_address().to_address().to_hex());
+
+    println!("Records length:");
+    println!("{:#?}", records.len());
+    println!("Records:");
+    println!("{:#?}", records);
 
     assert_eq!(
         records
@@ -190,7 +186,7 @@ pub fn voters_reward_happy_path() {
             .find(|(x, _y)| **x == alice_wallet.reward_address().to_address().to_hex())
             .unwrap()
             .1,
-        &50u32.into()
+        &EXPECTED_REWARD.into()
     );
 
     assert_eq!(
@@ -199,6 +195,8 @@ pub fn voters_reward_happy_path() {
             .find(|(x, _y)| **x == bob_wallet.reward_address().to_address().to_hex())
             .unwrap()
             .1,
-        &50u32.into()
+        &EXPECTED_REWARD.into()
     );
+
+    assert!(!records.iter().any(|(x, _y)| **x == clarice_wallet.reward_address().to_address().to_hex()));
 }

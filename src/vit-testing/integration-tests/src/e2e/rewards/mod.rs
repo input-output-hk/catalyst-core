@@ -1,1 +1,1 @@
-//mod voter_rewards;
+mod voter_rewards;

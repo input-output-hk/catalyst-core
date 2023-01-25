@@ -72,8 +72,6 @@ pub fn voter_rewards_happy_path() {
     let (mut controller, vit_parameters, network_params) =
         vitup_setup(&config, testing_directory.path().to_path_buf()).unwrap();
 
-    println!("Vit parameters challenges count: {:#?}", vit_parameters.current_fund.challenges_count);
-
     let (nodes, vit_station, wallet_proxy) = spawn_network(
         &mut controller,
         vit_parameters,
@@ -81,8 +79,6 @@ pub fn voter_rewards_happy_path() {
         &mut template_generator,
     )
         .unwrap();
-
-    println!("number of challenges: {:#?}", vit_station.challenges().unwrap().len());
 
     let mut alice = iapyx_from_mainnet(&alice_wallet, &wallet_proxy).unwrap();
     let mut bob = iapyx_from_mainnet(&bob_wallet, &wallet_proxy).unwrap();
@@ -169,16 +165,6 @@ pub fn voter_rewards_happy_path() {
         TOTAL_REWARD.into(),
     )
         .unwrap();
-
-    println!("Alice address and conversion");
-
-    //println!("{:#?}", alice_wallet.reward_address().to_address());
-    println!("{:#?}", alice_wallet.reward_address().to_address().to_hex());
-
-    println!("Records length:");
-    println!("{:#?}", records.len());
-    println!("Records:");
-    println!("{:#?}", records);
 
     assert_eq!(
         records

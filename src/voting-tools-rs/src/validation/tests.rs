@@ -1,16 +1,16 @@
 use std::collections::BTreeMap;
 
+use cardano_serialization_lib::chain_crypto::{AsymmetricKey, SigningAlgorithm};
 use ciborium::cbor;
-use mainnet_lib::InMemoryDbSync;
 use validity::Failure;
 
-use crate::{data::PubKey, test_api::MockDbProvider, vectors::cip15};
+use crate::{
+    data::PubKey,
+    vectors::cip15::{self, SIGNATURE, STAKE_PRIVATE_KEY, STAKE_KEY},
+    Sig,
+};
 
 use super::*;
-
-fn make_db() -> MockDbProvider {
-    MockDbProvider::from(InMemoryDbSync::empty())
-}
 
 fn test_ctx() -> ValidationCtx {
     ValidationCtx {
@@ -56,7 +56,6 @@ fn fails_if_stake_key_invalid_type() {
 #[test]
 fn fails_if_stake_key_wrong_network_id() {
     let mut ctx = test_ctx();
-
     ctx.network_id = NetworkId::Mainnet;
 
     let mut reg = cip15::vector();
@@ -75,6 +74,48 @@ fn fails_if_stake_key_wrong_network_id() {
             actual: Some(NetworkId::Testnet),
         }
     )
+}
+
+/// Sign a registration with the key provided in the CIP 15 vector
+fn compute_sig_from_registration(reg: &Registration) -> Signature {
+    let data = reg.to_cbor();
+    let data_bytes = cbor_to_bytes(&data);
+
+    let secret_bytes = hex::decode(STAKE_PRIVATE_KEY).unwrap();
+    let secret_key = Ed25519::secret_from_binary(&secret_bytes).unwrap();
+
+    let public_bytes = hex::decode(STAKE_KEY).unwrap();
+    let public_key = Ed25519::public_from_binary(&public_bytes).unwrap();
+    
+    if Ed25519::compute_public(&secret_key) != public_key {
+        panic!("inconsistent secret/public key pair");
+    }
+
+    let signature = Ed25519::sign(&secret_key, &data_bytes);
+    let signature_bytes = signature.as_ref();
+
+    Signature {
+        inner: Sig(signature_bytes.try_into().unwrap()),
+    }
+}
+
+#[test]
+fn cip15_test_vector_correct_sig() {
+    let reg = cip15::vector();
+
+    let sig = compute_sig_from_registration(&reg.registration);
+    let signature_bytes = sig.inner.0;
+    let vector_signature_bytes = hex::decode(SIGNATURE).unwrap();
+
+    assert_eq!(signature_bytes.to_vec(), vector_signature_bytes);
+}
+
+#[test]
+fn signature_is_consistent() {
+    let reg = cip15::vector();
+    let signature = compute_sig_from_registration(&reg.registration);
+
+    validate_signature(&reg.registration, &signature).unwrap();
 }
 
 #[test]

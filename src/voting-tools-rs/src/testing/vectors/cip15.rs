@@ -16,6 +16,9 @@ pub const SIGNATURE: &str = "6c2312cd49067ecf0920df7e067199c55b3faef4ec0bce1bd2c
 /// CIP-15 test vector nonce
 pub const NONCE: u64 = 1234;
 
+/// The private key corresponding to [`STAKE_KEY`]
+pub const STAKE_PRIVATE_KEY: &str = "f5beaeff7932a4164d270afde7716067582412e8977e67986cd9b456fc082e3a";
+
 /// The full CIP-15 test vector
 #[must_use]
 pub fn vector() -> SignedRegistration {
@@ -48,4 +51,29 @@ pub fn vector_json() -> Value {
             "1": SIGNATURE,
         }
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use cardano_serialization_lib::chain_crypto::{AsymmetricKey, AsymmetricPublicKey, Ed25519};
+
+    use super::*;
+
+    // this test is mainly verifying that cip15 test vectors are correct
+    #[test]
+    fn signature_given_is_correct() {
+        let secret_bytes = hex::decode(STAKE_PRIVATE_KEY).unwrap();
+        let secret = Ed25519::secret_from_binary(&secret_bytes).unwrap();
+
+        let public_bytes = hex::decode(STAKE_KEY).unwrap();
+        let public = Ed25519::public_from_binary(&public_bytes).unwrap();
+
+        let public_from_secret = Ed25519::compute_public(&secret);
+
+        // cardano_serialization_lib types don't implement Debug so we can't use assert_eq!
+        // lmao
+        if public != public_from_secret {
+            panic!()
+        }
+    }
 }

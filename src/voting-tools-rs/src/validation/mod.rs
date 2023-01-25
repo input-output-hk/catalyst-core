@@ -116,14 +116,14 @@ fn validate_voting_purpose(
 ///  - signing the hash with the private key used to generate the stake key
 fn validate_signature(
     registration: &Registration,
-    Signature { inner }: &Signature,
+    Signature { inner: sig }: &Signature,
 ) -> Result<(), RegistrationError> {
     let cbor = registration.to_cbor();
     let bytes = cbor_to_bytes(&cbor);
     let hash_bytes = hash::hash(&bytes);
 
     let pub_key = Ed25519::public_from_binary(registration.stake_key.as_ref()).unwrap();
-    let sig = Ed25519::signature_from_bytes(inner.as_ref()).unwrap();
+    let sig = Ed25519::signature_from_bytes(sig.as_ref()).unwrap();
 
     match Ed25519::verify_bytes(&pub_key, &sig, &hash_bytes) {
         Verification::Success => Ok(()),

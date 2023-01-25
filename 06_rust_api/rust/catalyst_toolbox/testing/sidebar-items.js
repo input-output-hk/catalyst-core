@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Error",""]],"struct":[["ProposerRewardsCommand","Wrapper over proposers rewards scripts. It uses script from ../scripts/python/proposers_rewards.py location. NOTE: by default struct uses python3 as script executable"]]};

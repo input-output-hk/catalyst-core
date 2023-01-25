@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["MAX_GOSSIP_SIZE","limit the gossip size to 512 bytes (limit per gossip)."],["MAX_ID_SIZE","limit the ID size to 32 bytes. Right now the Node ID are 24 bytes but for backward compatibility keep the value to 32bytes."]]};

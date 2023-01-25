@@ -17,7 +17,7 @@ impl FragmentLogVerifier {
         assert_eq!(
             self.rest.fragment_logs().unwrap().len(),
             size,
-            "only 1 transaction should be in fragment log"
+            "only {size} transactions should be in fragment log"
         );
         self
     }

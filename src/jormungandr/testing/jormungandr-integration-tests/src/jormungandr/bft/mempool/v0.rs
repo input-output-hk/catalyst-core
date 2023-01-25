@@ -13,11 +13,13 @@ pub fn test_mempool_pool_max_entries_limit() {
     let temp_dir = TempDir::new().unwrap();
 
     let receiver = thor::Wallet::default();
-    let mut sender = thor::Wallet::default();
+    let mut sender1 = thor::Wallet::default();
+    let mut sender2 = thor::Wallet::default();
 
     let leader_block0_config = Block0ConfigurationBuilder::default()
         .with_utxos(vec![
-            sender.to_initial_fund(100),
+            sender1.to_initial_fund(100),
+            sender2.to_initial_fund(100),
             receiver.to_initial_fund(100),
         ])
         // Use a long slot time to avoid producing a block
@@ -45,14 +47,18 @@ pub fn test_mempool_pool_max_entries_limit() {
 
     let verifier = jormungandr
         .correct_state_verifier()
-        .record_address_state(vec![&sender.address(), &receiver.address()]);
-
-    let mempool_check = fragment_sender
-        .send_transaction(&mut sender, &receiver, &jormungandr, 1.into())
-        .unwrap();
+        .record_address_state(vec![
+            &sender1.address(),
+            &sender2.address(),
+            &receiver.address(),
+        ]);
 
     fragment_sender
-        .send_transaction(&mut sender, &receiver, &jormungandr, 1.into())
+        .send_transaction(&mut sender1, &receiver, &jormungandr, 1.into())
+        .unwrap();
+
+    let mempool_check = fragment_sender
+        .send_transaction(&mut sender2, &receiver, &jormungandr, 1.into())
         .unwrap();
 
     // Wait until the fragment enters the mempool
@@ -67,7 +73,7 @@ pub fn test_mempool_pool_max_entries_limit() {
     jormungandr
         .correct_state_verifier()
         .fragment_logs()
-        .assert_size(1)
+        .assert_size(2)
         .assert_contains_only(mempool_check.fragment_id());
 
     FragmentVerifier::wait_and_verify_is_in_block(
@@ -78,7 +84,7 @@ pub fn test_mempool_pool_max_entries_limit() {
     .unwrap();
 
     verifier
-        .value_moved_between_addresses(&sender.address(), &receiver.address(), 1.into())
+        .value_moved_between_addresses(&sender2.address(), &receiver.address(), 1.into())
         .unwrap();
 }
 
@@ -90,14 +96,8 @@ pub fn test_mempool_pool_max_entries_equal_0() {
     let mut sender = thor::Wallet::default();
 
     let config = Block0ConfigurationBuilder::default().with_utxos(vec![
-        InitialUTxO {
-            address: sender.address(),
-            value: 100.into(),
-        },
-        InitialUTxO {
-            address: receiver.address(),
-            value: 100.into(),
-        },
+        sender.to_initial_fund(100),
+        receiver.to_initial_fund(100),
     ]);
 
     let node_config = NodeConfigBuilder::default().with_mempool(Mempool {
@@ -147,21 +147,17 @@ pub fn test_mempool_log_max_entries_only_one_fragment() {
     let temp_dir = TempDir::new().unwrap();
 
     let receiver = thor::Wallet::default();
-    let mut sender = thor::Wallet::default();
+    let mut sender1 = thor::Wallet::default();
+    let mut sender2 = thor::Wallet::default();
 
     let config = Block0ConfigurationBuilder::default()
         // Use a long slot time to avoid producing a block
         // before both test requests has been sent
         .with_slot_duration(15.try_into().unwrap())
         .with_utxos(vec![
-            InitialUTxO {
-                address: sender.address(),
-                value: 100.into(),
-            },
-            InitialUTxO {
-                address: receiver.address(),
-                value: 100.into(),
-            },
+            sender1.to_initial_fund(100),
+            sender2.to_initial_fund(100),
+            receiver.to_initial_fund(100),
         ]);
 
     let node_config = NodeConfigBuilder::default().with_mempool(Mempool {
@@ -182,23 +178,27 @@ pub fn test_mempool_log_max_entries_only_one_fragment() {
 
     let verifier = jormungandr
         .correct_state_verifier()
-        .record_address_state(vec![&sender.address(), &receiver.address()]);
+        .record_address_state(vec![
+            &sender1.address(),
+            &sender2.address(),
+            &receiver.address(),
+        ]);
 
     let fragment_sender =
         FragmentSender::from_settings_with_setup(&settings, FragmentSenderSetup::no_verify());
 
-    let first_fragment = fragment_sender
-        .send_transaction(&mut sender, &receiver, &jormungandr, 1.into())
+    let _first_fragment = fragment_sender
+        .send_transaction(&mut sender1, &receiver, &jormungandr, 1.into())
         .unwrap();
 
-    let _second_fragment = fragment_sender
-        .send_transaction(&mut sender, &receiver, &jormungandr, 1.into())
+    let second_fragment = fragment_sender
+        .send_transaction(&mut sender2, &receiver, &jormungandr, 1.into())
         .unwrap();
 
     // Wait until the fragment enters the mempool
     FragmentVerifier::wait_fragment(
         Duration::from_millis(100),
-        first_fragment.clone(),
+        second_fragment.clone(),
         VerifyExitStrategy::OnPending,
         &jormungandr,
     )
@@ -208,17 +208,17 @@ pub fn test_mempool_log_max_entries_only_one_fragment() {
         .correct_state_verifier()
         .fragment_logs()
         .assert_size(1)
-        .assert_contains_only(first_fragment.fragment_id());
+        .assert_contains_only(second_fragment.fragment_id());
 
     FragmentVerifier::wait_and_verify_is_in_block(
         Duration::from_secs(15),
-        first_fragment,
+        second_fragment,
         &jormungandr,
     )
     .unwrap();
 
     verifier
-        .value_moved_between_addresses(&sender.address(), &receiver.address(), 1.into())
+        .value_moved_between_addresses(&sender2.address(), &receiver.address(), 1.into())
         .unwrap();
 }
 

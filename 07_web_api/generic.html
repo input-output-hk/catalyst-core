@@ -1722,11 +1722,17 @@
                         <!-- Page table of contents -->
                         <div class="sidetoc"><nav class="pagetoc"></nav></div>
 
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
                         <h1 id="generic-voting"><a class="header" href="#generic-voting">Generic voting</a></h1>
 <h2 id="pre-voting-stage"><a class="header" href="#pre-voting-stage">Pre-voting stage</a></h2>
 <ul>
-<li>It is assumed that all vote plans on the blockchain are already present in the genesis block, Json-encoded vote plan(s) loaded from file. </li>
-<li>Proposal submission. In order to submit a proposal for funding, a project owner submits a special proposal transaction to the blockchain.</li>
+<li>Vote plans on the blockchain are already present in the genesis block, Json-encoded vote plan(s) loaded from file.</li>
+<li>In order to submit a proposal for funding, a project owner submits a special proposal transaction to the blockchain.</li>
 </ul>
 <h2 id="voting-stage"><a class="header" href="#voting-stage">Voting stage</a></h2>
 <p>In order to cast a vote, a user must first obtain a <em>proposal_id</em> and <em>vote_plan_id</em>.</p>
@@ -1859,7 +1865,7 @@ seqdiag {
   <text fill="rgb(0,0,0)" font-family="sans-serif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="21" x="297.5" y="321">200</text>
 </svg></pre>
 <h3 id="vote-fragment-in-more-detail"><a class="header" href="#vote-fragment-in-more-detail">Vote fragment in more detail</a></h3>
-<p><a href="https://github.com/input-output-hk/catalyst-core/blob/main/src/chain-libs/chain-impl-mockchain/doc/format.md#type-11-vote-cast">Fragment breakdown</a></p>
+<p><a href="https://github.com/input-output-hk/catalyst-core/blob/main/src/chain-libs/chain-impl-mockchain/doc/format.md#type-11-vote-cast">Vote Fragment breakdown</a></p>
 <h3 id="node-verification"><a class="header" href="#node-verification">Node verification</a></h3>
 <ul>
 <li>The Node verifies if the fragment is correctly signed and formatted and then performs additional verification:
@@ -1933,7 +1939,9 @@ seqdiag {
 </li>
 </ul>
 <h2 id="post-voting-stage"><a class="header" href="#post-voting-stage">Post-voting stage</a></h2>
-<h3 id="joint-decryption-of-tally"><a class="header" href="#joint-decryption-of-tally">Joint decryption of tally.</a></h3>
+<ul>
+<li>Joint decryption of tally.</li>
+</ul>
 <footer id="open-on-gh">Found a bug? <a href="https://github.com/input-output-hk/catalyst-core/edit/main/book/src/07_web_api/generic.md">Edit this page on GitHub.</a></footer>
                     </main>
 

@@ -10,7 +10,7 @@ pub use jormungandr_lib::interfaces::{Cors, JRpc, LayersConfig, Rest, Tls, Trust
 use jormungandr_lib::{interfaces::Mempool, time::Duration};
 use multiaddr::Multiaddr;
 use serde::{de::Error as _, Deserialize, Deserializer, Serialize, Serializer};
-use std::{net::SocketAddr, path::PathBuf};
+use std::path::PathBuf;
 use tracing::level_filters::LevelFilter;
 
 #[derive(Debug, Deserialize)]
@@ -132,7 +132,7 @@ pub struct Connection {
     pub allow_private_addresses: bool,
 
     /// contains addrs of nodes which we can accept fragments from
-    pub whitelist: Option<Vec<SocketAddr>>,
+    pub whitelist: Option<Vec<Multiaddr>>,
 
     /// interval to start gossiping with new nodes, changing the value will
     /// affect the bandwidth. The more often the node will gossip the more
@@ -149,6 +149,11 @@ pub struct Connection {
     /// The default value is 5 min.
     #[serde(default)]
     pub network_stuck_check: Option<Duration>,
+
+    /// If given, specifies the address of the DNS server to connect to
+    /// for executing DNS lookups.
+    #[serde(default)]
+    pub dns_server_address: Option<Address>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]

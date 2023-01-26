@@ -67,9 +67,25 @@ impl SpendingCounterIncreasing {
                 actual: counter,
             })
         } else {
-            self.nexts[counter.lane()] = actual_counter.increment();
+            self.next_unchecked(counter);
             Ok(())
         }
+    }
+
+    /// Increases the spending counter on the given lane.
+    pub(crate) fn next_unchecked(&mut self, unchecked_counter: SpendingCounter) {
+        let lane = unchecked_counter.lane();
+        let counter_to_update = self.nexts[lane];
+        if counter_to_update != unchecked_counter {
+            tracing::warn!(
+                "Invalid spending counter, {}",
+                Error::SpendingCredentialInvalid {
+                    expected: counter_to_update,
+                    actual: unchecked_counter,
+                }
+            );
+        }
+        self.nexts[lane] = counter_to_update.increment();
     }
 }
 

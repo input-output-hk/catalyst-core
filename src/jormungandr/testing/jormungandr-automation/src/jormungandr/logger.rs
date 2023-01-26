@@ -378,7 +378,7 @@ impl JormungandrLogger {
                 .collect()
         }
 
-        let mut value: Value = serde_json::from_str(line).unwrap();
+        let mut value: Value = serde_json::from_str(line)?;
         value["fields"] = stringify_map(&value, "fields");
         if value.get("span").is_some() {
             value["span"] = stringify_map(&value, "span");

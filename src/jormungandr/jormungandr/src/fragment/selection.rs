@@ -200,8 +200,7 @@ impl FragmentSelectionAlgorithm for OldestFirst {
             "finished block creation with {} fragments left in the pool",
             pool.len()
         );
-        return_to_pool.reverse();
-        pool.return_to_pool(return_to_pool);
+        pool.insert_all(return_to_pool);
 
         FragmentSelectionResult {
             contents: contents_builder.into(),

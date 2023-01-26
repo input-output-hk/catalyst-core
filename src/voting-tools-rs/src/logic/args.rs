@@ -5,6 +5,7 @@ use crate::{
 
 /// Arguments to the `voting_power` function
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct VotingPowerArgs {
     /// The lower bound for slots to include
     pub min_slot: Option<SlotNo>,

@@ -7,7 +7,7 @@ use hex::FromHexError;
 use microtype::microtype;
 use serde::{Deserialize, Serialize};
 
-mod arbitrary;
+pub(crate) mod arbitrary;
 mod cbor;
 // mod crypto;
 pub use crypto2::{PubKey, Sig};
@@ -128,7 +128,7 @@ pub struct SnapshotEntry {
 
 // Create newtype wrappers for better type safety
 microtype! {
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
     pub PubKey {
         VotingKeyHex,
         StakeKeyHex,

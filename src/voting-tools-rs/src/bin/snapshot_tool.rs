@@ -35,12 +35,11 @@ fn main() -> Result<()> {
         password: db_pass,
     };
 
-    let args = VotingPowerArgs {
-        min_slot,
-        max_slot,
-        network_id,
-        expected_voting_purpose,
-    };
+    let mut args = VotingPowerArgs::default();
+    args.min_slot = min_slot;
+    args.max_slot = max_slot;
+    args.network_id = network_id;
+    args.expected_voting_purpose = expected_voting_purpose;
 
     let outputs = load(db_config, dry_run, args)?;
 

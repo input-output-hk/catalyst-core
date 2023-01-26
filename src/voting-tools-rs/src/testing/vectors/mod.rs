@@ -1,5 +1,35 @@
+use proptest::prelude::Rng;
+
+use crate::data::{
+    arbitrary::arbitrary_signed_registration, Nonce, PubKey, RewardsAddress, SignedRegistration,
+    TxId, VotingKeyHex,
+};
+
 /// CIP-15 test vectors
 pub mod cip15;
+
+
+/// Generate a random signed registration
+///
+/// This may not be fully valid (i.e. stake address may not be in exactly the right format)
+pub fn generate_signed_registration(mut rng: impl Rng) -> SignedRegistration {
+    let nonce = Nonce(rng.next_u64());
+
+    let mut rewards_address = vec![0u8; 100];
+    rng.fill_bytes(&mut rewards_address);
+    let rewards_address = RewardsAddress(rewards_address.into());
+
+    let mut voting_key = [0; 32];
+    rng.fill_bytes(&mut voting_key);
+    let voting_key = VotingKeyHex(PubKey(voting_key));
+
+    let mut stake_secret = [0; 32];
+    rng.fill_bytes(&mut stake_secret);
+
+    let tx_id = TxId(rng.next_u64());
+
+    arbitrary_signed_registration(nonce, rewards_address, voting_key, stake_secret, tx_id)
+}
 
 #[cfg(test)]
 mod tests {

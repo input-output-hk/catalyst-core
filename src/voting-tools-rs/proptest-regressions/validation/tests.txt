@@ -1,8 +1,0 @@
-# Seeds for failure cases proptest has generated in the past. It is
-# automatically read and these particular cases re-run before any
-# novel cases are generated.
-#
-# It is recommended to check this file in to source control so that
-# everyone who runs the test benefits from these saved cases.
-xx 2a9890dfc1d3d8a2a8762fed8efda66bd1779a4b75b0b71d48e4424e0ac65936 # shrinks to input = _FailsIfStakeKeyInvalidTypeArgs { leading_byte_leading_4_bits: 0 }
-xx 182580ac41b0819b6e2b57f78aa46285a9cba48a8f51a3baeef9af5f569485db # shrinks to input = _FailsIfStakeKeyInvalidTypeArgs { leading_byte_leading_4_bits: 14 }

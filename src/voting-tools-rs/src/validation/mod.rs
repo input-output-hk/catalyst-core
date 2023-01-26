@@ -1,14 +1,14 @@
-use cardano_serialization_lib::chain_crypto::{
-    AsymmetricPublicKey, Ed25519, Verification, VerificationAlgorithm,
-};
-use ciborium::value::Value as Cbor;
-
 use crate::data::{NetworkId, Registration, SignedRegistration, StakeKeyHex, VotingPurpose};
 use crate::error::RegistrationError;
 use crate::{Signature, VotingPowerSource};
+use cardano_serialization_lib::chain_crypto::{
+    AsymmetricPublicKey, Ed25519, Verification, VerificationAlgorithm,
+};
+use cbor::cbor_to_bytes;
 use validity::Validate;
 
-mod hash;
+pub(crate) mod cbor;
+pub(crate) mod hash;
 
 #[cfg(test)]
 mod tests;
@@ -129,10 +129,4 @@ fn validate_signature(
         Verification::Success => Ok(()),
         Verification::Failed => Err(RegistrationError::MismatchedSignature { hash_bytes }),
     }
-}
-
-fn cbor_to_bytes(cbor: &Cbor) -> Vec<u8> {
-    let mut bytes: Vec<u8> = vec![];
-    ciborium::ser::into_writer(cbor, &mut bytes).unwrap();
-    bytes
 }

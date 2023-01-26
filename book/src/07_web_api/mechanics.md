@@ -64,25 +64,25 @@ Generic API abstraction with multiple backends
 
     + Headers
 
-            X-My-Message-Header: 42
+            X-meta-Header: 42
 
     + Body
 
-            { "message": "" }
+            {"meta":[{"vote_plan_id","proposal_id"}]}
 
 
 ## Store vote [POST /vote]
 
-Start out by creating a message for the world to see.
+Send vote fragment to Node
 
 + Request (application/json)
 
-        { "vote": "choice,proposal_id,signature" }
+        {"vote":[{"choice","proposal_id","signature"}]}
 
 + Response 201
 
     + Headers
 
-            Location: /messages/1337
+            
 
 

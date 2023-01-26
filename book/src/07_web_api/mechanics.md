@@ -53,10 +53,10 @@ seqdiag {
 - get   - /v1/fragments/statuses - checking fragment statuses
 
 
-# Posix style API
+## Posix style API
 Generic API abstraction with multiple backends
 
-## Get active voting plans metadata [/active_plans]
+### Get active voting plans metadata [/live]
 
 ### Retrieve a Message [GET]
 
@@ -71,7 +71,7 @@ Generic API abstraction with multiple backends
             {"meta":[{"vote_plan_id","proposal_id"}]}
 
 
-## Store vote [POST /vote]
+### Store vote [POST /vote]
 
 Send vote fragment to Node
 

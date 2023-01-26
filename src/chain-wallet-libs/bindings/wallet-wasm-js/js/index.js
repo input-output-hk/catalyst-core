@@ -27,17 +27,9 @@ export class Proposal {
 }
 
 export class Vote {
-  constructor(
-    proposal,
-    choice,
-    expiration,
-    spendingCounter,
-    spendingCounterLane
-  ) {
+  constructor(proposal, choice) {
     this.proposal = proposal;
     this.choice = choice;
-    this.spendingCounter = spendingCounter;
-    this.spendingCounterLane = spendingCounterLane;
   }
 }
 
@@ -70,15 +62,8 @@ export function signVotes(votes, settings, accountId, privateKey) {
       );
     }
 
-    let builder = wasm.VoteCastTxBuilder.new(
-      settings.settings,
-      voteCast
-    );
-    let tx_builder = builder.build_tx(
-      accountId,
-      vote.spendingCounter,
-      vote.spendingCounterLane
-    );
+    let builder = wasm.VoteCastTxBuilder.new(settings.settings, voteCast);
+    let tx_builder = builder.build_tx(accountId);
     if (privateKey != undefined) {
       tx_builder = tx_builder.sign_tx(privateKey);
     }

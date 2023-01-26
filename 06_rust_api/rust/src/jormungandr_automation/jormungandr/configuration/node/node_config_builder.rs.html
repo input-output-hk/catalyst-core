@@ -163,6 +163,7 @@
 <span id="163">163</span>
 <span id="164">164</span>
 <span id="165">165</span>
+<span id="166">166</span>
 </pre><pre class="rust"><code><span class="attribute">#![allow(dead_code)]
 
 </span><span class="kw">use </span><span class="kw">crate</span>::jormungandr::get_available_port;
@@ -240,6 +241,7 @@
                     gossip_interval: <span class="prelude-val">None</span>,
                     network_stuck_check: <span class="prelude-val">None</span>,
                     whitelist: <span class="prelude-val">None</span>,
+                    dns_server_address: <span class="prelude-val">None</span>,
                 },
 
                 policy: <span class="prelude-val">Some</span>(Policy {

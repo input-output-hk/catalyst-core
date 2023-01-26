@@ -338,6 +338,22 @@
 <span id="338">338</span>
 <span id="339">339</span>
 <span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Spending strategies
 </span><span class="attribute">#[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>Error {
@@ -407,9 +423,25 @@
                 actual: counter,
             })
         } <span class="kw">else </span>{
-            <span class="self">self</span>.nexts[counter.lane()] = actual_counter.increment();
+            <span class="self">self</span>.next_unchecked(counter);
             <span class="prelude-val">Ok</span>(())
         }
+    }
+
+    <span class="doccomment">/// Increases the spending counter on the given lane.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>next_unchecked(<span class="kw-2">&amp;mut </span><span class="self">self</span>, unchecked_counter: SpendingCounter) {
+        <span class="kw">let </span>lane = unchecked_counter.lane();
+        <span class="kw">let </span>counter_to_update = <span class="self">self</span>.nexts[lane];
+        <span class="kw">if </span>counter_to_update != unchecked_counter {
+            <span class="macro">tracing::warn!</span>(
+                <span class="string">&quot;Invalid spending counter, {}&quot;</span>,
+                Error::SpendingCredentialInvalid {
+                    expected: counter_to_update,
+                    actual: unchecked_counter,
+                }
+            );
+        }
+        <span class="self">self</span>.nexts[lane] = counter_to_update.increment();
     }
 }
 

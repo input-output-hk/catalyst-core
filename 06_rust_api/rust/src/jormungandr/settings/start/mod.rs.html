@@ -357,6 +357,7 @@
 <span id="357">357</span>
 <span id="358">358</span>
 <span id="359">359</span>
+<span id="360">360</span>
 </pre><pre class="rust"><code><span class="kw">pub mod </span>config;
 <span class="kw">pub mod </span>network;
 
@@ -700,6 +701,7 @@
             .map(Into::into)
             .unwrap_or(<span class="kw">crate</span>::topology::DEFAULT_NETWORK_STUCK_INTERVAL),
         max_bootstrap_attempts: p2p.bootstrap.max_bootstrap_attempts,
+        dns_server_address: p2p.connection.dns_server_address,
         http_fetch_block0_service,
         bootstrap_from_trusted_peers,
         skip_bootstrap,

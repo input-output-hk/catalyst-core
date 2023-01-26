@@ -737,6 +737,13 @@
 <span id="737">737</span>
 <span id="738">738</span>
 <span id="739">739</span>
+<span id="740">740</span>
+<span id="741">741</span>
+<span id="742">742</span>
+<span id="743">743</span>
+<span id="744">744</span>
+<span id="745">745</span>
+<span id="746">746</span>
 </pre><pre class="rust"><code><span class="comment">// Rustc default type_length_limit is too low for complex futures, which generate deeply nested
 // monomorphized structured with long signatures. This value is enough for current project.
 </span><span class="attribute">#![type_length_limit = <span class="string">&quot;10000000&quot;</span>]
@@ -790,6 +797,10 @@
 
 <span class="kw">fn </span>start() -&gt; <span class="prelude-ty">Result</span>&lt;(), start_up::Error&gt; {
     <span class="kw">let </span>initialized_node = initialize_node()<span class="question-mark">?</span>;
+
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(whitelist) = initialized_node.settings.network.whitelist.as_ref() {
+        <span class="macro">tracing::info!</span>(<span class="string">&quot;Whitelisted addresses {:?}&quot;</span>, whitelist);
+    }
 
     <span class="kw">let </span>bootstrapped_node = bootstrap(initialized_node)<span class="question-mark">?</span>;
 
@@ -912,12 +923,15 @@
     }
 
     <span class="comment">// FIXME: reduce state sharing across services
-    </span><span class="kw">let </span>network_state = Arc::new(network::GlobalState::new(
-        bootstrapped_node.block0_hash,
-        bootstrapped_node.settings.network.clone(),
-        stats_counter.clone(),
-        <span class="macro">span!</span>(Level::TRACE, <span class="string">&quot;task&quot;</span>, kind = <span class="string">&quot;network&quot;</span>),
-    ));
+    </span><span class="kw">let </span>network_state = Arc::new(
+        network::GlobalState::new(
+            bootstrapped_node.block0_hash,
+            bootstrapped_node.settings.network.clone(),
+            stats_counter.clone(),
+            <span class="macro">span!</span>(Level::TRACE, <span class="string">&quot;task&quot;</span>, kind = <span class="string">&quot;network&quot;</span>),
+        )
+        .map_err(start_up::Error::GlobalState)<span class="question-mark">?</span>,
+    );
 
     {
         <span class="kw">let </span>fragment_msgbox = fragment_msgbox.clone();

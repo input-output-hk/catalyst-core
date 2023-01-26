@@ -65,10 +65,8 @@ Generic API abstraction with multiple backends
 Gets a single vote plan by its unique identifier.
 
 - Response 200 (application/json)
-  - Attributes
-  - id: abc123
-  - title: vote plan
-  - content: [proposals]
+  
+
 
 ### Store vote [POST /vote]
 
@@ -76,14 +74,14 @@ Send vote fragment to Node
 
 - Request (application/json)
 
-  ```json
-  {
-	"choice": "*",
-	"vote_plan_id": "*",
-	"proposal_id": "*",
-	"signature": "*"
-  }
-  ```
+```json
+{
+"choice":"*",
+"vote_plan_id":"*",
+"proposal_id":"*",
+"signature":"*"
+}
+```
 
 - Response 201
   - Headers

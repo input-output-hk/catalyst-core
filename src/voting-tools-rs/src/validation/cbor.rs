@@ -3,7 +3,7 @@ use ciborium::value::Value;
 pub(crate) fn cbor_to_bytes(cbor: &Value) -> Vec<u8> {
     let mut bytes: Vec<u8> = vec![];
     ciborium::ser::into_writer(cbor, &mut bytes).unwrap();
-    bytes.to_vec()
+    bytes
 }
 
 #[cfg(test)]

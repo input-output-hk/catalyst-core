@@ -8,7 +8,6 @@ use crate::data::{
 /// CIP-15 test vectors
 pub mod cip15;
 
-
 /// Generate a random signed registration
 ///
 /// This may not be fully valid (i.e. stake address may not be in exactly the right format)

@@ -7,9 +7,7 @@ use super::{
     Nonce, PubKey, Registration, RewardsAddress, SignedRegistration, StakeKeyHex, TxId,
     VotingKeyHex,
 };
-use cardano_serialization_lib::chain_crypto::{
-    AsymmetricKey, Ed25519, SigningAlgorithm, 
-};
+use cardano_serialization_lib::chain_crypto::{AsymmetricKey, Ed25519, SigningAlgorithm};
 use proptest::{arbitrary::StrategyFor, prelude::*, strategy::Map};
 
 type Inputs = (Nonce, RewardsAddress, VotingKeyHex, [u8; 32], TxId);

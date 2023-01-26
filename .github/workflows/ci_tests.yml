@@ -26,6 +26,7 @@ env:
   RUST_BACKTRACE: 1
   CARGO_INCREMENTAL: 0
   CARGO_FLAGS: --verbose --locked
+  SEGMENT_DOWNLOAD_TIMEOUT_MINS: 15
 
 jobs:
   cancel:

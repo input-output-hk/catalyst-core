@@ -12,6 +12,8 @@ env:
   RUST_BACKTRACE: 1
   CARGO_INCREMENTAL: 0
   CARGO_FLAGS: --verbose --locked
+  SEGMENT_DOWNLOAD_TIMEOUT_MINS: 15
+
 
 concurrency:
   group: ${{ github.sha }}
@@ -83,7 +85,7 @@ jobs:
 
           cargo llvm-cov nextest --no-report --manifest-path ./src/jormungandr/jormungandr/Cargo.toml --profile ci
           cargo llvm-cov report --lcov --output-path ./lcov.info
-          
+
       - name: Upload code coverage to coveralls.io
         uses: coverallsapp/github-action@master
         with:

@@ -963,7 +963,7 @@ version = "0.1.0"
 dependencies = [
  "aurora-bn",
  "base64 0.13.1",
- "blake2",
+ "blake2 0.9.1",
  "byte-slice-cast",
  "chain-core",
  "chain-ser",
@@ -1490,7 +1490,7 @@ version = "0.9.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "01a9af1f4c2ef74bb8aa1f7e19706bc72d03598c8a570bb5de72243c7a9d9d5a"
 dependencies = [
- "autocfg",
+ "autocfg 1.1.0",
  "cfg-if 1.0.0",
  "crossbeam-utils",
  "memoffset 0.7.1",
@@ -4517,7 +4517,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a92518e98c078586bc6c934028adcca4c92a53d6a958196de835170a01d84e4b"
 dependencies = [
  "adler",
- "autocfg",
+ "autocfg 1.1.0",
 ]
 
 [[package]]
@@ -4891,7 +4891,7 @@ version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "578ede34cf02f8924ab9447f50c28075b4d3e5b269972345e7e0372b38c6cdcd"
 dependencies = [
- "autocfg",
+ "autocfg 1.1.0",
  "libm",
 ]
 
@@ -5673,7 +5673,7 @@ dependencies = [
  "quick-error 2.0.1",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
- "rand_xorshift",
+ "rand_xorshift 0.3.0",
  "regex-syntax",
  "rusty-fork",
  "tempfile",
@@ -6546,7 +6546,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing",
- "uuid 0.8.2",
+ "uuid 1.2.2",
  "walkdir",
  "warp",
 ]
@@ -7051,7 +7051,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing",
- "uuid 0.8.2",
+ "uuid 1.2.2",
  "voting_tools_rs",
  "walkdir",
  "warp",
@@ -7998,7 +7998,6 @@ dependencies = [
 name = "try-lock"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
->>>>>>> main
 checksum = "3528ecfd12c466c6f163363caf2d02a71161dd5e1cc6ae7b34207ea2d42d81ed"
 
 [[package]]
@@ -8219,6 +8218,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "422ee0de9031b5b948b97a8fc04e3aa35230001a722ddd27943e0be31564ce4c"
 dependencies = [
  "getrandom 0.2.8",
+ "serde",
 ]
 
 [[package]]
@@ -8501,6 +8501,7 @@ dependencies = [
  "blake2 0.10.6",
  "bytekind",
  "cardano-serialization-lib",
+ "chrono",
  "ciborium",
  "clap 4.0.32",
  "color-eyre",

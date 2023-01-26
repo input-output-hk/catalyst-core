@@ -18,18 +18,19 @@ export class Settings {
 }
 
 export class Proposal {
-  constructor(votePlan, voteOptions, proposalIndex, voteEncKey) {
+  constructor(votePlan, proposalIndex, voteOptions, voteEncKey) {
     this.votePlan = votePlan;
-    this.voteOptions = voteOptions;
     this.proposalIndex = proposalIndex;
+    this.voteOptions = voteOptions;
     this.voteEncKey = voteEncKey;
   }
 }
 
 export class Vote {
-  constructor(proposal, choice) {
+  constructor(proposal, choice, purpose) {
     this.proposal = proposal;
     this.choice = choice;
+    this.purpose = purpose;
   }
 }
 
@@ -37,30 +38,25 @@ export function signVotes(votes, settings, accountId, privateKey) {
   let tx_builders = [];
   for (let i = 0; i < votes.length; i++) {
     let vote = votes[i];
-    let voteCast;
+    let payload;
     if (
-      vote.proposal.options != undefined &&
+      vote.proposal.voteOptions != undefined &&
       vote.proposal.voteEncKey != undefined
     ) {
-      let payload = wasm.Payload.new_private(
+      payload = wasm.Payload.new_private(
         wasm.VotePlanId.from_hex(vote.proposal.votePlan),
-        vote.proposal.options,
+        vote.proposal.voteOptions,
         vote.choice,
-        vote.proposal.voteEncKey
-      );
-      voteCast = wasm.VoteCast.new(
-        wasm.VotePlanId.from_hex(vote.proposal.votePlan),
-        vote.proposal.proposalIndex,
-        payload
+        wasm.ElectionPublicKey.from_hex(vote.proposal.voteEncKey)
       );
     } else {
-      let payload = wasm.Payload.new_public(vote.choice);
-      voteCast = wasm.VoteCast.new(
-        wasm.VotePlanId.from_hex(vote.proposal.votePlan),
-        vote.proposal.proposalIndex,
-        payload
-      );
+      payload = wasm.Payload.new_public(vote.choice);
     }
+    let voteCast = wasm.VoteCast.new(
+      wasm.VotePlanId.from_hex(vote.proposal.votePlan),
+      vote.proposal.proposalIndex,
+      payload
+    );
 
     let builder = wasm.VoteCastTxBuilder.new(settings.settings, voteCast);
     let tx_builder = builder.build_tx(accountId);

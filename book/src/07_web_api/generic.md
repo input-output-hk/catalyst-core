@@ -41,16 +41,15 @@ seqdiag {
 
 ### Relevant endpoints
 
-```
-- get - /v0/account/${id} - retrieve voting power
-- get - /v1/votes/plan/account-votes/${account_id} - for history of votes
-- get - /v0/settings - for block-hash and fees
-- get - /v0/vote/active/plans - for votplan id to be able to construct vote ✅
-- get - /v0/node/stats - for information about network congestion
-- post - /v0/message - sending single fragment ✅
-- post - /v1/fragments -  sending batch fragments ✅
-- get  - /v1/fragments/statuses - checking fragment statuses
-```
+- get /v0/account/${id} **retrieve voting power**
+- get /v1/votes/plan/account-votes/${account_id} **for history of votes**
+- get /v0/settings **for block-hash and fees**
+- get /v0/vote/active/plans **for votplan id to be able to construct vote** ✅
+- get /v0/node/stats **for information about network congestion**
+- post /v0/message **sending single fragment** ✅
+- post /v1/fragments **sending batch fragments** ✅
+- get /v1/fragments/statuses **checking fragment statuses**
+
 
 ## Posix style API
 

@@ -1005,6 +1005,9 @@
                         <!-- Page table of contents -->
                         <div class="sidetoc"><nav class="pagetoc"></nav></div>
 
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
                         <h1 id="generic-voting"><a class="header" href="#generic-voting">Generic voting</a></h1>
 <h2 id="pre-requisites"><a class="header" href="#pre-requisites">Pre-requisites</a></h2>
 <p>In order to cast a vote, a user must first obtain a <em>proposal_id</em> and <em>vote_plan_id</em>.</p>
@@ -1189,24 +1192,6 @@ seqdiag {
 <li>
 <p>Request (application/json)</p>
 <pre><code>  {&quot;vote&quot;:[{ &quot;choice&quot;, &quot;vote_plan_id&quot; , &quot;proposal_id&quot; , &quot;signature&quot;}]}
-</code></pre>
-</li>
-<li>
-<p>Response 201</p>
-<ul>
-<li>Headers</li>
-</ul>
-</li>
-</ul>
-<h3 id="obfuscate-more-using-session-headers"><a class="header" href="#obfuscate-more-using-session-headers">obfuscate more using session headers?</a></h3>
-<h3 id="store-vote-post-vote-1"><a class="header" href="#store-vote-post-vote-1">Store vote [POST /vote]</a></h3>
-<p>Send vote fragment to Node</p>
-<ul>
-<li>
-<p>Request (application/json)</p>
-<pre><code> + Headers
-
-      vote_metadata: *
 </code></pre>
 </li>
 <li>

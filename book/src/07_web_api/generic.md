@@ -2,8 +2,8 @@
 
 ## Pre-voting stage
 
-- It is assumed that all vote plans on the blockchain are already present in the genesis block, Json-encoded vote plan(s) loaded from file. 
-- Proposal submission. In order to submit a proposal for funding, a project owner submits a special proposal transaction to the blockchain.
+- Vote plans on the blockchain are already present in the genesis block, Json-encoded vote plan(s) loaded from file.
+- In order to submit a proposal for funding, a project owner submits a special proposal transaction to the blockchain.
 
 ## Voting stage
 
@@ -45,6 +45,7 @@ seqdiag {
 [Fragment breakdown](https://github.com/input-output-hk/catalyst-core/blob/main/src/chain-libs/chain-impl-mockchain/doc/format.md#type-11-vote-cast)
 
 ### Node verification
+
 - The Node verifies if the fragment is correctly signed and formatted and then performs additional verification:
   - (*votes duplications, missing vote plan etc*)
 - **/api/v1/fragments** is used for the same purpose but can also send batches of fragments
@@ -103,4 +104,4 @@ Send vote fragment to Node
 
 ## Post-voting stage
 
-### Joint decryption of tally.
+- Joint decryption of tally.

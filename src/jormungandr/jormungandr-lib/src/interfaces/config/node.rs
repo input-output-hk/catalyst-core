@@ -233,7 +233,7 @@ pub struct Connection {
     pub allow_private_addresses: bool,
 
     /// contains addrs of nodes which we can accept fragments from
-    pub whitelist: Option<Vec<SocketAddr>>,
+    pub whitelist: Option<Vec<Multiaddr>>,
 
     /// interval to start gossiping with new nodes, changing the value will affect the bandwidth.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -242,6 +242,9 @@ pub struct Connection {
     /// If no gossip has been received in the last interval, try to connect to nodes that were previously known to this node
     #[serde(skip_serializing_if = "Option::is_none")]
     pub network_stuck_check: Option<Duration>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dns_server_address: Option<SocketAddr>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

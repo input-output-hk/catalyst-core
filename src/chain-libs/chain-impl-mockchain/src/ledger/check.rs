@@ -76,7 +76,9 @@ pub(super) fn valid_stake_owner_delegation_transaction(
 /// check that the transaction input/outputs/witnesses is valid for the ballot
 ///
 /// * Only 1 input (subsequently 1 witness), no output
-pub(super) fn valid_vote_cast(tx: &TransactionSlice<certificate::VoteCast>) -> LedgerCheck {
+pub(super) fn valid_vote_cast_tx_slice(
+    tx: &TransactionSlice<certificate::VoteCast>,
+) -> LedgerCheck {
     if_cond_fail_with!(
         tx.inputs().nb_inputs() != 1
             || tx.witnesses().nb_witnesses() != 1

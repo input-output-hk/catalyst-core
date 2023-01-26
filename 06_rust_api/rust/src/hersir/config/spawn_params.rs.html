@@ -350,6 +350,22 @@
 <span id="350">350</span>
 <span id="351">351</span>
 <span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::NodeAlias;
 <span class="kw">use </span>jormungandr_automation::jormungandr::{
     FaketimeConfig, LeadershipMode, LogLevel, PersistenceMode, Version,
@@ -382,7 +398,7 @@
     max_bootstrap_attempts: <span class="prelude-ty">Option</span>&lt;usize&gt;,
     max_connections: <span class="prelude-ty">Option</span>&lt;u32&gt;,
     allow_private_addresses: <span class="prelude-ty">Option</span>&lt;bool&gt;,
-    whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;SocketAddr&gt;&gt;,
+    whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;Multiaddr&gt;&gt;,
     max_inbound_connections: <span class="prelude-ty">Option</span>&lt;u32&gt;,
     mempool: <span class="prelude-ty">Option</span>&lt;Mempool&gt;,
     network_stuck_check: <span class="prelude-ty">Option</span>&lt;Duration&gt;,
@@ -398,6 +414,8 @@
     version: <span class="prelude-ty">Option</span>&lt;Version&gt;,
     <span class="attribute">#[serde(default)]
     </span>verbose: bool,
+    <span class="attribute">#[serde(default)]
+    </span>dns_server_address: <span class="prelude-ty">Option</span>&lt;SocketAddr&gt;,
 }
 
 <span class="kw">impl </span>SpawnParams {
@@ -429,6 +447,7 @@
             trusted_peers: <span class="prelude-val">None</span>,
             version: <span class="prelude-val">None</span>,
             verbose: <span class="bool-val">false</span>,
+            dns_server_address: <span class="prelude-val">None</span>,
         }
     }
 
@@ -500,7 +519,7 @@
         <span class="self">self
     </span>}
 
-    <span class="kw">pub fn </span>whitelist(<span class="kw-2">mut </span><span class="self">self</span>, nodes: Vec&lt;SocketAddr&gt;) -&gt; <span class="self">Self </span>{
+    <span class="kw">pub fn </span>whitelist(<span class="kw-2">mut </span><span class="self">self</span>, nodes: Vec&lt;Multiaddr&gt;) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.whitelist = <span class="prelude-val">Some</span>(nodes);
         <span class="self">self
     </span>}
@@ -612,6 +631,15 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>.jormungandr
     }
 
+    <span class="kw">pub fn </span>with_dns_server_address(<span class="kw-2">mut </span><span class="self">self</span>, addr: SocketAddr) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.dns_server_address = <span class="prelude-val">Some</span>(addr);
+        <span class="self">self
+    </span>}
+
+    <span class="kw">pub fn </span>dns_server_address(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>SocketAddr&gt; {
+        <span class="self">self</span>.dns_server_address.as_ref()
+    }
+
     <span class="kw">pub fn </span>override_settings(<span class="kw-2">&amp;</span><span class="self">self</span>, node_config: <span class="kw-2">&amp;mut </span>NodeConfig) {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(topics_of_interest) = <span class="kw-2">&amp;</span><span class="self">self</span>.topics_of_interest {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>config) = node_config.p2p.layers {
@@ -658,6 +686,10 @@
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(trusted_peers) = <span class="kw-2">&amp;</span><span class="self">self</span>.trusted_peers {
             node_config.p2p.bootstrap.trusted_peers = trusted_peers.clone();
+        }
+
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(dns_server_name) = <span class="kw-2">&amp;</span><span class="self">self</span>.dns_server_address {
+            node_config.p2p.connection.dns_server_address = <span class="prelude-val">Some</span>(<span class="kw-2">*</span>dns_server_name);
         }
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(preferred_layer) = <span class="kw-2">&amp;</span><span class="self">self</span>.preferred_layer {

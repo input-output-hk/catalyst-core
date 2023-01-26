@@ -800,6 +800,43 @@
 <span id="800">800</span>
 <span id="801">801</span>
 <span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
 </pre><pre class="rust"><code><span class="doccomment">//! all the network related actions and processes
 //!
 //! This module only provides and handle the different connections
@@ -954,6 +991,12 @@
     }
 }
 
+<span class="attribute">#[derive(Debug, Error)]
+</span><span class="kw">pub enum </span>NewGlobalStateError {
+    <span class="attribute">#[error(<span class="string">&quot;Failed to create DNS resolver: {0}&quot;</span>)]
+    </span>DnsResolver(trust_dns_resolver::error::ResolveError),
+}
+
 <span class="doccomment">/// Global state shared between all network tasks.
 </span><span class="kw">pub struct </span>GlobalState {
     block0_hash: HeaderHash,
@@ -963,6 +1006,7 @@
     span: Span,
 
     connected_count: AtomicUsize,
+    dns_resolver: trust_dns_resolver::TokioAsyncResolver,
 }
 
 <span class="kw">pub type </span>GlobalStateR = Arc&lt;GlobalState&gt;;
@@ -974,21 +1018,25 @@
         config: Configuration,
         stats_counter: Metrics,
         span: Span,
-    ) -&gt; <span class="self">Self </span>{
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, NewGlobalStateError&gt; {
         <span class="kw">let </span>peers = Peers::new(config.max_connections, stats_counter);
 
         <span class="comment">//TODO: move this to a secure enclave
         </span><span class="kw">let </span>keypair =
             NodeKeyPair::from(&lt;chain_crypto::SecretKey&lt;<span class="kw">_</span>&gt;&gt;::from(config.node_key.clone()));
 
-        GlobalState {
+        <span class="kw">let </span>dns_resolver = new_dns_resolver(config.dns_server_address)
+            .map_err(NewGlobalStateError::DnsResolver)<span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>(GlobalState {
             block0_hash,
             config,
             peers,
             keypair,
             span,
             connected_count: AtomicUsize::new(<span class="number">0</span>),
-        }
+            dns_resolver,
+        })
     }
 
     <span class="kw">pub fn </span>span(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Span {
@@ -1027,6 +1075,32 @@
         } <span class="kw">else </span>{
             <span class="number">0
         </span>}
+    }
+}
+
+<span class="kw">fn </span>new_dns_resolver(
+    dns_server_address: <span class="prelude-ty">Option</span>&lt;SocketAddr&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;trust_dns_resolver::TokioAsyncResolver, trust_dns_resolver::error::ResolveError&gt; {
+    <span class="kw">match </span>dns_server_address {
+        <span class="prelude-val">Some</span>(addr) =&gt; {
+            <span class="macro">tracing::info!</span>(<span class="string">&quot;configured DNS resolver with server {}&quot;</span>, addr);
+
+            <span class="kw">let </span><span class="kw-2">mut </span>resolver_conf = trust_dns_resolver::config::ResolverConfig::new();
+            resolver_conf.add_name_server(trust_dns_resolver::config::NameServerConfig::new(
+                addr,
+                trust_dns_resolver::config::Protocol::Tcp,
+            ));
+
+            <span class="kw">let </span><span class="kw-2">mut </span>resolver_opts = trust_dns_resolver::config::ResolverOpts::default();
+            resolver_opts.use_hosts_file = <span class="bool-val">false</span>;
+
+            trust_dns_resolver::AsyncResolver::tokio(resolver_conf, resolver_opts)
+        }
+        <span class="prelude-val">None </span>=&gt; {
+            <span class="macro">tracing::info!</span>(<span class="string">&quot;configured DNS resolver with system DNS server&quot;</span>);
+
+            trust_dns_resolver::AsyncResolver::tokio_from_system_conf()
+        }
     }
 }
 

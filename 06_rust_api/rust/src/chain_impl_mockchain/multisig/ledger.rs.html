@@ -147,6 +147,31 @@
 <span id="147">147</span>
 <span id="148">148</span>
 <span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
 </pre><pre class="rust"><code><span class="kw">use </span>imhamt::{Hamt, HamtIter, InsertError, RemoveError};
 <span class="kw">use </span>std::collections::hash_map::DefaultHasher;
 <span class="kw">use </span>thiserror::Error;
@@ -256,27 +281,52 @@
         <span class="self">self</span>.declarations.iter()
     }
 
-    <span class="doccomment">/// If the account doesn&#39;t exist, or that the value would become negative, errors out.
-    </span><span class="kw">pub fn </span>remove_value(
+    <span class="doccomment">/// Spend value from an existing account.
+    ///
+    /// If the account doesn&#39;t exist, or if the value is too much to spend,
+    /// or if the spending counter doesn&#39;t match, it throws a `LedgerError`.
+    </span><span class="kw">pub fn </span>spend(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         identifier: <span class="kw-2">&amp;</span>Identifier,
-        spending_counter: SpendingCounter,
+        counter: SpendingCounter,
         value: Value,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="self">Self</span>, <span class="kw-2">&amp;</span>Declaration), LedgerError&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, LedgerError&gt; {
+        <span class="kw">let </span>new_accts = <span class="self">self</span>.accounts.spend(identifier, counter, value)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            accounts: new_accts,
+            declarations: <span class="self">self</span>.declarations.clone(),
+        })
+    }
+
+    <span class="doccomment">/// Spend value from an existing account without spending counter check.
+    ///
+    /// If the account doesn&#39;t exist, or if the value is too much to spend,
+    /// it throws a `LedgerError`.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>spend_with_no_counter_check(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        identifier: <span class="kw-2">&amp;</span>Identifier,
+        counter: SpendingCounter,
+        value: Value,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, LedgerError&gt; {
+        <span class="kw">let </span>new_accts = <span class="self">self
+            </span>.accounts
+            .spend_with_no_counter_check(identifier, counter, value)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            accounts: new_accts,
+            declarations: <span class="self">self</span>.declarations.clone(),
+        })
+    }
+
+    <span class="doccomment">/// Gets the `&amp;Declaration` for the given `&amp;Identifier`.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>get_declaration_by_id(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        identifier: <span class="kw-2">&amp;</span>Identifier,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span>Declaration, LedgerError&gt; {
         <span class="kw">let </span>decl = <span class="self">self
             </span>.declarations
             .lookup(identifier)
             .ok_or(LedgerError::DoesntExist)<span class="question-mark">?</span>;
-        <span class="kw">let </span>new_accts = <span class="self">self
-            </span>.accounts
-            .remove_value(identifier, spending_counter, value)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>((
-            <span class="self">Self </span>{
-                accounts: new_accts,
-                declarations: <span class="self">self</span>.declarations.clone(),
-            },
-            decl,
-        ))
+        <span class="prelude-val">Ok</span>(decl)
     }
 
     <span class="doccomment">/// Set the delegation of an account in this ledger

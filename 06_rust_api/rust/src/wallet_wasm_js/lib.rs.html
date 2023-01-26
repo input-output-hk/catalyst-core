@@ -76,14 +76,6 @@
 <span id="76">76</span>
 <span id="77">77</span>
 <span id="78">78</span>
-<span id="79">79</span>
-<span id="80">80</span>
-<span id="81">81</span>
-<span id="82">82</span>
-<span id="83">83</span>
-<span id="84">84</span>
-<span id="85">85</span>
-<span id="86">86</span>
 </pre><pre class="rust"><code><span class="doccomment">//! JavaScript and TypeScript bindings for the Jormungandr wallet SDK.
 
 </span><span class="kw">pub use </span>certificates::Certificate;
@@ -134,18 +126,10 @@
     ///
     /// The `account` parameter gives the Ed25519Extended private key
     /// of the account.
-    </span><span class="kw">pub fn </span>build_tx(
-        <span class="kw-2">mut </span><span class="self">self</span>,
-        hex_account_id: String,
-        counter: u32,
-        lane: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;VoteCastTxBuilder, JsValue&gt; {
+    </span><span class="kw">pub fn </span>build_tx(<span class="kw-2">mut </span><span class="self">self</span>, hex_account_id: String) -&gt; <span class="prelude-ty">Result</span>&lt;VoteCastTxBuilder, JsValue&gt; {
         <span class="self">self</span>.<span class="number">0 </span>= <span class="self">self
             </span>.<span class="number">0
-            </span>.build_tx(
-                hex_account_id,
-                SpendingCounter::new(lane, counter).map_err(|e| JsValue::from(e.to_string()))<span class="question-mark">?</span>,
-            )
+            </span>.build_tx(hex_account_id, SpendingCounter::zero())
             .map_err(|e| JsValue::from(e.to_string()))<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
     }

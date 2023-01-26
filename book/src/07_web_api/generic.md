@@ -76,8 +76,13 @@ Send vote fragment to Node
 
 - Request (application/json)
 
-  ```
-  {"vote":[{ "choice", "vote_plan_id" , "proposal_id" , "signature"}]}
+  ```json
+  {
+	"choice": "*",
+	"vote_plan_id": "*",
+	"proposal_id": "*",
+	"signature": "*"
+  }
   ```
 
 - Response 201

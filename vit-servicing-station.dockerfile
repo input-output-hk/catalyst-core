@@ -1,35 +1,39 @@
 # Simple dockerfile example to build a vit server
 
-FROM ubuntu:18.04
+FROM ubuntu:latest
 LABEL MAINTAINER IOHK
 LABEL description="Vit servicing station server"
 
-ARG PREFIX=/app
-ENV ENV_PREFIX="vit_server_env"
+ARG APP_PATH=/app
+ENV RUST_VERSION=1.65.0
+ENV WORKSPACE=/workspace
 
-COPY database.db /data/database.db
-COPY block0.bin /data/block0.bin
-
+COPY . /workspace
+WORKDIR ${WORKSPACE}
 
 # prepare the environment
-RUN apt-get update && \
-    apt-get install -y git curl && \
-    mkdir -p ${ENV_PREFIX} && \
-    cd ${ENV_PREFIX} && \
-    git clone --recurse-submodules https://github.com/input-output-hk/vit-servicing-station src
+RUN echo "[INFO] - Preparing the environment" && \
+    apt-get update && \
+    apt-get install -y curl git build-essential pkg-config \
+                       protobuf-compiler libssl-dev libpq-dev libsqlite3-dev
     
-#install rustup
-RUN  apt-get install -y build-essential pkg-config libssl-dev && \
-    bash -c "curl https://sh.rustup.rs -sSf | bash -s -- -y" && \
-     ~/.cargo/bin/rustup install stable && \
-    ~/.cargo/bin/rustup default stable
+#install rust and crate
+RUN bash -c "curl https://sh.rustup.rs -sSf | bash -s -- -y" && \
+    export PATH=$HOME/.cargo/bin:$PATH && \
+    rustup install ${RUST_VERSION} && \
+    rustup default ${RUST_VERSION} && \
+    cargo install --locked --path src/vit-servicing-station/vit-servicing-station-server && \
+    mkdir -p ${APP_PATH}/bin && \
+    cp $HOME/.cargo/bin/vit-servicing-station-server ${APP_PATH}/bin
 
+# cleanup
+RUN apt-get remove --purge --auto-remove -y git curl build-essential pkg-config && \
+    apt-get install -y --no-install-recommends && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf $HOME/.rustup
 
-# install the node and jcli from source
-RUN cd ${ENV_PREFIX}/src && \
-    git submodule update --init --recursive && \
-    ~/.cargo/bin/cargo build --all --release --locked && \
-	~/.cargo/bin/cargo install --path vit-servicing-station-server
-	
+WORKDIR ${APP_PATH}
+# TODO: Add files to this path needed for the node
 
-CMD ["bash", "-c", "~/.cargo/bin/vit-servicing-station-server --db-url /data/database.db --block0-path /data/block0.bin --log-output-path vit-servicing-station.log --log-level info"]
+CMD [ "./bin/vit-servicing-station-server", "--help" ]

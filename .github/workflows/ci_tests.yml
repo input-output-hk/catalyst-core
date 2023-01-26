@@ -138,12 +138,14 @@ jobs:
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Restore test archive
+        id: archive-cache
         uses: actions/cache/restore@v3
         with:
           path: nextest-archive.tar.zst
           key: nextest-archive-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Restore external dependencies
+        id: deps-cache
         uses: actions/cache/restore@v3
         with:
           path: |
@@ -160,6 +162,15 @@ jobs:
       - name: Install dependencies
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+
+      - name: Build external dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        run:
+          cargo build -p vit-servicing-station-cli -p vit-servicing-station-server -p jcli -p jormungandr -p explorer
+
+      - name: Build and archive tests
+        if: steps.archive-cache.outputs.cache-hit != 'true'
+        run: cargo nextest archive --archive-file nextest-archive.tar.zst
 
       - name: Run Catalyst Core tests
         ## removing test ui_test because of bug https://github.com/rust-lang/cargo/issues/10352

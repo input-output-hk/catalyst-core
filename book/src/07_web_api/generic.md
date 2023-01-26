@@ -43,41 +43,42 @@ seqdiag {
 
 - get  - /v0/account/${id} - retrieve voting power
 - get  - /v1/votes/plan/account-votes/${account_id} - for history of votes
-- get  -  /v0/settings - for block-hash and fees
-- get  -  /v0/vote/active/plans - for votplan id to be able to construct vote ✅ 	
-- get  -  /v0/node/stats - for information about network congestion
-- post  - /v0/message - sending single fragment ✅ 	
-- post  - /v1/fragments -  sending batch fragments ✅ 	
-- get   - /v1/fragments/statuses - checking fragment statuses
+- get  - /v0/settings - for block-hash and fees
+- get  - /v0/vote/active/plans - for votplan id to be able to construct vote ✅ 	
+- get  - /v0/node/stats - for information about network congestion
+- post - /v0/message - sending single fragment ✅ 	
+- post - /v1/fragments -  sending batch fragments ✅ 	
+- get  - /v1/fragments/statuses - checking fragment statuses
 
 ## Posix style API
+
 Generic API abstraction with multiple backends
 
 ### Notes [/vote_plan/{id}]
 
-+ Parameters
+- Parameters
 
-    + id: abc123 (required) - Unique identifier for a vote plan
+    - id: abc123 (required) - Unique identifier for a vote plan
 
 ## Get a vote plan [GET]
 Gets a single vote plan by its unique identifier.
 
-+ Response 200 (application/json)
+- Response 200 (application/json)
 
-    + Attributes
+    - Attributes
 
-        + id: abc123
-        + title: vote plan
-        + content: [proposals]
+        - id: abc123
+        - title: vote plan
+        - content: [proposals]
 
 ### Store vote [POST /vote]
 
 Send vote fragment to Node
 
-+ Request (application/json)
+- Request (application/json)
 
         {"vote":[{ "choice", "vote_plan_id" , "proposal_id" , "signature"}]}
 
-+ Response 201
+- Response 201
 
-    + Headers
+    - Headers

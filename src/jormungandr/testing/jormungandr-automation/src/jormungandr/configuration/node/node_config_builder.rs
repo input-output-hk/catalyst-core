@@ -75,6 +75,7 @@ impl Default for NodeConfigBuilder {
                     gossip_interval: None,
                     network_stuck_check: None,
                     whitelist: None,
+                    dns_server_address: None,
                 },
 
                 policy: Some(Policy {

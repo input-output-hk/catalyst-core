@@ -1,6 +1,6 @@
 # catalyst-toolbox
-Catalyst Tools, cli's and scripts related
 
+Catalyst Tools, cli's and scripts related
 
 ## Catalyst toolbox cli
 
@@ -45,6 +45,7 @@ OPTIONS:
 ```
 
 #### Send push notification through Pushwoosh API
+
 You can send a push notification directly from `catalyst-toolbox-cli` with:
 
 ```shell
@@ -61,8 +62,8 @@ SUBCOMMANDS:
     help         Prints this message or the help of the given subcommand(s)
 ```
 
-There are two main subcommands for sending such notifications. The difference between them is the input type. 
-One (`from-args`) derives the notification required data from cli arguments meanwhile the other (`from-json`) takes 
+There are two main subcommands for sending such notifications. The difference between them is the input type.
+One (`from-args`) derives the notification required data from cli arguments meanwhile the other (`from-json`) takes
 a preloaded json file as input.
 
 ##### from-args
@@ -94,6 +95,7 @@ ARGS:
 The content file can have two types of content, a plain string or a multilanguage one.
 
 ###### Plain string
+
 Should be a message surrounded by `"`, json style. For example:
 
 ```json
@@ -101,6 +103,7 @@ Should be a message surrounded by `"`, json style. For example:
 ```
 
 ###### Multi-language content
+
 A json style object with international language code as keys and message as value:
 
 ```json
@@ -110,7 +113,6 @@ A json style object with international language code as keys and message as valu
     "de": "Hallo!"
 }
 ```
-
 
 ##### from-json
 
@@ -131,7 +133,9 @@ ARGS:
 ```
 
 ##### Notification json format
+
 The notification json must include all mandatory fields or request would fail. A minimal example:
+
 ```json
 {
     "auth": "z2CjBa...OTbWox",
@@ -148,6 +152,7 @@ The notification json must include all mandatory fields or request would fail. A
     ]
 }
 ```
+
 Required fields:
 
 * `auth`: Pushwoosh API token
@@ -157,13 +162,13 @@ Required fields:
 notification fields:
 
 * Required:
-    * `send_date`: Either `"now"` or a datetime with format `"Y-m-d H:M"`.
-    * `content`: Either a plain mesasge (`"Hello app!"`) or a multilanguage object as explained above.
-    * `ignore_use_timezones`: A boolean indicating if timezones will be avoided.
+  * `send_date`: Either `"now"` or a datetime with format `"Y-m-d H:M"`.
+  * `content`: Either a plain mesasge (`"Hello app!"`) or a multilanguage object as explained above.
+  * `ignore_use_timezones`: A boolean indicating if timezones will be avoided.
 * Optionals:
-    * `timezone`: Timezone of the provided `send_date`. [Available timezones](https://www.php.net/manual/en/timezones.php).
-    * `campaign`: Campaign name for filtering push. Should exist in pushwoosh app configuration.
-    * `filter`: Filter name string. Should exist in pushwoosh app configuration. As described in [pushwoosh documentation](https://docs.pushwoosh.com/platform-docs/api-reference/messages/api-prerequisites#filter)
+  * `timezone`: Timezone of the provided `send_date`. [Available timezones](https://www.php.net/manual/en/timezones.php).
+  * `campaign`: Campaign name for filtering push. Should exist in pushwoosh app configuration.
+  * `filter`: Filter name string. Should exist in pushwoosh app configuration. As described in [pushwoosh documentation](https://docs.pushwoosh.com/platform-docs/api-reference/messages/api-prerequisites#filter)
 
 #### Recover tally from permanent logs
 
@@ -183,6 +188,7 @@ catalyst-toolbox recover tally --block0-path block0.bin --logs-path ./logs/fragm
 ```
 
 #### Logs
+
 There are a set of utilities to work with catalyst related logs
 
 ```shell
@@ -251,6 +257,7 @@ An example would look like:
 #### vCA Reviews export tool
 
 Export data from the vCA aggregated file into a csv file ready for VitSS db import
+
 ```shell
 catalyst-toolbox-reviews-export 0.2.0
 
@@ -270,7 +277,7 @@ OPTIONS:
 
 ##### Review tags file
 
-Tags are variable markers in the review files that we need to take into account. We need to match tags with their 
+Tags are variable markers in the review files that we need to take into account. We need to match tags with their
 corresponding tag phrase. It already has some defaults, but if this changes a new configuration file of the forward style
 needs to be provided:
 
@@ -285,7 +292,7 @@ needs to be provided:
 }
 ```
 
-Where **all the keys are needed** and values are matching reviews phrases markers. 
+Where **all the keys are needed** and values are matching reviews phrases markers.
 
 #### QR code generation
 
@@ -296,7 +303,7 @@ catalyst-toolbox qr-code --input <input> --pin <pin>
 ```
 
 The `--input` option value should give path to a file containing an
-ed25519extended voting key in the Bech32 text format.
+ed25519-extended voting key in the Bech32 text format.
 The PIN code used to encrypt and decrypt the key is given with the `--pin`
 option.
 
@@ -380,11 +387,11 @@ OPTIONS:
 ## Python scripts
 
 Use an updated version of `python3` and either create a venv or just install the dependencies from the
-`requirements.txt` file inside the `/catalyst-toolbox/scripts/python` folder. 
+`requirements.txt` file inside the `/catalyst-toolbox/scripts/python` folder.
 
 #### Calculate proposers rewards
 
-Load your __venv__ and/or run with your default __python3__ `python proposers_rewards.py --help`
+Load your **venv** and/or run with your default **python3** `python proposers_rewards.py --help`
 
 ```shell
 Usage: proposers_rewards.py [OPTIONS]
@@ -425,6 +432,6 @@ Options:
 This project is licensed under either of the following licenses:
 
 * Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
-  http://www.apache.org/licenses/LICENSE-2.0)
+  <http://www.apache.org/licenses/LICENSE-2.0>)
 * MIT license ([LICENSE-MIT](LICENSE-MIT) or
-  http://opensource.org/licenses/MIT)
+  <http://opensource.org/licenses/MIT>)

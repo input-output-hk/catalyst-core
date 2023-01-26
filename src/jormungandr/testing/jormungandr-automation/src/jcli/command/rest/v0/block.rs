@@ -13,7 +13,7 @@ impl BlockCommand {
         self.command
             .arg(block_id.into())
             .arg("get")
-            .arg("-h")
+            .arg("--host")
             .arg(host.into());
         self
     }
@@ -29,7 +29,7 @@ impl BlockCommand {
             .arg("get")
             .arg("--count")
             .arg(limit.to_string())
-            .arg("-h")
+            .arg("--host")
             .arg(host.into());
         self
     }

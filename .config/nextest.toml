@@ -5,5 +5,7 @@ failure-output = "immediate-final"
 fail-fast = false
 # Show all tests in the CI output.
 status-level = "all"
+# Test statuses at the end of the run.
+final-status-level = "slow"
 # Retries the test n times, tests that succeed on a subsequent attempt will be marked as flaky
 retries = 10

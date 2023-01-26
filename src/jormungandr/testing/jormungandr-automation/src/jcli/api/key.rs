@@ -3,7 +3,7 @@ use assert_cmd::assert::OutputAssertExt;
 use assert_fs::{fixture::FileWriteStr, NamedTempFile};
 use jortestkit::prelude::ProcessOutput;
 use std::path::Path;
-const DEFAULT_KEY_TYPE: &str = "Ed25519Extended";
+const DEFAULT_KEY_TYPE: &str = "ed25519-extended";
 
 pub struct Key {
     key_command: KeyCommand,

@@ -29,7 +29,7 @@ pub fn test_key_to_public_invalid_chars_key() {
 #[test]
 pub fn test_private_key_to_public_key() {
     let jcli: JCli = Default::default();
-    let private_key = jcli.key().generate("Ed25519Extended");
+    let private_key = jcli.key().generate("ed25519-extended");
     let public_key = jcli.key().convert_to_public_string(private_key);
     assert_ne!(public_key, "", "generated key is empty");
 }

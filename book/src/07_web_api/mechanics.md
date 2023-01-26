@@ -1,4 +1,4 @@
-# Mechanics Of Voting
+# Generic voting
 
 ### Pre-requisites
 

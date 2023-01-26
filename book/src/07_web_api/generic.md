@@ -50,7 +50,6 @@ seqdiag {
 - post /v1/fragments **sending batch fragments** ✅
 - get /v1/fragments/statuses **checking fragment statuses**
 
-
 ## Posix style API
 
 Generic API abstraction with multiple backends
@@ -86,7 +85,7 @@ Send vote fragment to Node
   - choice
   - vote_plan_id
   - proposal_id
-  - signature 
+  - signature
 
 - Response 201
   - Headers

@@ -42,7 +42,7 @@ seqdiag {
 
 ### Vote fragment in more detail
 
-[Fragment breakdown](https://github.com/input-output-hk/catalyst-core/blob/main/src/chain-libs/chain-impl-mockchain/doc/format.md#type-11-vote-cast)
+[Vote Fragment breakdown](https://github.com/input-output-hk/catalyst-core/blob/main/src/chain-libs/chain-impl-mockchain/doc/format.md#type-11-vote-cast)
 
 ### Node verification
 
@@ -100,7 +100,6 @@ Send vote fragment to Node
 
 - Response 201
   - Headers
-
 
 ## Post-voting stage
 

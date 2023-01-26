@@ -1527,6 +1527,117 @@
                         <!-- Page table of contents -->
                         <div class="sidetoc"><nav class="pagetoc"></nav></div>
 
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
                         <h1 id="generic-voting"><a class="header" href="#generic-voting">Generic voting</a></h1>
 <h2 id="pre-requisites"><a class="header" href="#pre-requisites">Pre-requisites</a></h2>
 <p>In order to cast a vote, a user must first obtain a <em>proposal_id</em> and <em>vote_plan_id</em>.</p>
@@ -1679,11 +1790,11 @@ seqdiag {
 </ul>
 <h2 id="posix-style-api"><a class="header" href="#posix-style-api">Posix style API</a></h2>
 <p>Generic API abstraction with multiple backends</p>
-<h3 id="vote-planvote_planid"><a class="header" href="#vote-planvote_planid">Vote plan[/vote_plan/{id}]</a></h3>
+<h2 id="vote-planvote_planid"><a class="header" href="#vote-planvote_planid">Vote plan[/vote_plan/{id}]</a></h2>
 <ul>
 <li>Parameters
 <ul>
-<li>id: abc123 (required) - Unique identifier for a vote plan</li>
+<li>vote_plan_id: abc123 (required) - Unique identifier for a vote plan</li>
 </ul>
 </li>
 </ul>
@@ -1693,24 +1804,34 @@ seqdiag {
 <li>Response 200 (application/json)
 <ul>
 <li>Attributes</li>
-<li>id: abc123</li>
+<li>vote_plan_id: abc123</li>
 <li>title: vote plan</li>
 <li>content: [proposals]</li>
 </ul>
 </li>
 </ul>
-<h3 id="store-vote-post-vote"><a class="header" href="#store-vote-post-vote">Store vote [POST /vote]</a></h3>
+<h2 id="store-votevotechoice-vote_plan_id-proposal_id-signature"><a class="header" href="#store-votevotechoice-vote_plan_id-proposal_id-signature">Store vote[/vote/{choice, vote_plan_id, proposal_id, signature}]</a></h2>
+<ul>
+<li>Parameters
+<ul>
+<li>choice: 1</li>
+<li>vote_plan_id: 2</li>
+<li>proposal_id: 3</li>
+<li>signature: 4</li>
+</ul>
+</li>
+</ul>
+<h2 id="store-vote-post-vote"><a class="header" href="#store-vote-post-vote">Store vote [POST /vote]</a></h2>
 <p>Send vote fragment to Node</p>
 <ul>
 <li>
 <p>Request (application/json)</p>
-<pre><code class="language-json">{
-  &quot;choice&quot;: &quot;*&quot;,
-  &quot;vote_plan_id&quot;: &quot;*&quot;,
-  &quot;proposal_id&quot;: &quot;*&quot;,
-  &quot;signature&quot;: &quot;*&quot;
-}
-</code></pre>
+<ul>
+<li>choice</li>
+<li>vote_plan_id</li>
+<li>proposal_id</li>
+<li>signature </li>
+</ul>
 </li>
 <li>
 <p>Response 201</p>

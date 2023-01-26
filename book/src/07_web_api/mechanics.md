@@ -56,19 +56,23 @@ seqdiag {
 ## Posix style API
 Generic API abstraction with multiple backends
 
-### Get active voting plans metadata [/live]
 
-### Retrieve a Message [GET]
+### Notes [/vote_plan/{id}]
+
++ Parameters
+
+    + id: abc123 (required) - Unique identifier for a vote plan
+
+## Get a vote plan [GET]
+Gets a single vote plan by its unique identifier.
 
 + Response 200 (application/json)
 
-    + Headers
+    + Attributes
 
-            X-meta-Header: 42
-
-    + Body
-
-            {"meta":[{"vote_plan_id","proposal_id"}]}
+        + id: abc123
+        + title: vote plan
+        + content: [proposals]
 
 
 ### Store vote [POST /vote]
@@ -77,12 +81,27 @@ Send vote fragment to Node
 
 + Request (application/json)
 
-        {"vote":[{"choice","proposal_id","signature"}]}
+        {"vote":[{ "choice", "vote_plan_id" , "proposal_id" , "signature"}]}
 
 + Response 201
 
     + Headers
 
-            
+
+### obfuscate more using session headers?
+### Store vote [POST /vote]
+
+Send vote fragment to Node
+
++ Request (application/json)
+
+       + Headers
+
+            vote_metadata: *
+
++ Response 201
+
+    + Headers      
+
 
 

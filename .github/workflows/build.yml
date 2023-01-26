@@ -22,10 +22,14 @@ on:
        - 'book/**'
 
 env:
+  RUST_LATEST_STABLE_VERSION: 1.65
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -D warnings
   RUST_BACKTRACE: 1
   CARGO_INCREMENTAL: 0
+  CARGO_FLAGS: --verbose --locked
+  SEGMENT_DOWNLOAD_TIMEOUT_MINS: 15
+
 
 jobs:
   cancel:
@@ -40,25 +44,29 @@ jobs:
   build_on_linux:
     name: Build Catalyst Core on Linux
     runs-on: ubuntu-latest
-    env:
-      CARGO_FLAGS: --verbose --locked
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - uses: Swatinem/rust-cache@v2
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
+
+      - name: Cache rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "build_cache"
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Install deps
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
       - name: Build on Linux
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: "1.65"
-      - run: cargo build
+        run: cargo build ${{env.CARGO_FLAGS}}
 
   build_on_windows:
     name: Build Catalyst Core on Windows
@@ -89,7 +97,8 @@ jobs:
           reg add HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1 /f
           git config --system core.longpaths true
 
-      - uses: Swatinem/rust-cache@v2
+      - name: Cache rust
+        uses: Swatinem/rust-cache@v2
         with:
           workspaces: "C:\\${{ github.event.repository.name }}"
 
@@ -108,10 +117,11 @@ jobs:
         run: |
           "PQ_LIB_DIR=${env:PROGRAMFILES}\PostgreSQL\14\lib" >> $env:GITHUB_ENV
 
-      - uses: actions-rs/toolchain@v1
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
         with:
-          toolchain: "1.65"
+          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
 
       - name: Build on Windows
         working-directory: "C:\\${{ github.event.repository.name }}"
-        run: cargo build --workspace
+        run: cargo build --workspace ${{env.CARGO_FLAGS}}

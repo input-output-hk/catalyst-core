@@ -4,7 +4,6 @@
 
 In order to cast a vote, a user must first obtain a *proposal_id* and *vote_plan_id*.
 
-
 ```kroki-seqdiag
 
 seqdiag {
@@ -36,10 +35,9 @@ seqdiag {
     
 ```
 
-- The Node verifies if the fragment is correctly signed and formatted and then performs additional verification (*votes duplications, missing vote plan etc*)
-
+- The Node verifies if the fragment is correctly signed and formatted and then performs additional verification:
+  - (*votes duplications, missing vote plan etc*)
 - **/api/v1/fragments** is used for the same purpose but can also send batches of fragments
-
 
 ### Relevant endpoints
 
@@ -52,10 +50,8 @@ seqdiag {
 - post  - /v1/fragments -  sending batch fragments ✅ 	
 - get   - /v1/fragments/statuses - checking fragment statuses
 
-
 ## Posix style API
 Generic API abstraction with multiple backends
-
 
 ### Notes [/vote_plan/{id}]
 
@@ -73,7 +69,6 @@ Gets a single vote plan by its unique identifier.
         + id: abc123
         + title: vote plan
         + content: [proposals]
-
 
 ### Store vote [POST /vote]
 

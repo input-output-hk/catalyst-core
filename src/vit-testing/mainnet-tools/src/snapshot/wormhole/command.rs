@@ -1,5 +1,6 @@
 pub use crate::snapshot::wormhole::Config;
 use crate::snapshot::OutputsExtension;
+use clap::Parser;
 use color_eyre::eyre::Result;
 use job_scheduler_ng::{Job, JobScheduler};
 use jormungandr_automation::jormungandr::LogLevel;
@@ -8,7 +9,6 @@ use snapshot_trigger_service::{client::rest::SnapshotRestClient, config::JobPara
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::time::Duration;
-use structopt::StructOpt;
 use thiserror::Error;
 use tracing::{debug, error, info, instrument, level_filters::LevelFilter};
 use tracing_subscriber::FmtSubscriber;
@@ -16,17 +16,17 @@ use vit_servicing_station_tests::common::clients::RestClient;
 use voting_tools_rs::SnapshotEntry;
 
 /// Main command
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct Command {
     /// Path to configuration file
-    #[structopt(short, long)]
+    #[clap(short, long)]
     pub config: PathBuf,
 
     /// Log level
-    #[structopt(long = "log-level", default_value = "INFO")]
+    #[clap(long = "log-level", default_value = "INFO")]
     pub log_level: LogLevel,
 
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     cmd: Operation,
 }
 
@@ -44,7 +44,7 @@ pub struct Command {
 ///              sec   min   hour   day of month   month   day of week   year
 ///
 ///              *     *     *      *              *       *             *
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Operation {
     /// run single job
     OneShot,
@@ -136,14 +136,14 @@ pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Config> {
 }
 
 /// Run job in a schedule mode.
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct Schedule {
     /// Cron string defining frequency of jobs
-    #[structopt(long)]
+    #[clap(long)]
     pub cron: String,
 
     /// If set to true, job will be run immediately.
-    #[structopt(short, long)]
+    #[clap(short, long)]
     pub eagerly: bool,
 }
 

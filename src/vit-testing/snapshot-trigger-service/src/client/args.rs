@@ -1,21 +1,21 @@
 use crate::client::rest::SnapshotRestClient;
 use crate::config::JobParameters;
 use crate::ContextState;
+use clap::Parser;
 use scheduler_service_lib::{CliError, FilesCommand, HealthCommand};
-use structopt::StructOpt;
 use thiserror::Error;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct TriggerServiceCliCommand {
     /// access token, which is necessary to perform client operations
-    #[structopt(short, long, env = "SNAPSHOT_TOKEN")]
+    #[clap(short, long, env = "SNAPSHOT_TOKEN")]
     token: Option<String>,
 
     /// snapshot endpoint
-    #[structopt(short, long, env = "SNAPSHOT_ENDPOINT")]
+    #[clap(short, long, env = "SNAPSHOT_ENDPOINT")]
     endpoint: String,
 
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     command: Command,
 }
 
@@ -30,13 +30,15 @@ impl TriggerServiceCliCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Command {
     /// check if snapshot service is up
     Health,
     /// retrieve files from snapshot (snapshot outcome etc.)
+    #[clap(subcommand)]
     Files(FilesCommand),
     /// job related commands
+    #[clap(subcommand)]
     Job(JobCommand),
 }
 
@@ -50,7 +52,7 @@ impl Command {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum JobCommand {
     /// start new job
     New(NewJobCommand),
@@ -73,10 +75,10 @@ impl JobCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct StatusCommand {
     /// job id
-    #[structopt(short, long)]
+    #[clap(short, long)]
     job_id: String,
 }
 
@@ -86,13 +88,13 @@ impl StatusCommand {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct NewJobCommand {
     /// slot no
-    #[structopt(short, long)]
+    #[clap(short, long)]
     slot_no: Option<u64>,
     /// tag
-    #[structopt(short, long)]
+    #[clap(short, long)]
     tag: Option<String>,
 }
 

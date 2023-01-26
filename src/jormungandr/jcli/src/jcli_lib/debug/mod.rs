@@ -1,13 +1,13 @@
 mod block;
 mod message;
 use chain_core::property::ReadError;
+use clap::Parser;
 use hex::FromHexError;
 use std::path::PathBuf;
-use structopt::StructOpt;
 use thiserror::Error;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Debug {
     /// Decode hex-encoded message and display its content
     Message(message::Message),

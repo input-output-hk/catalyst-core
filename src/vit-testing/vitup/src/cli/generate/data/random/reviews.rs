@@ -1,24 +1,23 @@
 use crate::builders::ReviewGenerator;
 use crate::Result;
+use clap::Parser;
 use std::io::Write;
 use std::path::PathBuf;
-use structopt::StructOpt;
 use vit_servicing_station_tests::common::data::ProposalTemplate;
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
 pub struct RandomReviewsDataCommandArgs {
     /// Careful! directory would be removed before export
-    #[structopt(long = "output", default_value = "./reviews.json")]
+    #[clap(long = "output", default_value = "./reviews.json")]
     pub output_file: PathBuf,
 
-    #[structopt(
+    #[clap(
         long = "proposals",
         default_value = "../resources/external/proposals.json"
     )]
     pub proposals: PathBuf,
 
-    #[structopt(long = "assessors-per-proposal-count", default_value = "3")]
+    #[clap(long = "assessors-per-proposal-count", default_value = "3")]
     pub assessors_per_proposal_count: u32,
 }
 

@@ -11,7 +11,6 @@ hex = { workspace = true }
 uuid = { workspace = true }
 chrono = { workspace = true }
 walkdir = "2.3.1"
-structopt = "0.3"
 scheduler-service-lib = { path = "../scheduler-service-lib"}
 jortestkit = { path = "../../jortestkit" }
 jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }

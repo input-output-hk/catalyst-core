@@ -1,9 +1,9 @@
 mod server;
 
+use clap::Parser;
 use serde::{Deserialize, Serialize};
 use server::{Error as ProxyServerError, ProxyServerStub};
 use std::path::PathBuf;
-use structopt::StructOpt;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -20,24 +20,24 @@ pub enum Error {
     Io(#[from] std::io::Error),
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ValigrindStartupCommand {
-    #[structopt(short = "a", long = "address", default_value = "127.0.0.1:8000")]
+    #[clap(short = 'a', long = "address", default_value = "127.0.0.1:8000")]
     pub address: String,
 
-    #[structopt(short = "v", long = "vit-address", default_value = "127.0.0.1:3030")]
+    #[clap(short = 'v', long = "vit-address", default_value = "127.0.0.1:3030")]
     pub vit_address: String,
 
-    #[structopt(short = "n", long = "node-address", default_value = "127.0.0.1:8080")]
+    #[clap(short = 'n', long = "node-address", default_value = "127.0.0.1:8080")]
     pub node_address: String,
 
-    #[structopt(short = "b", long = "block0")]
+    #[clap(short = 'b', long = "block0")]
     pub block0_path: PathBuf,
 
-    #[structopt(long = "cert")]
+    #[clap(long = "cert")]
     pub cert_path: Option<PathBuf>,
 
-    #[structopt(long = "key")]
+    #[clap(long = "key")]
     pub key_path: Option<PathBuf>,
 }
 

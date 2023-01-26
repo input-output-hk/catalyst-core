@@ -7,10 +7,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-uuid = { workspace = true }
+uuid = "1.2.2"
 hex = "0.4"
 bech32 = "0.8.1"
-structopt = "0.3"
+clap = { workspace = true }
 thiserror = "1.0"
 futures = "0.3.8"
 serde_json = "1.0"
@@ -35,7 +35,6 @@ num-traits = "0.2.15"
 job_scheduler_ng = "*"
 snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib", features=["proptest"] }
 snapshot-trigger-service = { path = "../snapshot-trigger-service" }
-clap = { version = "4", features = ["derive"] }
 tracing.workspace = true
 tracing-subscriber.workspace = true
 warp = "0.3.3"

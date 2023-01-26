@@ -7,21 +7,21 @@ use chain_impl_mockchain::{
     certificate::{Certificate, StakeDelegation as Delegation},
     transaction::UnspecifiedAccountIdentifier,
 };
+use clap::Parser;
 use jormungandr_lib::interfaces::Certificate as CertificateType;
 use std::{convert::TryInto, path::PathBuf};
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct StakeDelegation {
     /// the public key used in the stake key registration
-    #[structopt(name = "STAKE_KEY", parse(try_from_str = parse_pub_key))]
+    #[clap(name = "STAKE_KEY", value_parser = parse_pub_key::<Ed25519>)]
     stake_id: PublicKey<Ed25519>,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pool_ids: WeightedPoolIds,
 
     /// write the output to the given file or print it to the standard output if not defined
-    #[structopt(short = "o", long = "output")]
+    #[clap(short = 'o', long = "output")]
     output: Option<PathBuf>,
 }
 

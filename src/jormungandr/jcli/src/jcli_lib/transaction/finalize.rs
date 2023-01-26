@@ -3,16 +3,16 @@ use crate::{
     transaction::staging::Staging,
 };
 use chain_impl_mockchain::transaction::OutputPolicy;
+use clap::Parser;
 use jormungandr_lib::interfaces;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Finalize {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub common: common::CommonTransaction,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub fee: common::CommonFees,
 
     /// Set the change in the given address

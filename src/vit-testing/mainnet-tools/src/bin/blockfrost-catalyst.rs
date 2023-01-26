@@ -1,12 +1,12 @@
 use cardano_serialization_lib::metadata::MetadataJsonSchema;
+use clap::Parser;
 use mainnet_lib::{
     CatalystBlockFrostApi, CatalystBlockFrostApiError, GeneralTransactionMetadataInfo,
 };
-use structopt::StructOpt;
 
 #[tokio::main]
 async fn main() -> Result<(), CatalystBlockFrostApiError> {
-    let params = Command::from_args();
+    let params = Command::parse();
 
     let api = CatalystBlockFrostApi::new()?;
     let registrations = api.list_registrations_for_address(&params.address).await?;
@@ -21,8 +21,8 @@ async fn main() -> Result<(), CatalystBlockFrostApiError> {
     Ok(())
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct Command {
-    #[structopt(env = "ADDRESS")]
+    #[clap(env = "ADDRESS")]
     pub address: String,
 }

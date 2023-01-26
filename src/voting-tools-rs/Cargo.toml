@@ -16,7 +16,11 @@ bytekind = { workspace = true }
 
 
 color-eyre = "0.6"  # error handling
+<<<<<<< HEAD
 clap = { version = "4", features = ["derive", "string"] }
+=======
+clap = { workspace = true}
+>>>>>>> main
 
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

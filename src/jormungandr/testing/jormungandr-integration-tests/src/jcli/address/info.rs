@@ -14,7 +14,7 @@ pub fn test_info_unknown_address_public_key() {
 pub fn test_info_account_address() {
     let jcli: JCli = Default::default();
 
-    let private_key = jcli.key().generate("ed25519Extended");
+    let private_key = jcli.key().generate("ed25519-extended");
     let public_key = jcli.key().convert_to_public_string(private_key);
     let account_address = jcli
         .address()
@@ -32,7 +32,7 @@ pub fn test_info_account_address() {
 pub fn test_info_account_address_for_prod() {
     let jcli: JCli = Default::default();
 
-    let private_key = jcli.key().generate("ed25519Extended");
+    let private_key = jcli.key().generate("ed25519-extended");
     let public_key = jcli.key().convert_to_public_string(private_key);
     let account_address = jcli
         .address()
@@ -50,10 +50,10 @@ pub fn test_info_account_address_for_prod() {
 pub fn test_info_delegation_address() {
     let jcli: JCli = Default::default();
 
-    let private_key = jcli.key().generate("ed25519Extended");
+    let private_key = jcli.key().generate("ed25519-extended");
     let public_key = jcli.key().convert_to_public_string(private_key);
 
-    let private_key = jcli.key().generate("ed25519Extended");
+    let private_key = jcli.key().generate("ed25519-extended");
     let delegation_key = jcli.key().convert_to_public_string(private_key);
     let account_address =
         jcli.address()

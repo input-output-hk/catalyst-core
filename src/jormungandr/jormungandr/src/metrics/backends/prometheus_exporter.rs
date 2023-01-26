@@ -20,7 +20,7 @@ pub struct Prometheus {
     tx_recv_cnt: IntCounter,
     tx_rejected_cnt: IntCounter,
     mempool_usage_ratio: Gauge,
-    mempool_size_bytes_total: UIntGauge,
+    mempool_tx_count: UIntGauge,
     votes_casted_cnt: IntCounter,
     block_recv_cnt: IntCounter,
     peer_connected_cnt: UIntGauge,
@@ -82,10 +82,9 @@ impl Default for Prometheus {
         registry
             .register(Box::new(mempool_usage_ratio.clone()))
             .unwrap();
-        let mempool_size_bytes_total =
-            UIntGauge::new("mempoolSizeBytesTotal", "mempoolSizeBytesTotal").unwrap();
+        let mempool_tx_count = UIntGauge::new("mempoolTxCount", "mempoolTxCount").unwrap();
         registry
-            .register(Box::new(mempool_size_bytes_total.clone()))
+            .register(Box::new(mempool_tx_count.clone()))
             .unwrap();
         let tx_rejected_cnt = IntCounter::new("txRejectedCnt", "txRejectedCnt").unwrap();
         registry
@@ -157,7 +156,7 @@ impl Default for Prometheus {
             tx_recv_cnt,
             tx_rejected_cnt,
             mempool_usage_ratio,
-            mempool_size_bytes_total,
+            mempool_tx_count,
             votes_casted_cnt,
             block_recv_cnt,
             peer_connected_cnt,
@@ -194,9 +193,9 @@ impl MetricsBackend for Prometheus {
         self.mempool_usage_ratio.set(ratio);
     }
 
-    fn set_mempool_total_size(&self, size: usize) {
+    fn set_mempool_tx_count(&self, size: usize) {
         let size = size.try_into().unwrap();
-        self.mempool_size_bytes_total.set(size);
+        self.mempool_tx_count.set(size);
     }
 
     fn add_block_recv_cnt(&self, count: usize) {

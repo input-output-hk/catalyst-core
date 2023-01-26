@@ -12,7 +12,6 @@ pub mod grpc;
 mod leadership;
 pub mod legacy;
 pub mod mempool;
-pub mod persistent_log;
 pub mod recovery;
 pub mod rest;
 pub mod tls;

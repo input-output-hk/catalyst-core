@@ -54,12 +54,12 @@ members = [
 ]
 
 [workspace.dependencies]
-proptest = { git = "https://github.com/input-output-hk/proptest.git" }
 uuid = { version = "1", features = ["v4", "serde"] }
 # we use this branch because it uses v1 of `itoa`, but the latest crates.io release doesn't
 csv = { git = "https://github.com/BurntSushi/rust-csv" }
 hex = "0.4"
 cfg-if = "1"
+proptest = { git = "https://github.com/proptest-rs/proptest.git" }
 
 
 # representing byte buffers while being generic over serde implementations
@@ -93,6 +93,9 @@ dirs = "4"
 # time-related utilities
 chrono = { version = "0.4", features = ["serde"] }
 
+# command line argument parsing
+clap = { version = "4", features = ["derive", "env"] }
+clap_complete = "4"  # shell autocomplete for CLIs
 
 [patch.crates-io]
 cryptoxide = { git = "https://github.com/typed-io/cryptoxide.git" }

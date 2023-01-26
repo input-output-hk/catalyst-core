@@ -1,15 +1,15 @@
 use crate::jcli_lib::transaction::{common, Error};
+use clap::Parser;
 use jormungandr_lib::interfaces;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct SetExpiryDate {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub common: common::CommonTransaction,
 
     /// the slot this transaction should be valid until, for example 3.14
-    #[structopt(name = "BLOCKDATE")]
+    #[clap(name = "BLOCKDATE")]
     pub valid_until: interfaces::BlockDate,
 }
 

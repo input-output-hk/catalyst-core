@@ -1,24 +1,24 @@
 use crate::jcli_lib::transaction::{common, Error};
 use chain_impl_mockchain::{fragment::FragmentId, transaction::TransactionIndex};
+use clap::Parser;
 use jormungandr_lib::interfaces;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct AddInput {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub common: common::CommonTransaction,
 
     /// the Transaction ID which contains the credited funds to utilise.
-    #[structopt(name = "TRANSACTION_ID")]
+    #[clap(name = "TRANSACTION_ID")]
     pub transaction_id: FragmentId,
 
     /// the output index where the credited funds to utilise are.
-    #[structopt(name = "INDEX")]
+    #[clap(name = "INDEX")]
     pub index: TransactionIndex,
 
     /// the value
-    #[structopt(name = "VALUE")]
+    #[clap(name = "VALUE")]
     pub value: interfaces::Value,
 }
 

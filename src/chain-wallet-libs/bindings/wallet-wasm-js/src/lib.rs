@@ -6,7 +6,6 @@ pub use certificates::{
     vote_plan::VotePlanId,
 };
 use chain_impl_mockchain::account::SpendingCounter;
-use chain_impl_mockchain::header::BlockDate;
 use chain_impl_mockchain::{
     certificate::VoteCast as VoteCastLib, fragment::Fragment as FragmentLib,
 };
@@ -41,38 +40,18 @@ impl Settings {
 impl VoteCastTxBuilder {
     /// Initializing of the VoteCastTxBuilder
     ///
-    pub fn new(
-        settings: Settings,
-        valid_until_epoch: u32,
-        valid_until_slot: u32,
-        vote_cast: VoteCast,
-    ) -> VoteCastTxBuilder {
-        Self(wallet_core::TxBuilder::new(
-            settings.0,
-            BlockDate {
-                epoch: valid_until_epoch,
-                slot_id: valid_until_slot,
-            },
-            vote_cast.0,
-        ))
+    pub fn new(settings: Settings, vote_cast: VoteCast) -> VoteCastTxBuilder {
+        Self(wallet_core::TxBuilder::new(settings.0, vote_cast.0))
     }
 
     /// First step of the VoteCast transaction building process
     ///
     /// The `account` parameter gives the Ed25519Extended private key
     /// of the account.
-    pub fn build_tx(
-        mut self,
-        hex_account_id: String,
-        counter: u32,
-        lane: usize,
-    ) -> Result<VoteCastTxBuilder, JsValue> {
+    pub fn build_tx(mut self, hex_account_id: String) -> Result<VoteCastTxBuilder, JsValue> {
         self.0 = self
             .0
-            .build_tx(
-                hex_account_id,
-                SpendingCounter::new(lane, counter).map_err(|e| JsValue::from(e.to_string()))?,
-            )
+            .build_tx(hex_account_id, SpendingCounter::zero())
             .map_err(|e| JsValue::from(e.to_string()))?;
         Ok(self)
     }

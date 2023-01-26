@@ -7,6 +7,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+num-traits = "0.2.15"
 jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
 jormungandr-automation = { path = "../../jormungandr/testing/jormungandr-automation" }
 thor = { path = "../../jormungandr/testing/thor" }
@@ -38,13 +39,13 @@ rand = "0.8"
 hex = "0.4.3"
 lazy_static = "1"
 libmath = "0.2.1"
-cfg-if = { workspace = true }
+cfg-if = "1.0.0"
 assert_fs = "1.0"
 assert_cmd = "2"
 chrono = { workspace = true }
 serde_json = "1.0.53"
 serde = "1.0.53"
-csv = { workspace = true }
+csv = "1.1"
 fraction = "0.12"
 
 [features]

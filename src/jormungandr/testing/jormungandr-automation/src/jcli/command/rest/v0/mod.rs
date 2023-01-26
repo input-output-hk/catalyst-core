@@ -56,7 +56,7 @@ impl V0Command {
             .arg("leaders")
             .arg("logs")
             .arg("get")
-            .arg("-h")
+            .arg("--host")
             .arg(host.into());
         self
     }
@@ -65,7 +65,7 @@ impl V0Command {
         self.command
             .arg("tip")
             .arg("get")
-            .arg("-h")
+            .arg("--host")
             .arg(host.into());
         self
     }
@@ -75,7 +75,7 @@ impl V0Command {
             .arg("account")
             .arg("get")
             .arg(address.into())
-            .arg("-h")
+            .arg("--host")
             .arg(host.into());
         self
     }
@@ -84,7 +84,7 @@ impl V0Command {
         self.command
             .arg("shutdown")
             .arg("post")
-            .arg("-h")
+            .arg("--host")
             .arg(host.into());
         self
     }

@@ -5,86 +5,85 @@ use crate::config::read_voter_hirs;
 use crate::mode::spawn::{spawn_network, NetworkSpawnParams};
 use crate::{error::Error, Result};
 use chain_addr::Discrimination;
+use clap::Parser;
 use hersir::config::SessionSettings;
 use jormungandr_automation::jormungandr::LogLevel;
 use std::path::PathBuf;
 use std::str::FromStr;
-use structopt::StructOpt;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
 pub struct AdvancedStartCommandArgs {
     /// path or name of the jormungandr node to test
-    #[structopt(long = "jormungandr", default_value = "jormungandr")]
+    #[clap(long = "jormungandr", default_value = "jormungandr")]
     pub jormungandr: PathBuf,
 
     /// path or name of the jcli to test
-    #[structopt(long = "jcli", default_value = "jcli")]
+    #[clap(long = "jcli", default_value = "jcli")]
     pub jcli: PathBuf,
 
     /// set a directory in which the tests will be run, allowing every details
     /// to be save persistently. By default it will create temporary directories
     /// and will delete the files and documents
-    #[structopt(long = "root-dir", default_value = "./catalyst")]
+    #[clap(long = "root-dir", default_value = "./catalyst")]
     pub testing_directory: PathBuf,
     /// level for all nodes
-    #[structopt(long = "log-level", default_value = "info")]
+    #[clap(long = "log-level", default_value = "info")]
     pub log_level: String,
 
     /// interactive mode introduce easy way to interact with backend
     /// is capable of quering logs, sending transactions (e.g. tallying), etc.,
-    #[structopt(
+    #[clap(
         long = "mode",
         default_value = "Endless",
-        parse(from_str = parse_mode_from_str)
+        value_parser = parse_mode_from_str
     )]
     pub mode: Mode,
 
     /// endopint in format: 127.0.0.1:80
-    #[structopt(long = "endpoint", default_value = "0.0.0.0:80")]
+    #[clap(long = "endpoint", default_value = "0.0.0.0:80")]
     pub endpoint: String,
 
     /// token, only applicable if service mode is used
-    #[structopt(long = "token")]
+    #[clap(long = "token")]
     pub token: Option<String>,
 
     /// how many qr to generate
-    #[structopt(long = "config")]
+    #[clap(long = "config")]
     pub config: PathBuf,
 
     /// proposals import json
-    #[structopt(
+    #[clap(
         long = "proposals",
         default_value = "../../catalyst-resources/ideascale/fund6/proposals.json"
     )]
     pub proposals: PathBuf,
 
     /// challenges import json
-    #[structopt(
+    #[clap(
         long = "challenges",
         default_value = "../../catalyst-resources/ideascale/fund6/challenges.json"
     )]
     pub challenges: PathBuf,
 
     /// challenges import json
-    #[structopt(
+    #[clap(
         long = "reviews",
         default_value = "../../catalyst-resources/ideascale/fund6/reviews.json"
     )]
     pub reviews: PathBuf,
 
     /// funds import json
-    #[structopt(
+    #[clap(
         long = "funds",
         default_value = "../../catalyst-resources/ideascale/fund6/funds.json"
     )]
     pub funds: PathBuf,
 
-    #[structopt(long = "snapshot")]
+    #[clap(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
 
-    #[structopt(long = "vitup-log-level", default_value = "LogLevel::INFO")]
+    #[clap(long = "vitup-log-level", default_value = "LogLevel::INFO")]
     pub vitup_log_level: LogLevel,
 }
 

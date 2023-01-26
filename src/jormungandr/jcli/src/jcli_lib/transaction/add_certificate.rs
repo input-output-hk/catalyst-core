@@ -1,11 +1,11 @@
 use crate::jcli_lib::transaction::{common, Error};
+use clap::Parser;
 use jormungandr_lib::interfaces::Certificate;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct AddCertificate {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub common: common::CommonTransaction,
 
     /// bech32-encoded certificate

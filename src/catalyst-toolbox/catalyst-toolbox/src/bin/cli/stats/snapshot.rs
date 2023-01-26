@@ -1,23 +1,23 @@
 use catalyst_toolbox::stats::distribution::Stats;
 use catalyst_toolbox::stats::snapshot::read_initials;
 use catalyst_toolbox::stats::voters::calculate_wallet_distribution_from_initials;
+use clap::Parser;
 use color_eyre::Report;
 use jormungandr_lib::interfaces::Initial;
 use std::path::PathBuf;
-use structopt::StructOpt;
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct SnapshotCommand {
-    #[structopt(long = "support-lovelace")]
+    #[clap(long = "support-lovelace")]
     pub support_lovelace: bool,
-    #[structopt(name = "SNAPSHOT")]
+    #[clap(name = "SNAPSHOT")]
     pub snapshot: PathBuf,
-    #[structopt(long = "threshold")]
+    #[clap(long = "threshold")]
     pub threshold: u64,
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     pub command: Command,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Command {
     Count,
     Ada,

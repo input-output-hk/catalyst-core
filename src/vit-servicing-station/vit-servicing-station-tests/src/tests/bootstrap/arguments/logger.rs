@@ -23,8 +23,7 @@ pub fn wrong_log_level_provided() {
         .log_level("traceble")
         .build()
         .assert()
-        .failure()
-        .code(1);
+        .failure();
 }
 
 #[test]

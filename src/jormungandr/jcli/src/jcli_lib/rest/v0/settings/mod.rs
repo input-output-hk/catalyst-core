@@ -2,17 +2,17 @@ use crate::jcli_lib::{
     rest::{Error, RestArgs},
     utils::OutputFormat,
 };
+use clap::Parser;
 use jormungandr_lib::interfaces::SettingsDto;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum Settings {
     /// Get node settings
     Get {
-        #[structopt(flatten)]
+        #[clap(flatten)]
         args: RestArgs,
-        #[structopt(flatten)]
+        #[clap(flatten)]
         output_format: OutputFormat,
     },
 }

@@ -1,3 +1,4 @@
+use crate::common::snapshot::result::SnapshotResult;
 use crate::common::RepsVoterAssignerSource;
 use chain_addr::Discrimination;
 use fraction::Fraction;
@@ -7,7 +8,6 @@ use jormungandr_lib::interfaces::Value;
 use snapshot_lib::registration::VotingRegistration;
 use snapshot_lib::voting_group::VotingGroupAssigner;
 use snapshot_lib::{RawSnapshot, Snapshot, VoterHIR};
-use snapshot_trigger_service::client::SnapshotResult;
 use std::collections::HashSet;
 
 pub trait SnapshotFilterSource {

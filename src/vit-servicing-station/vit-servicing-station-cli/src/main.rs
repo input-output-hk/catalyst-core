@@ -6,11 +6,11 @@ mod init_db;
 mod task;
 
 use app::*;
-use structopt::StructOpt;
+use clap::Parser;
 use task::ExecTask;
 
 fn main() {
-    let app = CliApp::from_args();
+    let app = CliApp::parse();
     match app.exec() {
         Ok(()) => (),
         Err(e) => {

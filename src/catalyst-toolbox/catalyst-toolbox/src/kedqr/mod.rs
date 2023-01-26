@@ -9,7 +9,7 @@ use thiserror::Error;
 
 pub const PIN_LENGTH: usize = 4;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct QrPin {
     pub password: [u8; 4],
 }

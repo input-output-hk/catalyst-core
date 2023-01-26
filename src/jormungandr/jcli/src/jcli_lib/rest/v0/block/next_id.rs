@@ -1,16 +1,16 @@
 use crate::jcli_lib::rest::{Error, RestArgs};
 use chain_crypto::Blake2b256;
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum NextId {
     /// Get block descendant ID
     Get {
-        #[structopt(flatten)]
+        #[clap(flatten)]
         args: RestArgs,
         /// Maximum number of IDs, must be between 1 and 100, default 1
-        #[structopt(short, long)]
+        #[clap(short, long)]
         count: Option<usize>,
     },
 }

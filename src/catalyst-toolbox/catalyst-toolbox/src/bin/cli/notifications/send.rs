@@ -11,69 +11,69 @@ use catalyst_toolbox::notifications::{
 use color_eyre::Report;
 use jcli_lib::utils::io;
 
+use clap::Parser;
 use reqwest::Url;
-use structopt::StructOpt;
 use time::OffsetDateTime;
 
 use std::io::Read;
 use std::path::PathBuf;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Content {
     /// Path to file with notification message, if not provided will be read from the stdin
     content_path: Option<PathBuf>,
 }
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Args {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     api_params: ApiParams,
 
-    #[structopt(flatten)]
+    #[clap(flatten)]
     content_path: Content,
 
     /// Pushwoosh application code where message will be send
-    #[structopt(long)]
+    #[clap(long)]
     application: String,
 
     /// Date and time to send notification of format  "Y-m-d H:M"
-    #[structopt(long, parse(try_from_str=parse_datetime))]
+    #[clap(long, value_parser = parse_datetime)]
     send_date: Option<OffsetDateTime>,
 
     /// Ignore user timezones when sending a message
-    #[structopt(long)]
+    #[clap(long)]
     ignore_user_timezones: bool,
 
     /// Select an specific campaign to send the message to
-    #[structopt(long)]
+    #[clap(long)]
     campaign: Option<String>,
 
     /// Filter options as described by pushwhoosh API
-    #[structopt(long)]
+    #[clap(long)]
     filter: Option<String>,
 
     /// Timezone of send date, for example "America/New_York"
-    #[structopt(long)]
+    #[clap(long)]
     timezone: Option<String>,
 }
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Json {
     /// Pushwoosh API url
-    #[structopt(long, default_value = DEFAULT_PUSHWOOSH_API_URL)]
+    #[clap(long, default_value = DEFAULT_PUSHWOOSH_API_URL)]
     pub api_url: Url,
 
     /// Path to file with the json representation of the notification,
     /// if not provided will be read from stdin
-    #[structopt(flatten)]
+    #[clap(flatten)]
     json_path: Content,
 }
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub enum SendNotification {
     /// Push a notification with setup taken from arguments
     FromArgs(Args),

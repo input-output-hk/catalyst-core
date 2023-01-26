@@ -27,7 +27,7 @@ pub struct P2p {
 
     pub allow_private_addresses: bool,
 
-    pub whitelist: Option<Vec<SocketAddr>>,
+    pub whitelist: Option<Vec<Multiaddr>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub topics_of_interest: Option<TopicsOfInterest>,
@@ -36,6 +36,9 @@ pub struct P2p {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub layers: Option<LayersConfig>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dns_server_address: Option<SocketAddr>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

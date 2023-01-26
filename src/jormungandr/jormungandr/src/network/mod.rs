@@ -152,6 +152,12 @@ impl Clone for Channels {
     }
 }
 
+#[derive(Debug, Error)]
+pub enum NewGlobalStateError {
+    #[error("Failed to create DNS resolver: {0}")]
+    DnsResolver(trust_dns_resolver::error::ResolveError),
+}
+
 /// Global state shared between all network tasks.
 pub struct GlobalState {
     block0_hash: HeaderHash,
@@ -161,6 +167,7 @@ pub struct GlobalState {
     span: Span,
 
     connected_count: AtomicUsize,
+    dns_resolver: trust_dns_resolver::TokioAsyncResolver,
 }
 
 pub type GlobalStateR = Arc<GlobalState>;
@@ -172,21 +179,25 @@ impl GlobalState {
         config: Configuration,
         stats_counter: Metrics,
         span: Span,
-    ) -> Self {
+    ) -> Result<Self, NewGlobalStateError> {
         let peers = Peers::new(config.max_connections, stats_counter);
 
         //TODO: move this to a secure enclave
         let keypair =
             NodeKeyPair::from(<chain_crypto::SecretKey<_>>::from(config.node_key.clone()));
 
-        GlobalState {
+        let dns_resolver = new_dns_resolver(config.dns_server_address)
+            .map_err(NewGlobalStateError::DnsResolver)?;
+
+        Ok(GlobalState {
             block0_hash,
             config,
             peers,
             keypair,
             span,
             connected_count: AtomicUsize::new(0),
-        }
+            dns_resolver,
+        })
     }
 
     pub fn span(&self) -> &Span {
@@ -224,6 +235,32 @@ impl GlobalState {
             count - self.config.max_client_connections
         } else {
             0
+        }
+    }
+}
+
+fn new_dns_resolver(
+    dns_server_address: Option<SocketAddr>,
+) -> Result<trust_dns_resolver::TokioAsyncResolver, trust_dns_resolver::error::ResolveError> {
+    match dns_server_address {
+        Some(addr) => {
+            tracing::info!("configured DNS resolver with server {}", addr);
+
+            let mut resolver_conf = trust_dns_resolver::config::ResolverConfig::new();
+            resolver_conf.add_name_server(trust_dns_resolver::config::NameServerConfig::new(
+                addr,
+                trust_dns_resolver::config::Protocol::Tcp,
+            ));
+
+            let mut resolver_opts = trust_dns_resolver::config::ResolverOpts::default();
+            resolver_opts.use_hosts_file = false;
+
+            trust_dns_resolver::AsyncResolver::tokio(resolver_conf, resolver_opts)
+        }
+        None => {
+            tracing::info!("configured DNS resolver with system DNS server");
+
+            trust_dns_resolver::AsyncResolver::tokio_from_system_conf()
         }
     }
 }

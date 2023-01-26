@@ -60,6 +60,8 @@ pub enum Error {
     DiagnosticError(#[from] DiagnosticError),
     #[error("Interrupted by the user")]
     Interrupted,
+    #[error("Failed to create global state: {0}")]
+    GlobalState(crate::network::NewGlobalStateError),
 }
 
 impl From<network::BootstrapError> for Error {
@@ -90,6 +92,7 @@ impl Error {
             Error::NetworkBootstrapError { .. } => 10,
             Error::ServiceTerminatedWithError { .. } => 12,
             Error::DiagnosticError { .. } => 13,
+            Error::GlobalState(..) => 14,
         }
     }
 }

@@ -143,7 +143,14 @@ pub fn test_public_node_cannot_publish() {
         .get_listen_addr()
         .unwrap();
 
-    let whitelist = vec![internal_node_addr, internal_node_2_addr, gateway_addr];
+    let whitelist = vec![internal_node_addr, internal_node_2_addr, gateway_addr]
+        .into_iter()
+        .map(|a| {
+            let mut ma = Multiaddr::from(a.ip());
+            ma.push(multiaddr::Protocol::Tcp(a.port()));
+            ma
+        })
+        .collect::<Vec<_>>();
 
     println!("whitelist {:?}", whitelist);
 
@@ -278,7 +285,14 @@ pub fn test_public_node_synced_with_internal() {
         .get_listen_addr()
         .unwrap();
 
-    let whitelist = vec![internal_node_addr, internal_node_2_addr, gateway_addr];
+    let whitelist = vec![internal_node_addr, internal_node_2_addr, gateway_addr]
+        .into_iter()
+        .map(|a| {
+            let mut ma = Multiaddr::from(a.ip());
+            ma.push(multiaddr::Protocol::Tcp(a.port()));
+            ma
+        })
+        .collect::<Vec<_>>();
 
     println!("whitelist {:?}", whitelist);
 
@@ -307,7 +321,7 @@ pub fn test_public_node_synced_with_internal() {
 
     params.override_settings(&mut internal_node_config);
 
-    let _client_internal = network_controller.spawn(params).unwrap();
+    let client_internal = network_controller.spawn(params).unwrap();
 
     let params = SpawnParams::new(INTERNAL_NODE_2)
         .gossip_interval(Duration::new(1, 0))
@@ -316,7 +330,7 @@ pub fn test_public_node_synced_with_internal() {
 
     params.override_settings(&mut internal_node_2_config);
 
-    let _client_internal_2 = network_controller.spawn(params).unwrap();
+    let client_internal_2 = network_controller.spawn(params).unwrap();
 
     // node from internal network exposed to public
 
@@ -327,7 +341,7 @@ pub fn test_public_node_synced_with_internal() {
 
     params.override_settings(&mut gateway_node_config);
 
-    let _gateway = network_controller.spawn(params).unwrap();
+    let gateway = network_controller.spawn(params).unwrap();
 
     // simulate node in the wild
     let address: Multiaddr = "/ip4/80.9.12.3/tcp/0".parse().unwrap();
@@ -340,7 +354,7 @@ pub fn test_public_node_synced_with_internal() {
 
     params.override_settings(&mut public_node_config);
 
-    let _client_public = network_controller.spawn(params).unwrap();
+    let client_public = network_controller.spawn(params).unwrap();
 
     // internal node sends fragments to network
     // fragments should be propagated to the publish node (which can consume but not publish)
@@ -353,7 +367,7 @@ pub fn test_public_node_synced_with_internal() {
         5,
         &mut alice,
         &mut bob,
-        &_client_internal,
+        &client_internal,
         100.into(),
     ) {
         Ok(_) => println!("fragments sent"),
@@ -364,22 +378,22 @@ pub fn test_public_node_synced_with_internal() {
 
     // account states should be the same
 
-    let public_state_a = _client_internal_2
+    let public_state_a = client_internal
         .rest()
         .account_state(&alice.account_id())
         .unwrap();
 
-    let public_state_b = _client_public
+    let public_state_b = client_public
         .rest()
         .account_state(&bob.account_id())
         .unwrap();
 
-    let internal_state_a = _client_internal_2
+    let internal_state_a = client_internal_2
         .rest()
         .account_state(&alice.account_id())
         .unwrap();
 
-    let internal_state_b = _client_public
+    let internal_state_b = client_public
         .rest()
         .account_state(&bob.account_id())
         .unwrap();
@@ -391,7 +405,7 @@ pub fn test_public_node_synced_with_internal() {
     // which do not allow private addresses
     ensure_nodes_are_in_sync(
         SyncWaitParams::ZeroWait,
-        &[&_client_internal_2, &_client_public],
+        &[&client_internal_2, &client_public],
     )
     .unwrap();
 }

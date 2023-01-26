@@ -55,33 +55,38 @@ seqdiag {
 
 Generic API abstraction with multiple backends
 
-### Vote plan[/vote_plan/{id}]
+## Vote plan[/vote_plan/{id}]
 
 - Parameters
-  - id: abc123 (required) - Unique identifier for a vote plan
+  - vote_plan_id: abc123 (required) - Unique identifier for a vote plan
 
 ## Get a vote plan [GET]
 
 Gets a single vote plan by its unique identifier.
 
 - Response 200 (application/json)
-  
+  - Attributes
+  - vote_plan_id: abc123
+  - title: vote plan
+  - content: [proposals]
 
+## Store vote[/vote/{choice, vote_plan_id, proposal_id, signature}]
 
-### Store vote [POST /vote]
+- Parameters
+  - choice: 1
+  - vote_plan_id: 2
+  - proposal_id: 3
+  - signature: 4
+
+## Store vote [POST /vote]
 
 Send vote fragment to Node
 
 - Request (application/json)
-
-```json
-{
-"choice":"*",
-"vote_plan_id":"*",
-"proposal_id":"*",
-"signature":"*"
-}
-```
+  - choice
+  - vote_plan_id
+  - proposal_id
+  - signature 
 
 - Response 201
   - Headers

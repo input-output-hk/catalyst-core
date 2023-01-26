@@ -331,9 +331,6 @@
 <span id="331">331</span>
 <span id="332">332</span>
 <span id="333">333</span>
-<span id="334">334</span>
-<span id="335">335</span>
-<span id="336">336</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     crypto::key::Identifier,
     interfaces::config::{Log, Mempool},
@@ -569,7 +566,7 @@
     </span><span class="kw">pub </span>allow_private_addresses: bool,
 
     <span class="doccomment">/// contains addrs of nodes which we can accept fragments from
-    </span><span class="kw">pub </span>whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;Multiaddr&gt;&gt;,
+    </span><span class="kw">pub </span>whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;SocketAddr&gt;&gt;,
 
     <span class="doccomment">/// interval to start gossiping with new nodes, changing the value will affect the bandwidth.
     </span><span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
@@ -578,9 +575,6 @@
     <span class="doccomment">/// If no gossip has been received in the last interval, try to connect to nodes that were previously known to this node
     </span><span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
     </span><span class="kw">pub </span>network_stuck_check: <span class="prelude-ty">Option</span>&lt;Duration&gt;,
-
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
-    </span><span class="kw">pub </span>dns_server_address: <span class="prelude-ty">Option</span>&lt;SocketAddr&gt;,
 }
 
 <span class="attribute">#[derive(Debug, Serialize, Deserialize, Clone)]

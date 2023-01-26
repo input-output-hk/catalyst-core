@@ -196,11 +196,6 @@
 <span id="196">196</span>
 <span id="197">197</span>
 <span id="198">198</span>
-<span id="199">199</span>
-<span id="200">200</span>
-<span id="201">201</span>
-<span id="202">202</span>
-<span id="203">203</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     network::p2p::Address,
     settings::{
@@ -213,7 +208,7 @@
 <span class="kw">use </span>jormungandr_lib::{interfaces::Mempool, time::Duration};
 <span class="kw">use </span>multiaddr::Multiaddr;
 <span class="kw">use </span>serde::{de::Error <span class="kw">as _</span>, Deserialize, Deserializer, Serialize, Serializer};
-<span class="kw">use </span>std::path::PathBuf;
+<span class="kw">use </span>std::{net::SocketAddr, path::PathBuf};
 <span class="kw">use </span>tracing::level_filters::LevelFilter;
 
 <span class="attribute">#[derive(Debug, Deserialize)]
@@ -335,7 +330,7 @@
     </span><span class="kw">pub </span>allow_private_addresses: bool,
 
     <span class="doccomment">/// contains addrs of nodes which we can accept fragments from
-    </span><span class="kw">pub </span>whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;Multiaddr&gt;&gt;,
+    </span><span class="kw">pub </span>whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;SocketAddr&gt;&gt;,
 
     <span class="doccomment">/// interval to start gossiping with new nodes, changing the value will
     /// affect the bandwidth. The more often the node will gossip the more
@@ -352,11 +347,6 @@
     /// The default value is 5 min.
     </span><span class="attribute">#[serde(default)]
     </span><span class="kw">pub </span>network_stuck_check: <span class="prelude-ty">Option</span>&lt;Duration&gt;,
-
-    <span class="doccomment">/// If given, specifies the address of the DNS server to connect to
-    /// for executing DNS lookups.
-    </span><span class="attribute">#[serde(default)]
-    </span><span class="kw">pub </span>dns_server_address: <span class="prelude-ty">Option</span>&lt;Address&gt;,
 }
 
 <span class="attribute">#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]

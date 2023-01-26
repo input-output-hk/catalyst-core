@@ -770,30 +770,6 @@
 <span id="770">770</span>
 <span id="771">771</span>
 <span id="772">772</span>
-<span id="773">773</span>
-<span id="774">774</span>
-<span id="775">775</span>
-<span id="776">776</span>
-<span id="777">777</span>
-<span id="778">778</span>
-<span id="779">779</span>
-<span id="780">780</span>
-<span id="781">781</span>
-<span id="782">782</span>
-<span id="783">783</span>
-<span id="784">784</span>
-<span id="785">785</span>
-<span id="786">786</span>
-<span id="787">787</span>
-<span id="788">788</span>
-<span id="789">789</span>
-<span id="790">790</span>
-<span id="791">791</span>
-<span id="792">792</span>
-<span id="793">793</span>
-<span id="794">794</span>
-<span id="795">795</span>
-<span id="796">796</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>peer_map;
 <span class="kw">use </span><span class="kw">super</span>::Address;
 <span class="kw">use crate</span>::{
@@ -810,7 +786,7 @@
 };
 <span class="kw">use </span>futures::{
     channel::mpsc,
-    lock::{Mutex, OwnedMutexLockFuture},
+    lock::{Mutex, MutexLockFuture},
     prelude::<span class="kw-2">*</span>,
     stream,
 };
@@ -821,7 +797,6 @@
     mem,
     net::SocketAddr,
     pin::Pin,
-    sync::Arc,
     task::{Context, Poll},
     time::SystemTime,
 };
@@ -1262,44 +1237,23 @@
     <span class="kw">pub </span>stats: PeerStats,
 }
 
-<span class="doccomment">/// Future for executing async address lookup
-/// for the given node id from [Peers].
-</span><span class="kw">pub struct </span>GetNodeAddress {
-    node_id: NodeId,
-    lock_fut: OwnedMutexLockFuture&lt;PeerMap&gt;,
-}
-
-<span class="kw">impl </span>Future <span class="kw">for </span>GetNodeAddress {
-    <span class="kw">type </span>Output = <span class="prelude-ty">Option</span>&lt;SocketAddr&gt;;
-
-    <span class="kw">fn </span>poll(<span class="kw-2">mut </span><span class="self">self</span>: Pin&lt;<span class="kw-2">&amp;mut </span><span class="self">Self</span>&gt;, cx: <span class="kw-2">&amp;mut </span>Context&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; Poll&lt;<span class="self">Self</span>::Output&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>peer_map = <span class="macro">futures::ready!</span>(<span class="self">self</span>.lock_fut.poll_unpin(cx));
-
-        Poll::Ready(
-            peer_map
-                .peer_comms(<span class="kw-2">&amp;</span><span class="self">self</span>.node_id)
-                .map(|peer| peer.remote_addr()),
-        )
-    }
-}
-
 <span class="doccomment">/// The collection of currently connected peer nodes.
 ///
 /// This object uses internal locking and is shared between
 /// all network connection tasks.
 </span><span class="kw">pub struct </span>Peers {
-    mutex: Arc&lt;Mutex&lt;PeerMap&gt;&gt;,
+    mutex: Mutex&lt;PeerMap&gt;,
 }
 
 <span class="kw">impl </span>Peers {
     <span class="kw">pub fn </span>new(capacity: usize, stats_counter: Metrics) -&gt; <span class="self">Self </span>{
         Peers {
-            mutex: Arc::new(Mutex::new(PeerMap::new(capacity, stats_counter))),
+            mutex: Mutex::new(PeerMap::new(capacity, stats_counter)),
         }
     }
 
-    <span class="kw">fn </span>inner(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; OwnedMutexLockFuture&lt;PeerMap&gt; {
-        <span class="self">self</span>.mutex.clone().lock_owned()
+    <span class="kw">fn </span>inner(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; MutexLockFuture&lt;PeerMap&gt; {
+        <span class="self">self</span>.mutex.lock()
     }
 
     <span class="kw">pub async fn </span>clear(<span class="kw-2">&amp;</span><span class="self">self</span>) {
@@ -1484,11 +1438,9 @@
         }
     }
 
-    <span class="kw">pub fn </span>get_peer_addr(<span class="kw-2">&amp;</span><span class="self">self</span>, node_id: NodeId) -&gt; GetNodeAddress {
-        GetNodeAddress {
-            node_id,
-            lock_fut: <span class="self">self</span>.inner(),
-        }
+    <span class="kw">pub async fn </span>get_peer_addr(<span class="kw-2">&amp;</span><span class="self">self</span>, peer: <span class="kw-2">&amp;</span>NodeId) -&gt; <span class="prelude-ty">Option</span>&lt;SocketAddr&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>map = <span class="self">self</span>.inner().<span class="kw">await</span>;
+        map.peer_comms(peer).map(|peer| peer.remote_addr())
     }
 
     <span class="kw">pub async fn </span>refresh_peer_on_gossip(<span class="kw-2">&amp;</span><span class="self">self</span>, peer: <span class="kw-2">&amp;</span>NodeId) -&gt; bool {

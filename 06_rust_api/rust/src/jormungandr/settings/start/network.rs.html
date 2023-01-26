@@ -172,15 +172,11 @@
 <span id="172">172</span>
 <span id="173">173</span>
 <span id="174">174</span>
-<span id="175">175</span>
-<span id="176">176</span>
-<span id="177">177</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::config;
 <span class="kw">use crate</span>::{
     network::p2p::Address,
     topology::{layers::LayersConfig, NodeId, QuarantineConfig},
 };
-<span class="kw">use </span>::multiaddr::Multiaddr;
 <span class="kw">use </span>chain_crypto::Ed25519;
 <span class="kw">use </span>jormungandr_lib::{crypto::key::SigningKey, multiaddr};
 <span class="kw">use </span>std::{net::SocketAddr, str, time::Duration};
@@ -263,7 +259,7 @@
     <span class="doccomment">/// Whether to allow non-public IP addresses in gossip
     </span><span class="kw">pub </span>allow_private_addresses: bool,
 
-    <span class="kw">pub </span>whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;Multiaddr&gt;&gt;,
+    <span class="kw">pub </span>whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;SocketAddr&gt;&gt;,
 
     <span class="kw">pub </span>gossip_interval: Duration,
 
@@ -278,8 +274,6 @@
     </span><span class="kw">pub </span>skip_bootstrap: bool,
 
     <span class="kw">pub </span>http_fetch_block0_service: Vec&lt;String&gt;,
-
-    <span class="kw">pub </span>dns_server_address: <span class="prelude-ty">Option</span>&lt;Address&gt;,
 }
 
 <span class="doccomment">/// Trusted peer with DNS address resolved.

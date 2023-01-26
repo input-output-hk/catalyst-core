@@ -72,9 +72,6 @@
 <span id="72">72</span>
 <span id="73">73</span>
 <span id="74">74</span>
-<span id="75">75</span>
-<span id="76">76</span>
-<span id="77">77</span>
 </pre><pre class="rust"><code><span class="kw">use </span>jormungandr_lib::interfaces::{
     JRpc, LayersConfig, LogEntry, LogOutput, Mempool, Policy, Rest, TopicsOfInterest,
 };
@@ -104,7 +101,7 @@
 
     <span class="kw">pub </span>allow_private_addresses: bool,
 
-    <span class="kw">pub </span>whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;Multiaddr&gt;&gt;,
+    <span class="kw">pub </span>whitelist: <span class="prelude-ty">Option</span>&lt;Vec&lt;SocketAddr&gt;&gt;,
 
     <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
     </span><span class="kw">pub </span>topics_of_interest: <span class="prelude-ty">Option</span>&lt;TopicsOfInterest&gt;,
@@ -113,9 +110,6 @@
 
     <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
     </span><span class="kw">pub </span>layers: <span class="prelude-ty">Option</span>&lt;LayersConfig&gt;,
-
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
-    </span><span class="kw">pub </span>dns_server_address: <span class="prelude-ty">Option</span>&lt;SocketAddr&gt;,
 }
 
 <span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize)]

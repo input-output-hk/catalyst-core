@@ -259,8 +259,6 @@
 <span id="259">259</span>
 <span id="260">260</span>
 <span id="261">261</span>
-<span id="262">262</span>
-<span id="263">263</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{Block0Error, Error};
 <span class="kw">use </span><span class="kw">crate</span>::certificate;
 <span class="kw">use </span><span class="kw">crate</span>::transaction::<span class="kw-2">*</span>;
@@ -339,9 +337,7 @@
 <span class="doccomment">/// check that the transaction input/outputs/witnesses is valid for the ballot
 ///
 /// * Only 1 input (subsequently 1 witness), no output
-</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>valid_vote_cast_tx_slice(
-    tx: <span class="kw-2">&amp;</span>TransactionSlice&lt;certificate::VoteCast&gt;,
-) -&gt; LedgerCheck {
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>valid_vote_cast(tx: <span class="kw-2">&amp;</span>TransactionSlice&lt;certificate::VoteCast&gt;) -&gt; LedgerCheck {
     <span class="macro">if_cond_fail_with!</span>(
         tx.inputs().nb_inputs() != <span class="number">1
             </span>|| tx.witnesses().nb_witnesses() != <span class="number">1

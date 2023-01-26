@@ -652,23 +652,6 @@
 <span id="652">652</span>
 <span id="653">653</span>
 <span id="654">654</span>
-<span id="655">655</span>
-<span id="656">656</span>
-<span id="657">657</span>
-<span id="658">658</span>
-<span id="659">659</span>
-<span id="660">660</span>
-<span id="661">661</span>
-<span id="662">662</span>
-<span id="663">663</span>
-<span id="664">664</span>
-<span id="665">665</span>
-<span id="666">666</span>
-<span id="667">667</span>
-<span id="668">668</span>
-<span id="669">669</span>
-<span id="670">670</span>
-<span id="671">671</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::spending::{SpendingCounter, SpendingCounterIncreasing};
 <span class="kw">use super</span>::{LastRewards, LedgerError};
 <span class="kw">use </span><span class="kw">crate</span>::date::Epoch;
@@ -833,31 +816,14 @@
         <span class="prelude-val">Ok</span>(st)
     }
 
-    <span class="doccomment">/// Spends value from an account state, and returns the new state.
+    <span class="doccomment">/// Subtract a value from an account state, and return the new state.
     ///
-    /// Note that this *also* increments the counter, as this function is usually
-    /// used for spending.
-    </span><span class="kw">pub fn </span>spend(<span class="kw-2">&amp;</span><span class="self">self</span>, spending: SpendingCounter, v: Value) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;, LedgerError&gt; {
+    /// Note that this *also* increment the counter, as this function would be usually call
+    /// for spending.
+    </span><span class="kw">pub fn </span>sub(<span class="kw-2">&amp;</span><span class="self">self</span>, spending: SpendingCounter, v: Value) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;, LedgerError&gt; {
         <span class="kw">let </span>new_value = (<span class="self">self</span>.value - v)<span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>r = <span class="self">self</span>.clone();
         r.spending.next_verify(spending)<span class="question-mark">?</span>;
-        r.value = new_value;
-        <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(r))
-    }
-
-    <span class="doccomment">/// Spends value from an account state, and returns the new state.
-    ///
-    /// Note that this *also* increments the counter, but does not fail if the
-    /// given counter fails to match the current one. However, it does throw
-    /// a warning.
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>spend_unchecked(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        counter: SpendingCounter,
-        v: Value,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;, LedgerError&gt; {
-        <span class="kw">let </span>new_value = (<span class="self">self</span>.value - v)<span class="question-mark">?</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>r = <span class="self">self</span>.clone();
-        r.spending.next_unchecked(counter);
         r.value = new_value;
         <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(r))
     }
@@ -914,7 +880,7 @@
         account_state.spending = SpendingCounterIncreasing::new_from_counter(counter);
         <span class="macro">assert_eq!</span>(
             should_sub_fail(account_state.clone(), sub_value),
-            account_state.spend(counter, sub_value).is_err(),
+            account_state.sub(counter, sub_value).is_err(),
         )
     }
 
@@ -1073,7 +1039,7 @@
                 }
                 ArbitraryAccountStateOp::Sub(value) =&gt; {
                     <span class="kw">let </span>should_fail = should_sub_fail(account_state.clone(), value);
-                    <span class="kw">match </span>(should_fail, account_state.spend(counter, value)) {
+                    <span class="kw">match </span>(should_fail, account_state.sub(counter, value)) {
                         (<span class="bool-val">false</span>, <span class="prelude-val">Ok</span>(account_state)) =&gt; {
                             strategy.next_verify(counter).expect(<span class="string">&quot;success&quot;</span>);
                             counter = counter.increment();
@@ -1087,8 +1053,8 @@
                             }
                         }
                         (<span class="bool-val">true</span>, <span class="prelude-val">Err</span>(<span class="kw">_</span>)) =&gt; account_state,
-                        (<span class="bool-val">false</span>,  <span class="prelude-val">Err</span>(err)) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Operation {}: unexpected spend operation failure. Expected success but got: {:?}&quot;</span>,op_counter,err),
-                        (<span class="bool-val">true</span>, <span class="prelude-val">Ok</span>(account_state)) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Operation {}: unexpected spend operation success. Expected failure but got: success. AccountState: {:?}&quot;</span>,op_counter, <span class="kw-2">&amp;</span>account_state),
+                        (<span class="bool-val">false</span>,  <span class="prelude-val">Err</span>(err)) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Operation {}: unexpected sub operation failure. Expected success but got: {:?}&quot;</span>,op_counter,err),
+                        (<span class="bool-val">true</span>, <span class="prelude-val">Ok</span>(account_state)) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Operation {}: unexpected sub operation success. Expected failure but got: success. AccountState: {:?}&quot;</span>,op_counter, <span class="kw-2">&amp;</span>account_state),
                     }
                 }
                 ArbitraryAccountStateOp::Delegate(stake_pool_id) =&gt; {

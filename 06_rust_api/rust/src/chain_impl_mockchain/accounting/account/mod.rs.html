@@ -751,23 +751,6 @@
 <span id="751">751</span>
 <span id="752">752</span>
 <span id="753">753</span>
-<span id="754">754</span>
-<span id="755">755</span>
-<span id="756">756</span>
-<span id="757">757</span>
-<span id="758">758</span>
-<span id="759">759</span>
-<span id="760">760</span>
-<span id="761">761</span>
-<span id="762">762</span>
-<span id="763">763</span>
-<span id="764">764</span>
-<span id="765">765</span>
-<span id="766">766</span>
-<span id="767">767</span>
-<span id="768">768</span>
-<span id="769">769</span>
-<span id="770">770</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Generic account like accounting
 //!
 //! This is effectively an immutable clonable-HAMT of bank style account,
@@ -943,34 +926,17 @@
             .map(Ledger)
     }
 
-    <span class="doccomment">/// Spend value from an existing account.
+    <span class="doccomment">/// Subtract value to an existing account.
     ///
-    /// If the account doesn&#39;t exist, or if the value is too much to spend,
-    /// or if the spending counter doesn&#39;t match, it throws a `LedgerError`.
-    </span><span class="kw">pub fn </span>spend(
+    /// If the account doesn&#39;t exist, or that the value would become negative, errors out.
+    </span><span class="kw">pub fn </span>remove_value(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         identifier: <span class="kw-2">&amp;</span>ID,
-        counter: SpendingCounter,
+        spending: SpendingCounter,
         value: Value,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, LedgerError&gt; {
         <span class="self">self</span>.<span class="number">0
-            </span>.update(identifier, |st| st.spend(counter, value))
-            .map(Ledger)
-            .map_err(|e| e.into())
-    }
-
-    <span class="doccomment">/// Spend value from an existing account without spending counter check.
-    ///
-    /// If the account doesn&#39;t exist, or if the value is too much to spend,
-    /// it throws a `LedgerError`.
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>spend_with_no_counter_check(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        identifier: <span class="kw-2">&amp;</span>ID,
-        counter: SpendingCounter,
-        value: Value,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, LedgerError&gt; {
-        <span class="self">self</span>.<span class="number">0
-            </span>.update(identifier, |st| st.spend_unchecked(counter, value))
+            </span>.update(identifier, |st| st.sub(spending, value))
             .map(Ledger)
             .map_err(|e| e.into())
     }
@@ -1380,7 +1346,7 @@
         }
 
         <span class="comment">// remove value from account
-        </span>ledger = <span class="kw">match </span>ledger.spend(<span class="kw-2">&amp;</span>account_id, spending_counter, value) {
+        </span>ledger = <span class="kw">match </span>ledger.remove_value(<span class="kw-2">&amp;</span>account_id, spending_counter, value) {
             <span class="prelude-val">Ok</span>(ledger) =&gt; ledger,
             <span class="prelude-val">Err</span>(err) =&gt; {
                 <span class="kw">return </span>TestResult::error(<span class="macro">format!</span>(
@@ -1409,7 +1375,7 @@
         }
 
         <span class="comment">// removes all funds from account
-        </span>ledger = <span class="kw">match </span>ledger.spend(<span class="kw-2">&amp;</span>account_id, spending_counter, value_before_reward) {
+        </span>ledger = <span class="kw">match </span>ledger.remove_value(<span class="kw-2">&amp;</span>account_id, spending_counter, value_before_reward) {
             <span class="prelude-val">Ok</span>(ledger) =&gt; ledger,
             <span class="prelude-val">Err</span>(err) =&gt; {
                 <span class="kw">return </span>TestResult::error(<span class="macro">format!</span>(
@@ -1461,7 +1427,7 @@
     }
 
     <span class="attribute">#[quickcheck]
-    </span><span class="kw">pub fn </span>ledger_total_value_is_correct_after_spend(
+    </span><span class="kw">pub fn </span>ledger_total_value_is_correct_after_remove_value(
         id: Identifier,
         account_state: AccountState&lt;()&gt;,
         value_to_remove: Value,
@@ -1470,7 +1436,7 @@
         ledger = ledger
             .add_account(id.clone(), account_state.value(), ())
             .unwrap();
-        <span class="kw">let </span>result = ledger.spend(<span class="kw-2">&amp;</span>id, SpendingCounter::zero(), value_to_remove);
+        <span class="kw">let </span>result = ledger.remove_value(<span class="kw-2">&amp;</span>id, SpendingCounter::zero(), value_to_remove);
         <span class="kw">let </span>expected_result = account_state.value() - value_to_remove;
         <span class="kw">match </span>(result, expected_result) {
             (<span class="prelude-val">Err</span>(<span class="kw">_</span>), <span class="prelude-val">Err</span>(<span class="kw">_</span>)) =&gt; verify_total_value(ledger, account_state.value()),

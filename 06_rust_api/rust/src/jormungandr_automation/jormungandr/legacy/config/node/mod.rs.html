@@ -252,9 +252,6 @@
 <span id="252">252</span>
 <span id="253">253</span>
 <span id="254">254</span>
-<span id="255">255</span>
-<span id="256">256</span>
-<span id="257">257</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>data;
 
 <span class="kw">use </span><span class="kw">crate</span>::jormungandr::{
@@ -399,7 +396,6 @@
                 layers: source.p2p.layers.clone(),
                 public_id: <span class="prelude-val">None</span>,
                 whitelist: source.p2p.connection.whitelist.clone(),
-                dns_server_address: source.p2p.connection.dns_server_address,
             },
             mempool: source.mempool.clone(),
             bootstrap_from_trusted_peers: source.bootstrap_from_trusted_peers,
@@ -441,7 +437,6 @@
                 layers: source.p2p.layers.clone(),
                 public_id: <span class="prelude-val">None</span>,
                 whitelist: source.p2p.connection.whitelist.clone(),
-                dns_server_address: source.p2p.connection.dns_server_address,
             },
             mempool: source.mempool.clone(),
             bootstrap_from_trusted_peers: source.bootstrap_from_trusted_peers,
@@ -503,7 +498,6 @@
                 layers: <span class="prelude-val">None</span>,
                 public_id: <span class="prelude-val">None</span>,
                 whitelist: source.p2p.connection.whitelist.clone(),
-                dns_server_address: source.p2p.connection.dns_server_address,
             },
             mempool: source.mempool.clone(),
             bootstrap_from_trusted_peers: source.bootstrap_from_trusted_peers,

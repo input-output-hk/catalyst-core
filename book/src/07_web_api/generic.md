@@ -69,7 +69,7 @@ Gets a single vote plan by its unique identifier.
   - title: vote plan
   - content: [proposals]
 
-## Store vote[/vote/{choice, vote_plan_id, proposal_id, signature}]
+## Store vote[/store/{choice, vote_plan_id, proposal_id, signature}]
 
 - Parameters
   - choice: 1

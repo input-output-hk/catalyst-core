@@ -2982,6 +2982,12 @@
   }
 }
 
+@media only screen and (max-width:1439px) {
+ :root{
+    --content-max-width: 98%;
+  }
+}
+
 /* Themes */
 
 .ayu {

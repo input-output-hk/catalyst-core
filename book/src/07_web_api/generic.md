@@ -86,22 +86,3 @@ Send vote fragment to Node
 + Response 201
 
     + Headers
-
-
-### obfuscate more using session headers?
-### Store vote [POST /vote]
-
-Send vote fragment to Node
-
-+ Request (application/json)
-
-       + Headers
-
-            vote_metadata: *
-
-+ Response 201
-
-    + Headers      
-
-
-

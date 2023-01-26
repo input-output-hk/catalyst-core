@@ -25,10 +25,10 @@ Please also list any relevant details for your test configuration
 
 **Test Configuration**: _if applicable_
 
-* Firmware version:
-* Hardware:
-* Toolchain:
-* SDK:
+- Firmware version:
+- Hardware:
+- Toolchain:
+- SDK:
 
 **List of new dependecies**: _if applicable_
 
@@ -37,7 +37,7 @@ Provide a list of newly added dependencies in this PR, with the description of w
 - Crate A: description
 - Crate B: description
 
-## Checklist:
+## Checklist
 
 - [ ] My code follows the style guidelines of this project
 - [ ] I have performed a self-review of my code

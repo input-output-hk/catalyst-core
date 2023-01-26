@@ -162,6 +162,15 @@ pub enum Block0Error {
 pub type OutputOldAddress = Output<legacy::OldAddress>;
 pub type OutputAddress = Output<Address>;
 
+// Indicates whether account verification deduces the fee value from the account.
+// This is used, for example, for VoteCast transactions.
+enum FeeDeductionMode {
+    // Checks the spending counter when spending.
+    Default,
+    // Disables checking the spending counter when spending.
+    NoSpendingCounterCheck,
+}
+
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum Error {
@@ -994,8 +1003,9 @@ impl Ledger {
             Fragment::VoteCast(tx) => {
                 let tx = tx.as_slice();
                 // this is a lightweight check, do this early to avoid doing any unnecessary computation
-                check::valid_vote_cast(&tx)?;
-                let (new_ledger_, _fee) = new_ledger.apply_transaction(&fragment_id, &tx)?;
+                check::valid_vote_cast_tx_slice(&tx)?;
+                let (new_ledger_, _fee) =
+                    new_ledger.apply_transaction_for_vote_cast(&fragment_id, &tx)?;
 
                 // we've just verified that this is a valid transaction (i.e. contains 1 input and 1 witness)
                 let account_id = match tx
@@ -1072,10 +1082,12 @@ impl Ledger {
         Ok(new_ledger)
     }
 
-    pub fn apply_transaction<'a, Extra>(
+    // Runs transaction validations, spends the tx fee, updates and returns the account ledger.
+    fn execute_apply_transaction<'a, Extra>(
         mut self,
         fragment_id: &FragmentId,
         tx: &TransactionSlice<'a, Extra>,
+        fee_deduction: FeeDeductionMode,
     ) -> Result<(Self, Value), Error>
     where
         Extra: Payload,
@@ -1084,10 +1096,46 @@ impl Ledger {
         check::valid_transaction_ios_number(tx)?;
         let fee = calculate_fee(tx, &self.settings.linear_fees);
         tx.verify_strictly_balanced(fee)?;
-        self = self.apply_tx_inputs(tx)?;
+        self = self.apply_tx_inputs(tx, fee_deduction)?;
         self = self.apply_tx_outputs(*fragment_id, tx.outputs())?;
         self = self.apply_tx_fee(fee)?;
         Ok((self, fee))
+    }
+
+    /// Applies transaction to the account ledger by validating and verifying
+    /// inputs and outputs, as well as spending the fee value from the related
+    /// account id. Returns an Error if the account cannot afford the fee or
+    /// if the spending counter doesn't match.
+    pub fn apply_transaction<'a, Extra>(
+        self,
+        fragment_id: &FragmentId,
+        tx: &TransactionSlice<'a, Extra>,
+    ) -> Result<(Self, Value), Error>
+    where
+        Extra: Payload,
+        LinearFee: FeeAlgorithm,
+    {
+        let result = self.execute_apply_transaction(fragment_id, tx, FeeDeductionMode::Default)?;
+        Ok(result)
+    }
+
+    // Applies vote cast transaction to the account ledger by validating and verifying
+    // inputs and outputs, deducing the fee, but ignoring the spending counter checks.
+    fn apply_transaction_for_vote_cast<'a, Extra>(
+        self,
+        fragment_id: &FragmentId,
+        tx: &TransactionSlice<'a, Extra>,
+    ) -> Result<(Self, Value), Error>
+    where
+        Extra: Payload,
+        LinearFee: FeeAlgorithm,
+    {
+        let result = self.execute_apply_transaction(
+            fragment_id,
+            tx,
+            FeeDeductionMode::NoSpendingCounterCheck,
+        )?;
+        Ok(result)
     }
 
     pub fn apply_update(mut self, update: &UpdateProposal) -> Result<Self, Error> {
@@ -1518,9 +1566,11 @@ impl Ledger {
         Value::sum(all_utxo_values).map_err(|_| Error::Block0(Block0Error::UtxoTotalValueTooBig))
     }
 
+    // Verifies witness data and spends the transaction fee from the account.
     fn apply_tx_inputs<Extra: Payload>(
         mut self,
         tx: &TransactionSlice<Extra>,
+        fee_deduction: FeeDeductionMode,
     ) -> Result<Self, Error> {
         let sign_data_hash = tx.transaction_sign_data_hash();
         for (input, witness) in tx.inputs_and_witnesses().iter() {
@@ -1535,26 +1585,48 @@ impl Ledger {
                             witness,
                             spending_counter,
                         ) => {
-                            self.accounts = input_single_account_verify(
-                                self.accounts,
-                                &self.static_params.block0_initial_hash,
-                                &sign_data_hash,
-                                &account_id,
-                                witness,
-                                spending_counter,
-                                value,
-                            )?
+                            self.accounts = match fee_deduction {
+                                FeeDeductionMode::Default => input_single_account_verify(
+                                    self.accounts,
+                                    &self.static_params.block0_initial_hash,
+                                    &sign_data_hash,
+                                    &account_id,
+                                    witness,
+                                    spending_counter,
+                                    value,
+                                )?,
+                                FeeDeductionMode::NoSpendingCounterCheck => input_single_account_witness_verify_with_no_spending_counter_check(
+                                    self.accounts,
+                                    &self.static_params.block0_initial_hash,
+                                    &sign_data_hash,
+                                    &account_id,
+                                    witness,
+                                    spending_counter,
+                                    value,
+                                )?,
+                            };
                         }
                         MatchingIdentifierWitness::Multi(account_id, witness, spending_counter) => {
-                            self.multisig = input_multi_account_verify(
-                                self.multisig,
-                                &self.static_params.block0_initial_hash,
-                                &sign_data_hash,
-                                &account_id,
-                                witness,
-                                spending_counter,
-                                value,
-                            )?
+                            self.multisig = match fee_deduction {
+                                FeeDeductionMode::Default => input_multi_account_verify(
+                                    self.multisig,
+                                    &self.static_params.block0_initial_hash,
+                                    &sign_data_hash,
+                                    &account_id,
+                                    witness,
+                                    spending_counter,
+                                    value,
+                                )?,
+                                FeeDeductionMode::NoSpendingCounterCheck => input_multi_account_witness_verify_with_no_spending_counter_check(
+                                    self.multisig,
+                                    &self.static_params.block0_initial_hash,
+                                    &sign_data_hash,
+                                    &account_id,
+                                    witness,
+                                    spending_counter,
+                                    value,
+                                )?,
+                            };
                         }
                     }
                 }
@@ -1826,50 +1898,126 @@ fn match_identifier_witness<'a>(
     }
 }
 
-fn input_single_account_verify<'a>(
-    mut ledger: account::Ledger,
+fn single_account_witness_verify<'a>(
+    ledger: account::Ledger,
     block0_hash: &HeaderId,
     sign_data_hash: &TransactionSignDataHash,
-    account: &account::Identifier,
+    account_id: &account::Identifier,
     witness: &'a account::Witness,
     spending_counter: account::SpendingCounter,
-    value: Value,
 ) -> Result<account::Ledger, Error> {
-    // .remove_value() check if there's enough value and if not, returns a Err.
-    let new_ledger = ledger.remove_value(account, spending_counter, value)?;
-    ledger = new_ledger;
-
     let tidsc = WitnessAccountData::new(block0_hash, sign_data_hash, spending_counter);
-    let verified = witness.verify(account.as_ref(), &tidsc);
+    let verified = witness.verify(account_id.as_ref(), &tidsc);
     if verified == chain_crypto::Verification::Failed {
         return Err(Error::AccountInvalidSignature {
-            account: account.clone(),
+            account: account_id.clone(),
             witness: Witness::Account(spending_counter, witness.clone()),
         });
     };
     Ok(ledger)
 }
 
-fn input_multi_account_verify<'a>(
-    mut ledger: multisig::Ledger,
+fn input_single_account_verify<'a>(
+    ledger: account::Ledger,
     block0_hash: &HeaderId,
     sign_data_hash: &TransactionSignDataHash,
-    account: &multisig::Identifier,
+    account_id: &account::Identifier,
+    witness: &'a account::Witness,
+    spending_counter: account::SpendingCounter,
+    value: Value,
+) -> Result<account::Ledger, Error> {
+    // Remove value from the account before proceeding
+    let updated_ledger = ledger.spend(account_id, spending_counter, value)?;
+    let ledger = single_account_witness_verify(
+        updated_ledger,
+        block0_hash,
+        sign_data_hash,
+        account_id,
+        witness,
+        spending_counter,
+    )?;
+    Ok(ledger)
+}
+
+fn input_single_account_witness_verify_with_no_spending_counter_check<'a>(
+    ledger: account::Ledger,
+    block0_hash: &HeaderId,
+    sign_data_hash: &TransactionSignDataHash,
+    account_id: &account::Identifier,
+    witness: &'a account::Witness,
+    spending_counter: account::SpendingCounter,
+    value: Value,
+) -> Result<account::Ledger, Error> {
+    let updated_ledger = ledger.spend_with_no_counter_check(account_id, spending_counter, value)?;
+    let ledger = single_account_witness_verify(
+        updated_ledger,
+        block0_hash,
+        sign_data_hash,
+        account_id,
+        witness,
+        spending_counter,
+    )?;
+    Ok(ledger)
+}
+
+fn multi_account_witness_verify<'a>(
+    ledger: multisig::Ledger,
+    block0_hash: &HeaderId,
+    sign_data_hash: &TransactionSignDataHash,
+    account_id: &multisig::Identifier,
+    witness: &'a multisig::Witness,
+    spending_counter: account::SpendingCounter,
+) -> Result<multisig::Ledger, Error> {
+    let declaration = ledger.get_declaration_by_id(account_id)?;
+    let data_to_verify = WitnessMultisigData::new(block0_hash, sign_data_hash, spending_counter);
+    if !witness.verify(declaration, &data_to_verify) {
+        return Err(Error::MultisigInvalidSignature {
+            multisig: account_id.clone(),
+            witness: Witness::Multisig(spending_counter, witness.clone()),
+        });
+    }
+    Ok(ledger)
+}
+
+fn input_multi_account_verify<'a>(
+    ledger: multisig::Ledger,
+    block0_hash: &HeaderId,
+    sign_data_hash: &TransactionSignDataHash,
+    account_id: &multisig::Identifier,
     witness: &'a multisig::Witness,
     spending_counter: account::SpendingCounter,
     value: Value,
 ) -> Result<multisig::Ledger, Error> {
-    // .remove_value() check if there's enough value and if not, returns a Err.
-    let (new_ledger, declaration) = ledger.remove_value(account, spending_counter, value)?;
+    let updated_ledger = ledger.spend(account_id, spending_counter, value)?;
+    let ledger = multi_account_witness_verify(
+        updated_ledger,
+        block0_hash,
+        sign_data_hash,
+        account_id,
+        witness,
+        spending_counter,
+    )?;
+    Ok(ledger)
+}
 
-    let data_to_verify = WitnessMultisigData::new(block0_hash, sign_data_hash, spending_counter);
-    if !witness.verify(declaration, &data_to_verify) {
-        return Err(Error::MultisigInvalidSignature {
-            multisig: account.clone(),
-            witness: Witness::Multisig(spending_counter, witness.clone()),
-        });
-    }
-    ledger = new_ledger;
+fn input_multi_account_witness_verify_with_no_spending_counter_check<'a>(
+    ledger: multisig::Ledger,
+    block0_hash: &HeaderId,
+    sign_data_hash: &TransactionSignDataHash,
+    account_id: &multisig::Identifier,
+    witness: &'a multisig::Witness,
+    spending_counter: account::SpendingCounter,
+    value: Value,
+) -> Result<multisig::Ledger, Error> {
+    let updated_ledger = ledger.spend_with_no_counter_check(account_id, spending_counter, value)?;
+    let ledger = multi_account_witness_verify(
+        updated_ledger,
+        block0_hash,
+        sign_data_hash,
+        account_id,
+        witness,
+        spending_counter,
+    )?;
     Ok(ledger)
 }
 
@@ -2131,7 +2279,7 @@ mod tests {
     }
 
     #[test]
-    fn test_input_account_wrong_value() {
+    fn test_input_single_account_verify_with_value_greater_than_initial_value_is_err() {
         let account = AddressData::account(Discrimination::Test);
         let initial_value = Value(100);
         let value_to_sub = Value(110);

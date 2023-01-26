@@ -1,8 +1,8 @@
 # Generic voting
 
-### Pre-requisites
+## Pre-requisites
 
-In order to cast a vote, a user must first obtain a *proposal_id* and *vote_plan_id*. 
+In order to cast a vote, a user must first obtain a *proposal_id* and *vote_plan_id*.
 
 
 ```kroki-seqdiag

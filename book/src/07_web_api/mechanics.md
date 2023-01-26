@@ -51,3 +51,38 @@ seqdiag {
 - post  - /v0/message - sending single fragment ✅ 	
 - post  - /v1/fragments -  sending batch fragments ✅ 	
 - get   - /v1/fragments/statuses - checking fragment statuses
+
+
+# Posix style API
+Generic API abstraction with multiple backends
+
+## Get active voting plans metadata [/active_plans]
+
+### Retrieve a Message [GET]
+
++ Response 200 (application/json)
+
+    + Headers
+
+            X-My-Message-Header: 42
+
+    + Body
+
+            { "message": "" }
+
+
+## Store vote [POST /vote]
+
+Start out by creating a message for the world to see.
+
++ Request (application/json)
+
+        { "vote": "choice,proposal_id,signature" }
+
++ Response 201
+
+    + Headers
+
+            Location: /messages/1337
+
+

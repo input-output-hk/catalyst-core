@@ -12,7 +12,6 @@ members = [
   "src/chain-libs/chain-network",
   "src/chain-libs/chain-storage",
   "src/chain-libs/chain-impl-mockchain",
-  "src/chain-libs/chain-evm",
   "src/chain-libs/cardano-legacy-address",
   "src/chain-libs/sparse-array",
   "src/chain-libs/typed-bytes",

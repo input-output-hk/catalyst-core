@@ -270,30 +270,8 @@
 <span id="270">270</span>
 <span id="271">271</span>
 <span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::jormungandr::{MemPoolCheck, RawRest, RestError, RestSettings};
 <span class="kw">use </span>chain_core::property::Fragment <span class="kw">as _</span>;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-</span><span class="kw">use </span>chain_evm::Address <span class="kw">as </span>EvmAddress;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-</span><span class="kw">use </span>chain_impl_mockchain::account::Identifier <span class="kw">as </span>JorAddress;
 <span class="kw">use </span>chain_impl_mockchain::{
     fragment::{Fragment, FragmentId},
     header::HeaderId,
@@ -423,20 +401,6 @@
 
     <span class="kw">pub fn </span>stake_distribution_at(<span class="kw-2">&amp;</span><span class="self">self</span>, epoch: u32) -&gt; <span class="prelude-ty">Result</span>&lt;String, reqwest::Error&gt; {
         <span class="kw">let </span>response_text = <span class="self">self</span>.raw().stake_distribution_at(epoch)<span class="question-mark">?</span>.text()<span class="question-mark">?</span>;
-        <span class="self">self</span>.print_response_text(<span class="kw-2">&amp;</span>response_text);
-        <span class="prelude-val">Ok</span>(response_text)
-    }
-
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-    </span><span class="kw">pub fn </span>evm_address(<span class="kw-2">&amp;</span><span class="self">self</span>, jor_address: <span class="kw-2">&amp;</span>JorAddress) -&gt; <span class="prelude-ty">Result</span>&lt;String, reqwest::Error&gt; {
-        <span class="kw">let </span>response_text = <span class="self">self</span>.raw().evm_address(jor_address)<span class="question-mark">?</span>.text()<span class="question-mark">?</span>;
-        <span class="self">self</span>.print_response_text(<span class="kw-2">&amp;</span>response_text);
-        <span class="prelude-val">Ok</span>(response_text)
-    }
-
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-    </span><span class="kw">pub fn </span>jor_address(<span class="kw-2">&amp;</span><span class="self">self</span>, evm_address: <span class="kw-2">&amp;</span>EvmAddress) -&gt; <span class="prelude-ty">Result</span>&lt;String, reqwest::Error&gt; {
-        <span class="kw">let </span>response_text = <span class="self">self</span>.raw().jor_address(evm_address)<span class="question-mark">?</span>.text()<span class="question-mark">?</span>;
         <span class="self">self</span>.print_response_text(<span class="kw-2">&amp;</span>response_text);
         <span class="prelude-val">Ok</span>(response_text)
     }

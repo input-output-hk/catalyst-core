@@ -95,8 +95,8 @@ mod test {
     use quickcheck::Arbitrary;
 
     impl Arbitrary for EvmTransaction {
-        fn arbitrary<G: quickcheck::Gen>(g: &mut G) -> Self {
-            Self(evm::EvmTransaction::arbitrary(g))
+        fn arbitrary<G: quickcheck::Gen>(_: &mut G) -> Self {
+            Self(evm::EvmTransaction {})
         }
     }
 

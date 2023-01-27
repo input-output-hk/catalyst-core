@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Clean up
         run: |
-          echo "Clean up for branch ${{ GIT_BRANCH }}"
+          echo "Clean up for branch ${{ env.GIT_BRANCH }}"
 
       - name: Get current published documentation
         uses: actions/checkout@v2
@@ -20,9 +20,9 @@ jobs:
 
       - name: Remove branches draft docs
         run: |
-          echo rm -rf ${{ GIT_BRANCH }}
+          echo rm -rf ${{ env.GIT_BRANCH }}
 
       - name: Save updated docs
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: Removed Draft Docs for ${{ GIT_BRANCH }}
+          commit_message: Removed Draft Docs for ${{ env.GIT_BRANCH }}

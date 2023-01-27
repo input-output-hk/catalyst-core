@@ -42,4 +42,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./book/html
-          destination_dir: ${{ GIT_BRANCH }}
+          destination_dir: ${{ env.GIT_BRANCH }}

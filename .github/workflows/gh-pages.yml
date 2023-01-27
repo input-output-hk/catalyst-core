@@ -2,9 +2,7 @@ name: GitHub Pages
 
 on: 
   push:
-    branches:
-      - main  
-      - docs
+
   pull_request:
     paths:
       - 'book/src/**'
@@ -21,8 +19,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      PUBLISH_DOCS: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-      TEST_DOCS: ${{ github.event_name == 'push' && github.ref == 'refs/heads/docs' }}
+      PUBLISH_DOCS: ${{ github.event_name == 'push' }}
+      GIT_BRANCH: ${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}      
     permissions:
       contents: write
     concurrency:
@@ -36,9 +34,12 @@ jobs:
           entrypoint: cargo
           args: make build-docs
 
-      - name: Deploy
-        if: ${{ env.PUBLISH_DOCS || env.TEST_DOCS }}
+      # On PUSH we deploy docs to a sub-directory named after the branch.
+      # But ONLY if a docs page changes.
+      - name: Deploy Docs
+        if: ${{ env.PUBLISH_DOCS }}
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./book/html
+          destination_dir: ${{ GIT_BRANCH }}

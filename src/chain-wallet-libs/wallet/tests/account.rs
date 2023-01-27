@@ -83,13 +83,14 @@ fn cast_vote() {
 
         let value = builder.estimate_fee_with(1, 0);
 
+        let secret_key = account.secret_key();
         let account_tx_builder = account.new_transaction(value, i % 8).unwrap();
         let input = account_tx_builder.input();
         let witness_builder = account_tx_builder.witness_builder();
 
         builder.add_input(input, witness_builder);
 
-        let tx = builder.finalize_tx(()).unwrap();
+        let tx = builder.finalize_tx((), vec![secret_key]).unwrap();
 
         let fragment = Fragment::VoteCast(tx);
         let id = fragment.hash();

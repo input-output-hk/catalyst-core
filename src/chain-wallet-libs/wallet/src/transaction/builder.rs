@@ -13,16 +13,20 @@ use chain_impl_mockchain::{
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-#[error("Cannot balance the transaction")]
-pub struct BalancingError;
+pub enum Error {
+    #[error("Cannot balance the transaction")]
+    BalancingError,
+    #[error("Invalid secret keys amount, expected: {0}, provided: {1}")]
+    InvalidSecretKeysAmount(usize, usize),
+}
 
-pub struct TransactionBuilder<P: Payload> {
+pub struct TransactionBuilder<P: Payload, SecretKey, WitnessData> {
     settings: Settings,
     payload: P,
     validity: BlockDate,
     outputs: Vec<Output<Address>>,
     inputs: Vec<Input>,
-    witness_builders: Vec<Box<dyn WitnessBuilder>>,
+    witness_builders: Vec<Box<dyn WitnessBuilder<SecretKey, WitnessData>>>,
 }
 
 pub enum AddInputStatus {
@@ -31,7 +35,9 @@ pub enum AddInputStatus {
     NotEnoughSpace,
 }
 
-impl<P: Payload> TransactionBuilder<P> {
+impl<P: Payload, SecretKey, WitnessData: AsRef<[u8]>>
+    TransactionBuilder<P, SecretKey, WitnessData>
+{
     /// create a new transaction builder with the given settings and outputs
     pub fn new(settings: Settings, payload: P, validity: BlockDate) -> Self {
         Self {
@@ -81,7 +87,7 @@ impl<P: Payload> TransactionBuilder<P> {
         self.estimate_fee_with(0, 0)
     }
 
-    pub fn add_input_if_worth<B: WitnessBuilder + 'static>(
+    pub fn add_input_if_worth<B: WitnessBuilder<SecretKey, WitnessData> + 'static>(
         &mut self,
         input: Input,
         witness_builder: B,
@@ -96,7 +102,7 @@ impl<P: Payload> TransactionBuilder<P> {
         }
     }
 
-    pub fn add_input<B: WitnessBuilder + 'static>(
+    pub fn add_input<B: WitnessBuilder<SecretKey, WitnessData> + 'static>(
         &mut self,
         input: Input,
         witness_builder: B,
@@ -139,9 +145,13 @@ impl<P: Payload> TransactionBuilder<P> {
         }
     }
 
-    pub fn finalize_tx(self, auth: <P as Payload>::Auth) -> Result<Transaction<P>, BalancingError> {
+    pub fn finalize_tx(
+        self,
+        auth: <P as Payload>::Auth,
+        secret_keys: Vec<SecretKey>,
+    ) -> Result<Transaction<P>, Error> {
         if !matches!(self.check_balance(), Balance::Zero) {
-            return Err(BalancingError);
+            return Err(Error::BalancingError);
         }
 
         let builder = TxBuilderState::new();
@@ -149,7 +159,7 @@ impl<P: Payload> TransactionBuilder<P> {
 
         let builder = self.set_validity(builder);
         let builder = self.set_ios(builder);
-        let builder = self.set_witnesses(builder);
+        let builder = self.set_witnesses(builder, secret_keys)?;
 
         Ok(builder.set_payload_auth(&auth))
     }
@@ -165,18 +175,25 @@ impl<P: Payload> TransactionBuilder<P> {
     fn set_witnesses(
         &self,
         builder: TxBuilderState<SetWitnesses<P>>,
-    ) -> TxBuilderState<SetAuthData<P>>
-    where
-        P: Payload,
-    {
+        secret_keys: Vec<SecretKey>,
+    ) -> Result<TxBuilderState<SetAuthData<P>>, Error> {
         let header_id = self.settings.block0_initial_hash;
         let auth_data = builder.get_auth_data_for_witness().hash();
-        let witnesses: Vec<_> = self
-            .witness_builders
-            .iter()
-            .map(|wb| wb.build(&header_id, &auth_data))
-            .collect();
 
-        builder.set_witnesses(&witnesses)
+        if secret_keys.len() != self.witness_builders.len() {
+            return Err(Error::InvalidSecretKeysAmount(
+                self.witness_builders.len(),
+                secret_keys.len(),
+            ));
+        }
+        let mut witnesses = Vec::new();
+        secret_keys
+            .into_iter()
+            .enumerate()
+            .for_each(|(i, secret_key)| {
+                witnesses.push(self.witness_builders[i].build(&header_id, &auth_data, secret_key));
+            });
+
+        Ok(builder.set_witnesses(&witnesses))
     }
 }

@@ -3,15 +3,17 @@ use chain_impl_mockchain::{
     account::SpendingCounter,
     fragment::Fragment,
     header::BlockDate,
-    transaction::{Input, Payload, Transaction},
+    transaction::{Input, Payload, Transaction, WitnessAccountData},
 };
 use std::{collections::HashMap, str::FromStr};
-use wallet::{AccountId, EitherAccount, Settings};
+use wallet::{
+    transaction::AccountSecretKey, AccountId, AccountWitnessBuilder, EitherAccount, Settings,
+};
 
 use crate::Error;
 
 pub struct TxBuilder<P: Payload> {
-    builder: wallet::TransactionBuilder<P>,
+    builder: wallet::TransactionBuilder<P, AccountSecretKey, WitnessAccountData>,
     inputs: HashMap<AccountId, (Input, SpendingCounter)>,
 }
 
@@ -46,7 +48,7 @@ impl<P: Payload> TxBuilder<P> {
         );
 
         let (input, spending_counter) = self.inputs.get(&account.account_id()).ok_or_else(|| Error::invalid_input("Cannot find corresponded input to the provided account, make sure that you have correctly execute build_tx function first"))?.clone();
-        let witness_builder = account.witness_builder(spending_counter);
+        let witness_builder = AccountWitnessBuilder(spending_counter);
         self.builder.add_input(input, witness_builder);
         Ok(self)
     }
@@ -58,7 +60,7 @@ impl<P: Payload> TxBuilder<P> {
     ) -> Result<Fragment, Error> {
         Ok(fragment_build_fn(
             self.builder
-                .finalize_tx(auth)
+                .finalize_tx(auth, vec![])
                 .map_err(|e| Error::wallet_transaction().with(e))?,
         ))
     }

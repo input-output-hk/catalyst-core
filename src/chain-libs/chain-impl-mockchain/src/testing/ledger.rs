@@ -59,8 +59,6 @@ pub struct ConfigBuilder {
     consensus_version: ConsensusVersion,
     pool_capping_ratio: Ratio,
     transaction_max_expiry_epochs: Option<u8>,
-    #[cfg(feature = "evm")]
-    evm_params: chain_evm::Config,
 }
 
 impl Default for ConfigBuilder {
@@ -103,8 +101,6 @@ impl ConfigBuilder {
             block0_date: Block0Date(0),
             consensus_version: ConsensusVersion::Bft,
             transaction_max_expiry_epochs: None,
-            #[cfg(feature = "evm")]
-            evm_params: chain_evm::Config::default(),
         }
     }
 
@@ -215,12 +211,6 @@ impl ConfigBuilder {
 
     pub fn with_transaction_max_expiry_epochs(mut self, n_epochs: u8) -> Self {
         self.transaction_max_expiry_epochs = Some(n_epochs);
-        self
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn with_evm_params(mut self, params: chain_evm::Config) -> Self {
-        self.evm_params = params;
         self
     }
 
@@ -747,14 +737,6 @@ impl TestLedger {
 
     pub fn pots(&self) -> Pots {
         self.ledger.pots.clone()
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn get_evm_mapped_address(
-        &self,
-        jor_id: &crate::account::Identifier,
-    ) -> Option<chain_evm::Address> {
-        self.ledger.evm.address_mapping.evm_address(jor_id)
     }
 }
 

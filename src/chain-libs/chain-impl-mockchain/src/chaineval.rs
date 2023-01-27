@@ -1,5 +1,3 @@
-#[cfg(feature = "evm")]
-use crate::block::HeaderId;
 use crate::certificate::PoolId;
 use crate::chaintypes::ChainLength;
 use crate::date::BlockDate;
@@ -56,8 +54,6 @@ pub struct HeaderContentEvalContext {
     pub(crate) chain_length: ChainLength,
     pub(crate) content_hash: BlockContentHash,
     pub(crate) consensus_eval_context: ConsensusEvalContext,
-    #[cfg(feature = "evm")]
-    pub(crate) block_id: HeaderId,
 }
 
 #[cfg(test)]
@@ -99,8 +95,6 @@ mod test {
                 chain_length: Arbitrary::arbitrary(g),
                 consensus_eval_context: Arbitrary::arbitrary(g),
                 content_hash: Arbitrary::arbitrary(g),
-                #[cfg(feature = "evm")]
-                block_id: Arbitrary::arbitrary(g),
             }
         }
     }

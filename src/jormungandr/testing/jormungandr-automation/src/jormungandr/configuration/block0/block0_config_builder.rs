@@ -67,10 +67,6 @@ impl Default for Block0ConfigurationBuilder {
                 }),
                 committees: Vec::new(),
                 tx_max_expiry_epochs: Some(100),
-                #[cfg(feature = "evm")]
-                evm_configs: None,
-                #[cfg(feature = "evm")]
-                evm_env_settings: None,
             },
             minimal_setup: false,
         }

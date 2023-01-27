@@ -627,10 +627,6 @@ impl ExplorerVerifier {
                         if explorer_param.transaction_max_expiry_epochs as u8 == *certificate_param)).count();
                     assert_eq!(matching_params, 1);
                 }
-                #[cfg(feature = "evm")]
-                EvmConfiguration(_) => unimplemented!(),
-                #[cfg(feature = "evm")]
-                EvmEnvironment(_) => unimplemented!(),
             }
         }
     }
@@ -1168,10 +1164,6 @@ impl ExplorerVerifier {
                         if explorer_param.transaction_max_expiry_epochs as u8 == *certificate_param)).count();
                     assert_eq!(matching_params, 1);
                 }
-                #[cfg(feature = "evm")]
-                EvmConfiguration(_) => unimplemented!(),
-                #[cfg(feature = "evm")]
-                EvmEnvironment(_) => unimplemented!(),
             }
         }
     }

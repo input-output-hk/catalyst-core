@@ -13,14 +13,12 @@ ARG REST_PORT=8448
 
 # Update container and copy executables
 RUN apt-get update && \
-    apt-get install -y curl git build-essential pkg-config \
-                       protobuf-compiler libssl-dev libpq-dev libsqlite3-dev
+    apt-get install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev
 COPY --from=0 /usr/local/cargo/bin/jormungandr /usr/local/bin/jormungandr
 COPY --from=0 /usr/local/cargo/bin/jcli /usr/local/bin/jcli
 
 # cleanup
-RUN apt-get remove --purge --auto-remove -y git curl build-essential pkg-config && \
-    apt-get install -y --no-install-recommends && \
+RUN apt-get install -y --no-install-recommends && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

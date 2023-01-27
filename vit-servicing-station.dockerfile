@@ -11,13 +11,11 @@ ARG APP_PATH=/app
     
 # Update container and copy executables
 RUN apt-get update && \
-    apt-get install -y curl git build-essential pkg-config \
-                       protobuf-compiler libssl-dev libpq-dev libsqlite3-dev
+    apt-get install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev
 COPY --from=0 /usr/local/cargo/bin/vit-servicing-station-server /usr/local/bin/vit-servicing-station-server
 
 # cleanup
-RUN apt-get remove --purge --auto-remove -y git curl build-essential pkg-config && \
-    apt-get install -y --no-install-recommends && \
+RUN apt-get install -y --no-install-recommends && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

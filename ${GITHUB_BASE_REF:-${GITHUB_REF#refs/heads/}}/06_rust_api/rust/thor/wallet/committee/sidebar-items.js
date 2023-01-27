@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["CommitteeCommunicationData",""],["CommitteeCommunicationDataManager",""],["CommitteeDataManager",""],["CommitteeMembershipData",""],["CommitteeMembershipDataManager",""]]};

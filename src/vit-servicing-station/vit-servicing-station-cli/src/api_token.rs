@@ -1,5 +1,5 @@
 use crate::db_utils::{backup_db_file, restore_db_file};
-use crate::{db_utils::db_file_exists, task::ExecTask};
+use crate::task::ExecTask;
 use clap::Parser;
 use rand::Rng;
 use std::collections::HashSet;
@@ -108,9 +108,6 @@ impl ApiTokenCmd {
     }
 
     fn handle_api_token_add(tokens: &Option<Vec<String>>, db_url: &str) -> Result<(), Error> {
-        // check if db file exists
-        db_file_exists(db_url)?;
-
         let pool = load_db_connection_pool(db_url).map_err(Error::DbPool)?;
         let db_conn = pool.get()?;
 
@@ -166,9 +163,9 @@ impl ExecTask for ApiTokenCmd {
 #[cfg(test)]
 mod test {
     use super::*;
+    use diesel::Connection;
     use vit_servicing_station_lib::db::{
-        load_db_connection_pool, migrations::initialize_db_with_migration,
-        queries::api_tokens::query_token_data_by_token,
+        migrations::initialize_db_with_migration, queries::api_tokens::query_token_data_by_token,
     };
 
     #[test]
@@ -190,9 +187,10 @@ mod test {
     #[test]
     fn add_token() {
         let tokens = ApiTokenCmd::generate(10, 10);
-        let connection_pool = load_db_connection_pool("").unwrap();
-        initialize_db_with_migration(&connection_pool.get().unwrap()).unwrap();
-        let db_conn = connection_pool.get().unwrap();
+        let pool = load_db_connection_pool(&init_test_db()).unwrap();
+
+        initialize_db_with_migration(&pool.get().unwrap()).unwrap();
+        let db_conn = pool.get().unwrap();
         ApiTokenCmd::add_tokens(&tokens, &db_conn).unwrap();
         for token in tokens
             .iter()
@@ -202,5 +200,26 @@ mod test {
                 .unwrap()
                 .is_some());
         }
+    }
+
+    fn init_test_db() -> String {
+        let base_db_url = match std::env::var("TEST_DATABASE_URL") {
+            Ok(url) => url,
+            Err(std::env::VarError::NotPresent) => panic!("missing TEST_DATABASE_URL env var"),
+            Err(e) => panic!("{}", e),
+        };
+
+        let name = rand::thread_rng()
+            .sample_iter(rand::distributions::Alphanumeric)
+            .filter(char::is_ascii_alphabetic)
+            .take(5)
+            .map(char::from)
+            .collect::<String>()
+            .to_lowercase();
+
+        let conn = diesel::pg::PgConnection::establish(&base_db_url).unwrap();
+        conn.execute(&format!("CREATE DATABASE {}", name)).unwrap();
+
+        format!("{}/{}", base_db_url, name)
     }
 }

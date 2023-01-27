@@ -11,7 +11,7 @@ pub fn token_validation() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
     let (hash, token) = data::token();
 
-    let db_path = DbBuilder::new().with_token(token).build(&temp_dir).unwrap();
+    let db_path = DbBuilder::new().with_token(token).build().unwrap();
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_path)

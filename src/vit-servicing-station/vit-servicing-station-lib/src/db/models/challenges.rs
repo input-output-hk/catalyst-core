@@ -112,10 +112,7 @@ impl Insertable<challenges::table> for Challenge {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::{
-        db::{DbConnection, DbConnectionPool},
-        q,
-    };
+    use crate::db::{DbConnection, DbConnectionPool};
     use diesel::RunQueryDsl;
 
     pub fn get_test_challenge_with_fund_id(fund_id: i32) -> Challenge {
@@ -141,12 +138,9 @@ pub mod test {
     }
 
     pub fn populate_db_with_challenge_conn(challenge: &Challenge, connection: &DbConnection) {
-        q!(
-            connection,
-            diesel::insert_into(challenges::table)
-                .values(challenge.clone().values())
-                .execute(connection)
-        )
-        .unwrap();
+        diesel::insert_into(challenges::table)
+            .values(challenge.clone().values())
+            .execute(connection)
+            .unwrap();
     }
 }

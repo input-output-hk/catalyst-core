@@ -2,19 +2,7 @@ use std::fs;
 use std::io;
 use std::io::{Read, Write};
 
-pub fn db_file_exists(db_url: &str) -> io::Result<()> {
-    // check if db file exists
-    if !db_url.starts_with("postgres://") && !std::path::Path::new(db_url).exists() {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            format!("DB file does not exist: {}", db_url),
-        ));
-    }
-    Ok(())
-}
-
 pub fn backup_db_file(db_url: &str) -> io::Result<tempfile::NamedTempFile> {
-    db_file_exists(db_url)?;
     let mut tmp_file = tempfile::NamedTempFile::new()?;
     let content = fs::read(db_url)?;
     tmp_file.write_all(&content)?;

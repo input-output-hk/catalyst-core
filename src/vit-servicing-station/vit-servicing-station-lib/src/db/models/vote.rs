@@ -41,7 +41,7 @@ impl Insertable<votes::table> for Vote {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::{db::DbConnectionPool, q};
+    use crate::db::DbConnectionPool;
     use diesel::RunQueryDsl;
 
     pub fn get_test_vote() -> Vote {
@@ -59,12 +59,9 @@ pub mod test {
     pub fn populate_db_with_vote(vote: &Vote, pool: &DbConnectionPool) {
         let connection = pool.get().unwrap();
 
-        q!(
-            connection,
-            diesel::insert_into(votes::table)
-                .values(vote.clone().values())
-                .execute(&connection)
-        )
-        .unwrap();
+        diesel::insert_into(votes::table)
+            .values(vote.clone().values())
+            .execute(&connection)
+            .unwrap();
     }
 }

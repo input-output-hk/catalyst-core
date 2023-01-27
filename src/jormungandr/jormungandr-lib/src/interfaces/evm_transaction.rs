@@ -89,7 +89,7 @@ impl<'de> Deserialize<'de> for EvmTransaction {
     }
 }
 
-#[cfg(all(test, feature = "evm"))]
+#[cfg(test)]
 mod test {
     use super::*;
     use quickcheck::Arbitrary;

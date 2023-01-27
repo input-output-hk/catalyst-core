@@ -1,5 +1,3 @@
-#[cfg(feature = "evm")]
-mod new_evm_mapping;
 mod new_owner_stake_delegation;
 mod new_stake_delegation;
 mod new_stake_pool_registration;
@@ -182,9 +180,6 @@ pub enum NewArgs {
     /// create a vote cast certificate
     #[clap(subcommand)]
     VoteCast(new_vote_cast::VoteCastCmd),
-    #[cfg(feature = "evm")]
-    /// create an EVM address mapping certificate
-    EvmMapping(new_evm_mapping::EvmMapCmd),
 }
 
 #[derive(Parser)]
@@ -217,8 +212,6 @@ impl NewArgs {
             NewArgs::VoteCast(args) => args.exec()?,
             NewArgs::UpdateVote(args) => args.exec()?,
             NewArgs::UpdateProposal(args) => args.exec()?,
-            #[cfg(feature = "evm")]
-            NewArgs::EvmMapping(args) => args.exec()?,
         }
         Ok(())
     }

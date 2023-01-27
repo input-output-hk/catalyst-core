@@ -1,4 +1,4 @@
-#[cfg(all(test, feature = "evm"))]
+#[cfg(test)]
 #[macro_use]
 extern crate quickcheck;
 

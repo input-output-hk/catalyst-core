@@ -1,5 +1,9 @@
 import * as wallet_wasm from "wallet-wasm-js";
 
+export enum VotingPurpose {
+  CATALYST = 0,
+}
+
 export class BlockDate {
   epoch: number;
   slot: number;
@@ -39,15 +43,15 @@ export class Proposal {
    * Proposal constructor
    *
    * @param {string} votePlan vote plan id bytes representation
-   * @param {number} voteOptions number of available vote plan options
-   * @param {number} proposalIndex vote's plan proposal index, mandatory for private proposal
+   * @param {number} proposalIndex vote's plan proposal index
+   * @param {number} voteOptions number of available vote plan options, mandatory for private proposal
    * @param {string} voteEncKey committee public key in hex representation, mandatory for private proposal
    * @returns {Proposal}
    */
   constructor(
     votePlan: string,
-    voteOptions: number,
-    proposalIndex?: number,
+    proposalIndex: number,
+    voteOptions?: number,
     voteEncKey?: string
   ): Proposal;
 }
@@ -58,15 +62,30 @@ export class Proposal {
 export class Vote {
   proposal: Proposal;
   choice: number;
+  purpose: VotingPurpose;
+  expiration?: BlockDate;
+  spendingCounter?: number;
+  spendingCounterLane?: number;
 
   /**
    * Vote constructor
    *
    * @param {Proposal} proposal
-   * @param {number} choice choosen vote plan option
+   * @param {number} choice choosen vote plan option.
+   * @param {VotingPurpose} purpose The voting purpose being voted on (Currently not used actually, can pass anything).
+   * @param {BlockDate} expiration Deprecated field, you can pass anything.
+   * @param {number} spendingCounter Deprecated field, you can pass anything.
+   * @param {number} spendingCounterLane Deprecated field, you can pass anything.
    * @returns {Vote}
    */
-  constructor(proposal: Proposal, choice: number): Vote;
+  constructor(
+    proposal: Proposal,
+    choice: number,
+    purpose: VotingPurpose,
+    expiration?: BlockDate,
+    spendingCounter?: number,
+    spendingCounterLane?: number
+  ): Vote;
 }
 
 /**
@@ -74,11 +93,13 @@ export class Vote {
  *
  * @param {Vote[]} votes list of votes
  * @param {Settings} settings wallet Settings
- * @param {string} privateKey user private key hex representation
+ * @param {string} accountId user's account id hex representation
+ * @param {string} privateKey user's private key hex representation
  * @returns {wallet_wasm.Fragment[]}
  */
 function signVotes(
   votes: Vote[],
   settings: Settings,
+  accountId: string,
   privateKey: string
-): wallet_wasm.Fragment[];
+): wallet_wasm.VoteCastTxBuilder[];

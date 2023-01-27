@@ -1,6 +1,4 @@
 pub mod check;
-#[cfg(feature = "evm")]
-pub(crate) mod evm;
 pub mod governance;
 mod info;
 pub mod iter;

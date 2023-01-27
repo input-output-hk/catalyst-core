@@ -148,21 +148,6 @@
 <span id="148">148</span>
 <span id="149">149</span>
 <span id="150">150</span>
-<span id="151">151</span>
-<span id="152">152</span>
-<span id="153">153</span>
-<span id="154">154</span>
-<span id="155">155</span>
-<span id="156">156</span>
-<span id="157">157</span>
-<span id="158">158</span>
-<span id="159">159</span>
-<span id="160">160</span>
-<span id="161">161</span>
-<span id="162">162</span>
-<span id="163">163</span>
-<span id="164">164</span>
-<span id="165">165</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{db::inner::DbQuery, Db};
 
 <span class="kw">use </span><span class="kw">crate</span>::db::schema::{block, tx, tx_metadata};
@@ -180,7 +165,7 @@
 <span class="kw">static </span>METADATA_KEY: Lazy&lt;BigDecimal&gt; = Lazy::new(|| BigDecimal::from_isize(<span class="number">61284</span>).unwrap());
 <span class="kw">static </span>SIGNATURE_KEY: Lazy&lt;BigDecimal&gt; = Lazy::new(|| BigDecimal::from_isize(<span class="number">61285</span>).unwrap());
 
-<span class="kw">type </span>Row = (i64, <span class="prelude-ty">Option</span>&lt;Value&gt;, <span class="prelude-ty">Option</span>&lt;Value&gt;, <span class="prelude-ty">Option</span>&lt;i64&gt;, Vec&lt;u8&gt;);
+<span class="kw">type </span>Row = (i64, <span class="prelude-ty">Option</span>&lt;Value&gt;, <span class="prelude-ty">Option</span>&lt;Value&gt;, <span class="prelude-ty">Option</span>&lt;i64&gt;);
 
 <span class="kw">impl </span>Db {
     <span class="doccomment">/// This query is detailed in ``src/db/design/vote_registration_query.md``
@@ -232,7 +217,6 @@
         metadata,
         signature,
         block::slot_no,
-        tx::hash,
     );
 
     <span class="kw">let </span>signature_keys_predicate = signature.has_all_keys([<span class="string">&quot;1&quot;</span>].as_slice());
@@ -251,7 +235,7 @@
 
 <span class="kw">fn </span>process(rows: Vec&lt;Row&gt;) -&gt; Vec&lt;Reg&gt; {
     rows.into_iter()
-        .filter_map(|(tx_id, metadata, signature, <span class="kw">_</span>, hash)| {
+        .filter_map(|(tx_id, metadata, signature, <span class="kw">_</span>)| {
             <span class="kw">let </span>tx_id = u64::try_from(tx_id).ok()<span class="question-mark">?</span>.into();
             <span class="kw">let </span>metadata = serde_json::from_value(metadata<span class="question-mark">?</span>).ok()<span class="question-mark">?</span>;
             <span class="kw">let </span>signature = serde_json::from_value(signature<span class="question-mark">?</span>).ok()<span class="question-mark">?</span>;
@@ -260,7 +244,6 @@
                 tx_id,
                 metadata,
                 signature,
-                tx_hash: hash,
             })
         })
         .collect()
@@ -289,12 +272,11 @@
 
     <span class="attribute">#[test]
     </span><span class="kw">fn </span>process_happy_path() {
-        <span class="kw">let </span>rows = <span class="macro">vec!</span>[(<span class="number">1</span>, <span class="prelude-val">Some</span>(good_meta()), <span class="prelude-val">Some</span>(good_sig()), <span class="prelude-val">None</span>, <span class="macro">vec!</span>[])];
+        <span class="kw">let </span>rows = <span class="macro">vec!</span>[(<span class="number">1</span>, <span class="prelude-val">Some</span>(good_meta()), <span class="prelude-val">Some</span>(good_sig()), <span class="prelude-val">None</span>)];
         <span class="kw">let </span>regs = <span class="macro">vec!</span>[Reg {
             tx_id: <span class="number">1</span>.into(),
             metadata: from_value(good_meta()).unwrap(),
             signature: from_value(good_sig()).unwrap(),
-            tx_hash: <span class="macro">vec!</span>[],
         }];
 
         <span class="macro">assert_eq!</span>(process(rows), regs);
@@ -307,25 +289,13 @@
         }
 
         <span class="comment">// bad sig
-        </span>check((
-            <span class="number">1</span>,
-            <span class="prelude-val">Some</span>(good_meta()),
-            <span class="prelude-val">Some</span>(<span class="macro">json!</span>(<span class="string">&quot;random json&quot;</span>)),
-            <span class="prelude-val">None</span>,
-            <span class="macro">vec!</span>[],
-        ));
+        </span>check((<span class="number">1</span>, <span class="prelude-val">Some</span>(good_meta()), <span class="prelude-val">Some</span>(<span class="macro">json!</span>(<span class="string">&quot;random json&quot;</span>)), <span class="prelude-val">None</span>));
 
         <span class="comment">// bad meta
-        </span>check((
-            <span class="number">1</span>,
-            <span class="prelude-val">Some</span>(<span class="macro">json!</span>(<span class="string">&quot;random json&quot;</span>)),
-            <span class="prelude-val">Some</span>(good_sig()),
-            <span class="prelude-val">None</span>,
-            <span class="macro">vec!</span>[],
-        ));
+        </span>check((<span class="number">1</span>, <span class="prelude-val">Some</span>(<span class="macro">json!</span>(<span class="string">&quot;random json&quot;</span>)), <span class="prelude-val">Some</span>(good_sig()), <span class="prelude-val">None</span>));
 
         <span class="comment">// none
-        </span>check((<span class="number">1</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="macro">vec!</span>[]));
+        </span>check((<span class="number">1</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>));
     }
 }
 </code></pre></div>

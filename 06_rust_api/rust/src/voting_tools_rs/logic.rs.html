@@ -239,10 +239,6 @@
 <span id="239">239</span>
 <span id="240">240</span>
 <span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
-<span id="245">245</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data_provider::DataProvider;
 <span class="kw">use </span>cardano_serialization_lib::address::{Address, NetworkInfo, RewardAddress};
 <span class="kw">use </span>cardano_serialization_lib::chain_crypto::Blake2b256;
@@ -296,11 +292,7 @@
         .into_iter()
         .filter_map(|reg| {
             <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = reg.check_valid() {
-                <span class="macro">warn!</span>(
-                    <span class="string">&quot;invalid reg on tx: &#39;{}&#39; with hash &#39;{}&#39;: {e}&quot;</span>,
-                    reg.tx_id,
-                    hex::encode(<span class="kw-2">&amp;</span>reg.tx_hash)
-                );
+                <span class="macro">warn!</span>(<span class="string">&quot;invalid reg on tx: &#39;{}&#39;: {e}&quot;</span>, reg.tx_id);
                 <span class="kw">return </span><span class="prelude-val">None</span>;
             }
 

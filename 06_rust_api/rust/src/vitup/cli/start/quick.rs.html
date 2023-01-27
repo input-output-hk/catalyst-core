@@ -343,7 +343,7 @@
     /// is capable of quering logs, sending transactions (e.g. tallying), etc.,
     </span><span class="attribute">#[clap(
         long = <span class="string">&quot;mode&quot;</span>,
-        default_value = <span class="string">&quot;Standard&quot;</span>,
+        default_value = <span class="string">&quot;Endless&quot;</span>,
         value_parser = parse_mode_from_str
     )]
     </span><span class="kw">pub </span>mode: Mode,
@@ -371,7 +371,7 @@
     <span class="attribute">#[clap(long = <span class="string">&quot;snapshot&quot;</span>)]
     </span><span class="kw">pub </span>snapshot: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
 
-    <span class="attribute">#[clap(long = <span class="string">&quot;vitup-log-level&quot;</span>, default_value = <span class="string">&quot;INFO&quot;</span>)]
+    <span class="attribute">#[clap(long = <span class="string">&quot;vitup-log-level&quot;</span>, default_value = <span class="string">&quot;LogLevel::INFO&quot;</span>)]
     </span><span class="kw">pub </span>vitup_log_level: LogLevel,
 }
 

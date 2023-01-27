@@ -157,7 +157,6 @@
 <span id="157">157</span>
 <span id="158">158</span>
 <span id="159">159</span>
-<span id="160">160</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data_provider::DataProvider;
 <span class="kw">use </span><span class="kw">crate</span>::model::{
     Delegations, Reg, RegoMetadata, RegoSignature, RewardsAddr, Signature, SlotNo, StakeVKey, TxId,
@@ -261,7 +260,6 @@
 
                         Reg {
                             tx_id: TxId::from(tx_id),
-                            tx_hash: Vec::new(),
                             metadata: RegoMetadata {
                                 delegations,
                                 stake_vkey: StakeVKey(pub_key.to_hex()),

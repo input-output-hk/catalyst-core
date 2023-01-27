@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["block_date_from_system_time","Safety"],["max_epiration_date","Safety"]],"struct":[["BlockDate",""]]};

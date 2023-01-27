@@ -283,6 +283,12 @@
 <span id="283">283</span>
 <span id="284">284</span>
 <span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
 </pre><pre class="rust"><code><span class="kw">use </span>jormungandr_lib::crypto::account::Identifier;
 <span class="kw">use </span>mainnet_tools::snapshot::MainnetWalletStateExtension;
 <span class="kw">use </span>proptest::{arbitrary::Arbitrary, prelude::<span class="kw-2">*</span>, strategy::BoxedStrategy};
@@ -492,10 +498,16 @@
 <span class="kw">use </span>futures::executor::block_on;
 <span class="kw">use </span>mainnet_lib::wallet_state::{build_default, MainnetWalletState};
 <span class="kw">use </span>mainnet_lib::{Initials, SnapshotParameters};
-<span class="kw">use </span>time::OffsetDateTime;
+<span class="kw">use </span>std::time::{SystemTime, UNIX_EPOCH};
 
 <span class="kw">fn </span>epoch_now() -&gt; i64 {
-    OffsetDateTime::now_utc().unix_timestamp()
+    <span class="kw">let </span>start = SystemTime::now();
+    <span class="kw">let </span>since_the_epoch = start
+        .duration_since(UNIX_EPOCH)
+        .expect(<span class="string">&quot;Time went backwards&quot;</span>);
+    <span class="kw">let </span>ms = since_the_epoch.as_secs() * <span class="number">1000 </span>+ since_the_epoch.subsec_nanos() <span class="kw">as </span>u64 / <span class="number">1_000_000</span>;
+
+    ms <span class="kw">as </span>i64
 }
 
 <span class="kw">impl </span>Arbitrary <span class="kw">for </span>VoterSnapshot {

@@ -23,7 +23,7 @@
 <span class="macro">macro_rules! </span>cond_println {
     (<span class="macro-nonterminal">$cond</span>:expr, $(<span class="macro-nonterminal">$arg</span>:tt)<span class="kw-2">*</span>) =&gt; {
         <span class="kw">if </span><span class="macro-nonterminal">$cond </span>{
-            <span class="macro">println!</span>($(<span class="macro-nonterminal">$arg</span>)<span class="kw-2">*</span>);
+            <span class="macro">tracing::debug!</span>($(<span class="macro-nonterminal">$arg</span>)<span class="kw-2">*</span>);
         }
     };
 }

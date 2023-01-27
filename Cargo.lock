@@ -3723,7 +3723,6 @@ dependencies = [
  "chain-addr",
  "chain-core",
  "chain-crypto",
- "chain-evm",
  "chain-impl-mockchain",
  "chain-storage",
  "chain-time",

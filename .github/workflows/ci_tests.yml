@@ -118,6 +118,19 @@ jobs:
     name: Catalyst Core tests
     runs-on: ubuntu-latest
     needs: [build-tests-artifacts, build-test-dependencies]
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: 123456
+        options:
+          >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     strategy:
       matrix:
         partition: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -174,6 +187,9 @@ jobs:
         run: cargo nextest archive --archive-file nextest-archive.tar.zst
 
       - name: Run Catalyst Core tests
+        env:
+          TEST_DB: postgres
+          TEST_DATABASE_URL: postgres://postgres:123456@localhost
         ## removing test ui_test because of bug https://github.com/rust-lang/cargo/issues/10352
         run: |
           cargo nextest run \

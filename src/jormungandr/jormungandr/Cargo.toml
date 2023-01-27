@@ -20,7 +20,6 @@ chain-network = { path = "../../chain-libs/chain-network" }
 chain-storage   = { path = "../../chain-libs/chain-storage" }
 chain-time      = { path = "../../chain-libs/chain-time" }
 chain-vote = { path = "../../chain-libs/chain-vote" }
-chain-evm = { path = "../../chain-libs/chain-evm", optional = true }
 cardano-legacy-address = { path = "../../chain-libs/cardano-legacy-address" }
 imhamt = { path = "../../chain-libs/imhamt" }
 
@@ -102,4 +101,3 @@ soak-test = []
 systemd = ["tracing-journald"]
 gelf = ["tracing-gelf"]
 prometheus-metrics = ["prometheus"]
-evm = [ "chain-impl-mockchain/evm", "jormungandr-lib/evm", "chain-evm" ]

@@ -10,25 +10,6 @@ pub fn filter(
     let with_context = warp::any().map(move || context.clone());
     let root = warp::path!("v0" / ..);
 
-    #[cfg(feature = "evm")]
-    let address_mapping = {
-        let root = warp::path!("address_mapping" / ..);
-
-        let get_jor_address = warp::path!("jormungandr_address" / String)
-            .and(warp::get())
-            .and(with_context.clone())
-            .and_then(handlers::get_jor_address)
-            .boxed();
-
-        let get_evm_address = warp::path!("evm_address" / String)
-            .and(warp::get())
-            .and(with_context.clone())
-            .and_then(handlers::get_evm_address)
-            .boxed();
-
-        root.and(get_jor_address.or(get_evm_address)).boxed()
-    };
-
     let shutdown = warp::path!("shutdown")
         .and(warp::get().or(warp::post()))
         .and(with_context.clone())
@@ -270,9 +251,6 @@ pub fn filter(
         .or(diagnostic)
         .or(updates)
         .or(votes);
-
-    #[cfg(feature = "evm")]
-    let routes = routes.or(address_mapping);
 
     root.and(routes.boxed()).recover(handle_rejection).boxed()
 }

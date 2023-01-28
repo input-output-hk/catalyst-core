@@ -320,7 +320,7 @@ impl Ledger {
         era: TimeEra,
         pots: Pots,
     ) -> Self {
-        let ledger = Ledger {
+        Ledger {
             utxos: utxo::Ledger::new(),
             oldutxos: utxo::Ledger::new(),
             accounts: account::Ledger::new(),
@@ -337,8 +337,7 @@ impl Ledger {
             votes: VotePlanLedger::new(),
             governance: Governance::default(),
             token_totals: TokenTotals::default(),
-        };
-        ledger
+        }
     }
 
     pub fn new<'a, I>(block0_initial_hash: HeaderId, contents: I) -> Result<Self, Error>

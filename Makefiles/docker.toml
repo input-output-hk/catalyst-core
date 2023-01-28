@@ -20,3 +20,11 @@ script_runner = "@shell"
 script = '''
 docker build --force-rm -t vit-servicing-station:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/vit-servicing-station.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 '''
+
+# Use docker to build the voting node service
+[tasks.build-voting-node]
+workspace = false
+script_runner = "@shell"
+script = '''
+docker build --force-rm -t voting-node:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/voting-node.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/services/voting-node
+'''

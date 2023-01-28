@@ -1,0 +1,22 @@
+# Use docker to build VIT servicing station
+[tasks.build-catalyst-core-base]
+workspace = false
+script_runner = "@shell"
+script = '''
+docker build --force-rm -t catalyst-core-base:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/catalyst-core-base.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+'''
+# Use docker to build jormungandr with jcli
+[tasks.build-jormungandr]
+workspace = false
+script_runner = "@shell"
+script = '''
+docker build --force-rm -t jormungandr:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/jormungandr.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+'''
+
+# Use docker to build VIT servicing station
+[tasks.build-vit]
+workspace = false
+script_runner = "@shell"
+script = '''
+docker build --force-rm -t vit-servicing-station:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/vit-servicing-station.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+'''

@@ -2942,7 +2942,6 @@
 <span id="2942">2942</span>
 <span id="2943">2943</span>
 <span id="2944">2944</span>
-<span id="2945">2945</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Mockchain ledger. Ledger exists in order to update the
 //! current state and verify transactions.
 
@@ -3265,7 +3264,7 @@
         era: TimeEra,
         pots: Pots,
     ) -&gt; <span class="self">Self </span>{
-        <span class="kw">let </span>ledger = Ledger {
+        Ledger {
             utxos: utxo::Ledger::new(),
             oldutxos: utxo::Ledger::new(),
             accounts: account::Ledger::new(),
@@ -3282,8 +3281,7 @@
             votes: VotePlanLedger::new(),
             governance: Governance::default(),
             token_totals: TokenTotals::default(),
-        };
-        ledger
+        }
     }
 
     <span class="kw">pub fn </span>new&lt;<span class="lifetime">&#39;a</span>, I&gt;(block0_initial_hash: HeaderId, contents: I) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt;

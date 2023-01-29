@@ -1,0 +1,7 @@
+version: "3"
+
+services:
+  voting-node:
+    image: voting-node:latest
+    ports:
+      - "5057:5057"

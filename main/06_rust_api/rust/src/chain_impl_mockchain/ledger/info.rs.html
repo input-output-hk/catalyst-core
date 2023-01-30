@@ -109,16 +109,6 @@
 <span id="109">109</span>
 <span id="110">110</span>
 <span id="111">111</span>
-<span id="112">112</span>
-<span id="113">113</span>
-<span id="114">114</span>
-<span id="115">115</span>
-<span id="116">116</span>
-<span id="117">117</span>
-<span id="118">118</span>
-<span id="119">119</span>
-<span id="120">120</span>
-<span id="121">121</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::ledger::Ledger;
 <span class="kw">use </span><span class="kw">crate</span>::value::Value;
 
@@ -140,8 +130,6 @@
             leaders_log: <span class="kw">_</span>,
             votes: <span class="kw">_</span>,
             governance: <span class="kw">_</span>,
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-            </span>evm,
             token_totals: <span class="kw">_</span>,
         } = <span class="self">self</span>;
 
@@ -166,8 +154,6 @@
                 multisig.iter_accounts().count(),
                 Value::sum(multisig.iter_accounts().map(|x| x.<span class="number">1</span>.value))
             ),
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-            </span>evm.stats(),
         ];
 
         stats
@@ -190,8 +176,6 @@
             leaders_log: leaders_log1,
             votes: votes1,
             governance: governance1,
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-                </span>evm: evm1,
             token_totals: token_totals1,
         } = <span class="self">self</span>;
 
@@ -211,8 +195,6 @@
             leaders_log: leaders_log2,
             votes: votes2,
             governance: governance2,
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-                </span>evm: evm2,
             token_totals: token_totals2,
         } = other;
 
@@ -232,8 +214,6 @@
             <span class="macro">format!</span>(<span class="string">&quot;leaders-log-same: {}&quot;</span>, leaders_log1 == leaders_log2),
             <span class="macro">format!</span>(<span class="string">&quot;vote-plans: {}&quot;</span>, votes1 == votes2),
             <span class="macro">format!</span>(<span class="string">&quot;governance: {}&quot;</span>, governance1 == governance2),
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-            </span>evm1.info_eq(evm2),
             <span class="macro">format!</span>(<span class="string">&quot;token-totals: {}&quot;</span>, token_totals1 == token_totals2),
         ];
 

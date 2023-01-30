@@ -277,28 +277,6 @@
 <span id="277">277</span>
 <span id="278">278</span>
 <span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>handlers;
 <span class="kw">pub mod </span>logic;
 
@@ -310,25 +288,6 @@
 ) -&gt; <span class="kw">impl </span>Filter&lt;Extract = <span class="kw">impl </span>Reply, Error = Rejection&gt; + Clone {
     <span class="kw">let </span>with_context = warp::any().map(<span class="kw">move </span>|| context.clone());
     <span class="kw">let </span>root = <span class="macro">warp::path!</span>(<span class="string">&quot;v0&quot; </span>/ ..);
-
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-    </span><span class="kw">let </span>address_mapping = {
-        <span class="kw">let </span>root = <span class="macro">warp::path!</span>(<span class="string">&quot;address_mapping&quot; </span>/ ..);
-
-        <span class="kw">let </span>get_jor_address = <span class="macro">warp::path!</span>(<span class="string">&quot;jormungandr_address&quot; </span>/ String)
-            .and(warp::get())
-            .and(with_context.clone())
-            .and_then(handlers::get_jor_address)
-            .boxed();
-
-        <span class="kw">let </span>get_evm_address = <span class="macro">warp::path!</span>(<span class="string">&quot;evm_address&quot; </span>/ String)
-            .and(warp::get())
-            .and(with_context.clone())
-            .and_then(handlers::get_evm_address)
-            .boxed();
-
-        root.and(get_jor_address.or(get_evm_address)).boxed()
-    };
 
     <span class="kw">let </span>shutdown = <span class="macro">warp::path!</span>(<span class="string">&quot;shutdown&quot;</span>)
         .and(warp::get().or(warp::post()))
@@ -571,9 +530,6 @@
         .or(diagnostic)
         .or(updates)
         .or(votes);
-
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-    </span><span class="kw">let </span>routes = routes.or(address_mapping);
 
     root.and(routes.boxed()).recover(handle_rejection).boxed()
 }

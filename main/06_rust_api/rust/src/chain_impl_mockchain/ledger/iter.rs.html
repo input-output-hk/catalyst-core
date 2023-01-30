@@ -492,14 +492,6 @@
 <span id="492">492</span>
 <span id="493">493</span>
 <span id="494">494</span>
-<span id="495">495</span>
-<span id="496">496</span>
-<span id="497">497</span>
-<span id="498">498</span>
-<span id="499">499</span>
-<span id="500">500</span>
-<span id="501">501</span>
-<span id="502">502</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::governance::Governance;
 <span class="kw">use </span><span class="kw">super</span>::ledger::{Error, Ledger, LedgerStaticParameters};
 <span class="kw">use </span><span class="kw">super</span>::pots::{<span class="self">self</span>, Pots};
@@ -509,8 +501,6 @@
 <span class="kw">use </span><span class="kw">crate</span>::config::ConfigParam;
 <span class="kw">use </span><span class="kw">crate</span>::date::BlockDate;
 <span class="kw">use </span><span class="kw">crate</span>::key::Hash;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-</span><span class="kw">use </span><span class="kw">crate</span>::ledger::evm;
 <span class="kw">use </span><span class="kw">crate</span>::ledger::token_distribution::TokenTotals;
 <span class="kw">use </span><span class="kw">crate</span>::stake::PoolsState;
 <span class="kw">use </span><span class="kw">crate</span>::vote::{VotePlanLedger, VotePlanManager};
@@ -793,8 +783,6 @@
         <span class="comment">// TODO: votes don&#39;t have their entry
         </span><span class="kw">let </span><span class="kw-2">mut </span>votes = VotePlanLedger::new();
         <span class="kw">let </span>governance = Governance::default();
-        <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-        </span><span class="kw">let </span>evm = evm::Ledger::new();
         <span class="kw">let </span>token_totals = TokenTotals::default();
 
         <span class="kw">for </span>entry <span class="kw">in </span>iter {
@@ -874,12 +862,8 @@
             leaders_log,
             votes,
             governance,
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-            </span>evm,
             token_totals,
         };
-        <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-        </span><span class="kw">let </span>ledger = ledger.set_evm_block0().set_evm_environment();
         <span class="prelude-val">Ok</span>(ledger)
     }
 }

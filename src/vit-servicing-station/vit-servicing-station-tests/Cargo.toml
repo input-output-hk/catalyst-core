@@ -7,6 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+hex = "0.4.2"
 base64 = "0.13"
 cfg-if = "0.1"
 time = { version = "0.3", features = ["formatting", "parsing", "macros"] }

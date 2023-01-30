@@ -31,16 +31,12 @@ chain-addr      = { path = "../../chain-libs/chain-addr" }
 chain-crypto    = { path = "../../chain-libs/chain-crypto" }
 chain-time    = { path = "../../chain-libs/chain-time" }
 chain-vote = { path = "../../chain-libs/chain-vote" }
-chain-evm = { path = "../../chain-libs/chain-evm", optional = true }
 jormungandr-lib = { path = "../jormungandr-lib" }
 gtmpl = "0.6.0"
 ed25519-bip32 = "0.4.1"
 thiserror = "1.0"
 bytes = "1.1"
 rpassword = "6.0"
-
-[features]
-evm = ["jormungandr-lib/evm", "chain-evm"]
 
 [dependencies.reqwest]
 version = "0.11"

@@ -7,11 +7,21 @@ edition = "2021"
 
 [dependencies]
 
+itertools = { workspace = true }
+dirs = { workspace = true }
+chrono = { workspace = true }
+nonempty = { workspace = true }
+validity = { workspace = true }
+bytekind = { workspace = true }
+
+
 color-eyre = "0.6"  # error handling
 clap = { workspace = true}
 
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+ciborium = "0.2"
+blake2 = "0.10"
 
 microtype = { version = "0.7.5", features = ["serde"] }
 once_cell = "1"
@@ -30,9 +40,16 @@ rust_decimal = { version = "1.26", features = ["serde", "db-postgres"] }
 mainnet-lib = { path = "../vit-testing/mainnet-lib"}
 cardano-serialization-lib = "11.0.0"
 
-[dev-dependencies]
+rand = "0.6"
+rand_core = "0.4"
+rand_chacha = "0.3"
+
+thiserror = "1"
+
 proptest = { workspace = true }
 test-strategy = "0.2"
+
+[dev-dependencies]
 serial_test = "0.9"
 assert_fs = "1.0.7"
 tempdir = "0.3"

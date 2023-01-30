@@ -3,10 +3,6 @@ use crate::jormungandr::RestError;
 use bech32::FromBase32;
 use chain_core::property::Serialize;
 use chain_crypto::PublicKey;
-#[cfg(feature = "evm")]
-use chain_evm::Address as EvmAddress;
-#[cfg(feature = "evm")]
-use chain_impl_mockchain::account::Identifier as JorAddress;
 use chain_impl_mockchain::{account, fragment::Fragment, header::HeaderId};
 use jormungandr_lib::{
     crypto::account::Identifier,
@@ -108,19 +104,6 @@ impl RawRest {
 
     pub fn remaining_rewards(&self) -> Result<Response, reqwest::Error> {
         self.get("rewards/remaining")
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn jor_address(&self, evm_address: &EvmAddress) -> Result<Response, reqwest::Error> {
-        let encoded_evm = hex::encode(evm_address.as_ref());
-        let request = format!("address_mapping/jormungandr_address/{}", encoded_evm);
-        self.get(&request)
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn evm_address(&self, jor_address: &JorAddress) -> Result<Response, reqwest::Error> {
-        let request = format!("address_mapping/evm_address/{}", jor_address);
-        self.get(&request)
     }
 
     fn print_request_path(&self, text: &str) {

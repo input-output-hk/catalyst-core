@@ -1,4 +1,4 @@
-use crate::model::{DbHost, DbName, DbPass, DbUser};
+use crate::data::{DbHost, DbName, DbPass, DbUser};
 
 mod queries;
 pub mod types;

@@ -1,0 +1,31 @@
+name: Branch Deleted
+on: delete
+jobs:
+  delete:
+    if: github.event.ref_type == 'branch'
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set env
+        run: |
+          GIT_BRANCH=$(echo ${{ github.event.ref }} | sed -e "s#refs/heads/##g")
+          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
+          echo "branch deleted is $GIT_BRANCH"        
+
+      - name: Clean up
+        run: |
+          echo "Clean up for branch ${{ env.GIT_BRANCH }}"
+
+      - name: Get current published documentation
+        uses: actions/checkout@v3
+        with:
+          ref: gh-pages
+
+      - name: Remove branches draft docs
+        run: |
+          rm -rf ${{ env.GIT_BRANCH }}
+
+      - name: Save updated docs
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Removed Draft Docs for ${{ env.GIT_BRANCH }}

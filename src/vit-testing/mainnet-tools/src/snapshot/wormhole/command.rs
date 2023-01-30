@@ -13,7 +13,7 @@ use thiserror::Error;
 use tracing::{debug, error, info, instrument, level_filters::LevelFilter};
 use tracing_subscriber::FmtSubscriber;
 use vit_servicing_station_tests::common::clients::RestClient;
-use voting_tools_rs::Output;
+use voting_tools_rs::SnapshotEntry;
 
 /// Main command
 #[derive(Parser, Debug)]
@@ -119,7 +119,7 @@ pub fn one_shot(config: &Config) -> Result<()> {
     let snapshot_content =
         snapshot_client.get_snapshot(snapshot_job_id, snapshot_params.tag.unwrap_or_default())?;
 
-    let snapshot: Vec<Output> = serde_json::from_str(&snapshot_content)?;
+    let snapshot: Vec<SnapshotEntry> = serde_json::from_str(&snapshot_content)?;
     let raw_snapshot = snapshot.try_into_raw_snapshot_request(config.parameters.clone())?;
     debug!("snapshot parsed.");
 

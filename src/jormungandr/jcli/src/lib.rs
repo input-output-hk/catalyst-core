@@ -1,5 +1,4 @@
-#[cfg(all(test, feature = "evm"))]
-#[macro_use]
+#[cfg(test)]
 extern crate quickcheck;
 
 pub mod jcli_lib;

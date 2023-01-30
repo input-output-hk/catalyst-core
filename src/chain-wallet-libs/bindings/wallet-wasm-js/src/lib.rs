@@ -2,7 +2,7 @@
 
 pub use certificates::Certificate;
 pub use certificates::{
-    vote_cast::{Payload, VoteCast},
+    vote_cast::{ElectionPublicKey, Payload, VoteCast},
     vote_plan::VotePlanId,
 };
 use chain_impl_mockchain::account::SpendingCounter;

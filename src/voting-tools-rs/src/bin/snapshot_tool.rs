@@ -5,23 +5,26 @@ use color_eyre::Result;
 use mainnet_lib::InMemoryDbSync;
 use tracing::info;
 use voting_tools_rs::test_api::MockDbProvider;
-use voting_tools_rs::{voting_power, Args, DataProvider, Db, DbConfig, DryRunCommand};
+use voting_tools_rs::{
+    voting_power, Args, Db, DbConfig, DryRunCommand, SnapshotEntry, VotingPowerArgs,
+};
 
 fn main() -> Result<()> {
     color_eyre::install()?;
     tracing_subscriber::fmt().init();
 
     let Args {
-        testnet_magic,
         db,
         db_user,
         db_host,
         db_pass,
-        min_slot_no,
-        max_slot_no,
+        min_slot,
+        max_slot,
         out_file,
         pretty,
         dry_run,
+        network_id,
+        expected_voting_purpose,
         ..
     } = Args::parse();
 
@@ -32,9 +35,13 @@ fn main() -> Result<()> {
         password: db_pass,
     };
 
-    let db = get_data_provider(db_config, dry_run)?;
+    let mut args = VotingPowerArgs::default();
+    args.min_slot = min_slot;
+    args.max_slot = max_slot;
+    args.network_id = network_id;
+    args.expected_voting_purpose = expected_voting_purpose;
 
-    let outputs = voting_power(Box::leak(db), min_slot_no, max_slot_no, testnet_magic)?;
+    let outputs = load(db_config, dry_run, args)?;
 
     info!("calculated {} outputs", outputs.len());
 
@@ -49,17 +56,21 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn get_data_provider(
+fn load(
     real_db_config: DbConfig,
-    maybe_dry_run: Option<DryRunCommand>,
-) -> Result<Box<dyn DataProvider>> {
-    if let Some(dry_run) = maybe_dry_run {
-        match dry_run {
-            DryRunCommand::DryRun { mock_json_file } => Ok(Box::new(MockDbProvider::from(
-                InMemoryDbSync::restore(mock_json_file)?,
-            ))),
+    dry_run: Option<DryRunCommand>,
+    args: VotingPowerArgs,
+) -> Result<Vec<SnapshotEntry>> {
+    let (result, _) = match dry_run {
+        Some(DryRunCommand::DryRun { mock_json_file }) => {
+            let db = MockDbProvider::from(InMemoryDbSync::restore(mock_json_file)?);
+            voting_power(db, args)
         }
-    } else {
-        Ok(Box::new(Db::connect(real_db_config)?))
-    }
+        None => {
+            let db = Db::connect(real_db_config)?;
+            voting_power(db, args)
+        }
+    }?;
+
+    Ok(result)
 }

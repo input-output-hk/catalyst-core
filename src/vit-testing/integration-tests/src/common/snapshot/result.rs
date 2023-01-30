@@ -8,7 +8,7 @@ use snapshot_trigger_service::client::rest::SnapshotRestClient;
 use snapshot_trigger_service::config::JobParameters;
 use snapshot_trigger_service::ContextState;
 use std::fmt::Debug;
-use voting_tools_rs::Output;
+use voting_tools_rs::SnapshotEntry;
 
 pub fn do_snapshot<S: Into<String> + Debug + Clone, P: Into<String> + Debug + Clone>(
     job_params: JobParameters,
@@ -83,7 +83,7 @@ pub struct SnapshotResult {
 }
 
 impl SnapshotResult {
-    pub fn from_outputs(status: ContextState, snapshot: Vec<Output>) -> Result<Self, Error> {
+    pub fn from_outputs(status: ContextState, snapshot: Vec<SnapshotEntry>) -> Result<Self, Error> {
         let mut voting_registrations = vec![];
         for output in snapshot {
             voting_registrations.push(output.try_into_voting_registration()?);

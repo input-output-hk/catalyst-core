@@ -20,14 +20,19 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PUBLISH_DOCS: ${{ github.event_name == 'push' }}
-      GIT_BRANCH: ${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}      
     permissions:
       contents: write
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout The Code
+        uses: actions/checkout@v3
 
+      - name: Set env
+        run: echo "GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)" >> $GITHUB_ENV
+      - name: Test      
+        run: echo $GIT_BRANCH
+    
       - name: Build Docs
         uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools:v1.1
         with:

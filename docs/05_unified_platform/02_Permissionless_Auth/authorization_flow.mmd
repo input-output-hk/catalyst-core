@@ -1,0 +1,55 @@
+%%{init: {'theme':'forest'}}%%
+sequenceDiagram
+    actor U as User
+    participant D as dApp
+    participant W as Wallet
+    participant C as Catalyst Backend
+
+    rect rgb(204,255,255)
+      rect rgb(0,255,0)
+        Note over U: Pre-Authorization
+      end
+
+      U ->> D: Priviliged Action
+      D ->> C: GET https://<backend>/api/preauth
+      Note over C: Prepares and Signs<br>System Pre-auth Token
+      C ->> D: 200: CWT Encoded pre-auth Token
+      Note over D: Validates Pre-auth Token
+    end
+
+    rect rgb(204,255,204)
+      rect rgb(0,255,0)
+        Note over U: Authorization
+      end
+
+      Note over D: Make Client Auth Token Payload
+      D ->> W: signData(Stake Address,Preauth)
+      W ->> U: Seeks Confirmation
+      U ->> W: Confirms Authorization
+
+      Note over W: Signs Payload with Stake Address Key
+
+      W ->> D: Client Authorization Token
+    end
+
+    rect rgb(204,204,255)
+      rect rgb(0,255,0)
+        Note over U: Authorized
+      end
+
+      Note over D: Caches Client Auth Token until expired
+
+      loop Until CWT Expires/Revoked by User
+        U ->> D: Privileged Action
+        D ->> C: Privileged Operation [Auth Token]
+        C ->> D: Privileged Response
+      end
+
+
+      W ->> U: Seeks Confirmation
+      U ->> W: Confirms Authorization
+
+      Note over W: Signs Payload with Stake Address Key
+
+      W ->> D: Client Authorization Token
+    end

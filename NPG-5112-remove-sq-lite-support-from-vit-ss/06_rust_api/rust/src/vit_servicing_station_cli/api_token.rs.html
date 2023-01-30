@@ -202,7 +202,6 @@
 <span id="202">202</span>
 <span id="203">203</span>
 <span id="204">204</span>
-<span id="205">205</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db_utils::{backup_db_file, restore_db_file};
 <span class="kw">use </span><span class="kw">crate</span>::task::ExecTask;
 <span class="kw">use </span>clap::Parser;
@@ -368,7 +367,6 @@
 <span class="attribute">#[cfg(test)]
 </span><span class="kw">mod </span>test {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use </span>diesel::Connection;
     <span class="kw">use </span>vit_servicing_station_lib::db::{
         migrations::initialize_db_with_migration, queries::api_tokens::query_token_data_by_token,
     };

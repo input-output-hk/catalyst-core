@@ -35,10 +35,8 @@ describe("Inplace signing vote cast certificate tests", function () {
     let vote = new wallet.Vote(proposal, 0);
     let tx_builders = wallet.signVotes([vote], settings, account_id);
     assert(tx_builders.length == 1);
-    // get fragemnts
-    fragments = tx_builders.map((tx_builder) =>
-      tx_builder.sign_tx(private_key)
-    );
+    // complete transaction
+    fragment = tx_builders[0].sign_tx(private_key);
   });
 
   it("private", async function () {
@@ -54,10 +52,8 @@ describe("Inplace signing vote cast certificate tests", function () {
     let vote = new wallet.Vote(proposal, 0);
     let tx_builders = wallet.signVotes([vote], settings, account_id);
     assert(tx_builders.length == 1);
-    // get fragemnts
-    fragments = tx_builders.map((tx_builder) =>
-      tx_builder.sign_tx(private_key)
-    );
+    // complete transaction
+    fragment = tx_builders[0].sign_tx(private_key);
   });
 });
 
@@ -74,10 +70,12 @@ describe("Postponed signing vote cast certificate tests", function () {
     let vote = new wallet.Vote(proposal, 0);
     let tx_builders = wallet.signVotes([vote], settings, account_id);
     assert(tx_builders.length == 1);
-    // get fragemnts
+    // get sign data
+    let data = tx_builders[0].get_sign_data();
+    // complete transaction
     let signature =
       "2195c6eca3e6901696e3c376cb01d27bca47ad13fe63d153e1883fef08921948960cb843fd3e8383a0cc3d15a47451cc9e3e1695fe0ebf0165a58a9d930c9d00";
-    fragments = tx_builders.map((tx_builder) => tx_builder.build_tx(signature));
+    fragment = tx_builders[0].build_tx(signature);
   });
 
   it("private", async function () {
@@ -93,9 +91,11 @@ describe("Postponed signing vote cast certificate tests", function () {
     let vote = new wallet.Vote(proposal, 0);
     let tx_builders = wallet.signVotes([vote], settings, account_id);
     assert(tx_builders.length == 1);
-    // get fragemnts
+    // get sign data
+    let data = tx_builders[0].get_sign_data();
+    // complete transaction
     let signature =
       "a33524b702ff2371ee214981433d543a39fc4c08958ef58d29d1890ad611b4deca9b11d0fad5bc076a1e68b87d97410907337dbc94286b0819464092674e0508";
-    fragments = tx_builders.map((tx_builder) => tx_builder.build_tx(signature));
+    fragment = tx_builders[0].build_tx(signature);
   });
 });

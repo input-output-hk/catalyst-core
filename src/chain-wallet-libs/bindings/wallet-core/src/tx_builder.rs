@@ -45,7 +45,7 @@ impl<P: Payload> TxBuilder<P> {
             .get_sign_data()
             .map_err(|e| Error::wallet_transaction().with(e))?;
         // as inside build_tx() function has been inserted only 1 input, valid tx should contains only first witness sign data
-        data.into_iter().next().ok_or(Error::invalid_fragment())
+        data.into_iter().next().ok_or_else(Error::invalid_fragment)
     }
 
     pub fn build_tx(

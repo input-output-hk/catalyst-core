@@ -8,6 +8,7 @@ jobs:
     steps:
       - name: Set env
         run: |
+          env
           GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
           echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV            
 

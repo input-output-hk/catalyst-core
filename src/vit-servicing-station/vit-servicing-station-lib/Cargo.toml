@@ -41,3 +41,4 @@ tempfile = "3"
 [dev-dependencies]
 tempfile = "3"
 rand = "0.8"
+vit-servicing-station-tests = { path = "../vit-servicing-station-tests" }

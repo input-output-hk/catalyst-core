@@ -48,12 +48,14 @@ pub fn new_shared_context(
 pub mod test {
     use diesel::Connection;
     use rand::{distributions::Alphanumeric, thread_rng, Rng};
+    use vit_servicing_station_tests::common::startup::db::DbBuilder;
 
     use super::*;
     use crate::db;
 
     pub fn new_db_test_shared_context() -> SharedContext {
-        let pool = db::load_db_connection_pool(&init_test_db()).unwrap();
+        let db_url = DbBuilder::new().build().unwrap();
+        let pool = db::load_db_connection_pool(&db_url).unwrap();
         let block0: Vec<u8> = vec![1, 2, 3, 4, 5];
         Arc::new(RwLock::new(Context::new(
             pool,
@@ -68,26 +70,5 @@ pub mod test {
     pub fn new_test_shared_context(block0_path: Vec<PathBuf>) -> SharedContext {
         let pool = db::load_db_connection_pool(&init_test_db()).unwrap();
         new_shared_context(pool, block0_path, "2.0")
-    }
-
-    fn init_test_db() -> String {
-        let base_db_url = match std::env::var("TEST_DATABASE_URL") {
-            Ok(url) => url,
-            Err(std::env::VarError::NotPresent) => panic!("missing TEST_DATABASE_URL env var"),
-            Err(e) => panic!("{}", e),
-        };
-
-        let name = thread_rng()
-            .sample_iter(Alphanumeric)
-            .filter(u8::is_ascii_alphabetic)
-            .take(5)
-            .map(char::from)
-            .collect::<String>()
-            .to_lowercase();
-
-        let conn = diesel::pg::PgConnection::establish(&base_db_url).unwrap();
-        conn.execute(&format!("CREATE DATABASE {}", name)).unwrap();
-
-        format!("{}/{}", base_db_url, name)
     }
 }

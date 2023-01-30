@@ -7803,6 +7803,7 @@ dependencies = [
  "tracing-futures",
  "tracing-subscriber",
  "url",
+ "vit-servicing-station-tests",
  "warp",
 ]
 

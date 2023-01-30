@@ -202,25 +202,4 @@ mod test {
                 .is_some());
         }
     }
-
-    fn init_test_db() -> String {
-        let base_db_url = match std::env::var("TEST_DATABASE_URL") {
-            Ok(url) => url,
-            Err(std::env::VarError::NotPresent) => panic!("missing TEST_DATABASE_URL env var"),
-            Err(e) => panic!("{}", e),
-        };
-
-        let name = rand::thread_rng()
-            .sample_iter(rand::distributions::Alphanumeric)
-            .filter(char::is_ascii_alphabetic)
-            .take(5)
-            .map(char::from)
-            .collect::<String>()
-            .to_lowercase();
-
-        let conn = diesel::pg::PgConnection::establish(&base_db_url).unwrap();
-        conn.execute(&format!("CREATE DATABASE {}", name)).unwrap();
-
-        format!("{}/{}", base_db_url, name)
-    }
 }

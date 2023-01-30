@@ -5,7 +5,7 @@ use chain_impl_mockchain::{
     header::BlockDate,
     transaction::{Input, Payload, Transaction, WitnessAccountData},
 };
-use std::{collections::HashMap, str::FromStr};
+use std::{str::FromStr};
 use wallet::{
     transaction::AccountSecretKey, AccountId, AccountWitnessBuilder, EitherAccount, Settings,
 };
@@ -14,16 +14,12 @@ use crate::Error;
 
 pub struct TxBuilder<P: Payload> {
     builder: wallet::TransactionBuilder<P, AccountSecretKey, WitnessAccountData>,
-    inputs: HashMap<AccountId, (Input, SpendingCounter)>,
 }
 
 impl<P: Payload> TxBuilder<P> {
     pub fn new(settings: Settings, payload: P) -> Self {
         let builder = wallet::TransactionBuilder::new(settings, payload, BlockDate::first());
-        Self {
-            builder,
-            inputs: HashMap::new(),
-        }
+        Self { builder }
     }
 
     pub fn build_tx(
@@ -37,30 +33,26 @@ impl<P: Payload> TxBuilder<P> {
         // It is needed to provide a 1 extra input as we are generating it later, but should take into account at this place.
         let value = self.builder.estimate_fee_with(1, 0);
         let input = Input::from_account_public_key(account_id.into(), value);
-        self.inputs.insert(account_id, (input, spending_counter));
-        Ok(self)
-    }
-
-    pub fn sign_tx(mut self, account_bytes: &[u8]) -> Result<Self, Error> {
-        let account = EitherAccount::new_from_key(
-            SecretKey::from_binary(account_bytes)
-                .map_err(|e| Error::wallet_transaction().with(e))?,
-        );
-
-        let (input, spending_counter) = self.inputs.get(&account.account_id()).ok_or_else(|| Error::invalid_input("Cannot find corresponded input to the provided account, make sure that you have correctly execute build_tx function first"))?.clone();
-        let witness_builder = AccountWitnessBuilder(spending_counter);
-        self.builder.add_input(input, witness_builder);
+        self.builder
+            .add_input(input, AccountWitnessBuilder(spending_counter));
         Ok(self)
     }
 
     pub fn finalize_tx(
         self,
         auth: P::Auth,
+        account_bytes: &[u8],
         fragment_build_fn: impl FnOnce(Transaction<P>) -> Fragment,
     ) -> Result<Fragment, Error> {
+        let account = EitherAccount::new_from_key(
+            SecretKey::from_binary(account_bytes)
+                .map_err(|e| Error::wallet_transaction().with(e))?,
+        );
+        let inputs_size = self.builder.inputs().len();
+
         Ok(fragment_build_fn(
             self.builder
-                .finalize_tx(auth, vec![])
+                .finalize_tx(auth, vec![account.secret_key(); inputs_size])
                 .map_err(|e| Error::wallet_transaction().with(e))?,
         ))
     }

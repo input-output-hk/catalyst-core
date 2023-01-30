@@ -29,6 +29,7 @@ pub trait WitnessBuilder<SecretKey, WitnessData: AsRef<[u8]>> {
 
 pub struct UtxoWitnessBuilder;
 
+#[derive(Clone)]
 pub enum AccountSecretKey {
     Ed25519(SecretKey<Ed25519>),
     Ed25519Extended(SecretKey<Ed25519Extended>),

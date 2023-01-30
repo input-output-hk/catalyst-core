@@ -33,15 +33,12 @@ describe("Inplace signing vote cast certificate tests", function () {
       8
     );
     let vote = new wallet.Vote(proposal, 0);
-    let tx_builders = wallet.signVotes(
-      [vote],
-      settings,
-      account_id,
-      private_key
-    );
+    let tx_builders = wallet.signVotes([vote], settings, account_id);
     assert(tx_builders.length == 1);
     // get fragemnts
-    fragments = tx_builders.map((tx_builder) => tx_builder.finalize_tx());
+    fragments = tx_builders.map((tx_builder) =>
+      tx_builder.finalize_tx(private_key)
+    );
   });
 
   it("private", async function () {
@@ -55,15 +52,12 @@ describe("Inplace signing vote cast certificate tests", function () {
       "bed88887abe0a84f64691fe0bdfa3daf1a6cd697a13f07ae07588910ce39c927"
     );
     let vote = new wallet.Vote(proposal, 0);
-    let tx_builders = wallet.signVotes(
-      [vote],
-      settings,
-      account_id,
-      private_key
-    );
+    let tx_builders = wallet.signVotes([vote], settings, account_id);
     assert(tx_builders.length == 1);
     // get fragemnts
-    fragments = tx_builders.map((tx_builder) => tx_builder.finalize_tx());
+    fragments = tx_builders.map((tx_builder) =>
+      tx_builder.finalize_tx(private_key)
+    );
   });
 });
 
@@ -82,7 +76,7 @@ describe("Postponed signing vote cast certificate tests", function () {
     assert(tx_builders.length == 1);
     // get fragemnts
     fragments = tx_builders.map((tx_builder) =>
-      tx_builder.sign_tx(private_key).finalize_tx()
+      tx_builder.finalize_tx(private_key)
     );
   });
 
@@ -101,7 +95,7 @@ describe("Postponed signing vote cast certificate tests", function () {
     assert(tx_builders.length == 1);
     // get fragemnts
     fragments = tx_builders.map((tx_builder) =>
-      tx_builder.sign_tx(private_key).finalize_tx()
+      tx_builder.finalize_tx(private_key)
     );
   });
 });

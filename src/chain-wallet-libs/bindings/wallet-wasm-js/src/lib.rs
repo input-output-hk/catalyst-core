@@ -56,22 +56,16 @@ impl VoteCastTxBuilder {
         Ok(self)
     }
 
-    pub fn sign_tx(mut self, hex_account: String) -> Result<VoteCastTxBuilder, JsValue> {
-        self.0 = self
-            .0
-            .sign_tx(
+    /// Finish step of signing and building VoteCast fragment
+    pub fn finalize_tx(self, hex_account: String) -> Result<Fragment, JsValue> {
+        self.0
+            .finalize_tx(
+                (),
                 hex::decode(hex_account)
                     .map_err(|e| JsValue::from(e.to_string()))?
                     .as_slice(),
+                FragmentLib::VoteCast,
             )
-            .map_err(|e| JsValue::from(e.to_string()))?;
-        Ok(self)
-    }
-
-    /// Finish step of building VoteCast fragment
-    pub fn finalize_tx(self) -> Result<Fragment, JsValue> {
-        self.0
-            .finalize_tx((), FragmentLib::VoteCast)
             .map_err(|e| JsValue::from(e.to_string()))
             .map(Fragment)
     }

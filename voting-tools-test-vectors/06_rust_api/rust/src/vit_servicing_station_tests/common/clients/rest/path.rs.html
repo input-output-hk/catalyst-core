@@ -89,6 +89,10 @@
 <span id="89">89</span>
 <span id="90">90</span>
 <span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
 </pre><pre class="rust"><code><span class="kw">use </span>url::Url;
 
 <span class="attribute">#[derive(Debug, Clone)]
@@ -142,6 +146,10 @@
 
     <span class="kw">pub fn </span>snapshot_voter_info(<span class="kw-2">&amp;</span><span class="self">self</span>, tag: <span class="kw-2">&amp;</span>str, key: <span class="kw-2">&amp;</span>str) -&gt; String {
         <span class="self">self</span>.path(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;snapshot/voter/{}/{}&quot;</span>, tag, key))
+    }
+
+    <span class="kw">pub fn </span>snapshot_delegator_info(<span class="kw-2">&amp;</span><span class="self">self</span>, tag: <span class="kw-2">&amp;</span>str, key: <span class="kw-2">&amp;</span>str) -&gt; String {
+        <span class="self">self</span>.path(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;snapshot/delegator/{}/{}&quot;</span>, tag, key))
     }
 
     <span class="kw">pub fn </span>proposal(<span class="kw-2">&amp;</span><span class="self">self</span>, id: <span class="kw-2">&amp;</span>str, group: <span class="kw-2">&amp;</span>str) -&gt; String {

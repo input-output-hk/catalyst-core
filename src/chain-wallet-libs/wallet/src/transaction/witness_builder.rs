@@ -1,14 +1,15 @@
 use chain_crypto::{Ed25519, Ed25519Extended, SecretKey, Signature};
 use chain_impl_mockchain::{
+    account,
     accounting::account::SpendingCounter,
     block::HeaderId,
+    key::SpendingSignature,
     transaction::{TransactionSignDataHash, Witness, WitnessAccountData, WitnessUtxoData},
 };
 use ed25519_bip32::XPrv;
-
 use hdkeygen::Key;
 
-pub trait WitnessBuilder<SecretKey, WitnessData: AsRef<[u8]>> {
+pub trait WitnessBuilder<SecretKey, WitnessData: AsRef<[u8]>, Signature> {
     fn build_sign_data(
         &self,
         block0: &HeaderId,
@@ -17,14 +18,7 @@ pub trait WitnessBuilder<SecretKey, WitnessData: AsRef<[u8]>> {
 
     fn sign(&self, witness_data: WitnessData, secret_key: SecretKey) -> Witness;
 
-    fn build(
-        &self,
-        block0: &HeaderId,
-        sign_data_hash: &TransactionSignDataHash,
-        secret_key: SecretKey,
-    ) -> Witness {
-        self.sign(self.build_sign_data(block0, sign_data_hash), secret_key)
-    }
+    fn build(&self, signature: Signature) -> Witness;
 }
 
 pub struct UtxoWitnessBuilder;
@@ -37,7 +31,9 @@ pub enum AccountSecretKey {
 
 pub struct AccountWitnessBuilder(pub SpendingCounter);
 
-impl<D> WitnessBuilder<Key<XPrv, D>, WitnessUtxoData> for UtxoWitnessBuilder {
+impl<D> WitnessBuilder<Key<XPrv, D>, WitnessUtxoData, SpendingSignature<WitnessUtxoData>>
+    for UtxoWitnessBuilder
+{
     fn build_sign_data(
         &self,
         block0: &HeaderId,
@@ -56,9 +52,15 @@ impl<D> WitnessBuilder<Key<XPrv, D>, WitnessUtxoData> for UtxoWitnessBuilder {
             .unwrap(),
         )
     }
+
+    fn build(&self, signature: SpendingSignature<WitnessUtxoData>) -> Witness {
+        Witness::Utxo(signature)
+    }
 }
 
-impl WitnessBuilder<SecretKey<Ed25519Extended>, WitnessUtxoData> for UtxoWitnessBuilder {
+impl WitnessBuilder<SecretKey<Ed25519Extended>, WitnessUtxoData, SpendingSignature<WitnessUtxoData>>
+    for UtxoWitnessBuilder
+{
     fn build_sign_data(
         &self,
         block0: &HeaderId,
@@ -74,9 +76,15 @@ impl WitnessBuilder<SecretKey<Ed25519Extended>, WitnessUtxoData> for UtxoWitness
     ) -> Witness {
         Witness::Utxo(secret_key.sign(&witness_data))
     }
+
+    fn build(&self, signature: SpendingSignature<WitnessUtxoData>) -> Witness {
+        Witness::Utxo(signature)
+    }
 }
 
-impl WitnessBuilder<AccountSecretKey, WitnessAccountData> for AccountWitnessBuilder {
+impl WitnessBuilder<AccountSecretKey, WitnessAccountData, account::Witness>
+    for AccountWitnessBuilder
+{
     fn build_sign_data(
         &self,
         block0: &HeaderId,
@@ -94,5 +102,9 @@ impl WitnessBuilder<AccountSecretKey, WitnessAccountData> for AccountWitnessBuil
                 Witness::Account(self.0, secret_key.sign(&witness_data))
             }
         }
+    }
+
+    fn build(&self, signature: account::Witness) -> Witness {
+        Witness::Account(self.0, signature)
     }
 }

@@ -8,7 +8,7 @@ use chain_impl_mockchain::{
     value::Value,
     vote::Choice,
 };
-use wallet::{AccountId, Settings};
+use wallet::{transaction::WitnessInput, AccountId, Settings};
 
 /// the wallet
 ///
@@ -163,7 +163,7 @@ impl Wallet {
         builder.add_input(input, witness_builder);
 
         let tx = builder
-            .finalize_tx((), vec![secret_key])
+            .finalize_tx((), vec![WitnessInput::SecretKey(secret_key)])
             .map_err(|e| Error::wallet_transaction().with(e))?;
 
         let fragment = Fragment::VoteCast(tx);

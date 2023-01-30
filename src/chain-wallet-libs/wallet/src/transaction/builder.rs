@@ -16,17 +16,17 @@ use thiserror::Error;
 pub enum Error {
     #[error("Cannot balance the transaction")]
     BalancingError,
-    #[error("Invalid secret keys amount, expected: {0}, provided: {1}")]
-    InvalidSecretKeysAmount(usize, usize),
+    #[error("Invalid witness input amount, expected: {0}, provided: {1}")]
+    InvalidWitnessInputAmount(usize, usize),
 }
 
-pub struct TransactionBuilder<P: Payload, SecretKey, WitnessData> {
+pub struct TransactionBuilder<P: Payload, SecretKey, WitnessData, Signature> {
     settings: Settings,
     payload: P,
     validity: BlockDate,
     outputs: Vec<Output<Address>>,
     inputs: Vec<Input>,
-    witness_builders: Vec<Box<dyn WitnessBuilder<SecretKey, WitnessData>>>,
+    witness_builders: Vec<Box<dyn WitnessBuilder<SecretKey, WitnessData, Signature>>>,
 }
 
 pub enum AddInputStatus {
@@ -35,8 +35,14 @@ pub enum AddInputStatus {
     NotEnoughSpace,
 }
 
-impl<P: Payload, SecretKey, WitnessData: AsRef<[u8]>>
-    TransactionBuilder<P, SecretKey, WitnessData>
+#[derive(Clone)]
+pub enum WitnessInput<SecretKey, Signature> {
+    SecretKey(SecretKey),
+    Signature(Signature),
+}
+
+impl<P: Payload, SecretKey, WitnessData: AsRef<[u8]>, Signature>
+    TransactionBuilder<P, SecretKey, WitnessData, Signature>
 {
     /// create a new transaction builder with the given settings and outputs
     pub fn new(settings: Settings, payload: P, validity: BlockDate) -> Self {
@@ -87,7 +93,7 @@ impl<P: Payload, SecretKey, WitnessData: AsRef<[u8]>>
         self.estimate_fee_with(0, 0)
     }
 
-    pub fn add_input_if_worth<B: WitnessBuilder<SecretKey, WitnessData> + 'static>(
+    pub fn add_input_if_worth<B: WitnessBuilder<SecretKey, WitnessData, Signature> + 'static>(
         &mut self,
         input: Input,
         witness_builder: B,
@@ -102,7 +108,7 @@ impl<P: Payload, SecretKey, WitnessData: AsRef<[u8]>>
         }
     }
 
-    pub fn add_input<B: WitnessBuilder<SecretKey, WitnessData> + 'static>(
+    pub fn add_input<B: WitnessBuilder<SecretKey, WitnessData, Signature> + 'static>(
         &mut self,
         input: Input,
         witness_builder: B,
@@ -145,22 +151,36 @@ impl<P: Payload, SecretKey, WitnessData: AsRef<[u8]>>
         }
     }
 
-    pub fn finalize_tx(
-        self,
-        auth: <P as Payload>::Auth,
-        secret_keys: Vec<SecretKey>,
-    ) -> Result<Transaction<P>, Error> {
+    fn prepare_tx(&self) -> Result<TxBuilderState<SetWitnesses<P>>, Error> {
         if !matches!(self.check_balance(), Balance::Zero) {
             return Err(Error::BalancingError);
         }
 
         let builder = TxBuilderState::new();
         let builder = builder.set_payload(&self.payload);
-
         let builder = self.set_validity(builder);
         let builder = self.set_ios(builder);
-        let builder = self.set_witnesses(builder, secret_keys)?;
+        Ok(builder)
+    }
 
+    pub fn get_sign_data(&self) -> Result<Vec<WitnessData>, Error> {
+        let builder = self.prepare_tx()?;
+        let header_id = self.settings.block0_initial_hash;
+        let auth_data = builder.get_auth_data_for_witness().hash();
+        Ok(self
+            .witness_builders
+            .iter()
+            .map(|witness_builder| witness_builder.build_sign_data(&header_id, &auth_data))
+            .collect())
+    }
+
+    pub fn finalize_tx(
+        self,
+        auth: <P as Payload>::Auth,
+        witness_input: Vec<WitnessInput<SecretKey, Signature>>,
+    ) -> Result<Transaction<P>, Error> {
+        let builder = self.prepare_tx()?;
+        let builder = self.set_witnesses(builder, witness_input)?;
         Ok(builder.set_payload_auth(&auth))
     }
 
@@ -175,23 +195,31 @@ impl<P: Payload, SecretKey, WitnessData: AsRef<[u8]>>
     fn set_witnesses(
         &self,
         builder: TxBuilderState<SetWitnesses<P>>,
-        secret_keys: Vec<SecretKey>,
+        witness_input: Vec<WitnessInput<SecretKey, Signature>>,
     ) -> Result<TxBuilderState<SetAuthData<P>>, Error> {
         let header_id = self.settings.block0_initial_hash;
         let auth_data = builder.get_auth_data_for_witness().hash();
 
-        if secret_keys.len() != self.witness_builders.len() {
-            return Err(Error::InvalidSecretKeysAmount(
+        if witness_input.len() != self.witness_builders.len() {
+            return Err(Error::InvalidWitnessInputAmount(
                 self.witness_builders.len(),
-                secret_keys.len(),
+                witness_input.len(),
             ));
         }
         let mut witnesses = Vec::new();
-        secret_keys
+        witness_input
             .into_iter()
             .enumerate()
-            .for_each(|(i, secret_key)| {
-                witnesses.push(self.witness_builders[i].build(&header_id, &auth_data, secret_key));
+            .for_each(|(i, witness_input)| {
+                let witness_builder = &self.witness_builders[i];
+                let witness = match witness_input {
+                    WitnessInput::SecretKey(secret_key) => witness_builder.sign(
+                        witness_builder.build_sign_data(&header_id, &auth_data),
+                        secret_key,
+                    ),
+                    WitnessInput::Signature(signature) => witness_builder.build(signature),
+                };
+                witnesses.push(witness);
             });
 
         Ok(builder.set_witnesses(&witnesses))

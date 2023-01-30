@@ -9,6 +9,7 @@ use chain_impl_mockchain::{
     value::Value,
     vote::{Choice, Payload},
 };
+use wallet::transaction::WitnessInput;
 
 const BLOCK0: &[u8] = include_bytes!("../../test-vectors/block0");
 const ACCOUNT_KEY: &str = include_str!("../../test-vectors/free_keys/key1.prv");
@@ -90,7 +91,9 @@ fn cast_vote() {
 
         builder.add_input(input, witness_builder);
 
-        let tx = builder.finalize_tx((), vec![secret_key]).unwrap();
+        let tx = builder
+            .finalize_tx((), vec![WitnessInput::SecretKey(secret_key)])
+            .unwrap();
 
         let fragment = Fragment::VoteCast(tx);
         let id = fragment.hash();

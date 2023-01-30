@@ -1,19 +1,20 @@
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::{
-    account::SpendingCounter,
+    account::{self, SpendingCounter},
     fragment::Fragment,
     header::BlockDate,
     transaction::{Input, Payload, Transaction, WitnessAccountData},
 };
-use std::{str::FromStr};
+use std::str::FromStr;
 use wallet::{
-    transaction::AccountSecretKey, AccountId, AccountWitnessBuilder, EitherAccount, Settings,
+    transaction::{AccountSecretKey, WitnessInput},
+    AccountId, AccountWitnessBuilder, EitherAccount, Settings,
 };
 
 use crate::Error;
 
 pub struct TxBuilder<P: Payload> {
-    builder: wallet::TransactionBuilder<P, AccountSecretKey, WitnessAccountData>,
+    builder: wallet::TransactionBuilder<P, AccountSecretKey, WitnessAccountData, account::Witness>,
 }
 
 impl<P: Payload> TxBuilder<P> {
@@ -52,7 +53,10 @@ impl<P: Payload> TxBuilder<P> {
 
         Ok(fragment_build_fn(
             self.builder
-                .finalize_tx(auth, vec![account.secret_key(); inputs_size])
+                .finalize_tx(
+                    auth,
+                    vec![WitnessInput::SecretKey(account.secret_key()); inputs_size],
+                )
                 .map_err(|e| Error::wallet_transaction().with(e))?,
         ))
     }

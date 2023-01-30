@@ -4,17 +4,19 @@ jobs:
   delete:
     if: github.event.ref_type == 'branch'
 
-    env:
-      GIT_BRANCH: ${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}      
-
     runs-on: ubuntu-latest
     steps:
+      - name: Set env
+        run: |
+          GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV            
+
       - name: Clean up
         run: |
           echo "Clean up for branch ${{ env.GIT_BRANCH }}"
 
       - name: Get current published documentation
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: gh-pages
 

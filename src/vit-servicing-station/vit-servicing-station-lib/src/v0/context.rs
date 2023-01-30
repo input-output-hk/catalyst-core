@@ -46,8 +46,6 @@ pub fn new_shared_context(
 
 #[cfg(test)]
 pub mod test {
-    use diesel::Connection;
-    use rand::{distributions::Alphanumeric, thread_rng, Rng};
     use vit_servicing_station_tests::common::startup::db::DbBuilder;
 
     use super::*;
@@ -68,7 +66,8 @@ pub mod test {
     }
 
     pub fn new_test_shared_context(block0_path: Vec<PathBuf>) -> SharedContext {
-        let pool = db::load_db_connection_pool(&init_test_db()).unwrap();
+        let db_url = DbBuilder::new().build().unwrap();
+        let pool = db::load_db_connection_pool(&db_url).unwrap();
         new_shared_context(pool, block0_path, "2.0")
     }
 }

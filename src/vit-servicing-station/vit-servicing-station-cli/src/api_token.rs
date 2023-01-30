@@ -163,7 +163,6 @@ impl ExecTask for ApiTokenCmd {
 #[cfg(test)]
 mod test {
     use super::*;
-    use diesel::Connection;
     use vit_servicing_station_lib::db::{
         migrations::initialize_db_with_migration, queries::api_tokens::query_token_data_by_token,
     };

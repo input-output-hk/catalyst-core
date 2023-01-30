@@ -1,0 +1,4 @@
+(function() {var implementors = {
+"iapyx":[["impl <a class=\"trait\" href=\"jortestkit/load/status/trait.RequestStatusProvider.html\" title=\"trait jortestkit::load::status::RequestStatusProvider\">RequestStatusProvider</a> for <a class=\"struct\" href=\"iapyx/struct.VoteStatusProvider.html\" title=\"struct iapyx::VoteStatusProvider\">VoteStatusProvider</a>"]],
+"mjolnir":[["impl <a class=\"trait\" href=\"jortestkit/load/status/trait.RequestStatusProvider.html\" title=\"trait jortestkit::load::status::RequestStatusProvider\">RequestStatusProvider</a> for <a class=\"struct\" href=\"mjolnir/mjolnir_lib/generators/struct.FragmentStatusProvider.html\" title=\"struct mjolnir::mjolnir_lib::generators::FragmentStatusProvider\">FragmentStatusProvider</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

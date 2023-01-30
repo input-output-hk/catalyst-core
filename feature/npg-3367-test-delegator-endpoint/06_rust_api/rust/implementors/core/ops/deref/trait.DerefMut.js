@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"wallet":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.65.0/core/ops/deref/trait.DerefMut.html\" title=\"trait core::ops::deref::DerefMut\">DerefMut</a> for <a class=\"struct\" href=\"wallet/struct.ScrubbedBytes.html\" title=\"struct wallet::ScrubbedBytes\">ScrubbedBytes</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

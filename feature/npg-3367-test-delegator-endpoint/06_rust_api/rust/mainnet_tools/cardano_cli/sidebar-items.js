@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["MockCommand","Wrapper around cardano CLI commands"]],"struct":[["Api","Cardano Cli wrapper which allows to use cardano cli as Rust library. It requires real `CardanoCli` to be installed on environment"],["Mock","Cardano CLI mock. It can return arbitrary/fake data but preserves correct Cardano CLI format."]]};

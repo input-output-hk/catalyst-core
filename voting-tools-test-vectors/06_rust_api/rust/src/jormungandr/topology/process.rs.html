@@ -1,0 +1,292 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/jormungandr/jormungandr/src/topology/process.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>process.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../jormungandr/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../jormungandr/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../jormungandr/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+</pre><pre class="rust"><code><span class="kw">use super</span>::{Gossip, Gossips, P2pTopology, Peer};
+<span class="kw">use crate</span>::{
+    intercom::{NetworkMsg, PropagateMsg, TopologyMsg},
+    metrics::Metrics,
+    settings::start::network::Configuration,
+    utils::async_msg::{MessageBox, MessageQueue},
+};
+<span class="kw">use </span>std::time::Duration;
+<span class="kw">use </span>tokio::time::{Instant, Interval, MissedTickBehavior};
+<span class="kw">use </span>tokio_stream::StreamExt;
+
+<span class="kw">pub const </span>DEFAULT_NETWORK_STUCK_INTERVAL: Duration = Duration::from_secs(<span class="number">60 </span>* <span class="number">5</span>); <span class="comment">// 5 min
+</span><span class="kw">const </span>QUARANTINE_CHECK: Duration = Duration::from_secs(<span class="number">60</span>);
+<span class="kw">const </span>MAX_GOSSIP_SIZE: usize = <span class="number">10</span>;
+
+<span class="kw">struct </span>Process {
+    input: MessageQueue&lt;TopologyMsg&gt;,
+    network_msgbox: MessageBox&lt;NetworkMsg&gt;,
+    gossip_interval: Interval,
+    network_stuck_check: Duration,
+    topology: P2pTopology,
+}
+
+<span class="kw">pub struct </span>TaskData {
+    <span class="kw">pub </span>network_msgbox: MessageBox&lt;NetworkMsg&gt;,
+    <span class="kw">pub </span>topology_queue: MessageQueue&lt;TopologyMsg&gt;,
+    <span class="kw">pub </span>initial_peers: Vec&lt;Peer&gt;,
+    <span class="kw">pub </span>config: Configuration,
+    <span class="kw">pub </span>stats_counter: Metrics,
+}
+
+<span class="kw">pub async fn </span>start(task_data: TaskData) {
+    <span class="kw">let </span>TaskData {
+        network_msgbox,
+        topology_queue,
+        initial_peers,
+        config,
+        stats_counter,
+    } = task_data;
+
+    <span class="kw">let </span><span class="kw-2">mut </span>topology = P2pTopology::new(<span class="kw-2">&amp;</span>config, stats_counter);
+
+    topology.accept_gossips(Gossips::from(
+        initial_peers
+            .into_iter()
+            .map(Gossip::from)
+            .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
+    ));
+
+    <span class="kw">let </span><span class="kw-2">mut </span>gossip_interval = tokio::time::interval(config.gossip_interval);
+    gossip_interval.set_missed_tick_behavior(MissedTickBehavior::Delay);
+
+    <span class="kw">let </span><span class="kw-2">mut </span>process = Process {
+        input: topology_queue,
+        gossip_interval,
+        network_stuck_check: config.network_stuck_check,
+        network_msgbox,
+        topology,
+    };
+    process.handle_input().<span class="kw">await</span>;
+}
+
+<span class="kw">impl </span>Process {
+    <span class="kw">async fn </span>handle_input(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="kw">let </span><span class="kw-2">mut </span>last_update = Instant::now();
+        <span class="kw">let </span><span class="kw-2">mut </span>quarantine_check = tokio::time::interval(QUARANTINE_CHECK);
+
+        <span class="kw">loop </span>{
+            <span class="macro">tokio::select! </span>{
+                <span class="prelude-val">Some</span>(input) = <span class="self">self</span>.input.next() =&gt; {
+                    <span class="macro">tracing::trace!</span>(<span class="string">&quot;handling new topology task item&quot;</span>);
+                    <span class="kw">match </span>input {
+                        TopologyMsg::AcceptGossip(gossip) =&gt; {
+                            <span class="self">self</span>.topology.accept_gossips(gossip);
+                            last_update = Instant::now();
+                        },
+                        TopologyMsg::DemotePeer(id) =&gt; <span class="self">self</span>.topology.report_node(<span class="kw-2">&amp;</span>id),
+                        TopologyMsg::PromotePeer(id) =&gt; <span class="self">self</span>.topology.promote_node(<span class="kw-2">&amp;</span>id),
+                        TopologyMsg::View(selection, handle) =&gt; {
+                            handle.reply_ok(<span class="self">self</span>.topology.view(selection))
+                        }
+                        TopologyMsg::ListAvailable(handle) =&gt; {
+                            handle.reply_ok(<span class="self">self</span>.topology.list_available().map(Into::into).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;())
+                        }
+                        TopologyMsg::ListNonPublic(handle) =&gt; {
+                            handle.reply_ok(<span class="self">self</span>.topology.list_non_public().map(Into::into).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;())
+                        }
+                        TopologyMsg::ListQuarantined(handle) =&gt; {
+                            handle.reply_ok(<span class="self">self</span>.topology.list_quarantined())
+                        }
+                    }
+                    <span class="macro">tracing::trace!</span>(<span class="string">&quot;item handling finished&quot;</span>);
+                },
+                <span class="kw">_ </span>= <span class="self">self</span>.gossip_interval.tick() =&gt; {
+                        <span class="kw">let </span>span = <span class="macro">tracing::debug_span!</span>(<span class="string">&quot;generating_gossip&quot;</span>, task = <span class="string">&quot;topology&quot;</span>);
+                        <span class="kw">let </span>_guard = span.enter();
+                        <span class="self">self</span>.topology.update_gossip();
+                        <span class="kw">let </span>view = <span class="self">self</span>.topology.view(poldercast::layer::Selection::Any);
+                        <span class="kw">if </span>view.peers.is_empty() {
+                            <span class="macro">tracing::warn!</span>(<span class="string">&quot;no peers to gossip with found, check your connection&quot;</span>);
+                        }
+                        <span class="macro">tracing::trace!</span>(<span class="string">&quot;gossiping with peers&quot;</span>);
+                        <span class="self">self</span>.send_gossip_messages(view.peers)
+                    }
+                <span class="kw">_ </span>= quarantine_check.tick() =&gt; {
+                    <span class="kw">let </span>span = <span class="macro">tracing::debug_span!</span>(<span class="string">&quot;quarantine_check&quot;</span>, task = <span class="string">&quot;topology&quot;</span>);
+                    <span class="kw">let </span>_guard = span.enter();
+                    <span class="comment">// Even if lifted from quarantine, peers will be re-added to the topology
+                    // only after we receive a gossip about them.
+                    </span><span class="kw">let </span><span class="kw-2">mut </span>nodes_to_contact = <span class="self">self</span>.topology.lift_reports();
+
+                    <span class="comment">// If we did not receive any incoming gossip recently let&#39;s try to contact known (but not active) nodes.
+                    </span><span class="kw">if </span>last_update.elapsed() &gt; <span class="self">self</span>.network_stuck_check {
+                        last_update = Instant::now();
+                        <span class="macro">tracing::warn!</span>(<span class="string">&quot;p2p network have been too quiet for some time, will try to contanct known nodes&quot;</span>);
+                        nodes_to_contact.extend(
+                            <span class="self">self</span>.topology
+                                .list_available()
+                                .take(MAX_GOSSIP_SIZE.saturating_sub(nodes_to_contact.len()))
+                        );
+                    }
+
+                    <span class="self">self</span>.send_gossip_messages(nodes_to_contact);
+                }
+            }
+        }
+    }
+
+    <span class="kw">fn </span>send_gossip_messages(<span class="kw-2">&amp;mut </span><span class="self">self</span>, peers: Vec&lt;Peer&gt;) {
+        <span class="kw">for </span>peer <span class="kw">in </span>peers {
+            <span class="kw">let </span>gossip = <span class="self">self</span>.topology.initiate_gossips(<span class="kw-2">&amp;</span>peer.id());
+            <span class="self">self</span>.network_msgbox
+                <span class="comment">// do not block the current thread to avoid deadlocks
+                </span>.try_send(NetworkMsg::Propagate(Box::new(PropagateMsg::Gossip(
+                    peer, gossip,
+                ))))
+                .unwrap_or_else(|e| {
+                    <span class="macro">tracing::error!</span>(
+                        reason = <span class="question-mark">?</span>e,
+                        <span class="string">&quot;cannot send PropagateMsg request to network&quot;
+                    </span>)
+                });
+        }
+    }
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="jormungandr" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

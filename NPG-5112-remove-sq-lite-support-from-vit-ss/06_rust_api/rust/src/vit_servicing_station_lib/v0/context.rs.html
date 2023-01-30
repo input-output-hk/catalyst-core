@@ -71,7 +71,6 @@
 <span id="71">71</span>
 <span id="72">72</span>
 <span id="73">73</span>
-<span id="74">74</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db;
 <span class="kw">use </span><span class="kw">crate</span>::v0::genesis_block::GenesisBlock;
 <span class="kw">use </span>std::path::PathBuf;
@@ -120,8 +119,6 @@
 
 <span class="attribute">#[cfg(test)]
 </span><span class="kw">pub mod </span>test {
-    <span class="kw">use </span>diesel::Connection;
-    <span class="kw">use </span>rand::{distributions::Alphanumeric, thread_rng, Rng};
     <span class="kw">use </span>vit_servicing_station_tests::common::startup::db::DbBuilder;
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
@@ -142,7 +139,8 @@
     }
 
     <span class="kw">pub fn </span>new_test_shared_context(block0_path: Vec&lt;PathBuf&gt;) -&gt; SharedContext {
-        <span class="kw">let </span>pool = db::load_db_connection_pool(<span class="kw-2">&amp;</span>init_test_db()).unwrap();
+        <span class="kw">let </span>db_url = DbBuilder::new().build().unwrap();
+        <span class="kw">let </span>pool = db::load_db_connection_pool(<span class="kw-2">&amp;</span>db_url).unwrap();
         new_shared_context(pool, block0_path, <span class="string">&quot;2.0&quot;</span>)
     }
 }

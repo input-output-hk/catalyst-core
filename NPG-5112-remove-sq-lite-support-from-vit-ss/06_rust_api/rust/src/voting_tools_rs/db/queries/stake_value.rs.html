@@ -58,12 +58,15 @@
 <span id="58">58</span>
 <span id="59">59</span>
 <span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashMap;
 
 <span class="kw">use </span>bigdecimal::BigDecimal;
 <span class="kw">use </span>color_eyre::{Report, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>diesel::{BoolExpressionMethods, JoinOnDsl, NullableExpressionMethods, QueryDsl, RunQueryDsl};
 
+<span class="kw">use </span><span class="kw">crate</span>::data::StakeKeyHex;
 <span class="kw">use </span><span class="kw">crate</span>::db::inner::DbQuery;
 <span class="kw">use </span><span class="kw">crate</span>::db::Db;
 <span class="kw">use </span>diesel::sql_types::Text;
@@ -76,13 +79,14 @@
     ///
     /// This query is detailed in &lt;../design/stake_value_processing.md&gt;
     </span><span class="attribute">#[instrument]
-    </span><span class="kw">pub fn </span>stake_values&lt;<span class="lifetime">&#39;a</span>&gt;(
+    </span><span class="kw">pub fn </span>stake_values(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        stake_addrs: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[String],
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;HashMap&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str, BigDecimal&gt;&gt; {
+        stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHex],
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;HashMap&lt;StakeKeyHex, BigDecimal&gt;&gt; {
         <span class="kw">let </span>rows = stake_addrs.iter().map(|addr| {
-            <span class="kw">let </span>result = <span class="self">self</span>.exec(|conn| query(addr).load(conn))<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, Report&gt;((addr.as_str(), result))
+            <span class="kw">let </span>hex = hex::encode(addr.<span class="number">0</span>);
+            <span class="kw">let </span>result = <span class="self">self</span>.exec(|conn| query(hex).load(conn))<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, Report&gt;((<span class="kw-2">*</span>addr, result))
         });
 
         <span class="comment">// If performance becomes an issue, we can replace this with `dashmap` and parallelize the
@@ -99,7 +103,7 @@
     }
 }
 
-<span class="kw">fn </span>query(stake_addr: <span class="kw-2">&amp;</span>str) -&gt; <span class="kw">impl </span>DbQuery&lt;<span class="lifetime">&#39;_</span>, BigDecimal&gt; {
+<span class="kw">fn </span>query(stake_addr: String) -&gt; <span class="kw">impl </span>DbQuery&lt;<span class="lifetime">&#39;static</span>, BigDecimal&gt; {
     <span class="kw">use </span><span class="kw">crate</span>::db::schema::{stake_address, tx_in, tx_out};
 
     <span class="kw">let </span>outer_join = tx_in::table.on(tx_out::tx_id

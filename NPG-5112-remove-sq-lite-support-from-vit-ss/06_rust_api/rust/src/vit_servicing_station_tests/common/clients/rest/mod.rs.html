@@ -248,6 +248,15 @@
 <span id="248">248</span>
 <span id="249">249</span>
 <span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>logger;
 <span class="kw">mod </span>path;
 <span class="kw">mod </span>raw;
@@ -255,6 +264,7 @@
 
 <span class="kw">pub use </span>raw::RestClient <span class="kw">as </span>RawRestClient;
 <span class="kw">pub use </span>search::SearchRequestBuilder;
+<span class="kw">use </span>vit_servicing_station_lib::v0::endpoints::snapshot::DelegatorInfo;
 
 <span class="kw">use </span><span class="kw">crate</span>::common::clients::rest::path::RestPathBuilder;
 <span class="kw">use </span><span class="kw">crate</span>::common::raw_snapshot::RawSnapshot;
@@ -379,6 +389,14 @@
 
     <span class="kw">pub fn </span>voter_info(<span class="kw-2">&amp;</span><span class="self">self</span>, tag: <span class="kw-2">&amp;</span>str, key: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;VoterInfo, Error&gt; {
         <span class="kw">let </span>response = <span class="self">self</span>.raw.voter_info(tag, key)<span class="question-mark">?</span>;
+        <span class="self">self</span>.verify_status_code(<span class="kw-2">&amp;</span>response)<span class="question-mark">?</span>;
+        <span class="kw">let </span>content = response.text()<span class="question-mark">?</span>;
+        <span class="self">self</span>.raw.log_text(<span class="kw-2">&amp;</span>content);
+        serde_json::from_str(<span class="kw-2">&amp;</span>content).map_err(Error::CannotDeserialize)
+    }
+
+    <span class="kw">pub fn </span>delegator_info(<span class="kw-2">&amp;</span><span class="self">self</span>, tag: <span class="kw-2">&amp;</span>str, key: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;DelegatorInfo, Error&gt; {
+        <span class="kw">let </span>response = <span class="self">self</span>.raw.delegator_info(tag, key)<span class="question-mark">?</span>;
         <span class="self">self</span>.verify_status_code(<span class="kw-2">&amp;</span>response)<span class="question-mark">?</span>;
         <span class="kw">let </span>content = response.text()<span class="question-mark">?</span>;
         <span class="self">self</span>.raw.log_text(<span class="kw-2">&amp;</span>content);

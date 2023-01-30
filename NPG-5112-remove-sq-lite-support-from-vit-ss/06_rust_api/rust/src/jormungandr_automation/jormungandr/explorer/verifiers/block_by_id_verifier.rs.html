@@ -1178,14 +1178,6 @@
 <span id="1178">1178</span>
 <span id="1179">1179</span>
 <span id="1180">1180</span>
-<span id="1181">1181</span>
-<span id="1182">1182</span>
-<span id="1183">1183</span>
-<span id="1184">1184</span>
-<span id="1185">1185</span>
-<span id="1186">1186</span>
-<span id="1187">1187</span>
-<span id="1188">1188</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{ExplorerVerifier, VerifierError};
 <span class="kw">use </span><span class="kw">crate</span>::jormungandr::explorer::data::block_by_id::{<span class="self">self</span>, PayloadType <span class="kw">as </span>expPayloadType, <span class="kw-2">*</span>};
 <span class="kw">use </span>chain_addr::AddressReadable;
@@ -1812,10 +1804,6 @@
                         <span class="kw">if </span>explorer_param.transaction_max_expiry_epochs <span class="kw">as </span>u8 == <span class="kw-2">*</span>certificate_param)).count();
                     <span class="macro">assert_eq!</span>(matching_params, <span class="number">1</span>);
                 }
-                <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-                </span>EvmConfiguration(<span class="kw">_</span>) =&gt; <span class="macro">unimplemented!</span>(),
-                <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-                </span>EvmEnvironment(<span class="kw">_</span>) =&gt; <span class="macro">unimplemented!</span>(),
             }
         }
     }
@@ -2351,10 +2339,6 @@
                         <span class="kw">if </span>explorer_param.transaction_max_expiry_epochs <span class="kw">as </span>u8 == <span class="kw-2">*</span>certificate_param)).count();
                     <span class="macro">assert_eq!</span>(matching_params, <span class="number">1</span>);
                 }
-                <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-                </span>EvmConfiguration(<span class="kw">_</span>) =&gt; <span class="macro">unimplemented!</span>(),
-                <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-                </span>EvmEnvironment(<span class="kw">_</span>) =&gt; <span class="macro">unimplemented!</span>(),
             }
         }
     }

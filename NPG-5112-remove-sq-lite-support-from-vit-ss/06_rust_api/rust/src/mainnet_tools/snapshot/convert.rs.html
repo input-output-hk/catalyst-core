@@ -143,6 +143,9 @@
 <span id="143">143</span>
 <span id="144">144</span>
 <span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::{SystemTime, UNIX_EPOCH};
 <span class="kw">use </span>vit_servicing_station_tests::common::raw_snapshot::RawSnapshot <span class="kw">as </span>RawSnapshotRequest;
 
@@ -172,7 +175,8 @@
             )
             .build();
         <span class="kw">let </span>db = MockDbProvider::from(db_sync);
-        <span class="kw">let </span>outputs = voting_tools_rs::voting_power(<span class="kw-2">&amp;</span>db, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>).unwrap();
+        <span class="kw">let </span>(outputs, _errs) =
+            voting_tools_rs::voting_power(<span class="kw-2">&amp;</span>db, VotingPowerArgs::default()).unwrap();
         outputs.try_into_raw_snapshot_request(parameters)
     }
 }
@@ -190,7 +194,7 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;RawSnapshotRequest, Error&gt;;
 }
 
-<span class="kw">impl </span>OutputsExtension <span class="kw">for </span>Vec&lt;Output&gt; {
+<span class="kw">impl </span>OutputsExtension <span class="kw">for </span>Vec&lt;SnapshotEntry&gt; {
     <span class="kw">fn </span>try_into_raw_snapshot_request(
         <span class="self">self</span>,
         parameters: SnapshotParameters,
@@ -226,7 +230,7 @@
 <span class="kw">use </span>snapshot_lib::registration::{Delegations <span class="kw">as </span>VotingDelegations, VotingRegistration};
 <span class="kw">use </span>vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 <span class="kw">use </span>voting_tools_rs::test_api::MockDbProvider;
-<span class="kw">use </span>voting_tools_rs::{Delegations, Output};
+<span class="kw">use </span>voting_tools_rs::{SnapshotEntry, VotingPowerArgs, VotingPowerSource, VotingPurpose};
 
 <span class="doccomment">/// Extensions for voting tools `Output` struct
 </span><span class="kw">pub trait </span>OutputExtension {
@@ -238,10 +242,10 @@
     </span><span class="kw">fn </span>try_into_voting_registration(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;VotingRegistration, Error&gt;;
 }
 
-<span class="kw">impl </span>OutputExtension <span class="kw">for </span>Output {
+<span class="kw">impl </span>OutputExtension <span class="kw">for </span>SnapshotEntry {
     <span class="kw">fn </span>try_into_voting_registration(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;VotingRegistration, Error&gt; {
         <span class="prelude-val">Ok</span>(VotingRegistration {
-            stake_public_key: <span class="self">self</span>.stake_public_key.to_string(),
+            stake_public_key: <span class="self">self</span>.stake_key.to_string(),
             voting_power: <span class="self">self
                 </span>.voting_power
                 .to_u64()
@@ -249,25 +253,27 @@
                     Error::CannotConvertFromOutput(<span class="string">&quot;cannot extract voting power&quot;</span>.to_string())
                 })<span class="question-mark">?
                 </span>.into(),
-            reward_address: <span class="self">self</span>.rewards_address.to_string(),
-            delegations: <span class="kw">match </span><span class="self">self</span>.delegations {
-                Delegations::Legacy(legacy) =&gt; VotingDelegations::Legacy(
-                    Identifier::from_hex(legacy.trim_start_matches(<span class="string">&quot;0x&quot;</span>))
-                        .map_err(|e| Error::CannotConvertFromOutput(e.to_string()))<span class="question-mark">?</span>,
+            reward_address: hex::encode(<span class="kw-2">&amp;</span><span class="self">self</span>.rewards_address.<span class="number">0</span>),
+            delegations: <span class="kw">match </span><span class="self">self</span>.voting_power_source {
+                VotingPowerSource::Direct(legacy) =&gt; VotingDelegations::Legacy(
+                    Identifier::from_hex(<span class="kw-2">&amp;</span>legacy.to_hex())
+                        .expect(<span class="string">&quot;to_hex() always returns valid hex&quot;</span>),
                 ),
-                Delegations::Delegated(delegated) =&gt; {
+                VotingPowerSource::Delegated(delegated) =&gt; {
                     <span class="kw">let </span><span class="kw-2">mut </span>new = <span class="macro">vec!</span>[];
                     <span class="kw">for </span>(key, weight) <span class="kw">in </span>delegated {
                         new.push((
-                            Identifier::from_hex(key.trim_start_matches(<span class="string">&quot;0x&quot;</span>))
-                                .map_err(|e| Error::CannotConvertFromOutput(e.to_string()))<span class="question-mark">?</span>,
-                            weight,
+                            Identifier::from_hex(<span class="kw-2">&amp;</span>key.to_hex())
+                                .expect(<span class="string">&quot;to_hex() always returns valid hex&quot;</span>),
+                            weight
+                                .to_u32()
+                                .expect(<span class="string">&quot;this tool expects voting powers that fit into a u32&quot;</span>),
                         ));
                     }
                     VotingDelegations::New(new)
                 }
             },
-            voting_purpose: <span class="kw-2">*</span><span class="self">self</span>.voting_purpose,
+            voting_purpose: <span class="kw-2">*</span><span class="self">self</span>.voting_purpose.unwrap_or(VotingPurpose::CATALYST),
         })
     }
 }

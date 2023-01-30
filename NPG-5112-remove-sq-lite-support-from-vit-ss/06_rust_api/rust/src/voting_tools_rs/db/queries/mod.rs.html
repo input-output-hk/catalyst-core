@@ -23,10 +23,8 @@
 <span id="23">23</span>
 <span id="24">24</span>
 <span id="25">25</span>
-<span id="26">26</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data_provider::DataProvider;
-<span class="kw">use </span><span class="kw">crate</span>::model::Reg;
-<span class="kw">use </span><span class="kw">crate</span>::model::SlotNo;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data::{SignedRegistration, SlotNo, StakeKeyHex};
+<span class="kw">use </span><span class="kw">crate</span>::data_provider::DataProvider;
 <span class="kw">use </span><span class="kw">crate</span>::Db;
 <span class="kw">use </span>bigdecimal::BigDecimal;
 <span class="kw">use </span>std::collections::HashMap;
@@ -37,16 +35,16 @@
 <span class="kw">impl </span>DataProvider <span class="kw">for </span>Db {
     <span class="kw">fn </span>vote_registrations(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        lower: <span class="prelude-ty">Option</span>&lt;SlotNo&gt;,
-        upper: <span class="prelude-ty">Option</span>&lt;SlotNo&gt;,
-    ) -&gt; color_eyre::Result&lt;Vec&lt;Reg&gt;&gt; {
+        lower: SlotNo,
+        upper: SlotNo,
+    ) -&gt; color_eyre::Result&lt;Vec&lt;SignedRegistration&gt;&gt; {
         <span class="self">self</span>.vote_registrations(lower, upper)
     }
 
-    <span class="kw">fn </span>stake_values&lt;<span class="lifetime">&#39;a</span>&gt;(
+    <span class="kw">fn </span>stake_values(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        stake_addrs: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[String],
-    ) -&gt; color_eyre::Result&lt;HashMap&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str, BigDecimal&gt;&gt; {
+        stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHex],
+    ) -&gt; color_eyre::Result&lt;HashMap&lt;StakeKeyHex, BigDecimal&gt;&gt; {
         <span class="self">self</span>.stake_values(stake_addrs)
     }
 }

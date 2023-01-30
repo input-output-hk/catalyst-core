@@ -54,7 +54,22 @@ members = [
 ]
 
 [workspace.dependencies]
+uuid = { version = "1", features = ["v4", "serde"] }
+# we use this branch because it uses v1 of `itoa`, but the latest crates.io release doesn't
+csv = { git = "https://github.com/BurntSushi/rust-csv" }
+hex = "0.4"
+cfg-if = "1"
 proptest = { git = "https://github.com/proptest-rs/proptest.git" }
+
+
+# representing byte buffers while being generic over serde implementations
+bytekind = "0.1.4"
+
+# provides `NonEmpty` which is like a `Vec` but guarantees it is non-empty
+nonempty = { version = "0.8", features = ["serialize"] }
+
+# type-system protection against acidentally using unvalidated data
+validity = "0.3.1"
 
 # Observability tools to instrument, generate, collect, and export telemetry data. 
 opentelemetry = { version = "0.18", features = ["rt-tokio"] }
@@ -69,8 +84,17 @@ tracing-subscriber = "0.3.16"
 tracing-opentelemetry = "0.18.0"
 tracing-test = "0.2.3"
 
+# extensions for iterators
+itertools = "0.10"
+
+# platform-independenent directory finding (e.g. home_dir() for `/home/<user>` on linux, `C:\Users\<user>` on windows)
+dirs = "4"
+
+# time-related utilities
+chrono = { version = "0.4", features = ["serde"] }
+
 # command line argument parsing
-clap = { version = "4", features = ["derive", "env"] }
+clap = { version = "4", features = ["derive", "env", "string"] }
 clap_complete = "4"  # shell autocomplete for CLIs
 
 [patch.crates-io]

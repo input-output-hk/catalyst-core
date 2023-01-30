@@ -27,7 +27,8 @@ impl MainnetWalletStateExtension for Vec<MainnetWalletState> {
             )
             .build();
         let db = MockDbProvider::from(db_sync);
-        let outputs = voting_tools_rs::voting_power(&db, None, None, None).unwrap();
+        let (outputs, _errs) =
+            voting_tools_rs::voting_power(&db, VotingPowerArgs::default()).unwrap();
         outputs.try_into_raw_snapshot_request(parameters)
     }
 }
@@ -45,7 +46,7 @@ pub trait OutputsExtension {
     ) -> Result<RawSnapshotRequest, Error>;
 }
 
-impl OutputsExtension for Vec<Output> {
+impl OutputsExtension for Vec<SnapshotEntry> {
     fn try_into_raw_snapshot_request(
         self,
         parameters: SnapshotParameters,
@@ -81,7 +82,7 @@ use num_traits::ToPrimitive;
 use snapshot_lib::registration::{Delegations as VotingDelegations, VotingRegistration};
 use vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 use voting_tools_rs::test_api::MockDbProvider;
-use voting_tools_rs::{Delegations, Output};
+use voting_tools_rs::{SnapshotEntry, VotingPowerArgs, VotingPowerSource, VotingPurpose};
 
 /// Extensions for voting tools `Output` struct
 pub trait OutputExtension {
@@ -93,10 +94,10 @@ pub trait OutputExtension {
     fn try_into_voting_registration(self) -> Result<VotingRegistration, Error>;
 }
 
-impl OutputExtension for Output {
+impl OutputExtension for SnapshotEntry {
     fn try_into_voting_registration(self) -> Result<VotingRegistration, Error> {
         Ok(VotingRegistration {
-            stake_public_key: self.stake_public_key.to_string(),
+            stake_public_key: self.stake_key.to_string(),
             voting_power: self
                 .voting_power
                 .to_u64()
@@ -104,25 +105,27 @@ impl OutputExtension for Output {
                     Error::CannotConvertFromOutput("cannot extract voting power".to_string())
                 })?
                 .into(),
-            reward_address: self.rewards_address.to_string(),
-            delegations: match self.delegations {
-                Delegations::Legacy(legacy) => VotingDelegations::Legacy(
-                    Identifier::from_hex(legacy.trim_start_matches("0x"))
-                        .map_err(|e| Error::CannotConvertFromOutput(e.to_string()))?,
+            reward_address: hex::encode(&self.rewards_address.0),
+            delegations: match self.voting_power_source {
+                VotingPowerSource::Direct(legacy) => VotingDelegations::Legacy(
+                    Identifier::from_hex(&legacy.to_hex())
+                        .expect("to_hex() always returns valid hex"),
                 ),
-                Delegations::Delegated(delegated) => {
+                VotingPowerSource::Delegated(delegated) => {
                     let mut new = vec![];
                     for (key, weight) in delegated {
                         new.push((
-                            Identifier::from_hex(key.trim_start_matches("0x"))
-                                .map_err(|e| Error::CannotConvertFromOutput(e.to_string()))?,
-                            weight,
+                            Identifier::from_hex(&key.to_hex())
+                                .expect("to_hex() always returns valid hex"),
+                            weight
+                                .to_u32()
+                                .expect("this tool expects voting powers that fit into a u32"),
                         ));
                     }
                     VotingDelegations::New(new)
                 }
             },
-            voting_purpose: *self.voting_purpose,
+            voting_purpose: *self.voting_purpose.unwrap_or(VotingPurpose::CATALYST),
         })
     }
 }

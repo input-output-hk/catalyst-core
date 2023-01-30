@@ -10,7 +10,6 @@ jobs:
         run: |
           GIT_BRANCH=$(echo ${{ github.event.ref }} | sed -e "s#refs/heads/##g")
           echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
-          echo "github.event.ref is ${{ github.event.ref }}"
           echo "branch deleted is $GIT_BRANCH"        
 
       - name: Clean up
@@ -24,7 +23,7 @@ jobs:
 
       - name: Remove branches draft docs
         run: |
-          echo rm -rf ${{ env.GIT_BRANCH }}
+          rm -rf ${{ env.GIT_BRANCH }}
 
       - name: Save updated docs
         uses: stefanzweifel/git-auto-commit-action@v4

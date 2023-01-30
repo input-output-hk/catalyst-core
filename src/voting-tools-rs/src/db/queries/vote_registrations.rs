@@ -1,9 +1,9 @@
 use crate::{db::inner::DbQuery, Db};
 
+use crate::data::{SignedRegistration, SlotNo};
 use crate::db::schema::{block, tx, tx_metadata};
-use crate::model::{Reg, SlotNo};
 use bigdecimal::{BigDecimal, FromPrimitive};
-use color_eyre::eyre::Result;
+use color_eyre::eyre::{eyre, Result};
 use diesel::RunQueryDsl;
 use diesel::{
     BoolExpressionMethods, ExpressionMethods, JoinOnDsl, PgAnyJsonExpressionMethods,
@@ -27,20 +27,20 @@ impl Db {
     ///
     /// # Errors
     ///
-    /// Returns an error if either of `lower` or `upper` doesn't fit in an `i64`
+    /// Returns an error if either of `lower` or `upper` doesn't fit in an `i64`, or if a
+    /// database-specific error occurs
     pub fn vote_registrations(
         &self,
-        lower: Option<SlotNo>,
-        upper: Option<SlotNo>,
-    ) -> Result<Vec<Reg>> {
-        let lower = lower.unwrap_or(SlotNo(0)).into_i64()?;
-        let upper = upper.unwrap_or(SlotNo(i64::MAX as u64)).into_i64()?;
+        lower: SlotNo,
+        upper: SlotNo,
+    ) -> Result<Vec<SignedRegistration>> {
+        let lower = lower.into_i64().ok_or_else(|| eyre!("invalid i64"))?;
+        let upper = upper.into_i64().ok_or_else(|| eyre!("invalid i64"))?;
         let q = query(lower, upper);
 
-        let results = self.exec(move |conn| q.load(conn))?;
-        let results = process(results);
+        let rows = self.exec(move |conn| q.load(conn))?;
 
-        Ok(results)
+        Ok(rows.into_iter().filter_map(convert_row).collect())
     }
 }
 
@@ -83,20 +83,17 @@ fn query(lower: i64, upper: i64) -> impl DbQuery<'static, Row> {
         .distinct_on(metadata_2)
 }
 
-fn process(rows: Vec<Row>) -> Vec<Reg> {
-    rows.into_iter()
-        .filter_map(|(tx_id, metadata, signature, _)| {
-            let tx_id = u64::try_from(tx_id).ok()?.into();
-            let metadata = serde_json::from_value(metadata?).ok()?;
-            let signature = serde_json::from_value(signature?).ok()?;
+/// Attempt to parse a row into a [`SignedRegistration`] struct
+fn convert_row((tx_id, metadata, signature, _slot_no): Row) -> Option<SignedRegistration> {
+    let tx_id = u64::try_from(tx_id).ok()?.into();
+    let registration = serde_json::from_value(metadata?).ok()?;
+    let signature = serde_json::from_value(signature?).ok()?;
 
-            Some(Reg {
-                tx_id,
-                metadata,
-                signature,
-            })
-        })
-        .collect()
+    Some(SignedRegistration {
+        registration,
+        signature,
+        tx_id,
+    })
 }
 
 #[cfg(test)]
@@ -105,44 +102,62 @@ mod tests {
 
     use super::*;
 
-    fn good_meta() -> serde_json::Value {
+    fn cip15_test_vector_meta() -> serde_json::Value {
         json!({
-            "1": "legacy",
-            "2": "stakevkey",
-            "3": "rewardsaddr",
-            "4": 123,
+            "1": "0036ef3e1f0d3f5989e2d155ea54bdb2a72c4c456ccb959af4c94868f473f5a0",
+            "2": "86870efc99c453a873a16492ce87738ec79a0ebd064379a62e2c9cf4e119219e",
+            "3": "e0ae3a0a7aeda4aea522e74e4fe36759fca80789a613a58a4364f6ecef",
+            "4": 1234,
         })
     }
 
-    fn good_sig() -> serde_json::Value {
+    fn cip15_test_vector_sig() -> serde_json::Value {
         json!({
-            "1": "sig",
+            "1": "6c2312cd49067ecf0920df7e067199c55b3faef4ec0bce1bd2cfb99793972478c45876af2bc271ac759c5ce40ace5a398b9fdb0e359f3c333fe856648804780e",
         })
     }
 
     #[test]
-    fn process_happy_path() {
-        let rows = vec![(1, Some(good_meta()), Some(good_sig()), None)];
-        let regs = vec![Reg {
+    fn process_accepts_cip15_test_vector() {
+        let rows = vec![(
+            1,
+            Some(cip15_test_vector_meta()),
+            Some(cip15_test_vector_sig()),
+            None,
+        )];
+
+        let regs = vec![SignedRegistration {
             tx_id: 1.into(),
-            metadata: from_value(good_meta()).unwrap(),
-            signature: from_value(good_sig()).unwrap(),
+            registration: from_value(cip15_test_vector_meta()).unwrap(),
+            signature: from_value(cip15_test_vector_sig()).unwrap(),
         }];
 
-        assert_eq!(process(rows), regs);
+        let result: Vec<_> = rows.into_iter().filter_map(convert_row).collect();
+
+        assert_eq!(result, regs);
     }
 
     #[test]
     fn filters_bad_rows() {
         fn check(row: Row) {
-            assert!(process(vec![row]).is_empty());
+            assert!(convert_row(row).is_none());
         }
 
         // bad sig
-        check((1, Some(good_meta()), Some(json!("random json")), None));
+        check((
+            1,
+            Some(cip15_test_vector_meta()),
+            Some(json!("random json")),
+            None,
+        ));
 
         // bad meta
-        check((1, Some(json!("random json")), Some(good_sig()), None));
+        check((
+            1,
+            Some(json!("random json")),
+            Some(cip15_test_vector_sig()),
+            None,
+        ));
 
         // none
         check((1, None, None, None));

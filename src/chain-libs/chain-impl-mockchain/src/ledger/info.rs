@@ -19,8 +19,6 @@ impl Ledger {
             leaders_log: _,
             votes: _,
             governance: _,
-            #[cfg(feature = "evm")]
-            evm,
             token_totals: _,
         } = self;
 
@@ -45,8 +43,6 @@ impl Ledger {
                 multisig.iter_accounts().count(),
                 Value::sum(multisig.iter_accounts().map(|x| x.1.value))
             ),
-            #[cfg(feature = "evm")]
-            evm.stats(),
         ];
 
         stats
@@ -69,8 +65,6 @@ impl Ledger {
             leaders_log: leaders_log1,
             votes: votes1,
             governance: governance1,
-            #[cfg(feature = "evm")]
-                evm: evm1,
             token_totals: token_totals1,
         } = self;
 
@@ -90,8 +84,6 @@ impl Ledger {
             leaders_log: leaders_log2,
             votes: votes2,
             governance: governance2,
-            #[cfg(feature = "evm")]
-                evm: evm2,
             token_totals: token_totals2,
         } = other;
 
@@ -111,8 +103,6 @@ impl Ledger {
             format!("leaders-log-same: {}", leaders_log1 == leaders_log2),
             format!("vote-plans: {}", votes1 == votes2),
             format!("governance: {}", governance1 == governance2),
-            #[cfg(feature = "evm")]
-            evm1.info_eq(evm2),
             format!("token-totals: {}", token_totals1 == token_totals2),
         ];
 

@@ -4,7 +4,7 @@ use snapshot_trigger_service::client::rest::SnapshotRestClient;
 use snapshot_trigger_service::config::Configuration;
 use snapshot_trigger_service::config::JobParameters;
 use std::process::Child;
-use voting_tools_rs::Output;
+use voting_tools_rs::SnapshotEntry;
 
 pub struct SnapshotServiceController {
     child: Child,
@@ -48,7 +48,7 @@ impl SnapshotServiceController {
             .client()
             .get_snapshot(id, job_params.tag.as_ref().unwrap().to_string())
             .unwrap();
-        let snapshot: Vec<Output> = serde_json::from_str(&snapshot_content).unwrap();
+        let snapshot: Vec<SnapshotEntry> = serde_json::from_str(&snapshot_content).unwrap();
 
         SnapshotResult::from_outputs(status, snapshot)
     }

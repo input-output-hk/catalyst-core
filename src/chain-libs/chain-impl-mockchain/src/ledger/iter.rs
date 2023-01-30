@@ -7,8 +7,6 @@ use crate::chaintypes::ChainLength;
 use crate::config::ConfigParam;
 use crate::date::BlockDate;
 use crate::key::Hash;
-#[cfg(feature = "evm")]
-use crate::ledger::evm;
 use crate::ledger::token_distribution::TokenTotals;
 use crate::stake::PoolsState;
 use crate::vote::{VotePlanLedger, VotePlanManager};
@@ -291,8 +289,6 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
         // TODO: votes don't have their entry
         let mut votes = VotePlanLedger::new();
         let governance = Governance::default();
-        #[cfg(feature = "evm")]
-        let evm = evm::Ledger::new();
         let token_totals = TokenTotals::default();
 
         for entry in iter {
@@ -372,12 +368,8 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
             leaders_log,
             votes,
             governance,
-            #[cfg(feature = "evm")]
-            evm,
             token_totals,
         };
-        #[cfg(feature = "evm")]
-        let ledger = ledger.set_evm_block0().set_evm_environment();
         Ok(ledger)
     }
 }

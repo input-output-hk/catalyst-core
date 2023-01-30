@@ -13,7 +13,7 @@ voting_tools_rs = { path = "../../voting-tools-rs"} # db sync schema
 microtype = { version = "0.7.5", features = ["serde"] } # defining secrecy and db internals
 diesel =  { version = "2", features = ["postgres", "64-column-tables", "numeric", "serde_json", "r2d2"]} # connector lib
 diesel-derive-enum = "2.0.0-rc.0" #extension to diesel
-chrono = "0.4.23"
+chrono = { workspace = true }
 tracing.workspace = true
 bigdecimal = "0.3.0"
 warp = { version = "0.3.2", features = ["tls"] }

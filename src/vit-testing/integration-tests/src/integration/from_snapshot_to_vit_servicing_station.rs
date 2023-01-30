@@ -98,5 +98,29 @@ pub fn put_raw_snapshot() {
             "wrong timestamp for entry: {:?}",
             snapshot_info
         );
+        for contribution in snapshot_info.contributions.iter() {
+            let delegator_info = vit_station
+                .delegator_info(&raw_snapshot.tag, &contribution.stake_public_key)
+                .unwrap();
+            assert!(
+                delegator_info
+                    .dreps
+                    .contains(&snapshot_info.hir.voting_key.to_hex()),
+                "wrong data for entry: {:?}",
+                snapshot_info
+            );
+            assert!(
+                delegator_info
+                    .voting_groups
+                    .contains(&snapshot_info.hir.voting_group),
+                "wrong data for entry: {:?}",
+                snapshot_info
+            );
+            assert_eq!(
+                delegator_info.last_updated, raw_snapshot.content.update_timestamp,
+                "wrong data for entry: {:?}",
+                snapshot_info
+            );
+        }
     }
 }

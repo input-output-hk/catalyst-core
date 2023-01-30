@@ -1,0 +1,492 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/jormungandr/jormungandr/src/metrics/backends/simple_counter.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>simple_counter.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../jormungandr/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../jormungandr/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../jormungandr/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+</pre><pre class="rust"><code><span class="kw">use crate</span>::{blockchain::Ref, metrics::MetricsBackend};
+<span class="kw">use </span>arc_swap::ArcSwapOption;
+<span class="kw">use </span>chain_impl_mockchain::{
+    block::Block,
+    fragment::Fragment,
+    transaction::Transaction,
+    value::{Value, ValueError},
+};
+<span class="kw">use </span>jormungandr_lib::{
+    interfaces::NodeStats,
+    time::{SecondsSinceUnixEpoch, SystemTime},
+};
+<span class="kw">use </span>std::{
+    convert::TryInto,
+    sync::{
+        atomic::{AtomicU64, AtomicUsize, Ordering},
+        Arc, RwLock,
+    },
+    time::Instant,
+};
+
+<span class="kw">const </span>EXP_MOVING_AVERAGE_COEFF: f64 = <span class="number">0.5</span>;
+
+<span class="kw">pub struct </span>SimpleCounter {
+    tx_recv_cnt: AtomicUsize,
+    tx_rejected_cnt: AtomicUsize,
+    <span class="comment">// no atomics for float in the std and bit-fiddling
+    // to re-use an AtomicU64 for the porpose
+    // seems like unneded complexity for this case
+    </span>mempool_usage_ratio: RwLock&lt;f64&gt;,
+    mempool_tx_count: AtomicUsize,
+    votes_cast: AtomicU64,
+    block_recv_cnt: AtomicUsize,
+    slot_start_time: AtomicU64,
+    peers_connected_cnt: AtomicUsize,
+    peers_quarantined_cnt: AtomicUsize,
+    peers_available_cnt: AtomicUsize,
+    tip_block: ArcSwapOption&lt;BlockCounters&gt;,
+    start_time: Instant,
+}
+
+<span class="kw">struct </span>BlockCounters {
+    block_tx_count: u64,
+    block_input_sum: u64,
+    block_fee_sum: u64,
+    content_size: u32,
+    avg_content_size: f64,
+    date: String,
+    hash: String,
+    chain_length: String,
+    time: SystemTime,
+}
+
+<span class="kw">impl </span>SimpleCounter {
+    <span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+        Default::default()
+    }
+
+    <span class="kw">pub fn </span>get_stats(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; NodeStats {
+        <span class="kw">let </span>peer_available_cnt = <span class="self">self</span>.peers_available_cnt.load(Ordering::Relaxed);
+        <span class="kw">let </span>peer_quarantined_cnt = <span class="self">self</span>.peers_quarantined_cnt.load(Ordering::Relaxed);
+        <span class="kw">let </span>peer_total_cnt = peer_available_cnt + peer_quarantined_cnt;
+
+        <span class="kw">let </span>block_data = <span class="self">self</span>.tip_block.load();
+        <span class="kw">let </span>block_data = block_data.as_deref();
+
+        NodeStats {
+            block_recv_cnt: <span class="self">self
+                </span>.block_recv_cnt
+                .load(Ordering::Relaxed)
+                .try_into()
+                .unwrap(),
+            last_block_content_size: block_data.map(|bd| bd.content_size).unwrap_or_default(),
+            last_block_date: block_data.map(|bd| bd.date.clone()),
+            last_block_fees: block_data.map(|bd| bd.block_fee_sum).unwrap_or_default(),
+            last_block_hash: block_data.map(|bd| bd.hash.clone()),
+            last_block_height: block_data.map(|bd| bd.chain_length.clone()),
+            last_block_sum: block_data.map(|bd| bd.block_input_sum).unwrap_or_default(),
+            last_block_time: block_data.map(|bd| bd.time),
+            last_block_tx: block_data.map(|bd| bd.block_tx_count).unwrap_or_default(),
+            last_received_block_time: <span class="prelude-val">Some</span>(SystemTime::from_secs_since_epoch(
+                <span class="self">self</span>.slot_start_time.load(Ordering::Relaxed),
+            )),
+            block_content_size_avg: block_data.map(|bd| bd.avg_content_size).unwrap_or_default(),
+            peer_available_cnt,
+            peer_connected_cnt: <span class="self">self</span>.peers_connected_cnt.load(Ordering::Relaxed),
+            peer_quarantined_cnt,
+            peer_total_cnt,
+            tx_recv_cnt: <span class="self">self</span>.tx_recv_cnt.load(Ordering::Relaxed).try_into().unwrap(),
+            mempool_usage_ratio: <span class="kw-2">*</span><span class="self">self</span>.mempool_usage_ratio.read().unwrap(),
+            mempool_tx_count: <span class="self">self
+                </span>.mempool_tx_count
+                .load(Ordering::Relaxed)
+                .try_into()
+                .unwrap(),
+            tx_rejected_cnt: <span class="self">self
+                </span>.tx_rejected_cnt
+                .load(Ordering::Relaxed)
+                .try_into()
+                .unwrap(),
+            votes_cast: <span class="self">self</span>.votes_cast.load(Ordering::Relaxed),
+            uptime: <span class="prelude-val">Some</span>(<span class="self">self</span>.start_time.elapsed().as_secs()),
+        }
+    }
+}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>SimpleCounter {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            tx_recv_cnt: Default::default(),
+            tx_rejected_cnt: Default::default(),
+            mempool_usage_ratio: Default::default(),
+            mempool_tx_count: Default::default(),
+            votes_cast: Default::default(),
+            block_recv_cnt: Default::default(),
+            slot_start_time: Default::default(),
+            peers_connected_cnt: Default::default(),
+            peers_quarantined_cnt: Default::default(),
+            peers_available_cnt: Default::default(),
+            tip_block: Default::default(),
+            start_time: Instant::now(),
+        }
+    }
+}
+
+<span class="kw">fn </span>calc_running_block_size_average(last_avg: f64, new_value: f64) -&gt; f64 {
+    last_avg * (<span class="number">1.0 </span>- EXP_MOVING_AVERAGE_COEFF) + new_value * EXP_MOVING_AVERAGE_COEFF
+}
+
+<span class="kw">impl </span>MetricsBackend <span class="kw">for </span>SimpleCounter {
+    <span class="kw">fn </span>add_tx_recv_cnt(<span class="kw-2">&amp;</span><span class="self">self</span>, count: usize) {
+        <span class="self">self</span>.tx_recv_cnt.fetch_add(count, Ordering::Relaxed);
+    }
+
+    <span class="kw">fn </span>add_tx_rejected_cnt(<span class="kw-2">&amp;</span><span class="self">self</span>, count: usize) {
+        <span class="self">self</span>.tx_rejected_cnt.fetch_add(count, Ordering::Relaxed);
+    }
+
+    <span class="kw">fn </span>set_mempool_usage_ratio(<span class="kw-2">&amp;</span><span class="self">self</span>, ratio: f64) {
+        <span class="kw-2">*</span><span class="self">self</span>.mempool_usage_ratio.write().unwrap() = ratio;
+    }
+
+    <span class="kw">fn </span>set_mempool_tx_count(<span class="kw-2">&amp;</span><span class="self">self</span>, size: usize) {
+        <span class="self">self</span>.mempool_tx_count.store(size, Ordering::Relaxed);
+    }
+
+    <span class="kw">fn </span>add_block_recv_cnt(<span class="kw-2">&amp;</span><span class="self">self</span>, count: usize) {
+        <span class="self">self</span>.block_recv_cnt.fetch_add(count, Ordering::Relaxed);
+    }
+
+    <span class="kw">fn </span>add_peer_connected_cnt(<span class="kw-2">&amp;</span><span class="self">self</span>, count: usize) {
+        <span class="self">self</span>.peers_connected_cnt.fetch_add(count, Ordering::Relaxed);
+    }
+
+    <span class="kw">fn </span>sub_peer_connected_cnt(<span class="kw-2">&amp;</span><span class="self">self</span>, count: usize) {
+        <span class="self">self</span>.peers_connected_cnt.fetch_sub(count, Ordering::Relaxed);
+    }
+
+    <span class="kw">fn </span>add_peer_quarantined_cnt(<span class="kw-2">&amp;</span><span class="self">self</span>, count: usize) {
+        <span class="self">self</span>.peers_quarantined_cnt
+            .fetch_add(count, Ordering::Relaxed);
+    }
+
+    <span class="kw">fn </span>sub_peer_quarantined_cnt(<span class="kw-2">&amp;</span><span class="self">self</span>, count: usize) {
+        <span class="self">self</span>.peers_quarantined_cnt
+            .fetch_sub(count, Ordering::Relaxed);
+    }
+
+    <span class="kw">fn </span>set_peer_available_cnt(<span class="kw-2">&amp;</span><span class="self">self</span>, count: usize) {
+        <span class="self">self</span>.peers_available_cnt.store(count, Ordering::Relaxed);
+    }
+
+    <span class="kw">fn </span>set_slot_start_time(<span class="kw-2">&amp;</span><span class="self">self</span>, time: SecondsSinceUnixEpoch) {
+        <span class="self">self</span>.slot_start_time
+            .store(time.to_secs(), Ordering::Relaxed);
+    }
+
+    <span class="kw">fn </span>set_tip_block(<span class="kw-2">&amp;</span><span class="self">self</span>, block: <span class="kw-2">&amp;</span>Block, block_ref: <span class="kw-2">&amp;</span>Ref) {
+        <span class="kw">let </span><span class="kw-2">mut </span>block_tx_count = <span class="number">0</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>block_input_sum = Value::zero();
+        <span class="kw">let </span><span class="kw-2">mut </span>block_fee_sum = Value::zero();
+        <span class="kw">let </span><span class="kw-2">mut </span>votes_cast = <span class="number">0</span>;
+
+        block
+            .contents()
+            .iter()
+            .try_for_each::&lt;<span class="kw">_</span>, <span class="prelude-ty">Result</span>&lt;(), ValueError&gt;&gt;(|fragment| {
+                <span class="kw">fn </span>totals&lt;T&gt;(t: <span class="kw-2">&amp;</span>Transaction&lt;T&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(Value, Value), ValueError&gt; {
+                    <span class="prelude-val">Ok</span>((t.total_input()<span class="question-mark">?</span>, t.total_output()<span class="question-mark">?</span>))
+                }
+
+                <span class="kw">let </span>(total_input, total_output) = <span class="kw">match </span><span class="kw-2">&amp;</span>fragment {
+                    Fragment::Transaction(tx) =&gt; totals(tx),
+                    Fragment::OwnerStakeDelegation(tx) =&gt; totals(tx),
+                    Fragment::StakeDelegation(tx) =&gt; totals(tx),
+                    Fragment::PoolRegistration(tx) =&gt; totals(tx),
+                    Fragment::PoolRetirement(tx) =&gt; totals(tx),
+                    Fragment::PoolUpdate(tx) =&gt; totals(tx),
+                    Fragment::VotePlan(tx) =&gt; totals(tx),
+                    Fragment::VoteCast(tx) =&gt; {
+                        votes_cast += <span class="number">1</span>;
+                        totals(tx)
+                    }
+                    Fragment::VoteTally(tx) =&gt; totals(tx),
+                    Fragment::MintToken(tx) =&gt; totals(tx),
+                    Fragment::UpdateProposal(tx) =&gt; totals(tx),
+                    Fragment::UpdateVote(tx) =&gt; totals(tx),
+                    Fragment::EvmMapping(tx) =&gt; totals(tx),
+                    Fragment::Initial(<span class="kw">_</span>) | Fragment::OldUtxoDeclaration(<span class="kw">_</span>) | Fragment::Evm(<span class="kw">_</span>) =&gt; {
+                        <span class="kw">return </span><span class="prelude-val">Ok</span>(())
+                    }
+                }<span class="question-mark">?</span>;
+                block_tx_count += <span class="number">1</span>;
+                block_input_sum = (block_input_sum + total_input)<span class="question-mark">?</span>;
+                <span class="kw">let </span>fee = (total_input - total_output).unwrap_or_else(|<span class="kw">_</span>| Value::zero());
+                block_fee_sum = (block_fee_sum + fee)<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(())
+            })
+            .expect(<span class="string">&quot;should be good&quot;</span>);
+
+        <span class="kw">let </span>content_size = block.header().block_content_size();
+        <span class="kw">let </span>content_size_ratio =
+            content_size <span class="kw">as </span>f64 / block_ref.ledger().settings().block_content_max_size <span class="kw">as </span>f64;
+        <span class="kw">let </span>last_avg = <span class="kw">if let </span><span class="prelude-val">Some</span>(data) = <span class="self">self</span>.tip_block.load().as_deref() {
+            data.avg_content_size
+        } <span class="kw">else </span>{
+            content_size_ratio <span class="comment">// jump start moving average from first known value
+        </span>};
+
+        <span class="kw">let </span>block_data = BlockCounters {
+            block_tx_count,
+            block_input_sum: block_input_sum.<span class="number">0</span>,
+            block_fee_sum: block_fee_sum.<span class="number">0</span>,
+            content_size,
+            avg_content_size: calc_running_block_size_average(last_avg, content_size_ratio),
+            date: block.header().block_date().to_string(),
+            hash: block.header().hash().to_string(),
+            chain_length: block.header().chain_length().to_string(),
+            time: SystemTime::from(block_ref.time()),
+        };
+
+        <span class="self">self</span>.votes_cast.fetch_add(votes_cast, Ordering::Relaxed);
+        <span class="self">self</span>.tip_block.store(<span class="prelude-val">Some</span>(Arc::new(block_data)));
+    }
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="jormungandr" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

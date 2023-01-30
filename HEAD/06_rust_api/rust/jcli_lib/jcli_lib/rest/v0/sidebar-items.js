@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["V0",""]],"mod":[["account",""],["message",""],["settings",""]]};

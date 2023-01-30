@@ -265,13 +265,6 @@ fn start_services(bootstrapped_node: BootstrappedNode) -> Result<(), start_up::E
     });
     let enclave = Enclave::new(leader_secret);
 
-    #[cfg(feature = "evm")]
-    let evm_keys = Arc::new(
-        node_secret
-            .map(|secret| secret.evm_keys())
-            .unwrap_or_default(),
-    );
-
     {
         let logs = leadership_logs.clone();
         let block_message = block_msgbox;
@@ -320,12 +313,8 @@ fn start_services(bootstrapped_node: BootstrappedNode) -> Result<(), start_up::E
             transaction_task: fragment_msgbox,
             topology_task: topology_msgbox,
             leadership_logs,
-            #[cfg(feature = "evm")]
-            evm_keys,
             enclave,
             network_state,
-            #[cfg(feature = "prometheus-metrics")]
-            prometheus: prometheus_metric,
         };
         block_on(async {
             let mut context = context.write().await;
@@ -653,26 +642,6 @@ fn initialize_node() -> Result<InitializedNode, start_up::Error> {
             Some(context)
         }
         None => None,
-    };
-
-    #[cfg(feature = "evm")]
-    let context = match settings.jrpc.clone() {
-        Some(jrpc_config) => {
-            let context = context.unwrap_or_else(|| init_context(diagnostic));
-
-            let jrpc_config = jrpc::Config {
-                listen: jrpc_config.listen,
-            };
-            let server_handler = jrpc::start_jrpc_server(jrpc_config, context.clone());
-            let service_context = context.clone();
-            services.spawn_future("jrpc", |info| async move {
-                service_context.write().await.set_span(info.span().clone());
-                server_handler.await
-            });
-
-            Some(context)
-        }
-        None => context,
     };
 
     // TODO: load network module here too (if needed)

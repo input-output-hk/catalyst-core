@@ -59,10 +59,6 @@ pub enum ConfigParam {
     #[serde(with = "PerVoteCertificateFeeDef")]
     PerVoteCertificateFees(PerVoteCertificateFee),
     TransactionMaxExpiryEpochs(u8),
-    #[cfg(feature = "evm")]
-    EvmConfiguration(super::evm_params::EvmConfig),
-    #[cfg(feature = "evm")]
-    EvmEnvironment(super::evm_params::EvmEnvSettings),
 }
 
 #[derive(Debug, Error)]
@@ -122,10 +118,6 @@ impl From<ConfigParam> for ConfigParamLib {
             ConfigParam::RemoveCommitteeId(val) => Self::RemoveCommitteeId(val.into()),
             ConfigParam::PerVoteCertificateFees(val) => Self::PerVoteCertificateFees(val),
             ConfigParam::TransactionMaxExpiryEpochs(val) => Self::TransactionMaxExpiryEpochs(val),
-            #[cfg(feature = "evm")]
-            ConfigParam::EvmConfiguration(val) => Self::EvmConfiguration(val.into()),
-            #[cfg(feature = "evm")]
-            ConfigParam::EvmEnvironment(val) => Self::EvmEnvironment(val.into()),
         }
     }
 }
@@ -168,10 +160,6 @@ impl TryFrom<ConfigParamLib> for ConfigParam {
             ConfigParamLib::TransactionMaxExpiryEpochs(val) => {
                 Self::TransactionMaxExpiryEpochs(val)
             }
-            #[cfg(feature = "evm")]
-            ConfigParamLib::EvmConfiguration(val) => Self::EvmConfiguration(val.into()),
-            #[cfg(feature = "evm")]
-            ConfigParamLib::EvmEnvironment(val) => Self::EvmEnvironment(val.into()),
         })
     }
 }

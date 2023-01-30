@@ -225,60 +225,6 @@ impl<ID: Clone + Eq + Hash, Extra: Clone> Ledger<ID, Extra> {
             .map_err(|e| e.into())
     }
 
-    #[cfg(feature = "evm")]
-    pub fn evm_move_state(
-        mut self,
-        new_identifier: ID,
-        old_identifier: &ID,
-    ) -> Result<Self, LedgerError> {
-        // get old state
-        match self.get_state(old_identifier).cloned() {
-            Ok(state) => {
-                // remove old state
-                self.0 = self.0.update(old_identifier, |_| Ok(None))?;
-                // move state
-                self.0
-                    .insert_or_update(new_identifier, state.clone(), |st| {
-                        if !st.evm_state.is_empty() {
-                            return Err(LedgerError::AlreadyExists);
-                        }
-                        Ok(Some(AccountState {
-                            value: st.value.checked_add(state.value)?,
-                            evm_state: state.evm_state,
-                            ..st.clone()
-                        }))
-                    })
-                    .map(Ledger)
-            }
-            // if does not exist do nothing
-            Err(LedgerError::NonExistent) => Ok(self),
-            Err(e) => Err(e),
-        }
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn evm_insert_or_update(
-        &self,
-        identifier: ID,
-        value: Value,
-        evm_state: chain_evm::state::AccountState,
-        extra: Extra,
-    ) -> Result<Self, LedgerError> {
-        self.0
-            .insert_or_update(
-                identifier,
-                AccountState::new_evm(evm_state.clone(), value, extra),
-                |st| {
-                    Ok(Some(AccountState {
-                        evm_state,
-                        value,
-                        ..st.clone()
-                    }))
-                },
-            )
-            .map(Ledger)
-    }
-
     pub fn iter(&self) -> Iter<'_, ID, Extra> {
         Iter(self.0.iter())
     }
@@ -372,96 +318,6 @@ mod tests {
             }
             ledger
         }
-    }
-
-    #[cfg(feature = "evm")]
-    #[quickcheck]
-    #[allow(clippy::too_many_arguments)]
-    fn evm_functions_test(
-        account_id1: Identifier,
-        account_id2: Identifier,
-        account_id3: Identifier,
-        value1: Value,
-        value2: Value,
-        value3: Value,
-        evm_state1: chain_evm::state::AccountState,
-        evm_state2: chain_evm::state::AccountState,
-    ) -> bool {
-        let mut ledger = Ledger::new();
-
-        ledger = ledger
-            .evm_insert_or_update(account_id1.clone(), value1, evm_state1.clone(), ())
-            .unwrap();
-
-        assert_eq!(
-            ledger.get_state(&account_id1),
-            Ok(&AccountState::new_evm(evm_state1, value1, ()))
-        );
-
-        ledger = ledger
-            .evm_insert_or_update(account_id1.clone(), value2, evm_state2.clone(), ())
-            .unwrap();
-
-        assert_eq!(
-            ledger.get_state(&account_id1),
-            Ok(&AccountState::new_evm(evm_state2.clone(), value2, ()))
-        );
-
-        ledger = ledger
-            .evm_move_state(account_id2.clone(), &account_id1)
-            .unwrap();
-
-        if account_id1 != account_id2 {
-            assert_eq!(
-                ledger.get_state(&account_id1),
-                Err(LedgerError::NonExistent)
-            );
-        }
-
-        assert_eq!(
-            ledger.get_state(&account_id2),
-            Ok(&AccountState::new_evm(evm_state2.clone(), value2, ()))
-        );
-
-        ledger = ledger
-            .evm_insert_or_update(
-                account_id3.clone(),
-                value3,
-                chain_evm::state::AccountState::default(),
-                (),
-            )
-            .unwrap();
-
-        assert_eq!(
-            ledger.get_state(&account_id3),
-            Ok(&AccountState::new_evm(
-                chain_evm::state::AccountState::default(),
-                value3,
-                ()
-            ))
-        );
-
-        ledger = ledger
-            .evm_move_state(account_id3.clone(), &account_id2)
-            .unwrap();
-
-        if account_id2 != account_id3 {
-            assert_eq!(
-                ledger.get_state(&account_id2),
-                Err(LedgerError::NonExistent)
-            );
-
-            assert_eq!(
-                ledger.get_state(&account_id3),
-                Ok(&AccountState::new_evm(
-                    evm_state2,
-                    value3.saturating_add(value2),
-                    ()
-                ))
-            );
-        }
-
-        true
     }
 
     #[quickcheck]
@@ -589,8 +445,6 @@ mod tests {
                     delegation: DelegationType::Full(stake_pool_id),
                     value: value_after_reward,
                     tokens: Hamt::new(),
-                    #[cfg(feature = "evm")]
-                    evm_state: chain_evm::state::AccountState::default(),
                     extra: (),
                 };
 

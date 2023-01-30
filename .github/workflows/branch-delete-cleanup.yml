@@ -8,9 +8,11 @@ jobs:
     steps:
       - name: Set env
         run: |
-          env
-          GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
-          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV            
+          echo "::set-env name=GIT_BRANCH::${{ github.event.ref }}"
+          GIT_BRANCH=$(echo $GIT_BRANCH | sed -e "s#refs/heads/##g")
+          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
+          echo "github.event.ref is ${{ github.event.ref }}"
+          echo "branch deleted is $GIT_BRANCH"        
 
       - name: Clean up
         run: |

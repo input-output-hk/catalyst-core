@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Error",""]],"mod":[["community_advisors",""],["dreps",""],["proposers",""],["veterans",""],["voters",""]],"struct":[["Threshold",""]],"type":[["Funds",""],["Rewards",""],["VoteCount",""]]};

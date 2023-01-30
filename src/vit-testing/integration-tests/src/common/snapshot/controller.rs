@@ -1,5 +1,4 @@
-use crate::common::snapshot::result::Error;
-use crate::common::snapshot::result::SnapshotResult;
+use crate::common::snapshot::result::{Error, SnapshotResult};
 use jortestkit::prelude::Wait;
 use snapshot_trigger_service::client::rest::SnapshotRestClient;
 use snapshot_trigger_service::config::Configuration;

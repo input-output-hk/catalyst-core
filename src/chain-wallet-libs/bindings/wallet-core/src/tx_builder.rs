@@ -23,7 +23,7 @@ impl<P: Payload> TxBuilder<P> {
         Self { builder }
     }
 
-    pub fn build_tx(
+    pub fn prepare_tx(
         mut self,
         account_id_hex: String,
         spending_counter: SpendingCounter,
@@ -39,7 +39,33 @@ impl<P: Payload> TxBuilder<P> {
         Ok(self)
     }
 
-    pub fn finalize_tx(
+    pub fn get_sign_data(&self) -> Result<WitnessAccountData, Error> {
+        let data = self
+            .builder
+            .get_sign_data()
+            .map_err(|e| Error::wallet_transaction().with(e))?;
+        // as inside build_tx() function has been inserted only 1 input, valid tx should contains only first witness sign data
+        data.into_iter().next().ok_or(Error::invalid_fragment())
+    }
+
+    pub fn build_tx(
+        self,
+        auth: P::Auth,
+        signature: &[u8],
+        fragment_build_fn: impl FnOnce(Transaction<P>) -> Fragment,
+    ) -> Result<Fragment, Error> {
+        // as inside build_tx() function has been inserted only 1 input, we should put only 1 witness input
+        let witness_input = vec![WitnessInput::Signature(
+            account::Witness::from_binary(signature).unwrap(),
+        )];
+        Ok(fragment_build_fn(
+            self.builder
+                .finalize_tx(auth, witness_input)
+                .map_err(|e| Error::wallet_transaction().with(e))?,
+        ))
+    }
+
+    pub fn sign_tx(
         self,
         auth: P::Auth,
         account_bytes: &[u8],
@@ -49,14 +75,11 @@ impl<P: Payload> TxBuilder<P> {
             SecretKey::from_binary(account_bytes)
                 .map_err(|e| Error::wallet_transaction().with(e))?,
         );
-        let inputs_size = self.builder.inputs().len();
-
+        // as inside build_tx() function has been inserted only 1 input, we should put only 1 witness input
+        let witness_input = vec![WitnessInput::SecretKey(account.secret_key())];
         Ok(fragment_build_fn(
             self.builder
-                .finalize_tx(
-                    auth,
-                    vec![WitnessInput::SecretKey(account.secret_key()); inputs_size],
-                )
+                .finalize_tx(auth, witness_input)
                 .map_err(|e| Error::wallet_transaction().with(e))?,
         ))
     }

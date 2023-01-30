@@ -37,7 +37,7 @@ describe("Inplace signing vote cast certificate tests", function () {
     assert(tx_builders.length == 1);
     // get fragemnts
     fragments = tx_builders.map((tx_builder) =>
-      tx_builder.finalize_tx(private_key)
+      tx_builder.sign_tx(private_key)
     );
   });
 
@@ -56,7 +56,7 @@ describe("Inplace signing vote cast certificate tests", function () {
     assert(tx_builders.length == 1);
     // get fragemnts
     fragments = tx_builders.map((tx_builder) =>
-      tx_builder.finalize_tx(private_key)
+      tx_builder.sign_tx(private_key)
     );
   });
 });
@@ -76,7 +76,7 @@ describe("Postponed signing vote cast certificate tests", function () {
     assert(tx_builders.length == 1);
     // get fragemnts
     fragments = tx_builders.map((tx_builder) =>
-      tx_builder.finalize_tx(private_key)
+      tx_builder.sign_tx(private_key)
     );
   });
 
@@ -95,7 +95,7 @@ describe("Postponed signing vote cast certificate tests", function () {
     assert(tx_builders.length == 1);
     // get fragemnts
     fragments = tx_builders.map((tx_builder) =>
-      tx_builder.finalize_tx(private_key)
+      tx_builder.sign_tx(private_key)
     );
   });
 });

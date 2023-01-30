@@ -59,7 +59,7 @@ export function signVotes(votes, settings, accountId, privateKey) {
     );
 
     let builder = wasm.VoteCastTxBuilder.new(settings.settings, voteCast);
-    let tx_builder = builder.build_tx(accountId);
+    let tx_builder = builder.prepare_tx(accountId);
     tx_builders.push(tx_builder);
   }
   return tx_builders;

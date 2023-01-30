@@ -8,7 +8,7 @@ VIT as a service (VaaS)
 
 ### Building tips and tricks
 
-We use [`diesel`](http://diesel.rs/) for database (`sqlite3`) integration. Please refer to the [`diesel_cli` documentation](https://docs.rs/crate/diesel_cli/) to understand how to operate with migrations and setup.
+We use [`diesel`](http://diesel.rs/) for database integration. Please refer to the [`diesel_cli` documentation](https://docs.rs/crate/diesel_cli/) to understand how to operate with migrations and setup.
 
 Diesel generates rust code based on a *SQL* migration script (`/migrations/*/up.sql`) when running the migration with `diesel_cli`.
 Diesel code generation is configured in the `diesel.toml` file. Right now it just contains the path on where the rust code should be generated.
@@ -45,7 +45,7 @@ The command line flags can be retrieved using the `--help` when running the serv
 --address <address>                        Server binding address [default: 0.0.0.0:3030]
 --allowed-origins <allowed-origins>        If none provided, echos request origin [env: CORS_ALLOWED_ORIGINS=]
 --block0-path <block0-path>                block0 static file path [default: ./resources/v0/block0.bin]
---block0-paths <block0-paths>              archive block0 static folder path. WARNING each file need to be named as 'fundX.bin' 
+--block0-paths <block0-paths>              archive block0 static folder path. WARNING each file need to be named as 'fundX.bin'
 --cert-file <cert-file>
     Path to server X.509 certificate chain file, must be PEM-encoded and contain at least 1 item [env:
     TLS_CERT_FILE=]
@@ -78,11 +78,11 @@ An example of the contents of the file would be like this:
         "allowed_origins" : ["https://foo.test", "https://test.foo"],
         "max_age_secs" : 60
     },
-    "db_url": "./database.sqlite3",
+    "db_url": "postgres://postgres:password@localhost",
     "block0_path": "./test/bin.test",
     "log" : {
         "log_output_path" : "./server.log",
-        "log_level" : "error"    
+        "log_level" : "error"
     }
 }
 ```

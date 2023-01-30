@@ -96,7 +96,7 @@ impl PerfDataCommandArgs {
         )
         .unwrap();
 
-        generate_database(&deployment_tree, vit_parameters, template_generator)?;
+        generate_database(vit_parameters, template_generator)?;
 
         self.move_single_user_secrets(
             &deployment_tree,

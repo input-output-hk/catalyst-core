@@ -167,6 +167,7 @@ mod test {
     use vit_servicing_station_lib::db::{
         migrations::initialize_db_with_migration, queries::api_tokens::query_token_data_by_token,
     };
+    use vit_servicing_station_tests::common::startup::db::DbBuilder;
 
     #[test]
     fn generate_token() {
@@ -187,10 +188,10 @@ mod test {
     #[test]
     fn add_token() {
         let tokens = ApiTokenCmd::generate(10, 10);
-        let pool = load_db_connection_pool(&init_test_db()).unwrap();
-
-        initialize_db_with_migration(&pool.get().unwrap()).unwrap();
-        let db_conn = pool.get().unwrap();
+        let db_url = DbBuilder::new().build().unwrap();
+        let connection_pool = load_db_connection_pool(&db_url).unwrap();
+        initialize_db_with_migration(&connection_pool.get().unwrap()).unwrap();
+        let db_conn = connection_pool.get().unwrap();
         ApiTokenCmd::add_tokens(&tokens, &db_conn).unwrap();
         for token in tokens
             .iter()

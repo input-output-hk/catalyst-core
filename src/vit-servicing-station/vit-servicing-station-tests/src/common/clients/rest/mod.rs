@@ -5,6 +5,7 @@ mod search;
 
 pub use raw::RestClient as RawRestClient;
 pub use search::SearchRequestBuilder;
+use vit_servicing_station_lib::v0::endpoints::snapshot::DelegatorInfo;
 
 use crate::common::clients::rest::path::RestPathBuilder;
 use crate::common::raw_snapshot::RawSnapshot;
@@ -129,6 +130,14 @@ impl RestClient {
 
     pub fn voter_info(&self, tag: &str, key: &str) -> Result<VoterInfo, Error> {
         let response = self.raw.voter_info(tag, key)?;
+        self.verify_status_code(&response)?;
+        let content = response.text()?;
+        self.raw.log_text(&content);
+        serde_json::from_str(&content).map_err(Error::CannotDeserialize)
+    }
+
+    pub fn delegator_info(&self, tag: &str, key: &str) -> Result<DelegatorInfo, Error> {
+        let response = self.raw.delegator_info(tag, key)?;
         self.verify_status_code(&response)?;
         let content = response.text()?;
         self.raw.log_text(&content);

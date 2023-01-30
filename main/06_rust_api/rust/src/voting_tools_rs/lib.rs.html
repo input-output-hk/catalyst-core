@@ -36,6 +36,13 @@
 <span id="36">36</span>
 <span id="37">37</span>
 <span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Rust implementation of voting tools
 //!
 //! Original Haskell repository is &lt;https://github.com/input-output-hk/voting-tools&gt;
@@ -43,13 +50,16 @@
 //! The queries themselves (as well as the details of the CLI) are different, but they should
 //! produce similar outputs. Malformed registrations are silently ignored.
 
-</span><span class="attribute">#![forbid(missing_docs)]
-#![warn(clippy::pedantic)]
+</span><span class="attribute">#![warn(clippy::pedantic)]
+#![deny(missing_docs)]
+#![deny(unsafe_code)]
+#![deny(clippy::integer_arithmetic)]
 #![allow(
     clippy::module_name_repetitions,
     clippy::match_bool,
     clippy::bool_assert_comparison,
-    clippy::derive_partial_eq_without_eq
+    clippy::derive_partial_eq_without_eq,
+    clippy::missing_panics_doc
 )]
 
 #[macro_use]
@@ -58,20 +68,24 @@
 </span><span class="kw">extern crate </span>diesel;
 
 <span class="kw">mod </span>cli;
+<span class="kw">mod </span>data;
 <span class="kw">mod </span>data_provider;
 <span class="kw">mod </span>db;
+<span class="kw">mod </span>error;
 <span class="kw">mod </span>logic;
-<span class="kw">mod </span>model;
 <span class="kw">mod </span>testing;
+<span class="kw">mod </span>validation;
 
 <span class="comment">// this export style forces us to be explicit about what is in the public API
 </span><span class="kw">pub use </span>exports::<span class="kw-2">*</span>;
 <span class="kw">mod </span>exports {
-    <span class="kw">pub use </span><span class="kw">crate</span>::cli::{Args, DryRunCommand};
+    <span class="kw">pub use </span><span class="kw">crate</span>::cli::{show_error_warning, Args, DryRunCommand};
+    <span class="kw">pub use </span><span class="kw">crate</span>::data::{
+        Sig, Signature, SlotNo, SnapshotEntry, VotingPowerSource, VotingPurpose,
+    };
     <span class="kw">pub use </span><span class="kw">crate</span>::data_provider::DataProvider;
     <span class="kw">pub use </span><span class="kw">crate</span>::db::{Conn, Db, DbConfig};
-    <span class="kw">pub use </span><span class="kw">crate</span>::logic::voting_power;
-    <span class="kw">pub use </span><span class="kw">crate</span>::model::{Delegations, Output};
+    <span class="kw">pub use </span><span class="kw">crate</span>::logic::{voting_power, VotingPowerArgs};
     <span class="kw">pub use </span><span class="kw">crate</span>::testing::<span class="kw-2">*</span>;
 }
 </code></pre></div>

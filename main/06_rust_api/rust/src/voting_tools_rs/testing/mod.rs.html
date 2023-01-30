@@ -15,22 +15,28 @@
 <span id="15">15</span>
 <span id="16">16</span>
 <span id="17">17</span>
-</pre><pre class="rust"><code><span class="doccomment">/// Snapshot reference tests which perform output comparison for historical snapshots
-</span><span class="attribute">#[cfg(test)]
-#[cfg(feature = <span class="string">&quot;reference_tests&quot;</span>)]
-</span><span class="kw">mod </span>reference;
-
-<span class="doccomment">/// E2E tests for integrations between voting tool and db sync database
-</span><span class="attribute">#[cfg(test)]
-#[cfg(feature = <span class="string">&quot;e2e_tests&quot;</span>)]
-</span><span class="kw">mod </span>e2e;
-
-<span class="doccomment">/// Functional tests for voting tools and db sync mock
-</span><span class="attribute">#[cfg(test)]
-</span><span class="kw">mod </span>functional;
-
-<span class="doccomment">/// Test api for internal tests as well for building mocks and varius testing utils
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+</pre><pre class="rust"><code><span class="comment">// /// Snapshot reference tests which perform output comparison for historical snapshots
+// #[cfg(test)]
+// #[cfg(feature = &quot;reference_tests&quot;)]
+// mod reference;
+//
+// /// E2E tests for integrations between voting tool and db sync database
+// #[cfg(test)]
+// #[cfg(feature = &quot;e2e_tests&quot;)]
+// mod e2e;
+//
+// /// Functional tests for voting tools and db sync mock
+// #[cfg(test)]
+// mod functional;
+//
+</span><span class="doccomment">/// Test api for internal tests as well for building mocks and various testing utils
 /// outside the project
 </span><span class="kw">pub mod </span>test_api;
+<span class="comment">//
+</span><span class="doccomment">/// Test vectors for various CIPs
+</span><span class="kw">pub mod </span>vectors;
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="voting_tools_rs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -349,7 +349,6 @@
 <span id="349">349</span>
 <span id="350">350</span>
 <span id="351">351</span>
-<span id="352">352</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{Block0, InMemoryNode, CARDANO_MAINNET_SLOTS_PER_EPOCH};
 <span class="kw">use </span>cardano_serialization_lib::metadata::GeneralTransactionMetadata;
 <span class="kw">use </span>cardano_serialization_lib::utils::BigNum;
@@ -409,6 +408,17 @@
         <span class="kw">let </span><span class="kw-2">mut </span>db_sync = InMemoryDbSync::default();
         db_sync.on_block_propagation(<span class="kw-2">&amp;</span>block0.block);
         db_sync
+    }
+
+    <span class="doccomment">/// Create an empty instance
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>empty() -&gt; <span class="self">Self </span>{
+        InMemoryDbSync {
+            transactions: HashMap::new(),
+            blocks: <span class="macro">vec!</span>[],
+            stakes: HashMap::new(),
+            settings: Settings::default(),
+        }
     }
 
     <span class="doccomment">/// Connects to Cardano mock node using simple observer/observable mechanism
@@ -540,24 +550,12 @@
     </span><span class="attribute">#[must_use]
     </span><span class="kw">pub fn </span>query_voting_transactions_with_bounds(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        lower: <span class="prelude-ty">Option</span>&lt;u64&gt;,
-        upper: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+        lower: u64,
+        upper: u64,
     ) -&gt; HashMap&lt;BlockNo, Vec&lt;GeneralTransactionMetadata&gt;&gt; {
         <span class="self">self</span>.metadata()
             .into_iter()
-            .filter(|(block_no, <span class="kw">_</span>)| {
-                <span class="kw">if let </span><span class="prelude-val">Some</span>(result) = lower.map(|x| x &gt; u64::from(<span class="kw-2">*</span>block_no)) {
-                    <span class="kw">if </span>result {
-                        <span class="kw">return </span><span class="bool-val">false</span>;
-                    }
-                }
-                <span class="kw">if let </span><span class="prelude-val">Some</span>(result) = upper.map(|x| x &lt; u64::from(<span class="kw-2">*</span>block_no)) {
-                    <span class="kw">if </span>result {
-                        <span class="kw">return </span><span class="bool-val">false</span>;
-                    }
-                }
-                <span class="bool-val">true
-            </span>})
+            .filter(|(block_no, <span class="kw">_</span>)| lower &lt;= u64::from(<span class="kw-2">*</span>block_no) &amp;&amp; u64::from(<span class="kw-2">*</span>block_no) &lt;= upper)
             .collect()
     }
 

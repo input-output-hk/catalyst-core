@@ -55,10 +55,8 @@
 <span id="55">55</span>
 <span id="56">56</span>
 <span id="57">57</span>
-<span id="58">58</span>
-<span id="59">59</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::SessionSettingsExtension;
-<span class="kw">use </span><span class="kw">crate</span>::builders::utils::{logger, DeploymentTree};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::logger;
+<span class="kw">use </span><span class="kw">crate</span>::builders::utils::SessionSettingsExtension;
 <span class="kw">use </span><span class="kw">crate</span>::builders::VitBackendSettingsBuilder;
 <span class="kw">use </span><span class="kw">crate</span>::config::read_config;
 <span class="kw">use </span><span class="kw">crate</span>::mode::standard::generate_random_database;
@@ -103,14 +101,12 @@
             std::fs::create_dir_all(<span class="kw-2">&amp;</span><span class="self">self</span>.output_directory)<span class="question-mark">?</span>;
         }
 
-        <span class="kw">let </span>deployment_tree = DeploymentTree::new(<span class="kw-2">&amp;</span><span class="self">self</span>.output_directory);
-
         <span class="kw">let </span>(controller, vit_parameters) = VitBackendSettingsBuilder::default()
             .config(<span class="kw-2">&amp;</span>config)
             .session_settings(session_settings)
             .build()<span class="question-mark">?</span>;
 
-        generate_random_database(<span class="kw-2">&amp;</span>deployment_tree, vit_parameters)<span class="question-mark">?</span>;
+        generate_random_database(vit_parameters)<span class="question-mark">?</span>;
 
         config.print_report(<span class="prelude-val">Some</span>(controller));
         <span class="prelude-val">Ok</span>(())

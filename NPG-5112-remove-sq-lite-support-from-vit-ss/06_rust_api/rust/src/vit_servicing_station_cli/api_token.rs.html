@@ -223,6 +223,7 @@
 <span id="223">223</span>
 <span id="224">224</span>
 <span id="225">225</span>
+<span id="226">226</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db_utils::{backup_db_file, restore_db_file};
 <span class="kw">use </span><span class="kw">crate</span>::task::ExecTask;
 <span class="kw">use </span>clap::Parser;
@@ -392,6 +393,7 @@
     <span class="kw">use </span>vit_servicing_station_lib::db::{
         migrations::initialize_db_with_migration, queries::api_tokens::query_token_data_by_token,
     };
+    <span class="kw">use </span>vit_servicing_station_tests::common::startup::db::DbBuilder;
 
     <span class="attribute">#[test]
     </span><span class="kw">fn </span>generate_token() {
@@ -412,10 +414,10 @@
     <span class="attribute">#[test]
     </span><span class="kw">fn </span>add_token() {
         <span class="kw">let </span>tokens = ApiTokenCmd::generate(<span class="number">10</span>, <span class="number">10</span>);
-        <span class="kw">let </span>pool = load_db_connection_pool(<span class="kw-2">&amp;</span>init_test_db()).unwrap();
-
-        initialize_db_with_migration(<span class="kw-2">&amp;</span>pool.get().unwrap()).unwrap();
-        <span class="kw">let </span>db_conn = pool.get().unwrap();
+        <span class="kw">let </span>db_url = DbBuilder::new().build().unwrap();
+        <span class="kw">let </span>connection_pool = load_db_connection_pool(<span class="kw-2">&amp;</span>db_url).unwrap();
+        initialize_db_with_migration(<span class="kw-2">&amp;</span>connection_pool.get().unwrap()).unwrap();
+        <span class="kw">let </span>db_conn = connection_pool.get().unwrap();
         ApiTokenCmd::add_tokens(<span class="kw-2">&amp;</span>tokens, <span class="kw-2">&amp;</span>db_conn).unwrap();
         <span class="kw">for </span>token <span class="kw">in </span>tokens
             .iter()

@@ -836,10 +836,6 @@
 <span id="836">836</span>
 <span id="837">837</span>
 <span id="838">838</span>
-<span id="839">839</span>
-<span id="840">840</span>
-<span id="841">841</span>
-<span id="842">842</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{ExplorerVerifier, VerifierError};
 <span class="kw">use </span><span class="kw">crate</span>::jormungandr::explorer::data::transaction_by_id_certificates::{
     PayloadType <span class="kw">as </span>expPayloadType, <span class="kw-2">*</span>,
@@ -1659,10 +1655,6 @@
                         <span class="kw">if </span>explorer_param.transaction_max_expiry_epochs <span class="kw">as </span>u8 == <span class="kw-2">*</span>certificate_param)).count();
                     <span class="macro">assert_eq!</span>(matching_params, <span class="number">1</span>);
                 }
-                <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-                </span>EvmConfiguration(<span class="kw">_</span>) =&gt; <span class="macro">unimplemented!</span>(),
-                <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-                </span>EvmEnvironment(<span class="kw">_</span>) =&gt; <span class="macro">unimplemented!</span>(),
             }
         }
     }

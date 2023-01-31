@@ -232,59 +232,7 @@
 <span id="232">232</span>
 <span id="233">233</span>
 <span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
-<span id="237">237</span>
-<span id="238">238</span>
-<span id="239">239</span>
-<span id="240">240</span>
-<span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
-<span id="245">245</span>
-<span id="246">246</span>
-<span id="247">247</span>
-<span id="248">248</span>
-<span id="249">249</span>
-<span id="250">250</span>
-<span id="251">251</span>
-<span id="252">252</span>
-<span id="253">253</span>
-<span id="254">254</span>
-<span id="255">255</span>
-<span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
-<span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
-<span id="262">262</span>
-<span id="263">263</span>
-<span id="264">264</span>
-<span id="265">265</span>
-<span id="266">266</span>
-<span id="267">267</span>
-<span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>vote;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-</span><span class="kw">use </span><span class="kw">super</span>::data::Wallet;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-</span><span class="kw">use </span><span class="kw">crate</span>::certificate::EvmMapping;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-</span><span class="kw">use </span><span class="kw">crate</span>::evm::EvmActionType;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-</span><span class="kw">use </span><span class="kw">crate</span>::evm::EvmTransaction;
 <span class="kw">use </span><span class="kw">crate</span>::fragment::Contents;
 <span class="kw">use </span><span class="kw">crate</span>::fragment::Fragment;
 <span class="kw">use </span><span class="kw">crate</span>::header::BlockDate;
@@ -317,10 +265,6 @@
 <span class="kw">use </span>chain_addr::Discrimination;
 <span class="kw">use </span>chain_crypto::SecretKey;
 <span class="kw">use </span>chain_crypto::{vrf_evaluate_and_prove, Ed25519, KeyPair, PublicKey};
-<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-</span><span class="kw">use </span>chain_evm::machine::Address;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-</span><span class="kw">use </span>chain_evm::AccessList;
 <span class="kw">use </span>chain_time::{Epoch <span class="kw">as </span>TimeEpoch, SlotDuration, TimeEra, TimeFrame, Timeline};
 <span class="kw">use </span>rand::SeedableRng;
 <span class="kw">use </span>rand_chacha::ChaCha20Rng;
@@ -519,38 +463,6 @@
             policy: Default::default(),
             to: id,
             value: Value(<span class="number">1</span>),
-        }
-    }
-
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-    </span><span class="kw">pub fn </span>evm_mapping_for_wallet(wallet: <span class="kw-2">&amp;</span>Wallet) -&gt; EvmMapping {
-        EvmMapping {
-            account_id: wallet.public_key().into(),
-            evm_address: Address::from_low_u64_be(<span class="self">Self</span>::rand().next_u64()),
-        }
-    }
-
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-    </span><span class="kw">pub fn </span>evm_transaction(
-        evm_address_sender: Address,
-        evm_address_receiver: Address,
-        amount: u64,
-        max_gas_fee: u64,
-        input_nonce: u64,
-    ) -&gt; EvmTransaction {
-        <span class="kw">let </span>empty_data: Box&lt;[u8]&gt; = <span class="macro">vec!</span>[<span class="number">0</span>].into_boxed_slice();
-        <span class="kw">let </span>empty_access_list = AccessList::new();
-
-        EvmTransaction {
-            value: amount,
-            nonce: input_nonce,
-            gas_limit: max_gas_fee,
-            caller: evm_address_sender,
-            access_list: empty_access_list,
-            action_type: EvmActionType::Call {
-                address: evm_address_receiver,
-                data: empty_data,
-            },
         }
     }
 }

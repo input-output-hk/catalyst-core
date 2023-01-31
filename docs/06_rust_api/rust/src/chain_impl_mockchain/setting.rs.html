@@ -354,34 +354,10 @@
 <span id="354">354</span>
 <span id="355">355</span>
 <span id="356">356</span>
-<span id="357">357</span>
-<span id="358">358</span>
-<span id="359">359</span>
-<span id="360">360</span>
-<span id="361">361</span>
-<span id="362">362</span>
-<span id="363">363</span>
-<span id="364">364</span>
-<span id="365">365</span>
-<span id="366">366</span>
-<span id="367">367</span>
-<span id="368">368</span>
-<span id="369">369</span>
-<span id="370">370</span>
-<span id="371">371</span>
-<span id="372">372</span>
-<span id="373">373</span>
-<span id="374">374</span>
-<span id="375">375</span>
-<span id="376">376</span>
-<span id="377">377</span>
-<span id="378">378</span>
 </pre><pre class="rust"><code><span class="doccomment">//! define the Blockchain settings
 //!
 
-</span><span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-</span><span class="kw">use </span><span class="kw">crate</span>::config::EvmEnvSettings;
-<span class="kw">use </span><span class="kw">crate</span>::fragment::{config::ConfigParams, BlockContentSize};
+</span><span class="kw">use </span><span class="kw">crate</span>::fragment::{config::ConfigParams, BlockContentSize};
 <span class="kw">use </span><span class="kw">crate</span>::milli::Milli;
 <span class="kw">use </span><span class="kw">crate</span>::rewards::TaxType;
 <span class="kw">use </span><span class="kw">crate</span>::update;
@@ -422,10 +398,6 @@
     <span class="kw">pub </span>pool_participation_capping: <span class="prelude-ty">Option</span>&lt;(NonZeroU32, NonZeroU32)&gt;,
     <span class="kw">pub </span>committees: Arc&lt;[CommitteeId]&gt;,
     <span class="kw">pub </span>transaction_max_expiry_epochs: u8,
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-    </span><span class="kw">pub </span>evm_config: chain_evm::Config,
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-    </span><span class="kw">pub </span>evm_environment: EvmEnvSettings,
 }
 
 <span class="attribute">#[derive(Clone, Debug, Eq, PartialEq)]
@@ -513,10 +485,6 @@
             pool_participation_capping: <span class="prelude-val">None</span>,
             committees: Arc::new([]),
             transaction_max_expiry_epochs: <span class="number">1</span>,
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-            </span>evm_config: chain_evm::Config::default(),
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-            </span>evm_environment: EvmEnvSettings::default(),
         }
     }
 
@@ -623,14 +591,6 @@
                 ConfigParam::TransactionMaxExpiryEpochs(max_expiry_epochs) =&gt; {
                     new_state.transaction_max_expiry_epochs = <span class="kw-2">*</span>max_expiry_epochs;
                 }
-                <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-                </span>ConfigParam::EvmConfiguration(evm_config_params) =&gt; {
-                    new_state.evm_config = <span class="kw-2">*</span>evm_config_params;
-                }
-                <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-                </span>ConfigParam::EvmEnvironment(evm_env_params) =&gt; {
-                    new_state.evm_environment = <span class="kw-2">*</span>evm_env_params;
-                }
             }
         }
 
@@ -675,10 +635,6 @@
             <span class="prelude-val">Some</span>(p) =&gt; params.push(ConfigParam::TreasuryParams(<span class="kw-2">*</span>p)),
             <span class="prelude-val">None </span>=&gt; (),
         };
-        <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-        </span>params.push(ConfigParam::EvmConfiguration(<span class="self">self</span>.evm_config));
-        <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-        </span>params.push(ConfigParam::EvmEnvironment(<span class="self">self</span>.evm_environment));
 
         <span class="macro">debug_assert_eq!</span>(<span class="self">self</span>, <span class="kw-2">&amp;</span>Settings::new().try_apply(<span class="kw-2">&amp;</span>params).unwrap());
 

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Witness","Structure that proofs that certain user agrees with some data. This structure is used to sign `Transaction` and get `SignedTransaction` out."]],"fn":[["make_witness",""],["make_witness_with_lane",""],["make_witnesses",""]]};

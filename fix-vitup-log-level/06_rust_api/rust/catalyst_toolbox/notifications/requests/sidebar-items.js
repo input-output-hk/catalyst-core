@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["RequestData",""]],"mod":[["create_message",""]],"struct":[["Request",""]]};

@@ -1,13 +1,14 @@
 name: Markdown Lint
 
-on: 
+on:
   push:
     branches:
-      - main  
+      - main
   pull_request:
 
 jobs:
   lint:
+    name: Markdown Lint
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["DEFAULT_STRATEGIES","the default strategies, in order of importance, to apply when selecting inputs and outputs of a transaction"]],"enum":[["AccountWitnessBuilder",""],["AddInputStatus",""],["InputStrategy",""],["OutputStrategy",""]],"struct":[["Strategy",""],["StrategyBuilder",""],["TransactionBuilder",""]]};

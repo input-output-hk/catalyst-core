@@ -315,6 +315,8 @@ fn start_services(bootstrapped_node: BootstrappedNode) -> Result<(), start_up::E
             leadership_logs,
             enclave,
             network_state,
+            #[cfg(feature = "prometheus-metrics")]
+            prometheus: prometheus_metric,
         };
         block_on(async {
             let mut context = context.write().await;

@@ -61,6 +61,6 @@ pub fn test_from_bytes_for_unknown_key() {
     jcli.key().convert_from_bytes_string_expect_fail(
         "ed25519-exten",
         byte_key_file.path(),
-        "'ed25519-exten' isn't a valid value for '--type <KEY_TYPE>'",
+        "invalid value 'ed25519-exten' for '--type <KEY_TYPE>'",
     );
 }

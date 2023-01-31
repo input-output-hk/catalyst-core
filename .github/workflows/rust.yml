@@ -1,4 +1,4 @@
-name: CI-Tests
+name: Rust CI
 
 on:
   push:
@@ -196,6 +196,20 @@ jobs:
           + test(multi_voteplan_ok_private) + test(ui_test))" \
           --archive-file nextest-archive.tar.zst --extract-to ${{ github.workspace }} \
           --extract-overwrite --partition hash:${{ matrix.partition }}/10 --profile ci
+
+  test-results:
+    if: always()
+    runs-on: ubuntu-latest
+    name: Final test results
+    needs: catalyst-core-tests
+    steps:
+      - run: |
+          result="${{ needs.catalyst-core-tests.result }}"
+          if [[ $result == "success" ]]; then
+            exit 0
+          else
+            exit 1
+          fi
 
   cleanup-cache:
     name: Clean up run cache

@@ -38,10 +38,8 @@ pub fn test_sumed25519_12_key_generation() {
 #[test]
 pub fn test_unknown_key_type_generation() {
     let jcli: JCli = Default::default();
-    jcli.key().generate_expect_fail(
-        "unknown",
-        "'unknown' isn't a valid value for '--type <KEY_TYPE>'",
-    );
+    jcli.key()
+        .generate_expect_fail("unknown", "invalid value 'unknown' for '--type <KEY_TYPE>'");
 }
 
 #[test]

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["DecryptionError",""]],"fn":[["decrypt","Decrypt data in the asymmetric lock. this is the dual of ‘encrypt’. The data should in the form:"],["encrypt","Encrypt data in an assymetric lock"]]};

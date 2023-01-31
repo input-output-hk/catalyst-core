@@ -52,30 +52,11 @@
 <span id="52">52</span>
 <span id="53">53</span>
 <span id="54">54</span>
-<span id="55">55</span>
-<span id="56">56</span>
-<span id="57">57</span>
-<span id="58">58</span>
-<span id="59">59</span>
-<span id="60">60</span>
-<span id="61">61</span>
-<span id="62">62</span>
-<span id="63">63</span>
-<span id="64">64</span>
-<span id="65">65</span>
-<span id="66">66</span>
-<span id="67">67</span>
-<span id="68">68</span>
-<span id="69">69</span>
-<span id="70">70</span>
-<span id="71">71</span>
-<span id="72">72</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db::{
     models::voteplans::Voteplan, schema::voteplans, schema::voteplans::dsl <span class="kw">as </span>voteplans_dsl,
     DbConnection, DbConnectionPool,
 };
 <span class="kw">use </span><span class="kw">crate</span>::v0::errors::HandleError;
-<span class="kw">use crate</span>::{execute_q, q};
 <span class="kw">use </span>diesel::{ExpressionMethods, Insertable, QueryDsl, QueryResult, RunQueryDsl};
 
 <span class="kw">pub async fn </span>query_voteplan_by_id(
@@ -84,31 +65,18 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Voteplan&gt;, HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
-        <span class="macro">q!</span>(
-            db_conn,
-            diesel::QueryDsl::filter(voteplans_dsl::voteplans, voteplans_dsl::fund_id.eq(id))
-                .load::&lt;Voteplan&gt;(<span class="kw-2">&amp;</span>db_conn)
-        )
-        .map_err(|_e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;voteplan with id {}&quot;</span>, id)))
+        diesel::QueryDsl::filter(voteplans_dsl::voteplans, voteplans_dsl::fund_id.eq(id))
+            .load::&lt;Voteplan&gt;(<span class="kw-2">&amp;</span>db_conn)
+            .map_err(|_e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;voteplan with id {}&quot;</span>, id)))
     })
     .<span class="kw">await
     </span>.map_err(|_e| HandleError::InternalError(<span class="string">&quot;Error executing request&quot;</span>.to_string()))<span class="question-mark">?
 </span>}
 
 <span class="kw">pub fn </span>insert_voteplan(voteplan: Voteplan, db_conn: <span class="kw-2">&amp;</span>DbConnection) -&gt; QueryResult&lt;Voteplan&gt; {
-    <span class="macro">q!</span>(
-        db_conn,
-        diesel::insert_into(voteplans::table)
-            .values(voteplan.values())
-            .execute(db_conn)
-    )<span class="question-mark">?</span>;
-
-    <span class="comment">// This can be done in a single query if we move to postgres or any DB that supports `get_result`
-    // instead of `execute` in the previous insert
-    </span><span class="macro">q!</span>(
-        db_conn,
-        voteplans::table.order(voteplans::id.desc()).first(db_conn)
-    )
+    diesel::insert_into(voteplans::table)
+        .values(voteplan.values())
+        .get_result(db_conn)
 }
 
 <span class="kw">pub fn </span>batch_insert_voteplans(
@@ -117,30 +85,26 @@
 ) -&gt; QueryResult&lt;Vec&lt;Voteplan&gt;&gt; {
     <span class="kw">let </span>len = voteplans_slice.len();
 
-    <span class="macro">execute_q!</span>(
-        db_conn,
-        diesel::insert_into(voteplans::table).values(
+    diesel::insert_into(voteplans::table)
+        .values(
             voteplans_slice
                 .iter()
                 .cloned()
                 .map(|voteplan| voteplan.values())
                 .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
         )
-    )<span class="question-mark">?</span>;
+        .execute(db_conn)<span class="question-mark">?</span>;
 
     <span class="comment">// This can be done in a single query if we move to postgres or any DB that supports `get_result`
     // instead of `execute` in the previous insert
-    </span><span class="prelude-val">Ok</span>(<span class="macro">q!</span>(
-        db_conn,
-        voteplans::table
-            .order(voteplans::id.desc())
-            .limit(len <span class="kw">as </span>i64)
-            .load(db_conn)<span class="question-mark">?
-    </span>)
-    .iter()
-    .cloned()
-    .rev()
-    .collect())
+    </span><span class="prelude-val">Ok</span>(voteplans::table
+        .order(voteplans::id.desc())
+        .limit(len <span class="kw">as </span>i64)
+        .load(db_conn)<span class="question-mark">?
+        </span>.iter()
+        .cloned()
+        .rev()
+        .collect())
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="vit_servicing_station_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

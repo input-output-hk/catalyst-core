@@ -6,15 +6,13 @@
 <span id="6">6</span>
 <span id="7">7</span>
 <span id="8">8</span>
-<span id="9">9</span>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{
-    db::{models::goals::InsertGoal, schema::goals, DbConnection},
-    execute_q,
-};
-<span class="kw">use </span>diesel::QueryResult;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db::{models::goals::InsertGoal, schema::goals, DbConnection};
+<span class="kw">use </span>diesel::{QueryResult, RunQueryDsl};
 
 <span class="kw">pub fn </span>batch_insert(goals: Vec&lt;InsertGoal&gt;, db_conn: <span class="kw-2">&amp;</span>DbConnection) -&gt; QueryResult&lt;usize&gt; {
-    <span class="macro">execute_q!</span>(db_conn, diesel::insert_into(goals::table).values(goals))
+    diesel::insert_into(goals::table)
+        .values(goals)
+        .execute(db_conn)
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="vit_servicing_station_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -144,12 +144,6 @@
 <span id="144">144</span>
 <span id="145">145</span>
 <span id="146">146</span>
-<span id="147">147</span>
-<span id="148">148</span>
-<span id="149">149</span>
-<span id="150">150</span>
-<span id="151">151</span>
-<span id="152">152</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db::models::proposals::ChallengeType;
 <span class="kw">use </span><span class="kw">crate</span>::db::schema::challenges;
 <span class="kw">use </span>diesel::backend::Backend;
@@ -264,10 +258,7 @@
 <span class="attribute">#[cfg(test)]
 </span><span class="kw">pub mod </span>test {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use crate</span>::{
-        db::{DbConnection, DbConnectionPool},
-        q,
-    };
+    <span class="kw">use </span><span class="kw">crate</span>::db::{DbConnection, DbConnectionPool};
     <span class="kw">use </span>diesel::RunQueryDsl;
 
     <span class="kw">pub fn </span>get_test_challenge_with_fund_id(fund_id: i32) -&gt; Challenge {
@@ -293,13 +284,10 @@
     }
 
     <span class="kw">pub fn </span>populate_db_with_challenge_conn(challenge: <span class="kw-2">&amp;</span>Challenge, connection: <span class="kw-2">&amp;</span>DbConnection) {
-        <span class="macro">q!</span>(
-            connection,
-            diesel::insert_into(challenges::table)
-                .values(challenge.clone().values())
-                .execute(connection)
-        )
-        .unwrap();
+        diesel::insert_into(challenges::table)
+            .values(challenge.clone().values())
+            .execute(connection)
+            .unwrap();
     }
 }
 </code></pre></div>

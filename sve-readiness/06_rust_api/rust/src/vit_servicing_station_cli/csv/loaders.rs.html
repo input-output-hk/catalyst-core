@@ -397,24 +397,8 @@
 <span id="397">397</span>
 <span id="398">398</span>
 <span id="399">399</span>
-<span id="400">400</span>
-<span id="401">401</span>
-<span id="402">402</span>
-<span id="403">403</span>
-<span id="404">404</span>
-<span id="405">405</span>
-<span id="406">406</span>
-<span id="407">407</span>
-<span id="408">408</span>
-<span id="409">409</span>
-<span id="410">410</span>
-<span id="411">411</span>
-<span id="412">412</span>
-<span id="413">413</span>
-<span id="414">414</span>
-<span id="415">415</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db_utils::{backup_db_file, restore_db_file};
-<span class="kw">use crate</span>::{db_utils::db_file_exists, task::ExecTask};
+<span class="kw">use </span><span class="kw">crate</span>::task::ExecTask;
 <span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>csv::Trim;
 <span class="kw">use </span>diesel::{Insertable, QueryDsl, RunQueryDsl};
@@ -566,7 +550,6 @@
             }
         };
 
-        db_file_exists(<span class="kw-2">&amp;</span><span class="self">self</span>.db_url)<span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>funds = LoadCmd::load_from_csv::&lt;<span class="kw">super</span>::models::Fund&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>.funds)<span class="question-mark">?</span>;
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(override_fund_id) = settings.force_fund_id {
@@ -679,12 +662,9 @@
             goal.fund_id = fund.id;
         }
 
-        <span class="kw">let </span>advisors = <span class="macro">vit_servicing_station_lib::q!</span>(
-            db_conn,
-            db::schema::community_advisors_reviews::dsl::community_advisors_reviews
-                .select(community_advisors_reviews_dsl::id)
-                .load::&lt;i32&gt;(db_conn)
-        )<span class="question-mark">?</span>;
+        <span class="kw">let </span>advisors = db::schema::community_advisors_reviews::dsl::community_advisors_reviews
+            .select(community_advisors_reviews_dsl::id)
+            .load::&lt;i32&gt;(db_conn)<span class="question-mark">?</span>;
         <span class="kw">let </span>max_id = advisors.iter().max().unwrap_or(<span class="kw-2">&amp;</span><span class="number">0i32</span>);
 
         <span class="kw">for </span>review <span class="kw">in </span>reviews.iter_mut() {
@@ -780,8 +760,6 @@
     }
 
     <span class="kw">fn </span>handle_votes_load(db_url: <span class="kw-2">&amp;</span>str, votes_path: <span class="kw-2">&amp;</span>Path) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-        db_file_exists(db_url)<span class="question-mark">?</span>;
-
         <span class="kw">let </span><span class="kw-2">mut </span>votes = <span class="macro">vec!</span>[];
 
         <span class="kw">for </span>csv_file <span class="kw">in </span><span class="self">Self</span>::list_of_csv_paths(votes_path)<span class="question-mark">? </span>{
@@ -803,18 +781,8 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn </span>handle_load_with_db_backup(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-        <span class="kw">let </span>backup_file = backup_db_file(<span class="kw-2">&amp;</span><span class="self">self</span>.db_url)<span class="question-mark">?</span>;
-        <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self</span>.handle_load() {
-            restore_db_file(backup_file, <span class="kw-2">&amp;</span><span class="self">self</span>.db_url)<span class="question-mark">?</span>;
-            <span class="prelude-val">Err</span>(e)
-        } <span class="kw">else </span>{
-            <span class="prelude-val">Ok</span>(())
-        }
-    }
-
     <span class="kw">pub fn </span>exec(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-        <span class="self">self</span>.handle_load_with_db_backup()<span class="question-mark">?</span>;
+        <span class="self">self</span>.handle_load()<span class="question-mark">?</span>;
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(votes_folder) = <span class="kw-2">&amp;</span><span class="self">self</span>.votes {
             <span class="kw">let </span>backup_file = backup_db_file(<span class="kw-2">&amp;</span><span class="self">self</span>.db_url)<span class="question-mark">?</span>;

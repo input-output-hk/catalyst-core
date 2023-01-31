@@ -2,7 +2,6 @@ use std::convert::TryInto;
 
 use crate::{
     db::{schema, DbConnection, DbConnectionPool},
-    q,
     v0::{
         endpoints::search::requests::{
             Column, Constraint, OrderBy, SearchCountQuery, SearchQuery, SearchResponse, Table,
@@ -222,7 +221,7 @@ fn search(
 
     match table {
         Table::Challenges => {
-            let vec = q!(conn, {
+            let vec = {
                 let mut query = build_challenges_query(filter, order_by)?;
 
                 if let Some(limit) = limit {
@@ -234,13 +233,13 @@ fn search(
                 }
 
                 query.load(conn)
-            })
+            }
             .map_err(|_| HandleError::InternalError("error searching".to_string()))?;
 
             Ok(SearchResponse::Challenge(vec))
         }
         Table::Proposals => {
-            let vec = q!(conn, {
+            let vec = {
                 let mut query = build_proposals_query(filter, order_by)?;
 
                 if let Some(limit) = limit {
@@ -252,7 +251,7 @@ fn search(
                 }
 
                 query.load(conn)
-            })
+            }
             .map_err(|_| HandleError::InternalError("error searching".to_string()))?;
 
             Ok(SearchResponse::Proposal(vec))
@@ -278,24 +277,20 @@ fn search_count(
 ) -> Result<i64, HandleError> {
     match table {
         Table::Challenges => {
-            q!(conn, {
-                let query = build_challenges_query(filter, Vec::new())?;
+            let query = build_challenges_query(filter, Vec::new())?;
 
-                query
-                    .count()
-                    .get_result(conn)
-                    .map_err(|e| HandleError::InternalError(e.to_string()))
-            })
+            query
+                .count()
+                .get_result(conn)
+                .map_err(|e| HandleError::InternalError(e.to_string()))
         }
         Table::Proposals => {
-            q!(conn, {
-                let query = build_proposals_query(filter, Vec::new())?;
+            let query = build_proposals_query(filter, Vec::new())?;
 
-                query
-                    .count()
-                    .get_result(conn)
-                    .map_err(|_| HandleError::InternalError("error searching".to_string()))
-            })
+            query
+                .count()
+                .get_result(conn)
+                .map_err(|_| HandleError::InternalError("error searching".to_string()))
         }
     }
 }

@@ -170,13 +170,6 @@ async fn main() -> ApplicationExitCode {
         }
     };
 
-    // Check db file exists (should be here only for current sqlite db backend)
-    if !settings.db_url.starts_with("postgres://")
-        && !std::path::Path::new(&settings.db_url).exists()
-    {
-        error!("DB file {} not found.", &settings.db_url);
-        return ApplicationExitCode::DbConnectionError;
-    }
     // load db pool
     let db_pool = match db::load_db_connection_pool(&settings.db_url) {
         Ok(d) => d,

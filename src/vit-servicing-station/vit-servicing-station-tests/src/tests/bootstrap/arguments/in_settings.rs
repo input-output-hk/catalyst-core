@@ -48,7 +48,7 @@ pub fn in_settings_file_malformed() {
     let mut settings_builder: ServerSettingsBuilder = Default::default();
     let settings = settings_builder
         .with_random_localhost_address()
-        .with_db_path(empty_db(&temp_dir))
+        .with_db_path(empty_db())
         .with_block0_path(BLOCK0_BIN)
         .build();
 
@@ -96,12 +96,11 @@ pub fn db_url_and_block0_replaced() -> Result<(), Box<dyn std::error::Error>> {
     let proposals = gen.proposals(&funds);
     let groups = gen.groups(&funds);
 
-    let temp_dir = TempDir::new().unwrap();
     let db_path = DbBuilder::new()
         .with_token(token)
         .with_groups(groups)
         .with_proposals(proposals)
-        .build(&temp_dir)?;
+        .build()?;
 
     let mut command_builder: BootstrapCommandBuilder = Default::default();
     command_builder

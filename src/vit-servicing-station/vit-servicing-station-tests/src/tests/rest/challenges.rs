@@ -15,10 +15,7 @@ pub fn challenges_are_sorted_by_insertion_order() {
 
     let expected_challenges = snapshot.challenges();
 
-    let db_url = DbBuilder::new()
-        .with_snapshot(&snapshot)
-        .build(&temp_dir)
-        .unwrap();
+    let db_url = DbBuilder::new().with_snapshot(&snapshot).build().unwrap();
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_url)

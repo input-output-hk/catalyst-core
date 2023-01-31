@@ -31,7 +31,7 @@ pub fn get_advisor_reviews() -> Result<(), Box<dyn std::error::Error>> {
     let db_path = DbBuilder::new()
         .with_token(token)
         .with_advisor_reviews(vec![expected_review.clone()])
-        .build(&temp_dir)?;
+        .build()?;
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_path)

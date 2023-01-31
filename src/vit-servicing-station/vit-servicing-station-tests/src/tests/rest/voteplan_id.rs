@@ -8,10 +8,7 @@ pub fn get_proposals_by_voteplan_id_and_index() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
     let snapshot = multivoteplan_snapshot();
 
-    let db_path = DbBuilder::new()
-        .with_snapshot(&snapshot)
-        .build(&temp_dir)
-        .unwrap();
+    let db_path = DbBuilder::new().with_snapshot(&snapshot).build().unwrap();
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_path)

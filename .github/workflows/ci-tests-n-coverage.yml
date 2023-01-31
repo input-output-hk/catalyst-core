@@ -26,7 +26,7 @@ jobs:
     needs: [integration-tests]
     services:
       postgres:
-        image: postgres:14
+        image: postgres:15
         env:
           POSTGRES_PASSWORD: 123456
         options:
@@ -65,7 +65,7 @@ jobs:
 
       - name: Run unit tests
         env:
-          TEST_DB: postgres
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost
         run: |
           cargo llvm-cov nextest --no-report --manifest-path ./src/catalyst-toolbox/catalyst-toolbox/Cargo.toml --profile ci
           cargo llvm-cov nextest --no-report --manifest-path ./src/catalyst-toolbox/snapshot-lib/Cargo.toml --profile ci
@@ -112,7 +112,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:14
+        image: postgres:15
         env:
           POSTGRES_PASSWORD: postgres
         options:

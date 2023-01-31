@@ -25,7 +25,6 @@ pub struct VitStationController {
 }
 
 pub const VIT_CONFIG: &str = "vit_config.yaml";
-pub const STORAGE: &str = "storage.db";
 pub const VIT_STATION_LOG: &str = "vit_station.log";
 
 impl VitStationController {

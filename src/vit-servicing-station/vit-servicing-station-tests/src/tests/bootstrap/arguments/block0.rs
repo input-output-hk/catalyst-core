@@ -8,7 +8,7 @@ use assert_fs::TempDir;
 pub fn non_existing_block0_file() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
     let snapshot = data::ArbitrarySnapshotGenerator::default().snapshot();
-    let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
+    let db_path = DbBuilder::new().with_snapshot(&snapshot).build()?;
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_path)
@@ -22,7 +22,7 @@ pub fn non_existing_block0_file() -> Result<(), Box<dyn std::error::Error>> {
 pub fn malformed_path() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
     let snapshot = data::ArbitrarySnapshotGenerator::default().snapshot();
-    let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
+    let db_path = DbBuilder::new().with_snapshot(&snapshot).build()?;
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_path)
@@ -38,7 +38,7 @@ pub fn malformed_path() -> Result<(), Box<dyn std::error::Error>> {
 pub fn network_path() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
     let snapshot = data::ArbitrarySnapshotGenerator::default().snapshot();
-    let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
+    let db_path = DbBuilder::new().with_snapshot(&snapshot).build()?;
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_path)

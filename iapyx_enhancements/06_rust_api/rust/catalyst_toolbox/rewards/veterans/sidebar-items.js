@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["calculate_veteran_advisors_incentives",""]],"struct":[["VeteranAdvisorIncentive",""]],"type":[["EligibilityThresholds",""],["VcaRewards",""]]};

@@ -206,7 +206,7 @@ jobs:
     steps:
       - run: |
           result="${{ needs.catalyst-core-tests.result }}"
-          if [[ $result == "success" || $result == "skipped" ]]; then
+          if [[ $result == "success" ]]; then
             exit 0
           else
             exit 1

@@ -92,23 +92,6 @@
 <span id="92">92</span>
 <span id="93">93</span>
 <span id="94">94</span>
-<span id="95">95</span>
-<span id="96">96</span>
-<span id="97">97</span>
-<span id="98">98</span>
-<span id="99">99</span>
-<span id="100">100</span>
-<span id="101">101</span>
-<span id="102">102</span>
-<span id="103">103</span>
-<span id="104">104</span>
-<span id="105">105</span>
-<span id="106">106</span>
-<span id="107">107</span>
-<span id="108">108</span>
-<span id="109">109</span>
-<span id="110">110</span>
-<span id="111">111</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     db::{
         models::{challenges::Challenge, proposals::Proposal},
@@ -116,7 +99,6 @@
         views_schema::full_proposals_info::dsl <span class="kw">as </span>proposals_dsl,
         DbConnection, DbConnectionPool,
     },
-    execute_q, q,
     v0::errors::HandleError,
 };
 <span class="kw">use </span>diesel::{ExpressionMethods, Insertable, QueryDsl, QueryResult, RunQueryDsl};
@@ -124,13 +106,10 @@
 <span class="kw">pub async fn </span>query_all_challenges(pool: <span class="kw-2">&amp;</span>DbConnectionPool) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Challenge&gt;, HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
-        <span class="macro">q!</span>(
-            db_conn,
-            challenges_dsl::challenges
-                .order_by(challenges_dsl::internal_id.asc())
-                .load::&lt;Challenge&gt;(<span class="kw-2">&amp;</span>db_conn)
-        )
-        .map_err(|<span class="kw">_</span>| HandleError::InternalError(<span class="string">&quot;Error retrieving challenges&quot;</span>.to_string()))
+        challenges_dsl::challenges
+            .order_by(challenges_dsl::internal_id.asc())
+            .load::&lt;Challenge&gt;(<span class="kw-2">&amp;</span>db_conn)
+            .map_err(|<span class="kw">_</span>| HandleError::InternalError(<span class="string">&quot;Error retrieving challenges&quot;</span>.to_string()))
     })
     .<span class="kw">await
     </span>.map_err(|_e| HandleError::InternalError(<span class="string">&quot;Error executing request&quot;</span>.to_string()))<span class="question-mark">?
@@ -142,13 +121,10 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Challenge, HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
-        <span class="macro">q!</span>(
-            db_conn,
-            challenges_dsl::challenges
-                .filter(challenges_dsl::id.eq(id))
-                .first::&lt;Challenge&gt;(<span class="kw-2">&amp;</span>db_conn)
-        )
-        .map_err(|_e| HandleError::NotFound(<span class="string">&quot;Error loading challenge&quot;</span>.to_string()))
+        challenges_dsl::challenges
+            .filter(challenges_dsl::id.eq(id))
+            .first::&lt;Challenge&gt;(<span class="kw-2">&amp;</span>db_conn)
+            .map_err(|_e| HandleError::NotFound(<span class="string">&quot;Error loading challenge&quot;</span>.to_string()))
     })
     .<span class="kw">await
     </span>.map_err(|_e| HandleError::InternalError(<span class="string">&quot;Error executing request&quot;</span>.to_string()))<span class="question-mark">?
@@ -160,14 +136,11 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Challenge&gt;, HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
-        <span class="macro">q!</span>(
-            db_conn,
-            challenges_dsl::challenges
-                .filter(challenges_dsl::fund_id.eq(fund_id))
-                .order_by(challenges_dsl::internal_id.asc())
-                .load::&lt;Challenge&gt;(<span class="kw-2">&amp;</span>db_conn)
-        )
-        .map_err(|_e| HandleError::NotFound(<span class="string">&quot;Error loading challenges for fund id&quot;</span>.to_string()))
+        challenges_dsl::challenges
+            .filter(challenges_dsl::fund_id.eq(fund_id))
+            .order_by(challenges_dsl::internal_id.asc())
+            .load::&lt;Challenge&gt;(<span class="kw-2">&amp;</span>db_conn)
+            .map_err(|_e| HandleError::NotFound(<span class="string">&quot;Error loading challenges for fund id&quot;</span>.to_string()))
     })
     .<span class="kw">await
     </span>.map_err(|_e| HandleError::InternalError(<span class="string">&quot;Error executing request&quot;</span>.to_string()))<span class="question-mark">?
@@ -179,13 +152,10 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Proposal&gt;, HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
-        <span class="macro">q!</span>(
-            db_conn,
-            proposals_dsl::full_proposals_info
-                .filter(proposals_dsl::challenge_id.eq(id))
-                .load::&lt;Proposal&gt;(<span class="kw-2">&amp;</span>db_conn)
-        )
-        .map_err(|_e| HandleError::NotFound(<span class="string">&quot;Error loading challenge&quot;</span>.to_string()))
+        proposals_dsl::full_proposals_info
+            .filter(proposals_dsl::challenge_id.eq(id))
+            .load::&lt;Proposal&gt;(<span class="kw-2">&amp;</span>db_conn)
+            .map_err(|_e| HandleError::NotFound(<span class="string">&quot;Error loading challenge&quot;</span>.to_string()))
     })
     .<span class="kw">await
     </span>.map_err(|_e| HandleError::InternalError(<span class="string">&quot;Error executing request&quot;</span>.to_string()))<span class="question-mark">?
@@ -198,14 +168,11 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Proposal&gt;, HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
-        <span class="macro">q!</span>(
-            db_conn,
-            proposals_dsl::full_proposals_info
-                .filter(proposals_dsl::challenge_id.eq(id))
-                .filter(proposals_dsl::group_id.eq(voter_group_id))
-                .load::&lt;Proposal&gt;(<span class="kw-2">&amp;</span>db_conn)
-        )
-        .map_err(|_e| HandleError::NotFound(<span class="string">&quot;Error loading challenge&quot;</span>.to_string()))
+        proposals_dsl::full_proposals_info
+            .filter(proposals_dsl::challenge_id.eq(id))
+            .filter(proposals_dsl::group_id.eq(voter_group_id))
+            .load::&lt;Proposal&gt;(<span class="kw-2">&amp;</span>db_conn)
+            .map_err(|_e| HandleError::NotFound(<span class="string">&quot;Error loading challenge&quot;</span>.to_string()))
     })
     .<span class="kw">await
     </span>.map_err(|_e| HandleError::InternalError(<span class="string">&quot;Error executing request&quot;</span>.to_string()))<span class="question-mark">?
@@ -215,10 +182,9 @@
     challenges: <span class="kw-2">&amp;</span>[&lt;Challenge <span class="kw">as </span>Insertable&lt;challenges::table&gt;&gt;::Values],
     db_conn: <span class="kw-2">&amp;</span>DbConnection,
 ) -&gt; QueryResult&lt;usize&gt; {
-    <span class="macro">execute_q!</span>(
-        db_conn,
-        diesel::insert_into(challenges::table).values(challenges)
-    )
+    diesel::insert_into(challenges::table)
+        .values(challenges)
+        .execute(db_conn)
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="vit_servicing_station_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

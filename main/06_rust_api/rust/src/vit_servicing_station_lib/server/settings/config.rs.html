@@ -575,7 +575,7 @@
 <span class="kw">const </span>VIT_SERVICE_VERSION_ENV_VARIABLE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;SERVICE_VERSION&quot;</span>;
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>ADDRESS_DEFAULT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;0.0.0.0:3030&quot;</span>;
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>DB_URL_DEFAULT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;./db/database.sqlite3&quot;</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>DB_URL_DEFAULT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;postgres://localhost&quot;</span>;
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>BLOCK0_PATH_DEFAULT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;./resources/v0/block0.bin&quot;</span>;
 
 <span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Parser)]
@@ -1012,7 +1012,7 @@
             <span class="string">&quot;--priv-key-file&quot;</span>,
             <span class="string">&quot;bar.foo&quot;</span>,
             <span class="string">&quot;--db-url&quot;</span>,
-            <span class="string">&quot;database.sqlite3&quot;</span>,
+            <span class="string">&quot;postgres://localhost&quot;</span>,
             <span class="string">&quot;--max-age-secs&quot;</span>,
             <span class="string">&quot;60&quot;</span>,
             <span class="string">&quot;--allowed-origins&quot;</span>,
@@ -1035,7 +1035,7 @@
         <span class="macro">assert!</span>(settings.enable_api_tokens);
         <span class="macro">assert_eq!</span>(settings.tls.cert_file.unwrap(), <span class="string">&quot;foo.bar&quot;</span>);
         <span class="macro">assert_eq!</span>(settings.tls.priv_key_file.unwrap(), <span class="string">&quot;bar.foo&quot;</span>);
-        <span class="macro">assert_eq!</span>(settings.db_url, <span class="string">&quot;database.sqlite3&quot;</span>);
+        <span class="macro">assert_eq!</span>(settings.db_url, <span class="string">&quot;postgres://localhost&quot;</span>);
         <span class="macro">assert_eq!</span>(settings.cors.max_age_secs.unwrap(), <span class="number">60</span>);
         <span class="macro">assert_eq!</span>(settings.service_version, <span class="string">&quot;v0.2.0&quot;</span>);
         <span class="kw">let </span>allowed_origins = settings.cors.allowed_origins.unwrap();
@@ -1054,7 +1054,7 @@
     <span class="attribute">#[test]
     </span><span class="kw">fn </span>load_settings_from_env() {
         <span class="kw">use </span>std::env::set_var;
-        set_var(DATABASE_URL, <span class="string">&quot;database.sqlite3&quot;</span>);
+        set_var(DATABASE_URL, <span class="string">&quot;postgres://localhost&quot;</span>);
         set_var(TLS_CERT_FILE, <span class="string">&quot;foo.bar&quot;</span>);
         set_var(TLS_PRIVATE_KEY_FILE, <span class="string">&quot;bar.foo&quot;</span>);
         set_var(
@@ -1079,7 +1079,7 @@
         <span class="macro">assert!</span>(settings.tls.is_loaded());
         <span class="macro">assert_eq!</span>(settings.tls.cert_file.unwrap(), <span class="string">&quot;foo.bar&quot;</span>);
         <span class="macro">assert_eq!</span>(settings.tls.priv_key_file.unwrap(), <span class="string">&quot;bar.foo&quot;</span>);
-        <span class="macro">assert_eq!</span>(settings.db_url, <span class="string">&quot;database.sqlite3&quot;</span>);
+        <span class="macro">assert_eq!</span>(settings.db_url, <span class="string">&quot;postgres://localhost&quot;</span>);
         <span class="macro">assert_eq!</span>(settings.cors.max_age_secs.unwrap(), <span class="number">60</span>);
         <span class="macro">assert_eq!</span>(settings.service_version, <span class="string">&quot;v0.2.0&quot;</span>);
         <span class="kw">let </span>allowed_origins = settings.cors.allowed_origins.unwrap();
@@ -1102,7 +1102,7 @@
             <span class="string">&quot;--priv-key-file&quot;</span>,
             <span class="string">&quot;bar.foo&quot;</span>,
             <span class="string">&quot;--db-url&quot;</span>,
-            <span class="string">&quot;database.sqlite3&quot;</span>,
+            <span class="string">&quot;postgres://localhost&quot;</span>,
             <span class="string">&quot;--max-age-secs&quot;</span>,
             <span class="string">&quot;60&quot;</span>,
             <span class="string">&quot;--allowed-origins&quot;</span>,

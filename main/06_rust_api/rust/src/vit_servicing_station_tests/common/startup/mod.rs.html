@@ -168,7 +168,7 @@
 <span class="kw">pub fn </span>quick_start(temp_dir: <span class="kw-2">&amp;</span>TempDir) -&gt; <span class="prelude-ty">Result</span>&lt;(Server, Snapshot), ServerBootstrapperError&gt; {
     <span class="kw">let </span>snapshot = ArbitrarySnapshotGenerator::default().snapshot();
 
-    <span class="kw">let </span>db_path = DbBuilder::new().with_snapshot(<span class="kw-2">&amp;</span>snapshot).build(temp_dir)<span class="question-mark">?</span>;
+    <span class="kw">let </span>db_path = DbBuilder::new().with_snapshot(<span class="kw-2">&amp;</span>snapshot).build()<span class="question-mark">?</span>;
 
     <span class="kw">let </span>server = ServerBootstrapper::new()
         .with_db_path(db_path)
@@ -181,8 +181,8 @@
     <span class="prelude-val">Ok</span>((server, snapshot))
 }
 
-<span class="kw">pub fn </span>empty_db(temp_dir: <span class="kw-2">&amp;</span>TempDir) -&gt; String {
-    DbBuilder::new().build(temp_dir).unwrap()
+<span class="kw">pub fn </span>empty_db() -&gt; String {
+    DbBuilder::new().build().unwrap()
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="vit_servicing_station_tests" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

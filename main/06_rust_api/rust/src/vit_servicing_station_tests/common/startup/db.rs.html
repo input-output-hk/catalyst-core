@@ -207,15 +207,7 @@
 <span id="207">207</span>
 <span id="208">208</span>
 <span id="209">209</span>
-<span id="210">210</span>
-<span id="211">211</span>
-<span id="212">212</span>
-<span id="213">213</span>
-<span id="214">214</span>
-<span id="215">215</span>
-<span id="216">216</span>
-</pre><pre class="rust"><code><span class="kw">use </span>assert_fs::{fixture::PathChild, TempDir};
-<span class="kw">use </span>diesel::RunQueryDsl;
+</pre><pre class="rust"><code><span class="kw">use </span>diesel::RunQueryDsl;
 <span class="kw">use </span>rand::Rng;
 <span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>std::path::PathBuf;
@@ -232,8 +224,6 @@
 };
 <span class="kw">use </span>vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 <span class="kw">use </span>vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
-
-<span class="kw">const </span>VIT_STATION_DB: <span class="kw-2">&amp;</span>str = <span class="string">&quot;vit_station.db&quot;</span>;
 
 <span class="kw">pub struct </span>DbBuilder {
     tokens: <span class="prelude-ty">Option</span>&lt;Vec&lt;ApiTokenData&gt;&gt;,
@@ -344,11 +334,11 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>, temp_dir: <span class="kw-2">&amp;</span>TempDir) -&gt; <span class="prelude-ty">Result</span>&lt;String, DbBuilderError&gt; {
+    <span class="kw">pub fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;String, DbBuilderError&gt; {
         <span class="kw">let </span>db_url = <span class="kw">match </span>std::env::var(<span class="string">&quot;TEST_DATABASE_URL&quot;</span>) {
             <span class="prelude-val">Ok</span>(u) =&gt; u,
             <span class="prelude-val">Err</span>(std::env::VarError::NotPresent) =&gt; {
-                temp_dir.child(VIT_STATION_DB).display().to_string()
+                <span class="kw">return </span><span class="prelude-val">Err</span>(DbBuilderError::MissingDatabaseUrlEnvVar)
             }
             <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(DbBuilderError::DatabaseUrlEnvVar(e)),
         };
@@ -358,26 +348,22 @@
             <span class="kw">let </span>connection = pool.get().unwrap();
 
             <span class="comment">// create a new database to use when testing
-            </span><span class="kw">if let </span>DbConnection::Postgres(conn) = <span class="kw-2">&amp;</span>connection {
-                <span class="kw">let </span>tmp_db_name = rand::thread_rng()
-                    .sample_iter(rand::distributions::Alphanumeric)
-                    .filter(char::is_ascii_alphabetic)
-                    .take(<span class="number">8</span>)
-                    .collect::&lt;String&gt;()
-                    .to_lowercase();
+            </span><span class="kw">let </span>tmp_db_name = rand::thread_rng()
+                .sample_iter(rand::distributions::Alphanumeric)
+                .filter(char::is_ascii_alphabetic)
+                .take(<span class="number">8</span>)
+                .collect::&lt;String&gt;()
+                .to_lowercase();
 
-                diesel::sql_query(<span class="macro">format!</span>(<span class="string">&quot;CREATE DATABASE {}&quot;</span>, tmp_db_name))
-                    .execute(conn)
-                    .unwrap();
+            diesel::sql_query(<span class="macro">format!</span>(<span class="string">&quot;CREATE DATABASE {}&quot;</span>, tmp_db_name))
+                .execute(<span class="kw-2">&amp;</span>connection)
+                .unwrap();
 
-                <span class="comment">// reconnect to the created database
-                </span><span class="kw">let </span>db_url = <span class="macro">format!</span>(<span class="string">&quot;{}/{}&quot;</span>, db_url, tmp_db_name);
-                <span class="kw">let </span>pool = vit_servicing_station_lib::db::load_db_connection_pool(<span class="kw-2">&amp;</span>db_url).unwrap();
+            <span class="comment">// reconnect to the created database
+            </span><span class="kw">let </span>db_url = <span class="macro">format!</span>(<span class="string">&quot;{}/{}&quot;</span>, db_url, tmp_db_name);
+            <span class="kw">let </span>pool = vit_servicing_station_lib::db::load_db_connection_pool(<span class="kw-2">&amp;</span>db_url).unwrap();
 
-                (db_url, pool.get().unwrap())
-            } <span class="kw">else </span>{
-                (db_url, connection)
-            }
+            (db_url, pool.get().unwrap())
         };
 
         vit_servicing_station_lib::db::migrations::initialize_db_with_migration(<span class="kw-2">&amp;</span>connection)<span class="question-mark">?</span>;
@@ -417,6 +403,8 @@
 
 <span class="attribute">#[derive(Error, Debug)]
 </span><span class="kw">pub enum </span>DbBuilderError {
+    <span class="attribute">#[error(<span class="string">&quot;missing TEST_DATABASE_URL env var&quot;</span>)]
+    </span>MissingDatabaseUrlEnvVar,
     <span class="attribute">#[error(<span class="string">&quot;failed to read database url env var&quot;</span>)]
     </span>DatabaseUrlEnvVar(<span class="attribute">#[from] </span>std::env::VarError),
     <span class="attribute">#[error(<span class="string">&quot;cannot insert data&quot;</span>)]
@@ -426,9 +414,7 @@
     <span class="attribute">#[error(<span class="string">&quot;Cannot initialize on temp directory&quot;</span>)]
     </span>CannotExtractTempPath,
     <span class="attribute">#[error(<span class="string">&quot;migration errors&quot;</span>)]
-    </span>MigrationsError(
-        <span class="attribute">#[from] </span>vit_servicing_station_lib::db::migrations::InitializeDbWithMigrationError,
-    ),
+    </span>MigrationsError(<span class="attribute">#[from] </span>diesel_migrations::RunMigrationsError),
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="vit_servicing_station_tests" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

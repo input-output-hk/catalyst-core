@@ -397,6 +397,22 @@
 <span id="397">397</span>
 <span id="398">398</span>
 <span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
 </pre><pre class="rust"><code><span class="kw">pub use </span><span class="self">self</span>::{
     chain_sender::FragmentChainSender,
     export::{FragmentExporter, FragmentExporterError},
@@ -411,6 +427,10 @@
     wallet::{account::Wallet <span class="kw">as </span>AccountWallet, Wallet},
 };
 <span class="kw">use </span>chain_crypto::{Ed25519, SecretKey};
+<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+</span><span class="kw">use </span>chain_impl_mockchain::certificate::EvmMapping;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+</span><span class="kw">use </span>chain_impl_mockchain::evm::EvmTransaction;
 <span class="kw">use </span>chain_impl_mockchain::{
     block::BlockDate,
     certificate::{
@@ -794,6 +814,18 @@
             <span class="kw-2">&amp;</span>signer_wallet.into(),
             update_vote,
         )
+    }
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+    </span><span class="kw">pub fn </span>evm_mapping(<span class="kw-2">&amp;</span><span class="self">self</span>, from: <span class="kw-2">&amp;</span>Wallet, evm_mapping: <span class="kw-2">&amp;</span>EvmMapping) -&gt; Fragment {
+        <span class="kw">let </span>inner_wallet = from.clone().into();
+        <span class="self">self</span>.fragment_factory
+            .evm_mapping(<span class="self">self</span>.valid_until, <span class="kw-2">&amp;</span>inner_wallet, evm_mapping.clone())
+    }
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+    </span><span class="kw">pub fn </span>evm_transaction(<span class="kw-2">&amp;</span><span class="self">self</span>, evm_transaction: EvmTransaction) -&gt; Fragment {
+        <span class="self">self</span>.fragment_factory.evm_transaction(evm_transaction)
     }
 }
 </code></pre></div>

@@ -29,6 +29,8 @@
 <span id="29">29</span>
 <span id="30">30</span>
 <span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
 </pre><pre class="rust"><code><span class="attribute">#[warn(unused_imports)]
 </span><span class="kw">use super</span>::{
     AccountState, DelegationType, LastRewards, SpendingCounter, SpendingCounterIncreasing,
@@ -56,6 +58,8 @@
             value: Arbitrary::arbitrary(gen),
             tokens: Hamt::new(),
             last_rewards: LastRewards::default(),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+            </span>evm_state: chain_evm::state::AccountState::default(),
             extra: (),
         }
     }

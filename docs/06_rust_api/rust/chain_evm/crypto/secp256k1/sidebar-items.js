@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Error","An ECDSA error"]],"struct":[["Message","A (hashed) message input to an ECDSA signature."],["RecoverableSignature","An ECDSA signature with a recovery ID for pubkey recovery."],["RecoveryId","A tag used for recovering the public key from a compact signature."]]};

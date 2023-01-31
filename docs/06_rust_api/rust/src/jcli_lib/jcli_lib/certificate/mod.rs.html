@@ -315,7 +315,16 @@
 <span id="315">315</span>
 <span id="316">316</span>
 <span id="317">317</span>
-</pre><pre class="rust"><code><span class="kw">mod </span>new_owner_stake_delegation;
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+</pre><pre class="rust"><code><span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+</span><span class="kw">mod </span>new_evm_mapping;
+<span class="kw">mod </span>new_owner_stake_delegation;
 <span class="kw">mod </span>new_stake_delegation;
 <span class="kw">mod </span>new_stake_pool_registration;
 <span class="kw">mod </span>new_stake_pool_retirement;
@@ -497,6 +506,9 @@
     <span class="doccomment">/// create a vote cast certificate
     </span><span class="attribute">#[clap(subcommand)]
     </span>VoteCast(new_vote_cast::VoteCastCmd),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+    </span><span class="doccomment">/// create an EVM address mapping certificate
+    </span>EvmMapping(new_evm_mapping::EvmMapCmd),
 }
 
 <span class="attribute">#[derive(Parser)]
@@ -529,6 +541,8 @@
             NewArgs::VoteCast(args) =&gt; args.exec()<span class="question-mark">?</span>,
             NewArgs::UpdateVote(args) =&gt; args.exec()<span class="question-mark">?</span>,
             NewArgs::UpdateProposal(args) =&gt; args.exec()<span class="question-mark">?</span>,
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+            </span>NewArgs::EvmMapping(args) =&gt; args.exec()<span class="question-mark">?</span>,
         }
         <span class="prelude-val">Ok</span>(())
     }

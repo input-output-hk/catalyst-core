@@ -286,8 +286,16 @@
 <span id="286">286</span>
 <span id="287">287</span>
 <span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
 </pre><pre class="rust"><code><span class="kw">pub mod </span>add_account;
 <span class="kw">mod </span>add_certificate;
+<span class="kw">mod </span>add_evm_transaction;
 <span class="kw">mod </span>add_input;
 <span class="kw">pub mod </span>add_output;
 <span class="kw">mod </span>add_witness;
@@ -339,6 +347,11 @@
     /// If there is already an extra certificate in the transaction
     /// it will be replaced with the new one.
     </span>AddCertificate(add_certificate::AddCertificate),
+    <span class="doccomment">/// set a evm transaction to the Transaction. If there is already
+    /// an extra certificate in the transaction it will be reset.
+    /// If there is already an evm transaction in the transaction
+    /// it will be replaced with the new one.
+    </span>AddEvmTransaction(add_evm_transaction::AddEvmTransaction),
     <span class="doccomment">/// Lock a transaction and start adding witnesses
     </span>Finalize(finalize::Finalize),
     <span class="doccomment">/// Finalize the transaction
@@ -534,6 +547,7 @@ impl From&lt;key_parser::Error&gt; for Error {
             Transaction::AddOutput(add_output) =&gt; add_output.exec(),
             Transaction::AddWitness(add_witness) =&gt; add_witness.exec(),
             Transaction::AddCertificate(add_certificate) =&gt; add_certificate.exec(),
+            Transaction::AddEvmTransaction(add_evm_transaction) =&gt; add_evm_transaction.exec(),
             Transaction::Finalize(finalize) =&gt; finalize.exec(),
             Transaction::Seal(seal) =&gt; seal.exec(),
             Transaction::FragmentId(common) =&gt; display_fragment_id(common),

@@ -654,6 +654,21 @@
 <span id="654">654</span>
 <span id="655">655</span>
 <span id="656">656</span>
+<span id="657">657</span>
+<span id="658">658</span>
+<span id="659">659</span>
+<span id="660">660</span>
+<span id="661">661</span>
+<span id="662">662</span>
+<span id="663">663</span>
+<span id="664">664</span>
+<span id="665">665</span>
+<span id="666">666</span>
+<span id="667">667</span>
+<span id="668">668</span>
+<span id="669">669</span>
+<span id="670">670</span>
+<span id="671">671</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::spending::{SpendingCounter, SpendingCounterIncreasing};
 <span class="kw">use super</span>::{LastRewards, LedgerError};
 <span class="kw">use </span><span class="kw">crate</span>::date::Epoch;
@@ -747,6 +762,8 @@
     <span class="kw">pub </span>value: Value,
     <span class="kw">pub </span>tokens: Hamt&lt;DefaultHasher, TokenIdentifier, Value&gt;,
     <span class="kw">pub </span>last_rewards: LastRewards,
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+    </span><span class="kw">pub </span>evm_state: chain_evm::state::AccountState,
     <span class="kw">pub </span>extra: Extra,
 }
 
@@ -759,6 +776,8 @@
             value: v,
             tokens: Hamt::new(),
             last_rewards: LastRewards::default(),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+            </span>evm_state: chain_evm::state::AccountState::default(),
             extra: e,
         }
     }
@@ -766,6 +785,13 @@
     <span class="kw">pub fn </span>new_reward(epoch: Epoch, v: Value, extra: Extra) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span><span class="kw-2">mut </span>st = <span class="self">Self</span>::new(v, extra);
         st.last_rewards.add_for(epoch, v);
+        st
+    }
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+    </span><span class="kw">pub fn </span>new_evm(evm_state: chain_evm::state::AccountState, v: Value, extra: Extra) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>st = <span class="self">Self</span>::new(v, extra);
+        st.evm_state = evm_state;
         st
     }
 
@@ -1010,6 +1036,8 @@
                 value: result_value,
                 tokens: Hamt::new(),
                 last_rewards: LastRewards::default(),
+                <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+                </span>evm_state: chain_evm::state::AccountState::default(),
                 extra: (),
             }
         }
@@ -1296,6 +1324,8 @@
                     tokens: Hamt::new(),
                     last_rewards: LastRewards::default(),
                     extra: (),
+                    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+                    </span>evm_state: chain_evm::state::AccountState::default(),
                 }
             }
         }

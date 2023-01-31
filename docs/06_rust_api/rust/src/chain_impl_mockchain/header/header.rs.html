@@ -329,6 +329,8 @@
 <span id="329">329</span>
 <span id="330">330</span>
 <span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::components::VrfProof;
 <span class="kw">use </span><span class="kw">super</span>::cstruct::{<span class="self">self</span>, HEADER_BFT_SIZE, HEADER_COMMON_SIZE, HEADER_GP_SIZE};
 <span class="kw">use </span><span class="kw">super</span>::deconstruct::{BftProof, Common, GenesisPraosProof, Proof};
@@ -593,6 +595,8 @@
             chain_length: <span class="self">self</span>.chain_length(),
             content_hash: <span class="self">self</span>.block_content_hash(),
             consensus_eval_context: <span class="self">self</span>.get_consensus_eval_context(),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+            </span>block_id: <span class="self">self</span>.id(),
         }
     }
 }

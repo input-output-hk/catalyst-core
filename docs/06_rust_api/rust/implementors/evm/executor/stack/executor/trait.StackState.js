@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"chain_evm":[["impl&lt;'a, State:&nbsp;<a class=\"trait\" href=\"chain_evm/machine/trait.EvmState.html\" title=\"trait chain_evm::machine::EvmState\">EvmState</a>&gt; StackState&lt;'a&gt; for <a class=\"struct\" href=\"chain_evm/machine/struct.VirtualMachine.html\" title=\"struct chain_evm::machine::VirtualMachine\">VirtualMachine</a>&lt;'a, State&gt;"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

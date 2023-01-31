@@ -99,7 +99,15 @@
 <span id="99">99</span>
 <span id="100">100</span>
 <span id="101">101</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::certificate::PoolId;
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+</pre><pre class="rust"><code><span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+</span><span class="kw">use </span><span class="kw">crate</span>::block::HeaderId;
+<span class="kw">use </span><span class="kw">crate</span>::certificate::PoolId;
 <span class="kw">use </span><span class="kw">crate</span>::chaintypes::ChainLength;
 <span class="kw">use </span><span class="kw">crate</span>::date::BlockDate;
 <span class="kw">use </span><span class="kw">crate</span>::fragment::BlockContentHash;
@@ -155,6 +163,8 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) chain_length: ChainLength,
     <span class="kw">pub</span>(<span class="kw">crate</span>) content_hash: BlockContentHash,
     <span class="kw">pub</span>(<span class="kw">crate</span>) consensus_eval_context: ConsensusEvalContext,
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) block_id: HeaderId,
 }
 
 <span class="attribute">#[cfg(test)]
@@ -196,6 +206,8 @@
                 chain_length: Arbitrary::arbitrary(g),
                 consensus_eval_context: Arbitrary::arbitrary(g),
                 content_hash: Arbitrary::arbitrary(g),
+                <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+                </span>block_id: Arbitrary::arbitrary(g),
             }
         }
     }

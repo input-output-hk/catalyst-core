@@ -523,6 +523,44 @@
 <span id="523">523</span>
 <span id="524">524</span>
 <span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{scalars::Value, BftLeader, Ratio, TaxType};
 <span class="kw">use </span>async_graphql::{Enum, SimpleObject, Union};
 <span class="kw">use </span>chain_addr::Discrimination <span class="kw">as </span>DiscriminationLib;
@@ -961,6 +999,36 @@
     }
 }
 
+<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+#[derive(SimpleObject)]
+</span><span class="kw">pub struct </span>EvmConfig {
+    evm_params: String,
+}
+
+<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+</span><span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span>chain_impl_mockchain::evm::Config&gt; <span class="kw">for </span>EvmConfig {
+    <span class="kw">fn </span>from(<span class="kw">_</span>: <span class="kw-2">&amp;</span>chain_impl_mockchain::evm::Config) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            evm_params: <span class="string">&quot;EVM config parametrs&quot;</span>.to_string(),
+        }
+    }
+}
+
+<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+#[derive(SimpleObject)]
+</span><span class="kw">pub struct </span>EvmEnvSettings {
+    evm_env_settings: String,
+}
+
+<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+</span><span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span>chain_impl_mockchain::config::EvmEnvSettings&gt; <span class="kw">for </span>EvmEnvSettings {
+    <span class="kw">fn </span>from(<span class="kw">_</span>: <span class="kw-2">&amp;</span>chain_impl_mockchain::config::EvmEnvSettings) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            evm_env_settings: <span class="string">&quot;EVM config parametrs&quot;</span>.to_string(),
+        }
+    }
+}
+
 <span class="attribute">#[derive(Union)]
 </span><span class="kw">pub enum </span>ConfigParam {
     Block0Date(Block0Date),
@@ -989,6 +1057,10 @@
     RemoveCommitteeId(RemoveCommitteeId),
     PerVoteCertificateFees(PerVoteCertificateFee),
     TransactionMaxExpiryEpochs(TransactionMaxExpiryEpochs),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+    </span>EvmConfiguration(EvmConfig),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+    </span>EvmEnvironment(EvmEnvSettings),
 }
 
 <span class="attribute">#[derive(SimpleObject)]
@@ -1035,6 +1107,10 @@
             ConfigParamLib::TransactionMaxExpiryEpochs(v) =&gt; {
                 <span class="self">Self</span>::TransactionMaxExpiryEpochs(v.into())
             }
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+            </span>ConfigParamLib::EvmConfiguration(v) =&gt; <span class="self">Self</span>::EvmConfiguration(v.into()),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+            </span>ConfigParamLib::EvmEnvironment(v) =&gt; <span class="self">Self</span>::EvmEnvironment(v.into()),
         }
     }
 }

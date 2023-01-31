@@ -225,6 +225,18 @@
 <span id="225">225</span>
 <span id="226">226</span>
 <span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{
     ActiveSlotCoefficient, BlockContentMaxSize, CommitteeIdDef, ConsensusLeaderId,
     ConsensusVersionDef, DiscriminationDef, EpochStabilityDepth, FeesGoTo, KesUpdateSpeed,
@@ -286,6 +298,10 @@
     <span class="attribute">#[serde(with = <span class="string">&quot;PerVoteCertificateFeeDef&quot;</span>)]
     </span>PerVoteCertificateFees(PerVoteCertificateFee),
     TransactionMaxExpiryEpochs(u8),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+    </span>EvmConfiguration(<span class="kw">super</span>::evm_params::EvmConfig),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+    </span>EvmEnvironment(<span class="kw">super</span>::evm_params::EvmEnvSettings),
 }
 
 <span class="attribute">#[derive(Debug, Error)]
@@ -345,6 +361,10 @@
             ConfigParam::RemoveCommitteeId(val) =&gt; <span class="self">Self</span>::RemoveCommitteeId(val.into()),
             ConfigParam::PerVoteCertificateFees(val) =&gt; <span class="self">Self</span>::PerVoteCertificateFees(val),
             ConfigParam::TransactionMaxExpiryEpochs(val) =&gt; <span class="self">Self</span>::TransactionMaxExpiryEpochs(val),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+            </span>ConfigParam::EvmConfiguration(val) =&gt; <span class="self">Self</span>::EvmConfiguration(val.into()),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+            </span>ConfigParam::EvmEnvironment(val) =&gt; <span class="self">Self</span>::EvmEnvironment(val.into()),
         }
     }
 }
@@ -387,6 +407,10 @@
             ConfigParamLib::TransactionMaxExpiryEpochs(val) =&gt; {
                 <span class="self">Self</span>::TransactionMaxExpiryEpochs(val)
             }
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+            </span>ConfigParamLib::EvmConfiguration(val) =&gt; <span class="self">Self</span>::EvmConfiguration(val.into()),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+            </span>ConfigParamLib::EvmEnvironment(val) =&gt; <span class="self">Self</span>::EvmEnvironment(val.into()),
         })
     }
 }

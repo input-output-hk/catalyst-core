@@ -757,6 +757,24 @@
 <span id="757">757</span>
 <span id="758">758</span>
 <span id="759">759</span>
+<span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
 </pre><pre class="rust"><code><span class="kw">use </span>quickcheck::{Arbitrary, Gen};
 
 <span class="kw">use crate</span>::{
@@ -818,6 +836,8 @@
     consensus_version: ConsensusVersion,
     pool_capping_ratio: Ratio,
     transaction_max_expiry_epochs: <span class="prelude-ty">Option</span>&lt;u8&gt;,
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+    </span>evm_params: chain_evm::Config,
 }
 
 <span class="kw">impl </span>Default <span class="kw">for </span>ConfigBuilder {
@@ -860,6 +880,8 @@
             block0_date: Block0Date(<span class="number">0</span>),
             consensus_version: ConsensusVersion::Bft,
             transaction_max_expiry_epochs: <span class="prelude-val">None</span>,
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+            </span>evm_params: chain_evm::Config::default(),
         }
     }
 
@@ -970,6 +992,12 @@
 
     <span class="kw">pub fn </span>with_transaction_max_expiry_epochs(<span class="kw-2">mut </span><span class="self">self</span>, n_epochs: u8) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.transaction_max_expiry_epochs = <span class="prelude-val">Some</span>(n_epochs);
+        <span class="self">self
+    </span>}
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+    </span><span class="kw">pub fn </span>with_evm_params(<span class="kw-2">mut </span><span class="self">self</span>, params: chain_evm::Config) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.evm_params = params;
         <span class="self">self
     </span>}
 
@@ -1496,6 +1524,14 @@
 
     <span class="kw">pub fn </span>pots(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Pots {
         <span class="self">self</span>.ledger.pots.clone()
+    }
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+    </span><span class="kw">pub fn </span>get_evm_mapped_address(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        jor_id: <span class="kw-2">&amp;</span><span class="kw">crate</span>::account::Identifier,
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;chain_evm::Address&gt; {
+        <span class="self">self</span>.ledger.evm.address_mapping.evm_address(jor_id)
     }
 }
 

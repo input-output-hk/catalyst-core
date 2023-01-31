@@ -266,6 +266,30 @@
 <span id="266">266</span>
 <span id="267">267</span>
 <span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::rest::{v0::logic, ContextLock};
 <span class="kw">use </span>warp::{reject::Reject, Rejection, Reply};
 
@@ -530,6 +554,30 @@
 <span class="kw">pub async fn </span>get_active_vote_plans(context: ContextLock) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
     <span class="kw">let </span>context = context.read().<span class="kw">await</span>;
     logic::get_active_vote_plans(<span class="kw-2">&amp;</span>context)
+        .<span class="kw">await
+        </span>.map(|r| warp::reply::json(<span class="kw-2">&amp;</span>r))
+        .map_err(warp::reject::custom)
+}
+
+<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+</span><span class="kw">pub async fn </span>get_jor_address(
+    evm_id_hex: String,
+    context: ContextLock,
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
+    <span class="kw">let </span>context = context.read().<span class="kw">await</span>;
+    logic::get_jor_address(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>evm_id_hex)
+        .<span class="kw">await
+        </span>.map(|r| warp::reply::json(<span class="kw-2">&amp;</span>r))
+        .map_err(warp::reject::custom)
+}
+
+<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+</span><span class="kw">pub async fn </span>get_evm_address(
+    evm_id_hex: String,
+    context: ContextLock,
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Reply, Rejection&gt; {
+    <span class="kw">let </span>context = context.read().<span class="kw">await</span>;
+    logic::get_evm_address(<span class="kw-2">&amp;</span>context, <span class="kw-2">&amp;</span>evm_id_hex)
         .<span class="kw">await
         </span>.map(|r| warp::reply::json(<span class="kw-2">&amp;</span>r))
         .map_err(warp::reject::custom)

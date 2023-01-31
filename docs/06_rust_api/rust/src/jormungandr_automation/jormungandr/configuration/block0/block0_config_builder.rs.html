@@ -335,6 +335,10 @@
 <span id="335">335</span>
 <span id="336">336</span>
 <span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
 </pre><pre class="rust"><code><span class="attribute">#![allow(dead_code)]
 
 </span><span class="kw">use </span>chain_addr::{Address <span class="kw">as </span>ChainAddress, Discrimination, Kind};
@@ -404,6 +408,10 @@
                 }),
                 committees: Vec::new(),
                 tx_max_expiry_epochs: <span class="prelude-val">Some</span>(<span class="number">100</span>),
+                <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+                </span>evm_configs: <span class="prelude-val">None</span>,
+                <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+                </span>evm_env_settings: <span class="prelude-val">None</span>,
             },
             minimal_setup: <span class="bool-val">false</span>,
         }

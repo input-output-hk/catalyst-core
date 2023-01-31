@@ -1519,6 +1519,60 @@
 <span id="1519">1519</span>
 <span id="1520">1520</span>
 <span id="1521">1521</span>
+<span id="1522">1522</span>
+<span id="1523">1523</span>
+<span id="1524">1524</span>
+<span id="1525">1525</span>
+<span id="1526">1526</span>
+<span id="1527">1527</span>
+<span id="1528">1528</span>
+<span id="1529">1529</span>
+<span id="1530">1530</span>
+<span id="1531">1531</span>
+<span id="1532">1532</span>
+<span id="1533">1533</span>
+<span id="1534">1534</span>
+<span id="1535">1535</span>
+<span id="1536">1536</span>
+<span id="1537">1537</span>
+<span id="1538">1538</span>
+<span id="1539">1539</span>
+<span id="1540">1540</span>
+<span id="1541">1541</span>
+<span id="1542">1542</span>
+<span id="1543">1543</span>
+<span id="1544">1544</span>
+<span id="1545">1545</span>
+<span id="1546">1546</span>
+<span id="1547">1547</span>
+<span id="1548">1548</span>
+<span id="1549">1549</span>
+<span id="1550">1550</span>
+<span id="1551">1551</span>
+<span id="1552">1552</span>
+<span id="1553">1553</span>
+<span id="1554">1554</span>
+<span id="1555">1555</span>
+<span id="1556">1556</span>
+<span id="1557">1557</span>
+<span id="1558">1558</span>
+<span id="1559">1559</span>
+<span id="1560">1560</span>
+<span id="1561">1561</span>
+<span id="1562">1562</span>
+<span id="1563">1563</span>
+<span id="1564">1564</span>
+<span id="1565">1565</span>
+<span id="1566">1566</span>
+<span id="1567">1567</span>
+<span id="1568">1568</span>
+<span id="1569">1569</span>
+<span id="1570">1570</span>
+<span id="1571">1571</span>
+<span id="1572">1572</span>
+<span id="1573">1573</span>
+<span id="1574">1574</span>
+<span id="1575">1575</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module holds all the necessary methods to be able to serialize the ledger.
 //! There are 2 methods for each type that needs to be serialize `pack_*` and `unpack_*`.
 //!
@@ -1695,6 +1749,54 @@
         .map_err(|e| ReadError::InvalidData(e.to_string()))
 }
 
+<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+</span><span class="kw">fn </span>pack_evm_state&lt;W: std::io::Write&gt;(
+    evm_state: <span class="kw-2">&amp;</span>chain_evm::state::AccountState,
+    codec: <span class="kw-2">&amp;mut </span>Codec&lt;W&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), WriteError&gt; {
+    codec.put_be_u32(evm_state.code.len().try_into().unwrap())<span class="question-mark">?</span>;
+    codec.put_bytes(<span class="kw-2">&amp;</span>evm_state.code)<span class="question-mark">?</span>;
+
+    codec.put_be_u64(evm_state.nonce)<span class="question-mark">?</span>;
+
+    codec.put_be_u32(evm_state.storage.size().try_into().unwrap())<span class="question-mark">?</span>;
+    <span class="kw">for </span>(key, value) <span class="kw">in </span>evm_state.storage.iter() {
+        codec.put_bytes(key.as_bytes())<span class="question-mark">?</span>;
+        codec.put_bytes(value.as_bytes())<span class="question-mark">?</span>;
+    }
+    <span class="prelude-val">Ok</span>(())
+}
+
+<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+</span><span class="kw">fn </span>unpack_evm_state&lt;R: std::io::BufRead&gt;(
+    codec: <span class="kw-2">&amp;mut </span>Codec&lt;R&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;chain_evm::state::AccountState, ReadError&gt; {
+    <span class="kw">use </span>chain_evm::state::Key;
+    <span class="kw">use </span>chain_evm::state::Value;
+
+    <span class="kw">let </span>code_size = codec.get_be_u32()<span class="question-mark">? </span><span class="kw">as </span>usize;
+    <span class="kw">let </span>code = codec.get_bytes(code_size)<span class="question-mark">?</span>.into();
+
+    <span class="kw">let </span>nonce = codec.get_be_u64()<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>storage_size = codec.get_be_u32()<span class="question-mark">? </span><span class="kw">as </span>usize;
+    <span class="kw">let </span><span class="kw-2">mut </span>storage = chain_evm::state::Trie::&lt;Key, Value&gt;::new();
+    <span class="kw">for _ in </span><span class="number">0</span>..storage_size {
+        <span class="kw">let </span>k = codec.get_bytes(Key::len_bytes())<span class="question-mark">?</span>;
+        <span class="kw">let </span>v = codec.get_bytes(Value::len_bytes())<span class="question-mark">?</span>;
+        storage = storage.put(
+            Key::from_slice(k.as_slice()),
+            Value::from_slice(v.as_slice()),
+        );
+    }
+
+    <span class="prelude-val">Ok</span>(chain_evm::state::AccountState {
+        code,
+        storage,
+        nonce,
+    })
+}
+
 <span class="kw">fn </span>pack_account_state&lt;W: std::io::Write&gt;(
     account_state: <span class="kw-2">&amp;</span>AccountState&lt;()&gt;,
     codec: <span class="kw-2">&amp;mut </span>Codec&lt;W&gt;,
@@ -1703,6 +1805,8 @@
     pack_delegation_type(<span class="kw-2">&amp;</span>account_state.delegation, codec)<span class="question-mark">?</span>;
     codec.put_be_u64(account_state.value.<span class="number">0</span>)<span class="question-mark">?</span>;
     pack_last_rewards(<span class="kw-2">&amp;</span>account_state.last_rewards, codec)<span class="question-mark">?</span>;
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+    </span>pack_evm_state(<span class="kw-2">&amp;</span>account_state.evm_state, codec)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }
 
@@ -1711,11 +1815,15 @@
     <span class="kw">let </span>delegation = unpack_delegation_type(codec)<span class="question-mark">?</span>;
     <span class="kw">let </span>value = codec.get_be_u64()<span class="question-mark">?</span>;
     <span class="kw">let </span>last_rewards = unpack_last_rewards(codec)<span class="question-mark">?</span>;
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+    </span><span class="kw">let </span>evm_state = unpack_evm_state(codec)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(AccountState {
         spending,
         delegation,
         value: Value(value),
         tokens: Hamt::new(),
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+        </span>evm_state,
         last_rewards,
         extra: (),
     })

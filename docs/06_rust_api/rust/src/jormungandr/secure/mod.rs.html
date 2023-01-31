@@ -69,6 +69,20 @@
 <span id="69">69</span>
 <span id="70">70</span>
 <span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_crypto::{Blake2b256, Ed25519, PublicKey, RistrettoGroup2HashDh, SumEd25519_12};
 <span class="kw">use </span>chain_impl_mockchain::leadership::{BftLeader, GenesisLeader};
 <span class="kw">use </span>jormungandr_lib::crypto::{
@@ -104,6 +118,8 @@
 </span><span class="kw">pub struct </span>NodeSecret {
     bft: <span class="prelude-ty">Option</span>&lt;Bft&gt;,
     genesis: <span class="prelude-ty">Option</span>&lt;GenesisPraos&gt;,
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+    </span>evm_keys: <span class="prelude-ty">Option</span>&lt;Vec&lt;chain_evm::ethereum_types::H256&gt;&gt;,
 }
 
 <span class="doccomment">/// Node Secret&#39;s Public parts
@@ -138,6 +154,18 @@
             sig_key: genesis.sig_key.into_secret_key(),
             vrf_key: genesis.vrf_key.into_secret_key(),
         })
+    }
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
+    </span><span class="kw">pub fn </span>evm_keys(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;chain_evm::util::Secret&gt; {
+        <span class="self">self</span>.evm_keys
+            .as_ref()
+            .map(|keys| {
+                keys.iter()
+                    .map(chain_evm::util::Secret::from_hash)
+                    .collect()
+            })
+            .unwrap_or_default()
     }
 }
 </code></pre></div>

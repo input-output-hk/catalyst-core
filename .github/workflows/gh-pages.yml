@@ -1,32 +1,23 @@
 name: GitHub Pages
 
-on: 
-  push:
-    branches:
-      - main  
-  pull_request:
-    paths:
-      - 'book/src/**'
-      - '**.md'
-      - 'LICENSE-APACHE'
-      - 'LICENSE-MIT'
-      - 'src/jormungandr/jormungandr-lib/src/interfaces/block0_configuration/BLOCKCHAIN_CONFIGURATION_DOCUMENTED_EXAMPLE.yaml'
-      - 'src/jormungandr/jormungandr-lib/src/interfaces/CONFIG_PARAMS_DOCUMENTED_EXAMPLE.yaml'
-      - 'book.toml'
-      - 'Makefile.toml'
-      - 'Makefiles/docs.toml'
+on: [push, pull_request]
 
 jobs:
   deploy:
+    name: Deploy GitHub Pages
     runs-on: ubuntu-latest
-    env:
-      PUBLISH_DOCS: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     permissions:
       contents: write
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout The Code
+        uses: actions/checkout@v3
+
+      - name: Set env
+        run: |
+          GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
 
       - name: Build Docs
         uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools:v1.1
@@ -34,9 +25,11 @@ jobs:
           entrypoint: cargo
           args: make build-docs
 
-      - name: Deploy
-        if: ${{ env.PUBLISH_DOCS }}
+      # On PUSH or PR we deploy docs to a sub-directory named after the branch.
+      # This lets us review the docs as rendered, and not just the markdown.
+      - name: Deploy Docs
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./book/html
+          destination_dir: ${{ env.GIT_BRANCH }}

@@ -66,4 +66,3 @@ thor = { path = "../testing/thor" }
 
 [features]
 default = []
-evm = ["chain-impl-mockchain/evm", "jormungandr-lib/evm"]

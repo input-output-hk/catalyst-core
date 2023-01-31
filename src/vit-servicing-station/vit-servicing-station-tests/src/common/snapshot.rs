@@ -1,5 +1,6 @@
 use chain_impl_mockchain::testing::TestGen;
 use itertools::Itertools;
+use jormungandr_lib::crypto::account::Identifier;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use snapshot_lib::{KeyContribution, SnapshotInfo, VoterHIR};
@@ -196,6 +197,23 @@ impl SnapshotUpdater {
             .content
             .snapshot
             .extend(extra_snapshot.content.snapshot.iter().cloned());
+        self
+    }
+
+    pub fn add_contributions_to_voter(
+        mut self,
+        contributions: Vec<KeyContribution>,
+        voting_key: &Identifier,
+    ) -> Self {
+        let voter = self
+            .snapshot
+            .content
+            .snapshot
+            .iter_mut()
+            .find(|entry| entry.hir.voting_key == *voting_key);
+        if let Some(voter) = voter {
+            voter.contributions.extend(contributions)
+        }
         self
     }
 

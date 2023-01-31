@@ -1,25 +1,8 @@
-#[cfg(feature = "evm")]
-mod eth_account;
-#[cfg(feature = "evm")]
-mod eth_block_info;
-#[cfg(feature = "evm")]
-mod eth_chain_info;
-#[cfg(feature = "evm")]
-mod eth_filter;
-#[cfg(feature = "evm")]
-mod eth_miner;
-#[cfg(feature = "evm")]
-mod eth_transaction;
-#[cfg(feature = "evm")]
-mod eth_types;
-
 use crate::{
     context::ContextLock,
     intercom::{self, TransactionMsg},
 };
 use chain_impl_mockchain::ledger::Error as LedgerError;
-#[cfg(feature = "evm")]
-pub use eth_filter::EvmFilters;
 use futures::channel::mpsc::TrySendError;
 use jormungandr_lib::interfaces::FragmentsProcessingSummary;
 use jsonrpsee_http_server::{HttpServerBuilder, RpcModule};
@@ -52,12 +35,6 @@ pub enum Error {
     TransactionDecodedError(String),
     #[error("Mining is not currently supported")]
     MiningIsNotAllowed,
-    #[cfg(feature = "evm")]
-    #[error(transparent)]
-    TransactionSignatureError(#[from] chain_impl_mockchain::evm::crypto::secp256k1::Error),
-    #[cfg(feature = "evm")]
-    #[error("Could not retrieve Ethereum account secret")]
-    AccountSignatureError,
     #[error("Ethereum signature error: {0}")]
     EthereumSignatureError(String),
 }
@@ -70,33 +47,6 @@ pub async fn start_jrpc_server(config: Config, _context: ContextLock) {
 
     #[allow(unused_mut)]
     let mut modules = RpcModule::new(());
-
-    #[cfg(feature = "evm")]
-    {
-        modules
-            .merge(eth_block_info::eth_block_info_module(_context.clone()))
-            .unwrap();
-
-        modules
-            .merge(eth_chain_info::eth_chain_info_module(_context.clone()))
-            .unwrap();
-
-        modules
-            .merge(eth_transaction::eth_transaction_module(_context.clone()))
-            .unwrap();
-
-        modules
-            .merge(eth_account::eth_account_module(_context.clone()))
-            .unwrap();
-
-        modules
-            .merge(eth_filter::eth_filter_module(_context.clone()))
-            .unwrap();
-
-        modules
-            .merge(eth_miner::eth_miner_module(_context))
-            .unwrap();
-    }
 
     server.start(modules).unwrap().await
 }

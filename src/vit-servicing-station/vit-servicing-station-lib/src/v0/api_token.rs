@@ -103,7 +103,6 @@ mod test {
         migrations as db_testing, models::api_tokens as api_token_model,
         models::api_tokens::ApiTokenData, schema::api_tokens, DbConnectionPool,
     };
-    use crate::q;
     use crate::v0::api_token::{api_token_filter, ApiToken, API_TOKEN_HEADER};
     use crate::v0::context::test::new_db_test_shared_context;
     use diesel::{ExpressionMethods, RunQueryDsl};
@@ -129,13 +128,11 @@ mod test {
             api_tokens::dsl::creation_time.eq(token.creation_time),
             api_tokens::dsl::expire_time.eq(token.expire_time),
         );
-        q!(
-            conn,
-            diesel::insert_into(api_tokens::table)
-                .values(values)
-                .execute(&conn)
-        )
-        .unwrap();
+
+        diesel::insert_into(api_tokens::table)
+            .values(values)
+            .execute(&conn)
+            .unwrap();
     }
 
     #[tokio::test]

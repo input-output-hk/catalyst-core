@@ -1,5 +1,5 @@
 use crate::db_utils::{backup_db_file, restore_db_file};
-use crate::{db_utils::db_file_exists, task::ExecTask};
+use crate::task::ExecTask;
 use clap::Parser;
 use rand::Rng;
 use std::collections::HashSet;
@@ -108,9 +108,6 @@ impl ApiTokenCmd {
     }
 
     fn handle_api_token_add(tokens: &Option<Vec<String>>, db_url: &str) -> Result<(), Error> {
-        // check if db file exists
-        db_file_exists(db_url)?;
-
         let pool = load_db_connection_pool(db_url).map_err(Error::DbPool)?;
         let db_conn = pool.get()?;
 
@@ -167,9 +164,9 @@ impl ExecTask for ApiTokenCmd {
 mod test {
     use super::*;
     use vit_servicing_station_lib::db::{
-        load_db_connection_pool, migrations::initialize_db_with_migration,
-        queries::api_tokens::query_token_data_by_token,
+        migrations::initialize_db_with_migration, queries::api_tokens::query_token_data_by_token,
     };
+    use vit_servicing_station_tests::common::startup::db::DbBuilder;
 
     #[test]
     fn generate_token() {
@@ -190,7 +187,8 @@ mod test {
     #[test]
     fn add_token() {
         let tokens = ApiTokenCmd::generate(10, 10);
-        let connection_pool = load_db_connection_pool("").unwrap();
+        let db_url = DbBuilder::new().build().unwrap();
+        let connection_pool = load_db_connection_pool(&db_url).unwrap();
         initialize_db_with_migration(&connection_pool.get().unwrap()).unwrap();
         let db_conn = connection_pool.get().unwrap();
         ApiTokenCmd::add_tokens(&tokens, &db_conn).unwrap();

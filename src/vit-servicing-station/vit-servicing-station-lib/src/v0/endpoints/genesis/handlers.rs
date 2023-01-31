@@ -67,8 +67,7 @@ mod test {
     async fn get_block0_succeed() {
         // build context
         let block0_path = "../resources/tests/block0.bin";
-        let shared_context =
-            new_test_shared_context("", vec![PathBuf::from_str(block0_path).unwrap()]);
+        let shared_context = new_test_shared_context(vec![PathBuf::from_str(block0_path).unwrap()]);
         let block0 = std::fs::read(block0_path).unwrap();
 
         let with_context = warp::any().map(move || shared_context.clone());

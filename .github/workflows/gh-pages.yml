@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 jobs:
   deploy:
+    name: Deploy GitHub Pages
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -16,8 +17,8 @@ jobs:
       - name: Set env
         run: |
           GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
-          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV            
-    
+          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
+
       - name: Build Docs
         uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools:v1.1
         with:

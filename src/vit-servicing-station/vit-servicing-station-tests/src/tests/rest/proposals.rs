@@ -51,7 +51,7 @@ pub fn get_proposal_by_id() -> Result<(), Box<dyn std::error::Error>> {
         .with_proposals(vec![expected_proposal.clone()])
         .with_challenges(vec![expected_challenge])
         .with_groups(groups.into_iter().take(1).collect())
-        .build(&temp_dir)?;
+        .build()?;
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_path)

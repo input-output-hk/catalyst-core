@@ -1,5 +1,4 @@
 use crate::builders::build_current_fund;
-use crate::builders::utils::DeploymentTree;
 use crate::config::Config;
 use crate::mode::standard::DbGenerator;
 use chain_impl_mockchain::testing::scenario::template::ProposalDefBuilder;
@@ -165,8 +164,6 @@ impl IdeascaleValidateCommand {
     ) -> Result<(), Error> {
         std::fs::create_dir_all(&self.output)?;
 
-        let deployment_tree = DeploymentTree::new(&self.output);
-
         let mut template_generator = ExternalValidVotingTemplateGenerator::new(
             proposals_path,
             challenges_path,
@@ -192,8 +189,7 @@ impl IdeascaleValidateCommand {
             vec![],
         ));
 
-        DbGenerator::new(parameters)
-            .build(&deployment_tree.database_path(), &mut template_generator)?;
+        DbGenerator::new(parameters).build(&mut template_generator)?;
 
         Ok(())
     }

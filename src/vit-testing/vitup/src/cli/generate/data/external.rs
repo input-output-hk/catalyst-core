@@ -1,4 +1,4 @@
-use crate::builders::utils::{logger, DeploymentTree, SessionSettingsExtension};
+use crate::builders::utils::{logger, SessionSettingsExtension};
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::read_config;
 use crate::mode::standard::generate_database;
@@ -74,8 +74,6 @@ impl ExternalDataCommandArgs {
             std::fs::create_dir_all(&self.output_directory)?;
         }
 
-        let deployment_tree = DeploymentTree::new(&self.output_directory);
-
         let (controller, vit_parameters) = quick_setup
             .config(&config)
             .session_settings(session_settings)
@@ -89,7 +87,7 @@ impl ExternalDataCommandArgs {
         )
         .unwrap();
 
-        generate_database(&deployment_tree, vit_parameters, template_generator)?;
+        generate_database(vit_parameters, template_generator)?;
 
         config.print_report(Some(controller));
         Ok(())

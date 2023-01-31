@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["PinReadError",""]],"fn":[["read_qrs",""]],"struct":[["PinReadModeSettings",""]],"trait":[["SecretFromQrCode",""]],"type":[["Secret",""]]};

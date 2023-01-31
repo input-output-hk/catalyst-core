@@ -204,6 +204,11 @@
 <span id="204">204</span>
 <span id="205">205</span>
 <span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::Error;
 <span class="kw">use super</span>::{RestClientLogger, RestPathBuilder};
 <span class="kw">use </span>reqwest::blocking::Response;
@@ -269,6 +274,11 @@
 
     <span class="kw">pub fn </span>voter_info(<span class="kw-2">&amp;</span><span class="self">self</span>, tag: <span class="kw-2">&amp;</span>str, key: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response, Error&gt; {
         <span class="self">self</span>.get(<span class="kw-2">&amp;</span><span class="self">self</span>.path_builder.snapshot_voter_info(tag, key))
+            .map_err(Into::into)
+    }
+
+    <span class="kw">pub fn </span>delegator_info(<span class="kw-2">&amp;</span><span class="self">self</span>, tag: <span class="kw-2">&amp;</span>str, key: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Response, Error&gt; {
+        <span class="self">self</span>.get(<span class="kw-2">&amp;</span><span class="self">self</span>.path_builder.snapshot_delegator_info(tag, key))
             .map_err(Into::into)
     }
 

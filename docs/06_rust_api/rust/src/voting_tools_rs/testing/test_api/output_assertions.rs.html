@@ -77,39 +77,42 @@
 <span id="77">77</span>
 <span id="78">78</span>
 <span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
 </pre><pre class="rust"><code><span class="attribute">#![allow(dead_code)]
 
-</span><span class="kw">use </span><span class="kw">crate</span>::model::Output;
-<span class="kw">use </span><span class="kw">crate</span>::Delegations;
+</span><span class="kw">use </span><span class="kw">crate</span>::data::SnapshotEntry;
+<span class="kw">use </span><span class="kw">crate</span>::VotingPowerSource;
 <span class="kw">use </span>bigdecimal::ToPrimitive;
 <span class="kw">use </span>cardano_serialization_lib::address::RewardAddress;
 <span class="kw">use </span>cardano_serialization_lib::crypto::PublicKey;
 
-<span class="doccomment">/// Allows [Output] struct to be assertable
+<span class="doccomment">/// Allows [`SnapshotEntry`] struct to be assertable
 </span><span class="kw">pub trait </span>VerifiableSnapshotOutput {
     <span class="doccomment">/// returns assertion struct
     </span><span class="kw">fn </span>assert(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; SnapshotOutputAssert;
 }
 
-<span class="kw">impl </span>VerifiableSnapshotOutput <span class="kw">for </span>Output {
+<span class="kw">impl </span>VerifiableSnapshotOutput <span class="kw">for </span>SnapshotEntry {
     <span class="kw">fn </span>assert(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; SnapshotOutputAssert {
         SnapshotOutputAssert::new(<span class="self">self</span>)
     }
 }
 
-<span class="doccomment">/// Fluent api for [Output] assertions
+<span class="doccomment">/// Fluent api for [`SnapshotEntry`] assertions
 </span><span class="kw">pub struct </span>SnapshotOutputAssert&lt;<span class="lifetime">&#39;a</span>&gt; {
-    output: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Output,
+    output: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>SnapshotEntry,
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; SnapshotOutputAssert&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="doccomment">/// Creates new instance based on [Output] reference
+    <span class="doccomment">/// Creates new instance based on [`SnapshotEntry`] reference
     </span><span class="attribute">#[must_use]
-    </span><span class="kw">pub fn </span>new(output: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Output) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>new(output: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>SnapshotEntry) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{ output }
     }
 
-    <span class="doccomment">/// Asserts expected voting power field from [Output]
+    <span class="doccomment">/// Asserts expected voting power field from [`SnapshotEntry`]
     /// # Panics
     ///
     /// Panics on assertion failed
@@ -124,34 +127,37 @@
         </span>);
     }
 
-    <span class="doccomment">/// Asserts delegations address field from [Output]
+    <span class="doccomment">/// Asserts delegations address field from [`SnapshotEntry`]
     /// # Panics
     ///
     /// Panics on assertion failed
-    </span><span class="kw">pub fn </span>delegations(<span class="kw-2">&amp;</span><span class="self">self</span>, delegations: <span class="kw-2">&amp;</span>Delegations) {
-        <span class="macro">assert_eq!</span>(delegations, <span class="kw-2">&amp;</span><span class="self">self</span>.output.delegations, <span class="string">&quot;delegation target&quot;</span>);
+    </span><span class="kw">pub fn </span>voting_power_source(<span class="kw-2">&amp;</span><span class="self">self</span>, voting_power_source: <span class="kw-2">&amp;</span>VotingPowerSource) {
+        <span class="macro">assert_eq!</span>(
+            voting_power_source, <span class="kw-2">&amp;</span><span class="self">self</span>.output.voting_power_source,
+            <span class="string">&quot;delegation target&quot;
+        </span>);
     }
 
-    <span class="doccomment">/// Asserts reward address field from [Output]
+    <span class="doccomment">/// Asserts reward address field from [`SnapshotEntry`]
     /// # Panics
     ///
     /// Panics on assertion failed
     </span><span class="kw">pub fn </span>reward_address(<span class="kw-2">&amp;</span><span class="self">self</span>, reward_address: <span class="kw-2">&amp;</span>RewardAddress) {
         <span class="macro">assert_eq!</span>(
             reward_address.to_address().to_hex(),
-            <span class="self">self</span>.output.rewards_address.to_string(),
+            hex::encode(<span class="kw-2">&amp;</span><span class="self">self</span>.output.rewards_address.<span class="number">0</span>),
             <span class="string">&quot;different rewards address&quot;
         </span>);
     }
 
-    <span class="doccomment">/// Asserts stake public key field from [Output]
+    <span class="doccomment">/// Asserts stake public key field from [`SnapshotEntry`]
     /// # Panics
     ///
     /// Panics on assertion failed
     </span><span class="kw">pub fn </span>stake_key(<span class="kw-2">&amp;</span><span class="self">self</span>, public_key: <span class="kw-2">&amp;</span>PublicKey) {
         <span class="macro">assert_eq!</span>(
             <span class="kw-2">&amp;</span>public_key.to_hex(),
-            <span class="kw-2">&amp;</span><span class="self">self</span>.output.stake_public_key.to_string(),
+            <span class="kw-2">&amp;</span>hex::encode(<span class="self">self</span>.output.stake_key),
             <span class="string">&quot;different stake public key&quot;
         </span>);
     }

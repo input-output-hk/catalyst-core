@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["get_data_provider",""],["main",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["load",""],["main",""]]};

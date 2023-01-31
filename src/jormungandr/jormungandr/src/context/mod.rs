@@ -160,4 +160,6 @@ pub struct FullContext {
     pub leadership_logs: LeadershipLogs,
     pub enclave: Enclave,
     pub network_state: NetworkStateR,
+    #[cfg(feature = "prometheus-metrics")]
+    pub prometheus: Option<Arc<crate::metrics::backends::Prometheus>>,
 }

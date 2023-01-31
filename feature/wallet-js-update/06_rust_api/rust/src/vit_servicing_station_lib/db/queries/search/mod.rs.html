@@ -294,16 +294,10 @@
 <span id="294">294</span>
 <span id="295">295</span>
 <span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::convert::TryInto;
 
 <span class="kw">use crate</span>::{
     db::{schema, DbConnection, DbConnectionPool},
-    q,
     v0::{
         endpoints::search::requests::{
             Column, Constraint, OrderBy, SearchCountQuery, SearchQuery, SearchResponse, Table,
@@ -523,7 +517,7 @@
 
     <span class="kw">match </span>table {
         Table::Challenges =&gt; {
-            <span class="kw">let </span>vec = <span class="macro">q!</span>(conn, {
+            <span class="kw">let </span>vec = {
                 <span class="kw">let </span><span class="kw-2">mut </span>query = build_challenges_query(filter, order_by)<span class="question-mark">?</span>;
 
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(limit) = limit {
@@ -535,13 +529,13 @@
                 }
 
                 query.load(conn)
-            })
+            }
             .map_err(|<span class="kw">_</span>| HandleError::InternalError(<span class="string">&quot;error searching&quot;</span>.to_string()))<span class="question-mark">?</span>;
 
             <span class="prelude-val">Ok</span>(SearchResponse::Challenge(vec))
         }
         Table::Proposals =&gt; {
-            <span class="kw">let </span>vec = <span class="macro">q!</span>(conn, {
+            <span class="kw">let </span>vec = {
                 <span class="kw">let </span><span class="kw-2">mut </span>query = build_proposals_query(filter, order_by)<span class="question-mark">?</span>;
 
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(limit) = limit {
@@ -553,7 +547,7 @@
                 }
 
                 query.load(conn)
-            })
+            }
             .map_err(|<span class="kw">_</span>| HandleError::InternalError(<span class="string">&quot;error searching&quot;</span>.to_string()))<span class="question-mark">?</span>;
 
             <span class="prelude-val">Ok</span>(SearchResponse::Proposal(vec))
@@ -579,24 +573,20 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;i64, HandleError&gt; {
     <span class="kw">match </span>table {
         Table::Challenges =&gt; {
-            <span class="macro">q!</span>(conn, {
-                <span class="kw">let </span>query = build_challenges_query(filter, Vec::new())<span class="question-mark">?</span>;
+            <span class="kw">let </span>query = build_challenges_query(filter, Vec::new())<span class="question-mark">?</span>;
 
-                query
-                    .count()
-                    .get_result(conn)
-                    .map_err(|e| HandleError::InternalError(e.to_string()))
-            })
+            query
+                .count()
+                .get_result(conn)
+                .map_err(|e| HandleError::InternalError(e.to_string()))
         }
         Table::Proposals =&gt; {
-            <span class="macro">q!</span>(conn, {
-                <span class="kw">let </span>query = build_proposals_query(filter, Vec::new())<span class="question-mark">?</span>;
+            <span class="kw">let </span>query = build_proposals_query(filter, Vec::new())<span class="question-mark">?</span>;
 
-                query
-                    .count()
-                    .get_result(conn)
-                    .map_err(|<span class="kw">_</span>| HandleError::InternalError(<span class="string">&quot;error searching&quot;</span>.to_string()))
-            })
+            query
+                .count()
+                .get_result(conn)
+                .map_err(|<span class="kw">_</span>| HandleError::InternalError(<span class="string">&quot;error searching&quot;</span>.to_string()))
         }
     }
 }

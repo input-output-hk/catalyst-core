@@ -86,7 +86,6 @@
 <span id="86">86</span>
 <span id="87">87</span>
 <span id="88">88</span>
-<span id="89">89</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::v0::context::SharedContext;
 <span class="kw">use </span>warp::{http::Response, Rejection, Reply};
 
@@ -156,8 +155,7 @@
     </span><span class="kw">async fn </span>get_block0_succeed() {
         <span class="comment">// build context
         </span><span class="kw">let </span>block0_path = <span class="string">&quot;../resources/tests/block0.bin&quot;</span>;
-        <span class="kw">let </span>shared_context =
-            new_test_shared_context(<span class="string">&quot;&quot;</span>, <span class="macro">vec!</span>[PathBuf::from_str(block0_path).unwrap()]);
+        <span class="kw">let </span>shared_context = new_test_shared_context(<span class="macro">vec!</span>[PathBuf::from_str(block0_path).unwrap()]);
         <span class="kw">let </span>block0 = std::fs::read(block0_path).unwrap();
 
         <span class="kw">let </span>with_context = warp::any().map(<span class="kw">move </span>|| shared_context.clone());

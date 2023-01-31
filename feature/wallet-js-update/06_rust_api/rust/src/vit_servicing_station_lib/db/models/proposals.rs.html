@@ -690,25 +690,6 @@
 <span id="690">690</span>
 <span id="691">691</span>
 <span id="692">692</span>
-<span id="693">693</span>
-<span id="694">694</span>
-<span id="695">695</span>
-<span id="696">696</span>
-<span id="697">697</span>
-<span id="698">698</span>
-<span id="699">699</span>
-<span id="700">700</span>
-<span id="701">701</span>
-<span id="702">702</span>
-<span id="703">703</span>
-<span id="704">704</span>
-<span id="705">705</span>
-<span id="706">706</span>
-<span id="707">707</span>
-<span id="708">708</span>
-<span id="709">709</span>
-<span id="710">710</span>
-<span id="711">711</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::vote_options;
 <span class="kw">use </span><span class="kw">crate</span>::db::models::vote_options::VoteOptions;
 <span class="kw">use </span><span class="kw">crate</span>::db::schema::proposals_voteplans;
@@ -1181,23 +1162,20 @@
 <span class="attribute">#[cfg(test)]
 </span><span class="kw">pub mod </span>test {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use crate</span>::{
-        db::{
-            models::groups::Group,
-            models::{
-                challenges::{
-                    test::{get_test_challenge_with_fund_id, populate_db_with_challenge_conn},
-                    Challenge,
-                },
-                vote_options::VoteOptions,
+    <span class="kw">use </span><span class="kw">crate</span>::db::{
+        models::{
+            challenges::{
+                test::{get_test_challenge_with_fund_id, populate_db_with_challenge_conn},
+                Challenge,
             },
-            schema::{
-                groups, proposal_community_choice_challenge, proposal_simple_challenge, proposals,
-                proposals_voteplans, voteplans,
-            },
-            DbConnection, DbConnectionPool,
+            groups::Group,
+            vote_options::VoteOptions,
         },
-        q,
+        schema::{
+            proposal_community_choice_challenge, proposal_simple_challenge, proposals,
+            proposals_voteplans, voteplans,
+        },
+        DbConnection, DbConnectionPool,
     };
     <span class="kw">use </span>diesel::{ExpressionMethods, RunQueryDsl};
     <span class="kw">use </span>time::OffsetDateTime;
@@ -1321,13 +1299,10 @@
                 .map(|h| serde_json::to_string(h).unwrap())),
         );
 
-        <span class="macro">q!</span>(
-            connection,
-            diesel::insert_into(proposals::table)
-                .values(values)
-                .execute(connection)
-        )
-        .unwrap();
+        diesel::insert_into(proposals::table)
+            .values(values)
+            .execute(connection)
+            .unwrap();
 
         <span class="kw">let </span>token_identifier = <span class="macro">format!</span>(<span class="string">&quot;{}-token&quot;</span>, full_proposal.group_id);
 
@@ -1343,28 +1318,22 @@
             voteplans::token_identifier.eq(<span class="kw-2">&amp;</span>token_identifier),
         );
 
-        <span class="macro">q!</span>(
-            connection,
-            diesel::insert_into(voteplans::table)
-                .values(voteplan_values)
-                .execute(connection)
-        )
-        .unwrap();
+        diesel::insert_into(voteplans::table)
+            .values(voteplan_values)
+            .execute(connection)
+            .unwrap();
 
-        <span class="macro">q!</span>(
-            connection,
-            diesel::insert_into(groups::table)
-                .values(
-                    Group {
-                        fund_id: proposal.fund_id,
-                        group_id: full_proposal.group_id.clone(),
-                        token_identifier,
-                    }
-                    .values(),
-                )
-                .execute(connection)
-        )
-        .unwrap();
+        diesel::insert_into(<span class="kw">crate</span>::db::schema::groups::table)
+            .values(
+                Group {
+                    fund_id: proposal.fund_id,
+                    group_id: full_proposal.group_id.clone(),
+                    token_identifier,
+                }
+                .values(),
+            )
+            .execute(connection)
+            .unwrap();
 
         <span class="kw">let </span>proposal_voteplan_values = (
             proposals_voteplans::proposal_id.eq(proposal_id),
@@ -1374,13 +1343,10 @@
                 .eq(full_proposal.voteplan.chain_proposal_index),
         );
 
-        <span class="macro">q!</span>(
-            connection,
-            diesel::insert_into(proposals_voteplans::table)
-                .values(proposal_voteplan_values)
-                .execute(connection)
-        )
-        .unwrap();
+        diesel::insert_into(proposals_voteplans::table)
+            .values(proposal_voteplan_values)
+            .execute(connection)
+            .unwrap();
 
         <span class="kw">match </span><span class="kw-2">&amp;</span>full_proposal.challenge_info {
             ProposalChallengeInfo::Simple(data) =&gt; {
@@ -1388,13 +1354,11 @@
                     proposal_simple_challenge::proposal_id.eq(proposal.proposal_id.clone()),
                     proposal_simple_challenge::proposal_solution.eq(data.proposal_solution.clone()),
                 );
-                <span class="macro">q!</span>(
-                    connection,
-                    diesel::insert_into(proposal_simple_challenge::table)
-                        .values(simple_values)
-                        .execute(connection)
-                )
-                .unwrap();
+
+                diesel::insert_into(proposal_simple_challenge::table)
+                    .values(simple_values)
+                    .execute(connection)
+                    .unwrap();
             }
             ProposalChallengeInfo::CommunityChoice(data) =&gt; {
                 <span class="kw">let </span>community_values = (
@@ -1409,13 +1373,11 @@
                     proposal_community_choice_challenge::proposal_metrics
                         .eq(data.proposal_metrics.clone()),
                 );
-                <span class="macro">q!</span>(
-                    connection,
-                    diesel::insert_into(proposal_community_choice_challenge::table)
-                        .values(community_values)
-                        .execute(connection)
-                )
-                .unwrap();
+
+                diesel::insert_into(proposal_community_choice_challenge::table)
+                    .values(community_values)
+                    .execute(connection)
+                    .unwrap();
             }
         };
     }

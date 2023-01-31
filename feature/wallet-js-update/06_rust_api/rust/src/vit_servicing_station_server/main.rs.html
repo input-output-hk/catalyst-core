@@ -216,13 +216,6 @@
 <span id="216">216</span>
 <span id="217">217</span>
 <span id="218">218</span>
-<span id="219">219</span>
-<span id="220">220</span>
-<span id="221">221</span>
-<span id="222">222</span>
-<span id="223">223</span>
-<span id="224">224</span>
-<span id="225">225</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::fs;
 <span class="kw">use </span>std::path::{Path, PathBuf};
 <span class="kw">use </span>std::str::FromStr;
@@ -395,13 +388,6 @@
         }
     };
 
-    <span class="comment">// Check db file exists (should be here only for current sqlite db backend)
-    </span><span class="kw">if </span>!settings.db_url.starts_with(<span class="string">&quot;postgres://&quot;</span>)
-        &amp;&amp; !std::path::Path::new(<span class="kw-2">&amp;</span>settings.db_url).exists()
-    {
-        <span class="macro">error!</span>(<span class="string">&quot;DB file {} not found.&quot;</span>, <span class="kw-2">&amp;</span>settings.db_url);
-        <span class="kw">return </span>ApplicationExitCode::DbConnectionError;
-    }
     <span class="comment">// load db pool
     </span><span class="kw">let </span>db_pool = <span class="kw">match </span>db::load_db_connection_pool(<span class="kw-2">&amp;</span>settings.db_url) {
         <span class="prelude-val">Ok</span>(d) =&gt; d,

@@ -46,35 +46,11 @@
 <span id="46">46</span>
 <span id="47">47</span>
 <span id="48">48</span>
-<span id="49">49</span>
-<span id="50">50</span>
-<span id="51">51</span>
-<span id="52">52</span>
-<span id="53">53</span>
-<span id="54">54</span>
-<span id="55">55</span>
-<span id="56">56</span>
-<span id="57">57</span>
-<span id="58">58</span>
-<span id="59">59</span>
-<span id="60">60</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::fs;
 <span class="kw">use </span>std::io;
 <span class="kw">use </span>std::io::{Read, Write};
 
-<span class="kw">pub fn </span>db_file_exists(db_url: <span class="kw-2">&amp;</span>str) -&gt; io::Result&lt;()&gt; {
-    <span class="comment">// check if db file exists
-    </span><span class="kw">if </span>!db_url.starts_with(<span class="string">&quot;postgres://&quot;</span>) &amp;&amp; !std::path::Path::new(db_url).exists() {
-        <span class="kw">return </span><span class="prelude-val">Err</span>(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            <span class="macro">format!</span>(<span class="string">&quot;DB file does not exist: {}&quot;</span>, db_url),
-        ));
-    }
-    <span class="prelude-val">Ok</span>(())
-}
-
 <span class="kw">pub fn </span>backup_db_file(db_url: <span class="kw-2">&amp;</span>str) -&gt; io::Result&lt;tempfile::NamedTempFile&gt; {
-    db_file_exists(db_url)<span class="question-mark">?</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>tmp_file = tempfile::NamedTempFile::new()<span class="question-mark">?</span>;
     <span class="kw">let </span>content = fs::read(db_url)<span class="question-mark">?</span>;
     tmp_file.write_all(<span class="kw-2">&amp;</span>content)<span class="question-mark">?</span>;

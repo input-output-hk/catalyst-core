@@ -65,9 +65,6 @@
 <span id="65">65</span>
 <span id="66">66</span>
 <span id="67">67</span>
-<span id="68">68</span>
-<span id="69">69</span>
-<span id="70">70</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db::schema::votes;
 <span class="kw">use </span>diesel::{ExpressionMethods, Insertable, Queryable};
 <span class="kw">use </span>serde::{Deserialize, Serialize};
@@ -111,7 +108,7 @@
 <span class="attribute">#[cfg(test)]
 </span><span class="kw">pub mod </span>test {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use crate</span>::{db::DbConnectionPool, q};
+    <span class="kw">use </span><span class="kw">crate</span>::db::DbConnectionPool;
     <span class="kw">use </span>diesel::RunQueryDsl;
 
     <span class="kw">pub fn </span>get_test_vote() -&gt; Vote {
@@ -129,13 +126,10 @@
     <span class="kw">pub fn </span>populate_db_with_vote(vote: <span class="kw-2">&amp;</span>Vote, pool: <span class="kw-2">&amp;</span>DbConnectionPool) {
         <span class="kw">let </span>connection = pool.get().unwrap();
 
-        <span class="macro">q!</span>(
-            connection,
-            diesel::insert_into(votes::table)
-                .values(vote.clone().values())
-                .execute(<span class="kw-2">&amp;</span>connection)
-        )
-        .unwrap();
+        diesel::insert_into(votes::table)
+            .values(vote.clone().values())
+            .execute(<span class="kw-2">&amp;</span>connection)
+            .unwrap();
     }
 }
 </code></pre></div>

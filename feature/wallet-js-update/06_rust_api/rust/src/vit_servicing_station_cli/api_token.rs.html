@@ -202,10 +202,8 @@
 <span id="202">202</span>
 <span id="203">203</span>
 <span id="204">204</span>
-<span id="205">205</span>
-<span id="206">206</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db_utils::{backup_db_file, restore_db_file};
-<span class="kw">use crate</span>::{db_utils::db_file_exists, task::ExecTask};
+<span class="kw">use </span><span class="kw">crate</span>::task::ExecTask;
 <span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>rand::Rng;
 <span class="kw">use </span>std::collections::HashSet;
@@ -314,9 +312,6 @@
     }
 
     <span class="kw">fn </span>handle_api_token_add(tokens: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;Vec&lt;String&gt;&gt;, db_url: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-        <span class="comment">// check if db file exists
-        </span>db_file_exists(db_url)<span class="question-mark">?</span>;
-
         <span class="kw">let </span>pool = load_db_connection_pool(db_url).map_err(Error::DbPool)<span class="question-mark">?</span>;
         <span class="kw">let </span>db_conn = pool.get()<span class="question-mark">?</span>;
 
@@ -373,9 +368,9 @@
 </span><span class="kw">mod </span>test {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span>vit_servicing_station_lib::db::{
-        load_db_connection_pool, migrations::initialize_db_with_migration,
-        queries::api_tokens::query_token_data_by_token,
+        migrations::initialize_db_with_migration, queries::api_tokens::query_token_data_by_token,
     };
+    <span class="kw">use </span>vit_servicing_station_tests::common::startup::db::DbBuilder;
 
     <span class="attribute">#[test]
     </span><span class="kw">fn </span>generate_token() {
@@ -396,7 +391,8 @@
     <span class="attribute">#[test]
     </span><span class="kw">fn </span>add_token() {
         <span class="kw">let </span>tokens = ApiTokenCmd::generate(<span class="number">10</span>, <span class="number">10</span>);
-        <span class="kw">let </span>connection_pool = load_db_connection_pool(<span class="string">&quot;&quot;</span>).unwrap();
+        <span class="kw">let </span>db_url = DbBuilder::new().build().unwrap();
+        <span class="kw">let </span>connection_pool = load_db_connection_pool(<span class="kw-2">&amp;</span>db_url).unwrap();
         initialize_db_with_migration(<span class="kw-2">&amp;</span>connection_pool.get().unwrap()).unwrap();
         <span class="kw">let </span>db_conn = connection_pool.get().unwrap();
         ApiTokenCmd::add_tokens(<span class="kw-2">&amp;</span>tokens, <span class="kw-2">&amp;</span>db_conn).unwrap();

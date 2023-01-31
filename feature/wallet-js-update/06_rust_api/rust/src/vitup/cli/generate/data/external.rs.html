@@ -93,9 +93,7 @@
 <span id="93">93</span>
 <span id="94">94</span>
 <span id="95">95</span>
-<span id="96">96</span>
-<span id="97">97</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::{logger, DeploymentTree, SessionSettingsExtension};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::utils::{logger, SessionSettingsExtension};
 <span class="kw">use </span><span class="kw">crate</span>::builders::VitBackendSettingsBuilder;
 <span class="kw">use </span><span class="kw">crate</span>::config::read_config;
 <span class="kw">use </span><span class="kw">crate</span>::mode::standard::generate_database;
@@ -171,8 +169,6 @@
             std::fs::create_dir_all(<span class="kw-2">&amp;</span><span class="self">self</span>.output_directory)<span class="question-mark">?</span>;
         }
 
-        <span class="kw">let </span>deployment_tree = DeploymentTree::new(<span class="kw-2">&amp;</span><span class="self">self</span>.output_directory);
-
         <span class="kw">let </span>(controller, vit_parameters) = quick_setup
             .config(<span class="kw-2">&amp;</span>config)
             .session_settings(session_settings)
@@ -186,7 +182,7 @@
         )
         .unwrap();
 
-        generate_database(<span class="kw-2">&amp;</span>deployment_tree, vit_parameters, template_generator)<span class="question-mark">?</span>;
+        generate_database(vit_parameters, template_generator)<span class="question-mark">?</span>;
 
         config.print_report(<span class="prelude-val">Some</span>(controller));
         <span class="prelude-val">Ok</span>(())

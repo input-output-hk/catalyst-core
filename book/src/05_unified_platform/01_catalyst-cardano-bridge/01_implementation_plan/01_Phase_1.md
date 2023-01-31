@@ -1,36 +1,17 @@
 # Phase 1
 
-In this initial implementation phase, we build the core foundational pieces of the service.
+Basic chain sync
 
-## Blockchain Interface
+Features:
 
-This is a blockchain reader task that takes the following parameters:
+1. Node 2 Client protocol syncing from local blockchain client
+2. Sync starts from genesis
+3. Dumps raw block information to the console as soon as each block is received.
 
-1. Starting block #
-2. Minimum distance from blockchain head
-3. Ending Block# (Optional, defaults to head)
-4. A queue to store blocks
+## Deliverables
 
-Reads as fast as possible from the starting block number and:
-
-* follows the blockchain but gets no closer than the minimum distance.
-* stops when it gets to the last block (if specified)
-
-This task should be able to run independently once started, and post blocks to its queue until killed or it reaches its final block.
-
-## Basic consumer
-
-Reads from the block queue and prints out each block number as it arrives.
-
-## Test CLI
-
-Rough CLI which allows the parameters to be specified.
+A test version that can do all of the above.
 
 ## Result
 
-A very simple chain follower which:
-
-1. does not parse or validate blocks
-2. but reliably can read sequential blocks from the Cardano network at its maximum rate.
-
-This can be used to test how fast a full chain sync could take in its simplest form.
+Allows us to test how fast the Node 2 Client protocol can retrieve blockchain data against a locally fully synced node.

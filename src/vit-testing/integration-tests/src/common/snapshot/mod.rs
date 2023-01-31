@@ -4,7 +4,7 @@ pub mod result;
 mod starter;
 mod voter_hirs_asserts;
 
-use crate::common::snapshot::result::{do_snapshot as do_snapshot_internal, SnapshotResult};
+use crate::common::snapshot::result::do_snapshot as do_snapshot_internal;
 use snapshot_trigger_service::config::JobParameters;
 use thiserror::Error;
 

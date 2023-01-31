@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Input","Input for the different task with input service"],["ServiceError",""]],"struct":[["Service","wrap up a service"],["Services","hold onto the different services created"],["TaskMessageBox",""],["TokioServiceInfo","the current future service information"]]};

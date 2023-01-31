@@ -29,22 +29,22 @@
 //!
 //! ## Moving blocks to the permanent store.
 //!
-//! If you have this block structure and call
-//! `store.flush_to_permanent_store(block 2 id)`, then `Block 1` and `Block 2`
-//! will be moved to the permanent storage. If you call
-//! `store.flush_to_permanent_store(block 3 id)`, `Block 3` will also be moved
-//! to the permanent store, but `Block 3'` will still exist in the volatile store.
-//! Note that if you call `store.get_blocks_by_chain_length(3)` only `Block 3`
+//! if you have this block structure and call
+//! `store.flush_to_permanent_store(block 2 id)`, then `block 1` and `block 2`
+//! will be moved to the permanent storage. if you call
+//! `store.flush_to_permanent_store(block 3 id)`, `block 3` will also be moved
+//! to the permanent store, but `block 3'` will still exist in the volatile store.
+//! note that if you call `store.get_blocks_by_chain_length(3)` only `block 3`
 //! (which is in the permanent store) will be returned; and you cannot call
 //! `store.flush_to_permanent_store(block 3' id)` now.
 //!
-//! __fig.1 - note that root does not actually exist, this is an ID referredby__
+//! __fig.1 - note that root does not actually exist, this is an id referredby__
 //! __the first block in the chain__
 //!
 //! ```text
 //! +---------+       +---------+
 //! |         |       |         |
-//! | Block 4 |       | Block 4'|
+//! | block 4 |       | block 4'|
 //! |         |       |         |
 //! +---------+       +---------+
 //!      |                 |
@@ -52,7 +52,7 @@
 //!      v                 v
 //! +---------+       +---------+
 //! |         |       |         |
-//! | Block 3 |       | Block 3'|
+//! | block 3 |       | block 3'|
 //! |         |       |         |
 //! +---------+       +---------+
 //!      |                 |
@@ -60,7 +60,7 @@
 //!      v                 |
 //! +---------+            |
 //! |         |            |
-//! | Block 2 +<-----------+
+//! | block 2 +<-----------+
 //! |         |
 //! +---------+
 //!      |
@@ -68,7 +68,7 @@
 //!      v
 //! +---------+
 //! |         |
-//! | Block 1 |
+//! | block 1 |
 //! |         |
 //! +---------+
 //!      |

@@ -1,5 +1,5 @@
 use crate::test_api::{MockDbProvider, VerifiableSnapshotOutput};
-use crate::Delegations;
+use crate::VotingPowerSource;
 use mainnet_lib::wallet_state::MainnetWalletStateBuilder;
 use mainnet_lib::{CardanoWallet, MainnetNetworkBuilder};
 
@@ -13,14 +13,14 @@ fn cip15_correctly_signed_before_snapshot() {
         .build();
 
     let db = MockDbProvider::from(db_sync);
-    let outputs = crate::voting_power(&db, None, None, None).unwrap();
+    let outputs = crate::voting_power(&db, None, None).unwrap();
 
     assert_eq!(outputs.len(), 1);
 
     let assertions = outputs[0].assert();
 
     assertions.voting_power(stake);
-    assertions.delegations(&Delegations::Legacy(
+    assertions.delegations(&VotingPowerSource::Legacy(
         alice_wallet.catalyst_public_key().to_hex(),
     ));
     assertions.reward_address(&alice_wallet.reward_address());
@@ -41,15 +41,15 @@ fn cip36_correctly_signed_before_snapshot() {
         .build();
 
     let db = MockDbProvider::from(db_sync);
-    let outputs = crate::voting_power(&db, None, None, None).unwrap();
+    let outputs = crate::voting_power(&db, None, None).unwrap();
 
     assert_eq!(outputs.len(), 1);
 
     let assertions = outputs[0].assert();
 
     assertions.voting_power(stake);
-    assertions.delegations(&Delegations::Delegated(vec![
-        (alice_wallet.catalyst_public_key().to_hex(), 1),
+    assertions.delegations(&VotingPowerSource::Delegated(vec![
+        (alice_wallet.catalyst_public_key().to_hex().parse().unwrap(), 1),
         (bob_wallet.catalyst_public_key().to_hex(), 1),
     ]));
     assertions.reward_address(&clarice_wallet.reward_address());

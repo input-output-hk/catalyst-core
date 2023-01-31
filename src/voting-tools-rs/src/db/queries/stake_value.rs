@@ -4,6 +4,7 @@ use bigdecimal::BigDecimal;
 use color_eyre::{Report, Result};
 use diesel::{BoolExpressionMethods, JoinOnDsl, NullableExpressionMethods, QueryDsl, RunQueryDsl};
 
+use crate::data::StakeKeyHex;
 use crate::db::inner::DbQuery;
 use crate::db::Db;
 use diesel::sql_types::Text;
@@ -16,13 +17,14 @@ impl Db {
     ///
     /// This query is detailed in <../design/stake_value_processing.md>
     #[instrument]
-    pub fn stake_values<'a>(
+    pub fn stake_values(
         &self,
-        stake_addrs: &'a [String],
-    ) -> Result<HashMap<&'a str, BigDecimal>> {
+        stake_addrs: &[StakeKeyHex],
+    ) -> Result<HashMap<StakeKeyHex, BigDecimal>> {
         let rows = stake_addrs.iter().map(|addr| {
-            let result = self.exec(|conn| query(addr).load(conn))?;
-            Ok::<_, Report>((addr.as_str(), result))
+            let hex = hex::encode(addr.0);
+            let result = self.exec(|conn| query(hex).load(conn))?;
+            Ok::<_, Report>((*addr, result))
         });
 
         // If performance becomes an issue, we can replace this with `dashmap` and parallelize the
@@ -39,7 +41,7 @@ impl Db {
     }
 }
 
-fn query(stake_addr: &str) -> impl DbQuery<'_, BigDecimal> {
+fn query(stake_addr: String) -> impl DbQuery<'static, BigDecimal> {
     use crate::db::schema::{stake_address, tx_in, tx_out};
 
     let outer_join = tx_in::table.on(tx_out::tx_id

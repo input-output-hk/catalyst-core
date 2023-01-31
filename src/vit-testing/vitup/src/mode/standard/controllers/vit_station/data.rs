@@ -2,9 +2,7 @@ use super::{
     ArbitraryValidVotingTemplateGenerator, DbBuilder, ExternalValidVotingTemplateGenerator,
     ValidVotePlanGenerator, ValidVotePlanParameters, ValidVotingTemplateGenerator,
 };
-use crate::builders::utils::DeploymentTree;
 use crate::config::MigrationError;
-use std::path::Path;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -28,33 +26,25 @@ impl DbGenerator {
 
     pub fn build(
         self,
-        db_file: &Path,
         template_generator: &mut dyn ValidVotingTemplateGenerator,
-    ) -> Result<(), Error> {
-        std::fs::File::create(db_file)?;
-
+    ) -> Result<String, Error> {
         let mut generator = ValidVotePlanGenerator::new(self.parameters);
         let snapshot = generator.build(template_generator);
         DbBuilder::new()
             .with_snapshot(&snapshot)
-            .build_into_path(db_file)
-            .map(|_| ())
+            .build()
             .map_err(Into::into)
     }
 }
 
-pub fn generate_random_database(
-    tree: &DeploymentTree,
-    vit_parameters: ValidVotePlanParameters,
-) -> Result<(), Error> {
+pub fn generate_random_database(vit_parameters: ValidVotePlanParameters) -> Result<String, Error> {
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    DbGenerator::new(vit_parameters).build(&tree.database_path(), &mut template_generator)
+    DbGenerator::new(vit_parameters).build(&mut template_generator)
 }
 
 pub fn generate_database(
-    tree: &DeploymentTree,
     vit_parameters: ValidVotePlanParameters,
     mut template_generator: ExternalValidVotingTemplateGenerator,
-) -> Result<(), Error> {
-    DbGenerator::new(vit_parameters).build(&tree.database_path(), &mut template_generator)
+) -> Result<String, Error> {
+    DbGenerator::new(vit_parameters).build(&mut template_generator)
 }

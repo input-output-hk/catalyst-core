@@ -10,6 +10,7 @@ use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use valgrind::ValgrindClient;
+use vit_servicing_station_tests::common::startup::db::DbBuilder;
 use vit_servicing_station_tests::common::startup::server::ServerBootstrapper;
 
 #[derive(Parser, Debug)]
@@ -41,7 +42,6 @@ impl DiffCommand {
         let remote = TempDir::new().unwrap();
         let deployment_tree = DeploymentTree::new(&self.local);
         let local_genesis_yaml = deployment_tree.genesis_path();
-        let local_vit_db = deployment_tree.database_path();
         let remote_client = ValgrindClient::new(self.target.clone(), Default::default())?;
 
         let remote_genesis_yaml = remote.path().join("genesis_remote.yaml");
@@ -51,8 +51,10 @@ impl DiffCommand {
         let local_genesis_content = read_file(&local_genesis_yaml)?;
         let remote_genesis_content = read_file(remote_genesis_yaml)?;
 
+        let db_url = DbBuilder::new().build().unwrap();
+
         let server = ServerBootstrapper::new()
-            .with_db_path(local_vit_db.to_str().unwrap())
+            .with_db_path(db_url)
             .start_with_exe(&remote, self.vit_station.clone())?;
 
         let local_funds = server.rest_client().funds()?;

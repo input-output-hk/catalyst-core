@@ -10,7 +10,7 @@ pub mod arguments;
 pub fn bootstrap_with_random_data() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap().into_persistent();
     let snapshot = data::ArbitrarySnapshotGenerator::default().snapshot();
-    let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
+    let db_path = DbBuilder::new().with_snapshot(&snapshot).build()?;
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_path)

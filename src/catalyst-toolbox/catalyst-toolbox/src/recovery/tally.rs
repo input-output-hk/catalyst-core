@@ -30,7 +30,7 @@ use std::collections::{HashMap, HashSet};
 use std::ops::{Add, Range};
 use std::time::{Duration, SystemTime};
 use tracing::{debug, error, trace, warn};
-use wallet::{Settings, TransactionBuilder, Wallet};
+use wallet::{transaction::WitnessInput, Settings, TransactionBuilder, Wallet};
 
 #[allow(clippy::large_enum_variant)]
 #[derive(thiserror::Error, Debug)]
@@ -513,6 +513,7 @@ impl FragmentReplayer {
             .get_mut(&address)
             .ok_or_else(|| ReplayError::NonVotingAccount(address.to_string()))?;
 
+        let secret_key = wallet.secret_key();
         // unwrap checked in the validation step
         let builder_help = wallet
             .new_transaction(tx.total_input().unwrap(), 0)
@@ -520,7 +521,11 @@ impl FragmentReplayer {
         let mut builder =
             TransactionBuilder::new(self.settings.clone(), vote_cast, tx.valid_until());
         builder.add_input(builder_help.input(), builder_help.witness_builder());
-        let res = Fragment::VoteCast(builder.finalize_tx(()).unwrap());
+        let res = Fragment::VoteCast(
+            builder
+                .finalize_tx((), vec![WitnessInput::SecretKey(secret_key)])
+                .unwrap(),
+        );
 
         debug!("replaying vote cast transaction from {}", address);
         self.pending_requests.insert(res.id(), address);
@@ -564,6 +569,7 @@ impl FragmentReplayer {
         };
 
         warn!("replaying a plain transaction from {} to {:?} with value {}, this is not coming from the app, might want to look into this", identifier, output_address, output.value);
+        let secret_key = wallet.secret_key();
         // unwrap checked in the validation step
         let builder_help = wallet
             .new_transaction(tx.total_input().unwrap(), 0)
@@ -571,7 +577,11 @@ impl FragmentReplayer {
         let mut builder = TransactionBuilder::new(self.settings.clone(), NoExtra, tx.valid_until());
         builder.add_input(builder_help.input(), builder_help.witness_builder());
         builder.add_output(Output::from_address(output_address, output.value));
-        let res = Fragment::Transaction(builder.finalize_tx(()).unwrap());
+        let res = Fragment::Transaction(
+            builder
+                .finalize_tx((), vec![WitnessInput::SecretKey(secret_key)])
+                .unwrap(),
+        );
         self.pending_requests.insert(res.id(), address);
         Ok(res)
     }

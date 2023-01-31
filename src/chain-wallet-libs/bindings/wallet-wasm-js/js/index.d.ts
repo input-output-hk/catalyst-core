@@ -91,15 +91,15 @@ export class Vote {
 /**
  * Signes provided votes and returns a completly generated transaction list
  *
- * @param {Vote[]} votes list of votes
- * @param {Settings} settings wallet Settings
- * @param {string} accountId user's account id hex representation
- * @param {string} privateKey user's private key hex representation
+ * @param {Vote[]} votes List of votes
+ * @param {Settings} settings Wallet Settings
+ * @param {string} accountId User's account id hex representation
+ * @param {string} privateKey Deprecated field, you can pass anything.
  * @returns {wallet_wasm.Fragment[]}
  */
 function signVotes(
   votes: Vote[],
   settings: Settings,
   accountId: string,
-  privateKey: string
+  privateKey?: string
 ): wallet_wasm.VoteCastTxBuilder[];

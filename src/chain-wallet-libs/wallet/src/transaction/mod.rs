@@ -3,7 +3,7 @@ mod strategy;
 mod witness_builder;
 
 pub use self::{
-    builder::{AddInputStatus, TransactionBuilder},
+    builder::{AddInputStatus, TransactionBuilder, WitnessInput},
     strategy::{InputStrategy, OutputStrategy, Strategy, StrategyBuilder, DEFAULT_STRATEGIES},
-    witness_builder::AccountWitnessBuilder,
+    witness_builder::{AccountSecretKey, AccountWitnessBuilder},
 };

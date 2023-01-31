@@ -2,8 +2,6 @@
 //! current state and verify transactions.
 
 use super::check::{self, TxVerifyError};
-#[cfg(feature = "evm")]
-use super::evm;
 use super::governance::{Governance, ParametersGovernanceAction, TreasuryGovernanceAction};
 use super::leaderlog::LeadersParticipationRecord;
 use super::pots::Pots;
@@ -15,8 +13,6 @@ use crate::chaineval::HeaderContentEvalContext;
 use crate::chaintypes::{ChainLength, ConsensusType, HeaderId};
 use crate::config::{self, ConfigParam};
 use crate::date::{BlockDate, Epoch};
-#[cfg(feature = "evm")]
-use crate::evm::EvmTransaction;
 use crate::fee::{FeeAlgorithm, LinearFee};
 use crate::fragment::{BlockContentHash, Contents, Fragment, FragmentId};
 use crate::rewards;
@@ -39,8 +35,6 @@ use crate::{
 };
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::Verification;
-#[cfg(feature = "evm")]
-use chain_evm::state::ByteCode;
 use chain_time::{Epoch as TimeEpoch, SlotDuration, TimeEra, TimeFrame, Timeline};
 use std::collections::HashSet;
 use std::mem::swap;
@@ -81,8 +75,6 @@ pub struct Ledger {
     pub(crate) leaders_log: LeadersParticipationRecord,
     pub(crate) votes: VotePlanLedger,
     pub(crate) governance: Governance,
-    #[cfg(feature = "evm")]
-    pub(crate) evm: evm::Ledger,
     pub(crate) token_totals: TokenTotals,
 }
 
@@ -319,12 +311,6 @@ pub enum Error {
     MintingPolicyViolation(#[from] MintingPolicyViolation),
     #[error("evm transactions are disabled, the node was built without the 'evm' feature")]
     DisabledEvmTransactions,
-    #[cfg(feature = "evm")]
-    #[error("Protocol evm mapping payload signature failed")]
-    EvmMappingSignatureFailed,
-    #[cfg(feature = "evm")]
-    #[error("evm error: {0}")]
-    EvmError(#[from] evm::Error),
 }
 
 impl Ledger {
@@ -334,7 +320,7 @@ impl Ledger {
         era: TimeEra,
         pots: Pots,
     ) -> Self {
-        let ledger = Ledger {
+        Ledger {
             utxos: utxo::Ledger::new(),
             oldutxos: utxo::Ledger::new(),
             accounts: account::Ledger::new(),
@@ -350,17 +336,7 @@ impl Ledger {
             leaders_log: LeadersParticipationRecord::new(),
             votes: VotePlanLedger::new(),
             governance: Governance::default(),
-            #[cfg(feature = "evm")]
-            evm: evm::Ledger::new(),
             token_totals: TokenTotals::default(),
-        };
-        #[cfg(not(feature = "evm"))]
-        {
-            ledger
-        }
-        #[cfg(feature = "evm")]
-        {
-            ledger.set_evm_block0().set_evm_environment()
         }
     }
 
@@ -513,53 +489,16 @@ impl Ledger {
                     ledger = ledger.mint_token_unchecked(tx.payload().into_payload())?;
                 }
                 Fragment::Evm(_tx) => {
-                    #[cfg(feature = "evm")]
-                    {
-                        (ledger.accounts, ledger.evm) = evm::Ledger::run_transaction(
-                            ledger.evm,
-                            ledger.accounts,
-                            _tx.clone(),
-                            ledger.settings.evm_config,
-                        )?;
-                    }
-                    #[cfg(not(feature = "evm"))]
-                    {
-                        return Err(Error::DisabledEvmTransactions);
-                    }
+                    return Err(Error::DisabledEvmTransactions);
                 }
                 Fragment::EvmMapping(_tx) => {
-                    #[cfg(feature = "evm")]
-                    {
-                        return Err(Error::Block0(Block0Error::HasEvmMapping));
-                    }
-                    #[cfg(not(feature = "evm"))]
-                    {
-                        return Err(Error::DisabledEvmTransactions);
-                    }
+                    return Err(Error::DisabledEvmTransactions);
                 }
             }
         }
 
         ledger.validate_utxo_total_value()?;
         Ok(ledger)
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn set_evm_block0(self) -> Self {
-        let mut ledger = self;
-        ledger.evm.environment.chain_id =
-            <[u8; 32]>::from(ledger.static_params.block0_initial_hash).into();
-        ledger.evm.environment.block_timestamp = ledger.static_params.block0_start_time.0.into();
-        ledger
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn set_evm_environment(self) -> Self {
-        let mut ledger = self;
-        ledger.evm.environment.gas_price = ledger.settings.evm_environment.gas_price.into();
-        ledger.evm.environment.block_gas_limit =
-            ledger.settings.evm_environment.block_gas_limit.into();
-        ledger
     }
 
     pub fn can_distribute_reward(&self) -> bool {
@@ -865,9 +804,6 @@ impl Ledger {
 
         let new_block_ledger = self.begin_block(metadata.chain_length, metadata.block_date)?;
 
-        #[cfg(feature = "evm")]
-        let new_block_ledger = new_block_ledger.begin_evm_block(metadata);
-
         let new_block_ledger = contents
             .iter()
             .try_fold(new_block_ledger, |new_block_ledger, fragment| {
@@ -1046,36 +982,10 @@ impl Ledger {
                 new_ledger = new_ledger_.mint_token(tx.payload().into_payload())?;
             }
             Fragment::Evm(_tx) => {
-                #[cfg(feature = "evm")]
-                {
-                    (new_ledger.accounts, new_ledger.evm) = evm::Ledger::run_transaction(
-                        new_ledger.evm,
-                        new_ledger.accounts,
-                        _tx.clone(),
-                        new_ledger.settings.evm_config,
-                    )?;
-                }
-                #[cfg(not(feature = "evm"))]
-                {
-                    return Err(Error::DisabledEvmTransactions);
-                }
+                return Err(Error::DisabledEvmTransactions);
             }
             Fragment::EvmMapping(_tx) => {
-                #[cfg(feature = "evm")]
-                {
-                    let tx = _tx.as_slice();
-                    (new_ledger, _) = new_ledger.apply_transaction(&fragment_id, &tx)?;
-
-                    new_ledger = new_ledger.apply_map_accounts(
-                        &tx.payload().into_payload(),
-                        &tx.transaction_binding_auth_data(),
-                        tx.payload_auth().into_payload_auth(),
-                    )?;
-                }
-                #[cfg(not(feature = "evm"))]
-                {
-                    return Err(Error::DisabledEvmTransactions);
-                }
+                return Err(Error::DisabledEvmTransactions);
             }
         }
 
@@ -1409,26 +1319,6 @@ impl Ledger {
         Ok(self)
     }
 
-    #[cfg(feature = "evm")]
-    pub fn apply_map_accounts<'a>(
-        mut self,
-        mapping: &crate::certificate::EvmMapping,
-        auth_data: &TransactionBindingAuthData<'a>,
-        sig: SingleAccountBindingSignature,
-    ) -> Result<Self, Error> {
-        if sig.verify_slice(&mapping.account_id().clone().into(), auth_data)
-            != Verification::Success
-        {
-            return Err(Error::EvmMappingSignatureFailed);
-        }
-
-        // TODO need to add Ethereum signature validation
-
-        (self.accounts, self.evm) =
-            evm::Ledger::apply_map_accounts(self.evm, self.accounts, mapping)?;
-        Ok(self)
-    }
-
     pub fn get_stake_distribution(&self) -> StakeDistribution {
         stake::get_distribution(&self.accounts, &self.delegation, &self.utxos)
     }
@@ -1456,52 +1346,6 @@ impl Ledger {
 
     pub fn consensus_version(&self) -> ConsensusType {
         self.settings.consensus_version
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn call_evm_transaction(&self, tx: EvmTransaction) -> Result<ByteCode, Error> {
-        Ok(evm::Ledger::call_evm_transaction(
-            self.evm.clone(),
-            self.accounts.clone(),
-            tx,
-            self.settings.evm_config,
-        )?)
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn estimate_evm_transaction(&self, tx: EvmTransaction) -> Result<u64, Error> {
-        Ok(evm::Ledger::estimate_transaction(
-            self.evm.clone(),
-            self.accounts.clone(),
-            tx,
-            self.settings.evm_config,
-        )?)
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn get_evm_gas_price(&self) -> u64 {
-        self.settings.evm_environment.gas_price
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn get_evm_block_gas_limit(&self) -> u64 {
-        self.settings.evm_environment.block_gas_limit
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn get_jormungandr_mapped_address(
-        &self,
-        evm_id: &chain_evm::Address,
-    ) -> crate::account::Identifier {
-        self.evm.address_mapping.jor_address(evm_id)
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn get_evm_mapped_address(
-        &self,
-        jor_id: &crate::account::Identifier,
-    ) -> Option<chain_evm::Address> {
-        self.evm.address_mapping.evm_address(jor_id)
     }
 
     pub fn utxo_out(
@@ -1800,19 +1644,6 @@ impl ApplyBlockLedger {
             ledger,
             ..self.clone()
         })
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn begin_evm_block(self, metadata: &HeaderContentEvalContext) -> Self {
-        let mut apply_block_ledger = self;
-        let slots_per_epoch = apply_block_ledger.ledger.settings.slots_per_epoch;
-        let slot_duration = apply_block_ledger.ledger.settings.slot_duration;
-        apply_block_ledger.ledger.evm.update_block_environment(
-            metadata,
-            slots_per_epoch,
-            slot_duration,
-        );
-        apply_block_ledger
     }
 
     pub fn finish(self, consensus_eval_context: &ConsensusEvalContext) -> Ledger {

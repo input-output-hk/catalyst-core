@@ -25,7 +25,6 @@ chain-crypto    = { path = "../../../chain-libs/chain-crypto", features = [ "pro
 chain-time      = { path = "../../../chain-libs/chain-time" }
 chain-storage   = { path = "../../../chain-libs/chain-storage", features = ["with-bench"] }
 chain-vote      = { path = "../../../chain-libs/chain-vote" }
-chain-evm       = { path = "../../../chain-libs/chain-evm", optional = true }
 cardano-legacy-address = { path = "../../../chain-libs/cardano-legacy-address" }
 typed-bytes = { path = "../../../chain-libs/typed-bytes" }
 jormungandr-lib = { path = "../../jormungandr-lib" }
@@ -78,7 +77,6 @@ features = ["json","fmt"]
 
 [features]
 default = []
-evm = ["jormungandr-lib/evm", "chain-evm"]
 property-test-api = [ ]
 
 [build-dependencies]

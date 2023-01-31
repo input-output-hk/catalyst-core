@@ -12,10 +12,6 @@ use crate::{
     wallet::{account::Wallet as AccountWallet, Wallet},
 };
 use chain_crypto::{Ed25519, SecretKey};
-#[cfg(feature = "evm")]
-use chain_impl_mockchain::certificate::EvmMapping;
-#[cfg(feature = "evm")]
-use chain_impl_mockchain::evm::EvmTransaction;
 use chain_impl_mockchain::{
     block::BlockDate,
     certificate::{
@@ -399,17 +395,5 @@ impl FragmentBuilder {
             &signer_wallet.into(),
             update_vote,
         )
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn evm_mapping(&self, from: &Wallet, evm_mapping: &EvmMapping) -> Fragment {
-        let inner_wallet = from.clone().into();
-        self.fragment_factory
-            .evm_mapping(self.valid_until, &inner_wallet, evm_mapping.clone())
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn evm_transaction(&self, evm_transaction: EvmTransaction) -> Fragment {
-        self.fragment_factory.evm_transaction(evm_transaction)
     }
 }

@@ -46,7 +46,6 @@ const VOTE_FOR_LUIGI: u8 = 1;
 const VOTE_FOR_ANTONIO: u8 = 2;
 
 #[test]
-#[should_panic]
 pub fn explorer_vote_plan_not_existing() {
     let temp_dir = TempDir::new().unwrap();
     let alice = Wallet::default();

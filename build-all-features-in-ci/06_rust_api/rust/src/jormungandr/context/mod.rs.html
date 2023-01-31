@@ -161,6 +161,8 @@
 <span id="161">161</span>
 <span id="162">162</span>
 <span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     blockchain::{Blockchain, Tip},
     diagnostic::Diagnostic,
@@ -323,6 +325,8 @@
     <span class="kw">pub </span>leadership_logs: LeadershipLogs,
     <span class="kw">pub </span>enclave: Enclave,
     <span class="kw">pub </span>network_state: NetworkStateR,
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;prometheus-metrics&quot;</span>)]
+    </span><span class="kw">pub </span>prometheus: <span class="prelude-ty">Option</span>&lt;Arc&lt;<span class="kw">crate</span>::metrics::backends::Prometheus&gt;&gt;,
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="jormungandr" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

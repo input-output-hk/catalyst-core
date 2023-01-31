@@ -6,8 +6,8 @@
 </p>
 
 <p align="center">
- <a href="https://github.com/input-output-hk/catalyst-core/actions/workflows/ci_tests.yml">
-    <img src="https://github.com/input-output-hk/catalyst-core/actions/workflows/ci_tests.yml/badge.svg" alt="Current CI Status." />
+ <a href="https://github.com/input-output-hk/catalyst-core/actions/workflows/rust.yml">
+    <img src="https://github.com/input-output-hk/catalyst-core/actions/workflows/rust.yml/badge.svg" alt="Current CI Status." />
   </a>
    <a href="https://github.com/input-output-hk/catalyst-core#license">
     <img src="https://img.shields.io/badge/license-MIT%2FApache--2.0-blue"

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["prepare_scenario",""],["proposal",""],["stake_pool",""],["vote_plan",""],["wallet",""]],"mod":[["template",""]],"struct":[["Controller",""],["FragmentFactory",""]]};

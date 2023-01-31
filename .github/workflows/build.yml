@@ -66,7 +66,7 @@ jobs:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
       - name: Build on Linux
-        run: cargo build ${{env.CARGO_FLAGS}}
+        run: cargo build --all-features ${{env.CARGO_FLAGS}}
 
   build_on_windows:
     name: Build Catalyst Core on Windows
@@ -125,4 +125,4 @@ jobs:
 
       - name: Build on Windows
         working-directory: "C:\\${{ github.event.repository.name }}"
-        run: cargo build --workspace ${{env.CARGO_FLAGS}}
+        run: cargo build --all-features ${{env.CARGO_FLAGS}}

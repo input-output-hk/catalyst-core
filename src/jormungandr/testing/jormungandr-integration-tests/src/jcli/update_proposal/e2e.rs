@@ -71,7 +71,7 @@ fn basic_change_config_test() {
     let current_epoch = get_current_date(&mut jormungandr.rest()).epoch();
     let block0_hash = Hash::from_str(&jormungandr.rest().settings().unwrap().block0_hash).unwrap();
 
-    let wait = Wait::new(Duration::from_secs(5), 10);
+    let wait = Wait::new(Duration::from_secs(2), 10);
 
     let update_proposal_cert = jcli.certificate().new_update_proposal(
         &alice_leader_key.public_key().to_bech32_str(),
@@ -135,7 +135,7 @@ fn basic_change_config_test() {
         .send(tx.as_str())
         .assert_in_block_with_wait(&wait);
 
-    wait_for_epoch(current_epoch + 2, jormungandr.rest());
+    wait_for_epoch(current_epoch + 1, jormungandr.rest());
 
     let new_settings = jcli.rest().v0().settings(jormungandr.rest_uri());
 

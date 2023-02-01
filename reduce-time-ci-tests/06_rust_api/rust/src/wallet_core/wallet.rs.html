@@ -174,17 +174,73 @@
 <span id="174">174</span>
 <span id="175">175</span>
 <span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{Error, Proposal};
 <span class="kw">use </span>chain_core::property::Serialize <span class="kw">as _</span>;
 <span class="kw">use </span>chain_crypto::SecretKey;
 <span class="kw">use </span>chain_impl_mockchain::{
     account::SpendingCounterIncreasing,
     block::BlockDate,
+    certificate::Certificate,
     fragment::{Fragment, FragmentId},
+    transaction::{Payload, Transaction},
     value::Value,
     vote::Choice,
 };
-<span class="kw">use </span>wallet::{transaction::WitnessInput, AccountId, Settings};
+<span class="kw">use </span>wallet::{AccountId, Settings};
 
 <span class="doccomment">/// the wallet
 ///
@@ -294,6 +350,59 @@
             .map_err(|<span class="kw">_</span>| Error::invalid_spending_counters())
     }
 
+    <span class="kw">fn </span>sign_transaction_impl&lt;P: Payload&gt;(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        settings: Settings,
+        valid_until: BlockDate,
+        lane: u8,
+        payload: P,
+        auth: P::Auth,
+        fragment_build_fn: <span class="kw">impl </span>FnOnce(Transaction&lt;P&gt;) -&gt; Fragment,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Fragment, Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>builder = wallet::TransactionBuilder::new(settings, payload, valid_until);
+
+        <span class="comment">// It is needed to provide a 1 extra input as we are generating it later, but should take into account at this place.
+        </span><span class="kw">let </span>value = builder.estimate_fee_with(<span class="number">1</span>, <span class="number">0</span>);
+
+        <span class="kw">let </span>account_tx_builder = <span class="self">self
+            </span>.account
+            .new_transaction(value, lane)
+            .map_err(|<span class="kw">_</span>| Error::not_enough_funds())<span class="question-mark">?</span>;
+
+        <span class="kw">let </span>input = account_tx_builder.input();
+        <span class="kw">let </span>witness_builder = account_tx_builder.witness_builder();
+
+        builder.add_input(input, witness_builder);
+
+        <span class="kw">let </span>tx = builder
+            .finalize_tx(auth)
+            .map_err(|e| Error::wallet_transaction().with(e))<span class="question-mark">?</span>;
+
+        <span class="kw">let </span>fragment = fragment_build_fn(tx);
+        account_tx_builder.add_fragment_id(fragment.hash());
+        <span class="prelude-val">Ok</span>(fragment)
+    }
+
+    <span class="doccomment">/// Sign a transaction
+    ///
+    /// This function outputs a fragment containing a signed transaction.
+    </span><span class="kw">pub fn </span>sign_transaction(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        settings: Settings,
+        valid_until: BlockDate,
+        lane: u8,
+        certificate: Certificate,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Fragment, Error&gt; {
+        <span class="kw">match </span>certificate {
+            Certificate::VoteCast(p) =&gt; {
+                <span class="self">self</span>.sign_transaction_impl(settings, valid_until, lane, p, (), |tx| {
+                    Fragment::VoteCast(tx)
+                })
+            }
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(Error::invalid_input(<span class="string">&quot;does not supported certificate type&quot;</span>)),
+        }
+    }
+
     <span class="doccomment">/// Cast a vote
     ///
     /// This function outputs a fragment containing a voting transaction.
@@ -327,7 +436,6 @@
 
         <span class="kw">let </span>value = builder.estimate_fee_with(<span class="number">1</span>, <span class="number">0</span>);
 
-        <span class="kw">let </span>secret_key = <span class="self">self</span>.account.secret_key();
         <span class="kw">let </span>account_tx_builder = <span class="self">self
             </span>.account
             .new_transaction(value, lane)
@@ -339,7 +447,7 @@
         builder.add_input(input, witness_builder);
 
         <span class="kw">let </span>tx = builder
-            .finalize_tx((), <span class="macro">vec!</span>[WitnessInput::SecretKey(secret_key)])
+            .finalize_tx(())
             .map_err(|e| Error::wallet_transaction().with(e))<span class="question-mark">?</span>;
 
         <span class="kw">let </span>fragment = Fragment::VoteCast(tx);

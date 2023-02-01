@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["EitherAccount",""],["Error",""]],"mod":[["time",""],["transaction",""]],"struct":[["AccountId",""],["AccountWitnessBuilder",""],["ScrubbedBytes",""],["Settings",""],["TransactionBuilder",""],["Wallet",""]],"type":[["Password",""]]};
+window.SIDEBAR_ITEMS = {"enum":[["AccountWitnessBuilder",""],["EitherAccount",""]],"mod":[["time",""],["transaction",""]],"struct":[["AccountId",""],["ScrubbedBytes",""],["Settings",""],["TransactionBuilder",""],["Wallet",""]],"type":[["Password",""]]};

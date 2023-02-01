@@ -214,116 +214,8 @@
 <span id="214">214</span>
 <span id="215">215</span>
 <span id="216">216</span>
-<span id="217">217</span>
-<span id="218">218</span>
-<span id="219">219</span>
-<span id="220">220</span>
-<span id="221">221</span>
-<span id="222">222</span>
-<span id="223">223</span>
-<span id="224">224</span>
-<span id="225">225</span>
-<span id="226">226</span>
-<span id="227">227</span>
-<span id="228">228</span>
-<span id="229">229</span>
-<span id="230">230</span>
-<span id="231">231</span>
-<span id="232">232</span>
-<span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
-<span id="237">237</span>
-<span id="238">238</span>
-<span id="239">239</span>
-<span id="240">240</span>
-<span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
-<span id="245">245</span>
-<span id="246">246</span>
-<span id="247">247</span>
-<span id="248">248</span>
-<span id="249">249</span>
-<span id="250">250</span>
-<span id="251">251</span>
-<span id="252">252</span>
-<span id="253">253</span>
-<span id="254">254</span>
-<span id="255">255</span>
-<span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
-<span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
-<span id="262">262</span>
-<span id="263">263</span>
-<span id="264">264</span>
-<span id="265">265</span>
-<span id="266">266</span>
-<span id="267">267</span>
-<span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
-<span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
-<span id="310">310</span>
-<span id="311">311</span>
-<span id="312">312</span>
-<span id="313">313</span>
-<span id="314">314</span>
-<span id="315">315</span>
-<span id="316">316</span>
-<span id="317">317</span>
-<span id="318">318</span>
-<span id="319">319</span>
-<span id="320">320</span>
-<span id="321">321</span>
-<span id="322">322</span>
-<span id="323">323</span>
-<span id="324">324</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::utils::qr::read_qrs;
-<span class="kw">use </span><span class="kw">crate</span>::utils::qr::Error <span class="kw">as </span>PinReadError;
+<span class="kw">use </span><span class="kw">crate</span>::utils::qr::PinReadError;
 <span class="kw">use </span><span class="kw">crate</span>::utils::qr::PinReadModeSettings;
 <span class="kw">use </span><span class="kw">crate</span>::Wallet;
 <span class="kw">use </span>bech32::FromBase32;
@@ -337,35 +229,22 @@
 <span class="kw">use </span>valgrind::ValgrindClient;
 <span class="kw">use </span>vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 <span class="kw">use </span>wallet::Settings;
-<span class="kw">use </span>wallet_core::Choice;
+<span class="kw">use </span>wallet_core::{Choice, Value};
 
 <span class="kw">unsafe impl </span>Send <span class="kw">for </span>Wallet {}
-<span class="kw">use </span>jormungandr_automation::testing::vit::VoteCastCounterError;
-<span class="kw">use </span>jormungandr_lib::interfaces::VotePlanId;
 <span class="kw">use </span>std::convert::TryInto;
 
-<span class="doccomment">/// Responsible for controlling more than one wallet at one time. Useful for load scenario or wallets
-/// which handles many users
-</span><span class="kw">pub struct </span>MultiController {
+<span class="kw">pub struct </span>MultiController {
     <span class="kw">pub</span>(<span class="kw">super</span>) backend: ValgrindClient,
     <span class="kw">pub</span>(<span class="kw">super</span>) wallets: Vec&lt;Wallet&gt;,
     <span class="kw">pub</span>(<span class="kw">super</span>) settings: Settings,
 }
 
 <span class="kw">impl </span>MultiController {
-    <span class="doccomment">/// Creates object based on qr codes files
-    ///
-    /// # Errors
-    ///
-    /// On backend connectivity issues or parsing qr problems
-    ///
-    /// # Panics
-    ///
-    /// On internal error when exposing secret key
-    </span><span class="kw">pub fn </span>recover_from_qrs&lt;P: AsRef&lt;Path&gt;&gt;(
+    <span class="kw">pub fn </span>recover_from_qrs&lt;P: AsRef&lt;Path&gt;&gt;(
         wallet_backend_address: <span class="kw-2">&amp;</span>str,
         qrs: <span class="kw-2">&amp;</span>[P],
-        pin_mode: <span class="kw-2">&amp;</span>PinReadModeSettings,
+        pin_mode: PinReadModeSettings,
         backend_settings: RestSettings,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, MultiControllerError&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>backend =
@@ -385,17 +264,7 @@
         })
     }
 
-    <span class="doccomment">/// Creates object based on secret files
-    ///
-    /// # Errors
-    ///
-    /// On backend connectivity issues or parsing qr problems
-    ///
-    /// # Panics
-    ///
-    /// On single wallet recover error
-    ///
-    </span><span class="kw">pub fn </span>recover_from_sks&lt;P: AsRef&lt;Path&gt;&gt;(
+    <span class="kw">pub fn </span>recover_from_sks&lt;P: AsRef&lt;Path&gt;&gt;(
         proxy_address: <span class="kw-2">&amp;</span>str,
         private_keys: <span class="kw-2">&amp;</span>[P],
         backend_settings: RestSettings,
@@ -406,7 +275,7 @@
             .iter()
             .map(|x| {
                 <span class="kw">let </span>(<span class="kw">_</span>, data, <span class="kw">_</span>) = read_bech32(<span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>x.as_ref().to_path_buf())).unwrap();
-                <span class="kw">let </span>key_bytes = Vec::&lt;u8&gt;::from_base32(data.as_slice()).unwrap();
+                <span class="kw">let </span>key_bytes = Vec::&lt;u8&gt;::from_base32(<span class="kw-2">&amp;</span>data).unwrap();
                 <span class="kw">let </span>data: [u8; <span class="number">64</span>] = key_bytes.try_into().unwrap();
                 Wallet::recover(<span class="kw-2">&amp;</span>data).unwrap()
             })
@@ -419,96 +288,49 @@
         })
     }
 
-    <span class="doccomment">/// Gets proposals from vit-servicing-station based on voting group
-    ///
-    /// # Errors
-    ///
-    /// On connection issues
-    ///
-    </span><span class="kw">pub fn </span>proposals(<span class="kw-2">&amp;</span><span class="self">self</span>, group: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;FullProposalInfo&gt;, MultiControllerError&gt; {
+    <span class="kw">pub fn </span>proposals(<span class="kw-2">&amp;</span><span class="self">self</span>, group: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;FullProposalInfo&gt;, MultiControllerError&gt; {
         <span class="self">self</span>.backend.proposals(group).map_err(Into::into)
     }
 
-    <span class="doccomment">/// Get inner backend client which can perform some custom REST API operations over the node
-    /// or servicing-station
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>backend(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>ValgrindClient {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>backend(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>ValgrindClient {
         <span class="kw-2">&amp;</span><span class="self">self</span>.backend
     }
 
-    <span class="doccomment">/// Update wallet state for entire wallets collection based on current state in blockchain
-    ///
-    /// # Errors
-    ///
-    /// On connection issues
-    ///
-    </span><span class="kw">pub fn </span>update_wallets_state(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), MultiControllerError&gt; {
+    <span class="kw">pub fn </span>update_wallets_state(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
         <span class="kw">let </span>backend = <span class="self">self</span>.backend().clone();
         <span class="kw">let </span>count = <span class="self">self</span>.wallets.len();
         <span class="kw">for </span>(idx, wallet) <span class="kw">in </span><span class="self">self</span>.wallets.iter_mut().enumerate() {
-            <span class="kw">let </span>account_state = backend.account_state(wallet.id())<span class="question-mark">?</span>;
+            <span class="kw">let </span>account_state = backend.account_state(wallet.id()).unwrap();
             <span class="macro">println!</span>(<span class="string">&quot;{}/{} Updating account state&quot;</span>, idx + <span class="number">1</span>, count);
-            wallet.set_state((<span class="kw-2">*</span>account_state.value()).into(), account_state.counters())<span class="question-mark">?</span>;
+            wallet.set_state((<span class="kw-2">*</span>account_state.value()).into(), account_state.counters());
         }
-        <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Update wallet states based on current state in blockchain
-    ///
-    /// # Errors
-    ///
-    /// On connection issues
-    ///
-    </span><span class="kw">pub fn </span>update_wallet_state(<span class="kw-2">&amp;mut </span><span class="self">self</span>, wallet_index: usize) -&gt; <span class="prelude-ty">Result</span>&lt;(), MultiControllerError&gt; {
+    <span class="kw">pub fn </span>update_wallet_state(<span class="kw-2">&amp;mut </span><span class="self">self</span>, wallet_index: usize) {
         <span class="kw">let </span>backend = <span class="self">self</span>.backend().clone();
-        <span class="kw">let </span>wallet = <span class="self">self
-            </span>.wallets
-            .get_mut(wallet_index)
-            .ok_or(MultiControllerError::NotEnoughWallets)<span class="question-mark">?</span>;
-        <span class="kw">let </span>account_state = backend.account_state(wallet.id())<span class="question-mark">?</span>;
-        wallet
-            .set_state((<span class="kw-2">*</span>account_state.value()).into(), account_state.counters())
-            .map_err(Into::into)
+        <span class="kw">let </span>wallet = <span class="self">self</span>.wallets.get_mut(wallet_index).unwrap();
+        <span class="kw">let </span>account_state = backend.account_state(wallet.id()).unwrap();
+        wallet.set_state((<span class="kw-2">*</span>account_state.value()).into(), account_state.counters());
     }
-
-    <span class="doccomment">/// Update wallet states based on current state in blockchain if condition is satisfied. For example
-    /// only if wallet spending counter is 0 which means it is in initial state
-    ///
-    /// # Errors
-    ///
-    /// On connection issues
-    ///
-    </span><span class="kw">pub fn </span>update_wallet_state_if(
+    <span class="kw">pub fn </span>update_wallet_state_if(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         wallet_index: usize,
         predicate: <span class="kw-2">&amp;</span><span class="kw">dyn </span>Fn(<span class="kw-2">&amp;</span>Wallet) -&gt; bool,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), MultiControllerError&gt; {
-        <span class="kw">let </span>wallet = <span class="self">self
-            </span>.wallets
-            .get_mut(wallet_index)
-            .ok_or(MultiControllerError::NotEnoughWallets)<span class="question-mark">?</span>;
+    ) {
+        <span class="kw">let </span>wallet = <span class="self">self</span>.wallets.get_mut(wallet_index).unwrap();
         <span class="kw">if </span>predicate(wallet) {
-            <span class="self">self</span>.update_wallet_state(wallet_index)<span class="question-mark">?</span>;
+            <span class="self">self</span>.update_wallet_state(wallet_index)
         }
-        <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Sends vote transaction on behalf of wallet with index `wallet_index` on proposal with
-    /// given choice. Sets expiry slot equal to `valid_until`.
-    /// # Errors
-    ///
-    /// On connection issues
-    ///
-    </span><span class="kw">pub fn </span>vote(
+    <span class="kw">pub fn </span>vote(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         wallet_index: usize,
         proposal: <span class="kw-2">&amp;</span>FullProposalInfo,
         choice: Choice,
         valid_until: BlockDate,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;FragmentId, MultiControllerError&gt; {
-        <span class="kw">let </span>wallet = <span class="self">self
-            </span>.wallets
-            .get_mut(wallet_index)
-            .ok_or(MultiControllerError::NotEnoughWallets)<span class="question-mark">?</span>;
+        <span class="kw">let </span>wallet = <span class="self">self</span>.wallets.get_mut(wallet_index).unwrap();
         <span class="kw">let </span>tx = wallet.vote(
             <span class="self">self</span>.settings.clone(),
             <span class="kw-2">&amp;</span>proposal.clone().into_wallet_proposal(),
@@ -520,30 +342,14 @@
             .map_err(Into::into)
     }
 
-    <span class="doccomment">/// Sends bunch of vote transactions on behalf of wallet with index `wallet_index`
-    /// with map of proposals and respectful choices. Sets expiry slot equal to `valid_until`.
-    /// Method can use V0 or V1 api based on preference. V1 enable to send all transactions in a batch
-    /// as single call whether legacy V0 is able to send them as one vote per call
-    ///
-    /// # Errors
-    ///
-    /// On connection issues
-    ///
-    /// # Panics
-    ///
-    /// On connection problem
-    ///
-    </span><span class="kw">pub fn </span>votes_batch(
+    <span class="kw">pub fn </span>votes_batch(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         wallet_index: usize,
         use_v1: bool,
         votes_data: Vec&lt;(<span class="kw-2">&amp;</span>FullProposalInfo, Choice)&gt;,
         valid_until: <span class="kw-2">&amp;</span>BlockDate,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;FragmentId&gt;, MultiControllerError&gt; {
-        <span class="kw">let </span>wallet = <span class="self">self
-            </span>.wallets
-            .get_mut(wallet_index)
-            .ok_or(MultiControllerError::NotEnoughWallets)<span class="question-mark">?</span>;
+        <span class="kw">let </span>wallet = <span class="self">self</span>.wallets.get_mut(wallet_index).unwrap();
         <span class="kw">let </span>account_state = <span class="self">self</span>.backend.account_state(wallet.id())<span class="question-mark">?</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>counters = account_state.counters();
@@ -551,9 +357,7 @@
         <span class="kw">let </span>txs = votes_data
             .into_iter()
             .map(|(p, c)| {
-                wallet
-                    .set_state((<span class="kw-2">*</span>account_state.value()).into(), counters)
-                    .unwrap();
+                wallet.set_state((<span class="kw-2">*</span>account_state.value()).into(), counters);
                 <span class="kw">let </span>tx = wallet
                     .vote(
                         settings.clone(),
@@ -574,77 +378,57 @@
             .map_err(Into::into)
     }
 
-    <span class="doccomment">/// Confirms all transactions for all wallets. Confirms means loose interest in tracking their statuses.
-    /// This method should be call when we are sure our transactions all in final states (in block or failed).
-    </span><span class="kw">pub fn </span>confirm_all_transactions(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-        <span class="kw">for </span>wallet <span class="kw">in </span><span class="kw-2">&amp;mut </span><span class="self">self</span>.wallets {
+    <span class="kw">pub fn </span>confirm_all_transactions(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="kw">for </span>wallet <span class="kw">in </span><span class="self">self</span>.wallets.iter_mut() {
             wallet.confirm_all_transactions();
         }
     }
 
-    <span class="doccomment">/// Confirms all transactions for wallet. Confirms means loose interest in tracking their statuses.
-    /// This method should be call when we are sure our transactions all in final states (in block or failed).
-    </span><span class="kw">pub fn </span>confirm_transaction(<span class="kw-2">&amp;mut </span><span class="self">self</span>, fragment_id: FragmentId) {
-        <span class="kw">for </span>wallet <span class="kw">in </span><span class="kw-2">&amp;mut </span><span class="self">self</span>.wallets {
+    <span class="kw">pub fn </span>confirm_transaction(<span class="kw-2">&amp;mut </span><span class="self">self</span>, fragment_id: FragmentId) {
+        <span class="kw">for </span>wallet <span class="kw">in </span><span class="self">self</span>.wallets.iter_mut() {
             wallet.confirm_transaction(fragment_id);
         }
     }
 
-    <span class="doccomment">/// Wallet counts
-    </span><span class="attribute">#[must_use]
-    </span><span class="kw">pub fn </span>wallet_count(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+    <span class="kw">pub fn </span>refresh_wallet(<span class="kw-2">&amp;mut </span><span class="self">self</span>, wallet_index: usize) -&gt; <span class="prelude-ty">Result</span>&lt;(), MultiControllerError&gt; {
+        <span class="kw">let </span>wallet = <span class="self">self</span>.wallets.get_mut(wallet_index).unwrap();
+        <span class="kw">let </span>account_state = <span class="self">self</span>.backend.account_state(wallet.id())<span class="question-mark">?</span>;
+        <span class="kw">let </span>value: u64 = (<span class="kw-2">*</span>account_state.value()).into();
+        wallet.set_state(Value(value), account_state.counters());
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="kw">pub fn </span>wallet_count(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
         <span class="self">self</span>.wallets.len()
     }
-}
 
-<span class="kw">impl </span>From&lt;MultiController&gt; <span class="kw">for </span>Vec&lt;Wallet&gt; {
-    <span class="kw">fn </span>from(controller: MultiController) -&gt; <span class="self">Self </span>{
-        controller.wallets
+    <span class="kw">pub fn </span>is_converted(<span class="kw-2">&amp;mut </span><span class="self">self</span>, wallet_index: usize) -&gt; <span class="prelude-ty">Result</span>&lt;bool, MultiControllerError&gt; {
+        <span class="kw">let </span>wallet = <span class="self">self</span>.wallets.get_mut(wallet_index).unwrap();
+        <span class="self">self</span>.backend.account_exists(wallet.id()).map_err(Into::into)
     }
 }
 
-<span class="doccomment">/// Errors for `MultiController`
-</span><span class="attribute">#[derive(Debug, Error)]
+<span class="attribute">#[allow(clippy::from_over_into)]
+</span><span class="kw">impl </span>Into&lt;Vec&lt;Wallet&gt;&gt; <span class="kw">for </span>MultiController {
+    <span class="kw">fn </span>into(<span class="self">self</span>) -&gt; Vec&lt;Wallet&gt; {
+        <span class="self">self</span>.wallets
+    }
+}
+
+<span class="attribute">#[derive(Debug, Error)]
 </span><span class="kw">pub enum </span>MultiControllerError {
-    <span class="doccomment">/// Wallet related errors
-    </span><span class="attribute">#[error(<span class="string">&quot;wallet error&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;wallet error&quot;</span>)]
     </span>Wallet(<span class="attribute">#[from] </span><span class="kw">crate</span>::wallet::Error),
-    <span class="doccomment">/// Backend related errors
-    </span><span class="attribute">#[error(<span class="string">&quot;wallet error&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;wallet error&quot;</span>)]
     </span>Backend(<span class="attribute">#[from] </span>valgrind::Error),
-    <span class="doccomment">/// Wallet Controller related errors
-    </span><span class="attribute">#[error(<span class="string">&quot;controller error&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;controller error&quot;</span>)]
     </span>Controller(<span class="attribute">#[from] </span><span class="kw">crate</span>::ControllerError),
-    <span class="doccomment">/// Read pin errors
-    </span><span class="attribute">#[error(<span class="string">&quot;pin read error&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;pin read error&quot;</span>)]
     </span>PinRead(<span class="attribute">#[from] </span>PinReadError),
-    <span class="doccomment">/// Wallet time boundaries errors
-    </span><span class="attribute">#[error(<span class="string">&quot;wallet time error&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;wallet time error&quot;</span>)]
     </span>WalletTime(<span class="attribute">#[from] </span>wallet::time::Error),
-    <span class="doccomment">/// Not enough proposals
-    </span><span class="attribute">#[error(<span class="string">&quot;not enough proposals&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;not enough proposals&quot;</span>)]
     </span>NotEnoughProposals,
-    <span class="doccomment">/// Internal wallet core errors
-    </span><span class="attribute">#[error(transparent)]
-    </span>WalletCore(<span class="attribute">#[from] </span>wallet_core::Error),
-    <span class="doccomment">/// Not enough proposals
-    </span><span class="attribute">#[error(<span class="string">&quot;not enough wallets&quot;</span>)]
-    </span>NotEnoughWallets,
-    <span class="doccomment">/// Not enough votes
-    </span><span class="attribute">#[error(<span class="string">&quot;not enough votes to cast&quot;</span>)]
-    </span>NoMoreVotesToVote,
-    <span class="doccomment">/// Randomizing choices failed
-    </span><span class="attribute">#[error(<span class="string">&quot;cannot choose next random choice&quot;</span>)]
-    </span>RandomChoiceFailed,
-    <span class="doccomment">/// Missing proposal
-    </span><span class="attribute">#[error(<span class="string">&quot;missing proposal with id: {0}&quot;</span>)]
-    </span>MissingProposal(usize),
-    <span class="doccomment">/// Missing proposal
-    </span><span class="attribute">#[error(transparent)]
-    </span>VotesCastRegister(<span class="attribute">#[from] </span>VoteCastCounterError),
-    <span class="doccomment">/// Too many proposals
-    </span><span class="attribute">#[error(<span class="string">&quot;invalid proposals length for voteplan with id: ({0}) by design it should be more than 128 proposals in single vote plan&quot;</span>)]
-    </span>InvalidProposalsLen(VotePlanId),
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="iapyx" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

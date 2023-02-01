@@ -112,26 +112,6 @@
 <span id="112">112</span>
 <span id="113">113</span>
 <span id="114">114</span>
-<span id="115">115</span>
-<span id="116">116</span>
-<span id="117">117</span>
-<span id="118">118</span>
-<span id="119">119</span>
-<span id="120">120</span>
-<span id="121">121</span>
-<span id="122">122</span>
-<span id="123">123</span>
-<span id="124">124</span>
-<span id="125">125</span>
-<span id="126">126</span>
-<span id="127">127</span>
-<span id="128">128</span>
-<span id="129">129</span>
-<span id="130">130</span>
-<span id="131">131</span>
-<span id="132">132</span>
-<span id="133">133</span>
-<span id="134">134</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::load::config::{ArtificialUserLoadConfig, ArtificialUserRequestType <span class="kw">as </span>RequestType};
 <span class="kw">use </span><span class="kw">crate</span>::load::request_generators::AccountRequestGen;
 <span class="kw">use </span><span class="kw">crate</span>::load::request_generators::ArtificialUserRequestGen;
@@ -142,38 +122,23 @@
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">use </span>valgrind::{VitStationRestClient, VitStationRestError};
 
-<span class="doccomment">/// Struct responsible to simulate real user calls send to Catalyst Backend.
-/// It uses combination of request generators with given proportions defined in settings.
-/// The idea is that if properly configured it can simulate REST API calls which will be generated
-/// from user using mobile apps. Usually users can be divided in 3 categories:
-/// - Browser - not voting at all, just generating load on static data
-/// - Fast voter - many votes, small amount of static data request
-/// - Indecisive voter - small amount of votes, many requests to static data
-/// - All in voter - big batches of votes
-</span><span class="kw">pub struct </span>ArtificialUserLoad {
+<span class="kw">pub struct </span>ArtificialUserLoad {
     config: ArtificialUserLoadConfig,
 }
 
 <span class="kw">impl </span>ArtificialUserLoad {
-    <span class="doccomment">/// Creates new object based on configuration
-    </span><span class="attribute">#[must_use]
-    </span><span class="kw">pub fn </span>new(config: ArtificialUserLoadConfig) -&gt; <span class="self">Self </span>{
+    <span class="kw">pub fn </span>new(config: ArtificialUserLoadConfig) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{ config }
     }
 
-    <span class="doccomment">/// Starts load based on configuration
-    ///
-    /// # Errors
-    ///
-    /// On any load related issue like lack of connectivity or data preparation problem
-    </span><span class="kw">pub fn </span>start(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;EfficiencyBenchmarkFinish&gt;, Error&gt; {
+    <span class="kw">pub fn </span>start(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;EfficiencyBenchmarkFinish&gt;, Error&gt; {
         <span class="kw">let </span>measurement_name = <span class="string">&quot;artificial user load&quot;</span>;
 
         <span class="kw">let </span>vit_client = VitStationRestClient::new(<span class="self">self</span>.config.vote.address.clone());
         <span class="kw">let </span><span class="kw-2">mut </span>multi_controller = <span class="self">self</span>.config.vote.build_multi_controller()<span class="question-mark">?</span>;
 
         <span class="kw">if </span><span class="self">self</span>.config.vote.reuse_accounts_early {
-            multi_controller.update_wallets_state()<span class="question-mark">?</span>;
+            multi_controller.update_wallets_state();
         }
 
         <span class="kw">let </span>node_client = multi_controller.backend().node_client();
@@ -250,20 +215,15 @@
     }
 }
 
-<span class="doccomment">/// Generator errors
-</span><span class="attribute">#[derive(Error, Debug)]
+<span class="attribute">#[derive(Error, Debug)]
 </span><span class="kw">pub enum </span>Error {
-    <span class="doccomment">/// Loading configuration
-    </span><span class="attribute">#[error(<span class="string">&quot;configuration error&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;configuration error&quot;</span>)]
     </span>LoadConfig(<span class="attribute">#[from] </span><span class="kw">crate</span>::load::config::NodeLoadConfigError),
-    <span class="doccomment">/// Building configuration
-    </span><span class="attribute">#[error(<span class="string">&quot;configuration error&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;configuration error&quot;</span>)]
     </span>ServicingConfig(<span class="attribute">#[from] </span><span class="kw">crate</span>::load::config::ServicingStationConfigError),
-    <span class="doccomment">/// Rest api errors
-    </span><span class="attribute">#[error(<span class="string">&quot;rest error&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;rest error&quot;</span>)]
     </span>Rest(<span class="attribute">#[from] </span>VitStationRestError),
-    <span class="doccomment">/// Controller errors
-    </span><span class="attribute">#[error(<span class="string">&quot;controller error&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;controller error&quot;</span>)]
     </span>MultiController(<span class="attribute">#[from] </span><span class="kw">crate</span>::load::MultiControllerError),
 }
 </code></pre></div>

@@ -187,15 +187,6 @@
 <span id="187">187</span>
 <span id="188">188</span>
 <span id="189">189</span>
-<span id="190">190</span>
-<span id="191">191</span>
-<span id="192">192</span>
-<span id="193">193</span>
-<span id="194">194</span>
-<span id="195">195</span>
-<span id="196">196</span>
-<span id="197">197</span>
-<span id="198">198</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::load::{MultiController, MultiControllerError};
 <span class="kw">use </span><span class="kw">crate</span>::utils::expiry;
 <span class="kw">use </span><span class="kw">crate</span>::Wallet;
@@ -249,26 +240,17 @@
             .chain_vote_options
             .<span class="number">0
             </span>.values()
-            .copied()
+            .cloned()
             .collect();
 
-        <span class="kw">let </span><span class="kw-2">mut </span>vote_plans_registry = Vec::new();
-
-        <span class="kw">for </span>v <span class="kw">in </span>vote_plans
-            .iter()
-            .filter(|v| voting_groups_vote_plans_ids.contains(<span class="kw-2">&amp;</span>v.id.to_string()))
-        {
-            vote_plans_registry.push((
-                v.id.into(),
-                proposals
-                    .len()
-                    .try_into()
-                    .map_err(|<span class="kw">_</span>| MultiControllerError::InvalidProposalsLen(v.id))<span class="question-mark">?</span>,
-            ));
-        }
-
-        <span class="kw">let </span>vote_cast_counter =
-            VoteCastCounter::new(multi_controller.wallet_count(), vote_plans_registry);
+        <span class="kw">let </span>vote_cast_counter = VoteCastCounter::new(
+            multi_controller.wallet_count(),
+            vote_plans
+                .iter()
+                .filter(|v| voting_groups_vote_plans_ids.contains(<span class="kw-2">&amp;</span>v.id.to_string()))
+                .map(|v| (v.id.into(), v.proposals.len() <span class="kw">as </span>u8))
+                .collect(),
+        );
 
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             batch_size,
@@ -304,7 +286,7 @@
             <span class="self">self</span>.multi_controller
                 .update_wallet_state_if(wallet_index, <span class="kw-2">&amp;</span>|wallet: <span class="kw-2">&amp;</span>Wallet| {
                     wallet.spending_counter()[<span class="number">0</span>] == <span class="number">0
-                </span>})<span class="question-mark">?</span>;
+                </span>});
         }
 
         <span class="kw">let </span>batch_size = <span class="self">self</span>.batch_size;
@@ -317,11 +299,11 @@
 
         <span class="kw">let </span><span class="kw-2">mut </span>proposals = Vec::new();
 
-        <span class="kw">for </span>item <span class="kw">in </span><span class="kw-2">&amp;</span>counter {
+        <span class="kw">for </span>item <span class="kw">in </span>counter.iter() {
             <span class="kw">for </span>i <span class="kw">in </span>item.range() {
                 <span class="kw">match </span><span class="self">self</span>.proposals.iter().find(|x| {
                     x.voteplan.chain_voteplan_id == item.id().to_string()
-                        &amp;&amp; (x.voteplan.chain_proposal_index % i64::from(u8::MAX)) == i <span class="kw">as </span>i64
+                        &amp;&amp; (x.voteplan.chain_proposal_index % u8::MAX <span class="kw">as </span>i64) == i <span class="kw">as </span>i64
                 }) {
                     <span class="prelude-val">Some</span>(proposal) =&gt; {
                         <span class="macro">println!</span>(<span class="string">&quot;vote on: {}/{}&quot;</span>, proposal.voteplan.chain_voteplan_id, i);

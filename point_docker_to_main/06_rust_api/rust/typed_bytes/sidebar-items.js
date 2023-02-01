@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["ByteArray","A typed Array of bytes"],["ByteBuilder","A dynamically created buffer for T"],["ByteSlice","A typed slice of bytes"]],"trait":[["ByteAccessor",""]]};

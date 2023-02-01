@@ -134,6 +134,43 @@
 <span id="134">134</span>
 <span id="135">135</span>
 <span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::load::{MultiController, MultiControllerError};
 <span class="kw">use </span><span class="kw">crate</span>::utils::expiry;
 <span class="kw">use </span><span class="kw">crate</span>::Wallet;
@@ -149,7 +186,16 @@
 <span class="kw">use </span>wallet::Settings;
 <span class="kw">use </span>wallet_core::Choice;
 
-<span class="kw">pub struct </span>WalletRequestGen {
+<span class="doccomment">///  Vote request generator. Implements `RequestGenerator` interface which incorporates generator
+/// to load testing framework. Responsibility is to keep track of wallets under tests and prepare
+/// each time valid vote transaction whenever asked. There are two challenges:
+/// - keeping track of spending counter and increase it each time fragment is sent. Current limitation
+/// is a lack of recovery scenario when transaction is failed (no resend strategy or spending counter revert)
+/// - keeping track of valid proposals to vote. One can vote only once per proposal. Duplicated votes will
+/// result in failed transaction which can skew load test results. Therefore, we need to also know which
+/// proposals are eligible to vote on.  Having in mind internal structure of vote plan (voteplan can have many proposals)
+/// and requirement to send batch of votes may result in different proposals from different voteplan.
+</span><span class="kw">pub struct </span>WalletRequestGen {
     rand: OsRng,
     multi_controller: MultiController,
     proposals: Vec&lt;FullProposalInfo&gt;,
@@ -162,7 +208,13 @@
 }
 
 <span class="kw">impl </span>WalletRequestGen {
-    <span class="kw">pub fn </span>new(
+    <span class="doccomment">/// Creates new object
+    ///
+    /// # Errors
+    ///
+    /// On connectivity with backend issues
+    </span><span class="attribute">#[allow(clippy::cast_possible_truncation)]
+    </span><span class="kw">pub fn </span>new(
         multi_controller: MultiController,
         update_account_before_vote: bool,
         group: <span class="kw-2">&amp;</span>str,
@@ -175,7 +227,7 @@
             .chain_vote_options
             .<span class="number">0
             </span>.values()
-            .cloned()
+            .copied()
             .collect();
 
         <span class="kw">let </span>vote_cast_counter = VoteCastCounter::new(
@@ -199,7 +251,19 @@
         })
     }
 
-    <span class="kw">pub fn </span>random_vote(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;FragmentId, MultiControllerError&gt; {
+    <span class="doccomment">/// Sends vote with random choice on behalf of random wallet. Having in mind account based model
+    /// in Jormungandr blockchain we need to carefully select wallet which sends transaction.
+    /// We should spread the use of wallets evenly to avoid inconsistency in spending-counter values.
+    /// This struct does not control how fast votes should be send so we need to avoid situation that
+    /// votes from account A will be send without prior confirmation of last vote sent from account A.
+    /// Therefore a simple rolling index is use which traverse from left to right of collection.
+    /// There is a silent assumption that collection is big enough to not cause mentioned problem
+    /// with spending counter inconsistency.
+    ///
+    /// # Errors
+    ///
+    ///
+    </span><span class="kw">pub fn </span>random_vote(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;FragmentId, MultiControllerError&gt; {
         <span class="kw">let </span>index = {
             <span class="self">self</span>.wallet_index += <span class="number">1</span>;
             <span class="kw">if </span><span class="self">self</span>.wallet_index &gt;= <span class="self">self</span>.multi_controller.wallet_count() {
@@ -214,16 +278,26 @@
             <span class="self">self</span>.multi_controller
                 .update_wallet_state_if(index, <span class="kw-2">&amp;</span>|wallet: <span class="kw-2">&amp;</span>Wallet| {
                     wallet.spending_counter()[<span class="number">0</span>] == <span class="number">0
-                </span>});
+                </span>})<span class="question-mark">?</span>;
         }
 
-        <span class="kw">let </span>counter = <span class="self">self</span>.vote_cast_counter.advance_single(index).unwrap();
-
+        <span class="kw">let </span>counter = <span class="self">self</span>.vote_cast_counter.advance_single(index)<span class="question-mark">?</span>;
+        <span class="kw">let </span>index = usize::from(
+            counter
+                .first()
+                .ok_or(MultiControllerError::NoMoreVotesToVote)<span class="question-mark">?
+                </span>.first(),
+        );
         <span class="kw">let </span>proposal = <span class="self">self
             </span>.proposals
-            .get(counter.first().unwrap().first() <span class="kw">as </span>usize)
-            .unwrap();
-        <span class="kw">let </span>choice = Choice::new(<span class="kw-2">*</span><span class="self">self</span>.options.choose(<span class="kw-2">&amp;mut </span><span class="self">self</span>.rand).unwrap());
+            .get(index)
+            .ok_or(MultiControllerError::MissingProposal(index))<span class="question-mark">?</span>;
+        <span class="kw">let </span>choice = Choice::new(
+            <span class="kw-2">*</span><span class="self">self
+                </span>.options
+                .choose(<span class="kw-2">&amp;mut </span><span class="self">self</span>.rand)
+                .ok_or(MultiControllerError::RandomChoiceFailed)<span class="question-mark">?</span>,
+        );
         <span class="self">self</span>.multi_controller.vote(
             index,
             proposal,

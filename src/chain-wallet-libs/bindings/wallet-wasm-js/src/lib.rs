@@ -2,7 +2,7 @@
 
 pub use certificates::Certificate;
 pub use certificates::{
-    vote_cast::{Payload, VoteCast},
+    vote_cast::{ElectionPublicKey, Payload, VoteCast},
     vote_plan::VotePlanId,
 };
 use chain_impl_mockchain::account::SpendingCounter;
@@ -48,30 +48,46 @@ impl VoteCastTxBuilder {
     ///
     /// The `account` parameter gives the Ed25519Extended private key
     /// of the account.
-    pub fn build_tx(mut self, hex_account_id: String) -> Result<VoteCastTxBuilder, JsValue> {
+    pub fn prepare_tx(mut self, hex_account_id: String) -> Result<VoteCastTxBuilder, JsValue> {
         self.0 = self
             .0
-            .build_tx(hex_account_id, SpendingCounter::zero())
+            .prepare_tx(hex_account_id, SpendingCounter::zero())
             .map_err(|e| JsValue::from(e.to_string()))?;
         Ok(self)
     }
 
-    pub fn sign_tx(mut self, hex_account: String) -> Result<VoteCastTxBuilder, JsValue> {
-        self.0 = self
-            .0
+    /// Get a transaction signing data
+    pub fn get_sign_data(&self) -> Result<Box<[u8]>, JsValue> {
+        self.0
+            .get_sign_data()
+            .map(|data| data.as_ref().into())
+            .map_err(|e| JsValue::from(e.to_string()))
+    }
+
+    /// Finish step of building VoteCast fragment with passing an already signed transaction data
+    pub fn build_tx(self, hex_signature: String) -> Result<Fragment, JsValue> {
+        self.0
+            .build_tx(
+                (),
+                hex::decode(hex_signature)
+                    .map_err(|e| JsValue::from(e.to_string()))?
+                    .as_slice(),
+                FragmentLib::VoteCast,
+            )
+            .map_err(|e| JsValue::from(e.to_string()))
+            .map(Fragment)
+    }
+
+    /// Finish step of signing and building VoteCast fragment
+    pub fn sign_tx(self, hex_account: String) -> Result<Fragment, JsValue> {
+        self.0
             .sign_tx(
+                (),
                 hex::decode(hex_account)
                     .map_err(|e| JsValue::from(e.to_string()))?
                     .as_slice(),
+                FragmentLib::VoteCast,
             )
-            .map_err(|e| JsValue::from(e.to_string()))?;
-        Ok(self)
-    }
-
-    /// Finish step of building VoteCast fragment
-    pub fn finalize_tx(self) -> Result<Fragment, JsValue> {
-        self.0
-            .finalize_tx((), FragmentLib::VoteCast)
             .map_err(|e| JsValue::from(e.to_string()))
             .map(Fragment)
     }

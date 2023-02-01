@@ -29,7 +29,6 @@ pub struct Config {
     pub fund: Configuration,
     pub challenges: Configuration,
     pub proposal: Configuration,
-    //   pub proposals: Configuration,
     pub challenge: Configuration,
     pub settings: Configuration,
 }

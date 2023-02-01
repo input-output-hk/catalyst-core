@@ -30,11 +30,16 @@
 <span id="30">30</span>
 <span id="31">31</span>
 <span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_impl_mockchain::header::BlockDate;
 <span class="kw">use </span>jormungandr_lib::interfaces::SettingsDto;
 <span class="kw">use </span>thor::BlockDateGenerator;
 
-<span class="kw">pub fn </span>from_block_or_shift(
+<span class="doccomment">/// Creates `BlockDateGenerator` object based on setup
+</span><span class="attribute">#[must_use]
+</span><span class="kw">pub fn </span>from_block_or_shift(
     valid_until_fixed: <span class="prelude-ty">Option</span>&lt;BlockDate&gt;,
     valid_until_shift: <span class="prelude-ty">Option</span>&lt;BlockDate&gt;,
     block0_settings: <span class="kw-2">&amp;</span>SettingsDto,
@@ -51,8 +56,9 @@
         <span class="bool-val">false</span>,
     )
 }
-
-<span class="kw">pub fn </span>default_block_date_generator(block0_settings: <span class="kw-2">&amp;</span>SettingsDto) -&gt; BlockDateGenerator {
+<span class="doccomment">/// Creates `BlockDateGenerator` object based on settings
+</span><span class="attribute">#[must_use]
+</span><span class="kw">pub fn </span>default_block_date_generator(block0_settings: <span class="kw-2">&amp;</span>SettingsDto) -&gt; BlockDateGenerator {
     BlockDateGenerator::rolling(
         block0_settings,
         BlockDate {

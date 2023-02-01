@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["SigningKeyParseError",""]],"struct":[["Identifier","Account identifier, used to identify an account. Cryptographically linked to the account `SigningKey`."],["SigningKey","account Singing key. Used to sign transaction. Any owner of this key can utilise the associated values or stake."]]};

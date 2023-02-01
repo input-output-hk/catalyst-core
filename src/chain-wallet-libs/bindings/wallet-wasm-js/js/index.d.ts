@@ -42,10 +42,10 @@ export class Proposal {
   /**
    * Proposal constructor
    *
-   * @param {string} votePlan vote plan id bytes representation
-   * @param {number} proposalIndex vote's plan proposal index
-   * @param {number} voteOptions number of available vote plan options, mandatory for private proposal
-   * @param {string} voteEncKey committee public key in hex representation, mandatory for private proposal
+   * @param {string} votePlan Vote plan id bytes representation
+   * @param {number} proposalIndex Vote's plan proposal index
+   * @param {number} voteOptions Number of available vote plan options, mandatory for private proposal
+   * @param {string} voteEncKey Committee public key in hex representation, mandatory for private proposal
    * @returns {Proposal}
    */
   constructor(
@@ -61,8 +61,8 @@ export class Proposal {
  */
 export class Vote {
   proposal: Proposal;
-  choice: number;
-  purpose: VotingPurpose;
+  selectedVotePlanOption: number;
+  votingPurpose: VotingPurpose;
   expiration?: BlockDate;
   spendingCounter?: number;
   spendingCounterLane?: number;
@@ -71,8 +71,8 @@ export class Vote {
    * Vote constructor
    *
    * @param {Proposal} proposal
-   * @param {number} choice choosen vote plan option.
-   * @param {VotingPurpose} purpose The voting purpose being voted on (Currently not used actually, can pass anything).
+   * @param {number} selectedVotePlanOption Selected vote plan option.
+   * @param {VotingPurpose} votingPurpose The voting purpose being voted on. (Currently not used).
    * @param {BlockDate} expiration Deprecated field, you can pass anything.
    * @param {number} spendingCounter Deprecated field, you can pass anything.
    * @param {number} spendingCounterLane Deprecated field, you can pass anything.
@@ -80,8 +80,8 @@ export class Vote {
    */
   constructor(
     proposal: Proposal,
-    choice: number,
-    purpose: VotingPurpose,
+    selectedVotePlanOption: number,
+    votingPurpose: VotingPurpose,
     expiration?: BlockDate,
     spendingCounter?: number,
     spendingCounterLane?: number
@@ -89,7 +89,7 @@ export class Vote {
 }
 
 /**
- * Signes provided votes and returns a completly generated transaction list
+ * Signes provided votes and returns a completely generated transaction list
  *
  * @param {Vote[]} votes List of votes
  * @param {Settings} settings Wallet Settings

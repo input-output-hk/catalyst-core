@@ -775,6 +775,10 @@
 <span id="775">775</span>
 <span id="776">776</span>
 <span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_addr::{Discrimination, Kind};
 <span class="kw">use </span>chain_core::property::Fragment <span class="kw">as _</span>;
 <span class="kw">use </span>chain_crypto::{Ed25519Extended, SecretKey};
@@ -826,6 +830,15 @@
 
     <span class="attribute">#[error(transparent)]
     </span>ReplayError(<span class="attribute">#[from] </span>ReplayError),
+
+    <span class="attribute">#[error(transparent)]
+    </span>WalletError(<span class="attribute">#[from] </span>wallet::Error),
+
+    <span class="attribute">#[error(transparent)]
+    </span>TxBuilderError(<span class="attribute">#[from] </span>wallet::transaction::Error),
+
+    <span class="attribute">#[error(transparent)]
+    </span>ValueError(<span class="attribute">#[from] </span>ValueError),
 }
 
 <span class="kw">fn </span>timestamp_to_system_time(ts: SecondsSinceUnixEpoch) -&gt; SystemTime {
@@ -1292,17 +1305,12 @@
 
         <span class="kw">let </span>secret_key = wallet.secret_key();
         <span class="comment">// unwrap checked in the validation step
-        </span><span class="kw">let </span>builder_help = wallet
-            .new_transaction(tx.total_input().unwrap(), <span class="number">0</span>)
-            .unwrap();
+        </span><span class="kw">let </span>builder_help = wallet.new_transaction(tx.total_input()<span class="question-mark">?</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>builder =
             TransactionBuilder::new(<span class="self">self</span>.settings.clone(), vote_cast, tx.valid_until());
         builder.add_input(builder_help.input(), builder_help.witness_builder());
-        <span class="kw">let </span>res = Fragment::VoteCast(
-            builder
-                .finalize_tx((), <span class="macro">vec!</span>[WitnessInput::SecretKey(secret_key)])
-                .unwrap(),
-        );
+        <span class="kw">let </span>res =
+            Fragment::VoteCast(builder.finalize_tx((), <span class="macro">vec!</span>[WitnessInput::SecretKey(secret_key)])<span class="question-mark">?</span>);
 
         <span class="macro">debug!</span>(<span class="string">&quot;replaying vote cast transaction from {}&quot;</span>, address);
         <span class="self">self</span>.pending_requests.insert(res.id(), address);

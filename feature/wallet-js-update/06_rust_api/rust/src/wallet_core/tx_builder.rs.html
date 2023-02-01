@@ -83,8 +83,8 @@
 <span id="83">83</span>
 <span id="84">84</span>
 <span id="85">85</span>
-<span id="86">86</span>
-</pre><pre class="rust"><code><span class="kw">use </span>chain_crypto::SecretKey;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::Error;
+<span class="kw">use </span>chain_crypto::SecretKey;
 <span class="kw">use </span>chain_impl_mockchain::{
     account::{<span class="self">self</span>, SpendingCounter},
     fragment::Fragment,
@@ -96,8 +96,6 @@
     transaction::{AccountSecretKey, WitnessInput},
     AccountId, AccountWitnessBuilder, EitherAccount, Settings,
 };
-
-<span class="kw">use </span><span class="kw">crate</span>::Error;
 
 <span class="kw">pub struct </span>TxBuilder&lt;P: Payload&gt; {
     builder: wallet::TransactionBuilder&lt;P, AccountSecretKey, WitnessAccountData, account::Witness&gt;,

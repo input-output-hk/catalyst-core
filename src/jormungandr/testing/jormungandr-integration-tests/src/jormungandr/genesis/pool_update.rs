@@ -30,7 +30,7 @@ pub fn update_pool_fees_is_not_allowed() {
     stake_pool_info.rewards = TaxType::zero();
 
     // 6. send pool update certificate
-    time::wait_for_epoch(2, jormungandr.rest());
+    time::wait_for_epoch(1, jormungandr.rest());
 
     let transaction = thor::FragmentBuilder::from_settings(
         &jormungandr.rest().settings().unwrap(),

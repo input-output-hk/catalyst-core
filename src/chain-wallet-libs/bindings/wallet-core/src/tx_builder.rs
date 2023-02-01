@@ -1,3 +1,4 @@
+use crate::Error;
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::{
     account::{self, SpendingCounter},
@@ -10,8 +11,6 @@ use wallet::{
     transaction::{AccountSecretKey, WitnessInput},
     AccountId, AccountWitnessBuilder, EitherAccount, Settings,
 };
-
-use crate::Error;
 
 pub struct TxBuilder<P: Payload> {
     builder: wallet::TransactionBuilder<P, AccountSecretKey, WitnessAccountData, account::Witness>,

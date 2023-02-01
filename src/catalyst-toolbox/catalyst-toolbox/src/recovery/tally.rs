@@ -49,6 +49,15 @@ pub enum Error {
 
     #[error(transparent)]
     ReplayError(#[from] ReplayError),
+
+    #[error(transparent)]
+    WalletError(#[from] wallet::Error),
+
+    #[error(transparent)]
+    TxBuilderError(#[from] wallet::transaction::Error),
+
+    #[error(transparent)]
+    ValueError(#[from] ValueError),
 }
 
 fn timestamp_to_system_time(ts: SecondsSinceUnixEpoch) -> SystemTime {
@@ -515,17 +524,12 @@ impl FragmentReplayer {
 
         let secret_key = wallet.secret_key();
         // unwrap checked in the validation step
-        let builder_help = wallet
-            .new_transaction(tx.total_input().unwrap(), 0)
-            .unwrap();
+        let builder_help = wallet.new_transaction(tx.total_input()?, 0)?;
         let mut builder =
             TransactionBuilder::new(self.settings.clone(), vote_cast, tx.valid_until());
         builder.add_input(builder_help.input(), builder_help.witness_builder());
-        let res = Fragment::VoteCast(
-            builder
-                .finalize_tx((), vec![WitnessInput::SecretKey(secret_key)])
-                .unwrap(),
-        );
+        let res =
+            Fragment::VoteCast(builder.finalize_tx((), vec![WitnessInput::SecretKey(secret_key)])?);
 
         debug!("replaying vote cast transaction from {}", address);
         self.pending_requests.insert(res.id(), address);

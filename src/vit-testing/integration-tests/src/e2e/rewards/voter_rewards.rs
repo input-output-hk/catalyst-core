@@ -90,17 +90,17 @@ pub fn voter_rewards_happy_path() {
     );
     let vote_plan = controller.defined_vote_plan(&voteplan_alias).unwrap();
 
-    alice.vote_for(vote_plan.id(), 0, Vote::Yes as u8).unwrap();
+    alice.vote_for(&vote_plan.id(), 0, Vote::Yes as u8).unwrap();
 
-    alice.vote_for(vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+    alice.vote_for(&vote_plan.id(), 1, Vote::Yes as u8).unwrap();
 
-    alice.vote_for(vote_plan.id(), 2, Vote::Yes as u8).unwrap();
+    alice.vote_for(&vote_plan.id(), 2, Vote::Yes as u8).unwrap();
 
-    bob.vote_for(vote_plan.id(), 0, Vote::Yes as u8).unwrap();
+    bob.vote_for(&vote_plan.id(), 0, Vote::Yes as u8).unwrap();
 
-    bob.vote_for(vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+    bob.vote_for(&vote_plan.id(), 1, Vote::Yes as u8).unwrap();
 
-    bob.vote_for(vote_plan.id(), 2, Vote::Yes as u8).unwrap();
+    bob.vote_for(&vote_plan.id(), 2, Vote::Yes as u8).unwrap();
 
     let target_date = BlockDate {
         epoch: 1,

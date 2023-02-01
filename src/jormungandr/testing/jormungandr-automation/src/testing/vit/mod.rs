@@ -4,7 +4,7 @@ mod vote_cast_register;
 pub use builder::VotePlanBuilder;
 use chain_crypto::bech32::Bech32;
 use chain_impl_mockchain::{certificate::VotePlan, vote::PayloadType};
-pub use vote_cast_register::VoteCastCounter;
+pub use vote_cast_register::{Error as VoteCastCounterError, VoteCastCounter};
 
 pub trait VotePlanExtension {
     fn as_json(&self) -> json::JsonValue;

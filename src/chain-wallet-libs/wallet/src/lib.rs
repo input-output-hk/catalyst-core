@@ -9,7 +9,7 @@ pub mod time;
 pub mod transaction;
 
 pub use self::{
-    account::{EitherAccount, Wallet, Error},
+    account::{EitherAccount, Error, Wallet},
     blockchain::Settings,
     password::{Password, ScrubbedBytes},
     transaction::{AccountWitnessBuilder, TransactionBuilder},

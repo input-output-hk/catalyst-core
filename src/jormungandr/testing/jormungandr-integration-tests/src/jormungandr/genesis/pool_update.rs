@@ -19,7 +19,10 @@ pub fn update_pool_fees_is_not_allowed() {
         &[stake_pool_owner.clone()],
         &[],
         Block0ConfigurationBuilder::default(),
-        NodeConfigBuilder::default().with_storage(temp_dir.child("storage").to_path_buf()),
+        NodeConfigBuilder::default()
+            .with_slots_per_epoch(20.try_into().unwrap())
+            .with_slot_duration(2.try_into().unwrap())
+            .with_storage(temp_dir.child("storage").to_path_buf()),
     )
     .unwrap();
 
@@ -30,7 +33,7 @@ pub fn update_pool_fees_is_not_allowed() {
     stake_pool_info.rewards = TaxType::zero();
 
     // 6. send pool update certificate
-    time::wait_for_epoch(1, jormungandr.rest());
+    time::wait_for_epoch(2, jormungandr.rest());
 
     let transaction = thor::FragmentBuilder::from_settings(
         &jormungandr.rest().settings().unwrap(),

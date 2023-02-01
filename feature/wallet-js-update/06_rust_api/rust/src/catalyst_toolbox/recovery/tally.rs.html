@@ -773,12 +773,6 @@
 <span id="773">773</span>
 <span id="774">774</span>
 <span id="775">775</span>
-<span id="776">776</span>
-<span id="777">777</span>
-<span id="778">778</span>
-<span id="779">779</span>
-<span id="780">780</span>
-<span id="781">781</span>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_addr::{Discrimination, Kind};
 <span class="kw">use </span>chain_core::property::Fragment <span class="kw">as _</span>;
 <span class="kw">use </span>chain_crypto::{Ed25519Extended, SecretKey};
@@ -1304,8 +1298,7 @@
             .ok_or_else(|| ReplayError::NonVotingAccount(address.to_string()))<span class="question-mark">?</span>;
 
         <span class="kw">let </span>secret_key = wallet.secret_key();
-        <span class="comment">// unwrap checked in the validation step
-        </span><span class="kw">let </span>builder_help = wallet.new_transaction(tx.total_input()<span class="question-mark">?</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>builder_help = wallet.new_transaction(tx.total_input()<span class="question-mark">?</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>builder =
             TransactionBuilder::new(<span class="self">self</span>.settings.clone(), vote_cast, tx.valid_until());
         builder.add_input(builder_help.input(), builder_help.witness_builder());
@@ -1355,17 +1348,12 @@
 
         <span class="macro">warn!</span>(<span class="string">&quot;replaying a plain transaction from {} to {:?} with value {}, this is not coming from the app, might want to look into this&quot;</span>, identifier, output_address, output.value);
         <span class="kw">let </span>secret_key = wallet.secret_key();
-        <span class="comment">// unwrap checked in the validation step
-        </span><span class="kw">let </span>builder_help = wallet
-            .new_transaction(tx.total_input().unwrap(), <span class="number">0</span>)
-            .unwrap();
+        <span class="kw">let </span>builder_help = wallet.new_transaction(tx.total_input()<span class="question-mark">?</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>builder = TransactionBuilder::new(<span class="self">self</span>.settings.clone(), NoExtra, tx.valid_until());
         builder.add_input(builder_help.input(), builder_help.witness_builder());
         builder.add_output(Output::from_address(output_address, output.value));
         <span class="kw">let </span>res = Fragment::Transaction(
-            builder
-                .finalize_tx((), <span class="macro">vec!</span>[WitnessInput::SecretKey(secret_key)])
-                .unwrap(),
+            builder.finalize_tx((), <span class="macro">vec!</span>[WitnessInput::SecretKey(secret_key)])<span class="question-mark">?</span>,
         );
         <span class="self">self</span>.pending_requests.insert(res.id(), address);
         <span class="prelude-val">Ok</span>(res)

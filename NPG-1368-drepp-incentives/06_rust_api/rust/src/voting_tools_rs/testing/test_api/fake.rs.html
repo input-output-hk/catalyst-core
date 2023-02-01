@@ -152,16 +152,13 @@
 <span id="152">152</span>
 <span id="153">153</span>
 <span id="154">154</span>
-<span id="155">155</span>
-<span id="156">156</span>
-<span id="157">157</span>
-<span id="158">158</span>
-<span id="159">159</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data_provider::DataProvider;
-<span class="kw">use </span><span class="kw">crate</span>::model::{
-    Delegations, Reg, RegoMetadata, RegoSignature, RewardsAddr, Signature, SlotNo, StakeVKey, TxId,
-    VotingPurpose,
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data::PubKey;
+<span class="kw">use </span><span class="kw">crate</span>::data::{
+    Nonce, Registration, RewardsAddress, Signature, SignedRegistration, SlotNo, StakeKeyHex, TxId,
+    VotingKeyHex, VotingPowerSource, VotingPurpose,
 };
+<span class="kw">use </span><span class="kw">crate</span>::data_provider::DataProvider;
+<span class="kw">use </span><span class="kw">crate</span>::Sig;
 <span class="kw">use </span>bigdecimal::{BigDecimal, FromPrimitive};
 <span class="kw">use </span>cardano_serialization_lib::address::Address;
 <span class="kw">use </span>cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey};
@@ -170,11 +167,12 @@
     InMemoryDbSync, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
     REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
 };
-<span class="kw">use </span>std::collections::HashMap;
+<span class="kw">use </span>std::collections::{BTreeMap, HashMap};
 <span class="kw">use </span>std::str::FromStr;
 
 <span class="doccomment">/// Mock db provider based on [`InMemoryDbSync`] struct from [`mainnet_lib`] project.
-/// In essence struct keep data in memory and provides query for voting tools logic
+///
+/// This struct simulates a real db-sync instance, but keeps data in memory in a struct
 </span><span class="attribute">#[derive(Debug)]
 </span><span class="kw">pub struct </span>MockDbProvider {
     db_sync_instance: InMemoryDbSync,
@@ -183,26 +181,14 @@
 <span class="kw">impl </span>DataProvider <span class="kw">for </span>MockDbProvider {
     <span class="kw">fn </span>vote_registrations(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        lower: <span class="prelude-ty">Option</span>&lt;SlotNo&gt;,
-        upper: <span class="prelude-ty">Option</span>&lt;SlotNo&gt;,
-    ) -&gt; color_eyre::Result&lt;Vec&lt;Reg&gt;&gt; {
-        <span class="kw">let </span>lower = <span class="kw">if let </span><span class="prelude-val">Some</span>(lower) = lower {
-            <span class="prelude-val">Some</span>(lower.into_i64()<span class="question-mark">?</span>.try_into()<span class="question-mark">?</span>)
-        } <span class="kw">else </span>{
-            <span class="prelude-val">None
-        </span>};
-
-        <span class="kw">let </span>upper = <span class="kw">if let </span><span class="prelude-val">Some</span>(upper) = upper {
-            <span class="prelude-val">Some</span>(upper.into_i64()<span class="question-mark">?</span>.try_into()<span class="question-mark">?</span>)
-        } <span class="kw">else </span>{
-            <span class="prelude-val">None
-        </span>};
-
+        lower: SlotNo,
+        upper: SlotNo,
+    ) -&gt; color_eyre::Result&lt;Vec&lt;SignedRegistration&gt;&gt; {
         <span class="kw">let </span>filtered_regs = <span class="self">self
             </span>.db_sync_instance
-            .query_voting_transactions_with_bounds(lower, upper);
+            .query_voting_transactions_with_bounds(<span class="kw-2">*</span>lower, <span class="kw-2">*</span>upper);
 
-        <span class="kw">let </span><span class="kw-2">mut </span>tx_id = <span class="number">0</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>tx_id: u64 = <span class="number">0</span>;
 
         <span class="prelude-val">Ok</span>(filtered_regs
             .values()
@@ -217,34 +203,38 @@
                             r.get(<span class="kw-2">&amp;</span>REGISTRATION_METADATA_SIGNATURE_LABEL).unwrap();
                         <span class="kw">let </span>signature_metadata_map = signature_metadata.as_map().unwrap();
 
-                        <span class="kw">let </span>delegations = {
+                        <span class="kw">let </span>voting_power_source = {
                             <span class="kw">let </span>metadata = metadata_map.get(<span class="kw-2">&amp;</span>METADATUM_1).unwrap();
 
                             <span class="kw">if let </span><span class="prelude-val">Ok</span>(data) = metadata.as_bytes() {
-                                Delegations::Legacy(hex::encode(data))
+                                <span class="kw">let </span>bytes: [u8; <span class="number">32</span>] = data.try_into().unwrap();
+                                VotingPowerSource::Direct(PubKey(bytes).into())
                             } <span class="kw">else </span>{
-                                <span class="kw">let </span><span class="kw-2">mut </span>delegations = <span class="macro">vec!</span>[];
+                                <span class="kw">let </span><span class="kw-2">mut </span>delegations = BTreeMap::new();
                                 <span class="kw">let </span>delgation_list = metadata.as_list().unwrap();
                                 <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..delgation_list.len() {
                                     <span class="kw">let </span>inner_list = delgation_list.get(i).as_list().unwrap();
 
                                     <span class="kw">let </span>delegation = inner_list.get(<span class="number">0</span>).as_bytes().unwrap();
+                                    <span class="kw">let </span>delegation = PubKey(delegation.try_into().unwrap());
                                     <span class="kw">let </span>weight = inner_list.get(<span class="number">1</span>).as_int().unwrap();
                                     <span class="kw">let </span>weight =
                                         u32::from_i32(weight.as_i32_or_fail().unwrap()).unwrap();
-                                    delegations.push((hex::encode(delegation), weight));
+                                    delegations.insert(VotingKeyHex(delegation), weight.into());
                                 }
 
-                                Delegations::Delegated(delegations)
+                                VotingPowerSource::Delegated(delegations)
                             }
                         };
 
-                        tx_id += <span class="number">1</span>;
+                        tx_id = tx_id.wrapping_add(<span class="number">1</span>);
 
                         <span class="kw">let </span>pub_key = PublicKey::from_bytes(
                             <span class="kw-2">&amp;</span>metadata_map.get(<span class="kw-2">&amp;</span>METADATUM_2).unwrap().as_bytes().unwrap(),
                         )
                         .unwrap();
+
+                        <span class="kw">let </span>stake_key = StakeKeyHex(PubKey(pub_key.as_bytes().try_into().unwrap()));
                         <span class="kw">let </span>rewards_address = Address::from_bytes(
                             metadata_map.get(<span class="kw-2">&amp;</span>METADATUM_3).unwrap().as_bytes().unwrap(),
                         )
@@ -258,13 +248,13 @@
                         )
                         .unwrap();
 
-                        Reg {
+                        SignedRegistration {
                             tx_id: TxId::from(tx_id),
-                            metadata: RegoMetadata {
-                                delegations,
-                                stake_vkey: StakeVKey(pub_key.to_hex()),
-                                rewards_addr: RewardsAddr(rewards_address.to_hex()),
-                                slot: SlotNo(
+                            registration: Registration {
+                                voting_power_source,
+                                stake_key,
+                                rewards_address: RewardsAddress(rewards_address.to_bytes().into()),
+                                nonce: Nonce(
                                     u64::from_str(
                                         <span class="kw-2">&amp;</span>metadata_map
                                             .get(<span class="kw-2">&amp;</span>METADATUM_4)
@@ -275,35 +265,35 @@
                                     )
                                     .unwrap(),
                                 ),
-                                purpose: VotingPurpose(<span class="number">0</span>),
+                                voting_purpose: <span class="prelude-val">Some</span>(VotingPurpose(<span class="number">0</span>)),
                             },
-                            signature: RegoSignature {
-                                signature: Signature(<span class="macro">format!</span>(<span class="string">&quot;0x{}&quot;</span>, sig.to_hex())),
+                            signature: Signature {
+                                inner: Sig(sig.to_bytes().try_into().unwrap()),
                             },
                         }
                     })
                     .collect()
             })
-            .fold(<span class="macro">vec!</span>[], |<span class="kw-2">mut </span>acc, sub_vec: Vec&lt;Reg&gt;| {
+            .fold(<span class="macro">vec!</span>[], |<span class="kw-2">mut </span>acc, sub_vec: Vec&lt;SignedRegistration&gt;| {
                 acc.extend(sub_vec);
                 acc
             }))
     }
 
-    <span class="kw">fn </span>stake_values&lt;<span class="lifetime">&#39;a</span>&gt;(
+    <span class="kw">fn </span>stake_values(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        stake_addrs: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[String],
-    ) -&gt; color_eyre::Result&lt;HashMap&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str, BigDecimal&gt;&gt; {
+        stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHex],
+    ) -&gt; color_eyre::Result&lt;HashMap&lt;StakeKeyHex, BigDecimal&gt;&gt; {
         <span class="prelude-val">Ok</span>(stake_addrs
             .iter()
             .map(|addr| {
                 <span class="kw">let </span>big_num = <span class="self">self
                     </span>.db_sync_instance
                     .stakes()
-                    .get(addr)
+                    .get(<span class="kw-2">&amp;</span>hex::encode(addr))
                     .unwrap_or(<span class="kw-2">&amp;</span>BigNum::zero())
                     .to_string();
-                (addr.as_str(), BigDecimal::from_str(<span class="kw-2">&amp;</span>big_num).unwrap())
+                (<span class="kw-2">*</span>addr, BigDecimal::from_str(<span class="kw-2">&amp;</span>big_num).unwrap())
             })
             .collect())
     }

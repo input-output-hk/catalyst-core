@@ -96,12 +96,6 @@
 <span id="96">96</span>
 <span id="97">97</span>
 <span id="98">98</span>
-<span id="99">99</span>
-<span id="100">100</span>
-<span id="101">101</span>
-<span id="102">102</span>
-<span id="103">103</span>
-<span id="104">104</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db::models::api_tokens::ApiTokenData;
 <span class="kw">use </span><span class="kw">crate</span>::db::{
     models::api_tokens <span class="kw">as </span>api_token_model,
@@ -110,7 +104,6 @@
 };
 <span class="kw">use </span><span class="kw">crate</span>::v0::api_token::ApiToken;
 <span class="kw">use </span><span class="kw">crate</span>::v0::errors::HandleError;
-<span class="kw">use crate</span>::{execute_q, q};
 <span class="kw">use </span>diesel::query_dsl::RunQueryDsl;
 <span class="kw">use </span>diesel::{ExpressionMethods, Insertable, OptionalExtension, QueryDsl, QueryResult};
 <span class="kw">use </span>time::{Duration, OffsetDateTime};
@@ -152,57 +145,52 @@
     raw_token: <span class="kw-2">&amp;</span>[u8],
     db_conn: <span class="kw-2">&amp;</span>DbConnection,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;api_token_model::ApiTokenData&gt;, diesel::result::Error&gt; {
-    <span class="macro">q!</span>(
-        db_conn,
-        api_tokens_dsl
-            .filter(api_tokens::token.eq(raw_token))
-            .first::&lt;api_token_model::ApiTokenData&gt;(db_conn)
-            .optional()
-    )
+    api_tokens_dsl
+        .filter(api_tokens::token.eq(raw_token))
+        .first::&lt;api_token_model::ApiTokenData&gt;(db_conn)
+        .optional()
 }
 
 <span class="kw">pub fn </span>insert_token_data(token_data: ApiTokenData, db_conn: <span class="kw-2">&amp;</span>DbConnection) -&gt; QueryResult&lt;usize&gt; {
-    <span class="macro">q!</span>(
-        db_conn,
-        diesel::insert_into(api_tokens::table)
-            .values(token_data.values())
-            .execute(db_conn)
-    )
+    diesel::insert_into(api_tokens::table)
+        .values(token_data.values())
+        .execute(db_conn)
 }
 
 <span class="kw">pub fn </span>batch_insert_token_data(
     tokens_data: <span class="kw-2">&amp;</span>[ApiTokenData],
     db_conn: <span class="kw-2">&amp;</span>DbConnection,
 ) -&gt; QueryResult&lt;usize&gt; {
-    <span class="macro">execute_q!</span>(
-        db_conn,
-        diesel::insert_into(api_tokens::table).values(
+    diesel::insert_into(api_tokens::table)
+        .values(
             tokens_data
                 .iter()
                 .map(|t| t.clone().values())
                 .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
         )
-    )
+        .execute(db_conn)
 }
 
 <span class="attribute">#[cfg(test)]
 </span><span class="kw">mod </span>test {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use </span><span class="kw">crate</span>::db::{
-        load_db_connection_pool, migrations <span class="kw">as </span>db_testing, models::api_tokens::ApiTokenData,
-        DbConnectionPool,
+    <span class="kw">use crate</span>::{
+        db::{migrations <span class="kw">as </span>db_testing, models::api_tokens::ApiTokenData},
+        v0::context::test::new_db_test_shared_context,
     };
 
     <span class="attribute">#[tokio::test]
     </span><span class="kw">async fn </span>api_token_insert_and_retrieve() {
         <span class="comment">// initialize db
-        </span><span class="kw">let </span>pool: DbConnectionPool = load_db_connection_pool(<span class="string">&quot;&quot;</span>).unwrap();
+        </span><span class="kw">let </span>ctx = new_db_test_shared_context();
+        <span class="kw">let </span>pool = <span class="kw-2">&amp;</span>ctx.read().<span class="kw">await</span>.db_connection_pool;
+
         db_testing::initialize_db_with_migration(<span class="kw-2">&amp;</span>pool.get().unwrap()).unwrap();
 
         <span class="comment">// checks
         </span><span class="kw">let </span>token = ApiToken::new(<span class="string">b&quot;foo_bar_zen&quot;</span>.to_vec());
-        insert_token(<span class="kw-2">&amp;</span>token, <span class="kw-2">&amp;</span>pool).<span class="kw">await</span>.unwrap();
-        <span class="kw">let </span>token_data: ApiTokenData = query_token(token.clone(), <span class="kw-2">&amp;</span>pool).<span class="kw">await</span>.unwrap().unwrap();
+        insert_token(<span class="kw-2">&amp;</span>token, pool).<span class="kw">await</span>.unwrap();
+        <span class="kw">let </span>token_data: ApiTokenData = query_token(token.clone(), pool).<span class="kw">await</span>.unwrap().unwrap();
         <span class="macro">assert_eq!</span>(token_data.token, token);
     }
 }

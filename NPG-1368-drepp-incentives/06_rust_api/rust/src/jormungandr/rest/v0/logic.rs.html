@@ -637,38 +637,6 @@
 <span id="637">637</span>
 <span id="638">638</span>
 <span id="639">639</span>
-<span id="640">640</span>
-<span id="641">641</span>
-<span id="642">642</span>
-<span id="643">643</span>
-<span id="644">644</span>
-<span id="645">645</span>
-<span id="646">646</span>
-<span id="647">647</span>
-<span id="648">648</span>
-<span id="649">649</span>
-<span id="650">650</span>
-<span id="651">651</span>
-<span id="652">652</span>
-<span id="653">653</span>
-<span id="654">654</span>
-<span id="655">655</span>
-<span id="656">656</span>
-<span id="657">657</span>
-<span id="658">658</span>
-<span id="659">659</span>
-<span id="660">660</span>
-<span id="661">661</span>
-<span id="662">662</span>
-<span id="663">663</span>
-<span id="664">664</span>
-<span id="665">665</span>
-<span id="666">666</span>
-<span id="667">667</span>
-<span id="668">668</span>
-<span id="669">669</span>
-<span id="670">670</span>
-<span id="671">671</span>
 </pre><pre class="rust"><code><span class="comment">// This module contains framework-independent implementations of REST API
 // methods. The convention is the following:
 //
@@ -749,9 +717,6 @@
     </span>Hex(<span class="attribute">#[from] </span>hex::FromHexError),
     <span class="attribute">#[error(<span class="string">&quot;Could not process fragment&quot;</span>)]
     </span>Fragment(FragmentsProcessingSummary),
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-    #[error(<span class="string">&quot;Can not parse address: {0}&quot;</span>)]
-    </span>AddressParseError(String),
     <span class="attribute">#[error(<span class="string">&quot;Can not parse address: {0}&quot;</span>)]
     </span>FromConfigParam(<span class="attribute">#[from] </span>jormungandr_lib::interfaces::FromConfigParamError),
 }
@@ -1290,35 +1255,6 @@
         .map(VotePlanStatus::from)
         .collect();
     <span class="prelude-val">Ok</span>(vp)
-}
-
-<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-</span><span class="kw">pub async fn </span>get_jor_address(context: <span class="kw-2">&amp;</span>Context, evm_id_hex: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, Error&gt; {
-    <span class="prelude-val">Ok</span>(context
-        .blockchain_tip()<span class="question-mark">?
-        </span>.get_ref()
-        .<span class="kw">await
-        </span>.ledger()
-        .get_jormungandr_mapped_address(
-            <span class="kw-2">&amp;</span>chain_evm::Address::from_str(evm_id_hex)
-                .map_err(|e| Error::AddressParseError(e.to_string()))<span class="question-mark">?</span>,
-        )
-        .to_string())
-}
-
-<span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-</span><span class="kw">pub async fn </span>get_evm_address(context: <span class="kw-2">&amp;</span>Context, jor_id_hex: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;String&gt;, Error&gt; {
-    <span class="prelude-val">Ok</span>(context
-        .blockchain_tip()<span class="question-mark">?
-        </span>.get_ref()
-        .<span class="kw">await
-        </span>.ledger()
-        .get_evm_mapped_address(
-            <span class="kw-2">&amp;</span>PublicKey::&lt;AccountAlg&gt;::from_str(jor_id_hex)
-                .map_err(|e| Error::AddressParseError(e.to_string()))<span class="question-mark">?
-                </span>.into(),
-        )
-        .map(|val| val.to_string()))
 }
 
 <span class="attribute">#[cfg(test)]

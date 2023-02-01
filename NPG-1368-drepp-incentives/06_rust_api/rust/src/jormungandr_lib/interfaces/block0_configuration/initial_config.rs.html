@@ -572,52 +572,6 @@
 <span id="572">572</span>
 <span id="573">573</span>
 <span id="574">574</span>
-<span id="575">575</span>
-<span id="576">576</span>
-<span id="577">577</span>
-<span id="578">578</span>
-<span id="579">579</span>
-<span id="580">580</span>
-<span id="581">581</span>
-<span id="582">582</span>
-<span id="583">583</span>
-<span id="584">584</span>
-<span id="585">585</span>
-<span id="586">586</span>
-<span id="587">587</span>
-<span id="588">588</span>
-<span id="589">589</span>
-<span id="590">590</span>
-<span id="591">591</span>
-<span id="592">592</span>
-<span id="593">593</span>
-<span id="594">594</span>
-<span id="595">595</span>
-<span id="596">596</span>
-<span id="597">597</span>
-<span id="598">598</span>
-<span id="599">599</span>
-<span id="600">600</span>
-<span id="601">601</span>
-<span id="602">602</span>
-<span id="603">603</span>
-<span id="604">604</span>
-<span id="605">605</span>
-<span id="606">606</span>
-<span id="607">607</span>
-<span id="608">608</span>
-<span id="609">609</span>
-<span id="610">610</span>
-<span id="611">611</span>
-<span id="612">612</span>
-<span id="613">613</span>
-<span id="614">614</span>
-<span id="615">615</span>
-<span id="616">616</span>
-<span id="617">617</span>
-<span id="618">618</span>
-<span id="619">619</span>
-<span id="620">620</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     interfaces::{
         ActiveSlotCoefficient, BlockContentMaxSize, CommitteeIdDef, ConsensusLeaderId,
@@ -757,14 +711,6 @@
     </span><span class="attribute">#[serde(default)]
     #[serde(skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]
     </span><span class="kw">pub </span>committees: Vec&lt;CommitteeIdDef&gt;,
-
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-    #[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
-    </span><span class="kw">pub </span>evm_configs: <span class="prelude-ty">Option</span>&lt;<span class="kw">crate</span>::interfaces::evm_params::EvmConfig&gt;,
-
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-    #[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
-    </span><span class="kw">pub </span>evm_env_settings: <span class="prelude-ty">Option</span>&lt;<span class="kw">crate</span>::interfaces::evm_params::EvmEnvSettings&gt;,
 }
 
 <span class="kw">impl </span>From&lt;BlockchainConfiguration&gt; <span class="kw">for </span>ConfigParams {
@@ -831,10 +777,6 @@
             reward_parameters: <span class="prelude-val">None</span>,
             reward_constraints: RewardConstraints::default(),
             committees: Vec::new(),
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-            </span>evm_configs: <span class="prelude-val">None</span>,
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-            </span>evm_env_settings: <span class="prelude-val">None</span>,
         }
     }
 
@@ -865,10 +807,6 @@
         <span class="kw">let </span><span class="kw-2">mut </span>reward_constraints = RewardConstraints::default();
         <span class="kw">let </span><span class="kw-2">mut </span>committees = Vec::new();
         <span class="kw">let </span><span class="kw-2">mut </span>tx_max_expiry_epochs = <span class="prelude-val">None</span>;
-        <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-        </span><span class="kw">let </span><span class="kw-2">mut </span>evm_configs = <span class="prelude-val">None</span>;
-        <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-        </span><span class="kw">let </span><span class="kw-2">mut </span>evm_env_settings = <span class="prelude-val">None</span>;
 
         <span class="kw">for </span>param <span class="kw">in </span>params.iter().cloned() {
             <span class="kw">match </span>param {
@@ -955,14 +893,6 @@
                 ConfigParam::TransactionMaxExpiryEpochs(value) =&gt; tx_max_expiry_epochs
                     .replace(value)
                     .map(|<span class="kw">_</span>| <span class="string">&quot;tx_max_expiry_epochs&quot;</span>),
-                <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-                </span>ConfigParam::EvmConfiguration(params) =&gt; {
-                    evm_configs.replace(params.into()).map(|<span class="kw">_</span>| <span class="string">&quot;evm_params&quot;</span>)
-                }
-                <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-                </span>ConfigParam::EvmEnvironment(params) =&gt; evm_env_settings
-                    .replace(params.into())
-                    .map(|<span class="kw">_</span>| <span class="string">&quot;evm_evn_settings&quot;</span>),
             }
             .map(|name| <span class="prelude-val">Err</span>(FromConfigParamsError::InitConfigParamDuplicate { name }))
             .unwrap_or(<span class="prelude-val">Ok</span>(()))<span class="question-mark">?</span>;
@@ -1006,10 +936,6 @@
             reward_constraints,
             committees,
             tx_max_expiry_epochs,
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-            </span>evm_configs,
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-            </span>evm_env_settings,
         })
     }
 
@@ -1035,10 +961,6 @@
             reward_constraints,
             committees,
             tx_max_expiry_epochs,
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-            </span>evm_configs,
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-            </span>evm_env_settings,
         } = <span class="self">self</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>params = ConfigParams::new();
@@ -1112,16 +1034,6 @@
             params.push(ConfigParam::TransactionMaxExpiryEpochs(
                 tx_max_expiry_epochs,
             ));
-        }
-
-        <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(evm_configs) = evm_configs {
-            params.push(ConfigParam::EvmConfiguration(evm_configs.into()));
-        }
-
-        <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(evm_env_settings) = evm_env_settings {
-            params.push(ConfigParam::EvmEnvironment(evm_env_settings.into()));
         }
 
         <span class="kw">let </span>params = consensus_leader_ids
@@ -1214,10 +1126,6 @@
                     .take(counter_committee)
                     .collect(),
                 tx_max_expiry_epochs: Arbitrary::arbitrary(g),
-                <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-                </span>evm_configs: Arbitrary::arbitrary(g),
-                <span class="attribute">#[cfg(feature = <span class="string">&quot;evm&quot;</span>)]
-                </span>evm_env_settings: Arbitrary::arbitrary(g),
             }
         }
     }

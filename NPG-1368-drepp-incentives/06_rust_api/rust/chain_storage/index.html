@@ -23,19 +23,19 @@ developer may need access to different branches.</li>
 change anymore.</li>
 </ul>
 <h3 id="moving-blocks-to-the-permanent-store"><a href="#moving-blocks-to-the-permanent-store">Moving blocks to the permanent store.</a></h3>
-<p>If you have this block structure and call
-<code>store.flush_to_permanent_store(block 2 id)</code>, then <code>Block 1</code> and <code>Block 2</code>
-will be moved to the permanent storage. If you call
-<code>store.flush_to_permanent_store(block 3 id)</code>, <code>Block 3</code> will also be moved
-to the permanent store, but <code>Block 3'</code> will still exist in the volatile store.
-Note that if you call <code>store.get_blocks_by_chain_length(3)</code> only <code>Block 3</code>
+<p>if you have this block structure and call
+<code>store.flush_to_permanent_store(block 2 id)</code>, then <code>block 1</code> and <code>block 2</code>
+will be moved to the permanent storage. if you call
+<code>store.flush_to_permanent_store(block 3 id)</code>, <code>block 3</code> will also be moved
+to the permanent store, but <code>block 3'</code> will still exist in the volatile store.
+note that if you call <code>store.get_blocks_by_chain_length(3)</code> only <code>block 3</code>
 (which is in the permanent store) will be returned; and you cannot call
 <code>store.flush_to_permanent_store(block 3' id)</code> now.</p>
-<p><strong>fig.1 - note that root does not actually exist, this is an ID referredby</strong>
+<p><strong>fig.1 - note that root does not actually exist, this is an id referredby</strong>
 <strong>the first block in the chain</strong></p>
 <div class="example-wrap"><pre class="language-text"><code>+---------+       +---------+
 |         |       |         |
-| Block 4 |       | Block 4&#39;|
+| block 4 |       | block 4&#39;|
 |         |       |         |
 +---------+       +---------+
      |                 |
@@ -43,7 +43,7 @@ Note that if you call <code>store.get_blocks_by_chain_length(3)</code> only <cod
      v                 v
 +---------+       +---------+
 |         |       |         |
-| Block 3 |       | Block 3&#39;|
+| block 3 |       | block 3&#39;|
 |         |       |         |
 +---------+       +---------+
      |                 |
@@ -51,7 +51,7 @@ Note that if you call <code>store.get_blocks_by_chain_length(3)</code> only <cod
      v                 |
 +---------+            |
 |         |            |
-| Block 2 +&lt;-----------+
+| block 2 +&lt;-----------+
 |         |
 +---------+
      |
@@ -59,7 +59,7 @@ Note that if you call <code>store.get_blocks_by_chain_length(3)</code> only <cod
      v
 +---------+
 |         |
-| Block 1 |
+| block 1 |
 |         |
 +---------+
      |

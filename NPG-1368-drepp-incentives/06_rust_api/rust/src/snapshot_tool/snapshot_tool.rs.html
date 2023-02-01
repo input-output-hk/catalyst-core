@@ -63,6 +63,17 @@
 <span id="63">63</span>
 <span id="64">64</span>
 <span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{fs::File, io::BufWriter};
 
 <span class="kw">use </span>clap::Parser;
@@ -70,23 +81,26 @@
 <span class="kw">use </span>mainnet_lib::InMemoryDbSync;
 <span class="kw">use </span>tracing::info;
 <span class="kw">use </span>voting_tools_rs::test_api::MockDbProvider;
-<span class="kw">use </span>voting_tools_rs::{voting_power, Args, DataProvider, Db, DbConfig, DryRunCommand};
+<span class="kw">use </span>voting_tools_rs::{
+    voting_power, Args, Db, DbConfig, DryRunCommand, SnapshotEntry, VotingPowerArgs,
+};
 
 <span class="kw">fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
     color_eyre::install()<span class="question-mark">?</span>;
     tracing_subscriber::fmt().init();
 
     <span class="kw">let </span>Args {
-        testnet_magic,
         db,
         db_user,
         db_host,
         db_pass,
-        min_slot_no,
-        max_slot_no,
+        min_slot,
+        max_slot,
         out_file,
         pretty,
         dry_run,
+        network_id,
+        expected_voting_purpose,
         ..
     } = Args::parse();
 
@@ -97,9 +111,13 @@
         password: db_pass,
     };
 
-    <span class="kw">let </span>db = get_data_provider(db_config, dry_run)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>args = VotingPowerArgs::default();
+    args.min_slot = min_slot;
+    args.max_slot = max_slot;
+    args.network_id = network_id;
+    args.expected_voting_purpose = expected_voting_purpose;
 
-    <span class="kw">let </span>outputs = voting_power(Box::leak(db), min_slot_no, max_slot_no, testnet_magic)<span class="question-mark">?</span>;
+    <span class="kw">let </span>outputs = load(db_config, dry_run, args)<span class="question-mark">?</span>;
 
     <span class="macro">info!</span>(<span class="string">&quot;calculated {} outputs&quot;</span>, outputs.len());
 
@@ -114,19 +132,23 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">fn </span>get_data_provider(
+<span class="kw">fn </span>load(
     real_db_config: DbConfig,
-    maybe_dry_run: <span class="prelude-ty">Option</span>&lt;DryRunCommand&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Box&lt;<span class="kw">dyn </span>DataProvider&gt;&gt; {
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(dry_run) = maybe_dry_run {
-        <span class="kw">match </span>dry_run {
-            DryRunCommand::DryRun { mock_json_file } =&gt; <span class="prelude-val">Ok</span>(Box::new(MockDbProvider::from(
-                InMemoryDbSync::restore(mock_json_file)<span class="question-mark">?</span>,
-            ))),
+    dry_run: <span class="prelude-ty">Option</span>&lt;DryRunCommand&gt;,
+    args: VotingPowerArgs,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SnapshotEntry&gt;&gt; {
+    <span class="kw">let </span>(result, <span class="kw">_</span>) = <span class="kw">match </span>dry_run {
+        <span class="prelude-val">Some</span>(DryRunCommand::DryRun { mock_json_file }) =&gt; {
+            <span class="kw">let </span>db = MockDbProvider::from(InMemoryDbSync::restore(mock_json_file)<span class="question-mark">?</span>);
+            voting_power(db, args)
         }
-    } <span class="kw">else </span>{
-        <span class="prelude-val">Ok</span>(Box::new(Db::connect(real_db_config)<span class="question-mark">?</span>))
-    }
+        <span class="prelude-val">None </span>=&gt; {
+            <span class="kw">let </span>db = Db::connect(real_db_config)<span class="question-mark">?</span>;
+            voting_power(db, args)
+        }
+    }<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(result)
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="snapshot_tool" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

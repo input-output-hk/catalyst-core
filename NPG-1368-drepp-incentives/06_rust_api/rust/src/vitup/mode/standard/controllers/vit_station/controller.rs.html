@@ -89,6 +89,10 @@
 <span id="89">89</span>
 <span id="90">90</span>
 <span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
 </pre><pre class="rust"><code><span class="attribute">#![allow(dead_code)]
 
 </span><span class="kw">use super</span>::{RestClient, <span class="prelude-ty">Result</span>};
@@ -100,6 +104,7 @@
 <span class="kw">use </span>std::sync::{Arc, Mutex};
 <span class="kw">use </span>vit_servicing_station_lib::db::models::challenges::Challenge;
 <span class="kw">use </span>vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
+<span class="kw">use </span>vit_servicing_station_lib::v0::endpoints::snapshot::DelegatorInfo;
 <span class="kw">use </span>vit_servicing_station_tests::common::raw_snapshot::RawSnapshot;
 <span class="kw">use </span>vit_servicing_station_tests::common::snapshot::VoterInfo;
 
@@ -115,7 +120,6 @@
 }
 
 <span class="kw">pub const </span>VIT_CONFIG: <span class="kw-2">&amp;</span>str = <span class="string">&quot;vit_config.yaml&quot;</span>;
-<span class="kw">pub const </span>STORAGE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;storage.db&quot;</span>;
 <span class="kw">pub const </span>VIT_STATION_LOG: <span class="kw-2">&amp;</span>str = <span class="string">&quot;vit_station.log&quot;</span>;
 
 <span class="kw">impl </span>VitStationController {
@@ -159,6 +163,10 @@
 
     <span class="kw">pub fn </span>voter_info(<span class="kw-2">&amp;</span><span class="self">self</span>, tag: <span class="kw-2">&amp;</span>str, key: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;VoterInfo&gt; {
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.rest_client.voter_info(tag, key)<span class="question-mark">?</span>)
+    }
+
+    <span class="kw">pub fn </span>delegator_info(<span class="kw-2">&amp;</span><span class="self">self</span>, tag: <span class="kw-2">&amp;</span>str, key: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;DelegatorInfo&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>.rest_client.delegator_info(tag, key)<span class="question-mark">?</span>)
     }
 
     <span class="kw">pub fn </span>as_named_process(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; NamedProcess {

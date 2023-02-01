@@ -195,7 +195,7 @@
 <span class="kw">use </span>tracing::{debug, error, info, instrument, level_filters::LevelFilter};
 <span class="kw">use </span>tracing_subscriber::FmtSubscriber;
 <span class="kw">use </span>vit_servicing_station_tests::common::clients::RestClient;
-<span class="kw">use </span>voting_tools_rs::Output;
+<span class="kw">use </span>voting_tools_rs::SnapshotEntry;
 
 <span class="doccomment">/// Main command
 </span><span class="attribute">#[derive(Parser, Debug)]
@@ -301,7 +301,7 @@
     <span class="kw">let </span>snapshot_content =
         snapshot_client.get_snapshot(snapshot_job_id, snapshot_params.tag.unwrap_or_default())<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>snapshot: Vec&lt;Output&gt; = serde_json::from_str(<span class="kw-2">&amp;</span>snapshot_content)<span class="question-mark">?</span>;
+    <span class="kw">let </span>snapshot: Vec&lt;SnapshotEntry&gt; = serde_json::from_str(<span class="kw-2">&amp;</span>snapshot_content)<span class="question-mark">?</span>;
     <span class="kw">let </span>raw_snapshot = snapshot.try_into_raw_snapshot_request(config.parameters.clone())<span class="question-mark">?</span>;
     <span class="macro">debug!</span>(<span class="string">&quot;snapshot parsed.&quot;</span>);
 

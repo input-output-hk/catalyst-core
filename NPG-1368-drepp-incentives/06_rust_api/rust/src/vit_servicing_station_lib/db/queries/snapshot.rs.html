@@ -238,66 +238,17 @@
 <span id="238">238</span>
 <span id="239">239</span>
 <span id="240">240</span>
-<span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
-<span id="245">245</span>
-<span id="246">246</span>
-<span id="247">247</span>
-<span id="248">248</span>
-<span id="249">249</span>
-<span id="250">250</span>
-<span id="251">251</span>
-<span id="252">252</span>
-<span id="253">253</span>
-<span id="254">254</span>
-<span id="255">255</span>
-<span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
-<span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
-<span id="262">262</span>
-<span id="263">263</span>
-<span id="264">264</span>
-<span id="265">265</span>
-<span id="266">266</span>
-<span id="267">267</span>
-<span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     db::{
         models::snapshot::{Contribution, Snapshot, Voter},
         schema::{contributions, snapshots, voters},
         DbConnection, DbConnectionPool,
     },
-    q,
     utils::collections::dedup_by_key_keep_last,
     v0::errors::HandleError,
 };
 <span class="kw">use </span>diesel::{
-    pg::upsert::excluded, query_dsl::methods::ExecuteDsl, Connection, ExpressionMethods, QueryDsl,
-    RunQueryDsl,
+    pg::upsert::excluded, Connection, ExpressionMethods, QueryDsl, QueryResult, RunQueryDsl,
 };
 <span class="kw">use </span>itertools::Itertools;
 
@@ -306,13 +257,10 @@
 <span class="kw">pub async fn </span>query_all_snapshots(pool: <span class="kw-2">&amp;</span>DbConnectionPool) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Snapshot&gt;, HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
-        <span class="macro">q!</span>(
-            db_conn,
-            snapshots::dsl::snapshots
-                .order_by(snapshots::dsl::last_updated.asc())
-                .load(<span class="kw-2">&amp;</span>db_conn)
-        )
-        .map_err(|e| HandleError::InternalError(<span class="macro">format!</span>(<span class="string">&quot;Error retrieving snapshot: {}&quot;</span>, e)))
+        snapshots::dsl::snapshots
+            .order_by(snapshots::dsl::last_updated.asc())
+            .load(<span class="kw-2">&amp;</span>db_conn)
+            .map_err(|e| HandleError::InternalError(<span class="macro">format!</span>(<span class="string">&quot;Error retrieving snapshot: {}&quot;</span>, e)))
     })
     .<span class="kw">await
     </span>.map_err(|e| HandleError::InternalError(<span class="macro">format!</span>(<span class="string">&quot;Error executing request: {}&quot;</span>, e)))<span class="question-mark">?
@@ -324,13 +272,10 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Snapshot, HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
-        <span class="macro">q!</span>(
-            db_conn,
-            snapshots::dsl::snapshots
-                .filter(snapshots::dsl::tag.eq(tag))
-                .first(<span class="kw-2">&amp;</span>db_conn)
-        )
-        .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading snapshot: {}&quot;</span>, e)))
+        snapshots::dsl::snapshots
+            .filter(snapshots::dsl::tag.eq(tag))
+            .first(<span class="kw-2">&amp;</span>db_conn)
+            .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading snapshot: {}&quot;</span>, e)))
     })
     .<span class="kw">await
     </span>.map_err(|e| HandleError::InternalError(<span class="macro">format!</span>(<span class="string">&quot;Error executing request: {}&quot;</span>, e)))<span class="question-mark">?
@@ -339,30 +284,24 @@
 <span class="kw">pub fn </span>put_snapshot(snapshot: Snapshot, pool: <span class="kw-2">&amp;</span>DbConnectionPool) -&gt; <span class="prelude-ty">Result</span>&lt;(), HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
 
-    <span class="kw">match </span>db_conn {
-        DbConnection::Sqlite(db_conn) =&gt; diesel::replace_into(snapshots::table)
-            .values(snapshot)
-            .execute(<span class="kw-2">&amp;</span>db_conn),
-        DbConnection::Postgres(db_conn) =&gt; {
-            <span class="comment">// TODO: Find a better way to do this?
-            //
-            // This is needed when moving from SQLite to Postgres
-            // because it used to be a replace_into call which
-            // is actually a delete followed by a insert in SQLite and
-            // this triggers the &#39;ON DELETE CASCADE&#39; of voters and contributions
-            // tables.
-            </span>db_conn.transaction(|| {
-                diesel::delete(snapshots::table)
-                    .filter(snapshots::tag.eq(<span class="kw-2">&amp;</span>snapshot.tag))
-                    .execute(<span class="kw-2">&amp;</span>db_conn)<span class="question-mark">?</span>;
+    <span class="comment">// TODO: Find a better way to do this?
+    //
+    // This is needed when moving from SQLite to Postgres
+    // because it used to be a replace_into call which
+    // is actually a delete followed by a insert in SQLite and
+    // this triggers the &#39;ON DELETE CASCADE&#39; of voters and contributions
+    // tables.
+    </span>db_conn
+        .transaction(|| {
+            diesel::delete(snapshots::table)
+                .filter(snapshots::tag.eq(<span class="kw-2">&amp;</span>snapshot.tag))
+                .execute(<span class="kw-2">&amp;</span>db_conn)<span class="question-mark">?</span>;
 
-                diesel::insert_into(snapshots::table)
-                    .values(snapshot)
-                    .execute(<span class="kw-2">&amp;</span>db_conn)
-            })
-        }
-    }
-    .map_err(|e| HandleError::InternalError(<span class="macro">format!</span>(<span class="string">&quot;Error executing request: {}&quot;</span>, e)))<span class="question-mark">?</span>;
+            diesel::insert_into(snapshots::table)
+                .values(snapshot)
+                .execute(<span class="kw-2">&amp;</span>db_conn)
+        })
+        .map_err(|e| HandleError::InternalError(<span class="macro">format!</span>(<span class="string">&quot;Error executing request: {}&quot;</span>, e)))<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }
 
@@ -372,13 +311,10 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Voter&gt;, HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
-        <span class="macro">q!</span>(
-            db_conn,
-            voters::dsl::voters
-                .filter(voters::dsl::snapshot_tag.eq(tag))
-                .load(<span class="kw-2">&amp;</span>db_conn)
-        )
-        .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading voters: {}&quot;</span>, e)))
+        voters::dsl::voters
+            .filter(voters::dsl::snapshot_tag.eq(tag))
+            .load(<span class="kw-2">&amp;</span>db_conn)
+            .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading voters: {}&quot;</span>, e)))
     })
     .<span class="kw">await
     </span>.map_err(|e| HandleError::InternalError(<span class="macro">format!</span>(<span class="string">&quot;Error executing voters: {}&quot;</span>, e)))<span class="question-mark">?
@@ -391,14 +327,11 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Voter&gt;, HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
-        <span class="macro">q!</span>(
-            db_conn,
-            voters::dsl::voters
-                .filter(voters::dsl::voting_key.eq(voting_key))
-                .filter(voters::dsl::snapshot_tag.eq(tag))
-                .load(<span class="kw-2">&amp;</span>db_conn)
-        )
-        .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading voters: {}&quot;</span>, e)))
+        voters::dsl::voters
+            .filter(voters::dsl::voting_key.eq(voting_key))
+            .filter(voters::dsl::snapshot_tag.eq(tag))
+            .load(<span class="kw-2">&amp;</span>db_conn)
+            .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading voters: {}&quot;</span>, e)))
     })
     .<span class="kw">await
     </span>.map_err(|e| HandleError::InternalError(<span class="macro">format!</span>(<span class="string">&quot;Error executing voters: {}&quot;</span>, e)))<span class="question-mark">?
@@ -411,54 +344,44 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;i64, HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
-        <span class="macro">q!</span>(
-            db_conn,
-            voters::dsl::voters
-                .filter(voters::dsl::voting_group.eq(voting_group))
-                .filter(voters::dsl::snapshot_tag.eq(tag))
-                .load::&lt;Voter&gt;(<span class="kw-2">&amp;</span>db_conn)
-        )
-        .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading voters: {}&quot;</span>, e)))
-        .map(|voters| voters.iter().map(|voter| voter.voting_power).sum())
+        voters::dsl::voters
+            .filter(voters::dsl::voting_group.eq(voting_group))
+            .filter(voters::dsl::snapshot_tag.eq(tag))
+            .load::&lt;Voter&gt;(<span class="kw-2">&amp;</span>db_conn)
+            .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading voters: {}&quot;</span>, e)))
+            .map(|voters| voters.iter().map(|voter| voter.voting_power).sum())
     })
     .<span class="kw">await
     </span>.map_err(|e| HandleError::InternalError(<span class="macro">format!</span>(<span class="string">&quot;Error executing voters: {}&quot;</span>, e)))<span class="question-mark">?
 </span>}
 
 <span class="kw">pub fn </span>batch_put_voters(voters: <span class="kw-2">&amp;</span>[Voter], db_conn: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;(), HandleError&gt; {
-    <span class="kw">match </span>db_conn {
-        DbConnection::Sqlite(db_conn) =&gt; ExecuteDsl::&lt;<span class="kw">_</span>, diesel::sqlite::Sqlite&gt;::execute(
-            diesel::replace_into(voters::table).values(voters),
-            db_conn,
-        )
-        .map(|<span class="kw">_</span>| ()),
-        DbConnection::Postgres(db_conn) =&gt; {
-            <span class="comment">// Postgres will not allow batch inserting if there are any values that would modify the same row twice.
-            // SQLite will allow it then, for Postgres, we keep only the latest conflicting value.
-            </span><span class="kw">let </span>unique_voters = dedup_by_key_keep_last(voters.iter(), |v| {
-                (<span class="kw-2">&amp;</span>v.voting_key, <span class="kw-2">&amp;</span>v.voting_group, <span class="kw-2">&amp;</span>v.snapshot_tag)
-            });
+    <span class="comment">// Postgres will not allow batch inserting if there are any values that would modify the same row twice.
+    // SQLite allowed it. Then, for Postgres, we keep only the latest conflicting value.
+    </span><span class="kw">let </span>unique_voters = dedup_by_key_keep_last(voters.iter(), |v| {
+        (<span class="kw-2">&amp;</span>v.voting_key, <span class="kw-2">&amp;</span>v.voting_group, <span class="kw-2">&amp;</span>v.snapshot_tag)
+    });
 
-            db_conn.build_transaction().read_write().run(<span class="kw">move </span>|| {
-                <span class="kw">for </span>chunk <span class="kw">in </span><span class="kw-2">&amp;</span>unique_voters.into_iter().chunks(BATCH_PUT_CHUNK_SIZE) {
-                    diesel::insert_into(voters::table)
-                        .values(chunk.collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;())
-                        .on_conflict((
-                            voters::voting_key,
-                            voters::voting_group,
-                            voters::snapshot_tag,
-                        ))
-                        .do_update()
-                        .set((voters::voting_power.eq(excluded(voters::voting_power)),))
-                        .execute(db_conn)<span class="question-mark">?</span>;
-                }
+    db_conn
+        .build_transaction()
+        .read_write()
+        .run(<span class="kw">move </span>|| {
+            <span class="kw">for </span>chunk <span class="kw">in </span><span class="kw-2">&amp;</span>unique_voters.into_iter().chunks(BATCH_PUT_CHUNK_SIZE) {
+                diesel::insert_into(voters::table)
+                    .values(chunk.collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;())
+                    .on_conflict((
+                        voters::voting_key,
+                        voters::voting_group,
+                        voters::snapshot_tag,
+                    ))
+                    .do_update()
+                    .set((voters::voting_power.eq(excluded(voters::voting_power)),))
+                    .execute(db_conn)<span class="question-mark">?</span>;
+            }
 
-                <span class="prelude-val">Ok</span>(())
-            })
-        }
-    }
-    .map_err(|e| HandleError::InternalError(<span class="macro">format!</span>(<span class="string">&quot;Error executing request: {}&quot;</span>, e)))<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(())
+            QueryResult::Ok(())
+        })
+        .map_err(|e| HandleError::InternalError(<span class="macro">format!</span>(<span class="string">&quot;Error executing request: {}&quot;</span>, e)))
 }
 
 <span class="kw">pub async fn </span>query_contributions_by_voting_key_and_voter_group_and_snapshot_tag(
@@ -469,15 +392,12 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Contribution&gt;, HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
-        <span class="macro">q!</span>(
-            db_conn,
-            contributions::dsl::contributions
-                .filter(contributions::dsl::voting_key.eq(voting_key))
-                .filter(contributions::dsl::voting_group.eq(voting_group))
-                .filter(contributions::dsl::snapshot_tag.eq(tag))
-                .load(<span class="kw-2">&amp;</span>db_conn)
-        )
-        .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading contributions: {}&quot;</span>, e)))
+        contributions::dsl::contributions
+            .filter(contributions::dsl::voting_key.eq(voting_key))
+            .filter(contributions::dsl::voting_group.eq(voting_group))
+            .filter(contributions::dsl::snapshot_tag.eq(tag))
+            .load(<span class="kw-2">&amp;</span>db_conn)
+            .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading contributions: {}&quot;</span>, e)))
     })
     .<span class="kw">await
     </span>.map_err(|e| HandleError::InternalError(<span class="macro">format!</span>(<span class="string">&quot;Error executing request: {}&quot;</span>, e)))<span class="question-mark">?
@@ -489,13 +409,10 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Contribution&gt;, HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
-        <span class="macro">q!</span>(
-            db_conn,
-            contributions::dsl::contributions
-                .filter(contributions::dsl::snapshot_tag.eq(tag))
-                .load(<span class="kw-2">&amp;</span>db_conn)
-        )
-        .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading contributions: {}&quot;</span>, e)))
+        contributions::dsl::contributions
+            .filter(contributions::dsl::snapshot_tag.eq(tag))
+            .load(<span class="kw-2">&amp;</span>db_conn)
+            .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading contributions: {}&quot;</span>, e)))
     })
     .<span class="kw">await
     </span>.map_err(|e| HandleError::InternalError(<span class="macro">format!</span>(<span class="string">&quot;Error executing request: {}&quot;</span>, e)))<span class="question-mark">?
@@ -508,14 +425,11 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Contribution&gt;, HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
-        <span class="macro">q!</span>(
-            db_conn,
-            contributions::dsl::contributions
-                .filter(contributions::dsl::stake_public_key.eq(stake_public_key))
-                .filter(contributions::dsl::snapshot_tag.eq(tag))
-                .load(<span class="kw-2">&amp;</span>db_conn)
-        )
-        .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading contributions: {}&quot;</span>, e)))
+        contributions::dsl::contributions
+            .filter(contributions::dsl::stake_public_key.eq(stake_public_key))
+            .filter(contributions::dsl::snapshot_tag.eq(tag))
+            .load(<span class="kw-2">&amp;</span>db_conn)
+            .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading contributions: {}&quot;</span>, e)))
     })
     .<span class="kw">await
     </span>.map_err(|e| HandleError::InternalError(<span class="macro">format!</span>(<span class="string">&quot;Error executing request: {}&quot;</span>, e)))<span class="question-mark">?
@@ -525,52 +439,44 @@
     contributions: <span class="kw-2">&amp;</span>[Contribution],
     db_conn: <span class="kw-2">&amp;</span>DbConnection,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), HandleError&gt; {
-    <span class="kw">match </span>db_conn {
-        DbConnection::Sqlite(db_conn) =&gt; ExecuteDsl::&lt;<span class="kw">_</span>, diesel::sqlite::Sqlite&gt;::execute(
-            diesel::replace_into(contributions::table).values(contributions),
-            db_conn,
+    <span class="comment">// Postgres will not allow batch inserting if there are any values that would modify the same row twice.
+    // SQLite allowed it. Then, for Postgres, we keep only the latest conflicting value.
+    </span><span class="kw">let </span>unique_contributions = dedup_by_key_keep_last(contributions.iter(), |c| {
+        (
+            <span class="kw-2">&amp;</span>c.stake_public_key,
+            <span class="kw-2">&amp;</span>c.voting_group,
+            <span class="kw-2">&amp;</span>c.voting_key,
+            <span class="kw-2">&amp;</span>c.snapshot_tag,
         )
-        .map(|<span class="kw">_</span>| ()),
-        DbConnection::Postgres(db_conn) =&gt; {
-            <span class="comment">// Postgres will not allow batch inserting if there are any values that would modify the same row twice.
-            // SQLite will allow it then, for Postgres, we keep only the latest conflicting value.
-            </span><span class="kw">let </span>unique_contributions = dedup_by_key_keep_last(contributions.iter(), |c| {
-                (
-                    <span class="kw-2">&amp;</span>c.stake_public_key,
-                    <span class="kw-2">&amp;</span>c.voting_group,
-                    <span class="kw-2">&amp;</span>c.voting_key,
-                    <span class="kw-2">&amp;</span>c.snapshot_tag,
-                )
-            });
+    });
 
-            db_conn.build_transaction().read_write().run(<span class="kw">move </span>|| {
-                <span class="kw">for </span>chunk <span class="kw">in </span><span class="kw-2">&amp;</span>unique_contributions
-                    .into_iter()
-                    .chunks(BATCH_PUT_CHUNK_SIZE)
-                {
-                    diesel::insert_into(contributions::table)
-                        .values(chunk.collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;())
-                        .on_conflict((
-                            contributions::stake_public_key,
-                            contributions::voting_group,
-                            contributions::voting_key,
-                            contributions::snapshot_tag,
-                        ))
-                        .do_update()
-                        .set((
-                            contributions::reward_address
-                                .eq(excluded(contributions::reward_address)),
-                            contributions::value.eq(excluded(contributions::value)),
-                        ))
-                        .execute(db_conn)<span class="question-mark">?</span>;
-                }
+    db_conn
+        .build_transaction()
+        .read_write()
+        .run(<span class="kw">move </span>|| {
+            <span class="kw">for </span>chunk <span class="kw">in </span><span class="kw-2">&amp;</span>unique_contributions
+                .into_iter()
+                .chunks(BATCH_PUT_CHUNK_SIZE)
+            {
+                diesel::insert_into(contributions::table)
+                    .values(chunk.collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;())
+                    .on_conflict((
+                        contributions::stake_public_key,
+                        contributions::voting_group,
+                        contributions::voting_key,
+                        contributions::snapshot_tag,
+                    ))
+                    .do_update()
+                    .set((
+                        contributions::reward_address.eq(excluded(contributions::reward_address)),
+                        contributions::value.eq(excluded(contributions::value)),
+                    ))
+                    .execute(db_conn)<span class="question-mark">?</span>;
+            }
 
-                <span class="prelude-val">Ok</span>(())
-            })
-        }
-    }
-    .map_err(|e| HandleError::InternalError(<span class="macro">format!</span>(<span class="string">&quot;Error executing request: {}&quot;</span>, e)))<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(())
+            QueryResult::Ok(())
+        })
+        .map_err(|e| HandleError::InternalError(<span class="macro">format!</span>(<span class="string">&quot;Error executing request: {}&quot;</span>, e)))
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="vit_servicing_station_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

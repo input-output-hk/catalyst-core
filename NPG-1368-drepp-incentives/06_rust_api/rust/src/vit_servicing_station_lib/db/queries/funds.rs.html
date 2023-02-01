@@ -175,55 +175,21 @@
 <span id="175">175</span>
 <span id="176">176</span>
 <span id="177">177</span>
-<span id="178">178</span>
-<span id="179">179</span>
-<span id="180">180</span>
-<span id="181">181</span>
-<span id="182">182</span>
-<span id="183">183</span>
-<span id="184">184</span>
-<span id="185">185</span>
-<span id="186">186</span>
-<span id="187">187</span>
-<span id="188">188</span>
-<span id="189">189</span>
-<span id="190">190</span>
-<span id="191">191</span>
-<span id="192">192</span>
-<span id="193">193</span>
-<span id="194">194</span>
-<span id="195">195</span>
-<span id="196">196</span>
-<span id="197">197</span>
-<span id="198">198</span>
-<span id="199">199</span>
-<span id="200">200</span>
-<span id="201">201</span>
-<span id="202">202</span>
-<span id="203">203</span>
-<span id="204">204</span>
-<span id="205">205</span>
-<span id="206">206</span>
-<span id="207">207</span>
-<span id="208">208</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::v0::errors::HandleError;
-<span class="kw">use crate</span>::{
-    db::{
-        models::{
-            challenges::Challenge,
-            funds::{Fund, FundStageDates},
-            goals::Goal,
-            groups::Group,
-            voteplans::Voteplan,
-        },
-        schema::{
-            challenges::dsl <span class="kw">as </span>challenges_dsl, funds, funds::dsl <span class="kw">as </span>fund_dsl,
-            goals::dsl <span class="kw">as </span>goals_dsl, groups::dsl <span class="kw">as </span>groups_dsl, voteplans::dsl <span class="kw">as </span>voteplans_dsl,
-        },
-        DbConnection, DbConnectionPool,
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db::{
+    models::{
+        challenges::Challenge,
+        funds::{Fund, FundStageDates},
+        goals::Goal,
+        groups::Group,
+        voteplans::Voteplan,
     },
-    q,
+    schema::{
+        challenges::dsl <span class="kw">as </span>challenges_dsl, funds, funds::dsl <span class="kw">as </span>fund_dsl, goals::dsl <span class="kw">as </span>goals_dsl,
+        groups::dsl <span class="kw">as </span>groups_dsl, voteplans::dsl <span class="kw">as </span>voteplans_dsl,
+    },
+    DbConnection, DbConnectionPool,
 };
+<span class="kw">use </span><span class="kw">crate</span>::v0::errors::HandleError;
 <span class="kw">use </span>diesel::pg::upsert::excluded;
 <span class="kw">use </span>diesel::{ExpressionMethods, Insertable, QueryDsl, QueryResult, RunQueryDsl};
 <span class="kw">use </span>serde::{Deserialize, Serialize};
@@ -231,40 +197,28 @@
 <span class="kw">fn </span>join_fund(<span class="kw-2">mut </span>fund: Fund, db_conn: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;Fund, HandleError&gt; {
     <span class="kw">let </span>id = fund.id;
 
-    fund.chain_vote_plans = <span class="macro">q!</span>(
-        db_conn,
-        voteplans_dsl::voteplans
-            .filter(voteplans_dsl::fund_id.eq(id))
-            .load::&lt;Voteplan&gt;(db_conn)
-    )
-    .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading voteplans, error: {}&quot;</span>, e)))<span class="question-mark">?</span>;
+    fund.chain_vote_plans = voteplans_dsl::voteplans
+        .filter(voteplans_dsl::fund_id.eq(id))
+        .load::&lt;Voteplan&gt;(db_conn)
+        .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading voteplans, error: {}&quot;</span>, e)))<span class="question-mark">?</span>;
 
-    fund.challenges = <span class="macro">q!</span>(
-        db_conn,
-        challenges_dsl::challenges
-            .filter(challenges_dsl::fund_id.eq(id))
-            .order_by(challenges_dsl::internal_id.asc())
-            .load::&lt;Challenge&gt;(db_conn)
-    )
-    .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading challenges, error: {}&quot;</span>, e)))<span class="question-mark">?</span>;
+    fund.challenges = challenges_dsl::challenges
+        .filter(challenges_dsl::fund_id.eq(id))
+        .order_by(challenges_dsl::internal_id.asc())
+        .load::&lt;Challenge&gt;(db_conn)
+        .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading challenges, error: {}&quot;</span>, e)))<span class="question-mark">?</span>;
 
-    fund.goals = <span class="macro">q!</span>(
-        db_conn,
-        goals_dsl::goals
-            .filter(goals_dsl::fund_id.eq(id))
-            .load::&lt;Goal&gt;(db_conn)
-    )
-    .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading goals, error: {}&quot;</span>, e)))<span class="question-mark">?</span>;
+    fund.goals = goals_dsl::goals
+        .filter(goals_dsl::fund_id.eq(id))
+        .load::&lt;Goal&gt;(db_conn)
+        .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading goals, error: {}&quot;</span>, e)))<span class="question-mark">?</span>;
 
-    fund.groups = <span class="macro">q!</span>(
-        db_conn,
-        groups_dsl::groups
-            .filter(groups_dsl::fund_id.eq(id))
-            .load::&lt;Group&gt;(db_conn)
-    )
-    .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading groups, error: {}&quot;</span>, e)))<span class="question-mark">?
-    </span>.into_iter()
-    .collect();
+    fund.groups = groups_dsl::groups
+        .filter(groups_dsl::fund_id.eq(id))
+        .load::&lt;Group&gt;(db_conn)
+        .map_err(|e| HandleError::NotFound(<span class="macro">format!</span>(<span class="string">&quot;Error loading groups, error: {}&quot;</span>, e)))<span class="question-mark">?
+        </span>.into_iter()
+        .collect();
 
     <span class="prelude-val">Ok</span>(fund)
 }
@@ -274,13 +228,10 @@
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
         <span class="kw">let </span>db_conn = <span class="kw-2">&amp;</span>db_conn;
 
-        <span class="kw">let </span>fund = <span class="macro">q!</span>(
-            db_conn,
-            fund_dsl::funds
-                .filter(fund_dsl::id.eq(id))
-                .first::&lt;Fund&gt;(db_conn)
-        )
-        .map_err(|_e| HandleError::NotFound(<span class="string">&quot;fund&quot;</span>.to_string()))<span class="question-mark">?</span>;
+        <span class="kw">let </span>fund = fund_dsl::funds
+            .filter(fund_dsl::id.eq(id))
+            .first::&lt;Fund&gt;(db_conn)
+            .map_err(|_e| HandleError::NotFound(<span class="string">&quot;fund&quot;</span>.to_string()))<span class="question-mark">?</span>;
 
         join_fund(fund, db_conn)
     })
@@ -309,18 +260,15 @@
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
         <span class="kw">let </span>db_conn = <span class="kw-2">&amp;</span>db_conn;
 
-        <span class="kw">let </span>funds: Vec&lt;Fund&gt; = <span class="macro">q!</span>(
-            db_conn,
-            fund_dsl::funds
-                <span class="comment">// TODO: Not sure if sorting by the PK is actually necessary
-                //
-                // this assumes that the next will be the second inserted
-                // and that the current is the first.
-                </span>.order(fund_dsl::id)
-                .limit(<span class="number">2</span>)
-                .load(db_conn)
-        )
-        .map_err(|_e| HandleError::NotFound(<span class="string">&quot;fund&quot;</span>.to_string()))<span class="question-mark">?</span>;
+        <span class="kw">let </span>funds: Vec&lt;Fund&gt; = fund_dsl::funds
+            <span class="comment">// TODO: Not sure if sorting by the PK is actually necessary
+            //
+            // this assumes that the next will be the second inserted
+            // and that the current is the first.
+            </span>.order(fund_dsl::id)
+            .limit(<span class="number">2</span>)
+            .load(db_conn)
+            .map_err(|_e| HandleError::NotFound(<span class="string">&quot;fund&quot;</span>.to_string()))<span class="question-mark">?</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>funds = funds.into_iter();
         <span class="kw">let </span>current = funds
@@ -347,67 +295,57 @@
 <span class="kw">pub async fn </span>query_all_funds(pool: <span class="kw-2">&amp;</span>DbConnectionPool) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;i32&gt;, HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
-        <span class="macro">q!</span>(
-            db_conn,
-            fund_dsl::funds.select(fund_dsl::id).load::&lt;i32&gt;(<span class="kw-2">&amp;</span>db_conn)
-        )
-        .map_err(|<span class="kw">_</span>| HandleError::InternalError(<span class="string">&quot;Error retrieving funds&quot;</span>.to_string()))
+        fund_dsl::funds
+            .select(fund_dsl::id)
+            .load::&lt;i32&gt;(<span class="kw-2">&amp;</span>db_conn)
+            .map_err(|<span class="kw">_</span>| HandleError::InternalError(<span class="string">&quot;Error retrieving funds&quot;</span>.to_string()))
     })
     .<span class="kw">await
     </span>.map_err(|_e| HandleError::InternalError(<span class="string">&quot;Error executing request&quot;</span>.to_string()))<span class="question-mark">?
 </span>}
 
 <span class="kw">pub fn </span>insert_fund(fund: Fund, db_conn: <span class="kw-2">&amp;</span>DbConnection) -&gt; QueryResult&lt;Fund&gt; {
-    <span class="macro">q!</span>(
-        db_conn,
-        diesel::insert_into(funds::table)
-            .values(fund.values())
-            .execute(db_conn)
-    )<span class="question-mark">?</span>;
+    diesel::insert_into(funds::table)
+        .values(fund.values())
+        .execute(db_conn)<span class="question-mark">?</span>;
     <span class="comment">// This can be done in a single query if we move to postgres or any DB that supports `get_result`
     // instead of `execute` in the previous insert
-    </span><span class="macro">q!</span>(
-        db_conn,
-        funds::table.order(fund_dsl::id.desc()).first(db_conn)
-    )
+
+    </span>funds::table.order(fund_dsl::id.desc()).first(db_conn)
 }
 
 <span class="kw">pub fn </span>put_fund(fund: Fund, pool: <span class="kw-2">&amp;</span>DbConnectionPool) -&gt; <span class="prelude-ty">Result</span>&lt;(), HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
-    <span class="kw">match </span>db_conn {
-        DbConnection::Sqlite(db_conn) =&gt; diesel::replace_into(funds::table)
-            .values(fund.values())
-            .execute(<span class="kw-2">&amp;</span>db_conn),
-        DbConnection::Postgres(db_conn) =&gt; diesel::insert_into(funds::table)
-            .values(fund.values())
-            .on_conflict(funds::id)
-            .do_update()
-            .set((
-                funds::fund_name.eq(excluded(funds::fund_name)),
-                funds::fund_goal.eq(excluded(funds::fund_goal)),
-                funds::registration_snapshot_time.eq(excluded(funds::registration_snapshot_time)),
-                funds::next_registration_snapshot_time
-                    .eq(excluded(funds::next_registration_snapshot_time)),
-                funds::voting_power_threshold.eq(excluded(funds::voting_power_threshold)),
-                funds::fund_start_time.eq(excluded(funds::fund_start_time)),
-                funds::fund_end_time.eq(excluded(funds::fund_end_time)),
-                funds::next_fund_start_time.eq(excluded(funds::next_fund_start_time)),
-                funds::insight_sharing_start.eq(excluded(funds::insight_sharing_start)),
-                funds::proposal_submission_start.eq(excluded(funds::proposal_submission_start)),
-                funds::refine_proposals_start.eq(excluded(funds::refine_proposals_start)),
-                funds::finalize_proposals_start.eq(excluded(funds::finalize_proposals_start)),
-                funds::proposal_assessment_start.eq(excluded(funds::proposal_assessment_start)),
-                funds::assessment_qa_start.eq(excluded(funds::assessment_qa_start)),
-                funds::snapshot_start.eq(excluded(funds::snapshot_start)),
-                funds::voting_start.eq(excluded(funds::voting_start)),
-                funds::voting_end.eq(excluded(funds::voting_end)),
-                funds::tallying_end.eq(excluded(funds::tallying_end)),
-                funds::results_url.eq(excluded(funds::results_url)),
-                funds::survey_url.eq(excluded(funds::survey_url)),
-            ))
-            .execute(<span class="kw-2">&amp;</span>db_conn),
-    }
-    .map_err(|_e| HandleError::InternalError(<span class="string">&quot;Error executing request&quot;</span>.to_string()))<span class="question-mark">?</span>;
+
+    diesel::insert_into(funds::table)
+        .values(fund.values())
+        .on_conflict(funds::id)
+        .do_update()
+        .set((
+            funds::fund_name.eq(excluded(funds::fund_name)),
+            funds::fund_goal.eq(excluded(funds::fund_goal)),
+            funds::registration_snapshot_time.eq(excluded(funds::registration_snapshot_time)),
+            funds::next_registration_snapshot_time
+                .eq(excluded(funds::next_registration_snapshot_time)),
+            funds::voting_power_threshold.eq(excluded(funds::voting_power_threshold)),
+            funds::fund_start_time.eq(excluded(funds::fund_start_time)),
+            funds::fund_end_time.eq(excluded(funds::fund_end_time)),
+            funds::next_fund_start_time.eq(excluded(funds::next_fund_start_time)),
+            funds::insight_sharing_start.eq(excluded(funds::insight_sharing_start)),
+            funds::proposal_submission_start.eq(excluded(funds::proposal_submission_start)),
+            funds::refine_proposals_start.eq(excluded(funds::refine_proposals_start)),
+            funds::finalize_proposals_start.eq(excluded(funds::finalize_proposals_start)),
+            funds::proposal_assessment_start.eq(excluded(funds::proposal_assessment_start)),
+            funds::assessment_qa_start.eq(excluded(funds::assessment_qa_start)),
+            funds::snapshot_start.eq(excluded(funds::snapshot_start)),
+            funds::voting_start.eq(excluded(funds::voting_start)),
+            funds::voting_end.eq(excluded(funds::voting_end)),
+            funds::tallying_end.eq(excluded(funds::tallying_end)),
+            funds::results_url.eq(excluded(funds::results_url)),
+            funds::survey_url.eq(excluded(funds::survey_url)),
+        ))
+        .execute(<span class="kw-2">&amp;</span>db_conn)
+        .map_err(|_e| HandleError::InternalError(<span class="string">&quot;Error executing request&quot;</span>.to_string()))<span class="question-mark">?</span>;
 
     <span class="comment">// TODO:
     // replace the voteplan and challenges too?

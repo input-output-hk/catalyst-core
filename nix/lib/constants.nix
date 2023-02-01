@@ -11,7 +11,7 @@ in rec {
   # The current SVE round we are in
   sveRound = 2;
 
-  # List of target environments we generate artifacts for
+  # List of target environments
   envs = [
     "dev"
     "signoff"

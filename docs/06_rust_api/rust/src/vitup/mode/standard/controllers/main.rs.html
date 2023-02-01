@@ -374,13 +374,12 @@
 <span id="374">374</span>
 <span id="375">375</span>
 <span id="376">376</span>
-<span id="377">377</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{
     <span class="kw">super</span>::VitSettings,
     vit_station::{
         dump_settings_to_file, BootstrapCommandBuilder, DbGenerator,
         Error <span class="kw">as </span>VitStationControllerError, RestClient, ValidVotePlanParameters,
-        ValidVotingTemplateGenerator, VitStationController, STORAGE, VIT_CONFIG,
+        ValidVotingTemplateGenerator, VitStationController, VIT_CONFIG,
     },
     wallet_proxy::{Error <span class="kw">as </span>WalletProxyError, WalletProxyController, WalletProxySpawnParams},
 };
@@ -623,16 +622,15 @@
         std::fs::DirBuilder::new().recursive(<span class="bool-val">true</span>).create(<span class="kw-2">&amp;</span>dir)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>config_file = dir.join(VIT_CONFIG);
-        <span class="kw">let </span>db_file = dir.join(STORAGE);
         dump_settings_to_file(config_file.to_str().unwrap(), settings).unwrap();
 
-        DbGenerator::new(vote_plan_parameters).build(<span class="kw-2">&amp;</span>db_file, template_generator)<span class="question-mark">?</span>;
+        <span class="kw">let </span>db_url = DbGenerator::new(vote_plan_parameters).build(template_generator)<span class="question-mark">?</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>command_builder =
             BootstrapCommandBuilder::new(PathBuf::from(<span class="string">&quot;vit-servicing-station-server&quot;</span>));
         <span class="kw">let </span><span class="kw-2">mut </span>command = command_builder
             .in_settings_file(<span class="kw-2">&amp;</span>config_file)
-            .db_url(db_file.to_str().unwrap())
+            .db_url(db_url)
             .service_version(version)
             .block0_path(<span class="prelude-val">Some</span>(
                 <span class="self">self</span>.hersir_controller

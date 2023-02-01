@@ -48,8 +48,6 @@
 <span id="48">48</span>
 <span id="49">49</span>
 <span id="50">50</span>
-<span id="51">51</span>
-<span id="52">52</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>controller;
 <span class="kw">mod </span>data;
 
@@ -64,9 +62,7 @@
 
 <span class="kw">pub use </span>vit_servicing_station_lib::server::settings::dump_settings_to_file;
 
-<span class="kw">pub use </span>controller::{
-    VitStationController, VitStationSettings, STORAGE, VIT_CONFIG, VIT_STATION_LOG,
-};
+<span class="kw">pub use </span>controller::{VitStationController, VitStationSettings, VIT_CONFIG, VIT_STATION_LOG};
 <span class="kw">pub use </span>data::{generate_database, generate_random_database, DbGenerator, Error <span class="kw">as </span>DataError};
 <span class="kw">use </span>std::time::Duration;
 <span class="kw">pub type </span><span class="prelude-ty">Result</span>&lt;T&gt; = std::result::Result&lt;T, Error&gt;;

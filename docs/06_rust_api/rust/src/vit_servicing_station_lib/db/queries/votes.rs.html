@@ -30,15 +30,12 @@
 <span id="30">30</span>
 <span id="31">31</span>
 <span id="32">32</span>
-<span id="33">33</span>
-<span id="34">34</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db::schema::votes;
 <span class="kw">use </span><span class="kw">crate</span>::db::DbConnection;
 <span class="kw">use crate</span>::{
     db::{models::vote::Vote, schema::votes::dsl <span class="kw">as </span>vote_dsl, DbConnectionPool},
     v0::errors::HandleError,
 };
-<span class="kw">use crate</span>::{execute_q, q};
 <span class="kw">use </span>diesel::{ExpressionMethods, Insertable, QueryDsl, QueryResult, RunQueryDsl};
 
 <span class="kw">pub async fn </span>query_votes_by_caster_and_voteplan_id(
@@ -48,13 +45,10 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Vote&gt;, HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
-        <span class="macro">q!</span>(
-            db_conn,
-            diesel::QueryDsl::filter(vote_dsl::votes, vote_dsl::caster.eq(<span class="kw-2">&amp;</span>caster))
-                .filter(vote_dsl::voteplan_id.eq(<span class="kw-2">&amp;</span>voteplan_id))
-                .load::&lt;Vote&gt;(<span class="kw-2">&amp;</span>db_conn)
-        )
-        .map_err(|_e| HandleError::NotFound(<span class="string">&quot;Error loading vote&quot;</span>.to_string()))
+        diesel::QueryDsl::filter(vote_dsl::votes, vote_dsl::caster.eq(<span class="kw-2">&amp;</span>caster))
+            .filter(vote_dsl::voteplan_id.eq(<span class="kw-2">&amp;</span>voteplan_id))
+            .load::&lt;Vote&gt;(<span class="kw-2">&amp;</span>db_conn)
+            .map_err(|_e| HandleError::NotFound(<span class="string">&quot;Error loading vote&quot;</span>.to_string()))
     })
     .<span class="kw">await
     </span>.map_err(|_e| HandleError::InternalError(<span class="string">&quot;Error executing request&quot;</span>.to_string()))<span class="question-mark">?
@@ -64,7 +58,9 @@
     votes: <span class="kw-2">&amp;</span>[&lt;Vote <span class="kw">as </span>Insertable&lt;votes::table&gt;&gt;::Values],
     db_conn: <span class="kw-2">&amp;</span>DbConnection,
 ) -&gt; QueryResult&lt;usize&gt; {
-    <span class="macro">execute_q!</span>(db_conn, diesel::insert_into(votes::table).values(votes))
+    diesel::insert_into(votes::table)
+        .values(votes)
+        .execute(db_conn)
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="vit_servicing_station_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

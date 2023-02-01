@@ -447,12 +447,7 @@
 <span id="447">447</span>
 <span id="448">448</span>
 <span id="449">449</span>
-<span id="450">450</span>
-<span id="451">451</span>
-<span id="452">452</span>
-<span id="453">453</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::builders::build_current_fund;
-<span class="kw">use </span><span class="kw">crate</span>::builders::utils::DeploymentTree;
 <span class="kw">use </span><span class="kw">crate</span>::config::Config;
 <span class="kw">use </span><span class="kw">crate</span>::mode::standard::DbGenerator;
 <span class="kw">use </span>chain_impl_mockchain::testing::scenario::template::ProposalDefBuilder;
@@ -618,8 +613,6 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         std::fs::create_dir_all(<span class="kw-2">&amp;</span><span class="self">self</span>.output)<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>deployment_tree = DeploymentTree::new(<span class="kw-2">&amp;</span><span class="self">self</span>.output);
-
         <span class="kw">let </span><span class="kw-2">mut </span>template_generator = ExternalValidVotingTemplateGenerator::new(
             proposals_path,
             challenges_path,
@@ -645,8 +638,7 @@
             <span class="macro">vec!</span>[],
         ));
 
-        DbGenerator::new(parameters)
-            .build(<span class="kw-2">&amp;</span>deployment_tree.database_path(), <span class="kw-2">&amp;mut </span>template_generator)<span class="question-mark">?</span>;
+        DbGenerator::new(parameters).build(<span class="kw-2">&amp;mut </span>template_generator)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }

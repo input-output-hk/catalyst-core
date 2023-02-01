@@ -969,12 +969,6 @@
 <span id="969">969</span>
 <span id="970">970</span>
 <span id="971">971</span>
-<span id="972">972</span>
-<span id="973">973</span>
-<span id="974">974</span>
-<span id="975">975</span>
-<span id="976">976</span>
-<span id="977">977</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>handlers;
 <span class="kw">mod </span>routes;
 
@@ -1796,12 +1790,6 @@
 
     <span class="attribute">#[tokio::test]
     </span><span class="kw">async fn </span>test_snapshot_get_tags_2() {
-        tracing_subscriber::fmt()
-            .with_max_level(Level::TRACE)
-            .with_writer(tracing_subscriber::fmt::TestWriter::new())
-            .try_init()
-            .unwrap();
-
         <span class="kw">let </span>key = <span class="string">&quot;0000000000000000000000000000000000000000000000000000000000000000&quot;</span>;
 
         <span class="kw">let </span>content_a = serde_json::to_string(<span class="kw-2">&amp;</span>RawSnapshotInput {

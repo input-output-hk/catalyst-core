@@ -390,16 +390,6 @@
 <span id="390">390</span>
 <span id="391">391</span>
 <span id="392">392</span>
-<span id="393">393</span>
-<span id="394">394</span>
-<span id="395">395</span>
-<span id="396">396</span>
-<span id="397">397</span>
-<span id="398">398</span>
-<span id="399">399</span>
-<span id="400">400</span>
-<span id="401">401</span>
-<span id="402">402</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::BTreeSet;
 
 <span class="kw">use </span><span class="kw">super</span>::groups::Group;
@@ -681,19 +671,16 @@
 
 <span class="attribute">#[cfg(test)]
 </span><span class="kw">pub mod </span>test {
-    <span class="kw">use crate</span>::{
-        db::{
-            models::{
-                challenges::test <span class="kw">as </span>challenges_testing,
-                funds::{Fund, FundStageDates},
-                goals::{Goal, InsertGoal},
-                groups::Group,
-                voteplans::test <span class="kw">as </span>voteplans_testing,
-            },
-            schema::{funds, goals, groups},
-            DbConnectionPool,
+    <span class="kw">use </span><span class="kw">crate</span>::db::{
+        models::{
+            challenges::test <span class="kw">as </span>challenges_testing,
+            funds::{Fund, FundStageDates},
+            goals::{Goal, InsertGoal},
+            groups::Group,
+            voteplans::test <span class="kw">as </span>voteplans_testing,
         },
-        execute_q, q,
+        schema::{funds, goals, groups},
+        DbConnectionPool,
     };
 
     <span class="kw">use </span>diesel::{Insertable, RunQueryDsl};
@@ -758,13 +745,10 @@
         // call below it creates a wrong connection (where there are not tables even if they were loaded).
         </span>{
             <span class="kw">let </span>connection = pool.get().unwrap();
-            <span class="macro">q!</span>(
-                connection,
-                diesel::insert_into(funds::table)
-                    .values(fund.clone().values())
-                    .execute(<span class="kw-2">&amp;</span>connection)
-            )
-            .unwrap();
+            diesel::insert_into(funds::table)
+                .values(fund.clone().values())
+                .execute(<span class="kw-2">&amp;</span>connection)
+                .unwrap();
         }
 
         <span class="kw">for </span>voteplan <span class="kw">in </span><span class="kw-2">&amp;</span>fund.chain_vote_plans {
@@ -778,27 +762,23 @@
         {
             <span class="kw">let </span>connection = <span class="kw-2">&amp;</span>pool.get().unwrap();
             <span class="kw">for </span>goal <span class="kw">in </span><span class="kw-2">&amp;</span>fund.goals {
-                <span class="macro">q!</span>(
-                    connection,
-                    diesel::insert_into(goals::table)
-                        .values(InsertGoal::from(goal))
-                        .execute(connection)
-                )
-                .unwrap();
+                diesel::insert_into(goals::table)
+                    .values(InsertGoal::from(goal))
+                    .execute(connection)
+                    .unwrap();
             }
 
             <span class="comment">// TODO: call batch_insert_groups?
-            </span><span class="macro">execute_q!</span>(
-                connection,
-                diesel::insert_into(groups::table).values(
+            </span>diesel::insert_into(groups::table)
+                .values(
                     fund.groups
                         .clone()
                         .into_iter()
                         .map(|g| g.values())
                         .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
                 )
-            )
-            .unwrap();
+                .execute(connection)
+                .unwrap();
         }
     }
 }

@@ -38,22 +38,12 @@
 <span id="38">38</span>
 <span id="39">39</span>
 <span id="40">40</span>
-<span id="41">41</span>
-<span id="42">42</span>
-<span id="43">43</span>
-<span id="44">44</span>
-<span id="45">45</span>
-<span id="46">46</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::execute_q;
-<span class="kw">use </span><span class="kw">crate</span>::v0::errors::HandleError;
-<span class="kw">use crate</span>::{
-    db::{
-        models::community_advisors_reviews::AdvisorReview,
-        schema::community_advisors_reviews::{<span class="self">self</span>, dsl <span class="kw">as </span>reviews_dsl},
-        DbConnection, DbConnectionPool,
-    },
-    q,
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db::{
+    models::community_advisors_reviews::AdvisorReview,
+    schema::community_advisors_reviews::{<span class="self">self</span>, dsl <span class="kw">as </span>reviews_dsl},
+    DbConnection, DbConnectionPool,
 };
+<span class="kw">use </span><span class="kw">crate</span>::v0::errors::HandleError;
 
 <span class="kw">use </span>diesel::{ExpressionMethods, Insertable, QueryDsl, QueryResult, RunQueryDsl};
 
@@ -63,13 +53,12 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;AdvisorReview&gt;, HandleError&gt; {
     <span class="kw">let </span>db_conn = pool.get().map_err(HandleError::DatabaseError)<span class="question-mark">?</span>;
     tokio::task::spawn_blocking(<span class="kw">move </span>|| {
-        <span class="macro">q!</span>(
-            db_conn,
-            reviews_dsl::community_advisors_reviews
-                .filter(reviews_dsl::proposal_id.eq(id))
-                .load::&lt;AdvisorReview&gt;(<span class="kw-2">&amp;</span>db_conn)
-        )
-        .map_err(|_e| HandleError::NotFound(<span class="string">&quot;Error loading community advisors reviews&quot;</span>.to_string()))
+        reviews_dsl::community_advisors_reviews
+            .filter(reviews_dsl::proposal_id.eq(id))
+            .load::&lt;AdvisorReview&gt;(<span class="kw-2">&amp;</span>db_conn)
+            .map_err(|_e| {
+                HandleError::NotFound(<span class="string">&quot;Error loading community advisors reviews&quot;</span>.to_string())
+            })
     })
     .<span class="kw">await
     </span>.map_err(|_e| HandleError::InternalError(<span class="string">&quot;Error executing request&quot;</span>.to_string()))<span class="question-mark">?
@@ -79,16 +68,15 @@
     reviews: <span class="kw-2">&amp;</span>[AdvisorReview],
     db_conn: <span class="kw-2">&amp;</span>DbConnection,
 ) -&gt; QueryResult&lt;usize&gt; {
-    <span class="macro">execute_q!</span>(
-        db_conn,
-        diesel::insert_into(community_advisors_reviews::table).values(
+    diesel::insert_into(community_advisors_reviews::table)
+        .values(
             reviews
                 .iter()
                 .cloned()
                 .map(|r| r.values())
                 .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
         )
-    )
+        .execute(db_conn)
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="vit_servicing_station_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

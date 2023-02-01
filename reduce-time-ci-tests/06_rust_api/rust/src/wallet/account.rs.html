@@ -296,11 +296,9 @@
 <span id="296">296</span>
 <span id="297">297</span>
 <span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::transaction::AccountWitnessBuilder;
-<span class="kw">use </span><span class="kw">crate</span>::scheme::{on_tx_input_and_witnesses, on_tx_output};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::scheme::{on_tx_input_and_witnesses, on_tx_output};
 <span class="kw">use </span><span class="kw">crate</span>::states::States;
+<span class="kw">use </span><span class="kw">crate</span>::transaction::{AccountSecretKey, AccountWitnessBuilder};
 <span class="kw">use </span>chain_crypto::{Ed25519, Ed25519Extended, PublicKey, SecretKey};
 <span class="kw">use </span>chain_impl_mockchain::accounting::account::{spending, SpendingCounterIncreasing};
 <span class="kw">use </span>chain_impl_mockchain::{
@@ -364,17 +362,11 @@
         }
     }
 
-    <span class="kw">pub fn </span>witness_builder(<span class="kw-2">&amp;</span><span class="self">self</span>, spending_counter: SpendingCounter) -&gt; AccountWitnessBuilder {
+    <span class="kw">pub fn </span>secret_key(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; AccountSecretKey {
         <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self </span>{
-            EitherAccount::Seed(account) =&gt; <span class="kw">crate</span>::transaction::AccountWitnessBuilder::Ed25519(
-                account.secret().clone(),
-                spending_counter,
-            ),
+            EitherAccount::Seed(account) =&gt; AccountSecretKey::Ed25519(account.secret().clone()),
             EitherAccount::Extended(account) =&gt; {
-                <span class="kw">crate</span>::transaction::AccountWitnessBuilder::Ed25519Extended(
-                    account.secret().clone(),
-                    spending_counter,
-                )
+                AccountSecretKey::Ed25519Extended(account.secret().clone())
             }
         }
     }
@@ -397,6 +389,10 @@
 
     <span class="kw">pub fn </span>account_id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; AccountId {
         <span class="self">self</span>.account.account_id()
+    }
+
+    <span class="kw">pub fn </span>secret_key(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; AccountSecretKey {
+        <span class="self">self</span>.account.secret_key()
     }
 
     <span class="doccomment">/// set the state counter so we can sync with the blockchain and the
@@ -580,7 +576,7 @@
     }
 
     <span class="kw">pub fn </span>witness_builder(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; AccountWitnessBuilder {
-        <span class="self">self</span>.wallet.account.witness_builder(<span class="self">self</span>.current_counter)
+        AccountWitnessBuilder(<span class="self">self</span>.current_counter)
     }
 
     <span class="kw">pub fn </span>add_fragment_id(<span class="self">self</span>, fragment_id: FragmentId) {

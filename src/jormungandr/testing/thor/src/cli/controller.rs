@@ -64,13 +64,8 @@ impl CliController {
     pub fn check_connection(&self) -> Result<(), Error> {
         self.client
             .settings()
-            .map(|_| {
-                println!("Connection succesfull.");
-            })
-            .map_err(|e| {
-                eprintln!("Connection unsuccesfull.");
-                Error::Connection(self.wallets.connection().address, e)
-            })
+            .map(|_| ())
+            .map_err(|e| Error::Connection(self.wallets.connection().address, e))
     }
 
     pub fn refresh_state(&mut self) -> Result<(), Error> {

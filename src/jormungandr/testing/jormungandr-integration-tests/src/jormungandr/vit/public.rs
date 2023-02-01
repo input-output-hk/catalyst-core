@@ -380,7 +380,7 @@ pub fn test_vote_flow_praos() {
                         clarice.to_initial_token(1_000_000),
                     ],
                 })
-                .with_slots_per_epoch(60.try_into().unwrap())
+                .with_slots_per_epoch(30.try_into().unwrap())
                 .with_consensus_genesis_praos_active_slot_coeff(
                     ActiveSlotCoefficient::new(Milli::from_millis(1_000)).unwrap(),
                 )

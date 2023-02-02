@@ -87,7 +87,7 @@ pub fn reward_history() {
             .with_slots_per_epoch(20.try_into().unwrap())
             .with_consensus_genesis_praos_active_slot_coeff(ActiveSlotCoefficient::MAXIMUM)
             //.with_rewards_history()
-            .with_slot_duration(3.try_into().unwrap()),
+            .with_slot_duration(4.try_into().unwrap()),
         NodeConfigBuilder::default(),
     )
     .unwrap();

@@ -12,55 +12,19 @@
 <span id="12">12</span>
 <span id="13">13</span>
 <span id="14">14</span>
-<span id="15">15</span>
-<span id="16">16</span>
-<span id="17">17</span>
-<span id="18">18</span>
-<span id="19">19</span>
-<span id="20">20</span>
-<span id="21">21</span>
-<span id="22">22</span>
-<span id="23">23</span>
-<span id="24">24</span>
-<span id="25">25</span>
-<span id="26">26</span>
-<span id="27">27</span>
-<span id="28">28</span>
-<span id="29">29</span>
-<span id="30">30</span>
-<span id="31">31</span>
-<span id="32">32</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Library part of iapyx which serves as a core lib for this testing CLI wallet.
-//! Idea behind split was to enable api interface for integration tests without spawning CLI process
-//! but directly operates on API level
-</span><span class="attribute">#![forbid(missing_docs)]
-#![warn(clippy::pedantic)]
-#![allow(
-    clippy::module_name_repetitions,
-    clippy::match_bool,
-    clippy::bool_assert_comparison,
-    clippy::derive_partial_eq_without_eq
-)]
-</span><span class="kw">extern crate </span>rand;
+</pre><pre class="rust"><code><span class="kw">extern crate </span>rand;
 
 <span class="kw">mod </span>controller;
 <span class="kw">mod </span>load;
-<span class="kw">mod </span>utils;
+<span class="kw">pub mod </span>utils;
 <span class="kw">mod </span>wallet;
 
-<span class="comment">// this export style forces us to be explicit about what is in the public API
-</span><span class="kw">pub use </span>exports::<span class="kw-2">*</span>;
-<span class="kw">mod </span>exports {
-    <span class="kw">pub use </span><span class="kw">crate</span>::controller::{
-        Controller, ControllerBuilder, ControllerBuilderError, ControllerError,
-    };
-    <span class="kw">pub use </span><span class="kw">crate</span>::load::{
-        ArtificialUserLoad, ArtificialUserLoadError, MultiController, MultiControllerError,
-        NodeLoad, NodeLoadConfig, NodeLoadError, ServicingStationLoad, ServicingStationLoadError,
-        VoteStatusProvider, WalletRequestGen,
-    };
-    <span class="kw">pub use </span><span class="kw">crate</span>::utils::{expiry, qr};
-    <span class="kw">pub use </span><span class="kw">crate</span>::wallet::{Error <span class="kw">as </span>WalletError, Wallet};
-}
+<span class="kw">pub use </span><span class="kw">crate</span>::wallet::{Error <span class="kw">as </span>WalletError, Wallet};
+<span class="kw">pub use </span>controller::{Controller, ControllerBuilder, ControllerBuilderError, ControllerError};
+<span class="kw">pub use </span>load::{
+    ArtificialUserLoad, ArtificialUserLoadError, MultiController, MultiControllerError, NodeLoad,
+    NodeLoadConfig, NodeLoadError, ServicingStationLoad, ServicingStationLoadError,
+    VoteStatusProvider, WalletRequestGen,
+};
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="iapyx" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

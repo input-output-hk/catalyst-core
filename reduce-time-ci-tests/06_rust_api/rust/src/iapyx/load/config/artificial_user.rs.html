@@ -32,6 +32,7 @@
 <span id="32">32</span>
 <span id="33">33</span>
 <span id="34">34</span>
+<span id="35">35</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::NodeLoadConfig;
 <span class="kw">use </span>jortestkit::load::Configuration;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
@@ -63,7 +64,8 @@
     <span class="kw">pub </span>fund: Configuration,
     <span class="kw">pub </span>challenges: Configuration,
     <span class="kw">pub </span>proposal: Configuration,
-    <span class="kw">pub </span>challenge: Configuration,
+    <span class="comment">//   pub proposals: Configuration,
+    </span><span class="kw">pub </span>challenge: Configuration,
     <span class="kw">pub </span>settings: Configuration,
 }
 </code></pre></div>

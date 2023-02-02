@@ -65,36 +65,20 @@
 <span id="65">65</span>
 <span id="66">66</span>
 <span id="67">67</span>
-<span id="68">68</span>
-<span id="69">69</span>
-<span id="70">70</span>
-<span id="71">71</span>
-<span id="72">72</span>
-<span id="73">73</span>
-<span id="74">74</span>
-<span id="75">75</span>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_impl_mockchain::fragment::FragmentId;
 <span class="kw">use </span>jormungandr_lib::interfaces::FragmentStatus;
 <span class="kw">use </span>jortestkit::load::RequestStatusProvider;
 <span class="kw">use </span>jortestkit::load::{Id, Status};
 <span class="kw">use </span>thiserror::Error;
-<span class="kw">use </span>valgrind::{ValgrindClient, ValgrindSettings};
+<span class="kw">use </span>valgrind::ValgrindClient;
 
-<span class="doccomment">/// Responsible for providing information about status for given ids collection.
-/// It can work over a batch of ids by preparing request to Jormungandr V1 REST Api. Basically it query
-/// statues for given ids and prepare `Status` struct for each id
-</span><span class="kw">pub struct </span>VoteStatusProvider {
+<span class="kw">pub struct </span>VoteStatusProvider {
     backend: ValgrindClient,
 }
 
 <span class="kw">impl </span>VoteStatusProvider {
-    <span class="doccomment">/// Creates object based on address and verbosity
-    ///
-    /// # Errors
-    ///
-    /// On connectivity issues
-    </span><span class="kw">pub fn </span>new(backend_address: String, debug: bool) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>backend = ValgrindClient::new(backend_address, ValgrindSettings::default())<span class="question-mark">?</span>;
+    <span class="kw">pub fn </span>new(backend_address: String, debug: bool) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>backend = ValgrindClient::new(backend_address, Default::default())<span class="question-mark">?</span>;
         <span class="kw">if </span>debug {
             backend.enable_logs();
         } <span class="kw">else </span>{
@@ -108,7 +92,7 @@
     <span class="kw">fn </span>get_statuses(<span class="kw-2">&amp;</span><span class="self">self</span>, ids: <span class="kw-2">&amp;</span>[Id]) -&gt; Vec&lt;Status&gt; {
         <span class="kw">match </span><span class="self">self
             </span>.backend
-            .fragments_statuses(ids.iter().map(ToString::to_string).collect())
+            .fragments_statuses(ids.iter().map(|id| id.to_string()).collect())
         {
             <span class="prelude-val">Ok</span>(fragments_statuses) =&gt; fragments_statuses
                 .iter()
@@ -144,7 +128,7 @@
     <span class="attribute">#[error(<span class="string">&quot;controller error&quot;</span>)]
     </span>Controller(<span class="attribute">#[from] </span><span class="kw">crate</span>::ControllerError),
     <span class="attribute">#[error(<span class="string">&quot;pin read error&quot;</span>)]
-    </span>PinRead(<span class="attribute">#[from] </span><span class="kw">crate</span>::utils::qr::Error),
+    </span>PinRead(<span class="attribute">#[from] </span><span class="kw">crate</span>::utils::qr::PinReadError),
     <span class="attribute">#[error(<span class="string">&quot;wallet time error&quot;</span>)]
     </span>WalletTime(<span class="attribute">#[from] </span>wallet::time::Error),
 }

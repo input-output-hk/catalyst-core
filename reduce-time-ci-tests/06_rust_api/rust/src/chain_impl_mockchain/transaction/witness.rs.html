@@ -254,29 +254,6 @@
 <span id="254">254</span>
 <span id="255">255</span>
 <span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
-<span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
-<span id="262">262</span>
-<span id="263">263</span>
-<span id="264">264</span>
-<span id="265">265</span>
-<span id="266">266</span>
-<span id="267">267</span>
-<span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::element::TransactionSignDataHash;
 <span class="kw">use </span><span class="kw">crate</span>::account;
 <span class="kw">use </span><span class="kw">crate</span>::chaintypes::HeaderId;
@@ -422,27 +399,12 @@
 
 <span class="kw">impl </span>Witness {
     <span class="doccomment">/// Creates new `Witness` value.
-
-    </span><span class="kw">pub fn </span>new_utxo_data(
-        block0: <span class="kw-2">&amp;</span>HeaderId,
-        sign_data_hash: <span class="kw-2">&amp;</span>TransactionSignDataHash,
-    ) -&gt; WitnessUtxoData {
-        WitnessUtxoData::new(block0, sign_data_hash, WitnessUtxoVersion::Normal)
-    }
-
-    <span class="kw">pub fn </span>new_utxo&lt;F&gt;(block0: <span class="kw-2">&amp;</span>HeaderId, sign_data_hash: <span class="kw-2">&amp;</span>TransactionSignDataHash, sign: F) -&gt; <span class="self">Self
+    </span><span class="kw">pub fn </span>new_utxo&lt;F&gt;(block0: <span class="kw-2">&amp;</span>HeaderId, sign_data_hash: <span class="kw-2">&amp;</span>TransactionSignDataHash, sign: F) -&gt; <span class="self">Self
     </span><span class="kw">where
         </span>F: FnOnce(<span class="kw-2">&amp;</span>WitnessUtxoData) -&gt; Signature&lt;WitnessUtxoData, Ed25519&gt;,
     {
         <span class="kw">let </span>wud = WitnessUtxoData::new(block0, sign_data_hash, WitnessUtxoVersion::Normal);
         Witness::Utxo(sign(<span class="kw-2">&amp;</span>wud))
-    }
-
-    <span class="kw">pub fn </span>new_old_utxo_data(
-        block0: <span class="kw-2">&amp;</span>HeaderId,
-        sign_data_hash: <span class="kw-2">&amp;</span>TransactionSignDataHash,
-    ) -&gt; WitnessUtxoData {
-        WitnessUtxoData::new(block0, sign_data_hash, WitnessUtxoVersion::Legacy)
     }
 
     <span class="kw">pub fn </span>new_old_utxo&lt;F&gt;(
@@ -457,14 +419,6 @@
         <span class="kw">let </span>wud = WitnessUtxoData::new(block0, sign_data_hash, WitnessUtxoVersion::Legacy);
         <span class="kw">let </span>(pk, sig) = sign(<span class="kw-2">&amp;</span>wud);
         Witness::OldUtxo(pk, <span class="kw-2">*</span>some_bytes, sig)
-    }
-
-    <span class="kw">pub fn </span>new_account_data(
-        block0: <span class="kw-2">&amp;</span>HeaderId,
-        sign_data_hash: <span class="kw-2">&amp;</span>TransactionSignDataHash,
-        spending_counter: account::SpendingCounter,
-    ) -&gt; WitnessAccountData {
-        WitnessAccountData::new(block0, sign_data_hash, spending_counter)
     }
 
     <span class="kw">pub fn </span>new_account&lt;F&gt;(

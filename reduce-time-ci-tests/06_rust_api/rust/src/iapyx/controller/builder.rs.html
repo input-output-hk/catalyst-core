@@ -145,96 +145,8 @@
 <span id="145">145</span>
 <span id="146">146</span>
 <span id="147">147</span>
-<span id="148">148</span>
-<span id="149">149</span>
-<span id="150">150</span>
-<span id="151">151</span>
-<span id="152">152</span>
-<span id="153">153</span>
-<span id="154">154</span>
-<span id="155">155</span>
-<span id="156">156</span>
-<span id="157">157</span>
-<span id="158">158</span>
-<span id="159">159</span>
-<span id="160">160</span>
-<span id="161">161</span>
-<span id="162">162</span>
-<span id="163">163</span>
-<span id="164">164</span>
-<span id="165">165</span>
-<span id="166">166</span>
-<span id="167">167</span>
-<span id="168">168</span>
-<span id="169">169</span>
-<span id="170">170</span>
-<span id="171">171</span>
-<span id="172">172</span>
-<span id="173">173</span>
-<span id="174">174</span>
-<span id="175">175</span>
-<span id="176">176</span>
-<span id="177">177</span>
-<span id="178">178</span>
-<span id="179">179</span>
-<span id="180">180</span>
-<span id="181">181</span>
-<span id="182">182</span>
-<span id="183">183</span>
-<span id="184">184</span>
-<span id="185">185</span>
-<span id="186">186</span>
-<span id="187">187</span>
-<span id="188">188</span>
-<span id="189">189</span>
-<span id="190">190</span>
-<span id="191">191</span>
-<span id="192">192</span>
-<span id="193">193</span>
-<span id="194">194</span>
-<span id="195">195</span>
-<span id="196">196</span>
-<span id="197">197</span>
-<span id="198">198</span>
-<span id="199">199</span>
-<span id="200">200</span>
-<span id="201">201</span>
-<span id="202">202</span>
-<span id="203">203</span>
-<span id="204">204</span>
-<span id="205">205</span>
-<span id="206">206</span>
-<span id="207">207</span>
-<span id="208">208</span>
-<span id="209">209</span>
-<span id="210">210</span>
-<span id="211">211</span>
-<span id="212">212</span>
-<span id="213">213</span>
-<span id="214">214</span>
-<span id="215">215</span>
-<span id="216">216</span>
-<span id="217">217</span>
-<span id="218">218</span>
-<span id="219">219</span>
-<span id="220">220</span>
-<span id="221">221</span>
-<span id="222">222</span>
-<span id="223">223</span>
-<span id="224">224</span>
-<span id="225">225</span>
-<span id="226">226</span>
-<span id="227">227</span>
-<span id="228">228</span>
-<span id="229">229</span>
-<span id="230">230</span>
-<span id="231">231</span>
-<span id="232">232</span>
-<span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::utils::expiry;
-<span class="kw">use </span><span class="kw">crate</span>::utils::qr::Error <span class="kw">as </span>PinReadError;
+<span class="kw">use </span><span class="kw">crate</span>::utils::qr::PinReadError;
 <span class="kw">use </span><span class="kw">crate</span>::utils::qr::Secret;
 <span class="kw">use </span><span class="kw">crate</span>::utils::qr::SecretFromQrCode;
 <span class="kw">use </span><span class="kw">crate</span>::Controller;
@@ -254,8 +166,7 @@
 <span class="kw">use </span>valgrind::ValgrindSettings;
 <span class="kw">use </span>wallet::Settings;
 
-<span class="doccomment">/// Builder for wallet controller
-</span><span class="attribute">#[derive(Default)]
+<span class="attribute">#[derive(Default)]
 </span><span class="kw">pub struct </span>ControllerBuilder {
     backend: <span class="prelude-ty">Option</span>&lt;ValgrindClient&gt;,
     wallet: <span class="prelude-ty">Option</span>&lt;Wallet&gt;,
@@ -263,13 +174,7 @@
 }
 
 <span class="kw">impl </span>ControllerBuilder {
-    <span class="doccomment">/// Sets backend from address along with connectivity setup (like cors/https)
-    ///
-    /// # Errors
-    ///
-    /// On connectivity issues with given address
-    ///
-    </span><span class="kw">pub fn </span>with_backend_from_address&lt;S: Into&lt;String&gt;&gt;(
+    <span class="kw">pub fn </span>with_backend_from_address&lt;S: Into&lt;String&gt;&gt;(
         <span class="kw-2">mut </span><span class="self">self</span>,
         proxy_address: S,
         backend_settings: ValgrindSettings,
@@ -280,72 +185,34 @@
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Sets backend from `ValgrindClient` struct
-    ///
-    /// # Errors
-    ///
-    /// On connectivity issues with given address
-    ///
-    </span><span class="kw">pub fn </span>with_backend_from_client(<span class="kw-2">mut </span><span class="self">self</span>, backend: ValgrindClient) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
+    <span class="kw">pub fn </span>with_backend_from_client(<span class="kw-2">mut </span><span class="self">self</span>, backend: ValgrindClient) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
         <span class="self">self</span>.settings = <span class="prelude-val">Some</span>(backend.settings()<span class="question-mark">?</span>.into_wallet_settings());
         <span class="self">self</span>.backend = <span class="prelude-val">Some</span>(backend);
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Sets wallet based on secret file with bech32 secret key
-    ///
-    /// # Errors
-    ///
-    /// On incorrect format of private key (it should be bech32), problem with reading file or
-    /// parsing wallet crypto material
-    ///
-    ///
-    </span><span class="kw">pub fn </span>with_wallet_from_secret_file&lt;P: AsRef&lt;Path&gt;&gt;(
+    <span class="kw">pub fn </span>with_wallet_from_secret_file&lt;P: AsRef&lt;Path&gt;&gt;(
         <span class="kw-2">mut </span><span class="self">self</span>,
         private_key: P,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
         <span class="kw">let </span>(<span class="kw">_</span>, data, <span class="kw">_</span>) = read_bech32(<span class="kw-2">&amp;</span>private_key.as_ref().to_path_buf())<span class="question-mark">?</span>;
         <span class="kw">let </span>key_bytes = Vec::&lt;u8&gt;::from_base32(<span class="kw-2">&amp;</span>data)<span class="question-mark">?</span>;
-        <span class="kw">let </span>data: [u8; <span class="number">64</span>] = key_bytes
-            .try_into()
-            .map_err(|<span class="kw">_</span>| Error::InvalidSecretKeyLength)<span class="question-mark">?</span>;
+        <span class="kw">let </span>data: [u8; <span class="number">64</span>] = key_bytes.try_into().unwrap();
         <span class="self">self</span>.wallet = <span class="prelude-val">Some</span>(Wallet::recover_from_utxo(<span class="kw-2">&amp;</span>data)<span class="question-mark">?</span>);
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Sets wallet based on secret key struct
-    ///
-    /// # Errors
-    ///
-    /// On incorrect format of private key (it should be bech32)
-    /// or parsing wallet crypto material
-    ///
-    </span><span class="kw">pub fn </span>with_wallet_from_secret_key(
+    <span class="kw">pub fn </span>with_wallet_from_secret_key(
         <span class="kw-2">mut </span><span class="self">self</span>,
         private_key: SecretKey&lt;Ed25519Extended&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
         <span class="self">self</span>.wallet = <span class="prelude-val">Some</span>(Wallet::recover_from_utxo(
-            <span class="kw-2">&amp;</span>private_key
-                .leak_secret()
-                .as_ref()
-                .try_into()
-                .map_err(|<span class="kw">_</span>| Error::CannotLeakSecret)<span class="question-mark">?</span>,
+            <span class="kw-2">&amp;</span>private_key.leak_secret().as_ref().try_into().unwrap(),
         )<span class="question-mark">?</span>);
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Sets wallet based on qr code with private key
-    ///
-    /// # Errors
-    ///
-    /// On incorrect qr code, problem with reading file or
-    /// parsing wallet crypto material
-    ///
-    /// # Panics
-    ///
-    /// In unlikely event of 10 not fit in u8 type
-    </span><span class="attribute">#[allow(clippy::cast_possible_truncation)]
-    </span><span class="kw">pub fn </span>with_wallet_from_qr_file&lt;P: AsRef&lt;Path&gt;&gt;(
+    <span class="kw">pub fn </span>with_wallet_from_qr_file&lt;P: AsRef&lt;Path&gt;&gt;(
         <span class="kw-2">mut </span><span class="self">self</span>,
         qr: P,
         password: <span class="kw-2">&amp;</span>str,
@@ -358,36 +225,21 @@
         <span class="kw">let </span>secret = KeyQrCode::decode(img, <span class="kw-2">&amp;</span>bytes)
             .unwrap()
             .get(<span class="number">0</span>)
-            .ok_or(Error::NoSecretKeyEncoded)<span class="question-mark">?
-            </span>.clone()
+            .unwrap()
+            .clone()
             .leak_secret();
         <span class="self">self</span>.wallet = <span class="prelude-val">Some</span>(Wallet::recover_from_utxo(
-            secret
-                .as_ref()
-                .try_into()
-                .map_err(|<span class="kw">_</span>| Error::InvalidSecretKeyLength)<span class="question-mark">?</span>,
+            secret.as_ref().try_into().unwrap(),
         )<span class="question-mark">?</span>);
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Sets wallet based on account bytes
-    ///
-    /// # Errors
-    ///
-    /// On parsing wallet crypto material
-    ///
-    </span><span class="kw">pub fn </span>with_wallet_from_account(<span class="kw-2">mut </span><span class="self">self</span>, account: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
+    <span class="kw">pub fn </span>with_wallet_from_account(<span class="kw-2">mut </span><span class="self">self</span>, account: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
         <span class="self">self</span>.wallet = <span class="prelude-val">Some</span>(Wallet::recover(account)<span class="question-mark">?</span>);
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Sets wallet based on payload file (in form of hex encoded string) with private key material
-    ///
-    /// # Errors
-    ///
-    /// On reading file or parsing wallet crypto material
-    ///
-    </span><span class="kw">pub fn </span>with_wallet_from_qr_hash_file&lt;P: AsRef&lt;Path&gt;&gt;(
+    <span class="kw">pub fn </span>with_wallet_from_qr_hash_file&lt;P: AsRef&lt;Path&gt;&gt;(
         <span class="kw-2">mut </span><span class="self">self</span>,
         qr_payload_file: P,
         password: <span class="kw-2">&amp;</span>str,
@@ -402,13 +254,7 @@
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Builds Controller
-    ///
-    /// # Errors
-    ///
-    /// On any missing configuration steps
-    ///
-    </span><span class="kw">pub fn </span>build(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Controller, Error&gt; {
+    <span class="kw">pub fn </span>build(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Controller, Error&gt; {
         <span class="kw">let </span>backend = <span class="self">self</span>.backend.ok_or(Error::WalletNotDefined)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(Controller {
@@ -421,52 +267,30 @@
         })
     }
 }
-
-<span class="doccomment">/// Builder errors
-</span><span class="attribute">#[derive(Debug, Error)]
+<span class="attribute">#[derive(Debug, Error)]
 </span><span class="kw">pub enum </span>Error {
-    <span class="doccomment">/// Lack of Wallet definition
-    </span><span class="attribute">#[error(<span class="string">&quot;wallet not recovered in builder&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;wallet not recovered in builder&quot;</span>)]
     </span>WalletNotDefined,
-    <span class="doccomment">/// Lack of Backend definition
-    </span><span class="attribute">#[error(<span class="string">&quot;backend not set in builder&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;backend not set in builder&quot;</span>)]
     </span>BackendNotDefined,
-    <span class="doccomment">/// Settings related
-    </span><span class="attribute">#[error(<span class="string">&quot;settings not defined&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;settings not defined&quot;</span>)]
     </span>SettingsNotDefined,
-    <span class="doccomment">/// Wallet
-    </span><span class="attribute">#[error(<span class="string">&quot;wallet error&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;wallet error&quot;</span>)]
     </span>WalletError(<span class="attribute">#[from] </span><span class="kw">crate</span>::wallet::Error),
-    <span class="doccomment">/// Backend
-    </span><span class="attribute">#[error(<span class="string">&quot;backend error&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;backend error&quot;</span>)]
     </span>BackendError(<span class="attribute">#[from] </span>valgrind::Error),
-    <span class="doccomment">/// Qr code
-    </span><span class="attribute">#[error(<span class="string">&quot;cannot read QR code from &#39;{0}&#39; path&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;cannot read QR code from &#39;{0}&#39; path&quot;</span>)]
     </span>CannotReadQrCode(<span class="attribute">#[from] </span>image::ImageError),
-    <span class="doccomment">/// Bech32
-    </span><span class="attribute">#[error(<span class="string">&quot;bech32 error&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;bech32 error&quot;</span>)]
     </span>Bech32(<span class="attribute">#[from] </span>bech32::Error),
-    <span class="doccomment">/// Time
-    </span><span class="attribute">#[error(<span class="string">&quot;time error&quot;</span>)]
+    <span class="attribute">#[error(<span class="string">&quot;time error&quot;</span>)]
     </span>TimeError(<span class="attribute">#[from] </span>wallet::time::Error),
-    <span class="doccomment">/// Rest
-    </span><span class="attribute">#[error(transparent)]
+    <span class="attribute">#[error(transparent)]
     </span>Rest(<span class="attribute">#[from] </span>RestError),
-    <span class="doccomment">/// Reading pin
-    </span><span class="attribute">#[error(transparent)]
+    <span class="attribute">#[error(transparent)]
     </span>PinRead(<span class="attribute">#[from] </span>PinReadError),
-    <span class="doccomment">/// Key
-    </span><span class="attribute">#[error(transparent)]
+    <span class="attribute">#[error(transparent)]
     </span>Key(<span class="attribute">#[from] </span>jcli_lib::key::Error),
-    <span class="doccomment">/// No secret key exposed
-    </span><span class="attribute">#[error(<span class="string">&quot;no secret key exposed&quot;</span>)]
-    </span>NoSecretKeyEncoded,
-    <span class="doccomment">/// Cannot leak secret
-    </span><span class="attribute">#[error(<span class="string">&quot;cannot leak secret key from qr code structure&quot;</span>)]
-    </span>CannotLeakSecret,
-    <span class="doccomment">/// Cannot leak secret
-    </span><span class="attribute">#[error(<span class="string">&quot;invalid secret key length&quot;</span>)]
-    </span>InvalidSecretKeyLength,
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="iapyx" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

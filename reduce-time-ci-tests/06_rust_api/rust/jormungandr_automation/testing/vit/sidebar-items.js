@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["VoteCastCounterError",""]],"struct":[["VoteCastCounter",""],["VotePlanBuilder",""]],"trait":[["VotePlanExtension",""]]};
+window.SIDEBAR_ITEMS = {"struct":[["VoteCastCounter",""],["VotePlanBuilder",""]],"trait":[["VotePlanExtension",""]]};

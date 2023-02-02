@@ -63,51 +63,33 @@
 <span id="63">63</span>
 <span id="64">64</span>
 <span id="65">65</span>
-<span id="66">66</span>
-<span id="67">67</span>
-<span id="68">68</span>
-<span id="69">69</span>
-<span id="70">70</span>
-<span id="71">71</span>
-<span id="72">72</span>
-<span id="73">73</span>
-<span id="74">74</span>
-<span id="75">75</span>
-<span id="76">76</span>
-<span id="77">77</span>
-<span id="78">78</span>
-<span id="79">79</span>
-<span id="80">80</span>
-<span id="81">81</span>
-<span id="82">82</span>
-<span id="83">83</span>
-<span id="84">84</span>
-<span id="85">85</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::Error;
-<span class="kw">use </span>chain_crypto::SecretKey;
+</pre><pre class="rust"><code><span class="kw">use </span>chain_crypto::SecretKey;
 <span class="kw">use </span>chain_impl_mockchain::{
-    account::{<span class="self">self</span>, SpendingCounter},
+    account::SpendingCounter,
     fragment::Fragment,
     header::BlockDate,
-    transaction::{Input, Payload, Transaction, WitnessAccountData},
+    transaction::{Input, Payload, Transaction},
 };
-<span class="kw">use </span>std::str::FromStr;
-<span class="kw">use </span>wallet::{
-    transaction::{AccountSecretKey, WitnessInput},
-    AccountId, AccountWitnessBuilder, EitherAccount, Settings,
-};
+<span class="kw">use </span>std::{collections::HashMap, str::FromStr};
+<span class="kw">use </span>wallet::{AccountId, EitherAccount, Settings};
+
+<span class="kw">use </span><span class="kw">crate</span>::Error;
 
 <span class="kw">pub struct </span>TxBuilder&lt;P: Payload&gt; {
-    builder: wallet::TransactionBuilder&lt;P, AccountSecretKey, WitnessAccountData, account::Witness&gt;,
+    builder: wallet::TransactionBuilder&lt;P&gt;,
+    inputs: HashMap&lt;AccountId, (Input, SpendingCounter)&gt;,
 }
 
 <span class="kw">impl</span>&lt;P: Payload&gt; TxBuilder&lt;P&gt; {
     <span class="kw">pub fn </span>new(settings: Settings, payload: P) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>builder = wallet::TransactionBuilder::new(settings, payload, BlockDate::first());
-        <span class="self">Self </span>{ builder }
+        <span class="self">Self </span>{
+            builder,
+            inputs: HashMap::new(),
+        }
     }
 
-    <span class="kw">pub fn </span>prepare_tx(
+    <span class="kw">pub fn </span>build_tx(
         <span class="kw-2">mut </span><span class="self">self</span>,
         account_id_hex: String,
         spending_counter: SpendingCounter,
@@ -118,52 +100,30 @@
         <span class="comment">// It is needed to provide a 1 extra input as we are generating it later, but should take into account at this place.
         </span><span class="kw">let </span>value = <span class="self">self</span>.builder.estimate_fee_with(<span class="number">1</span>, <span class="number">0</span>);
         <span class="kw">let </span>input = Input::from_account_public_key(account_id.into(), value);
-        <span class="self">self</span>.builder
-            .add_input(input, AccountWitnessBuilder(spending_counter));
+        <span class="self">self</span>.inputs.insert(account_id, (input, spending_counter));
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
     }
 
-    <span class="kw">pub fn </span>get_sign_data(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;WitnessAccountData, Error&gt; {
-        <span class="kw">let </span>data = <span class="self">self
-            </span>.builder
-            .get_sign_data()
-            .map_err(|e| Error::wallet_transaction().with(e))<span class="question-mark">?</span>;
-        <span class="comment">// as inside build_tx() function has been inserted only 1 input, valid tx should contains only first witness sign data
-        </span>data.into_iter().next().ok_or_else(Error::invalid_fragment)
-    }
-
-    <span class="kw">pub fn </span>build_tx(
-        <span class="self">self</span>,
-        auth: P::Auth,
-        signature: <span class="kw-2">&amp;</span>[u8],
-        fragment_build_fn: <span class="kw">impl </span>FnOnce(Transaction&lt;P&gt;) -&gt; Fragment,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Fragment, Error&gt; {
-        <span class="comment">// as inside build_tx() function has been inserted only 1 input, we should put only 1 witness input
-        </span><span class="kw">let </span>witness_input = <span class="macro">vec!</span>[WitnessInput::Signature(
-            account::Witness::from_binary(signature).unwrap(),
-        )];
-        <span class="prelude-val">Ok</span>(fragment_build_fn(
-            <span class="self">self</span>.builder
-                .finalize_tx(auth, witness_input)
-                .map_err(|e| Error::wallet_transaction().with(e))<span class="question-mark">?</span>,
-        ))
-    }
-
-    <span class="kw">pub fn </span>sign_tx(
-        <span class="self">self</span>,
-        auth: P::Auth,
-        account_bytes: <span class="kw-2">&amp;</span>[u8],
-        fragment_build_fn: <span class="kw">impl </span>FnOnce(Transaction&lt;P&gt;) -&gt; Fragment,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Fragment, Error&gt; {
+    <span class="kw">pub fn </span>sign_tx(<span class="kw-2">mut </span><span class="self">self</span>, account_bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
         <span class="kw">let </span>account = EitherAccount::new_from_key(
             SecretKey::from_binary(account_bytes)
                 .map_err(|e| Error::wallet_transaction().with(e))<span class="question-mark">?</span>,
         );
-        <span class="comment">// as inside build_tx() function has been inserted only 1 input, we should put only 1 witness input
-        </span><span class="kw">let </span>witness_input = <span class="macro">vec!</span>[WitnessInput::SecretKey(account.secret_key())];
+
+        <span class="kw">let </span>(input, spending_counter) = <span class="self">self</span>.inputs.get(<span class="kw-2">&amp;</span>account.account_id()).ok_or_else(|| Error::invalid_input(<span class="string">&quot;Cannot find corresponded input to the provided account, make sure that you have correctly execute build_tx function first&quot;</span>))<span class="question-mark">?</span>.clone();
+        <span class="kw">let </span>witness_builder = account.witness_builder(spending_counter);
+        <span class="self">self</span>.builder.add_input(input, witness_builder);
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>)
+    }
+
+    <span class="kw">pub fn </span>finalize_tx(
+        <span class="self">self</span>,
+        auth: P::Auth,
+        fragment_build_fn: <span class="kw">impl </span>FnOnce(Transaction&lt;P&gt;) -&gt; Fragment,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Fragment, Error&gt; {
         <span class="prelude-val">Ok</span>(fragment_build_fn(
             <span class="self">self</span>.builder
-                .finalize_tx(auth, witness_input)
+                .finalize_tx(auth)
                 .map_err(|e| Error::wallet_transaction().with(e))<span class="question-mark">?</span>,
         ))
     }

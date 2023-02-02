@@ -176,7 +176,7 @@ pub fn import_big_raw_snapshot() {
     let temp_dir = TempDir::new().unwrap();
     let (server, data) = quick_start(&temp_dir).unwrap();
     let mut rest_client = server.rest_client_with_token(&data.token_hash());
-    rest_client.set_timeout(Duration::new(600, 0));
+    rest_client.set_timeout(Duration::new(450, 0));
 
     let raw_snapshot = RawSnapshotBuilder::default()
         .with_tag("big")

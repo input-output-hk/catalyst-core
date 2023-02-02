@@ -2,7 +2,7 @@
 
 FROM ubuntu:18.04
 LABEL MAINTAINER IOHK
-LABEL description="Catalyst Disruption backend"
+LABEL description="Catalyst Snapshot Service"
 
 ARG PREFIX=/app
 ENV ENV_PREFIX=${PREFIX}
@@ -23,14 +23,18 @@ RUN cd ${ENV_PREFIX} && \
     cd catalyst-core && \
 	git checkout main
 
-RUN cd ${ENV_PREFIX}/catalyst-core/src/vit-testing/vitup && \
-    ~/.cargo/bin/cargo install --locked --path . 
+RUN cd ${ENV_PREFIX}/catalyst-core/src/vit-testing/snapshot-trigger-service && \
+    ~/.cargo/bin/cargo install --locked --path . --bin snapshot-trigger-service
+
+RUN cd ${ENV_PREFIX}/catalyst-core/src/voting-tools-rs && \
+    ~/.cargo/bin/cargo install --locked --path . --bin snapshot_tool
 
 ENV PATH="/root/.cargo/bin/:${PATH}"
 
-EXPOSE 80 8000 8001 8002 8003 8004 8005 8006 8007 8008 8009 8010 3030
+EXPOSE 8080
 
-WORKDIR ${ENV_PREFIX}/catalyst-core/src/vit-testing/vitup
-RUN mkdir -p ./mock
+WORKDIR ${ENV_PREFIX}/catalyst-core/src/vit-testing/snapshot-trigger-service
 
-ENTRYPOINT ~/.cargo/bin/vitup start mock --config ./example/mock/https.yaml
+COPY entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ~/.cargo/bin/snapshot-trigger-service --config /config.yaml

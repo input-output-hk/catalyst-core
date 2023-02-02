@@ -169,7 +169,7 @@ impl Schedule {
 
     fn run_single(config: &Config) {
         if let Err(err) = one_shot(config) {
-            error!("scheduled transfer failed due to: {err}");
+            error!("scheduled transfer failed due to: {err:?}");
         }
         info!("waiting for next scheduled run..");
     }

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["VitInteractiveCommand",""]],"mod":[["describe",""],["show",""]],"struct":[["VitInteractiveCommandExec",""],["VitUserInteractionController",""]]};

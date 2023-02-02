@@ -3,6 +3,7 @@
 #  <https://github.com/sagiegurari/cargo-make>
 extend = [
     { path = "Makefiles/prereqs.toml"  },
+    { path = "Makefiles/docker.toml"  },
     { path = "Makefiles/docs.toml"  }
 ]
 

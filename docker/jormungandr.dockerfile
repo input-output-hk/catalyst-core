@@ -15,7 +15,7 @@ RUN apt-get update && \
 COPY --from=0 /usr/local/cargo/bin/jormungandr /usr/local/bin/jormungandr
 COPY --from=0 /usr/local/cargo/bin/jcli /usr/local/bin/jcli
 
-## cleanup
+## apt cleanup
 RUN apt-get install -y --no-install-recommends && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*

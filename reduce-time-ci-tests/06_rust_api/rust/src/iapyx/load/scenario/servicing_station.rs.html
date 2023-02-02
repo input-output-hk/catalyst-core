@@ -65,22 +65,45 @@
 <span id="65">65</span>
 <span id="66">66</span>
 <span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::load::config::{ServicingStationLoadConfig, ServicingStationRequestType <span class="kw">as </span>RequestType};
 <span class="kw">use </span><span class="kw">crate</span>::load::ServicingStationRequestGen;
 <span class="kw">use </span>jortestkit::measurement::EfficiencyBenchmarkFinish;
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">use </span>valgrind::VitStationRestClient;
 
-<span class="kw">pub struct </span>ServicingStationLoad {
+<span class="doccomment">/// Servicing station load scenario. Basically responsible for generating load on static resources.
+/// All calls are read only, therefore logic is simple and no need to track state of state.
+</span><span class="kw">pub struct </span>ServicingStationLoad {
     config: ServicingStationLoadConfig,
 }
 
 <span class="kw">impl </span>ServicingStationLoad {
-    <span class="kw">pub fn </span>new(config: ServicingStationLoadConfig) -&gt; <span class="self">Self </span>{
+    <span class="doccomment">/// Creates new load scenario object
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>new(config: ServicingStationLoadConfig) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{ config }
     }
 
-    <span class="kw">pub fn </span>start(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;EfficiencyBenchmarkFinish&gt;, Error&gt; {
+    <span class="doccomment">/// Start scenario
+    ///
+    /// # Errors
+    ///
+    /// On any connectivity issues or setup problem
+    ///
+    </span><span class="kw">pub fn </span>start(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;EfficiencyBenchmarkFinish&gt;, Error&gt; {
         <span class="kw">let </span>measurement_name = <span class="string">&quot;servicing station load&quot;</span>;
 
         <span class="kw">let </span>vit_client = VitStationRestClient::new(<span class="self">self</span>.config.address.clone());
@@ -125,11 +148,14 @@
     }
 }
 
-<span class="attribute">#[derive(Error, Debug)]
+<span class="doccomment">/// Servicing station errors
+</span><span class="attribute">#[derive(Error, Debug)]
 </span><span class="kw">pub enum </span>Error {
-    <span class="attribute">#[error(<span class="string">&quot;configuration error&quot;</span>)]
+    <span class="doccomment">/// Configuration error
+    </span><span class="attribute">#[error(<span class="string">&quot;configuration error&quot;</span>)]
     </span>ConfigurationError(<span class="attribute">#[from] </span><span class="kw">crate</span>::load::config::ServicingStationConfigError),
-    <span class="attribute">#[error(<span class="string">&quot;rest error&quot;</span>)]
+    <span class="doccomment">/// Rest api errors
+    </span><span class="attribute">#[error(<span class="string">&quot;rest error&quot;</span>)]
     </span>RestError(<span class="attribute">#[from] </span>valgrind::VitStationRestError),
 }
 </code></pre></div>

@@ -4,13 +4,6 @@ export enum VotingPurpose {
   CATALYST = 0,
 }
 
-export class BlockDate {
-  epoch: number;
-  slot: number;
-
-  constructor(epoch: number, slot: number): BlockDate;
-}
-
 /**
  * Wrapper over wallet-wasm-js Settings type
  */
@@ -63,9 +56,6 @@ export class Vote {
   proposal: Proposal;
   selectedVotePlanOption: number;
   votingPurpose: VotingPurpose;
-  expiration?: BlockDate;
-  spendingCounter?: number;
-  spendingCounterLane?: number;
 
   /**
    * Vote constructor
@@ -73,18 +63,12 @@ export class Vote {
    * @param {Proposal} proposal
    * @param {number} selectedVotePlanOption Selected vote plan option.
    * @param {VotingPurpose} votingPurpose The voting purpose being voted on. (Currently not used).
-   * @param {BlockDate} expiration Deprecated field, you can pass anything.
-   * @param {number} spendingCounter Deprecated field, you can pass anything.
-   * @param {number} spendingCounterLane Deprecated field, you can pass anything.
    * @returns {Vote}
    */
   constructor(
     proposal: Proposal,
     selectedVotePlanOption: number,
     votingPurpose: VotingPurpose,
-    expiration?: BlockDate,
-    spendingCounter?: number,
-    spendingCounterLane?: number
   ): Vote;
 }
 

@@ -1,6 +1,6 @@
-use super::transaction::AccountWitnessBuilder;
 use crate::scheme::{on_tx_input_and_witnesses, on_tx_output};
 use crate::states::States;
+use crate::transaction::{AccountSecretKey, AccountWitnessBuilder};
 use chain_crypto::{Ed25519, Ed25519Extended, PublicKey, SecretKey};
 use chain_impl_mockchain::accounting::account::{spending, SpendingCounterIncreasing};
 use chain_impl_mockchain::{
@@ -64,17 +64,11 @@ impl EitherAccount {
         }
     }
 
-    pub fn witness_builder(&self, spending_counter: SpendingCounter) -> AccountWitnessBuilder {
+    pub fn secret_key(&self) -> AccountSecretKey {
         match &self {
-            EitherAccount::Seed(account) => crate::transaction::AccountWitnessBuilder::Ed25519(
-                account.secret().clone(),
-                spending_counter,
-            ),
+            EitherAccount::Seed(account) => AccountSecretKey::Ed25519(account.secret().clone()),
             EitherAccount::Extended(account) => {
-                crate::transaction::AccountWitnessBuilder::Ed25519Extended(
-                    account.secret().clone(),
-                    spending_counter,
-                )
+                AccountSecretKey::Ed25519Extended(account.secret().clone())
             }
         }
     }
@@ -97,6 +91,10 @@ impl Wallet {
 
     pub fn account_id(&self) -> AccountId {
         self.account.account_id()
+    }
+
+    pub fn secret_key(&self) -> AccountSecretKey {
+        self.account.secret_key()
     }
 
     /// set the state counter so we can sync with the blockchain and the
@@ -280,7 +278,7 @@ impl<'a> WalletBuildTx<'a> {
     }
 
     pub fn witness_builder(&self) -> AccountWitnessBuilder {
-        self.wallet.account.witness_builder(self.current_counter)
+        AccountWitnessBuilder(self.current_counter)
     }
 
     pub fn add_fragment_id(self, fragment_id: FragmentId) {

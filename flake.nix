@@ -36,7 +36,6 @@
         (std.blockTypes.functions "constants")
         (std.blockTypes.functions "lib")
         (std.blockTypes.functions "toolchains")
-        (std.blockTypes.installables "artifacts")
         (std.blockTypes.installables "libraries")
         (std.blockTypes.installables "packages" {ci.build = true;})
         (std.blockTypes.nixago "configs")
@@ -45,9 +44,6 @@
     }
     {
       devShells = std.harvest inputs.self ["automation" "devshells"];
-      artifacts = std.harvest inputs.self [
-        ["artifacts" "artifacts"]
-      ];
       containers = std.harvest inputs.self [
         ["jormungandr" "containers"]
         ["vit-servicing-station" "containers"]

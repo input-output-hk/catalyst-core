@@ -51,17 +51,26 @@ impl BatchWalletRequestGen {
             .chain_vote_options
             .0
             .values()
-            .cloned()
+            .copied()
             .collect();
 
-        let vote_cast_counter = VoteCastCounter::new(
-            multi_controller.wallet_count(),
-            vote_plans
-                .iter()
-                .filter(|v| voting_groups_vote_plans_ids.contains(&v.id.to_string()))
-                .map(|v| (v.id.into(), v.proposals.len() as u8))
-                .collect(),
-        );
+        let mut vote_plans_registry = Vec::new();
+
+        for v in vote_plans
+            .iter()
+            .filter(|v| voting_groups_vote_plans_ids.contains(&v.id.to_string()))
+        {
+            vote_plans_registry.push((
+                v.id.into(),
+                proposals
+                    .len()
+                    .try_into()
+                    .map_err(|_| MultiControllerError::InvalidProposalsLen(v.id))?,
+            ));
+        }
+
+        let vote_cast_counter =
+            VoteCastCounter::new(multi_controller.wallet_count(), vote_plans_registry);
 
         Ok(Self {
             batch_size,
@@ -97,7 +106,7 @@ impl BatchWalletRequestGen {
             self.multi_controller
                 .update_wallet_state_if(wallet_index, &|wallet: &Wallet| {
                     wallet.spending_counter()[0] == 0
-                });
+                })?;
         }
 
         let batch_size = self.batch_size;
@@ -110,11 +119,11 @@ impl BatchWalletRequestGen {
 
         let mut proposals = Vec::new();
 
-        for item in counter.iter() {
+        for item in &counter {
             for i in item.range() {
                 match self.proposals.iter().find(|x| {
                     x.voteplan.chain_voteplan_id == item.id().to_string()
-                        && (x.voteplan.chain_proposal_index % u8::MAX as i64) == i as i64
+                        && (x.voteplan.chain_proposal_index % i64::from(u8::MAX)) == i as i64
                 }) {
                     Some(proposal) => {
                         println!("vote on: {}/{}", proposal.voteplan.chain_voteplan_id, i);

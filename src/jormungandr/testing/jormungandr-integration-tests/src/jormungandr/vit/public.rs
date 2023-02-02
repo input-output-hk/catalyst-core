@@ -380,7 +380,7 @@ pub fn test_vote_flow_praos() {
                         clarice.to_initial_token(1_000_000),
                     ],
                 })
-                .with_slots_per_epoch(30.try_into().unwrap())
+                .with_slots_per_epoch(20.try_into().unwrap())
                 .with_consensus_genesis_praos_active_slot_coeff(
                     ActiveSlotCoefficient::new(Milli::from_millis(1_000)).unwrap(),
                 )
@@ -552,13 +552,12 @@ pub fn jcli_e2e_flow() {
         .with_total_rewards_supply(Some(Value::zero().into()))
         .with_discrimination(Discrimination::Production)
         .with_committees(&[alice.to_committee_id()])
-        .with_slots_per_epoch(60.try_into().unwrap())
         .with_consensus_genesis_praos_active_slot_coeff(
             ActiveSlotCoefficient::new(Milli::from_millis(100)).unwrap(),
         )
         .with_treasury(1000.into())
-        .with_slot_duration(4.try_into().unwrap())
-        .with_slots_per_epoch(10.try_into().unwrap());
+        .with_slot_duration(2.try_into().unwrap())
+        .with_slots_per_epoch(20.try_into().unwrap());
 
     let alice_sk = temp_dir.child("alice_sk");
     alice.save_to_path(alice_sk.path()).unwrap();

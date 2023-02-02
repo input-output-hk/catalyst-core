@@ -10,11 +10,17 @@ use iapyx::ControllerError;
 use jcli_lib::key::read_bech32;
 use jormungandr_automation::jormungandr::RestError;
 use jormungandr_lib::crypto::hash::Hash;
+use jormungandr_lib::interfaces::{AccountVotes, FragmentStatus};
+use prettytable::{
+    format::{FormatBuilder, LinePosition, LineSeparator},
+    row, Table,
+};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::str::FromStr;
 use thiserror::Error;
 use thor::cli::{Alias, Connection};
+use url::Url;
 use valgrind::ProposalExtension;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use wallet_core::Choice;
@@ -57,12 +63,6 @@ pub enum IapyxCommand {
     Wallets(Wallets),
 }
 
-const DELIMITER: &str = "===================";
-
-fn print_delim() {
-    println!("{}", DELIMITER);
-}
-
 impl IapyxCommand {
     pub fn exec(self, mut model: CliController) -> Result<(), IapyxCommandError> {
         match self {
@@ -71,27 +71,53 @@ impl IapyxCommand {
             IapyxCommand::Proposals(proposals) => proposals.exec(model),
             IapyxCommand::Address => {
                 let wallet = model.wallets().wallet()?;
-                println!("Address: {}", wallet.address_readable()?);
-                println!("Account id: {}", wallet.id()?);
+
+                let mut table = table();
+                table.set_titles(row!["alias", "address", "account id",]);
+                table.add_row(row![
+                    model
+                        .wallets()
+                        .default_alias()
+                        .unwrap_or(&"undefined".to_string()),
+                    wallet.address_readable()?.to_string(),
+                    wallet.id()?
+                ]);
+                table.printstd();
                 Ok(())
             }
             IapyxCommand::Status => {
                 let account_state = model.account_state()?;
-                print_delim();
-                println!("- Delegation: {:?}", account_state.delegation());
-                println!("- Value: {}", account_state.value());
-                println!("- Spending counters: {:?}", account_state.counters());
-                println!("- Rewards: {:?}", account_state.last_rewards());
-                println!("- Tokens: {:?}", account_state.tokens());
-                print_delim();
+                let mut table = table();
+                table.add_row(row![
+                    "delegation",
+                    format!("{:#?}", account_state.delegation())
+                ]);
+                table.add_row(row!["value", account_state.value()]);
+                table.add_row(row![
+                    "spending counters",
+                    format!("{:#?}", account_state.counters())
+                ]);
+                table.add_row(row![
+                    "rewards",
+                    format!("{:#?}", account_state.last_rewards())
+                ]);
+                table.add_row(row!["tokens", format!("{:#?}", account_state.tokens())]);
+                table.printstd();
                 Ok(())
             }
             IapyxCommand::PendingTransactions => {
-                print_delim();
-                for (idx, fragment_ids) in model.wallets().wallet()?.pending_tx.iter().enumerate() {
-                    println!("{}. {}", (idx + 1), fragment_ids);
-                }
-                print_delim();
+                let mut table = table();
+                table.set_titles(row!["index", "hash"]);
+                model
+                    .wallets()
+                    .wallet()?
+                    .pending_tx
+                    .iter()
+                    .enumerate()
+                    .for_each(|(idx, fragment_id)| {
+                        table.add_row(row![(idx + 1), fragment_id]);
+                    });
+                table.printstd();
                 Ok(())
             }
             IapyxCommand::Vote(vote) => vote.exec(model),
@@ -108,7 +134,20 @@ impl IapyxCommand {
                 model.save_config().map_err(Into::into)
             }
             IapyxCommand::Logs => {
-                println!("{:#?}", model.fragment_logs()?);
+                let mut table = table();
+                table.set_titles(row!["id", "status"]);
+                model
+                    .fragment_logs()?
+                    .iter()
+                    .for_each(|(id, fragment_log)| {
+                        let compact = match fragment_log.status() {
+                            FragmentStatus::Pending => "pending".to_string(),
+                            FragmentStatus::Rejected { reason } => format!("rejected: {reason}"),
+                            FragmentStatus::InABlock { .. } => "in a block".to_string(),
+                        };
+                        table.add_row(row![id, compact]);
+                    });
+                table.printstd();
                 Ok(())
             }
             IapyxCommand::Funds => {
@@ -116,11 +155,16 @@ impl IapyxCommand {
                 Ok(())
             }
             IapyxCommand::Statuses => {
-                print_delim();
-                for (idx, (id, status)) in model.statuses()?.iter().enumerate() {
-                    println!("{}. {} -> {:#?}", idx, id, status);
-                }
-                print_delim();
+                let mut table = table();
+                table.set_titles(row!["index", "id", "status"]);
+                model
+                    .statuses()?
+                    .iter()
+                    .enumerate()
+                    .for_each(|(idx, (id, status))| {
+                        table.add_row(row![idx, id, format!("{:?}", status)]);
+                    });
+                table.printstd();
                 Ok(())
             }
             IapyxCommand::Votes(votes) => votes.exec(model),
@@ -137,8 +181,8 @@ pub struct Votes {
     #[clap(long = "vote-plan-index", conflicts_with = "vote-plan-id")]
     pub vote_plan_index: Option<usize>,
     /// Print title, otherwise only id would be print out
-    #[clap(long = "print-title")]
-    pub print_proposal_title: bool,
+    #[clap(long = "print-details")]
+    pub print_details: bool,
     #[clap(default_value = "direct", long)]
     pub voting_group: String,
 }
@@ -156,66 +200,73 @@ impl Votes {
             }
         };
 
-        print_delim();
-        match vote_plan_id {
-            Some(vote_plan_id) => {
-                let vote_plan_id_hash = Hash::from_str(&vote_plan_id)?;
-                if self.print_proposal_title {
-                    let history = model.vote_plan_history(vote_plan_id_hash)?;
-                    let proposals = model.proposals(&self.voting_group)?;
+        let mut table = table();
 
-                    if let Some(history) = history {
-                        let history: Vec<String> = history
+        let maybe_history_of_votes = if let Some(vote_plan_id) = vote_plan_id {
+            let vote_plan_id_hash = Hash::from_str(&vote_plan_id)?;
+            model.vote_plan_history(vote_plan_id_hash)?.map(|votes| {
+                vec![AccountVotes {
+                    vote_plan_id: vote_plan_id_hash,
+                    votes,
+                }]
+            })
+        } else {
+            model.votes_history()?
+        };
+
+        if maybe_history_of_votes.is_none() {
+            println!("No votes are cast so far");
+            return Ok(());
+        }
+
+        if let Some(votes_history) = maybe_history_of_votes {
+            if self.print_details {
+                let proposals = model.proposals(&self.voting_group)?;
+                table.set_titles(row!["vote plan", "proposals"]);
+
+                votes_history
+                    .iter()
+                    .map(|x| {
+                        let indexes_and_titles: Vec<(u8, String)> = x
+                            .votes
                             .iter()
-                            .map(|x| {
-                                proposals
+                            .map(|id| {
+                                let proposal = proposals
                                     .iter()
                                     .find(|y| {
-                                        y.voteplan.chain_proposal_index as u8 == *x
-                                            && y.voteplan.chain_voteplan_id == vote_plan_id
-                                    })
-                                    .unwrap()
-                            })
-                            .map(|p| p.proposal.proposal_title.clone())
-                            .collect();
-                        println!("{:#?}", history);
-                    } else {
-                        println!("Vote plan not found",);
-                    }
-                } else {
-                    println!("{:#?}", model.vote_plan_history(vote_plan_id_hash)?);
-                }
-            }
-            None => {
-                if self.print_proposal_title {
-                    let history = model.votes_history()?;
-                    let proposals = model.proposals(&self.voting_group)?;
-
-                    if let Some(history) = history {
-                        let history: Vec<String> = history
-                            .iter()
-                            .map(|x| {
-                                proposals
-                                    .iter()
-                                    .find(|y| {
-                                        x.votes.contains(&(y.voteplan.chain_proposal_index as u8))
+                                        *id == y.voteplan.chain_proposal_index as u8
                                             && y.voteplan.chain_voteplan_id
                                                 == x.vote_plan_id.to_string()
                                     })
-                                    .unwrap()
+                                    .expect(
+                                        "internal error: cannot find proposal for history of votes",
+                                    );
+
+                                (*id, proposal.proposal.proposal_title.clone())
                             })
-                            .map(|p| p.proposal.proposal_title.clone())
                             .collect();
-                        println!("{:#?}", history)
-                    } else {
-                        println!("Cannot find any voteplan");
-                    }
-                } else {
-                    println!("{:#?}", model.votes_history()?);
-                }
+
+                        (x.vote_plan_id, indexes_and_titles)
+                    })
+                    .for_each(|(voteplan, proposals)| {
+                        let mut inner_table = empty_table();
+                        proposals.iter().for_each(|(id, title)| {
+                            inner_table.add_row(row![id, title]);
+                        });
+                        table.add_row(row![voteplan, inner_table]);
+                    });
+            } else {
+                table.set_titles(row!["vote plan", "proposals indexes"]);
+                votes_history.iter().for_each(|x| {
+                    let mut inner_table = empty_table();
+                    x.votes.iter().for_each(|v| {
+                        inner_table.add_row(row![v]);
+                    });
+                    table.add_row(row![x.vote_plan_id, inner_table]);
+                });
             }
         };
-        print_delim();
+        table.printstd();
         Ok(())
     }
 }
@@ -261,11 +312,6 @@ pub struct SingleVote {
 impl SingleVote {
     pub fn exec(self, mut model: CliController) -> Result<(), IapyxCommandError> {
         let proposals = model.proposals(&self.voting_group)?;
-        /*   let block_date_generator = expiry::from_block_or_shift(
-            self.valid_until_fixed,
-            self.valid_until_shift,
-            &model.backend_client()?.settings()?,
-        );*/
 
         let proposal = proposals
             .iter()
@@ -375,6 +421,10 @@ pub enum IapyxCommandError {
     Read(#[from] chain_core::property::ReadError),
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    #[error("Parsing command line failed")]
+    Cli(#[from] CliParserError),
+    #[error("Invalid regex")]
+    Regex(#[from] regex::Error),
 }
 
 #[derive(Parser, Debug)]
@@ -390,23 +440,38 @@ pub struct Connect {
     pub enable_debug: bool,
 }
 
+#[derive(Error, Debug)]
+pub enum CliParserError {
+    #[error("incorrect format of url. Tip: http(s)://address:port is acceptable")]
+    IncorrectFormatOfAddressUrl,
+}
+
 impl Connect {
     pub fn exec(&self, mut controller: CliController) -> Result<(), IapyxCommandError> {
+        Url::parse(&self.address).map_err(|_| CliParserError::IncorrectFormatOfAddressUrl)?;
+
         controller.update_connection(Connection {
             address: self.address.clone(),
             https: self.use_https,
             debug: self.enable_debug,
         });
-        controller.check_connection()?;
-        controller.save_config().map_err(Into::into)
+        if controller.check_connection().is_ok() {
+            println!("Connection succesfull.");
+            controller.save_config().map_err(Into::into)
+        } else {
+            eprintln!("Connection unsuccesfull.");
+            Ok(())
+        }
     }
 }
 
 #[derive(Parser, Debug)]
 pub struct Proposals {
-    /// Show only ids
-    #[clap(short = 'i')]
-    pub only_ids: bool,
+    /// Limit output entries by text
+    #[clap(short, long)]
+    pub regex: Option<String>,
+    #[clap(short, long)]
+    pub sort: Option<String>,
     /// Limit output entries
     #[clap(short, long)]
     pub limit: Option<usize>,
@@ -415,7 +480,9 @@ pub struct Proposals {
 }
 impl Proposals {
     pub fn exec(self, model: CliController) -> Result<(), IapyxCommandError> {
-        print_delim();
+        let mut table = table();
+        table.set_titles(row!["index", "title", "summary", "proposal hash",]);
+
         for (id, proposal) in model.proposals(&self.voting_group)?.iter().enumerate() {
             if let Some(limit) = self.limit {
                 if id >= limit {
@@ -423,20 +490,23 @@ impl Proposals {
                 }
             }
 
-            if self.only_ids {
-                println!("{}", proposal.chain_proposal_id_as_str());
-            } else {
-                println!(
-                    "{}. {} [{}] {}",
-                    (id + 1),
-                    proposal.chain_proposal_id_as_str(),
-                    proposal.proposal.proposal_title,
-                    proposal.proposal.proposal_summary
-                );
-                println!("{:#?}", proposal.proposal.chain_vote_options.0);
+            if let Some(regex) = &self.regex {
+                use regex::Regex;
+                let re = Regex::new(regex)?;
+
+                if !re.is_match(&proposal.proposal.proposal_title) {
+                    continue;
+                }
             }
+
+            table.add_row(row![
+                (id + 1),
+                proposal.proposal.proposal_title,
+                proposal.proposal.proposal_summary,
+                proposal.chain_proposal_id_as_str(),
+            ]);
         }
-        print_delim();
+        table.printstd();
         Ok(())
     }
 }
@@ -567,15 +637,50 @@ impl Wallets {
                 model.wallets().save_config().map_err(Into::into)
             }
             Self::List => {
-                for (idx, (alias, wallet)) in model.wallets().iter().enumerate() {
-                    if Some(alias) == model.wallets().default_alias() {
-                        println!("[Default]{}.\t{}\t{}", idx + 1, alias, wallet.public_key);
-                    } else {
-                        println!("{}.\t{}\t{}", idx + 1, alias, wallet.public_key);
-                    }
-                }
+                let mut table = table();
+                table.set_titles(row!["in use", "index", "alias", "public key"]);
+                model
+                    .wallets()
+                    .iter()
+                    .enumerate()
+                    .for_each(|(idx, (alias, wallet))| {
+                        table.add_row(if Some(alias) == model.wallets().default_alias() {
+                            row!["  ->  ", idx + 1, alias, wallet.public_key]
+                        } else {
+                            row!["", idx + 1, alias, wallet.public_key]
+                        });
+                    });
+                table.printstd();
                 Ok(())
             }
         }
     }
+}
+
+fn table() -> Table {
+    let mut table = Table::new();
+    table.set_format(
+        FormatBuilder::new()
+            .column_separator(' ')
+            .borders(' ')
+            .separators(
+                &[LinePosition::Title],
+                LineSeparator::new('─', ' ', ' ', ' '),
+            )
+            .padding(1, 1)
+            .build(),
+    );
+    table
+}
+
+fn empty_table() -> Table {
+    let mut inner_table = Table::new();
+    inner_table.set_format(
+        FormatBuilder::new()
+            .column_separator(' ')
+            .borders(' ')
+            .padding(1, 1)
+            .build(),
+    );
+    inner_table
 }

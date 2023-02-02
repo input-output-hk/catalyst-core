@@ -207,16 +207,10 @@ impl Arbitrary for ArbitraryVoterHIR {
 use futures::executor::block_on;
 use mainnet_lib::wallet_state::{build_default, MainnetWalletState};
 use mainnet_lib::{Initials, SnapshotParameters};
-use std::time::{SystemTime, UNIX_EPOCH};
+use time::OffsetDateTime;
 
 fn epoch_now() -> i64 {
-    let start = SystemTime::now();
-    let since_the_epoch = start
-        .duration_since(UNIX_EPOCH)
-        .expect("Time went backwards");
-    let ms = since_the_epoch.as_secs() * 1000 + since_the_epoch.subsec_nanos() as u64 / 1_000_000;
-
-    ms as i64
+    OffsetDateTime::now_utc().unix_timestamp()
 }
 
 impl Arbitrary for VoterSnapshot {

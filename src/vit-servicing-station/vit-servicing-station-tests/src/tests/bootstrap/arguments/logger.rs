@@ -46,7 +46,7 @@ pub fn in_settings_file_malformed_log_output_path() {
     let mut settings_builder: ServerSettingsBuilder = Default::default();
     let settings = settings_builder
         .with_random_localhost_address()
-        .with_db_path(empty_db(&temp_dir).as_str())
+        .with_db_path(empty_db().as_str())
         .with_block0_path(BLOCK0_BIN)
         .with_log_output_path(PathBuf::from("c:\\a\\d:\\logger"))
         .build();

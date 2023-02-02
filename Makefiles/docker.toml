@@ -28,3 +28,28 @@ script_runner = "@shell"
 script = '''
 docker build --force-rm -t voting-node:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/voting-node.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/services/voting-node
 '''
+
+[tasks.build-all]
+workspace = false
+dependencies = [
+    "build-catalyst-core-base",
+    "build-jormungandr",
+    "build-vit",
+    "build-voting-node"
+]
+
+# Use docker-compose to build and run deployment
+[tasks.voting-deploy-up]
+workspace = false
+script_runner = "@shell"
+script = '''
+docker-compose -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/services/voting-node/docker-compose.yml up
+'''
+
+# Use docker-compose to remove deployment artifacts
+[tasks.voting-deploy-down]
+workspace = false
+script_runner = "@shell"
+script = '''
+docker-compose -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/services/voting-node/docker-compose.yml down -v --remove-orphans --rmi local
+'''

@@ -18,8 +18,8 @@ RUN apt-get install -y --no-install-recommends && \
 COPY requirements.txt requirements.txt
 COPY main.py ./
 
-RUN python3 -m venv $WORKDIR/env && . $WORKDIR/env/bin/activate
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: start the service
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5057"]

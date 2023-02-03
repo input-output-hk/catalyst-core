@@ -102,7 +102,7 @@ pub struct QuickStartCommandArgs {
     /// is capable of quering logs, sending transactions (e.g. tallying), etc.,
     #[clap(
         long = "mode",
-        default_value = "Endless",
+        default_value = "Standard",
         value_parser = parse_mode_from_str
     )]
     pub mode: Mode,

@@ -47,7 +47,7 @@ pub struct ExternalDataCommandArgs {
     #[clap(long = "skip-qr-generation")]
     pub skip_qr_generation: bool,
 
-    #[clap(long = "log-level", default_value = "LogLevel::INFO")]
+    #[clap(long = "log-level", default_value = "INFO")]
     pub log_level: LogLevel,
 }
 

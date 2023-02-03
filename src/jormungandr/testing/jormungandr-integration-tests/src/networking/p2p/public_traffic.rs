@@ -341,7 +341,7 @@ pub fn test_public_node_synced_with_internal() {
 
     params.override_settings(&mut gateway_node_config);
 
-    let gateway = network_controller.spawn(params).unwrap();
+    let _gateway = network_controller.spawn(params).unwrap();
 
     // simulate node in the wild
     let address: Multiaddr = "/ip4/80.9.12.3/tcp/0".parse().unwrap();

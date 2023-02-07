@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "voting_node"
+dependencies = [
+    "Click",
+    "asyncpg",
+    "fastapi",
+    "uvicorn[standard]",
+]
+dynamic = ["version"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
+
+[project.scripts]
+voting-node = "voting_node.cli:cli"

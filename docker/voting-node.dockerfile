@@ -3,11 +3,9 @@ FROM jormungandr:latest
 
 WORKDIR /voting
 
-
 ## Update container and copy executables
 RUN apt-get update && \
-    apt-get install -y python3-venv python3-pip
-
+    apt-get install -y python3-pip
 
 ## apt cleanup
 RUN apt-get install -y --no-install-recommends && \
@@ -15,11 +13,9 @@ RUN apt-get install -y --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
 # Add python codebase
-COPY requirements.txt requirements.txt
-COPY main.py ./
+COPY . /voting
 
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+RUN pip3 install .
 
 # Stage 2: start the service
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5057"]
+CMD ["voting-node", "start", "--host", "0.0.0.0", "--port", "5057"]

@@ -1,3 +1,0 @@
-asyncpg
-fastapi
-uvicorn[standard]

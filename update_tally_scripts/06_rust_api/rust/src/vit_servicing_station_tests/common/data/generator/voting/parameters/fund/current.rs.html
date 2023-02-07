@@ -1,0 +1,130 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/vit-servicing-station/vit-servicing-station-tests/src/common/data/generator/voting/parameters/fund/current.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>current.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../../../../../normalize.css"><link rel="stylesheet" href="../../../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../../../../../dark.css" disabled><link rel="stylesheet" href="../../../../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../../../../storage.js"></script><script defer src="../../../../../../../../source-script.js"></script><script defer src="../../../../../../../../source-files.js"></script><script defer src="../../../../../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../../../../../vit_servicing_station_tests/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../../../../../vit_servicing_station_tests/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../../../../../vit_servicing_station_tests/index.html"><img class="rust-logo" src="../../../../../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::FundInfo;
+<span class="kw">use </span><span class="kw">crate</span>::common::data::SingleVotePlanParameters;
+<span class="kw">use </span>chain_impl_mockchain::testing::scenario::template::VotePlanDef;
+<span class="kw">use </span>vit_servicing_station_lib::db::models::challenges::Challenge;
+<span class="kw">use </span>vit_servicing_station_lib::db::models::funds::Fund;
+<span class="kw">use </span>vit_servicing_station_lib::db::models::vote_options::VoteOptions;
+
+<span class="kw">use </span>vit_servicing_station_lib::db::models::voteplans::Voteplan;
+
+<span class="kw">pub struct </span>CurrentFund {
+    <span class="kw">pub </span>vote_plans: Vec&lt;SingleVotePlanParameters&gt;,
+    <span class="kw">pub </span>vote_options: VoteOptions,
+    <span class="kw">pub </span>challenges_count: usize,
+    <span class="kw">pub </span>reviews_count: usize,
+    <span class="kw">pub </span>calculate_challenges_total_funds: bool,
+    <span class="kw">pub </span>info: FundInfo,
+}
+
+<span class="kw">impl </span>CurrentFund {
+    <span class="kw">pub fn </span>from_single(vote_plan: VotePlanDef, info: FundInfo) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new(<span class="macro">vec!</span>[vote_plan], info)
+    }
+
+    <span class="kw">pub fn </span>new(vote_plans: Vec&lt;VotePlanDef&gt;, info: FundInfo) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            vote_plans: vote_plans.into_iter().map(Into::into).collect(),
+            info,
+            vote_options: VoteOptions::parse_coma_separated_value(<span class="string">&quot;yes,no&quot;</span>),
+            challenges_count: <span class="number">4</span>,
+            reviews_count: <span class="number">1</span>,
+            calculate_challenges_total_funds: <span class="bool-val">false</span>,
+        }
+    }
+
+    <span class="kw">pub fn </span>set_vote_encryption_key(<span class="kw-2">&amp;mut </span><span class="self">self</span>, vote_encryption_key: String, alias: <span class="kw-2">&amp;</span>str) {
+        <span class="kw">let </span>vote_plan = <span class="self">self
+            </span>.vote_plans
+            .iter_mut()
+            .find(|x| x.alias() == alias)
+            .unwrap();
+        vote_plan.set_vote_encryption_key(vote_encryption_key);
+    }
+
+    <span class="kw">pub fn </span>to_fund(<span class="kw-2">&amp;</span><span class="self">self</span>, vote_plans: Vec&lt;Voteplan&gt;, challenges: Vec&lt;Challenge&gt;) -&gt; Fund {
+        Fund {
+            id: <span class="self">self</span>.info.fund_id,
+            fund_name: <span class="self">self</span>.info.fund_name.clone(),
+            fund_goal: <span class="self">self</span>.info.fund_goal.clone(),
+            voting_power_threshold: <span class="self">self</span>.info.voting_power_threshold,
+            fund_start_time: <span class="self">self</span>.info.dates.voting_start,
+            fund_end_time: <span class="self">self</span>.info.dates.voting_tally_start,
+            next_fund_start_time: <span class="self">self</span>.info.dates.next_fund_start_time,
+            registration_snapshot_time: <span class="self">self</span>.info.dates.registration_snapshot_time,
+            next_registration_snapshot_time: <span class="self">self</span>.info.dates.next_registration_snapshot_time,
+            chain_vote_plans: vote_plans,
+            challenges,
+            stage_dates: <span class="self">self</span>.info.dates.clone().into(),
+            goals: <span class="self">self</span>.info.goals.clone(),
+            results_url: <span class="self">self</span>.info.results_url.clone(),
+            survey_url: <span class="self">self</span>.info.survey_url.clone(),
+            groups: <span class="self">self</span>.info.groups.iter().cloned().collect(),
+        }
+    }
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../../../../" data-current-crate="vit_servicing_station_tests" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

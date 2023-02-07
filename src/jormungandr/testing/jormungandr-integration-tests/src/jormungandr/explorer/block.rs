@@ -31,6 +31,8 @@ use thor::{
 
 const BLOCK_QUERY_COMPLEXITY_LIMIT: u64 = 150;
 const BLOCK_QUERY_DEPTH_LIMIT: u64 = 30;
+const SLOTS_PER_EPOCH: u32 = 20;
+const SLOT_DURATION: u8 = 2;
 
 #[test]
 pub fn explorer_block_test() {
@@ -46,9 +48,9 @@ pub fn explorer_block_test() {
             Block0ConfigurationBuilder::default()
                 .with_consensus_leaders_ids(vec![bft_secret.identifier().into()])
                 .with_wallets_having_some_values(vec![&sender, &receiver])
-                .with_slots_per_epoch(20.try_into().unwrap())
+                .with_slots_per_epoch(SLOTS_PER_EPOCH.try_into().unwrap())
                 .with_block_content_max_size(100000.into())
-                .with_slot_duration(3.try_into().unwrap())
+                .with_slot_duration(SLOT_DURATION.try_into().unwrap())
                 .with_token(InitialToken {
                     token_id: TokenIdentifier::from_str(
                         "00000000000000000000000000000000000000000000000000000000.00000000",
@@ -222,10 +224,10 @@ pub fn explorer_last_block_test() {
                 .with_wallets_having_some_values(vec![&sender, &receiver])
                 .with_stake_pool_and_delegation(&stake_pool, vec![&sender])
                 .with_block0_consensus(ConsensusType::GenesisPraos)
-                .with_slots_per_epoch(20.try_into().unwrap())
+                .with_slots_per_epoch(SLOTS_PER_EPOCH.try_into().unwrap())
                 .with_block_content_max_size(100000.into())
                 .with_consensus_genesis_praos_active_slot_coeff(ActiveSlotCoefficient::MAXIMUM)
-                .with_slot_duration(3.try_into().unwrap())
+                .with_slot_duration(SLOT_DURATION.try_into().unwrap())
                 .with_linear_fees(LinearFee::new(1, 1, 1))
                 .with_token(InitialToken {
                     // FIXME: this works because I know it's the VotePlanBuilder's default, but
@@ -326,10 +328,10 @@ pub fn explorer_all_blocks_test() {
                 .with_wallets_having_some_values(vec![&sender, &receiver])
                 .with_stake_pool_and_delegation(&stake_pool, vec![&sender])
                 .with_block0_consensus(ConsensusType::GenesisPraos)
-                .with_slots_per_epoch(20.try_into().unwrap())
+                .with_slots_per_epoch(SLOTS_PER_EPOCH.try_into().unwrap())
                 .with_block_content_max_size(100000.into())
                 .with_consensus_genesis_praos_active_slot_coeff(ActiveSlotCoefficient::MAXIMUM)
-                .with_slot_duration(3.try_into().unwrap())
+                .with_slot_duration(SLOT_DURATION.try_into().unwrap())
                 .with_linear_fees(LinearFee::new(1, 1, 1))
                 .with_token(InitialToken {
                     // FIXME: this works because I know it's the VotePlanBuilder's default, but
@@ -440,10 +442,10 @@ pub fn explorer_block_by_chain_length_test() {
                 .with_wallets_having_some_values(vec![&sender, &receiver])
                 .with_stake_pool_and_delegation(&stake_pool, vec![&sender])
                 .with_block0_consensus(ConsensusType::GenesisPraos)
-                .with_slots_per_epoch(20.try_into().unwrap())
+                .with_slots_per_epoch(SLOTS_PER_EPOCH.try_into().unwrap())
                 .with_block_content_max_size(100000.into())
                 .with_consensus_genesis_praos_active_slot_coeff(ActiveSlotCoefficient::MAXIMUM)
-                .with_slot_duration(3.try_into().unwrap())
+                .with_slot_duration(SLOT_DURATION.try_into().unwrap())
                 .with_linear_fees(LinearFee::new(1, 1, 1))
                 .with_token(InitialToken {
                     // FIXME: this works because I know it's the VotePlanBuilder's default, but

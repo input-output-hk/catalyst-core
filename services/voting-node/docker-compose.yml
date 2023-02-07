@@ -5,6 +5,13 @@ services:
     image: voting-node:latest
     ports:
       - "5057:5057"
+    environment:
+      - JORMUNGANDR_EXECUTABLE=/usr/local/bin/jormungandr
+      - JCLI_EXECUTABLE=/usr/local/bin/jcli
+      - VOTING_HOST=0.0.0.0
+      - VOTING_PORT=5057
+      - VOTING_LOG_LEVEL=debug
+    command: voting-node start
 
   otel-collector:
     image: otel/opentelemetry-collector:latest

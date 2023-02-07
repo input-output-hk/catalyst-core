@@ -1,10 +1,10 @@
 import asyncio
-import logging
 from uvicorn import Config, Server
 from typing import Union
 
 from fastapi import FastAPI
-from fastapi.logger import logger as fastapi_logger
+
+from .import logs as applogs
 
 app = FastAPI()
 
@@ -14,9 +14,10 @@ def heartbeat():
     return None
 
 class VotingServer(Server):
-    def __init__(self, logger, config: Config):
+    def __init__(self, config: Config):
         Server.__init__(self, config)
-        self.logger = logger
+        self.logger = applogs.getLogger(config.log_level)
+        self.retry_jorm = True
 
 
     def run(self, jormungandr_path, jcli_path, sockets=None):
@@ -27,51 +28,52 @@ class VotingServer(Server):
 
         jorm_task = asyncio.create_task(self.start_jormungandr(jormungandr_path=jormungandr_path, jcli_path=jcli_path))
 
-        try:
-            await jorm_task
-            self.logger.debug("jorm task is finished")
-        except:
-            self.logger.debug("jorm failed to start")
+        while self.retry_jorm: 
+            try:
+                self.logger.debug("jorm task starting")
+                await jorm_task
+                self.logger.debug("jorm task is finished")
+                break
+            except Exception as e:
+                self.logger.debug(f"jorm failed to start: {e}")
+                await asyncio.sleep(1)
 
         print(await api_task)
 
     async def start_api_server(self, sockets=None):
         print('starting api')
         await self.serve(sockets=sockets)
+        self.retry_jorm = False
 
     async def start_jormungandr(self, jormungandr_path, jcli_path):
         try:
-            try:
-                proc = await asyncio.create_subprocess_exec(f"{jormungandr_path}",
-                                                            stdout=asyncio.subprocess.PIPE,
-                                                            stderr=asyncio.subprocess.PIPE,
-                                                            )
-                stdout, stderr = await proc.communicate()
+            await self.try_to_start_jormungandr(jormungandr_path, jcli_path)
+        except Exception as e:
+            f"jorm error: {e}"
+            raise e
 
-                if proc.returncode != 0:
-                    raise Exception("jormungandr exited with non-zero status")
 
-                if stdout:
-                    self.logger.info(f"[stdout]\n{stdout.decode()}")
-                if stderr:
-                    self.logger.warning(f"[stderr]\n{stderr.decode()}")
-            except Exception as e:
-                self.logger.warning(f"jorm node error: {e}")
+    async def try_to_start_jormungandr(self, jormungandr_path, jcli_path):
+        try:
+            proc = await asyncio.create_subprocess_exec(f"{jormungandr_path}", #"--help",
+                                                        stdout=asyncio.subprocess.PIPE,
+                                                        stderr=asyncio.subprocess.PIPE,
+                                                        )
+            stdout, stderr = await proc.communicate()
 
-        except:
-            "jorm error"
+            if stdout:
+                self.logger.info(f"[stdout]\n{stdout.decode()}")
+            if stderr:
+                self.logger.warning(f"[stderr]\n{stderr.decode()}")
 
+            if proc.returncode != 0:
+                raise Exception(f"jormungandr exited with non-zero status: {proc.returncode}")
+        except Exception as e:
+            self.logger.warning(f"jorm node error: {e}")
+            raise e
 
 def run(jormungandr_path, jcli_path, host="127.0.0.1", port=8000, log_level="info"):
     """Entrypoint to running the service."""
-    logger = logging.getLogger(__name__)
-    logger.setLevel(getattr(logging, log_level.upper()))
-    ch = logging.StreamHandler()
-    ch.setLevel(getattr(logging, log_level.upper()))
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
-
     config = Config(app=app, host=host, port=port, log_level=log_level)
-    server = VotingServer(logger, config=config)
+    server = VotingServer(config=config)
     server.run(jormungandr_path=jormungandr_path, jcli_path=jcli_path)

@@ -1,27 +1,33 @@
 import asyncio
+from prometheus_fastapi_instrumentator import Instrumentator
 from uvicorn import Config, Server
-from typing import Union
 
 from fastapi import FastAPI
 
-from .import logs as applogs
+from . import logs
 
 app = FastAPI()
+
 
 @app.get("/")
 def heartbeat():
     """Returns 200 if the service is running."""
     return None
 
+
+Instrumentator().instrument(app).expose(app)
+
+
 class JormConfig(object):
     def __init__(self, jormungandr_path: str, jcli_path: str):
         self.jormungandr_path = jormungandr_path
         self.jcli_path = jcli_path
 
+
 class VotingServer(Server):
     def __init__(self, config: Config, jorm_config: JormConfig):
         Server.__init__(self, config)
-        self.logger = applogs.getLogger(config.log_level)
+        self.logger = logs.getLogger(config.log_level)
         self.retry_jorm = True
         self.jorm_config = jorm_config
 
@@ -60,7 +66,7 @@ class VotingServer(Server):
 
     async def start_api_server(self, sockets=None):
         """Starts API server for the Voting Node."""
-        print('starting api')
+        print("starting api")
         await self.serve(sockets=sockets)
         # stops trying to launch jormungandr after API service is finished
         self.stop_trying()
@@ -72,13 +78,13 @@ class VotingServer(Server):
             f"jorm error: {e}"
             raise e
 
-
     async def jormungandr_subprocess_exec(self):
         try:
-            proc = await asyncio.create_subprocess_exec(f"{self.jormungandr_exec()}", #"--help",
-                                                        stdout=asyncio.subprocess.PIPE,
-                                                        stderr=asyncio.subprocess.PIPE,
-                                                        )
+            proc = await asyncio.create_subprocess_exec(
+                f"{self.jormungandr_exec()}",  # "--help",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
             stdout, stderr = await proc.communicate()
 
             if stdout:
@@ -87,10 +93,13 @@ class VotingServer(Server):
                 self.logger.warning(f"[stderr]\n{stderr.decode()}")
 
             if proc.returncode != 0:
-                raise Exception(f"jormungandr exited with non-zero status: {proc.returncode}")
+                raise Exception(
+                    f"jormungandr exited with non-zero status: {proc.returncode}"
+                )
         except Exception as e:
             self.logger.warning(f"jorm node error: {e}")
             raise e
+
 
 # Use this to run your service
 def run(jormungandr_path, jcli_path, host="127.0.0.1", port=8000, log_level="info"):

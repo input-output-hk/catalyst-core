@@ -8,6 +8,7 @@ dependencies = [
     "Click",
     "asyncpg",
     "fastapi",
+    "prometheus-fastapi-instrumentator",
     "uvicorn[standard]",
 ]
 dynamic = ["version"]

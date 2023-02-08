@@ -1,32 +1,32 @@
 use crate::cli::command::Error;
+use clap::Parser;
 use jcli_lib::key::read_bech32;
 use std::path::PathBuf;
-use structopt::StructOpt;
 use thor::cli::{Alias, CliController};
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Wallets {
     /// recover wallet funds from mnemonic
     Use {
-        #[structopt(name = "ALIAS")]
+        #[clap(name = "ALIAS")]
         alias: Alias,
     },
     /// recover wallet funds from qr code
     Import {
-        #[structopt(name = "SECRET")]
+        #[clap(name = "SECRET")]
         secret: PathBuf,
 
-        #[structopt(short, long)]
+        #[clap(short, long)]
         password: String,
 
-        #[structopt(short, long)]
+        #[clap(short, long)]
         testing: bool,
 
-        #[structopt(short, long)]
+        #[clap(short, long)]
         alias: Alias,
     },
     Delete {
-        #[structopt(name = "ALIAS")]
+        #[clap(name = "ALIAS")]
         alias: Alias,
     },
     List,

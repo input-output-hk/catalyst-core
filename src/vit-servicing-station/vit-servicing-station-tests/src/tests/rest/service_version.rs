@@ -9,7 +9,7 @@ pub fn service_version() {
     let temp_dir = TempDir::new().unwrap();
     let (hash, token) = data::token();
 
-    let db_path = DbBuilder::new().with_token(token).build(&temp_dir).unwrap();
+    let db_path = DbBuilder::new().with_token(token).build().unwrap();
     let version = "TestV1".to_string();
     let server = ServerBootstrapper::new()
         .with_db_path(db_path)

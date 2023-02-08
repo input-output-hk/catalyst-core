@@ -4,62 +4,61 @@ use crate::builders::VitBackendSettingsBuilder;
 use crate::config::read_config;
 use crate::mode::standard::generate_database;
 use crate::Result;
+use clap::Parser;
 use glob::glob;
 use hersir::config::SessionSettings;
 use jormungandr_automation::jormungandr::LogLevel;
 use std::path::Path;
 use std::path::PathBuf;
-use structopt::StructOpt;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
 pub struct PerfDataCommandArgs {
     /// Careful! directory would be removed before export
-    #[structopt(long = "output", default_value = "./perf")]
+    #[clap(long = "output", default_value = "./perf")]
     pub output_directory: PathBuf,
 
     /// configuration
-    #[structopt(long = "config")]
+    #[clap(long = "config")]
     pub config: PathBuf,
 
     /// proposals import json
-    #[structopt(
+    #[clap(
         long = "proposals",
         default_value = "../../catalyst-resources/ideascale/fund5/proposals.json"
     )]
     pub proposals: PathBuf,
 
     /// challenges import json
-    #[structopt(
+    #[clap(
         long = "challenges",
         default_value = "../../catalyst-resources/ideascale/fund5/challenges.json"
     )]
     pub challenges: PathBuf,
 
     /// funds import json
-    #[structopt(
+    #[clap(
         long = "funds",
         default_value = "../../catalyst-resources/ideascale/fund5/funds.json"
     )]
     pub funds: PathBuf,
 
     /// reviews import json
-    #[structopt(
+    #[clap(
         long = "reviews",
         default_value = "../../catalyst-resources/ideascale/fund5/reviews.json"
     )]
     pub reviews: PathBuf,
 
-    #[structopt(long = "snapshot")]
+    #[clap(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
 
-    #[structopt(short = "p", long = "parts", default_value = "1")]
+    #[clap(short = 'p', long = "parts", default_value = "1")]
     pub parts: usize,
 
-    #[structopt(short = "s", long = "single", default_value = "0")]
+    #[clap(short = 's', long = "single", default_value = "0")]
     pub single: usize,
 
-    #[structopt(long = "log-level", default_value = "LogLevel::INFO")]
+    #[clap(long = "log-level", default_value = "LogLevel::INFO")]
     pub log_level: LogLevel,
 }
 
@@ -97,7 +96,7 @@ impl PerfDataCommandArgs {
         )
         .unwrap();
 
-        generate_database(&deployment_tree, vit_parameters, template_generator)?;
+        generate_database(vit_parameters, template_generator)?;
 
         self.move_single_user_secrets(
             &deployment_tree,

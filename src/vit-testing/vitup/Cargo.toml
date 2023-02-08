@@ -30,9 +30,13 @@ jormungandr-automation = { path = "../../jormungandr/testing/jormungandr-automat
 thor = { path = "../../jormungandr/testing/thor" }
 hersir = { path = "../../jormungandr/testing/hersir" }
 jortestkit = { path = "../../jortestkit" }
+mainnet-lib = { path = "../mainnet-lib" }
+mainnet-tools = { path = "../mainnet-tools" }
 vit-servicing-station-tests = { path = "../../vit-servicing-station/vit-servicing-station-tests" }
 vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib" }
+voting_tools_rs = { path = "../../voting-tools-rs" }
 catalyst-toolbox = { path = "../../catalyst-toolbox/catalyst-toolbox" }
+snapshot-trigger-service = { path = "../snapshot-trigger-service" }
 snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib" }
 valgrind = { path = "../valgrind" }
 poldercast = "1"
@@ -48,7 +52,7 @@ rand_chacha = "0.3"
 tempdir = "0.3.7"
 diffy = "0.2.1"
 regex = "1.4"
-structopt = "0.3"
+clap = { workspace = true }
 thiserror = "1.0"
 warp-reverse-proxy = "0.3.2"
 hex = "0.4"
@@ -66,9 +70,9 @@ json = "0.12.4"
 image = "0.23"
 base64 = "0.13"
 uuid = { version = "0.8", features = ["serde", "v4"] }
-tracing-subscriber = { version = "0.3", features= ["std", "env-filter"] }
-tracing = "0.1"
-tracing-appender = "0.2"
+tracing-subscriber = { workspace = true, features= ["std", "env-filter"] }
+tracing.workspace = true
+tracing-appender.workspace = true
 hyper = { version = "0.14.17", features = ["server"] }
 rustls = "0.20.4"
 rustls-pemfile = "1"

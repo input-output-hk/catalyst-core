@@ -36,6 +36,8 @@ use thor::{
 };
 
 const TEST_COMMITTEE_SIZE: usize = 3;
+const SLOTS_PER_EPOCH: u32 = 20;
+const SLOT_DURATION: u8 = 2;
 
 fn generate_wallets_and_committee() -> (Vec<Wallet>, Vec<CommitteeIdDef>) {
     let mut ids = Vec::new();
@@ -199,9 +201,9 @@ pub fn test_vote_flow_bft() {
             bob.to_committee_id(),
             clarice.to_committee_id(),
         ])
-        .with_slots_per_epoch(60.try_into().unwrap())
+        .with_slots_per_epoch(SLOTS_PER_EPOCH.try_into().unwrap())
         .with_certs(vec![vote_plan_cert])
-        .with_slot_duration(1.try_into().unwrap())
+        .with_slot_duration(SLOT_DURATION.try_into().unwrap())
         .with_treasury(1_000.into());
 
     let test_context = SingleNodeTestBootstrapper::default()
@@ -380,7 +382,7 @@ pub fn test_vote_flow_praos() {
                         clarice.to_initial_token(1_000_000),
                     ],
                 })
-                .with_slots_per_epoch(60.try_into().unwrap())
+                .with_slots_per_epoch(SLOTS_PER_EPOCH.try_into().unwrap())
                 .with_consensus_genesis_praos_active_slot_coeff(
                     ActiveSlotCoefficient::new(Milli::from_millis(1_000)).unwrap(),
                 )
@@ -552,13 +554,12 @@ pub fn jcli_e2e_flow() {
         .with_total_rewards_supply(Some(Value::zero().into()))
         .with_discrimination(Discrimination::Production)
         .with_committees(&[alice.to_committee_id()])
-        .with_slots_per_epoch(60.try_into().unwrap())
         .with_consensus_genesis_praos_active_slot_coeff(
             ActiveSlotCoefficient::new(Milli::from_millis(100)).unwrap(),
         )
         .with_treasury(1000.into())
-        .with_slot_duration(4.try_into().unwrap())
-        .with_slots_per_epoch(10.try_into().unwrap());
+        .with_slot_duration(SLOT_DURATION.try_into().unwrap())
+        .with_slots_per_epoch(SLOTS_PER_EPOCH.try_into().unwrap());
 
     let alice_sk = temp_dir.child("alice_sk");
     alice.save_to_path(alice_sk.path()).unwrap();
@@ -709,8 +710,8 @@ pub fn duplicated_vote() {
         .with_block0_config(
             Block0ConfigurationBuilder::default()
                 .with_wallets_having_some_values(vec![&alice])
-                .with_slots_per_epoch(20.try_into().unwrap())
-                .with_slot_duration(3.try_into().unwrap())
+                .with_slots_per_epoch(SLOTS_PER_EPOCH.try_into().unwrap())
+                .with_slot_duration(SLOT_DURATION.try_into().unwrap())
                 .with_linear_fees(LinearFee::new(0, 0, 0))
                 .with_token(InitialToken {
                     token_id: token_id.clone().into(),
@@ -785,8 +786,8 @@ pub fn non_duplicated_vote() {
                     policy: minting_policy.into(),
                     to: vec![alice.to_initial_token(initial_token_per_wallet)],
                 })
-                .with_slots_per_epoch(20.try_into().unwrap())
-                .with_slot_duration(3.try_into().unwrap())
+                .with_slots_per_epoch(SLOTS_PER_EPOCH.try_into().unwrap())
+                .with_slot_duration(SLOT_DURATION.try_into().unwrap())
                 .with_linear_fees(LinearFee::new(0, 0, 0)),
         )
         .build()
@@ -859,7 +860,7 @@ pub fn vote_outside_of_choices_is_rejected_in_tally() {
             Block0ConfigurationBuilder::default()
                 .with_wallets_having_some_values(vec![&alice])
                 .with_slots_per_epoch(10.try_into().unwrap())
-                .with_slot_duration(2.try_into().unwrap())
+                .with_slot_duration(SLOT_DURATION.try_into().unwrap())
                 .with_linear_fees(LinearFee::new(0, 0, 0))
                 .with_token(InitialToken {
                     token_id: token_id.clone().into(),

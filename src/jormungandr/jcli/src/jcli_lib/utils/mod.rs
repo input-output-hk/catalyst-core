@@ -6,24 +6,24 @@ pub mod output_format;
 pub mod vote;
 
 pub use self::{account_id::AccountId, output_format::OutputFormat};
-use structopt::StructOpt;
+use clap::Parser;
 use thiserror::Error;
 
-#[derive(StructOpt)]
-#[structopt(name = "utils", rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(name = "utils", rename_all = "kebab-case")]
 pub enum Utils {
     /// convert a bech32 with hrp n into a bech32 with prefix m
     Bech32Convert(Bech32ConvertArgs),
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct Bech32ConvertArgs {
     /// the bech32 you want to convert
-    #[structopt(name = "FROM_BECH32")]
+    #[clap(name = "FROM_BECH32")]
     from_bech32: String,
 
     /// the new bech32 hrp you want to use
-    #[structopt(name = "NEW_PREFIX")]
+    #[clap(name = "NEW_PREFIX")]
     new_hrp: String,
 }
 

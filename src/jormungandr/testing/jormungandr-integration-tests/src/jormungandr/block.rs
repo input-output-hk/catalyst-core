@@ -97,10 +97,9 @@ fn block0_with_incorrect_hash(consensus: ConsensusType) {
         .with_trusted_peers(vec![adversary.to_trusted_peer()])
         .build();
 
-    JormungandrBootstrapper::default()
+    JormungandrBootstrapper::default_with_config(passive_params)
         .passive()
         .with_block0_hash(adversary.genesis_block_hash())
-        .with_node_config(passive_params)
         .into_starter(passive_temp_dir)
         .unwrap()
         .start_with_fail_in_logs("failed to download block")

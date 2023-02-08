@@ -3,8 +3,6 @@ use assert_fs::TempDir;
 use chain_addr::Discrimination;
 use chain_core::property::BlockDate as propertyBlockDate;
 use chain_crypto::Ed25519;
-#[cfg(feature = "evm")]
-use chain_impl_mockchain::testing::TestGen;
 use chain_impl_mockchain::{
     block::BlockDate,
     certificate::{UpdateProposal, UpdateVote, VoteAction, VoteTallyPayload},
@@ -35,6 +33,8 @@ use thor::{
 
 const TRANSACTION_CERTIFICATE_QUERY_COMPLEXITY_LIMIT: u64 = 140;
 const TRANSACTION_CERTIFICATE_QUERY_DEPTH_LIMIT: u64 = 30;
+const SLOTS_PER_EPOCH: u32 = 20;
+const SLOT_DURATION: u8 = 2;
 
 #[test]
 pub fn explorer_stake_pool_registration_test() {
@@ -456,69 +456,6 @@ pub fn explorer_pool_retire_test() {
     .unwrap();
 }
 
-#[cfg(feature = "evm")]
-#[should_panic] //BUG EAS-238
-#[test]
-pub fn explorer_evm_mapping_certificates_test() {
-    use thor::Block0ConfigurationBuilderExtension;
-
-    let temp_dir = TempDir::new().unwrap();
-    let mut first_stake_pool_owner = thor::Wallet::default();
-    let jormungandr = SingleNodeTestBootstrapper::default()
-        .with_block0_config(
-            Block0ConfigurationBuilder::default()
-                .with_wallet(&first_stake_pool_owner, 1_000_000.into()),
-        )
-        .as_bft_leader()
-        .build()
-        .start_node(temp_dir)
-        .unwrap();
-
-    let fragment_sender = FragmentSender::from(&jormungandr.rest().settings().unwrap());
-
-    let fragment_builder = FragmentBuilder::from_settings(
-        &jormungandr.rest().settings().unwrap(),
-        BlockDate::first().next_epoch(),
-    );
-
-    let params = ExplorerParams::new(
-        TRANSACTION_CERTIFICATE_QUERY_COMPLEXITY_LIMIT,
-        TRANSACTION_CERTIFICATE_QUERY_DEPTH_LIMIT,
-        None,
-    );
-    let explorer_process = jormungandr.explorer(params).unwrap();
-    let explorer = explorer_process.client();
-
-    let evm_mapping = TestGen::evm_mapping_for_wallet(&first_stake_pool_owner.clone().into());
-
-    let evm_mapping_fragment = fragment_builder.evm_mapping(&first_stake_pool_owner, &evm_mapping);
-
-    fragment_sender
-        .send_fragment(
-            &mut first_stake_pool_owner,
-            evm_mapping_fragment.clone(),
-            &jormungandr,
-        )
-        .unwrap();
-
-    assert_eq!(
-        evm_mapping.evm_address().to_string(),
-        jormungandr
-            .rest()
-            .evm_address(evm_mapping.account_id())
-            .unwrap(),
-        "Evm address not equal"
-    );
-
-    let trans = explorer
-        .transaction_certificates(evm_mapping_fragment.hash().into())
-        .expect("evm mapping transaction not found");
-
-    assert!(trans.errors.is_none(), "{:?}", trans.errors.unwrap());
-
-    let _evm_mapping_transaction = trans.data.unwrap().transaction;
-}
-
 #[test]
 pub fn explorer_vote_plan_certificates_test() {
     let temp_dir = TempDir::new().unwrap();
@@ -541,8 +478,8 @@ pub fn explorer_vote_plan_certificates_test() {
             Block0ConfigurationBuilder::default()
                 .with_wallets_having_some_values(vec![&first_stake_pool_owner, &bob])
                 .with_discrimination(discrimination)
-                .with_slots_per_epoch(20.try_into().unwrap())
-                .with_slot_duration(3.try_into().unwrap())
+                .with_slots_per_epoch(SLOTS_PER_EPOCH.try_into().unwrap())
+                .with_slot_duration(SLOT_DURATION.try_into().unwrap())
                 .with_linear_fees(LinearFee::new(0, 0, 0)),
         )
         .build()
@@ -619,7 +556,7 @@ pub fn explorer_vote_cast_certificates_test() {
             to: vec![alice.to_initial_token(1000)],
         })
         .with_committees(&[alice.to_committee_id()])
-        .with_slots_per_epoch(60.try_into().unwrap())
+        .with_slots_per_epoch(SLOTS_PER_EPOCH.try_into().unwrap())
         .with_certs(vec![vote_plan_cert])
         .with_treasury(1_000.into());
 
@@ -695,7 +632,7 @@ pub fn explorer_vote_tally_certificate_test() {
             to: vec![alice.to_initial_token(1000)],
         })
         .with_committees(&[alice.to_committee_id()])
-        .with_slots_per_epoch(60.try_into().unwrap())
+        .with_slots_per_epoch(SLOTS_PER_EPOCH.try_into().unwrap())
         .with_certs(vec![vote_plan_cert])
         .with_treasury(1_000.into());
 
@@ -767,7 +704,7 @@ pub fn explorer_update_proposal_and_vote_certificate_test() {
             bft_secret_bob.identifier().into(),
         ])
         .with_proposal_expiration(20.try_into().unwrap())
-        .with_slots_per_epoch(20.try_into().unwrap())
+        .with_slots_per_epoch(SLOTS_PER_EPOCH.try_into().unwrap())
         .with_linear_fees(LinearFee::new(0, 0, 0));
 
     let jormungandr = SingleNodeTestBootstrapper::default()

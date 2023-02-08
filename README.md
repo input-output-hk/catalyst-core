@@ -1,3 +1,4 @@
+<!-- markdownlint-disable no-inline-html -->
 <h1 align="center">Catalyst Core</h1>
 
 <p align="center">
@@ -5,16 +6,20 @@
 </p>
 
 <p align="center">
- <a href="https://github.com/input-output-hk/catalyst-core/actions/workflows/ci_tests.yml">
-    <img src="https://github.com/input-output-hk/catalyst-core/actions/workflows/ci_tests.yml/badge.svg" alt="Current CI Status." />
+ <a href="https://github.com/input-output-hk/catalyst-core/actions/workflows/rust.yml">
+    <img src="https://github.com/input-output-hk/catalyst-core/actions/workflows/rust.yml/badge.svg" alt="Current CI Status." />
   </a>
    <a href="https://github.com/input-output-hk/catalyst-core#license">
-    <img src="https://img.shields.io/badge/license-MIT%2FApache--2.0-blue" alt="Catalyst Core is released under either of Apache License, Version 2.0 or MIT license at your option.." />
+    <img src="https://img.shields.io/badge/license-MIT%2FApache--2.0-blue"
+    alt="Catalyst Core is released under either of Apache License, Version 2.0 or MIT license at your option.." />
   </a>
   <a href="https://github.com/input-output-hk/catalyst-core/blob/main/CODE_OF_CONDUCT.md">
     <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome!" />
   </a>
+   <a href='https://coveralls.io/github/input-output-hk/catalyst-core?branch=main'><img src='https://coveralls.io/repos/github/input-output-hk/catalyst-core/badge.svg?branch=main' alt='Coverage Status' />
+</a>
 </p>
+<!-- markdownlint-enable no-inline-html -->
 
 # Content
 
@@ -42,7 +47,6 @@ TODO:
 ## Requirements
 
 ## Development
-
 
 ### Development Environment (NIX Shell)
 

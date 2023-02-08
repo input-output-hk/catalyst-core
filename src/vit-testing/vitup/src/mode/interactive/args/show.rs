@@ -1,11 +1,11 @@
 use super::super::VitInteractiveCommandExec;
 use chain_impl_mockchain::block::BlockDate;
+use clap::Parser;
 use hersir::controller::interactive::args::show::ShowStatus as BasicShowStatus;
 use jormungandr_lib::interfaces::BlockchainConfiguration;
-use structopt::StructOpt;
 use time::OffsetDateTime;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Show {
     /// Prints which nodes are upp
     Status(ShowStatus),
@@ -45,9 +45,9 @@ impl Show {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct ShowStatus {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 
@@ -69,9 +69,9 @@ impl ShowStatus {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct VoteTimeStatus {
-    #[structopt(short = "a", long = "alias")]
+    #[clap(short = 'a', long = "alias")]
     pub alias: Option<String>,
 }
 

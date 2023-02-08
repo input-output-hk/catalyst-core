@@ -1,4 +1,4 @@
-use wallet_js::*;
+use wallet_wasm_js::*;
 use wasm_bindgen_test::*;
 
 #[wasm_bindgen_test]

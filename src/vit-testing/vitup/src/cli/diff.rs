@@ -1,6 +1,7 @@
 use crate::builders::utils::DeploymentTree;
 use crate::Result;
 use assert_fs::TempDir;
+use clap::Parser;
 use diffy::create_patch;
 use diffy::PatchFormatter;
 use jormungandr_automation::testing::block0::decode_block0;
@@ -8,31 +9,30 @@ use jortestkit::prelude::read_file;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use structopt::StructOpt;
 use valgrind::ValgrindClient;
+use vit_servicing_station_tests::common::startup::db::DbBuilder;
 use vit_servicing_station_tests::common::startup::server::ServerBootstrapper;
 
-#[derive(StructOpt, Debug)]
-#[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
+#[derive(Parser, Debug)]
 pub struct DiffCommand {
     /// Local environment to compare
-    #[structopt(short = "l", long = "local", default_value = "./data/")]
+    #[clap(short = 'l', long = "local", default_value = "./data/")]
     pub local: PathBuf,
 
     /// Vit servicing station server binary
-    #[structopt(long = "vit-station", default_value = "vit-servicing-station-server")]
+    #[clap(long = "vit-station", default_value = "vit-servicing-station-server")]
     pub vit_station: PathBuf,
 
     /// Target environment to compare
-    #[structopt(short = "t", long = "target")]
+    #[clap(short = 't', long = "target")]
     pub target: String,
 
     /// Output file. If not defined it will output to stdout
-    #[structopt(short = "o", long = "output")]
+    #[clap(short = 'o', long = "output")]
     pub output: Option<PathBuf>,
 
     /// Apply coloring during diff
-    #[structopt(short = "c", long = "color")]
+    #[clap(short = 'c', long = "color")]
     pub color: bool,
 }
 
@@ -42,7 +42,6 @@ impl DiffCommand {
         let remote = TempDir::new().unwrap();
         let deployment_tree = DeploymentTree::new(&self.local);
         let local_genesis_yaml = deployment_tree.genesis_path();
-        let local_vit_db = deployment_tree.database_path();
         let remote_client = ValgrindClient::new(self.target.clone(), Default::default())?;
 
         let remote_genesis_yaml = remote.path().join("genesis_remote.yaml");
@@ -52,8 +51,10 @@ impl DiffCommand {
         let local_genesis_content = read_file(&local_genesis_yaml)?;
         let remote_genesis_content = read_file(remote_genesis_yaml)?;
 
+        let db_url = DbBuilder::new().build().unwrap();
+
         let server = ServerBootstrapper::new()
-            .with_db_path(local_vit_db.to_str().unwrap())
+            .with_db_path(db_url)
             .start_with_exe(&remote, self.vit_station.clone())?;
 
         let local_funds = server.rest_client().funds()?;

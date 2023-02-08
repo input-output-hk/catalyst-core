@@ -5,6 +5,7 @@ use crate::{
 use chain_addr::Discrimination;
 use chain_crypto::Ed25519;
 use chain_impl_mockchain::block::BlockDate;
+use clap::Parser;
 use jormungandr_automation::{
     jormungandr::RemoteJormungandrBuilder,
     testing::{keys::create_new_key_pair, time},
@@ -15,67 +16,66 @@ use jortestkit::{
     prelude::{parse_progress_bar_mode_from_str, ProgressBarMode},
 };
 use std::{path::PathBuf, str::FromStr, time::Duration};
-use structopt::StructOpt;
 use thor::{
     BlockDateGenerator, DiscriminationExtension, FragmentSender, FragmentSenderSetup, Wallet,
 };
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct AllFragments {
     /// Number of threads
-    #[structopt(short = "c", long = "count", default_value = "3")]
+    #[clap(short = 'c', long = "count", default_value = "3")]
     pub count: usize,
 
     /// address in format:
     /// /ip4/54.193.75.55/tcp/3000
-    #[structopt(short = "a", long = "address")]
+    #[clap(short = 'a', long = "address")]
     pub endpoint: String,
 
     /// address in format:
     /// /ip4/54.193.75.55/tcp/3000
-    #[structopt(short = "e", long = "explorer")]
+    #[clap(short = 'e', long = "explorer")]
     pub explorer_endpoint: String,
 
     /// amount of delay [milliseconds] between sync attempts
-    #[structopt(long = "delay", default_value = "50")]
+    #[clap(long = "delay", default_value = "50")]
     pub delay: u64,
 
     /// amount of delay [seconds] between sync attempts
-    #[structopt(short = "d", long = "duration")]
+    #[clap(short = 'd', long = "duration")]
     pub duration: u64,
 
     // show progress
-    #[structopt(
+    #[clap(
         long = "progress-bar-mode",
-        short = "b",
+        short = 'b',
         default_value = "Monitor",
-        parse(from_str = parse_progress_bar_mode_from_str)
+        value_parser = parse_progress_bar_mode_from_str
     )]
     progress_bar_mode: ProgressBarMode,
 
-    #[structopt(short = "m", long = "measure")]
+    #[clap(short = 'm', long = "measure")]
     pub measure: bool,
 
-    #[structopt(long = "key", short = "k")]
+    #[clap(long = "key", short = 'k')]
     faucet_key_file: PathBuf,
 
-    #[structopt(long = "spending-counter", short = "s")]
+    #[clap(long = "spending-counter", short = 's')]
     faucet_spending_counter: u32,
 
     /// load test rump up period
-    #[structopt(long = "rump-up")]
+    #[clap(long = "rump-up")]
     rump_up: u32,
 
     /// Transaction validity deadline (inclusive)
-    #[structopt(short = "v", long = "valid-until", conflicts_with = "ttl")]
+    #[clap(short = 'v', long = "valid-until", conflicts_with = "ttl")]
     valid_until: Option<BlockDate>,
 
     /// Transaction time to live (can be negative e.g. ~4.2)
-    #[structopt(short = "t", long= "ttl", default_value = "1.0", parse(try_from_str = parse_shift))]
+    #[clap(short = 't', long= "ttl", default_value = "1.0", value_parser = parse_shift)]
     ttl: (BlockDate, bool),
 
     /// Set the discrimination type to testing (default is production).
-    #[structopt(long = "testing")]
+    #[clap(long = "testing")]
     testing: bool,
 }
 

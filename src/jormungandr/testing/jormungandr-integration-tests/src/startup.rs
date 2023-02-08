@@ -297,10 +297,9 @@ pub fn start_stake_pool(
         .with_certs(initial_certs.into_iter().map(Initial::Cert).collect())
         .build();
 
-    JormungandrBootstrapper::default()
+    JormungandrBootstrapper::default_with_config(node_config_builder.build())
         .with_block0_configuration(block0_config)
         .with_secret(secret)
-        .with_node_config(node_config_builder.build())
         .into_starter(temp_dir)?
         .start()
         .map(|process| (process, stake_pools))

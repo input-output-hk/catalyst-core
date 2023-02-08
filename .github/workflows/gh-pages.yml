@@ -1,47 +1,35 @@
 name: GitHub Pages
 
-on:
-  push:
-    branches: 
-      - "main"
-
-    paths:
-      - book/src/**
-      - CODE_OF_CONDUCT.md
-      - CONTRIBUTING.md
-      - src/jormungandr/jormungandr-lib/src/interfaces/block0_configuration/BLOCKCHAIN_CONFIGURATION_DOCUMENTED_EXAMPLE.yaml
-      - src/jormungandr/jormungandr-lib/src/interfaces/CONFIG_PARAMS_DOCUMENTED_EXAMPLE.yaml
-
+on: [push, pull_request]
 
 jobs:
   deploy:
+    name: Deploy GitHub Pages
     runs-on: ubuntu-latest
     permissions:
       contents: write
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout The Code
+        uses: actions/checkout@v3
 
-      - uses: taiki-e/install-action@v1
+      - name: Set env
+        run: |
+          GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
+
+      - name: Build Docs
+        uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools:v1.1
         with:
-          tool: cargo-binstall,cargo-make,mdbook
+          entrypoint: cargo
+          args: make build-docs
 
-      - name: Install deps
-        run:
-          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-
-      - name: Setup mdBook prerequisites 
-        run: |
-          cargo make install-docs-prereqs
-
-      - name: Build the book
-        run: |
-          cargo make build-docs
-
-      - name: Deploy
+      # On PUSH or PR we deploy docs to a sub-directory named after the branch.
+      # This lets us review the docs as rendered, and not just the markdown.
+      - name: Deploy Docs
         uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.ref == 'refs/heads/main' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./book/html
+          destination_dir: ${{ env.GIT_BRANCH }}

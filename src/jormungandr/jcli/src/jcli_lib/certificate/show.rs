@@ -2,10 +2,10 @@ mod stake_pool_id;
 mod vote_plan_id;
 
 use crate::jcli_lib::certificate::Error;
-use structopt::StructOpt;
+use clap::Subcommand;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Subcommand)]
+#[clap(rename_all = "kebab-case")]
 pub enum ShowArgs {
     /// get the stake pool id from the given stake pool registration certificate
     StakePoolId(stake_pool_id::GetStakePoolId),

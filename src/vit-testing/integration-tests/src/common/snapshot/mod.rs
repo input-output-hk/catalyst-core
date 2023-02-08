@@ -1,18 +1,19 @@
 mod controller;
 pub mod mock;
+pub mod result;
 mod starter;
 mod voter_hirs_asserts;
 
-pub use controller::SnapshotServiceController;
-pub use starter::SnapshotServiceStarter;
-pub use voter_hirs_asserts::RegistrationAsserts;
-
-use snapshot_trigger_service::client::do_snapshot as do_snapshot_internal;
-use snapshot_trigger_service::client::{Error as SnapshotClientError, SnapshotResult};
+use crate::common::snapshot::result::do_snapshot as do_snapshot_internal;
 use snapshot_trigger_service::config::JobParameters;
 use thiserror::Error;
 
-pub fn do_snapshot(job_params: JobParameters) -> Result<SnapshotResult, SnapshotClientError> {
+pub use controller::SnapshotServiceController;
+pub use result::SnapshotResult;
+pub use starter::SnapshotServiceStarter;
+pub use voter_hirs_asserts::RegistrationAsserts;
+
+pub fn do_snapshot(job_params: JobParameters) -> Result<SnapshotResult, result::Error> {
     let snapshot_token = std::env::var("SNAPSHOT_TOKEN").expect("SNAPSHOT_TOKEN not defined");
     let snapshot_address = std::env::var("SNAPSHOT_ADDRESS").expect("SNAPSHOT_ADDRESS not defined");
 
@@ -29,8 +30,6 @@ pub fn wait_for_db_sync() {
 pub enum Error {
     #[error("spawn error")]
     Io(#[from] std::io::Error),
-    #[error(transparent)]
-    SnapshotClient(#[from] SnapshotClientError),
     #[error(transparent)]
     Config(#[from] snapshot_trigger_service::config::Error),
     #[error("cannot bootstrap snapshot service on port {0}")]

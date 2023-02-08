@@ -1,36 +1,36 @@
 #![allow(dead_code)]
 
-use crate::model::Output;
-use crate::Delegations;
+use crate::data::SnapshotEntry;
+use crate::VotingPowerSource;
 use bigdecimal::ToPrimitive;
 use cardano_serialization_lib::address::RewardAddress;
 use cardano_serialization_lib::crypto::PublicKey;
 
-/// Allows [Output] struct to be assertable
+/// Allows [`SnapshotEntry`] struct to be assertable
 pub trait VerifiableSnapshotOutput {
     /// returns assertion struct
     fn assert(&self) -> SnapshotOutputAssert;
 }
 
-impl VerifiableSnapshotOutput for Output {
+impl VerifiableSnapshotOutput for SnapshotEntry {
     fn assert(&self) -> SnapshotOutputAssert {
         SnapshotOutputAssert::new(self)
     }
 }
 
-/// Fluent api for [Output] assertions
+/// Fluent api for [`SnapshotEntry`] assertions
 pub struct SnapshotOutputAssert<'a> {
-    output: &'a Output,
+    output: &'a SnapshotEntry,
 }
 
 impl<'a> SnapshotOutputAssert<'a> {
-    /// Creates new instance based on [Output] reference
+    /// Creates new instance based on [`SnapshotEntry`] reference
     #[must_use]
-    pub fn new(output: &'a Output) -> Self {
+    pub fn new(output: &'a SnapshotEntry) -> Self {
         Self { output }
     }
 
-    /// Asserts expected voting power field from [Output]
+    /// Asserts expected voting power field from [`SnapshotEntry`]
     /// # Panics
     ///
     /// Panics on assertion failed
@@ -45,34 +45,37 @@ impl<'a> SnapshotOutputAssert<'a> {
         );
     }
 
-    /// Asserts delegations address field from [Output]
+    /// Asserts delegations address field from [`SnapshotEntry`]
     /// # Panics
     ///
     /// Panics on assertion failed
-    pub fn delegations(&self, delegations: &Delegations) {
-        assert_eq!(delegations, &self.output.delegations, "delegation target");
+    pub fn voting_power_source(&self, voting_power_source: &VotingPowerSource) {
+        assert_eq!(
+            voting_power_source, &self.output.voting_power_source,
+            "delegation target"
+        );
     }
 
-    /// Asserts reward address field from [Output]
+    /// Asserts reward address field from [`SnapshotEntry`]
     /// # Panics
     ///
     /// Panics on assertion failed
     pub fn reward_address(&self, reward_address: &RewardAddress) {
         assert_eq!(
             reward_address.to_address().to_hex(),
-            self.output.rewards_address.to_string(),
+            hex::encode(&self.output.rewards_address.0),
             "different rewards address"
         );
     }
 
-    /// Asserts stake public key field from [Output]
+    /// Asserts stake public key field from [`SnapshotEntry`]
     /// # Panics
     ///
     /// Panics on assertion failed
     pub fn stake_key(&self, public_key: &PublicKey) {
         assert_eq!(
             &public_key.to_hex(),
-            &self.output.stake_public_key.to_string(),
+            &hex::encode(self.output.stake_key),
             "different stake public key"
         );
     }

@@ -9,6 +9,7 @@ use std::process::Child;
 use std::sync::{Arc, Mutex};
 use vit_servicing_station_lib::db::models::challenges::Challenge;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
+use vit_servicing_station_lib::v0::endpoints::snapshot::DelegatorInfo;
 use vit_servicing_station_tests::common::raw_snapshot::RawSnapshot;
 use vit_servicing_station_tests::common::snapshot::VoterInfo;
 
@@ -24,7 +25,6 @@ pub struct VitStationController {
 }
 
 pub const VIT_CONFIG: &str = "vit_config.yaml";
-pub const STORAGE: &str = "storage.db";
 pub const VIT_STATION_LOG: &str = "vit_station.log";
 
 impl VitStationController {
@@ -68,6 +68,10 @@ impl VitStationController {
 
     pub fn voter_info(&self, tag: &str, key: &str) -> Result<VoterInfo> {
         Ok(self.rest_client.voter_info(tag, key)?)
+    }
+
+    pub fn delegator_info(&self, tag: &str, key: &str) -> Result<DelegatorInfo> {
+        Ok(self.rest_client.delegator_info(tag, key)?)
     }
 
     pub fn as_named_process(&self) -> NamedProcess {

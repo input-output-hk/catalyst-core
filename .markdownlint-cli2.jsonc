@@ -1,0 +1,10 @@
+{
+    // Configures the markdownlint-cli2 tool only.
+    // For common markdownlint configuration which this tool also uses, see: ./.markdownlint.jsonc
+    "globs": [
+        "book/src/**/*.md"
+    ],
+    "ignores": [
+        "book/src/rust/**"
+    ]
+}

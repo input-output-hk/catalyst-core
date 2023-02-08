@@ -1,0 +1,159 @@
+name: Testing and Code Coverage
+
+on:
+  schedule:
+    # runs 5min after midnight, everyday
+    - cron: '5 0 * * *'
+
+env:
+  RUST_LATEST_STABLE_VERSION: 1.65
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+  RUST_BACKTRACE: 1
+  CARGO_INCREMENTAL: 0
+  CARGO_FLAGS: --verbose --locked
+  SEGMENT_DOWNLOAD_TIMEOUT_MINS: 15
+
+
+concurrency:
+  group: ${{ github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: [integration-tests]
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: 123456
+        options:
+          >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}  # it says it can read the rust-toolchain file, but it fails if we omit this
+          components: llvm-tools-preview
+
+      - name: Cache rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "build_cache"
+          save-if: "false"
+
+      - name: Install nextest
+        uses: taiki-e/install-action@nextest
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: Install system deps
+        run:
+          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+
+      - name: Run unit tests
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost
+        run: |
+          cargo llvm-cov nextest --no-report --manifest-path ./src/catalyst-toolbox/catalyst-toolbox/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/catalyst-toolbox/snapshot-lib/Cargo.toml --profile ci
+
+          cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-cli/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-lib/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-server/Cargo.toml --profile ci
+
+          cargo llvm-cov nextest --no-report --manifest-path ./src/voting-tools-rs/Cargo.toml --profile ci
+
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/cardano-legacy-address/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-addr/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-core/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-crypto/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-evm/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-impl-mockchain/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-network/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-ser/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-storage/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-time/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/chain-vote/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/imhamt/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/sparse-array/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/typed-bytes/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-c/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-core/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/bindings/wallet-wasm-js/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/chain-path-derivation/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/hdkeygen/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/symmetric-cipher/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/chain-wallet-libs/wallet/Cargo.toml --profile ci
+
+          cargo llvm-cov nextest --no-report --manifest-path ./src/jormungandr/jormungandr/Cargo.toml --profile ci
+          cargo llvm-cov report --lcov --output-path ./lcov.info
+
+      - name: Upload code coverage to coveralls.io
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: "./lcov.info"
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+        options:
+          >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}  # it says it can read the rust-toolchain file, but it fails if we omit this
+          components: llvm-tools-preview
+
+      - name: Cache rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "build_cache"
+          save-if: "false"
+
+      - name: Install nextest
+        uses: taiki-e/install-action@nextest
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: Install system deps
+        run:
+          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+
+      - name: Run integration tests
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost
+        run: |
+          source <(cargo llvm-cov show-env --export-prefix)
+          cargo build -p jcli -p jormungandr -p explorer -p vit-servicing-station-cli -p vit-servicing-station-server
+          cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-tests/Cargo.toml --profile ci
+          cargo llvm-cov nextest --no-report --manifest-path ./src/jormungandr/testing/jormungandr-integration-tests/Cargo.toml --profile ci

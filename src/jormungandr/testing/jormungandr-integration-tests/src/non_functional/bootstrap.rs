@@ -49,8 +49,7 @@ pub fn bootstrap_from_100_mb_storage() {
     let temp_dir = jormungandr.steal_temp_dir().unwrap().try_into().unwrap();
     jormungandr.shutdown();
 
-    let mut jormungandr = JormungandrBootstrapper::default()
-        .with_node_config(test_context.node_config())
+    let mut jormungandr = JormungandrBootstrapper::default_with_config(test_context.node_config())
         .with_block0_configuration(test_context.block0_config())
         .into_starter(temp_dir)
         .unwrap()
@@ -66,8 +65,7 @@ pub fn bootstrap_from_100_mb_storage() {
     let temp_dir = jormungandr.steal_temp_dir().unwrap().try_into().unwrap();
     jormungandr.stop();
 
-    let _jormungandr = JormungandrBootstrapper::default()
-        .with_node_config(test_context.node_config())
+    let _jormungandr = JormungandrBootstrapper::default_with_config(test_context.node_config())
         .with_block0_configuration(test_context.block0_config())
         .into_starter(temp_dir)
         .unwrap()

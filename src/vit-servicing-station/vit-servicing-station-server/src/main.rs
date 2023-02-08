@@ -2,8 +2,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
+use clap::Parser;
 use opentelemetry_otlp::WithExportConfig;
-use structopt::StructOpt;
 use tracing::{error, info};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::filter::LevelFilter;
@@ -131,7 +131,7 @@ fn config_tracing(
 #[tokio::main]
 async fn main() -> ApplicationExitCode {
     // load settings from command line (defaults to env variables)
-    let mut settings: ServiceSettings = ServiceSettings::from_args();
+    let mut settings: ServiceSettings = ServiceSettings::parse();
 
     // load settings from file if specified
     if let Some(settings_file) = &settings.in_settings_file {
@@ -170,13 +170,6 @@ async fn main() -> ApplicationExitCode {
         }
     };
 
-    // Check db file exists (should be here only for current sqlite db backend)
-    if !settings.db_url.starts_with("postgres://")
-        && !std::path::Path::new(&settings.db_url).exists()
-    {
-        error!("DB file {} not found.", &settings.db_url);
-        return ApplicationExitCode::DbConnectionError;
-    }
     // load db pool
     let db_pool = match db::load_db_connection_pool(&settings.db_url) {
         Ok(d) => d,

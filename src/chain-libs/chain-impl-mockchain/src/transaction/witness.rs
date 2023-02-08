@@ -143,12 +143,27 @@ impl AsRef<[u8]> for WitnessMultisigData {
 
 impl Witness {
     /// Creates new `Witness` value.
+
+    pub fn new_utxo_data(
+        block0: &HeaderId,
+        sign_data_hash: &TransactionSignDataHash,
+    ) -> WitnessUtxoData {
+        WitnessUtxoData::new(block0, sign_data_hash, WitnessUtxoVersion::Normal)
+    }
+
     pub fn new_utxo<F>(block0: &HeaderId, sign_data_hash: &TransactionSignDataHash, sign: F) -> Self
     where
         F: FnOnce(&WitnessUtxoData) -> Signature<WitnessUtxoData, Ed25519>,
     {
         let wud = WitnessUtxoData::new(block0, sign_data_hash, WitnessUtxoVersion::Normal);
         Witness::Utxo(sign(&wud))
+    }
+
+    pub fn new_old_utxo_data(
+        block0: &HeaderId,
+        sign_data_hash: &TransactionSignDataHash,
+    ) -> WitnessUtxoData {
+        WitnessUtxoData::new(block0, sign_data_hash, WitnessUtxoVersion::Legacy)
     }
 
     pub fn new_old_utxo<F>(
@@ -163,6 +178,14 @@ impl Witness {
         let wud = WitnessUtxoData::new(block0, sign_data_hash, WitnessUtxoVersion::Legacy);
         let (pk, sig) = sign(&wud);
         Witness::OldUtxo(pk, *some_bytes, sig)
+    }
+
+    pub fn new_account_data(
+        block0: &HeaderId,
+        sign_data_hash: &TransactionSignDataHash,
+        spending_counter: account::SpendingCounter,
+    ) -> WitnessAccountData {
+        WitnessAccountData::new(block0, sign_data_hash, spending_counter)
     }
 
     pub fn new_account<F>(

@@ -1,23 +1,23 @@
 use super::UserInteractionController;
 use crate::{controller::Error, style};
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub struct CastVote {
-    #[structopt(short = "w", long = "wallet")]
+    #[clap(short = 'w', long = "wallet")]
     pub wallet: String,
-    #[structopt(short = "p", long = "vote-plan")]
+    #[clap(short = 'p', long = "vote-plan")]
     pub vote_plan: String,
-    #[structopt(short = "v", long = "via")]
+    #[clap(short = 'v', long = "via")]
     pub via: String,
 
-    #[structopt(short = "i", long = "idx")]
+    #[clap(short = 'i', long = "idx")]
     pub proposal_index: Option<usize>,
 
-    #[structopt(short = "d", long = "id")]
+    #[clap(short = 'd', long = "id")]
     pub proposal_id: Option<String>,
 
-    #[structopt(short = "c", long = "choice")]
+    #[clap(short = 'c', long = "choice")]
     pub choice: u8,
 }
 

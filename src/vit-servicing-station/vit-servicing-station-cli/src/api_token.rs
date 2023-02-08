@@ -1,9 +1,9 @@
 use crate::db_utils::{backup_db_file, restore_db_file};
-use crate::{db_utils::db_file_exists, task::ExecTask};
+use crate::task::ExecTask;
+use clap::Parser;
 use rand::Rng;
 use std::collections::HashSet;
 use std::io;
-use structopt::StructOpt;
 use thiserror::Error;
 use time::{Duration, OffsetDateTime};
 use vit_servicing_station_lib::{
@@ -36,27 +36,27 @@ pub enum Error {
     Io(#[from] std::io::Error),
 }
 
-#[derive(Debug, PartialEq, Eq, StructOpt)]
+#[derive(Debug, PartialEq, Eq, Parser)]
 pub enum ApiTokenCmd {
     /// Add provided tokens to database. If --tokens is not provided the binary will read them from the `stdin`
     Add {
         /// List of tokens in URL safe base64. If --tokens is not provided the binary will read them from the `stdin`
-        #[structopt(long = "tokens")]
+        #[clap(long = "tokens")]
         tokens: Option<Vec<String>>,
 
         /// URL of the vit-servicing-station database to interact with
-        #[structopt(long = "db-url")]
+        #[clap(long = "db-url")]
         db_url: String,
     },
 
     /// Generate API tokens, URL safe base64 encoded.
     Generate {
         /// Number of tokens to generate
-        #[structopt(long = "n", default_value = "1")]
+        #[clap(long = "n", default_value = "1")]
         n: usize,
 
         /// Size of the token
-        #[structopt(long = "size", default_value = "10")]
+        #[clap(long = "size", default_value = "10")]
         size: usize,
     },
 }
@@ -108,9 +108,6 @@ impl ApiTokenCmd {
     }
 
     fn handle_api_token_add(tokens: &Option<Vec<String>>, db_url: &str) -> Result<(), Error> {
-        // check if db file exists
-        db_file_exists(db_url)?;
-
         let pool = load_db_connection_pool(db_url).map_err(Error::DbPool)?;
         let db_conn = pool.get()?;
 
@@ -167,9 +164,9 @@ impl ExecTask for ApiTokenCmd {
 mod test {
     use super::*;
     use vit_servicing_station_lib::db::{
-        load_db_connection_pool, migrations::initialize_db_with_migration,
-        queries::api_tokens::query_token_data_by_token,
+        migrations::initialize_db_with_migration, queries::api_tokens::query_token_data_by_token,
     };
+    use vit_servicing_station_tests::common::startup::db::DbBuilder;
 
     #[test]
     fn generate_token() {
@@ -190,7 +187,8 @@ mod test {
     #[test]
     fn add_token() {
         let tokens = ApiTokenCmd::generate(10, 10);
-        let connection_pool = load_db_connection_pool("").unwrap();
+        let db_url = DbBuilder::new().build().unwrap();
+        let connection_pool = load_db_connection_pool(&db_url).unwrap();
         initialize_db_with_migration(&connection_pool.get().unwrap()).unwrap();
         let db_conn = connection_pool.get().unwrap();
         ApiTokenCmd::add_tokens(&tokens, &db_conn).unwrap();

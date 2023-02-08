@@ -2,10 +2,10 @@ use crate::jcli_lib::{
     rest::{Error, RestArgs},
     utils::OutputFormat,
 };
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 pub struct Utxo {
     /// hex-encoded ID of the transaction fragment
     fragment_id: String,
@@ -13,19 +13,19 @@ pub struct Utxo {
     /// index of the transaction output
     output_index: u8,
 
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     subcommand: Subcommand,
 }
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(rename_all = "kebab-case")]
 enum Subcommand {
     /// Get UTxO details
     Get {
-        #[structopt(flatten)]
+        #[clap(flatten)]
         output_format: OutputFormat,
 
-        #[structopt(flatten)]
+        #[clap(flatten)]
         args: RestArgs,
     },
 }

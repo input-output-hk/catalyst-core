@@ -52,6 +52,10 @@ use tracing_futures::Instrument;
 fn start() -> Result<(), start_up::Error> {
     let initialized_node = initialize_node()?;
 
+    if let Some(whitelist) = initialized_node.settings.network.whitelist.as_ref() {
+        tracing::info!("Whitelisted addresses {:?}", whitelist);
+    }
+
     let bootstrapped_node = bootstrap(initialized_node)?;
 
     start_services(bootstrapped_node)
@@ -173,12 +177,15 @@ fn start_services(bootstrapped_node: BootstrappedNode) -> Result<(), start_up::E
     }
 
     // FIXME: reduce state sharing across services
-    let network_state = Arc::new(network::GlobalState::new(
-        bootstrapped_node.block0_hash,
-        bootstrapped_node.settings.network.clone(),
-        stats_counter.clone(),
-        span!(Level::TRACE, "task", kind = "network"),
-    ));
+    let network_state = Arc::new(
+        network::GlobalState::new(
+            bootstrapped_node.block0_hash,
+            bootstrapped_node.settings.network.clone(),
+            stats_counter.clone(),
+            span!(Level::TRACE, "task", kind = "network"),
+        )
+        .map_err(start_up::Error::GlobalState)?,
+    );
 
     {
         let fragment_msgbox = fragment_msgbox.clone();
@@ -258,13 +265,6 @@ fn start_services(bootstrapped_node: BootstrappedNode) -> Result<(), start_up::E
     });
     let enclave = Enclave::new(leader_secret);
 
-    #[cfg(feature = "evm")]
-    let evm_keys = Arc::new(
-        node_secret
-            .map(|secret| secret.evm_keys())
-            .unwrap_or_default(),
-    );
-
     {
         let logs = leadership_logs.clone();
         let block_message = block_msgbox;
@@ -290,8 +290,6 @@ fn start_services(bootstrapped_node: BootstrappedNode) -> Result<(), start_up::E
     }
 
     {
-        let blockchain_tip = blockchain_tip.clone();
-
         let process = fragment::Process::new(
             bootstrapped_node.settings.mempool.pool_max_entries.into(),
             bootstrapped_node.settings.mempool.log_max_entries.into(),
@@ -304,13 +302,7 @@ fn start_services(bootstrapped_node: BootstrappedNode) -> Result<(), start_up::E
             .map(|s| s.dir);
 
         services.spawn_try_future("fragment", move |info| {
-            process.start(
-                info,
-                stats_counter,
-                fragment_queue,
-                fragment_log_dir,
-                blockchain_tip,
-            )
+            process.start(info, stats_counter, fragment_queue, fragment_log_dir)
         });
     };
 
@@ -321,8 +313,6 @@ fn start_services(bootstrapped_node: BootstrappedNode) -> Result<(), start_up::E
             transaction_task: fragment_msgbox,
             topology_task: topology_msgbox,
             leadership_logs,
-            #[cfg(feature = "evm")]
-            evm_keys,
             enclave,
             network_state,
             #[cfg(feature = "prometheus-metrics")]
@@ -654,26 +644,6 @@ fn initialize_node() -> Result<InitializedNode, start_up::Error> {
             Some(context)
         }
         None => None,
-    };
-
-    #[cfg(feature = "evm")]
-    let context = match settings.jrpc.clone() {
-        Some(jrpc_config) => {
-            let context = context.unwrap_or_else(|| init_context(diagnostic));
-
-            let jrpc_config = jrpc::Config {
-                listen: jrpc_config.listen,
-            };
-            let server_handler = jrpc::start_jrpc_server(jrpc_config, context.clone());
-            let service_context = context.clone();
-            services.spawn_future("jrpc", |info| async move {
-                service_context.write().await.set_span(info.span().clone());
-                server_handler.await
-            });
-
-            Some(context)
-        }
-        None => context,
     };
 
     // TODO: load network module here too (if needed)

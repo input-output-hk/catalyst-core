@@ -12,7 +12,7 @@ use catalyst_toolbox::rewards::Threshold;
 use chain_impl_mockchain::block::BlockDate;
 use jormungandr_automation::testing::time;
 use jormungandr_lib::crypto::account::Identifier;
-use mainnet_lib::{MainnetNetworkBuilder, MainnetWalletStateBuilder};
+use mainnet_lib::{wallet_state::MainnetWalletStateBuilder, MainnetNetworkBuilder};
 use snapshot_trigger_service::config::JobParameters;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::VoteBlockchainTime;
@@ -82,11 +82,11 @@ pub fn voters_with_at_least_one_vote() {
     );
     let vote_plan = controller.defined_vote_plan(&voteplan_alias).unwrap();
 
-    alice.vote_for(vote_plan.id(), 0, Vote::Yes as u8).unwrap();
+    alice.vote_for(&vote_plan.id(), 0, Vote::Yes as u8).unwrap();
 
-    bob.vote_for(vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+    bob.vote_for(&vote_plan.id(), 1, Vote::Yes as u8).unwrap();
 
-    bob.vote_for(vote_plan.id(), 0, Vote::Yes as u8).unwrap();
+    bob.vote_for(&vote_plan.id(), 0, Vote::Yes as u8).unwrap();
 
     let target_date = BlockDate {
         epoch: 1,

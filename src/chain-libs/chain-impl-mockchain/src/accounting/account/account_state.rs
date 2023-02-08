@@ -91,8 +91,6 @@ pub struct AccountState<Extra> {
     pub value: Value,
     pub tokens: Hamt<DefaultHasher, TokenIdentifier, Value>,
     pub last_rewards: LastRewards,
-    #[cfg(feature = "evm")]
-    pub evm_state: chain_evm::state::AccountState,
     pub extra: Extra,
 }
 
@@ -105,8 +103,6 @@ impl<Extra> AccountState<Extra> {
             value: v,
             tokens: Hamt::new(),
             last_rewards: LastRewards::default(),
-            #[cfg(feature = "evm")]
-            evm_state: chain_evm::state::AccountState::default(),
             extra: e,
         }
     }
@@ -114,13 +110,6 @@ impl<Extra> AccountState<Extra> {
     pub fn new_reward(epoch: Epoch, v: Value, extra: Extra) -> Self {
         let mut st = Self::new(v, extra);
         st.last_rewards.add_for(epoch, v);
-        st
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn new_evm(evm_state: chain_evm::state::AccountState, v: Value, extra: Extra) -> Self {
-        let mut st = Self::new(v, extra);
-        st.evm_state = evm_state;
         st
     }
 
@@ -162,14 +151,31 @@ impl<Extra: Clone> AccountState<Extra> {
         Ok(st)
     }
 
-    /// Subtract a value from an account state, and return the new state.
+    /// Spends value from an account state, and returns the new state.
     ///
-    /// Note that this *also* increment the counter, as this function would be usually call
-    /// for spending.
-    pub fn sub(&self, spending: SpendingCounter, v: Value) -> Result<Option<Self>, LedgerError> {
+    /// Note that this *also* increments the counter, as this function is usually
+    /// used for spending.
+    pub fn spend(&self, spending: SpendingCounter, v: Value) -> Result<Option<Self>, LedgerError> {
         let new_value = (self.value - v)?;
         let mut r = self.clone();
         r.spending.next_verify(spending)?;
+        r.value = new_value;
+        Ok(Some(r))
+    }
+
+    /// Spends value from an account state, and returns the new state.
+    ///
+    /// Note that this *also* increments the counter, but does not fail if the
+    /// given counter fails to match the current one. However, it does throw
+    /// a warning.
+    pub(crate) fn spend_unchecked(
+        &self,
+        counter: SpendingCounter,
+        v: Value,
+    ) -> Result<Option<Self>, LedgerError> {
+        let new_value = (self.value - v)?;
+        let mut r = self.clone();
+        r.spending.next_unchecked(counter);
         r.value = new_value;
         Ok(Some(r))
     }
@@ -226,7 +232,7 @@ mod tests {
         account_state.spending = SpendingCounterIncreasing::new_from_counter(counter);
         assert_eq!(
             should_sub_fail(account_state.clone(), sub_value),
-            account_state.sub(counter, sub_value).is_err(),
+            account_state.spend(counter, sub_value).is_err(),
         )
     }
 
@@ -348,8 +354,6 @@ mod tests {
                 value: result_value,
                 tokens: Hamt::new(),
                 last_rewards: LastRewards::default(),
-                #[cfg(feature = "evm")]
-                evm_state: chain_evm::state::AccountState::default(),
                 extra: (),
             }
         }
@@ -385,7 +389,7 @@ mod tests {
                 }
                 ArbitraryAccountStateOp::Sub(value) => {
                     let should_fail = should_sub_fail(account_state.clone(), value);
-                    match (should_fail, account_state.sub(counter, value)) {
+                    match (should_fail, account_state.spend(counter, value)) {
                         (false, Ok(account_state)) => {
                             strategy.next_verify(counter).expect("success");
                             counter = counter.increment();
@@ -399,8 +403,8 @@ mod tests {
                             }
                         }
                         (true, Err(_)) => account_state,
-                        (false,  Err(err)) => panic!("Operation {}: unexpected sub operation failure. Expected success but got: {:?}",op_counter,err),
-                        (true, Ok(account_state)) => panic!("Operation {}: unexpected sub operation success. Expected failure but got: success. AccountState: {:?}",op_counter, &account_state),
+                        (false,  Err(err)) => panic!("Operation {}: unexpected spend operation failure. Expected success but got: {:?}",op_counter,err),
+                        (true, Ok(account_state)) => panic!("Operation {}: unexpected spend operation success. Expected failure but got: success. AccountState: {:?}",op_counter, &account_state),
                     }
                 }
                 ArbitraryAccountStateOp::Delegate(stake_pool_id) => {
@@ -636,8 +640,6 @@ mod tests {
                     tokens: Hamt::new(),
                     last_rewards: LastRewards::default(),
                     extra: (),
-                    #[cfg(feature = "evm")]
-                    evm_state: chain_evm::state::AccountState::default(),
                 }
             }
         }

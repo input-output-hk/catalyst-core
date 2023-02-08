@@ -2,7 +2,6 @@ use super::{snapshot::VoterSnapshot, Configuration as MockConfig, LedgerState};
 use crate::builders::utils::SessionSettingsExtension;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::Config;
-use crate::config::SnapshotError;
 use crate::mode::mock::NetworkCongestion;
 use crate::mode::mock::NetworkCongestionMode;
 use crate::mode::standard::VitController;
@@ -79,10 +78,7 @@ impl MockState {
             version: VitVersion {
                 service_version: params.service.version,
             },
-            voters: VoterSnapshot::from_config_or_default(
-                controller.defined_wallets(),
-                &params.initials.snapshot,
-            )?,
+            voters: VoterSnapshot::from_config_or_default(&params.initials.snapshot)?,
             block0_bin: jortestkit::file::get_file_as_byte_vec(controller.block0_file())?,
             block_account_endpoint_counter: 0,
             controller,
@@ -221,7 +217,7 @@ impl MockState {
                 peer_total_cnt: 2,
                 tx_recv_cnt: network_congestion_data.received_fragments_count as u64,
                 mempool_usage_ratio: network_congestion_data.mempool_usage_ratio,
-                mempool_total_size: network_congestion_data.mempool_total_size,
+                mempool_tx_count: network_congestion_data.mempool_tx_count,
                 tx_rejected_cnt: network_congestion_data.rejected_fragments_count as u64,
                 votes_cast: network_congestion_data.received_fragments_count as u64,
                 uptime: Some(uptime),
@@ -240,5 +236,5 @@ pub enum Error {
     #[error(transparent)]
     Io(#[from] std::io::Error),
     #[error(transparent)]
-    Snapshot(#[from] SnapshotError),
+    Snapshot(#[from] mainnet_tools::snapshot::Error),
 }

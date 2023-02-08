@@ -88,27 +88,3 @@ impl<'de> Deserialize<'de> for EvmTransaction {
         }
     }
 }
-
-#[cfg(all(test, feature = "evm"))]
-mod test {
-    use super::*;
-    use quickcheck::Arbitrary;
-
-    impl Arbitrary for EvmTransaction {
-        fn arbitrary<G: quickcheck::Gen>(g: &mut G) -> Self {
-            Self(evm::EvmTransaction::arbitrary(g))
-        }
-    }
-
-    quickcheck! {
-        fn evm_transaction_bincode_serde_test(evm_transaction: EvmTransaction) -> bool {
-            let decoded_evm_transaction: EvmTransaction = bincode::deserialize(bincode::serialize(&evm_transaction).unwrap().as_slice()).unwrap();
-            decoded_evm_transaction == evm_transaction
-        }
-
-        fn evm_transaction_yaml_serde_test(evm_transaction: EvmTransaction) -> bool {
-            let decoded_evm_transaction: EvmTransaction = serde_yaml::from_str(&serde_yaml::to_string(&evm_transaction).unwrap()).unwrap();
-            decoded_evm_transaction == evm_transaction
-        }
-    }
-}

@@ -1,4 +1,5 @@
 # Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -6,10 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-## [0.8.1]
+## [0.8.2]
+
 - Updated Javascript wallet bindings, initial version of CIP-62 specification API.
 - *breaking change*: wallet_spending_counter replaced by wallet_spending_counters
-- *breaking change*: wallet_set_state now takes an array of spending counters 
+- *breaking change*: wallet_set_state now takes an array of spending counters
 - *breaking change*: wallet_vote now takes a lane as an argument
 - *breaking change*: wallet_import_keys now takes a single argument with the
   account key.
@@ -84,7 +86,7 @@ transactions, also in order of creation (and signing).
 
 ### Changed
 
-#### cordova - c - java - wallet-js 
+#### cordova - c - java - wallet-js
 
 - *breaking change*: Take a bech32 string in proposal_new_private instead of raw bytes
 
@@ -135,14 +137,16 @@ Add specific package used for daedalus catalyst
 
 - Add Ed25519Extended generation from seed
 - Key signing and verification.
-- Add the other kinds of private keys: 
+- Add the other kinds of private keys:
   - Ed25519
 
 #### Cordova-android | Java | C | Electron/Browser
+
 - vote_proposal_new_public
 - vote_proposal_new_private
 
 #### Cordova-electron/browser
+
 - add confirm/get pending transactions
 - add import keys (free keys)
 - pin decryption (symmetric cipher decrypt)
@@ -178,9 +182,11 @@ apis).
 ## [0.5.0-pre2] - 2020-08-18
 
 ### Fixed
+
 - Wrong secret key type was used when recovering from mnemonics.
 
 ## [0.5.0-pre1] - 2020-08-18
+
 ### Added
 
 - New utxo store.

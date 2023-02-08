@@ -15,7 +15,7 @@ futures = "0.3.21"
 base64 = "0.13"
 bech32 = "0.8"
 bytesize = "1.1.0"
-structopt = "0.3.26"
+clap = { workspace = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chain-impl-mockchain = { path = "../../../chain-libs/chain-impl-mockchain", features = [ "property-test-api" ] }
@@ -25,7 +25,6 @@ chain-crypto    = { path = "../../../chain-libs/chain-crypto", features = [ "pro
 chain-time      = { path = "../../../chain-libs/chain-time" }
 chain-storage   = { path = "../../../chain-libs/chain-storage", features = ["with-bench"] }
 chain-vote      = { path = "../../../chain-libs/chain-vote" }
-chain-evm       = { path = "../../../chain-libs/chain-evm", optional = true }
 cardano-legacy-address = { path = "../../../chain-libs/cardano-legacy-address" }
 typed-bytes = { path = "../../../chain-libs/typed-bytes" }
 jormungandr-lib = { path = "../../jormungandr-lib" }
@@ -55,7 +54,7 @@ graphql_client = "0.10.0"
 semver = { version = "1.0", features = ["serde"] }
 json = "0.12.4"
 strum = { version = "0.24", features = ["derive"] }
-tracing = "0.1"
+tracing.workspace = true
 log = { version = "0.4", features = ["serde"] }
 netstat2 = "0.9"
 multiaddr = { package = "parity-multiaddr", version = "0.11" }
@@ -71,14 +70,13 @@ default-features = false
 features = ["blocking", "json", "rustls-tls"]
 
 [dependencies.tracing-subscriber]
-version = "0.3"
+workspace = true
 default-features = false
 features = ["json","fmt"]
 
 
 [features]
 default = []
-evm = ["jormungandr-lib/evm", "chain-evm"]
 property-test-api = [ ]
 
 [build-dependencies]

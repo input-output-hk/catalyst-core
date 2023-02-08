@@ -7,14 +7,15 @@ use chain_impl_mockchain::{
     block::Block,
     ledger::{self, Ledger},
 };
+use clap::Parser;
 use jormungandr_lib::interfaces::{
     block0_configuration_documented_example, Block0Configuration, Block0ConfigurationError,
 };
 use std::{
     io::{BufRead, Write},
     path::PathBuf,
+    str::FromStr,
 };
-use structopt::StructOpt;
 use thiserror::Error;
 
 #[allow(clippy::large_enum_variant)]
@@ -88,8 +89,8 @@ fn print_hash(input: Input) -> Result<(), Error> {
 }
 
 /// create block 0 of the blockchain (i.e. the genesis block)
-#[derive(StructOpt)]
-#[structopt(name = "genesis", rename_all = "kebab-case")]
+#[derive(Parser)]
+#[clap(name = "genesis", rename_all = "kebab-case")]
 pub enum Genesis {
     /// Create a default Genesis file with appropriate documentation
     /// to help creating the YAML file
@@ -107,13 +108,13 @@ pub enum Genesis {
     Hash(Input),
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct Input {
     /// the file path to the genesis file defining the block 0
     ///
     /// If not available the command will expect to read the configuration from
     /// the standard input.
-    #[structopt(long = "input", parse(from_os_str), name = "FILE_INPUT")]
+    #[clap(long = "input", value_parser = PathBuf::from_str, name = "FILE_INPUT")]
     pub input_file: Option<std::path::PathBuf>,
 }
 
@@ -139,16 +140,16 @@ pub fn load_block(block_reader: impl BufRead) -> Result<Block, Error> {
     Block::deserialize(&mut Codec::new(block_reader)).map_err(Error::BlockFileCorrupted)
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct Common {
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub input: Input,
 
     /// the file path to the block to create
     ///
     /// If not available the command will expect to write the block to
     /// to the standard output
-    #[structopt(long = "output", parse(from_os_str), name = "FILE_OUTPUT")]
+    #[clap(long = "output", value_parser = PathBuf::from_str, name = "FILE_OUTPUT")]
     pub output_file: Option<std::path::PathBuf>,
 }
 

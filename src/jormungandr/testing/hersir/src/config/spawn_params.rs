@@ -30,7 +30,7 @@ pub struct SpawnParams {
     max_bootstrap_attempts: Option<usize>,
     max_connections: Option<u32>,
     allow_private_addresses: Option<bool>,
-    whitelist: Option<Vec<SocketAddr>>,
+    whitelist: Option<Vec<Multiaddr>>,
     max_inbound_connections: Option<u32>,
     mempool: Option<Mempool>,
     network_stuck_check: Option<Duration>,
@@ -46,6 +46,8 @@ pub struct SpawnParams {
     version: Option<Version>,
     #[serde(default)]
     verbose: bool,
+    #[serde(default)]
+    dns_server_address: Option<SocketAddr>,
 }
 
 impl SpawnParams {
@@ -77,6 +79,7 @@ impl SpawnParams {
             trusted_peers: None,
             version: None,
             verbose: false,
+            dns_server_address: None,
         }
     }
 
@@ -148,7 +151,7 @@ impl SpawnParams {
         self
     }
 
-    pub fn whitelist(mut self, nodes: Vec<SocketAddr>) -> Self {
+    pub fn whitelist(mut self, nodes: Vec<Multiaddr>) -> Self {
         self.whitelist = Some(nodes);
         self
     }
@@ -260,6 +263,15 @@ impl SpawnParams {
         &self.jormungandr
     }
 
+    pub fn with_dns_server_address(mut self, addr: SocketAddr) -> Self {
+        self.dns_server_address = Some(addr);
+        self
+    }
+
+    pub fn dns_server_address(&self) -> Option<&SocketAddr> {
+        self.dns_server_address.as_ref()
+    }
+
     pub fn override_settings(&self, node_config: &mut NodeConfig) {
         if let Some(topics_of_interest) = &self.topics_of_interest {
             if let Some(ref mut config) = node_config.p2p.layers {
@@ -281,31 +293,35 @@ impl SpawnParams {
         }
 
         if let Some(public_address) = &self.public_address {
-            node_config.p2p.public_address = public_address.clone();
+            node_config.p2p.connection.public_address = public_address.clone();
         }
 
         if let Some(max_inbound_connections) = &self.max_inbound_connections {
-            node_config.p2p.max_inbound_connections = Some(*max_inbound_connections);
+            node_config.p2p.connection.max_inbound_connections = Some(*max_inbound_connections);
         }
 
         if let Some(allow_private_addresses) = &self.allow_private_addresses {
-            node_config.p2p.allow_private_addresses = *allow_private_addresses;
+            node_config.p2p.connection.allow_private_addresses = *allow_private_addresses;
         }
 
         if let Some(whitelist) = &self.whitelist {
-            node_config.p2p.whitelist = Some(whitelist.clone());
+            node_config.p2p.connection.whitelist = Some(whitelist.clone());
         }
 
         if let Some(max_connections) = &self.max_connections {
-            node_config.p2p.max_connections = Some(*max_connections);
+            node_config.p2p.connection.max_connections = Some(*max_connections);
         }
 
         if let Some(listen_address_option) = &self.listen_address {
-            node_config.p2p.listen = *listen_address_option;
+            node_config.p2p.connection.listen = *listen_address_option;
         }
 
         if let Some(trusted_peers) = &self.trusted_peers {
-            node_config.p2p.trusted_peers = trusted_peers.clone();
+            node_config.p2p.bootstrap.trusted_peers = trusted_peers.clone();
+        }
+
+        if let Some(dns_server_name) = &self.dns_server_address {
+            node_config.p2p.connection.dns_server_address = Some(*dns_server_name);
         }
 
         if let Some(preferred_layer) = &self.preferred_layer {
@@ -328,19 +344,19 @@ impl SpawnParams {
         }
 
         if let Some(node_key_file) = &self.node_key_file {
-            node_config.p2p.node_key_file = Some(node_key_file.clone());
+            node_config.p2p.bootstrap.node_key_file = Some(node_key_file.clone());
         }
 
         if self.gossip_interval.is_some() {
-            node_config.p2p.gossip_interval = self.gossip_interval;
+            node_config.p2p.connection.gossip_interval = self.gossip_interval;
         }
 
         if let Some(max_bootstrap_attempts) = self.max_bootstrap_attempts {
-            node_config.p2p.max_bootstrap_attempts = Some(max_bootstrap_attempts);
+            node_config.p2p.bootstrap.max_bootstrap_attempts = Some(max_bootstrap_attempts);
         }
 
         if let Some(network_stuck_check) = self.network_stuck_check {
-            node_config.p2p.network_stuck_check = Some(network_stuck_check);
+            node_config.p2p.connection.network_stuck_check = Some(network_stuck_check);
         }
         node_config.mempool.as_mut().unwrap().persistent_log = self
             .persistent_fragment_log

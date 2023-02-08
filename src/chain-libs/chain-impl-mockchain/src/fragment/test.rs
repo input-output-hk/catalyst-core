@@ -9,10 +9,7 @@ use quickcheck_macros::quickcheck;
 
 impl Arbitrary for Fragment {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        #[cfg(not(feature = "evm"))]
         let r = g.next_u32() % 14;
-        #[cfg(feature = "evm")]
-        let r = g.next_u32() % 16;
         match r {
             0 => Fragment::Initial(Arbitrary::arbitrary(g)),
             1 => Fragment::OldUtxoDeclaration(Arbitrary::arbitrary(g)),
@@ -28,10 +25,6 @@ impl Arbitrary for Fragment {
             11 => Fragment::VoteCast(Arbitrary::arbitrary(g)),
             12 => Fragment::VoteTally(Arbitrary::arbitrary(g)),
             13 => Fragment::MintToken(Arbitrary::arbitrary(g)),
-            #[cfg(feature = "evm")]
-            14 => Fragment::Evm(Arbitrary::arbitrary(g)),
-            #[cfg(feature = "evm")]
-            15 => Fragment::EvmMapping(Arbitrary::arbitrary(g)),
             _ => unreachable!(),
         }
     }

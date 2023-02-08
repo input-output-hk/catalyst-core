@@ -13,7 +13,7 @@ jormungandr-automation = { path = "../jormungandr-automation" }
 rand_core = "0.6"
 rand = "0.8"
 thiserror = "1.0"
-structopt = "^0.3"
+clap = { workspace = true }
 assert_fs = "1.0"
 indicatif = "0.15"
 chain-impl-mockchain = { path = "../../../chain-libs/chain-impl-mockchain", features = [ "property-test-api" ] }

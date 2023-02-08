@@ -10,7 +10,7 @@ use assert_fs::{fixture::PathChild, TempDir};
 #[test]
 pub fn load_data_test() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
-    let db_file = temp_dir.child("db.sqlite");
+    let db_url = DbBuilder::new().build().unwrap();
     let snapshot = ArbitrarySnapshotGenerator::default().snapshot();
 
     let csv_converter = CsvConverter;
@@ -64,7 +64,7 @@ pub fn load_data_test() {
     vit_cli
         .db()
         .init()
-        .db_url(db_file.path())
+        .db_url(db_url.clone())
         .build()
         .assert()
         .success();
@@ -73,7 +73,7 @@ pub fn load_data_test() {
     vit_cli
         .csv_data()
         .load()
-        .db_url(db_file.path())
+        .db_url(db_url.clone())
         .funds(funds.path())
         .proposals(proposals.path())
         .voteplans(voteplans.path())
@@ -86,7 +86,7 @@ pub fn load_data_test() {
         .success();
 
     let server = ServerBootstrapper::new()
-        .with_db_path(db_file.path().to_str().unwrap())
+        .with_db_path(db_url)
         .start(&temp_dir)
         .unwrap();
 
@@ -96,8 +96,7 @@ pub fn load_data_test() {
 
 #[test]
 pub fn voting_snapshot_build() {
-    let temp_dir = TempDir::new().unwrap().into_persistent();
     let mut db_builder = DbBuilder::new();
     db_builder.with_snapshot(&multivoteplan_snapshot());
-    db_builder.build(&temp_dir).unwrap();
+    db_builder.build().unwrap();
 }

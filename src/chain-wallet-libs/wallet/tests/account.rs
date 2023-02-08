@@ -4,12 +4,12 @@ use self::utils::State;
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::{
     account::SpendingCounter,
-    accounting::account::SpendingCounterIncreasing,
     certificate::VoteCast,
     fragment::Fragment,
     value::Value,
     vote::{Choice, Payload},
 };
+use wallet::transaction::WitnessInput;
 
 const BLOCK0: &[u8] = include_bytes!("../../test-vectors/block0");
 const ACCOUNT_KEY: &str = include_str!("../../test-vectors/free_keys/key1.prv");
@@ -30,9 +30,16 @@ fn update_state_overrides_old() {
     account
         .set_state(
             Value(110),
-            (0..SpendingCounterIncreasing::LANES)
-                .map(|lane| SpendingCounter::new(lane, 1).unwrap())
-                .collect(),
+            [
+                SpendingCounter::new(0, 1).unwrap(),
+                SpendingCounter::new(1, 1).unwrap(),
+                SpendingCounter::new(2, 1).unwrap(),
+                SpendingCounter::new(3, 1).unwrap(),
+                SpendingCounter::new(4, 1).unwrap(),
+                SpendingCounter::new(5, 1).unwrap(),
+                SpendingCounter::new(6, 1).unwrap(),
+                SpendingCounter::new(7, 1).unwrap(),
+            ],
         )
         .unwrap();
 
@@ -77,13 +84,16 @@ fn cast_vote() {
 
         let value = builder.estimate_fee_with(1, 0);
 
+        let secret_key = account.secret_key();
         let account_tx_builder = account.new_transaction(value, i % 8).unwrap();
         let input = account_tx_builder.input();
         let witness_builder = account_tx_builder.witness_builder();
 
         builder.add_input(input, witness_builder);
 
-        let tx = builder.finalize_tx(()).unwrap();
+        let tx = builder
+            .finalize_tx((), vec![WitnessInput::SecretKey(secret_key)])
+            .unwrap();
 
         let fragment = Fragment::VoteCast(tx);
         let id = fragment.hash();

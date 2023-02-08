@@ -43,6 +43,7 @@ pub struct InMemoryDbSync {
     stakes: HashMap<Address, BigNum>,
     settings: Settings,
 }
+
 impl Debug for InMemoryDbSync {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.settings)
@@ -56,6 +57,17 @@ impl InMemoryDbSync {
         let mut db_sync = InMemoryDbSync::default();
         db_sync.on_block_propagation(&block0.block);
         db_sync
+    }
+
+    /// Create an empty instance
+    #[must_use]
+    pub fn empty() -> Self {
+        InMemoryDbSync {
+            transactions: HashMap::new(),
+            blocks: vec![],
+            stakes: HashMap::new(),
+            settings: Settings::default(),
+        }
     }
 
     /// Connects to Cardano mock node using simple observer/observable mechanism
@@ -187,24 +199,12 @@ impl InMemoryDbSync {
     #[must_use]
     pub fn query_voting_transactions_with_bounds(
         &self,
-        lower: Option<u64>,
-        upper: Option<u64>,
+        lower: u64,
+        upper: u64,
     ) -> HashMap<BlockNo, Vec<GeneralTransactionMetadata>> {
         self.metadata()
             .into_iter()
-            .filter(|(block_no, _)| {
-                if let Some(result) = lower.map(|x| x > u64::from(*block_no)) {
-                    if result {
-                        return false;
-                    }
-                }
-                if let Some(result) = upper.map(|x| x < u64::from(*block_no)) {
-                    if result {
-                        return false;
-                    }
-                }
-                true
-            })
+            .filter(|(block_no, _)| lower <= u64::from(*block_no) && u64::from(*block_no) <= upper)
             .collect()
     }
 
@@ -284,8 +284,10 @@ pub enum Error {
 
 #[cfg(test)]
 mod tests {
+    use crate::network::wallet_state::MainnetWalletStateBuilder;
+    use crate::network::MainnetNetworkBuilder;
     use crate::{Block0, InMemoryNode};
-    use crate::{CardanoWallet, InMemoryDbSync, MainnetNetworkBuilder, MainnetWalletStateBuilder};
+    use crate::{CardanoWallet, InMemoryDbSync};
     use assert_fs::fixture::PathChild;
     use assert_fs::TempDir;
     use cardano_serialization_lib::utils::BigNum;

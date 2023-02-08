@@ -1,5 +1,4 @@
 use crate::{
-    block::BlockDate,
     fee::LinearFee,
     testing::{
         ledger::ConfigBuilder,
@@ -23,69 +22,53 @@ pub fn ledger_accepts_signature_from_all_lanes() {
         .fragment_factory()
         .witness_mode(WitnessMode::Account { lane: 0 })
         .transaction(&alice, &bob, &mut ledger, 10);
-    assert!(ledger
-        .apply_transaction(fragment, BlockDate::first())
-        .is_ok());
+    assert!(ledger.apply_transaction(fragment).is_ok());
     alice.confirm_transaction_at_lane(0);
 
     let fragment = controller
         .fragment_factory()
         .witness_mode(WitnessMode::Account { lane: 1 })
         .transaction(&alice, &bob, &mut ledger, 10);
-    assert!(ledger
-        .apply_transaction(fragment, BlockDate::first())
-        .is_ok());
+    assert!(ledger.apply_transaction(fragment).is_ok());
     alice.confirm_transaction_at_lane(1);
 
     let fragment = controller
         .fragment_factory()
         .witness_mode(WitnessMode::Account { lane: 2 })
         .transaction(&alice, &bob, &mut ledger, 10);
-    ledger
-        .apply_transaction(fragment, BlockDate::first())
-        .unwrap();
+    ledger.apply_transaction(fragment).unwrap();
     alice.confirm_transaction_at_lane(2);
 
     let fragment = controller
         .fragment_factory()
         .witness_mode(WitnessMode::Account { lane: 0 })
         .transaction(&alice, &bob, &mut ledger, 10);
-    assert!(ledger
-        .apply_transaction(fragment, BlockDate::first())
-        .is_ok());
+    assert!(ledger.apply_transaction(fragment).is_ok());
     alice.confirm_transaction_at_lane(0);
 
     let fragment = controller
         .fragment_factory()
         .witness_mode(WitnessMode::Account { lane: 1 })
         .transaction(&alice, &bob, &mut ledger, 10);
-    assert!(ledger
-        .apply_transaction(fragment, BlockDate::first())
-        .is_ok());
+    assert!(ledger.apply_transaction(fragment).is_ok());
     alice.confirm_transaction_at_lane(1);
 
     let fragment = controller
         .fragment_factory()
         .witness_mode(WitnessMode::Account { lane: 2 })
         .transaction(&alice, &bob, &mut ledger, 10);
-    assert!(ledger
-        .apply_transaction(fragment, BlockDate::first())
-        .is_ok());
+    assert!(ledger.apply_transaction(fragment).is_ok());
     alice.confirm_transaction_at_lane(2);
 
     let fragment = controller
         .fragment_factory()
         .witness_mode(WitnessMode::Account { lane: 2 })
         .transaction(&alice, &bob, &mut ledger, 10);
-    assert!(ledger
-        .apply_transaction(fragment, BlockDate::first())
-        .is_ok());
+    assert!(ledger.apply_transaction(fragment).is_ok());
 
     let fragment = controller
         .fragment_factory()
         .witness_mode(WitnessMode::Account { lane: 2 })
         .transaction(&alice, &bob, &mut ledger, 10);
-    assert!(ledger
-        .apply_transaction(fragment, BlockDate::first())
-        .is_err());
+    assert!(ledger.apply_transaction(fragment).is_err());
 }

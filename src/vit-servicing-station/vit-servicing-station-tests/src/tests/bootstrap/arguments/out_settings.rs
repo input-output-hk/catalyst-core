@@ -70,7 +70,7 @@ fn example_settings_file(temp_dir: &TempDir) -> (PathBuf, ServiceSettings) {
     let mut settings_builder: ServerSettingsBuilder = Default::default();
     let settings = settings_builder
         .with_random_localhost_address()
-        .with_db_path(empty_db(temp_dir))
+        .with_db_path(empty_db())
         .with_block0_path(BLOCK0_BIN)
         .with_log_level(LogLevel::Info)
         .with_log_output_path(temp_dir.child("logger.log").path().into())

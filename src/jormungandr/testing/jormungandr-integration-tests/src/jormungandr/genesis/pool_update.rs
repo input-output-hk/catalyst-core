@@ -18,7 +18,9 @@ pub fn update_pool_fees_is_not_allowed() {
     let (jormungandr, stake_pools) = startup::start_stake_pool(
         &[stake_pool_owner.clone()],
         &[],
-        Block0ConfigurationBuilder::default(),
+        Block0ConfigurationBuilder::default()
+            .with_slots_per_epoch(20.try_into().unwrap())
+            .with_slot_duration(2.try_into().unwrap()),
         NodeConfigBuilder::default().with_storage(temp_dir.child("storage").to_path_buf()),
     )
     .unwrap();

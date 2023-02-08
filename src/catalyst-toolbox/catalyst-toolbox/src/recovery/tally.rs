@@ -30,7 +30,7 @@ use std::collections::{HashMap, HashSet};
 use std::ops::{Add, Range};
 use std::time::{Duration, SystemTime};
 use tracing::{debug, error, trace, warn};
-use wallet::{Settings, TransactionBuilder, Wallet};
+use wallet::{transaction::WitnessInput, Settings, TransactionBuilder, Wallet};
 
 #[allow(clippy::large_enum_variant)]
 #[derive(thiserror::Error, Debug)]
@@ -49,6 +49,15 @@ pub enum Error {
 
     #[error(transparent)]
     ReplayError(#[from] ReplayError),
+
+    #[error(transparent)]
+    WalletError(#[from] wallet::Error),
+
+    #[error(transparent)]
+    TxBuilderError(#[from] wallet::transaction::Error),
+
+    #[error(transparent)]
+    ValueError(#[from] ValueError),
 }
 
 fn timestamp_to_system_time(ts: SecondsSinceUnixEpoch) -> SystemTime {
@@ -408,7 +417,7 @@ pub fn recover_ledger_from_logs(
                 fragment_replayer.confirm_fragment(&fragment);
             }
             Err((
-                err @ Error::LedgerError(ledger::Error::VotePlan(_) | ledger::Error::InvalidTransactionValidity(_) | ledger::Error::Account(LedgerError::ValueError(
+                err @ Error::LedgerError(ledger::Error::VotePlan(_) | ledger::Error::Account(LedgerError::ValueError(
                     ValueError::NegativeAmount,
                 )))
                 | err @ Error::ValidationError(_)
@@ -513,14 +522,13 @@ impl FragmentReplayer {
             .get_mut(&address)
             .ok_or_else(|| ReplayError::NonVotingAccount(address.to_string()))?;
 
-        // unwrap checked in the validation step
-        let builder_help = wallet
-            .new_transaction(tx.total_input().unwrap(), 0)
-            .unwrap();
+        let secret_key = wallet.secret_key();
+        let builder_help = wallet.new_transaction(tx.total_input()?, 0)?;
         let mut builder =
             TransactionBuilder::new(self.settings.clone(), vote_cast, tx.valid_until());
         builder.add_input(builder_help.input(), builder_help.witness_builder());
-        let res = Fragment::VoteCast(builder.finalize_tx(()).unwrap());
+        let res =
+            Fragment::VoteCast(builder.finalize_tx((), vec![WitnessInput::SecretKey(secret_key)])?);
 
         debug!("replaying vote cast transaction from {}", address);
         self.pending_requests.insert(res.id(), address);
@@ -564,14 +572,14 @@ impl FragmentReplayer {
         };
 
         warn!("replaying a plain transaction from {} to {:?} with value {}, this is not coming from the app, might want to look into this", identifier, output_address, output.value);
-        // unwrap checked in the validation step
-        let builder_help = wallet
-            .new_transaction(tx.total_input().unwrap(), 0)
-            .unwrap();
+        let secret_key = wallet.secret_key();
+        let builder_help = wallet.new_transaction(tx.total_input()?, 0)?;
         let mut builder = TransactionBuilder::new(self.settings.clone(), NoExtra, tx.valid_until());
         builder.add_input(builder_help.input(), builder_help.witness_builder());
         builder.add_output(Output::from_address(output_address, output.value));
-        let res = Fragment::Transaction(builder.finalize_tx(()).unwrap());
+        let res = Fragment::Transaction(
+            builder.finalize_tx((), vec![WitnessInput::SecretKey(secret_key)])?,
+        );
         self.pending_requests.insert(res.id(), address);
         Ok(res)
     }

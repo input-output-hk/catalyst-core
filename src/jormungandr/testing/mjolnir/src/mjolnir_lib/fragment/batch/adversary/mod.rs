@@ -2,9 +2,9 @@ mod all;
 mod votes_only;
 
 use crate::mjolnir_lib::MjolnirError;
-use structopt::StructOpt;
+use clap::Parser;
 pub use votes_only::VotesOnly;
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 pub enum Adversary {
     VotesOnly(votes_only::VotesOnly),
     All(all::AdversaryAll),

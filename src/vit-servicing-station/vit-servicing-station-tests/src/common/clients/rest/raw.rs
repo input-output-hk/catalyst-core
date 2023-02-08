@@ -66,6 +66,11 @@ impl RestClient {
             .map_err(Into::into)
     }
 
+    pub fn delegator_info(&self, tag: &str, key: &str) -> Result<Response, Error> {
+        self.get(&self.path_builder.snapshot_delegator_info(tag, key))
+            .map_err(Into::into)
+    }
+
     pub fn proposal(&self, id: &str, group: &str) -> Result<Response, Error> {
         self.get(&self.path_builder().proposal(id, group))
             .map_err(Into::into)

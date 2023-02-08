@@ -13,26 +13,33 @@ const FAKE_GENESIS_HASH: &str = "19c9852ca0a68f15d0f7de5d1a26acd67a3a3251640c606
 #[test]
 pub fn test_cannot_create_input_with_negative_amount() {
     let jcli: JCli = Default::default();
+    const INVALID_VALUE: &str = "-1";
+    let expected_stderr_str = format!("error: unexpected argument '{}' found", INVALID_VALUE);
     jcli.transaction_builder(Hash::from_hex(FAKE_GENESIS_HASH).unwrap())
         .new_transaction()
         .add_input_expect_fail(
             &FAKE_INPUT_TRANSACTION_ID,
             0,
-            "-100",
-            "Found argument '-1' which wasn't expected",
+            INVALID_VALUE,
+            &expected_stderr_str,
         );
 }
 
 #[test]
 pub fn test_cannot_create_input_with_too_big_utxo_amount() {
     let jcli: JCli = Default::default();
+    const INVALID_VALUE: &str = "100000000000000000000";
+    let expected_stderr_str = format!(
+        "error: invalid value '{}' for '<VALUE>': number too large to fit in target type",
+        INVALID_VALUE
+    );
     jcli.transaction_builder(Hash::from_hex(FAKE_GENESIS_HASH).unwrap())
         .new_transaction()
         .add_input_expect_fail(
             &FAKE_INPUT_TRANSACTION_ID,
             0,
-            "100000000000000000000",
-            "error: Invalid value for '<VALUE>': number too large to fit in target type",
+            INVALID_VALUE,
+            &expected_stderr_str,
         );
 }
 

@@ -436,36 +436,6 @@ impl From<&u8> for TransactionMaxExpiryEpochs {
     }
 }
 
-#[cfg(feature = "evm")]
-#[derive(SimpleObject)]
-pub struct EvmConfig {
-    evm_params: String,
-}
-
-#[cfg(feature = "evm")]
-impl From<&chain_impl_mockchain::evm::Config> for EvmConfig {
-    fn from(_: &chain_impl_mockchain::evm::Config) -> Self {
-        Self {
-            evm_params: "EVM config parametrs".to_string(),
-        }
-    }
-}
-
-#[cfg(feature = "evm")]
-#[derive(SimpleObject)]
-pub struct EvmEnvSettings {
-    evm_env_settings: String,
-}
-
-#[cfg(feature = "evm")]
-impl From<&chain_impl_mockchain::config::EvmEnvSettings> for EvmEnvSettings {
-    fn from(_: &chain_impl_mockchain::config::EvmEnvSettings) -> Self {
-        Self {
-            evm_env_settings: "EVM config parametrs".to_string(),
-        }
-    }
-}
-
 #[derive(Union)]
 pub enum ConfigParam {
     Block0Date(Block0Date),
@@ -494,10 +464,6 @@ pub enum ConfigParam {
     RemoveCommitteeId(RemoveCommitteeId),
     PerVoteCertificateFees(PerVoteCertificateFee),
     TransactionMaxExpiryEpochs(TransactionMaxExpiryEpochs),
-    #[cfg(feature = "evm")]
-    EvmConfiguration(EvmConfig),
-    #[cfg(feature = "evm")]
-    EvmEnvironment(EvmEnvSettings),
 }
 
 #[derive(SimpleObject)]
@@ -544,10 +510,6 @@ impl From<&ConfigParamLib> for ConfigParam {
             ConfigParamLib::TransactionMaxExpiryEpochs(v) => {
                 Self::TransactionMaxExpiryEpochs(v.into())
             }
-            #[cfg(feature = "evm")]
-            ConfigParamLib::EvmConfiguration(v) => Self::EvmConfiguration(v.into()),
-            #[cfg(feature = "evm")]
-            ConfigParamLib::EvmEnvironment(v) => Self::EvmEnvironment(v.into()),
         }
     }
 }

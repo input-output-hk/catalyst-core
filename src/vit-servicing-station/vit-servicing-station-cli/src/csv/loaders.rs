@@ -1,5 +1,6 @@
 use crate::db_utils::{backup_db_file, restore_db_file};
-use crate::{db_utils::db_file_exists, task::ExecTask};
+use crate::task::ExecTask;
+use clap::Parser;
 use csv::Trim;
 use diesel::{Insertable, QueryDsl, RunQueryDsl};
 use serde::de::DeserializeOwned;
@@ -12,7 +13,6 @@ use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::{fs, io};
-use structopt::StructOpt;
 use thiserror::Error;
 use vit_servicing_station_lib::db;
 use vit_servicing_station_lib::db::models::goals::InsertGoal;
@@ -41,14 +41,14 @@ pub enum Error {
     #[error(transparent)]
     Diesel(#[from] diesel::result::Error),
 }
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Parser)]
 pub struct LoadCmd {
     /// Additional import settings
-    #[structopt(long = "additional-settings")]
+    #[clap(long = "additional-settings")]
     settings: Option<PathBuf>,
 
     /// URL of the vit-servicing-station database to interact with
-    #[structopt(long = "db-url")]
+    #[clap(long = "db-url")]
     db_url: String,
 
     /// Path to the csv containing funds information
@@ -56,39 +56,39 @@ pub struct LoadCmd {
     ///
     /// Also the first fund being the current one, which means previous funds should not be
     /// included. This restriction may be lifted in the future.
-    #[structopt(long = "funds")]
+    #[clap(long = "funds")]
     funds: PathBuf,
 
     /// Path to the csv containing voteplans information
-    #[structopt(long = "voteplans")]
+    #[clap(long = "voteplans")]
     voteplans: PathBuf,
 
     /// Path to the csv containing proposals information
-    #[structopt(long = "proposals")]
+    #[clap(long = "proposals")]
     proposals: PathBuf,
 
     /// Path to the csv containing challenges information
-    #[structopt(long = "challenges")]
+    #[clap(long = "challenges")]
     challenges: PathBuf,
 
     /// Path to the csv containing advisor reviews information
-    #[structopt(long = "reviews")]
+    #[clap(long = "reviews")]
     reviews: PathBuf,
 
     /// Path to the csv containing goals information
-    #[structopt(long = "goals")]
+    #[clap(long = "goals")]
     goals: Option<PathBuf>,
 
     /// Path to the csv containing goals information
-    #[structopt(long = "groups")]
+    #[clap(long = "groups")]
     groups: Option<PathBuf>,
 
     /// Path to the folder containing csv with votes information
-    #[structopt(long = "votes")]
+    #[clap(long = "votes")]
     votes: Option<PathBuf>,
 }
 
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Parser)]
 pub enum CsvDataCmd {
     /// Loads data into db
     Load(LoadCmd),
@@ -151,7 +151,6 @@ impl LoadCmd {
             }
         };
 
-        db_file_exists(&self.db_url)?;
         let mut funds = LoadCmd::load_from_csv::<super::models::Fund>(&self.funds)?;
 
         if let Some(override_fund_id) = settings.force_fund_id {
@@ -264,12 +263,9 @@ impl LoadCmd {
             goal.fund_id = fund.id;
         }
 
-        let advisors = vit_servicing_station_lib::q!(
-            db_conn,
-            db::schema::community_advisors_reviews::dsl::community_advisors_reviews
-                .select(community_advisors_reviews_dsl::id)
-                .load::<i32>(db_conn)
-        )?;
+        let advisors = db::schema::community_advisors_reviews::dsl::community_advisors_reviews
+            .select(community_advisors_reviews_dsl::id)
+            .load::<i32>(db_conn)?;
         let max_id = advisors.iter().max().unwrap_or(&0i32);
 
         for review in reviews.iter_mut() {
@@ -365,8 +361,6 @@ impl LoadCmd {
     }
 
     fn handle_votes_load(db_url: &str, votes_path: &Path) -> Result<(), Error> {
-        db_file_exists(db_url)?;
-
         let mut votes = vec![];
 
         for csv_file in Self::list_of_csv_paths(votes_path)? {
@@ -388,18 +382,8 @@ impl LoadCmd {
         Ok(())
     }
 
-    fn handle_load_with_db_backup(&self) -> Result<(), Error> {
-        let backup_file = backup_db_file(&self.db_url)?;
-        if let Err(e) = self.handle_load() {
-            restore_db_file(backup_file, &self.db_url)?;
-            Err(e)
-        } else {
-            Ok(())
-        }
-    }
-
     pub fn exec(&self) -> Result<(), Error> {
-        self.handle_load_with_db_backup()?;
+        self.handle_load()?;
 
         if let Some(votes_folder) = &self.votes {
             let backup_file = backup_db_file(&self.db_url)?;

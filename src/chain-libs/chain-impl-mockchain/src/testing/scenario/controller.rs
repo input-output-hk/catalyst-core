@@ -1,13 +1,8 @@
-#[cfg(feature = "evm")]
-use crate::certificate::EvmMapping;
-#[cfg(feature = "evm")]
-use crate::evm::EvmTransaction;
 use crate::{
     certificate::{
         DecryptedPrivateTally, ExternalProposalId, MintToken, Proposal, UpdateProposal, UpdateVote,
         VoteCast, VotePlan, VoteTally,
     },
-    date::BlockDate,
     fee::LinearFee,
     key::Hash,
     ledger::Error as LedgerError,
@@ -121,7 +116,7 @@ impl Controller {
         let transaction = self
             .fragment_factory
             .transaction(from, to, test_ledger, funds);
-        test_ledger.apply_transaction(transaction, BlockDate::first())
+        test_ledger.apply_transaction(transaction)
     }
 
     pub fn register(
@@ -365,29 +360,6 @@ impl Controller {
         let fragment = self
             .fragment_factory
             .mint_token(test_ledger.date(), owner, mint_token);
-        test_ledger.apply_fragment(&fragment, test_ledger.date())
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn evm_mapping(
-        &self,
-        owner: &Wallet,
-        evm_mapping: EvmMapping,
-        test_ledger: &mut TestLedger,
-    ) -> Result<(), LedgerError> {
-        let fragment = self
-            .fragment_factory
-            .evm_mapping(test_ledger.date(), owner, evm_mapping);
-        test_ledger.apply_fragment(&fragment, test_ledger.date())
-    }
-
-    #[cfg(feature = "evm")]
-    pub fn evm_transaction(
-        &self,
-        evm_transaction: EvmTransaction,
-        test_ledger: &mut TestLedger,
-    ) -> Result<(), LedgerError> {
-        let fragment = self.fragment_factory.evm_transaction(evm_transaction);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 }

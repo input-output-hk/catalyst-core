@@ -36,7 +36,6 @@
         (std.blockTypes.functions "constants")
         (std.blockTypes.functions "lib")
         (std.blockTypes.functions "toolchains")
-        (std.blockTypes.installables "artifacts")
         (std.blockTypes.installables "libraries")
         (std.blockTypes.installables "packages" {ci.build = true;})
         (std.blockTypes.nixago "configs")
@@ -45,9 +44,6 @@
     }
     {
       devShells = std.harvest inputs.self ["automation" "devshells"];
-      artifacts = std.harvest inputs.self [
-        ["artifacts" "artifacts"]
-      ];
       containers = std.harvest inputs.self [
         ["jormungandr" "containers"]
         ["vit-servicing-station" "containers"]
@@ -75,7 +71,7 @@
   nixConfig = {
     extra-substituters = [
       "https://cache.iog.io"
-      "https://iog-catalyst-nix-cache.s3.eu-central-1.amazonaws.com"
+      "https://iog-catalyst-nix.s3.eu-central-1.amazonaws.com"
     ];
     extra-trusted-public-keys = [
       "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="

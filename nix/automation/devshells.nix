@@ -8,6 +8,8 @@
 
   mkEnv = env: l.mapAttrsToList (name: value: {inherit name value;}) env;
 
+
+
   catalystCore = {...}: {
     name = nixpkgs.lib.mkForce "Catalyst Core";
     env = with nixpkgs;
@@ -19,12 +21,13 @@
         PROTOC_INCLUDE = "${protobuf}/include";
       };
     nixago = [
-      cell.configs.lefthook
+      # cell.configs.lefthook
       cell.configs.prettier
       cell.configs.treefmt
     ];
     packages = with nixpkgs; [
       gcc
+      # rustNightly
       rustToolchain
       pkg-config
       protobuf
@@ -32,6 +35,7 @@
       postgresql
       diesel-cli
       cargo-insta # snapshot testing lib
+      nodejs
     ];
   };
 in

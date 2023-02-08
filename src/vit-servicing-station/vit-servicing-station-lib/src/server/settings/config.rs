@@ -15,70 +15,70 @@ const CORS_ALLOWED_ORIGINS: &str = "CORS_ALLOWED_ORIGINS";
 const VIT_SERVICE_VERSION_ENV_VARIABLE: &str = "SERVICE_VERSION";
 
 pub(crate) const ADDRESS_DEFAULT: &str = "0.0.0.0:3030";
-pub(crate) const DB_URL_DEFAULT: &str = "./db/database.sqlite3";
+pub(crate) const DB_URL_DEFAULT: &str = "postgres://localhost";
 pub(crate) const BLOCK0_PATH_DEFAULT: &str = "./resources/v0/block0.bin";
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Parser)]
 #[serde(deny_unknown_fields)]
-#[structopt(rename_all = "kebab-case")]
+#[clap(rename_all = "kebab-case")]
 pub struct ServiceSettings {
     /// Load settings from file
     #[serde(skip)]
-    #[structopt(long)]
+    #[clap(long)]
     pub in_settings_file: Option<String>,
 
     /// Dump current settings to file
     #[serde(skip)]
-    #[structopt(long)]
+    #[clap(long)]
     pub out_settings_file: Option<String>,
 
     /// Server binding address
-    #[structopt(long, default_value = ADDRESS_DEFAULT)]
+    #[clap(long, default_value = ADDRESS_DEFAULT)]
     pub address: SocketAddr,
 
     #[serde(default)]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub tls: Tls,
 
     #[serde(default)]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub cors: Cors,
 
     /// Database url
-    #[structopt(long, env = DATABASE_URL, default_value = DB_URL_DEFAULT)]
+    #[clap(long, env = DATABASE_URL, default_value = DB_URL_DEFAULT)]
     pub db_url: String,
 
     /// block0 static file path
-    #[structopt(long)]
+    #[clap(long)]
     pub block0_path: Option<String>,
 
     /// archive block0 static file path
-    #[structopt(long)]
+    #[clap(long)]
     pub block0_paths: Option<PathBuf>,
 
     /// Enable API Tokens feature
     #[serde(default)]
-    #[structopt(long)]
+    #[clap(long)]
     pub enable_api_tokens: bool,
 
     #[serde(default)]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub log: Log,
 
-    #[structopt(long, env = VIT_SERVICE_VERSION_ENV_VARIABLE)]
+    #[clap(long, env = VIT_SERVICE_VERSION_ENV_VARIABLE)]
     pub service_version: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Parser, Default)]
 #[serde(deny_unknown_fields)]
-#[structopt(rename_all = "kebab-case")]
+#[clap(rename_all = "kebab-case")]
 pub struct Tls {
     /// Path to server X.509 certificate chain file, must be PEM-encoded and contain at least 1 item
-    #[structopt(long, env = TLS_CERT_FILE)]
+    #[clap(long, env = TLS_CERT_FILE)]
     pub cert_file: Option<String>,
 
     /// Path to server private key file, must be PKCS8 with single PEM-encoded, unencrypted key
-    #[structopt(long, env = TLS_PRIVATE_KEY_FILE)]
+    #[clap(long, env = TLS_PRIVATE_KEY_FILE)]
     pub priv_key_file: Option<String>,
 }
 
@@ -88,16 +88,16 @@ pub struct CorsOrigin(String);
 #[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct AllowedOrigins(Vec<CorsOrigin>);
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq, StructOpt)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq, Parser)]
 #[serde(deny_unknown_fields)]
-#[structopt(rename_all = "kebab-case")]
+#[clap(rename_all = "kebab-case")]
 pub struct Cors {
     /// If none provided, echos request origin
     #[serde(default)]
-    #[structopt(long, env = CORS_ALLOWED_ORIGINS, parse(try_from_str = parse_allowed_origins))]
+    #[clap(long, env = CORS_ALLOWED_ORIGINS, value_parser = parse_allowed_origins)]
     pub allowed_origins: Option<AllowedOrigins>,
     /// If none provided, CORS responses won't be cached
-    #[structopt(long)]
+    #[clap(long)]
     pub max_age_secs: Option<u64>,
 }
 
@@ -112,20 +112,20 @@ pub enum LogLevel {
     Trace,
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq, Parser)]
 #[serde(deny_unknown_fields)]
-#[structopt(rename_all = "kebab-case")]
+#[clap(rename_all = "kebab-case")]
 pub struct Log {
     /// Output log file path
-    #[structopt(long)]
+    #[clap(long)]
     pub log_output_path: Option<PathBuf>,
 
     /// Application logging level
-    #[structopt(long)]
+    #[clap(long)]
     pub log_level: Option<LogLevel>,
 
     /// Enable the OTLP trace data exporter and set the collector's GRPC endpoint
-    #[structopt(long = "log-trace-collector-endpoint")]
+    #[clap(long = "log-trace-collector-endpoint")]
     pub trace_collector_endpoint: Option<url::Url>,
 }
 
@@ -360,9 +360,9 @@ pub fn dump_settings_to_file(
 #[cfg(test)]
 mod test {
     use super::*;
+    use clap::Parser;
     use std::net::SocketAddr;
     use std::str::FromStr;
-    use structopt::StructOpt;
     use tempfile;
 
     #[test]
@@ -443,7 +443,7 @@ mod test {
 
     #[test]
     fn load_settings_from_cli() {
-        let settings: ServiceSettings = ServiceSettings::from_iter(&[
+        let settings: ServiceSettings = ServiceSettings::parse_from([
             "test",
             "--address",
             "127.0.0.1:3030",
@@ -452,7 +452,7 @@ mod test {
             "--priv-key-file",
             "bar.foo",
             "--db-url",
-            "database.sqlite3",
+            "postgres://localhost",
             "--max-age-secs",
             "60",
             "--allowed-origins",
@@ -475,7 +475,7 @@ mod test {
         assert!(settings.enable_api_tokens);
         assert_eq!(settings.tls.cert_file.unwrap(), "foo.bar");
         assert_eq!(settings.tls.priv_key_file.unwrap(), "bar.foo");
-        assert_eq!(settings.db_url, "database.sqlite3");
+        assert_eq!(settings.db_url, "postgres://localhost");
         assert_eq!(settings.cors.max_age_secs.unwrap(), 60);
         assert_eq!(settings.service_version, "v0.2.0");
         let allowed_origins = settings.cors.allowed_origins.unwrap();
@@ -494,7 +494,7 @@ mod test {
     #[test]
     fn load_settings_from_env() {
         use std::env::set_var;
-        set_var(DATABASE_URL, "database.sqlite3");
+        set_var(DATABASE_URL, "postgres://localhost");
         set_var(TLS_CERT_FILE, "foo.bar");
         set_var(TLS_PRIVATE_KEY_FILE, "bar.foo");
         set_var(
@@ -503,7 +503,7 @@ mod test {
         );
         set_var(VIT_SERVICE_VERSION_ENV_VARIABLE, "v0.2.0");
 
-        let settings: ServiceSettings = ServiceSettings::from_iter(&[
+        let settings: ServiceSettings = ServiceSettings::parse_from([
             "test",
             "--address",
             "127.0.0.1:3030",
@@ -519,7 +519,7 @@ mod test {
         assert!(settings.tls.is_loaded());
         assert_eq!(settings.tls.cert_file.unwrap(), "foo.bar");
         assert_eq!(settings.tls.priv_key_file.unwrap(), "bar.foo");
-        assert_eq!(settings.db_url, "database.sqlite3");
+        assert_eq!(settings.db_url, "postgres://localhost");
         assert_eq!(settings.cors.max_age_secs.unwrap(), 60);
         assert_eq!(settings.service_version, "v0.2.0");
         let allowed_origins = settings.cors.allowed_origins.unwrap();
@@ -533,7 +533,7 @@ mod test {
     #[test]
     fn merge_settings() {
         let default = ServiceSettings::default();
-        let other_settings = ServiceSettings::from_iter(&[
+        let other_settings = ServiceSettings::parse_from([
             "test",
             "--address",
             "127.0.0.1:8080",
@@ -542,7 +542,7 @@ mod test {
             "--priv-key-file",
             "bar.foo",
             "--db-url",
-            "database.sqlite3",
+            "postgres://localhost",
             "--max-age-secs",
             "60",
             "--allowed-origins",

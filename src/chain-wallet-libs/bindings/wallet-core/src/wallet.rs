@@ -2,15 +2,13 @@ use crate::{Error, Proposal};
 use chain_core::property::Serialize as _;
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::{
-    account::SpendingCounter,
+    account::SpendingCounterIncreasing,
     block::BlockDate,
-    certificate::Certificate,
     fragment::{Fragment, FragmentId},
-    transaction::{Payload, Transaction},
     value::Value,
     vote::Choice,
 };
-use wallet::{AccountId, Settings};
+use wallet::{transaction::WitnessInput, AccountId, Settings};
 
 /// the wallet
 ///
@@ -62,12 +60,18 @@ impl Wallet {
 
     /// get the current spending counter
     ///
-    pub fn spending_counter(&self) -> Vec<u32> {
-        self.account
-            .spending_counter()
-            .into_iter()
-            .map(SpendingCounter::into)
-            .collect()
+    pub fn spending_counter(&self) -> [u32; SpendingCounterIncreasing::LANES] {
+        let spending_counters = self.account.spending_counter();
+        [
+            spending_counters[0].into(),
+            spending_counters[1].into(),
+            spending_counters[2].into(),
+            spending_counters[3].into(),
+            spending_counters[4].into(),
+            spending_counters[5].into(),
+            spending_counters[6].into(),
+            spending_counters[7].into(),
+        ]
     }
 
     /// get the total value in the wallet
@@ -92,66 +96,26 @@ impl Wallet {
     /// before doing any transactions, otherwise future transactions may fail
     /// to be accepted by the blockchain nodes because of an invalid witness
     /// signature.
-    pub fn set_state(&mut self, value: Value, counters: Vec<u32>) -> Result<(), Error> {
+    pub fn set_state(
+        &mut self,
+        value: Value,
+        counters: [u32; SpendingCounterIncreasing::LANES],
+    ) -> Result<(), Error> {
         self.account
             .set_state(
                 value,
-                counters.into_iter().map(SpendingCounter::from).collect(),
+                [
+                    counters[0].into(),
+                    counters[1].into(),
+                    counters[2].into(),
+                    counters[3].into(),
+                    counters[4].into(),
+                    counters[5].into(),
+                    counters[6].into(),
+                    counters[7].into(),
+                ],
             )
             .map_err(|_| Error::invalid_spending_counters())
-    }
-
-    fn sign_transaction_impl<P: Payload>(
-        &mut self,
-        settings: Settings,
-        valid_until: BlockDate,
-        lane: u8,
-        payload: P,
-        auth: P::Auth,
-        fragment_build_fn: impl FnOnce(Transaction<P>) -> Fragment,
-    ) -> Result<Fragment, Error> {
-        let mut builder = wallet::TransactionBuilder::new(settings, payload, valid_until);
-
-        // It is needed to provide a 1 extra input as we are generating it later, but should take into account at this place.
-        let value = builder.estimate_fee_with(1, 0);
-
-        let account_tx_builder = self
-            .account
-            .new_transaction(value, lane)
-            .map_err(|_| Error::not_enough_funds())?;
-
-        let input = account_tx_builder.input();
-        let witness_builder = account_tx_builder.witness_builder();
-
-        builder.add_input(input, witness_builder);
-
-        let tx = builder
-            .finalize_tx(auth)
-            .map_err(|e| Error::wallet_transaction().with(e))?;
-
-        let fragment = fragment_build_fn(tx);
-        account_tx_builder.add_fragment_id(fragment.hash());
-        Ok(fragment)
-    }
-
-    /// Sign a transaction
-    ///
-    /// This function outputs a fragment containing a signed transaction.
-    pub fn sign_transaction(
-        &mut self,
-        settings: Settings,
-        valid_until: BlockDate,
-        lane: u8,
-        certificate: Certificate,
-    ) -> Result<Fragment, Error> {
-        match certificate {
-            Certificate::VoteCast(p) => {
-                self.sign_transaction_impl(settings, valid_until, lane, p, (), |tx| {
-                    Fragment::VoteCast(tx)
-                })
-            }
-            _ => Err(Error::invalid_input("does not supported certificate type")),
-        }
     }
 
     /// Cast a vote
@@ -187,6 +151,7 @@ impl Wallet {
 
         let value = builder.estimate_fee_with(1, 0);
 
+        let secret_key = self.account.secret_key();
         let account_tx_builder = self
             .account
             .new_transaction(value, lane)
@@ -198,7 +163,7 @@ impl Wallet {
         builder.add_input(input, witness_builder);
 
         let tx = builder
-            .finalize_tx(())
+            .finalize_tx((), vec![WitnessInput::SecretKey(secret_key)])
             .map_err(|e| Error::wallet_transaction().with(e))?;
 
         let fragment = Fragment::VoteCast(tx);

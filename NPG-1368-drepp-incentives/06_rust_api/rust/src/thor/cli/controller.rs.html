@@ -212,11 +212,6 @@
 <span id="212">212</span>
 <span id="213">213</span>
 <span id="214">214</span>
-<span id="215">215</span>
-<span id="216">216</span>
-<span id="217">217</span>
-<span id="218">218</span>
-<span id="219">219</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{Error, WalletController};
 <span class="kw">use crate</span>::{
     cli::{
@@ -283,13 +278,8 @@
     <span class="kw">pub fn </span>check_connection(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="self">self</span>.client
             .settings()
-            .map(|<span class="kw">_</span>| {
-                <span class="macro">println!</span>(<span class="string">&quot;Connection succesfull.&quot;</span>);
-            })
-            .map_err(|e| {
-                <span class="macro">eprintln!</span>(<span class="string">&quot;Connection unsuccesfull.&quot;</span>);
-                Error::Connection(<span class="self">self</span>.wallets.connection().address, e)
-            })
+            .map(|<span class="kw">_</span>| ())
+            .map_err(|e| Error::Connection(<span class="self">self</span>.wallets.connection().address, e))
     }
 
     <span class="kw">pub fn </span>refresh_state(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {

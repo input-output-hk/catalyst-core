@@ -7848,6 +7848,7 @@ dependencies = [
  "diesel_migrations 1.4.0",
  "dotenv",
  "eccoxide 0.2.0",
+ "election-db",
  "http-zipkin",
  "itertools",
  "jormungandr-lib",

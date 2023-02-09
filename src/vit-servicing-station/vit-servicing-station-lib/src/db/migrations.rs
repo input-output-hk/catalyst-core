@@ -1,6 +1,6 @@
 use crate::db::DbConnection;
 
-embed_migrations!("./migrations");
+embed_migrations!("../../election-db/migrations");
 
 pub type InitializeDbWithMigrationError = diesel_migrations::RunMigrationsError;
 

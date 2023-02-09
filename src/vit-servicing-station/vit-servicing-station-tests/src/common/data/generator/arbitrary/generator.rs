@@ -50,6 +50,10 @@ impl ArbitraryGenerator {
         self.id_generator.next_u64()
     }
 
+    pub fn next_i32(&mut self) -> i32 {
+        (self.id_generator.next_u32() as i32).abs()
+    }
+
     pub fn token_hash(&mut self) -> String {
         base64::encode_config(self.bytes(), base64::URL_SAFE_NO_PAD)
     }

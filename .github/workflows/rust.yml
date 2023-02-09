@@ -143,6 +143,7 @@ jobs:
         image: postgres:15
         env:
           POSTGRES_PASSWORD: 123456
+          LC_ALL: C # string sorting in tests expect this
         options:
           >-
           --health-cmd pg_isready

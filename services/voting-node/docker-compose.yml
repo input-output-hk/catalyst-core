@@ -16,6 +16,11 @@ services:
     networks:
       voting-network:
 
+  postgres:
+    image: postgres:latest
+    networks:
+      voting-network:
+
   otel-collector:
     image: otel/opentelemetry-collector:latest
     command: [ "--config=/etc/otel-collector.yaml" ]
@@ -33,7 +38,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./extras/prometheus.yml:/etc/prometheus/prometheus.yml
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
     networks:

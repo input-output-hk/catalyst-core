@@ -546,10 +546,18 @@ pub mod test {
                 fund_id: 1,
                 challenge_id: CHALLENGE_ID,
                 extra: Some(
-                    vec![("key1", "value1"), ("key2", "value2")]
-                        .into_iter()
-                        .map(|(a, b)| (a.to_string(), b.to_string()))
-                        .collect(),
+                    vec![
+                        ("brief", "A for ADA"),
+                        ("importance", "We need to get them while they're young."),
+                        ("goal", "Nebulous"),
+                        (
+                            "metrics",
+                            "\\- Number of people engaged into the creation of Cryptoalphabet",
+                        ),
+                    ]
+                    .into_iter()
+                    .map(|(a, b)| (a.to_string(), b.to_string()))
+                    .collect(),
                 ),
             },
             challenge_info: ProposalChallengeInfo::CommunityChoice(

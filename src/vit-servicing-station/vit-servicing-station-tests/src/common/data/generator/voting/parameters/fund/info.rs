@@ -66,12 +66,12 @@ impl Default for FundInfo {
                 Group {
                     fund_id: 1,
                     token_identifier: "00000000000000000000000000000000000000000000000000000000.0000000000000000000000000000000000000000000000000000000000000000".to_string(),
-                    group_id: "dreps".to_string(),
+                    group_id: "12345".to_string(),
                 },
                 Group {
                     fund_id: 1,
                     token_identifier: "00000000000000000000000000000000000000000000000000000001.0000000000000000000000000000000000000000000000000000000000000000".to_string(),
-                    group_id: "direct".to_string(),
+                    group_id: "12346".to_string(),
                 },
             ],
         }

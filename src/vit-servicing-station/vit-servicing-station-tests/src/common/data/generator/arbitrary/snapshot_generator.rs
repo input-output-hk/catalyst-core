@@ -13,7 +13,7 @@ use vit_servicing_station_lib::db::models::{
     api_tokens::ApiTokenData,
     challenges::Challenge,
     funds::Fund,
-    proposals::{ChallengeType, Proposal},
+    proposals::{ChallengeType, Proposal, ProposalChallengeInfo},
     voteplans::Voteplan,
 };
 
@@ -72,12 +72,12 @@ impl ArbitrarySnapshotGenerator {
         let dates = self.fund_date_times();
         let fund = ValidVotingTemplateGenerator::next_fund(&mut self.template_generator);
 
-        let groups: BTreeSet<Group> = std::iter::from_fn(|| Some(self.id_generator.next_u64()))
+        let groups: BTreeSet<Group> = std::iter::from_fn(|| Some(self.id_generator.next_i32()))
             .take(2)
             .map(|group_id| Group {
                 fund_id: id.abs(),
                 token_identifier: format!("group{group_id}-token"),
-                group_id: format!("group{group_id}"),
+                group_id: group_id.to_string(),
             })
             .collect();
 
@@ -134,6 +134,22 @@ impl ArbitrarySnapshotGenerator {
             .to_string()
             .as_bytes()
             .to_vec();
+
+        let extra = match &challenge_info {
+            ProposalChallengeInfo::Simple(info) => {
+                vec![("solution", info.proposal_solution.as_str())]
+            }
+            ProposalChallengeInfo::CommunityChoice(info) => vec![
+                ("brief", info.proposal_brief.as_str()),
+                ("importance", info.proposal_importance.as_str()),
+                ("goal", info.proposal_goal.as_str()),
+                ("metrics", info.proposal_metrics.as_str()),
+            ],
+        }
+        .iter()
+        .map(|(a, b)| (a.to_string(), b.to_string()))
+        .collect::<std::collections::BTreeMap<String, String>>();
+
         let proposal = Proposal {
             internal_id: id.abs(),
             proposal_id: id.abs().to_string(),
@@ -155,12 +171,7 @@ impl ArbitrarySnapshotGenerator {
             chain_voteplan_payload: voteplan.chain_voteplan_payload.clone(),
             chain_vote_encryption_key: voteplan.chain_vote_encryption_key.clone(),
             fund_id: fund.id,
-            extra: Some(
-                vec![("key1", "value1"), ("key2", "value2")]
-                    .into_iter()
-                    .map(|(a, b)| (a.to_string(), b.to_string()))
-                    .collect(),
-            ),
+            extra: Some(extra),
             challenge_id,
         };
 

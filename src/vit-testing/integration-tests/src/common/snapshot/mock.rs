@@ -15,6 +15,8 @@ pub fn do_snapshot(
     let mock_json_file = testing_directory.child("database.json");
     db_sync_instance.persist(mock_json_file.path())?;
 
+    println!("do_snapshot::MemoryDB: {:#?}", db_sync_instance);
+
     let params = VotingToolsParams {
         bin: Some("snapshot_tool".to_string()),
         nix_branch: None,

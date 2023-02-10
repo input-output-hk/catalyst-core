@@ -31,6 +31,7 @@ const STAKE: u64 = 10_000;
 
 #[test]
 pub fn voter_rewards_happy_path() {
+    println!("*****************************START");
     let testing_directory = TempDir::new().unwrap().into_persistent();
 
     let alice_wallet = CardanoWallet::new(STAKE);
@@ -43,9 +44,15 @@ pub fn voter_rewards_happy_path() {
         .with(clarice_wallet.as_direct_voter())
         .build();
 
+    println!("db_sync: {:#?}", db_sync.metadata());
+
+    println!("*****************************PRE SNAPSHOT");
+
     let snapshot = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
         .unwrap()
         .filter_default(&HashSet::new());
+
+    println!("*****************************POST SNAPSHOT");
 
     let vote_timing = VoteBlockchainTime {
         vote_start: 0,
@@ -72,6 +79,8 @@ pub fn voter_rewards_happy_path() {
     let (mut controller, vit_parameters, network_params) =
         vitup_setup(&config, testing_directory.path().to_path_buf()).unwrap();
 
+    println!("*****************************PRE SPAWN NETWORK");
+
     let (nodes, vit_station, wallet_proxy) = spawn_network(
         &mut controller,
         vit_parameters,
@@ -79,6 +88,8 @@ pub fn voter_rewards_happy_path() {
         &mut template_generator,
     )
     .unwrap();
+
+    println!("*****************************POST SPAWN NETWORK");
 
     let mut alice = iapyx_from_mainnet(&alice_wallet, &wallet_proxy).unwrap();
     let mut bob = iapyx_from_mainnet(&bob_wallet, &wallet_proxy).unwrap();

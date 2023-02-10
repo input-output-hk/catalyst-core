@@ -43,3 +43,4 @@ tempfile = "3"
 tempfile = "3"
 rand = "0.8"
 vit-servicing-station-tests = { path = "../vit-servicing-station-tests" }
+pretty_assertions = "1.3"

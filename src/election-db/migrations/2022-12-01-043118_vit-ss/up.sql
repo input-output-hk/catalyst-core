@@ -27,8 +27,8 @@ CREATE VIEW funds AS SELECT
     EXTRACT (EPOCH FROM this_fund.voting_end)::BIGINT AS voting_end,
     EXTRACT (EPOCH FROM this_fund.tallying_end)::BIGINT AS tallying_end,
 
-    (this_fund.extra->'url'->'results')::TEXT AS results_url,
-    (this_fund.extra->'url'->'survey')::TEXT AS survey_url
+    (this_fund.extra->'url'->'results') #>> '{}' AS results_url,
+    (this_fund.extra->'url'->'survey') #>> '{}' AS survey_url
 FROM election this_fund
 LEFT JOIN election next_fund ON next_fund.row_id = this_fund.row_id + 1;
 
@@ -59,7 +59,7 @@ CREATE VIEW proposals AS SELECT
     proposal.bb_vote_options AS chain_vote_options,
     proposal.challenge  AS challenge_id,
 
-    proposal.extra::TEXT AS extra
+    proposal.extra #>> '{}' AS extra
 FROM proposal
 INNER JOIN challenge ON challenge.id = proposal.challenge;
 
@@ -85,7 +85,7 @@ Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
 CREATE VIEW proposal_simple_challenge AS SELECT
     CAST(proposal.id AS VARCHAR) AS proposal_id,
-    (proposal.extra->'solution')::TEXT AS proposal_solution
+    (proposal.extra->'solution') #>> '{}' AS proposal_solution
 FROM
     proposal
     INNER JOIN challenge ON proposal.challenge = challenge.id
@@ -99,11 +99,11 @@ Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
 CREATE VIEW proposal_community_choice_challenge AS SELECT
     CAST(proposal.id AS VARCHAR) AS proposal_id,
-    (proposal.extra->'solution')::TEXT AS proposal_solution,
-    (proposal.extra->'brief')::TEXT AS proposal_brief,
-    (proposal.extra->'importance')::TEXT AS proposal_importance,
-    (proposal.extra->'goal')::TEXT AS proposal_goal,
-    (proposal.extra->'metrics')::TEXT AS proposal_metrics
+    (proposal.extra->'solution') #>> '{}' AS proposal_solution,
+    (proposal.extra->'brief') #>> '{}' AS proposal_brief,
+    (proposal.extra->'importance') #>> '{}' AS proposal_importance,
+    (proposal.extra->'goal') #>> '{}' AS proposal_goal,
+    (proposal.extra->'metrics') #>> '{}' AS proposal_metrics
 FROM
     proposal
     INNER JOIN challenge ON proposal.challenge = challenge.id
@@ -159,8 +159,8 @@ CREATE VIEW challenges AS SELECT
     challenge.rewards_total AS rewards_total,
     challenge.proposers_rewards AS proposers_rewards,
     challenge.election AS fund_id,
-    (challenge.extra->'url'->'challenge')::TEXT AS challenge_url,
-    (challenge.extra->'highlights')::TEXT AS highlights
+    (challenge.extra->'url'->'challenge') #>> '{}' AS challenge_url,
+    (challenge.extra->'highlights') #>> '{}' AS highlights
 FROM challenge;
 
 COMMENT ON VIEW challenges IS

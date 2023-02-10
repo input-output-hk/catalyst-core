@@ -74,7 +74,10 @@ where
             fund_id: row.7,
             challenge_url: row.8,
             // It should be ensured that the content is valid json
-            highlights: row.9.and_then(|v| serde_json::from_str(&v).ok()),
+            highlights: row.9.and_then(|v| {
+                println!("{}", v);
+                serde_json::from_str(&v).ok()
+            }),
         }
     }
 }

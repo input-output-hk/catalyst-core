@@ -60,7 +60,7 @@ impl<'a> DbInserter<'a> {
     }
 
     pub fn insert_proposals(&self, proposals: &[FullProposalInfo]) -> Result<(), DbInserterError> {
-        use election_db::schema::{proposal, proposal_voteplan, voteplan, voting_group};
+        use election_db::schema::{proposal, proposal_voteplan, voteplan};
 
         for proposal in proposals {
             let proposal_id = proposal
@@ -120,26 +120,6 @@ impl<'a> DbInserter<'a> {
 
             diesel::insert_into(proposal::table)
                 .values(values)
-                .execute(self.connection)
-                .map_err(DbInserterError::DieselError)?;
-
-            let group_row_id = voting_group::table
-                .filter(voting_group::group_id.eq(&proposal.group_id))
-                .select(voting_group::row_id)
-                .get_result::<i32>(self.connection)
-                .unwrap();
-
-            let voteplan_values = (
-                voteplan::id.eq(proposal.voteplan.chain_voteplan_id.clone()),
-                voteplan::election_id.eq(proposal.proposal.fund_id),
-                voteplan::group_id.eq(group_row_id),
-                voteplan::category.eq(proposal.proposal.chain_voteplan_payload.clone()),
-                voteplan::encryption_key.eq(proposal.proposal.chain_vote_encryption_key.clone()),
-            );
-
-            diesel::insert_into(voteplan::table)
-                .values(voteplan_values)
-                .on_conflict_do_nothing()
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
 
@@ -241,15 +221,13 @@ impl<'a> DbInserter<'a> {
 
             self.insert_groups(&fund.groups.iter().cloned().collect::<Vec<_>>())?;
 
-            let group_id = fund.groups.iter().next().unwrap().group_id.as_str();
-
-            let group_row_id = voting_group::table
-                .filter(voting_group::group_id.eq(group_id))
-                .select(voting_group::row_id)
-                .get_result::<i32>(self.connection)
-                .unwrap();
-
             for voteplan in &fund.chain_vote_plans {
+                let group_row_id = voting_group::table
+                    .filter(voting_group::token_id.eq(&voteplan.token_identifier))
+                    .select(voting_group::row_id)
+                    .get_result::<i32>(self.connection)
+                    .unwrap();
+
                 let values = (
                     voteplan::row_id.eq(voteplan.id),
                     voteplan::id.eq(&voteplan.chain_voteplan_id),
@@ -287,6 +265,7 @@ impl<'a> DbInserter<'a> {
 
         for challenge in challenges {
             let values = (
+                challenge::row_id.eq(challenge.internal_id),
                 challenge::id.eq(challenge.id),
                 challenge::category.eq(challenge.challenge_type.to_string()),
                 challenge::title.eq(&challenge.title),
@@ -304,7 +283,6 @@ impl<'a> DbInserter<'a> {
 
             diesel::insert_into(challenge::table)
                 .values(values)
-                .on_conflict_do_nothing()
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
         }

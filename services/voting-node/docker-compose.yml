@@ -18,6 +18,11 @@ services:
 
   postgres:
     image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=CHANGE_ME
+      - POSTGRES_DB=election
+    volumes:
+      - electiondb:/var/lib/postgresql/data
     networks:
       voting-network:
 
@@ -72,3 +77,6 @@ services:
 networks:
   voting-network:
     name: voting-network
+
+volumes:
+  electiondb:

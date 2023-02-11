@@ -4,7 +4,8 @@
 extend = [
     { path = "Makefiles/prereqs.toml"  },
     { path = "Makefiles/docker.toml"  },
-    { path = "Makefiles/docs.toml"  }
+    { path = "Makefiles/docs.toml"  },
+    { path = "Makefiles/db.toml"  }
 ]
 
 [config]

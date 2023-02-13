@@ -1,0 +1,60 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="new module to prepare for the new leadership scheduling of blocks"><meta name="keywords" content="rust, rustlang, rust-lang, leadership"><title>jormungandr::leadership - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../jormungandr/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../jormungandr/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"><a href="#">Module leadership</a></h2><div class="sidebar-elems"><section><div class="block"><ul><li><a href="#reexports">Re-exports</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li></ul></div></section></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../jormungandr/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn"><span class="in-band">Module <a href="../index.html">jormungandr</a>::<wbr><a class="mod" href="#">leadership</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../../src/jormungandr/leadership/mod.rs.html#1-68">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>new module to prepare for the new leadership scheduling of blocks</p>
+<p>here we need to take into consideration that won’t have access to the
+cryptographic objects of the leader: they will be executed in a secure
+enclave.</p>
+<h3 id="data-structures"><a href="#data-structures">data structures</a></h3>
+<p>We need to separate our components as following:</p>
+<ol>
+<li>the enclave:
+<ul>
+<li>upon receiving the necessary parameters, it will return a schedule
+when it should be elected to create a block;</li>
+<li>upon receiving the necessary parameters, it will create the
+proof to finalize the creation of a block;</li>
+</ul>
+</li>
+<li>the schedule:
+<ul>
+<li>it holds the schedules for a given epoch</li>
+<li>we can query it to get a list of schedule for the REST API (useful to
+have information when the node is expected to create blocks);</li>
+<li>optional but useful: have a way to update if a schedule has been
+executed (and what time);</li>
+<li>optional: have a way for the blockchain task to update
+the schedule to know if the scheduled block as been accepted in the
+branch;</li>
+</ul>
+</li>
+</ol>
+<p>The enclave is not yet implemented, but we will need to separate the crypto
+from the representation here.</p>
+<h3 id="workflow"><a href="#workflow">workflow</a></h3>
+<p>The flow process will work as follow:</p>
+<ol>
+<li>the leadership module will receive a new event to create prepare a leadership
+schedule; It will only includes the <code>Leadership</code> object from chain_lib and the
+<code>TimeFrame</code> active for the future blocks to come;</li>
+<li>upon receiving these data, it will query the <strong>enclave</strong> to know the list of expected
+scheduled leader elections; (this part may require heavy cryptographic computation,
+we may want to split this part into incrementally long queries);</li>
+<li>once the schedule is retrieved (even partially) we can start waiting for the appropriate
+time to create a new block (to run block fragment selection) and ask the enclave to sign
+the block;</li>
+<li>once a block is ready we need to send it to the blockchain task to process it and update
+the blockchain.</li>
+</ol>
+<h3 id="how-and-when-to-trigger-a-new-leadership-event"><a href="#how-and-when-to-trigger-a-new-leadership-event">how and when to trigger a new leadership event</a></h3>
+<p>The blockchain module has the material to create the new leadership parameters
+for a given epoch (the <code>Leadership</code> object and the time frame). It needs to send
+the appropriate data when necessary.</p>
+<p>2 ways to trigger a new leadership schedule from the blockchain module:</p>
+<ol>
+<li>the blockchain detects an epoch transition,</li>
+<li>the leadership sent an end of epoch signal to the blockchain;</li>
+</ol>
+<p>Now doing so we may trigger the same leader schedule twice. We will need to make sure
+we don’t duplicate the work everywhere.</p>
+</div></details><h2 id="reexports" class="small-section-header"><a href="#reexports">Re-exports</a></h2><div class="item-table"><div class="item-row"><div class="item-left import-item" id="reexport.LeaderEvent"><code>pub use self::enclave::<a class="struct" href="../secure/enclave/struct.LeaderEvent.html" title="struct jormungandr::secure::enclave::LeaderEvent">LeaderEvent</a>;</code></div></div></div><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Enclave.html" title="jormungandr::leadership::Enclave struct">Enclave</a></div><div class="item-right docblock-short">represent the client side of an enclave. From there we will query the
+actual enclave about schedules and signing blocks</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.LeadershipLogHandle.html" title="jormungandr::leadership::LeadershipLogHandle struct">LeadershipLogHandle</a></div><div class="item-right docblock-short">leadership log handle. will allow to update the status of the log
+without having to hold the <a href="./struct.Logs.html"><code>Logs</code></a></div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Logs.html" title="jormungandr::leadership::Logs struct">Logs</a></div><div class="item-right docblock-short">all leadership logs, allow for following up on the different entity
+of the blockchain</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Module.html" title="jormungandr::leadership::Module struct">Module</a></div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.ModuleConfig.html" title="jormungandr::leadership::ModuleConfig struct">ModuleConfig</a></div></div></div><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.EnclaveError.html" title="jormungandr::leadership::EnclaveError enum">EnclaveError</a></div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="jormungandr" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

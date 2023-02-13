@@ -23,6 +23,7 @@ use std::error::Error;
 /// eg: "`postgres://catalyst-dev:CHANGE_ME@localhost/CatalystDev`"
 const DATABASE_URL_ENVVAR: &str = "ELECTION_DB_URL";
 
+#[allow(unused)]
 /// Connection to the Election Database
 pub struct ElectionDB {
     /// Internal database connection.  DO NOT MAKE PUBLIC.

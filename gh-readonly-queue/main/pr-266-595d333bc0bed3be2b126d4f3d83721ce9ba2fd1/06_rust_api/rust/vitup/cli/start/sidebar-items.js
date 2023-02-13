@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["MockError",""]],"struct":[["AdvancedStartCommandArgs",""],["MockFarmCommand",""],["MockStartCommandArgs",""],["QuickStartCommandArgs",""]]};

@@ -33,6 +33,8 @@ use thor::{
 
 const TRANSACTION_CERTIFICATE_QUERY_COMPLEXITY_LIMIT: u64 = 140;
 const TRANSACTION_CERTIFICATE_QUERY_DEPTH_LIMIT: u64 = 30;
+const SLOTS_PER_EPOCH: u32 = 20;
+const SLOT_DURATION: u8 = 2;
 
 #[test]
 pub fn explorer_stake_pool_registration_test() {
@@ -476,8 +478,8 @@ pub fn explorer_vote_plan_certificates_test() {
             Block0ConfigurationBuilder::default()
                 .with_wallets_having_some_values(vec![&first_stake_pool_owner, &bob])
                 .with_discrimination(discrimination)
-                .with_slots_per_epoch(20.try_into().unwrap())
-                .with_slot_duration(3.try_into().unwrap())
+                .with_slots_per_epoch(SLOTS_PER_EPOCH.try_into().unwrap())
+                .with_slot_duration(SLOT_DURATION.try_into().unwrap())
                 .with_linear_fees(LinearFee::new(0, 0, 0)),
         )
         .build()
@@ -554,7 +556,7 @@ pub fn explorer_vote_cast_certificates_test() {
             to: vec![alice.to_initial_token(1000)],
         })
         .with_committees(&[alice.to_committee_id()])
-        .with_slots_per_epoch(60.try_into().unwrap())
+        .with_slots_per_epoch(SLOTS_PER_EPOCH.try_into().unwrap())
         .with_certs(vec![vote_plan_cert])
         .with_treasury(1_000.into());
 
@@ -630,7 +632,7 @@ pub fn explorer_vote_tally_certificate_test() {
             to: vec![alice.to_initial_token(1000)],
         })
         .with_committees(&[alice.to_committee_id()])
-        .with_slots_per_epoch(60.try_into().unwrap())
+        .with_slots_per_epoch(SLOTS_PER_EPOCH.try_into().unwrap())
         .with_certs(vec![vote_plan_cert])
         .with_treasury(1_000.into());
 
@@ -702,7 +704,7 @@ pub fn explorer_update_proposal_and_vote_certificate_test() {
             bft_secret_bob.identifier().into(),
         ])
         .with_proposal_expiration(20.try_into().unwrap())
-        .with_slots_per_epoch(20.try_into().unwrap())
+        .with_slots_per_epoch(SLOTS_PER_EPOCH.try_into().unwrap())
         .with_linear_fees(LinearFee::new(0, 0, 0));
 
     let jormungandr = SingleNodeTestBootstrapper::default()

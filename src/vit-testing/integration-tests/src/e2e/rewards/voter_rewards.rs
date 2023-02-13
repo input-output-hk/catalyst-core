@@ -44,13 +44,15 @@ pub fn voter_rewards_happy_path() {
         .with(clarice_wallet.as_direct_voter())
         .build();
 
-    println!("db_sync: {:#?}", db_sync.metadata());
+    //println!("db_sync: {:#?}", db_sync.metadata());
 
     println!("*****************************PRE SNAPSHOT");
 
     let snapshot = mock::do_snapshot(&db_sync, JobParameters::fund("fund9"), &testing_directory)
         .unwrap()
         .filter_default(&HashSet::new());
+
+    println!("snapshot: {:#?}", snapshot.snapshot().to_full_snapshot_info());
 
     println!("*****************************POST SNAPSHOT");
 

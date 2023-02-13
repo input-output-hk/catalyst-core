@@ -21,10 +21,10 @@ pub fn do_snapshot(
         bin: Some("snapshot_tool".to_string()),
         nix_branch: None,
         network: NetworkType::Mainnet,
-        db: "fake".to_string(),
-        db_user: "fake".to_string(),
-        db_pass: "fake".to_string(),
-        db_host: "fake".to_string(),
+        db: "".to_string(), //fake
+        db_user: "".to_string(),
+        db_pass: "".to_string(),
+        db_host: "".to_string(),
         additional_params: Some(vec![
             "dry-run".to_string(),
             "--mock-json-file".to_string(),

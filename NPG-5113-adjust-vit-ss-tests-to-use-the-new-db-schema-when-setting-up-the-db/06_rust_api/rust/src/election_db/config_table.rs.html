@@ -190,25 +190,20 @@
 <span id="190">190</span>
 <span id="191">191</span>
 <span id="192">192</span>
-<span id="193">193</span>
-<span id="194">194</span>
-<span id="195">195</span>
-<span id="196">196</span>
-<span id="197">197</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Operations on the config table
 
-
-</span><span class="kw">use </span>chrono::{Utc, DateTime, serde::ts_seconds};
-<span class="kw">use </span>serde::{Serialize, Deserialize};
+</span><span class="kw">use </span>chrono::{serde::ts_seconds, DateTime, Utc};
+<span class="kw">use </span>serde::{Deserialize, Serialize};
 <span class="kw">use </span>std::error::Error;
 
 <span class="kw">use </span><span class="kw">crate</span>::ElectionDB;
 
 <span class="doccomment">/// The configuration key into the `config` table.
-</span><span class="attribute">#[derive(Default)]
-</span><span class="kw">struct </span>ConfigKey&lt;<span class="lifetime">&#39;a</span>&gt;{
+</span><span class="attribute">#[allow(unused)]
+#[derive(Default)]
+</span><span class="kw">struct </span>ConfigKey&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="doccomment">/// Primary `id` into the table
-    </span>id : <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
+    </span>id: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
     <span class="comment">// Optional `id2` set to None to match all on lookup.
     </span>id2: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;,
     <span class="comment">// Optional `id3` set to None to match all on lookup.
@@ -216,71 +211,68 @@
 }
 
 <span class="kw">impl </span>ConfigKey&lt;<span class="lifetime">&#39;_</span>&gt; {
-
     <span class="kw">const </span>API_TOKEN_ID: <span class="kw-2">&amp;</span>str = <span class="string">&quot;api_token&quot;</span>;
 
     <span class="doccomment">/// Create an api_token key for the Config table.
     </span><span class="kw">fn </span>api_token(token: <span class="kw-2">&amp;</span>str) -&gt; ConfigKey {
-        ConfigKey { 
+        ConfigKey {
             id: ConfigKey::API_TOKEN_ID, <span class="comment">// Config Key space.
-            </span>id2: <span class="prelude-val">Some</span>(token), <span class="comment">// Encrypted Token.
-            </span>id3: <span class="prelude-val">Some</span>(<span class="string">&quot;&quot;</span>), <span class="comment">// Not used.
+            </span>id2: <span class="prelude-val">Some</span>(token),            <span class="comment">// Encrypted Token.
+            </span>id3: <span class="prelude-val">Some</span>(<span class="string">&quot;&quot;</span>),               <span class="comment">// Not used.
         </span>}
     }
 }
-
 
 <span class="comment">// Internal operations which perform general config table operations on the
 // database.
 
 </span><span class="doccomment">/// Get all config records matching a key.
-/// 
+///
 /// # Parameters
-/// 
+///
 /// * `key` - the key to lookup in the config table.  any parts of the key that
 ///   are `None` are wildcard and will match anything.
-/// 
+///
 /// # Returns
-///   
+///
 /// Will return an iterator over all the found raw config models of the
 /// database.  Returning the raw config row lets the caller check the `id`
-/// fields as well as the body.  
-/// 
+/// fields as well as the body.
+///
 /// # Errors
-///   * if at least 1 is not found, 
-///   * Or there is a DB error of some kind. 
-</span><span class="kw">fn </span>get_config_records(key : <span class="kw-2">&amp;</span>ConfigKey ) -&gt; 
-    <span class="prelude-ty">Result</span>&lt;(<span class="comment">/*TODO*/</span>), Box&lt;<span class="kw">dyn </span>Error + Send + Sync + <span class="lifetime">&#39;static</span>&gt;&gt; {
-
+///   * if at least 1 is not found,
+///   * Or there is a DB error of some kind.
+</span><span class="kw">fn </span>get_config_records(
+    _key: <span class="kw-2">&amp;</span>ConfigKey,
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Iterator&lt;Item = ()&gt;, Box&lt;<span class="kw">dyn </span>Error + Send + Sync + <span class="lifetime">&#39;static</span>&gt;&gt; {
     <span class="comment">// Query the `config` table for all records matching the key.
 
     // If no records are found, return an error.
 
     // Return the iterator over the found records.
-    </span><span class="macro">todo!</span>()
+    </span><span class="prelude-val">Ok</span>(Vec::new().into_iter())
 }
 
-
 <span class="doccomment">/// Get a single config record by its key.
-/// 
+///
 /// # Parameters
-/// 
+///
 /// * `key` - the key to lookup in the config table.  any parts of the key that
 ///   are `None` are wildcard and will match anything.
-/// 
+///
 /// # Returns
-///   
+///
 /// Returns the found json record as a `serde_json::Value` type. This needs to
 /// be further deserialized and checked by the caller.
-/// 
+///
 /// # Errors
-///   * if its not found, 
+///   * if its not found,
 ///   * or more than 1 result is found.
 ///   * Or there is a DB error of some kind.
-</span><span class="kw">fn </span>get_config_record(key : <span class="kw-2">&amp;</span>ConfigKey ) -&gt; 
-    <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;serde_json::Value&gt;, Box&lt;<span class="kw">dyn </span>Error + Send + Sync + <span class="lifetime">&#39;static</span>&gt;&gt;  {
-
-    <span class="kw">let </span>results = get_config_records(key)<span class="question-mark">?</span>;
+</span><span class="kw">fn </span>get_config_record(
+    key: <span class="kw-2">&amp;</span>ConfigKey,
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;serde_json::Value&gt;, Box&lt;<span class="kw">dyn </span>Error + Send + Sync + <span class="lifetime">&#39;static</span>&gt;&gt; {
+    <span class="kw">let </span>_results = get_config_records(key)<span class="question-mark">?</span>;
 
     <span class="comment">// Check if there is more than one record in the results.
     // If there is exactly 1 record in the results, return it.
@@ -289,29 +281,30 @@
     </span><span class="macro">todo!</span>()
 }
 
-
 <span class="doccomment">/// Set a config record for the matching key.
-/// 
+///
 /// If the key does not exist, it is created.  Otherwise it is updated.
-/// 
+///
 /// # Parameters
-/// 
+///
 /// * `key` the Key to set.  Any parts of the key which are `None` become &quot;&quot;.
 /// * `value` the json value to store in the record.
-/// 
+///
 /// # Returns
-///   
+///
 /// Ok()
-/// 
+///
 /// # Errors
 ///   * There is a DB error of some kind.
-/// 
-</span><span class="kw">fn </span>set_config_record(key : <span class="kw-2">&amp;</span>ConfigKey, value: <span class="kw-2">&amp;</span>serde_json::Value ) -&gt; 
-    <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>Error + Send + Sync + <span class="lifetime">&#39;static</span>&gt;&gt; {
-    <span class="macro">todo!</span>()
-}
+///
+</span><span class="comment">// fn set_config_record(
+// _key: &amp;ConfigKey,
+//     _value: &amp;serde_json::Value,
+// ) -&gt; Result&lt;(), Box&lt;dyn Error + Send + Sync + &#39;static&gt;&gt; {
+//     todo!()
+// }
 
-<span class="doccomment">/// Individual Permissions assigned to an authorization.
+</span><span class="doccomment">/// Individual Permissions assigned to an authorization.
 </span><span class="attribute">#[derive(Serialize, Deserialize)]
 </span><span class="kw">pub struct </span>Permissions {
     <span class="doccomment">/// Example permission, at the moment there are no permission categories.
@@ -336,43 +329,41 @@
     </span><span class="kw">pub </span>perms: Permissions,
 }
 
-
 <span class="kw">impl </span>ElectionDB {
     <span class="doccomment">/// Check if an API key is valid, and if it is, return its authorization record.
     ///
     /// # Parameters
-    /// 
+    ///
     /// * `conn` - The Connection to the Election DB.
     /// * `token` - The API token to check (Should be a UUID String.)
-    /// 
+    ///
     /// # Returns
-    /// 
+    ///
     /// The authorization details of the checked API token.
-    /// 
+    ///
     /// # Errors
     /// key
     /// * If the API token is invalid.
     /// * If the API token has expired.
     /// * If the Authorization record in the API Token record is malformed.
     /// * If there is a database connection error.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// Because its not yet implemented...
-    /// 
+    ///
     /// # Notes
-    /// 
+    ///
     /// API Tokens are not stored in the clear in the database, they are encrypted
     /// with a key supplied by a `TODO` environment variable.  This prevents a DB
     /// dump from exposing the API keys.
-    /// 
+    ///
     </span><span class="kw">pub fn </span>check_api_token(
-        <span class="kw-2">&amp;</span><span class="self">self</span>, 
-        _token : <span class="kw-2">&amp;</span>str) -&gt; 
-        <span class="prelude-ty">Result</span>&lt;Authorization, Box&lt;<span class="kw">dyn </span>Error + Send + Sync + <span class="lifetime">&#39;static</span>&gt;&gt; 
-    {
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        _token: <span class="kw-2">&amp;</span>str,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Authorization, Box&lt;<span class="kw">dyn </span>Error + Send + Sync + <span class="lifetime">&#39;static</span>&gt;&gt; {
         <span class="comment">// Read the encryption key from env var. Error if its not found. (Can cache it)
-        
+
         // Encrypt the passed token with the encryption key. Note, this isn&#39;t
         // salted, but using it as a key requires that no two api tokens can be
         // the same anyway.
@@ -382,14 +373,14 @@
         // (&quot;api_token&quot;,&lt;encrypted api key&gt;, &quot;&quot;)
 
         // Lookup the record by calling `get_config_record()`
-        </span><span class="kw">let </span>auth = get_config_record(
-            <span class="kw-2">&amp;</span>ConfigKey::api_token(encrypted_token))<span class="question-mark">?</span>;
+        </span><span class="kw">let </span>_auth = get_config_record(<span class="kw-2">&amp;</span>ConfigKey::api_token(encrypted_token))<span class="question-mark">?</span>;
 
         <span class="comment">// Deserialize the result into a `Authorization` struct.
 
         // And return it.
-        
+
         </span><span class="macro">todo!</span>(<span class="string">&quot;Not yet implemented.&quot;</span>)
     }
-}</code></pre></div>
+}
+</code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="election_db" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

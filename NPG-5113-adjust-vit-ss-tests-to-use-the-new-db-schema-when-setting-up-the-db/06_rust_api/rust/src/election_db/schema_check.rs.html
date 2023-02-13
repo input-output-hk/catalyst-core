@@ -106,33 +106,60 @@
 <span id="106">106</span>
 <span id="107">107</span>
 <span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Check if the schema is up-to-date.
 
-</span><span class="kw">use </span>std::{error::Error, collections::HashMap, fmt};
+</span><span class="kw">use </span>std::{collections::HashMap, error::Error, fmt};
 
+<span class="kw">use </span>diesel::{
+    migration::{MigrationSource, MigrationVersion},
+    pg::Pg,
+};
 <span class="kw">use </span>diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-<span class="kw">use </span>diesel::{pg::Pg, migration::{MigrationSource, MigrationVersion}};
-
 
 <span class="doccomment">/// Schema in database does not match schema supported by the Crate.
 </span><span class="attribute">#[derive(Debug)]
 </span><span class="kw">struct </span>MismatchedSchema&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="doccomment">/// List of migrations which are applied to the DB but which this schema does not know about.
-    </span>unknown_applied_migrations : Vec&lt;MigrationVersion&lt;<span class="lifetime">&#39;a</span>&gt;&gt;,
-    <span class="doccomment">/// List of migrations which this schema knows about, but are not applied to the DB.    
-    </span>missing_migrations: Vec&lt;MigrationVersion&lt;<span class="lifetime">&#39;a</span>&gt;&gt;
+    </span>unknown_applied_migrations: Vec&lt;MigrationVersion&lt;<span class="lifetime">&#39;a</span>&gt;&gt;,
+    <span class="doccomment">/// List of migrations which this schema knows about, but are not applied to the DB.
+    </span>missing_migrations: Vec&lt;MigrationVersion&lt;<span class="lifetime">&#39;a</span>&gt;&gt;,
 }
 
 <span class="kw">impl </span>Error <span class="kw">for </span>MismatchedSchema&lt;<span class="lifetime">&#39;_</span>&gt; {}
 
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>MismatchedSchema&lt;<span class="lifetime">&#39;_</span>&gt; {
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
-        <span class="macro">write!</span>(f, <span class="string">&quot;Schema in database does not match schema supported by the Crate.&quot;</span>)<span class="question-mark">?</span>;
+        <span class="macro">write!</span>(
+            f,
+            <span class="string">&quot;Schema in database does not match schema supported by the Crate.&quot;
+        </span>)<span class="question-mark">?</span>;
         <span class="kw">if </span>!<span class="self">self</span>.unknown_applied_migrations.is_empty() {
-            <span class="macro">write!</span>(f, <span class="string">&quot;Unknown but applied migrations = {:?}&quot;</span>, <span class="self">self</span>.unknown_applied_migrations)<span class="question-mark">?</span>;
+            <span class="macro">write!</span>(
+                f,
+                <span class="string">&quot;Unknown but applied migrations = {:?}&quot;</span>,
+                <span class="self">self</span>.unknown_applied_migrations
+            )<span class="question-mark">?</span>;
         }
         <span class="kw">if </span>!<span class="self">self</span>.unknown_applied_migrations.is_empty() {
-            <span class="macro">write!</span>(f, <span class="string">&quot;Migrations which have not been applied = {:?}&quot;</span>, <span class="self">self</span>.missing_migrations)<span class="question-mark">?</span>;
+            <span class="macro">write!</span>(
+                f,
+                <span class="string">&quot;Migrations which have not been applied = {:?}&quot;</span>,
+                <span class="self">self</span>.missing_migrations
+            )<span class="question-mark">?</span>;
         }
         <span class="prelude-val">Ok</span>(())
     }
@@ -142,22 +169,22 @@
 </span><span class="kw">const </span>MIGRATIONS: EmbeddedMigrations = <span class="macro">embed_migrations!</span>(<span class="string">&quot;migrations&quot;</span>);
 
 <span class="doccomment">/// Check iof all the migrations we know about are applied, and ONLY those
-/// migrations are applied. 
-/// 
+/// migrations are applied.
+///
 /// # Parameters
-/// 
+///
 /// * `harness` - The Migration Harness for this database connection.
 /// * `source` - The Source of the migrations to check against.
-/// 
+///
 /// # Errors
 ///
 /// This function will return an error if:
 /// * `url` is None and the environment variable &quot;`DATABASE_URL`&quot; isn&#39;t set.
 /// * The database schema in the DB does not 100% match the schema supported by
 ///   this library.
-/// 
+///
 /// $ Notes
-/// 
+///
 /// This function will NOT apply any migrations.  Migrations should be applied
 /// manually if they are not up-to-date as there is no single master of the
 /// database schema.  The purpose of this check is to ensure the election db
@@ -197,16 +224,17 @@
     </span><span class="kw">if </span>unknown_applied_migrations.is_empty() &amp;&amp; migrations.is_empty() {
         <span class="prelude-val">Ok</span>(())
     } <span class="kw">else </span>{
-         <span class="prelude-val">Err</span>(
-            Box::new(MismatchedSchema{
-                unknown_applied_migrations,
-                missing_migrations: migrations,
+        <span class="prelude-val">Err</span>(Box::new(MismatchedSchema {
+            unknown_applied_migrations,
+            missing_migrations: migrations,
         }))
     }
 }
 
 <span class="doccomment">/// Check if the DB has all migrations applied like we expect it should.
-</span><span class="kw">pub fn </span>db_version_check(connection: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>MigrationHarness&lt;Pg&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>Error + Send + Sync + <span class="lifetime">&#39;static</span>&gt;&gt; {
+</span><span class="kw">pub fn </span>db_version_check(
+    connection: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>MigrationHarness&lt;Pg&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>Error + Send + Sync + <span class="lifetime">&#39;static</span>&gt;&gt; {
     <span class="comment">// We only have 1 actual Election DB.  If checking the schema every time we
     // get a DB connection adds too much overhead, the result could be cached
     // using something like the `once_cell` crate.

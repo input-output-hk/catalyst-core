@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["Error",""]],"mod":[["vote_plan",""]],"struct":[["Blockchain",""],["NodeSetting","contains all the data to start or interact with a node"],["Settings",""]]};

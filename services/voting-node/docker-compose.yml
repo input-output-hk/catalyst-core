@@ -12,6 +12,7 @@ services:
       - VOTING_HOST=0.0.0.0
       - VOTING_PORT=5057
       - VOTING_LOG_LEVEL=debug
+      - DATABASE_URL=postgres://catalyst-dev:CHANGE_ME@postgres/CatalystDev
     command: voting-node start
     networks:
       voting-network:
@@ -20,11 +21,14 @@ services:
     image: postgres:latest
     environment:
       - POSTGRES_PASSWORD=CHANGE_ME
-      - POSTGRES_DB=election
-    volumes:
-      - electiondb:/var/lib/postgresql/data
+      - POSTGRES_USER=catalyst-dev
+      - POSTGRES_DB=CatalystDev
     networks:
       voting-network:
+    ports:
+      - "5432:5432"
+    volumes:
+      - electiondb:/var/lib/postgresql/data
 
   otel-collector:
     image: otel/opentelemetry-collector:latest

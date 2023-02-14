@@ -185,7 +185,6 @@ struct CommandLine {
 #[derive(Debug, Deserialize, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
-    pub storage: Option<PathBuf>,
     pub tls: Option<Tls>,
     pub cors: Option<Cors>,
     #[serde(default, deserialize_with = "deserialize_uri_string")]

@@ -11,6 +11,7 @@ on:
   push:
     branches:
       - main
+      - gh-readonly-queue/main/**
     paths:
       - ".github/workflows/nix.yml"
       - "nix/**"

@@ -16,20 +16,26 @@ def cli(debug, hot_reload):
     "--host",
     envvar="VOTING_HOST",
     default="0.0.0.0",
-    help="Host for the voting node API. If left unset it will look for the env var VOTING_HOST. If no host is found, the default value is: 0.0.0.0",
+    help="""\
+    Host for the voting node API. If left unset it will look for VOTING_HOST.\
+    If no host is found, the default value is: 0.0.0.0""",
 )
 @click.option(
     "--port",
     envvar="VOTING_PORT",
     default=8000,
-    help="Port for the voting node API. If left unset it will look for the env var VOTING_PORT. If no port is found, the default value is: 8000",
+    help="""\
+    Port for the voting node API. If left unset it will look for VOTING_PORT.\
+    If no port is found, the default value is: 8000""",
 )
 @click.option(
     "--log-level",
     envvar="VOTING_LOG_LEVEL",
     default="info",
     type=click.Choice(["info", "debug", "warn", "error", "trace"]),
-    help="Sets the level for logs in the voting node. If left unset it will look for the env var VOTING_LOG_LEVEL. If no level is found, the default value is: info",
+    help="""\
+    Sets the level for logs in the voting node. If left unset it will look for\
+    VOTING_LOG_LEVEL. If no level is found, the default value is: info""",
 )
 @click.option(
     "--database-url",

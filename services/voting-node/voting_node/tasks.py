@@ -9,11 +9,9 @@ from .config import JormConfig
 
 # task lists are the things that schedules go through
 class TaskList(object):
-    """A list of task names with corresponding method names that are executed sequentially.
-
-    If the current task raises an exception, running the task list again will resume from it.
-
-    Raises exceptions"""
+    """A list of task names with corresponding method names that are executed
+    sequentially. If the current task raises an exception, running the task list
+    again will resume from it."""
 
     tasks: list[str] = []
     current_task: str | None = None
@@ -53,6 +51,7 @@ class Leader0Schedule(TaskList):
         self.current_task: str | None = None
         self.tasks: list[str] = [
             "bootstrap_storage",
+            "bootstrap_db",
             "get_host_info",
             "get_upcoming_election",
             "load_node_keys",
@@ -71,18 +70,25 @@ class Leader0Schedule(TaskList):
         # its path. Raise exception if it can't
         self.storage = Path(self.jorm_config.storage).mkdir(parents=True, exist_ok=True)
 
+    async def bootstrap_db(self):
+        conn = await asyncpg.connect(self.db_url)
+        if conn is None:
+            raise Exception("failed to connect to the database")
+        self.conn = conn
+
     async def get_upcoming_election(self):
         # This all starts by getting the election row that has the nearest
         # `voting_start`. We query the DB to get the row, and store it.
-        query = "SELECT * FROM election WHERE voting_start > $1 ORDER BY voting_start ASC LIMIT 1"
+        filter_by = "voting_start > $1"
+        sort_by = "voting_start ASC"
+        query = f"SELECT * FROM election WHERE {filter_by} ORDER BY {sort_by} LIMIT 1"
         now = datetime.datetime.utcnow()
-        conn = await asyncpg.connect(self.db_url)
-        result = await conn.fetchrow(query, now)
-        print(f"Result: {result}")
+        result = await self.conn.fetchrow(query, now)
         if result is None:
             raise Exception("no upcoming election found")
-        else:
-            self.election = result
+
+        print(f"Result: {result}")
+        self.election = result
 
     async def get_host_info(self):
         # gets host information
@@ -93,12 +99,12 @@ class Leader0Schedule(TaskList):
     async def load_node_keys(self):
         # Loads keys from storage
 
-        # node topology secret key
+        # node network secret key
         key_file = Path(self.jorm_config.storage, "node_topology_key")
         if key_file.exists():
             key = key_file.open("r").readline()
-            print(f"found key: {key}")
-            self.topology_key = key
+            print(f"found key: {key} stored in {key_file.absolute()}")
+            self.network_key = key
         else:
             try:
                 proc = await asyncio.create_subprocess_exec(
@@ -110,12 +116,14 @@ class Leader0Schedule(TaskList):
                     stdout=asyncio.subprocess.PIPE,
                 )
                 data = await proc.stdout.readline()
+                if data is None:
+                    raise Exception("failed to generate network key")
                 key = data.decode().rstrip()
                 key_file.open("w").write(key)
-                self.topology_key = key
+                self.network_key = key
             except Exception as e:
                 raise e
-        # node topology secret key
+        # node configuration file
         key_file = Path(self.jorm_config.storage, "node_config.yaml")
         if key_file.exists():
             raise Exception("WIP: need to add yaml to the stack")
@@ -132,6 +140,9 @@ class Leader0Schedule(TaskList):
                     stdout=asyncio.subprocess.PIPE,
                 )
                 data = await proc.stdout.readline()
+                if data is None:
+                    raise Exception("failed to make network key")
+
                 key = data.decode().rstrip()
                 key_file.open("w").write(key)
                 self.secret_key = key
@@ -160,4 +171,6 @@ class Leader0Schedule(TaskList):
         pass
 
     async def cleanup(self):
-        pass
+        # if the connection to the DB is there, close it.
+        if self.conn is not None:
+            await self.conn.close()

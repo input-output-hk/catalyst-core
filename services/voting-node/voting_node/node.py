@@ -1,5 +1,4 @@
 import asyncio
-import asyncpg
 import socket
 import uvicorn
 from typing import Final, List, Optional
@@ -27,7 +26,9 @@ class VotingNode(uvicorn.Server):
 
     # Use this to run your voting node
     def start(self, sockets: Optional[List[socket.socket]] = None):
-        """This method starts the voting node service in an asynchronous runtime. It accepts the optional arguments of `sockets` used by the uvicorn server used to run the FastAPI service."""
+        """This method starts the voting node service in an asynchronous runtime. It
+        accepts the optional arguments of `sockets` used by the uvicorn server used
+        to run the FastAPI service."""
         asyncio.run(self.start_service(sockets=sockets))
 
     # Starts Voting Node Service, including this fastAPI server as well as the
@@ -37,15 +38,16 @@ class VotingNode(uvicorn.Server):
         # time to wait before retrying to run a schedule
         SLEEP_TO_SCHEDULE_RETRY: Final = 5
 
-        # this is the main task, which stops other tasks by calling the 'stop_schedule' method.
-        # new tasks need to ask 'is_running_schedule()' to know when to shutdown.
+        # this is the main task, which stops other tasks by calling the
+        # 'stop_schedule' method.
         api_task: asyncio.Task[None] = asyncio.create_task(
             self.start_api(sockets=sockets)
         )
 
-        # run task schedule for leader 0
+        # get the schedule corresponding to the 'JormConfig.node_type'
         schedule = self.get_schedule()
 
+        # checks if `stop_schedule` has been called
         while self.is_running_schedule():
             try:
                 await schedule.run()
@@ -56,7 +58,8 @@ class VotingNode(uvicorn.Server):
             await asyncio.sleep(SLEEP_TO_SCHEDULE_RETRY)
 
         # await the api task until last
-        print(await api_task)
+        await api_task
+        print("Bye bye!")
 
     async def start_api(self, sockets: Optional[List[socket.socket]] = None):
         """Starts API server for the Voting Node."""
@@ -79,13 +82,12 @@ class VotingNode(uvicorn.Server):
         self.keep_running = False
 
     def get_schedule(self):
-        match self.jorm_config.node_type:
-            case "leader0":
-                return Leader0Schedule(self.db_url, self.jorm_config)
-            case "other-leader":
-                pass
-            case "follower":
-                pass
+        schedules = {
+            "leader0": Leader0Schedule(self.db_url, self.jorm_config),
+            "other-leader": None,
+            "follower": None,
+        }
+        return schedules.get(self.jorm_config.node_type)
 
     async def start_jormungandr(self):
         try:

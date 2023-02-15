@@ -1,0 +1,714 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/chain-libs/chain-impl-mockchain/src/setting.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>setting.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../chain_impl_mockchain/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../chain_impl_mockchain/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../chain_impl_mockchain/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+</pre><pre class="rust"><code><span class="doccomment">//! define the Blockchain settings
+//!
+
+</span><span class="kw">use </span><span class="kw">crate</span>::fragment::{config::ConfigParams, BlockContentSize};
+<span class="kw">use </span><span class="kw">crate</span>::milli::Milli;
+<span class="kw">use </span><span class="kw">crate</span>::rewards::TaxType;
+<span class="kw">use </span><span class="kw">crate</span>::update;
+<span class="kw">use crate</span>::{
+    chaineval::PraosNonce,
+    chaintypes::ConsensusType,
+    config::{ConfigParam, RewardParams},
+    fee::LinearFee,
+    key::BftLeaderId,
+    rewards,
+    vote::CommitteeId,
+};
+<span class="kw">use </span>std::error::Error;
+<span class="kw">use </span>std::fmt;
+<span class="kw">use </span>std::num::NonZeroU32;
+<span class="kw">use </span>std::sync::Arc;
+
+<span class="attribute">#[derive(Clone, Debug, Eq, PartialEq)]
+</span><span class="kw">pub struct </span>Settings {
+    <span class="kw">pub </span>consensus_version: ConsensusType,
+    <span class="kw">pub </span>consensus_nonce: PraosNonce,
+    <span class="kw">pub </span>slots_per_epoch: u32,
+    <span class="kw">pub </span>slot_duration: u8,
+    <span class="kw">pub </span>epoch_stability_depth: u32,
+    <span class="kw">pub </span>active_slots_coeff: ActiveSlotsCoeff,
+    <span class="kw">pub </span>block_content_max_size: BlockContentSize,
+    <span class="kw">pub </span>bft_leaders: Arc&lt;[BftLeaderId]&gt;,
+    <span class="kw">pub </span>linear_fees: LinearFee,
+    <span class="doccomment">/// The number of epochs that a proposal remains valid. To be
+    /// precise, if a proposal is made at date (epoch_p, slot), then
+    /// it expires at the start of epoch &#39;epoch_p +
+    /// proposal_expiration + 1&#39;. FIXME: make updateable.
+    </span><span class="kw">pub </span>proposal_expiration: u32,
+    reward_params: <span class="prelude-ty">Option</span>&lt;RewardParams&gt;,
+    treasury_params: <span class="prelude-ty">Option</span>&lt;rewards::TaxType&gt;,
+    <span class="kw">pub </span>fees_goes_to: FeesGoesTo,
+    <span class="kw">pub </span>rewards_limit: rewards::Limit,
+    <span class="kw">pub </span>pool_participation_capping: <span class="prelude-ty">Option</span>&lt;(NonZeroU32, NonZeroU32)&gt;,
+    <span class="kw">pub </span>committees: Arc&lt;[CommitteeId]&gt;,
+    <span class="kw">pub </span>transaction_max_expiry_epochs: u8,
+}
+
+<span class="attribute">#[derive(Clone, Debug, Eq, PartialEq)]
+</span><span class="kw">pub enum </span>ActiveSlotsCoeffError {
+    InvalidValue(Milli),
+}
+
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>ActiveSlotsCoeffError {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
+        <span class="kw">match </span><span class="self">self </span>{
+            ActiveSlotsCoeffError::InvalidValue(v) =&gt; {
+                <span class="macro">write!</span>(f, <span class="string">&quot;Invalid value {}, should be in range (0,1]&quot;</span>, v)
+            }
+        }
+    }
+}
+
+<span class="kw">impl </span>Error <span class="kw">for </span>ActiveSlotsCoeffError {}
+
+<span class="doccomment">/// Active slots coefficient used for calculating minimum stake to become slot leader candidate
+/// Described in Ouroboros Praos paper, also referred to as parameter F of phi function
+/// Always in range (0, 1]
+</span><span class="attribute">#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+</span><span class="kw">pub struct </span>ActiveSlotsCoeff(Milli);
+
+<span class="kw">impl </span>TryFrom&lt;Milli&gt; <span class="kw">for </span>ActiveSlotsCoeff {
+    <span class="kw">type </span>Error = ActiveSlotsCoeffError;
+
+    <span class="kw">fn </span>try_from(value: Milli) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">if </span>value &gt; Milli::ZERO &amp;&amp; value &lt;= Milli::ONE {
+            <span class="prelude-val">Ok</span>(ActiveSlotsCoeff(value))
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(ActiveSlotsCoeffError::InvalidValue(value))
+        }
+    }
+}
+
+<span class="kw">impl </span>From&lt;ActiveSlotsCoeff&gt; <span class="kw">for </span>Milli {
+    <span class="kw">fn </span>from(coeff: ActiveSlotsCoeff) -&gt; Milli {
+        coeff.<span class="number">0
+    </span>}
+}
+
+<span class="kw">impl </span>From&lt;ActiveSlotsCoeff&gt; <span class="kw">for </span>f64 {
+    <span class="kw">fn </span>from(coeff: ActiveSlotsCoeff) -&gt; f64 {
+        coeff.<span class="number">0</span>.to_float()
+    }
+}
+
+<span class="doccomment">/// Fees nSettings
+</span><span class="attribute">#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>FeesGoesTo {
+    <span class="doccomment">/// Move the fees to the rewards; this is the common mode of blockchain operation.
+    </span>Rewards,
+    <span class="doccomment">/// Move the fees directly to treasury. this is not a recommended settings, as
+    /// it fundamentally change the dynamic of the blockchain operation.
+    </span>Treasury,
+}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>FeesGoesTo {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        FeesGoesTo::Rewards
+    }
+}
+
+<span class="kw">pub const </span>SLOTS_PERCENTAGE_RANGE: u8 = <span class="number">100</span>;
+
+<span class="kw">impl </span>Settings {
+    <span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            consensus_version: ConsensusType::Bft,
+            consensus_nonce: PraosNonce::zero(),
+            slots_per_epoch: <span class="number">1</span>,
+            slot_duration: <span class="number">10</span>,         <span class="comment">// 10 sec
+            </span>epoch_stability_depth: <span class="number">10</span>, <span class="comment">// num of block
+            </span>active_slots_coeff: ActiveSlotsCoeff::try_from(Milli::HALF).unwrap(),
+            block_content_max_size: <span class="number">102_400</span>,
+            bft_leaders: Arc::new([]),
+            linear_fees: LinearFee::new(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>),
+            proposal_expiration: <span class="number">100</span>,
+            reward_params: <span class="prelude-val">None</span>,
+            treasury_params: <span class="prelude-val">None</span>,
+            fees_goes_to: FeesGoesTo::Rewards,
+            rewards_limit: rewards::Limit::None,
+            pool_participation_capping: <span class="prelude-val">None</span>,
+            committees: Arc::new([]),
+            transaction_max_expiry_epochs: <span class="number">1</span>,
+        }
+    }
+
+    <span class="kw">pub fn </span>try_apply(<span class="kw-2">&amp;</span><span class="self">self</span>, changes: <span class="kw-2">&amp;</span>ConfigParams) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, update::Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>new_state = <span class="self">self</span>.clone();
+        <span class="kw">let </span><span class="kw-2">mut </span>per_certificate_fees = <span class="prelude-val">None</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>per_vote_certificate_fees = <span class="prelude-val">None</span>;
+
+        <span class="kw">for </span>param <span class="kw">in </span>changes.iter() {
+            <span class="kw">match </span>param {
+                ConfigParam::Block0Date(<span class="kw">_</span>)
+                | ConfigParam::Discrimination(<span class="kw">_</span>)
+                | ConfigParam::TreasuryAdd(<span class="kw">_</span>)
+                | ConfigParam::RewardPot(<span class="kw">_</span>)
+                | ConfigParam::KesUpdateSpeed(<span class="kw">_</span>) =&gt; {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(update::Error::ReadOnlySetting);
+                }
+                ConfigParam::ConsensusVersion(d) =&gt; {
+                    new_state.consensus_version = <span class="kw-2">*</span>d;
+                }
+                ConfigParam::SlotsPerEpoch(d) =&gt; {
+                    new_state.slots_per_epoch = <span class="kw-2">*</span>d;
+                }
+                ConfigParam::SlotDuration(d) =&gt; {
+                    new_state.slot_duration = <span class="kw-2">*</span>d;
+                }
+                ConfigParam::EpochStabilityDepth(d) =&gt; {
+                    new_state.epoch_stability_depth = <span class="kw-2">*</span>d;
+                }
+                ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(d) =&gt; {
+                    new_state.active_slots_coeff = ActiveSlotsCoeff::try_from(<span class="kw-2">*</span>d)<span class="question-mark">?</span>;
+                }
+                ConfigParam::BlockContentMaxSize(d) =&gt; {
+                    new_state.block_content_max_size = <span class="kw-2">*</span>d;
+                }
+                ConfigParam::AddBftLeader(d) =&gt; {
+                    <span class="comment">// FIXME: O(n)
+                    </span><span class="kw">let </span><span class="kw-2">mut </span>v = new_state.bft_leaders.to_vec();
+                    v.push(d.clone());
+                    new_state.bft_leaders = v.into();
+
+                    <span class="comment">// BFT Leader are automatically promoted committee too
+                    // FIXME: O(n)
+                    </span><span class="kw">let </span><span class="kw-2">mut </span>v = new_state.committees.to_vec();
+                    v.push(d.as_public_key().clone().into());
+                    new_state.committees = v.into();
+                }
+                ConfigParam::RemoveBftLeader(d) =&gt; {
+                    new_state.bft_leaders = new_state
+                        .bft_leaders
+                        .iter()
+                        .filter(|leader| <span class="kw-2">*</span>leader != d)
+                        .cloned()
+                        .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()
+                        .into();
+                }
+                ConfigParam::LinearFee(d) =&gt; {
+                    new_state.linear_fees = d.clone();
+                }
+                ConfigParam::ProposalExpiration(d) =&gt; {
+                    new_state.proposal_expiration = <span class="kw-2">*</span>d;
+                }
+                ConfigParam::RewardParams(rp) =&gt; {
+                    new_state.reward_params = <span class="prelude-val">Some</span>(rp.clone());
+                }
+                ConfigParam::TreasuryParams(rp) =&gt; {
+                    new_state.treasury_params = <span class="prelude-val">Some</span>(<span class="kw-2">*</span>rp);
+                }
+                ConfigParam::PerCertificateFees(pcf) =&gt; {
+                    per_certificate_fees = <span class="prelude-val">Some</span>(pcf);
+                }
+                ConfigParam::PerVoteCertificateFees(pcf) =&gt; {
+                    per_vote_certificate_fees = <span class="prelude-val">Some</span>(pcf);
+                }
+                ConfigParam::FeesInTreasury(value) =&gt; {
+                    new_state.fees_goes_to = <span class="kw">if </span><span class="kw-2">*</span>value {
+                        FeesGoesTo::Treasury
+                    } <span class="kw">else </span>{
+                        FeesGoesTo::Rewards
+                    };
+                }
+                ConfigParam::RewardLimitNone =&gt; new_state.rewards_limit = rewards::Limit::None,
+                ConfigParam::RewardLimitByAbsoluteStake(ratio) =&gt; {
+                    new_state.rewards_limit = rewards::Limit::ByStakeAbsolute(<span class="kw-2">*</span>ratio)
+                }
+                ConfigParam::PoolRewardParticipationCapping(r) =&gt; {
+                    new_state.pool_participation_capping = <span class="prelude-val">Some</span>(<span class="kw-2">*</span>r)
+                }
+                ConfigParam::AddCommitteeId(committee_id) =&gt; {
+                    <span class="comment">// FIXME: O(n)
+                    </span><span class="kw">let </span><span class="kw-2">mut </span>v = new_state.committees.to_vec();
+                    v.push(<span class="kw-2">*</span>committee_id);
+                    new_state.committees = v.into();
+                }
+                ConfigParam::RemoveCommitteeId(committee_id) =&gt; {
+                    new_state.committees = new_state
+                        .committees
+                        .iter()
+                        .filter(|cid| <span class="kw-2">*</span>cid != committee_id)
+                        .cloned()
+                        .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()
+                        .into();
+                }
+                ConfigParam::TransactionMaxExpiryEpochs(max_expiry_epochs) =&gt; {
+                    new_state.transaction_max_expiry_epochs = <span class="kw-2">*</span>max_expiry_epochs;
+                }
+            }
+        }
+
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(pcf) = per_certificate_fees {
+            new_state.linear_fees.per_certificate_fees(<span class="kw-2">*</span>pcf);
+        }
+
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(pcf) = per_vote_certificate_fees {
+            new_state.linear_fees.per_vote_certificate_fees(<span class="kw-2">*</span>pcf);
+        }
+
+        <span class="prelude-val">Ok</span>(new_state)
+    }
+
+    <span class="kw">pub fn </span>config_params(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ConfigParams {
+        <span class="kw">let </span><span class="kw-2">mut </span>params = ConfigParams::new();
+
+        params.push(ConfigParam::ConsensusVersion(<span class="self">self</span>.consensus_version));
+        params.push(ConfigParam::SlotsPerEpoch(<span class="self">self</span>.slots_per_epoch));
+        params.push(ConfigParam::SlotDuration(<span class="self">self</span>.slot_duration));
+        params.push(ConfigParam::EpochStabilityDepth(<span class="self">self</span>.epoch_stability_depth));
+        params.push(ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(
+            <span class="self">self</span>.active_slots_coeff.into(),
+        ));
+        params.push(ConfigParam::BlockContentMaxSize(
+            <span class="self">self</span>.block_content_max_size,
+        ));
+        <span class="kw">for </span>bft_leader <span class="kw">in </span><span class="self">self</span>.bft_leaders.iter() {
+            params.push(ConfigParam::AddBftLeader(bft_leader.clone()));
+        }
+        params.push(ConfigParam::LinearFee(<span class="self">self</span>.linear_fees.clone()));
+        params.push(ConfigParam::ProposalExpiration(<span class="self">self</span>.proposal_expiration));
+        params.push(ConfigParam::TransactionMaxExpiryEpochs(
+            <span class="self">self</span>.transaction_max_expiry_epochs,
+        ));
+
+        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.reward_params {
+            <span class="prelude-val">Some</span>(p) =&gt; params.push(ConfigParam::RewardParams(p.clone())),
+            <span class="prelude-val">None </span>=&gt; (),
+        };
+        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.treasury_params {
+            <span class="prelude-val">Some</span>(p) =&gt; params.push(ConfigParam::TreasuryParams(<span class="kw-2">*</span>p)),
+            <span class="prelude-val">None </span>=&gt; (),
+        };
+
+        <span class="macro">debug_assert_eq!</span>(<span class="self">self</span>, <span class="kw-2">&amp;</span>Settings::new().try_apply(<span class="kw-2">&amp;</span>params).unwrap());
+
+        params
+    }
+
+    <span class="kw">pub fn </span>treasury_params(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TaxType {
+        <span class="self">self</span>.treasury_params.unwrap_or_else(rewards::TaxType::zero)
+    }
+
+    <span class="kw">pub fn </span>reward_params(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; rewards::Parameters {
+        <span class="kw">let </span>reward_drawing_limit_max = <span class="self">self</span>.rewards_limit.clone();
+        <span class="kw">let </span>pool_participation_capping = <span class="self">self</span>.pool_participation_capping;
+
+        <span class="kw">match </span><span class="self">self</span>.reward_params {
+            <span class="prelude-val">None </span>=&gt; rewards::Parameters::zero(),
+            <span class="prelude-val">Some</span>(RewardParams::Halving {
+                constant,
+                ratio,
+                epoch_start,
+                epoch_rate,
+            }) =&gt; rewards::Parameters {
+                initial_value: constant,
+                compounding_ratio: ratio,
+                compounding_type: rewards::CompoundingType::Halvening,
+                epoch_start,
+                epoch_rate,
+                reward_drawing_limit_max,
+                pool_participation_capping,
+            },
+            <span class="prelude-val">Some</span>(RewardParams::Linear {
+                constant,
+                ratio,
+                epoch_start,
+                epoch_rate,
+            }) =&gt; rewards::Parameters {
+                initial_value: constant,
+                compounding_ratio: ratio,
+                compounding_type: rewards::CompoundingType::Linear,
+                epoch_start,
+                epoch_rate,
+                reward_drawing_limit_max,
+                pool_participation_capping,
+            },
+        }
+    }
+}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>Settings {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
+    }
+}
+
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::{FeesGoesTo, Settings};
+    <span class="kw">use </span>quickcheck::{Arbitrary, Gen};
+
+    <span class="kw">impl </span>Arbitrary <span class="kw">for </span>FeesGoesTo {
+        <span class="kw">fn </span>arbitrary&lt;G: Gen&gt;(g: <span class="kw-2">&amp;mut </span>G) -&gt; <span class="self">Self </span>{
+            <span class="kw">if </span>Arbitrary::arbitrary(g) {
+                FeesGoesTo::Treasury
+            } <span class="kw">else </span>{
+                FeesGoesTo::Rewards
+            }
+        }
+    }
+
+    <span class="kw">impl </span>Arbitrary <span class="kw">for </span>Settings {
+        <span class="kw">fn </span>arbitrary&lt;G: Gen&gt;(<span class="kw">_</span>: <span class="kw-2">&amp;mut </span>G) -&gt; <span class="self">Self </span>{
+            Settings::new()
+        }
+    }
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="chain_impl_mockchain" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

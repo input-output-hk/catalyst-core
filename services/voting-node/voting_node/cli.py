@@ -44,21 +44,31 @@ def cli(debug, hot_reload):
     help="Sets the location for the voting node's storage",
 )
 @click.option(
+    "--node-type",
+    envvar="VOTING_NODE_TYPE",
+    type=click.Choice(["leader0", "other-leather", "follower"]),
+    default="leader0",
+    help="Sets the voting node type from. Default: leader0",
+)
+@click.option(
     "--jormungandr-path",
     envvar="JORMUNGANDR_PATH",
     default="jormungandr",
 )
 @click.option("--jcli-path", envvar="JCLI_PATH", default="~/.cargo/bin/jcli")
-def start(host, port, log_level, database_url, storage, jormungandr_path, jcli_path):
+def start(
+    host, port, log_level, database_url, storage, node_type, jormungandr_path, jcli_path
+):
     click.echo("Starting...")
     click.echo(f"host={host}")
     click.echo(f"port={port}")
     click.echo(f"log-level={log_level}")
     click.echo(f"database-url={database_url}")
     click.echo(f"storage={storage}")
+    click.echo(f"node-type={node_type}")
 
     api_config = uvicorn.Config(api.app, host=host, port=port, log_level=log_level)
-    jorm_config = node.JormConfig(jormungandr_path, jcli_path, storage)
+    jorm_config = node.JormConfig(jormungandr_path, jcli_path, storage, node_type)
 
     voting_node = node.VotingNode(api_config, jorm_config, database_url)
     voting_node.start()

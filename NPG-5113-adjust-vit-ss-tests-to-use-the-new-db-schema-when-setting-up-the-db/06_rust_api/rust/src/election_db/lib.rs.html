@@ -172,10 +172,10 @@
 }
 
 <span class="attribute">#[cfg(test)]
-#[ignore = <span class="string">&quot;We&#39;ll probably not be using this. Will be fixed in the election-db PR.&quot;</span>]
 </span><span class="kw">mod </span>test {
     <span class="doccomment">/// Check if the schema version in the DB is up to date.
     </span><span class="attribute">#[test]
+    #[ignore = <span class="string">&quot;We&#39;ll probably not be using this. Will be fixed in the election-db PR.&quot;</span>]
     </span><span class="kw">fn </span>check_schema_version() {
         <span class="kw">use </span><span class="kw">crate</span>::establish_connection;
 

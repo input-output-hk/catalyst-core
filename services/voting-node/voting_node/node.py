@@ -4,24 +4,25 @@ import socket
 import uvicorn
 from typing import Final, List, Optional
 
-from . import logs, tasks
-
-
-class JormConfig(object):
-    def __init__(self, jormungandr_path: str, jcli_path: str, storage: str):
-        self.jormungandr_path = jormungandr_path
-        self.jcli_path = jcli_path
-        self.storage = storage
+from . import logs
+from .config import JormConfig
+from .tasks import Leader0Schedule
 
 
 class VotingNode(uvicorn.Server):
     def __init__(
         self, api_config: uvicorn.Config, jorm_config: JormConfig, database_url: str
     ):
+        # initialize uvicorn
         uvicorn.Server.__init__(self, api_config)
+        # get logger, this goes away with opentelemetry
         self.logger = logs.getLogger(api_config.log_level)
-        self.retry_jorm = True
+        # flag that tells the voting node to whether to continue
+        # running the task schedule
+        self.keep_running = True
+        # jorm node params
         self.jorm_config = jorm_config
+        # url for database connection
         self.db_url = database_url
 
     # Use this to run your voting node
@@ -36,35 +37,26 @@ class VotingNode(uvicorn.Server):
         # time to wait before retrying to run a schedule
         SLEEP_TO_SCHEDULE_RETRY: Final = 5
 
-        # this is the main task, which stops other tasks by calling the 'stop_trying' method.
-        # new tasks need to ask 'keeps_trying()' to know when to shutdown.
+        # this is the main task, which stops other tasks by calling the 'stop_schedule' method.
+        # new tasks need to ask 'is_running_schedule()' to know when to shutdown.
         api_task: asyncio.Task[None] = asyncio.create_task(
             self.start_api(sockets=sockets)
         )
 
-        # start DB pool
-        db_pool = await asyncpg.create_pool(self.db_url)
-
         # run task schedule for leader 0
-        self.schedule = tasks.Leader0Schedule(db_pool)
+        schedule = self.get_schedule()
 
-        while self.keeps_trying():
+        while self.is_running_schedule():
             try:
-                await self.schedule.run()
+                await schedule.run()
                 break
             except Exception as e:
                 print(f"schedule failed: {e}")
             # waits before retrying
             await asyncio.sleep(SLEEP_TO_SCHEDULE_RETRY)
 
-        if db_pool is not None:
-            db_pool.terminate()
-
         # await the api task until last
         print(await api_task)
-
-        # TODO: add other tasks, like:
-        # self.run_jorm_node()
 
     async def start_api(self, sockets: Optional[List[socket.socket]] = None):
         """Starts API server for the Voting Node."""
@@ -72,7 +64,7 @@ class VotingNode(uvicorn.Server):
         # runs 'serve' method from uvicorn.Server
         await self.serve(sockets=sockets)
         # stops trying to launch jormungandr after API service is finished
-        self.stop_trying()
+        self.stop_schedule()
 
     def jormungandr_exec(self) -> str:
         return self.jorm_config.jormungandr_path
@@ -80,11 +72,20 @@ class VotingNode(uvicorn.Server):
     def jcli_exec(self) -> str:
         return self.jorm_config.jcli_path
 
-    def keeps_trying(self) -> bool:
-        return self.retry_jorm
+    def is_running_schedule(self) -> bool:
+        return self.keep_running
 
-    def stop_trying(self):
-        self.retry_jorm = False
+    def stop_schedule(self):
+        self.keep_running = False
+
+    def get_schedule(self):
+        match self.jorm_config.node_type:
+            case "leader0":
+                return Leader0Schedule(self.db_url, self.jorm_config)
+            case "other-leader":
+                pass
+            case "follower":
+                pass
 
     async def start_jormungandr(self):
         try:
@@ -93,9 +94,9 @@ class VotingNode(uvicorn.Server):
             f"jorm error: {e}"
             raise e
 
-    # keeps on launching jormungandr until `stop_trying()` is called
+    # keeps on launching jormungandr until `stop_schedule()` is called
     async def run_jorm_node(self):
-        while self.keeps_trying():
+        while self.is_running_schedule():
             jorm_task = asyncio.create_task(self.start_jormungandr())
             try:
                 self.logger.debug("jorm task starting")

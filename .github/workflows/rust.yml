@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - gh-readonly-queue/main/**
     paths-ignore:
       - '**.md'
       - 'src/**/**.md'
@@ -302,7 +301,7 @@ jobs:
           sudo rm -rf "/usr/local/share/boost"
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
           df -h
-
+          
       - name: Checkout code
         uses: actions/checkout@v3
         with:

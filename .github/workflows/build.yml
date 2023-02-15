@@ -4,7 +4,6 @@ on:
   push:
     branches:
     - main
-    - gh-readonly-queue/main/**
     paths-ignore:
       - '**.md'
       - 'src/**/**.md'
@@ -14,7 +13,6 @@ on:
   pull_request:
     branches:
     - main
-    - gh-readonly-queue/main/**
     paths-ignore:
        - '**.md'
        - 'book/**'

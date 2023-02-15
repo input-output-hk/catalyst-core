@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["default_http_client",""]],"struct":[["HttpResponse","A value returned from a HTTP method"]],"trait":[["HttpClient","Types which can make HTTP requests"]]};

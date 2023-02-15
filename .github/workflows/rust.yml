@@ -42,6 +42,16 @@ jobs:
     name: Build test dependencies
     runs-on: ubuntu-latest
     steps:
+      - name: Free disk space
+        # https://github.com/actions/virtual-environments/issues/709
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+
       - name: Checkout code
         uses: actions/checkout@v3
         with:
@@ -82,6 +92,16 @@ jobs:
     name: Build test artifacts
     runs-on: ubuntu-latest
     steps:
+      - name: Free disk space
+        # https://github.com/actions/virtual-environments/issues/709
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+
       - name: Checkout code
         uses: actions/checkout@v3
         with:
@@ -135,16 +155,6 @@ jobs:
       matrix:
         partition: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     steps:
-      - name: Free disk space
-        # https://github.com/actions/virtual-environments/issues/709
-        run: |
-          sudo apt-get clean
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          df -h
-
       - name: Checkout code
         uses: actions/checkout@v3
         with:
@@ -282,6 +292,16 @@ jobs:
     name: Clippy
     runs-on: ubuntu-latest
     steps:
+      - name: Free disk space
+        # https://github.com/actions/virtual-environments/issues/709
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+          
       - name: Checkout code
         uses: actions/checkout@v3
         with:

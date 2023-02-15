@@ -135,6 +135,16 @@ jobs:
       matrix:
         partition: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     steps:
+      - name: Free disk space
+        # https://github.com/actions/virtual-environments/issues/709
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+
       - name: Checkout code
         uses: actions/checkout@v3
         with:
@@ -177,27 +187,15 @@ jobs:
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
-      - name: Check space
-        run:
-          df -h
-
       - name: Build external dependencies
         if: steps.deps-cache.outputs.cache-hit != 'true'
         run:
           cargo build -p vit-servicing-station-cli -p vit-servicing-station-server -p jcli -p jormungandr -p explorer
 
-      - name: Check space
-        run:
-          df -h
-
       - name: Build and archive tests
         if: steps.archive-cache.outputs.cache-hit != 'true'
         run: cargo nextest archive --archive-file nextest-archive.tar.zst
 
-      - name: Check space
-        run:
-          df -h
-          
       - name: Run Catalyst Core tests
         env:
           TEST_DATABASE_URL: postgres://postgres:123456@localhost

@@ -93,6 +93,9 @@ itertools = "0.10"
 # platform-independenent directory finding (e.g. home_dir() for `/home/<user>` on linux, `C:\Users\<user>` on windows)
 dirs = "4"
 
+# graphql-related utilities
+graphql_client = "0.12"
+
 # time-related utilities
 chrono = { version = "0.4", features = ["serde"] }
 

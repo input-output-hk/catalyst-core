@@ -181,6 +181,7 @@ CREATE TABLE challenge
 );
 
 CREATE UNIQUE INDEX challenge_idx ON challenge (id, election);
+CREATE UNIQUE INDEX challenge_id ON challenge (id);
 
 COMMENT ON TABLE challenge IS 'All Challenges for all elections. A Challenge is a group category for selection in an election.';
 COMMENT ON COLUMN challenge.row_id IS 'Synthetic Unique Key';
@@ -204,6 +205,7 @@ CREATE TABLE proposal
     challenge INTEGER NOT NULL,
     title TEXT NOT NULL,
     summary TEXT NOT NULL,
+    category TEXT NOT NULL,
     public_key TEXT NOT NULL,
     funds BIGINT NOT NULL,
     url TEXT NOT NULL,
@@ -220,7 +222,7 @@ CREATE TABLE proposal
 
     bb_vote_options TEXT,
 
-    FOREIGN KEY(challenge) REFERENCES challenge(row_id),
+    FOREIGN KEY(challenge) REFERENCES challenge(id),
     FOREIGN KEY(bb_vote_options) REFERENCES vote_options(challenge)
 );
 

@@ -8,13 +8,13 @@ CREATE VIEW funds AS SELECT
     this_fund.description AS fund_goal,
 
     EXTRACT (EPOCH FROM this_fund.registration_snapshot_time)::BIGINT AS registration_snapshot_time,
-    EXTRACT (EPOCH FROM next_fund.registration_snapshot_time)::BIGINT AS next_registration_snapshot_time,
+    COALESCE(EXTRACT (EPOCH FROM next_fund.registration_snapshot_time), 0)::BIGINT AS next_registration_snapshot_time,
 
     this_fund.voting_power_threshold AS voting_power_threshold,
 
     EXTRACT (EPOCH FROM this_fund.start_time)::BIGINT AS fund_start_time,
     EXTRACT (EPOCH FROM this_fund.end_time)::BIGINT AS fund_end_time,
-    EXTRACT (EPOCH FROM next_fund.start_time)::BIGINT AS next_fund_start_time,
+    COALESCE(EXTRACT (EPOCH FROM next_fund.start_time)::BIGINT, 0) AS next_fund_start_time,
 
     EXTRACT (EPOCH FROM this_fund.insight_sharing_start)::BIGINT AS insight_sharing_start,
     EXTRACT (EPOCH FROM this_fund.proposal_submission_start)::BIGINT AS proposal_submission_start,
@@ -27,10 +27,10 @@ CREATE VIEW funds AS SELECT
     EXTRACT (EPOCH FROM this_fund.voting_end)::BIGINT AS voting_end,
     EXTRACT (EPOCH FROM this_fund.tallying_end)::BIGINT AS tallying_end,
 
-    this_fund.extra->'url'->'results' AS results_url,
-    this_fund.extra->'url'->'survey' AS survey_url
+    (this_fund.extra->'url'->'results') #>> '{}' AS results_url,
+    (this_fund.extra->'url'->'survey') #>> '{}' AS survey_url
 FROM election this_fund
-INNER JOIN election next_fund ON next_fund.row_id = this_fund.row_id + 1;
+LEFT JOIN election next_fund ON next_fund.row_id = this_fund.row_id + 1;
 
 COMMENT ON VIEW funds IS
     'This view maps the original VIT-SS funds table to the new election table.
@@ -41,7 +41,7 @@ Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 CREATE VIEW proposals AS SELECT
     proposal.row_id AS id,
     CAST(proposal.id AS VARCHAR) AS proposal_id,
-    challenge.category AS proposal_category,
+    proposal.category AS proposal_category,
     proposal.title AS proposal_title,
     proposal.summary AS proposal_summary,
     proposal.public_key AS proposal_public_key,
@@ -59,9 +59,9 @@ CREATE VIEW proposals AS SELECT
     proposal.bb_vote_options AS chain_vote_options,
     proposal.challenge  AS challenge_id,
 
-    proposal.extra::TEXT AS extra
+    proposal.extra #>> '{}' AS extra
 FROM proposal
-INNER JOIN challenge ON challenge.row_id = proposal.challenge;
+INNER JOIN challenge ON challenge.id = proposal.challenge;
 
 COMMENT ON VIEW proposals IS
     'This view maps the original VIT-SS proposals table to the new proposal table.
@@ -85,10 +85,10 @@ Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
 CREATE VIEW proposal_simple_challenge AS SELECT
     CAST(proposal.id AS VARCHAR) AS proposal_id,
-    proposal.extra->'solution' AS proposal_solution
+    (proposal.extra->'solution') #>> '{}' AS proposal_solution
 FROM
     proposal
-    INNER JOIN challenge ON proposal.challenge = challenge.row_id
+    INNER JOIN challenge ON proposal.challenge = challenge.id
 WHERE challenge.category = 'simple';
 
 COMMENT ON VIEW proposal_simple_challenge IS
@@ -99,14 +99,14 @@ Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
 CREATE VIEW proposal_community_choice_challenge AS SELECT
     CAST(proposal.id AS VARCHAR) AS proposal_id,
-    proposal.extra->'solution' AS proposal_solution,
-    proposal.extra->'brief' AS proposal_brief,
-    proposal.extra->'importance' AS proposal_importance,
-    proposal.extra->'goal' AS proposal_goal,
-    proposal.extra->'metrics' AS proposal_metrics
+    (proposal.extra->'solution') #>> '{}' AS proposal_solution,
+    (proposal.extra->'brief') #>> '{}' AS proposal_brief,
+    (proposal.extra->'importance') #>> '{}' AS proposal_importance,
+    (proposal.extra->'goal') #>> '{}' AS proposal_goal,
+    (proposal.extra->'metrics') #>> '{}' AS proposal_metrics
 FROM
     proposal
-    INNER JOIN challenge ON proposal.challenge = challenge.row_id
+    INNER JOIN challenge ON proposal.challenge = challenge.id
 WHERE challenge.category = 'community-choice';
 
 COMMENT ON VIEW proposal_community_choice_challenge IS
@@ -136,9 +136,9 @@ Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 -- VIT-SS Compatibility View - api_tokens table.
 
 CREATE VIEW api_tokens AS SELECT
-    DECODE(config.id2, 'base64') AS token,
-    config.value->'created' AS creation_time,
-    config.value->'expires' AS expire_time
+    DECODE(config.id2, 'base64')::BYTEA AS token,
+    (config.value->'created')::BIGINT AS creation_time,
+    (config.value->'expires')::BIGINT AS expire_time
 FROM config
     WHERE config.id = 'api_token';
 
@@ -159,8 +159,8 @@ CREATE VIEW challenges AS SELECT
     challenge.rewards_total AS rewards_total,
     challenge.proposers_rewards AS proposers_rewards,
     challenge.election AS fund_id,
-    challenge.extra->'url'->'challenge' AS challenge_url,
-    challenge.extra->'highlights' AS highlights
+    (challenge.extra->'url'->'challenge') #>> '{}' AS challenge_url,
+    (challenge.extra->'highlights') #>> '{}' AS highlights
 FROM challenge;
 
 COMMENT ON VIEW challenges IS
@@ -240,7 +240,7 @@ COMMENT ON COLUMN votes.raw_fragment is 'TODO';
 
 CREATE TABLE snapshots (
     tag TEXT PRIMARY KEY,
-    last_updated TIMESTAMP NOT NULL
+    last_updated BIGINT NOT NULL
 );
 
 COMMENT ON TABLE snapshots IS 'Something to do with snapshots. VIT-SS Compatibility Table, to be replaced when analysis completed.';
@@ -315,7 +315,7 @@ SELECT
 FROM proposals p
 INNER JOIN proposals_voteplans pvp ON p.proposal_id = pvp.proposal_id
 INNER JOIN voteplans vp ON pvp.chain_voteplan_id = vp.chain_voteplan_id
-INNER JOIN challenges ch ON ch.internal_id = p.challenge_id
+INNER JOIN challenges ch ON ch.id = p.challenge_id
 INNER JOIN groups gr ON vp.token_identifier = gr.token_identifier
 LEFT JOIN proposal_simple_challenge psc
     ON p.proposal_id = psc.proposal_id

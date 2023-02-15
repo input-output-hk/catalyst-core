@@ -161,8 +161,8 @@ impl DbBuilder {
         self.try_insert_tokens(&connection)?;
         self.try_insert_funds(&connection)?;
         self.try_insert_groups(&connection)?;
-        self.try_insert_proposals(&connection)?;
         self.try_insert_challenges(&connection)?;
+        self.try_insert_proposals(&connection)?;
         self.try_insert_reviews(&connection)?;
 
         Ok(db_url)
@@ -179,8 +179,8 @@ impl DbBuilder {
         self.try_insert_tokens(&connection)?;
         self.try_insert_funds(&connection)?;
         self.try_insert_groups(&connection)?;
-        self.try_insert_proposals(&connection)?;
         self.try_insert_challenges(&connection)?;
+        self.try_insert_proposals(&connection)?;
         self.try_insert_reviews(&connection)?;
         Ok(path.to_path_buf())
     }

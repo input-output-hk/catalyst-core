@@ -26,24 +26,35 @@ pub(super) async fn search_count(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::db::models::challenges::Challenge;
-    use crate::db::models::proposals::test::add_test_proposal_and_challenge;
-    use crate::testing::filters::test_context;
+    use crate::db::{migrations::initialize_db_with_migration, models::challenges::Challenge};
     use crate::testing::filters::ResponseBytesExt;
-    use crate::v0::endpoints::search::requests::Column;
-    use crate::v0::endpoints::search::requests::Constraint;
-    use crate::v0::endpoints::search::requests::OrderBy;
-    use crate::v0::endpoints::search::requests::Table;
+    use crate::v0::context::test::new_test_shared_context_from_url;
+    use crate::v0::endpoints::search::requests::{Column, Constraint, OrderBy, Table};
+    use pretty_assertions::assert_eq;
+    use vit_servicing_station_tests::common::{
+        data::ArbitrarySnapshotGenerator, startup::db::DbBuilder,
+    };
     use warp::Filter;
 
     #[tokio::test]
     async fn basic_search() {
-        let (with_context, conn) = test_context().await;
+        // build context
+        let mut gen = ArbitrarySnapshotGenerator::default();
 
-        let (_, challenge) = add_test_proposal_and_challenge(1, &conn);
-        add_test_proposal_and_challenge(2, &conn);
-        add_test_proposal_and_challenge(3, &conn);
-        add_test_proposal_and_challenge(4, &conn);
+        let mut snapshot = gen.snapshot();
+        let c = snapshot.challenges_mut();
+        c[0].title = "abc1".to_string();
+
+        let db_url = DbBuilder::new().with_snapshot(&snapshot).build().unwrap();
+        let shared_context = new_test_shared_context_from_url(&db_url);
+        let filter_context = shared_context.clone();
+        let with_context = warp::any().map(move || filter_context.clone());
+
+        // initialize db
+        let pool = &shared_context.read().await.db_connection_pool;
+        initialize_db_with_migration(&pool.get().unwrap()).unwrap();
+
+        let challenge = snapshot.challenges().remove(0);
 
         let filter = warp::path!("search")
             .and(warp::post())
@@ -74,7 +85,10 @@ mod test {
             .as_json();
 
         assert_eq!(challenges.len(), 1);
-        assert_eq!(challenges[0], challenge);
+        assert_eq!(
+            serde_json::to_value(&challenges[0]).unwrap(),
+            serde_json::to_value(&challenge).unwrap()
+        );
 
         let body = serde_json::to_string(&SearchCountQuery {
             table: Table::Challenges,
@@ -105,12 +119,23 @@ mod test {
 
     #[tokio::test]
     async fn multiple_item_search() {
-        let (with_context, conn) = test_context().await;
+        // build context
+        let mut gen = ArbitrarySnapshotGenerator::default();
 
-        let (_, challenge_1) = add_test_proposal_and_challenge(1, &conn);
-        let (_, challenge_2) = add_test_proposal_and_challenge(10, &conn);
-        let (_, challenge_3) = add_test_proposal_and_challenge(12, &conn);
-        add_test_proposal_and_challenge(20, &conn);
+        let mut snapshot = gen.snapshot();
+        let c = snapshot.challenges_mut();
+        c[0].title = "abc1".to_string();
+        c[1].title = "abcd1".to_string();
+        c[2].title = "abcde1".to_string();
+
+        let db_url = DbBuilder::new().with_snapshot(&snapshot).build().unwrap();
+        let shared_context = new_test_shared_context_from_url(&db_url);
+        let filter_context = shared_context.clone();
+        let with_context = warp::any().map(move || filter_context.clone());
+
+        // initialize db
+        let pool = &shared_context.read().await.db_connection_pool;
+        initialize_db_with_migration(&pool.get().unwrap()).unwrap();
 
         let filter_search = warp::path!("search")
             .and(warp::post())
@@ -150,24 +175,15 @@ mod test {
             .await
             .as_json();
 
-        // db sets these fields
-        let challenge_1 = Challenge {
-            internal_id: 1,
-            ..challenge_1
-        };
-
-        let challenge_2 = Challenge {
-            internal_id: 2,
-            ..challenge_2
-        };
-
-        let challenge_3 = Challenge {
-            internal_id: 3,
-            ..challenge_3
-        };
-
-        let output = vec![challenge_1, challenge_2, challenge_3];
-        assert_eq!(challenges, output);
+        let expected_challenges = snapshot
+            .challenges()
+            .into_iter()
+            .take(3)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            serde_json::to_value(&expected_challenges).unwrap(),
+            serde_json::to_value(&challenges).unwrap()
+        );
 
         let body = serde_json::to_string(&SearchCountQuery {
             table: Table::Challenges,
@@ -212,12 +228,16 @@ mod test {
             .await
             .as_json();
 
-        let reversed_output = {
-            let mut temp = output.clone();
-            temp.reverse();
-            temp
-        };
-        assert_eq!(reversed, reversed_output);
+        let expected_challenges = snapshot
+            .challenges()
+            .into_iter()
+            .take(3)
+            .rev()
+            .collect::<Vec<_>>();
+        assert_eq!(
+            serde_json::to_value(&expected_challenges).unwrap(),
+            serde_json::to_value(&reversed).unwrap()
+        );
 
         let body = serde_json::to_string(&SearchCountQuery {
             order_by: vec![OrderBy::Column {
@@ -245,13 +265,25 @@ mod test {
 
     #[tokio::test]
     async fn limits_and_offset_item_search() {
-        let (with_context, conn) = test_context().await;
+        // build context
+        let mut gen = ArbitrarySnapshotGenerator::default();
 
-        add_test_proposal_and_challenge(10, &conn);
-        let (_, challenge_2) = add_test_proposal_and_challenge(11, &conn);
-        let (_, challenge_3) = add_test_proposal_and_challenge(12, &conn);
-        let (_, challenge_4) = add_test_proposal_and_challenge(13, &conn);
-        let (_, challenge_5) = add_test_proposal_and_challenge(14, &conn);
+        let mut snapshot = gen.snapshot();
+        let c = snapshot.challenges_mut();
+        c[0].title = "abc1".to_string();
+        c[1].title = "abcd1".to_string();
+        c[2].title = "abcd1".to_string();
+        c[3].title = "abcd1".to_string();
+        c[4].title = "abcde1".to_string();
+
+        let db_url = DbBuilder::new().with_snapshot(&snapshot).build().unwrap();
+        let shared_context = new_test_shared_context_from_url(&db_url);
+        let filter_context = shared_context.clone();
+        let with_context = warp::any().map(move || filter_context.clone());
+
+        // initialize db
+        let pool = &shared_context.read().await.db_connection_pool;
+        initialize_db_with_migration(&pool.get().unwrap()).unwrap();
 
         let filter = warp::path!("search")
             .and(warp::post())
@@ -285,27 +317,15 @@ mod test {
             .await
             .as_json();
 
-        let challenge_2 = Challenge {
-            internal_id: 2,
-            ..challenge_2
-        };
-
-        let challenge_3 = Challenge {
-            internal_id: 3,
-            ..challenge_3
-        };
-
-        let challenge_4 = Challenge {
-            internal_id: 4,
-            ..challenge_4
-        };
-
-        let challenge_5 = Challenge {
-            internal_id: 5,
-            ..challenge_5
-        };
-
-        let output = vec![challenge_2, challenge_3, challenge_4, challenge_5];
-        assert_eq!(challenges, output);
+        let expected_challenges = snapshot
+            .challenges()
+            .into_iter()
+            .skip(1)
+            .take(4)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            serde_json::to_value(&expected_challenges).unwrap(),
+            serde_json::to_value(&challenges).unwrap()
+        );
     }
 }

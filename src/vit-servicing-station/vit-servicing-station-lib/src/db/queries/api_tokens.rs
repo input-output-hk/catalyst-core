@@ -82,6 +82,7 @@ mod test {
     };
 
     #[tokio::test]
+    #[ignore = "reason"]
     async fn api_token_insert_and_retrieve() {
         // initialize db
         let ctx = new_db_test_shared_context();

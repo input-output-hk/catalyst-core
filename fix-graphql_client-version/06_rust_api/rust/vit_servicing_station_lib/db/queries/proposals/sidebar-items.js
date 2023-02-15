@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["batch_insert_community_choice_challenge_data",""],["batch_insert_groups",""],["batch_insert_proposals",""],["batch_insert_proposals_voteplans",""],["batch_insert_simple_challenge_data",""],["insert_proposal",""],["query_all_proposals",""],["query_proposal_by_id",""],["query_proposals_by_voteplan_id_and_indexes",""]]};

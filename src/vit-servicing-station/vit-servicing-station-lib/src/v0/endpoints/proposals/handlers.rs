@@ -34,39 +34,35 @@ pub async fn get_proposals_by_voteplan_id_and_index(
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::db::{
-        migrations as db_testing,
-        models::{
-            challenges::{test as challenges_testing, Challenge},
-            community_advisors_reviews::test as reviews_testing,
-            proposals::{test as proposals_testing, *},
-        },
-    };
-    use crate::v0::context::test::new_db_test_shared_context;
+
     use crate::v0::endpoints::proposals::requests::ProposalVoteplanIdAndIndexes;
+    use crate::{
+        db::migrations as db_testing, db::models::proposals::FullProposalInfo,
+        v0::context::test::new_test_shared_context_from_url,
+    };
+    use pretty_assertions::assert_eq;
+    use vit_servicing_station_tests::common::data::ArbitrarySnapshotGenerator;
+    use vit_servicing_station_tests::common::startup::db::DbBuilder;
     use warp::Filter;
 
     #[tokio::test]
     async fn get_proposal_by_id_handler() {
         // build context
-        let shared_context = new_db_test_shared_context();
+        let mut gen = ArbitrarySnapshotGenerator::default();
+
+        let snapshot = gen.snapshot();
+
+        let db_url = DbBuilder::new().with_snapshot(&snapshot).build().unwrap();
+        let shared_context = new_test_shared_context_from_url(&db_url);
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
         db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
-        let mut proposal: FullProposalInfo = proposals_testing::get_test_proposal("group1");
-        proposals_testing::populate_db_with_proposal(&proposal, pool);
-        let challenge: Challenge =
-            challenges_testing::get_test_challenge_with_fund_id(proposal.proposal.fund_id);
-        challenges_testing::populate_db_with_challenge(&challenge, pool);
 
-        let review = reviews_testing::get_test_advisor_review_with_proposal_id(
-            proposal.proposal.proposal_id.parse().unwrap(),
-        );
-        reviews_testing::populate_db_with_advisor_review(&review, pool);
-        proposal.proposal.reviews_count = 1;
+        let proposal = snapshot.proposals().into_iter().next().unwrap();
+
         // build filter
         let filter = warp::path!(i32 / String)
             .and(warp::get())
@@ -75,31 +71,40 @@ pub mod test {
 
         let result = warp::test::request()
             .method("GET")
-            .path("/1/group1")
+            .path(&format!(
+                "/{}/{}",
+                proposal.proposal.proposal_id, proposal.group_id
+            ))
             .reply(&filter)
             .await;
         assert_eq!(result.status(), warp::http::StatusCode::OK);
         println!("{}", String::from_utf8(result.body().to_vec()).unwrap());
         let result_proposal: FullProposalInfo =
             serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
-        assert_eq!(proposal, result_proposal);
+        assert_eq!(
+            serde_json::to_value(&proposal).unwrap(),
+            serde_json::to_value(result_proposal).unwrap()
+        );
     }
 
     #[tokio::test]
     async fn get_all_proposals_handler() {
         // build context
-        let shared_context = new_db_test_shared_context();
+        let mut gen = ArbitrarySnapshotGenerator::default();
+
+        let snapshot = gen.snapshot();
+
+        let db_url = DbBuilder::new().with_snapshot(&snapshot).build().unwrap();
+        let shared_context = new_test_shared_context_from_url(&db_url);
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
         db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
-        let proposal: FullProposalInfo = proposals_testing::get_test_proposal("group1");
-        proposals_testing::populate_db_with_proposal(&proposal, pool);
-        let challenge: Challenge =
-            challenges_testing::get_test_challenge_with_fund_id(proposal.proposal.fund_id);
-        challenges_testing::populate_db_with_challenge(&challenge, pool);
+
+        let proposal = snapshot.proposals().into_iter().next().unwrap();
+
         // build filter
         let filter = warp::any()
             .and(warp::path!(String))
@@ -109,30 +114,36 @@ pub mod test {
 
         let result = warp::test::request()
             .method("GET")
-            .path("/group1")
+            .path(&format!("/{}", proposal.group_id))
             .reply(&filter)
             .await;
         assert_eq!(result.status(), warp::http::StatusCode::OK);
         let result_proposals: Vec<FullProposalInfo> =
             serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
-        assert_eq!(vec![proposal], result_proposals);
+        assert_eq!(
+            serde_json::to_value(vec![proposal]).unwrap(),
+            serde_json::to_value(result_proposals).unwrap()
+        );
     }
 
     #[tokio::test]
     async fn get_proposal_by_voteplan_id_and_index() {
         // build context
-        let shared_context = new_db_test_shared_context();
+        let mut gen = ArbitrarySnapshotGenerator::default();
+
+        let snapshot = gen.snapshot();
+
+        let db_url = DbBuilder::new().with_snapshot(&snapshot).build().unwrap();
+        let shared_context = new_test_shared_context_from_url(&db_url);
+
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
         db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
-        let proposal: FullProposalInfo = proposals_testing::get_test_proposal("group1");
-        proposals_testing::populate_db_with_proposal(&proposal, pool);
-        let challenge: Challenge =
-            challenges_testing::get_test_challenge_with_fund_id(proposal.proposal.fund_id);
-        challenges_testing::populate_db_with_challenge(&challenge, pool);
+
+        let proposal = snapshot.proposals().into_iter().next().unwrap();
 
         // build filter
         let filter = warp::any()
@@ -155,6 +166,9 @@ pub mod test {
         assert_eq!(result.status(), warp::http::StatusCode::OK);
         let result_proposals: Vec<FullProposalInfo> =
             serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
-        assert_eq!(vec![proposal], result_proposals);
+        assert_eq!(
+            serde_json::to_value(vec![proposal]).unwrap(),
+            serde_json::to_value(result_proposals).unwrap()
+        );
     }
 }

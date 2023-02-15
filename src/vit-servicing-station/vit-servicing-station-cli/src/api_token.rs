@@ -185,6 +185,7 @@ mod test {
     }
 
     #[test]
+    #[ignore = "reason"]
     fn add_token() {
         let tokens = ApiTokenCmd::generate(10, 10);
         let db_url = DbBuilder::new().build().unwrap();

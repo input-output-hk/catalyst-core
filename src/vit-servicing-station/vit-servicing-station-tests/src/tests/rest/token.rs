@@ -22,7 +22,11 @@ pub fn token_validation() -> Result<(), Box<dyn std::error::Error>> {
     let invalid_token = data::token_hash();
 
     let rest_client: RawRestClient = server.rest_client_with_token(&hash).into();
-    assert_eq!(rest_client.health()?.status(), StatusCode::OK);
+    let res = rest_client.health()?;
+    let status = res.status();
+    println!("{:?}", res.text());
+
+    assert_eq!(status, StatusCode::OK);
 
     let rest_client: RawRestClient = server.rest_client_with_token(&invalid_token).into();
     assert_eq!(rest_client.health()?.status(), StatusCode::UNAUTHORIZED);

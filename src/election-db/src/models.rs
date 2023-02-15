@@ -7,8 +7,8 @@
 #[allow(clippy::wildcard_imports)]
 use crate::schema::*;
 
-use chrono::NaiveDateTime;
 use bigdecimal::BigDecimal;
+use chrono::NaiveDateTime;
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(row_id))]
 #[diesel(table_name = challenge)]
@@ -263,4 +263,3 @@ pub struct VotingPower {
     pub voting_key: Option<String>,
     pub power: Option<BigDecimal>,
 }
-

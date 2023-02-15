@@ -177,15 +177,27 @@ jobs:
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
+      - name: Check space
+        run:
+          df -h
+
       - name: Build external dependencies
         if: steps.deps-cache.outputs.cache-hit != 'true'
         run:
           cargo build -p vit-servicing-station-cli -p vit-servicing-station-server -p jcli -p jormungandr -p explorer
 
+      - name: Check space
+        run:
+          df -h
+
       - name: Build and archive tests
         if: steps.archive-cache.outputs.cache-hit != 'true'
         run: cargo nextest archive --archive-file nextest-archive.tar.zst
 
+      - name: Check space
+        run:
+          df -h
+          
       - name: Run Catalyst Core tests
         env:
           TEST_DATABASE_URL: postgres://postgres:123456@localhost

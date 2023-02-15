@@ -59,7 +59,7 @@ uuid = { version = "1", features = ["v4", "serde"] }
 csv = { git = "https://github.com/BurntSushi/rust-csv" }
 hex = "0.4"
 cfg-if = "1"
-proptest = { git = "https://github.com/proptest-rs/proptest.git" }
+proptest = "1.1"
 
 
 # representing byte buffers while being generic over serde implementations

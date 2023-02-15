@@ -2,7 +2,8 @@
 
 
 class JormConfig(object):
-    """ Holds parameters used to configure and start jormungandr."""
+    """Holds parameters used to configure and start jormungandr."""
+
     def __init__(
         self, jormungandr_path: str, jcli_path: str, storage: str, node_type: str
     ):

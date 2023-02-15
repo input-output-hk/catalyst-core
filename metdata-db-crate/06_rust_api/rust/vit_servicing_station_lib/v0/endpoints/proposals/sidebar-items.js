@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["proposal_filter",""],["proposals_filter",""]],"struct":[["ProposalVoteplanIdAndIndexes",""]],"type":[["ProposalsByVoteplanIdAndIndex",""]]};

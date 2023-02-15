@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Error",""],["Rest","Send request to node REST API"]],"mod":[["v0",""],["v1",""]],"struct":[["RestArgs",""]]};

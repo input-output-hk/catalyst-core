@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Error",""],["ErrorKind",""]],"fn":[["load_blockchain",""],["prepare_block_0","loading the block 0 is not as trivial as it seems, there are different cases that we may encounter:"],["prepare_storage","prepare the block storage from the given settings"]]};

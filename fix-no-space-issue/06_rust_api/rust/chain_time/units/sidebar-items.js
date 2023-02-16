@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["DurationSeconds","Represent a Duration where the maximum precision is in the second"]]};

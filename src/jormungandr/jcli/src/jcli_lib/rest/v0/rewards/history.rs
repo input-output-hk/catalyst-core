@@ -18,7 +18,7 @@ impl History {
         let History::Get { args, length } = self;
         let response = args
             .client()?
-            .get(&["v0", "rewards", "history", &length.to_string()])
+            .get(&["api", "v0", "rewards", "history", &length.to_string()])
             .execute()?
             .text()?;
         println!("{}", response);

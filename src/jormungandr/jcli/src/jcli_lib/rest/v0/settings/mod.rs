@@ -31,6 +31,12 @@ impl Settings {
 }
 
 pub fn request_settings(args: RestArgs) -> Result<SettingsDto, Error> {
-    serde_json::from_str(&(args.client()?.get(&["v0", "settings"]).execute()?.text()?))
-        .map_err(Error::SerdeError)
+    serde_json::from_str(
+        &(args
+            .client()?
+            .get(&["api", "v0", "settings"])
+            .execute()?
+            .text()?),
+    )
+    .map_err(Error::SerdeError)
 }

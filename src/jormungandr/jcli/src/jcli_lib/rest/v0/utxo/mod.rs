@@ -39,6 +39,7 @@ impl Utxo {
         let response = args
             .client()?
             .get(&[
+                "api",
                 "v0",
                 "utxo",
                 &self.fragment_id,

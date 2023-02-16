@@ -24,7 +24,7 @@ impl Stats {
         } = self;
         let response = args
             .client()?
-            .get(&["v0", "network", "stats"])
+            .get(&["api", "v0", "network", "stats"])
             .execute()?
             .json()?;
         let formatted = output_format.format_json(response)?;

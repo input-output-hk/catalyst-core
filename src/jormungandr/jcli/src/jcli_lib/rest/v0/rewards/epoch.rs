@@ -18,7 +18,7 @@ impl Epoch {
         let Epoch::Get { args, epoch } = self;
         let response = args
             .client()?
-            .get(&["v0", "rewards", "epoch", &epoch.to_string()])
+            .get(&["api", "v0", "rewards", "epoch", &epoch.to_string()])
             .execute()?
             .text()?;
         println!("{}", response);

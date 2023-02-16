@@ -26,7 +26,7 @@ impl Stake {
             epoch,
         } = self;
         let epoch = epoch.map(|epoch| epoch.to_string());
-        let mut url = vec!["v0", "stake"];
+        let mut url = vec!["api", "v0", "stake"];
         if let Some(epoch) = &epoch {
             url.push(epoch);
         }

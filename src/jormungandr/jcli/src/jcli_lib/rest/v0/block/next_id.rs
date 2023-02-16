@@ -26,7 +26,7 @@ impl NextId {
 fn exec_get(args: RestArgs, block_id: String, count: Option<usize>) -> Result<(), Error> {
     let response = args
         .client()?
-        .get(&["v0", "block", &block_id, "next_id"])
+        .get(&["api", "v0", "block", &block_id, "next_id"])
         .query(&[("count", count)])
         .execute()?
         .bytes()?;

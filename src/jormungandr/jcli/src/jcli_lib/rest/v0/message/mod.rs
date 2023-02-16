@@ -49,7 +49,7 @@ impl Message {
 fn get_logs(args: RestArgs, output_format: OutputFormat) -> Result<(), Error> {
     let response = args
         .client()?
-        .get(&["v0", "fragment", "logs"])
+        .get(&["api", "v0", "fragment", "logs"])
         .execute()?
         .json()?;
     let formatted = output_format.format_json(response)?;

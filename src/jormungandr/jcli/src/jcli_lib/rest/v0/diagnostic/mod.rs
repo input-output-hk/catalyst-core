@@ -18,7 +18,7 @@ impl Diagnostic {
         };
         let response = args
             .client()?
-            .get(&["v0", "diagnostic"])
+            .get(&["api", "v0", "diagnostic"])
             .execute()?
             .text()?;
         println!("{}", response);

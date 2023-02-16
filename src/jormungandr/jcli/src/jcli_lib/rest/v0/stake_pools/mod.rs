@@ -24,7 +24,7 @@ impl StakePools {
         } = self;
         let response = args
             .client()?
-            .get(&["v0", "stake_pools"])
+            .get(&["api", "v0", "stake_pools"])
             .execute()?
             .json()?;
         let formatted = output_format.format_json(response)?;

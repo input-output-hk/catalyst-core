@@ -16,7 +16,11 @@ impl Tip {
         let args = match self {
             Tip::Get { args } => args,
         };
-        let response = args.client()?.get(&["v0", "tip"]).execute()?.text()?;
+        let response = args
+            .client()?
+            .get(&["api", "v0", "tip"])
+            .execute()?
+            .text()?;
         println!("{}", response);
         Ok(())
     }

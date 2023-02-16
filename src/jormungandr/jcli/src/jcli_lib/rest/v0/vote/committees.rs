@@ -24,7 +24,7 @@ impl Committees {
         } = self;
         let response = args
             .client()?
-            .get(&["v0", "vote", "active", "committees"])
+            .get(&["api", "v0", "vote", "active", "committees"])
             .execute()?
             .json()?;
         let formatted = output_format.format_json(response)?;

@@ -45,7 +45,7 @@
         };
         <span class="kw">let </span>response = args
             .client()<span class="question-mark">?
-            </span>.get(<span class="kw-2">&amp;</span>[<span class="string">&quot;v0&quot;</span>, <span class="string">&quot;diagnostic&quot;</span>])
+            </span>.get(<span class="kw-2">&amp;</span>[<span class="string">&quot;api&quot;</span>, <span class="string">&quot;v0&quot;</span>, <span class="string">&quot;diagnostic&quot;</span>])
             .execute()<span class="question-mark">?
             </span>.text()<span class="question-mark">?</span>;
         <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, response);

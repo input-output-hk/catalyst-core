@@ -58,7 +58,7 @@
         } = <span class="self">self</span>;
         <span class="kw">let </span>response = args
             .client()<span class="question-mark">?
-            </span>.get(<span class="kw-2">&amp;</span>[<span class="string">&quot;v0&quot;</span>, <span class="string">&quot;vote&quot;</span>, <span class="string">&quot;active&quot;</span>, <span class="string">&quot;committees&quot;</span>])
+            </span>.get(<span class="kw-2">&amp;</span>[<span class="string">&quot;api&quot;</span>, <span class="string">&quot;v0&quot;</span>, <span class="string">&quot;vote&quot;</span>, <span class="string">&quot;active&quot;</span>, <span class="string">&quot;committees&quot;</span>])
             .execute()<span class="question-mark">?
             </span>.json()<span class="question-mark">?</span>;
         <span class="kw">let </span>formatted = output_format.format_json(response)<span class="question-mark">?</span>;

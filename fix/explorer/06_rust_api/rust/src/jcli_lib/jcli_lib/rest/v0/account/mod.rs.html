@@ -85,7 +85,7 @@
     account_id: AccountId,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;AccountState, Error&gt; {
     args.client()<span class="question-mark">?
-        </span>.get(<span class="kw-2">&amp;</span>[<span class="string">&quot;v0&quot;</span>, <span class="string">&quot;account&quot;</span>, <span class="kw-2">&amp;</span>account_id.to_url_arg()])
+        </span>.get(<span class="kw-2">&amp;</span>[<span class="string">&quot;api&quot;</span>, <span class="string">&quot;v0&quot;</span>, <span class="string">&quot;account&quot;</span>, <span class="kw-2">&amp;</span>account_id.to_url_arg()])
         .execute()<span class="question-mark">?
         </span>.json()
         .map_err(Into::into)

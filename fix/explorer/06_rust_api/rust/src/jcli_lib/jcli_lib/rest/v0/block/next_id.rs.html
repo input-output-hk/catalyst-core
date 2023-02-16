@@ -63,7 +63,7 @@
 <span class="kw">fn </span>exec_get(args: RestArgs, block_id: String, count: <span class="prelude-ty">Option</span>&lt;usize&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
     <span class="kw">let </span>response = args
         .client()<span class="question-mark">?
-        </span>.get(<span class="kw-2">&amp;</span>[<span class="string">&quot;v0&quot;</span>, <span class="string">&quot;block&quot;</span>, <span class="kw-2">&amp;</span>block_id, <span class="string">&quot;next_id&quot;</span>])
+        </span>.get(<span class="kw-2">&amp;</span>[<span class="string">&quot;api&quot;</span>, <span class="string">&quot;v0&quot;</span>, <span class="string">&quot;block&quot;</span>, <span class="kw-2">&amp;</span>block_id, <span class="string">&quot;next_id&quot;</span>])
         .query(<span class="kw-2">&amp;</span>[(<span class="string">&quot;count&quot;</span>, count)])
         .execute()<span class="question-mark">?
         </span>.bytes()<span class="question-mark">?</span>;

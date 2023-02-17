@@ -63,7 +63,7 @@ fn fails_if_stake_key_invalid_type() {
     reg.registration.stake_key = StakeKeyHex(PubKey(stake_key_bytes));
 
     let Failure { error, .. } = reg.validate_with(ctx).unwrap_err();
-    assert_eq!(error, RegistrationError::StakeKeyWrongType(0))
+    assert_eq!(error, RegistrationError::StakeKeyWrongType(0));
 }
 
 #[test]
@@ -72,7 +72,7 @@ fn fails_if_stake_key_wrong_network_id() {
     ctx.network_id = NetworkId::Mainnet;
 
     let mut reg = cip15::vector();
-    let leading_byte = 0b11110000; // type 15, testnet
+    let leading_byte = 0b1111_0000; // type 15, testnet
     let mut bytes = [0; 32];
     bytes[0] = leading_byte;
 
@@ -86,7 +86,7 @@ fn fails_if_stake_key_wrong_network_id() {
             expected: NetworkId::Mainnet,
             actual: Some(NetworkId::Testnet),
         }
-    )
+    );
 }
 
 /// Sign a registration with the key provided in the CIP 15 vector
@@ -100,9 +100,10 @@ fn compute_sig_from_registration(reg: &Registration) -> Signature {
     let public_bytes = hex::decode(STAKE_KEY).unwrap();
     let public_key = Ed25519::public_from_binary(&public_bytes).unwrap();
 
-    if Ed25519::compute_public(&secret_key) != public_key {
-        panic!("inconsistent secret/public key pair");
-    }
+    assert!(
+        Ed25519::compute_public(&secret_key) != public_key,
+        "inconsistent secret/public key pair"
+    );
 
     let signature = Ed25519::sign(&secret_key, &data_bytes);
     let signature_bytes = signature.as_ref();

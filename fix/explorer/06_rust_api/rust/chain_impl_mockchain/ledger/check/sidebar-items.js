@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":[["CHECK_POOL_REG_MAXIMUM_OPERATORS",""],["CHECK_POOL_REG_MAXIMUM_OWNERS",""],["CHECK_TX_MAXIMUM_INPUTS",""],["CHECK_TX_MAXIMUM_OUTPUTS",""]],"enum":[["TxVerifyError",""]]};

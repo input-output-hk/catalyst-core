@@ -39,7 +39,7 @@ pub fn request_account_information(
     account_id: AccountId,
 ) -> Result<AccountState, Error> {
     args.client()?
-        .get(&["api", "v0", "account", &account_id.to_url_arg()])
+        .get(&["v0", "account", &account_id.to_url_arg()])
         .execute()?
         .json()
         .map_err(Into::into)

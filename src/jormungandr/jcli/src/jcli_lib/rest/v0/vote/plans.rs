@@ -24,7 +24,7 @@ impl Plans {
         } = self;
         let response = args
             .client()?
-            .get(&["api", "v0", "vote", "active", "plans"])
+            .get(&["v0", "vote", "active", "plans"])
             .execute()?
             .json()?;
         let formatted = output_format.format_json(response)?;

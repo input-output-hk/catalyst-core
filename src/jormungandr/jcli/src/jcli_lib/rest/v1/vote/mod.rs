@@ -49,7 +49,6 @@ impl AccountVotes {
                 .args
                 .client()?
                 .get(&[
-                    "api",
                     "v1",
                     "votes",
                     "plan",
@@ -63,7 +62,6 @@ impl AccountVotes {
                 .args
                 .client()?
                 .get(&[
-                    "api",
                     "v1",
                     "votes",
                     "plan",

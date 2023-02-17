@@ -19,5 +19,6 @@ DROP TABLE IF EXISTS
     currency,
     vote_options,
     challenge,
-    proposal;
+    proposal,
+    voting_nodes;
 

@@ -3,9 +3,8 @@ import socket
 import uvicorn
 from typing import Final, List, Optional
 
-from . import logs
+from . import logs, tasks, utils
 from .config import JormConfig
-from .tasks import Leader0Schedule
 
 
 class VotingNode(uvicorn.Server):
@@ -35,21 +34,24 @@ class VotingNode(uvicorn.Server):
     # jormungandr node's REST and GRPC servers.
     async def start_service(self, sockets: Optional[List[socket.socket]] = None):
         """Starts Voting Node Service."""
-        # time to wait before retrying to run a schedule
+        # time in seconds to wait before retrying to run a schedule
         SLEEP_TO_SCHEDULE_RETRY: Final = 5
 
         # this is the main task, which stops other tasks by calling the
         # 'stop_schedule' method.
         api_task: asyncio.Task[None] = asyncio.create_task(
+            # start the API
             self.start_api(sockets=sockets)
         )
-
-        # get the schedule corresponding to the 'JormConfig.node_type'
-        schedule = self.get_schedule()
 
         # checks if `stop_schedule` has been called
         while self.is_running_schedule():
             try:
+                # execute the scheduled tasks for this node, by
+                # extracting the leadership role from the hostname
+                schedule = self.get_schedule()
+                if schedule is None:
+                    raise Exception("no proper schedule found for this node")
                 await schedule.run()
                 break
             except Exception as e:
@@ -69,12 +71,6 @@ class VotingNode(uvicorn.Server):
         # stops trying to launch jormungandr after API service is finished
         self.stop_schedule()
 
-    def jormungandr_exec(self) -> str:
-        return self.jorm_config.jormungandr_path
-
-    def jcli_exec(self) -> str:
-        return self.jorm_config.jcli_path
-
     def is_running_schedule(self) -> bool:
         return self.keep_running
 
@@ -82,12 +78,15 @@ class VotingNode(uvicorn.Server):
         self.keep_running = False
 
     def get_schedule(self):
-        schedules = {
-            "leader0": Leader0Schedule(self.db_url, self.jorm_config),
-            "other-leader": None,
-            "follower": None,
-        }
-        return schedules.get(self.jorm_config.node_type)
+        # checks the hostname and returns the schedule
+        # according to its leadership role.
+        match utils.get_leadership_role_by_hostname():
+            case "leader0":
+                return tasks.Leader0Schedule(self.db_url, self.jorm_config)
+            case "leader":
+                return tasks.LeaderSchedule(self.db_url, self.jorm_config)
+            case "follower":
+                return tasks.FollowerSchedule(self.db_url, self.jorm_config)
 
     async def start_jormungandr(self):
         try:
@@ -107,6 +106,12 @@ class VotingNode(uvicorn.Server):
             except Exception as e:
                 self.logger.debug(f"jorm failed to start: {e}")
             await asyncio.sleep(1)
+
+    def jormungandr_exec(self) -> str:
+        return self.jorm_config.jormungandr_path
+
+    def jcli_exec(self) -> str:
+        return self.jorm_config.jcli_path
 
     async def jormungandr_subprocess_exec(self):
         try:

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["ConfigBuilder",""],["LedgerBuilder",""],["TestLedger",""],["UtxoDb",""]],"type":[["UtxoDeclaration",""]]};

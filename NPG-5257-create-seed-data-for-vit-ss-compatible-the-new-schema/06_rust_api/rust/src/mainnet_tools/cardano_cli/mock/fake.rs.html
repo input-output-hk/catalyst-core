@@ -1,0 +1,446 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/vit-testing/mainnet-tools/src/cardano_cli/mock/fake.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>fake.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../mainnet_tools/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../mainnet_tools/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../mainnet_tools/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+</pre><pre class="rust"><code><span class="kw">use </span>core::fmt::Formatter;
+<span class="kw">use </span>prettytable::{format, Table};
+<span class="kw">use </span>serde::{Deserialize, Serialize};
+<span class="kw">use </span>serde_json::{json, Value};
+<span class="kw">use </span>std::fmt;
+
+<span class="doccomment">/// Arbitrary blockchain tip
+</span><span class="attribute">#[must_use]
+</span><span class="kw">pub fn </span>tip() -&gt; Tip {
+    Tip::default()
+}
+
+<span class="doccomment">/// Arbitraty query utxo response
+</span><span class="attribute">#[must_use]
+</span><span class="kw">pub fn </span>utxo() -&gt; QueryUTxO {
+    QueryUTxO::default()
+}
+
+<span class="doccomment">/// Arbitrary hash
+</span><span class="attribute">#[must_use]
+</span><span class="kw">pub fn </span>hash() -&gt; String {
+    <span class="string">&quot;a3a93043d015e9bb089b1a90d59b1922dffb9684b5c64a61426b6134e348123d&quot;</span>.to_string()
+}
+
+<span class="doccomment">/// Arbitrary address
+</span><span class="attribute">#[must_use]
+</span><span class="kw">pub fn </span>address() -&gt; String {
+    <span class="string">&quot;addr1q9e0wsxghc395p8e3ff0zx2gdzurveq0pcu68lyq2z59vc5squl6qr0re0pe2x5syq7j5qf77q6s7zl43nass8u85vgscexsev&quot;</span>.to_string()
+}
+
+<span class="doccomment">/// Arbitrary stake address
+</span><span class="attribute">#[must_use]
+</span><span class="kw">pub fn </span>stake_address() -&gt; String {
+    <span class="string">&quot;stake1uxgqw0aqph3uhsu4r2gzq0f2qyl0qdg0p06ce7cgr7r6xygwmtwku&quot;</span>.to_string()
+}
+
+<span class="doccomment">/// Arbitrary Response from Cardano CLI on submit transaction command
+</span><span class="attribute">#[must_use]
+</span><span class="kw">pub fn </span>submit() -&gt; String {
+    <span class="string">&quot;Transaction successfully submitted.&quot;</span>.to_string()
+}
+
+<span class="doccomment">/// Response from transaction sign command
+</span><span class="attribute">#[must_use]
+</span><span class="kw">pub fn </span>sign() -&gt; String {
+    <span class="macro">json!</span>({
+        <span class="string">&quot;type&quot;</span>: <span class="string">&quot;TxSignedShelley&quot;</span>,
+        <span class="string">&quot;description&quot;</span>: <span class="string">&quot;&quot;</span>,
+        <span class="string">&quot;cborHex&quot;</span>: <span class="string">&quot;83a500828258205761bdc4fd016ee0d52ac759ae6c0e8e0943d4892474283866a07f9768e48fee00825820e6701be50c87d8d584985edd4cf39799e1445bd37907027c44d08c7da79ea23200018182583900fec5a902e307707b6ab3de38104918c0e33cf4c3408e6fcea4f0a199c13582aec9a44fcc6d984be003c5058c660e1d2ff1370fd8b49ba73f1b00001e0369444cd7021a0002c329031a00ce0fc70758202386abf617780a925495f38f23d7bc594920ff374f03f3d7517a4345e355b047a1008182582099d1d0c4cdc8a4b206066e9606c6c3729678bd7338a8eab9bffdffa39d3df9585840af346c11fe7a222008f5b1b50fbc23a0cbc3d783bf4461f21353e8b5eb664adadb34291197e039e467d2a68346921879d1212bd0d54245a9e110162ecae9190ba219ef64a201582071ce673ef64b4ac1fb758b65df01b036665d4498256335e93e28b869568d9ed80258209be513df12b3fabe7c1b8c3f9fab0968eb2168d5689bf981c2f7c35b11718b2719ef65a101584057267d94e5bae64fa236924b83ce7411fef10bd5d73aca7af8403053cf2dc2e3621f7d253bf90933e2bc0bfb56146cf0a13925d9f96d6d06b0b798bc41d4000d&quot;
+    </span>}).to_string()
+}
+
+<span class="doccomment">/// Helper struct which imitates response from tip
+</span><span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>Tip {
+    <span class="doccomment">/// tip hash
+    </span><span class="kw">pub </span>hash: String,
+    <span class="doccomment">/// tip block height
+    </span><span class="kw">pub </span>block: u64,
+    <span class="doccomment">/// tip slot
+    </span><span class="kw">pub </span>slot: u64,
+    <span class="doccomment">/// tip sync progress
+    </span><span class="kw">pub </span>sync_progress: String,
+    <span class="doccomment">/// tip era
+    </span><span class="kw">pub </span>era: String,
+    <span class="doccomment">/// tip epoch
+    </span><span class="kw">pub </span>epoch: u64,
+}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>Tip {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            hash: hash(),
+            block: <span class="number">6_589_745</span>,
+            slot: <span class="number">47_163_888</span>,
+            sync_progress: <span class="string">&quot;100.00&quot;</span>.to_string(),
+            era: <span class="string">&quot;Alonzo&quot;</span>.to_string(),
+            epoch: <span class="number">306</span>,
+        }
+    }
+}
+
+<span class="doccomment">/// Helper struct which imitates response from utxo
+</span><span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>UTxO {
+    <span class="doccomment">/// Utxo tx hash
+    </span><span class="kw">pub </span>tx_hash: String,
+    <span class="doccomment">/// Utxo tx id
+    </span><span class="kw">pub </span>tx_ix: u64,
+    <span class="doccomment">/// Utxo ada amount
+    </span><span class="kw">pub </span>amount: u64,
+}
+
+<span class="doccomment">/// Helper struct which imitates response from query utxo
+</span><span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>QueryUTxO {
+    utxos: Vec&lt;UTxO&gt;,
+}
+
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>QueryUTxO {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="kw">let </span><span class="kw-2">mut </span>table = Table::new();
+        <span class="kw">let </span>format = format::FormatBuilder::new()
+            .column_separator(<span class="string">&#39;|&#39;</span>)
+            .separators(
+                <span class="kw-2">&amp;</span>[format::LinePosition::Top, format::LinePosition::Bottom],
+                format::LineSeparator::new(<span class="string">&#39;-&#39;</span>, <span class="string">&#39; &#39;</span>, <span class="string">&#39; &#39;</span>, <span class="string">&#39; &#39;</span>),
+            )
+            .padding(<span class="number">1</span>, <span class="number">1</span>)
+            .build();
+        table.set_format(format);
+        table.set_titles(<span class="macro">row!</span>[<span class="string">&quot;TxHash&quot;</span>, <span class="string">&quot;TxIx&quot;</span>, <span class="string">&quot;Amount&quot;</span>]);
+
+        <span class="kw">for </span>utxo <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.utxos {
+            table.add_row(<span class="macro">row!</span>[
+                utxo.tx_hash.to_string(),
+                utxo.tx_ix,
+                <span class="macro">format!</span>(<span class="string">&quot;{} lovelace&quot;</span>, utxo.amount)
+            ]);
+        }
+        <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, table)
+    }
+}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>QueryUTxO {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        QueryUTxO {
+            utxos: <span class="macro">vec!</span>[
+                UTxO {
+                    tx_hash: <span class="string">&quot;61d47e568b1502064906e977aae848c7aec9a76f97e7d11ad5d752e95c438011&quot;
+                        </span>.to_string(),
+                    tx_ix: <span class="number">0</span>,
+                    amount: <span class="number">1_379_280</span>,
+                },
+                UTxO {
+                    tx_hash: <span class="string">&quot;ac1d8802a4e100d90ce59fb4e4573f1c7884a65197ff39810a88eb0b07de3aa6&quot;
+                        </span>.to_string(),
+                    tx_ix: <span class="number">0</span>,
+                    amount: <span class="number">30_000_000</span>,
+                },
+                UTxO {
+                    tx_hash: <span class="string">&quot;69818d49963ffafe8a287ec270d05ba89493de33ddf7b5b9bcb07e97802a0f28&quot;
+                        </span>.to_string(),
+                    tx_ix: <span class="number">0</span>,
+                    amount: <span class="number">5_573_009</span>,
+                },
+                UTxO {
+                    tx_hash: <span class="string">&quot;fba1526c49684722199b102bffd5b4a66ea1d490605532753fa24e12af925722&quot;
+                        </span>.to_string(),
+                    tx_ix: <span class="number">0</span>,
+                    amount: <span class="number">5_000_000</span>,
+                },
+            ],
+        }
+    }
+}
+
+<span class="doccomment">/// Arbitrary protocol parameters
+</span><span class="attribute">#[must_use]
+</span><span class="kw">pub fn </span>protocol_parameters() -&gt; Value {
+    <span class="macro">json!</span>(
+    {
+        <span class="string">&quot;txFeePerByte&quot;</span>: <span class="number">44</span>,
+        <span class="string">&quot;minUTxOValue&quot;</span>: <span class="number">34_482</span>,
+        <span class="string">&quot;decentralization&quot;</span>: <span class="number">0</span>,
+        <span class="string">&quot;utxoCostPerWord&quot;</span>:  <span class="number">34_482</span>,
+        <span class="string">&quot;stakePoolDeposit&quot;</span>: <span class="number">500_000_000</span>,
+        <span class="string">&quot;poolRetireMaxEpoch&quot;</span>: <span class="number">18</span>,
+        <span class="string">&quot;extraPraosEntropy&quot;</span>: null,
+        <span class="string">&quot;collateralPercentage&quot;</span>: <span class="number">150</span>,
+        <span class="string">&quot;stakePoolTargetNum&quot;</span>: <span class="number">500</span>,
+        <span class="string">&quot;maxBlockBodySize&quot;</span>: <span class="number">73_728</span>,
+        <span class="string">&quot;minPoolCost&quot;</span>: <span class="number">340_000_000</span>,
+        <span class="string">&quot;maxTxSize&quot;</span>: <span class="number">16_384</span>,
+        <span class="string">&quot;treasuryCut&quot;</span>: <span class="number">0.2</span>,
+        <span class="string">&quot;maxBlockExecutionUnits&quot;</span>: {
+            <span class="string">&quot;memory&quot;</span>: <span class="number">50_000_000</span>,
+            <span class="string">&quot;steps&quot;</span>:  <span class="number">4_000_000
+        </span>},
+        <span class="string">&quot;maxCollateralInputs&quot;</span>: <span class="number">3</span>,
+        <span class="string">&quot;maxValueSize&quot;</span>: <span class="number">5_000</span>,
+        <span class="string">&quot;maxBlockHeaderSize&quot;</span>: <span class="number">1_100</span>,
+        <span class="string">&quot;maxTxExecutionUnits&quot;</span>: {
+            <span class="string">&quot;memory&quot;</span>: <span class="number">11_250_000</span>,
+            <span class="string">&quot;steps&quot;</span>: <span class="number">1_000_000
+        </span>},
+        <span class="string">&quot;costModels&quot;</span>: {},
+        <span class="string">&quot;protocolVersion&quot;</span>: {
+            <span class="string">&quot;minor&quot;</span>: <span class="number">0</span>,
+            <span class="string">&quot;major&quot;</span>: <span class="number">6
+        </span>},
+        <span class="string">&quot;txFeeFixed&quot;</span>: <span class="number">155_381</span>,
+        <span class="string">&quot;stakeAddressDeposit&quot;</span>: <span class="number">2_000_000</span>,
+        <span class="string">&quot;monetaryExpansion&quot;</span>: <span class="number">0.003</span>,
+        <span class="string">&quot;poolPledgeInfluence&quot;</span>: <span class="number">0.3</span>,
+        <span class="string">&quot;executionUnitPrices&quot;</span>: {
+            <span class="string">&quot;priceSteps&quot;</span>: <span class="number">0.000_072_1</span>,
+            <span class="string">&quot;priceMemory&quot;</span>: <span class="number">0.057_7
+        </span>}
+    })
+}
+
+<span class="doccomment">/// Arbitrary stake certificate
+</span><span class="attribute">#[must_use]
+#[allow(dead_code)]
+</span><span class="kw">pub fn </span>stake_certificate() -&gt; String {
+    <span class="string">&quot;type: CertificateShelley \
+    description: Stake Registration Certificate \
+    cborHex: \
+    18b58a03582062d632e7ee8a83769bc108e3e42a674d8cb242d7375fc2d97db9b4dd6eded6fd5820 \
+    48aa7b2c8deb8f6d2318e3bf3df885e22d5d63788153e7f4040c33ecae15d3e61b0000005d21dba0 \
+    001b000000012a05f200d81e820001820058203a4e813b6340dc790f772b3d433ce1c371d5c5f5de \
+    46f1a68bdf8113f50e779d8158203a4e813b6340dc790f772b3d433ce1c371d5c5f5de46f1a68bdf \
+    8113f50e779d80f6&quot;
+        </span>.to_string()
+}
+
+<span class="doccomment">/// Arbitrary transaction
+</span><span class="attribute">#[must_use]
+</span><span class="kw">pub fn </span>transaction() -&gt; String {
+    <span class="string">&quot;[{0: [[h&#39;C2642218EF9C5B2BC1EF66BF27C37640C0DFD159A0274C8100C852CA0B03D484&#39;, 1]], 1: [[h&#39;01B2344AB02D3DB07A62D640E2BA6F307CB02F3BB8196E81FE68BE8B780C39E651F9564FEFB52309B211E6F5A96BE9EE2A773AEC691219789E&#39;, 0]], 2: 0, 3: 25000000}, null]&quot;</span>.to_string()
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="mainnet_tools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

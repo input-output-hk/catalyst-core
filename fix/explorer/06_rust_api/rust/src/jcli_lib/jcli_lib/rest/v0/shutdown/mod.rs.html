@@ -35,7 +35,7 @@
 <span class="kw">impl </span>Shutdown {
     <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">let </span>Shutdown::Post { args } = <span class="self">self</span>;
-        args.client()<span class="question-mark">?</span>.get(<span class="kw-2">&amp;</span>[<span class="string">&quot;api&quot;</span>, <span class="string">&quot;v0&quot;</span>, <span class="string">&quot;shutdown&quot;</span>]).execute()<span class="question-mark">?</span>;
+        args.client()<span class="question-mark">?</span>.get(<span class="kw-2">&amp;</span>[<span class="string">&quot;v0&quot;</span>, <span class="string">&quot;shutdown&quot;</span>]).execute()<span class="question-mark">?</span>;
         <span class="macro">println!</span>(<span class="string">&quot;Success&quot;</span>);
         <span class="prelude-val">Ok</span>(())
     }

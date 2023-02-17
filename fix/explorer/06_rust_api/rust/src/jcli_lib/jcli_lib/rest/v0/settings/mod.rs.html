@@ -34,12 +34,6 @@
 <span id="34">34</span>
 <span id="35">35</span>
 <span id="36">36</span>
-<span id="37">37</span>
-<span id="38">38</span>
-<span id="39">39</span>
-<span id="40">40</span>
-<span id="41">41</span>
-<span id="42">42</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::jcli_lib::{
     rest::{Error, RestArgs},
     utils::OutputFormat,
@@ -73,14 +67,8 @@
 }
 
 <span class="kw">pub fn </span>request_settings(args: RestArgs) -&gt; <span class="prelude-ty">Result</span>&lt;SettingsDto, Error&gt; {
-    serde_json::from_str(
-        <span class="kw-2">&amp;</span>(args
-            .client()<span class="question-mark">?
-            </span>.get(<span class="kw-2">&amp;</span>[<span class="string">&quot;api&quot;</span>, <span class="string">&quot;v0&quot;</span>, <span class="string">&quot;settings&quot;</span>])
-            .execute()<span class="question-mark">?
-            </span>.text()<span class="question-mark">?</span>),
-    )
-    .map_err(Error::SerdeError)
+    serde_json::from_str(<span class="kw-2">&amp;</span>(args.client()<span class="question-mark">?</span>.get(<span class="kw-2">&amp;</span>[<span class="string">&quot;v0&quot;</span>, <span class="string">&quot;settings&quot;</span>]).execute()<span class="question-mark">?</span>.text()<span class="question-mark">?</span>))
+        .map_err(Error::SerdeError)
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../../../" data-current-crate="jcli_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

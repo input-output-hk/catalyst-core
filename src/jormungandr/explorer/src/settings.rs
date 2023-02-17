@@ -185,7 +185,6 @@ struct CommandLine {
 #[derive(Debug, Deserialize, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
-    pub storage: Option<PathBuf>,
     pub tls: Option<Tls>,
     pub cors: Option<Cors>,
     #[serde(default, deserialize_with = "deserialize_uri_string")]
@@ -201,8 +200,8 @@ fn deserialize_uri_string<'de, D>(deserializer: D) -> Result<Option<Uri>, D::Err
 where
     D: de::Deserializer<'de>,
 {
-    let s: &str = de::Deserialize::deserialize(deserializer)?;
-    Ok(Some(s.parse().unwrap()))
+    let s: String = de::Deserialize::deserialize(deserializer)?;
+    Ok(Some(s.parse().map_err(D::Error::custom)?))
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

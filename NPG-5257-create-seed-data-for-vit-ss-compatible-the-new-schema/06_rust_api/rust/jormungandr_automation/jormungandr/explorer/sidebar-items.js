@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["ExplorerError",""]],"fn":[["compare_schema",""]],"mod":[["configuration",""],["data",""],["verifiers",""]],"struct":[["Explorer",""],["ExplorerProcess",""],["LastBlockResponse",""]]};

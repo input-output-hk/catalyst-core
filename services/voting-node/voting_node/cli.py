@@ -44,37 +44,29 @@ def cli(debug, hot_reload):
     help="Sets the URL for the database. Default: postgres://localhost/CatalystDev",
 )
 @click.option(
-    "--storage",
+    "--node-storage",
     envvar="VOTING_NODE_STORAGE",
-    default="./storage",
+    default="./node_storage",
     help="Sets the location for the voting node's storage",
 )
 @click.option(
-    "--node-type",
-    envvar="VOTING_NODE_TYPE",
-    type=click.Choice(["leader0", "other-leather", "follower"]),
-    default="leader0",
-    help="Sets the voting node type from. Default: leader0",
-)
-@click.option(
-    "--jormungandr-path",
-    envvar="JORMUNGANDR_PATH",
+    "--jorm-path",
+    envvar="JORM_PATH",
     default="jormungandr",
 )
 @click.option("--jcli-path", envvar="JCLI_PATH", default="~/.cargo/bin/jcli")
-def start(
-    host, port, log_level, database_url, storage, node_type, jormungandr_path, jcli_path
-):
+def start(host, port, database_url, node_storage, log_level, jorm_path, jcli_path):
     click.echo("Starting...")
     click.echo(f"host={host}")
     click.echo(f"port={port}")
-    click.echo(f"log-level={log_level}")
     click.echo(f"database-url={database_url}")
-    click.echo(f"storage={storage}")
-    click.echo(f"node-type={node_type}")
+    click.echo(f"node-storage={node_storage}")
+    click.echo(f"log-level={log_level}")
+    click.echo(f"jorm-path={jorm_path}")
+    click.echo(f"jcli-path={jcli_path}")
 
     api_config = uvicorn.Config(api.app, host=host, port=port, log_level=log_level)
-    jorm_config = node.JormConfig(jormungandr_path, jcli_path, storage, node_type)
+    jorm_config = node.JormConfig(jorm_path, jcli_path, node_storage)
 
     voting_node = node.VotingNode(api_config, jorm_config, database_url)
     voting_node.start()

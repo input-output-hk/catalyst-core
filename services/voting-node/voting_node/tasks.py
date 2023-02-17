@@ -1,9 +1,10 @@
 from pathlib import Path
-import asyncio
 import asyncpg
-import datetime
 import socket
 
+from voting_node.jcli import JCli
+
+from . import utils
 from .config import JormConfig
 
 
@@ -15,6 +16,10 @@ class TaskList(object):
 
     tasks: list[str] = []
     current_task: str | None = None
+
+    def set_reset(self):
+        self.current_task = None
+        raise Exception("schedule was reset")
 
     async def run(self) -> None:
         """Runs through the startup tasks. This schedule is called each time that
@@ -52,9 +57,9 @@ class Leader0Schedule(TaskList):
         self.tasks: list[str] = [
             "bootstrap_storage",
             "bootstrap_db",
-            "get_host_info",
-            "get_upcoming_election",
-            "load_node_keys",
+            "bootstrap_host",
+            "set_upcoming_election",
+            "load_node_secrets",
             "load_node_config",
             "gather_voteplan_proposal",
             "generate_block0",
@@ -76,81 +81,61 @@ class Leader0Schedule(TaskList):
             raise Exception("failed to connect to the database")
         self.conn = conn
 
-    async def get_upcoming_election(self):
+    async def bootstrap_host(self):
+        # gets host information
+        try:
+            result = await utils.fetch_leader0_node_info(self.conn)
+            print(f"LEADER0 NODE INFO {result}")
+            self.node_info = result
+        except:
+            # we add the row
+            #  - by adding the keys
+            result = await utils.insert_leader0_node_info(
+                self.conn, self.jorm_config.jcli_path
+            )
+            # if all is good, we save and reset the schedule
+            print(f"INSERTED LEADER0 NODE INFO {result}")
+            self.set_reset()
+    async def set_upcoming_election(self):
         # This all starts by getting the election row that has the nearest
         # `voting_start`. We query the DB to get the row, and store it.
-        filter_by = "voting_start > $1"
-        sort_by = "voting_start ASC"
-        query = f"SELECT * FROM election WHERE {filter_by} ORDER BY {sort_by} LIMIT 1"
-        now = datetime.datetime.utcnow()
-        result = await self.conn.fetchrow(query, now)
-        if result is None:
-            raise Exception("no upcoming election found")
+        try:
+            row = await utils.fetch_election(self.conn)
+            print(f"current election: {row}")
+            self.election = row
+        except Exception as e:
+            raise Exception(f"failed to fetch election from db: {e}")
 
-        print(f"Result: {result}")
-        self.election = result
-
-    async def get_host_info(self):
-        # gets host information
-        self.hostname = socket.gethostname()
-        self.ip_address = socket.gethostbyname(self.hostname)
-        print(f"{self.hostname} {self.ip_address}")
-
-    async def load_node_keys(self):
+    async def load_node_secrets(self):
         # Loads keys from storage
-
         # node network secret key
-        key_file = Path(self.jorm_config.storage, "node_topology_key")
-        if key_file.exists():
-            key = key_file.open("r").readline()
-            print(f"found key: {key} stored in {key_file.absolute()}")
-            self.network_key = key
-        else:
-            try:
-                proc = await asyncio.create_subprocess_exec(
-                    "jcli",
-                    "key",
-                    "generate",
-                    "--type",
-                    "ed25519",
-                    stdout=asyncio.subprocess.PIPE,
-                )
-                data = await proc.stdout.readline()
-                if data is None:
-                    raise Exception("failed to generate network key")
-                key = data.decode().rstrip()
-                key_file.open("w").write(key)
-                self.network_key = key
-            except Exception as e:
-                raise e
-        # node configuration file
-        key_file = Path(self.jorm_config.storage, "node_config.yaml")
-        if key_file.exists():
-            raise Exception("WIP: need to add yaml to the stack")
-            print(f"found node: {key}")
-            self.secret_key = key
-        else:
-            try:
-                proc = await asyncio.create_subprocess_exec(
-                    "jcli",
-                    "key",
-                    "generate",
-                    "--type",
-                    "ed25519",
-                    stdout=asyncio.subprocess.PIPE,
-                )
-                data = await proc.stdout.readline()
-                if data is None:
-                    raise Exception("failed to make network key")
+        node_topology_key = Path(self.jorm_config.storage, "node_topology_key")
+        await utils.get_network_secret(node_topology_key, self.jorm_config.jcli_path)
 
-                key = data.decode().rstrip()
-                key_file.open("w").write(key)
-                self.secret_key = key
+        # node secret file
+        node_secret_file = Path(self.jorm_config.storage, "node_secret.yaml")
+        if node_secret_file.exists():
+            # TODO: need to parse file and extract secret"
+            key = node_secret_file.open("r").readline()
+            print(f"found key: {key} stored in {node_secret_file.absolute()}")
+            self.secret_key = key
+            self.secret_key_file = node_secret_file
+        else:
+            try:
+                # run jcli to generate the secret key
+                jcli_exec = JCli(self.jorm_config.jcli_path)
+                secret = await jcli_exec.seckey("ed25519")
+                # write the key to the file in yaml format
+                node_secret_file.open("w").write(secret)
+                # TODO: need to parse file and extract secret"
+                # save the key and the path to the file
+                self.secret_key = secret
+                self.secret_key_file = node_secret_file
             except Exception as e:
                 raise e
 
     async def load_node_config(self):
-        pass
+        self.set_reset()
 
     async def gather_voteplan_proposal(self):
         pass
@@ -174,3 +159,25 @@ class Leader0Schedule(TaskList):
         # if the connection to the DB is there, close it.
         if self.conn is not None:
             await self.conn.close()
+
+
+class LeaderSchedule(TaskList):
+    def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
+        self.db_url = db_url
+        self.jorm_config = jorm_config
+        self.current_task: str | None = None
+        self.tasks: list[str] = ["todo"]
+
+    async def todo(self):
+        pass
+
+
+class FollowerSchedule(TaskList):
+    def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
+        self.db_url = db_url
+        self.jorm_config = jorm_config
+        self.current_task: str | None = None
+        self.tasks: list[str] = ["todo"]
+
+    async def todo(self):
+        pass

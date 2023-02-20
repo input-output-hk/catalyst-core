@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"jortestkit":[["impl&lt;T:&nbsp;<a class=\"trait\" href=\"jortestkit/load/trait.RequestGenerator.html\" title=\"trait jortestkit::load::RequestGenerator\">RequestGenerator</a>&gt; UnindexedProducer for <a class=\"struct\" href=\"jortestkit/load/struct.RayonWrapper.html\" title=\"struct jortestkit::load::RayonWrapper\">RayonWrapper</a>&lt;T&gt;"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

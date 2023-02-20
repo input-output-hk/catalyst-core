@@ -150,14 +150,10 @@ impl Module {
         let epoch_time = self.epoch_time(epoch)?;
 
         match epoch_time.as_ref().duration_since(SystemTime::now().into()) {
-            Err(err) => {
+            Err(_) => {
                 // only possible if `epoch_time` is earlier than now. I.e. if the next
                 // epoch is in the past.
-
-                unreachable!(
-                    "next epoch is in the past. This is not possible, but it seems it append. {}",
-                    err
-                )
+                Ok(Instant::now())
             }
             Ok(duration) => Ok(Instant::now() + duration),
         }

@@ -58,7 +58,7 @@ uuid = { version = "1", features = ["v4", "serde"] }
 csv = { git = "https://github.com/BurntSushi/rust-csv" }
 hex = "0.4"
 cfg-if = "1"
-proptest = { git = "https://github.com/proptest-rs/proptest.git" }
+proptest = "1.1"
 
 
 # representing byte buffers while being generic over serde implementations
@@ -91,6 +91,9 @@ itertools = "0.10"
 
 # platform-independenent directory finding (e.g. home_dir() for `/home/<user>` on linux, `C:\Users\<user>` on windows)
 dirs = "4"
+
+# graphql-related utilities
+graphql_client = "0.12"
 
 # time-related utilities
 chrono = { version = "0.4", features = ["serde"] }

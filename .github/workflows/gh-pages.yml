@@ -9,7 +9,7 @@ jobs:
     permissions:
       contents: write
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
+      group: gh-docs-deploy
     steps:
       - name: Checkout The Code
         uses: actions/checkout@v3

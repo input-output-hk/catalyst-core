@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Args","Hersir is a command line tool that lets you deploy a network of Jormungandr nodes"]]};

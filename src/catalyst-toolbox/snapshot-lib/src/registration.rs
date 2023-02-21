@@ -42,7 +42,7 @@ pub enum Delegations {
     Legacy(Identifier),
 }
 
-mod serde_impl {
+pub mod serde_impl {
     use super::*;
     use chain_crypto::{Ed25519, PublicKey};
     use serde::{
@@ -51,7 +51,7 @@ mod serde_impl {
     };
     use std::fmt;
 
-    struct IdentifierDef(Identifier);
+    pub struct IdentifierDef(pub(crate) Identifier);
     struct VotingKeyVisitor;
 
     impl Serialize for IdentifierDef {

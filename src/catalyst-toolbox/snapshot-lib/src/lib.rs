@@ -1,9 +1,16 @@
 pub use fraction::Fraction;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
-use registration::MainnetStakeAddress;
-use registration::{Delegations, MainnetRewardAddress, VotingRegistration};
-use serde::{Deserialize, Serialize};
-use std::{borrow::Borrow, collections::BTreeMap, iter::Iterator, num::NonZeroU64};
+use registration::{
+    serde_impl::IdentifierDef, Delegations, MainnetRewardAddress, MainnetStakeAddress,
+    VotingRegistration,
+};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::{
+    borrow::Borrow,
+    collections::{BTreeMap, HashSet},
+    iter::Iterator,
+    num::NonZeroU64,
+};
 use thiserror::Error;
 pub use voter_hir::VoterHIR;
 pub use voter_hir::VotingGroup;
@@ -23,6 +30,35 @@ impl From<Vec<VotingRegistration>> for RawSnapshot {
     fn from(from: Vec<VotingRegistration>) -> Self {
         Self(from)
     }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Dreps(
+    #[serde(
+        serialize_with = "serialize_identifiers",
+        deserialize_with = "deserialize_identifiers"
+    )]
+    HashSet<Identifier>,
+);
+
+fn serialize_identifiers<S: Serializer>(
+    identifiers: &HashSet<Identifier>,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    let identifiers: Vec<_> = identifiers
+        .into_iter()
+        .map(|id| IdentifierDef(id.clone()))
+        .collect();
+    identifiers.serialize(serializer)
+}
+
+fn deserialize_identifiers<'de, D: Deserializer<'de>>(
+    deserializer: D,
+) -> Result<HashSet<Identifier>, D::Error> {
+    Ok(Vec::<IdentifierDef>::deserialize(deserializer)?
+        .into_iter()
+        .map(|id| id.0)
+        .collect())
 }
 
 #[derive(Debug, Error)]
@@ -189,7 +225,6 @@ pub mod tests {
     use chain_addr::{Discrimination, Kind};
     use jormungandr_lib::interfaces::{Address, InitialUTxO};
     use proptest::prelude::*;
-    #[cfg(test)]
     use test_strategy::proptest;
 
     struct DummyAssigner;
@@ -224,27 +259,30 @@ pub mod tests {
         }
     }
 
-    #[cfg(test)]
     #[proptest]
-    fn test_threshold(raw: RawSnapshot, stake_threshold: u64, additional_reg: VotingRegistration) {
-        let mut add = raw.clone();
-        add.0.push(additional_reg.clone());
+    fn test_threshold(
+        _raw: RawSnapshot,
+        _stake_threshold: u64,
+        _additional_reg: VotingRegistration,
+    ) {
+        let mut add = _raw.clone();
+        add.0.push(_additional_reg.clone());
         assert_eq!(
             Snapshot::from_raw_snapshot(
-                raw,
-                stake_threshold.into(),
+                _raw,
+                _stake_threshold.into(),
                 Fraction::from(1u64),
                 &DummyAssigner
             )
             .unwrap()
                 == Snapshot::from_raw_snapshot(
                     add,
-                    stake_threshold.into(),
+                    _stake_threshold.into(),
                     Fraction::from(1u64),
                     &DummyAssigner
                 )
                 .unwrap(),
-            additional_reg.voting_power < stake_threshold.into()
+            _additional_reg.voting_power < _stake_threshold.into()
         );
     }
 
@@ -268,11 +306,10 @@ pub mod tests {
     }
 
     // Test all voting power is distributed among delegated keys
-    #[cfg(test)]
     #[proptest]
-    fn test_voting_power_all_distributed(reg: VotingRegistration) {
+    fn test_voting_power_all_distributed(_reg: VotingRegistration) {
         let snapshot = Snapshot::from_raw_snapshot(
-            vec![reg.clone()].into(),
+            vec![_reg.clone()].into(),
             0.into(),
             Fraction::from(1),
             &|_vk: &Identifier| String::new(),
@@ -283,16 +320,15 @@ pub mod tests {
             .into_iter()
             .map(|hir| u64::from(hir.voting_power))
             .sum::<u64>();
-        assert_eq!(total_stake, u64::from(reg.voting_power))
+        assert_eq!(total_stake, u64::from(_reg.voting_power))
     }
 
-    #[cfg(test)]
     #[proptest]
-    fn test_non_catalyst_regs_are_ignored(mut reg: VotingRegistration) {
-        reg.voting_purpose = 1;
+    fn test_non_catalyst_regs_are_ignored(mut _reg: VotingRegistration) {
+        _reg.voting_purpose = 1;
         assert_eq!(
             Snapshot::from_raw_snapshot(
-                vec![reg].into(),
+                vec![_reg].into(),
                 0.into(),
                 Fraction::from(1u64),
                 &DummyAssigner
@@ -308,7 +344,6 @@ pub mod tests {
         )
     }
 
-    #[cfg(test)]
     #[test]
     fn test_distribution() {
         let mut raw_snapshot = Vec::new();
@@ -351,9 +386,8 @@ pub mod tests {
         assert_eq!(vp_2 - vp_1, n / 2); // last key get the remainder during distribution
     }
 
-    #[cfg(test)]
     #[test]
-    fn test_parsing() {
+    fn test_raw_snapshot_parsing() {
         let raw: RawSnapshot = serde_json::from_str(
             r#"[
             {
@@ -390,5 +424,26 @@ pub mod tests {
             .value,
             44422342528
         );
+    }
+
+    #[test]
+    fn test_drep_info_parsing() {
+        let dreps: Dreps = serde_json::from_str(r#"
+                ["0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee", "0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663", "0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663"] 
+            "#).unwrap();
+
+        assert_eq!(dreps.0.len(), 2);
+        assert!(dreps.0.contains(
+            &Identifier::from_hex(
+                "00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee",
+            )
+            .unwrap()
+        ));
+        assert!(dreps.0.contains(
+            &Identifier::from_hex(
+                "a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663",
+            )
+            .unwrap()
+        ));
     }
 }

@@ -1,8 +1,0 @@
-logs:
-  output: stderr
-  level:  info
-  format: plain
-
-node: http://127.0.0.1:9081
-
-binding_address: 127.0.0.1:3100

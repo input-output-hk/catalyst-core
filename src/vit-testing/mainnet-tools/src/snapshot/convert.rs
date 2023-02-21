@@ -70,6 +70,7 @@ impl OutputsExtension for Vec<SnapshotEntry> {
                 voting_power_cap: parameters.voting_power_cap,
                 direct_voters_group: parameters.direct_voters_group.clone(),
                 representatives_group: parameters.representatives_group,
+                dreps: parameters.dreps,
             },
         })
     }

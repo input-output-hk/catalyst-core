@@ -24,7 +24,7 @@ pub use routes::{filter, update_filter};
 use serde::{Deserialize, Serialize};
 use snapshot_lib::{
     voting_group::{RepsVotersAssigner, DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP},
-    Fraction, RawSnapshot, Snapshot, SnapshotInfo,
+    Dreps, Fraction, RawSnapshot, Snapshot, SnapshotInfo,
 };
 
 pub type Tag = String;
@@ -161,12 +161,13 @@ pub async fn update_from_raw_snapshot(
     voting_power_cap: Fraction,
     direct_voters_group: Option<String>,
     representatives_group: Option<String>,
+    dreps: Dreps,
     context: SharedContext,
 ) -> Result<(), HandleError> {
     let direct_voter = direct_voters_group.unwrap_or_else(|| DEFAULT_DIRECT_VOTER_GROUP.into());
     let representative =
         representatives_group.unwrap_or_else(|| DEFAULT_REPRESENTATIVE_GROUP.into());
-    let assigner = RepsVotersAssigner::new(direct_voter, representative);
+    let assigner = RepsVotersAssigner::new(direct_voter, representative, dreps);
     let snapshot =
         Snapshot::from_raw_snapshot(snapshot, min_stake_threshold, voting_power_cap, &assigner)
             .map_err(|e| HandleError::InternalError(e.to_string()))?
@@ -852,6 +853,7 @@ mod test {
             voting_power_cap: 100.into(),
             direct_voters_group: None,
             representatives_group: None,
+            dreps: Dreps::default(),
         })
         .unwrap();
 
@@ -886,6 +888,7 @@ mod test {
             voting_power_cap: 100.into(),
             direct_voters_group: None,
             representatives_group: None,
+            dreps: Dreps::default(),
         })
         .unwrap();
 

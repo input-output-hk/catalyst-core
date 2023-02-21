@@ -32,7 +32,7 @@ impl From<Vec<VotingRegistration>> for RawSnapshot {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct Dreps(
     #[serde(
         serialize_with = "serialize_identifiers",
@@ -40,6 +40,12 @@ pub struct Dreps(
     )]
     HashSet<Identifier>,
 );
+
+impl From<HashSet<Identifier>> for Dreps {
+    fn from(val: HashSet<Identifier>) -> Self {
+        Self(val)
+    }
+}
 
 fn serialize_identifiers<S: Serializer>(
     identifiers: &HashSet<Identifier>,

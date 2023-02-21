@@ -9,12 +9,11 @@ pub trait RepsVoterAssignerSource {
 
 impl RepsVoterAssignerSource for HashSet<Identifier> {
     fn into_reps_voter_assigner(self) -> RepsVotersAssigner {
-        RepsVotersAssigner::new_from_repsdb(
+        RepsVotersAssigner::new(
             DIRECT_VOTING_GROUP.to_string(),
             REP_VOTING_GROUP.to_string(),
-            self,
+            self.into(),
         )
-        .unwrap()
     }
 }
 

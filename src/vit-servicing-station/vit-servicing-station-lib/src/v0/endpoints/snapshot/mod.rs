@@ -238,6 +238,8 @@ pub async fn update_from_snapshot_info(
 
 #[cfg(test)]
 mod test {
+    use std::collections::HashSet;
+
     use super::*;
     use crate::db::migrations::initialize_db_with_migration;
     use crate::v0::context::test::new_db_test_shared_context;
@@ -853,7 +855,10 @@ mod test {
             voting_power_cap: 100.into(),
             direct_voters_group: None,
             representatives_group: None,
-            dreps: Dreps::default(),
+            dreps: (vec![Identifier::from_hex(key).unwrap()]
+                .into_iter()
+                .collect::<HashSet<Identifier>>())
+            .into(),
         })
         .unwrap();
 
@@ -924,7 +929,7 @@ mod test {
 
         assert_eq!(
             get_voters_info("tag_a", key, &filter).await.unwrap(),
-            vec![(3u64, 2u64, 3u64, "direct".to_string())]
+            vec![(3u64, 2u64, 3u64, "drep".to_string())]
         );
 
         assert_eq!(

@@ -1,6 +1,10 @@
 import click
 import uvicorn
+from opentelemetry import trace
 from . import api, node
+
+# Acquire a tracer
+tracer = trace.get_tracer("voting_node")
 
 
 @click.group()

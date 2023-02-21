@@ -9,7 +9,7 @@ from .config import JormConfig
 
 class VotingNode(uvicorn.Server):
     def __init__(
-        self, api_config: uvicorn.Config, jorm_config: JormConfig, database_url: str
+        self, api_config: uvicorn.Config, jorm_config: JormConfig, database_url: str, tracer
     ):
         # initialize uvicorn
         uvicorn.Server.__init__(self, api_config)
@@ -22,6 +22,8 @@ class VotingNode(uvicorn.Server):
         self.jorm_config = jorm_config
         # url for database connection
         self.db_url = database_url
+        # tracer
+        self.tracer = tracer
 
     # Use this to run your voting node
     def start(self, sockets: Optional[List[socket.socket]] = None):

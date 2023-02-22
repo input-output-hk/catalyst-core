@@ -45,5 +45,4 @@ class JCli(object):
             raise Exception("failed to generate secret")
         # read the output
         key = stdout.decode().rstrip()
-        print(f"new secret: {key}")
         return key

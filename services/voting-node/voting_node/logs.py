@@ -1,7 +1,8 @@
 import logging
 
 
-def getLogger(log_level):
+def configLogger(log_level: str):
+    """Configures logging for the voting node."""
     logger = logging.getLogger("voting-node")
     logger.setLevel(getattr(logging, log_level.upper()))
     ch = logging.StreamHandler()
@@ -11,4 +12,7 @@ def getLogger(log_level):
     )
     ch.setFormatter(formatter)
     logger.addHandler(ch)
-    return logger
+
+
+def getLogger() -> logging.Logger:
+    return logging.getLogger("voting-node")

@@ -5,7 +5,10 @@ import socket
 from pathlib import Path
 from typing import Dict, Final, Literal
 
-from . import jcli
+from . import jcli, logs
+
+# gets voting node logger
+logger = logs.getLogger()
 
 
 async def get_network_secret(secret_file: Path, jcli_path: str) -> str:
@@ -15,7 +18,7 @@ async def get_network_secret(secret_file: Path, jcli_path: str) -> str:
     if secret_file.exists():
         # open and read it
         secret = secret_file.open("r").readline()
-        print(f"found key: {secret} stored in {secret_file.absolute()}")
+        logger.debug(f"found key: {secret} stored in {secret_file.absolute()}")
         # return the key and the path to the file
         return secret
     else:
@@ -51,22 +54,22 @@ async def fetch_leader0_node_info(conn) -> Dict:
     return dict(result)
 
 
-async def insert_leader0_node_info(conn, jcli_path: str) -> Dict:
-    print(f"jcli: {jcli_path}")
+async def insert_leader0_node_info(conn, jcli_path: str):
+    logger.debug(f"jcli: {jcli_path}")
     jcli_exec = jcli.JCli(jcli_path)
     hostname = get_hostname()
-    print(f"hostname: {hostname}")
+    logger.debug(f"hostname: {hostname}")
     seckey = await jcli_exec.seckey("ed25519")
-    print(f"seckey: {seckey}")
+    logger.debug(f"seckey: {seckey}")
     pubkey = await jcli_exec.pubkey(seckey)
-    print(f"pubkey: {pubkey}")
+    logger.debug(f"pubkey: {pubkey}")
     netkey = await jcli_exec.seckey("ed25519")
-    print(f"netkey: {netkey}")
+    logger.debug(f"netkey: {netkey}")
     # this secret is not used, apparently, just to be safe
     consensus_secret = await jcli_exec.seckey("ed25519-extended")
     # the consensus_id is the public key
     consensus_id = await jcli_exec.pubkey(consensus_secret)
-    print(f"consensus_id: {consensus_id}")
+    logger.debug(f"consensus_id: {consensus_id}")
     # just to be safe, we store the pub and sec parts of the consensus_id
     extra = json.dumps(
         {"consensus_id": consensus_id, "consensus_secret": consensus_secret}
@@ -74,11 +77,14 @@ async def insert_leader0_node_info(conn, jcli_path: str) -> Dict:
     fields = "hostname, pubkey, seckey, netkey, extra"
     values = "$1, $2, $3, $4, $5"
     query = f"INSERT INTO voting_nodes({fields}) VALUES({values}) RETURNING *"
-    result = await conn.execute(query, hostname, seckey, pubkey, netkey, extra)
-    if result is None:
-        raise Exception("failed to insert leader0 node into from db")
-    print(f"insert result: {result}")
-    return dict(result)
+    try:
+        result = await conn.execute(query, hostname, seckey, pubkey, netkey, extra)
+        if result is None:
+            raise Exception("failed to insert leader0 node into from db")
+        logger.debug(f"insert result: {result}")
+    except Exception as e:
+        logger.error(f"leadership went wrong: {e}")
+        raise e
 
 
 def get_hostname() -> str:

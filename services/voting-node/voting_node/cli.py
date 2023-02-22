@@ -1,10 +1,9 @@
 import click
 import uvicorn
-from opentelemetry import trace
-from . import api, node
 
-# Acquire a tracer
-tracer = trace.get_tracer("voting_node")
+from . import api, node
+from .logs import configLogger
+
 
 
 @click.group()
@@ -68,6 +67,8 @@ def start(host, port, database_url, node_storage, log_level, jorm_path, jcli_pat
     click.echo(f"log-level={log_level}")
     click.echo(f"jorm-path={jorm_path}")
     click.echo(f"jcli-path={jcli_path}")
+
+    configLogger(log_level)
 
     api_config = uvicorn.Config(api.app, host=host, port=port, log_level=log_level)
     jorm_config = node.JormConfig(jorm_path, jcli_path, node_storage)

@@ -1,10 +1,11 @@
 import asyncpg
+import yaml
 
 from pathlib import Path
+from typing import NoReturn
 
 from . import logs, utils
 from .config import JormConfig
-from .jcli import JCli
 
 
 # gets voting node logger
@@ -20,7 +21,9 @@ class TaskList(object):
     tasks: list[str] = []
     current_task: str | None = None
 
-    def reset_schedule(self):
+    def reset_schedule(self) -> NoReturn:
+        """Reset the schedule by setting the current task to None, and raising
+        an exception. This method never returns."""
         self.current_task = None
         raise Exception("schedule was reset")
 
@@ -39,8 +42,10 @@ class TaskList(object):
 
         for task in tasks:
             try:
+                logger.info(f"running '{task}'")
                 await self.run_task(task)
             except Exception as e:
+                logger.warning(f"'{task}' failed")
                 raise e
         logger.info("SCHEDULE STOP")
 
@@ -66,15 +71,15 @@ class Leader0Schedule(TaskList):
             "bootstrap_db",
             "bootstrap_host",
             "set_upcoming_election",
-            "load_node_secrets",
-            "load_node_config",
-            "gather_voteplan_proposal",
-            "generate_block0",
-            "generate_voteplan",
-            "wait_for_voting",
-            "voting",
-            "tally",
-            "cleanup",
+            "set_node_secrets",
+            # "set_node_config",
+            # "gather_voteplan_proposal",
+            # "generate_block0",
+            # "generate_voteplan",
+            # "wait_for_voting",
+            # "voting",
+            # "tally",
+            # "cleanup",
         ]
 
     async def bootstrap_storage(self):
@@ -92,17 +97,15 @@ class Leader0Schedule(TaskList):
         # gets host information
         try:
             result = await utils.fetch_leader0_node_info(self.conn)
-            logger.debug(f"leader0 node info retrieved from db")
+            logger.debug("leader0 node info retrieved from db")
             self.node_info = result
         except Exception as e:
             logger.warning(f"leader0 node info was not fetched: {e}")
             # we add the row
             #  - by adding the keys
-            await utils.insert_leader0_node_info(
-                self.conn, self.jorm_config.jcli_path
-            )
+            await utils.insert_leader0_node_info(self.conn, self.jorm_config.jcli_path)
             # if all is good, we save and reset the schedule
-            logger.debug(f"inserted leader0 node info, resetting the schedule")
+            logger.debug("inserted leader0 node info, resetting the schedule")
             self.reset_schedule()
 
     async def set_upcoming_election(self):
@@ -110,41 +113,25 @@ class Leader0Schedule(TaskList):
         # `voting_start`. We query the DB to get the row, and store it.
         try:
             row = await utils.fetch_election(self.conn)
-            logger.debug(f"current election retrieved from db")
+            logger.debug("current election retrieved from db")
             self.election = row
         except Exception as e:
             raise Exception(f"failed to fetch election from db: {e}")
 
-    async def load_node_secrets(self):
-        # Loads keys from storage
+    async def set_node_secrets(self):
         # node network secret key
-        node_topology_key = Path(self.jorm_config.storage, "node_topology_key")
-        await utils.get_network_secret(node_topology_key, self.jorm_config.jcli_path)
+        node_topology_key_file = Path(self.jorm_config.storage, "node_topology_key")
+        netkey = self.node_info["netkey"]
+        node_topology_key_file.open("w").write(netkey)
 
         # node secret file
         node_secret_file = Path(self.jorm_config.storage, "node_secret.yaml")
-        if node_secret_file.exists():
-            # TODO: need to parse file and extract secret"
-            key = node_secret_file.open("r").readline()
-            logger.debug(f"node secret stored in {node_secret_file.absolute()}")
-            self.secret_key = key
-            self.secret_key_file = node_secret_file
-        else:
-            try:
-                # run jcli to generate the secret key
-                jcli_exec = JCli(self.jorm_config.jcli_path)
-                secret = await jcli_exec.seckey("ed25519")
-                # write the key to the file in yaml format
-                node_secret_file.open("w").write(secret)
-                # TODO: need to parse file and extract secret"
-                # save the key and the path to the file
-                self.secret_key = secret
-                self.secret_key_file = node_secret_file
-            except Exception as e:
-                raise e
+        node_secret = { "bft": { "signing_key": self.node_info["seckey"] } }
+        node_secret_yaml = yaml.dump(node_secret)
+        node_secret_file.open("w").write(node_secret_yaml)
 
-    async def load_node_config(self):
-        self.reset_schedule()
+    async def set_node_config(self):
+        pass
 
     async def gather_voteplan_proposal(self):
         pass

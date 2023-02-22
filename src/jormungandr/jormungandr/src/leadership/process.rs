@@ -148,11 +148,16 @@ impl Module {
 
     fn epoch_instant(&self, epoch: Epoch) -> Result<Instant, LeadershipError> {
         let epoch_time = self.epoch_time(epoch)?;
-
-        match epoch_time.as_ref().duration_since(SystemTime::now().into()) {
+        let current = SystemTime::now();
+        match epoch_time.as_ref().duration_since(current.into()) {
             Err(_) => {
                 // only possible if `epoch_time` is earlier than now. I.e. if the next
                 // epoch is in the past.
+                tracing::debug!(
+                    "epoch time is earlier than now, epoch time: {0}, current: {1}",
+                    epoch_time,
+                    current
+                );
                 Ok(Instant::now())
             }
             Ok(duration) => Ok(Instant::now() + duration),

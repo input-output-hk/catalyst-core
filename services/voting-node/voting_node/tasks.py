@@ -12,9 +12,8 @@ from .config import JormConfig
 logger = logs.getLogger()
 
 
-# task lists are the things that schedules go through
-class TaskList(object):
-    """A list of task names with corresponding method names that are executed
+class TaskSchedule(object):
+    """A schedule of task names with corresponding method names that are executed
     sequentially. If the current task raises an exception, running the task list
     again will resume from it."""
 
@@ -51,17 +50,14 @@ class TaskList(object):
 
     # runs tasks that are meant to be implemented by deriving classes
     async def run_task(self, task_name):
-        try:
-            self.current_task = task_name
-            logger.debug(f"|'{self.__class__.__name__}:{task_name}' is starting")
-            task_exec = getattr(self, task_name)
-            await task_exec()
-            logger.debug(f"|'{task_name}' finished")
-        except Exception as e:
-            raise e
+        self.current_task = task_name
+        logger.debug(f"|'{self.__class__.__name__}:{task_name}' is starting")
+        task_exec = getattr(self, task_name)
+        await task_exec()
+        logger.debug(f"|'{task_name}' finished")
 
 
-class Leader0Schedule(TaskList):
+class Leader0Schedule(TaskSchedule):
     def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
         self.db_url = db_url
         self.jorm_config = jorm_config
@@ -72,14 +68,14 @@ class Leader0Schedule(TaskList):
             "bootstrap_host",
             "set_upcoming_election",
             "set_node_secrets",
-            # "set_node_config",
-            # "gather_voteplan_proposal",
-            # "generate_block0",
-            # "generate_voteplan",
-            # "wait_for_voting",
-            # "voting",
-            # "tally",
-            # "cleanup",
+            "set_node_config",
+            "gather_voteplan_proposal",
+            "generate_block0",
+            "generate_voteplan",
+            "wait_for_voting",
+            "voting",
+            "tally",
+            "cleanup",
         ]
 
     async def bootstrap_storage(self):
@@ -119,19 +115,21 @@ class Leader0Schedule(TaskList):
             raise Exception(f"failed to fetch election from db: {e}")
 
     async def set_node_secrets(self):
-        # node network secret key
+        # node network topology key
         node_topology_key_file = Path(self.jorm_config.storage, "node_topology_key")
         netkey = self.node_info["netkey"]
         node_topology_key_file.open("w").write(netkey)
 
-        # node secret file
+        # node secret
         node_secret_file = Path(self.jorm_config.storage, "node_secret.yaml")
-        node_secret = { "bft": { "signing_key": self.node_info["seckey"] } }
+        node_secret = {"bft": {"signing_key": self.node_info["seckey"]}}
         node_secret_yaml = yaml.dump(node_secret)
         node_secret_file.open("w").write(node_secret_yaml)
 
     async def set_node_config(self):
-        pass
+        # node config
+        Path(self.jorm_config.storage, "node_config.yaml")
+        raise Exception("TODO")
 
     async def gather_voteplan_proposal(self):
         pass
@@ -157,7 +155,7 @@ class Leader0Schedule(TaskList):
             await self.conn.close()
 
 
-class LeaderSchedule(TaskList):
+class LeaderSchedule(TaskSchedule):
     def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
         self.db_url = db_url
         self.jorm_config = jorm_config
@@ -168,7 +166,7 @@ class LeaderSchedule(TaskList):
         pass
 
 
-class FollowerSchedule(TaskList):
+class FollowerSchedule(TaskSchedule):
     def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
         self.db_url = db_url
         self.jorm_config = jorm_config

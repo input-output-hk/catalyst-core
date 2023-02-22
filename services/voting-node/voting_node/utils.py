@@ -56,21 +56,20 @@ async def fetch_leader0_node_info(conn) -> Dict:
 
 
 async def insert_leader0_node_info(conn, jcli_path: str):
-    logger.debug(f"jcli: {jcli_path}")
     jcli_exec = jcli.JCli(jcli_path)
     hostname = get_hostname()
-    logger.debug(f"hostname: {hostname}")
+    logger.debug(f"generating {hostname} node info with jcli: {jcli_path}")
     seckey = await jcli_exec.seckey("ed25519")
-    logger.debug(f"seckey: {seckey}")
+    logger.debug("seckey generated")
     pubkey = await jcli_exec.pubkey(seckey)
-    logger.debug(f"pubkey: {pubkey}")
+    logger.debug("pubkey generated")
     netkey = await jcli_exec.seckey("ed25519")
-    logger.debug(f"netkey: {netkey}")
+    logger.debug("netkey generated")
     # this secret is not used, apparently, just to be safe
     consensus_secret = await jcli_exec.seckey("ed25519-extended")
     # the consensus_id is the public key
     consensus_id = await jcli_exec.pubkey(consensus_secret)
-    logger.debug(f"consensus_id: {consensus_id}")
+    logger.debug("consensus_id generated")
     # just to be safe, we store the pub and sec parts of the consensus_id
     extra = json.dumps(
         {"consensus_id": consensus_id, "consensus_secret": consensus_secret}
@@ -82,7 +81,7 @@ async def insert_leader0_node_info(conn, jcli_path: str):
         result = await conn.execute(query, hostname, seckey, pubkey, netkey, extra)
         if result is None:
             raise Exception("failed to insert leader0 node into from db")
-        logger.debug(f"insert result: {result}")
+        logger.debug(f"{hostname} info added: {result}")
     except Exception as e:
         logger.error(f"leadership went wrong: {e}")
         raise e

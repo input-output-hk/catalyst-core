@@ -11,6 +11,7 @@ dependencies = [
     "opentelemetry-distro[otlp]",
     "opentelemetry-instrumentation",
     "opentelemetry-instrumentation-fastapi",
+    "opentelemetry-instrumentation-asyncpg",
     "prometheus-fastapi-instrumentator",
     "uvicorn[standard]",
 ]

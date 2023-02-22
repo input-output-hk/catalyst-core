@@ -33,17 +33,17 @@ impl From<Vec<VotingRegistration>> for RawSnapshot {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
-pub struct Dreps(
+pub struct Dreps {
     #[serde(
         serialize_with = "serialize_identifiers",
         deserialize_with = "deserialize_identifiers"
     )]
-    HashSet<Identifier>,
-);
+    reps: HashSet<Identifier>,
+}
 
 impl From<HashSet<Identifier>> for Dreps {
-    fn from(val: HashSet<Identifier>) -> Self {
-        Self(val)
+    fn from(reps: HashSet<Identifier>) -> Self {
+        Self { reps }
     }
 }
 
@@ -52,7 +52,7 @@ fn serialize_identifiers<S: Serializer>(
     serializer: S,
 ) -> Result<S::Ok, S::Error> {
     let identifiers: Vec<_> = identifiers
-        .into_iter()
+        .iter()
         .map(|id| IdentifierDef(id.clone()))
         .collect();
     identifiers.serialize(serializer)
@@ -434,18 +434,18 @@ pub mod tests {
 
     #[test]
     fn test_drep_info_parsing() {
-        let dreps: Dreps = serde_json::from_str(r#"
-                ["0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee", "0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663", "0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663"] 
-            "#).unwrap();
+        let dreps: Dreps = serde_json::from_str(r#"{
+            "reps": ["0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee", "0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663", "0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663"] 
+        }"#).unwrap();
 
-        assert_eq!(dreps.0.len(), 2);
-        assert!(dreps.0.contains(
+        assert_eq!(dreps.reps.len(), 2);
+        assert!(dreps.reps.contains(
             &Identifier::from_hex(
                 "00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee",
             )
             .unwrap()
         ));
-        assert!(dreps.0.contains(
+        assert!(dreps.reps.contains(
             &Identifier::from_hex(
                 "a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663",
             )

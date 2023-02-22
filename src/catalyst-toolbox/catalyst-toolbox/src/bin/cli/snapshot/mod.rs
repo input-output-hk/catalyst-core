@@ -2,11 +2,11 @@ use clap::Parser;
 use color_eyre::Report;
 use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 use jormungandr_lib::interfaces::Value;
-use snapshot_lib::Fraction;
 use snapshot_lib::{
     voting_group::{RepsVotersAssigner, DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP},
     RawSnapshot, Snapshot,
 };
+use snapshot_lib::{Dreps, Fraction};
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
@@ -19,6 +19,9 @@ pub struct SnapshotCmd {
     /// Path to the file containing all CIP-15 compatible registrations in json format.
     #[clap(short, long, value_parser = PathBuf::from_str)]
     snapshot: PathBuf,
+    /// Path to the file containing all dreps information in json format.
+    #[clap(short, long, value_parser = PathBuf::from_str)]
+    dreps: PathBuf,
     /// Registrations voting power threshold for eligibility
     #[clap(short, long)]
     min_stake_threshold: Value,
@@ -47,13 +50,14 @@ pub struct SnapshotCmd {
 impl SnapshotCmd {
     pub fn exec(self) -> Result<(), Report> {
         let raw_snapshot: RawSnapshot = serde_json::from_reader(File::open(&self.snapshot)?)?;
+        let dreps: Dreps = serde_json::from_reader(File::open(&self.dreps)?)?;
         let direct_voter = self
             .direct_voters_group
             .unwrap_or_else(|| DEFAULT_DIRECT_VOTER_GROUP.into());
         let representative = self
             .representatives_group
             .unwrap_or_else(|| DEFAULT_REPRESENTATIVE_GROUP.into());
-        let assigner = RepsVotersAssigner::new(direct_voter, representative, Default::default());
+        let assigner = RepsVotersAssigner::new(direct_voter, representative, dreps);
         let initials = Snapshot::from_raw_snapshot(
             raw_snapshot,
             self.min_stake_threshold,

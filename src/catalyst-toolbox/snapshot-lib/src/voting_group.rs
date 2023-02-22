@@ -20,7 +20,7 @@ impl RepsVotersAssigner {
         Self {
             direct_voters,
             reps,
-            dreps: dreps.0,
+            dreps: dreps.reps,
         }
     }
 }

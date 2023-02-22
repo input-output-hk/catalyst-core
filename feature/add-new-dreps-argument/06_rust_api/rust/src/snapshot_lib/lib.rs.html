@@ -488,17 +488,17 @@
 }
 
 <span class="attribute">#[derive(Serialize, Deserialize, Clone, Debug, Default)]
-</span><span class="kw">pub struct </span>Dreps(
+</span><span class="kw">pub struct </span>Dreps {
     <span class="attribute">#[serde(
         serialize_with = <span class="string">&quot;serialize_identifiers&quot;</span>,
         deserialize_with = <span class="string">&quot;deserialize_identifiers&quot;
     </span>)]
-    </span>HashSet&lt;Identifier&gt;,
-);
+    </span>reps: HashSet&lt;Identifier&gt;,
+}
 
 <span class="kw">impl </span>From&lt;HashSet&lt;Identifier&gt;&gt; <span class="kw">for </span>Dreps {
-    <span class="kw">fn </span>from(val: HashSet&lt;Identifier&gt;) -&gt; <span class="self">Self </span>{
-        <span class="self">Self</span>(val)
+    <span class="kw">fn </span>from(reps: HashSet&lt;Identifier&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ reps }
     }
 }
 
@@ -507,7 +507,7 @@
     serializer: S,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt; {
     <span class="kw">let </span>identifiers: Vec&lt;<span class="kw">_</span>&gt; = identifiers
-        .into_iter()
+        .iter()
         .map(|id| IdentifierDef(id.clone()))
         .collect();
     identifiers.serialize(serializer)
@@ -889,18 +889,18 @@
 
     <span class="attribute">#[test]
     </span><span class="kw">fn </span>test_drep_info_parsing() {
-        <span class="kw">let </span>dreps: Dreps = serde_json::from_str(<span class="string">r#&quot;
-                [&quot;0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee&quot;, &quot;0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663&quot;, &quot;0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663&quot;] 
-            &quot;#</span>).unwrap();
+        <span class="kw">let </span>dreps: Dreps = serde_json::from_str(<span class="string">r#&quot;{
+            &quot;reps&quot;: [&quot;0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee&quot;, &quot;0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663&quot;, &quot;0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663&quot;] 
+        }&quot;#</span>).unwrap();
 
-        <span class="macro">assert_eq!</span>(dreps.<span class="number">0</span>.len(), <span class="number">2</span>);
-        <span class="macro">assert!</span>(dreps.<span class="number">0</span>.contains(
+        <span class="macro">assert_eq!</span>(dreps.reps.len(), <span class="number">2</span>);
+        <span class="macro">assert!</span>(dreps.reps.contains(
             <span class="kw-2">&amp;</span>Identifier::from_hex(
                 <span class="string">&quot;00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee&quot;</span>,
             )
             .unwrap()
         ));
-        <span class="macro">assert!</span>(dreps.<span class="number">0</span>.contains(
+        <span class="macro">assert!</span>(dreps.reps.contains(
             <span class="kw-2">&amp;</span>Identifier::from_hex(
                 <span class="string">&quot;a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663&quot;</span>,
             )

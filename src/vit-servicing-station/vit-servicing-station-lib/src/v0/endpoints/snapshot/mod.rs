@@ -929,7 +929,7 @@ mod test {
 
         assert_eq!(
             get_voters_info("tag_a", key, &filter).await.unwrap(),
-            vec![(3u64, 2u64, 3u64, "drep".to_string())]
+            vec![(3u64, 2u64, 3u64, "rep".to_string())]
         );
 
         assert_eq!(

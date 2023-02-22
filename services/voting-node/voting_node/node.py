@@ -7,14 +7,19 @@ from . import logs, tasks, utils
 from .config import JormConfig
 
 
+# gets voting node logger
+logger = logs.getLogger()
+
+
 class VotingNode(uvicorn.Server):
     def __init__(
-        self, api_config: uvicorn.Config, jorm_config: JormConfig, database_url: str, tracer
+        self,
+        api_config: uvicorn.Config,
+        jorm_config: JormConfig,
+        database_url: str,
     ):
         # initialize uvicorn
         uvicorn.Server.__init__(self, api_config)
-        # get logger, this goes away with opentelemetry
-        self.logger = logs.getLogger(api_config.log_level)
         # flag that tells the voting node to whether to continue
         # running the task schedule
         self.keep_running = True
@@ -22,8 +27,6 @@ class VotingNode(uvicorn.Server):
         self.jorm_config = jorm_config
         # url for database connection
         self.db_url = database_url
-        # tracer
-        self.tracer = tracer
 
     # Use this to run your voting node
     def start(self, sockets: Optional[List[socket.socket]] = None):
@@ -46,6 +49,8 @@ class VotingNode(uvicorn.Server):
             self.start_api(sockets=sockets)
         )
 
+        # wait for the stdout from uvicorn before our logs start to roll
+        await asyncio.sleep(0.5)
         # checks if `stop_schedule` has been called
         while self.is_running_schedule():
             try:
@@ -57,17 +62,18 @@ class VotingNode(uvicorn.Server):
                 await schedule.run()
                 break
             except Exception as e:
-                print(f"schedule failed: {e}")
+                logger.warning(f"schedule failed: {e}")
             # waits before retrying
             await asyncio.sleep(SLEEP_TO_SCHEDULE_RETRY)
 
         # await the api task until last
         await api_task
+
         print("Bye bye!")
 
     async def start_api(self, sockets: Optional[List[socket.socket]] = None):
         """Starts API server for the Voting Node."""
-        print("starting api")
+        logger.info("starting api")
         # runs 'serve' method from uvicorn.Server
         await self.serve(sockets=sockets)
         # stops trying to launch jormungandr after API service is finished
@@ -102,11 +108,11 @@ class VotingNode(uvicorn.Server):
         while self.is_running_schedule():
             jorm_task = asyncio.create_task(self.start_jormungandr())
             try:
-                self.logger.debug("jorm task starting")
+                logger.debug("jorm task starting")
                 await jorm_task
-                self.logger.debug("jorm task is finished")
+                logger.debug("jorm task is finished")
             except Exception as e:
-                self.logger.debug(f"jorm failed to start: {e}")
+                logger.debug(f"jorm failed to start: {e}")
             await asyncio.sleep(1)
 
     def jormungandr_exec(self) -> str:
@@ -125,14 +131,14 @@ class VotingNode(uvicorn.Server):
             stdout, stderr = await proc.communicate()
 
             if stdout:
-                self.logger.info(f"[stdout]\n{stdout.decode()}")
+                logger.info(f"[stdout]\n{stdout.decode()}")
             if stderr:
-                self.logger.warning(f"[stderr]\n{stderr.decode()}")
+                logger.warning(f"[stderr]\n{stderr.decode()}")
 
             if proc.returncode != 0:
                 raise Exception(
                     f"jormungandr exited with non-zero status: {proc.returncode}"
                 )
         except Exception as e:
-            self.logger.warning(f"jorm node error: {e}")
+            logger.warning(f"jorm node error: {e}")
             raise e

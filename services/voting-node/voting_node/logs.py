@@ -7,9 +7,7 @@ def configLogger(log_level: str):
     logger.setLevel(getattr(logging, log_level.upper()))
     ch = logging.StreamHandler()
     ch.setLevel(getattr(logging, log_level.upper()))
-    formatter = logging.Formatter(
-        "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
-    )
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 

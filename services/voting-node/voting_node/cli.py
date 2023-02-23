@@ -1,8 +1,7 @@
 import click
 import uvicorn
 
-from . import api, node
-from .logs import configLogger
+from . import api, logs, node
 
 
 
@@ -57,21 +56,58 @@ def cli(debug, hot_reload):
     envvar="JORM_PATH",
     default="jormungandr",
 )
+@click.option(
+    "--jorm-rest-port",
+    envvar="JORM_REST_PORT",
+    default=10080,
+)
+@click.option(
+    "--jorm-jrpc-port",
+    envvar="JORM_JRPC_PORT",
+    default=10085,
+)
+@click.option(
+    "--jorm-p2p-port",
+    envvar="JORM_P2P_PORT",
+    default=10090,
+)
 @click.option("--jcli-path", envvar="JCLI_PATH", default="~/.cargo/bin/jcli")
-def start(host, port, database_url, node_storage, log_level, jorm_path, jcli_path):
-    click.echo("Starting...")
-    click.echo(f"host={host}")
-    click.echo(f"port={port}")
-    click.echo(f"database-url={database_url}")
-    click.echo(f"node-storage={node_storage}")
-    click.echo(f"log-level={log_level}")
-    click.echo(f"jorm-path={jorm_path}")
-    click.echo(f"jcli-path={jcli_path}")
+def start(
+    host,
+    port,
+    database_url,
+    node_storage,
+    log_level,
+    jorm_path,
+    jcli_path,
+    jorm_rest_port,
+    jorm_jrpc_port,
+    jorm_p2p_port,
+):
+    logs.configLogger(log_level)
 
-    configLogger(log_level)
+    logger = logs.getLogger()
+    logger.debug("Executing: voting-node start")
+    logger.info(f"host={host}")
+    logger.info(f"port={port}")
+    logger.info(f"database-url={database_url}")
+    logger.info(f"node-storage={node_storage}")
+    logger.info(f"log-level={log_level}")
+    logger.info(f"jorm-path={jorm_path}")
+    logger.info(f"jcli-path={jcli_path}")
+    logger.info(f"rest-port={jorm_rest_port}")
+    logger.info(f"jrpc-port={jorm_jrpc_port}")
+    logger.info(f"p2p-port={jorm_p2p_port}")
 
     api_config = uvicorn.Config(api.app, host=host, port=port, log_level=log_level)
-    jorm_config = node.JormConfig(jorm_path, jcli_path, node_storage)
+    jorm_config = node.JormConfig(
+        jorm_path,
+        jcli_path,
+        node_storage,
+        jorm_rest_port,
+        jorm_jrpc_port,
+        jorm_p2p_port,
+    )
 
     voting_node = node.VotingNode(api_config, jorm_config, database_url)
     voting_node.start()

@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import NoReturn
 
 from . import logs, utils
-from .config import JormConfig
+from .config import NODE_CONFIG_TEMPLATE, JormConfig
 
 
 # gets voting node logger
@@ -26,35 +26,36 @@ class TaskSchedule(object):
         self.current_task = None
         raise Exception("schedule was reset")
 
+    def is_resuming(self) -> bool:
+        return self.current_task is not None
+
     async def run(self) -> None:
         """Runs through the startup tasks. This schedule is called each time that
         a nodes starts."""
         # checks if it should resume from a current task or go through all
-        logger.info("SCHEDULE START")
-        if self.current_task is None:
-            logger.debug("no current task is set, running all tasks")
-            tasks = self.tasks[:]
-        else:
-            logger.debug(f"'{self.current_task}' is set, resuming")
+        if self.is_resuming():
             task_idx = self.tasks.index(self.current_task)
             tasks = self.tasks[task_idx:]
+            logger.info("SCHEDULE RESTART")
+        else:
+            tasks = self.tasks[:]
+            logger.info("SCHEDULE START")
 
         for task in tasks:
             try:
-                logger.info(f"running '{task}'")
+                # runs tasks that are meant to be implemented by deriving classes
                 await self.run_task(task)
             except Exception as e:
-                logger.warning(f"'{task}' failed")
-                raise e
-        logger.info("SCHEDULE STOP")
+                raise Exception(f"'{task}' error: {e}") from e
+        logger.info("SCHEDULE END")
 
-    # runs tasks that are meant to be implemented by deriving classes
     async def run_task(self, task_name):
+        logger.info(f"{task_name}")
+        logger.debug(f"|'{task_name}' start")
         self.current_task = task_name
-        logger.debug(f"|'{self.__class__.__name__}:{task_name}' is starting")
         task_exec = getattr(self, task_name)
         await task_exec()
-        logger.debug(f"|'{task_name}' finished")
+        logger.debug(f"|'{task_name}' end")
 
 
 class Leader0Schedule(TaskSchedule):
@@ -112,27 +113,45 @@ class Leader0Schedule(TaskSchedule):
             logger.debug("current election retrieved from db")
             self.election = row
         except Exception as e:
-            raise Exception(f"failed to fetch election from db: {e}")
+            raise Exception(f"failed to fetch election from db: {e}") from e
 
     async def set_node_secrets(self):
         # node network topology key
         node_topology_key_file = Path(self.jorm_config.storage, "node_topology_key")
         netkey = self.node_info["netkey"]
         node_topology_key_file.open("w").write(netkey)
+        self.node_topology_key_file = f"{node_topology_key_file}"
 
         # node secret
         node_secret_file = Path(self.jorm_config.storage, "node_secret.yaml")
         node_secret = {"bft": {"signing_key": self.node_info["seckey"]}}
         node_secret_yaml = yaml.dump(node_secret)
         node_secret_file.open("w").write(node_secret_yaml)
+        self.node_secret_file = f"{node_secret_file}"
 
     async def set_node_config(self):
         # node config
-        Path(self.jorm_config.storage, "node_config.yaml")
-        raise Exception("TODO")
+        node_config_file = Path(self.jorm_config.storage, "node_config.yaml")
+        node_config = yaml.safe_load(NODE_CONFIG_TEMPLATE)
+        host_ip = utils.get_hostname_addr()
+        logger.debug(f"host ip: {host_ip}")
+        rest_port = self.jorm_config.rest_port
+        jrpc_port = self.jorm_config.jrpc_port
+        p2p_port = self.jorm_config.p2p_port
+        node_config["storage"] = self.jorm_config.storage
+        node_config["rest"]["listen"] = f"{host_ip}:{rest_port}"
+        node_config["jrpc"]["listen"] = f"{host_ip}:{jrpc_port}"
+        node_config["p2p"]["bootstrap"]["node_key_file"] = self.node_topology_key_file
+        node_config["p2p"]["connection"][
+            "public_address"
+        ] = f"/ip4/{host_ip}/tcp/{p2p_port}"
+        node_config_yaml = yaml.dump(node_config)
+        node_config_file.open("w").write(node_config_yaml)
+        logger.debug(f"node config: {node_config_yaml}")
+        self.node_config_file = f"{node_config_file}"
 
     async def gather_voteplan_proposal(self):
-        pass
+        raise Exception("TODO")
 
     async def generate_block0(self):
         pass

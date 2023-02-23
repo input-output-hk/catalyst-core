@@ -79,6 +79,7 @@ pub fn voting_power(
     };
 
     let registrations = db.vote_registrations(min_slot, max_slot)?;
+    info!("found {} registrations", registrations.len());
 
     let (valid_registrations, validation_errors): (Vec<_>, Vec<_>) =
         registrations.into_iter().map(validate).partition_result();

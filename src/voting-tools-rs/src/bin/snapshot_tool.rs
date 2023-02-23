@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::{fs::File, io::BufWriter};
 
 use clap::Parser;
@@ -6,7 +7,8 @@ use mainnet_lib::InMemoryDbSync;
 use tracing::info;
 use voting_tools_rs::test_api::MockDbProvider;
 use voting_tools_rs::{
-    voting_power, Args, Db, DbConfig, DryRunCommand, SnapshotEntry, VotingPowerArgs,
+    voting_power, Args, Db, DbConfig, DryRunCommand, InvalidRegistration, SnapshotEntry,
+    VotingPowerArgs,
 };
 
 fn main() -> Result<()> {
@@ -41,9 +43,11 @@ fn main() -> Result<()> {
     args.network_id = network_id;
     args.expected_voting_purpose = expected_voting_purpose;
 
-    let outputs = load(db_config, dry_run, args)?;
+    let (outputs, invalids) = load(db_config, dry_run, args)?;
 
     info!("calculated {} outputs", outputs.len());
+
+    handle_invalids(&out_file, &invalids)?;
 
     let file = File::options().write(true).create(true).open(out_file)?;
     let writer = BufWriter::new(file);
@@ -60,17 +64,39 @@ fn load(
     real_db_config: DbConfig,
     dry_run: Option<DryRunCommand>,
     args: VotingPowerArgs,
-) -> Result<Vec<SnapshotEntry>> {
-    let (result, _) = match dry_run {
+) -> Result<(Vec<SnapshotEntry>, Vec<InvalidRegistration>)> {
+    let result = match dry_run {
         Some(DryRunCommand::DryRun { mock_json_file }) => {
+            info!("using dryrun file: {}", mock_json_file.to_string_lossy());
             let db = MockDbProvider::from(InMemoryDbSync::restore(mock_json_file)?);
             voting_power(db, args)
         }
         None => {
+            info!("using real db");
             let db = Db::connect(real_db_config)?;
             voting_power(db, args)
         }
     }?;
 
     Ok(result)
+}
+
+fn handle_invalids(path: &Path, invalids: &[InvalidRegistration]) -> Result<()> {
+    info!("handling invalids");
+    if invalids.len() == 0 {
+        return Ok(());
+    }
+
+    let path = path.join(".error");
+    tracing::warn!(
+        "found invalid registrations: writing to {}",
+        path.to_string_lossy()
+    );
+
+    let file = File::options().write(true).create(true).open(path)?;
+    let writer = BufWriter::new(file);
+
+    serde_json::to_writer_pretty(writer, invalids)?;
+
+    Ok(())
 }

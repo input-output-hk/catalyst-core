@@ -1,0 +1,5 @@
+---
+source: src/voting-tools-rs/src/db/queries/vote_registrations.rs
+expression: q.sql_string()
+---
+SELECT DISTINCT ON (("meta_table"."json" -> $1))"meta_table"."tx_id", "meta_table"."json", "sig_table"."json", "block"."slot_no" FROM ((("tx_metadata" AS "meta_table" INNER JOIN "tx" ON ("tx"."id" = "meta_table"."tx_id")) INNER JOIN "tx_metadata" AS "sig_table" ON ("sig_table"."tx_id" = "meta_table"."tx_id")) INNER JOIN "block" ON ("block"."id" = "tx"."block_id")) WHERE (((("meta_table"."key" = $2) AND ("sig_table"."key" = $3)) AND ("sig_table"."json" ?& $4)) AND (("block"."slot_no" >= $5) AND ("block"."slot_no" <= $6))) -- binds: ["2", BigDecimal("61284"), BigDecimal("61285"), ["1"], 123, 234]

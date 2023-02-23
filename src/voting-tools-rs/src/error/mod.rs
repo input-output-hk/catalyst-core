@@ -1,11 +1,14 @@
+#![allow(missing_docs)]
+
 use nonempty::NonEmpty;
+use serde::Serialize;
 use serde_json::Value;
 use thiserror::Error;
 
 use crate::data::{NetworkId, SignedRegistration, VotingPurpose};
 
 /// An error encountered during parsing and validation of a Catalyst registration
-#[derive(Debug, Error, PartialEq, Eq)]
+#[derive(Debug, Error, PartialEq, Eq, Serialize)]
 pub enum RegistrationError {
     /// The registration couldn't be parsed from json -> struct
     #[error(
@@ -58,7 +61,7 @@ pub enum RegistrationError {
 ///
 /// `registration` is an `Option` because some errors prevent us from even generating a
 /// [`SignedRegistration`] struct
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct InvalidRegistration {
     pub registration: Option<SignedRegistration>,
     pub errors: NonEmpty<RegistrationError>,

@@ -38,6 +38,7 @@ impl Db {
         let upper = upper.into_i64().ok_or_else(|| eyre!("invalid i64"))?;
         let q = query(lower, upper);
 
+        println!("EXECTING AGAINST DB");
         let rows = self.exec(move |conn| q.load(conn))?;
 
         Ok(rows.into_iter().filter_map(convert_row).collect())
@@ -100,6 +101,8 @@ fn convert_row((tx_id, metadata, signature, _slot_no): Row) -> Option<SignedRegi
 mod tests {
     use serde_json::{from_value, json};
 
+    use crate::VotingPowerSource;
+
     use super::*;
 
     fn cip15_test_vector_meta() -> serde_json::Value {
@@ -161,5 +164,18 @@ mod tests {
 
         // none
         check((1, None, None, None));
+    }
+
+    #[test]
+    fn query_snapshot() {
+        let q = query(123, 234);
+        insta::assert_snapshot!(q.sql_string());
+    }
+
+    #[test]
+    fn can_parse_voting_power_source() {
+        let value = json!([["0xcadcb2ac0935f873b3fa827b85befa24bf1c4660b55efbde056688c8ba37d2f9", 100]]);
+        // let value = json!("0xcadcb2ac0935f873b3fa827b85befa24bf1c4660b55efbde056688c8ba37d2f9");
+        let _: VotingPowerSource = from_value(value).unwrap();
     }
 }

@@ -1,10 +1,11 @@
 use core::fmt::Display;
 use core::str::FromStr;
 
+use serde::Serialize;
 use thiserror::Error;
 
 /// An identifier for a cardano network
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub enum NetworkId {
     Mainnet,
     Testnet,

@@ -5,7 +5,7 @@ use bytekind::{Bytes, HexString};
 use clap::builder::OsStr;
 use hex::FromHexError;
 use microtype::microtype;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 pub(crate) mod arbitrary;
 mod cbor;
@@ -35,7 +35,23 @@ pub enum VotingPowerSource {
     /// Delegated voting
     ///
     /// Voting power is based on the staked ada of the delegated keys
+    #[serde(serialize_with = "serialize_btree_as_vec_tuple")]
+    #[serde(deserialize_with = "deserialize_btree_as_vec_tuple")]
     Delegated(BTreeMap<VotingKeyHex, BigDecimal>),
+}
+
+fn deserialize_btree_as_vec_tuple<'de, D: Deserializer<'de>>(
+    d: D,
+) -> Result<BTreeMap<VotingKeyHex, BigDecimal>, D::Error> {
+    <Vec<(VotingKeyHex, BigDecimal)>>::deserialize(d).map(|vec| vec.into_iter().collect())
+}
+
+fn serialize_btree_as_vec_tuple<S: Serializer>(
+    map: &BTreeMap<VotingKeyHex, BigDecimal>,
+    s: S,
+) -> Result<S::Ok, S::Error> {
+    let vec: Vec<_> = map.into_iter().collect();
+    vec.serialize(s)
 }
 
 impl VotingPowerSource {

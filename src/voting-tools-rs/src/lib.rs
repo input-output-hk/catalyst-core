@@ -42,4 +42,5 @@ mod exports {
     pub use crate::db::{Conn, Db, DbConfig};
     pub use crate::logic::{voting_power, VotingPowerArgs};
     pub use crate::testing::*;
+    pub use crate::error::*;
 }

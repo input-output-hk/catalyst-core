@@ -54,7 +54,7 @@ pub struct RawSnapshotInput {
     pub voting_power_cap: Fraction,
     pub direct_voters_group: Option<String>,
     pub representatives_group: Option<String>,
-    pub dreps: Dreps,
+    pub dreps: Option<Dreps>,
 }
 
 #[tracing::instrument(skip(context))]

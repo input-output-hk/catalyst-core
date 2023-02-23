@@ -37,7 +37,7 @@ impl RawSnapshot {
                 voting_power_cap: 0.into(),
                 direct_voters_group: None,
                 representatives_group: None,
-                dreps: Dreps::default(),
+                dreps: None,
             },
         }
     }
@@ -94,8 +94,11 @@ impl TryInto<Vec<SnapshotInfo>> for RawSnapshot {
             .clone()
             .unwrap_or_else(|| DEFAULT_REPRESENTATIVE_GROUP.into());
 
-        let assigner =
-            RepsVotersAssigner::new(direct_voter, representative, self.content.dreps.clone());
+        let assigner = RepsVotersAssigner::new(
+            direct_voter,
+            representative,
+            self.content.dreps.clone().unwrap_or_default(),
+        );
         self.into_full_snapshot_infos(&assigner)
     }
 }
@@ -110,7 +113,7 @@ pub struct RawSnapshotBuilder {
     representatives_group: Option<String>,
     voting_registrations_count: usize,
     voting_registrations: Option<Vec<VotingRegistration>>,
-    dreps: Dreps,
+    dreps: Option<Dreps>,
 }
 
 impl Default for RawSnapshotBuilder {
@@ -124,7 +127,7 @@ impl Default for RawSnapshotBuilder {
             representatives_group: Some(DEFAULT_REPRESENTATIVE_GROUP.into()),
             voting_registrations_count: 2,
             voting_registrations: None,
-            dreps: Dreps::default(),
+            dreps: None,
         }
     }
 }
@@ -149,7 +152,7 @@ impl RawSnapshotBuilder {
     }
 
     pub fn with_dreps(mut self, dreps: Dreps) -> Self {
-        self.dreps = dreps;
+        self.dreps = Some(dreps);
         self
     }
 

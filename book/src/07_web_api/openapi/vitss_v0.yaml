@@ -1187,6 +1187,9 @@ components:
           type: string
           format: date-time
           description: Date and time for the latest update to this snapshot information.
+        dreps:
+          type: object
+          description: dreps represantation in json format
 
     DelegatorInfo:
       type: object

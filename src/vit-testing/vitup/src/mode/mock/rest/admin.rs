@@ -59,7 +59,11 @@ pub async fn put_raw_snapshot(
     let representative = input
         .representatives_group
         .unwrap_or_else(|| DEFAULT_REPRESENTATIVE_GROUP.to_owned());
-    let assigner = RepsVotersAssigner::new(direct_voter, representative, input.dreps);
+    let assigner = RepsVotersAssigner::new(
+        direct_voter,
+        representative,
+        input.dreps.unwrap_or_default(),
+    );
     let snapshot = Snapshot::from_raw_snapshot(
         input.snapshot,
         input.min_stake_threshold,

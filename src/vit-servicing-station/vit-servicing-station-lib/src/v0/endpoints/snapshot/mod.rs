@@ -161,13 +161,13 @@ pub async fn update_from_raw_snapshot(
     voting_power_cap: Fraction,
     direct_voters_group: Option<String>,
     representatives_group: Option<String>,
-    dreps: Dreps,
+    dreps: Option<Dreps>,
     context: SharedContext,
 ) -> Result<(), HandleError> {
     let direct_voter = direct_voters_group.unwrap_or_else(|| DEFAULT_DIRECT_VOTER_GROUP.into());
     let representative =
         representatives_group.unwrap_or_else(|| DEFAULT_REPRESENTATIVE_GROUP.into());
-    let assigner = RepsVotersAssigner::new(direct_voter, representative, dreps);
+    let assigner = RepsVotersAssigner::new(direct_voter, representative, dreps.unwrap_or_default());
     let snapshot =
         Snapshot::from_raw_snapshot(snapshot, min_stake_threshold, voting_power_cap, &assigner)
             .map_err(|e| HandleError::InternalError(e.to_string()))?
@@ -855,10 +855,12 @@ mod test {
             voting_power_cap: 100.into(),
             direct_voters_group: None,
             representatives_group: None,
-            dreps: (vec![Identifier::from_hex(key).unwrap()]
-                .into_iter()
-                .collect::<HashSet<Identifier>>())
-            .into(),
+            dreps: Some(
+                (vec![Identifier::from_hex(key).unwrap()]
+                    .into_iter()
+                    .collect::<HashSet<Identifier>>())
+                .into(),
+            ),
         })
         .unwrap();
 
@@ -893,7 +895,7 @@ mod test {
             voting_power_cap: 100.into(),
             direct_voters_group: None,
             representatives_group: None,
-            dreps: Dreps::default(),
+            dreps: None,
         })
         .unwrap();
 

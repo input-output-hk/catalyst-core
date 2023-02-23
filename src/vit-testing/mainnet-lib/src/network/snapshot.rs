@@ -28,7 +28,7 @@ pub struct Parameters {
     /// Name of delegated registrations holders (representatives)
     pub representatives_group: Option<String>,
     /// dreps information
-    pub dreps: Dreps,
+    pub dreps: Option<Dreps>,
 }
 
 impl Default for Parameters {
@@ -39,7 +39,7 @@ impl Default for Parameters {
             voting_power_cap: Fraction::new(1u64, 2u64),
             direct_voters_group: None,
             representatives_group: None,
-            dreps: Dreps::default(),
+            dreps: None,
         }
     }
 }

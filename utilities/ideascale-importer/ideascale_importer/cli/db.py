@@ -1,10 +1,12 @@
 import asyncio
 from datetime import datetime
-import db
-from db import models
 import random
 import rich
 import typer
+
+import ideascale_importer.db
+from ideascale_importer.db import models
+
 
 app = typer.Typer(add_completion=False)
 
@@ -18,7 +20,7 @@ def seed_compatible(database_url: str = typer.Option(..., help="Postgres databas
     async def inner(database_url: str):
         console = rich.console.Console()
 
-        conn = await db.connect(database_url)
+        conn = await ideascale_importer.db.connect(database_url)
         console.log("Connected to database")
 
         async with conn.transaction():

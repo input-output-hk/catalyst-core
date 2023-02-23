@@ -1,6 +1,6 @@
 import unittest
 
-import utils
+from ideascale_importer import utils
 
 
 class TestUtils(unittest.TestCase):

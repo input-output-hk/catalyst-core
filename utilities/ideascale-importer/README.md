@@ -21,7 +21,7 @@ poetry install
 To see the available commands:
 
 ```sh
-poetry run python src/main.py --help
+PYTHONPATH=$(pwd) poetry run python ideascale_importer --help
 ```
 
 ## Importing IdeaScale Data
@@ -29,7 +29,7 @@ poetry run python src/main.py --help
 The easiest way is to run:
 
 ```sh
-poetry run python src/main.py \
+PYTHONPATH=$(pwd) poetry run python ideascale_importer \
     --api-token IDEASCALE_API_TOKEN \
     --database-url POSTGRES_URL
 ```
@@ -42,11 +42,11 @@ And go through the interactive steps.
 
 ```sh
 # If you haven't already:
-poetry run python -m flake8 src
+poetry run python -m flake8 ideascale_importer
 ```
 
 ### Type checking
 
 ```sh
-poetry run python -m mypy src --check-untyped-defs
+poetry run python -m mypy ideascale_importer --check-untyped-defs
 ```

@@ -6,9 +6,10 @@ import rich.table
 import rich.console
 from typing import Dict, List, Optional
 
+
 from . import config, db_mapper
-import db
-import ideascale.client
+from ideascale_importer.ideascale.client import CampaignGroup, Client, Funnel
+import ideascale_importer.db
 
 
 class ReadConfigException(Exception):
@@ -35,7 +36,7 @@ class Importer:
         self.election_id = election_id
         self.campaign_group_id = campaign_group_id
         self.stage_id = stage_id
-        self.conn: db.Connection | None = None
+        self.conn: ideascale_importer.db.Connection | None = None
 
         try:
             self.config = config.from_json_file(config_path or "config.json")
@@ -60,7 +61,7 @@ class Importer:
 
     async def connect(self):
         if self.conn is None:
-            self.conn = await db.connect(self.database_url)
+            self.conn = await ideascale_importer.db.connect(self.database_url)
 
     async def close(self):
         if self.conn is not None:
@@ -82,7 +83,7 @@ class Importer:
             console.print("\n[red]No election exists with the given id[/red]")
             return
 
-        client = ideascale.client.Client(self.api_token)
+        client = Client(self.api_token)
 
         groups = []
         with client.request_progress_observer:
@@ -109,7 +110,7 @@ class Importer:
         else:
             campaign_group_id = self.campaign_group_id
 
-        group: Optional[ideascale.client.CampaignGroup] = None
+        group: Optional[CampaignGroup] = None
         for g in groups:
             if g.id == campaign_group_id:
                 group = g
@@ -125,7 +126,7 @@ class Importer:
                 if c.funnel_id is not None:
                     funnel_ids.add(c.funnel_id)
 
-            funnels: List[ideascale.client.Funnel] = []
+            funnels: List[Funnel] = []
             with client.request_progress_observer:
                 funnels = await asyncio.gather(*[client.funnel(id) for id in funnel_ids])
 

@@ -4,9 +4,9 @@ import re
 from typing import Any, Mapping
 
 from . import config
-import db
-import db.models
-import ideascale.client
+import ideascale_importer.db
+import ideascale_importer.db.models
+import ideascale_importer.ideascale.client
 
 
 class Mapper:
@@ -18,14 +18,18 @@ class Mapper:
         self.config = config
         self.vote_options_id = vote_options_id
 
-    def map_challenge(self, a: ideascale.client.Campaign, election_id: int) -> db.models.Challenge:
+    def map_challenge(
+        self,
+        a: ideascale_importer.ideascale.client.Campaign,
+        election_id: int
+    ) -> ideascale_importer.db.models.Challenge:
         """
         Maps a IdeaScale campaign into a challenge.
         """
 
         reward = parse_reward(a.tagline)
 
-        return db.models.Challenge(
+        return ideascale_importer.db.models.Challenge(
             id=a.id,
             election=election_id,
             category=get_challenge_category(a),
@@ -40,10 +44,10 @@ class Mapper:
 
     def map_proposal(
         self,
-        a: ideascale.client.Idea,
+        a: ideascale_importer.ideascale.client.Idea,
         challenge_id_to_row_id_map: Mapping[int, int],
         impact_scores: Mapping[int, int],
-    ) -> db.models.Proposal:
+    ) -> ideascale_importer.db.models.Proposal:
         """
         Maps an IdeaScale idea into a proposal.
         """
@@ -67,7 +71,7 @@ class Mapper:
             if mv is not None:
                 extra[k] = html_to_md(mv)
 
-        return db.models.Proposal(
+        return ideascale_importer.db.models.Proposal(
             id=a.id,
             challenge=challenge_id_to_row_id_map[a.campaign_id],
             title=html_to_md(a.title),
@@ -142,7 +146,7 @@ def parse_reward(s: str) -> Reward:
     return Reward(amount=int(amount, base=10), currency=currency.upper())
 
 
-def get_challenge_category(c: ideascale.client.Campaign) -> str:
+def get_challenge_category(c: ideascale_importer.ideascale.client.Campaign) -> str:
     """
     Computes the challenge category of a given campaign.
     """

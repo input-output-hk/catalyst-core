@@ -6,7 +6,7 @@ import marshmallow_dataclass
 import rich.progress
 from typing import Any, Iterable, List, Mapping
 
-import utils
+from ideascale_importer import utils
 
 
 class BadResponse(Exception):

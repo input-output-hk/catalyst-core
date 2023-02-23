@@ -45,7 +45,6 @@ class Mapper:
     def map_proposal(
         self,
         a: ideascale_importer.ideascale.client.Idea,
-        challenge_id_to_row_id_map: Mapping[int, int],
         impact_scores: Mapping[int, int],
     ) -> ideascale_importer.db.models.Proposal:
         """
@@ -73,7 +72,7 @@ class Mapper:
 
         return ideascale_importer.db.models.Proposal(
             id=a.id,
-            challenge=challenge_id_to_row_id_map[a.campaign_id],
+            challenge=a.campaign_id,
             title=html_to_md(a.title),
             summary=html_to_md(a.text),
             category="",

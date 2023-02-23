@@ -39,7 +39,7 @@ class Importer:
         self.conn: ideascale_importer.db.Connection | None = None
 
         try:
-            self.config = config.from_json_file(config_path or "config.json")
+            self.config = config.from_json_file(config_path or "ideascale-importer-config.json")
         except Exception as e:
             raise ReadConfigException(repr(e)) from e
 

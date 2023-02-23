@@ -1,7 +1,5 @@
 import asyncio
-import asyncpg
 import csv
-import json
 import rich.panel
 import rich.prompt
 import rich.table

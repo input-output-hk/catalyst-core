@@ -56,9 +56,11 @@ async def fetch_leader0_node_info(conn) -> Dict:
 
 
 async def insert_leader0_node_info(conn, jcli_path: str):
-    jcli_exec = jcli.JCli(jcli_path)
     hostname = get_hostname()
     logger.debug(f"generating {hostname} node info with jcli: {jcli_path}")
+    # use JCli to make calls
+    jcli_exec = jcli.JCli(jcli_path)
+    # generate the keys
     seckey = await jcli_exec.seckey("ed25519")
     logger.debug("seckey generated")
     pubkey = await jcli_exec.pubkey(seckey)
@@ -74,6 +76,8 @@ async def insert_leader0_node_info(conn, jcli_path: str):
     extra = json.dumps(
         {"consensus_id": consensus_id, "consensus_secret": consensus_secret}
     )
+
+    # insert the hostname row into the voting_nodes table
     fields = "hostname, pubkey, seckey, netkey, extra"
     values = "$1, $2, $3, $4, $5"
     query = f"INSERT INTO voting_nodes({fields}) VALUES({values}) RETURNING *"
@@ -89,6 +93,10 @@ async def insert_leader0_node_info(conn, jcli_path: str):
 
 def get_hostname() -> str:
     return socket.gethostname()
+
+
+def get_hostname_addr() -> str:
+    return socket.gethostbyname(get_hostname())
 
 
 def get_leadership_role_by_hostname() -> Literal["leader0", "leader", "follower"]:

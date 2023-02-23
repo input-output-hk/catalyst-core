@@ -51,18 +51,18 @@ class VotingNode(uvicorn.Server):
 
         # wait for the stdout from uvicorn before our logs start to roll
         await asyncio.sleep(0.5)
+        # execute the scheduled tasks for this node, by
+        # extracting the leadership role from the hostname
+        schedule = self.get_schedule()
         # checks if `stop_schedule` has been called
         while self.is_running_schedule():
             try:
-                # execute the scheduled tasks for this node, by
-                # extracting the leadership role from the hostname
-                schedule = self.get_schedule()
                 if schedule is None:
                     raise Exception("no proper schedule found for this node")
                 await schedule.run()
                 break
             except Exception as e:
-                logger.warning(f"schedule failed: {e}")
+                logger.warning(f"schedule task failed: {e}")
             # waits before retrying
             await asyncio.sleep(SLEEP_TO_SCHEDULE_RETRY)
 

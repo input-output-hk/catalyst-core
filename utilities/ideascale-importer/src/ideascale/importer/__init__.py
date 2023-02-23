@@ -6,10 +6,9 @@ import rich.table
 import rich.console
 from typing import Dict, List, Optional
 
-import config
+from . import config, db_mapper
 import db
-import db.mapper
-import ideascale
+import ideascale.client
 
 
 class ReadConfigException(Exception):
@@ -83,7 +82,7 @@ class Importer:
             console.print("\n[red]No election exists with the given id[/red]")
             return
 
-        client = ideascale.Client(self.api_token)
+        client = ideascale.client.Client(self.api_token)
 
         groups = []
         with client.request_progress_observer:
@@ -110,7 +109,7 @@ class Importer:
         else:
             campaign_group_id = self.campaign_group_id
 
-        group: Optional[ideascale.CampaignGroup] = None
+        group: Optional[ideascale.client.CampaignGroup] = None
         for g in groups:
             if g.id == campaign_group_id:
                 group = g
@@ -126,7 +125,7 @@ class Importer:
                 if c.funnel_id is not None:
                     funnel_ids.add(c.funnel_id)
 
-            funnels: List[ideascale.Funnel] = []
+            funnels: List[ideascale.client.Funnel] = []
             with client.request_progress_observer:
                 funnels = await asyncio.gather(*[client.funnel(id) for id in funnel_ids])
 
@@ -157,7 +156,7 @@ class Importer:
             ideas = await client.stage_ideas(stage_id)
 
         vote_options_id = await self.conn.get_vote_options_id("yes,no")
-        mapper = db.mapper.Mapper(vote_options_id, self.config)
+        mapper = db_mapper.Mapper(vote_options_id, self.config)
 
         challenges = [mapper.map_challenge(a, election_id) for a in group.campaigns]
         challenge_count = len(challenges)

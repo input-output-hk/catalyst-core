@@ -3,10 +3,10 @@ from markdownify import markdownify
 import re
 from typing import Any, Mapping
 
-import config
+from . import config
 import db
 import db.models
-import ideascale
+import ideascale.client
 
 
 class Mapper:
@@ -18,7 +18,7 @@ class Mapper:
         self.config = config
         self.vote_options_id = vote_options_id
 
-    def map_challenge(self, a: ideascale.Campaign, election_id: int) -> db.models.Challenge:
+    def map_challenge(self, a: ideascale.client.Campaign, election_id: int) -> db.models.Challenge:
         """
         Maps a IdeaScale campaign into a challenge.
         """
@@ -40,7 +40,7 @@ class Mapper:
 
     def map_proposal(
         self,
-        a: ideascale.Idea,
+        a: ideascale.client.Idea,
         challenge_id_to_row_id_map: Mapping[int, int],
         impact_scores: Mapping[int, int],
     ) -> db.models.Proposal:
@@ -142,7 +142,7 @@ def parse_reward(s: str) -> Reward:
     return Reward(amount=int(amount, base=10), currency=currency.upper())
 
 
-def get_challenge_category(c: ideascale.Campaign) -> str:
+def get_challenge_category(c: ideascale.client.Campaign) -> str:
     """
     Computes the challenge category of a given campaign.
     """

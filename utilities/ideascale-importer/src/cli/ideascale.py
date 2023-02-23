@@ -2,7 +2,7 @@ import asyncio
 from typing import Optional
 import typer
 
-from importer import Importer
+from ideascale.importer import Importer
 
 app = typer.Typer(add_completion=False)
 

@@ -449,7 +449,6 @@ pub fn vote_on_different_proposal() {
         )
         .unwrap();
 
-    alice.confirm_transaction();
 
     assert!(controller
         .cast_vote_public(
@@ -590,7 +589,6 @@ pub fn voting_consistency() {
             &mut ledger,
         )
         .unwrap();
-    alice.confirm_transaction();
     controller
         .cast_vote_public(
             &alice,
@@ -600,7 +598,6 @@ pub fn voting_consistency() {
             &mut ledger,
         )
         .unwrap();
-    alice.confirm_transaction();
     controller
         .cast_vote_public(
             &alice,
@@ -610,7 +607,6 @@ pub fn voting_consistency() {
             &mut ledger,
         )
         .unwrap();
-    alice.confirm_transaction();
     ledger.fast_forward_to(BlockDate {
         epoch: 1,
         slot_id: 1,

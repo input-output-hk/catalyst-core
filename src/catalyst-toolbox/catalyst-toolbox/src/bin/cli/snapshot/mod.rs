@@ -21,7 +21,7 @@ pub struct SnapshotCmd {
     snapshot: PathBuf,
     /// Path to the file containing all dreps information in json format.
     #[clap(short, long, value_parser = PathBuf::from_str)]
-    dreps: PathBuf,
+    dreps: Option<PathBuf>,
     /// Registrations voting power threshold for eligibility
     #[clap(short, long)]
     min_stake_threshold: Value,
@@ -50,7 +50,11 @@ pub struct SnapshotCmd {
 impl SnapshotCmd {
     pub fn exec(self) -> Result<(), Report> {
         let raw_snapshot: RawSnapshot = serde_json::from_reader(File::open(&self.snapshot)?)?;
-        let dreps: Dreps = serde_json::from_reader(File::open(&self.dreps)?)?;
+        let dreps = if let Some(dreps) = &self.dreps {
+            serde_json::from_reader(File::open(dreps)?)?
+        } else {
+            Dreps::default()
+        };
         let direct_voter = self
             .direct_voters_group
             .unwrap_or_else(|| DEFAULT_DIRECT_VOTER_GROUP.into());

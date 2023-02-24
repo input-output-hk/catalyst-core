@@ -1,7 +1,7 @@
 import click
 import uvicorn
 
-from . import api, logs, node
+from voting_node import api, config, logs, service
 
 
 @click.group()
@@ -99,7 +99,7 @@ def start(
     logger.debug(f"p2p-port={jorm_p2p_port}")
 
     api_config = uvicorn.Config(api.app, host=host, port=port, log_level=log_level)
-    jorm_config = node.JormConfig(
+    jorm_config = config.JormConfig(
         jorm_path,
         jcli_path,
         node_storage,
@@ -108,9 +108,12 @@ def start(
         jorm_p2p_port,
     )
 
-    voting_node = node.VotingNode(api_config, jorm_config, database_url)
+    voting_node = service.VotingNode(api_config, jorm_config, database_url)
     voting_node.start()
 
 
 # this groups commands in the main 'cli' group
 cli.add_command(start)
+
+if __name__ == "__main__":
+    cli()

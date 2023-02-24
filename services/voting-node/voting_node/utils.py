@@ -113,8 +113,7 @@ async def insert_leader_node_info(conn, jcli_path: str):
         raise e
 
 
-def get_leadership_role_by_hostname() -> Literal["leader0", "leader", "follower"]:
-    host_name: str = get_hostname().lower()
+def get_leadership_role_by_hostname(host_name: str) -> Literal["leader0", "leader", "follower"]:
     leader_regex: str = r"^(leader|follower)([0-9]+)$"
     ERR_MSG: Final[str] = f"hostname {host_name} needs to conform to '{leader_regex}'"
     res = re.match(leader_regex, host_name)

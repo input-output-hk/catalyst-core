@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["AdversaryNode","An adversary-controlled node, which can deviate in every way from the blockchain protocol."],["AdversaryNodeBuilder",""]]};

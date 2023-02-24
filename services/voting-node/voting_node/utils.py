@@ -20,7 +20,7 @@ def get_hostname_addr(hostname: str | None = None) -> str:
     """Gets the voting node hostname."""
     if hostname is None:
         hostname = get_hostname()
-    return socket.gethostbyname(get_hostname())
+    return socket.gethostbyname(hostname)
 
 
 async def get_network_secret(secret_file: Path, jcli_path: str) -> str:
@@ -67,16 +67,22 @@ async def fetch_leader_node_info(conn) -> Dict:
 
 
 async def fetch_peers_node_info(conn) -> Dict:
-    filter_by = "hostname != $1 AND hostname ~ '^(leader|follower)([0-9]+)$'"
+    filter_by = "hostname != $1 AND hostname ~ '^leader[0-9]+$'"
     query = f"SELECT (hostname, pubkey) FROM voting_nodes WHERE {filter_by}"
     result = await conn.fetch(query, get_hostname())
     if result is None:
-        raise Exception("failed to fetch peer node info from db")
+        raise Exception("db peer node error")
+    logger.debug(f"peers node info retrieved from db: {len(result)}")
     rows = []
     for r in result:
         hostname, pubkey = r["row"]
-        ip_addr = get_hostname_addr(hostname)
-        rows.append((hostname, {"consensus_id": pubkey, "ip_addr": ip_addr}))
+        ip_addr = None
+        try:
+            ip_addr = get_hostname_addr(hostname)
+        except Exception:
+            logger.warn(f"failed to get ip address for {hostname}")
+        finally:
+            rows.append((hostname, {"consensus_id": pubkey, "ip_addr": ip_addr}))
     return dict(rows)
 
 

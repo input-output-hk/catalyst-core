@@ -13,4 +13,5 @@ def configLogger(log_level: str):
 
 
 def getLogger() -> logging.Logger:
+    """Returns the voting node logger."""
     return logging.getLogger("voting-node")

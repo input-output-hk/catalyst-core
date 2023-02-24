@@ -4,7 +4,6 @@ import uvicorn
 from . import api, logs, node
 
 
-
 @click.group()
 @click.option("--debug/--no-debug", default=False)
 @click.option("--hot-reload/--no-hot-reload", default=False)
@@ -75,9 +74,9 @@ def cli(debug, hot_reload):
 def start(
     host,
     port,
+    log_level,
     database_url,
     node_storage,
-    log_level,
     jorm_path,
     jcli_path,
     jorm_rest_port,
@@ -88,16 +87,16 @@ def start(
 
     logger = logs.getLogger()
     logger.debug("Executing: voting-node start")
-    logger.info(f"host={host}")
-    logger.info(f"port={port}")
-    logger.info(f"database-url={database_url}")
-    logger.info(f"node-storage={node_storage}")
-    logger.info(f"log-level={log_level}")
-    logger.info(f"jorm-path={jorm_path}")
-    logger.info(f"jcli-path={jcli_path}")
-    logger.info(f"rest-port={jorm_rest_port}")
-    logger.info(f"jrpc-port={jorm_jrpc_port}")
-    logger.info(f"p2p-port={jorm_p2p_port}")
+    logger.debug(f"host={host}")
+    logger.debug(f"port={port}")
+    logger.debug(f"database-url={database_url}")
+    logger.debug(f"node-storage={node_storage}")
+    logger.debug(f"log-level={log_level}")
+    logger.debug(f"jorm-path={jorm_path}")
+    logger.debug(f"jcli-path={jcli_path}")
+    logger.debug(f"rest-port={jorm_rest_port}")
+    logger.debug(f"jrpc-port={jorm_jrpc_port}")
+    logger.debug(f"p2p-port={jorm_p2p_port}")
 
     api_config = uvicorn.Config(api.app, host=host, port=port, log_level=log_level)
     jorm_config = node.JormConfig(

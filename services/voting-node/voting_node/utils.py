@@ -1,5 +1,4 @@
 import datetime
-import json
 import re
 import socket
 
@@ -10,6 +9,18 @@ from . import jcli, logs
 
 # gets voting node logger
 logger = logs.getLogger()
+
+
+def get_hostname() -> str:
+    """Gets the voting node hostname."""
+    return socket.gethostname()
+
+
+def get_hostname_addr(hostname: str | None = None) -> str:
+    """Gets the voting node hostname."""
+    if hostname is None:
+        hostname = get_hostname()
+    return socket.gethostbyname(get_hostname())
 
 
 async def get_network_secret(secret_file: Path, jcli_path: str) -> str:
@@ -46,16 +57,30 @@ async def fetch_election(conn) -> Dict:
     return dict(result)
 
 
-async def fetch_leader0_node_info(conn) -> Dict:
+async def fetch_leader_node_info(conn) -> Dict:
     filter_by = "hostname = $1"
     query = f"SELECT * FROM voting_nodes WHERE {filter_by}"
     result = await conn.fetchrow(query, get_hostname())
     if result is None:
-        raise Exception("failed to fetch leader0 node info from db")
+        raise Exception("failed to fetch leader node info from db")
     return dict(result)
 
 
-async def insert_leader0_node_info(conn, jcli_path: str):
+async def fetch_peers_node_info(conn) -> Dict:
+    filter_by = "hostname != $1 AND hostname ~ '^(leader|follower)([0-9]+)$'"
+    query = f"SELECT (hostname, pubkey) FROM voting_nodes WHERE {filter_by}"
+    result = await conn.fetch(query, get_hostname())
+    if result is None:
+        raise Exception("failed to fetch peer node info from db")
+    rows = []
+    for r in result:
+        hostname, pubkey = r["row"]
+        ip_addr = get_hostname_addr(hostname)
+        rows.append((hostname, {"consensus_id": pubkey, "ip_addr": ip_addr}))
+    return dict(rows)
+
+
+async def insert_leader_node_info(conn, jcli_path: str):
     hostname = get_hostname()
     logger.debug(f"generating {hostname} node info with jcli: {jcli_path}")
     # use JCli to make calls
@@ -67,22 +92,13 @@ async def insert_leader0_node_info(conn, jcli_path: str):
     logger.debug("pubkey generated")
     netkey = await jcli_exec.seckey("ed25519")
     logger.debug("netkey generated")
-    # this secret is not used, apparently, just to be safe
-    consensus_secret = await jcli_exec.seckey("ed25519-extended")
-    # the consensus_id is the public key
-    consensus_id = await jcli_exec.pubkey(consensus_secret)
-    logger.debug("consensus_id generated")
-    # just to be safe, we store the pub and sec parts of the consensus_id
-    extra = json.dumps(
-        {"consensus_id": consensus_id, "consensus_secret": consensus_secret}
-    )
 
     # insert the hostname row into the voting_nodes table
-    fields = "hostname, pubkey, seckey, netkey, extra"
-    values = "$1, $2, $3, $4, $5"
+    fields = "hostname, seckey, pubkey, netkey"
+    values = "$1, $2, $3, $4"
     query = f"INSERT INTO voting_nodes({fields}) VALUES({values}) RETURNING *"
     try:
-        result = await conn.execute(query, hostname, seckey, pubkey, netkey, extra)
+        result = await conn.execute(query, hostname, seckey, pubkey, netkey)
         if result is None:
             raise Exception("failed to insert leader0 node into from db")
         logger.debug(f"{hostname} info added: {result}")
@@ -91,16 +107,8 @@ async def insert_leader0_node_info(conn, jcli_path: str):
         raise e
 
 
-def get_hostname() -> str:
-    return socket.gethostname()
-
-
-def get_hostname_addr() -> str:
-    return socket.gethostbyname(get_hostname())
-
-
 def get_leadership_role_by_hostname() -> Literal["leader0", "leader", "follower"]:
-    host_name: str = get_hostname()
+    host_name: str = get_hostname().lower()
     leader_regex: str = r"^(leader|follower)([0-9]+)$"
     ERR_MSG: Final[str] = f"hostname {host_name} needs to conform to '{leader_regex}'"
     res = re.match(leader_regex, host_name)

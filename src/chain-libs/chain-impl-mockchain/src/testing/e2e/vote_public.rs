@@ -433,7 +433,7 @@ pub fn vote_on_different_proposal() {
         .build()
         .unwrap();
 
-    let mut alice = controller.wallet(ALICE).unwrap();
+    let alice = controller.wallet(ALICE).unwrap();
 
     let vote_plan = controller.vote_plan(VOTE_PLAN).unwrap();
     let first_proposal = vote_plan.proposal(0);
@@ -577,7 +577,7 @@ pub fn voting_consistency() {
         .build()
         .unwrap();
 
-    let mut alice = controller.wallet(ALICE).unwrap();
+    let alice = controller.wallet(ALICE).unwrap();
     let vote_plan = controller.vote_plan(VOTE_PLAN).unwrap();
 
     controller

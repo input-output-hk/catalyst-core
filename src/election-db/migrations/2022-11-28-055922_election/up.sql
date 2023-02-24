@@ -491,5 +491,4 @@ CREATE TABLE voting_power (
     power NUMERIC,
 
     FOREIGN KEY(election) REFERENCES Election(row_id)
-)
-
+);

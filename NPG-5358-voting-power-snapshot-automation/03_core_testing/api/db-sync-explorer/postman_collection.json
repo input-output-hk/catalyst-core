@@ -1,0 +1,158 @@
+{
+	"info": {
+		"_postman_id": "cb8ec9f2-ba0d-4840-a1ce-b828936795f1",
+		"name": "Db Sync Explorer",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "11181958"
+	},
+	"item": [
+		{
+			"name": "Behind Tip",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v0/sync/behind",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v0",
+						"sync",
+						"behind"
+					]
+				},
+				"description": "Request for fetching information about Db Sync synchronization status. 'Behind' endpoint return date interval object which represent difference between utc::now() and last block time registered in db sync."
+			},
+			"response": []
+		},
+		{
+			"name": "Meta information",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v0/meta",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v0",
+						"meta"
+					]
+				},
+				"description": "Provides information about meta information of db sync, like version, network and start date"
+			},
+			"response": []
+		},
+		{
+			"name": "Transaction info by hash",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v0/tx/hash/bc692d5a2a6b014b50fc6216e544c6dc08299add60b62a64eb682c53ffedd4c9",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v0",
+						"tx",
+						"hash",
+						"bc692d5a2a6b014b50fc6216e544c6dc08299add60b62a64eb682c53ffedd4c9"
+					]
+				},
+				"description": "Returns information about transaction by given hash. Returns collection of transaction matching given hash. If none transaction is found, returns empty collection."
+			},
+			"response": [
+				{
+					"name": "Transaction info by hash",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v0/tx/hash/:hash",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v0",
+								"tx",
+								"hash",
+								":hash"
+							],
+							"variable": [
+								{
+									"key": "hash",
+									"value": "bc692d5a2a6b014b50fc6216e544c6dc08299add60b62a64eb682c53ffedd4c9",
+									"description": "valid hash for given transaction"
+								}
+							]
+						}
+					},
+					"_postman_previewlanguage": null,
+					"header": null,
+					"cookie": [],
+					"body": null
+				}
+			]
+		},
+		{
+			"name": "Sync percentage",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v0/sync/progress",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v0",
+						"sync",
+						"progress"
+					]
+				},
+				"description": "Endpoint can provide float represents percentage of synchronization between dbsync and target network (to check target network please use meta endpoint). Number is expressed as BigDecimal"
+			},
+			"response": []
+		},
+		{
+			"name": "Health",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v0/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v0",
+						"health"
+					]
+				},
+				"description": "Health endpoint for checking if service is up"
+			},
+			"response": []
+		}
+	]
+}

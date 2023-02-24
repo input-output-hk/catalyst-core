@@ -275,6 +275,9 @@ jobs:
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 19
 
     - uses: jetli/wasm-pack-action@v0.3.0
       with:
@@ -288,16 +291,22 @@ jobs:
 
     - name: Build JS package
       run: |
+        node --version
+        npm --version
         cd src/chain-wallet-libs/bindings/wallet-wasm-js/js
         rm package.json
         cp package_test.json package.json
         cat package.json
+        cat index.js
         npm install
+        ls node_modules
 
     - name: Run JS tests
       run: |
         cd src/chain-wallet-libs/bindings/wallet-wasm-js/js-test
         npm install
+        cat node_modules/wallet-js/package.json
+        ls node_modules/wallet-js
         npm test
 
   clippy:

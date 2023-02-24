@@ -2033,7 +2033,7 @@ dependencies = [
  "chrono",
  "diesel 2.0.3",
  "diesel-autoincrement-new-struct",
- "diesel_migrations 2.0.0",
+ "diesel_migrations 1.4.0",
  "dotenvy",
  "serde",
  "serde_json",

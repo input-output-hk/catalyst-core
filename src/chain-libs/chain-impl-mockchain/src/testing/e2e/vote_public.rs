@@ -449,7 +449,6 @@ pub fn vote_on_different_proposal() {
         )
         .unwrap();
 
-
     assert!(controller
         .cast_vote_public(
             &alice,

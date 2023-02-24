@@ -275,6 +275,9 @@ jobs:
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 19
 
     - uses: jetli/wasm-pack-action@v0.3.0
       with:

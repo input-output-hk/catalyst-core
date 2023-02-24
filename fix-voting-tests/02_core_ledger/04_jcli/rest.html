@@ -1,0 +1,808 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>REST - Catalyst Voting System - Core Technology</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../.././book/assets/css/mdbook-admonish.css">
+        <link rel="stylesheet" href="../.././book/assets/css/open-in.css">
+        <link rel="stylesheet" href="../.././book/assets/theme/pagetoc.css">
+        <link rel="stylesheet" href="../.././book/assets/theme/css/chrome.css">
+        <link rel="stylesheet" href="../.././book/assets/theme/css/general.css">
+        <link rel="stylesheet" href="../.././book/assets/theme/css/variables.css">
+
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item affix "><a href="../../00_prologue.html">Prologue</a></li><li class="chapter-item "><a href="../../01_intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../../02_core_ledger/index.html"><strong aria-hidden="true">2.</strong> Core Ledger</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/01_concepts/index.html"><strong aria-hidden="true">2.1.</strong> General Concepts</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/01_concepts/blockchain.html"><strong aria-hidden="true">2.1.1.</strong> Blockchain concepts</a></li><li class="chapter-item "><a href="../../02_core_ledger/01_concepts/network.html"><strong aria-hidden="true">2.1.2.</strong> Network overview</a></li><li class="chapter-item "><a href="../../02_core_ledger/01_concepts/node.html"><strong aria-hidden="true">2.1.3.</strong> Node organization</a></li><li class="chapter-item "><a href="../../02_core_ledger/01_concepts/stake.html"><strong aria-hidden="true">2.1.4.</strong> Stake</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/index.html"><strong aria-hidden="true">2.2.</strong> Quickstart</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/01_command_line.html"><strong aria-hidden="true">2.2.1.</strong> Command line tools</a></li><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/02_passive_node.html"><strong aria-hidden="true">2.2.2.</strong> Starting a passive node</a></li><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/03_rest_api.html"><strong aria-hidden="true">2.2.3.</strong> REST Api</a></li><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/04_explorer.html"><strong aria-hidden="true">2.2.4.</strong> Explorer mode</a></li><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/05_leader_candidate.html"><strong aria-hidden="true">2.2.5.</strong> How to start a node as a leader candidate</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/index.html"><strong aria-hidden="true">2.3.</strong> Configuration</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/leadership.html"><strong aria-hidden="true">2.3.1.</strong> Leadership</a></li><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/logging.html"><strong aria-hidden="true">2.3.2.</strong> Logging</a></li><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/mempool.html"><strong aria-hidden="true">2.3.3.</strong> Mempool</a></li><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/network.html"><strong aria-hidden="true">2.3.4.</strong> Node network</a></li><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/prometheus.html"><strong aria-hidden="true">2.3.5.</strong> Prometheus</a></li></ol></li><li class="chapter-item expanded "><a href="../../02_core_ledger/04_jcli/index.html"><strong aria-hidden="true">2.4.</strong> jcli</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/address.html"><strong aria-hidden="true">2.4.1.</strong> Address</a></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/certificate.html"><strong aria-hidden="true">2.4.2.</strong> Certificate</a></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/genesis.html"><strong aria-hidden="true">2.4.3.</strong> Genesis</a></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/key.html"><strong aria-hidden="true">2.4.4.</strong> cryptographic keys</a></li><li class="chapter-item expanded "><a href="../../02_core_ledger/04_jcli/rest.html" class="active"><strong aria-hidden="true">2.4.5.</strong> REST</a></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/transaction.html"><strong aria-hidden="true">2.4.6.</strong> Transaction</a></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/vote.html"><strong aria-hidden="true">2.4.7.</strong> Voting</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/05_stake_pool/index.html"><strong aria-hidden="true">2.5.</strong> Staking with Jörmungandr</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/05_stake_pool/delegating_stake.html"><strong aria-hidden="true">2.5.1.</strong> Delegating your stake</a></li><li class="chapter-item "><a href="../../02_core_ledger/05_stake_pool/registering_stake_pool.html"><strong aria-hidden="true">2.5.2.</strong> Registering a stake pool</a></li><li class="chapter-item "><a href="../../02_core_ledger/05_stake_pool/retiring_stake_pool.html"><strong aria-hidden="true">2.5.3.</strong> Retiring a stake pool</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/06_advanced/index.html"><strong aria-hidden="true">2.6.</strong> Advanced</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/06_advanced/01_the_genesis_block.html"><strong aria-hidden="true">2.6.1.</strong> genesis file</a></li><li class="chapter-item "><a href="../../02_core_ledger/06_advanced/02_starting_bft_blockchain.html"><strong aria-hidden="true">2.6.2.</strong> starting a bft node</a></li><li class="chapter-item "><a href="../../02_core_ledger/06_advanced/03_starting_genesis_praos_blockchain.html"><strong aria-hidden="true">2.6.3.</strong> starting a genesis blockchain</a></li><li class="chapter-item "><a href="../../02_core_ledger/06_advanced/04_vote_fragments_voteplan_blockchain_relationships.html"><strong aria-hidden="true">2.6.4.</strong> How Vote plans, Vote Fragments and the blockchain transaction work and inter-relate</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/07_specs/index.html"><strong aria-hidden="true">2.7.</strong> Jormungandr Specifications</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/07_specs/migration.html"><strong aria-hidden="true">2.7.1.</strong> MIGRATION</a></li><li class="chapter-item "><a href="../../02_core_ledger/07_specs/network.html"><strong aria-hidden="true">2.7.2.</strong> Network</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/index.html"><strong aria-hidden="true">2.8.</strong> testing</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/08_testing/automation.html"><strong aria-hidden="true">2.8.1.</strong> jormungandr-automation</a></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/hersir.html"><strong aria-hidden="true">2.8.2.</strong> Hersir</a></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/integration_tests.html"><strong aria-hidden="true">2.8.3.</strong> jormungandr-integration-tests</a></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/loki.html"><strong aria-hidden="true">2.8.4.</strong> Loki</a></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/mjolnir.html"><strong aria-hidden="true">2.8.5.</strong> Mjolnir</a></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/thor.html"><strong aria-hidden="true">2.8.6.</strong> Thor</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/09_internal_design/index.html"><strong aria-hidden="true">2.9.</strong> Internal Design</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/09_internal_design/01_auto-start.html"><strong aria-hidden="true">2.9.1.</strong> Automatic deployment of the voting blockchain</a></li><li class="chapter-item "><a href="../../02_core_ledger/09_internal_design/02_permissionless_auth.html"><strong aria-hidden="true">2.9.2.</strong> Permissionless Auth</a></li></ol></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/index.html"><strong aria-hidden="true">3.</strong> Catalyst testing User Guide</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/iapyx/index.html"><strong aria-hidden="true">3.1.</strong> Iapyx</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/iapyx/iapyx.html"><strong aria-hidden="true">3.1.1.</strong> Iapyx</a></li><li class="chapter-item "><a href="../../03_core_testing/iapyx/load.html"><strong aria-hidden="true">3.1.2.</strong> Iapyx Load</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/integration-tests/index.html"><strong aria-hidden="true">3.2.</strong> integration-tests</a></li><li class="chapter-item "><a href="../../03_core_testing/registration-service/index.html"><strong aria-hidden="true">3.3.</strong> Registration service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/registration-service/cli.html"><strong aria-hidden="true">3.3.1.</strong> Registration CLI</a></li><li class="chapter-item "><a href="../../03_core_testing/registration-service/configuration.html"><strong aria-hidden="true">3.3.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/registration-verify-service/index.html"><strong aria-hidden="true">3.4.</strong> Registration service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/registration-verify-service/cli.html"><strong aria-hidden="true">3.4.1.</strong> Registration Verify CLI</a></li><li class="chapter-item "><a href="../../03_core_testing/registration-verify-service/configuration.html"><strong aria-hidden="true">3.4.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/snapshot-service/index.html"><strong aria-hidden="true">3.5.</strong> Snapshot trigger service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/snapshot-service/cli.html"><strong aria-hidden="true">3.5.1.</strong> Registration CLI</a></li><li class="chapter-item "><a href="../../03_core_testing/snapshot-service/configuration.html"><strong aria-hidden="true">3.5.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/snapshot-wormhole/index.html"><strong aria-hidden="true">3.6.</strong> snapshot wormhole</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/snapshot-wormhole/configuration.html"><strong aria-hidden="true">3.6.1.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/valgrind/index.html"><strong aria-hidden="true">3.7.</strong> valgrind</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/valgrind/configuration.html"><strong aria-hidden="true">3.7.1.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/vitup/index.html"><strong aria-hidden="true">3.8.</strong> vitup</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/vitup/configuration.html"><strong aria-hidden="true">3.8.1.</strong> Configuration</a></li><li class="chapter-item "><a href="../../03_core_testing/vitup/data_generation/index.html"><strong aria-hidden="true">3.8.2.</strong> Data Generation</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/vitup/data_generation/reset.html"><strong aria-hidden="true">3.8.2.1.</strong> Configuration</a></li><li class="chapter-item "><a href="../../03_core_testing/vitup/data_generation/snapshot.html"><strong aria-hidden="true">3.8.2.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/vitup/data_generation.html"><strong aria-hidden="true">3.8.3.</strong> Data Generation</a></li><li class="chapter-item "><a href="../../03_core_testing/vitup/mock.html"><strong aria-hidden="true">3.8.4.</strong> Mock</a></li><li class="chapter-item "><a href="../../03_core_testing/vitup/mock_farm.html"><strong aria-hidden="true">3.8.5.</strong> Mock Farm</a></li><li class="chapter-item "><a href="../../03_core_testing/vitup/run_modes.html"><strong aria-hidden="true">3.8.6.</strong> Configuration modes</a></li></ol></li></ol></li><li class="chapter-item "><a href="../../04_core_vitss/index.html"><strong aria-hidden="true">4.</strong> Core VIT Servicing Station</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../04_core_vitss/testing.html"><strong aria-hidden="true">4.1.</strong> vit-servicing-station-tests</a></li></ol></li><li class="chapter-item "><a href="../../05_unified_platform/index.html"><strong aria-hidden="true">5.</strong> Unified Platform</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/index.html"><strong aria-hidden="true">5.1.</strong> Overview</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/01_cardano_nodes.html"><strong aria-hidden="true">5.1.1.</strong> Cardano Nodes</a></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/02_bridge_pipeline/index.html"><strong aria-hidden="true">5.1.2.</strong> Bridge Pipeline</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/02_bridge_pipeline/01_block_reader.html"><strong aria-hidden="true">5.1.2.1.</strong> Block Reader</a></li></ol></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/03_rest_http_service.html"><strong aria-hidden="true">5.1.3.</strong> REST HTTP Service</a></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/04_event_stream.html"><strong aria-hidden="true">5.1.4.</strong> Event Stream</a></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/05_database/index.html"><strong aria-hidden="true">5.1.5.</strong> Database</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/05_database/01_registration_db.html"><strong aria-hidden="true">5.1.5.1.</strong> Registrations Database</a></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/05_database/02_staked_ada_db.html"><strong aria-hidden="true">5.1.5.2.</strong> Staked ADA Database</a></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/05_database/03_transaction_state.html"><strong aria-hidden="true">5.1.5.3.</strong> Transaction State Database</a></li></ol></li></ol></li></ol></li><li class="chapter-item "><a href="../../06_rust_api/index.html"><strong aria-hidden="true">6.</strong> Rust API</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../06_rust_api/rust_api.html"><strong aria-hidden="true">6.1.</strong> Rust API Documentation and Packages</a></li><li class="chapter-item "><a href="../../06_rust_api/rust_style_guide.html"><strong aria-hidden="true">6.2.</strong> 🦀 Rust Style Guide</a></li></ol></li><li class="chapter-item "><a href="../../07_web_api/index.html"><strong aria-hidden="true">7.</strong> Web API</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../07_web_api/dbsync-explorer.html"><strong aria-hidden="true">7.1.</strong> dbSync Explorer HTTP/REST API V1</a></li><li class="chapter-item "><a href="../../07_web_api/vit-servicing-station-v0.html"><strong aria-hidden="true">7.2.</strong> VIT Servicing Station HTTP/REST API V0</a></li><li class="chapter-item "><a href="../../07_web_api/vit-testing-mock-farm-v0.html"><strong aria-hidden="true">7.3.</strong> VIT Testing Mock Farm HTTP/REST API V0</a></li><li class="chapter-item "><a href="../../07_web_api/vit-testing-mock-v0.html"><strong aria-hidden="true">7.4.</strong> VIT Testing Mock HTTP/REST API V0</a></li><li class="chapter-item "><a href="../../07_web_api/vote-ledger-v0.html"><strong aria-hidden="true">7.5.</strong> Vote Ledger HTTP/REST API V0</a></li><li class="chapter-item "><a href="../../07_web_api/vote-ledger-v1.html"><strong aria-hidden="true">7.6.</strong> Vote Ledger HTTP/REST API V1</a></li></ol></li><li class="chapter-item "><a href="../../97_CONTRIBUTING.html"><strong aria-hidden="true">8.</strong> Contributing to Catalyst Core</a></li><li class="chapter-item "><a href="../../98_CODE_OF_CONDUCT.html"><strong aria-hidden="true">9.</strong> Contributor Covenant Code of Conduct</a></li><li class="chapter-item "><a href="../../99_example_enhanced_markup.html"><strong aria-hidden="true">10.</strong> Example Enhanced Markup</a></li><li class="chapter-item affix "><a href="../../ZZ_suffix.html">Suffix</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Catalyst Voting System - Core Technology</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/input-output-hk/catalyst-core" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <h1 id="rest"><a class="header" href="#rest">REST</a></h1>
+<p>Jormungandr comes with a CLI client for manual communication with nodes over HTTP.</p>
+<h2 id="conventions"><a class="header" href="#conventions">Conventions</a></h2>
+<p>Many CLI commands have common arguments:</p>
+<ul>
+<li><code>-h &lt;addr&gt;</code> or <code>--host &lt;addr&gt;</code> - Node API address. Must always have <code>http://</code> or
+<code>https://</code> prefix and always ends with the <code>/api</code>. E.g. <code>-h http://127.0.0.1:8081/api</code>, <code>--host https://node.com:8443/cardano/api</code>.</li>
+<li><code>--debug</code> - Print additional debug information to stderr.
+The output format is intentionally undocumented and unstable</li>
+<li><code>--output-format &lt;format&gt;</code> - Format of output data. Possible values: json, yaml, default yaml.
+Any other value is treated as a custom format using values from output data structure.
+Syntax is Go text template: <a href="https://golang.org/pkg/text/template/">https://golang.org/pkg/text/template/</a>.</li>
+</ul>
+<h2 id="node-stats"><a class="header" href="#node-stats">Node stats</a></h2>
+<p>Fetches node stats</p>
+<pre><code class="language-sh">jcli rest v0 node stats get &lt;options&gt;
+</code></pre>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+<li>–output-format &lt;format&gt; - see <a href="#conventions">conventions</a></li>
+</ul>
+<p>YAML printed on success</p>
+<pre><code class="language-yaml">---
+# Number of blocks received by node
+blockRecvCnt: 1102
+# Size in bytes of all transactions in last block
+lastBlockContentSize: 484
+# The Epoch and slot Number of the block (optional)
+lastBlockDate: &quot;20.29&quot;
+# Sum of all fee values in all transactions in last block
+lastBlockFees: 534
+# The block hash, it's unique identifier in the blockchain (optional)
+lastBlockHash: b9597b45a402451540e6aabb58f2ee4d65c67953b338e04c52c00aa0886bd1f0
+# The block number, in order, since the block0 (optional)
+lastBlockHeight: 202901
+# Sum of all input values in all transactions in last block
+lastBlockSum: 51604
+# The time slot of the tip block
+lastBlockTime: &quot;2020-01-30T22:37:46+00:00&quot;
+# Number of transactions in last block
+lastBlockTx: 2
+# The time at which we received the last block, not necessarily the current tip block (optional)
+lastReceivedBlockTime: &quot;2020-01-30T22:37:59+00:00&quot;
+# 24 bytes encoded in hexadecimal Node ID
+nodeId: &quot;ad24537cb009bedaebae3d247fecee9e14c57fe942e9bb0d&quot;
+# Number of nodes that are available for p2p discovery and events propagation
+peerAvailableCnt: 321
+# Number of nodes that have been quarantined by our node
+peerQuarantinedCnt: 123
+# Total number of nodes
+peerTotalCnt: 444
+# Number of nodes that are connected to ours but that are not publicly reachable
+peerUnreachableCnt: 0
+# State of the node
+state: Running
+# Number of transactions received by node
+txRecvCnt: 5440
+# Node uptime in seconds
+uptime: 20032
+# Node app version
+version: jormungandr 0.8.9-30d20d2e
+</code></pre>
+<h2 id="get-utxo"><a class="header" href="#get-utxo">Get UTxO</a></h2>
+<p>Fetches UTxO details</p>
+<pre><code class="language-sh">jcli rest v0 utxo &lt;fragment-id&gt; &lt;output-index&gt; get &lt;options&gt;
+</code></pre>
+<ul>
+<li>&lt;fragment-id&gt;   - hex-encoded ID of the transaction fragment</li>
+<li>&lt;output-index&gt;  - index of the transaction output</li>
+</ul>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+<li>–output-format &lt;format&gt; - see <a href="#conventions">conventions</a></li>
+</ul>
+<p>YAML printed on success</p>
+<pre><code class="language-yaml">---
+# UTxO owner address
+address: ca1svs0mwkfky9htpam576mc93mee5709khre8dgnqslj6y3p5f77s5gpgv02w
+# UTxO value
+value: 10000
+</code></pre>
+<h2 id="post-transaction"><a class="header" href="#post-transaction">Post transaction</a></h2>
+<p>Posts a signed, hex-encoded transaction</p>
+<pre><code class="language-sh">jcli rest v0 message post &lt;options&gt;
+</code></pre>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+<li>-f –file &lt;file_path&gt; - File containing hex-encoded transaction.
+If not provided, transaction will be read from stdin.</li>
+</ul>
+<p>Fragment Id is printed on success (which can help finding transaction status using get message log command)</p>
+<pre><code class="language-sh">50f21ac6bd3f57f231c4bf9c5fff7c45e2529c4dffed68f92410dbf7647541f1
+</code></pre>
+<h2 id="get-message-log"><a class="header" href="#get-message-log">Get message log</a></h2>
+<p>Get the node’s logs on the message pool. This will provide information on pending transaction,
+rejected transaction and or when a transaction has been added in a block</p>
+<pre><code class="language-sh">jcli rest v0 message logs &lt;options&gt;
+</code></pre>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+<li>–output-format &lt;format&gt; - see <a href="#conventions">conventions</a></li>
+</ul>
+<p>YAML printed on success</p>
+<pre><code class="language-yaml">---
+- fragment_id: 7db6f91f3c92c0aef7b3dd497e9ea275229d2ab4dba6a1b30ce6b32db9c9c3b2 # hex-encoded fragment ID
+  last_updated_at: 2019-06-02T16:20:26.201000000Z                               # RFC3339 timestamp of last fragment status change
+  received_at: 2019-06-02T16:20:26.201000000Z                                   # RFC3339 timestamp of fragment receivement
+  received_from: Network,                                                       # how fragment was received
+  status: Pending,                                                              # fragment status
+</code></pre>
+<p><code>received_from</code> can be one of:</p>
+<pre><code class="language-yaml">received_from: Rest     # fragment was received from node's REST API
+</code></pre>
+<pre><code class="language-yaml">received_from: Network  # fragment was received from the network
+</code></pre>
+<p><code>status</code> can be one of:</p>
+<pre><code class="language-yaml">status: Pending                 # fragment is pending
+</code></pre>
+<pre><code class="language-yaml">status:
+  Rejected:                     # fragment was rejected
+    reason: reason of rejection # cause
+</code></pre>
+<pre><code class="language-yaml">status:                         # fragment was included in a block
+  InABlock:
+    date: &quot;6637.3&quot;            # block epoch and slot ID formed as &lt;epoch&gt;.&lt;slot_id&gt;
+    block: &quot;d9040ca57e513a36ecd3bb54207dfcd10682200929cad6ada46b521417964174&quot;
+</code></pre>
+<h2 id="blockchain-tip"><a class="header" href="#blockchain-tip">Blockchain tip</a></h2>
+<p>Retrieves a hex-encoded ID of the blockchain tip</p>
+<pre><code class="language-sh">jcli rest v0 tip get &lt;options&gt;
+</code></pre>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+</ul>
+<h2 id="get-block"><a class="header" href="#get-block">Get block</a></h2>
+<p>Retrieves a hex-encoded block with given ID</p>
+<pre><code class="language-sh">jcli rest v0 block &lt;block_id&gt; get &lt;options&gt;
+</code></pre>
+<ul>
+<li>&lt;block_id&gt; - hex-encoded block ID</li>
+</ul>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+</ul>
+<h2 id="get-next-block-id"><a class="header" href="#get-next-block-id">Get next block ID</a></h2>
+<p>Retrieves a list of hex-encoded IDs of descendants of block with given ID.
+Every list element is in separate line. The IDs are sorted from closest to farthest.</p>
+<pre><code class="language-sh">jcli rest v0 block &lt;block_id&gt; next-id get &lt;options&gt;
+</code></pre>
+<ul>
+<li>&lt;block_id&gt; - hex-encoded block ID</li>
+</ul>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+<li>-c –count &lt;count&gt; - Maximum number of IDs, must be between 1 and 100, default 1</li>
+</ul>
+<h2 id="get-account-state"><a class="header" href="#get-account-state">Get account state</a></h2>
+<p>Get account state</p>
+<pre><code class="language-sh">jcli rest v0 account get &lt;account-id&gt; &lt;options&gt;
+</code></pre>
+<ul>
+<li>&lt;account-id&gt; - ID of an account, bech32-encoded</li>
+</ul>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+<li>–output-format &lt;format&gt; - see <a href="#conventions">conventions</a></li>
+</ul>
+<p>YAML printed on success</p>
+<pre><code class="language-yaml">---
+counter: 1
+delegation: c780f14f9782770014d8bcd514b1bc664653d15f73a7158254730c6e1aa9f356
+value: 990
+</code></pre>
+<ul>
+<li><code>value</code> is the current balance of the account;</li>
+<li><code>counter</code> is the number of transactions performed using this account
+this is useful to know when signing new transactions;</li>
+<li><code>delegation</code> is the Stake Pool Identifier the account is delegating to.
+it is possible this value is not set if there is no delegation certificate
+sent associated to this account.</li>
+</ul>
+<h2 id="node-settings"><a class="header" href="#node-settings">Node settings</a></h2>
+<p>Fetches node settings</p>
+<pre><code class="language-sh">jcli rest v0 settings get &lt;options&gt;
+</code></pre>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+<li>–output-format &lt;format&gt; - see <a href="#conventions">conventions</a></li>
+</ul>
+<p>YAML printed on success</p>
+<pre><code class="language-yaml">---
+block0Hash: 8d94ecfcc9a566f492e6335858db645691f628b012bed4ac2b1338b5690355a7  # block 0 hash of
+block0Time: &quot;2019-07-09T12:32:51+00:00&quot;         # block 0 creation time of
+blockContentMaxSize: 102400                     # the block content's max size in bytes
+consensusVersion: bft                           # currently used consensus
+currSlotStartTime: &quot;2019-07-09T12:55:11+00:00&quot;  # current slot start time
+epochStabilityDepth: 102400                     # the depth, number of blocks, to which we consider the blockchain to
+                                                # be stable and prevent rollback beyond that depth
+fees:                                           # transaction fee configuration
+  certificate: 4                                # fee per certificate
+  coefficient: 1                                # fee per every input and output
+  constant: 2                                   # fee per transaction
+  per_certificate_fees:                         # fee per certificate operations, all zero if this object absent (optional)
+    certificate_pool_registration: 5            # fee per pool registration, zero if absent (optional)
+    certificate_stake_delegation: 15            # fee per stake delegation, zero if absent (optional)
+    certificate_owner_stake_delegation: 2       # fee per pool owner stake delegation, zero if absent (optional)
+rewardParams:                                   # parameters for rewards calculation
+  compoundingRatio:                             # speed at which reward is reduced. Expressed as numerator/denominator
+    denominator: 1024
+    numerator: 1
+  compoundingType: Linear                       # reward reduction algorithm. Possible values: &quot;Linear&quot; and &quot;Halvening&quot;
+  epochRate: 100                                # number of epochs between reward reductions
+  epochStart: 0                                 # epoch when rewarding starts
+  initialValue: 10000                           # initial reward
+slotDuration: 5                                 # slot duration in seconds
+slotsPerEpoch: 720                              # number of slots per epoch
+treasuryTax:                                    # tax from reward that goes to pot
+  fixed: 5                                      # what get subtracted as fixed value
+  ratio:                                        # ratio of tax after fixed amount is subtracted. Expressed as numerator/denominator
+    numerator: 1
+    denominator: 10000
+  max: 100                                      # limit of tax (optional)
+</code></pre>
+<h2 id="node-shutdown"><a class="header" href="#node-shutdown">Node shutdown</a></h2>
+<p>Node shutdown</p>
+<pre><code class="language-sh">jcli rest v0 shutdown get &lt;options&gt;
+</code></pre>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+</ul>
+<h2 id="get-leaders"><a class="header" href="#get-leaders">Get leaders</a></h2>
+<p>Fetches list of leader IDs</p>
+<pre><code class="language-sh">jcli rest v0 leaders get &lt;options&gt;
+</code></pre>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+<li>–output-format &lt;format&gt; - see <a href="#conventions">conventions</a></li>
+</ul>
+<p>YAML printed on success</p>
+<pre><code class="language-yaml">---
+- 1 # list of leader IDs
+- 2
+</code></pre>
+<h2 id="register-leader"><a class="header" href="#register-leader">Register leader</a></h2>
+<p>Register new leader and get its ID</p>
+<pre><code class="language-sh">jcli rest v0 leaders post &lt;options&gt;
+</code></pre>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+<li>–output-format &lt;format&gt; - see <a href="#conventions">conventions</a></li>
+<li>-f, –file &lt;file&gt; - File containing YAML with leader secret.
+It must have the same format as secret YAML passed to Jormungandr as –secret.
+If not provided, YAML will be read from stdin.</li>
+</ul>
+<p>On success created leader ID is printed</p>
+<pre><code class="language-sh">3
+</code></pre>
+<h2 id="delete-leader"><a class="header" href="#delete-leader">Delete leader</a></h2>
+<p>Delete leader with given ID</p>
+<pre><code class="language-sh">jcli rest v0 leaders delete &lt;id&gt; &lt;options&gt;
+</code></pre>
+<ul>
+<li>&lt;id&gt; - ID of deleted leader</li>
+</ul>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+</ul>
+<h2 id="get-leadership-logs"><a class="header" href="#get-leadership-logs">Get leadership logs</a></h2>
+<p>Fetches leadership logs</p>
+<pre><code class="language-sh">jcli rest v0 leaders logs get &lt;options&gt;
+</code></pre>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+<li>–output-format &lt;format&gt; - see <a href="#conventions">conventions</a></li>
+</ul>
+<p>YAML printed on success</p>
+<pre><code class="language-yaml">---
+- created_at_time: &quot;2019-08-19T12:25:00.417263555+00:00&quot;
+  enclave_leader_id: 1
+  finished_at_time: &quot;2019-08-19T23:19:05.010113333+00:00&quot;
+  scheduled_at_date: &quot;0.3923&quot;
+  scheduled_at_time: &quot;2019-08-19T23:18:35+00:00&quot;
+  wake_at_time: &quot;2019-08-19T23:18:35.001254555+00:00&quot;
+  status:
+    Block:
+      chain_length: 201018
+      block: d9040ca57e513a36ecd3bb54207dfcd10682200929cad6ada46b521417964174
+      parent: cc72d4ca957b03d7c795596b7fd7b1ff09c649c3e2877c508c0466abc8604832
+
+</code></pre>
+<p>Different value for the status:</p>
+<pre><code class="language-yaml"># meaning the action is still pending to happen
+status: Pending
+</code></pre>
+<pre><code class="language-yaml"># meaning the action successfully create the given block with the given hash and parent
+status:
+  Block:
+    chain_length: 201018
+    block: d9040ca57e513a36ecd3bb54207dfcd10682200929cad6ada46b521417964174
+    parent: cc72d4ca957b03d7c795596b7fd7b1ff09c649c3e2877c508c0466abc8604832
+</code></pre>
+<pre><code class="language-yaml"># meaning the event has failed for some reasons
+status:
+  Rejected:
+    reason: &quot;Missed the deadline to compute the schedule&quot;
+</code></pre>
+<h2 id="get-stake-pools"><a class="header" href="#get-stake-pools">Get stake pools</a></h2>
+<p>Fetches list of stake pool IDs</p>
+<pre><code class="language-sh">jcli rest v0 stake-pools get &lt;options&gt;
+</code></pre>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+<li>–output-format &lt;format&gt; - see <a href="#conventions">conventions</a></li>
+</ul>
+<p>YAML printed on success</p>
+<pre><code class="language-yaml">---
+- 5cf03f333f37eb7b987dbc9017b8a928287a3d77d086cd93cd9ad05bcba7e60f # list of stake pool IDs
+- 3815602c096fcbb91072f419c296c3dfe1f730e0f446a9bd2553145688e75615
+</code></pre>
+<h2 id="get-stake-distribution"><a class="header" href="#get-stake-distribution">Get stake distribution</a></h2>
+<p>Fetches stake information</p>
+<pre><code class="language-sh">jcli rest v0 stake get &lt;options&gt; [&lt;epoch&gt;]
+</code></pre>
+<ul>
+<li>&lt;epoch&gt; - Epoch to get the stake distribution from. (optional)</li>
+</ul>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+<li>–output-format &lt;format&gt; - see <a href="#conventions">conventions</a></li>
+</ul>
+<p>YAML printed on success</p>
+<ul>
+<li><code>jcli rest v0 stake get &lt;options&gt;</code> - stake distribution from the current epoch</li>
+</ul>
+<pre><code class="language-yaml">---
+epoch: 228      # Epoch of last block
+stake:
+  dangling: 0 # Total value stored in accounts, but assigned to nonexistent pools
+  pools:
+    - - 5cf03f333f37eb7b987dbc9017b8a928287a3d77d086cd93cd9ad05bcba7e60f # stake pool ID
+      - 1000000000000                                                    # staked value
+    - - 3815602c096fcbb91072f419c296c3dfe1f730e0f446a9bd2553145688e75615 # stake pool ID
+      - 1000000000000                                                    # staked value
+  unassigned: 0 # Total value stored in accounts, but not assigned to any pool
+</code></pre>
+<ul>
+<li><code>jcli rest v0 stake get &lt;options&gt; 10</code> - stake distribution from a specific epoch (epoch 10 in this example)</li>
+</ul>
+<pre><code class="language-yaml">---
+epoch: 10      # Epoch specified in the request
+stake:
+  dangling: 0 # Total value stored in accounts, but assigned to nonexistent pools
+  pools:
+    - - 5cf03f333f37eb7b987dbc9017b8a928287a3d77d086cd93cd9ad05bcba7e60f # stake pool ID
+      - 1000000000000                                                    # staked value
+    - - 3815602c096fcbb91072f419c296c3dfe1f730e0f446a9bd2553145688e75615 # stake pool ID
+      - 1000000000000                                                    # staked value
+  unassigned: 0 # Total value stored in accounts, but not assigned to any pool
+</code></pre>
+<h2 id="network-stats"><a class="header" href="#network-stats">Network stats</a></h2>
+<p>Fetches network stats</p>
+<pre><code class="language-sh">jcli rest v0 network stats get &lt;options&gt;
+</code></pre>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+<li>–output-format &lt;format&gt; - see <a href="#conventions">conventions</a></li>
+</ul>
+<p>YAML printed on success</p>
+<pre><code class="language-yaml">---
+- # node address (optional)
+  addr: &quot;3.124.55.91:3000&quot;
+  # hex-encoded node ID
+  nodeId: 0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20
+  # timestamp of when the connection was established
+  establishedAt: &quot;2019-10-14T06:24:12.010231281+00:00&quot;
+  # timestamp of last time block was received from node if ever (optional)
+  lastBlockReceived: &quot;2019-10-14T00:45:57.419496113+00:00&quot;
+  # timestamp of last time fragment was received from node if ever (optional)
+  lastFragmentReceived: &quot;2019-10-14T00:45:58.419496150+00:00&quot;
+  # timestamp of last time gossip was received from node if ever (optional)
+  lastGossipReceived: &quot;2019-10-14T00:45:59.419496188+00:00&quot;
+</code></pre>
+<h2 id="get-stake-pool-details"><a class="header" href="#get-stake-pool-details">Get stake pool details</a></h2>
+<p>Fetches stake pool details</p>
+<pre><code class="language-sh">jcli rest v0 stake-pool get &lt;pool-id&gt; &lt;options&gt;
+</code></pre>
+<ul>
+<li>&lt;pool-id&gt; - hex-encoded pool ID</li>
+</ul>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+<li>–output-format &lt;format&gt; - see <a href="#conventions">conventions</a></li>
+</ul>
+<p>YAML printed on success</p>
+<pre><code class="language-yaml">---
+tax:                        # pool reward
+  fixed: 5                  # what get subtracted as fixed value
+  ratio:                    # ratio of tax after fixed amount is subtracted. Expressed as numerator/denominator
+    numerator: 1
+    denominator: 10000
+  max: 100                  # limit of tax (optional)
+total_stake: 2000000000000  # total stake pool value
+# bech32-encoded stake pool KES key
+kesPublicKey: kes25519-12-pk1q7susucqwje0lpetqzjgzncgcrjzx7e2guh900qszdjskkeyqpusf3p39r
+# bech32-encoded stake pool VRF key
+vrfPublicKey: vrf_pk1rcm4qm3q9dtwq22x9a4avnan7a3k987zvepuxwekzj3uyu6a8v0s6sdy0l
+</code></pre>
+<h2 id="get-rewards-history-for-a-specific-epoch"><a class="header" href="#get-rewards-history-for-a-specific-epoch">Get rewards history for a specific epoch</a></h2>
+<p>Get the rewards history of a given <em>epoch</em>.</p>
+<pre><code class="language-sh">jcli rest v0 rewards epoch get &lt;epoch&gt; &lt;options&gt;
+</code></pre>
+<ul>
+<li>&lt;epoch&gt; - epoch number to get the rewards history for.</li>
+</ul>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+</ul>
+<pre><code class="language-sh">jcli rest v0 rewards epoch get 82 -h &lt;node_addr&gt;
+</code></pre>
+<pre><code class="language-json">[
+  {
+    &quot;epoch&quot;: 82,              // the epoch number to collect rewards info from (rewards are from epoch 81)
+    &quot;drawn&quot;: 3835616440000,   // Total Drawn from reward escrow pot for the epoch
+    &quot;fees&quot;: 1828810000,       // Fees contributed into the pot the epoch
+    &quot;treasury&quot;: 462179124139, // Value added to the treasury
+    &quot;stake_pools&quot;: {
+      &quot;0087011b9c626759f19d9d0315a9b42492ba497438c12efc026d664c9f324ecb&quot;: [
+        1683091391, // pool's owned rewards from taxes
+        32665712521 // distributed rewards to delegators
+      ],
+      &quot;014bb0d84f40900f6dd85835395bc38da3ab81435d1e6ee27d419d6eeaf7d16a&quot;: [
+        47706672,
+        906426770
+      ],
+    },
+    &quot;accounts&quot;: {
+      &quot;ed25519_pk1qqq6r7r7medu2kdpvdra5kwh8uz9frvftm9lf25shm7ygx9ayvss0nqke9&quot;: 427549785, // Amount added to each account
+      &quot;ed25519_pk1qqymlwehsztpzhy2k4szkp7j0xk0ra35jyxcpgr9p9q4ngvzzc5q4sh2gm&quot;: 24399360,
+      &quot;ed25519_pk1qq9h62jv6a0mz36xgecjrz9tm8z6ay3vj4d64ashxkgxcyhjewwsvgvelj&quot;: 22449169,
+      &quot;ed25519_pk1qq9l2qrqazk5fp4kt2kvjtsjc32g0ud888um8k2pvms0cw2r0uzsute83u&quot;: 1787992,
+      &quot;ed25519_pk1qqx6h559ee7pa67dm255d0meekt6dmq6857x302wdwrhzv47z9hqucdnt2&quot;: 369024,
+    }
+  }
+]
+</code></pre>
+<h2 id="get-rewards-history-for-some-epochs"><a class="header" href="#get-rewards-history-for-some-epochs">Get rewards history for some epochs</a></h2>
+<p>Get the rewards history of the <em>length</em> last epoch(s) from tip.</p>
+<pre><code class="language-sh">jcli rest v0 rewards history get &lt;length&gt; &lt;options&gt;
+</code></pre>
+<ul>
+<li>&lt;length&gt; - number of epochs, starting from the last epoch from tip, to get the reward history for.</li>
+</ul>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+</ul>
+<pre><code class="language-sh">jcli rest v0 rewards history get 2 -h &lt;node_addr&gt;
+</code></pre>
+<pre><code class="language-json">[
+  {
+    &quot;epoch&quot;: 93,
+    &quot;drawn&quot;: 3835616440000,
+    &quot;fees&quot;: 641300000,
+    &quot;treasury&quot;: 467151470296,
+    &quot;stake_pools&quot;: {
+      &quot;0087011b9c626759f19d9d0315a9b42492ba497438c12efc026d664c9f324ecb&quot;: [
+        1121750881,
+        21771124247
+      ],
+      &quot;014bb0d84f40900f6dd85835395bc38da3ab81435d1e6ee27d419d6eeaf7d16a&quot;: [
+        429241408,
+        8155586765
+      ],
+      &quot;01bd272cede02d0b0c9cd47b16e5356ab3fb2330dd9d1e972ab5494365309d2a&quot;: [
+        1691506850,
+        32829041110
+      ],
+    },
+    &quot;accounts&quot;: {
+      &quot;ed25519_pk1002kje4l8j7kvsseyauusk3s7nzef4wcvvafltjmg0rkzr6qccyqg064kz&quot;: 33311805,
+      &quot;ed25519_pk100549kxqn8tnzfzr5ndu0wx7pp2y2ck28mnykq03m2z5qcwkvazqx9fp0h&quot;: 15809,
+      &quot;ed25519_pk10054y058qfn5wnazalnkax0mthg06ucq87nn9320rphtye5ca0xszjcelk&quot;: 10007789,
+      &quot;ed25519_pk10069dsunppwttl4qtsfnyhjnqwkunuwxjxlandl2fnpwpuznf5pqmg3twe&quot;: 545094806,
+      &quot;ed25519_pk1009sfpljfgx30z70l3n63gj7w9vp3epugmd3vn62fyr07ut9pfwqjp7f8h&quot;: 4208232,
+    },
+  },
+  {
+    &quot;epoch&quot;: 92,
+    &quot;drawn&quot;: 3835616440000,
+    &quot;fees&quot;: 620400000,
+    &quot;treasury&quot;: 480849578351,
+    &quot;stake_pools&quot;: {
+      &quot;0087011b9c626759f19d9d0315a9b42492ba497438c12efc026d664c9f324ecb&quot;: [
+        979164601,
+        19003786459
+      ],
+      &quot;0105449dd66524111349ef677d1ebc25247a5ba2d094913f52aa4db265eac03a&quot;: [
+        26977274,
+        972170279
+      ],
+      &quot;014bb0d84f40900f6dd85835395bc38da3ab81435d1e6ee27d419d6eeaf7d16a&quot;: [
+        299744265,
+        5695141053
+      ],
+    },
+    &quot;accounts&quot;: {
+      &quot;ed25519_pk1002kje4l8j7kvsseyauusk3s7nzef4wcvvafltjmg0rkzr6qccyqg064kz&quot;: 40581616,
+      &quot;ed25519_pk100549kxqn8tnzfzr5ndu0wx7pp2y2ck28mnykq03m2z5qcwkvazqx9fp0h&quot;: 49156,
+      &quot;ed25519_pk10054y058qfn5wnazalnkax0mthg06ucq87nn9320rphtye5ca0xszjcelk&quot;: 12306084,
+      &quot;ed25519_pk10069dsunppwttl4qtsfnyhjnqwkunuwxjxlandl2fnpwpuznf5pqmg3twe&quot;: 142737175,
+      &quot;ed25519_pk1009sfpljfgx30z70l3n63gj7w9vp3epugmd3vn62fyr07ut9pfwqjp7f8h&quot;: 3932910,
+    },
+  }
+]
+</code></pre>
+<hr />
+<h2 id="get-voting-committee-members"><a class="header" href="#get-voting-committee-members">Get voting committee members</a></h2>
+<p>Get the list of voting committee members.</p>
+<pre><code class="language-sh">jcli rest v0 vote active committees get &lt;options&gt;
+</code></pre>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+<li>–output-format &lt;format&gt; - see <a href="#conventions">conventions</a></li>
+</ul>
+<p>YAML printed on success</p>
+<pre><code class="language-yaml">---
+- 7ef044ba437057d6d944ace679b7f811335639a689064cd969dffc8b55a7cc19 # list of members
+- f5285eeead8b5885a1420800de14b0d1960db1a990a6c2f7b517125bedc000db
+</code></pre>
+<h2 id="get-active-voting-plans-and-proposals"><a class="header" href="#get-active-voting-plans-and-proposals">Get active voting plans and proposals</a></h2>
+<p>Get the list of active voting plans and proposals.</p>
+<pre><code class="language-sh">jcli rest v0 vote active plans get &lt;options&gt;
+</code></pre>
+<p>The options are</p>
+<ul>
+<li>-h &lt;node_addr&gt; - see <a href="#conventions">conventions</a></li>
+<li>–debug - see <a href="#conventions">conventions</a></li>
+<li>–output-format &lt;format&gt; - see <a href="#conventions">conventions</a></li>
+</ul>
+<p>YAML printed on success</p>
+<pre><code class="language-yaml">---
+- committee_end:
+    epoch: 10
+    slot_id: 0
+  proposals:
+    - external_id: adb92757155d09e7f92c9f100866a92dddd35abd2a789a44ae19ab9a1dbc3280
+      options:
+        OneOf:
+          max_value: 3
+    - external_id: 6778d37161c3962fe62c9fa8a31a55bccf6ec2d1ea254a467d8cd994709fc404
+      options:
+        OneOf:
+          max_value: 3
+  vote_end:
+    epoch: 5
+    slot_id: 0
+  vote_start:
+    epoch: 1
+    slot_id: 0
+</code></pre>
+<footer id="open-on-gh">Found a bug? <a href="https://github.com/input-output-hk/catalyst-core/edit/main/book/src/02_core_ledger/04_jcli/rest.md">Edit this page on GitHub.</a></footer>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../02_core_ledger/04_jcli/key.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next" href="../../02_core_ledger/04_jcli/transaction.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../02_core_ledger/04_jcli/key.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next" href="../../02_core_ledger/04_jcli/transaction.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../.././book/assets/theme/pagetoc.js"></script>
+
+
+    </body>
+</html>

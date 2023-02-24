@@ -7,7 +7,7 @@ Jormungandr comes with a CLI client for manual communication with nodes over HTT
 Many CLI commands have common arguments:
 
 - `-h <addr>` or `--host <addr>` - Node API address. Must always have `http://` or
-`https://` prefix. E.g. `-h http://127.0.0.1`, `--host https://node.com:8443/cardano/api`
+`https://` prefix and always ends with the `/api`. E.g. `-h http://127.0.0.1:8081/api`, `--host https://node.com:8443/cardano/api`.
 - `--debug` - Print additional debug information to stderr.
 The output format is intentionally undocumented and unstable
 - `--output-format <format>` - Format of output data. Possible values: json, yaml, default yaml.

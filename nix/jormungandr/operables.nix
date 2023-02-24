@@ -80,6 +80,30 @@ in {
         done
       fi
 
+      # Allows resetting our footprint in persistent storage
+      if [[ -f "$STORAGE_PATH/reset" ]]; then
+        echo ">>> Reset file detected at $STORAGE_PATH/reset"
+        rm -rf "$STORAGE_PATH/reset"
+
+        if [[ -d "$STORAGE_PATH/fragments" ]]; then
+          echo ">>> Deleting $STORAGE_PATH/fragments"
+          rm -rf "$STORAGE_PATH/fragments"
+        fi
+
+        if [[ -d "$STORAGE_PATH/permanent" ]]; then
+          echo ">>> Deleting $STORAGE_PATH/permanent"
+          rm -rf "$STORAGE_PATH/permanent"
+        fi
+
+        if [[ -d "$STORAGE_PATH/volatile" ]]; then
+          echo ">>> Deleting $STORAGE_PATH/volatile"
+          rm -rf "$STORAGE_PATH/volatile"
+        fi
+
+        echo ">>> Reset complete"
+      fi
+
+      echo "Starting node..."
       exec "$BIN_PATH" "''${args[@]}"
     '';
   };

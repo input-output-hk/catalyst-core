@@ -13,56 +13,17 @@ logger = logs.getLogger()
 
 
 class TaskSchedule(object):
-    """A schedule of task names with corresponding method names that are executed
+    """A schedule of task names with corresponding async methods that are executed
     sequentially. If the current task raises an exception, running the task list
     again will resume from it."""
 
-    tasks: list[str] = []
     current_task: str | None = None
+    tasks: list[str] = []
 
-    def reset_schedule(self) -> NoReturn:
-        """Reset the schedule by setting the current task to None, and raising
-        an exception. This method never returns."""
-        self.current_task = None
-        raise Exception("schedule was reset")
-
-    def is_resuming(self) -> bool:
-        return self.current_task is not None
-
-    async def run(self) -> None:
-        """Runs through the startup tasks. This schedule is called each time that
-        a nodes starts."""
-        # checks if it should resume from a current task or go through all
-        if self.is_resuming():
-            task_idx = self.tasks.index(self.current_task)
-            tasks = self.tasks[task_idx:]
-            logger.info("SCHEDULE RESTART")
-        else:
-            tasks = self.tasks[:]
-            logger.info("SCHEDULE START")
-
-        for task in tasks:
-            try:
-                # runs tasks that are meant to be implemented by deriving classes
-                await self.run_task(task)
-            except Exception as e:
-                raise Exception(f"'{task}' error: {e}") from e
-        logger.info("SCHEDULE END")
-
-    async def run_task(self, task_name):
-        logger.info(f"{task_name}")
-        logger.debug(f"|'{task_name}' start")
-        self.current_task = task_name
-        task_exec = getattr(self, task_name)
-        await task_exec()
-        logger.debug(f"|'{task_name}' end")
-
-
-class Leader0Schedule(TaskSchedule):
     def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
         self.db_url = db_url
         self.jorm_config = jorm_config
-        self.current_task: str | None = None
+        self.current_task = None
         self.tasks: list[str] = [
             "bootstrap_storage",
             "bootstrap_db",
@@ -70,14 +31,42 @@ class Leader0Schedule(TaskSchedule):
             "set_upcoming_election",
             "set_node_secrets",
             "set_node_config",
-            "gather_voteplan_proposal",
-            "generate_block0",
-            "generate_voteplan",
-            "wait_for_voting",
-            "voting",
-            "tally",
             "cleanup",
         ]
+
+    def reset_schedule(self) -> NoReturn:
+        """Reset the schedule by setting the current task to None, and raising
+        an exception. This method never returns."""
+        self.current_task = None
+        raise Exception("schedule was reset")
+
+    async def run(self) -> None:
+        """Runs through the scheduled tasks."""
+        # checks if it should resume from a current task or go through all
+        if self.current_task is None:
+            tasks = self.tasks[:]
+            logger.info("SCHEDULE START")
+        else:
+            task_idx = self.tasks.index(self.current_task)
+            tasks = self.tasks[task_idx:]
+            logger.info("SCHEDULE RESTART")
+
+        for task in tasks:
+            try:
+                # run the async task
+                await self.run_task(task)
+            except Exception as e:
+                raise Exception(f"'{task}' error: {e}") from e
+        logger.info("SCHEDULE END")
+
+    async def run_task(self, task_name):
+        """Runs the async method with the given task_name."""
+        logger.info(f"{task_name}")
+        logger.debug(f"|'{task_name}' start")
+        self.current_task = task_name
+        task_exec = getattr(self, task_name)
+        await task_exec()
+        logger.debug(f"|'{task_name}' end")
 
     async def bootstrap_storage(self):
         # finds or tries to create the storage from
@@ -93,17 +82,29 @@ class Leader0Schedule(TaskSchedule):
     async def bootstrap_host(self):
         # gets host information
         try:
-            result = await utils.fetch_leader0_node_info(self.conn)
-            logger.debug("leader0 node info retrieved from db")
+            result = await utils.fetch_leader_node_info(self.conn)
+            logger.debug("leader node info retrieved from db")
             self.node_info = result
         except Exception as e:
-            logger.warning(f"leader0 node info was not fetched: {e}")
+            logger.warning(f"leader node info was not fetched: {e}")
             # we add the row
             #  - by adding the keys
-            await utils.insert_leader0_node_info(self.conn, self.jorm_config.jcli_path)
+            await utils.insert_leader_node_info(self.conn, self.jorm_config.jcli_path)
             # if all is good, we save and reset the schedule
-            logger.debug("inserted leader0 node info, resetting the schedule")
+            logger.debug("inserted leader node info, resetting the schedule")
             self.reset_schedule()
+
+        # gets info for other leaders
+        try:
+            # todo
+            result = await utils.fetch_peers_node_info(self.conn)
+            logger.debug(f"peers node info retrieved from db: {result}")
+            # logger.debug("peer leader node info retrieved from db")
+            # self.peer_info = {}
+        except Exception as e:
+            logger.warning(f"peer leader node info was not fetched: {e}")
+            # todo
+            # self.reset_schedule()
 
     async def set_upcoming_election(self):
         # This all starts by getting the election row that has the nearest
@@ -150,13 +151,27 @@ class Leader0Schedule(TaskSchedule):
         logger.debug(f"node config: {node_config_yaml}")
         self.node_config_file = f"{node_config_file}"
 
-    async def gather_voteplan_proposal(self):
-        raise Exception("TODO")
 
-    async def generate_block0(self):
-        pass
+class LeaderSchedule(TaskSchedule):
+    def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
+        self.db_url = db_url
+        self.jorm_config = jorm_config
+        self.current_task: str | None = None
+        self.tasks: list[str] = [
+            "bootstrap_storage",
+            "bootstrap_db",
+            "bootstrap_host",
+            "set_upcoming_election",
+            "set_node_secrets",
+            "set_node_config",
+            "get_block0",
+            "wait_for_voting",
+            "voting",
+            "tally",
+            "cleanup",
+        ]
 
-    async def generate_voteplan(self):
+    async def get_block0(self):
         pass
 
     async def wait_for_voting(self):
@@ -174,14 +189,34 @@ class Leader0Schedule(TaskSchedule):
             await self.conn.close()
 
 
-class LeaderSchedule(TaskSchedule):
+class Leader0Schedule(LeaderSchedule):
     def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
         self.db_url = db_url
         self.jorm_config = jorm_config
         self.current_task: str | None = None
-        self.tasks: list[str] = ["todo"]
+        self.tasks: list[str] = [
+            "bootstrap_storage",
+            "bootstrap_db",
+            "bootstrap_host",
+            "set_upcoming_election",
+            "set_node_secrets",
+            "set_node_config",
+            "gather_voteplan_proposal",
+            "generate_block0",
+            "generate_voteplan",
+            "wait_for_voting",
+            "voting",
+            "tally",
+            "cleanup",
+        ]
 
-    async def todo(self):
+    async def gather_voteplan_proposal(self):
+        raise Exception("TODO")
+
+    async def generate_block0(self):
+        pass
+
+    async def generate_voteplan(self):
         pass
 
 

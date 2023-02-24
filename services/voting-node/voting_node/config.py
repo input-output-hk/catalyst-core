@@ -24,6 +24,7 @@ class JormConfig(object):
         self.p2p_port = p2p_port
 
 
+"""Default template for node_config.yaml."""
 NODE_CONFIG_TEMPLATE: Final = """
 ---
 storage: #"./node_storage"

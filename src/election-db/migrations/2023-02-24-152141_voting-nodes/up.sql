@@ -3,7 +3,7 @@
 -- Voting Nodes Table - Defines nodes in the network
 -- This table is looked up by hostname
 CREATE TABLE voting_nodes (
-    hostname NAME PRIMARY KEY,
+    hostname VARCHAR PRIMARY KEY,
     pubkey TEXT NOT NULL,
     seckey TEXT NOT NULL,
     netkey TEXT NOT NULL

@@ -25,4 +25,4 @@ where = ["."]
 version = {file = "VERSION"}
 
 [project.scripts]
-voting-node = "voting_node.cli:cli"
+voting-node = "voting_node.main:cli"

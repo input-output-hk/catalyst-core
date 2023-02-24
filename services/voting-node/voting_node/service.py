@@ -88,7 +88,9 @@ class VotingNode(uvicorn.Server):
     def get_schedule(self):
         # checks the hostname and returns the schedule
         # according to its leadership role.
-        match utils.get_leadership_role_by_hostname():
+        # raises exception is something goes wrong with the hostname
+        host_name: str = utils.get_hostname().lower()
+        match utils.get_leadership_role_by_hostname(host_name):
             case "leader0":
                 return tasks.Leader0Schedule(self.db_url, self.jorm_config)
             case "leader":

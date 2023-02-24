@@ -132,6 +132,10 @@
 <span id="132">132</span>
 <span id="133">133</span>
 <span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::mode::mock::ContextLock;
 <span class="kw">use </span>snapshot_lib::voting_group::{
     RepsVotersAssigner, DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP,
@@ -193,7 +197,11 @@
     <span class="kw">let </span>representative = input
         .representatives_group
         .unwrap_or_else(|| DEFAULT_REPRESENTATIVE_GROUP.to_owned());
-    <span class="kw">let </span>assigner = RepsVotersAssigner::new(direct_voter, representative, input.dreps);
+    <span class="kw">let </span>assigner = RepsVotersAssigner::new(
+        direct_voter,
+        representative,
+        input.dreps.unwrap_or_default(),
+    );
     <span class="kw">let </span>snapshot = Snapshot::from_raw_snapshot(
         input.snapshot,
         input.min_stake_threshold,

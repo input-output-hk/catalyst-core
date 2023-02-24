@@ -234,6 +234,9 @@
 <span id="234">234</span>
 <span id="235">235</span>
 <span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::convert::TryInto;
 
 <span class="kw">use </span>chain_impl_mockchain::testing::TestGen;
@@ -273,7 +276,7 @@
                 voting_power_cap: <span class="number">0</span>.into(),
                 direct_voters_group: <span class="prelude-val">None</span>,
                 representatives_group: <span class="prelude-val">None</span>,
-                dreps: Dreps::default(),
+                dreps: <span class="prelude-val">None</span>,
             },
         }
     }
@@ -330,8 +333,11 @@
             .clone()
             .unwrap_or_else(|| DEFAULT_REPRESENTATIVE_GROUP.into());
 
-        <span class="kw">let </span>assigner =
-            RepsVotersAssigner::new(direct_voter, representative, <span class="self">self</span>.content.dreps.clone());
+        <span class="kw">let </span>assigner = RepsVotersAssigner::new(
+            direct_voter,
+            representative,
+            <span class="self">self</span>.content.dreps.clone().unwrap_or_default(),
+        );
         <span class="self">self</span>.into_full_snapshot_infos(<span class="kw-2">&amp;</span>assigner)
     }
 }
@@ -346,7 +352,7 @@
     representatives_group: <span class="prelude-ty">Option</span>&lt;String&gt;,
     voting_registrations_count: usize,
     voting_registrations: <span class="prelude-ty">Option</span>&lt;Vec&lt;VotingRegistration&gt;&gt;,
-    dreps: Dreps,
+    dreps: <span class="prelude-ty">Option</span>&lt;Dreps&gt;,
 }
 
 <span class="kw">impl </span>Default <span class="kw">for </span>RawSnapshotBuilder {
@@ -360,7 +366,7 @@
             representatives_group: <span class="prelude-val">Some</span>(DEFAULT_REPRESENTATIVE_GROUP.into()),
             voting_registrations_count: <span class="number">2</span>,
             voting_registrations: <span class="prelude-val">None</span>,
-            dreps: Dreps::default(),
+            dreps: <span class="prelude-val">None</span>,
         }
     }
 }
@@ -385,7 +391,7 @@
     </span>}
 
     <span class="kw">pub fn </span>with_dreps(<span class="kw-2">mut </span><span class="self">self</span>, dreps: Dreps) -&gt; <span class="self">Self </span>{
-        <span class="self">self</span>.dreps = dreps;
+        <span class="self">self</span>.dreps = <span class="prelude-val">Some</span>(dreps);
         <span class="self">self
     </span>}
 

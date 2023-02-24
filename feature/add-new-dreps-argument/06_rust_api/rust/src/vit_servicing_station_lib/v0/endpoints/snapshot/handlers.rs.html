@@ -146,7 +146,7 @@
     </span><span class="kw">pub </span>voting_power_cap: Fraction,
     <span class="kw">pub </span>direct_voters_group: <span class="prelude-ty">Option</span>&lt;String&gt;,
     <span class="kw">pub </span>representatives_group: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="kw">pub </span>dreps: Dreps,
+    <span class="kw">pub </span>dreps: <span class="prelude-ty">Option</span>&lt;Dreps&gt;,
 }
 
 <span class="attribute">#[tracing::instrument(skip(context))]

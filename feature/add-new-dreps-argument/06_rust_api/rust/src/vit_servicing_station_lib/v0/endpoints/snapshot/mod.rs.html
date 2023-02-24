@@ -977,6 +977,8 @@
 <span id="977">977</span>
 <span id="978">978</span>
 <span id="979">979</span>
+<span id="980">980</span>
+<span id="981">981</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>handlers;
 <span class="kw">mod </span>routes;
 
@@ -1140,13 +1142,13 @@
     voting_power_cap: Fraction,
     direct_voters_group: <span class="prelude-ty">Option</span>&lt;String&gt;,
     representatives_group: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    dreps: Dreps,
+    dreps: <span class="prelude-ty">Option</span>&lt;Dreps&gt;,
     context: SharedContext,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), HandleError&gt; {
     <span class="kw">let </span>direct_voter = direct_voters_group.unwrap_or_else(|| DEFAULT_DIRECT_VOTER_GROUP.into());
     <span class="kw">let </span>representative =
         representatives_group.unwrap_or_else(|| DEFAULT_REPRESENTATIVE_GROUP.into());
-    <span class="kw">let </span>assigner = RepsVotersAssigner::new(direct_voter, representative, dreps);
+    <span class="kw">let </span>assigner = RepsVotersAssigner::new(direct_voter, representative, dreps.unwrap_or_default());
     <span class="kw">let </span>snapshot =
         Snapshot::from_raw_snapshot(snapshot, min_stake_threshold, voting_power_cap, <span class="kw-2">&amp;</span>assigner)
             .map_err(|e| HandleError::InternalError(e.to_string()))<span class="question-mark">?
@@ -1834,10 +1836,12 @@
             voting_power_cap: <span class="number">100</span>.into(),
             direct_voters_group: <span class="prelude-val">None</span>,
             representatives_group: <span class="prelude-val">None</span>,
-            dreps: (<span class="macro">vec!</span>[Identifier::from_hex(key).unwrap()]
-                .into_iter()
-                .collect::&lt;HashSet&lt;Identifier&gt;&gt;())
-            .into(),
+            dreps: <span class="prelude-val">Some</span>(
+                (<span class="macro">vec!</span>[Identifier::from_hex(key).unwrap()]
+                    .into_iter()
+                    .collect::&lt;HashSet&lt;Identifier&gt;&gt;())
+                .into(),
+            ),
         })
         .unwrap();
 
@@ -1872,7 +1876,7 @@
             voting_power_cap: <span class="number">100</span>.into(),
             direct_voters_group: <span class="prelude-val">None</span>,
             representatives_group: <span class="prelude-val">None</span>,
-            dreps: Dreps::default(),
+            dreps: <span class="prelude-val">None</span>,
         })
         .unwrap();
 

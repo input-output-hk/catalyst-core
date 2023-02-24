@@ -10,12 +10,10 @@ extern crate diesel_autoincrement_new_struct;
 mod config_table;
 mod models;
 mod schema;
-mod schema_check;
 
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use dotenvy::dotenv;
-use schema_check::db_version_check;
 use std::env;
 use std::error::Error;
 
@@ -71,8 +69,7 @@ pub fn establish_connection(
         None => env::var(DATABASE_URL_ENVVAR)?,
     };
 
-    let mut conn = PgConnection::establish(database_url.as_str())?;
-    db_version_check(&mut conn)?;
+    let conn = PgConnection::establish(database_url.as_str())?;
 
     let db = ElectionDB { conn };
 

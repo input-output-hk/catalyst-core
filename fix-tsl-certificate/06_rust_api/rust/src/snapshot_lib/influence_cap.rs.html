@@ -1,0 +1,394 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/catalyst-toolbox/snapshot-lib/src/influence_cap.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>influence_cap.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../snapshot_lib/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../snapshot_lib/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../snapshot_lib/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+</pre><pre class="rust"><code><span class="kw">use super</span>::{Error, SnapshotInfo};
+<span class="kw">use </span>fraction::{BigFraction, Fraction};
+<span class="kw">use </span>rust_decimal::prelude::ToPrimitive;
+
+<span class="doccomment">/// Calculates ceil(a / b) where a and b are integers with perfect precision
+</span><span class="attribute">#[inline]
+</span><span class="kw">fn </span>int_ceil(a: u64, b: u64) -&gt; u64 {
+    <span class="macro">assert!</span>(b &gt; <span class="number">0</span>);
+    (a + b - <span class="number">1</span>) / b
+}
+
+<span class="doccomment">/// Let&#39;s denote with X the current voting power of user U and with TOT the total voting power
+/// and suppose X / TOT &gt;= threshold.
+/// We want to remove a quantity Y from X such that (X - Y)/ (TOT - Y) &lt;= treshold.
+/// The solution to this equation is therefore Y &lt;= (X - T*TOT) / (1 - T).
+/// Since we work with integer numbers, we will use Y&#39; = ceil(Y).
+///
+/// Panics if threshold is &gt; 1 or x/tot &lt;= threshold
+</span><span class="kw">fn </span>calc_vp_to_remove(x: u64, tot: u64, threshold: Fraction) -&gt; u64 {
+    <span class="macro">assert!</span>(threshold &lt;= Fraction::from(<span class="number">1u64</span>));
+    <span class="macro">assert!</span>(threshold &lt; Fraction::new(x, tot));
+    <span class="comment">// Avoid cluttering this part with overflow checks by using big ints.
+    // The result is guaranteed to fit in a u64 anyway.
+    </span><span class="kw">let </span>threshold = BigFraction::from_fraction(threshold);
+    <span class="kw">let </span>num = BigFraction::from(x) - threshold.clone() * BigFraction::from(tot);
+    <span class="kw">let </span>denum = BigFraction::from(<span class="number">1u64</span>) - threshold;
+    <span class="comment">// Y must be smaller than X, hence it&#39;s safe to unwrap here
+    </span>(num / denum).ceil().to_u64().unwrap()
+}
+
+<span class="doccomment">/// Cap each individual voting power according to the threshold, if possible.
+///
+/// Obviously, to cap each individual&#39;s influence to T, we need at east M = ceil(1/T) participants.
+/// If we have M or more participants, it&#39;s always possible to do it.
+///
+/// The algorithm is as follows:
+/// 1. Sort the list of voters V = [V_0, ..., V_n] in non-decreasing order according to voting power Vp_i.
+/// 2. Let S be the set of contiguous voters being currently considered, X the voting power of each of the voters inside S,
+///   and V_l the leftmost voter inside S. All voters in S will be given the same voting power.
+///   Initially, set S = {V_n}, X = Vp_n.
+///   2.1 Calculate Y, how much voting power we should remove from each of the voters in S to match the
+///       threshold (see [calc_vp_to_remove] for more information).
+///       If (a) X - Y &gt;= Vp_{l-1}, set X to X - Y. The current list is the solution.
+///       If (b) X - Y &lt; Vp_{l-1}, set X to Vp_{l-1}, add V_{l-1} to S and repeat from step 2.1.
+///       It&#39;s easy to see we need to repeat step 2.1 at most min(ceil(1/T), N) times.
+///
+/// Complexity: O(NlogN + min(ceil(1/T), N))
+</span><span class="kw">pub fn </span>cap_voting_influence(
+    <span class="kw-2">mut </span>voters: Vec&lt;SnapshotInfo&gt;,
+    threshold: Fraction,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SnapshotInfo&gt;, Error&gt; {
+    voters.retain(|v| v.hir.voting_power &gt; <span class="number">0</span>.into());
+
+    <span class="kw">if </span>voters.is_empty() {
+        <span class="kw">return </span><span class="prelude-val">Ok</span>(voters);
+    }
+
+    <span class="kw">if </span>Fraction::new(<span class="number">1u64</span>, voters.len() <span class="kw">as </span>u64) &gt; threshold {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(Error::NotEnoughVoters);
+    }
+    <span class="kw">let </span><span class="kw-2">mut </span>tot = <span class="number">0u64</span>;
+    <span class="comment">// can&#39;t check for overflows with Iterator::sum()
+    </span><span class="kw">for </span>v <span class="kw">in </span><span class="kw-2">&amp;</span>voters {
+        tot = tot
+            .checked_add(u64::from(v.hir.voting_power))
+            .ok_or(Error::Overflow)<span class="question-mark">?</span>;
+    }
+    voters.sort_unstable_by_key(|v| v.hir.voting_power);
+    <span class="kw">let </span>last = voters.len() - <span class="number">1</span>;
+
+    <span class="kw">let </span>last_vp = u64::from(voters[last].hir.voting_power);
+    <span class="kw">if </span>Fraction::new(last_vp, tot) &lt;= threshold {
+        <span class="kw">return </span><span class="prelude-val">Ok</span>(voters);
+    }
+
+    <span class="kw">let </span><span class="kw-2">mut </span>prev = last - <span class="number">1</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>next_vp = last_vp;
+    <span class="kw">let </span>next_vp = <span class="kw">loop </span>{
+        <span class="kw">let </span>set_len = (last - prev) <span class="kw">as </span>u64;
+        <span class="comment">// Since it&#39;s guaranteed that all elements in S will have the same voting power,
+        // to calculate the value of Y for each element in S it&#39;s sufficient to treat it as a single
+        // value which should not exceed a threshold of T * |S| and get Y&#39;.
+        // Given Y&#39;, we need to &#39;spread&#39; it among all elements, from which we get Y = ceil(Y&#39; / len).
+        </span><span class="kw">let </span>y = int_ceil(
+            calc_vp_to_remove(next_vp * set_len, tot, threshold * set_len),
+            set_len,
+        );
+        <span class="kw">let </span>prev_vp = u64::from(voters[prev].hir.voting_power);
+        <span class="kw">if </span>next_vp - y &gt;= prev_vp {
+            <span class="comment">// Case (a): we can fix the current voter without impacting other
+            </span>next_vp -= y;
+            <span class="kw">break </span>next_vp;
+        } <span class="kw">else </span>{
+            <span class="comment">// Case (b): we need to enlarge the set S and try again
+            </span>tot -= (next_vp - prev_vp) * set_len;
+            next_vp = prev_vp;
+        }
+        <span class="macro">assert!</span>(prev &gt; <span class="number">0</span>);
+        prev -= <span class="number">1</span>;
+    };
+
+    <span class="kw">for </span>v <span class="kw">in </span><span class="kw-2">&amp;mut </span>voters[prev + <span class="number">1</span>..=last] {
+        v.hir.voting_power = next_vp.into();
+    }
+
+    <span class="prelude-val">Ok</span>(voters)
+}
+
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use crate</span>::{voter_hir::tests::VpRange, VoterHIR};
+    <span class="kw">use </span>proptest::{collection::vec, prelude::<span class="kw-2">*</span>};
+    <span class="kw">use </span>test_strategy::proptest;
+
+    <span class="kw">const </span>DEFAULT_VP_STRATEGY: VpRange = VpRange::ada_distribution();
+
+    <span class="attribute">#[proptest]
+    </span><span class="kw">fn </span>test_insufficient_voters(
+        <span class="attribute">#[strategy(vec(any::&lt;SnapshotInfo&gt;(), <span class="number">1</span>..<span class="number">100</span>))] </span>voters: Vec&lt;SnapshotInfo&gt;,
+    ) {
+        <span class="kw">let </span>cap = Fraction::new(<span class="number">1u64</span>, voters.len() <span class="kw">as </span>u64 + <span class="number">1</span>);
+        <span class="macro">assert!</span>(cap_voting_influence(voters, cap).is_err());
+    }
+
+    <span class="attribute">#[proptest]
+    </span><span class="kw">fn </span>test_exact_voters(
+        <span class="attribute">#[strategy(vec(any_with::&lt;SnapshotInfo&gt;((Default::default(), DEFAULT_VP_STRATEGY)), <span class="number">1</span>..<span class="number">100</span>))]
+        </span>voters: Vec&lt;SnapshotInfo&gt;,
+    ) {
+        <span class="kw">let </span>cap = Fraction::new(<span class="number">1u64</span>, voters.len() <span class="kw">as </span>u64);
+        <span class="kw">let </span>min = voters.iter().map(|v| v.hir.voting_power).min().unwrap();
+        <span class="kw">let </span>res = cap_voting_influence(voters, cap).unwrap();
+        <span class="macro">assert!</span>(res
+            .iter()
+            .map(|entry| entry.hir.voting_power)
+            .all(|vp| vp == min));
+    }
+
+    <span class="attribute">#[proptest]
+    </span><span class="kw">fn </span>test_exact_voters_fixed_at_threshold(
+        <span class="attribute">#[strategy(vec(any_with::&lt;SnapshotInfo&gt;((Default::default(), DEFAULT_VP_STRATEGY)), <span class="number">101</span>..=<span class="number">101</span>))]
+        </span>voters: Vec&lt;SnapshotInfo&gt;,
+    ) {
+        <span class="kw">let </span>cap = Fraction::new(<span class="number">999u64</span>, <span class="number">100000u64</span>);
+        <span class="kw">let </span>res = cap_voting_influence(voters, cap).unwrap();
+        <span class="kw">let </span>vps = res
+            .iter()
+            .map(|entry| u64::from(entry.hir.voting_power))
+            .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+        <span class="kw">let </span>tot = vps.iter().sum::&lt;u64&gt;();
+        <span class="kw">for </span>v <span class="kw">in </span>vps {
+            <span class="macro">assert!</span>(Fraction::new(v, tot) &lt;= cap);
+        }
+    }
+
+    <span class="attribute">#[proptest]
+    </span><span class="kw">fn </span>test_exact_voters_fixed_below_threshold(
+        <span class="attribute">#[strategy(vec(any_with::&lt;SnapshotInfo&gt;((Default::default(), DEFAULT_VP_STRATEGY)), <span class="number">100</span>..=<span class="number">100</span>))]
+        </span>voters: Vec&lt;SnapshotInfo&gt;,
+    ) {
+        <span class="kw">let </span>cap = Fraction::new(<span class="number">9u64</span>, <span class="number">1000u64</span>);
+        <span class="macro">assert!</span>(cap_voting_influence(voters, cap).is_err());
+    }
+
+    <span class="attribute">#[proptest]
+    </span><span class="kw">fn </span>test_below_threshold(
+        <span class="attribute">#[strategy(vec(any_with::&lt;SnapshotInfo&gt;((Default::default(), DEFAULT_VP_STRATEGY)), <span class="number">100</span>..<span class="number">300</span>))]
+        </span>voters: Vec&lt;SnapshotInfo&gt;,
+    ) {
+        <span class="kw">let </span>cap = Fraction::new(<span class="number">1u64</span>, <span class="number">100u64</span>);
+        <span class="kw">let </span>res = cap_voting_influence(voters, cap).unwrap();
+        <span class="kw">let </span>vps = res
+            .iter()
+            .map(|entry| u64::from(entry.hir.voting_power))
+            .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+        <span class="kw">let </span>tot = vps.iter().sum::&lt;u64&gt;();
+        <span class="kw">for </span>v <span class="kw">in </span>vps {
+            <span class="macro">assert!</span>(Fraction::new(v, tot) &lt;= cap);
+        }
+    }
+
+    <span class="kw">impl </span>Arbitrary <span class="kw">for </span>SnapshotInfo {
+        <span class="kw">type </span>Parameters = (String, VpRange);
+        <span class="kw">type </span>Strategy = BoxedStrategy&lt;<span class="self">Self</span>&gt;;
+
+        <span class="kw">fn </span>arbitrary_with(args: <span class="self">Self</span>::Parameters) -&gt; <span class="self">Self</span>::Strategy {
+            any_with::&lt;VoterHIR&gt;(args)
+                .prop_map(|hir| <span class="self">Self </span>{
+                    contributions: Vec::new(),
+                    hir,
+                })
+                .boxed()
+        }
+    }
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="snapshot_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

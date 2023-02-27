@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["FragmentSelectionAlgorithmParams",""],["SelectionOutput",""]],"struct":[["FragmentSelectionResult",""],["OldestFirst",""]],"trait":[["FragmentSelectionAlgorithm",""]]};

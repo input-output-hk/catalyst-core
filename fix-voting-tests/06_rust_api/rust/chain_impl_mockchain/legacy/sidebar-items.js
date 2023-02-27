@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["OldAddressMatchXPub",""]],"fn":[["oldaddress_from_xpub",""]],"struct":[["OldAddress","A valid cardano Address that is displayed in base58"],["UtxoDeclaration",""]]};

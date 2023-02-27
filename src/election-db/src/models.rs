@@ -3,12 +3,9 @@
 #![allow(unused)]
 #![allow(clippy::all)]
 
-// For now this has to be manually added...
-#[allow(clippy::wildcard_imports)]
-use crate::schema::*;
 
-use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
+use bigdecimal::BigDecimal;
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(row_id))]
 #[diesel(table_name = challenge)]
@@ -67,11 +64,13 @@ pub struct Config {
 pub struct Contribution {
     pub row_id: i32,
     pub stake_public_key: String,
+    pub snapshot_id: i32,
     pub voting_key: String,
-    pub voting_group: String,
-    pub snapshot_tag: String,
-    pub reward_address: String,
+    pub voting_weight: i32,
+    pub voting_key_idx: i32,
     pub value: i64,
+    pub voting_group: String,
+    pub reward_address: Option<String>,
 }
 
 #[derive(Queryable, Debug, Identifiable)]
@@ -150,23 +149,19 @@ pub struct ProposalVoteplan {
 }
 
 #[derive(Queryable, Debug, Identifiable)]
-#[diesel(primary_key(tag))]
+#[diesel(primary_key(row_id))]
 #[diesel(table_name = snapshots)]
 pub struct Snapshot {
-    pub tag: String,
+    pub row_id: i32,
+    pub election: i32,
+    pub as_at: NaiveDateTime,
     pub last_updated: NaiveDateTime,
-}
-
-#[derive(Queryable, Debug, Identifiable)]
-#[diesel(primary_key(row_id))]
-#[diesel(table_name = stake_address_balance)]
-pub struct StakeAddressBalance {
-    pub row_id: i64,
-    pub time: Option<NaiveDateTime>,
-    pub block: Option<i64>,
-    pub public_key: Option<String>,
-    pub balance: Option<BigDecimal>,
-    pub unpaid_rewards: Option<BigDecimal>,
+    pub final_: bool,
+    pub dbsync_snapshot_cmd: Option<String>,
+    pub dbsync_snapshot_data: Option<String>,
+    pub drep_data: Option<String>,
+    pub catalyst_snapshot_cmd: Option<String>,
+    pub catalyst_snapshot_data: Option<String>,
 }
 
 #[derive(Queryable, Debug, Identifiable)]
@@ -199,36 +194,13 @@ pub struct VoteplanCategory {
 
 #[derive(Queryable, Debug, Identifiable)]
 #[diesel(primary_key(row_id))]
-#[diesel(table_name = voter_registration)]
-pub struct VoterRegistration {
-    pub row_id: i64,
-    pub time: Option<NaiveDateTime>,
-    pub nonce: Option<i64>,
-    pub purpose: Option<i64>,
-    pub stake_pub: Option<String>,
-    pub category: Option<String>,
-    pub delegations: Option<serde_json::Value>,
-    pub reward_addr: Option<String>,
-    pub txn: Option<Vec<u8>>,
-    pub block: Option<i64>,
-}
-
-#[derive(Queryable, Debug, Identifiable)]
-#[diesel(primary_key(name))]
-#[diesel(table_name = voter_registration_category)]
-pub struct VoterRegistrationCategory {
-    pub name: String,
-    pub description: Option<String>,
-}
-
-#[derive(Queryable, Debug, Identifiable)]
-#[diesel(primary_key(voting_key, voting_group, snapshot_tag))]
 #[diesel(table_name = voters)]
 pub struct Voter {
+    pub row_id: i64,
     pub voting_key: String,
-    pub voting_power: i64,
+    pub snapshot_id: i32,
     pub voting_group: String,
-    pub snapshot_tag: String,
+    pub voting_power: i64,
 }
 
 #[derive(Queryable, Debug, Identifiable)]
@@ -255,11 +227,12 @@ pub struct VotingGroup {
 }
 
 #[derive(Queryable, Debug, Identifiable)]
-#[diesel(primary_key(row_id))]
-#[diesel(table_name = voting_power)]
-pub struct VotingPower {
-    pub row_id: i64,
-    pub election: Option<i32>,
-    pub voting_key: Option<String>,
-    pub power: Option<BigDecimal>,
+#[diesel(primary_key(hostname))]
+#[diesel(table_name = voting_nodes)]
+pub struct VotingNode {
+    pub hostname: /* TODO: unknown type Name */,
+    pub pubkey: String,
+    pub seckey: String,
+    pub netkey: String,
 }
+

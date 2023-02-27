@@ -230,7 +230,7 @@ pub struct VotingGroup {
 #[diesel(primary_key(hostname))]
 #[diesel(table_name = voting_nodes)]
 pub struct VotingNode {
-    pub hostname: /* TODO: unknown type Name */,
+    pub hostname: String,
     pub pubkey: String,
     pub seckey: String,
     pub netkey: String,

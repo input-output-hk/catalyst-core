@@ -5,14 +5,18 @@ on: [push, pull_request]
 jobs:
   deploy:
     name: Deploy GitHub Pages
-    runs-on: ubuntu-latest
+    runs-on:  ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write  # To create a PR from that branch
     concurrency:
-      group: gh-docs-deploy
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - name: Checkout The Code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Set env
         run: |
@@ -20,7 +24,7 @@ jobs:
           echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
 
       - name: Build Docs
-        uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools:v1.1
+        uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools:v1.3
         with:
           entrypoint: cargo
           args: make build-docs
@@ -28,6 +32,46 @@ jobs:
       # On PUSH or PR we deploy docs to a sub-directory named after the branch.
       # This lets us review the docs as rendered, and not just the markdown.
       - name: Deploy Docs
+        id:   deployAttempt
+        continue-on-error: true
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./book/html
+          destination_dir: ${{ env.GIT_BRANCH }}
+
+      # This might fail if we try and deploy multiple pages at once.
+      # So, check if it did, and retry.
+
+      # Retry #1
+      - name: Delay On Failure To Deploy
+        id:   deployRetryWait1
+        if:   steps.deployAttempt.outcome == 'failure'
+        run: |
+          sleep $[ ( $RANDOM % 10 )  + 1 ]s
+        shell: bash
+
+      - name: Deploy Docs
+        id:   deployRetry1
+        if:   steps.deployAttempt.outcome == 'failure'
+        continue-on-error: true
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./book/html
+          destination_dir: ${{ env.GIT_BRANCH }}
+
+      # Retry #2
+      - name: Delay On Failure To Deploy
+        id:   deployRetryWait2
+        if:   steps.deployRetry1.outcome == 'failure'
+        run: |
+          sleep $[ ( $RANDOM % 10 )  + 1 ]s
+        shell: bash
+
+      - name: Deploy Docs
+        id:   deployRetry2
+        if:   steps.deployRetry1.outcome == 'failure'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

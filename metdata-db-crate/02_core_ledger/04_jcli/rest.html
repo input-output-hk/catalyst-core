@@ -159,7 +159,7 @@
 <p>Many CLI commands have common arguments:</p>
 <ul>
 <li><code>-h &lt;addr&gt;</code> or <code>--host &lt;addr&gt;</code> - Node API address. Must always have <code>http://</code> or
-<code>https://</code> prefix. E.g. <code>-h http://127.0.0.1</code>, <code>--host https://node.com:8443/cardano/api</code></li>
+<code>https://</code> prefix and always ends with the <code>/api</code>. E.g. <code>-h http://127.0.0.1:8081/api</code>, <code>--host https://node.com:8443/cardano/api</code>.</li>
 <li><code>--debug</code> - Print additional debug information to stderr.
 The output format is intentionally undocumented and unstable</li>
 <li><code>--output-format &lt;format&gt;</code> - Format of output data. Possible values: json, yaml, default yaml.

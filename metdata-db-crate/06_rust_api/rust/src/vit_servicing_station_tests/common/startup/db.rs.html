@@ -220,8 +220,8 @@
 
 <span class="kw">use </span><span class="kw">crate</span>::common::{
     data::Snapshot,
-    db::{DbInserter, DbInserterError},
-};
+    <span class="comment">//db::{DbInserter, DbInserterError},
+</span>};
 <span class="kw">use </span>vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 <span class="kw">use </span>vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
@@ -291,46 +291,46 @@
         <span class="self">self
     </span>}
 
-    <span class="kw">fn </span>try_insert_tokens(<span class="kw-2">&amp;</span><span class="self">self</span>, connection: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbBuilderError&gt; {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(tokens) = <span class="kw-2">&amp;</span><span class="self">self</span>.tokens {
-            DbInserter::new(connection).insert_tokens(tokens)<span class="question-mark">?</span>;
-        }
+    <span class="kw">fn </span>try_insert_tokens(<span class="kw-2">&amp;</span><span class="self">self</span>, _connection: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbBuilderError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(_tokens) = <span class="kw-2">&amp;</span><span class="self">self</span>.tokens {
+            <span class="comment">//DbInserter::new(connection).insert_tokens(tokens)?;
+        </span>}
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn </span>try_insert_funds(<span class="kw-2">&amp;</span><span class="self">self</span>, connection: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbBuilderError&gt; {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(funds) = <span class="kw-2">&amp;</span><span class="self">self</span>.funds {
-            DbInserter::new(connection).insert_funds(funds)<span class="question-mark">?</span>;
-        }
+    <span class="kw">fn </span>try_insert_funds(<span class="kw-2">&amp;</span><span class="self">self</span>, _connection: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbBuilderError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(_funds) = <span class="kw-2">&amp;</span><span class="self">self</span>.funds {
+            <span class="comment">//DbInserter::new(connection).insert_funds(funds)?;
+        </span>}
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn </span>try_insert_proposals(<span class="kw-2">&amp;</span><span class="self">self</span>, connection: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbBuilderError&gt; {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(proposals) = <span class="kw-2">&amp;</span><span class="self">self</span>.proposals {
-            DbInserter::new(connection).insert_proposals(proposals)<span class="question-mark">?</span>;
-        }
+    <span class="kw">fn </span>try_insert_proposals(<span class="kw-2">&amp;</span><span class="self">self</span>, _connection: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbBuilderError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(_proposals) = <span class="kw-2">&amp;</span><span class="self">self</span>.proposals {
+            <span class="comment">//DbInserter::new(connection).insert_proposals(proposals)?;
+        </span>}
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn </span>try_insert_challenges(<span class="kw-2">&amp;</span><span class="self">self</span>, connection: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbBuilderError&gt; {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(challenges) = <span class="kw-2">&amp;</span><span class="self">self</span>.challenges {
-            DbInserter::new(connection).insert_challenges(challenges)<span class="question-mark">?</span>;
-        }
+    <span class="kw">fn </span>try_insert_challenges(<span class="kw-2">&amp;</span><span class="self">self</span>, _connection: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbBuilderError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(_challenges) = <span class="kw-2">&amp;</span><span class="self">self</span>.challenges {
+            <span class="comment">//DbInserter::new(connection).insert_challenges(challenges)?;
+        </span>}
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn </span>try_insert_reviews(<span class="kw-2">&amp;</span><span class="self">self</span>, connection: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbBuilderError&gt; {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(reviews) = <span class="kw-2">&amp;</span><span class="self">self</span>.advisor_reviews {
-            DbInserter::new(connection).insert_advisor_reviews(reviews)<span class="question-mark">?</span>;
-        }
+    <span class="kw">fn </span>try_insert_reviews(<span class="kw-2">&amp;</span><span class="self">self</span>, _connection: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbBuilderError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(_reviews) = <span class="kw-2">&amp;</span><span class="self">self</span>.advisor_reviews {
+            <span class="comment">//DbInserter::new(connection).insert_advisor_reviews(reviews)?;
+        </span>}
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn </span>try_insert_groups(<span class="kw-2">&amp;</span><span class="self">self</span>, connection: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbBuilderError&gt; {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(groups) = <span class="kw-2">&amp;</span><span class="self">self</span>.groups {
-            DbInserter::new(connection).insert_groups(groups)<span class="question-mark">?</span>;
-        }
+    <span class="kw">fn </span>try_insert_groups(<span class="kw-2">&amp;</span><span class="self">self</span>, _connection: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbBuilderError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(_groups) = <span class="kw-2">&amp;</span><span class="self">self</span>.groups {
+            <span class="comment">//DbInserter::new(connection).insert_groups(groups)?;
+        </span>}
         <span class="prelude-val">Ok</span>(())
     }
 
@@ -366,8 +366,8 @@
             (db_url, pool.get().unwrap())
         };
 
-        vit_servicing_station_lib::db::migrations::initialize_db_with_migration(<span class="kw-2">&amp;</span>connection)<span class="question-mark">?</span>;
-        <span class="self">self</span>.try_insert_tokens(<span class="kw-2">&amp;</span>connection)<span class="question-mark">?</span>;
+        <span class="comment">//vit_servicing_station_lib::db::migrations::initialize_db_with_migration(&amp;connection)?;
+        </span><span class="self">self</span>.try_insert_tokens(<span class="kw-2">&amp;</span>connection)<span class="question-mark">?</span>;
         <span class="self">self</span>.try_insert_funds(<span class="kw-2">&amp;</span>connection)<span class="question-mark">?</span>;
         <span class="self">self</span>.try_insert_groups(<span class="kw-2">&amp;</span>connection)<span class="question-mark">?</span>;
         <span class="self">self</span>.try_insert_challenges(<span class="kw-2">&amp;</span>connection)<span class="question-mark">?</span>;
@@ -384,8 +384,8 @@
         <span class="kw">let </span>pool = vit_servicing_station_lib::db::load_db_connection_pool(db_path).unwrap();
         <span class="kw">let </span>connection = pool.get().unwrap();
 
-        vit_servicing_station_lib::db::migrations::initialize_db_with_migration(<span class="kw-2">&amp;</span>connection)<span class="question-mark">?</span>;
-        <span class="self">self</span>.try_insert_tokens(<span class="kw-2">&amp;</span>connection)<span class="question-mark">?</span>;
+        <span class="comment">//vit_servicing_station_lib::db::migrations::initialize_db_with_migration(&amp;connection)?;
+        </span><span class="self">self</span>.try_insert_tokens(<span class="kw-2">&amp;</span>connection)<span class="question-mark">?</span>;
         <span class="self">self</span>.try_insert_funds(<span class="kw-2">&amp;</span>connection)<span class="question-mark">?</span>;
         <span class="self">self</span>.try_insert_groups(<span class="kw-2">&amp;</span>connection)<span class="question-mark">?</span>;
         <span class="self">self</span>.try_insert_challenges(<span class="kw-2">&amp;</span>connection)<span class="question-mark">?</span>;
@@ -407,9 +407,9 @@
     </span>MissingDatabaseUrlEnvVar,
     <span class="attribute">#[error(<span class="string">&quot;failed to read database url env var&quot;</span>)]
     </span>DatabaseUrlEnvVar(<span class="attribute">#[from] </span>std::env::VarError),
-    <span class="attribute">#[error(<span class="string">&quot;cannot insert data&quot;</span>)]
-    </span>DbInserterError(<span class="attribute">#[from] </span>DbInserterError),
-    <span class="attribute">#[error(<span class="string">&quot;Cannot open or create database&quot;</span>)]
+    <span class="comment">//#[error(&quot;cannot insert data&quot;)]
+    //DbInserterError(#[from] DbInserterError),
+    </span><span class="attribute">#[error(<span class="string">&quot;Cannot open or create database&quot;</span>)]
     </span>CannotCreateDatabase(<span class="attribute">#[from] </span>diesel::ConnectionError),
     <span class="attribute">#[error(<span class="string">&quot;Cannot initialize on temp directory&quot;</span>)]
     </span>CannotExtractTempPath,

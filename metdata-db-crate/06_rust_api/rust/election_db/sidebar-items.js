@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["establish_connection","Establish a connection to the database, and check the schema is up-to-date."]],"struct":[["ElectionDB","Connection to the Election Database"]]};

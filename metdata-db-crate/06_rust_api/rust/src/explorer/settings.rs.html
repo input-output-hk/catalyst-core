@@ -242,7 +242,6 @@
 <span id="242">242</span>
 <span id="243">243</span>
 <span id="244">244</span>
-<span id="245">245</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::logging::{LogFormat, LogOutput, LogSettings};
 <span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::interfaces::{Cors, Tls};
@@ -430,7 +429,6 @@
 <span class="attribute">#[derive(Debug, Deserialize, Default)]
 #[serde(deny_unknown_fields)]
 </span><span class="kw">pub struct </span>Config {
-    <span class="kw">pub </span>storage: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
     <span class="kw">pub </span>tls: <span class="prelude-ty">Option</span>&lt;Tls&gt;,
     <span class="kw">pub </span>cors: <span class="prelude-ty">Option</span>&lt;Cors&gt;,
     <span class="attribute">#[serde(default, deserialize_with = <span class="string">&quot;deserialize_uri_string&quot;</span>)]
@@ -446,8 +444,8 @@
 <span class="kw">where
     </span>D: de::Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;,
 {
-    <span class="kw">let </span>s: <span class="kw-2">&amp;</span>str = de::Deserialize::deserialize(deserializer)<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(s.parse().unwrap()))
+    <span class="kw">let </span>s: String = de::Deserialize::deserialize(deserializer)<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(s.parse().map_err(D::Error::custom)<span class="question-mark">?</span>))
 }
 
 <span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

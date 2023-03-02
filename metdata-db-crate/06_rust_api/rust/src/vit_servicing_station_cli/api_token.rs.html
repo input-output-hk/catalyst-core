@@ -203,6 +203,9 @@
 <span id="203">203</span>
 <span id="204">204</span>
 <span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db_utils::{backup_db_file, restore_db_file};
 <span class="kw">use </span><span class="kw">crate</span>::task::ExecTask;
 <span class="kw">use </span>clap::Parser;
@@ -365,22 +368,24 @@
     }
 }
 
-<span class="attribute">#[cfg(test)]
-</span><span class="kw">mod </span>test {
-    <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use </span>vit_servicing_station_lib::db::{
+<span class="comment">/* Vit-SS does not write to the DB.  So these tests are obsolete.
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use vit_servicing_station_lib::db::{
         migrations::initialize_db_with_migration, queries::api_tokens::query_token_data_by_token,
     };
-    <span class="kw">use </span>vit_servicing_station_tests::common::startup::db::DbBuilder;
+    use vit_servicing_station_tests::common::startup::db::DbBuilder;
 
-    <span class="attribute">#[test]
-    </span><span class="kw">fn </span>generate_token() {
-        <span class="kw">let </span>size = <span class="number">10</span>;
-        <span class="kw">let </span>n = <span class="number">10</span>;
-        <span class="kw">let </span>tokens = ApiTokenCmd::generate(n, size);
-        <span class="macro">assert_eq!</span>(tokens.len(), n);
+    #[test]
+    fn generate_token() {
+        let size = 10;
+        let n = 10;
+        let tokens = ApiTokenCmd::generate(n, size);
+        assert_eq!(tokens.len(), n);
         tokens.iter().for_each(|token| {
-            <span class="macro">assert_eq!</span>(
+            assert_eq!(
                 base64::decode_config(token, base64::URL_SAFE_NO_PAD)
                     .unwrap()
                     .len(),
@@ -389,24 +394,24 @@
         })
     }
 
-    <span class="attribute">#[test]
-    #[ignore = <span class="string">&quot;reason&quot;</span>]
-    </span><span class="kw">fn </span>add_token() {
-        <span class="kw">let </span>tokens = ApiTokenCmd::generate(<span class="number">10</span>, <span class="number">10</span>);
-        <span class="kw">let </span>db_url = DbBuilder::new().build().unwrap();
-        <span class="kw">let </span>connection_pool = load_db_connection_pool(<span class="kw-2">&amp;</span>db_url).unwrap();
-        initialize_db_with_migration(<span class="kw-2">&amp;</span>connection_pool.get().unwrap()).unwrap();
-        <span class="kw">let </span>db_conn = connection_pool.get().unwrap();
-        ApiTokenCmd::add_tokens(<span class="kw-2">&amp;</span>tokens, <span class="kw-2">&amp;</span>db_conn).unwrap();
-        <span class="kw">for </span>token <span class="kw">in </span>tokens
+    #[test]
+    #[ignore = &quot;reason&quot;]
+    fn add_token() {
+        let tokens = ApiTokenCmd::generate(10, 10);
+        let db_url = DbBuilder::new().build().unwrap();
+        let connection_pool = load_db_connection_pool(&amp;db_url).unwrap();
+        initialize_db_with_migration(&amp;connection_pool.get().unwrap()).unwrap();
+        let db_conn = connection_pool.get().unwrap();
+        ApiTokenCmd::add_tokens(&amp;tokens, &amp;db_conn).unwrap();
+        for token in tokens
             .iter()
             .map(|t| base64::decode_config(t, base64::URL_SAFE_NO_PAD).unwrap())
         {
-            <span class="macro">assert!</span>(query_token_data_by_token(token.as_ref(), <span class="kw-2">&amp;</span>db_conn)
+            assert!(query_token_data_by_token(token.as_ref(), &amp;db_conn)
                 .unwrap()
                 .is_some());
         }
     }
 }
-</code></pre></div>
+*/</span></code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="vit_servicing_station_cli" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

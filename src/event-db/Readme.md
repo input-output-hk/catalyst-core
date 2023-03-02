@@ -4,7 +4,7 @@ This crate defines the structure and RUST access methods for the Catalyst Event 
 
 ## Creating A Local Test Database
 
-Run the following SQL on your local test postgresql server:
+Run the following SQL on your local test PostgreSQL server:
 
 ```sql
 -- Cleanup if we already ran this before.

@@ -1,3 +1,5 @@
+import yaml
+
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -5,18 +7,32 @@ from typing import Any, Dict, List, Mapping, Optional
 
 
 @dataclass
-class NodeSettings:
-    db_url: str
-    jcli_path: str
-    rest_port: int
-    jrpc_port: int
-    p2p_port: int
+class NodeConfig:
+    # we usually convert from a yaml template to instantiate this NodeConfig
+    config_dict: Dict
+
+    def as_dict(self) -> Dict:
+        return self.config_dict
+
+    def as_yaml(self) -> str:
+        return yaml.safe_dump(self.as_dict())
 
 
 @dataclass
-class NodeConfig:
-    config: Dict
+class NodeConfigYaml:
+    config: NodeConfig
     path: Path
+
+    def save(self):
+        yaml_str: str = self.config.as_yaml()
+        self.path.open("w").write(yaml_str)
+
+
+@dataclass
+class NodeSettings:
+    rest_port: int
+    jrpc_port: int
+    p2p_port: int
 
 
 @dataclass
@@ -28,9 +44,22 @@ class NodeInfo:
 
 
 @dataclass
-class NodeSecret:
-    secret: Dict
+class NodeSecretYaml:
+    secret_dict: Dict
     path: Path
+
+    def save(self):
+        yaml_str: str = yaml.safe_dump(self.secret_dict)
+        self.path.open("w").write(yaml_str)
+
+
+@dataclass
+class NodeTopologyKey:
+    key: str
+    path: Path
+
+    def save(self):
+        self.path.open("w").write(self.key)
 
 
 @dataclass
@@ -48,7 +77,8 @@ class Block0:
 
 @dataclass
 class Genesis:
-    settings: Dict
+    bin: bytes
+    hash: str
     path: Path
 
 
@@ -77,9 +107,7 @@ class Election:
 
 @dataclass
 class Proposal:
-    """
-    Represents a database proposal.
-    """
+    """Represents a database proposal."""
 
     id: int
     challenge: int
@@ -91,25 +119,24 @@ class Proposal:
     url: str
     files_url: str
     impact_score: float
-
     extra: Optional[Mapping[str, str]]
-
     proposer_name: str
     proposer_contact: str
     proposer_url: str
     proposer_relevant_experience: str
-
     bb_proposal_id: Optional[bytes]
     bb_vote_options: Optional[str]
 
 
 @dataclass
 class VotingNode:
-    block0: Optional[Block0]
-    election: Optional[Election]
-    node_config: Optional[NodeConfig]
-    node_secret: Optional[NodeSecret]
-    peer_info: Optional[List[PeerNode]]
+    node_info: NodeInfo
+    node_config: NodeConfigYaml
+    node_secret: NodeSecretYaml
+    topology_key: NodeTopologyKey
+    peer_info: List[PeerNode]
+    voting_event: Election
+    block0: Block0
 
 
 @dataclass

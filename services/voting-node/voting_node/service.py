@@ -92,7 +92,7 @@ class VotingNode(uvicorn.Server):
         # raises exception is something goes wrong with the hostname
         host_name: str = utils.get_hostname().lower()
         match utils.get_leadership_role_n_number_by_hostname(host_name):
-            case ("leader", "0"):
+            case ("leader", 0):
                 return tasks.Leader0Schedule(self.db_url, self.jorm_config)
             case ("leader", _):
                 return tasks.LeaderSchedule(self.db_url, self.jorm_config)

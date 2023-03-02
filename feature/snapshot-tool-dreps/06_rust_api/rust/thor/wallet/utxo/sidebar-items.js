@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Wallet","wallet for an account"]],"type":[["SpendingKey",""]]};

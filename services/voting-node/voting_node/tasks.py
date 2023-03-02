@@ -8,7 +8,9 @@ from .jcli import JCli
 from .jormungandr import Jormungandr
 from .logs import getLogger
 from .models import (
+    Block0,
     Election,
+    GenesisYaml,
     NodeConfigYaml,
     NodeInfo,
     NodeSecretYaml,
@@ -17,12 +19,6 @@ from .models import (
     PeerNode,
     Proposal,
 )
-from .templates import (
-    NODE_CONFIG_LEADER_TEMPLATE,
-    NODE_CONFIG_LEADER0_TEMPLATE,
-    NODE_CONFIG_FOLLOWER_TEMPLATE,
-)
-
 
 # gets voting node logger
 logger = getLogger()
@@ -71,8 +67,6 @@ class NodeTaskSchedule(ScheduleRunner):
     """A schedule of task names with corresponding async methods that are executed
     sequentially. If the current task raises an exception, running the task list
     again will resume from it."""
-
-    NODE_CONFIG_TEMPLATE: str
 
     # node settings
     settings: NodeSettings
@@ -261,7 +255,6 @@ class NodeTaskSchedule(ScheduleRunner):
 class LeaderSchedule(NodeTaskSchedule):
     def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
         NodeTaskSchedule.__init__(self, db_url, jorm_config)
-        self.NODE_CONFIG_TEMPLATE = NODE_CONFIG_LEADER_TEMPLATE
         self.tasks: list[str] = [
             "connect_db",
             "setup_node_info",
@@ -292,11 +285,12 @@ class LeaderSchedule(NodeTaskSchedule):
 
 class Leader0Schedule(LeaderSchedule):
     # Leader0 Voting Node data
+    block0_bin: Block0
+    genesis_yaml: GenesisYaml
     proposals: List[Proposal]
 
     def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
         LeaderSchedule.__init__(self, db_url, jorm_config)
-        self.NODE_CONFIG_TEMPLATE = NODE_CONFIG_LEADER0_TEMPLATE
         self.tasks: list[str] = [
             "connect_db",
             "setup_node_info",
@@ -327,7 +321,26 @@ class Leader0Schedule(LeaderSchedule):
             raise Exception(f"failed to fetch proposals from db: {e}") from e
 
     async def generate_block0(self):
-        pass
+        if self.voting_event is None or self.voting_event.start_time is None:
+            logger.debug("no election was found, resetting.")
+            self.reset_schedule()
+        if self.leader_info is None:
+            logger.debug("no leader info was found, resetting.")
+            self.reset_schedule()
+        genesis = utils.make_genesis_file(
+            self.voting_event.start_time, self.leader_info
+        )
+        logger.debug("generated genesis")
+        # convert to yaml and save
+        genesis_yaml = GenesisYaml(genesis, self.storage.joinpath("genesis.yaml"))
+        genesis_yaml.save()
+        logger.debug(f"{genesis_yaml}")
+        self.genesis_yaml = genesis_yaml
+        block0_bin, block0_hash = await utils.make_block0(
+            self.jcli_path_str, self.storage, genesis_yaml.path
+        )
+        self.block0_bin = Block0(block0_bin, block0_hash)
+        logger.debug(f"block0 created: {self.block0_bin}")
 
     async def generate_voteplan(self):
         pass
@@ -336,7 +349,6 @@ class Leader0Schedule(LeaderSchedule):
 class FollowerSchedule(NodeTaskSchedule):
     def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
         NodeTaskSchedule.__init__(self, db_url, jorm_config)
-        self.NODE_CONFIG_TEMPLATE = NODE_CONFIG_FOLLOWER_TEMPLATE
         self.tasks: list[str] = ["todo"]
 
     async def todo(self):

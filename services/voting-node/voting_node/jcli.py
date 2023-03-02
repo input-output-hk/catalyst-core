@@ -1,4 +1,5 @@
 import asyncio
+from pathlib import Path
 
 
 class JCli(object):
@@ -47,3 +48,40 @@ class JCli(object):
         # read the output
         key = stdout.decode().rstrip()
         return key
+
+    async def create_block0_bin(self, block0_bin: Path, genesis_yaml: Path):
+        # run jcli to make block0 from genesis.yaml
+        proc = await asyncio.create_subprocess_exec(
+            self.jcli_exec,
+            "genesis",
+            "encode",
+            "--input",
+            f"{genesis_yaml}",
+            "--output",
+            f"{block0_bin}",
+            stdout=asyncio.subprocess.PIPE,
+        )
+
+        returncode = await proc.wait()
+        # checks that there is stdout
+        if returncode > 0:
+            raise Exception("failed to generate block0")
+
+    async def get_block0_hash(self, block0_bin: Path) -> str:
+        # run jcli to make block0 from genesis.yaml
+        proc = await asyncio.create_subprocess_exec(
+            self.jcli_exec,
+            "genesis",
+            "hash",
+            "--input",
+            f"{block0_bin}",
+            stdout=asyncio.subprocess.PIPE,
+        )
+
+        # checks that there is stdout
+        stdout, _ = await proc.communicate()
+        if stdout is None:
+            raise Exception("failed to generate block0 hash")
+        # read the output
+        hash = stdout.decode().rstrip()
+        return hash

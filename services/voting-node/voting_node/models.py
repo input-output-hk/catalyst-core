@@ -7,25 +7,33 @@ from typing import Any, Dict, List, Mapping, Optional
 
 
 @dataclass
-class NodeConfig:
-    # we usually convert from a yaml template to instantiate this NodeConfig
-    config_dict: Dict
-
-    def as_dict(self) -> Dict:
-        return self.config_dict
+class YamlType:
+    content: Dict
 
     def as_yaml(self) -> str:
-        return yaml.safe_dump(self.as_dict())
+        return yaml.safe_dump(self.content)
 
 
 @dataclass
-class NodeConfigYaml:
-    config: NodeConfig
+class YamlFile:
+    yaml_type: YamlType
     path: Path
 
     def save(self):
-        yaml_str: str = self.config.as_yaml()
+        yaml_str: str = self.yaml_type.as_yaml()
         self.path.open("w").write(yaml_str)
+
+
+@dataclass
+class NodeConfig(YamlType):
+    """Data for creating 'node_config.yaml'."""
+
+
+@dataclass
+class NodeConfigYaml(YamlFile):
+    """Represents the contents and path to 'node_secret.yaml'."""
+
+    yaml_type: NodeConfig
 
 
 @dataclass
@@ -45,16 +53,20 @@ class NodeInfo:
 
 @dataclass
 class NodeSecretYaml:
-    secret_dict: Dict
+    """Represents the contents and path to 'node_secret.yaml'."""
+
+    content: Dict
     path: Path
 
     def save(self):
-        yaml_str: str = yaml.safe_dump(self.secret_dict)
+        yaml_str: str = yaml.safe_dump(self.content)
         self.path.open("w").write(yaml_str)
 
 
 @dataclass
 class NodeTopologyKey:
+    """Represents the contents and path to 'node_topology_key' file."""
+
     key: str
     path: Path
 
@@ -71,15 +83,22 @@ class PeerNode:
 
 @dataclass
 class Block0:
-    path: Path
+    """Represents the path to 'block0.bin' and its hash."""
+
+    bin_path: Path
     hash: str
 
 
 @dataclass
-class Genesis:
-    bin: bytes
-    hash: str
-    path: Path
+class Genesis(YamlType):
+    """Data for creating 'node_config.yaml'."""
+
+
+@dataclass
+class GenesisYaml(YamlFile):
+    """Represents the contents and path to 'genesis.yaml'."""
+
+    yaml_type: Genesis
 
 
 @dataclass

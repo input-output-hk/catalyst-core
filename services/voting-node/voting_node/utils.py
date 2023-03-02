@@ -2,16 +2,18 @@ import re
 import socket
 import yaml
 
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Final, Literal, List, Match, Tuple
 
 from . import jcli
 from .logs import getLogger
-from .models import NodeConfig
+from .models import Genesis, NodeConfig, PeerNode
 from .templates import (
-    NODE_CONFIG_LEADER_TEMPLATE,
-    NODE_CONFIG_LEADER0_TEMPLATE,
-    NODE_CONFIG_FOLLOWER_TEMPLATE,
+    GENESIS_YAML,
+    NODE_CONFIG_LEADER,
+    NODE_CONFIG_LEADER0,
+    NODE_CONFIG_FOLLOWER,
 )
 
 # gets voting node logger
@@ -86,7 +88,7 @@ def leader0_node_config(
     topology_key: Path,
 ) -> NodeConfig:
     """Configures a leader0 node from template."""
-    node_config_dict = yaml.safe_load(NODE_CONFIG_LEADER0_TEMPLATE)
+    node_config_dict = yaml.safe_load(NODE_CONFIG_LEADER0)
     node_config_dict["storage"] = f"{storage.absolute()}"
     node_config_dict["rest"]["listen"] = listen_rest
     node_config_dict["jrpc"]["listen"] = listen_jrpc
@@ -111,7 +113,7 @@ def leader_node_config(
     topology_key: Path,
 ) -> NodeConfig:
     """Configures a leader node from template."""
-    node_config_dict = yaml.safe_load(NODE_CONFIG_LEADER_TEMPLATE)
+    node_config_dict = yaml.safe_load(NODE_CONFIG_LEADER)
 
     node_config_dict["storage"] = f"{storage.absolute()}"
     node_config_dict["rest"]["listen"] = listen_rest
@@ -137,7 +139,7 @@ def follower_node_config(
     topology_key: Path,
 ) -> NodeConfig:
     """Configures a follower node from template."""
-    node_config_dict = yaml.safe_load(NODE_CONFIG_FOLLOWER_TEMPLATE)
+    node_config_dict = yaml.safe_load(NODE_CONFIG_FOLLOWER)
 
     node_config_dict["storage"] = f"{storage.absolute()}"
     node_config_dict["rest"]["listen"] = listen_rest
@@ -161,9 +163,6 @@ def follower_node_config(
     return node_config
 
 
-"""Configures a node from template, depending on its leadership and number."""
-
-
 def make_node_config(
     leadership: Tuple[Literal["leader", "follower"], int],
     listen_rest: str,
@@ -173,6 +172,7 @@ def make_node_config(
     storage: Path,
     topology_key: Path,
 ) -> NodeConfig:
+    """Configures a node from template, depending on its leadership and number."""
     match leadership:
         case ("leader", 0):
             return leader0_node_config(
@@ -201,3 +201,32 @@ def make_node_config(
                 storage,
                 topology_key,
             )
+        case _:
+            raise Exception("something odd happened creating node_config.yaml")
+
+
+def make_genesis_file(start_date: datetime, peers: List[PeerNode]) -> Genesis:
+    genesis_dict = yaml.safe_load(GENESIS_YAML)
+    consensus_leader_ids = []
+    for peer in peers:
+        consensus_leader_ids.append(peer.consensus_leader_id)
+
+    # modify the template with the proper settings
+    genesis_dict["blockchain_configuration"]["block0_date"] = int(
+        start_date.timestamp()
+    )
+    genesis_dict["blockchain_configuration"][
+        "consensus_leader_ids"
+    ] = consensus_leader_ids
+
+    return Genesis(genesis_dict)
+
+
+async def make_block0(
+    jcli_path: str, storage: Path, genesis_path: Path
+) -> Tuple[Path, str]:
+    block0_path = storage.joinpath("block0.bin")
+    jcli_exec = jcli.JCli(jcli_path)
+    await jcli_exec.create_block0_bin(block0_path, genesis_path)
+    hash = await jcli_exec.get_block0_hash(block0_path)
+    return (block0_path, hash)

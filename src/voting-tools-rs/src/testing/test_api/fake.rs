@@ -53,8 +53,7 @@ impl DataProvider for MockDbProvider {
                             let metadata = metadata_map.get(&METADATUM_1).unwrap();
 
                             if let Ok(data) = metadata.as_bytes() {
-                                let bytes: [u8; 32] = data.try_into().unwrap();
-                                VotingPowerSource::Direct(PubKey(bytes).into())
+                                VotingPowerSource::Direct(PubKey(data).into())
                             } else {
                                 let mut delegations = BTreeMap::new();
                                 let delgation_list = metadata.as_list().unwrap();
@@ -62,7 +61,7 @@ impl DataProvider for MockDbProvider {
                                     let inner_list = delgation_list.get(i).as_list().unwrap();
 
                                     let delegation = inner_list.get(0).as_bytes().unwrap();
-                                    let delegation = PubKey(delegation.try_into().unwrap());
+                                    let delegation = PubKey(delegation);
                                     let weight = inner_list.get(1).as_int().unwrap();
                                     let weight =
                                         u32::from_i32(weight.as_i32_or_fail().unwrap()).unwrap();
@@ -139,7 +138,7 @@ impl DataProvider for MockDbProvider {
                     .get(&hex::encode(addr))
                     .unwrap_or(&BigNum::zero())
                     .to_string();
-                (*addr, BigDecimal::from_str(&big_num).unwrap())
+                (addr.clone(), BigDecimal::from_str(&big_num).unwrap())
             })
             .collect())
     }

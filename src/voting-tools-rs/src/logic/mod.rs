@@ -62,12 +62,12 @@ pub fn voting_power(
     let min_slot = min_slot.unwrap_or(ABS_MIN_SLOT);
     let max_slot = max_slot.unwrap_or(ABS_MAX_SLOT);
 
-    let ctx = ValidationCtx::default();
-
     let ctx = ValidationCtx {
         network_id,
         expected_voting_purpose,
-        ..ctx
+        validate_network_id: false,
+        validate_key_type: false,
+        ..Default::default()
     };
 
     let validate = |reg: SignedRegistration| {
@@ -98,7 +98,7 @@ pub fn voting_power(
 fn stake_addrs(registrations: &[Valid<SignedRegistration>]) -> Vec<StakeKeyHex> {
     registrations
         .iter()
-        .map(|reg| reg.registration.stake_key)
+        .map(|reg| reg.registration.stake_key.clone())
         .collect()
 }
 

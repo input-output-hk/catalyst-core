@@ -62,7 +62,7 @@ proptest = "1.1"
 
 
 # representing byte buffers while being generic over serde implementations
-bytekind = "0.1.4"
+bytekind = "0.1.7"
 
 # provides `NonEmpty` which is like a `Vec` but guarantees it is non-empty
 nonempty = { version = "0.8", features = ["serialize"] }

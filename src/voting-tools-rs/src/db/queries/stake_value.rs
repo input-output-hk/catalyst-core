@@ -22,9 +22,9 @@ impl Db {
         stake_addrs: &[StakeKeyHex],
     ) -> Result<HashMap<StakeKeyHex, BigDecimal>> {
         let rows = stake_addrs.iter().map(|addr| {
-            let hex = hex::encode(addr.0);
+            let hex = hex::encode(&addr.0);
             let result = self.exec(|conn| query(hex).load(conn))?;
-            Ok::<_, Report>((*addr, result))
+            Ok::<_, Report>((addr.clone(), result))
         });
 
         // If performance becomes an issue, we can replace this with `dashmap` and parallelize the

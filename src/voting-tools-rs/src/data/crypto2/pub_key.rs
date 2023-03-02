@@ -6,8 +6,8 @@ use crate::data::NetworkId;
 /// An ED25519 public key
 ///
 /// This is a wrapper around `[u8; 32]`, with serde impls that serialize to/from a hex string
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
-pub struct PubKey(pub [u8; 32]);
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
+pub struct PubKey(pub Vec<u8>);
 
 impl Serialize for PubKey {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -25,8 +25,8 @@ impl<'de> Deserialize<'de> for PubKey {
         D: serde::Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        let mut bytes = [0; 32];
-        hex::decode_to_slice(s.trim_start_matches("0x"), &mut bytes).map_err(<D::Error as serde::de::Error>::custom)?;
+        let bytes = hex::decode(s.trim_start_matches("0x"))
+            .map_err(<D::Error as serde::de::Error>::custom)?;
         Ok(Self(bytes))
     }
 }
@@ -41,8 +41,8 @@ impl PubKey {
     /// assert_eq!(sig.to_string, "0".repeat(64));
     /// ```
     #[inline]
-    pub fn to_hex(self) -> String {
-        hex::encode(self.0)
+    pub fn to_hex(&self) -> String {
+        hex::encode(&self.0)
     }
 
     /// Create a public key from a string slice containing hex bytes
@@ -57,8 +57,7 @@ impl PubKey {
     /// ```
     #[inline]
     pub fn from_hex(hex: &str) -> Result<Self, hex::FromHexError> {
-        let mut bytes = [0; 32];
-        hex::decode_to_slice(hex, &mut bytes)?;
+        let bytes = hex::decode(hex)?;
         Ok(Self(bytes))
     }
 

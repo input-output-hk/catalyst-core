@@ -59,7 +59,7 @@ fn fails_if_stake_key_invalid_type() {
     let ctx = test_ctx();
 
     let mut reg = cip15::vector();
-    let stake_key_bytes = [0; 32];
+    let stake_key_bytes = vec![0; 32];
     reg.registration.stake_key = StakeKeyHex(PubKey(stake_key_bytes));
 
     let Failure { error, .. } = reg.validate_with(ctx).unwrap_err();
@@ -73,7 +73,7 @@ fn fails_if_stake_key_wrong_network_id() {
 
     let mut reg = cip15::vector();
     let leading_byte = 0b1111_0000; // type 15, testnet
-    let mut bytes = [0; 32];
+    let mut bytes = vec![0; 32];
     bytes[0] = leading_byte;
 
     reg.registration.stake_key = StakeKeyHex(PubKey(bytes));

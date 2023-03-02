@@ -83,11 +83,13 @@ fn load(
 
 fn handle_invalids(path: &Path, invalids: &[InvalidRegistration]) -> Result<()> {
     info!("handling invalids");
-    if invalids.len() == 0 {
+    if invalids.is_empty() {
         return Ok(());
     }
 
-    let path = path.join(".error");
+    let path = path.with_file_name("voting_tool_error");
+
+
     tracing::warn!(
         "found invalid registrations: writing to {}",
         path.to_string_lossy()

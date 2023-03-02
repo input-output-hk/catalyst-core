@@ -663,9 +663,9 @@ dependencies = [
 
 [[package]]
 name = "bytekind"
-version = "0.1.4"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "deec57751eba131a6b8ca0a48f44c820fcf33181564fa5dc440095e16193742a"
+checksum = "5a9184979f87194d19b70d2b1903c350f0a4b818ce82522ee0b90cc55ed09fab"
 dependencies = [
  "hex",
  "serde",

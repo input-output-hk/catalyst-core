@@ -16,6 +16,7 @@
     clippy::derive_partial_eq_without_eq,
     clippy::missing_panics_doc
 )]
+#![cfg_attr(test, allow(clippy::let_underscore_drop))] // useful in tests, often a bug otherwise
 
 #[macro_use]
 extern crate tracing;

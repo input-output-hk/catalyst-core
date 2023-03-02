@@ -22,7 +22,7 @@ impl<'de> Deserialize<'de> for Sig {
     {
         let s = String::deserialize(deserializer)?;
         let mut bytes = [0; 64];
-        hex::decode_to_slice(&s, &mut bytes).map_err(<D::Error as serde::de::Error>::custom)?;
+        hex::decode_to_slice(s.trim_start_matches("0x"), &mut bytes).map_err(<D::Error as serde::de::Error>::custom)?;
         Ok(Self(bytes))
     }
 }

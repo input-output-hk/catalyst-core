@@ -45,7 +45,7 @@ pub(crate) fn arbitrary_signed_registration(
 
     let registration = Registration {
         voting_power_source: VotingPowerSource::Direct(voting_key),
-        stake_key: StakeKeyHex(PubKey(stake_key)),
+        stake_key: StakeKeyHex(PubKey(stake_key.to_vec())),
         rewards_address,
         nonce,
         voting_purpose: Some(VotingPurpose::CATALYST),

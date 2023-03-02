@@ -75,7 +75,7 @@ impl<'a> SnapshotOutputAssert<'a> {
     pub fn stake_key(&self, public_key: &PublicKey) {
         assert_eq!(
             &public_key.to_hex(),
-            &hex::encode(self.output.stake_key),
+            &hex::encode(self.output.stake_key.clone()),
             "different stake public key"
         );
     }

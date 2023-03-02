@@ -50,7 +50,7 @@ impl SchemaVersion for EventDB {
         let conn = self.pool.get().await?;
 
         let schema_check = conn.query_one(
-            "SELECT MAX('version') FROM 'refinery_schema_history';",
+            "SELECT MAX(version) from refinery_schema_history;",
             &[]).await?;
 
         let current_ver = schema_check.try_get::<usize,u32>(0)?;

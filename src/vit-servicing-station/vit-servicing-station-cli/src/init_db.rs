@@ -2,7 +2,7 @@ use crate::task::ExecTask;
 use clap::Parser;
 use thiserror::Error;
 use vit_servicing_station_lib::db::{
-    load_db_connection_pool, migrations::initialize_db_with_migration, Error as DbPoolError,
+    load_db_connection_pool, /*migrations::initialize_db_with_migration,*/ Error as DbPoolError,
 };
 
 #[derive(Error, Debug)]
@@ -11,10 +11,10 @@ pub enum Error {
     DbPool(#[from] DbPoolError),
     #[error("Error connecting to db: {0}")]
     DbConnection(#[from] r2d2::Error),
-    #[error("Error running db migrations: {0}")]
-    InitializeDbWithMigration(
-        #[from] vit_servicing_station_lib::db::migrations::InitializeDbWithMigrationError,
-    ),
+    //#[error("Error running db migrations: {0}")]
+    //InitializeDbWithMigration(
+    //    #[from] vit_servicing_station_lib::db::migrations::InitializeDbWithMigrationError,
+    //),
 }
 
 #[derive(Debug, PartialEq, Eq, Parser)]
@@ -30,8 +30,8 @@ pub enum Db {
 impl Db {
     fn init_with_migrations(db_url: &str) -> Result<(), Error> {
         let pool = load_db_connection_pool(db_url)?;
-        let db_conn = pool.get()?;
-        initialize_db_with_migration(&db_conn)?;
+        let _db_conn = pool.get()?;
+        //initialize_db_with_migration(&db_conn)?;
         Ok(())
     }
 }

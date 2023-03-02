@@ -15,20 +15,38 @@
 <span id="15">15</span>
 <span id="16">16</span>
 <span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
 </pre><pre class="rust"><code><span class="kw">use </span>clap::Parser;
 
+<span class="kw">use crate</span>::{service, settings::Settings};
+
 <span class="attribute">#[derive(thiserror::Error, Debug)]
-</span><span class="kw">pub enum </span>Error {}
+</span><span class="kw">pub enum </span>Error {
+    <span class="attribute">#[error(transparent)]
+    </span>ServiceError(<span class="attribute">#[from] </span>service::Error),
+}
 
 <span class="attribute">#[derive(Parser)]
+#[clap(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>Cli {
-    Run,
+    Run(Settings),
 }
 
 <span class="kw">impl </span>Cli {
-    <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+    <span class="kw">pub async fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">match </span><span class="self">self </span>{
-            <span class="self">Self</span>::Run =&gt; <span class="prelude-val">Ok</span>(()),
+            <span class="self">Self</span>::Run(settings) =&gt; {
+                service::run_service(<span class="kw-2">&amp;</span>settings.address).<span class="kw">await</span><span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(())
+            }
         }
     }
 }

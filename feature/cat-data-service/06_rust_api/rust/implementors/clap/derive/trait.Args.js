@@ -1,5 +1,6 @@
 (function() {var implementors = {
 "blockfrost_catalyst":[["impl Args for <a class=\"struct\" href=\"blockfrost_catalyst/struct.Command.html\" title=\"struct blockfrost_catalyst::Command\">Command</a>"]],
+"cat_data_service":[["impl Args for <a class=\"struct\" href=\"cat_data_service/settings/struct.Settings.html\" title=\"struct cat_data_service::settings::Settings\">Settings</a>"]],
 "catalyst_toolbox":[["impl Args for <a class=\"struct\" href=\"catalyst_toolbox/rewards/proposers/struct.ProposerRewards.html\" title=\"struct catalyst_toolbox::rewards::proposers::ProposerRewards\">ProposerRewards</a>"]],
 "db_sync_explorer":[["impl Args for <a class=\"struct\" href=\"db_sync_explorer/struct.Args.html\" title=\"struct db_sync_explorer::Args\">Args</a>"]],
 "explorer":[["impl Args for <a class=\"struct\" href=\"explorer/settings/struct.CommandLine.html\" title=\"struct explorer::settings::CommandLine\">CommandLine</a>"]],

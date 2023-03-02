@@ -100,6 +100,8 @@
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Catalyst Election Database crate
 
 </span><span class="kw">mod </span>config_table;
@@ -118,7 +120,7 @@
 
 <span class="doccomment">/// Database URL Environment Variable name.
 /// eg: &quot;`postgres://catalyst-dev:CHANGE_ME@localhost/CatalystDev`&quot;
-</span><span class="kw">const </span>DATABASE_URL_ENVVAR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;ELECTION_DB_URL&quot;</span>;
+</span><span class="kw">const </span>DATABASE_URL_ENVVAR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;EVENT_DB_URL&quot;</span>;
 
 <span class="doccomment">/// Database version this crate matches.
 /// Must equal the last Migrations Version Number.
@@ -169,9 +171,11 @@
     </span>dotenv().ok();
 
     <span class="comment">// If the Database connection URL is not supplied, try and get from the env var.
-    </span><span class="kw">let </span>database_url = <span class="kw">match </span>url {
+    </span><span class="kw">let </span>env_raw = env::var(DATABASE_URL_ENVVAR);
+
+    <span class="kw">let </span>database_url = <span class="kw">match </span>url {
         <span class="prelude-val">Some</span>(url) =&gt; url.to_string(),
-        <span class="prelude-val">None </span>=&gt; env::var(DATABASE_URL_ENVVAR)<span class="question-mark">?</span>,
+        <span class="prelude-val">None </span>=&gt; env_raw<span class="question-mark">?</span>,
     };
 
     <span class="kw">let </span>config = tokio_postgres::config::Config::from_str(<span class="kw-2">&amp;</span>database_url)<span class="question-mark">?</span>;

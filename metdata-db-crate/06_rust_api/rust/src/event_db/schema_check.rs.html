@@ -117,7 +117,7 @@
         <span class="kw">let </span>conn = <span class="self">self</span>.pool.get().<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">let </span>schema_check = conn.query_one(
-            <span class="string">&quot;SELECT MAX(&#39;version&#39;) FROM &#39;refinery_schema_history&#39;;&quot;</span>,
+            <span class="string">&quot;SELECT MAX(version) from refinery_schema_history;&quot;</span>,
             <span class="kw-2">&amp;</span>[]).<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">let </span>current_ver = schema_check.try_get::&lt;usize,u32&gt;(<span class="number">0</span>)<span class="question-mark">?</span>;

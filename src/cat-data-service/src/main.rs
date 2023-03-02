@@ -1,10 +1,14 @@
 use clap::Parser;
 
-mod cli;
-mod v0;
+pub mod cli;
+pub mod service;
+pub mod settings;
 
 #[tokio::main]
 async fn main() -> Result<(), cli::Error> {
-    cli::Cli::parse().exec()?;
+    // initialize tracing
+    tracing_subscriber::fmt::init();
+
+    cli::Cli::parse().exec().await?;
     Ok(())
 }

@@ -779,6 +779,8 @@ dependencies = [
  "clap 4.1.4",
  "thiserror",
  "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

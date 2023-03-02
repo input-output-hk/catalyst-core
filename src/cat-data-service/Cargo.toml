@@ -7,7 +7,9 @@ edition = "2021"
 
 [dependencies]
 clap = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["fmt"]}
 
-tokio = { version = "1.8", features = ["rt", "macros"] }
+tokio = { version = "1.8", features = ["rt", "macros", "rt-multi-thread"] }
 thiserror = { version = "1.0" }
 axum = { version = "0.6.9" }

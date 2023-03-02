@@ -7,40 +7,14 @@
 <span id="7">7</span>
 <span id="8">8</span>
 <span id="9">9</span>
-<span id="10">10</span>
-<span id="11">11</span>
-<span id="12">12</span>
-<span id="13">13</span>
-<span id="14">14</span>
-<span id="15">15</span>
-<span id="16">16</span>
-<span id="17">17</span>
-<span id="18">18</span>
-<span id="19">19</span>
-<span id="20">20</span>
-<span id="21">21</span>
-<span id="22">22</span>
-</pre><pre class="rust"><code><span class="kw">use </span>axum::{routing::get, Router};
-<span class="kw">use </span>std::time::{SystemTime, UNIX_EPOCH};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="self">self</span>::{delegator::delegator, voter::voter};
+<span class="kw">use </span>axum::Router;
+
+<span class="kw">mod </span>delegator;
+<span class="kw">mod </span>voter;
 
 <span class="kw">pub fn </span>snapshot() -&gt; Router {
-    Router::new()
-        .route(<span class="string">&quot;/snapshot/tag&quot;</span>, get(tag))
-        .route(<span class="string">&quot;/snapshot/time&quot;</span>, get(time))
-}
-
-<span class="kw">async fn </span>tag() -&gt; String {
-    <span class="string">&quot;fund 9&quot;</span>.to_string()
-}
-
-<span class="kw">async fn </span>time() -&gt; String {
-    <span class="macro">format!</span>(
-        <span class="string">&quot;time: {}&quot;</span>,
-        SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs()
-    )
+    Router::new().nest(<span class="string">&quot;/snapshot&quot;</span>, voter().merge(delegator()))
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="cat_data_service" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

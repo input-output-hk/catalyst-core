@@ -42,7 +42,7 @@
 
     <span class="comment">// build our application with a route
     </span><span class="kw">let </span>v0 = v0::v0();
-    <span class="kw">let </span>app = Router::new().nest(<span class="string">&quot;/&quot;</span>, v0);
+    <span class="kw">let </span>app = Router::new().nest(<span class="string">&quot;/api&quot;</span>, v0);
 
     axum::Server::bind(addr)
         .serve(app.into_make_service())

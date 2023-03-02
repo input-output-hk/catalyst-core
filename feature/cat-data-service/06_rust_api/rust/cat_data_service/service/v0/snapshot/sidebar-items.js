@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["snapshot",""],["tag",""],["time",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["snapshot",""]],"mod":[["delegator",""],["voter",""]]};

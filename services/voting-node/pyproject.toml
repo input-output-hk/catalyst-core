@@ -26,3 +26,7 @@ version = {file = "VERSION"}
 
 [project.scripts]
 voting-node = "voting_node.main:cli"
+
+[tool.ruff.per-file-ignores]
+# ignore long lines in templates
+"voting_node/templates.py" = ["E501"]

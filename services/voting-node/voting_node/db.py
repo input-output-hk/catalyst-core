@@ -84,4 +84,13 @@ class ElectionDb(object):
         return rows
 
     async def fetch_proposals(self) -> List[Proposal]:
-        return []
+        sort_by = "id ASC"
+        query = f"SELECT * FROM proposal ORDER BY {sort_by}"
+        result = await self.conn.fetch(query)
+        if result is None:
+            raise Exception("proposals db error")
+        logger.debug(f"proposals retrieved from db: {len(result)}")
+        rows = []
+        for r in result:
+            rows.append(Proposal(**dict(r)))
+        return rows

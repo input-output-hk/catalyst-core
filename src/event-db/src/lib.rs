@@ -16,7 +16,7 @@ use std::str::FromStr;
 
 /// Database URL Environment Variable name.
 /// eg: "`postgres://catalyst-dev:CHANGE_ME@localhost/CatalystDev`"
-const DATABASE_URL_ENVVAR: &str = "ELECTION_DB_URL";
+const DATABASE_URL_ENVVAR: &str = "EVENT_DB_URL";
 
 /// Database version this crate matches.
 /// Must equal the last Migrations Version Number.
@@ -67,9 +67,11 @@ pub async fn establish_connection(
     dotenv().ok();
 
     // If the Database connection URL is not supplied, try and get from the env var.
+    let env_raw = env::var(DATABASE_URL_ENVVAR);
+
     let database_url = match url {
         Some(url) => url.to_string(),
-        None => env::var(DATABASE_URL_ENVVAR)?,
+        None => env_raw?,
     };
 
     let config = tokio_postgres::config::Config::from_str(&database_url)?;

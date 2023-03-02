@@ -83,7 +83,7 @@ pub fn establish_connection(
 mod test {
     /// Check if the schema version in the DB is up to date.
     #[test]
-    #[ignore = "We'll probably not be using this. Will be fixed in the election-db PR."]
+    #[ignore = "We'll probably not be using this. Will be fixed in the event-db PR."]
     fn check_schema_version() {
         use crate::establish_connection;
 

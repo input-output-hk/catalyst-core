@@ -1,54 +1,22 @@
-# We  use this tool to generate our DB models from SQL.
-# See: https://github.com/abbychau/diesel_cli_ext/blob/master/README.md
-[tasks.install-diesel-cli-ext]
-script_runner = "@shell"
-script = '''
-cargo install --git https://github.com/stevenj/diesel_cli_ext --branch all-changes
-'''
-# Was  binstall --no-confirm diesel_cli_ext
+# Tool needed to run DB migrations.
+# See: https://github.com/rust-db/refinery/tree/main/refinery_cli
+[tasks.install-refinery-cli]
+install_crate = { crate_name = "refinery_cli", binary = "refinery", test_arg = "--help" }
 
 # All the prerequisite tooling needed to work with the DB.
 [tasks.install-db-prereqs]
 workspace = false
 run_task = { name = [
-        "install-diesel-cli-ext"
+        "install-refinery-cli",
     ], parallel = true }
 
 # Run Diesel Migrations, constructing the full up-to-date DB in a local database.
-[tasks.run-election-db-migration]
+[tasks.run-event-db-migration]
 workspace = false
 category = "db"
-script_runner = "@shell" 
+script_runner = "@shell"
 script = '''
-cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/election-db
-diesel migration run
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
+refinery migrate -c refinery.toml -p ./migrations
 '''
-
-# Revert  Diesel  Election Migrations, should be no DB artifacts left after it runs.
-[tasks.revert-election-db-migration]
-workspace = false
-category = "db"
-script_runner = "@shell" 
-script = '''
-cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/election-db
-diesel migration revert
-'''
-
-[tasks.generate-election-db-models]
-workspace = false
-category = "db"
-script_runner = "@shell" 
-script = '''
-cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/election-db
-diesel_ext --model -t > src/models.rs
-'''
-
-# Build the Catalyst election DB
-[tasks.build-db-code-from-sql]
-workspace = false
-category = "db"
-run_task = { name = [
-        "run-election-db-migration",
-        "generate-election-db-models"
-    ]}
 

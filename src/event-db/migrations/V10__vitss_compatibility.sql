@@ -1,6 +1,8 @@
--- Catalyst Election Database - VIT-SS Compatibility
+-- Catalyst Event Database - VIT-SS Compatibility
 
--- This view maps the original VIT-SS funds table to the new election table.
+-- All Tables defined here will be dropped once Vit-SS backward compatibility is no longer needed.
+
+-- This view maps the original VIT-SS funds table to the new event table.
 --   Do not use this VIEW for new queries, its ONLY for backward compatibility.
 CREATE VIEW funds AS SELECT
     this_fund.row_id AS id,
@@ -29,11 +31,11 @@ CREATE VIEW funds AS SELECT
 
     (this_fund.extra->'url'->'results') #>> '{}' AS results_url,
     (this_fund.extra->'url'->'survey') #>> '{}' AS survey_url
-FROM election this_fund
-LEFT JOIN election next_fund ON next_fund.row_id = this_fund.row_id + 1;
+FROM event this_fund
+LEFT JOIN event next_fund ON next_fund.row_id = this_fund.row_id + 1;
 
 COMMENT ON VIEW funds IS
-    'This view maps the original VIT-SS funds table to the new election table.
+    'This view maps the original VIT-SS funds table to the new event table.
 Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
 -- VIT-SS Compatibility View - proposals table.
@@ -118,15 +120,15 @@ Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 CREATE VIEW voteplans AS SELECT
     voteplan.row_id AS id,
     voteplan.id AS chain_voteplan_id,
-    EXTRACT (EPOCH FROM election.voting_start)::BIGINT AS chain_vote_start_time,
-    EXTRACT (EPOCH FROM election.voting_end)::BIGINT AS chain_vote_end_time,
-    EXTRACT (EPOCH FROM election.tallying_end)::BIGINT AS chain_committee_end_time,
+    EXTRACT (EPOCH FROM event.voting_start)::BIGINT AS chain_vote_start_time,
+    EXTRACT (EPOCH FROM event.voting_end)::BIGINT AS chain_vote_end_time,
+    EXTRACT (EPOCH FROM event.tallying_end)::BIGINT AS chain_committee_end_time,
     voteplan.category AS chain_voteplan_payload,
     voteplan.encryption_key AS chain_vote_encryption_key,
-    election.row_id AS fund_id,
+    event.row_id AS fund_id,
     voting_group.token_id AS token_identifier
 FROM voteplan
-    INNER JOIN election ON voteplan.election_id = election.row_id
+    INNER JOIN event ON voteplan.event_id = event.row_id
     INNER JOIN voting_group ON voteplan.group_id = voting_group.row_id;
 
 COMMENT ON VIEW voteplans IS
@@ -158,7 +160,7 @@ CREATE VIEW challenges AS SELECT
     challenge.description AS description,
     challenge.rewards_total AS rewards_total,
     challenge.proposers_rewards AS proposers_rewards,
-    challenge.election AS fund_id,
+    challenge.event AS fund_id,
     (challenge.extra->'url'->'challenge') #>> '{}' AS challenge_url,
     (challenge.extra->'highlights') #>> '{}' AS highlights
 FROM challenge;
@@ -191,8 +193,8 @@ Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 CREATE VIEW goals AS SELECT
     id,
     name AS goal_name,
-    election_id AS fund_id
-FROM goal ORDER BY (election_id, idx);
+    event_id AS fund_id
+FROM goal ORDER BY (event_id, idx);
 
 COMMENT ON VIEW goals IS
     'This view maps the original VIT-SS goals table to the new goal table.
@@ -201,7 +203,7 @@ Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 -- VIT-SS Compatibility View - groups.
 
 CREATE VIEW groups AS SELECT
-    election_id AS fund_id,
+    event_id AS fund_id,
     token_id AS token_identifier,
     group_id AS group_id
 FROM voting_group;
@@ -210,88 +212,7 @@ COMMENT ON VIEW groups IS
     'This view maps the original VIT-SS groups table to the new voting_groups table.
 Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
--- These tables are not updated to the new schema and still need analysis.
--- They are a copy of the latest vit-ss database table definitions.
-
--- votes
-
-CREATE TABLE votes (
-    fragment_id TEXT PRIMARY KEY,
-    caster TEXT NOT NULL,
-    proposal INTEGER NOT NULL,
-    voteplan_id TEXT NOT NULL,
-    time REAL NOT NULL,
-    choice SMALLINT,
-    raw_fragment TEXT NOT NULL
-);
-
--- TODO, Shouldn't this be related to the other tables?
-
-COMMENT ON TABLE votes IS 'All Votes. VIT-SS Compatibility Table, to be replaced when analysis completed.';
-COMMENT ON COLUMN votes.fragment_id is 'TODO';
-COMMENT ON COLUMN votes.caster is 'TODO';
-COMMENT ON COLUMN votes.proposal is 'TODO';
-COMMENT ON COLUMN votes.voteplan_id is 'TODO';
-COMMENT ON COLUMN votes.time is 'TODO';
-COMMENT ON COLUMN votes.choice is 'TODO';
-COMMENT ON COLUMN votes.raw_fragment is 'TODO';
-
--- snapshots
-
-CREATE TABLE snapshots (
-    tag TEXT PRIMARY KEY,
-    last_updated BIGINT NOT NULL
-);
-
-COMMENT ON TABLE snapshots IS 'Something to do with snapshots. VIT-SS Compatibility Table, to be replaced when analysis completed.';
-COMMENT ON COLUMN snapshots.last_updated is 'TODO';
-
--- voters
-
-CREATE TABLE voters (
-    voting_key TEXT NOT NULL,
-    voting_power BIGINT NOT NULL,
-    voting_group TEXT NOT NULL,
-    snapshot_tag TEXT NOT NULL,
-
-    PRIMARY KEY(voting_key, voting_group, snapshot_tag),
-    FOREIGN KEY(snapshot_tag) REFERENCES snapshots(tag) ON DELETE CASCADE
-);
-
-CREATE UNIQUE INDEX unique_voter_id on voters (voting_key, voting_group, snapshot_tag);
-
-COMMENT ON TABLE voters IS 'Voters table. VIT-SS Compatibility Table, to be replaced when analysis completed.';
-COMMENT ON COLUMN voters.voting_key is 'TODO';
-COMMENT ON COLUMN voters.voting_power is 'TODO';
-COMMENT ON COLUMN voters.voting_group is 'TODO';
-COMMENT ON COLUMN voters.snapshot_tag is 'TODO';
-
--- contributions
-
-CREATE TABLE contributions (
-    row_id SERIAL PRIMARY KEY,
-
-    stake_public_key TEXT NOT NULL,
-    voting_key TEXT NOT NULL,
-    voting_group TEXT NOT NULL,
-    snapshot_tag TEXT NOT NULL,
-
-    reward_address TEXT NOT NULL,
-    value BIGINT NOT NULL,
-
-    FOREIGN KEY(snapshot_tag) REFERENCES snapshots(tag) ON DELETE CASCADE
-);
-
-CREATE UNIQUE INDEX unique_contribution_id ON contributions (stake_public_key, voting_key, voting_group, snapshot_tag);
-
-COMMENT ON TABLE contributions IS 'TODO';
-COMMENT ON COLUMN contributions.row_id is 'Synthetic Unique Row Key';
-COMMENT ON COLUMN contributions.stake_public_key IS 'TODO';
-COMMENT ON COLUMN contributions.voting_key IS 'TODO';
-COMMENT ON COLUMN contributions.voting_group IS 'TODO';
-COMMENT ON COLUMN contributions.snapshot_tag IS 'TODO';
-COMMENT ON COLUMN contributions.reward_address IS 'TODO';
-COMMENT ON COLUMN contributions.value IS 'TODO';
+-- VIT-SS Full Proposal View
 
 CREATE VIEW full_proposals_info AS
 SELECT

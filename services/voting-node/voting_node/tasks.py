@@ -15,6 +15,7 @@ from .models import (
     NodeSettings,
     NodeTopologyKey,
     PeerNode,
+    Proposal,
 )
 from .templates import (
     NODE_CONFIG_LEADER_TEMPLATE,
@@ -290,12 +291,40 @@ class LeaderSchedule(NodeTaskSchedule):
 
 
 class Leader0Schedule(LeaderSchedule):
+    # Leader0 Voting Node data
+    proposals: List[Proposal]
+
     def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
         LeaderSchedule.__init__(self, db_url, jorm_config)
         self.NODE_CONFIG_TEMPLATE = NODE_CONFIG_LEADER0_TEMPLATE
+        self.tasks: list[str] = [
+            "connect_db",
+            "setup_node_info",
+            "fetch_leader_info",
+            "set_node_secret",
+            "set_node_topology_key",
+            "set_node_config",
+            "fetch_upcoming_election",
+            "fetch_proposals",
+            "generate_block0",
+            "wait_for_voting",
+            "voting",
+            "tally",
+            "cleanup",
+        ]
 
-    async def fetch_voteplan_proposals(self):
-        raise Exception("TODO")
+    async def fetch_proposals(self):
+        # This all starts by getting the election row that has the nearest
+        # `voting_start`. We query the DB to get the row, and store it.
+        if self.voting_event is None:
+            logger.debug("no election was found, resetting.")
+            self.reset_schedule()
+        try:
+            proposals = await self.db.fetch_proposals()
+            logger.debug(f"proposals:\n{proposals}")
+            self.proposals = proposals
+        except Exception as e:
+            raise Exception(f"failed to fetch proposals from db: {e}") from e
 
     async def generate_block0(self):
         pass

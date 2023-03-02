@@ -109,6 +109,7 @@ class Election:
 class Proposal:
     """Represents a database proposal."""
 
+    row_id: int
     id: int
     challenge: int
     title: str

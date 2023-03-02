@@ -64,14 +64,14 @@ COMMENT ON COLUMN voter.voting_power is 'Calculated Voting Power associated with
 -- contributions
 
 CREATE TABLE contribution (
-    row_id SERIAL PRIMARY KEY,
+    row_id SERIAL8 PRIMARY KEY,
 
     stake_public_key TEXT NOT NULL,
     snapshot_id INTEGER NOT NULL,
 
-    voting_key TEXT NOT NULL,
-    voting_weight INTEGER NOT NULL,
-    voting_key_idx INTEGER NOT NULL,
+    voting_key TEXT NULL,
+    voting_weight INTEGER NULL,
+    voting_key_idx INTEGER NULL,
     value BIGINT NOT NULL,
 
     voting_group TEXT NOT NULL,
@@ -88,7 +88,7 @@ COMMENT ON COLUMN contribution.row_id is 'Synthetic Unique Row Key';
 COMMENT ON COLUMN contribution.stake_public_key IS 'The voters Stake Public Key';
 COMMENT ON COLUMN contribution.snapshot_id IS 'The snapshot this contribution was recorded from.';
 
-COMMENT ON COLUMN contribution.voting_key IS 'The voting key ';
+COMMENT ON COLUMN contribution.voting_key IS 'The voting key.  If this is NULL it is the raw staked ADA.';
 COMMENT ON COLUMN contribution.voting_weight IS 'The weight this voting key gets of the total.';
 COMMENT ON COLUMN contribution.voting_key_idx IS 'The index from 0 of the keys in the delegation array.';
 COMMENT ON COLUMN contribution.value IS 'The amount of ADA contributed to this voting key from the stake address';

@@ -5,6 +5,8 @@ pub fn delegator() -> Router {
 }
 
 async fn delegator_exec(Path((event, stake_public_key)): Path<(String, String)>) -> String {
+    tracing::debug!("event: {0}, stake_public_key: {1}", event, stake_public_key);
+
     format!(
         "delegator, event: {0}, stake_public_key: {1}",
         event, stake_public_key

@@ -5,5 +5,7 @@ pub fn voter() -> Router {
 }
 
 async fn voter_exec(Path((event, voting_key)): Path<(String, String)>) -> String {
+    tracing::debug!("event: {0}, voting_key: {1}", event, voting_key);
+
     format!("voter, event: {0}, voting_ket: {1}", event, voting_key)
 }

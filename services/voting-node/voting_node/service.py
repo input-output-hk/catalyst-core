@@ -3,12 +3,13 @@ import socket
 import uvicorn
 from typing import Final, List, Optional
 
-from . import logs, tasks, utils
+from . import tasks, utils
+from .logs import getLogger
 from .config import JormConfig
 
 
 # gets voting node logger
-logger = logs.getLogger()
+logger = getLogger()
 
 
 class VotingNode(uvicorn.Server):
@@ -90,12 +91,12 @@ class VotingNode(uvicorn.Server):
         # according to its leadership role.
         # raises exception is something goes wrong with the hostname
         host_name: str = utils.get_hostname().lower()
-        match utils.get_leadership_role_by_hostname(host_name):
-            case "leader0":
+        match utils.get_leadership_role_n_number_by_hostname(host_name):
+            case ("leader", "0"):
                 return tasks.Leader0Schedule(self.db_url, self.jorm_config)
-            case "leader":
+            case ("leader", _):
                 return tasks.LeaderSchedule(self.db_url, self.jorm_config)
-            case "follower":
+            case ("follower", _):
                 return tasks.FollowerSchedule(self.db_url, self.jorm_config)
 
     async def start_jormungandr(self):
@@ -118,7 +119,7 @@ class VotingNode(uvicorn.Server):
             await asyncio.sleep(1)
 
     def jormungandr_exec(self) -> str:
-        return self.jorm_config.jormungandr_path
+        return self.jorm_config.jorm_path
 
     def jcli_exec(self) -> str:
         return self.jorm_config.jcli_path

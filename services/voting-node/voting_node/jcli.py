@@ -1,8 +1,9 @@
 import asyncio
 
 
-# wrapper type for the jcli command-line
 class JCli(object):
+    """Wrapper type for the jcli command-line."""
+
     def __init__(self, jcli_exec: str):
         self.jcli_exec = jcli_exec
 

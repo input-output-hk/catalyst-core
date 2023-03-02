@@ -1,7 +1,7 @@
 import click
 import uvicorn
 
-from voting_node import api, config, logs, service
+from . import api, config, logs, service
 
 
 @click.group()

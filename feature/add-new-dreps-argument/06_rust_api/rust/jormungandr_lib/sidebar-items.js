@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":[["crypto","This module provides wrapper around the different cryptographic objects used in jormungandr, the jcli and the tests"],["interfaces",""],["multiaddr",""],["time","Time and related data structures"]]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["reward_addr_from_hex",""]],"struct":[["IdentifierDef",""]]};

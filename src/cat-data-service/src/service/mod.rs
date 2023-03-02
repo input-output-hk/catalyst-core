@@ -16,7 +16,7 @@ pub async fn run_service(addr: &SocketAddr) -> Result<(), Error> {
 
     // build our application with a route
     let v0 = v0::v0();
-    let app = Router::new().nest("/", v0);
+    let app = Router::new().nest("/api", v0);
 
     axum::Server::bind(addr)
         .serve(app.into_make_service())

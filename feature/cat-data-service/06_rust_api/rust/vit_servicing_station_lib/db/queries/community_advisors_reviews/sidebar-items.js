@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["batch_insert_advisor_reviews",""],["query_reviews_by_fund_id",""]]};

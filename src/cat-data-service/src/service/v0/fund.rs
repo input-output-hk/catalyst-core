@@ -1,12 +1,10 @@
 use axum::{extract::Path, routing::get, Router};
 
 pub fn fund() -> Router {
-    let funds = Router::new()
+    Router::new()
         .route("/funds", get(funds_exec))
         .route("/fund", get(fund_exec))
-        .route("/fund/:id", get(fund_by_id_exec));
-
-    funds
+        .route("/fund/:id", get(fund_by_id_exec))
 }
 
 async fn fund_exec() -> String {

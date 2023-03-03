@@ -7,7 +7,7 @@ mod voter;
 pub fn snapshot() -> Router {
     let root = Router::new().route("/", get(versions_exec));
 
-    Router::new().nest("/snapshot", root.merge(voter().merge(delegator())))
+    Router::new().nest("/snapshot", root.merge(voter()).merge(delegator()))
 }
 
 async fn versions_exec() -> String {

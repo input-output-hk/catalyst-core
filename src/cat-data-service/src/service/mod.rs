@@ -9,7 +9,7 @@ pub enum Error {
     CannotRunService(String),
 }
 
-#[tracing::instrument]
+// #[tracing::instrument]
 pub async fn run_service(addr: &SocketAddr) -> Result<(), Error> {
     tracing::info!("Starting service...");
     tracing::info!("Listening on {}", addr);

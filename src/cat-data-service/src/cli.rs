@@ -22,6 +22,8 @@ impl Cli {
             Self::Run(settings) => {
                 logger::init(settings.log_level)?;
 
+                // let state = MockedDB::default();
+
                 service::run_service(&settings.address).await?;
                 Ok(())
             }

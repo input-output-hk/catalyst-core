@@ -1,6 +1,6 @@
 # Simple dockerfile example to build a jormungandr and start in genesis mode
 
-FROM ubuntu:cosmic
+FROM ubuntu:cosmic@sha256:7d657275047118bb77b052c4c0ae43e8a289ca2879ebfa78a703c93aa8fd686c
 LABEL MAINTAINER IOHK
 LABEL description="Jormungandr latest"
 

@@ -2,6 +2,9 @@ name: GitHub Pages
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     name: Deploy GitHub Pages
@@ -13,8 +16,13 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Checkout The Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           fetch-depth: 0
 
@@ -24,7 +32,7 @@ jobs:
           echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
 
       - name: Build Docs
-        uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools:v1.3
+        uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools@sha256:d4d0beee1c85b8004f14775d60e7c612e5bdab1c14eb6ddcbcebce2a4903a44b # v1.3
         with:
           entrypoint: cargo
           args: make build-docs
@@ -34,7 +42,7 @@ jobs:
       - name: Deploy Docs
         id:   deployAttempt
         continue-on-error: true
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7 # v3.9.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./book/html
@@ -55,7 +63,7 @@ jobs:
         id:   deployRetry1
         if:   steps.deployAttempt.outcome == 'failure'
         continue-on-error: true
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7 # v3.9.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./book/html
@@ -72,7 +80,7 @@ jobs:
       - name: Deploy Docs
         id:   deployRetry2
         if:   steps.deployRetry1.outcome == 'failure'
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7 # v3.9.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./book/html

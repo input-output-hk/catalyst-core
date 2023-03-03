@@ -31,13 +31,23 @@ env:
   SEGMENT_DOWNLOAD_TIMEOUT_MINS: 15
 
 
+permissions:
+  contents: read
+
 jobs:
   cancel:
+    permissions:
+      actions: write  # for styfle/cancel-workflow-action to cancel/stop running workflows
     name: 'Cancel Previous Runs'
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - uses: styfle/cancel-workflow-action@0.11.0
+      - name: Harden Runner
+        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
+      - uses: styfle/cancel-workflow-action@b173b6ec0100793626c2d9e6b90435061f4fc3e5 # 0.11.0
         with:
           access_token: ${{ github.token }}
 
@@ -45,18 +55,23 @@ jobs:
     name: Build Catalyst Core on Linux
     runs-on: ubuntu-latest
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install rust
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
 
       - name: Cache rust
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6fd3edff6979b79f87531400ad694fb7f2c84b1f # v2.2.1
         with:
           shared-key: "build_cache"
           save-if: ${{ github.ref == 'refs/heads/main' }}
@@ -74,6 +89,11 @@ jobs:
     env:
       CARGO_FLAGS: --verbose --locked
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Checkout code on PR
         # Workaround for the running out of disk space issue. See https://github.com/actions/runner-images/issues/1341
         run: |
@@ -98,7 +118,7 @@ jobs:
           git config --system core.longpaths true
 
       - name: Cache rust
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6fd3edff6979b79f87531400ad694fb7f2c84b1f # v2.2.1
         with:
           workspaces: "C:\\${{ github.event.repository.name }}"
           save-if: ${{ github.ref == 'refs/heads/main' }}
@@ -119,7 +139,7 @@ jobs:
           "PQ_LIB_DIR=${env:PROGRAMFILES}\PostgreSQL\14\lib" >> $env:GITHUB_ENV
 
       - name: Install rust
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
 

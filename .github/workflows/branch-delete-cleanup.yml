@@ -1,12 +1,22 @@
 name: Branch Deleted
 on: delete
+permissions:
+  contents: read
+
 jobs:
   delete:
+    permissions:
+      contents: write  # for stefanzweifel/git-auto-commit-action to push code in repo
     name: On branch deleted
     if: github.event.ref_type == 'branch'
 
     runs-on: ubuntu-latest
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Set env
         run: |
           GIT_BRANCH=$(echo ${{ github.event.ref }} | sed -e "s#refs/heads/##g")
@@ -18,7 +28,7 @@ jobs:
           echo "Clean up for branch ${{ env.GIT_BRANCH }}"
 
       - name: Get current published documentation
-        uses: actions/checkout@v3
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: gh-pages
 
@@ -27,6 +37,6 @@ jobs:
           rm -rf ${{ env.GIT_BRANCH }}
 
       - name: Save updated docs
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@3ea6ae190baf489ba007f7c92608f33ce20ef04a # v4.16.0
         with:
           commit_message: Removed Draft Docs for ${{ env.GIT_BRANCH }}

@@ -1,6 +1,6 @@
 # Simple dockerfile example to build a catalyst voting backend 
 
-FROM ubuntu:18.04
+FROM ubuntu:18.04@sha256:1e32b9c52e8f22769df41e8f61066c77b2b35b0a423c4161c0e48eca2fd24f75
 LABEL MAINTAINER IOHK
 LABEL description="Catalyst Disruption backend"
 

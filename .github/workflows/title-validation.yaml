@@ -19,6 +19,11 @@ jobs:
       pull-requests: read
       statuses: write
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - uses: amannn/action-semantic-pull-request@505e44b4f33b4c801f063838b3f053990ee46ea7 # v4.6.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

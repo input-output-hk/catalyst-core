@@ -34,7 +34,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - uses: styfle/cancel-workflow-action@0.11.0
+      - name: Harden Runner
+        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
+      - uses: styfle/cancel-workflow-action@b173b6ec0100793626c2d9e6b90435061f4fc3e5 # 0.11.0
         with:
           access_token: ${{ github.token }}
 
@@ -42,6 +47,11 @@ jobs:
     name: Build test dependencies
     runs-on: ubuntu-latest
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Free disk space
         # https://github.com/actions/virtual-environments/issues/709
         run: |
@@ -53,17 +63,17 @@ jobs:
           df -h
 
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
 
       - name: Cache rust
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6fd3edff6979b79f87531400ad694fb7f2c84b1f # v2.2.1
         with:
           shared-key: "test_cache"
           save-if: ${{ github.ref == 'refs/heads/main' }}
@@ -77,7 +87,7 @@ jobs:
           cargo build -p vit-servicing-station-cli -p vit-servicing-station-server -p jcli -p jormungandr -p explorer
 
       - name: Save external dependencies
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
         with:
           path: |
                   target/debug/vit-servicing-station-cli
@@ -92,6 +102,11 @@ jobs:
     name: Build test artifacts
     runs-on: ubuntu-latest
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Free disk space
         # https://github.com/actions/virtual-environments/issues/709
         run: |
@@ -103,23 +118,23 @@ jobs:
           df -h
 
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
 
       - name: Cache rust
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6fd3edff6979b79f87531400ad694fb7f2c84b1f # v2.2.1
         with:
           shared-key: "test_cache"
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Install nextest
-        uses: taiki-e/install-action@nextest
+        uses: taiki-e/install-action@ddfbd2cab72fd94842c80ade93f28fe7ee9c71f8 # nextest
 
       - name: Install dependencies
         run:
@@ -129,7 +144,7 @@ jobs:
         run: cargo nextest archive --archive-file nextest-archive.tar.zst
 
       - name: Save test archive
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
         with:
           path: nextest-archive.tar.zst
           key: nextest-archive-${{ github.run_id }}-${{ github.run_attempt }}
@@ -155,6 +170,11 @@ jobs:
       matrix:
         partition: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Free disk space
         # https://github.com/actions/virtual-environments/issues/709
         run: |
@@ -166,31 +186,31 @@ jobs:
           df -h
           
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
 
       - name: Cache rust
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6fd3edff6979b79f87531400ad694fb7f2c84b1f # v2.2.1
         with:
           shared-key: "test_cache"
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Restore test archive
         id: archive-cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
         with:
           path: nextest-archive.tar.zst
           key: nextest-archive-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Restore external dependencies
         id: deps-cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@69d9d449aced6a2ede0bc19182fadc3a0a42d2b0 # v3.2.6
         with:
           path: |
                   target/debug/vit-servicing-station-cli
@@ -201,7 +221,7 @@ jobs:
           key: deps-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Install nextest
-        uses: taiki-e/install-action@nextest
+        uses: taiki-e/install-action@ddfbd2cab72fd94842c80ade93f28fe7ee9c71f8 # nextest
 
       - name: Install dependencies
         run:
@@ -233,6 +253,11 @@ jobs:
     name: Final test results
     needs: catalyst-core-tests
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - run: |
           result="${{ needs.catalyst-core-tests.result }}"
           if [[ $result == "success" ]]; then
@@ -249,8 +274,13 @@ jobs:
     needs: catalyst-core-tests
     if: always()
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
@@ -270,20 +300,25 @@ jobs:
     name: Wallet JS Binding Tests
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - name: Harden Runner
+      uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
+      with:
+        egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
-    - uses: actions-rs/toolchain@v1
+    - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+
+    - uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
       with:
         toolchain: stable
-    - uses: actions/setup-node@v3
+    - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
       with:
         node-version: 19
 
-    - uses: actions/setup-node@v3
+    - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
       with:
         node-version: 19
 
-    - uses: jetli/wasm-pack-action@v0.3.0
+    - uses: jetli/wasm-pack-action@f98777369a49686b132a9e8f0fdd59837bf3c3fd # v0.3.0
       with:
         version: 'latest'
 
@@ -309,6 +344,11 @@ jobs:
     name: Clippy
     runs-on: ubuntu-latest
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Free disk space
         # https://github.com/actions/virtual-environments/issues/709
         run: |
@@ -320,12 +360,12 @@ jobs:
           df -h
 
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Cache rust
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6fd3edff6979b79f87531400ad694fb7f2c84b1f # v2.2.1
         with:
           shared-key: "build_cache"
           save-if: ${{ github.ref == 'refs/heads/main' }}
@@ -335,7 +375,7 @@ jobs:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
       - name: Clippy and fmt
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
           components: rustfmt, clippy

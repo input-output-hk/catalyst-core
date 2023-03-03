@@ -1,0 +1,86 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /src/catalyst-toolbox/catalyst-toolbox/scripts/python
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /src/chain-wallet-libs/bindings/wallet-cordova
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /src/chain-wallet-libs/bindings/wallet-cordova/tests
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /src/chain-wallet-libs/bindings/wallet-wasm-js/js-test
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /src/chain-wallet-libs/bindings/wallet-wasm-js/js
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/jormungandr/ci/docker
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/jormungandr/docker
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/jormungandr/docker/alpine
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/vit-servicing-station/docker/master
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/vit-servicing-station/docker/soak_tests
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/vit-testing/docker/snapshot-service-wormhole
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/vit-testing/docker/snapshot-service
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/vit-testing/docker/vitup/demo
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /src/vit-testing/docker/vitup/mock
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /utilities/ideascale-importer
+    schedule:
+      interval: daily

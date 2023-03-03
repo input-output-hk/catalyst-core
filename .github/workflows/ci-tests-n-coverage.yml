@@ -19,8 +19,14 @@ concurrency:
   group: ${{ github.sha }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   unit-tests:
+    permissions:
+      checks: write  # for coverallsapp/github-action to create new checks
+      contents: read  # for actions/checkout to fetch code
     name: Unit Tests
     runs-on: ubuntu-latest
     needs: [integration-tests]
@@ -38,26 +44,31 @@ jobs:
         ports:
           - 5432:5432
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
 
       - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}  # it says it can read the rust-toolchain file, but it fails if we omit this
           components: llvm-tools-preview
 
       - name: Cache rust
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6fd3edff6979b79f87531400ad694fb7f2c84b1f # v2.2.1
         with:
           shared-key: "build_cache"
           save-if: "false"
 
       - name: Install nextest
-        uses: taiki-e/install-action@nextest
+        uses: taiki-e/install-action@ddfbd2cab72fd94842c80ade93f28fe7ee9c71f8 # nextest
 
       - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@cargo-llvm-cov
+        uses: taiki-e/install-action@cdc3afe6ed5a5d5870c227c04be4eeb43e48fc81 # cargo-llvm-cov
 
       - name: Install system deps
         run:
@@ -102,7 +113,7 @@ jobs:
           cargo llvm-cov report --lcov --output-path ./lcov.info
 
       - name: Upload code coverage to coveralls.io
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@50c33ad324a9902697adbf2f92c22cf5023eacf1 # master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: "./lcov.info"
@@ -124,26 +135,31 @@ jobs:
         ports:
           - 5432:5432
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
 
       - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}  # it says it can read the rust-toolchain file, but it fails if we omit this
           components: llvm-tools-preview
 
       - name: Cache rust
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6fd3edff6979b79f87531400ad694fb7f2c84b1f # v2.2.1
         with:
           shared-key: "build_cache"
           save-if: "false"
 
       - name: Install nextest
-        uses: taiki-e/install-action@nextest
+        uses: taiki-e/install-action@ddfbd2cab72fd94842c80ade93f28fe7ee9c71f8 # nextest
 
       - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@cargo-llvm-cov
+        uses: taiki-e/install-action@cdc3afe6ed5a5d5870c227c04be4eeb43e48fc81 # cargo-llvm-cov
 
       - name: Install system deps
         run:

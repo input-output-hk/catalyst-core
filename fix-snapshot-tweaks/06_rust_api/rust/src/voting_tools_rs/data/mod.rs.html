@@ -260,6 +260,7 @@
 <span id="260">260</span>
 <span id="261">261</span>
 <span id="262">262</span>
+<span id="263">263</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{collections::BTreeMap, ffi::OsString};
 
 <span class="kw">use </span>bigdecimal::BigDecimal;
@@ -381,6 +382,7 @@
 </span><span class="attribute">#[derive(Debug, PartialEq, Serialize, Deserialize)]
 </span><span class="kw">pub struct </span>SnapshotEntry {
     <span class="doccomment">/// Registration content
+    </span><span class="attribute">#[serde(rename = <span class="string">&quot;delegations&quot;</span>)]
     </span><span class="kw">pub </span>voting_power_source: VotingPowerSource,
 
     <span class="doccomment">/// Mainnet rewards address
@@ -392,7 +394,7 @@
     <span class="doccomment">/// Voting power expressed in ada
     ///
     /// This is computed from `voting_power_source`
-    </span><span class="kw">pub </span>voting_power: BigDecimal,
+    </span><span class="kw">pub </span>voting_power: u128,
 
     <span class="doccomment">/// Voting purpose
     ///

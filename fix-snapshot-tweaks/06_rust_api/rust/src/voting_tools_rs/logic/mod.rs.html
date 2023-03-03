@@ -142,7 +142,7 @@
     validation::ValidationCtx,
     DataProvider, SnapshotEntry,
 };
-<span class="kw">use </span>bigdecimal::BigDecimal;
+<span class="kw">use </span>bigdecimal::{BigDecimal, ToPrimitive};
 <span class="kw">use </span>color_eyre::eyre::{eyre, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>itertools::Itertools;
 <span class="kw">use </span>nonempty::nonempty;
@@ -259,7 +259,7 @@
         .get(<span class="kw-2">&amp;</span>stake_key)
         .ok_or_else(|| <span class="macro">eyre!</span>(<span class="string">&quot;no voting power available for stake key: {}&quot;</span>, stake_key))<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>voting_power = voting_power.clone();
+    <span class="kw">let </span>voting_power = voting_power.to_u128().unwrap_or(<span class="number">0</span>);
 
     <span class="prelude-val">Ok</span>(SnapshotEntry {
         voting_power_source,

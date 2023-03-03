@@ -11,14 +11,22 @@
 <span id="11">11</span>
 <span id="12">12</span>
 <span id="13">13</span>
-</pre><pre class="rust"><code><span class="kw">use </span>axum::Router;
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+</pre><pre class="rust"><code><span class="kw">use </span>std::sync::Arc;
+
+<span class="kw">use </span>axum::Router;
+
+<span class="kw">use </span><span class="kw">crate</span>::db::DB;
 
 <span class="kw">mod </span>chalenges;
 <span class="kw">mod </span>fund;
 <span class="kw">mod </span>snapshot;
 
-<span class="kw">pub fn </span>v0() -&gt; Router {
-    <span class="kw">let </span>snapshot = snapshot::snapshot();
+<span class="kw">pub fn </span>v0&lt;State: DB + Send + Sync + <span class="lifetime">&#39;static</span>&gt;(state: Arc&lt;State&gt;) -&gt; Router {
+    <span class="kw">let </span>snapshot = snapshot::snapshot(state);
     <span class="kw">let </span>fund = fund::fund();
     <span class="kw">let </span>chalenges = chalenges::chalenges();
 

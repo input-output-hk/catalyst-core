@@ -30,37 +30,83 @@
 <span id="30">30</span>
 <span id="31">31</span>
 <span id="32">32</span>
-</pre><pre class="rust"><code><span class="kw">use </span>axum::{extract::Path, routing::get, Router};
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db::snapshot::SnapshotDb;
+<span class="kw">use </span>axum::{extract::Path, routing::get, Router};
+<span class="kw">use </span>std::sync::Arc;
 
-<span class="kw">pub fn </span>snapshot() -&gt; Router {
+<span class="kw">pub fn </span>snapshot&lt;State: SnapshotDb + Send + Sync + <span class="lifetime">&#39;static</span>&gt;(state: Arc&lt;State&gt;) -&gt; Router {
     Router::new()
-        .route(<span class="string">&quot;/snapshot&quot;</span>, get(versions_exec))
-        .route(<span class="string">&quot;/snapshot/voter/:event/:voting_key&quot;</span>, get(voter_exec))
+        .route(
+            <span class="string">&quot;/snapshot&quot;</span>,
+            get({
+                <span class="kw">let </span>state = state.clone();
+                <span class="kw">move </span>|| versions_exec(state)
+            }),
+        )
+        .route(
+            <span class="string">&quot;/snapshot/voter/:event/:voting_key&quot;</span>,
+            get({
+                <span class="kw">let </span>state = state.clone();
+                <span class="kw">move </span>|path| voter_exec(path, state)
+            }),
+        )
         .route(
             <span class="string">&quot;/snapshot/delegator/:event/:stake_public_key&quot;</span>,
-            get(delegator_exec),
+            get({
+                <span class="kw">let </span>state = state.clone();
+                <span class="kw">move </span>|path| delegator_exec(path, state)
+            }),
         )
 }
 
-<span class="kw">async fn </span>versions_exec() -&gt; String {
+<span class="kw">async fn </span>versions_exec&lt;State: SnapshotDb&gt;(state: Arc&lt;State&gt;) -&gt; String {
     <span class="macro">tracing::debug!</span>(<span class="string">&quot;&quot;</span>);
 
-    <span class="string">&quot;latest&quot;</span>.to_string()
+    <span class="kw">let </span>snapshot_versions = state.get_snapshot_versions();
+    serde_json::to_string(<span class="kw-2">&amp;</span>snapshot_versions).unwrap()
 }
 
-<span class="kw">async fn </span>voter_exec(Path((event, voting_key)): Path&lt;(String, String)&gt;) -&gt; String {
+<span class="kw">async fn </span>voter_exec&lt;State: SnapshotDb&gt;(
+    Path((event, voting_key)): Path&lt;(String, String)&gt;,
+    state: Arc&lt;State&gt;,
+) -&gt; String {
     <span class="macro">tracing::debug!</span>(<span class="string">&quot;event: {0}, voting_key: {1}&quot;</span>, event, voting_key);
 
-    <span class="macro">format!</span>(<span class="string">&quot;voter, event: {0}, voting_ket: {1}&quot;</span>, event, voting_key)
+    <span class="kw">let </span>voter = state.get_voter(event, voting_key);
+    serde_json::to_string(<span class="kw-2">&amp;</span>voter).unwrap()
 }
 
-<span class="kw">async fn </span>delegator_exec(Path((event, stake_public_key)): Path&lt;(String, String)&gt;) -&gt; String {
+<span class="kw">async fn </span>delegator_exec&lt;State: SnapshotDb&gt;(
+    Path((event, stake_public_key)): Path&lt;(String, String)&gt;,
+    state: Arc&lt;State&gt;,
+) -&gt; String {
     <span class="macro">tracing::debug!</span>(<span class="string">&quot;event: {0}, stake_public_key: {1}&quot;</span>, event, stake_public_key);
 
-    <span class="macro">format!</span>(
-        <span class="string">&quot;delegator, event: {0}, stake_public_key: {1}&quot;</span>,
-        event, stake_public_key
-    )
+    <span class="kw">let </span>delegator = state.get_delegator(event, stake_public_key);
+    serde_json::to_string(<span class="kw-2">&amp;</span>delegator).unwrap()
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="cat_data_service" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -24,8 +24,15 @@
 <span id="24">24</span>
 <span id="25">25</span>
 <span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
 </pre><pre class="rust"><code><span class="kw">use </span>axum::Router;
-<span class="kw">use </span>std::net::SocketAddr;
+<span class="kw">use </span>std::{net::SocketAddr, sync::Arc};
+
+<span class="kw">use </span><span class="kw">crate</span>::db::DB;
 
 <span class="kw">mod </span>v0;
 
@@ -36,12 +43,15 @@
 }
 
 <span class="comment">// #[tracing::instrument]
-</span><span class="kw">pub async fn </span>run_service(addr: <span class="kw-2">&amp;</span>SocketAddr) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+</span><span class="kw">pub async fn </span>run_service&lt;State: DB + Send + Sync + <span class="lifetime">&#39;static</span>&gt;(
+    addr: <span class="kw-2">&amp;</span>SocketAddr,
+    state: Arc&lt;State&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
     <span class="macro">tracing::info!</span>(<span class="string">&quot;Starting service...&quot;</span>);
     <span class="macro">tracing::info!</span>(<span class="string">&quot;Listening on {}&quot;</span>, addr);
 
     <span class="comment">// build our application with a route
-    </span><span class="kw">let </span>v0 = v0::v0();
+    </span><span class="kw">let </span>v0 = v0::v0(state);
     <span class="kw">let </span>app = Router::new().nest(<span class="string">&quot;/api&quot;</span>, v0);
 
     axum::Server::bind(addr)

@@ -1,36 +1,36 @@
 //! Catalyst Election Database crate
-#![recursion_limit = "256"]
-
-#[macro_use]
-extern crate diesel;
-
-#[macro_use]
-extern crate diesel_autoincrement_new_struct;
 
 mod config_table;
-mod models;
-mod schema;
 mod schema_check;
 
-use diesel::pg::PgConnection;
-use diesel::prelude::*;
+use bb8::Pool;
+use bb8_postgres::PostgresConnectionManager;
+use schema_check::SchemaVersion;
+use tokio_postgres::NoTls;
+
 use dotenvy::dotenv;
-use schema_check::db_version_check;
+
 use std::env;
 use std::error::Error;
+use std::str::FromStr;
 
 /// Database URL Environment Variable name.
 /// eg: "`postgres://catalyst-dev:CHANGE_ME@localhost/CatalystDev`"
-const DATABASE_URL_ENVVAR: &str = "ELECTION_DB_URL";
+const DATABASE_URL_ENVVAR: &str = "EVENT_DB_URL";
+
+/// Database version this crate matches.
+/// Must equal the last Migrations Version Number.
+pub const DATABASE_SCHEMA_VERSION: u32 = 10;
 
 #[allow(unused)]
 /// Connection to the Election Database
-pub struct ElectionDB {
-    /// Internal database connection.  DO NOT MAKE PUBLIC.
-    /// All database operations (queries, inserts, etc) should be constrained
-    /// to this crate and should be exported with a clean data access api.
-    conn: PgConnection,
+pub struct EventDB {
+    // Internal database connection.  DO NOT MAKE PUBLIC.
+    // All database operations (queries, inserts, etc) should be constrained
+    // to this crate and should be exported with a clean data access api.
+    pool: Pool<PostgresConnectionManager<NoTls>>,
 }
+
 
 /// Establish a connection to the database, and check the schema is up-to-date.
 ///
@@ -59,34 +59,46 @@ pub struct ElectionDB {
 /// ```
 /// let db = election_db::establish_connection(None)?;
 /// ```
-pub fn establish_connection(
+pub async fn establish_connection(
     url: Option<&str>,
-) -> Result<ElectionDB, Box<dyn Error + Send + Sync + 'static>> {
+) -> Result<EventDB, Box<dyn Error + Send + Sync + 'static>> {
+
     // Support env vars in a `.env` file,  doesn't need to exist.
     dotenv().ok();
 
     // If the Database connection URL is not supplied, try and get from the env var.
+    let env_raw = env::var(DATABASE_URL_ENVVAR);
+
     let database_url = match url {
         Some(url) => url.to_string(),
-        None => env::var(DATABASE_URL_ENVVAR)?,
+        None => env_raw?,
     };
 
-    let mut conn = PgConnection::establish(database_url.as_str())?;
-    db_version_check(&mut conn)?;
+    let config = tokio_postgres::config::Config::from_str(&database_url)?;
 
-    let db = ElectionDB { conn };
+    let pg_mgr = PostgresConnectionManager::new(
+        config,
+        tokio_postgres::NoTls,
+    );
+
+    let pool = Pool::builder().build(pg_mgr).await?;
+
+    let db = EventDB { pool };
+
+    db.schema_version_check().await?;
 
     Ok(db)
 }
 
 #[cfg(test)]
 mod test {
+
+
     /// Check if the schema version in the DB is up to date.
-    #[test]
-    #[ignore = "We'll probably not be using this. Will be fixed in the election-db PR."]
-    fn check_schema_version() {
+    #[tokio::test]
+    async fn check_schema_version() {
         use crate::establish_connection;
 
-        establish_connection(None).unwrap();
+        establish_connection(None).await.expect("pass");
     }
 }

@@ -1,5 +1,7 @@
 //! Operations on the config table
 
+/* NOT Currently Implemented
+
 use chrono::{serde::ts_seconds, DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::error::Error;
@@ -190,3 +192,5 @@ impl ElectionDB {
         todo!("Not yet implemented.")
     }
 }
+
+*/

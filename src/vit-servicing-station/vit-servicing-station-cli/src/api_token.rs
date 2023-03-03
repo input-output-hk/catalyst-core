@@ -160,6 +160,8 @@ impl ExecTask for ApiTokenCmd {
     }
 }
 
+/* Vit-SS does not write to the DB.  So these tests are obsolete.
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -203,3 +205,4 @@ mod test {
         }
     }
 }
+*/

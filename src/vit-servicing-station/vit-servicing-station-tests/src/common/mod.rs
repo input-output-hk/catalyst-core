@@ -1,7 +1,6 @@
 pub mod cli;
 pub mod clients;
 pub mod data;
-pub mod db;
 pub mod load;
 pub mod logger;
 pub mod paths;

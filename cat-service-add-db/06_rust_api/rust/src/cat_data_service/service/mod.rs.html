@@ -35,7 +35,7 @@
     </span>CannotRunService(String),
 }
 
-<span class="attribute">#[tracing::instrument]
+<span class="comment">// #[tracing::instrument]
 </span><span class="kw">pub async fn </span>run_service(addr: <span class="kw-2">&amp;</span>SocketAddr) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
     <span class="macro">tracing::info!</span>(<span class="string">&quot;Starting service...&quot;</span>);
     <span class="macro">tracing::info!</span>(<span class="string">&quot;Listening on {}&quot;</span>, addr);

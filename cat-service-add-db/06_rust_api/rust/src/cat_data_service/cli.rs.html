@@ -28,6 +28,8 @@
 <span id="28">28</span>
 <span id="29">29</span>
 <span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{logger, service, settings::Settings};
 <span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>tracing::subscriber::SetGlobalDefaultError;
@@ -52,7 +54,9 @@
             <span class="self">Self</span>::Run(settings) =&gt; {
                 logger::init(settings.log_level)<span class="question-mark">?</span>;
 
-                service::run_service(<span class="kw-2">&amp;</span>settings.address).<span class="kw">await</span><span class="question-mark">?</span>;
+                <span class="comment">// let state = MockedDB::default();
+
+                </span>service::run_service(<span class="kw-2">&amp;</span>settings.address).<span class="kw">await</span><span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(())
             }
         }

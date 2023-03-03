@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {};
+window.SIDEBAR_ITEMS = {"mod":[["snapshot",""]],"struct":[["MockedDB",""]],"trait":[["DB",""]]};

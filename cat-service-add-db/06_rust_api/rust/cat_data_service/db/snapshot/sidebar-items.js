@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Delegation",""],["Delegator",""],["SnapshotVersions",""],["Voter",""],["VoterInfo",""]],"trait":[["SnapshotDb",""]]};

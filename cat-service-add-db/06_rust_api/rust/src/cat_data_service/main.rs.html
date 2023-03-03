@@ -14,10 +14,10 @@
 </pre><pre class="rust"><code><span class="kw">use </span>clap::Parser;
 
 <span class="kw">pub mod </span>cli;
+<span class="kw">pub mod </span>db;
 <span class="kw">pub mod </span>logger;
 <span class="kw">pub mod </span>service;
 <span class="kw">pub mod </span>settings;
-<span class="kw">pub mod </span>db;
 
 <span class="attribute">#[tokio::main]
 </span><span class="kw">async fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), cli::Error&gt; {

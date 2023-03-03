@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["ControllerError",""]],"mod":[["rng",""],["settings",""],["topology",""],["vote",""],["wallet",""]],"struct":[["NetworkBuilder",""],["NodeSetting","contains all the data to start or interact with a node"],["Wallet","wallet to utilise when testing jormungandr"]],"type":[["NodeAlias",""]]};

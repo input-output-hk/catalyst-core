@@ -1,4 +1,6 @@
-use crate::{logger, service, settings::Settings};
+use std::sync::Arc;
+
+use crate::{db::MockedDB, logger, service, settings::Settings};
 use clap::Parser;
 use tracing::subscriber::SetGlobalDefaultError;
 
@@ -22,9 +24,9 @@ impl Cli {
             Self::Run(settings) => {
                 logger::init(settings.log_level)?;
 
-                // let state = MockedDB::default();
+                let state = Arc::new(MockedDB::default());
 
-                service::run_service(&settings.address).await?;
+                service::run_service(&settings.address, state).await?;
                 Ok(())
             }
         }

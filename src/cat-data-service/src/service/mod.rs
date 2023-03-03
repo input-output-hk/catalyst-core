@@ -1,5 +1,7 @@
 use axum::Router;
-use std::net::SocketAddr;
+use std::{net::SocketAddr, sync::Arc};
+
+use crate::db::DB;
 
 mod v0;
 
@@ -10,12 +12,15 @@ pub enum Error {
 }
 
 // #[tracing::instrument]
-pub async fn run_service(addr: &SocketAddr) -> Result<(), Error> {
+pub async fn run_service<State: DB + Send + Sync + 'static>(
+    addr: &SocketAddr,
+    state: Arc<State>,
+) -> Result<(), Error> {
     tracing::info!("Starting service...");
     tracing::info!("Listening on {}", addr);
 
     // build our application with a route
-    let v0 = v0::v0();
+    let v0 = v0::v0(state);
     let app = Router::new().nest("/api", v0);
 
     axum::Server::bind(addr)

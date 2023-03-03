@@ -14,7 +14,7 @@ impl Serialize for PubKey {
     where
         S: serde::Serializer,
     {
-        let s = hex::encode(self); // TODO: stack allocate this string into a [u8; 64]
+        let s = "0x".to_string() + &hex::encode(self); // TODO: stack allocate this string into a [u8; 64]
         String::serialize(&s, serializer)
     }
 }

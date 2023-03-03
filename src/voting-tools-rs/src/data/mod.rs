@@ -119,6 +119,7 @@ pub struct SignedRegistration {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct SnapshotEntry {
     /// Registration content
+    #[serde(rename = "delegations")]
     pub voting_power_source: VotingPowerSource,
 
     /// Mainnet rewards address
@@ -130,7 +131,7 @@ pub struct SnapshotEntry {
     /// Voting power expressed in ada
     ///
     /// This is computed from `voting_power_source`
-    pub voting_power: BigDecimal,
+    pub voting_power: u128,
 
     /// Voting purpose
     ///

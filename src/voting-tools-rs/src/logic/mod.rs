@@ -6,7 +6,7 @@ use crate::{
     validation::ValidationCtx,
     DataProvider, SnapshotEntry,
 };
-use bigdecimal::BigDecimal;
+use bigdecimal::{BigDecimal, ToPrimitive};
 use color_eyre::eyre::{eyre, Result};
 use itertools::Itertools;
 use nonempty::nonempty;
@@ -123,7 +123,7 @@ fn convert_to_snapshot_entry(
         .get(&stake_key)
         .ok_or_else(|| eyre!("no voting power available for stake key: {}", stake_key))?;
 
-    let voting_power = voting_power.clone();
+    let voting_power = voting_power.to_u128().unwrap_or(0);
 
     Ok(SnapshotEntry {
         voting_power_source,

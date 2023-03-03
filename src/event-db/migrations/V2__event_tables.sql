@@ -28,6 +28,9 @@ CREATE TABLE event
     voting_end TIMESTAMP,
     tallying_end TIMESTAMP,
 
+    block0 BYTEA NULL,
+    block0_hash TEXT NULL,
+
     extra JSONB
 );
 
@@ -51,4 +54,8 @@ COMMENT ON COLUMN event.snapshot_start IS 'The Time (UTC) when the voting power 
 COMMENT ON COLUMN event.voting_start IS 'The earliest time that registered wallets with sufficient voting power can place votes in the event. NULL = Not yet defined.';
 COMMENT ON COLUMN event.voting_end IS 'The latest time that registered wallets with sufficient voting power can place votes in the event. NULL = Not yet defined.';
 COMMENT ON COLUMN event.tallying_end IS 'The latest time that tallying the event can complete by. NULL = Not yet defined.';
+
+COMMENT ON COLUMN event.block0      IS 'The copy of Block 0 used to start the Blockchain. NULL = Blockchain not started yet.';
+COMMENT ON COLUMN event.block0_hash IS 'The hash of block 0. NULL = Blockchain not started yet.';
+
 COMMENT ON COLUMN event.extra IS 'Json Map defining event specific extra data. NULL = Not yet defined. "url"."results" = a results URL, "url"."survey" = a survey URL, others can be defined as required.';

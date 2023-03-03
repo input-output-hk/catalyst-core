@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["chalenge_by_id_and_voter_group_id_exec",""],["chalenge_by_id_exec",""],["chalenges",""],["chalenges_exec",""]]};

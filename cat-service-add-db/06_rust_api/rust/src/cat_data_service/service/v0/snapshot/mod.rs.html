@@ -7,14 +7,30 @@
 <span id="7">7</span>
 <span id="8">8</span>
 <span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="self">self</span>::{delegator::delegator, voter::voter};
-<span class="kw">use </span>axum::Router;
+<span class="kw">use </span>axum::{routing::get, Router};
 
 <span class="kw">mod </span>delegator;
 <span class="kw">mod </span>voter;
 
 <span class="kw">pub fn </span>snapshot() -&gt; Router {
-    Router::new().nest(<span class="string">&quot;/snapshot&quot;</span>, voter().merge(delegator()))
+    <span class="kw">let </span>root = Router::new().route(<span class="string">&quot;/&quot;</span>, get(versions_exec));
+
+    Router::new().nest(<span class="string">&quot;/snapshot&quot;</span>, root.merge(voter()).merge(delegator()))
+}
+
+<span class="kw">async fn </span>versions_exec() -&gt; String {
+    <span class="macro">tracing::debug!</span>(<span class="string">&quot;&quot;</span>);
+
+    <span class="string">&quot;latest&quot;</span>.to_string()
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="cat_data_service" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

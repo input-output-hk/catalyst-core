@@ -31,6 +31,9 @@ CREATE TABLE event
     block0 BYTEA NULL,
     block0_hash TEXT NULL,
 
+    comittee_size INTEGER NOT NULL,
+    comittee_threshold INTEGER NOT NULL,
+
     extra JSONB
 );
 
@@ -57,5 +60,8 @@ COMMENT ON COLUMN event.tallying_end IS 'The latest time that tallying the event
 
 COMMENT ON COLUMN event.block0      IS 'The copy of Block 0 used to start the Blockchain. NULL = Blockchain not started yet.';
 COMMENT ON COLUMN event.block0_hash IS 'The hash of block 0. NULL = Blockchain not started yet.';
+
+COMMENT ON COLUMN event.committee_size  IS 'The size of the tally committee.  0 = No Committee, and all votes are therefore public.';
+COMMENT ON COLUMN event.committee_threshold  IS 'The minimum size of the tally committee to perform the tally. Must be <= `comittee_size`';
 
 COMMENT ON COLUMN event.extra IS 'Json Map defining event specific extra data. NULL = Not yet defined. "url"."results" = a results URL, "url"."survey" = a survey URL, others can be defined as required.';

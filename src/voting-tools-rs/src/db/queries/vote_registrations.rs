@@ -43,7 +43,7 @@ impl Db {
         let upper = upper.into_i64().ok_or_else(|| eyre!("invalid i64"))?;
         let q = query(lower, upper);
 
-        println!("EXECTING AGAINST DB");
+        println!("EXECUTING AGAINST DB");
         let rows = self.exec(move |conn| q.load(conn))?;
 
         let (oks, errs): (_, Vec<_>) = rows.into_iter().map(convert_row).partition_result();

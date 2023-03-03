@@ -357,7 +357,7 @@ pub mod tests {
         let raw: RawSnapshot = serde_json::from_str(
             r#"[
             {
-                "reward_address": "0xe1ffff2912572257b59dca84c965e4638a09f1524af7a15787eb0d8a46",
+                "rewards_address": "0xe1ffff2912572257b59dca84c965e4638a09f1524af7a15787eb0d8a46",
                 "stake_public_key": "0xe7d6616840734686855ec80ee9658f5ead9e29e494ec6889a5d1988b50eb8d0f",
                 "voting_power": 177689370111,
                 "delegations": [

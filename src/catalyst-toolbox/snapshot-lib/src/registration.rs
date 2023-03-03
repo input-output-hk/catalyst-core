@@ -14,7 +14,7 @@ pub struct VotingRegistration {
     pub stake_public_key: MainnetStakeAddress,
     pub voting_power: Value,
     /// Shelley address discriminated for the same network this transaction is submitted to.
-    #[serde(deserialize_with = "serde_impl::reward_addr_from_hex")]
+    #[serde(deserialize_with = "serde_impl::reward_addr_from_hex", rename = "rewards_address")]
     pub reward_address: MainnetRewardAddress,
     pub delegations: Delegations,
     /// 0 = Catalyst, assumed 0 for old legacy registrations

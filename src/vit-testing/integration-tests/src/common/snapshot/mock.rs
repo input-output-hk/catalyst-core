@@ -15,16 +15,14 @@ pub fn do_snapshot(
     let mock_json_file = testing_directory.child("database.json");
     db_sync_instance.persist(mock_json_file.path())?;
 
-    println!("do_snapshot::MemoryDB: {:#?}", db_sync_instance);
-
     let params = VotingToolsParams {
         bin: Some("snapshot_tool".to_string()),
         nix_branch: None,
         network: NetworkType::Mainnet,
-        db: "".to_string(), //fake
-        db_user: "".to_string(),
-        db_pass: "".to_string(),
-        db_host: "".to_string(),
+        db: "fake".to_string(),
+        db_user: "fake".to_string(),
+        db_pass: "fake".to_string(),
+        db_host: "fake".to_string(),
         additional_params: Some(vec![
             "dry-run".to_string(),
             "--mock-json-file".to_string(),

@@ -8,7 +8,6 @@ use crate::common::snapshot_filter::SnapshotFilterSource;
 use crate::common::CardanoWallet;
 use assert_fs::TempDir;
 use catalyst_toolbox::rewards::dreps::calc_dreps_rewards;
-use catalyst_toolbox::rewards::voters::calc_voter_rewards;
 use catalyst_toolbox::rewards::Threshold;
 use chain_impl_mockchain::block::BlockDate;
 use jormungandr_automation::testing::time;
@@ -24,52 +23,65 @@ use vitup::testing::spawn_network;
 use vitup::testing::vitup_setup;
 
 const CHALLENGES_COUNT: usize = 1;
-const PROPOSALS_COUNT: u32 = 3;
+const PROPOSALS_COUNT: u32 = 4;
 const VOTE_THRESHOLD_PER_CHALLENGE: u32 = 1;
 const VOTE_THRESHOLD_PER_VOTER: usize = 1;
 const TOTAL_REWARD: u32 = 100;
-const EXPECTED_REWARD: u32 = 50;
-const STAKE: u64 = 10_000;
+const EXPECTED_REWARD: u32 = 25;
+const STAKE: u64 = 1000;
 
-#[test]
+#[test] // no direct voter, 4 dreps with equal amount of voting power
 pub fn drep_rewards_happy_path() {
-    let REP_VOTING_GROUP: VotingGroup = "rep".to_string();
+    let rep_voting_group: VotingGroup = "rep".to_string();
 
     let testing_directory = TempDir::new().unwrap().into_persistent();
 
-    let drep1_wallet = CardanoWallet::new(STAKE);
-    let drep2_wallet = CardanoWallet::new(STAKE);
+    let drep1_wallet = CardanoWallet::new(1000);
+    let drep2_wallet = CardanoWallet::new(1000);
+    let drep3_wallet = CardanoWallet::new(1000);
+    let drep4_wallet = CardanoWallet::new(1000);
 
     let alice_wallet = CardanoWallet::new(STAKE);
     let bob_wallet = CardanoWallet::new(STAKE);
     let clarice_wallet = CardanoWallet::new(STAKE);
     let john_wallet = CardanoWallet::new(STAKE);
-
-    let direct1_wallet = CardanoWallet::new(STAKE);
-    let direct2_wallet = CardanoWallet::new(STAKE);
-    let direct3_wallet = CardanoWallet::new(STAKE);
+    let emma_wallet = CardanoWallet::new(STAKE);
+    let jim_wallet = CardanoWallet::new(STAKE);
+    let clara_wallet = CardanoWallet::new(STAKE);
+    let sam_wallet = CardanoWallet::new(STAKE);
 
     let (db_sync, _node, reps) = MainnetNetworkBuilder::default()
-        // .with(drep1_wallet.as_direct_voter())
-        // .with(drep2_wallet.as_direct_voter())
         .with(drep1_wallet.as_representative())
         .with(drep2_wallet.as_representative())
+        .with(drep3_wallet.as_representative())
+        .with(drep4_wallet.as_representative())
         .with(alice_wallet.as_delegator(vec![(&drep1_wallet, STAKE as u8)]))
         .with(bob_wallet.as_delegator(vec![(&drep1_wallet, STAKE as u8)]))
         .with(clarice_wallet.as_delegator(vec![(&drep2_wallet, STAKE as u8)]))
         .with(john_wallet.as_delegator(vec![(&drep2_wallet, STAKE as u8)]))
-        .with(direct1_wallet.as_direct_voter())
-        .with(direct2_wallet.as_direct_voter())
-        .with(direct3_wallet.as_direct_voter())
+        .with(emma_wallet.as_delegator(vec![(&drep3_wallet, (STAKE) as u8)]))
+        .with(jim_wallet.as_delegator(vec![(&drep3_wallet, (STAKE) as u8)]))
+        .with(clara_wallet.as_delegator(vec![(&drep4_wallet, (STAKE) as u8)]))
+        .with(sam_wallet.as_delegator(vec![(&drep4_wallet, (STAKE) as u8)]))
         .build();
-
-    println!("reps: {:#?}", reps);
 
     let snapshot = mock::do_snapshot(&db_sync, JobParameters::fund("fund10"), &testing_directory)
         .unwrap()
         .filter_default(&HashSet::new());
 
-    println!("snapshot: {:#?}", snapshot.snapshot().to_full_snapshot_info());
+    let mut snapshot_doctored_copy = Vec::new();
+    let mut drep_hirs = Vec::new();
+
+    for voter_info in snapshot.snapshot().to_full_snapshot_info() {
+        if reps.contains(&voter_info.hir.voting_key) {
+            let mut copy = voter_info;
+            copy.hir.voting_group = rep_voting_group.clone();
+            snapshot_doctored_copy.push(copy.clone());
+            drep_hirs.push(copy.clone().hir.voting_key)
+        } else{
+            snapshot_doctored_copy.push(voter_info);
+        }
+    }
 
     let vote_timing = VoteBlockchainTime {
         vote_start: 0,
@@ -82,13 +94,14 @@ pub fn drep_rewards_happy_path() {
         .block0_initials(Block0Initials(vec![
             drep1_wallet.as_initial_entry(),
             drep2_wallet.as_initial_entry(),
-            clarice_wallet.as_initial_entry(),
+            drep3_wallet.as_initial_entry(),
+            drep4_wallet.as_initial_entry(),
         ]))
         .vote_timing(vote_timing.into())
         .slot_duration_in_seconds(2)
         .challenges_count(CHALLENGES_COUNT)
         .proposals_count(PROPOSALS_COUNT)
-        .voting_power(STAKE)
+        .voting_power(1000000)
         .private(false)
         .build();
 
@@ -104,8 +117,10 @@ pub fn drep_rewards_happy_path() {
     )
         .unwrap();
 
-    let mut alice = iapyx_from_mainnet(&drep1_wallet, &wallet_proxy).unwrap();
-    let mut bob = iapyx_from_mainnet(&drep2_wallet, &wallet_proxy).unwrap();
+    let mut drep1 = iapyx_from_mainnet(&drep1_wallet, &wallet_proxy).unwrap();
+    let mut drep2 = iapyx_from_mainnet(&drep2_wallet, &wallet_proxy).unwrap();
+    let mut drep3 = iapyx_from_mainnet(&drep3_wallet, &wallet_proxy).unwrap();
+    let mut drep4 = iapyx_from_mainnet(&drep4_wallet, &wallet_proxy).unwrap();
 
     let voteplan_alias = format!(
         "{}-{}",
@@ -114,17 +129,37 @@ pub fn drep_rewards_happy_path() {
     );
     let vote_plan = controller.defined_vote_plan(&voteplan_alias).unwrap();
 
-    alice.vote_for(&vote_plan.id(), 0, Vote::Yes as u8).unwrap();
+    drep1.vote_for(vote_plan.id(), 0, Vote::Yes as u8).unwrap();
 
-    alice.vote_for(&vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+    drep1.vote_for(vote_plan.id(), 1, Vote::Yes as u8).unwrap();
 
-    alice.vote_for(&vote_plan.id(), 2, Vote::Yes as u8).unwrap();
+    drep1.vote_for(vote_plan.id(), 2, Vote::Yes as u8).unwrap();
 
-    bob.vote_for(&vote_plan.id(), 0, Vote::Yes as u8).unwrap();
+    drep1.vote_for(vote_plan.id(), 3, Vote::Yes as u8).unwrap();
 
-    bob.vote_for(&vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+    drep2.vote_for(vote_plan.id(), 0, Vote::Yes as u8).unwrap();
 
-    bob.vote_for(&vote_plan.id(), 2, Vote::Yes as u8).unwrap();
+    drep2.vote_for(vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+
+    drep2.vote_for(vote_plan.id(), 2, Vote::Yes as u8).unwrap();
+
+    drep2.vote_for(vote_plan.id(), 3, Vote::Yes as u8).unwrap();
+
+    drep3.vote_for(vote_plan.id(), 0, Vote::Yes as u8).unwrap();
+
+    drep3.vote_for(vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+
+    drep3.vote_for(vote_plan.id(), 2, Vote::Yes as u8).unwrap();
+
+    drep3.vote_for(vote_plan.id(), 3, Vote::Yes as u8).unwrap();
+
+    drep4.vote_for(vote_plan.id(), 0, Vote::Yes as u8).unwrap();
+
+    drep4.vote_for(vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+
+    drep4.vote_for(vote_plan.id(), 2, Vote::Yes as u8).unwrap();
+
+    drep4.vote_for(vote_plan.id(), 3, Vote::Yes as u8).unwrap();
 
     let target_date = BlockDate {
         epoch: 1,
@@ -132,7 +167,7 @@ pub fn drep_rewards_happy_path() {
     };
     time::wait_for_date(target_date.into(), nodes[0].rest());
 
-    let proposals = vit_station.proposals(&REP_VOTING_GROUP).unwrap();
+    let proposals = vit_station.proposals(&rep_voting_group).unwrap();
 
     let account_votes_count = nodes[0]
         .rest()
@@ -173,10 +208,10 @@ pub fn drep_rewards_happy_path() {
         .collect();
 
     let records = calc_dreps_rewards(
-        snapshot.snapshot().to_full_snapshot_info(),
+        snapshot_doctored_copy,
         account_votes_count,
-        REP_VOTING_GROUP as VotingGroup,
-        2,
+        rep_voting_group as VotingGroup,
+        4,
         Threshold::new(
             VOTE_THRESHOLD_PER_VOTER,
             vit_station
@@ -191,9 +226,14 @@ pub fn drep_rewards_happy_path() {
         TOTAL_REWARD.into(),
     ).unwrap();
 
-    println!("RECORDS: {:#?}", records);
-
-    println!("drep1: {:#?}", drep1_wallet.as_representative());
-
-    assert!(true);
+    for drep in drep_hirs {
+        assert_eq!(
+            records
+                .iter()
+                .find(|(x, _y)| **x == drep)
+                .unwrap()
+                .1,
+            &EXPECTED_REWARD.into()
+        );
+    }
 }

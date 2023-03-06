@@ -12,14 +12,14 @@ use crate::data::{NetworkId, SignedRegistration, VotingPurpose};
 pub enum RegistrationError {
     /// The registration couldn't be parsed from json -> struct
     #[error(
-        "the registration metadata couldn't be parsed from JSON into the registration format, json = {}", 
+        "the registration metadata couldn't be parsed from JSON into the registration format, json = {}",
         serde_json::to_string_pretty(&0).unwrap(),
     )]
     RegistrationFormat(Value),
 
     /// The signature couldn't be parsed from json -> struct
     #[error(
-        "the registration metadata couldn't be parsed from JSON into the signature format, json = {}", 
+        "the registration metadata couldn't be parsed from JSON into the signature format, json = {}",
         serde_json::to_string_pretty(&0).unwrap(),
     )]
     SignatureFormat(Value),
@@ -33,7 +33,7 @@ pub enum RegistrationError {
     },
 
     #[error(
-        "the signature, public key, and payload were well-formed, but the signature was not valid for this payload, cbor hash bytes: {}", 
+        "the signature, public key, and payload were well-formed, but the signature was not valid for this payload, cbor hash bytes: {}",
         hex::encode(hash_bytes),
     )]
     MismatchedSignature { hash_bytes: [u8; 32] },
@@ -42,7 +42,7 @@ pub enum RegistrationError {
     EmptyDelegations,
 
     #[error(
-        "stake key has wrong network id, expected {expected}, actual {}", 
+        "stake key has wrong network id, expected {expected}, actual {}",
         actual.map(|id| id.to_string()).unwrap_or_else(|| "None".to_string()),
     )]
     StakeKeyWrongNetwork {
@@ -52,6 +52,22 @@ pub enum RegistrationError {
 
     #[error("stake key has wrong type: {0}, expected 14 or 15")]
     StakeKeyWrongType(u8),
+
+    #[error(
+        "stake public key error {err}"
+    )]
+    StakePublicKeyError {
+        err: String,
+    },
+
+    #[error(
+        "signature error {err}"
+    )]
+    SignatureError {
+        err: String,
+    },
+
+
 }
 
 /// A registration that failed validation, along with the error

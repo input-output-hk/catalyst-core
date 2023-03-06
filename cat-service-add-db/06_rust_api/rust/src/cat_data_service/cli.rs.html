@@ -58,7 +58,7 @@
             <span class="self">Self</span>::Run(settings) =&gt; {
                 logger::init(settings.log_level)<span class="question-mark">?</span>;
 
-                <span class="kw">let </span>state = Arc::new(MockedDB::default());
+                <span class="kw">let </span>state = Arc::new(MockedDB);
 
                 service::run_service(<span class="kw-2">&amp;</span>settings.address, state).<span class="kw">await</span><span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(())

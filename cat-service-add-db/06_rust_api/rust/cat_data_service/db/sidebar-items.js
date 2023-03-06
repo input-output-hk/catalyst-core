@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["fund",""],["snapshot",""]],"struct":[["MockedDB",""]],"trait":[["DB",""]]};
+window.SIDEBAR_ITEMS = {"mod":[["fund",""],["proposal",""],["snapshot",""]],"struct":[["MockedDB",""]],"trait":[["DB",""]]};

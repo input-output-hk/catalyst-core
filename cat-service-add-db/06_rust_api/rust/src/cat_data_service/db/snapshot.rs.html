@@ -95,13 +95,7 @@
 <span id="95">95</span>
 <span id="96">96</span>
 <span id="97">97</span>
-<span id="98">98</span>
-<span id="99">99</span>
-<span id="100">100</span>
 </pre><pre class="rust"><code><span class="kw">use </span>serde::Serialize;
-
-<span class="attribute">#[derive(Serialize, Clone, Default)]
-</span><span class="kw">pub struct </span>SnapshotVersions(Vec&lt;String&gt;);
 
 <span class="attribute">#[derive(Serialize, Clone, Default)]
 </span><span class="kw">pub struct </span>VoterInfo {
@@ -139,7 +133,7 @@
 }
 
 <span class="kw">pub trait </span>SnapshotDb {
-    <span class="kw">fn </span>get_snapshot_versions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; SnapshotVersions;
+    <span class="kw">fn </span>get_snapshot_versions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;String&gt;;
     <span class="kw">fn </span>get_voter(<span class="kw-2">&amp;</span><span class="self">self</span>, event: String, voting_key: String) -&gt; Voter;
     <span class="kw">fn </span>get_delegator(<span class="kw-2">&amp;</span><span class="self">self</span>, event: String, stake_public_key: String) -&gt; Delegator;
 }
@@ -150,7 +144,7 @@
 
     <span class="attribute">#[test]
     </span><span class="kw">fn </span>snapshot_versions_json_test() {
-        <span class="kw">let </span>snapshot_versions = SnapshotVersions(<span class="macro">vec!</span>[<span class="string">&quot;latest&quot;</span>.to_string(), <span class="string">&quot;fund 10&quot;</span>.to_string()]);
+        <span class="kw">let </span>snapshot_versions = <span class="macro">vec!</span>[<span class="string">&quot;latest&quot;</span>.to_string(), <span class="string">&quot;fund 10&quot;</span>.to_string()];
         <span class="kw">let </span>json = serde_json::to_string(<span class="kw-2">&amp;</span>snapshot_versions).unwrap();
         <span class="macro">assert_eq!</span>(json, <span class="string">r#&quot;[&quot;latest&quot;,&quot;fund 10&quot;]&quot;#</span>);
     }

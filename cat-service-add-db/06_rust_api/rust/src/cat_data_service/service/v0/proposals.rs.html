@@ -36,22 +36,38 @@
 <span id="36">36</span>
 <span id="37">37</span>
 <span id="38">38</span>
-</pre><pre class="rust"><code><span class="kw">use </span>axum::{
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db::proposal::ProposalDb;
+<span class="kw">use </span>axum::{
     extract::Path,
     routing::{get, post},
     Router,
 };
+<span class="kw">use </span>std::sync::Arc;
 
-<span class="kw">pub fn </span>proposals() -&gt; Router {
+<span class="kw">pub fn </span>proposals&lt;State: ProposalDb + Send + Sync + <span class="lifetime">&#39;static</span>&gt;(state: Arc&lt;State&gt;) -&gt; Router {
     Router::new()
         .route(<span class="string">&quot;/proposals&quot;</span>, post(proposals_exec))
         .route(
             <span class="string">&quot;/proposals/:voter_group_id&quot;</span>,
-            get(proposals_by_voter_group_id_exec),
+            get({
+                <span class="kw">let </span>state = state.clone();
+                <span class="kw">move </span>|path| proposals_by_voter_group_id_exec(path, state)
+            }),
         )
         .route(
             <span class="string">&quot;/proposal/:id/:voter_group_id&quot;</span>,
-            get(proposal_by_and_by_voter_group_id_exec),
+            get(<span class="kw">move </span>|path| proposal_by_and_by_voter_group_id_exec(path, state)),
         )
 }
 
@@ -61,18 +77,24 @@
     <span class="macro">format!</span>(<span class="string">&quot;body: {0}&quot;</span>, body)
 }
 
-<span class="kw">async fn </span>proposals_by_voter_group_id_exec(Path(voter_group_id): Path&lt;String&gt;) -&gt; String {
+<span class="kw">async fn </span>proposals_by_voter_group_id_exec&lt;State: ProposalDb&gt;(
+    Path(voter_group_id): Path&lt;String&gt;,
+    state: Arc&lt;State&gt;,
+) -&gt; String {
     <span class="macro">tracing::debug!</span>(<span class="string">&quot;voter group id: {0}&quot;</span>, voter_group_id);
 
-    <span class="macro">format!</span>(<span class="string">&quot;voter group id: {0}&quot;</span>, voter_group_id)
+    <span class="kw">let </span>proposals = state.get_proposals_by_voter_group_id(voter_group_id);
+    serde_json::to_string(<span class="kw-2">&amp;</span>proposals).unwrap()
 }
 
-<span class="kw">async fn </span>proposal_by_and_by_voter_group_id_exec(
-    Path((id, voter_group_id)): Path&lt;(String, String)&gt;,
+<span class="kw">async fn </span>proposal_by_and_by_voter_group_id_exec&lt;State: ProposalDb&gt;(
+    Path((id, voter_group_id)): Path&lt;(i32, String)&gt;,
+    state: Arc&lt;State&gt;,
 ) -&gt; String {
     <span class="macro">tracing::debug!</span>(<span class="string">&quot;id: {0}, voter group id: {1}&quot;</span>, id, voter_group_id);
 
-    <span class="macro">format!</span>(<span class="string">&quot;id: {0}, voter group id: {1}&quot;</span>, id, voter_group_id)
+    <span class="kw">let </span>proposal = state.get_proposal_by_and_by_voter_group_id(id, voter_group_id);
+    serde_json::to_string(<span class="kw-2">&amp;</span>proposal).unwrap()
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="cat_data_service" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -185,9 +185,6 @@
 <span id="185">185</span>
 <span id="186">186</span>
 <span id="187">187</span>
-<span id="188">188</span>
-<span id="189">189</span>
-<span id="190">190</span>
 </pre><pre class="rust"><code><span class="kw">use </span>serde::Serialize;
 
 <span class="attribute">#[derive(Serialize, Clone, Default)]
@@ -261,13 +258,10 @@
     tallying_end: String,
 }
 
-<span class="attribute">#[derive(Serialize, Clone, Default)]
-</span><span class="kw">pub struct </span>FundIDs(Vec&lt;i32&gt;);
-
 <span class="kw">pub trait </span>FundDb {
     <span class="kw">fn </span>get_current_fund(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Fund;
     <span class="kw">fn </span>get_fund_by_id(<span class="kw-2">&amp;</span><span class="self">self</span>, id: i32) -&gt; Fund;
-    <span class="kw">fn </span>get_fund_ids(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FundIDs;
+    <span class="kw">fn </span>get_fund_ids(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;i32&gt;;
 }
 
 <span class="attribute">#[cfg(test)]
@@ -373,7 +367,7 @@
 
     <span class="attribute">#[test]
     </span><span class="kw">fn </span>fund_ids_json_test() {
-        <span class="kw">let </span>fund_ids = FundIDs(<span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>]);
+        <span class="kw">let </span>fund_ids = <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>];
         <span class="kw">let </span>json = serde_json::to_string(<span class="kw-2">&amp;</span>fund_ids).unwrap();
         <span class="macro">assert_eq!</span>(json, <span class="string">r#&quot;[0,1]&quot;#</span>);
     }

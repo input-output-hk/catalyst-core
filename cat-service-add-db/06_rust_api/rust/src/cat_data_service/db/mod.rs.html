@@ -42,46 +42,56 @@
 <span id="42">42</span>
 <span id="43">43</span>
 <span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="self">self</span>::{
-    fund::{Fund, FundDb, FundIDs},
-    snapshot::{Delegator, SnapshotDb, SnapshotVersions, Voter},
+    fund::{Fund, FundDb},
+    proposal::{Proposal, ProposalDb},
+    snapshot::{Delegator, SnapshotDb, Voter},
 };
 
 <span class="kw">pub mod </span>fund;
+<span class="kw">pub mod </span>proposal;
 <span class="kw">pub mod </span>snapshot;
 
-<span class="kw">pub trait </span>DB: SnapshotDb + FundDb {}
+<span class="kw">pub trait </span>DB: SnapshotDb + FundDb + ProposalDb {}
 
-<span class="attribute">#[derive(Clone, Default)]
-</span><span class="kw">pub struct </span>MockedDB {
-    voter: Voter,
-    delegator: Delegator,
-    snapshot_versions: SnapshotVersions,
-    fund: Fund,
-    fund_ids: FundIDs,
-}
+<span class="attribute">#[derive(Clone)]
+</span><span class="kw">pub struct </span>MockedDB;
 
 <span class="kw">impl </span>SnapshotDb <span class="kw">for </span>MockedDB {
-    <span class="kw">fn </span>get_snapshot_versions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; SnapshotVersions {
-        <span class="self">self</span>.snapshot_versions.clone()
+    <span class="kw">fn </span>get_snapshot_versions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;String&gt; {
+        Default::default()
     }
     <span class="kw">fn </span>get_voter(<span class="kw-2">&amp;</span><span class="self">self</span>, _event: String, _voting_key: String) -&gt; Voter {
-        <span class="self">self</span>.voter.clone()
+        Default::default()
     }
     <span class="kw">fn </span>get_delegator(<span class="kw-2">&amp;</span><span class="self">self</span>, _event: String, _stake_public_key: String) -&gt; Delegator {
-        <span class="self">self</span>.delegator.clone()
+        Default::default()
     }
 }
 
 <span class="kw">impl </span>FundDb <span class="kw">for </span>MockedDB {
     <span class="kw">fn </span>get_current_fund(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Fund {
-        <span class="self">self</span>.fund.clone()
+        Default::default()
     }
     <span class="kw">fn </span>get_fund_by_id(<span class="kw-2">&amp;</span><span class="self">self</span>, _id: i32) -&gt; Fund {
-        <span class="self">self</span>.fund.clone()
+        Default::default()
     }
-    <span class="kw">fn </span>get_fund_ids(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FundIDs {
-        <span class="self">self</span>.fund_ids.clone()
+    <span class="kw">fn </span>get_fund_ids(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;i32&gt; {
+        Default::default()
+    }
+}
+
+<span class="kw">impl </span>ProposalDb <span class="kw">for </span>MockedDB {
+    <span class="kw">fn </span>get_proposals_by_voter_group_id(<span class="kw-2">&amp;</span><span class="self">self</span>, _voter_group_id: String) -&gt; Vec&lt;Proposal&gt; {
+        Default::default()
+    }
+    <span class="kw">fn </span>get_proposal_by_and_by_voter_group_id(<span class="kw-2">&amp;</span><span class="self">self</span>, _id: i32, _voter_group_id: String) -&gt; Proposal {
+        Default::default()
     }
 }
 

@@ -113,11 +113,9 @@ fn convert_row((tx_id, metadata, signature, _slot_no): Row) -> Result<SignedRegi
 
     let tx_id = u64::try_from(tx_id)?.into();
     let registration = serde_json::from_value(metadata.clone())
-        .map_err(|e| Report::from(e).with_warning(|| format!("registration json: {metadata:#?}")))
-        .unwrap();
+        .map_err(|e| Report::from(e).with_warning(|| format!("registration json: {metadata:#?}")))?;
     let signature = serde_json::from_value(signature.clone())
-        .map_err(|e| Report::from(e).with_warning(|| format!("signature json: {signature:#?}")))
-        .unwrap();
+        .map_err(|e| Report::from(e).with_warning(|| format!("signature json: {signature:#?}")))?;
 
     Ok(SignedRegistration {
         registration,

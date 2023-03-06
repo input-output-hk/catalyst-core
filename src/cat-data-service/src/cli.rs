@@ -24,7 +24,7 @@ impl Cli {
             Self::Run(settings) => {
                 logger::init(settings.log_level)?;
 
-                let state = Arc::new(MockedDB::default());
+                let state = Arc::new(MockedDB);
 
                 service::run_service(&settings.address, state).await?;
                 Ok(())

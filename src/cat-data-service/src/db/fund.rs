@@ -71,13 +71,10 @@ pub struct Fund {
     tallying_end: String,
 }
 
-#[derive(Serialize, Clone, Default)]
-pub struct FundIDs(Vec<i32>);
-
 pub trait FundDb {
     fn get_current_fund(&self) -> Fund;
     fn get_fund_by_id(&self, id: i32) -> Fund;
-    fn get_fund_ids(&self) -> FundIDs;
+    fn get_fund_ids(&self) -> Vec<i32>;
 }
 
 #[cfg(test)]
@@ -183,7 +180,7 @@ mod tests {
 
     #[test]
     fn fund_ids_json_test() {
-        let fund_ids = FundIDs(vec![0, 1]);
+        let fund_ids = vec![0, 1];
         let json = serde_json::to_string(&fund_ids).unwrap();
         assert_eq!(json, r#"[0,1]"#);
     }

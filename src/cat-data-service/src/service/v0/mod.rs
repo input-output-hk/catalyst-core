@@ -12,9 +12,9 @@ mod snapshot;
 
 pub fn v0<State: DB + Send + Sync + 'static>(state: Arc<State>) -> Router {
     let snapshot = snapshot::snapshot(state.clone());
-    let fund = fund::fund(state);
+    let fund = fund::fund(state.clone());
     let chalenges = chalenges::chalenges();
-    let proposals = proposals::proposals();
+    let proposals = proposals::proposals(state);
     let reviews = reviews::reviews();
 
     Router::new().nest(

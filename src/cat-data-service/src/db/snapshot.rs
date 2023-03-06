@@ -1,9 +1,6 @@
 use serde::Serialize;
 
 #[derive(Serialize, Clone, Default)]
-pub struct SnapshotVersions(Vec<String>);
-
-#[derive(Serialize, Clone, Default)]
 pub struct VoterInfo {
     voting_power: u64,
     voting_group: String,
@@ -39,7 +36,7 @@ pub struct Delegator {
 }
 
 pub trait SnapshotDb {
-    fn get_snapshot_versions(&self) -> SnapshotVersions;
+    fn get_snapshot_versions(&self) -> Vec<String>;
     fn get_voter(&self, event: String, voting_key: String) -> Voter;
     fn get_delegator(&self, event: String, stake_public_key: String) -> Delegator;
 }
@@ -50,7 +47,7 @@ mod tests {
 
     #[test]
     fn snapshot_versions_json_test() {
-        let snapshot_versions = SnapshotVersions(vec!["latest".to_string(), "fund 10".to_string()]);
+        let snapshot_versions = vec!["latest".to_string(), "fund 10".to_string()];
         let json = serde_json::to_string(&snapshot_versions).unwrap();
         assert_eq!(json, r#"["latest","fund 10"]"#);
     }

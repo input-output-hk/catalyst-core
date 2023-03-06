@@ -100,42 +100,42 @@
 <span id="100">100</span>
 </pre><pre class="rust"><code><span class="kw">use </span>serde::Serialize;
 
-<span class="attribute">#[derive(Serialize, Clone)]
-</span><span class="kw">pub struct </span>SnapshotVersions(<span class="kw">pub </span>Vec&lt;String&gt;);
+<span class="attribute">#[derive(Serialize, Clone, Default)]
+</span><span class="kw">pub struct </span>SnapshotVersions(Vec&lt;String&gt;);
 
-<span class="attribute">#[derive(Serialize, Clone)]
+<span class="attribute">#[derive(Serialize, Clone, Default)]
 </span><span class="kw">pub struct </span>VoterInfo {
-    <span class="kw">pub </span>voting_power: u64,
-    <span class="kw">pub </span>voting_group: String,
-    <span class="kw">pub </span>delegations_power: u64,
-    <span class="kw">pub </span>delegations_count: u64,
-    <span class="kw">pub </span>voting_power_saturation: f64,
+    voting_power: u64,
+    voting_group: String,
+    delegations_power: u64,
+    delegations_count: u64,
+    voting_power_saturation: f64,
 }
 
-<span class="attribute">#[derive(Serialize, Clone)]
+<span class="attribute">#[derive(Serialize, Clone, Default)]
 </span><span class="kw">pub struct </span>Voter {
-    <span class="kw">pub </span>voter_info: VoterInfo,
-    <span class="kw">pub </span>as_at: String,
-    <span class="kw">pub </span>last_updated: String,
-    <span class="kw">pub </span>r#final: bool,
+    voter_info: VoterInfo,
+    as_at: String,
+    last_updated: String,
+    r#final: bool,
 }
 
-<span class="attribute">#[derive(Serialize, Clone)]
+<span class="attribute">#[derive(Serialize, Clone, Default)]
 </span><span class="kw">pub struct </span>Delegation {
-    <span class="kw">pub </span>voting_key: String,
-    <span class="kw">pub </span>group: String,
-    <span class="kw">pub </span>weight: u64,
-    <span class="kw">pub </span>value: u64,
+    voting_key: String,
+    group: String,
+    weight: u64,
+    value: u64,
 }
 
-<span class="attribute">#[derive(Serialize, Clone)]
+<span class="attribute">#[derive(Serialize, Clone, Default)]
 </span><span class="kw">pub struct </span>Delegator {
-    <span class="kw">pub </span>delegations: Vec&lt;Delegation&gt;,
-    <span class="kw">pub </span>raw_power: u64,
-    <span class="kw">pub </span>total_power: u64,
-    <span class="kw">pub </span>as_at: String,
-    <span class="kw">pub </span>last_updated: String,
-    <span class="kw">pub </span>r#final: bool,
+    delegations: Vec&lt;Delegation&gt;,
+    raw_power: u64,
+    total_power: u64,
+    as_at: String,
+    last_updated: String,
+    r#final: bool,
 }
 
 <span class="kw">pub trait </span>SnapshotDb {

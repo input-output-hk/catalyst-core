@@ -24,31 +24,65 @@
 <span id="24">24</span>
 <span id="25">25</span>
 <span id="26">26</span>
-</pre><pre class="rust"><code><span class="kw">use </span>axum::{extract::Path, routing::get, Router};
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db::fund::FundDb;
+<span class="kw">use </span>axum::{extract::Path, routing::get, Router};
+<span class="kw">use </span>std::sync::Arc;
 
-<span class="kw">pub fn </span>fund() -&gt; Router {
+<span class="kw">pub fn </span>fund&lt;State: FundDb + Send + Sync + <span class="lifetime">&#39;static</span>&gt;(state: Arc&lt;State&gt;) -&gt; Router {
     Router::new()
-        .route(<span class="string">&quot;/funds&quot;</span>, get(funds_exec))
-        .route(<span class="string">&quot;/fund&quot;</span>, get(fund_exec))
-        .route(<span class="string">&quot;/fund/:id&quot;</span>, get(fund_by_id_exec))
+        .route(
+            <span class="string">&quot;/funds&quot;</span>,
+            get({
+                <span class="kw">let </span>state = state.clone();
+                <span class="kw">move </span>|| funds_exec(state)
+            }),
+        )
+        .route(
+            <span class="string">&quot;/fund&quot;</span>,
+            get({
+                <span class="kw">let </span>state = state.clone();
+                <span class="kw">move </span>|| fund_exec(state)
+            }),
+        )
+        .route(<span class="string">&quot;/fund/:id&quot;</span>, get(<span class="kw">move </span>|path| fund_by_id_exec(path, state)))
 }
 
-<span class="kw">async fn </span>fund_exec() -&gt; String {
+<span class="kw">async fn </span>fund_exec&lt;State: FundDb&gt;(state: Arc&lt;State&gt;) -&gt; String {
     <span class="macro">tracing::debug!</span>(<span class="string">&quot;&quot;</span>);
 
-    <span class="string">&quot;latest fund&quot;</span>.to_string()
+    <span class="kw">let </span>current_fund = state.get_current_fund();
+    serde_json::to_string(<span class="kw-2">&amp;</span>current_fund).unwrap()
 }
 
-<span class="kw">async fn </span>fund_by_id_exec(Path(id): Path&lt;String&gt;) -&gt; String {
+<span class="kw">async fn </span>fund_by_id_exec&lt;State: FundDb&gt;(Path(id): Path&lt;i32&gt;, state: Arc&lt;State&gt;) -&gt; String {
     <span class="macro">tracing::debug!</span>(<span class="string">&quot;id: {0}&quot;</span>, id);
 
-    <span class="macro">format!</span>(<span class="string">&quot;fund id: {0}&quot;</span>, id)
+    <span class="kw">let </span>fund = state.get_fund_by_id(id);
+    serde_json::to_string(<span class="kw-2">&amp;</span>fund).unwrap()
 }
 
-<span class="kw">async fn </span>funds_exec() -&gt; String {
+<span class="kw">async fn </span>funds_exec&lt;State: FundDb&gt;(state: Arc&lt;State&gt;) -&gt; String {
     <span class="macro">tracing::debug!</span>(<span class="string">&quot;&quot;</span>);
 
-    <span class="string">&quot;latest&quot;</span>.to_string()
+    <span class="kw">let </span>fund_ids = state.get_fund_ids();
+    serde_json::to_string(<span class="kw-2">&amp;</span>fund_ids).unwrap()
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="cat_data_service" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

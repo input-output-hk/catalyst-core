@@ -39,8 +39,8 @@
 <span class="kw">mod </span>snapshot;
 
 <span class="kw">pub fn </span>v0&lt;State: DB + Send + Sync + <span class="lifetime">&#39;static</span>&gt;(state: Arc&lt;State&gt;) -&gt; Router {
-    <span class="kw">let </span>snapshot = snapshot::snapshot(state);
-    <span class="kw">let </span>fund = fund::fund();
+    <span class="kw">let </span>snapshot = snapshot::snapshot(state.clone());
+    <span class="kw">let </span>fund = fund::fund(state);
     <span class="kw">let </span>chalenges = chalenges::chalenges();
     <span class="kw">let </span>proposals = proposals::proposals();
     <span class="kw">let </span>reviews = reviews::reviews();

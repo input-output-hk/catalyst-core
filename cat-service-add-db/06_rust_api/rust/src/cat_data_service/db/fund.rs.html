@@ -169,9 +169,28 @@
 <span id="169">169</span>
 <span id="170">170</span>
 <span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
 </pre><pre class="rust"><code><span class="kw">use </span>serde::Serialize;
 
-<span class="attribute">#[derive(Serialize)]
+<span class="attribute">#[derive(Serialize, Clone, Default)]
 </span><span class="kw">pub struct </span>VotePlan {
     id: i32,
     chain_voteplan_id: String,
@@ -183,18 +202,18 @@
     voting_token: String,
 }
 
-<span class="attribute">#[derive(Serialize)]
+<span class="attribute">#[derive(Serialize, Clone, Default)]
 </span><span class="kw">pub struct </span>VoterGroup {
     id: String,
     voting_token: String,
 }
 
-<span class="attribute">#[derive(Serialize)]
+<span class="attribute">#[derive(Serialize, Clone, Default)]
 </span><span class="kw">pub struct </span>Highlights {
     sponsor: String,
 }
 
-<span class="attribute">#[derive(Serialize)]
+<span class="attribute">#[derive(Serialize, Clone, Default)]
 </span><span class="kw">pub struct </span>Challenge {
     id: i32,
     challenge_type: String,
@@ -206,14 +225,14 @@
     highlights: Highlights,
 }
 
-<span class="attribute">#[derive(Serialize)]
+<span class="attribute">#[derive(Serialize, Clone, Default)]
 </span><span class="kw">pub struct </span>Goal {
     id: i32,
     goal_name: String,
     fund_id: i32,
 }
 
-<span class="attribute">#[derive(Serialize)]
+<span class="attribute">#[derive(Serialize, Clone, Default)]
 </span><span class="kw">pub struct </span>Fund {
     id: i32,
     fund_name: String,
@@ -240,6 +259,15 @@
     voting_start: String,
     voting_end: String,
     tallying_end: String,
+}
+
+<span class="attribute">#[derive(Serialize, Clone, Default)]
+</span><span class="kw">pub struct </span>FundIDs(Vec&lt;i32&gt;);
+
+<span class="kw">pub trait </span>FundDb {
+    <span class="kw">fn </span>get_current_fund(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Fund;
+    <span class="kw">fn </span>get_fund_by_id(<span class="kw-2">&amp;</span><span class="self">self</span>, id: i32) -&gt; Fund;
+    <span class="kw">fn </span>get_fund_ids(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FundIDs;
 }
 
 <span class="attribute">#[cfg(test)]
@@ -337,7 +365,17 @@
             tallying_end: <span class="string">&quot;tallying_end&quot;</span>.to_string(),
         };
         <span class="kw">let </span>json = serde_json::to_string(<span class="kw-2">&amp;</span>fund).unwrap();
-        <span class="macro">assert_eq!</span>(json, <span class="string">r#&quot;{&quot;id&quot;:0,&quot;fund_name&quot;:&quot;fund_name&quot;,&quot;fund_goal&quot;:&quot;fund_goal&quot;,&quot;voting_power_info&quot;:&quot;voting_power_info&quot;,&quot;voting_power_threshold&quot;:0,&quot;rewards_info&quot;:&quot;rewards_info&quot;,&quot;fund_start_time&quot;:&quot;fund_start_time&quot;,&quot;fund_end_time&quot;:&quot;fund_end_time&quot;,&quot;next_fund_start_time&quot;:&quot;next_fund_start_time&quot;,&quot;registration_snapshot_time&quot;:&quot;registration_snapshot_time&quot;,&quot;next_registration_snapshot_time&quot;:&quot;next_registration_snapshot_time&quot;,&quot;chain_vote_plans&quot;:[],&quot;groups&quot;:[],&quot;challenges&quot;:[],&quot;goals&quot;:[],&quot;insight_sharing_start&quot;:&quot;insight_sharing_start&quot;,&quot;proposal_submission_start&quot;:&quot;proposal_submission_start&quot;,&quot;refine_proposals_start&quot;:&quot;refine_proposals_start&quot;,&quot;finalize_proposals_start&quot;:&quot;finalize_proposals_start&quot;,&quot;proposal_assessment_start&quot;:&quot;proposal_assessment_start&quot;,&quot;assessment_qa_start&quot;:&quot;assessment_qa_start&quot;,&quot;snapshot_start&quot;:&quot;snapshot_start&quot;,&quot;voting_start&quot;:&quot;voting_start&quot;,&quot;voting_end&quot;:&quot;voting_end&quot;,&quot;tallying_end&quot;:&quot;tallying_end&quot;}&quot;#</span>);
+        <span class="macro">assert_eq!</span>(
+            json,
+            <span class="string">r#&quot;{&quot;id&quot;:0,&quot;fund_name&quot;:&quot;fund_name&quot;,&quot;fund_goal&quot;:&quot;fund_goal&quot;,&quot;voting_power_info&quot;:&quot;voting_power_info&quot;,&quot;voting_power_threshold&quot;:0,&quot;rewards_info&quot;:&quot;rewards_info&quot;,&quot;fund_start_time&quot;:&quot;fund_start_time&quot;,&quot;fund_end_time&quot;:&quot;fund_end_time&quot;,&quot;next_fund_start_time&quot;:&quot;next_fund_start_time&quot;,&quot;registration_snapshot_time&quot;:&quot;registration_snapshot_time&quot;,&quot;next_registration_snapshot_time&quot;:&quot;next_registration_snapshot_time&quot;,&quot;chain_vote_plans&quot;:[],&quot;groups&quot;:[],&quot;challenges&quot;:[],&quot;goals&quot;:[],&quot;insight_sharing_start&quot;:&quot;insight_sharing_start&quot;,&quot;proposal_submission_start&quot;:&quot;proposal_submission_start&quot;,&quot;refine_proposals_start&quot;:&quot;refine_proposals_start&quot;,&quot;finalize_proposals_start&quot;:&quot;finalize_proposals_start&quot;,&quot;proposal_assessment_start&quot;:&quot;proposal_assessment_start&quot;,&quot;assessment_qa_start&quot;:&quot;assessment_qa_start&quot;,&quot;snapshot_start&quot;:&quot;snapshot_start&quot;,&quot;voting_start&quot;:&quot;voting_start&quot;,&quot;voting_end&quot;:&quot;voting_end&quot;,&quot;tallying_end&quot;:&quot;tallying_end&quot;}&quot;#
+        </span>);
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>fund_ids_json_test() {
+        <span class="kw">let </span>fund_ids = FundIDs(<span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>]);
+        <span class="kw">let </span>json = serde_json::to_string(<span class="kw-2">&amp;</span>fund_ids).unwrap();
+        <span class="macro">assert_eq!</span>(json, <span class="string">r#&quot;[0,1]&quot;#</span>);
     }
 }
 </code></pre></div>

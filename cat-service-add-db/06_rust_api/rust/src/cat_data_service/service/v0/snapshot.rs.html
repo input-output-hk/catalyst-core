@@ -50,9 +50,6 @@
 <span id="50">50</span>
 <span id="51">51</span>
 <span id="52">52</span>
-<span id="53">53</span>
-<span id="54">54</span>
-<span id="55">55</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db::snapshot::SnapshotDb;
 <span class="kw">use </span>axum::{extract::Path, routing::get, Router};
 <span class="kw">use </span>std::sync::Arc;
@@ -75,10 +72,7 @@
         )
         .route(
             <span class="string">&quot;/snapshot/delegator/:event/:stake_public_key&quot;</span>,
-            get({
-                <span class="kw">let </span>state = state.clone();
-                <span class="kw">move </span>|path| delegator_exec(path, state)
-            }),
+            get(<span class="kw">move </span>|path| delegator_exec(path, state)),
         )
 }
 

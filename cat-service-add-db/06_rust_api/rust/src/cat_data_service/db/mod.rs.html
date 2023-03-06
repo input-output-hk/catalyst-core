@@ -42,67 +42,23 @@
 <span id="42">42</span>
 <span id="43">43</span>
 <span id="44">44</span>
-<span id="45">45</span>
-<span id="46">46</span>
-<span id="47">47</span>
-<span id="48">48</span>
-<span id="49">49</span>
-<span id="50">50</span>
-<span id="51">51</span>
-<span id="52">52</span>
-<span id="53">53</span>
-<span id="54">54</span>
-<span id="55">55</span>
-<span id="56">56</span>
-<span id="57">57</span>
-<span id="58">58</span>
-<span id="59">59</span>
-<span id="60">60</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="self">self</span>::snapshot::{Delegation, Delegator, SnapshotDb, SnapshotVersions, Voter, VoterInfo};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="self">self</span>::{
+    fund::{Fund, FundDb, FundIDs},
+    snapshot::{Delegator, SnapshotDb, SnapshotVersions, Voter},
+};
 
 <span class="kw">pub mod </span>fund;
 <span class="kw">pub mod </span>snapshot;
 
-<span class="kw">pub trait </span>DB: SnapshotDb {}
+<span class="kw">pub trait </span>DB: SnapshotDb + FundDb {}
 
-<span class="attribute">#[derive(Clone)]
+<span class="attribute">#[derive(Clone, Default)]
 </span><span class="kw">pub struct </span>MockedDB {
-    <span class="kw">pub </span>voter: Voter,
-    <span class="kw">pub </span>delegator: Delegator,
-    <span class="kw">pub </span>snapshot_versions: SnapshotVersions,
-}
-
-<span class="kw">impl </span>Default <span class="kw">for </span>MockedDB {
-    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
-            snapshot_versions: SnapshotVersions(<span class="macro">vec!</span>[<span class="string">&quot;latest&quot;</span>.to_string(), <span class="string">&quot;fund 10&quot;</span>.to_string()]),
-            voter: Voter {
-                voter_info: VoterInfo {
-                    voting_power: <span class="number">100</span>,
-                    voting_group: <span class="string">&quot;rep&quot;</span>.to_string(),
-                    delegations_power: <span class="number">100</span>,
-                    delegations_count: <span class="number">1</span>,
-                    voting_power_saturation: <span class="number">0.4</span>,
-                },
-                as_at: <span class="string">&quot;today&quot;</span>.to_string(),
-                last_updated: <span class="string">&quot;today&quot;</span>.to_string(),
-                r#final: <span class="bool-val">true</span>,
-            },
-            delegator: Delegator {
-                delegations: <span class="macro">vec!</span>[Delegation {
-                    voting_key: <span class="string">&quot;voter&quot;</span>.to_string(),
-                    group: <span class="string">&quot;rep&quot;</span>.to_string(),
-                    weight: <span class="number">5</span>,
-                    value: <span class="number">100</span>,
-                }],
-                raw_power: <span class="number">100</span>,
-                total_power: <span class="number">1000</span>,
-                as_at: <span class="string">&quot;today&quot;</span>.to_string(),
-                last_updated: <span class="string">&quot;today&quot;</span>.to_string(),
-                r#final: <span class="bool-val">true</span>,
-            },
-        }
-    }
+    voter: Voter,
+    delegator: Delegator,
+    snapshot_versions: SnapshotVersions,
+    fund: Fund,
+    fund_ids: FundIDs,
 }
 
 <span class="kw">impl </span>SnapshotDb <span class="kw">for </span>MockedDB {
@@ -114,6 +70,18 @@
     }
     <span class="kw">fn </span>get_delegator(<span class="kw-2">&amp;</span><span class="self">self</span>, _event: String, _stake_public_key: String) -&gt; Delegator {
         <span class="self">self</span>.delegator.clone()
+    }
+}
+
+<span class="kw">impl </span>FundDb <span class="kw">for </span>MockedDB {
+    <span class="kw">fn </span>get_current_fund(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Fund {
+        <span class="self">self</span>.fund.clone()
+    }
+    <span class="kw">fn </span>get_fund_by_id(<span class="kw-2">&amp;</span><span class="self">self</span>, _id: i32) -&gt; Fund {
+        <span class="self">self</span>.fund.clone()
+    }
+    <span class="kw">fn </span>get_fund_ids(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FundIDs {
+        <span class="self">self</span>.fund_ids.clone()
     }
 }
 

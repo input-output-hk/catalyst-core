@@ -87,7 +87,7 @@ pub fn drep_rewards_happy_path() {
         vote_start: 0,
         tally_start: 1,
         tally_end: 2,
-        slots_per_epoch: 30,
+        slots_per_epoch: 15,
     };
 
     let config = ConfigBuilder::default()

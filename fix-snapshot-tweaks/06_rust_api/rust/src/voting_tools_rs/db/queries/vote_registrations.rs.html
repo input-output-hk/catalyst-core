@@ -231,8 +231,6 @@
 <span id="231">231</span>
 <span id="232">232</span>
 <span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::io::{BufWriter, Write};
 
@@ -348,11 +346,9 @@
 
     <span class="kw">let </span>tx_id = u64::try_from(tx_id)<span class="question-mark">?</span>.into();
     <span class="kw">let </span>registration = serde_json::from_value(metadata.clone())
-        .map_err(|e| Report::from(e).with_warning(|| <span class="macro">format!</span>(<span class="string">&quot;registration json: {metadata:#?}&quot;</span>)))
-        .unwrap();
+        .map_err(|e| Report::from(e).with_warning(|| <span class="macro">format!</span>(<span class="string">&quot;registration json: {metadata:#?}&quot;</span>)))<span class="question-mark">?</span>;
     <span class="kw">let </span>signature = serde_json::from_value(signature.clone())
-        .map_err(|e| Report::from(e).with_warning(|| <span class="macro">format!</span>(<span class="string">&quot;signature json: {signature:#?}&quot;</span>)))
-        .unwrap();
+        .map_err(|e| Report::from(e).with_warning(|| <span class="macro">format!</span>(<span class="string">&quot;signature json: {signature:#?}&quot;</span>)))<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(SignedRegistration {
         registration,

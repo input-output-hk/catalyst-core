@@ -46,6 +46,7 @@ class NodeSettings:
 @dataclass
 class NodeInfo:
     hostname: str
+    event: int
     seckey: str
     pubkey: str
     netkey: str
@@ -102,7 +103,7 @@ class GenesisYaml(YamlFile):
 
 
 @dataclass
-class Election:
+class Event:
     row_id: int
     name: str
     description: str
@@ -155,7 +156,7 @@ class VotingNode:
     node_secret: NodeSecretYaml
     topology_key: NodeTopologyKey
     peer_info: List[PeerNode]
-    voting_event: Election
+    voting_event: Event
     block0: Block0
 
 

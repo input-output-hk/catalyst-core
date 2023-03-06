@@ -41,8 +41,8 @@ def cli(debug, hot_reload):
 @click.option(
     "--database-url",
     envvar="DATABASE_URL",
-    default="postgres://localhost/CatalystDev",
-    help="Sets the URL for the database. Default: postgres://localhost/CatalystDev",
+    default="postgres://localhost/CatalystEventDev",
+    help="Sets the URL for the database. Default: postgres://localhost/CatalystEventDev",
 )
 @click.option(
     "--node-storage",

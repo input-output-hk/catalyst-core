@@ -18,6 +18,9 @@
   </a>
    <a href='https://coveralls.io/github/input-output-hk/catalyst-core?branch=main'><img src='https://coveralls.io/repos/github/input-output-hk/catalyst-core/badge.svg?branch=main' alt='Coverage Status' />
 </a>
+  <a href="https://api.securityscorecards.dev/projects/github.com/input-output-hk/catalyst-core">
+    <img src="https://api.securityscorecards.dev/projects/github.com/input-output-hk/catalyst-core/badge" alt="OpenSSF Scorecard" />
+  </a>
 </p>
 <!-- markdownlint-enable no-inline-html -->
 

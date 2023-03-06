@@ -1,5 +1,5 @@
+use crate::builders::utils::logger;
 use crate::builders::utils::SessionSettingsExtension;
-use crate::builders::utils::{logger, DeploymentTree};
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::read_config;
 use crate::mode::standard::generate_random_database;
@@ -22,7 +22,7 @@ pub struct AllRandomDataCommandArgs {
     #[clap(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
 
-    #[clap(long = "log-level", default_value = "LogLevel::INFO")]
+    #[clap(long = "log-level", default_value = "INFO")]
     pub log_level: LogLevel,
 }
 
@@ -44,14 +44,12 @@ impl AllRandomDataCommandArgs {
             std::fs::create_dir_all(&self.output_directory)?;
         }
 
-        let deployment_tree = DeploymentTree::new(&self.output_directory);
-
         let (controller, vit_parameters) = VitBackendSettingsBuilder::default()
             .config(&config)
             .session_settings(session_settings)
             .build()?;
 
-        generate_random_database(&deployment_tree, vit_parameters)?;
+        generate_random_database(vit_parameters)?;
 
         config.print_report(Some(controller));
         Ok(())

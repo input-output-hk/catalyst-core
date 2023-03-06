@@ -1,10 +1,7 @@
 import * as wallet_wasm from "wallet-wasm-js";
 
-export class BlockDate {
-  epoch: number;
-  slot: number;
-
-  constructor(epoch: number, slot: number): BlockDate;
+export enum VotingPurpose {
+  CATALYST = 0,
 }
 
 /**
@@ -38,16 +35,16 @@ export class Proposal {
   /**
    * Proposal constructor
    *
-   * @param {string} votePlan vote plan id bytes representation
-   * @param {number} voteOptions number of available vote plan options
-   * @param {number} proposalIndex vote's plan proposal index, mandatory for private proposal
-   * @param {string} voteEncKey committee public key in hex representation, mandatory for private proposal
+   * @param {string} votePlan Vote plan id bytes representation
+   * @param {number} proposalIndex Vote's plan proposal index
+   * @param {number} voteOptions Number of available vote plan options, mandatory for private proposal
+   * @param {string} voteEncKey Committee public key in hex representation, mandatory for private proposal
    * @returns {Proposal}
    */
   constructor(
     votePlan: string,
-    voteOptions: number,
-    proposalIndex?: number,
+    proposalIndex: number,
+    voteOptions?: number,
     voteEncKey?: string
   ): Proposal;
 }
@@ -57,28 +54,36 @@ export class Proposal {
  */
 export class Vote {
   proposal: Proposal;
-  choice: number;
+  selectedVotePlanOption: number;
+  votingPurpose: VotingPurpose;
 
   /**
    * Vote constructor
    *
    * @param {Proposal} proposal
-   * @param {number} choice choosen vote plan option
+   * @param {number} selectedVotePlanOption Selected vote plan option.
+   * @param {VotingPurpose} votingPurpose The voting purpose being voted on. (Currently not used).
    * @returns {Vote}
    */
-  constructor(proposal: Proposal, choice: number): Vote;
+  constructor(
+    proposal: Proposal,
+    selectedVotePlanOption: number,
+    votingPurpose: VotingPurpose,
+  ): Vote;
 }
 
 /**
- * Signes provided votes and returns a completly generated transaction list
+ * Signes provided votes and returns a completely generated transaction list
  *
- * @param {Vote[]} votes list of votes
- * @param {Settings} settings wallet Settings
- * @param {string} privateKey user private key hex representation
+ * @param {Vote[]} votes List of votes
+ * @param {Settings} settings Wallet Settings
+ * @param {string} accountId User's account id hex representation
+ * @param {string} privateKey Deprecated field, you can pass anything.
  * @returns {wallet_wasm.Fragment[]}
  */
 function signVotes(
   votes: Vote[],
   settings: Settings,
-  privateKey: string
-): wallet_wasm.Fragment[];
+  accountId: string,
+  privateKey?: string
+): wallet_wasm.VoteCastTxBuilder[];

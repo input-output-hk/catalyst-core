@@ -42,6 +42,16 @@ jobs:
     name: Build test dependencies
     runs-on: ubuntu-latest
     steps:
+      - name: Free disk space
+        # https://github.com/actions/virtual-environments/issues/709
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+
       - name: Checkout code
         uses: actions/checkout@v3
         with:
@@ -82,6 +92,16 @@ jobs:
     name: Build test artifacts
     runs-on: ubuntu-latest
     steps:
+      - name: Free disk space
+        # https://github.com/actions/virtual-environments/issues/709
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+
       - name: Checkout code
         uses: actions/checkout@v3
         with:
@@ -120,7 +140,7 @@ jobs:
     needs: [build-tests-artifacts, build-test-dependencies]
     services:
       postgres:
-        image: postgres:14
+        image: postgres:15
         env:
           POSTGRES_PASSWORD: 123456
         options:
@@ -135,6 +155,16 @@ jobs:
       matrix:
         partition: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     steps:
+      - name: Free disk space
+        # https://github.com/actions/virtual-environments/issues/709
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+          
       - name: Checkout code
         uses: actions/checkout@v3
         with:
@@ -188,15 +218,28 @@ jobs:
 
       - name: Run Catalyst Core tests
         env:
-          TEST_DB: postgres
           TEST_DATABASE_URL: postgres://postgres:123456@localhost
         ## removing test ui_test because of bug https://github.com/rust-lang/cargo/issues/10352
         run: |
           cargo nextest run \
           -E "not (package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) \
-          + test(multi_voteplan_ok_private) + test(ui_test))" \
+          + test(ui_test))" \
           --archive-file nextest-archive.tar.zst --extract-to ${{ github.workspace }} \
           --extract-overwrite --partition hash:${{ matrix.partition }}/10 --profile ci
+
+  test-results:
+    if: always()
+    runs-on: ubuntu-latest
+    name: Final test results
+    needs: catalyst-core-tests
+    steps:
+      - run: |
+          result="${{ needs.catalyst-core-tests.result }}"
+          if [[ $result == "success" ]]; then
+            exit 0
+          else
+            exit 1
+          fi
 
   cleanup-cache:
     name: Clean up run cache
@@ -232,6 +275,13 @@ jobs:
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 19
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 19
 
     - uses: jetli/wasm-pack-action@v0.3.0
       with:
@@ -259,6 +309,16 @@ jobs:
     name: Clippy
     runs-on: ubuntu-latest
     steps:
+      - name: Free disk space
+        # https://github.com/actions/virtual-environments/issues/709
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+
       - name: Checkout code
         uses: actions/checkout@v3
         with:

@@ -2,7 +2,7 @@
 
 set -o errexit -o pipefail -o noclobber -o nounset
 
-ECR_REGISTRY="432820653916.dkr.ecr.eu-central-1.amazonaws.com"
+ECR_REGISTRY="332405224602.dkr.ecr.eu-central-1.amazonaws.com"
 
 echo "Clearing existing login sessions..."
 docker logout "$ECR_REGISTRY"

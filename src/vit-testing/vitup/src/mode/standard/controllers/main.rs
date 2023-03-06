@@ -3,7 +3,7 @@ use super::{
     vit_station::{
         dump_settings_to_file, BootstrapCommandBuilder, DbGenerator,
         Error as VitStationControllerError, RestClient, ValidVotePlanParameters,
-        ValidVotingTemplateGenerator, VitStationController, STORAGE, VIT_CONFIG,
+        ValidVotingTemplateGenerator, VitStationController, VIT_CONFIG,
     },
     wallet_proxy::{Error as WalletProxyError, WalletProxyController, WalletProxySpawnParams},
 };
@@ -246,16 +246,15 @@ impl VitController {
         std::fs::DirBuilder::new().recursive(true).create(&dir)?;
 
         let config_file = dir.join(VIT_CONFIG);
-        let db_file = dir.join(STORAGE);
         dump_settings_to_file(config_file.to_str().unwrap(), settings).unwrap();
 
-        DbGenerator::new(vote_plan_parameters).build(&db_file, template_generator)?;
+        let db_url = DbGenerator::new(vote_plan_parameters).build(template_generator)?;
 
         let mut command_builder =
             BootstrapCommandBuilder::new(PathBuf::from("vit-servicing-station-server"));
         let mut command = command_builder
             .in_settings_file(&config_file)
-            .db_url(db_file.to_str().unwrap())
+            .db_url(db_url)
             .service_version(version)
             .block0_path(Some(
                 self.hersir_controller

@@ -1,0 +1,20 @@
+#!/bin/sh
+{
+  echo "{"
+  echo "	\"snapshot_service\": {"
+  echo "		\"address\": \"$SNAPSHOT_ADDRESS\""
+  echo "	},"
+  echo "	\"servicing_station\":  {"
+  echo "		\"address\": \"$SERVICING_STATION_ADDRESS\""
+  echo "	},"
+  echo "	\"parameters\": {"
+  echo "		\"min_stake_threshold\": $MIN_STAKE_THRESHOLD,"
+  echo "		\"voting_power_cap\": {"
+  echo "			\"Rational\": [\"Plus\",[$VOTING_POWER_CAP]]"
+  echo "		},"
+  echo "		\"direct_voters_group\": \"$DIRECT_GROUP\","
+  echo "		\"representatives_group\": \"$REP_GROUP\""
+  echo "	}"
+  echo "}"
+} > /config.yaml
+exec "$@"

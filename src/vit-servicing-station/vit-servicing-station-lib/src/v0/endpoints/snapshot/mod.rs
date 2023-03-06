@@ -819,12 +819,6 @@ mod test {
 
     #[tokio::test]
     async fn test_snapshot_get_tags_2() {
-        tracing_subscriber::fmt()
-            .with_max_level(Level::TRACE)
-            .with_writer(tracing_subscriber::fmt::TestWriter::new())
-            .try_init()
-            .unwrap();
-
         let key = "0000000000000000000000000000000000000000000000000000000000000000";
 
         let content_a = serde_json::to_string(&RawSnapshotInput {

@@ -102,7 +102,7 @@ pub struct QuickStartCommandArgs {
     /// is capable of quering logs, sending transactions (e.g. tallying), etc.,
     #[clap(
         long = "mode",
-        default_value = "Endless",
+        default_value = "Standard",
         value_parser = parse_mode_from_str
     )]
     pub mode: Mode,
@@ -130,7 +130,7 @@ pub struct QuickStartCommandArgs {
     #[clap(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
 
-    #[clap(long = "vitup-log-level", default_value = "LogLevel::INFO")]
+    #[clap(long = "vitup-log-level", default_value = "info")]
     pub vitup_log_level: LogLevel,
 }
 

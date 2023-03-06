@@ -3,69 +3,108 @@
   cell,
 }: let
   inherit (inputs) nixpkgs std;
-  inherit (inputs.cells.artifacts) artifacts;
   inherit (inputs.cells.lib) lib;
   l = nixpkgs.lib // builtins;
 
   package = cell.packages.jormungandr;
+in {
+  jormungandr = std.lib.ops.mkOperable {
+    inherit package;
+    debugInputs = lib.containerCommonDebug;
+    runtimeInputs = with nixpkgs; [
+      busybox # Includes nslookup
+    ];
+    runtimeScript = ''
+      echo ">>> Entering entrypoint script..."
 
-  mkOperable = namespace: let
-    artifacts' = artifacts."artifacts-${namespace}";
-  in
-    std.lib.ops.mkOperable {
-      inherit package;
-      debugInputs = lib.containerCommonDebug;
-      # TODO: Remove all the bitte stuff
-      runtimeScript = ''
-        ulimit -n 1024
-        nodeConfig="$NOMAD_TASK_DIR/node-config.json"
-        runConfig="$NOMAD_TASK_DIR/running.json"
-        runYaml="$NOMAD_TASK_DIR/running.yaml"
-        chmod u+rwx -R "$NOMAD_TASK_DIR" || true
-        function convert () {
-          chmod u+rwx -R "$NOMAD_TASK_DIR" || true
-          cp "$nodeConfig" "$runConfig"
-          remarshal --if json --of yaml "$runConfig" > "$runYaml"
-        }
-        if [ "$RESET" = "true" ]; then
-          echo "RESET is given, will start from scratch..."
-          rm -rf "$STORAGE_DIR"
-        elif [ -d "$STORAGE_DIR" ]; then
-          echo "$STORAGE_DIR found, not restoring from backup..."
-        else
-          echo "$STORAGE_DIR not found, restoring backup..."
-          restic restore latest \
-            --verbose=5 \
-            --no-lock \
-            --tag "$NAMESPACE" \
-            --target / \
-          || echo "couldn't restore backup, continue startup procedure..."
+      # Verify the storage path exists
+      if [[ ! -d "$STORAGE_PATH" ]]; then
+        echo "ERROR: storage path does not exist at: $STORAGE_PATH";
+        echo ">>> Aborting..."
+        exit 1
+      fi
+
+      # Verify config is present
+      if [[ ! -f "$NODE_CONFIG_PATH" ]]; then
+        echo "ERROR: node configuration is absent at: $NODE_CONFIG_PATH"
+        echo ">>> Aborting..."
+        exit 1
+      fi
+
+      # Verify genesis block is present
+      if [[ ! -f "$GENESIS_PATH" ]]; then
+        echo "ERROR: genesis block is absent at: $GENESIS_PATH"
+        echo ">>> Aborting..."
+        exit 1
+      fi
+
+      # Allow overriding jormungandr binary
+      BIN_PATH=''${BIN_PATH:=${l.getExe package}}
+
+      echo ">>> Using the following parameters:"
+      echo "Storage path: $STORAGE_PATH"
+      echo "Node config: $NODE_CONFIG_PATH"
+      echo "Genesis block: $GENESIS_PATH"
+      echo "Binary path: $BIN_PATH"
+
+      args+=()
+      args+=("--storage" "$STORAGE_PATH")
+      args+=("--config" "$NODE_CONFIG_PATH")
+      args+=("--genesis-block" "$GENESIS_PATH")
+
+      if [[ -n "''${LEADER:=}" ]]; then
+        echo ">>> Configuring node as leader..."
+
+        # shellcheck disable=SC2153
+        if [[ ! -f "$BFT_PATH" ]]; then
+          echo "ERROR: BFT is absent at: $BFT_PATH"
+          echo ">>> Aborting..."
+          exit 1
         fi
-        set +x
-        echo "waiting for $REQUIRED_PEER_COUNT peers"
-        until [ "$(jq -e -r '.p2p.trusted_peers | length' < "$nodeConfig" || echo 0)" -ge "$REQUIRED_PEER_COUNT" ]; do
-          sleep 1
+
+        echo ">>> Using BFT at: $BFT_PATH"
+        args+=("--secret" "$BFT_PATH")
+      fi
+
+      # Nodes will fail to start if they cannot resolve the domain names of
+      # their respective peers. If domains are used for peers, it's necessary
+      # to wait for them to resolve first before starting the node.
+      if [[ -n "''${DNS_PEERS:=}" ]]; then
+        for PEER in $DNS_PEERS
+        do
+          while ! nslookup "$PEER"; do
+              echo ">>> Waiting for $PEER to be resolvable..."
+              sleep 1
+          done
+          echo "Successfully resolved $PEER"
         done
-        set -x
-        convert
-        if [ -n "$PRIVATE" ]; then
-          echo "Running with node with secrets..."
-          exec ${l.getExe package} \
-            --storage "$STORAGE_DIR" \
-            --config "$NOMAD_TASK_DIR/running.yaml" \
-            --genesis-block "${artifacts'}/block0.bin" \
-            --secret "$NOMAD_SECRETS_DIR/bft-secret.yaml" \
-            "$@" || true
-        else
-          echo "Running with follower node..."
-          exec ${l.getExe package} \
-            --storage "$STORAGE_DIR" \
-            --config "$NOMAD_TASK_DIR/running.yaml" \
-            --genesis-block "${artifacts'}/block0.bin" \
-            "$@" || true
+      fi
+
+      # Allows resetting our footprint in persistent storage
+      if [[ -f "$STORAGE_PATH/reset" ]]; then
+        echo ">>> Reset file detected at $STORAGE_PATH/reset"
+        rm -rf "$STORAGE_PATH/reset"
+
+        if [[ -d "$STORAGE_PATH/fragments" ]]; then
+          echo ">>> Deleting $STORAGE_PATH/fragments"
+          rm -rf "$STORAGE_PATH/fragments"
         fi
-      '';
-    };
-in
-  {}
-  // lib.mapToNamespaces "jormungandr" mkOperable
+
+        if [[ -d "$STORAGE_PATH/permanent" ]]; then
+          echo ">>> Deleting $STORAGE_PATH/permanent"
+          rm -rf "$STORAGE_PATH/permanent"
+        fi
+
+        if [[ -d "$STORAGE_PATH/volatile" ]]; then
+          echo ">>> Deleting $STORAGE_PATH/volatile"
+          rm -rf "$STORAGE_PATH/volatile"
+        fi
+
+        echo ">>> Reset complete"
+      fi
+
+      echo "Starting node..."
+      exec "$BIN_PATH" "''${args[@]}"
+    '';
+  };
+}

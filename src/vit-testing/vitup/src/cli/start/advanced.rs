@@ -83,7 +83,7 @@ pub struct AdvancedStartCommandArgs {
     #[clap(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
 
-    #[clap(long = "vitup-log-level", default_value = "LogLevel::INFO")]
+    #[clap(long = "vitup-log-level", default_value = "info")]
     pub vitup_log_level: LogLevel,
 }
 

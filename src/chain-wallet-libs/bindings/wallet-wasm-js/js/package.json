@@ -1,6 +1,6 @@
 {
   "name": "@catalyst-core/wallet-js",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "description": "Jormungandr wallet capabilities for Javascript",
   "main": "index.js",
   "types": "index.d.ts",
@@ -11,6 +11,6 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
-    "@catalyst-core/wallet-wasm-js": "0.8.4"
+    "@catalyst-core/wallet-wasm-js": "0.8.5"
   }
 }

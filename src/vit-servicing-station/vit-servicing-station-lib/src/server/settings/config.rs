@@ -15,7 +15,7 @@ const CORS_ALLOWED_ORIGINS: &str = "CORS_ALLOWED_ORIGINS";
 const VIT_SERVICE_VERSION_ENV_VARIABLE: &str = "SERVICE_VERSION";
 
 pub(crate) const ADDRESS_DEFAULT: &str = "0.0.0.0:3030";
-pub(crate) const DB_URL_DEFAULT: &str = "./db/database.sqlite3";
+pub(crate) const DB_URL_DEFAULT: &str = "postgres://localhost";
 pub(crate) const BLOCK0_PATH_DEFAULT: &str = "./resources/v0/block0.bin";
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Parser)]
@@ -452,7 +452,7 @@ mod test {
             "--priv-key-file",
             "bar.foo",
             "--db-url",
-            "database.sqlite3",
+            "postgres://localhost",
             "--max-age-secs",
             "60",
             "--allowed-origins",
@@ -475,7 +475,7 @@ mod test {
         assert!(settings.enable_api_tokens);
         assert_eq!(settings.tls.cert_file.unwrap(), "foo.bar");
         assert_eq!(settings.tls.priv_key_file.unwrap(), "bar.foo");
-        assert_eq!(settings.db_url, "database.sqlite3");
+        assert_eq!(settings.db_url, "postgres://localhost");
         assert_eq!(settings.cors.max_age_secs.unwrap(), 60);
         assert_eq!(settings.service_version, "v0.2.0");
         let allowed_origins = settings.cors.allowed_origins.unwrap();
@@ -494,7 +494,7 @@ mod test {
     #[test]
     fn load_settings_from_env() {
         use std::env::set_var;
-        set_var(DATABASE_URL, "database.sqlite3");
+        set_var(DATABASE_URL, "postgres://localhost");
         set_var(TLS_CERT_FILE, "foo.bar");
         set_var(TLS_PRIVATE_KEY_FILE, "bar.foo");
         set_var(
@@ -519,7 +519,7 @@ mod test {
         assert!(settings.tls.is_loaded());
         assert_eq!(settings.tls.cert_file.unwrap(), "foo.bar");
         assert_eq!(settings.tls.priv_key_file.unwrap(), "bar.foo");
-        assert_eq!(settings.db_url, "database.sqlite3");
+        assert_eq!(settings.db_url, "postgres://localhost");
         assert_eq!(settings.cors.max_age_secs.unwrap(), 60);
         assert_eq!(settings.service_version, "v0.2.0");
         let allowed_origins = settings.cors.allowed_origins.unwrap();
@@ -542,7 +542,7 @@ mod test {
             "--priv-key-file",
             "bar.foo",
             "--db-url",
-            "database.sqlite3",
+            "postgres://localhost",
             "--max-age-secs",
             "60",
             "--allowed-origins",

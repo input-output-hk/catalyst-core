@@ -16,10 +16,6 @@ impl DeploymentTree {
         self.root.clone()
     }
 
-    pub fn database_path(&self) -> PathBuf {
-        self.root.join("database.sqlite3")
-    }
-
     pub fn genesis_path(&self) -> PathBuf {
         self.root.join("genesis.yaml")
     }

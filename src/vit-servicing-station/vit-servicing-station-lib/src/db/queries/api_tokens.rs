@@ -6,7 +6,6 @@ use crate::db::{
 };
 use crate::v0::api_token::ApiToken;
 use crate::v0::errors::HandleError;
-use crate::{execute_q, q};
 use diesel::query_dsl::RunQueryDsl;
 use diesel::{ExpressionMethods, Insertable, OptionalExtension, QueryDsl, QueryResult};
 use time::{Duration, OffsetDateTime};
@@ -48,57 +47,52 @@ pub fn query_token_data_by_token(
     raw_token: &[u8],
     db_conn: &DbConnection,
 ) -> Result<Option<api_token_model::ApiTokenData>, diesel::result::Error> {
-    q!(
-        db_conn,
-        api_tokens_dsl
-            .filter(api_tokens::token.eq(raw_token))
-            .first::<api_token_model::ApiTokenData>(db_conn)
-            .optional()
-    )
+    api_tokens_dsl
+        .filter(api_tokens::token.eq(raw_token))
+        .first::<api_token_model::ApiTokenData>(db_conn)
+        .optional()
 }
 
 pub fn insert_token_data(token_data: ApiTokenData, db_conn: &DbConnection) -> QueryResult<usize> {
-    q!(
-        db_conn,
-        diesel::insert_into(api_tokens::table)
-            .values(token_data.values())
-            .execute(db_conn)
-    )
+    diesel::insert_into(api_tokens::table)
+        .values(token_data.values())
+        .execute(db_conn)
 }
 
 pub fn batch_insert_token_data(
     tokens_data: &[ApiTokenData],
     db_conn: &DbConnection,
 ) -> QueryResult<usize> {
-    execute_q!(
-        db_conn,
-        diesel::insert_into(api_tokens::table).values(
+    diesel::insert_into(api_tokens::table)
+        .values(
             tokens_data
                 .iter()
                 .map(|t| t.clone().values())
                 .collect::<Vec<_>>(),
         )
-    )
+        .execute(db_conn)
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::db::{
-        load_db_connection_pool, migrations as db_testing, models::api_tokens::ApiTokenData,
-        DbConnectionPool,
+    use crate::{
+        db::{migrations as db_testing, models::api_tokens::ApiTokenData},
+        v0::context::test::new_db_test_shared_context,
     };
 
     #[tokio::test]
     async fn api_token_insert_and_retrieve() {
         // initialize db
-        let pool: DbConnectionPool = load_db_connection_pool("").unwrap();
+        let ctx = new_db_test_shared_context();
+        let pool = &ctx.read().await.db_connection_pool;
+
         db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
 
         // checks
         let token = ApiToken::new(b"foo_bar_zen".to_vec());
-        insert_token(&token, &pool).await.unwrap();
-        let token_data: ApiTokenData = query_token(token.clone(), &pool).await.unwrap().unwrap();
+        insert_token(&token, pool).await.unwrap();
+        let token_data: ApiTokenData = query_token(token.clone(), pool).await.unwrap().unwrap();
         assert_eq!(token_data.token, token);
     }
 }

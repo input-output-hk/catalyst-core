@@ -2,6 +2,8 @@
 
 set -o errexit -o pipefail -o noclobber -o nounset
 
+ECR_REGISTRY="332405224602.dkr.ecr.eu-central-1.amazonaws.com"
+
 help() {
     echo "Usage: $(basename "$0") [-hl] image_name"
     echo
@@ -17,6 +19,15 @@ list_images() {
 push_image() {
     system="$(nix eval --raw --impure --expr 'builtins.currentSystem')"
     nix run ".#containers.$system.$1.copyToRegistry"
+}
+
+write_image_hash() {
+    system="$(nix eval --raw --impure --expr 'builtins.currentSystem')"
+    store=$(nix eval --json ".#containers.$system" | jq -r --arg name "$1" '.[$name]')
+    hash=$(echo "$store" | cut -d '-' -f 1 | cut -d '/' -f 4)
+
+    echo ">>> The image is available at the following location:"
+    echo "$ECR_REGISTRY/$1:$hash"
 }
 
 while getopts ':hl' option; do
@@ -44,4 +55,8 @@ if [[ $# -ne 1 ]]; then
     exit 1
 fi
 
+echo ">>> Pushing image $1 to $ECR_REGISTRY"
 push_image "$1"
+
+echo ">>> Done!"
+write_image_hash "$1"

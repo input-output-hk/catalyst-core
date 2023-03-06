@@ -7,7 +7,7 @@ pub mod utils;
 macro_rules! cond_println {
     ($cond:expr, $($arg:tt)*) => {
         if $cond {
-            println!($($arg)*);
+            tracing::debug!($($arg)*);
         }
     };
 }

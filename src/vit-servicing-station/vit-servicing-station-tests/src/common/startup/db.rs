@@ -1,4 +1,3 @@
-use assert_fs::{fixture::PathChild, TempDir};
 use diesel::RunQueryDsl;
 use rand::Rng;
 use std::path::Path;
@@ -16,8 +15,6 @@ use crate::common::{
 };
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
-
-const VIT_STATION_DB: &str = "vit_station.db";
 
 pub struct DbBuilder {
     tokens: Option<Vec<ApiTokenData>>,
@@ -128,11 +125,11 @@ impl DbBuilder {
         Ok(())
     }
 
-    pub fn build(&self, temp_dir: &TempDir) -> Result<String, DbBuilderError> {
+    pub fn build(&self) -> Result<String, DbBuilderError> {
         let db_url = match std::env::var("TEST_DATABASE_URL") {
             Ok(u) => u,
             Err(std::env::VarError::NotPresent) => {
-                temp_dir.child(VIT_STATION_DB).display().to_string()
+                return Err(DbBuilderError::MissingDatabaseUrlEnvVar)
             }
             Err(e) => return Err(DbBuilderError::DatabaseUrlEnvVar(e)),
         };
@@ -142,26 +139,22 @@ impl DbBuilder {
             let connection = pool.get().unwrap();
 
             // create a new database to use when testing
-            if let DbConnection::Postgres(conn) = &connection {
-                let tmp_db_name = rand::thread_rng()
-                    .sample_iter(rand::distributions::Alphanumeric)
-                    .filter(char::is_ascii_alphabetic)
-                    .take(8)
-                    .collect::<String>()
-                    .to_lowercase();
+            let tmp_db_name = rand::thread_rng()
+                .sample_iter(rand::distributions::Alphanumeric)
+                .filter(char::is_ascii_alphabetic)
+                .take(8)
+                .collect::<String>()
+                .to_lowercase();
 
-                diesel::sql_query(format!("CREATE DATABASE {}", tmp_db_name))
-                    .execute(conn)
-                    .unwrap();
+            diesel::sql_query(format!("CREATE DATABASE {}", tmp_db_name))
+                .execute(&connection)
+                .unwrap();
 
-                // reconnect to the created database
-                let db_url = format!("{}/{}", db_url, tmp_db_name);
-                let pool = vit_servicing_station_lib::db::load_db_connection_pool(&db_url).unwrap();
+            // reconnect to the created database
+            let db_url = format!("{}/{}", db_url, tmp_db_name);
+            let pool = vit_servicing_station_lib::db::load_db_connection_pool(&db_url).unwrap();
 
-                (db_url, pool.get().unwrap())
-            } else {
-                (db_url, connection)
-            }
+            (db_url, pool.get().unwrap())
         };
 
         vit_servicing_station_lib::db::migrations::initialize_db_with_migration(&connection)?;
@@ -201,6 +194,8 @@ impl Default for DbBuilder {
 
 #[derive(Error, Debug)]
 pub enum DbBuilderError {
+    #[error("missing TEST_DATABASE_URL env var")]
+    MissingDatabaseUrlEnvVar,
     #[error("failed to read database url env var")]
     DatabaseUrlEnvVar(#[from] std::env::VarError),
     #[error("cannot insert data")]
@@ -210,7 +205,5 @@ pub enum DbBuilderError {
     #[error("Cannot initialize on temp directory")]
     CannotExtractTempPath,
     #[error("migration errors")]
-    MigrationsError(
-        #[from] vit_servicing_station_lib::db::migrations::InitializeDbWithMigrationError,
-    ),
+    MigrationsError(#[from] diesel_migrations::RunMigrationsError),
 }

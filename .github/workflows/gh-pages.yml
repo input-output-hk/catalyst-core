@@ -2,9 +2,6 @@ name: GitHub Pages
 
 on: [push, pull_request]
 
-permissions:
-  contents: read
-
 jobs:
   deploy:
     name: Deploy GitHub Pages

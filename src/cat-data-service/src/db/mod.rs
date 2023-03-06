@@ -1,5 +1,6 @@
 use self::snapshot::{Delegation, Delegator, SnapshotDb, SnapshotVersions, Voter, VoterInfo};
 
+pub mod fund;
 pub mod snapshot;
 
 pub trait DB: SnapshotDb {}

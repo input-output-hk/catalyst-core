@@ -15,6 +15,17 @@
 <span id="15">15</span>
 <span id="16">16</span>
 <span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">use </span>axum::Router;
@@ -23,14 +34,25 @@
 
 <span class="kw">mod </span>chalenges;
 <span class="kw">mod </span>fund;
+<span class="kw">mod </span>proposals;
+<span class="kw">mod </span>reviews;
 <span class="kw">mod </span>snapshot;
 
 <span class="kw">pub fn </span>v0&lt;State: DB + Send + Sync + <span class="lifetime">&#39;static</span>&gt;(state: Arc&lt;State&gt;) -&gt; Router {
     <span class="kw">let </span>snapshot = snapshot::snapshot(state);
     <span class="kw">let </span>fund = fund::fund();
     <span class="kw">let </span>chalenges = chalenges::chalenges();
+    <span class="kw">let </span>proposals = proposals::proposals();
+    <span class="kw">let </span>reviews = reviews::reviews();
 
-    Router::new().nest(<span class="string">&quot;/v0&quot;</span>, snapshot.merge(fund).merge(chalenges))
+    Router::new().nest(
+        <span class="string">&quot;/v0&quot;</span>,
+        snapshot
+            .merge(fund)
+            .merge(chalenges)
+            .merge(proposals)
+            .merge(reviews),
+    )
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="cat_data_service" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

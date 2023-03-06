@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["proposal_by_and_by_voter_group_id_exec",""],["proposals",""],["proposals_by_voter_group_id_exec",""],["proposals_exec",""]]};

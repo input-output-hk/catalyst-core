@@ -1,6 +1,6 @@
 # Voting Node Service
 
-This service acts as a wrapper around a `jormungandr`, interacting with the Election DB to gather the necessary so that the node can join in the network.
+This service acts as a wrapper around a `jormungandr`, interacting with the Event DB to gather the necessary so that the node can join in the network.
 
 
 # Running locally
@@ -12,7 +12,7 @@ This service acts as a wrapper around a `jormungandr`, interacting with the Elec
 * jormungandr
 * jcli
 
-Access to postgres with Election DB.
+Access to postgres with Event DB.
 
 1. Get a working copy of the repository and change into the new directory.
 

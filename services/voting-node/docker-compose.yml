@@ -11,7 +11,7 @@ services:
       - VOTING_PORT=5057
       - VOTING_LOG_LEVEL=debug
       - VOTING_NODE_STORAGE=/node_storage
-      - DATABASE_URL=postgres://catalyst-dev:CHANGE_ME@postgres/CatalystDev
+      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
       - JORM_PATH=/usr/local/bin/jormungandr
       - JCLI_PATH=/usr/local/bin/jcli
       - JORM_REST_PORT=5067
@@ -31,7 +31,7 @@ services:
       - VOTING_PORT=5057
       - VOTING_LOG_LEVEL=info
       - VOTING_NODE_STORAGE=/node_storage
-      - DATABASE_URL=postgres://catalyst-dev:CHANGE_ME@postgres/CatalystDev
+      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
       - JORM_PATH=/usr/local/bin/jormungandr
       - JCLI_PATH=/usr/local/bin/jcli
       - JORM_REST_PORT=5067
@@ -51,7 +51,7 @@ services:
       - VOTING_PORT=5057
       - VOTING_LOG_LEVEL=debug
       - VOTING_NODE_STORAGE=/node_storage
-      - DATABASE_URL=postgres://catalyst-dev:CHANGE_ME@postgres/CatalystDev
+      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
       - JORM_PATH=/usr/local/bin/jormungandr
       - JCLI_PATH=/usr/local/bin/jcli
       - JORM_REST_PORT=5067
@@ -65,12 +65,12 @@ services:
     image: postgres:latest
     environment:
       - POSTGRES_PASSWORD=CHANGE_ME
-      - POSTGRES_USER=catalyst-dev
-      - POSTGRES_DB=CatalystDev
+      - POSTGRES_USER=catalyst-event-dev
+      - POSTGRES_DB=CatalystEventDev
     ports:
       - "5432:5432"
     volumes:
-      - electiondb:/var/lib/postgresql/data
+      - eventdb:/var/lib/postgresql/data
 
   otel-collector:
     image: otel/opentelemetry-collector:latest
@@ -113,7 +113,7 @@ services:
       - ./datasource.yml:/etc/grafana/provisioning/datasource.yml
 
 volumes:
-  electiondb:
+  eventdb:
   leader0_store:
   leader1_store:
   leader2_store:

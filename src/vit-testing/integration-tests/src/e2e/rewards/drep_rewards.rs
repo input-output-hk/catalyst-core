@@ -36,10 +36,10 @@ pub fn drep_rewards_happy_path() {
 
     let testing_directory = TempDir::new().unwrap().into_persistent();
 
-    let drep1_wallet = CardanoWallet::new(1000);
-    let drep2_wallet = CardanoWallet::new(1000);
-    let drep3_wallet = CardanoWallet::new(1000);
-    let drep4_wallet = CardanoWallet::new(1000);
+    let drep1_wallet = CardanoWallet::new(STAKE);
+    let drep2_wallet = CardanoWallet::new(STAKE);
+    let drep3_wallet = CardanoWallet::new(STAKE);
+    let drep4_wallet = CardanoWallet::new(STAKE);
 
     let alice_wallet = CardanoWallet::new(STAKE);
     let bob_wallet = CardanoWallet::new(STAKE);

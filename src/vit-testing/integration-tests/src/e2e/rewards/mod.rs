@@ -1,2 +1,2 @@
-mod voter_rewards;
 mod drep_rewards;
+mod voter_rewards;

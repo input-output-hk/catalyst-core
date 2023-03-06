@@ -16,9 +16,9 @@ use mainnet_lib::{wallet_state::MainnetWalletStateBuilder, MainnetNetworkBuilder
 use snapshot_lib::VotingGroup;
 use snapshot_trigger_service::config::JobParameters;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
+use vitup::config::Role;
 use vitup::config::VoteBlockchainTime;
 use vitup::config::{Block0Initials, ConfigBuilder};
-use vitup::config::{Role};
 use vitup::testing::spawn_network;
 use vitup::testing::vitup_setup;
 
@@ -78,7 +78,7 @@ pub fn drep_rewards_happy_path() {
             copy.hir.voting_group = rep_voting_group.clone();
             snapshot_doctored_copy.push(copy.clone());
             drep_hirs.push(copy.clone().hir.voting_key)
-        } else{
+        } else {
             snapshot_doctored_copy.push(voter_info);
         }
     }
@@ -115,7 +115,7 @@ pub fn drep_rewards_happy_path() {
         network_params,
         &mut template_generator,
     )
-        .unwrap();
+    .unwrap();
 
     let mut drep1 = iapyx_from_mainnet(&drep1_wallet, &wallet_proxy).unwrap();
     let mut drep2 = iapyx_from_mainnet(&drep2_wallet, &wallet_proxy).unwrap();
@@ -129,37 +129,37 @@ pub fn drep_rewards_happy_path() {
     );
     let vote_plan = controller.defined_vote_plan(&voteplan_alias).unwrap();
 
-    drep1.vote_for(vote_plan.id(), 0, Vote::Yes as u8).unwrap();
+    drep1.vote_for(&vote_plan.id(), 0, Vote::Yes as u8).unwrap();
 
-    drep1.vote_for(vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+    drep1.vote_for(&vote_plan.id(), 1, Vote::Yes as u8).unwrap();
 
-    drep1.vote_for(vote_plan.id(), 2, Vote::Yes as u8).unwrap();
+    drep1.vote_for(&vote_plan.id(), 2, Vote::Yes as u8).unwrap();
 
-    drep1.vote_for(vote_plan.id(), 3, Vote::Yes as u8).unwrap();
+    drep1.vote_for(&vote_plan.id(), 3, Vote::Yes as u8).unwrap();
 
-    drep2.vote_for(vote_plan.id(), 0, Vote::Yes as u8).unwrap();
+    drep2.vote_for(&vote_plan.id(), 0, Vote::Yes as u8).unwrap();
 
-    drep2.vote_for(vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+    drep2.vote_for(&vote_plan.id(), 1, Vote::Yes as u8).unwrap();
 
-    drep2.vote_for(vote_plan.id(), 2, Vote::Yes as u8).unwrap();
+    drep2.vote_for(&vote_plan.id(), 2, Vote::Yes as u8).unwrap();
 
-    drep2.vote_for(vote_plan.id(), 3, Vote::Yes as u8).unwrap();
+    drep2.vote_for(&vote_plan.id(), 3, Vote::Yes as u8).unwrap();
 
-    drep3.vote_for(vote_plan.id(), 0, Vote::Yes as u8).unwrap();
+    drep3.vote_for(&vote_plan.id(), 0, Vote::Yes as u8).unwrap();
 
-    drep3.vote_for(vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+    drep3.vote_for(&vote_plan.id(), 1, Vote::Yes as u8).unwrap();
 
-    drep3.vote_for(vote_plan.id(), 2, Vote::Yes as u8).unwrap();
+    drep3.vote_for(&vote_plan.id(), 2, Vote::Yes as u8).unwrap();
 
-    drep3.vote_for(vote_plan.id(), 3, Vote::Yes as u8).unwrap();
+    drep3.vote_for(&vote_plan.id(), 3, Vote::Yes as u8).unwrap();
 
-    drep4.vote_for(vote_plan.id(), 0, Vote::Yes as u8).unwrap();
+    drep4.vote_for(&vote_plan.id(), 0, Vote::Yes as u8).unwrap();
 
-    drep4.vote_for(vote_plan.id(), 1, Vote::Yes as u8).unwrap();
+    drep4.vote_for(&vote_plan.id(), 1, Vote::Yes as u8).unwrap();
 
-    drep4.vote_for(vote_plan.id(), 2, Vote::Yes as u8).unwrap();
+    drep4.vote_for(&vote_plan.id(), 2, Vote::Yes as u8).unwrap();
 
-    drep4.vote_for(vote_plan.id(), 3, Vote::Yes as u8).unwrap();
+    drep4.vote_for(&vote_plan.id(), 3, Vote::Yes as u8).unwrap();
 
     let target_date = BlockDate {
         epoch: 1,
@@ -222,17 +222,14 @@ pub fn drep_rewards_happy_path() {
                 .collect(),
             proposals,
         )
-            .unwrap(),
+        .unwrap(),
         TOTAL_REWARD.into(),
-    ).unwrap();
+    )
+    .unwrap();
 
     for drep in drep_hirs {
         assert_eq!(
-            records
-                .iter()
-                .find(|(x, _y)| **x == drep)
-                .unwrap()
-                .1,
+            records.iter().find(|(x, _y)| **x == drep).unwrap().1,
             &EXPECTED_REWARD.into()
         );
     }

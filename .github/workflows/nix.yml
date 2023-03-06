@@ -42,13 +42,8 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
-        with:
-          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
-
       - name: Standard Discovery
-        uses: divnix/std-action/discover@ee2bde0566b88637cbf47b8efedb6a5063caadd1 # v0.0.4
+        uses: divnix/std-action/discover@v0.0.4
         id: discovery
   build-packages:
     needs: discover
@@ -59,17 +54,12 @@ jobs:
     name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
     runs-on: ubuntu-latest
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
-        with:
-          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
-
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838 # v1.7.0
+        uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      - uses: divnix/std-action/run@ee2bde0566b88637cbf47b8efedb6a5063caadd1 # v0.0.4
+      - uses: divnix/std-action/run@v0.0.4
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}
@@ -85,17 +75,12 @@ jobs:
     name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
     runs-on: ubuntu-latest
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
-        with:
-          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
-
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838 # v1.7.0
+        uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      - uses: divnix/std-action/run@ee2bde0566b88637cbf47b8efedb6a5063caadd1 # v0.0.4
+      - uses: divnix/std-action/run@v0.0.4
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}
@@ -114,20 +99,15 @@ jobs:
     name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
     runs-on: ubuntu-latest
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@c8454efe5d0bdefd25384362fe217428ca277d57 # v2.2.0
-        with:
-          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
-
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838 # v1.7.0
+        uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
       - name: Configure Registry
         run: |
           aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin "${{ env.ECR_REGISTRY }}"
-      - uses: divnix/std-action/run@ee2bde0566b88637cbf47b8efedb6a5063caadd1 # v0.0.4
+      - uses: divnix/std-action/run@v0.0.4
         with:
           extra_nix_config: |
             ${{ needs.discover.outputs.nix_conf }}

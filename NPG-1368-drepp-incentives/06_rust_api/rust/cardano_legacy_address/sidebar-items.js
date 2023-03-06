@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["AddressMatchXPub",""],["ParseExtendedAddrError",""]],"struct":[["Addr","A valid cardano Address that is displayed in base58"],["Attributes",""],["ExtendedAddr","A valid cardano address deconstructed"]]};

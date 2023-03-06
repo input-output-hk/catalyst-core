@@ -1,41 +1,41 @@
 use serde::Serialize;
 
-#[derive(Serialize, Clone)]
-pub struct SnapshotVersions(pub Vec<String>);
+#[derive(Serialize, Clone, Default)]
+pub struct SnapshotVersions(Vec<String>);
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Clone, Default)]
 pub struct VoterInfo {
-    pub voting_power: u64,
-    pub voting_group: String,
-    pub delegations_power: u64,
-    pub delegations_count: u64,
-    pub voting_power_saturation: f64,
+    voting_power: u64,
+    voting_group: String,
+    delegations_power: u64,
+    delegations_count: u64,
+    voting_power_saturation: f64,
 }
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Clone, Default)]
 pub struct Voter {
-    pub voter_info: VoterInfo,
-    pub as_at: String,
-    pub last_updated: String,
-    pub r#final: bool,
+    voter_info: VoterInfo,
+    as_at: String,
+    last_updated: String,
+    r#final: bool,
 }
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Clone, Default)]
 pub struct Delegation {
-    pub voting_key: String,
-    pub group: String,
-    pub weight: u64,
-    pub value: u64,
+    voting_key: String,
+    group: String,
+    weight: u64,
+    value: u64,
 }
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Clone, Default)]
 pub struct Delegator {
-    pub delegations: Vec<Delegation>,
-    pub raw_power: u64,
-    pub total_power: u64,
-    pub as_at: String,
-    pub last_updated: String,
-    pub r#final: bool,
+    delegations: Vec<Delegation>,
+    raw_power: u64,
+    total_power: u64,
+    as_at: String,
+    last_updated: String,
+    r#final: bool,
 }
 
 pub trait SnapshotDb {

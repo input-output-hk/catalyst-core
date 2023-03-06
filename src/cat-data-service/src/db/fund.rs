@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Default)]
 pub struct VotePlan {
     id: i32,
     chain_voteplan_id: String,
@@ -12,18 +12,18 @@ pub struct VotePlan {
     voting_token: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Default)]
 pub struct VoterGroup {
     id: String,
     voting_token: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Default)]
 pub struct Highlights {
     sponsor: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Default)]
 pub struct Challenge {
     id: i32,
     challenge_type: String,
@@ -35,14 +35,14 @@ pub struct Challenge {
     highlights: Highlights,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Default)]
 pub struct Goal {
     id: i32,
     goal_name: String,
     fund_id: i32,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Default)]
 pub struct Fund {
     id: i32,
     fund_name: String,
@@ -69,6 +69,15 @@ pub struct Fund {
     voting_start: String,
     voting_end: String,
     tallying_end: String,
+}
+
+#[derive(Serialize, Clone, Default)]
+pub struct FundIDs(Vec<i32>);
+
+pub trait FundDb {
+    fn get_current_fund(&self) -> Fund;
+    fn get_fund_by_id(&self, id: i32) -> Fund;
+    fn get_fund_ids(&self) -> FundIDs;
 }
 
 #[cfg(test)]
@@ -166,6 +175,16 @@ mod tests {
             tallying_end: "tallying_end".to_string(),
         };
         let json = serde_json::to_string(&fund).unwrap();
-        assert_eq!(json, r#"{"id":0,"fund_name":"fund_name","fund_goal":"fund_goal","voting_power_info":"voting_power_info","voting_power_threshold":0,"rewards_info":"rewards_info","fund_start_time":"fund_start_time","fund_end_time":"fund_end_time","next_fund_start_time":"next_fund_start_time","registration_snapshot_time":"registration_snapshot_time","next_registration_snapshot_time":"next_registration_snapshot_time","chain_vote_plans":[],"groups":[],"challenges":[],"goals":[],"insight_sharing_start":"insight_sharing_start","proposal_submission_start":"proposal_submission_start","refine_proposals_start":"refine_proposals_start","finalize_proposals_start":"finalize_proposals_start","proposal_assessment_start":"proposal_assessment_start","assessment_qa_start":"assessment_qa_start","snapshot_start":"snapshot_start","voting_start":"voting_start","voting_end":"voting_end","tallying_end":"tallying_end"}"#);
+        assert_eq!(
+            json,
+            r#"{"id":0,"fund_name":"fund_name","fund_goal":"fund_goal","voting_power_info":"voting_power_info","voting_power_threshold":0,"rewards_info":"rewards_info","fund_start_time":"fund_start_time","fund_end_time":"fund_end_time","next_fund_start_time":"next_fund_start_time","registration_snapshot_time":"registration_snapshot_time","next_registration_snapshot_time":"next_registration_snapshot_time","chain_vote_plans":[],"groups":[],"challenges":[],"goals":[],"insight_sharing_start":"insight_sharing_start","proposal_submission_start":"proposal_submission_start","refine_proposals_start":"refine_proposals_start","finalize_proposals_start":"finalize_proposals_start","proposal_assessment_start":"proposal_assessment_start","assessment_qa_start":"assessment_qa_start","snapshot_start":"snapshot_start","voting_start":"voting_start","voting_end":"voting_end","tallying_end":"tallying_end"}"#
+        );
+    }
+
+    #[test]
+    fn fund_ids_json_test() {
+        let fund_ids = FundIDs(vec![0, 1]);
+        let json = serde_json::to_string(&fund_ids).unwrap();
+        assert_eq!(json, r#"[0,1]"#);
     }
 }

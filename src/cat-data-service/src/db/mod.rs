@@ -1,48 +1,20 @@
-use self::snapshot::{Delegation, Delegator, SnapshotDb, SnapshotVersions, Voter, VoterInfo};
+use self::{
+    fund::{Fund, FundDb, FundIDs},
+    snapshot::{Delegator, SnapshotDb, SnapshotVersions, Voter},
+};
 
 pub mod fund;
 pub mod snapshot;
 
-pub trait DB: SnapshotDb {}
+pub trait DB: SnapshotDb + FundDb {}
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct MockedDB {
-    pub voter: Voter,
-    pub delegator: Delegator,
-    pub snapshot_versions: SnapshotVersions,
-}
-
-impl Default for MockedDB {
-    fn default() -> Self {
-        Self {
-            snapshot_versions: SnapshotVersions(vec!["latest".to_string(), "fund 10".to_string()]),
-            voter: Voter {
-                voter_info: VoterInfo {
-                    voting_power: 100,
-                    voting_group: "rep".to_string(),
-                    delegations_power: 100,
-                    delegations_count: 1,
-                    voting_power_saturation: 0.4,
-                },
-                as_at: "today".to_string(),
-                last_updated: "today".to_string(),
-                r#final: true,
-            },
-            delegator: Delegator {
-                delegations: vec![Delegation {
-                    voting_key: "voter".to_string(),
-                    group: "rep".to_string(),
-                    weight: 5,
-                    value: 100,
-                }],
-                raw_power: 100,
-                total_power: 1000,
-                as_at: "today".to_string(),
-                last_updated: "today".to_string(),
-                r#final: true,
-            },
-        }
-    }
+    voter: Voter,
+    delegator: Delegator,
+    snapshot_versions: SnapshotVersions,
+    fund: Fund,
+    fund_ids: FundIDs,
 }
 
 impl SnapshotDb for MockedDB {
@@ -54,6 +26,18 @@ impl SnapshotDb for MockedDB {
     }
     fn get_delegator(&self, _event: String, _stake_public_key: String) -> Delegator {
         self.delegator.clone()
+    }
+}
+
+impl FundDb for MockedDB {
+    fn get_current_fund(&self) -> Fund {
+        self.fund.clone()
+    }
+    fn get_fund_by_id(&self, _id: i32) -> Fund {
+        self.fund.clone()
+    }
+    fn get_fund_ids(&self) -> FundIDs {
+        self.fund_ids.clone()
     }
 }
 

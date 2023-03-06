@@ -20,10 +20,7 @@ pub fn snapshot<State: SnapshotDb + Send + Sync + 'static>(state: Arc<State>) ->
         )
         .route(
             "/snapshot/delegator/:event/:stake_public_key",
-            get({
-                let state = state.clone();
-                move |path| delegator_exec(path, state)
-            }),
+            get(move |path| delegator_exec(path, state)),
         )
 }
 

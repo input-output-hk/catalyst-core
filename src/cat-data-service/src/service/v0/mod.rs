@@ -11,8 +11,8 @@ mod reviews;
 mod snapshot;
 
 pub fn v0<State: DB + Send + Sync + 'static>(state: Arc<State>) -> Router {
-    let snapshot = snapshot::snapshot(state);
-    let fund = fund::fund();
+    let snapshot = snapshot::snapshot(state.clone());
+    let fund = fund::fund(state);
     let chalenges = chalenges::chalenges();
     let proposals = proposals::proposals();
     let reviews = reviews::reviews();

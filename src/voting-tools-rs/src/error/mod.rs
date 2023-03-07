@@ -53,21 +53,11 @@ pub enum RegistrationError {
     #[error("stake key has wrong type: {0}, expected 14 or 15")]
     StakeKeyWrongType(u8),
 
-    #[error(
-        "stake public key error {err}"
-    )]
-    StakePublicKeyError {
-        err: String,
-    },
+    #[error("stake public key error {err}")]
+    StakePublicKeyError { err: String },
 
-    #[error(
-        "signature error {err}"
-    )]
-    SignatureError {
-        err: String,
-    },
-
-
+    #[error("signature error {err}")]
+    SignatureError { err: String },
 }
 
 /// A registration that failed validation, along with the error

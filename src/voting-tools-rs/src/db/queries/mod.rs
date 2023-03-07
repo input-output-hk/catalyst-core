@@ -16,10 +16,7 @@ impl DataProvider for Db {
         self.vote_registrations(lower, upper)
     }
 
-    fn stake_values(
-        &self,
-        stake_addrs: &[StakeKeyHex],
-    ) -> DashMap<StakeKeyHex, BigDecimal> {
+    fn stake_values(&self, stake_addrs: &[StakeKeyHex]) -> DashMap<StakeKeyHex, BigDecimal> {
         self.stake_values(stake_addrs)
     }
 }

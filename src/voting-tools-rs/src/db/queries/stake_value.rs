@@ -1,4 +1,4 @@
-use std::sync::atomic::{Ordering, AtomicU64};
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use bigdecimal::BigDecimal;
 use color_eyre::Report;
@@ -23,17 +23,12 @@ impl Db {
     /// # Errors
     ///
     /// Will return an error not at all.  TODO, don't return Result.
-    pub fn stake_values(
-        &self,
-        stake_addrs: &[StakeKeyHex],
-    ) -> DashMap<StakeKeyHex, BigDecimal> {
-
+    pub fn stake_values(&self, stake_addrs: &[StakeKeyHex]) -> DashMap<StakeKeyHex, BigDecimal> {
         let rows = stake_addrs.par_iter().map(|addr| {
             let hex = hex::encode(&addr.0);
             let result = self.exec(|conn| query(hex).load(conn))?;
             Ok::<_, Report>((addr.clone(), result))
         });
-
 
         let max_rows = rows.len();
 
@@ -50,25 +45,26 @@ impl Db {
 
         let row_count = AtomicU64::new(0);
 
-        rows.into_par_iter().for_each(|row| {
-            match row {
-                Ok(row) => {
+        rows.into_par_iter().for_each(|row| match row {
+            Ok(row) => {
+                let current_row = row_count.fetch_add(1, Ordering::SeqCst).saturating_add(1);
+                let row_pct = current_row
+                    .saturating_mul(100)
+                    .saturating_div(max_rows as u64);
 
-                    let current_row = row_count.fetch_add(1, Ordering::SeqCst).saturating_add(1);
-                    let row_pct =  current_row.saturating_mul(100).saturating_div(max_rows as u64);
-
-                    if current_row % 100 == 0 {
-                        info!("Stake Keys Processed: {current_row}/{max_rows} ({row_pct}%)");
-                    }
-                    let (addr, values) = row;
-                    let sum: BigDecimal = values.iter().sum();
-                    *result.entry(addr).or_insert_with(|| BigDecimal::from(0)) += sum;
-                },
-                Err(row) => {
-                    let current_row = row_count.fetch_add(1, Ordering::SeqCst).saturating_add(1);
-                    let row_pct =  current_row.saturating_mul(100).saturating_div(max_rows as u64);
-                    error!("Error on row: {current_row}/{max_rows} ({row_pct}%) :- {row}");
+                if current_row % 100 == 0 {
+                    info!("Stake Keys Processed: {current_row}/{max_rows} ({row_pct}%)");
                 }
+                let (addr, values) = row;
+                let sum: BigDecimal = values.iter().sum();
+                *result.entry(addr).or_insert_with(|| BigDecimal::from(0)) += sum;
+            }
+            Err(row) => {
+                let current_row = row_count.fetch_add(1, Ordering::SeqCst).saturating_add(1);
+                let row_pct = current_row
+                    .saturating_mul(100)
+                    .saturating_div(max_rows as u64);
+                error!("Error on row: {current_row}/{max_rows} ({row_pct}%) :- {row}");
             }
         });
 
@@ -99,5 +95,4 @@ fn query(stake_addr: String) -> impl DbQuery<'static, BigDecimal> {
         .filter(stake_address::hash_raw.eq(decode(stake_addr, "hex")));
 
     result
-
 }

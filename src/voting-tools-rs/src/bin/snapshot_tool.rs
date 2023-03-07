@@ -4,7 +4,7 @@ use std::{fs::File, io::BufWriter};
 use clap::Parser;
 use color_eyre::Result;
 use mainnet_lib::InMemoryDbSync;
-use tracing::{info,debug, Level};
+use tracing::{debug, info, Level};
 use voting_tools_rs::test_api::MockDbProvider;
 use voting_tools_rs::{
     voting_power, Args, Db, DbConfig, DryRunCommand, InvalidRegistration, SnapshotEntry,
@@ -105,7 +105,6 @@ fn handle_invalids(path: &Path, invalids: &[InvalidRegistration]) -> Result<()> 
     }
 
     let path = path.with_file_name("voting_tool_error");
-
 
     tracing::warn!(
         "found invalid registrations: writing to {}",

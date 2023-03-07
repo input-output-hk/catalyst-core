@@ -127,7 +127,6 @@ fn validate_signature(
     let sig = Ed25519::signature_from_bytes(sig.as_ref())
         .map_err(|e| RegistrationError::SignatureError { err: e.to_string() })?;
 
-
     match Ed25519::verify_bytes(&pub_key, &sig, &hash_bytes) {
         Verification::Success => Ok(()),
         Verification::Failed => Ok(()), //Err(RegistrationError::MismatchedSignature { hash_bytes }),

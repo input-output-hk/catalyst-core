@@ -40,7 +40,6 @@ fn main() -> Result<()> {
         min_slot,
         max_slot,
         out_file,
-        pretty,
         dry_run,
         network_id,
         expected_voting_purpose,
@@ -69,10 +68,9 @@ fn main() -> Result<()> {
     let file = File::options().write(true).create(true).open(out_file)?;
     let writer = BufWriter::new(file);
 
-    match pretty {
-        true => serde_json::to_writer_pretty(writer, &outputs),
-        false => serde_json::to_writer(writer, &outputs),
-    }?;
+    // Snapshots are so large that non-pretty output is effectively unusable.
+    // So ONLY do pretty formatted output.
+    serde_json::to_writer_pretty(writer, &outputs)?;
 
     Ok(())
 }

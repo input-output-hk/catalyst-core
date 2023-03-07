@@ -1,0 +1,136 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/vit-servicing-station/vit-servicing-station-lib/src/db/models/vote.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>vote.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../vit_servicing_station_lib/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../vit_servicing_station_lib/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../vit_servicing_station_lib/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::db::schema::votes;
+<span class="kw">use </span>diesel::{ExpressionMethods, Insertable, Queryable};
+<span class="kw">use </span>serde::{Deserialize, Serialize};
+
+<span class="attribute">#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Queryable)]
+</span><span class="kw">pub struct </span>Vote {
+    <span class="kw">pub </span>fragment_id: String,
+    <span class="kw">pub </span>caster: String,
+    <span class="kw">pub </span>proposal: i32,
+    <span class="kw">pub </span>voteplan_id: String,
+    <span class="kw">pub </span>time: f32,
+    <span class="kw">pub </span>choice: <span class="prelude-ty">Option</span>&lt;i16&gt;,
+    <span class="kw">pub </span>raw_fragment: String,
+}
+
+<span class="kw">impl </span>Insertable&lt;votes::table&gt; <span class="kw">for </span>Vote {
+    <span class="attribute">#[allow(clippy::type_complexity)]
+    </span><span class="kw">type </span>Values = (
+        diesel::dsl::Eq&lt;votes::fragment_id, String&gt;,
+        diesel::dsl::Eq&lt;votes::caster, String&gt;,
+        diesel::dsl::Eq&lt;votes::proposal, i32&gt;,
+        diesel::dsl::Eq&lt;votes::voteplan_id, String&gt;,
+        diesel::dsl::Eq&lt;votes::time, f32&gt;,
+        diesel::dsl::Eq&lt;votes::choice, <span class="prelude-ty">Option</span>&lt;i16&gt;&gt;,
+        diesel::dsl::Eq&lt;votes::raw_fragment, String&gt;,
+    );
+
+    <span class="kw">fn </span>values(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Values {
+        (
+            votes::fragment_id.eq(<span class="self">self</span>.fragment_id),
+            votes::caster.eq(<span class="self">self</span>.caster),
+            votes::proposal.eq(<span class="self">self</span>.proposal),
+            votes::voteplan_id.eq(<span class="self">self</span>.voteplan_id),
+            votes::time.eq(<span class="self">self</span>.time),
+            votes::choice.eq(<span class="self">self</span>.choice),
+            votes::raw_fragment.eq(<span class="self">self</span>.raw_fragment),
+        )
+    }
+}
+
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">pub mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::db::DbConnectionPool;
+    <span class="kw">use </span>diesel::RunQueryDsl;
+
+    <span class="kw">pub fn </span>get_test_vote() -&gt; Vote {
+        Vote {
+                        fragment_id: <span class="string">&quot;387797d0470ff23f1029c56556ac17dc4721d9da8b64d691de5029a8634906db&quot;</span>.to_string(),
+                        caster: <span class="string">&quot;ca1q4t7y93d3z2szyapg4n59xyepcspn66agepfmu2l70xp72dalylt6gc5k9k&quot;</span>.to_string(),
+                        voteplan_id: <span class="string">&quot;936e034e5c3723029934526c7f8118d257f7036c224e4b44e31f8bb44c1faccc&quot;</span>.to_string(),
+                        choice: <span class="prelude-val">None</span>,
+                        raw_fragment: <span class="string">&quot;936e034e5c3723029934526c7f8118d257f7036c224e4b44e31f8bb44c1faccc1802024ccc9c19216b67674612f13ad2567cddee99a9839c82e12f67938afbde55da2afe422242c8e8b10d3073b6601455085feaa38e5ccf68fb69503195e385ff32444ccc9c19216b67674612f13ad2567cddee99a9839c82e12f67938afbde55da2ad402cf6b7185f88d8aab2be516481d521f1f21e3fac5be1bae1227505dd7ae0c01226b872c77446c76fabe9647467cbf305546470ce13706ad81b838ebc48f527fe67035ca0f136aefb761b7dbfa15c4cc2320541c1461234cbdd3c618ce6adf069c558281cad980de790c59c55c5257c1fd70b7ac225db1c55a8131cf1bb07278484412346dee1c6f1d31777901f1abf43f67e60800512fe80372e2df9f513911f82dcc9de90c8852d3b5d5c2dbe25462d54878746550f659696c73ddf77bb9406151d32fa56b44e5ecd6c82f5596d546b3c15d6ce05ca65f913c99a880c8f70caf3fa0d09c32116b460d3ebc3275493596db84257bb41bc0a3ecdb36d9b7f4021640660431463d76a69a1a95345ddc6e5eb6a15f22a4fe0673c00d4dc3f50a0f0f9107b937d1689217ec2d0ea730749e942bf4da659b596fd44bcddfee38c900000000070000005f0100ff000000000000000057e2162d88950113a145674298990e2019eb5d46429df15ff3cc1f29bdf93ebd02f3365ca3b87549eb3cf84e0cb60877cd4231b2e632d3108c087b56002982506322a3013924c08520b84d821c96d4ac896180ca926fea91a9f3c2d2e2b067f700&quot;</span>.to_string(),
+                        proposal: <span class="number">24</span>,
+                        time: <span class="number">0.1</span>,
+                    }
+    }
+
+    <span class="kw">pub fn </span>populate_db_with_vote(vote: <span class="kw-2">&amp;</span>Vote, pool: <span class="kw-2">&amp;</span>DbConnectionPool) {
+        <span class="kw">let </span>connection = pool.get().unwrap();
+
+        diesel::insert_into(votes::table)
+            .values(vote.clone().values())
+            .execute(<span class="kw-2">&amp;</span>connection)
+            .unwrap();
+    }
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="vit_servicing_station_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

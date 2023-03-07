@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Slot","Identify a slot in a specific timeframe"],["SlotAndDuration","Identify a slot in a specific timeframe and a leftover duration"],["SlotDuration","Duration of a slot"],["TimeFrame","Time frame which is a timeline that is configured to be split in discrete slots"]]};

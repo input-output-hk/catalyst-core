@@ -29,6 +29,7 @@ fn main() -> Result<()> {
         .with_max_level(Level::DEBUG)
         .init();
 
+
     info!("Snapshot Tool.");
     debug!("Debug Logs Enabled!");
 
@@ -65,7 +66,7 @@ fn main() -> Result<()> {
 
     handle_invalids(&out_file, &invalids)?;
 
-    let file = File::options().write(true).create(true).open(out_file)?;
+    let file = File::options().write(true).create(true).truncate(true).open(out_file)?;
     let writer = BufWriter::new(file);
 
     // Snapshots are so large that non-pretty output is effectively unusable.
@@ -109,7 +110,7 @@ fn handle_invalids(path: &Path, invalids: &[InvalidRegistration]) -> Result<()> 
         path.to_string_lossy()
     );
 
-    let file = File::options().write(true).create(true).open(path)?;
+    let file = File::options().write(true).create(true).truncate(true).open(path)?;
     let writer = BufWriter::new(file);
 
     serde_json::to_writer_pretty(writer, invalids)?;

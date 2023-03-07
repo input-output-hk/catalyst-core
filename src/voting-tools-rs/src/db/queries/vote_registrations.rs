@@ -57,6 +57,7 @@ impl Db {
             let file = File::options()
                 .write(true)
                 .create(true)
+                .truncate(true)
                 .open("convert_row.err")
                 .unwrap();
             let mut writer = BufWriter::new(file);

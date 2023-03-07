@@ -273,6 +273,8 @@ class NodeTaskSchedule(ScheduleRunner):
 
 
 class LeaderSchedule(NodeTaskSchedule):
+    block0_bin: Optional[Block0] = None
+
     def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
         NodeTaskSchedule.__init__(self, db_url, jorm_config)
         self.tasks: list[str] = [
@@ -296,7 +298,24 @@ class LeaderSchedule(NodeTaskSchedule):
         self.block0_bin = None
 
     async def get_block0(self):
-        pass
+        # initial checks for data that's needed
+        if self.leaders_info is None:
+            logger.debug("peer leader info was not found, resetting.")
+            self.reset_schedule()
+        if self.voting_event is None or self.voting_event.start_time is None:
+            logger.debug("event was not found, resetting.")
+            self.reset_schedule()
+
+        if (
+            self.voting_event.block0 is not None
+            and self.voting_event.block0_hash is not None
+        ):
+            # fetch block0 from db event
+            block0 = self.storage.joinpath("block0.bin")
+            block0.write_bytes(self.voting_event.block0)
+            block0_hash = await utils.make_block0_hash(self.jcli_path_str, block0)
+            self.block0 = Block0(block0, block0_hash)
+            logger.debug(f"block0 found in voting event: {self.block0}")
 
     async def wait_for_voting(self):
         pass
@@ -360,17 +379,11 @@ class Leader0Schedule(LeaderSchedule):
             logger.debug("event was not found, resetting.")
             self.reset_schedule()
 
-        if (
-            self.voting_event.block0 is not None
-            and self.voting_event.block0_hash is not None
-        ):
+        try:
             # fetch block0 from db event
-            block0 = self.storage.joinpath("block0.bin")
-            block0.write_bytes(self.voting_event.block0)
-            block0_hash = await utils.make_block0_hash(self.jcli_path_str, block0)
-            self.block0 = Block0(block0, block0_hash)
-            logger.debug(f"block0 fetched: {self.block0}")
-        else:
+            await self.get_block0()
+        except Exception as e:
+            logger.debug(f"block0 was not found in voting event: {e}")
             # generate genesis file to make block0
             genesis = utils.make_genesis_file(
                 self.voting_event.start_time, self.leaders_info

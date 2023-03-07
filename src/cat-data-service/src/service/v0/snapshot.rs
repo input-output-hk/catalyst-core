@@ -25,7 +25,7 @@ pub fn snapshot<State: SnapshotDb + Send + Sync + 'static>(state: Arc<State>) ->
 }
 
 async fn versions_exec<State: SnapshotDb>(state: Arc<State>) -> String {
-    tracing::debug!("");
+    tracing::debug!("versions_exec");
 
     let snapshot_versions = state.get_snapshot_versions();
     serde_json::to_string(&snapshot_versions).unwrap()
@@ -35,7 +35,7 @@ async fn voter_exec<State: SnapshotDb>(
     Path((event, voting_key)): Path<(String, String)>,
     state: Arc<State>,
 ) -> String {
-    tracing::debug!("event: {0}, voting_key: {1}", event, voting_key);
+    tracing::debug!("voter_exec, event: {0}, voting_key: {1}", event, voting_key);
 
     let voter = state.get_voter(event, voting_key);
     serde_json::to_string(&voter).unwrap()
@@ -45,7 +45,7 @@ async fn delegator_exec<State: SnapshotDb>(
     Path((event, stake_public_key)): Path<(String, String)>,
     state: Arc<State>,
 ) -> String {
-    tracing::debug!("event: {0}, stake_public_key: {1}", event, stake_public_key);
+    tracing::debug!("delegator_exec, event: {0}, stake_public_key: {1}", event, stake_public_key);
 
     let delegator = state.get_delegator(event, stake_public_key);
     serde_json::to_string(&delegator).unwrap()

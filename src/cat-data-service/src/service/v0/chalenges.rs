@@ -11,13 +11,13 @@ pub fn chalenges() -> Router {
 }
 
 async fn chalenges_exec() -> String {
-    tracing::debug!("");
+    tracing::debug!("chalenges_exec");
 
     "latest".to_string()
 }
 
 async fn chalenge_by_id_exec(Path(id): Path<String>) -> String {
-    tracing::debug!("id: {0}", id);
+    tracing::debug!("chalenge_by_id_exec, id: {0}", id);
 
     format!("chalenge id: {0}", id)
 }
@@ -25,7 +25,7 @@ async fn chalenge_by_id_exec(Path(id): Path<String>) -> String {
 async fn chalenge_by_id_and_voter_group_id_exec(
     Path((id, voter_group_id)): Path<(String, String)>,
 ) -> String {
-    tracing::debug!("id: {0}, voter group id: {1}", id, voter_group_id);
+    tracing::debug!("chalenge_by_id_and_voter_group_id_exec, id: {0}, voter group id: {1}", id, voter_group_id);
 
     format!("chalenge id: {0}, voter group id: {1}", id, voter_group_id)
 }

@@ -5,7 +5,7 @@ pub fn reviews() -> Router {
 }
 
 async fn reviews_by_proposal_id_id_exec(Path(proposal_id): Path<String>) -> String {
-    tracing::debug!("proposal id: {0}", proposal_id);
+    tracing::debug!("reviews_by_proposal_id_id_exec, proposal id: {0}", proposal_id);
 
     format!("proposal id: {0}", proposal_id)
 }

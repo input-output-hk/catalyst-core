@@ -1,7 +1,7 @@
 use crate::data::{SignedRegistration, SlotNo, StakeKeyHex};
 use bigdecimal::BigDecimal;
 use color_eyre::eyre::Result;
-use std::collections::HashMap;
+use dashmap::DashMap;
 use std::fmt::Debug;
 
 /// Abstraction trait over data provider for voting tools. This approach can allow various data sources
@@ -24,8 +24,7 @@ pub trait DataProvider: Debug {
     ///
     /// This function returns an error if a database error occurs. The exact details of any error will
     /// depend on the database implementation
-    fn stake_values(&self, stake_addrs: &[StakeKeyHex])
-        -> Result<HashMap<StakeKeyHex, BigDecimal>>;
+    fn stake_values(&self, stake_addrs: &[StakeKeyHex]) -> DashMap<StakeKeyHex, BigDecimal>;
 }
 
 // Since we only need &self for all methods, we can implement DataProvider for any shared reference
@@ -38,10 +37,7 @@ where
         T::vote_registrations(self, lower, upper)
     }
 
-    fn stake_values(
-        &self,
-        stake_addrs: &[StakeKeyHex],
-    ) -> Result<HashMap<StakeKeyHex, BigDecimal>> {
+    fn stake_values(&self, stake_addrs: &[StakeKeyHex]) -> DashMap<StakeKeyHex, BigDecimal> {
         T::stake_values(self, stake_addrs)
     }
 }

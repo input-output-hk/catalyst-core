@@ -17,6 +17,8 @@ use itertools::Itertools;
 use once_cell::sync::Lazy;
 use serde_json::Value;
 
+use tracing::{debug, info};
+
 static METADATA_KEY: Lazy<BigDecimal> = Lazy::new(|| BigDecimal::from_isize(61284).unwrap());
 static SIGNATURE_KEY: Lazy<BigDecimal> = Lazy::new(|| BigDecimal::from_isize(61285).unwrap());
 
@@ -43,13 +45,14 @@ impl Db {
         let upper = upper.into_i64().ok_or_else(|| eyre!("invalid i64"))?;
         let q = query(lower, upper);
 
-        println!("EXECUTING AGAINST DB");
+        info!("Querying Registrations from DB from Slot# {lower} to {upper} Inclusive.");
+
         let rows = self.exec(move |conn| q.load(conn))?;
 
         let (oks, errs): (_, Vec<_>) = rows.into_iter().map(convert_row).partition_result();
 
         if errs.is_empty() {
-            println!("no errors");
+            info!("No registration errors detected.");
         } else {
             let file = File::options()
                 .write(true)
@@ -57,12 +60,13 @@ impl Db {
                 .open("convert_row.err")
                 .unwrap();
             let mut writer = BufWriter::new(file);
-            println!("writing {} errors to convert_row.err", errs.len());
+            warn!("writing {} errors to convert_row.err", errs.len());
             for err in errs {
                 writeln!(&mut writer, "==========================").unwrap();
                 writeln!(&mut writer, "{err:#?}").unwrap();
             }
         }
+
         Ok(oks)
     }
 }
@@ -112,8 +116,9 @@ fn convert_row((tx_id, metadata, signature, _slot_no): Row) -> Result<SignedRegi
     let signature = signature.ok_or_else(|| eyre!("no metadata"))?;
 
     let tx_id = u64::try_from(tx_id)?.into();
-    let registration = serde_json::from_value(metadata.clone())
-        .map_err(|e| Report::from(e).with_warning(|| format!("registration json: {metadata:#?}")))?;
+    let registration = serde_json::from_value(metadata.clone()).map_err(|e| {
+        Report::from(e).with_warning(|| format!("registration json: {metadata:#?}"))
+    })?;
     let signature = serde_json::from_value(signature.clone())
         .map_err(|e| Report::from(e).with_warning(|| format!("signature json: {signature:#?}")))?;
 

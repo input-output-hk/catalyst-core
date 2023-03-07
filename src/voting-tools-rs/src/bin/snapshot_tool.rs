@@ -4,7 +4,7 @@ use std::{fs::File, io::BufWriter};
 use clap::Parser;
 use color_eyre::Result;
 use mainnet_lib::InMemoryDbSync;
-use tracing::info;
+use tracing::{info,debug, Level};
 use voting_tools_rs::test_api::MockDbProvider;
 use voting_tools_rs::{
     voting_power, Args, Db, DbConfig, DryRunCommand, InvalidRegistration, SnapshotEntry,
@@ -13,7 +13,24 @@ use voting_tools_rs::{
 
 fn main() -> Result<()> {
     color_eyre::install()?;
-    tracing_subscriber::fmt().init();
+
+    // Configure a custom event formatter
+    let format = tracing_subscriber::fmt::format()
+        .with_level(true) // don't include levels in formatted output
+        .with_target(true) // don't include targets
+        .with_thread_ids(true) // include the thread ID of the current thread
+        .with_thread_names(true) // include the name of the current thread
+        .compact(); // use the `Compact` formatting style.
+
+    // Create a `fmt` subscriber that uses our custom event format, and set it
+    // as the default.
+    tracing_subscriber::fmt()
+        .event_format(format)
+        .with_max_level(Level::DEBUG)
+        .init();
+
+    info!("Snapshot Tool.");
+    debug!("Debug Logs Enabled!");
 
     let Args {
         db,

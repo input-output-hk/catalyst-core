@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::{
     data::{Registration, SignedRegistration, SlotNo, StakeKeyHex},
     error::InvalidRegistration,
@@ -8,6 +6,7 @@ use crate::{
 };
 use bigdecimal::{BigDecimal, ToPrimitive};
 use color_eyre::eyre::{eyre, Result};
+use dashmap::DashMap;
 use itertools::Itertools;
 use nonempty::nonempty;
 use validity::{Failure, Valid, Validate};
@@ -85,7 +84,8 @@ pub fn voting_power(
         registrations.into_iter().map(validate).partition_result();
 
     let addrs = stake_addrs(&valid_registrations);
-    let voting_powers = db.stake_values(&addrs)?;
+
+    let voting_powers = db.stake_values(&addrs);
 
     let snapshot = valid_registrations
         .into_iter()
@@ -104,7 +104,7 @@ fn stake_addrs(registrations: &[Valid<SignedRegistration>]) -> Vec<StakeKeyHex> 
 
 fn convert_to_snapshot_entry(
     registration: Valid<SignedRegistration>,
-    voting_powers: &HashMap<StakeKeyHex, BigDecimal>,
+    voting_powers: &DashMap<StakeKeyHex, BigDecimal>,
 ) -> Result<SnapshotEntry> {
     let SignedRegistration {
         registration:

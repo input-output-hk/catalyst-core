@@ -295,9 +295,11 @@ class LeaderSchedule(NodeTaskSchedule):
     async def get_block0(self):
         # initial checks for data that's needed
         if self.leaders_info is None:
-            raise Exception("peer leader info was not found.")
-        if self.voting_event is None or self.voting_event.start_time is None:
-            raise Exception("event was not found.")
+            self.reset_schedule("peer leader info was not found")
+        if self.voting_event is None:
+            self.reset_schedule("event was not found")
+        if self.voting_event.start_time is None:
+            self.reset_schedule("event.start_time was not found")
 
         # Path to block0.bin file
         block0_bin_path = self.storage.joinpath("block0.bin")
@@ -308,7 +310,7 @@ class LeaderSchedule(NodeTaskSchedule):
 
         if block0 is None or block0_hash is None:
             # we don't have block0
-            raise Exception("block0 not found in voting event")
+            self.reset_schedule("block0 not found in voting event")
         else:
             # write the block bytes to file
             block0_bin_path.write_bytes(block0)
@@ -379,8 +381,10 @@ class Leader0Schedule(LeaderSchedule):
         # initial checks for data that's needed
         if self.leaders_info is None:
             self.reset_schedule("peer leader info was not found")
-        if self.voting_event is None or self.voting_event.start_time is None:
+        if self.voting_event is None:
             self.reset_schedule("event was not found")
+        if self.voting_event.start_time is None:
+            self.reset_schedule("event.start_time was not found")
 
         try:
             # fetch block0 from db event

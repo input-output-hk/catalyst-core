@@ -31,8 +31,8 @@ CREATE TABLE event
     block0 BYTEA NULL,
     block0_hash TEXT NULL,
 
-    comittee_size INTEGER NOT NULL,
-    comittee_threshold INTEGER NOT NULL,
+    committee_size INTEGER NOT NULL,
+    committee_threshold INTEGER NOT NULL,
 
     extra JSONB
 );

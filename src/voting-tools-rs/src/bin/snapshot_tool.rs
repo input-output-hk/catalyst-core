@@ -91,7 +91,10 @@ fn load(
     } else {
         let db_loc = &real_db_config.host;
         let db_user = &real_db_config.name;
-        info!("Connecting to Postgresql at {}:xxxxxxxx@{}.",db_user, db_loc);
+        info!(
+            "Connecting to Postgresql at {}:xxxxxxxx@{}.",
+            db_user, db_loc
+        );
         let db = Db::connect(real_db_config)?;
         voting_power(db, args)
     }

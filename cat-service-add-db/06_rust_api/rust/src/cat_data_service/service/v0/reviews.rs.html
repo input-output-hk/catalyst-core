@@ -16,7 +16,7 @@
 }
 
 <span class="kw">async fn </span>reviews_by_proposal_id_id_exec(Path(proposal_id): Path&lt;String&gt;) -&gt; String {
-    <span class="macro">tracing::debug!</span>(<span class="string">&quot;proposal id: {0}&quot;</span>, proposal_id);
+    <span class="macro">tracing::debug!</span>(<span class="string">&quot;reviews_by_proposal_id_id_exec, proposal id: {0}&quot;</span>, proposal_id);
 
     <span class="macro">format!</span>(<span class="string">&quot;proposal id: {0}&quot;</span>, proposal_id)
 }

@@ -77,7 +77,7 @@
 }
 
 <span class="kw">async fn </span>versions_exec&lt;State: SnapshotDb&gt;(state: Arc&lt;State&gt;) -&gt; String {
-    <span class="macro">tracing::debug!</span>(<span class="string">&quot;&quot;</span>);
+    <span class="macro">tracing::debug!</span>(<span class="string">&quot;versions_exec&quot;</span>);
 
     <span class="kw">let </span>snapshot_versions = state.get_snapshot_versions();
     serde_json::to_string(<span class="kw-2">&amp;</span>snapshot_versions).unwrap()
@@ -87,7 +87,7 @@
     Path((event, voting_key)): Path&lt;(String, String)&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; String {
-    <span class="macro">tracing::debug!</span>(<span class="string">&quot;event: {0}, voting_key: {1}&quot;</span>, event, voting_key);
+    <span class="macro">tracing::debug!</span>(<span class="string">&quot;voter_exec, event: {0}, voting_key: {1}&quot;</span>, event, voting_key);
 
     <span class="kw">let </span>voter = state.get_voter(event, voting_key);
     serde_json::to_string(<span class="kw-2">&amp;</span>voter).unwrap()
@@ -97,7 +97,7 @@
     Path((event, stake_public_key)): Path&lt;(String, String)&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; String {
-    <span class="macro">tracing::debug!</span>(<span class="string">&quot;event: {0}, stake_public_key: {1}&quot;</span>, event, stake_public_key);
+    <span class="macro">tracing::debug!</span>(<span class="string">&quot;delegator_exec, event: {0}, stake_public_key: {1}&quot;</span>, event, stake_public_key);
 
     <span class="kw">let </span>delegator = state.get_delegator(event, stake_public_key);
     serde_json::to_string(<span class="kw-2">&amp;</span>delegator).unwrap()

@@ -42,13 +42,13 @@
 }
 
 <span class="kw">async fn </span>chalenges_exec() -&gt; String {
-    <span class="macro">tracing::debug!</span>(<span class="string">&quot;&quot;</span>);
+    <span class="macro">tracing::debug!</span>(<span class="string">&quot;chalenges_exec&quot;</span>);
 
     <span class="string">&quot;latest&quot;</span>.to_string()
 }
 
 <span class="kw">async fn </span>chalenge_by_id_exec(Path(id): Path&lt;String&gt;) -&gt; String {
-    <span class="macro">tracing::debug!</span>(<span class="string">&quot;id: {0}&quot;</span>, id);
+    <span class="macro">tracing::debug!</span>(<span class="string">&quot;chalenge_by_id_exec, id: {0}&quot;</span>, id);
 
     <span class="macro">format!</span>(<span class="string">&quot;chalenge id: {0}&quot;</span>, id)
 }
@@ -56,7 +56,7 @@
 <span class="kw">async fn </span>chalenge_by_id_and_voter_group_id_exec(
     Path((id, voter_group_id)): Path&lt;(String, String)&gt;,
 ) -&gt; String {
-    <span class="macro">tracing::debug!</span>(<span class="string">&quot;id: {0}, voter group id: {1}&quot;</span>, id, voter_group_id);
+    <span class="macro">tracing::debug!</span>(<span class="string">&quot;chalenge_by_id_and_voter_group_id_exec, id: {0}, voter group id: {1}&quot;</span>, id, voter_group_id);
 
     <span class="macro">format!</span>(<span class="string">&quot;chalenge id: {0}, voter group id: {1}&quot;</span>, id, voter_group_id)
 }

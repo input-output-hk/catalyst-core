@@ -72,7 +72,7 @@
 }
 
 <span class="kw">async fn </span>proposals_exec(body: String) -&gt; String {
-    <span class="macro">tracing::debug!</span>(<span class="string">&quot;body: {0}&quot;</span>, body);
+    <span class="macro">tracing::debug!</span>(<span class="string">&quot;proposals_exec, body: {0}&quot;</span>, body);
 
     <span class="macro">format!</span>(<span class="string">&quot;body: {0}&quot;</span>, body)
 }
@@ -81,7 +81,7 @@
     Path(voter_group_id): Path&lt;String&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; String {
-    <span class="macro">tracing::debug!</span>(<span class="string">&quot;voter group id: {0}&quot;</span>, voter_group_id);
+    <span class="macro">tracing::debug!</span>(<span class="string">&quot;proposals_by_voter_group_id_exec, voter group id: {0}&quot;</span>, voter_group_id);
 
     <span class="kw">let </span>proposals = state.get_proposals_by_voter_group_id(voter_group_id);
     serde_json::to_string(<span class="kw-2">&amp;</span>proposals).unwrap()
@@ -91,7 +91,7 @@
     Path((id, voter_group_id)): Path&lt;(i32, String)&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; String {
-    <span class="macro">tracing::debug!</span>(<span class="string">&quot;id: {0}, voter group id: {1}&quot;</span>, id, voter_group_id);
+    <span class="macro">tracing::debug!</span>(<span class="string">&quot;proposal_by_and_by_voter_group_id_exec, id: {0}, voter group id: {1}&quot;</span>, id, voter_group_id);
 
     <span class="kw">let </span>proposal = state.get_proposal_by_and_by_voter_group_id(id, voter_group_id);
     serde_json::to_string(<span class="kw-2">&amp;</span>proposal).unwrap()

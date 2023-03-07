@@ -32,13 +32,13 @@ class ScheduleRunner(object):
         """Resets data kept by the schedule runner."""
         self.current_task = None
 
-    def reset_schedule(self) -> NoReturn:
+    def reset_schedule(self, msg: str = "schedule was reset") -> NoReturn:
         """Reset the schedule by setting the current task to None, and raising
         an exception that can be handled by the calling service.
 
         This method never returns."""
         self.reset_data()
-        raise Exception("schedule was reset")
+        raise Exception(f"schedule reset: {msg}")
 
     async def run(self) -> None:
         """Runs through the scheduled tasks."""
@@ -148,8 +148,7 @@ class NodeTaskSchedule(ScheduleRunner):
     async def setup_node_info(self):
         # check that we have the info we need, otherwise, we reset
         if self.voting_event is None:
-            logger.debug("no voting event was found, resetting.")
-            self.reset_schedule()
+            self.reset_schedule("no voting event was found.")
         try:
             # gets host information from voting_node table
             event_row_id: int = self.voting_event.row_id
@@ -172,8 +171,7 @@ class NodeTaskSchedule(ScheduleRunner):
             # we add the node info row
             await self.db.insert_leader_node_info(node_info)
             # if all is good, we reset the schedule
-            logger.debug("inserted leader node info, resetting the schedule")
-            self.reset_schedule()
+            self.reset_schedule("inserted leader node info")
 
     async def set_node_secret(self):
         # node secret
@@ -187,8 +185,7 @@ class NodeTaskSchedule(ScheduleRunner):
                 self.node_secret.save()
                 logger.debug(f"{self.node_secret.path} saved")
             case _:
-                logger.debug("no node host info was found, resetting.")
-                self.reset_schedule()
+                self.reset_schedule("no node host info was found")
 
     async def set_node_topology_key(self):
         # node network topology key
@@ -200,8 +197,7 @@ class NodeTaskSchedule(ScheduleRunner):
                 # write key to file
                 self.topology_key.save()
             case _:
-                logger.debug("no node host info was found, resetting.")
-                self.reset_schedule()
+                self.reset_schedule("no node host info was found")
 
     async def fetch_upcoming_event(self):
         # This all starts by getting the event row that has the nearest
@@ -216,11 +212,9 @@ class NodeTaskSchedule(ScheduleRunner):
     async def set_node_config(self):
         # check that we have the info we need, otherwise, we reset
         if self.topology_key is None:
-            logger.debug("no node topology key was found, resetting.")
-            self.reset_schedule()
+            self.reset_schedule("no node topology key was found")
         if self.leaders_info is None:
-            logger.debug("no leader info was found, resetting.")
-            self.reset_schedule()
+            self.reset_schedule("no leaders info was found")
 
         #  modify node config for all nodes
         host_name = utils.get_hostname()
@@ -365,8 +359,7 @@ class Leader0Schedule(LeaderSchedule):
         # This all starts by getting the event row that has the nearest
         # `voting_start`. We query the DB to get the row, and store it.
         if self.voting_event is None:
-            logger.debug("no event was found, resetting.")
-            self.reset_schedule()
+            self.reset_schedule("no event was found")
         try:
             proposals = await self.db.fetch_proposals()
             logger.debug(f"proposals:\n{proposals}")
@@ -385,11 +378,9 @@ class Leader0Schedule(LeaderSchedule):
     async def setup_block0(self):
         # initial checks for data that's needed
         if self.leaders_info is None:
-            logger.debug("peer leader info was not found, resetting.")
-            self.reset_schedule()
+            self.reset_schedule("peer leader info was not found")
         if self.voting_event is None or self.voting_event.start_time is None:
-            logger.debug("event was not found, resetting.")
-            self.reset_schedule()
+            self.reset_schedule("event was not found")
 
         try:
             # fetch block0 from db event
@@ -418,8 +409,7 @@ class Leader0Schedule(LeaderSchedule):
                 self.voting_event.row_id, block0_bytes, block0_hash
             )
             # if all is good, we reset the schedule
-            logger.debug("inserted block0 info, resetting the schedule")
-            self.reset_schedule()
+            self.reset_schedule("inserted block0 info")
 
     async def generate_voteplan(self):
         pass

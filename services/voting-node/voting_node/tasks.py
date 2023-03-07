@@ -134,13 +134,14 @@ class NodeTaskSchedule(ScheduleRunner):
         if self.voting_event is None:
             logger.debug("no voting event was found, resetting.")
             self.reset_schedule()
-        # gets host information
         try:
+            # gets host information from voting_node table
             event_row_id: int = self.voting_event.row_id
             node_info: NodeInfo = await self.db.fetch_leader_node_info(event_row_id)
             logger.debug("leader node host info was retrieved from db")
             self.node_info = node_info
         except Exception as e:
+            # generate and insert host information into voting_node table
             logger.warning(f"leader node info was not fetched: {e}")
             hostname = utils.get_hostname()
             event = self.voting_event.row_id
@@ -305,7 +306,7 @@ class Leader0Schedule(LeaderSchedule):
             "set_node_topology_key",
             "set_node_config",
             "fetch_proposals",
-            "generate_block0",
+            "setup_block0",
             "wait_for_voting",
             "voting",
             "tally",
@@ -325,27 +326,49 @@ class Leader0Schedule(LeaderSchedule):
         except Exception as e:
             raise Exception(f"failed to fetch proposals from db: {e}") from e
 
-    async def generate_block0(self):
-        if self.voting_event is None or self.voting_event.start_time is None:
-            logger.debug("no event was found, resetting.")
-            self.reset_schedule()
+    async def setup_block0(self):
+        # initial checks for data that's needed
         if self.leader_info is None:
-            logger.debug("no leader info was found, resetting.")
+            logger.debug("peer leader info was not found, resetting.")
             self.reset_schedule()
-        genesis = utils.make_genesis_file(
-            self.voting_event.start_time, self.leader_info
-        )
-        logger.debug("generated genesis")
-        # convert to yaml and save
-        genesis_yaml = GenesisYaml(genesis, self.storage.joinpath("genesis.yaml"))
-        genesis_yaml.save()
-        logger.debug(f"{genesis_yaml}")
-        self.genesis_yaml = genesis_yaml
-        block0_bin, block0_hash = await utils.make_block0(
-            self.jcli_path_str, self.storage, genesis_yaml.path
-        )
-        self.block0_bin = Block0(block0_bin, block0_hash)
-        logger.debug(f"block0 created: {self.block0_bin}")
+        if self.voting_event is None or self.voting_event.start_time is None:
+            logger.debug("event was not found, resetting.")
+            self.reset_schedule()
+
+        if (
+            self.voting_event.block0 is not None
+            and self.voting_event.block0_hash is not None
+        ):
+            # fetch block0 from db event
+            block0 = self.storage.joinpath("block0.bin")
+            block0.write_bytes(self.voting_event.block0)
+            block0_hash = await utils.make_block0_hash(self.jcli_path_str, block0)
+            self.block0 = Block0(block0, block0_hash)
+            logger.debug(f"block0 fetched: {self.block0}")
+        else:
+            # generate genesis file to make block0
+            genesis = utils.make_genesis_file(
+                self.voting_event.start_time, self.leader_info
+            )
+            logger.debug("generated genesis")
+            # convert to yaml and save
+            genesis_yaml = GenesisYaml(genesis, self.storage.joinpath("genesis.yaml"))
+            genesis_yaml.save()
+            logger.debug(f"{genesis_yaml}")
+            self.genesis_yaml = genesis_yaml
+            block0, block0_hash = await utils.make_block0(
+                self.jcli_path_str, self.storage, genesis_yaml.path
+            )
+            self.block0 = Block0(block0, block0_hash)
+            logger.debug(f"block0 created: {self.block0}")
+            # push block0 to event table
+            block0_bytes = block0.read_bytes()
+            await self.db.insert_block0_info(
+                self.voting_event.row_id, block0_bytes, block0_hash
+            )
+            # if all is good, we reset the schedule
+            logger.debug("inserted block0 info, resetting the schedule")
+            self.reset_schedule()
 
     async def generate_voteplan(self):
         pass

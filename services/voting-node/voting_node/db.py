@@ -95,3 +95,21 @@ class EventDb(object):
         for r in result:
             rows.append(Proposal(**dict(r)))
         return rows
+
+    async def insert_block0_info(
+        self, event_row_id: int, block0_bytes: bytes, block0_hash: str
+    ):
+        # insert the hostname row into the voting_node table
+        columns = f"block0 = $1, block0_hash = $2"
+        condition = f"row_id = $3"
+        returning = "name"
+        query = f"UPDATE event SET {columns} WHERE {condition} RETURNING {returning}"
+        try:
+            result = await self.conn.execute(
+                query, block0_bytes, block0_hash, event_row_id
+            )
+            if result is None:
+                raise Exception("failed to insert block0 info from db")
+            logger.debug(f"block0 info added to event: {result}")
+        except Exception as e:
+            raise Exception(f"inserting block0 info went wrong: {e}") from e

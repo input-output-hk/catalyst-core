@@ -228,5 +228,10 @@ async def make_block0(
     block0_path = storage.joinpath("block0.bin")
     jcli_exec = jcli.JCli(jcli_path)
     await jcli_exec.create_block0_bin(block0_path, genesis_path)
-    hash = await jcli_exec.get_block0_hash(block0_path)
+    hash = await make_block0_hash(jcli_path, block0_path)
     return (block0_path, hash)
+
+
+async def make_block0_hash(jcli_path: str, block0_path: Path) -> str:
+    jcli_exec = jcli.JCli(jcli_path)
+    return await jcli_exec.get_block0_hash(block0_path)

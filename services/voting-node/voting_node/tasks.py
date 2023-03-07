@@ -28,12 +28,16 @@ class ScheduleRunner(object):
     current_task: Optional[str] = None
     tasks: list[str] = []
 
+    def reset_data(self) -> None:
+        """Resets data kept by the schedule runner."""
+        self.current_task = None
+
     def reset_schedule(self) -> NoReturn:
         """Reset the schedule by setting the current task to None, and raising
         an exception that can be handled by the calling service.
 
         This method never returns."""
-        self.current_task = None
+        self.reset_data()
         raise Exception("schedule was reset")
 
     async def run(self) -> None:
@@ -111,6 +115,15 @@ class NodeTaskSchedule(ScheduleRunner):
             "set_node_config",
             "cleanup",
         ]
+
+    # resets data for the node task schedule
+    def reset_data(self) -> None:
+        ScheduleRunner.reset_data(self)
+        self.leaders_info: Optional[List[PeerNode]] = None
+        self.node_config: Optional[NodeConfigYaml] = None
+        self.node_secret: Optional[NodeSecretYaml] = None
+        self.topology_key: Optional[NodeTopologyKey] = None
+        self.voting_event: Optional[Event] = None
 
     async def connect_db(self):
         # connect to the db
@@ -277,6 +290,11 @@ class LeaderSchedule(NodeTaskSchedule):
             "cleanup",
         ]
 
+    # resets data for leader schedule
+    def reset_data(self) -> None:
+        NodeTaskSchedule.reset_data(self)
+        self.block0_bin = None
+
     async def get_block0(self):
         pass
 
@@ -292,9 +310,8 @@ class LeaderSchedule(NodeTaskSchedule):
 
 class Leader0Schedule(LeaderSchedule):
     # Leader0 Voting Node data
-    block0_bin: Block0
-    genesis_yaml: GenesisYaml
-    proposals: List[Proposal]
+    genesis_yaml: Optional[GenesisYaml] = None
+    proposals: Optional[List[Proposal]] = None
 
     def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
         LeaderSchedule.__init__(self, db_url, jorm_config)
@@ -313,6 +330,13 @@ class Leader0Schedule(LeaderSchedule):
             "tally",
             "cleanup",
         ]
+
+    # resets data for Leader0
+    def reset_data(self) -> None:
+        LeaderSchedule.reset_data(self)
+        self.genesis_yaml = None
+        self.proposals = None
+
 
     async def fetch_proposals(self):
         # This all starts by getting the event row that has the nearest

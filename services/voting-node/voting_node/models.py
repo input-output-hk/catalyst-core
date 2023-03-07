@@ -78,7 +78,6 @@ class NodeTopologyKey:
 @dataclass
 class PeerNode:
     hostname: str
-    ip_addr: str
     consensus_leader_id: str
 
 

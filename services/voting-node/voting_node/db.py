@@ -4,7 +4,7 @@ from typing import Any, List
 
 from .logs import getLogger
 from .models import Event, NodeInfo, PeerNode, Proposal
-from .utils import get_hostname, get_hostname_addr
+from .utils import get_hostname
 
 # gets voting node logger
 logger = getLogger()
@@ -76,12 +76,7 @@ class EventDb(object):
         rows = []
         for r in result:
             hostname, pubkey = r["row"]
-            try:
-                ip_addr = get_hostname_addr(hostname)
-                rows.append(PeerNode(hostname, ip_addr, pubkey))
-            except Exception as e:
-                logger.debug(f"failed to get ip address for {hostname}: {e}")
-                logger.warning(f"ignoring peer {hostname}, invalid host information")
+            rows.append(PeerNode(hostname, pubkey))
         return rows
 
     async def fetch_proposals(self) -> List[Proposal]:
@@ -100,8 +95,8 @@ class EventDb(object):
         self, event_row_id: int, block0_bytes: bytes, block0_hash: str
     ):
         # insert the hostname row into the voting_node table
-        columns = f"block0 = $1, block0_hash = $2"
-        condition = f"row_id = $3"
+        columns = "block0 = $1, block0_hash = $2"
+        condition = "row_id = $3"
         returning = "name"
         query = f"UPDATE event SET {columns} WHERE {condition} RETURNING {returning}"
         try:

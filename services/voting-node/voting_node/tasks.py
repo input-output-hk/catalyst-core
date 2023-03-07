@@ -81,7 +81,7 @@ class NodeTaskSchedule(ScheduleRunner):
 
     # Voting Node data
     node_info: Optional[NodeInfo] = None
-    leader_info: Optional[List[PeerNode]] = None
+    leaders_info: Optional[List[PeerNode]] = None
     node_config: Optional[NodeConfigYaml] = None
     node_secret: Optional[NodeSecretYaml] = None
     topology_key: Optional[NodeTopologyKey] = None
@@ -103,7 +103,7 @@ class NodeTaskSchedule(ScheduleRunner):
             "connect_db",
             "fetch_upcoming_event",
             "setup_node_info",
-            "fetch_leader_info",
+            "fetch_leaders_info",
             "set_node_secret",
             "set_node_topology_key",
             "set_node_config",
@@ -117,17 +117,17 @@ class NodeTaskSchedule(ScheduleRunner):
     def jcli(self) -> JCli:
         return JCli(self.jcli_path_str)
 
-    async def fetch_leader_info(self):
+    async def fetch_leaders_info(self):
         # gets info for other leaders
         try:
             # todo
             peers = await self.db.fetch_leaders_host_info()
             logger.debug(f"saving node info for {len(peers)} peers")
             logger.debug(f"peer leader node info retrieved from db {peers}")
-            self.leader_info = peers
+            self.leaders_info = peers
         except Exception as e:
             logger.warning(f"peer node info not fetched: {e}")
-            self.leader_info = None
+            self.leaders_info = None
 
     async def setup_node_info(self):
         # check that we have the info we need, otherwise, we reset
@@ -202,7 +202,7 @@ class NodeTaskSchedule(ScheduleRunner):
         if self.topology_key is None:
             logger.debug("no node topology key was found, resetting.")
             self.reset_schedule()
-        if self.leader_info is None:
+        if self.leaders_info is None:
             logger.debug("no node topology key was found, resetting.")
             self.reset_schedule()
 
@@ -216,7 +216,7 @@ class NodeTaskSchedule(ScheduleRunner):
         listen_p2p = f"/ip4/{host_ip}/tcp/{self.settings.p2p_port}"
         trusted_peers = []
 
-        for peer in self.leader_info:
+        for peer in self.leaders_info:
             match role_n_number:
                 case ("leader", 0):
                     pass
@@ -225,15 +225,14 @@ class NodeTaskSchedule(ScheduleRunner):
                         case ("leader", peer_number):
                             if peer_number < host_number:
                                 peer_addr = (
-                                    f"/ip4/{peer.ip_addr}/tcp/{self.settings.p2p_port}"
+                                    f"/ip4/{peer.hostname}/tcp/{self.settings.p2p_port}"
                                 )
                                 trusted_peers.append({"address": peer_addr})
                         case _:
                             pass
                 case ("follower", host_number):
-                    trusted_peers.append(
-                        {"address": f"/ip4/{peer.ip_addr}/tcp/{self.settings.p2p_port}"}
-                    )
+                    peer_addr = f"/ip4/{peer.hostname}/tcp/{self.settings.p2p_port}"
+                    trusted_peers.append({"address": peer_addr})
 
         # node config from default template
         config = utils.make_node_config(
@@ -265,7 +264,7 @@ class LeaderSchedule(NodeTaskSchedule):
             "connect_db",
             "fetch_upcoming_event",
             "setup_node_info",
-            "fetch_leader_info",
+            "fetch_leaders_info",
             "set_node_secret",
             "set_node_topology_key",
             "set_node_config",
@@ -301,7 +300,7 @@ class Leader0Schedule(LeaderSchedule):
             "connect_db",
             "fetch_upcoming_event",
             "setup_node_info",
-            "fetch_leader_info",
+            "fetch_leaders_info",
             "set_node_secret",
             "set_node_topology_key",
             "set_node_config",
@@ -328,7 +327,7 @@ class Leader0Schedule(LeaderSchedule):
 
     async def setup_block0(self):
         # initial checks for data that's needed
-        if self.leader_info is None:
+        if self.leaders_info is None:
             logger.debug("peer leader info was not found, resetting.")
             self.reset_schedule()
         if self.voting_event is None or self.voting_event.start_time is None:
@@ -348,7 +347,7 @@ class Leader0Schedule(LeaderSchedule):
         else:
             # generate genesis file to make block0
             genesis = utils.make_genesis_file(
-                self.voting_event.start_time, self.leader_info
+                self.voting_event.start_time, self.leaders_info
             )
             logger.debug("generated genesis")
             # convert to yaml and save

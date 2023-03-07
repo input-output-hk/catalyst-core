@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["LedgerError",""]],"mod":[["account_state",""],["last_rewards",""],["spending","Spending strategies"],["test",""]],"struct":[["Ledger","The public ledger of all accounts associated with their current state"]]};

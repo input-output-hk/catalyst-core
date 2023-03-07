@@ -121,6 +121,9 @@
 <span id="121">121</span>
 <span id="122">122</span>
 <span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>std::{fs::File, io::BufWriter};
 
@@ -214,7 +217,10 @@
     } <span class="kw">else </span>{
         <span class="kw">let </span>db_loc = <span class="kw-2">&amp;</span>real_db_config.host;
         <span class="kw">let </span>db_user = <span class="kw-2">&amp;</span>real_db_config.name;
-        <span class="macro">info!</span>(<span class="string">&quot;Connecting to Postgresql at {}:xxxxxxxx@{}.&quot;</span>,db_user, db_loc);
+        <span class="macro">info!</span>(
+            <span class="string">&quot;Connecting to Postgresql at {}:xxxxxxxx@{}.&quot;</span>,
+            db_user, db_loc
+        );
         <span class="kw">let </span>db = Db::connect(real_db_config)<span class="question-mark">?</span>;
         voting_power(db, args)
     }

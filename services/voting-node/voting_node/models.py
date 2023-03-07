@@ -77,6 +77,8 @@ class NodeTopologyKey:
 
 @dataclass
 class PeerNode:
+    """Peer information that leaders need for consensus."""
+
     hostname: str
     consensus_leader_id: str
 
@@ -91,7 +93,7 @@ class Block0:
 
 @dataclass
 class Genesis(YamlType):
-    """Data for creating 'node_config.yaml'."""
+    """Data for creating 'genesis.yaml'."""
 
 
 @dataclass
@@ -103,6 +105,8 @@ class GenesisYaml(YamlFile):
 
 @dataclass
 class Event:
+    """Represents DB row for the current event."""
+
     row_id: int
 
     name: str

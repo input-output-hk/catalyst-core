@@ -205,7 +205,7 @@ def make_node_config(
             raise Exception("something odd happened creating node_config.yaml")
 
 
-def make_genesis_file(start_date: datetime, peers: List[PeerNode]) -> Genesis:
+def make_genesis_content(start_date: datetime, peers: List[PeerNode]) -> Genesis:
     genesis_dict = yaml.safe_load(GENESIS_YAML)
     consensus_leader_ids = []
     for peer in peers:

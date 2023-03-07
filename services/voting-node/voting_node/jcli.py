@@ -63,7 +63,7 @@ class JCli(object):
         )
 
         returncode = await proc.wait()
-        # checks that there is stdout
+        # checks that the subprocess did not fail
         if returncode > 0:
             raise Exception("failed to generate block0")
 
@@ -85,3 +85,21 @@ class JCli(object):
         # read the output
         hash = stdout.decode().rstrip()
         return hash
+
+    async def decode_block0_bin(self, block0_bin: Path, genesis_yaml: Path) -> None:
+        """Decodes block0.bin and saves it to genesis.yaml."""
+        proc = await asyncio.create_subprocess_exec(
+            self.jcli_exec,
+            "genesis",
+            "decode",
+            "--input",
+            f"{block0_bin}",
+            "--output",
+            f"{genesis_yaml}",
+            stdout=asyncio.subprocess.PIPE,
+        )
+
+        returncode = await proc.wait()
+        # checks that the subprocess did not fail
+        if returncode > 0:
+            raise Exception("failed to decode block0")

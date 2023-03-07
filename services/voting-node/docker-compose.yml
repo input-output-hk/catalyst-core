@@ -1,9 +1,23 @@
 version: "3"
 
 services:
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=CHANGE_ME
+      - POSTGRES_USER=catalyst-event-dev
+      - POSTGRES_DB=CatalystEventDev
+    ports:
+      - "5432:5432"
+    volumes:
+      - eventdb:/var/lib/postgresql/data
+
   leader0:
     image: voting-node:latest
     hostname: leader0
+    depends_on:
+      postgres:
+        condition: service_started
     ports:
       - "5057:5057"
     environment:
@@ -24,6 +38,9 @@ services:
   leader1:
     image: voting-node:latest
     hostname: leader1
+    depends_on:
+      postgres:
+        condition: service_started
     ports:
       - "6057:5057"
     environment:
@@ -44,6 +61,9 @@ services:
   leader2:
     image: voting-node:latest
     hostname: leader2
+    depends_on:
+      postgres:
+        condition: service_started
     ports:
       - "7057:5057"
     environment:
@@ -60,17 +80,6 @@ services:
     volumes:
       - leader2_store:/node_storage
     command: voting-node start
-
-  postgres:
-    image: postgres:latest
-    environment:
-      - POSTGRES_PASSWORD=CHANGE_ME
-      - POSTGRES_USER=catalyst-event-dev
-      - POSTGRES_DB=CatalystEventDev
-    ports:
-      - "5432:5432"
-    volumes:
-      - eventdb:/var/lib/postgresql/data
 
   otel-collector:
     image: otel/opentelemetry-collector:latest

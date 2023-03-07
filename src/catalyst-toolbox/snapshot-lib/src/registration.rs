@@ -10,7 +10,7 @@ pub type MainnetStakeAddress = String;
 /// voting power among multiple keys in a single transaction and
 /// to tag the purpose of the vote.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-#[allow(module-name-repetitions)]
+#[allow(clippy::module_name_repetitions)]
 pub struct VotingRegistration {
     pub stake_public_key: MainnetStakeAddress,
     pub voting_power: Value,

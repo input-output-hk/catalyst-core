@@ -1,6 +1,6 @@
 import yaml
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional
@@ -105,13 +105,17 @@ class GenesisYaml(YamlFile):
 @dataclass
 class Event:
     row_id: int
+
     name: str
     description: str
+
     registration_snapshot_time: Optional[datetime]
     voting_power_threshold: Optional[int]
     max_voting_power_pct: Optional[int]
+
     start_time: Optional[datetime]
     end_time: Optional[datetime]
+
     insight_sharing_start: Optional[datetime]
     proposal_submission_start: Optional[datetime]
     refine_proposals_start: Optional[datetime]
@@ -122,6 +126,13 @@ class Event:
     voting_start: Optional[datetime]
     voting_end: Optional[datetime]
     tallying_end: Optional[datetime]
+
+    block0: Optional[bytes]
+    block0_hash: Optional[str]
+
+    committee_size: int
+    committee_threshold: int
+
     extra: Optional[Mapping[str, Any]]
 
 

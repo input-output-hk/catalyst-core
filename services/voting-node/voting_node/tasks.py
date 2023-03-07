@@ -136,7 +136,8 @@ class NodeTaskSchedule(ScheduleRunner):
             self.reset_schedule()
         # gets host information
         try:
-            node_info = await self.db.fetch_leader_node_info()
+            event_row_id: int = self.voting_event.row_id
+            node_info: NodeInfo = await self.db.fetch_leader_node_info(event_row_id)
             logger.debug("leader node host info was retrieved from db")
             self.node_info = node_info
         except Exception as e:

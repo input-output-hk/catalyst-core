@@ -37,10 +37,10 @@ class EventDb(object):
             raise Exception("failed to fetch event from db")
         return Event(**dict(result))
 
-    async def fetch_leader_node_info(self) -> NodeInfo:
-        filter_by = "hostname = $1"
+    async def fetch_leader_node_info(self, event_row_id: int) -> NodeInfo:
+        filter_by = "hostname = $1 AND event = $2"
         query = f"SELECT * FROM voting_node WHERE {filter_by}"
-        result = await self.conn.fetchrow(query, get_hostname())
+        result = await self.conn.fetchrow(query, get_hostname(), event_row_id)
         if result is None:
             raise Exception("failed to fetch leader node info from db")
         node_info = NodeInfo(**dict(result))

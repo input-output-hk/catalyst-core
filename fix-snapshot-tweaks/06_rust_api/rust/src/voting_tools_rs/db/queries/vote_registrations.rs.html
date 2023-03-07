@@ -236,6 +236,7 @@
 <span id="236">236</span>
 <span id="237">237</span>
 <span id="238">238</span>
+<span id="239">239</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::io::{BufWriter, Write};
 
@@ -295,6 +296,7 @@
             <span class="kw">let </span>file = File::options()
                 .write(<span class="bool-val">true</span>)
                 .create(<span class="bool-val">true</span>)
+                .truncate(<span class="bool-val">true</span>)
                 .open(<span class="string">&quot;convert_row.err&quot;</span>)
                 .unwrap();
             <span class="kw">let </span><span class="kw-2">mut </span>writer = BufWriter::new(file);

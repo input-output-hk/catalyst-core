@@ -116,6 +116,7 @@
 <span id="116">116</span>
 <span id="117">117</span>
 <span id="118">118</span>
+<span id="119">119</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>std::{fs::File, io::BufWriter};
 
@@ -146,6 +147,7 @@
         .event_format(format)
         .with_max_level(Level::DEBUG)
         .init();
+
 
     <span class="macro">info!</span>(<span class="string">&quot;Snapshot Tool.&quot;</span>);
     <span class="macro">debug!</span>(<span class="string">&quot;Debug Logs Enabled!&quot;</span>);
@@ -183,7 +185,7 @@
 
     handle_invalids(<span class="kw-2">&amp;</span>out_file, <span class="kw-2">&amp;</span>invalids)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>file = File::options().write(<span class="bool-val">true</span>).create(<span class="bool-val">true</span>).open(out_file)<span class="question-mark">?</span>;
+    <span class="kw">let </span>file = File::options().write(<span class="bool-val">true</span>).create(<span class="bool-val">true</span>).truncate(<span class="bool-val">true</span>).open(out_file)<span class="question-mark">?</span>;
     <span class="kw">let </span>writer = BufWriter::new(file);
 
     <span class="comment">// Snapshots are so large that non-pretty output is effectively unusable.
@@ -227,7 +229,7 @@
         path.to_string_lossy()
     );
 
-    <span class="kw">let </span>file = File::options().write(<span class="bool-val">true</span>).create(<span class="bool-val">true</span>).open(path)<span class="question-mark">?</span>;
+    <span class="kw">let </span>file = File::options().write(<span class="bool-val">true</span>).create(<span class="bool-val">true</span>).truncate(<span class="bool-val">true</span>).open(path)<span class="question-mark">?</span>;
     <span class="kw">let </span>writer = BufWriter::new(file);
 
     serde_json::to_writer_pretty(writer, invalids)<span class="question-mark">?</span>;

@@ -17,7 +17,7 @@ use itertools::Itertools;
 use once_cell::sync::Lazy;
 use serde_json::Value;
 
-use tracing::{debug, info};
+use tracing::info;
 
 static METADATA_KEY: Lazy<BigDecimal> = Lazy::new(|| BigDecimal::from_isize(61284).unwrap());
 static SIGNATURE_KEY: Lazy<BigDecimal> = Lazy::new(|| BigDecimal::from_isize(61285).unwrap());

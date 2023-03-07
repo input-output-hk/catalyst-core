@@ -336,6 +336,12 @@
 <span id="336">336</span>
 <span id="337">337</span>
 <span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
 </pre><pre class="rust"><code><span class="kw">use </span>jormungandr_lib::crypto::account::Identifier;
 <span class="kw">use </span>jormungandr_lib::interfaces::Value;
 <span class="kw">use </span>serde::{de::Error, Deserialize, Serialize};
@@ -348,11 +354,15 @@
 /// voting power among multiple keys in a single transaction and
 /// to tag the purpose of the vote.
 </span><span class="attribute">#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[allow(clippy::module_name_repetitions)]
 </span><span class="kw">pub struct </span>VotingRegistration {
     <span class="kw">pub </span>stake_public_key: MainnetStakeAddress,
     <span class="kw">pub </span>voting_power: Value,
     <span class="doccomment">/// Shelley address discriminated for the same network this transaction is submitted to.
-    </span><span class="attribute">#[serde(deserialize_with = <span class="string">&quot;serde_impl::reward_addr_from_hex&quot;</span>, rename = <span class="string">&quot;rewards_address&quot;</span>)]
+    </span><span class="attribute">#[serde(
+        deserialize_with = <span class="string">&quot;serde_impl::reward_addr_from_hex&quot;</span>,
+        rename = <span class="string">&quot;rewards_address&quot;
+    </span>)]
     </span><span class="kw">pub </span>reward_address: MainnetRewardAddress,
     <span class="kw">pub </span>delegations: Delegations,
     <span class="doccomment">/// 0 = Catalyst, assumed 0 for old legacy registrations
@@ -361,11 +371,13 @@
 }
 
 <span class="kw">impl </span>VotingRegistration {
-    <span class="kw">pub fn </span>is_legacy(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+    <span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>is_legacy(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="macro">matches!</span>(<span class="self">self</span>.delegations, Delegations::Legacy(<span class="kw">_</span>))
     }
 
-    <span class="kw">pub fn </span>is_new(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+    <span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>is_new(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         !<span class="self">self</span>.is_legacy()
     }
 }
@@ -632,7 +644,7 @@
         <span class="macro">assert_eq!</span>(
             serde_json::from_str::&lt;Delegations&gt;(<span class="kw-2">&amp;</span>serde_json::to_string(<span class="kw-2">&amp;</span>d).unwrap()).unwrap(),
             d
-        )
+        );
     }
 
     <span class="attribute">#[cfg(test)]
@@ -641,7 +653,7 @@
         <span class="macro">assert_eq!</span>(
             serde_yaml::from_str::&lt;Delegations&gt;(<span class="kw-2">&amp;</span>serde_yaml::to_string(<span class="kw-2">&amp;</span>d).unwrap()).unwrap(),
             d
-        )
+        );
     }
 
     <span class="attribute">#[cfg(test)]

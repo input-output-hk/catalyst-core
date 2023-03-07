@@ -102,13 +102,27 @@
 <span id="102">102</span>
 <span id="103">103</span>
 <span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>std::{fs::File, io::BufWriter};
 
 <span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>color_eyre::Result;
 <span class="kw">use </span>mainnet_lib::InMemoryDbSync;
-<span class="kw">use </span>tracing::info;
+<span class="kw">use </span>tracing::{debug, info, Level};
 <span class="kw">use </span>voting_tools_rs::test_api::MockDbProvider;
 <span class="kw">use </span>voting_tools_rs::{
     voting_power, Args, Db, DbConfig, DryRunCommand, InvalidRegistration, SnapshotEntry,
@@ -117,7 +131,24 @@
 
 <span class="kw">fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
     color_eyre::install()<span class="question-mark">?</span>;
-    tracing_subscriber::fmt().init();
+
+    <span class="comment">// Configure a custom event formatter
+    </span><span class="kw">let </span>format = tracing_subscriber::fmt::format()
+        .with_level(<span class="bool-val">true</span>) <span class="comment">// don&#39;t include levels in formatted output
+        </span>.with_target(<span class="bool-val">true</span>) <span class="comment">// don&#39;t include targets
+        </span>.with_thread_ids(<span class="bool-val">true</span>) <span class="comment">// include the thread ID of the current thread
+        </span>.with_thread_names(<span class="bool-val">true</span>) <span class="comment">// include the name of the current thread
+        </span>.compact(); <span class="comment">// use the `Compact` formatting style.
+
+    // Create a `fmt` subscriber that uses our custom event format, and set it
+    // as the default.
+    </span>tracing_subscriber::fmt()
+        .event_format(format)
+        .with_max_level(Level::DEBUG)
+        .init();
+
+    <span class="macro">info!</span>(<span class="string">&quot;Snapshot Tool.&quot;</span>);
+    <span class="macro">debug!</span>(<span class="string">&quot;Debug Logs Enabled!&quot;</span>);
 
     <span class="kw">let </span>Args {
         db,
@@ -127,7 +158,6 @@
         min_slot,
         max_slot,
         out_file,
-        pretty,
         dry_run,
         network_id,
         expected_voting_purpose,
@@ -156,10 +186,9 @@
     <span class="kw">let </span>file = File::options().write(<span class="bool-val">true</span>).create(<span class="bool-val">true</span>).open(out_file)<span class="question-mark">?</span>;
     <span class="kw">let </span>writer = BufWriter::new(file);
 
-    <span class="kw">match </span>pretty {
-        <span class="bool-val">true </span>=&gt; serde_json::to_writer_pretty(writer, <span class="kw-2">&amp;</span>outputs),
-        <span class="bool-val">false </span>=&gt; serde_json::to_writer(writer, <span class="kw-2">&amp;</span>outputs),
-    }<span class="question-mark">?</span>;
+    <span class="comment">// Snapshots are so large that non-pretty output is effectively unusable.
+    // So ONLY do pretty formatted output.
+    </span>serde_json::to_writer_pretty(writer, <span class="kw-2">&amp;</span>outputs)<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(())
 }
@@ -192,7 +221,6 @@
     }
 
     <span class="kw">let </span>path = path.with_file_name(<span class="string">&quot;voting_tool_error&quot;</span>);
-
 
     <span class="macro">tracing::warn!</span>(
         <span class="string">&quot;found invalid registrations: writing to {}&quot;</span>,

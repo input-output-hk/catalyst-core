@@ -134,9 +134,7 @@
 <span id="134">134</span>
 <span id="135">135</span>
 <span id="136">136</span>
-</pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashMap;
-
-<span class="kw">use crate</span>::{
+</pre><pre class="rust"><code><span class="kw">use crate</span>::{
     data::{Registration, SignedRegistration, SlotNo, StakeKeyHex},
     error::InvalidRegistration,
     validation::ValidationCtx,
@@ -144,6 +142,7 @@
 };
 <span class="kw">use </span>bigdecimal::{BigDecimal, ToPrimitive};
 <span class="kw">use </span>color_eyre::eyre::{eyre, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>dashmap::DashMap;
 <span class="kw">use </span>itertools::Itertools;
 <span class="kw">use </span>nonempty::nonempty;
 <span class="kw">use </span>validity::{Failure, Valid, Validate};
@@ -221,7 +220,8 @@
         registrations.into_iter().map(validate).partition_result();
 
     <span class="kw">let </span>addrs = stake_addrs(<span class="kw-2">&amp;</span>valid_registrations);
-    <span class="kw">let </span>voting_powers = db.stake_values(<span class="kw-2">&amp;</span>addrs)<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>voting_powers = db.stake_values(<span class="kw-2">&amp;</span>addrs);
 
     <span class="kw">let </span>snapshot = valid_registrations
         .into_iter()
@@ -240,7 +240,7 @@
 
 <span class="kw">fn </span>convert_to_snapshot_entry(
     registration: Valid&lt;SignedRegistration&gt;,
-    voting_powers: <span class="kw-2">&amp;</span>HashMap&lt;StakeKeyHex, BigDecimal&gt;,
+    voting_powers: <span class="kw-2">&amp;</span>DashMap&lt;StakeKeyHex, BigDecimal&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;SnapshotEntry&gt; {
     <span class="kw">let </span>SignedRegistration {
         registration:

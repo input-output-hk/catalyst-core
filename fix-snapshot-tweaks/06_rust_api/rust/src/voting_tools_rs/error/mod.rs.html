@@ -72,16 +72,6 @@
 <span id="72">72</span>
 <span id="73">73</span>
 <span id="74">74</span>
-<span id="75">75</span>
-<span id="76">76</span>
-<span id="77">77</span>
-<span id="78">78</span>
-<span id="79">79</span>
-<span id="80">80</span>
-<span id="81">81</span>
-<span id="82">82</span>
-<span id="83">83</span>
-<span id="84">84</span>
 </pre><pre class="rust"><code><span class="attribute">#![allow(missing_docs)]
 
 </span><span class="kw">use </span>nonempty::NonEmpty;
@@ -137,21 +127,11 @@
     <span class="attribute">#[error(<span class="string">&quot;stake key has wrong type: {0}, expected 14 or 15&quot;</span>)]
     </span>StakeKeyWrongType(u8),
 
-    <span class="attribute">#[error(
-        <span class="string">&quot;stake public key error {err}&quot;
-    </span>)]
-    </span>StakePublicKeyError {
-        err: String,
-    },
+    <span class="attribute">#[error(<span class="string">&quot;stake public key error {err}&quot;</span>)]
+    </span>StakePublicKeyError { err: String },
 
-    <span class="attribute">#[error(
-        <span class="string">&quot;signature error {err}&quot;
-    </span>)]
-    </span>SignatureError {
-        err: String,
-    },
-
-
+    <span class="attribute">#[error(<span class="string">&quot;signature error {err}&quot;</span>)]
+    </span>SignatureError { err: String },
 }
 
 <span class="doccomment">/// A registration that failed validation, along with the error

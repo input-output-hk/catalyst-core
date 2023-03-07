@@ -132,7 +132,6 @@
 <span id="132">132</span>
 <span id="133">133</span>
 <span id="134">134</span>
-<span id="135">135</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data::{NetworkId, Registration, SignedRegistration, StakeKeyHex, VotingPurpose};
 <span class="kw">use </span><span class="kw">crate</span>::error::RegistrationError;
 <span class="kw">use crate</span>::{Signature, VotingPowerSource};
@@ -261,7 +260,6 @@
         .map_err(|e| RegistrationError::StakePublicKeyError { err: e.to_string() })<span class="question-mark">?</span>;
     <span class="kw">let </span>sig = Ed25519::signature_from_bytes(sig.as_ref())
         .map_err(|e| RegistrationError::SignatureError { err: e.to_string() })<span class="question-mark">?</span>;
-
 
     <span class="kw">match </span>Ed25519::verify_bytes(<span class="kw-2">&amp;</span>pub_key, <span class="kw-2">&amp;</span>sig, <span class="kw-2">&amp;</span>hash_bytes) {
         Verification::Success =&gt; <span class="prelude-val">Ok</span>(()),

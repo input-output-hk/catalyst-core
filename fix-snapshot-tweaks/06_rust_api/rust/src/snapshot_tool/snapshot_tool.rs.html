@@ -117,6 +117,10 @@
 <span id="117">117</span>
 <span id="118">118</span>
 <span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>std::{fs::File, io::BufWriter};
 
@@ -145,9 +149,8 @@
     // as the default.
     </span>tracing_subscriber::fmt()
         .event_format(format)
-        .with_max_level(Level::DEBUG)
+        .with_max_level(Level::INFO <span class="comment">/*DEBUG*/</span>)
         .init();
-
 
     <span class="macro">info!</span>(<span class="string">&quot;Snapshot Tool.&quot;</span>);
     <span class="macro">debug!</span>(<span class="string">&quot;Debug Logs Enabled!&quot;</span>);
@@ -185,7 +188,11 @@
 
     handle_invalids(<span class="kw-2">&amp;</span>out_file, <span class="kw-2">&amp;</span>invalids)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>file = File::options().write(<span class="bool-val">true</span>).create(<span class="bool-val">true</span>).truncate(<span class="bool-val">true</span>).open(out_file)<span class="question-mark">?</span>;
+    <span class="kw">let </span>file = File::options()
+        .write(<span class="bool-val">true</span>)
+        .create(<span class="bool-val">true</span>)
+        .truncate(<span class="bool-val">true</span>)
+        .open(out_file)<span class="question-mark">?</span>;
     <span class="kw">let </span>writer = BufWriter::new(file);
 
     <span class="comment">// Snapshots are so large that non-pretty output is effectively unusable.
@@ -200,20 +207,17 @@
     dry_run: <span class="prelude-ty">Option</span>&lt;DryRunCommand&gt;,
     args: VotingPowerArgs,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(Vec&lt;SnapshotEntry&gt;, Vec&lt;InvalidRegistration&gt;)&gt; {
-    <span class="kw">let </span>result = <span class="kw">match </span>dry_run {
-        <span class="prelude-val">Some</span>(DryRunCommand::DryRun { mock_json_file }) =&gt; {
-            <span class="macro">info!</span>(<span class="string">&quot;using dryrun file: {}&quot;</span>, mock_json_file.to_string_lossy());
-            <span class="kw">let </span>db = MockDbProvider::from(InMemoryDbSync::restore(mock_json_file)<span class="question-mark">?</span>);
-            voting_power(db, args)
-        }
-        <span class="prelude-val">None </span>=&gt; {
-            <span class="macro">info!</span>(<span class="string">&quot;using real db&quot;</span>);
-            <span class="kw">let </span>db = Db::connect(real_db_config)<span class="question-mark">?</span>;
-            voting_power(db, args)
-        }
-    }<span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>(result)
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(DryRunCommand::DryRun { mock_json_file }) = dry_run {
+        <span class="macro">info!</span>(<span class="string">&quot;Using dryrun file: {}&quot;</span>, mock_json_file.to_string_lossy());
+        <span class="kw">let </span>db = MockDbProvider::from(InMemoryDbSync::restore(mock_json_file)<span class="question-mark">?</span>);
+        voting_power(db, args)
+    } <span class="kw">else </span>{
+        <span class="kw">let </span>db_loc = <span class="kw-2">&amp;</span>real_db_config.host;
+        <span class="kw">let </span>db_user = <span class="kw-2">&amp;</span>real_db_config.name;
+        <span class="macro">info!</span>(<span class="string">&quot;Connecting to Postgresql at {}:xxxxxxxx@{}.&quot;</span>,db_user, db_loc);
+        <span class="kw">let </span>db = Db::connect(real_db_config)<span class="question-mark">?</span>;
+        voting_power(db, args)
+    }
 }
 
 <span class="kw">fn </span>handle_invalids(path: <span class="kw-2">&amp;</span>Path, invalids: <span class="kw-2">&amp;</span>[InvalidRegistration]) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
@@ -222,14 +226,18 @@
         <span class="kw">return </span><span class="prelude-val">Ok</span>(());
     }
 
-    <span class="kw">let </span>path = path.with_file_name(<span class="string">&quot;voting_tool_error&quot;</span>);
+    <span class="kw">let </span>path = path.with_extension(<span class="string">&quot;errors.json&quot;</span>);
 
     <span class="macro">tracing::warn!</span>(
         <span class="string">&quot;found invalid registrations: writing to {}&quot;</span>,
         path.to_string_lossy()
     );
 
-    <span class="kw">let </span>file = File::options().write(<span class="bool-val">true</span>).create(<span class="bool-val">true</span>).truncate(<span class="bool-val">true</span>).open(path)<span class="question-mark">?</span>;
+    <span class="kw">let </span>file = File::options()
+        .write(<span class="bool-val">true</span>)
+        .create(<span class="bool-val">true</span>)
+        .truncate(<span class="bool-val">true</span>)
+        .open(path)<span class="question-mark">?</span>;
     <span class="kw">let </span>writer = BufWriter::new(file);
 
     serde_json::to_writer_pretty(writer, invalids)<span class="question-mark">?</span>;

@@ -30,7 +30,9 @@ class ScheduleRunner(object):
 
     def reset_schedule(self) -> NoReturn:
         """Reset the schedule by setting the current task to None, and raising
-        an exception. This method never returns."""
+        an exception that can be handled by the calling service.
+
+        This method never returns."""
         self.current_task = None
         raise Exception("schedule was reset")
 
@@ -147,9 +149,9 @@ class NodeTaskSchedule(ScheduleRunner):
             event = self.voting_event.row_id
             logger.debug(f"generating {hostname} node info with jcli")
             # generate the keys
-            seckey = await self.jcli().seckey(secret_type="ed25519")
+            seckey = await self.jcli().privkey(secret_type="ed25519")
             pubkey = await self.jcli().pubkey(seckey=seckey)
-            netkey = await self.jcli().seckey(secret_type="ed25519")
+            netkey = await self.jcli().privkey(secret_type="ed25519")
             logger.debug("node keys were generated")
 
             node_info = NodeInfo(hostname, event, seckey, pubkey, netkey)
@@ -203,7 +205,7 @@ class NodeTaskSchedule(ScheduleRunner):
             logger.debug("no node topology key was found, resetting.")
             self.reset_schedule()
         if self.leaders_info is None:
-            logger.debug("no node topology key was found, resetting.")
+            logger.debug("no leader info was found, resetting.")
             self.reset_schedule()
 
         #  modify node config for all nodes

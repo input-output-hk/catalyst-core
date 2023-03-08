@@ -50,7 +50,7 @@ async def get_network_secret(secret_file: Path, jcli_path: str) -> str:
         try:
             # run jcli to generate the secret key
             jcli_exec = jcli.JCli(jcli_path)
-            secret = await jcli_exec.seckey(secret_type="ed25519")
+            secret = await jcli_exec.privkey(secret_type="ed25519")
             # write the key to the file
             secret_file.open("w").write(secret)
             # save the key and the path to the file

@@ -71,7 +71,7 @@ def cli(debug, hot_reload):
     envvar="JORM_P2P_PORT",
     default=10090,
 )
-@click.option("--jcli-path", envvar="JCLI_PATH", default="~/.cargo/bin/jcli")
+@click.option("--jcli-path", envvar="JCLI_PATH", default="jcli")
 def start(
     host,
     port,

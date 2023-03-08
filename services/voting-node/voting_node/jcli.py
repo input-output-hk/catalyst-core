@@ -8,7 +8,7 @@ class JCli(object):
     def __init__(self, jcli_exec: str):
         self.jcli_exec = jcli_exec
 
-    async def seckey(self, secret_type: str) -> str:
+    async def privkey(self, secret_type: str) -> str:
         """Returns ed25519 secret key."""
         # run jcli to generate the secret key
         proc = await asyncio.create_subprocess_exec(

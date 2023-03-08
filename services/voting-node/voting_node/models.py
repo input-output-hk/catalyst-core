@@ -87,8 +87,17 @@ class PeerNode:
 class Block0:
     """Represents the path to 'block0.bin' and its hash."""
 
-    bin_path: Path
+    bin: bytes
     hash: str
+
+
+@dataclass
+class Block0File:
+    block0: Block0
+    path: Path
+
+    def save(self):
+        self.path.write_bytes(self.block0.bin)
 
 
 @dataclass
@@ -137,6 +146,18 @@ class Event:
     committee_threshold: int
 
     extra: Optional[Mapping[str, Any]]
+
+    def get_start_time(self) -> datetime:
+        if self.start_time is None:
+            raise Exception("event has no start time")
+        return self.start_time
+
+    def get_block0(self) -> Block0:
+        if self.block0 is None or self.block0_hash is None:
+            raise Exception("event has no block0")
+        block0: bytes = self.block0
+        block0_hash: str = self.block0_hash
+        return Block0(block0, block0_hash)
 
 
 @dataclass

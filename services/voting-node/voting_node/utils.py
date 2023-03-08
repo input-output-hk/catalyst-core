@@ -2,13 +2,12 @@ import re
 import socket
 import yaml
 
-from datetime import datetime
 from pathlib import Path
 from typing import Dict, Final, Literal, List, Match, Tuple
 
 from . import jcli
 from .logs import getLogger
-from .models import Genesis, NodeConfig, PeerNode
+from .models import Event, Genesis, NodeConfig, PeerNode
 from .templates import (
     GENESIS_YAML,
     NODE_CONFIG_LEADER,
@@ -205,15 +204,13 @@ def make_node_config(
             raise Exception("something odd happened creating node_config.yaml")
 
 
-def make_genesis_content(start_date: datetime, peers: List[PeerNode]) -> Genesis:
+def make_genesis_content(voting_event: Event, peers: List[PeerNode]) -> Genesis:
+    start_time = voting_event.get_start_time()
     genesis_dict = yaml.safe_load(GENESIS_YAML)
-    consensus_leader_ids = []
-    for peer in peers:
-        consensus_leader_ids.append(peer.consensus_leader_id)
-
+    consensus_leader_ids = [peer.consensus_leader_id for peer in peers]
     # modify the template with the proper settings
     genesis_dict["blockchain_configuration"]["block0_date"] = int(
-        start_date.timestamp()
+        start_time.timestamp()
     )
     genesis_dict["blockchain_configuration"][
         "consensus_leader_ids"

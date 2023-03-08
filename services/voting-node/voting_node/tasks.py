@@ -9,6 +9,7 @@ from .jormungandr import Jormungandr
 from .logs import getLogger
 from .models import (
     Block0,
+    Block0File,
     Event,
     GenesisYaml,
     NodeConfigYaml,
@@ -268,7 +269,7 @@ class NodeTaskSchedule(ScheduleRunner):
 
 
 class LeaderSchedule(NodeTaskSchedule):
-    block0_bin: Optional[Block0] = None
+    block0_bin: Optional[Block0File] = None
     tasks: list[str] = [
         "connect_db",
         "fetch_upcoming_event",
@@ -299,24 +300,17 @@ class LeaderSchedule(NodeTaskSchedule):
         if self.voting_event is None:
             self.reset_schedule("event was not found")
         if self.voting_event.start_time is None:
-            self.reset_schedule("event.start_time was not found")
+            self.reset_schedule("event has no start time")
 
         # Path to block0.bin file
-        block0_bin_path = self.storage.joinpath("block0.bin")
-
+        block0_path = self.storage.joinpath("block0.bin")
         # Get the optional fields from the current event
-        block0 = self.voting_event.block0
-        block0_hash = self.voting_event.block0_hash
-
-        if block0 is None or block0_hash is None:
-            # we don't have block0
-            self.reset_schedule("block0 not found in voting event")
-        else:
-            # write the block bytes to file
-            block0_bin_path.write_bytes(block0)
-            # save Block0 to schedule
-            self.block0 = Block0(block0_bin_path, block0_hash)
-            logger.debug(f"block0 found in voting event: {self.block0}")
+        block0 = self.voting_event.get_block0()
+        # save Block0 to schedule
+        self.block0_bin = Block0File(block0, block0_path)
+        # write the block bytes to file
+        self.block0_bin.save()
+        logger.debug(f"block0 found in voting event: {self.block0_bin}")
 
     async def wait_for_voting(self):
         pass
@@ -369,32 +363,41 @@ class Leader0Schedule(LeaderSchedule):
         except Exception as e:
             raise Exception(f"failed to fetch proposals from db: {e}") from e
 
-    async def get_block0(self):
-        await super().get_block0()
-        # decode genesis and store it after getting block0
-        genesis_path = self.storage.joinpath("genesis.yaml")
-        block0_bin_path = self.storage.joinpath("block0.bin")
-        await self.jcli().decode_block0_bin(block0_bin_path, genesis_path)
-        logger.debug(f"decoded and stored file: {genesis_path}")
-
     async def setup_block0(self):
         # initial checks for data that's needed
         if self.leaders_info is None:
             self.reset_schedule("peer leader info was not found")
         if self.voting_event is None:
             self.reset_schedule("event was not found")
-        if self.voting_event.start_time is None:
-            self.reset_schedule("event.start_time was not found")
 
         try:
-            # fetch block0 from db event
-            await self.get_block0()
+            # checks for data that's needed
+            if self.voting_event.block0 is None:
+                raise Exception("event has no block0")
+            if self.voting_event.block0_hash is None:
+                raise Exception("event has no block0 hash")
+            # Path to block0.bin file
+            block0_path = self.storage.joinpath("block0.bin")
+            # Get the optional fields from the current event
+            block0 = self.voting_event.get_block0()
+            # save Block0 to schedule
+            self.block0_bin = Block0File(block0, block0_path)
+            # write the block bytes to file
+            self.block0_bin.save()
+            logger.debug(f"block0 found in voting event: {self.block0_bin}")
+
+            # decode genesis and store it after getting block0
+            genesis_path = self.storage.joinpath("genesis.yaml")
+            block0_path = self.storage.joinpath("block0.bin")
+            await self.jcli().decode_block0_bin(block0_path, genesis_path)
+            logger.debug(f"decoded and stored file: {genesis_path}")
         except Exception as e:
             logger.debug(f"block0 was not found in voting event: {e}")
+            # checks for data that's needed
+            if self.voting_event.start_time is None:
+                self.reset_schedule("event has no start time")
             # generate genesis file to make block0
-            genesis = utils.make_genesis_content(
-                self.voting_event.start_time, self.leaders_info
-            )
+            genesis = utils.make_genesis_content(self.voting_event, self.leaders_info)
             logger.debug("generated genesis content")
             # convert to yaml and save
             genesis_path = self.storage.joinpath("genesis.yaml")
@@ -402,13 +405,16 @@ class Leader0Schedule(LeaderSchedule):
             genesis_yaml.save()
             logger.debug(f"{genesis_yaml}")
             self.genesis_yaml = genesis_yaml
-            block0_bin_path = self.storage.joinpath("block0.bin")
-            await self.jcli().create_block0_bin(block0_bin_path, genesis_path)
-            block0_hash = await self.jcli().get_block0_hash(block0_bin_path)
-            self.block0 = Block0(block0_bin_path, block0_hash)
-            logger.debug(f"block0 created: {self.block0}")
+
+            block0_path = self.storage.joinpath("block0.bin")
+            await self.jcli().create_block0_bin(block0_path, genesis_path)
+
+            block0_hash = await self.jcli().get_block0_hash(block0_path)
+            block0_bytes = block0_path.read_bytes()
+            block0 = Block0(block0_bytes, block0_hash)
+            self.block0_bin = Block0File(block0, block0_path)
+            logger.debug(f"block0 created: {self.block0_bin}")
             # push block0 to event table
-            block0_bytes = block0_bin_path.read_bytes()
             await self.db.insert_block0_info(
                 self.voting_event.row_id, block0_bytes, block0_hash
             )

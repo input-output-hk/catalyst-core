@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Zkp","Proof of correct decryption. Note: if the goal is to reduce the size of a proof, it is better to store the challenge and the response. If on the other hand we want to allow for batch verification of proofs, we should store the announcements and the response."]]};

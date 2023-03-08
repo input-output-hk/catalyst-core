@@ -404,7 +404,9 @@ class Leader0Schedule(LeaderSchedule):
                 await self.jcli().create_committee_id()
                 for _ in range(self.voting_event.committee_size)
             ]
+
             # generate genesis file to make block0
+            logger.debug("generating genesis content")
             genesis = utils.make_genesis_content(
                 self.voting_event, self.leaders_info, committee_ids
             )

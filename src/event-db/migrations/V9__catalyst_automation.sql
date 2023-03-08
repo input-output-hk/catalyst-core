@@ -1,15 +1,16 @@
 -- Catalyst Event Database
 
 -- Voting Nodes Table - Defines nodes in the network
--- This table is looked up by hostname
+-- This table is looked up by hostname and event
 CREATE TABLE voting_node (
-    hostname TEXT PRIMARY KEY,
-    event INTEGER NOT NULL UNIQUE,
+    hostname TEXT NOT NULL,
+    event INTEGER NOT NULL,
 
     pubkey TEXT NOT NULL,
     seckey TEXT NOT NULL,
     netkey TEXT NOT NULL,
 
+    PRIMARY KEY (hostname, event),
     FOREIGN KEY(event) REFERENCES event(row_id)
 );
 

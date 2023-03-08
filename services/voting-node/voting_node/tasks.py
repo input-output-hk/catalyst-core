@@ -364,6 +364,9 @@ class Leader0Schedule(LeaderSchedule):
             raise Exception(f"failed to fetch proposals from db: {e}") from e
 
     async def setup_block0(self):
+        """Checks DB event for block0 information, creates and adds it to the DB
+        when the needed information is found. Resets the schedule otherwise.
+        """
         # initial checks for data that's needed
         if self.leaders_info is None:
             self.reset_schedule("peer leader info was not found")
@@ -396,8 +399,15 @@ class Leader0Schedule(LeaderSchedule):
             # checks for data that's needed
             if self.voting_event.start_time is None:
                 self.reset_schedule("event has no start time")
+
+            committee_ids = [
+                await self.jcli().create_committee_id()
+                for _ in range(self.voting_event.committee_size)
+            ]
             # generate genesis file to make block0
-            genesis = utils.make_genesis_content(self.voting_event, self.leaders_info)
+            genesis = utils.make_genesis_content(
+                self.voting_event, self.leaders_info, committee_ids
+            )
             logger.debug("generated genesis content")
             # convert to yaml and save
             genesis_path = self.storage.joinpath("genesis.yaml")

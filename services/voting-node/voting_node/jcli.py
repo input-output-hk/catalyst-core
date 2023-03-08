@@ -8,8 +8,9 @@ class JCli(object):
     def __init__(self, jcli_exec: str):
         self.jcli_exec = jcli_exec
 
-    async def privkey(self, secret_type: str) -> str:
-        """Returns ed25519 secret key."""
+    async def privkey(self, secret_type: str = "ed25519") -> str:
+        """Returns a secret key. Defaults to 'ed25519. Possible values: ed25519,
+        ed25519-bip32, ed25519-extended, sum-ed25519-12, ristretto-group2-hash-dh."""
         # run jcli to generate the secret key
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,
@@ -31,7 +32,7 @@ class JCli(object):
         return key
 
     async def pubkey(self, seckey: str) -> str:
-        """Returns ed25519 public key."""
+        """Returns a public key the given secret key."""
         # run jcli to generate the secret key
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,
@@ -48,6 +49,31 @@ class JCli(object):
         # read the output
         key = stdout.decode().rstrip()
         return key
+
+    async def key_to_hex(self, key: str) -> str:
+        """Returns the hex-encoded bytes of a given key."""
+        # run jcli to generate the secret key
+        proc = await asyncio.create_subprocess_exec(
+            self.jcli_exec,
+            "key",
+            "to-bytes",
+            stdout=asyncio.subprocess.PIPE,
+            stdin=asyncio.subprocess.PIPE,
+        )
+
+        stdout, _ = await proc.communicate(input=key.encode())
+        # checks that there is stdout
+        if stdout is None:
+            raise Exception("failed to generate secret")
+        # read the output
+        key = stdout.decode().rstrip()
+        return key
+
+    async def create_committee_id(self) -> str:
+        seckey = await self.seckey()
+        pubkey = await self.pubkey(seckey)
+        hex_key = await self.key_to_hex(pubkey)
+        return hex_key
 
     async def create_block0_bin(self, block0_bin: Path, genesis_yaml: Path):
         # run jcli to make block0 from genesis.yaml

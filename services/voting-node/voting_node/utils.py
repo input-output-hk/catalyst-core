@@ -204,19 +204,18 @@ def make_node_config(
             raise Exception("something odd happened creating node_config.yaml")
 
 
-def make_genesis_content(voting_event: Event, peers: List[PeerNode]) -> Genesis:
+def make_genesis_content(
+    voting_event: Event, peers: List[PeerNode], committee_ids: List[str]
+) -> Genesis:
     start_time = voting_event.get_start_time()
-    genesis_dict = yaml.safe_load(GENESIS_YAML)
+    genesis = yaml.safe_load(GENESIS_YAML)
     consensus_leader_ids = [peer.consensus_leader_id for peer in peers]
     # modify the template with the proper settings
-    genesis_dict["blockchain_configuration"]["block0_date"] = int(
-        start_time.timestamp()
-    )
-    genesis_dict["blockchain_configuration"][
-        "consensus_leader_ids"
-    ] = consensus_leader_ids
+    genesis["blockchain_configuration"]["block0_date"] = int(start_time.timestamp())
+    genesis["blockchain_configuration"]["consensus_leader_ids"] = consensus_leader_ids
+    genesis["blockchain_configuration"]["committees"] = committee_ids
 
-    return Genesis(genesis_dict)
+    return Genesis(genesis)
 
 
 async def make_block0(

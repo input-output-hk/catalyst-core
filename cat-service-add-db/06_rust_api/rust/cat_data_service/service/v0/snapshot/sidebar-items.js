@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["delegator_exec",""],["snapshot",""],["versions_exec",""],["voter_exec",""]]};

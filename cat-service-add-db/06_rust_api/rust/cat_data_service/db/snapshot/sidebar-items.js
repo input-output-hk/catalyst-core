@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Delegation",""],["Delegator",""],["Voter",""],["VoterInfo",""]],"trait":[["SnapshotDb",""]]};

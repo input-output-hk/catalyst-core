@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":[["fund",""],["proposal",""],["snapshot",""]],"struct":[["MockedDB",""]],"trait":[["DB",""]]};

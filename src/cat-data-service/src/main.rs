@@ -1,6 +1,7 @@
 use clap::Parser;
 
 pub mod cli;
+pub mod db;
 pub mod logger;
 pub mod service;
 pub mod settings;

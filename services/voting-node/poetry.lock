@@ -450,7 +450,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "pydantic"
-version = "1.10.5"
+version = "1.10.6"
 description = "Data validation and settings management using python type hints"
 category = "main"
 optional = false

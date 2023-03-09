@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["OPERATION_NAME",""],["QUERY",""]],"struct":[["EpochEpoch",""],["EpochEpochFirstBlock",""],["EpochEpochLastBlock",""],["EpochTip",""],["EpochTipBlocksByEpoch",""],["EpochTipBlocksByEpochEdges",""],["EpochTipBlocksByEpochEdgesNode",""],["ResponseData",""],["Variables",""]]};

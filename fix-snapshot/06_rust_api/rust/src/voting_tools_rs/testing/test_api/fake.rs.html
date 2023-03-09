@@ -149,8 +149,6 @@
 <span id="149">149</span>
 <span id="150">150</span>
 <span id="151">151</span>
-<span id="152">152</span>
-<span id="153">153</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data::PubKey;
 <span class="kw">use </span><span class="kw">crate</span>::data::{
     Nonce, Registration, RewardsAddress, Signature, SignedRegistration, SlotNo, StakeKeyHex, TxId,
@@ -162,11 +160,12 @@
 <span class="kw">use </span>cardano_serialization_lib::address::Address;
 <span class="kw">use </span>cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey};
 <span class="kw">use </span>cardano_serialization_lib::utils::BigNum;
+<span class="kw">use </span>dashmap::DashMap;
 <span class="kw">use </span>mainnet_lib::{
     InMemoryDbSync, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
     REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
 };
-<span class="kw">use </span>std::collections::{BTreeMap, HashMap};
+<span class="kw">use </span>std::collections::BTreeMap;
 <span class="kw">use </span>std::str::FromStr;
 
 <span class="doccomment">/// Mock db provider based on [`InMemoryDbSync`] struct from [`mainnet_lib`] project.
@@ -278,11 +277,8 @@
             }))
     }
 
-    <span class="kw">fn </span>stake_values(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHex],
-    ) -&gt; color_eyre::Result&lt;HashMap&lt;StakeKeyHex, BigDecimal&gt;&gt; {
-        <span class="prelude-val">Ok</span>(stake_addrs
+    <span class="kw">fn </span>stake_values(<span class="kw-2">&amp;</span><span class="self">self</span>, stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHex]) -&gt; DashMap&lt;StakeKeyHex, BigDecimal&gt; {
+        stake_addrs
             .iter()
             .map(|addr| {
                 <span class="kw">let </span>big_num = <span class="self">self
@@ -293,7 +289,7 @@
                     .to_string();
                 (addr.clone(), BigDecimal::from_str(<span class="kw-2">&amp;</span>big_num).unwrap())
             })
-            .collect())
+            .collect()
     }
 }
 

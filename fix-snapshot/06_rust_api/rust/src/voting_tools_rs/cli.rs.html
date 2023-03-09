@@ -164,12 +164,6 @@
 <span id="164">164</span>
 <span id="165">165</span>
 <span id="166">166</span>
-<span id="167">167</span>
-<span id="168">168</span>
-<span id="169">169</span>
-<span id="170">170</span>
-<span id="171">171</span>
-<span id="172">172</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     data::{DbHost, DbName, DbPass, DbUser, NetworkId, SlotNo, VotingPurpose},
     error::InvalidRegistration,
@@ -216,10 +210,6 @@
     <span class="doccomment">/// File to output the signed transaction to
     </span><span class="attribute">#[clap(long, short = <span class="string">&#39;o&#39;</span>)]
     </span><span class="kw">pub </span>out_file: PathBuf,
-
-    <span class="doccomment">/// Whether to pretty-print the json
-    </span><span class="attribute">#[clap(long, short = <span class="string">&#39;p&#39;</span>)]
-    </span><span class="kw">pub </span>pretty: bool,
 
     <span class="doccomment">/// This parameter should be used only for voting tool dry runs or internal testing
     </span><span class="attribute">#[clap(subcommand)]
@@ -327,7 +317,6 @@
                 max_slot: <span class="prelude-val">Some</span>(<span class="number">234</span>.into()),
                 out_file: <span class="string">&quot;some/path&quot;</span>.into(),
                 dry_run: <span class="prelude-val">None</span>,
-                pretty: <span class="bool-val">true</span>,
                 network_id: NetworkId::Mainnet,
                 expected_voting_purpose: VotingPurpose::CATALYST,
             }
@@ -339,7 +328,6 @@
         <span class="kw">let </span>args = Args::parse_from([<span class="string">&quot;binary_name&quot;</span>, <span class="string">&quot;-o&quot;</span>, <span class="string">&quot;some/path&quot;</span>]);
 
         <span class="macro">assert_eq!</span>(args.out_file, PathBuf::from(<span class="string">&quot;some/path&quot;</span>));
-        <span class="macro">assert_eq!</span>(args.pretty, <span class="bool-val">false</span>);
     }
 }
 </code></pre></div>

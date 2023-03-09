@@ -233,6 +233,10 @@
 <span id="233">233</span>
 <span id="234">234</span>
 <span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::io::{BufWriter, Write};
 
@@ -251,6 +255,8 @@
 <span class="kw">use </span>itertools::Itertools;
 <span class="kw">use </span>once_cell::sync::Lazy;
 <span class="kw">use </span>serde_json::Value;
+
+<span class="kw">use </span>tracing::info;
 
 <span class="kw">static </span>METADATA_KEY: Lazy&lt;BigDecimal&gt; = Lazy::new(|| BigDecimal::from_isize(<span class="number">61284</span>).unwrap());
 <span class="kw">static </span>SIGNATURE_KEY: Lazy&lt;BigDecimal&gt; = Lazy::new(|| BigDecimal::from_isize(<span class="number">61285</span>).unwrap());
@@ -278,26 +284,29 @@
         <span class="kw">let </span>upper = upper.into_i64().ok_or_else(|| <span class="macro">eyre!</span>(<span class="string">&quot;invalid i64&quot;</span>))<span class="question-mark">?</span>;
         <span class="kw">let </span>q = query(lower, upper);
 
-        <span class="macro">println!</span>(<span class="string">&quot;EXECTING AGAINST DB&quot;</span>);
+        <span class="macro">info!</span>(<span class="string">&quot;Querying Registrations from DB from Slot# {lower} to {upper} Inclusive.&quot;</span>);
+
         <span class="kw">let </span>rows = <span class="self">self</span>.exec(<span class="kw">move </span>|conn| q.load(conn))<span class="question-mark">?</span>;
 
         <span class="kw">let </span>(oks, errs): (<span class="kw">_</span>, Vec&lt;<span class="kw">_</span>&gt;) = rows.into_iter().map(convert_row).partition_result();
 
         <span class="kw">if </span>errs.is_empty() {
-            <span class="macro">println!</span>(<span class="string">&quot;no errors&quot;</span>);
+            <span class="macro">info!</span>(<span class="string">&quot;No registration errors detected.&quot;</span>);
         } <span class="kw">else </span>{
             <span class="kw">let </span>file = File::options()
                 .write(<span class="bool-val">true</span>)
                 .create(<span class="bool-val">true</span>)
+                .truncate(<span class="bool-val">true</span>)
                 .open(<span class="string">&quot;convert_row.err&quot;</span>)
                 .unwrap();
             <span class="kw">let </span><span class="kw-2">mut </span>writer = BufWriter::new(file);
-            <span class="macro">println!</span>(<span class="string">&quot;writing {} errors to convert_row.err&quot;</span>, errs.len());
+            <span class="macro">warn!</span>(<span class="string">&quot;writing {} errors to convert_row.err&quot;</span>, errs.len());
             <span class="kw">for </span>err <span class="kw">in </span>errs {
                 <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>writer, <span class="string">&quot;==========================&quot;</span>).unwrap();
                 <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>writer, <span class="string">&quot;{err:#?}&quot;</span>).unwrap();
             }
         }
+
         <span class="prelude-val">Ok</span>(oks)
     }
 }
@@ -347,12 +356,11 @@
     <span class="kw">let </span>signature = signature.ok_or_else(|| <span class="macro">eyre!</span>(<span class="string">&quot;no metadata&quot;</span>))<span class="question-mark">?</span>;
 
     <span class="kw">let </span>tx_id = u64::try_from(tx_id)<span class="question-mark">?</span>.into();
-    <span class="kw">let </span>registration = serde_json::from_value(metadata.clone())
-        .map_err(|e| Report::from(e).with_warning(|| <span class="macro">format!</span>(<span class="string">&quot;registration json: {metadata:#?}&quot;</span>)))
-        .unwrap();
+    <span class="kw">let </span>registration = serde_json::from_value(metadata.clone()).map_err(|e| {
+        Report::from(e).with_warning(|| <span class="macro">format!</span>(<span class="string">&quot;registration json: {metadata:#?}&quot;</span>))
+    })<span class="question-mark">?</span>;
     <span class="kw">let </span>signature = serde_json::from_value(signature.clone())
-        .map_err(|e| Report::from(e).with_warning(|| <span class="macro">format!</span>(<span class="string">&quot;signature json: {signature:#?}&quot;</span>)))
-        .unwrap();
+        .map_err(|e| Report::from(e).with_warning(|| <span class="macro">format!</span>(<span class="string">&quot;signature json: {signature:#?}&quot;</span>)))<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(SignedRegistration {
         registration,

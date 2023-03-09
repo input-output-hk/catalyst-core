@@ -20,14 +20,11 @@
 <span id="20">20</span>
 <span id="21">21</span>
 <span id="22">22</span>
-<span id="23">23</span>
-<span id="24">24</span>
-<span id="25">25</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data::{SignedRegistration, SlotNo, StakeKeyHex};
 <span class="kw">use </span><span class="kw">crate</span>::data_provider::DataProvider;
 <span class="kw">use </span><span class="kw">crate</span>::Db;
 <span class="kw">use </span>bigdecimal::BigDecimal;
-<span class="kw">use </span>std::collections::HashMap;
+<span class="kw">use </span>dashmap::DashMap;
 
 <span class="kw">mod </span>stake_value;
 <span class="kw">mod </span>vote_registrations;
@@ -41,10 +38,7 @@
         <span class="self">self</span>.vote_registrations(lower, upper)
     }
 
-    <span class="kw">fn </span>stake_values(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHex],
-    ) -&gt; color_eyre::Result&lt;HashMap&lt;StakeKeyHex, BigDecimal&gt;&gt; {
+    <span class="kw">fn </span>stake_values(<span class="kw-2">&amp;</span><span class="self">self</span>, stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHex]) -&gt; DashMap&lt;StakeKeyHex, BigDecimal&gt; {
         <span class="self">self</span>.stake_values(stake_addrs)
     }
 }

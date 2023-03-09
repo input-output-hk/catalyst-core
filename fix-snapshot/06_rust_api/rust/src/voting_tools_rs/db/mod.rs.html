@@ -108,6 +108,18 @@
 <span id="108">108</span>
 <span id="109">109</span>
 <span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data::{DbHost, DbName, DbPass, DbUser};
 
 <span class="kw">mod </span>queries;
@@ -143,6 +155,9 @@
 
 <span class="doccomment">/// Inner module to hide database internals from database code
 </span><span class="kw">mod </span>inner {
+    <span class="kw">use </span>scheduled_thread_pool::ScheduledThreadPool;
+    <span class="kw">use </span>std::sync::Arc;
+
     <span class="kw">use </span><span class="kw">super</span>::DbConfig;
     <span class="kw">use </span>color_eyre::Result;
     <span class="kw">use </span>diesel::{
@@ -182,7 +197,16 @@
 
             <span class="kw">let </span>url = <span class="macro">format!</span>(<span class="string">&quot;postgres://{user}{password}@{host}/{name}&quot;</span>,);
             <span class="kw">let </span>manager = ConnectionManager::new(url);
-            <span class="kw">let </span>pool = Pool::new(manager)<span class="question-mark">?</span>;
+            <span class="kw">let </span>pool = Pool::builder()
+                .max_size(<span class="number">50</span>)
+                .min_idle(<span class="prelude-val">Some</span>(<span class="number">25</span>))
+                .thread_pool(Arc::new(
+                    ScheduledThreadPool::builder()
+                        .num_threads(<span class="number">16</span>)
+                        .thread_name_pattern(<span class="string">&quot;r2d2-worker-{}&quot;</span>)
+                        .build(),
+                ))
+                .build(manager)<span class="question-mark">?</span>;
 
             password.zeroize();
             <span class="prelude-val">Ok</span>(Db(pool))

@@ -102,13 +102,35 @@
 <span id="102">102</span>
 <span id="103">103</span>
 <span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>std::{fs::File, io::BufWriter};
 
 <span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>color_eyre::Result;
 <span class="kw">use </span>mainnet_lib::InMemoryDbSync;
-<span class="kw">use </span>tracing::info;
+<span class="kw">use </span>tracing::{debug, info, Level};
 <span class="kw">use </span>voting_tools_rs::test_api::MockDbProvider;
 <span class="kw">use </span>voting_tools_rs::{
     voting_power, Args, Db, DbConfig, DryRunCommand, InvalidRegistration, SnapshotEntry,
@@ -117,7 +139,24 @@
 
 <span class="kw">fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
     color_eyre::install()<span class="question-mark">?</span>;
-    tracing_subscriber::fmt().init();
+
+    <span class="comment">// Configure a custom event formatter
+    </span><span class="kw">let </span>format = tracing_subscriber::fmt::format()
+        .with_level(<span class="bool-val">true</span>) <span class="comment">// don&#39;t include levels in formatted output
+        </span>.with_target(<span class="bool-val">true</span>) <span class="comment">// don&#39;t include targets
+        </span>.with_thread_ids(<span class="bool-val">true</span>) <span class="comment">// include the thread ID of the current thread
+        </span>.with_thread_names(<span class="bool-val">true</span>) <span class="comment">// include the name of the current thread
+        </span>.compact(); <span class="comment">// use the `Compact` formatting style.
+
+    // Create a `fmt` subscriber that uses our custom event format, and set it
+    // as the default.
+    </span>tracing_subscriber::fmt()
+        .event_format(format)
+        .with_max_level(Level::INFO <span class="comment">/*DEBUG*/</span>)
+        .init();
+
+    <span class="macro">info!</span>(<span class="string">&quot;Snapshot Tool.&quot;</span>);
+    <span class="macro">debug!</span>(<span class="string">&quot;Debug Logs Enabled!&quot;</span>);
 
     <span class="kw">let </span>Args {
         db,
@@ -127,7 +166,6 @@
         min_slot,
         max_slot,
         out_file,
-        pretty,
         dry_run,
         network_id,
         expected_voting_purpose,
@@ -153,13 +191,16 @@
 
     handle_invalids(<span class="kw-2">&amp;</span>out_file, <span class="kw-2">&amp;</span>invalids)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>file = File::options().write(<span class="bool-val">true</span>).create(<span class="bool-val">true</span>).open(out_file)<span class="question-mark">?</span>;
+    <span class="kw">let </span>file = File::options()
+        .write(<span class="bool-val">true</span>)
+        .create(<span class="bool-val">true</span>)
+        .truncate(<span class="bool-val">true</span>)
+        .open(out_file)<span class="question-mark">?</span>;
     <span class="kw">let </span>writer = BufWriter::new(file);
 
-    <span class="kw">match </span>pretty {
-        <span class="bool-val">true </span>=&gt; serde_json::to_writer_pretty(writer, <span class="kw-2">&amp;</span>outputs),
-        <span class="bool-val">false </span>=&gt; serde_json::to_writer(writer, <span class="kw-2">&amp;</span>outputs),
-    }<span class="question-mark">?</span>;
+    <span class="comment">// Snapshots are so large that non-pretty output is effectively unusable.
+    // So ONLY do pretty formatted output.
+    </span>serde_json::to_writer_pretty(writer, <span class="kw-2">&amp;</span>outputs)<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(())
 }
@@ -169,20 +210,20 @@
     dry_run: <span class="prelude-ty">Option</span>&lt;DryRunCommand&gt;,
     args: VotingPowerArgs,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(Vec&lt;SnapshotEntry&gt;, Vec&lt;InvalidRegistration&gt;)&gt; {
-    <span class="kw">let </span>result = <span class="kw">match </span>dry_run {
-        <span class="prelude-val">Some</span>(DryRunCommand::DryRun { mock_json_file }) =&gt; {
-            <span class="macro">info!</span>(<span class="string">&quot;using dryrun file: {}&quot;</span>, mock_json_file.to_string_lossy());
-            <span class="kw">let </span>db = MockDbProvider::from(InMemoryDbSync::restore(mock_json_file)<span class="question-mark">?</span>);
-            voting_power(db, args)
-        }
-        <span class="prelude-val">None </span>=&gt; {
-            <span class="macro">info!</span>(<span class="string">&quot;using real db&quot;</span>);
-            <span class="kw">let </span>db = Db::connect(real_db_config)<span class="question-mark">?</span>;
-            voting_power(db, args)
-        }
-    }<span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>(result)
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(DryRunCommand::DryRun { mock_json_file }) = dry_run {
+        <span class="macro">info!</span>(<span class="string">&quot;Using dryrun file: {}&quot;</span>, mock_json_file.to_string_lossy());
+        <span class="kw">let </span>db = MockDbProvider::from(InMemoryDbSync::restore(mock_json_file)<span class="question-mark">?</span>);
+        voting_power(db, args)
+    } <span class="kw">else </span>{
+        <span class="kw">let </span>db_loc = <span class="kw-2">&amp;</span>real_db_config.host;
+        <span class="kw">let </span>db_user = <span class="kw-2">&amp;</span>real_db_config.name;
+        <span class="macro">info!</span>(
+            <span class="string">&quot;Connecting to Postgresql at {}:xxxxxxxx@{}.&quot;</span>,
+            db_user, db_loc
+        );
+        <span class="kw">let </span>db = Db::connect(real_db_config)<span class="question-mark">?</span>;
+        voting_power(db, args)
+    }
 }
 
 <span class="kw">fn </span>handle_invalids(path: <span class="kw-2">&amp;</span>Path, invalids: <span class="kw-2">&amp;</span>[InvalidRegistration]) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
@@ -191,15 +232,18 @@
         <span class="kw">return </span><span class="prelude-val">Ok</span>(());
     }
 
-    <span class="kw">let </span>path = path.with_file_name(<span class="string">&quot;voting_tool_error&quot;</span>);
-
+    <span class="kw">let </span>path = path.with_extension(<span class="string">&quot;errors.json&quot;</span>);
 
     <span class="macro">tracing::warn!</span>(
         <span class="string">&quot;found invalid registrations: writing to {}&quot;</span>,
         path.to_string_lossy()
     );
 
-    <span class="kw">let </span>file = File::options().write(<span class="bool-val">true</span>).create(<span class="bool-val">true</span>).open(path)<span class="question-mark">?</span>;
+    <span class="kw">let </span>file = File::options()
+        .write(<span class="bool-val">true</span>)
+        .create(<span class="bool-val">true</span>)
+        .truncate(<span class="bool-val">true</span>)
+        .open(path)<span class="question-mark">?</span>;
     <span class="kw">let </span>writer = BufWriter::new(file);
 
     serde_json::to_writer_pretty(writer, invalids)<span class="question-mark">?</span>;

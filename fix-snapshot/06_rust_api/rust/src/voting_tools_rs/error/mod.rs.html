@@ -66,6 +66,12 @@
 <span id="66">66</span>
 <span id="67">67</span>
 <span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
 </pre><pre class="rust"><code><span class="attribute">#![allow(missing_docs)]
 
 </span><span class="kw">use </span>nonempty::NonEmpty;
@@ -80,14 +86,14 @@
 </span><span class="kw">pub enum </span>RegistrationError {
     <span class="doccomment">/// The registration couldn&#39;t be parsed from json -&gt; struct
     </span><span class="attribute">#[error(
-        <span class="string">&quot;the registration metadata couldn&#39;t be parsed from JSON into the registration format, json = {}&quot;</span>, 
+        <span class="string">&quot;the registration metadata couldn&#39;t be parsed from JSON into the registration format, json = {}&quot;</span>,
         serde_json::to_string_pretty(<span class="kw-2">&amp;</span><span class="number">0</span>).unwrap(),
     )]
     </span>RegistrationFormat(Value),
 
     <span class="doccomment">/// The signature couldn&#39;t be parsed from json -&gt; struct
     </span><span class="attribute">#[error(
-        <span class="string">&quot;the registration metadata couldn&#39;t be parsed from JSON into the signature format, json = {}&quot;</span>, 
+        <span class="string">&quot;the registration metadata couldn&#39;t be parsed from JSON into the signature format, json = {}&quot;</span>,
         serde_json::to_string_pretty(<span class="kw-2">&amp;</span><span class="number">0</span>).unwrap(),
     )]
     </span>SignatureFormat(Value),
@@ -101,7 +107,7 @@
     },
 
     <span class="attribute">#[error(
-        <span class="string">&quot;the signature, public key, and payload were well-formed, but the signature was not valid for this payload, cbor hash bytes: {}&quot;</span>, 
+        <span class="string">&quot;the signature, public key, and payload were well-formed, but the signature was not valid for this payload, cbor hash bytes: {}&quot;</span>,
         hex::encode(hash_bytes),
     )]
     </span>MismatchedSignature { hash_bytes: [u8; <span class="number">32</span>] },
@@ -110,7 +116,7 @@
     </span>EmptyDelegations,
 
     <span class="attribute">#[error(
-        <span class="string">&quot;stake key has wrong network id, expected {expected}, actual {}&quot;</span>, 
+        <span class="string">&quot;stake key has wrong network id, expected {expected}, actual {}&quot;</span>,
         actual.map(|id| id.to_string()).unwrap_or_else(|| <span class="string">&quot;None&quot;</span>.to_string()),
     )]
     </span>StakeKeyWrongNetwork {
@@ -120,6 +126,12 @@
 
     <span class="attribute">#[error(<span class="string">&quot;stake key has wrong type: {0}, expected 14 or 15&quot;</span>)]
     </span>StakeKeyWrongType(u8),
+
+    <span class="attribute">#[error(<span class="string">&quot;stake public key error {err}&quot;</span>)]
+    </span>StakePublicKeyError { err: String },
+
+    <span class="attribute">#[error(<span class="string">&quot;signature error {err}&quot;</span>)]
+    </span>SignatureError { err: String },
 }
 
 <span class="doccomment">/// A registration that failed validation, along with the error

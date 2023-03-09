@@ -260,9 +260,9 @@
 <span id="260">260</span>
 <span id="261">261</span>
 <span id="262">262</span>
+<span id="263">263</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{collections::BTreeMap, ffi::OsString};
 
-<span class="kw">use </span>bigdecimal::BigDecimal;
 <span class="kw">use </span>bytekind::{Bytes, HexString};
 <span class="kw">use </span>clap::builder::OsStr;
 <span class="kw">use </span>hex::FromHexError;
@@ -299,17 +299,17 @@
     /// Voting power is based on the staked ada of the delegated keys
     </span><span class="attribute">#[serde(serialize_with = <span class="string">&quot;serialize_btree_as_vec_tuple&quot;</span>)]
     #[serde(deserialize_with = <span class="string">&quot;deserialize_btree_as_vec_tuple&quot;</span>)]
-    </span>Delegated(BTreeMap&lt;VotingKeyHex, BigDecimal&gt;),
+    </span>Delegated(BTreeMap&lt;VotingKeyHex, u64&gt;),
 }
 
 <span class="kw">fn </span>deserialize_btree_as_vec_tuple&lt;<span class="lifetime">&#39;de</span>, D: Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;&gt;(
     d: D,
-) -&gt; <span class="prelude-ty">Result</span>&lt;BTreeMap&lt;VotingKeyHex, BigDecimal&gt;, D::Error&gt; {
-    &lt;Vec&lt;(VotingKeyHex, BigDecimal)&gt;&gt;::deserialize(d).map(|vec| vec.into_iter().collect())
+) -&gt; <span class="prelude-ty">Result</span>&lt;BTreeMap&lt;VotingKeyHex, u64&gt;, D::Error&gt; {
+    &lt;Vec&lt;(VotingKeyHex, u64)&gt;&gt;::deserialize(d).map(|vec| vec.into_iter().collect())
 }
 
 <span class="kw">fn </span>serialize_btree_as_vec_tuple&lt;S: Serializer&gt;(
-    map: <span class="kw-2">&amp;</span>BTreeMap&lt;VotingKeyHex, BigDecimal&gt;,
+    map: <span class="kw-2">&amp;</span>BTreeMap&lt;VotingKeyHex, u64&gt;,
     s: S,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt; {
     <span class="kw">let </span>vec: Vec&lt;<span class="kw">_</span>&gt; = map.iter().collect();
@@ -381,18 +381,20 @@
 </span><span class="attribute">#[derive(Debug, PartialEq, Serialize, Deserialize)]
 </span><span class="kw">pub struct </span>SnapshotEntry {
     <span class="doccomment">/// Registration content
+    </span><span class="attribute">#[serde(rename = <span class="string">&quot;delegations&quot;</span>)]
     </span><span class="kw">pub </span>voting_power_source: VotingPowerSource,
 
     <span class="doccomment">/// Mainnet rewards address
     </span><span class="kw">pub </span>rewards_address: RewardsAddress,
 
     <span class="doccomment">/// Stake public key
+    </span><span class="attribute">#[serde(rename = <span class="string">&quot;stake_public_key&quot;</span>)]
     </span><span class="kw">pub </span>stake_key: StakeKeyHex,
 
     <span class="doccomment">/// Voting power expressed in ada
     ///
     /// This is computed from `voting_power_source`
-    </span><span class="kw">pub </span>voting_power: BigDecimal,
+    </span><span class="kw">pub </span>voting_power: u128,
 
     <span class="doccomment">/// Voting purpose
     ///

@@ -63,7 +63,7 @@ class VotingNode(uvicorn.Server):
                 await schedule.run()
                 break
             except Exception as e:
-                logger.warning(f"schedule task failed: {e}")
+                logger.warning(f"schedule fail: {e}")
             # waits before retrying
             await asyncio.sleep(SLEEP_TO_SCHEDULE_RETRY)
 

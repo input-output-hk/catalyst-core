@@ -9,8 +9,13 @@ class JCli(object):
         self.jcli_exec = jcli_exec
 
     async def privkey(self, secret_type: str = "ed25519") -> str:
-        """Returns a secret key. Defaults to 'ed25519. Possible values: ed25519,
-        ed25519-bip32, ed25519-extended, sum-ed25519-12, ristretto-group2-hash-dh."""
+        """Returns a private (secret) key from the given secret_type.
+
+        Possible values: "ed25519", "ed25519-bip32", "ed25519-extended",
+        "sum-ed25519-12", "ristretto-group2-hash-dh".
+
+        Defaults to "ed25519".
+        """
         # run jcli to generate the secret key
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,
@@ -32,7 +37,7 @@ class JCli(object):
         return key
 
     async def pubkey(self, seckey: str) -> str:
-        """Returns a public key the given secret key."""
+        """Returns a public key the given secret key string."""
         # run jcli to generate the secret key
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,
@@ -70,7 +75,7 @@ class JCli(object):
         return key
 
     async def create_committee_id(self) -> str:
-        seckey = await self.seckey()
+        seckey = await self.privkey()
         pubkey = await self.pubkey(seckey)
         hex_key = await self.key_to_hex(pubkey)
         return hex_key

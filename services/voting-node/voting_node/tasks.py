@@ -39,7 +39,7 @@ class ScheduleRunner(object):
 
         This method never returns."""
         self.reset_data()
-        raise Exception(f"schedule reset: {msg}")
+        raise Exception(f"RESET: {msg}")
 
     async def run(self) -> None:
         """Runs through the scheduled tasks."""
@@ -149,7 +149,7 @@ class NodeTaskSchedule(ScheduleRunner):
     async def setup_node_info(self):
         # check that we have the info we need, otherwise, we reset
         if self.voting_event is None:
-            self.reset_schedule("no voting event was found.")
+            self.reset_schedule("no voting event was found")
         try:
             # gets host information from voting_node table
             event_row_id: int = self.voting_event.row_id
@@ -164,7 +164,7 @@ class NodeTaskSchedule(ScheduleRunner):
             logger.debug(f"generating {hostname} node info with jcli")
             # generate the keys
             seckey = await self.jcli().privkey(secret_type="ed25519")
-            pubkey = await self.jcli().pubkey(seckey=seckey)
+            pubkey = await self.jcli().pubkey(seckey)
             netkey = await self.jcli().privkey(secret_type="ed25519")
             logger.debug("node keys were generated")
 

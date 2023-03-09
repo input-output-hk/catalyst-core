@@ -14,6 +14,9 @@ nonempty = { workspace = true }
 validity = { workspace = true }
 bytekind = { workspace = true }
 
+rayon = "1.7" # Parallel Iteration.
+dashmap = "5.4.0" # Parallel access map.
+scheduled-thread-pool = "0.2.7" # Thread Pool for connection pooling.
 
 color-eyre = "0.6"  # error handling
 clap = { workspace = true}

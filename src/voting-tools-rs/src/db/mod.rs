@@ -33,6 +33,9 @@ pub struct DbConfig {
 
 /// Inner module to hide database internals from database code
 mod inner {
+    use scheduled_thread_pool::ScheduledThreadPool;
+    use std::sync::Arc;
+
     use super::DbConfig;
     use color_eyre::Result;
     use diesel::{
@@ -72,7 +75,16 @@ mod inner {
 
             let url = format!("postgres://{user}{password}@{host}/{name}",);
             let manager = ConnectionManager::new(url);
-            let pool = Pool::new(manager)?;
+            let pool = Pool::builder()
+                .max_size(50)
+                .min_idle(Some(25))
+                .thread_pool(Arc::new(
+                    ScheduledThreadPool::builder()
+                        .num_threads(16)
+                        .thread_name_pattern("r2d2-worker-{}")
+                        .build(),
+                ))
+                .build(manager)?;
 
             password.zeroize();
             Ok(Db(pool))

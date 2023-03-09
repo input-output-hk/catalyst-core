@@ -1,6 +1,5 @@
 use std::{collections::BTreeMap, ffi::OsString};
 
-use bigdecimal::BigDecimal;
 use bytekind::{Bytes, HexString};
 use clap::builder::OsStr;
 use hex::FromHexError;
@@ -37,17 +36,17 @@ pub enum VotingPowerSource {
     /// Voting power is based on the staked ada of the delegated keys
     #[serde(serialize_with = "serialize_btree_as_vec_tuple")]
     #[serde(deserialize_with = "deserialize_btree_as_vec_tuple")]
-    Delegated(BTreeMap<VotingKeyHex, BigDecimal>),
+    Delegated(BTreeMap<VotingKeyHex, u64>),
 }
 
 fn deserialize_btree_as_vec_tuple<'de, D: Deserializer<'de>>(
     d: D,
-) -> Result<BTreeMap<VotingKeyHex, BigDecimal>, D::Error> {
-    <Vec<(VotingKeyHex, BigDecimal)>>::deserialize(d).map(|vec| vec.into_iter().collect())
+) -> Result<BTreeMap<VotingKeyHex, u64>, D::Error> {
+    <Vec<(VotingKeyHex, u64)>>::deserialize(d).map(|vec| vec.into_iter().collect())
 }
 
 fn serialize_btree_as_vec_tuple<S: Serializer>(
-    map: &BTreeMap<VotingKeyHex, BigDecimal>,
+    map: &BTreeMap<VotingKeyHex, u64>,
     s: S,
 ) -> Result<S::Ok, S::Error> {
     let vec: Vec<_> = map.iter().collect();
@@ -119,18 +118,20 @@ pub struct SignedRegistration {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct SnapshotEntry {
     /// Registration content
+    #[serde(rename = "delegations")]
     pub voting_power_source: VotingPowerSource,
 
     /// Mainnet rewards address
     pub rewards_address: RewardsAddress,
 
     /// Stake public key
+    #[serde(rename = "stake_public_key")]
     pub stake_key: StakeKeyHex,
 
     /// Voting power expressed in ada
     ///
     /// This is computed from `voting_power_source`
-    pub voting_power: BigDecimal,
+    pub voting_power: u128,
 
     /// Voting purpose
     ///

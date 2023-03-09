@@ -9,11 +9,12 @@ use bigdecimal::{BigDecimal, FromPrimitive};
 use cardano_serialization_lib::address::Address;
 use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey};
 use cardano_serialization_lib::utils::BigNum;
+use dashmap::DashMap;
 use mainnet_lib::{
     InMemoryDbSync, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
     REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
 };
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::str::FromStr;
 
 /// Mock db provider based on [`InMemoryDbSync`] struct from [`mainnet_lib`] project.
@@ -125,11 +126,8 @@ impl DataProvider for MockDbProvider {
             }))
     }
 
-    fn stake_values(
-        &self,
-        stake_addrs: &[StakeKeyHex],
-    ) -> color_eyre::Result<HashMap<StakeKeyHex, BigDecimal>> {
-        Ok(stake_addrs
+    fn stake_values(&self, stake_addrs: &[StakeKeyHex]) -> DashMap<StakeKeyHex, BigDecimal> {
+        stake_addrs
             .iter()
             .map(|addr| {
                 let big_num = self
@@ -140,7 +138,7 @@ impl DataProvider for MockDbProvider {
                     .to_string();
                 (addr.clone(), BigDecimal::from_str(&big_num).unwrap())
             })
-            .collect())
+            .collect()
     }
 }
 

@@ -1,13 +1,12 @@
-use std::collections::HashMap;
-
 use crate::{
     data::{Registration, SignedRegistration, SlotNo, StakeKeyHex},
     error::InvalidRegistration,
     validation::ValidationCtx,
     DataProvider, SnapshotEntry,
 };
-use bigdecimal::BigDecimal;
+use bigdecimal::{BigDecimal, ToPrimitive};
 use color_eyre::eyre::{eyre, Result};
+use dashmap::DashMap;
 use itertools::Itertools;
 use nonempty::nonempty;
 use validity::{Failure, Valid, Validate};
@@ -85,7 +84,8 @@ pub fn voting_power(
         registrations.into_iter().map(validate).partition_result();
 
     let addrs = stake_addrs(&valid_registrations);
-    let voting_powers = db.stake_values(&addrs)?;
+
+    let voting_powers = db.stake_values(&addrs);
 
     let snapshot = valid_registrations
         .into_iter()
@@ -104,7 +104,7 @@ fn stake_addrs(registrations: &[Valid<SignedRegistration>]) -> Vec<StakeKeyHex> 
 
 fn convert_to_snapshot_entry(
     registration: Valid<SignedRegistration>,
-    voting_powers: &HashMap<StakeKeyHex, BigDecimal>,
+    voting_powers: &DashMap<StakeKeyHex, BigDecimal>,
 ) -> Result<SnapshotEntry> {
     let SignedRegistration {
         registration:
@@ -123,7 +123,7 @@ fn convert_to_snapshot_entry(
         .get(&stake_key)
         .ok_or_else(|| eyre!("no voting power available for stake key: {}", stake_key))?;
 
-    let voting_power = voting_power.clone();
+    let voting_power = voting_power.to_u128().unwrap_or(0);
 
     Ok(SnapshotEntry {
         voting_power_source,

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["Error",""]],"mod":[["client",""],["config",""],["rest",""]],"struct":[["Context",""],["TriggerServiceCommand",""]],"type":[["ContextState",""]]};

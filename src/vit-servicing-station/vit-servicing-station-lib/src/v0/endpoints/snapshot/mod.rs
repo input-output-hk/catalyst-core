@@ -238,20 +238,19 @@ pub async fn update_from_snapshot_info(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::db::migrations::initialize_db_with_migration;
-    use crate::v0::context::test::new_db_test_shared_context;
+    use crate::v0::context::test::new_test_shared_context_from_url;
     use jormungandr_lib::crypto::account::Identifier;
     use snapshot_lib::registration::{Delegations, VotingRegistration};
     use snapshot_lib::{KeyContribution, SnapshotInfo, VoterHIR};
     use tracing::Level;
+    use vit_servicing_station_tests::common::startup::db::DbBuilder;
     use warp::hyper::StatusCode;
     use warp::{Filter, Reply};
 
     #[tokio::test]
     pub async fn test_snapshot() {
-        let context = new_db_test_shared_context();
-        let db_conn = &context.read().await.db_connection_pool.get().unwrap();
-        initialize_db_with_migration(db_conn).unwrap();
+        let db_url = DbBuilder::new().build().unwrap();
+        let context = new_test_shared_context_from_url(&db_url);
 
         let keys = [
             Identifier::from_hex(
@@ -530,9 +529,9 @@ mod test {
 
         const UPDATE_TIME1: i64 = 0;
 
-        let context = new_db_test_shared_context();
+        let db_url = DbBuilder::new().build().unwrap();
+        let context = new_test_shared_context_from_url(&db_url);
         let db_conn = &context.read().await.db_connection_pool.get().unwrap();
-        initialize_db_with_migration(db_conn).unwrap();
 
         let voting_key = Identifier::from_hex(
             "0000000000000000000000000000000000000000000000000000000000000000",
@@ -757,9 +756,9 @@ mod test {
         })
         .unwrap();
 
-        let context = new_db_test_shared_context();
+        let db_url = DbBuilder::new().build().unwrap();
+        let context = new_test_shared_context_from_url(&db_url);
         let db_conn = &context.read().await.db_connection_pool.get().unwrap();
-        initialize_db_with_migration(db_conn).unwrap();
 
         let snapshot_root = warp::path!("snapshot" / ..).boxed();
         let filter = filter(snapshot_root.clone(), context.clone());
@@ -889,9 +888,9 @@ mod test {
         })
         .unwrap();
 
-        let context = new_db_test_shared_context();
+        let db_url = DbBuilder::new().build().unwrap();
+        let context = new_test_shared_context_from_url(&db_url);
         let db_conn = &context.read().await.db_connection_pool.get().unwrap();
-        initialize_db_with_migration(db_conn).unwrap();
 
         let snapshot_root = warp::path!("snapshot" / ..).boxed();
         let filter = filter(snapshot_root.clone(), context.clone());
@@ -950,9 +949,9 @@ mod test {
     async fn test_put_raw_snapshot() {
         let content = r#"{"snapshot":[{"stake_public_key":"0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663","voting_power":2,"reward_address":"0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663","delegations":"0x0000000000000000000000000000000000000000000000000000000000000000","voting_purpose":0},{"stake_public_key":"0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee","voting_power":1,"reward_address":"0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee","delegations":"0x0000000000000000000000000000000000000000000000000000000000000000","voting_purpose":0}],"update_timestamp":"1970-01-01T00:00:00Z","min_stake_threshold":0,"voting_power_cap": "NaN","direct_voters_group":null,"representatives_group":null}"#;
 
-        let context = new_db_test_shared_context();
+        let db_url = DbBuilder::new().build().unwrap();
+        let context = new_test_shared_context_from_url(&db_url);
         let db_conn = &context.read().await.db_connection_pool.get().unwrap();
-        initialize_db_with_migration(db_conn).unwrap();
 
         let snapshot_root = warp::path!("snapshot" / ..).boxed();
         let put_filter = snapshot_root.and(update_filter(context));

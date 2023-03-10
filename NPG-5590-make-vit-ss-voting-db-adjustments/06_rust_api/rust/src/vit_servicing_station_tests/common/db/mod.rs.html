@@ -333,8 +333,96 @@
 <span id="333">333</span>
 <span id="334">334</span>
 <span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::BTreeMap;
 
+<span class="kw">use </span>diesel::RunQueryDsl;
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">use </span>vit_servicing_station_lib::db::models::{
     api_tokens::ApiTokenData,
@@ -346,6 +434,12 @@
 };
 <span class="kw">use </span>vit_servicing_station_lib::db::DbConnection;
 
+<span class="attribute">#[derive(diesel::QueryableByName)]
+</span><span class="kw">struct </span>RowId {
+    <span class="attribute">#[sql_type = <span class="string">&quot;diesel::sql_types::Integer&quot;</span>]
+    </span>row_id: i32,
+}
+
 <span class="kw">pub struct </span>DbInserter&lt;<span class="lifetime">&#39;a</span>&gt; {
     connection: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>DbConnection,
 }
@@ -356,24 +450,17 @@
     }
 
     <span class="kw">pub fn </span>insert_token(<span class="kw-2">&amp;</span><span class="self">self</span>, token_data: <span class="kw-2">&amp;</span>ApiTokenData) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbInserterError&gt; {
-        <span class="comment">// use election_db::schema::config;
-
-        // let values = (
-        //     config::id.eq(&quot;api_token&quot;),
-        //     config::id2.eq(base64::encode(token_data.token.as_ref())),
-        //     config::id3.eq(&quot;&quot;),
-        //     config::value.eq(serde_json::json!({
-        //         &quot;created&quot;: token_data.creation_time,
-        //         &quot;expires&quot;: token_data.expire_time,
-        //     })),
-        // );
-
-        // diesel::insert_into(config::table)
-        //     .values(values)
-        //     .execute(self.connection)
-        //     .map_err(DbInserterError::DieselError)?;
-
-        </span><span class="prelude-val">Ok</span>(())
+        diesel::sql_query(<span class="string">&quot;INSERT INTO config (id, id2, id3, value) VALUES ($1, $2, $3, $4)&quot;</span>)
+            .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="string">&quot;api_token&quot;</span>)
+            .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(base64::encode(token_data.token.as_ref()))
+            .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="string">&quot;&quot;</span>)
+            .bind::&lt;diesel::sql_types::Jsonb, <span class="kw">_</span>&gt;(<span class="macro">serde_json::json!</span>({
+                <span class="string">&quot;created&quot;</span>: token_data.creation_time,
+                <span class="string">&quot;expires&quot;</span>: token_data.expire_time,
+            }))
+            .execute(<span class="self">self</span>.connection)
+            .map_err(DbInserterError::DieselError)
+            .map(|<span class="kw">_</span>| ())
     }
 
     <span class="kw">pub fn </span>insert_tokens(<span class="kw-2">&amp;</span><span class="self">self</span>, tokens_data: <span class="kw-2">&amp;</span>[ApiTokenData]) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbInserterError&gt; {
@@ -384,282 +471,369 @@
     }
 
     <span class="kw">pub fn </span>insert_proposals(<span class="kw-2">&amp;</span><span class="self">self</span>, proposals: <span class="kw-2">&amp;</span>[FullProposalInfo]) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbInserterError&gt; {
-        <span class="comment">// use election_db::schema::{proposal, proposal_voteplan, voteplan};
+        <span class="kw">for </span>proposal <span class="kw">in </span>proposals {
+            <span class="kw">let </span>proposal_id = proposal
+                .proposal
+                .proposal_id
+                .as_str()
+                .parse::&lt;i32&gt;()
+                .unwrap();
 
-        // for proposal in proposals {
-        //     let proposal_id = proposal
-        //         .proposal
-        //         .proposal_id
-        //         .as_str()
-        //         .parse::&lt;i32&gt;()
-        //         .unwrap();
+            <span class="kw">let </span><span class="kw-2">mut </span>extra = <span class="kw">match </span><span class="kw-2">&amp;</span>proposal.challenge_info {
+                ProposalChallengeInfo::Simple(info) =&gt; {
+                    <span class="macro">vec!</span>[(<span class="string">&quot;solution&quot;</span>, info.proposal_solution.as_str())]
+                }
+                ProposalChallengeInfo::CommunityChoice(info) =&gt; <span class="macro">vec!</span>[
+                    (<span class="string">&quot;brief&quot;</span>, info.proposal_brief.as_str()),
+                    (<span class="string">&quot;importance&quot;</span>, info.proposal_importance.as_str()),
+                    (<span class="string">&quot;goal&quot;</span>, info.proposal_goal.as_str()),
+                    (<span class="string">&quot;metrics&quot;</span>, info.proposal_metrics.as_str()),
+                ],
+            }
+            .iter()
+            .map(|(a, b)| (a.to_string(), b.to_string()))
+            .collect::&lt;BTreeMap&lt;String, String&gt;&gt;();
 
-        //     let mut extra = match &amp;proposal.challenge_info {
-        //         ProposalChallengeInfo::Simple(info) =&gt; {
-        //             vec![(&quot;solution&quot;, info.proposal_solution.as_str())]
-        //         }
-        //         ProposalChallengeInfo::CommunityChoice(info) =&gt; vec![
-        //             (&quot;brief&quot;, info.proposal_brief.as_str()),
-        //             (&quot;importance&quot;, info.proposal_importance.as_str()),
-        //             (&quot;goal&quot;, info.proposal_goal.as_str()),
-        //             (&quot;metrics&quot;, info.proposal_metrics.as_str()),
-        //         ],
-        //     }
-        //     .iter()
-        //     .map(|(a, b)| (a.to_string(), b.to_string()))
-        //     .collect::&lt;BTreeMap&lt;String, String&gt;&gt;();
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(e) = proposal.proposal.extra.as_ref() {
+                extra.extend(
+                    e.iter()
+                        .map(|(a, b)| (a.clone(), b.clone()))
+                        .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
+                );
+            }
 
-        //     if let Some(e) = proposal.proposal.extra.as_ref() {
-        //         extra.extend(
-        //             e.iter()
-        //                 .map(|(a, b)| (a.clone(), b.clone()))
-        //                 .collect::&lt;Vec&lt;_&gt;&gt;(),
-        //         );
-        //     }
+            diesel::sql_query(
+                <span class="string">r#&quot;
+                INSERT INTO proposal (
+                    row_id,
+                    id,
+                    title,
+                    summary,
+                    category,
+                    public_key,
+                    funds,
+                    url,
+                    files_url,
+                    impact_score,
+                    proposer_name,
+                    proposer_contact,
+                    proposer_url,
+                    proposer_relevant_experience,
+                    bb_proposal_id,
+                    bb_vote_options,
+                    challenge,
+                    extra
+                ) VALUES (
+                    $1, $2, $3, $4, $5, $6, $7, $8, $9,
+                    $10, $11, $12, $13, $14, $15, $16, $17, $18
+                )
+                &quot;#</span>,
+            )
+            .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal.proposal.internal_id)
+            .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal_id)
+            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal.proposal.proposal_title)
+            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal.proposal.proposal_summary)
+            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal.proposal.proposal_category.category_name)
+            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal.proposal.proposal_public_key)
+            .bind::&lt;diesel::sql_types::BigInt, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal.proposal.proposal_funds)
+            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal.proposal.proposal_url)
+            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal.proposal.proposal_files_url)
+            .bind::&lt;diesel::sql_types::BigInt, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal.proposal.proposal_impact_score)
+            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal.proposal.proposer.proposer_name)
+            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal.proposal.proposer.proposer_email)
+            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal.proposal.proposer.proposer_url)
+            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(
+                <span class="kw-2">&amp;</span>proposal.proposal.proposer.proposer_relevant_experience,
+            )
+            .bind::&lt;diesel::sql_types::Binary, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal.proposal.chain_proposal_id)
+            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(
+                proposal.proposal.chain_vote_options.as_csv_string(),
+            )
+            .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal.proposal.challenge_id)
+            .bind::&lt;diesel::sql_types::Jsonb, <span class="kw">_</span>&gt;(serde_json::to_value(extra).unwrap())
+            .execute(<span class="self">self</span>.connection)
+            .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
 
-        //     let values = (
-        //         proposal::row_id.eq(proposal.proposal.internal_id),
-        //         proposal::id.eq(proposal_id),
-        //         proposal::title.eq(proposal.proposal.proposal_title.clone()),
-        //         proposal::summary.eq(proposal.proposal.proposal_summary.clone()),
-        //         proposal::category.eq(proposal.proposal.proposal_category.category_name.clone()),
-        //         proposal::public_key.eq(proposal.proposal.proposal_public_key.clone()),
-        //         proposal::funds.eq(proposal.proposal.proposal_funds),
-        //         proposal::url.eq(proposal.proposal.proposal_url.clone()),
-        //         proposal::files_url.eq(proposal.proposal.proposal_files_url.clone()),
-        //         proposal::impact_score.eq(proposal.proposal.proposal_impact_score),
-        //         proposal::proposer_name.eq(proposal.proposal.proposer.proposer_name.clone()),
-        //         proposal::proposer_contact.eq(proposal.proposal.proposer.proposer_email.clone()),
-        //         proposal::proposer_url.eq(proposal.proposal.proposer.proposer_url.clone()),
-        //         proposal::proposer_relevant_experience.eq(proposal
-        //             .proposal
-        //             .proposer
-        //             .proposer_relevant_experience
-        //             .clone()),
-        //         proposal::bb_proposal_id.eq(proposal.proposal.chain_proposal_id.clone()),
-        //         proposal::bb_vote_options.eq(proposal.proposal.chain_vote_options.as_csv_string()),
-        //         proposal::challenge.eq(proposal.proposal.challenge_id),
-        //         proposal::extra.eq(serde_json::to_value(extra).unwrap()),
-        //     );
+            <span class="kw">let </span>res = diesel::sql_query(
+                <span class="string">r#&quot;
+                SELECT row_id FROM voteplan WHERE id = $1
+                &quot;#</span>,
+            )
+            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal.voteplan.chain_voteplan_id)
+            .get_result::&lt;RowId&gt;(<span class="self">self</span>.connection)
+            .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
 
-        //     diesel::insert_into(proposal::table)
-        //         .values(values)
-        //         .execute(self.connection)
-        //         .map_err(DbInserterError::DieselError)?;
+            diesel::sql_query(
+                <span class="string">r#&quot;
+                INSERT INTO proposal_voteplan (
+                    proposal_id,
+                    voteplan_id,
+                    bb_proposal_index
+                ) VALUES ($1, $2, $3)
+                &quot;#</span>,
+            )
+            .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(proposal.proposal.internal_id)
+            .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(res.row_id)
+            .bind::&lt;diesel::sql_types::BigInt, <span class="kw">_</span>&gt;(proposal.voteplan.chain_proposal_index)
+            .execute(<span class="self">self</span>.connection)
+            .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
+        }
 
-        //     let voteplan_row_id = voteplan::table
-        //         .filter(voteplan::id.eq(&amp;proposal.voteplan.chain_voteplan_id))
-        //         .select(voteplan::row_id)
-        //         .get_result::&lt;i32&gt;(self.connection)
-        //         .unwrap();
-
-        //     let values = (
-        //         proposal_voteplan::proposal_id.eq(proposal.proposal.internal_id),
-        //         proposal_voteplan::voteplan_id.eq(voteplan_row_id),
-        //         proposal_voteplan::bb_proposal_index.eq(proposal.voteplan.chain_proposal_index),
-        //     );
-
-        //     diesel::insert_into(proposal_voteplan::table)
-        //         .values(values)
-        //         .execute(self.connection)
-        //         .map_err(DbInserterError::DieselError)?;
-        // }
-
-        </span><span class="prelude-val">Ok</span>(())
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="kw">pub fn </span>insert_funds(<span class="kw-2">&amp;</span><span class="self">self</span>, funds: <span class="kw-2">&amp;</span>[Fund]) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbInserterError&gt; {
-        <span class="comment">// use election_db::schema::{election, goal, voteplan, voting_group};
+        <span class="kw">for </span>fund <span class="kw">in </span>funds {
+            <span class="kw">let </span>id_item = <span class="kw">if </span>fund.id == <span class="number">0 </span>{ <span class="prelude-val">None </span>} <span class="kw">else </span>{ <span class="prelude-val">Some</span>(fund.id) };
 
-        // for fund in funds {
-        //     let id_item = if fund.id == 0 {
-        //         None
-        //     } else {
-        //         Some(election::row_id.eq(fund.id))
-        //     };
+            diesel::sql_query(
+                <span class="string">r#&quot;
+                INSERT INTO event (
+                    row_id,
+                    name,
+                    description,
+                    registration_snapshot_time,
+                    voting_power_threshold,
+                    start_time,
+                    end_time,
+                    insight_sharing_start,
+                    proposal_submission_start,
+                    refine_proposals_start,
+                    finalize_proposals_start,
+                    proposal_assessment_start,
+                    assessment_qa_start,
+                    snapshot_start,
+                    voting_start,
+                    voting_end,
+                    tallying_end,
+                    extra,
+                    committee_size,
+                    committee_threshold
+                ) VALUES (
+                    $1, $2, $3, $4, $5, $6, $7, $8, $9,
+                    $10, $11, $12, $13, $14, $15, $16, $17, $18,
+                    $19, $20
+                )
+                &quot;#</span>,
+            )
+            .bind::&lt;diesel::sql_types::Nullable&lt;diesel::sql_types::Integer&gt;, <span class="kw">_</span>&gt;(id_item)
+            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>fund.fund_name)
+            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>fund.fund_goal)
+            .bind::&lt;diesel::sql_types::Nullable&lt;diesel::sql_types::Timestamp&gt;, <span class="kw">_</span>&gt;(
+                chrono::NaiveDateTime::from_timestamp_millis(
+                    fund.registration_snapshot_time * <span class="number">1000</span>,
+                ),
+            )
+            .bind::&lt;diesel::sql_types::BigInt, <span class="kw">_</span>&gt;(fund.voting_power_threshold)
+            .bind::&lt;diesel::sql_types::Nullable&lt;diesel::sql_types::Timestamp&gt;, <span class="kw">_</span>&gt;(
+                chrono::NaiveDateTime::from_timestamp_millis(fund.fund_start_time * <span class="number">1000</span>),
+            )
+            .bind::&lt;diesel::sql_types::Nullable&lt;diesel::sql_types::Timestamp&gt;, <span class="kw">_</span>&gt;(
+                chrono::NaiveDateTime::from_timestamp_millis(fund.fund_end_time * <span class="number">1000</span>),
+            )
+            .bind::&lt;diesel::sql_types::Nullable&lt;diesel::sql_types::Timestamp&gt;, <span class="kw">_</span>&gt;(
+                chrono::NaiveDateTime::from_timestamp_millis(
+                    fund.stage_dates.insight_sharing_start * <span class="number">1000</span>,
+                ),
+            )
+            .bind::&lt;diesel::sql_types::Nullable&lt;diesel::sql_types::Timestamp&gt;, <span class="kw">_</span>&gt;(
+                chrono::NaiveDateTime::from_timestamp_millis(
+                    fund.stage_dates.proposal_submission_start * <span class="number">1000</span>,
+                ),
+            )
+            .bind::&lt;diesel::sql_types::Nullable&lt;diesel::sql_types::Timestamp&gt;, <span class="kw">_</span>&gt;(
+                chrono::NaiveDateTime::from_timestamp_millis(
+                    fund.stage_dates.refine_proposals_start * <span class="number">1000</span>,
+                ),
+            )
+            .bind::&lt;diesel::sql_types::Nullable&lt;diesel::sql_types::Timestamp&gt;, <span class="kw">_</span>&gt;(
+                chrono::NaiveDateTime::from_timestamp_millis(
+                    fund.stage_dates.finalize_proposals_start * <span class="number">1000</span>,
+                ),
+            )
+            .bind::&lt;diesel::sql_types::Nullable&lt;diesel::sql_types::Timestamp&gt;, <span class="kw">_</span>&gt;(
+                chrono::NaiveDateTime::from_timestamp_millis(
+                    fund.stage_dates.proposal_assessment_start * <span class="number">1000</span>,
+                ),
+            )
+            .bind::&lt;diesel::sql_types::Nullable&lt;diesel::sql_types::Timestamp&gt;, <span class="kw">_</span>&gt;(
+                chrono::NaiveDateTime::from_timestamp_millis(
+                    fund.stage_dates.assessment_qa_start * <span class="number">1000</span>,
+                ),
+            )
+            .bind::&lt;diesel::sql_types::Nullable&lt;diesel::sql_types::Timestamp&gt;, <span class="kw">_</span>&gt;(
+                chrono::NaiveDateTime::from_timestamp_millis(
+                    fund.stage_dates.snapshot_start * <span class="number">1000</span>,
+                ),
+            )
+            .bind::&lt;diesel::sql_types::Nullable&lt;diesel::sql_types::Timestamp&gt;, <span class="kw">_</span>&gt;(
+                chrono::NaiveDateTime::from_timestamp_millis(fund.stage_dates.voting_start * <span class="number">1000</span>),
+            )
+            .bind::&lt;diesel::sql_types::Nullable&lt;diesel::sql_types::Timestamp&gt;, <span class="kw">_</span>&gt;(
+                chrono::NaiveDateTime::from_timestamp_millis(fund.stage_dates.voting_end * <span class="number">1000</span>),
+            )
+            .bind::&lt;diesel::sql_types::Nullable&lt;diesel::sql_types::Timestamp&gt;, <span class="kw">_</span>&gt;(
+                chrono::NaiveDateTime::from_timestamp_millis(fund.stage_dates.tallying_end * <span class="number">1000</span>),
+            )
+            .bind::&lt;diesel::sql_types::Jsonb, <span class="kw">_</span>&gt;(<span class="macro">serde_json::json!</span>({
+                <span class="string">&quot;url&quot;</span>: {
+                    <span class="string">&quot;results&quot;</span>: fund.results_url,
+                    <span class="string">&quot;survey&quot;</span>: fund.survey_url,
+                }
+            }))
+            .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(<span class="number">0</span>)
+            .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(<span class="number">0</span>)
+            .execute(<span class="self">self</span>.connection)
+            .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
 
-        //     let values = (
-        //         id_item,
-        //         election::name.eq(&amp;fund.fund_name),
-        //         election::description.eq(&amp;fund.fund_goal),
-        //         election::registration_snapshot_time.eq(
-        //             chrono::NaiveDateTime::from_timestamp_millis(
-        //                 fund.registration_snapshot_time * 1000,
-        //             ),
-        //         ),
-        //         election::voting_power_threshold.eq(fund.voting_power_threshold),
-        //         election::start_time.eq(chrono::NaiveDateTime::from_timestamp_millis(
-        //             fund.fund_start_time * 1000,
-        //         )),
-        //         election::end_time.eq(chrono::NaiveDateTime::from_timestamp_millis(
-        //             fund.fund_end_time * 1000,
-        //         )),
-        //         election::insight_sharing_start.eq(chrono::NaiveDateTime::from_timestamp_millis(
-        //             fund.stage_dates.insight_sharing_start * 1000,
-        //         )),
-        //         election::proposal_submission_start.eq(
-        //             chrono::NaiveDateTime::from_timestamp_millis(
-        //                 fund.stage_dates.proposal_submission_start * 1000,
-        //             ),
-        //         ),
-        //         election::refine_proposals_start.eq(chrono::NaiveDateTime::from_timestamp_millis(
-        //             fund.stage_dates.refine_proposals_start * 1000,
-        //         )),
-        //         election::finalize_proposals_start.eq(
-        //             chrono::NaiveDateTime::from_timestamp_millis(
-        //                 fund.stage_dates.finalize_proposals_start * 1000,
-        //             ),
-        //         ),
-        //         election::proposal_assessment_start.eq(
-        //             chrono::NaiveDateTime::from_timestamp_millis(
-        //                 fund.stage_dates.proposal_assessment_start * 1000,
-        //             ),
-        //         ),
-        //         election::assessment_qa_start.eq(chrono::NaiveDateTime::from_timestamp_millis(
-        //             fund.stage_dates.assessment_qa_start * 1000,
-        //         )),
-        //         election::snapshot_start.eq(chrono::NaiveDateTime::from_timestamp_millis(
-        //             fund.stage_dates.snapshot_start * 1000,
-        //         )),
-        //         election::voting_start.eq(chrono::NaiveDateTime::from_timestamp_millis(
-        //             fund.stage_dates.voting_start * 1000,
-        //         )),
-        //         election::voting_end.eq(chrono::NaiveDateTime::from_timestamp_millis(
-        //             fund.stage_dates.voting_end * 1000,
-        //         )),
-        //         election::tallying_end.eq(chrono::NaiveDateTime::from_timestamp_millis(
-        //             fund.stage_dates.tallying_end * 1000,
-        //         )),
-        //         election::extra.eq(serde_json::json!({
-        //             &quot;url&quot;: {
-        //                 &quot;results&quot;: fund.results_url,
-        //                 &quot;survey&quot;: fund.survey_url,
-        //             }
-        //         })),
-        //     );
+            <span class="self">self</span>.insert_groups(<span class="kw-2">&amp;</span>fund.groups.iter().cloned().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;())<span class="question-mark">?</span>;
 
-        //     diesel::insert_into(election::table)
-        //         .values(values)
-        //         .execute(self.connection)
-        //         .map_err(DbInserterError::DieselError)?;
+            <span class="kw">for </span>voteplan <span class="kw">in </span><span class="kw-2">&amp;</span>fund.chain_vote_plans {
+                <span class="kw">let </span>res = diesel::sql_query(<span class="string">&quot;SELECT row_id FROM voting_group WHERE token_id = $1&quot;</span>)
+                    .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>voteplan.token_identifier)
+                    .get_result::&lt;RowId&gt;(<span class="self">self</span>.connection)
+                    .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
 
-        //     self.insert_groups(&amp;fund.groups.iter().cloned().collect::&lt;Vec&lt;_&gt;&gt;())?;
+                diesel::sql_query(
+                    <span class="string">r#&quot;
+                    INSERT INTO voteplan (
+                        row_id,
+                        id,
+                        category,
+                        event_id,
+                        encryption_key,
+                        group_id
+                    ) VALUES (
+                        $1, $2, $3,
+                        $4, $5, $6
+                    ) ON CONFLICT (id) DO NOTHING
+                    &quot;#</span>,
+                )
+                .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(voteplan.id)
+                .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>voteplan.chain_voteplan_id)
+                .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>voteplan.chain_voteplan_payload)
+                .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>voteplan.fund_id)
+                .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>voteplan.chain_vote_encryption_key)
+                .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>res.row_id)
+                .execute(<span class="self">self</span>.connection)
+                .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
+            }
 
-        //     for voteplan in &amp;fund.chain_vote_plans {
-        //         let group_row_id = voting_group::table
-        //             .filter(voting_group::token_id.eq(&amp;voteplan.token_identifier))
-        //             .select(voting_group::row_id)
-        //             .get_result::&lt;i32&gt;(self.connection)
-        //             .unwrap();
+            <span class="kw">for </span>(ix, fund_goal) <span class="kw">in </span>fund.goals.iter().enumerate() {
+                diesel::sql_query(
+                    <span class="string">r#&quot;
+                    INSERT INTO goal (
+                        id,
+                        name,
+                        event_id,
+                        idx
+                    ) VALUES (
+                        $1, $2, $3, $4
+                    ) ON CONFLICT (id) DO NOTHING
+                    &quot;#</span>,
+                )
+                .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>fund_goal.id)
+                .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>fund_goal.goal_name)
+                .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>fund_goal.fund_id)
+                .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(ix <span class="kw">as </span>i32)
+                .execute(<span class="self">self</span>.connection)
+                .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
+            }
+        }
 
-        //         let values = (
-        //             voteplan::row_id.eq(voteplan.id),
-        //             voteplan::id.eq(&amp;voteplan.chain_voteplan_id),
-        //             voteplan::category.eq(&amp;voteplan.chain_voteplan_payload),
-        //             voteplan::election_id.eq(voteplan.fund_id),
-        //             voteplan::encryption_key.eq(&amp;voteplan.chain_vote_encryption_key),
-        //             voteplan::group_id.eq(group_row_id),
-        //         );
-
-        //         diesel::insert_into(voteplan::table)
-        //             .values(values)
-        //             .on_conflict_do_nothing()
-        //             .execute(self.connection)
-        //             .map_err(DbInserterError::DieselError)?;
-        //     }
-
-        //     for (ix, fund_goal) in fund.goals.iter().enumerate() {
-        //         diesel::insert_into(goal::table)
-        //             .values((
-        //                 goal::id.eq(fund_goal.id),
-        //                 goal::name.eq(&amp;fund_goal.goal_name),
-        //                 goal::election_id.eq(fund_goal.fund_id),
-        //                 goal::idx.eq(ix as i32),
-        //             ))
-        //             .on_conflict_do_nothing()
-        //             .execute(self.connection)
-        //             .map_err(DbInserterError::DieselError)?;
-        //     }
-        // }
-
-        </span><span class="prelude-val">Ok</span>(())
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="kw">pub fn </span>insert_challenges(<span class="kw-2">&amp;</span><span class="self">self</span>, challenges: <span class="kw-2">&amp;</span>[Challenge]) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbInserterError&gt; {
-        <span class="comment">// use election_db::schema::challenge;
+        <span class="kw">for </span>challenge <span class="kw">in </span>challenges {
+            diesel::sql_query(
+                <span class="string">r#&quot;
+                INSERT INTO challenge (
+                    row_id,
+                    id,
+                    category,
+                    title,
+                    description,
+                    rewards_total,
+                    proposers_rewards,
+                    event,
+                    extra
+                ) VALUES (
+                    $1, $2, $3,
+                    $4, $5, $6,
+                    $7, $8, $9
+                )
+            &quot;#</span>,
+            )
+            .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(challenge.internal_id)
+            .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(challenge.id)
+            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(challenge.challenge_type.to_string())
+            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>challenge.title)
+            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>challenge.description)
+            .bind::&lt;diesel::sql_types::BigInt, <span class="kw">_</span>&gt;(challenge.rewards_total)
+            .bind::&lt;diesel::sql_types::BigInt, <span class="kw">_</span>&gt;(challenge.proposers_rewards)
+            .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(challenge.fund_id)
+            .bind::&lt;diesel::sql_types::Jsonb, <span class="kw">_</span>&gt;(<span class="macro">serde_json::json!</span>({
+                <span class="string">&quot;url&quot;</span>: {
+                    <span class="string">&quot;challenge&quot;</span>: challenge.challenge_url,
+                },
+                <span class="string">&quot;highlights&quot;</span>: serde_json::to_string(<span class="kw-2">&amp;</span>challenge.highlights).ok(),
+            }))
+            .execute(<span class="self">self</span>.connection)
+            .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
+        }
 
-        // for challenge in challenges {
-        //     let values = (
-        //         challenge::row_id.eq(challenge.internal_id),
-        //         challenge::id.eq(challenge.id),
-        //         challenge::category.eq(challenge.challenge_type.to_string()),
-        //         challenge::title.eq(&amp;challenge.title),
-        //         challenge::description.eq(&amp;challenge.description),
-        //         challenge::rewards_total.eq(challenge.rewards_total),
-        //         challenge::proposers_rewards.eq(challenge.proposers_rewards),
-        //         challenge::election.eq(challenge.fund_id),
-        //         challenge::extra.eq(serde_json::json!({
-        //             &quot;url&quot;: {
-        //                 &quot;challenge&quot;: challenge.challenge_url,
-        //             },
-        //             &quot;highlights&quot;: serde_json::to_string(&amp;challenge.highlights).ok(),
-        //         })),
-        //     );
-
-        //     diesel::insert_into(challenge::table)
-        //         .values(values)
-        //         .execute(self.connection)
-        //         .map_err(DbInserterError::DieselError)?;
-        // }
-
-        </span><span class="prelude-val">Ok</span>(())
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="kw">pub fn </span>insert_advisor_reviews(<span class="kw-2">&amp;</span><span class="self">self</span>, reviews: <span class="kw-2">&amp;</span>[AdvisorReview]) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbInserterError&gt; {
-        <span class="comment">// use election_db::schema::community_advisors_review;
-
-        // for review in reviews {
-        //     let values = (
-        //         community_advisors_review::proposal_id.eq(review.proposal_id),
-        //         community_advisors_review::assessor.eq(&amp;review.assessor),
-        //         community_advisors_review::impact_alignment_rating_given
-        //             .eq(review.impact_alignment_rating_given),
-        //         community_advisors_review::impact_alignment_note.eq(&amp;review.impact_alignment_note),
-        //         community_advisors_review::feasibility_rating_given
-        //             .eq(review.feasibility_rating_given),
-        //         community_advisors_review::feasibility_note.eq(&amp;review.feasibility_note),
-        //         community_advisors_review::auditability_rating_given
-        //             .eq(review.auditability_rating_given),
-        //         community_advisors_review::auditability_note.eq(&amp;review.auditability_note),
-        //         community_advisors_review::ranking.eq(review.ranking as i32),
-        //     );
-
-        //     diesel::insert_into(community_advisors_review::table)
-        //         .values(values)
-        //         .on_conflict_do_nothing()
-        //         .execute(self.connection)
-        //         .map_err(DbInserterError::DieselError)?;
-        // }
-        </span><span class="prelude-val">Ok</span>(())
+        <span class="kw">for </span>review <span class="kw">in </span>reviews {
+            diesel::sql_query(
+                <span class="string">r#&quot;
+                INSERT INTO community_advisors_review (
+                    proposal_id,
+                    assessor,
+                    impact_alignment_rating_given,
+                    impact_alignment_note,
+                    feasibility_rating_given,
+                    feasibility_note,
+                    auditability_rating_given,
+                    auditability_note,
+                    ranking
+                ) VALUES (
+                    $1, $2, $3,
+                    $4, $5, $6,
+                    $7, $8, $9
+                )
+            &quot;#</span>,
+            )
+            .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(review.proposal_id)
+            .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>review.assessor)
+            .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(review.impact_alignment_rating_given)
+            .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>review.impact_alignment_note)
+            .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(review.feasibility_rating_given)
+            .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>review.feasibility_note)
+            .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(review.auditability_rating_given)
+            .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>review.auditability_note)
+            .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(review.ranking <span class="kw">as </span>i32)
+            .execute(<span class="self">self</span>.connection)
+            .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
+        }
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="kw">pub fn </span>insert_groups(<span class="kw-2">&amp;</span><span class="self">self</span>, groups: <span class="kw-2">&amp;</span>[Group]) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbInserterError&gt; {
-        <span class="comment">// use election_db::schema::voting_group;
+        <span class="kw">for </span>group <span class="kw">in </span>groups {
+            diesel::sql_query(
+                <span class="string">&quot;INSERT INTO voting_group (event_id, token_id, group_id) VALUES ($1, $2, $3) ON CONFLICT (token_id, event_id) DO NOTHING&quot;</span>,
+            )
+            .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>group.fund_id)
+            .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>group.token_identifier)
+            .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>group.group_id)
+            .execute(<span class="self">self</span>.connection)<span class="question-mark">?</span>;
+        }
 
-        // for group in groups {
-        //     let values = (
-        //         voting_group::election_id.eq(group.fund_id),
-        //         voting_group::token_id.eq(&amp;group.token_identifier),
-        //         voting_group::group_id.eq(&amp;group.group_id),
-        //     );
-
-        //     diesel::insert_into(voting_group::table)
-        //         .values(values)
-        //         .on_conflict_do_nothing()
-        //         .execute(self.connection)
-        //         .map_err(DbInserterError::DieselError)?;
-        // }
-        </span><span class="prelude-val">Ok</span>(())
+        <span class="prelude-val">Ok</span>(())
     }
 }
 

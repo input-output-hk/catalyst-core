@@ -968,7 +968,6 @@
 <span id="968">968</span>
 <span id="969">969</span>
 <span id="970">970</span>
-<span id="971">971</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>handlers;
 <span class="kw">mod </span>routes;
 
@@ -1222,7 +1221,6 @@
     </span><span class="kw">pub async fn </span>test_snapshot() {
         <span class="kw">let </span>db_url = DbBuilder::new().build().unwrap();
         <span class="kw">let </span>context = new_test_shared_context_from_url(<span class="kw-2">&amp;</span>db_url);
-        <span class="kw">let </span>db_conn = <span class="kw-2">&amp;</span>context.read().<span class="kw">await</span>.db_connection_pool.get().unwrap();
 
         <span class="kw">let </span>keys = [
             Identifier::from_hex(

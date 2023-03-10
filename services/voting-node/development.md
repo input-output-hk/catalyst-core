@@ -1,6 +1,6 @@
 # Voting Node Service
 
-This service acts as a wrapper around a `jormungandr`, interacting with the Event DB to gather the necessary so that the node can join in the network.
+This service acts as a wrapper around a `jormungandr`, interacting with the Event DB to gather the necessary data so that the node can join in the network.
 
 
 # Running locally

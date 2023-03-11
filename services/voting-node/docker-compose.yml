@@ -26,8 +26,6 @@ services:
       - VOTING_LOG_LEVEL=debug
       - VOTING_NODE_STORAGE=/node_storage
       - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
-      - JORM_PATH=/usr/local/bin/jormungandr
-      - JCLI_PATH=/usr/local/bin/jcli
       - JORM_REST_PORT=5067
       - JORM_JRPC_PORT=5068
       - JORM_P2P_PORT=5069
@@ -49,8 +47,6 @@ services:
       - VOTING_LOG_LEVEL=info
       - VOTING_NODE_STORAGE=/node_storage
       - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
-      - JORM_PATH=/usr/local/bin/jormungandr
-      - JCLI_PATH=/usr/local/bin/jcli
       - JORM_REST_PORT=5067
       - JORM_JRPC_PORT=5068
       - JORM_P2P_PORT=5069
@@ -72,8 +68,6 @@ services:
       - VOTING_LOG_LEVEL=debug
       - VOTING_NODE_STORAGE=/node_storage
       - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
-      - JORM_PATH=/usr/local/bin/jormungandr
-      - JCLI_PATH=/usr/local/bin/jcli
       - JORM_REST_PORT=5067
       - JORM_JRPC_PORT=5068
       - JORM_P2P_PORT=5069

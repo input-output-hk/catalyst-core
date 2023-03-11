@@ -44,7 +44,7 @@ class NodeSettings:
 
 
 @dataclass
-class NodeInfo:
+class HostInfo:
     hostname: str
     event: int
     seckey: str
@@ -186,13 +186,16 @@ class Proposal:
 
 @dataclass
 class VotingNode:
-    node_info: NodeInfo
-    node_config: NodeConfigYaml
-    node_secret: NodeSecretYaml
-    topology_key: NodeTopologyKey
-    peer_info: List[PeerNode]
-    voting_event: Event
-    block0: Block0
+    host_info: Optional[HostInfo] = None
+    node_config: Optional[NodeConfigYaml] = None
+    node_secret: Optional[NodeSecretYaml] = None
+    topology_key: Optional[NodeTopologyKey] = None
+    leaders: Optional[List[PeerNode]] = None
+    event: Optional[Event] = None
+    block0: Optional[Block0File] = None
+
+    def reset(self):
+        self.__init__()
 
 
 @dataclass
@@ -202,7 +205,8 @@ class LeaderNode(VotingNode):
 
 @dataclass
 class Leader0Node(LeaderNode):
-    genesis: Optional[Genesis]
+    genesis: Optional[Genesis] = None
+    proposals: Optional[List[Proposal]] = None
 
 
 @dataclass

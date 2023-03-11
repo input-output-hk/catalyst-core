@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, NoReturn, Optional
+from typing import NoReturn, Optional
 
 from . import utils
 from .db import EventDb
@@ -10,15 +10,15 @@ from .logs import getLogger
 from .models import (
     Block0,
     Block0File,
-    Event,
     GenesisYaml,
+    Leader0Node,
+    LeaderNode,
     NodeConfigYaml,
-    NodeInfo,
+    HostInfo,
     NodeSecretYaml,
     NodeSettings,
     NodeTopologyKey,
-    PeerNode,
-    Proposal,
+    VotingNode,
 )
 
 # gets voting node logger
@@ -57,7 +57,7 @@ class ScheduleRunner(object):
                 # run the async task
                 await self.run_task(task)
             except Exception as e:
-                raise Exception(f"'{task}' error: {e}") from e
+                raise Exception(f"'{task}': {e}") from e
         logger.info("SCHEDULE END")
 
     async def run_task(self, task_name):
@@ -87,18 +87,13 @@ class NodeTaskSchedule(ScheduleRunner):
     storage: Path
 
     # Voting Node data
-    node_info: Optional[NodeInfo] = None
-    leaders_info: Optional[List[PeerNode]] = None
-    node_config: Optional[NodeConfigYaml] = None
-    node_secret: Optional[NodeSecretYaml] = None
-    topology_key: Optional[NodeTopologyKey] = None
-    voting_event: Optional[Event] = None
+    node: VotingNode
 
     tasks = [
         "connect_db",
         "fetch_upcoming_event",
-        "setup_node_info",
-        "fetch_leaders_info",
+        "setup_host_info",
+        "fetch_leaders",
         "set_node_secret",
         "set_node_topology_key",
         "set_node_config",
@@ -121,11 +116,7 @@ class NodeTaskSchedule(ScheduleRunner):
     # resets data for the node task schedule
     def reset_data(self) -> None:
         ScheduleRunner.reset_data(self)
-        self.leaders_info: Optional[List[PeerNode]] = None
-        self.node_config: Optional[NodeConfigYaml] = None
-        self.node_secret: Optional[NodeSecretYaml] = None
-        self.topology_key: Optional[NodeTopologyKey] = None
-        self.voting_event: Optional[Event] = None
+        self.node.reset()
 
     async def connect_db(self):
         # connect to the db
@@ -134,33 +125,33 @@ class NodeTaskSchedule(ScheduleRunner):
     def jcli(self) -> JCli:
         return JCli(self.jcli_path_str)
 
-    async def fetch_leaders_info(self):
+    async def fetch_leaders(self):
         # gets info for other leaders
         try:
             # todo
             peers = await self.db.fetch_leaders_host_info()
             logger.debug(f"saving node info for {len(peers)} peers")
             logger.debug(f"peer leader node info retrieved from db {peers}")
-            self.leaders_info = peers
+            self.node.leaders = peers
         except Exception as e:
             logger.warning(f"peer node info not fetched: {e}")
-            self.leaders_info = None
+            self.node.leaders = None
 
-    async def setup_node_info(self):
+    async def setup_host_info(self):
         # check that we have the info we need, otherwise, we reset
-        if self.voting_event is None:
+        if self.node.event is None:
             self.reset_schedule("no voting event was found")
         try:
             # gets host information from voting_node table
-            event_row_id: int = self.voting_event.row_id
-            node_info: NodeInfo = await self.db.fetch_leader_node_info(event_row_id)
+            event_row_id: int = self.node.event.row_id
+            host_info: HostInfo = await self.db.fetch_leader_host_info(event_row_id)
             logger.debug("leader node host info was retrieved from db")
-            self.node_info = node_info
+            self.node.host_info = host_info
         except Exception as e:
             # generate and insert host information into voting_node table
             logger.warning(f"leader node info was not fetched: {e}")
             hostname = utils.get_hostname()
-            event = self.voting_event.row_id
+            event = self.node.event.row_id
             logger.debug(f"generating {hostname} node info with jcli")
             # generate the keys
             seckey = await self.jcli().privkey(secret_type="ed25519")
@@ -168,16 +159,16 @@ class NodeTaskSchedule(ScheduleRunner):
             netkey = await self.jcli().privkey(secret_type="ed25519")
             logger.debug("node keys were generated")
 
-            node_info = NodeInfo(hostname, event, seckey, pubkey, netkey)
+            host_info = HostInfo(hostname, event, seckey, pubkey, netkey)
             # we add the node info row
-            await self.db.insert_leader_node_info(node_info)
+            await self.db.insert_leader_host_info(host_info)
             # if all is good, we reset the schedule
             self.reset_schedule("inserted leader node info")
 
     async def set_node_secret(self):
         # node secret
-        match self.node_info:
-            case NodeInfo(_, seckey, _, _):
+        match self.node.host_info:
+            case HostInfo(_, seckey, _, _):
                 node_secret_file = self.storage.joinpath("node_secret.yaml")
                 node_secret = {"bft": {"signing_key": seckey}}
                 # save in schedule
@@ -190,13 +181,13 @@ class NodeTaskSchedule(ScheduleRunner):
 
     async def set_node_topology_key(self):
         # node network topology key
-        match self.node_info:
-            case NodeInfo(_, _, _, netkey):
+        match self.node.host_info:
+            case HostInfo(_, _, _, netkey):
                 topokey_file = self.storage.joinpath("node_topology_key")
                 # save in schedule
-                self.topology_key = NodeTopologyKey(netkey, topokey_file)
+                self.node.topology_key = NodeTopologyKey(netkey, topokey_file)
                 # write key to file
-                self.topology_key.save()
+                self.node.topology_key.save()
             case _:
                 self.reset_schedule("no node host info was found")
 
@@ -206,15 +197,15 @@ class NodeTaskSchedule(ScheduleRunner):
         try:
             event = await self.db.fetch_upcoming_event()
             logger.debug("current event retrieved from db")
-            self.voting_event = event
+            self.node.event = event
         except Exception as e:
             raise Exception(f"failed to fetch event from db: {e}") from e
 
     async def set_node_config(self):
         # check that we have the info we need, otherwise, we reset
-        if self.topology_key is None:
+        if self.node.topology_key is None:
             self.reset_schedule("no node topology key was found")
-        if self.leaders_info is None:
+        if self.node.leaders is None:
             self.reset_schedule("no leaders info was found")
 
         #  modify node config for all nodes
@@ -227,7 +218,7 @@ class NodeTaskSchedule(ScheduleRunner):
         listen_p2p = f"/ip4/{host_ip}/tcp/{self.settings.p2p_port}"
         trusted_peers = []
 
-        for peer in self.leaders_info:
+        for peer in self.node.leaders:
             match role_n_number:
                 case ("leader", 0):
                     pass
@@ -253,7 +244,7 @@ class NodeTaskSchedule(ScheduleRunner):
             listen_p2p,
             trusted_peers,
             self.storage,
-            self.topology_key.path,
+            self.node.topology_key.path,
         )
 
         # convert to yaml and save
@@ -269,18 +260,22 @@ class NodeTaskSchedule(ScheduleRunner):
 
 
 class LeaderSchedule(NodeTaskSchedule):
-    block0_bin: Optional[Block0File] = None
+    # Voting Node data
+    node: LeaderNode
+    # Tasks for `LeaderNode`
     tasks: list[str] = [
         "connect_db",
         "fetch_upcoming_event",
-        "setup_node_info",
-        "fetch_leaders_info",
+        "setup_host_info",
+        "fetch_leaders",
         "set_node_secret",
         "set_node_topology_key",
         "set_node_config",
+        "wait_for_block0",
         "get_block0",
         "wait_for_voting",
         "voting",
+        "wait_for_tally",
         "tally",
         "cleanup",
     ]
@@ -288,31 +283,32 @@ class LeaderSchedule(NodeTaskSchedule):
     def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
         NodeTaskSchedule.__init__(self, db_url, jorm_config)
 
-    # resets data for leader schedule
-    def reset_data(self) -> None:
-        NodeTaskSchedule.reset_data(self)
-        self.block0_bin = None
+    async def wait_for_block0(self):
+        pass
 
     async def get_block0(self):
         # initial checks for data that's needed
-        if self.leaders_info is None:
+        if self.node.leaders is None:
             self.reset_schedule("peer leader info was not found")
-        if self.voting_event is None:
+        if self.node.event is None:
             self.reset_schedule("event was not found")
-        if self.voting_event.start_time is None:
+        if self.node.event.start_time is None:
             self.reset_schedule("event has no start time")
 
         # Path to block0.bin file
         block0_path = self.storage.joinpath("block0.bin")
         # Get the optional fields from the current event
-        block0 = self.voting_event.get_block0()
+        block0 = self.node.event.get_block0()
         # save Block0 to schedule
-        self.block0_bin = Block0File(block0, block0_path)
+        self.node.block0 = Block0File(block0, block0_path)
         # write the block bytes to file
-        self.block0_bin.save()
-        logger.debug(f"block0 found in voting event: {self.block0_bin}")
+        self.node.block0.save()
+        logger.debug(f"block0 found in voting event: {self.node.block0}")
 
     async def wait_for_voting(self):
+        pass
+
+    async def wait_for_tally(self):
         pass
 
     async def voting(self):
@@ -323,21 +319,24 @@ class LeaderSchedule(NodeTaskSchedule):
 
 
 class Leader0Schedule(LeaderSchedule):
+    # Voting Node data
+    node: Leader0Node = Leader0Node()
     # Leader0 Voting Node data
-    genesis_yaml: Optional[GenesisYaml] = None
-    proposals: Optional[List[Proposal]] = None
     tasks: list[str] = [
         "connect_db",
         "fetch_upcoming_event",
-        "setup_node_info",
-        "fetch_leaders_info",
+        "setup_host_info",
+        "fetch_leaders",
         "set_node_secret",
         "set_node_topology_key",
         "set_node_config",
+        "wait_for_snapshot",
         "fetch_proposals",
         "setup_block0",
+        "publish_block0",
         "wait_for_voting",
         "voting",
+        "wait_for_tally",
         "tally",
         "cleanup",
     ]
@@ -345,16 +344,10 @@ class Leader0Schedule(LeaderSchedule):
     def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
         LeaderSchedule.__init__(self, db_url, jorm_config)
 
-    # resets data for Leader0
-    def reset_data(self) -> None:
-        LeaderSchedule.reset_data(self)
-        self.genesis_yaml = None
-        self.proposals = None
-
     async def fetch_proposals(self):
         # This all starts by getting the event row that has the nearest
         # `voting_start`. We query the DB to get the row, and store it.
-        if self.voting_event is None:
+        if self.node.event is None:
             self.reset_schedule("no event was found")
         try:
             proposals = await self.db.fetch_proposals()
@@ -368,26 +361,26 @@ class Leader0Schedule(LeaderSchedule):
         when the needed information is found. Resets the schedule otherwise.
         """
         # initial checks for data that's needed
-        if self.leaders_info is None:
+        if self.node.leaders is None:
             self.reset_schedule("peer leader info was not found")
-        if self.voting_event is None:
+        if self.node.event is None:
             self.reset_schedule("event was not found")
 
         try:
             # checks for data that's needed
-            if self.voting_event.block0 is None:
+            if self.node.event.block0 is None:
                 raise Exception("event has no block0")
-            if self.voting_event.block0_hash is None:
+            if self.node.event.block0_hash is None:
                 raise Exception("event has no block0 hash")
             # Path to block0.bin file
             block0_path = self.storage.joinpath("block0.bin")
             # Get the optional fields from the current event
-            block0 = self.voting_event.get_block0()
+            block0 = self.node.event.get_block0()
             # save Block0 to schedule
-            self.block0_bin = Block0File(block0, block0_path)
+            self.node.block0 = Block0File(block0, block0_path)
             # write the block bytes to file
-            self.block0_bin.save()
-            logger.debug(f"block0 found in voting event: {self.block0_bin}")
+            self.node.block0.save()
+            logger.debug(f"block0 found in voting event: {self.node.block0}")
 
             # decode genesis and store it after getting block0
             genesis_path = self.storage.joinpath("genesis.yaml")
@@ -397,18 +390,18 @@ class Leader0Schedule(LeaderSchedule):
         except Exception as e:
             logger.debug(f"block0 was not found in voting event: {e}")
             # checks for data that's needed
-            if self.voting_event.start_time is None:
+            if self.node.event.start_time is None:
                 self.reset_schedule("event has no start time")
 
             committee_ids = [
                 await self.jcli().create_committee_id()
-                for _ in range(self.voting_event.committee_size)
+                for _ in range(self.node.event.committee_size)
             ]
 
             # generate genesis file to make block0
             logger.debug("generating genesis content")
             genesis = utils.make_genesis_content(
-                self.voting_event, self.leaders_info, committee_ids
+                self.node.event, self.node.leaders, committee_ids
             )
             logger.debug("generated genesis content")
             # convert to yaml and save
@@ -424,11 +417,13 @@ class Leader0Schedule(LeaderSchedule):
             block0_hash = await self.jcli().get_block0_hash(block0_path)
             block0_bytes = block0_path.read_bytes()
             block0 = Block0(block0_bytes, block0_hash)
-            self.block0_bin = Block0File(block0, block0_path)
-            logger.debug(f"block0 created: {self.block0_bin}")
+            self.node.block0 = Block0File(block0, block0_path)
+            # write the block bytes to file
+            self.node.block0.save()
+            logger.debug(f"block0 created and saved: {self.node.block0}")
             # push block0 to event table
             await self.db.insert_block0_info(
-                self.voting_event.row_id, block0_bytes, block0_hash
+                self.node.event.row_id, block0_bytes, block0_hash
             )
             # if all is good, we reset the schedule
             self.reset_schedule("inserted block0 info")

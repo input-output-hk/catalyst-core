@@ -3,7 +3,7 @@ import datetime
 from typing import Any, List
 
 from .logs import getLogger
-from .models import Event, NodeInfo, PeerNode, Proposal
+from .models import Event, HostInfo, PeerNode, Proposal
 from .utils import get_hostname
 
 # gets voting node logger
@@ -37,16 +37,16 @@ class EventDb(object):
             raise Exception("failed to fetch event from db")
         return Event(**dict(result))
 
-    async def fetch_leader_node_info(self, event_row_id: int) -> NodeInfo:
+    async def fetch_leader_host_info(self, event_row_id: int) -> HostInfo:
         filter_by = "hostname = $1 AND event = $2"
         query = f"SELECT * FROM voting_node WHERE {filter_by}"
         result = await self.conn.fetchrow(query, get_hostname(), event_row_id)
         if result is None:
             raise Exception("failed to fetch leader node info from db")
-        node_info = NodeInfo(**dict(result))
-        return node_info
+        host_info = HostInfo(**dict(result))
+        return host_info
 
-    async def insert_leader_node_info(self, node_info: NodeInfo):
+    async def insert_leader_host_info(self, host_info: HostInfo):
         # insert the hostname row into the voting_node table
         fields = "hostname, event, seckey, pubkey, netkey"
         values = "$1, $2, $3, $4, $5"
@@ -54,15 +54,15 @@ class EventDb(object):
         try:
             result = await self.conn.execute(
                 query,
-                node_info.hostname,
-                node_info.event,
-                node_info.seckey,
-                node_info.pubkey,
-                node_info.netkey,
+                host_info.hostname,
+                host_info.event,
+                host_info.seckey,
+                host_info.pubkey,
+                host_info.netkey,
             )
             if result is None:
                 raise Exception("failed to insert leader0 node into from db")
-            logger.debug(f"{node_info.hostname} info added: {result}")
+            logger.debug(f"{host_info.hostname} info added: {result}")
         except Exception as e:
             raise Exception(f"leadership went wrong: {e}") from e
 

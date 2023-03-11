@@ -205,9 +205,9 @@ def make_node_config(
 
 
 def make_genesis_content(
-    voting_event: Event, peers: List[PeerNode], committee_ids: List[str]
+    event: Event, peers: List[PeerNode], committee_ids: List[str]
 ) -> Genesis:
-    start_time = voting_event.get_start_time()
+    start_time = event.get_start_time()
     genesis = yaml.safe_load(GENESIS_YAML)
     consensus_leader_ids = [peer.consensus_leader_id for peer in peers]
     # modify the template with the proper settings

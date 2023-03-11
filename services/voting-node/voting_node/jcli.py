@@ -56,7 +56,7 @@ class JCli(object):
         return key
 
     async def key_to_hex(self, key: str) -> str:
-        """Returns the hex-encoded bytes of a given key."""
+        """Returns the hex-encoded bytes of a given key string."""
         # run jcli to generate the secret key
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,

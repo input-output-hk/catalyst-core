@@ -99,7 +99,7 @@ pub async fn api_token_filter(
 
 #[cfg(test)]
 mod test {
-    use crate::v0::api_token::{api_token_filter, ApiToken, API_TOKEN_HEADER};
+    use crate::v0::api_token::{api_token_filter, API_TOKEN_HEADER};
     use crate::v0::context::test::new_test_shared_context_from_url;
     use vit_servicing_station_tests::common::startup::db::DbBuilder;
 

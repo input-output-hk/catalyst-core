@@ -23,10 +23,7 @@ pub async fn put_fund(fund: Fund, context: SharedContext) -> Result<impl Reply, 
 pub mod test {
     use super::*;
     use crate::{
-        db::{
-            models::funds::{test as funds_testing, Fund},
-            queries::funds::FundWithNext,
-        },
+        db::{models::funds::Fund, queries::funds::FundWithNext},
         v0::context::test::new_test_shared_context_from_url,
     };
     use vit_servicing_station_tests::common::{
@@ -150,24 +147,5 @@ pub mod test {
             serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
 
         assert_eq!(funds_ids, result_funds);
-    }
-
-    async fn test_get_fund(id: i32, context: SharedContext) -> Fund {
-        let with_context = warp::any().map(move || context.clone());
-
-        let get_filter = warp::path!(i32)
-            .and(warp::get())
-            .and(with_context)
-            .and_then(get_fund_by_id);
-
-        let result = warp::test::request()
-            .method("GET")
-            .path(&format!("/{}", id))
-            .reply(&get_filter)
-            .await;
-
-        assert_eq!(result.status(), warp::http::StatusCode::OK);
-
-        serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap()
     }
 }

@@ -92,10 +92,6 @@
 <span id="92">92</span>
 <span id="93">93</span>
 <span id="94">94</span>
-<span id="95">95</span>
-<span id="96">96</span>
-<span id="97">97</span>
-<span id="98">98</span>
 </pre><pre class="rust"><code><span class="kw">mod </span>advisor_reviews;
 <span class="kw">pub mod </span>challenges;
 <span class="kw">mod </span>funds;
@@ -161,13 +157,9 @@
 
     <span class="kw">let </span>admin_filter = {
         <span class="kw">let </span>base = <span class="macro">warp::path!</span>(<span class="string">&quot;admin&quot; </span>/ ..);
-
-        <span class="kw">let </span>snapshot_tx_filter =
-            <span class="macro">warp::path!</span>(<span class="string">&quot;snapshot&quot; </span>/ ..).and(snapshot::update_filter(context.clone()).boxed());
-
         <span class="kw">let </span>fund_filter = <span class="macro">warp::path!</span>(<span class="string">&quot;fund&quot; </span>/ ..).and(funds::admin_filter(context.clone()));
 
-        base.and(snapshot_tx_filter.or(fund_filter))
+        base.and(fund_filter)
     };
 
     <span class="kw">let </span>api_token_filter = <span class="kw">if </span>enable_api_tokens {

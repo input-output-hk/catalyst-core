@@ -149,28 +149,6 @@
 <span id="149">149</span>
 <span id="150">150</span>
 <span id="151">151</span>
-<span id="152">152</span>
-<span id="153">153</span>
-<span id="154">154</span>
-<span id="155">155</span>
-<span id="156">156</span>
-<span id="157">157</span>
-<span id="158">158</span>
-<span id="159">159</span>
-<span id="160">160</span>
-<span id="161">161</span>
-<span id="162">162</span>
-<span id="163">163</span>
-<span id="164">164</span>
-<span id="165">165</span>
-<span id="166">166</span>
-<span id="167">167</span>
-<span id="168">168</span>
-<span id="169">169</span>
-<span id="170">170</span>
-<span id="171">171</span>
-<span id="172">172</span>
-<span id="173">173</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::logic;
 <span class="kw">use </span><span class="kw">crate</span>::v0::result::HandlerResult;
 <span class="kw">use crate</span>::{db::models::funds::Fund, v0::context::SharedContext};
@@ -196,10 +174,7 @@
 </span><span class="kw">pub mod </span>test {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use crate</span>::{
-        db::{
-            models::funds::{test <span class="kw">as </span>funds_testing, Fund},
-            queries::funds::FundWithNext,
-        },
+        db::{models::funds::Fund, queries::funds::FundWithNext},
         v0::context::test::new_test_shared_context_from_url,
     };
     <span class="kw">use </span>vit_servicing_station_tests::common::{
@@ -323,25 +298,6 @@
             serde_json::from_str(<span class="kw-2">&amp;</span>String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
 
         <span class="macro">assert_eq!</span>(funds_ids, result_funds);
-    }
-
-    <span class="kw">async fn </span>test_get_fund(id: i32, context: SharedContext) -&gt; Fund {
-        <span class="kw">let </span>with_context = warp::any().map(<span class="kw">move </span>|| context.clone());
-
-        <span class="kw">let </span>get_filter = <span class="macro">warp::path!</span>(i32)
-            .and(warp::get())
-            .and(with_context)
-            .and_then(get_fund_by_id);
-
-        <span class="kw">let </span>result = warp::test::request()
-            .method(<span class="string">&quot;GET&quot;</span>)
-            .path(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;/{}&quot;</span>, id))
-            .reply(<span class="kw-2">&amp;</span>get_filter)
-            .<span class="kw">await</span>;
-
-        <span class="macro">assert_eq!</span>(result.status(), warp::http::StatusCode::OK);
-
-        serde_json::from_str(<span class="kw-2">&amp;</span>String::from_utf8(result.body().to_vec()).unwrap()).unwrap()
     }
 }
 </code></pre></div>

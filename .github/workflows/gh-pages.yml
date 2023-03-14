@@ -39,7 +39,7 @@ jobs:
         run: |
           GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
           echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
-          echo "POSTGRES_HOST=postgres" >> $GITHUB_ENV
+          echo "PGHOST=postgres" >> $GITHUB_ENV
           echo "postgres" > ~/.pgpass
 
       - name: Start the Kroki service for building images

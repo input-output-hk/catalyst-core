@@ -13,24 +13,6 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
 
-    # Service containers to run
-    services:
-      # Label used to access the service container
-      postgres:
-        # Docker Hub image
-        image: postgres:14
-        # Provide the password for postgres
-        env:
-          POSTGRES_PASSWORD: postgres
-        # Set health checks to wait until postgres has started
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          # Maps tcp port 5432 on service container to the host
-          - 5432:5432
     steps:
       - name: Checkout The Code
         uses: actions/checkout@v3
@@ -42,6 +24,9 @@ jobs:
           GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
           echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
           echo "PGHOST=localhost" >> $GITHUB_ENV
+
+      - name: Start postgres server
+        run: docker run --name postgres -e POSTGRES_PASSWORD=postgres -d postgres:14
 
       - name: Start the Kroki service for building images
         run: docker-compose -f "utilities/kroki-service/docker-compose.yml" up -d --build

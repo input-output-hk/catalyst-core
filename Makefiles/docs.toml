@@ -130,6 +130,7 @@ script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 dbviz -d CatalystEventDocs \
+    -h postgres \
     --title "Catalyst Event Database Overview" \
     -e  funds proposals \
         proposals_voteplans \
@@ -156,6 +157,7 @@ script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 dbviz -d CatalystEventDocs \
+    -h postgres \
     --title "Catalyst Event Database VitSS Compatibility" \
     --comments \
     --column-description-wrap 40 \
@@ -184,6 +186,7 @@ script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 dbviz -d CatalystEventDocs \
+    -h postgres \
     --title "Catalyst Event Database - Configuration" \
     --comments \
     --column-description-wrap 60 \
@@ -202,6 +205,7 @@ script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 dbviz -d CatalystEventDocs \
+    -h postgres \
     --title "Catalyst Event Database - Event" \
     --comments \
     --column-description-wrap 140 \
@@ -219,6 +223,7 @@ script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 dbviz -d CatalystEventDocs \
+    -h postgres \
     --title "Catalyst Event Database - Challenges & Proposals" \
     --comments \
     --column-description-wrap 40 \
@@ -242,6 +247,7 @@ script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 dbviz -d CatalystEventDocs \
+    -h postgres \
     --title "Catalyst Event Database - Vote Plans" \
     --comments \
     --column-description-wrap 40 \
@@ -262,6 +268,7 @@ script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 dbviz -d CatalystEventDocs \
+    -h postgres \
     --title "Catalyst Event Database - Snapshot" \
     --comments \
     --column-description-wrap 40 \
@@ -283,6 +290,7 @@ script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 dbviz -d CatalystEventDocs \
+    -h postgres \
     --title "Catalyst Event Database - Automation" \
     --comments \
     --column-description-wrap 40 \

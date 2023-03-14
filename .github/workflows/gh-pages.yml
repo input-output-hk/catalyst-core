@@ -12,6 +12,23 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
+
+    # Service containers to run
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout The Code
         uses: actions/checkout@v3
@@ -23,8 +40,11 @@ jobs:
           GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
           echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
 
+      - name: Start the Kroki service for building images
+        run: docker-compose -f "utilities/kroki-service/docker-compose.yml" up -d --build
+
       - name: Build Docs
-        uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools:v1.3
+        uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools:v1.4
         with:
           entrypoint: cargo
           args: make build-docs
@@ -77,3 +97,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./book/html
           destination_dir: ${{ env.GIT_BRANCH }}
+
+      - name: Stop containers
+        if: always()
+        run: docker-compose -f "utilities/kroki-service/docker-compose.yml" down

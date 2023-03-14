@@ -55,11 +55,6 @@ install_crate = { crate_name = "mdbook-theme", binary = "mdbook-theme", test_arg
 [tasks.install-mdbook-template]
 install_crate = { crate_name = "mdbook-template", binary = "mdbook-template", test_arg = "--help" }
 
-# Allow the use of refinery cli migrations
-# See: https://crates.io/crates/refinery_cli
-[tasks.install-refinery-cli]
-install_crate = { crate_name = "refinery-cli", binary = "refinery", test_arg = "--help" }
-
 [tasks.install-dbviz]
 description = "Installs the latest dbviz for making db documentation from schema."
 install_crate = { crate_name = "dbviz", test_arg = "--help" }
@@ -68,9 +63,6 @@ install_crate_args = [
   "https://github.com/stevenj/dbviz.git",
 ]
 args = ["dbviz", "--help"]
-dependencies = [
-    "install-refinery-cli"
-]
 
 
 [tasks.install-docs-prereqs]
@@ -85,8 +77,7 @@ run_task = { name = [
         "install-mdbook-theme",
         "install-mdbook-template",
         "install-cargo-spellcheck",
-        "install-dbviz",
-        "install-refinery-cli"
+        "install-dbviz"
     ], parallel = true }
 dependencies = [
     "install-mdbook"

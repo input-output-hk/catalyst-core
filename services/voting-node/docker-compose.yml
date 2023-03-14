@@ -1,0 +1,119 @@
+version: "3"
+
+services:
+  leader0:
+    image: voting-node:latest
+    hostname: leader0
+    ports:
+      - "5057:5057"
+    environment:
+      - VOTING_HOST=0.0.0.0
+      - VOTING_PORT=5057
+      - VOTING_LOG_LEVEL=debug
+      - VOTING_NODE_STORAGE=/node_storage
+      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
+      - JORM_PATH=/usr/local/bin/jormungandr
+      - JCLI_PATH=/usr/local/bin/jcli
+      - JORM_REST_PORT=5067
+      - JORM_JRPC_PORT=5068
+      - JORM_P2P_PORT=5069
+    volumes:
+      - leader0_store:/node_storage
+    command: voting-node start
+
+  leader1:
+    image: voting-node:latest
+    hostname: leader1
+    ports:
+      - "6057:5057"
+    environment:
+      - VOTING_HOST=0.0.0.0
+      - VOTING_PORT=5057
+      - VOTING_LOG_LEVEL=info
+      - VOTING_NODE_STORAGE=/node_storage
+      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
+      - JORM_PATH=/usr/local/bin/jormungandr
+      - JCLI_PATH=/usr/local/bin/jcli
+      - JORM_REST_PORT=5067
+      - JORM_JRPC_PORT=5068
+      - JORM_P2P_PORT=5069
+    volumes:
+      - leader1_store:/node_storage
+    command: voting-node start
+
+  leader2:
+    image: voting-node:latest
+    hostname: leader2
+    ports:
+      - "7057:5057"
+    environment:
+      - VOTING_HOST=0.0.0.0
+      - VOTING_PORT=5057
+      - VOTING_LOG_LEVEL=debug
+      - VOTING_NODE_STORAGE=/node_storage
+      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
+      - JORM_PATH=/usr/local/bin/jormungandr
+      - JCLI_PATH=/usr/local/bin/jcli
+      - JORM_REST_PORT=5067
+      - JORM_JRPC_PORT=5068
+      - JORM_P2P_PORT=5069
+    volumes:
+      - leader2_store:/node_storage
+    command: voting-node start
+
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=CHANGE_ME
+      - POSTGRES_USER=catalyst-event-dev
+      - POSTGRES_DB=CatalystEventDev
+    ports:
+      - "5432:5432"
+    volumes:
+      - eventdb:/var/lib/postgresql/data
+
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    command: [ "--config=/etc/otel-collector.yaml" ]
+    volumes:
+      - ./extras/otel-collector.yaml:/etc/otel-collector.yaml
+    ports:
+      - "4317:4317"
+
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./extras/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+
+  tempo:
+    image: grafana/tempo:latest
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./extras/tempo-local.yaml:/etc/tempo.yaml
+      - ./extras/tempo-data:/tmp/tempo
+    ports:
+      - "3200:3200"  # tempo
+      - "4317"  # otlp grpc
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./datasource.yml:/etc/grafana/provisioning/datasource.yml
+
+volumes:
+  eventdb:
+  leader0_store:
+  leader1_store:
+  leader2_store:

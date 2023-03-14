@@ -7,14 +7,17 @@ pub async fn check_health(_context: SharedContext) -> Result<impl Reply, Rejecti
 
 #[cfg(test)]
 pub mod test {
+    use crate::v0::context::test::new_test_shared_context_from_url;
+
     use super::*;
-    use crate::v0::context::test::new_db_test_shared_context;
+    use vit_servicing_station_tests::common::startup::db::DbBuilder;
     use warp::Filter;
 
     #[tokio::test]
     async fn get_proposal_by_id_handler() {
         // build context
-        let shared_context = new_db_test_shared_context();
+        let db_url = DbBuilder::new().build().unwrap();
+        let shared_context = new_test_shared_context_from_url(&db_url);
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
 

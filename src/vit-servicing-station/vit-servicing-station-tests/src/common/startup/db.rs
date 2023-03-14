@@ -9,12 +9,24 @@ use vit_servicing_station_lib::db::models::{
 };
 use vit_servicing_station_lib::db::DbConnection;
 
-use crate::common::{
-    data::Snapshot,
-    //db::{DbInserter, DbInserterError},
-};
+use crate::common::data::Snapshot;
+use crate::common::db::{DbInserter, DbInserterError};
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
+
+mod embedded_migrations {
+    use refinery::embed_migrations;
+    embed_migrations!("../../event-db/migrations");
+}
+
+pub fn initialize_db_with_migrations(db_url: &str) -> Result<(), DbBuilderError> {
+    let mut client = postgres::Client::connect(db_url, postgres::NoTls).unwrap();
+    embedded_migrations::migrations::runner()
+        .run(&mut client)
+        .unwrap();
+
+    Ok(())
+}
 
 pub struct DbBuilder {
     tokens: Option<Vec<ApiTokenData>>,
@@ -82,45 +94,45 @@ impl DbBuilder {
         self
     }
 
-    fn try_insert_tokens(&self, _connection: &DbConnection) -> Result<(), DbBuilderError> {
-        if let Some(_tokens) = &self.tokens {
-            //DbInserter::new(connection).insert_tokens(tokens)?;
+    fn try_insert_tokens(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
+        if let Some(tokens) = &self.tokens {
+            DbInserter::new(connection).insert_tokens(tokens)?;
         }
         Ok(())
     }
 
-    fn try_insert_funds(&self, _connection: &DbConnection) -> Result<(), DbBuilderError> {
-        if let Some(_funds) = &self.funds {
-            //DbInserter::new(connection).insert_funds(funds)?;
+    fn try_insert_funds(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
+        if let Some(funds) = &self.funds {
+            DbInserter::new(connection).insert_funds(funds)?;
         }
         Ok(())
     }
 
-    fn try_insert_proposals(&self, _connection: &DbConnection) -> Result<(), DbBuilderError> {
-        if let Some(_proposals) = &self.proposals {
-            //DbInserter::new(connection).insert_proposals(proposals)?;
+    fn try_insert_proposals(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
+        if let Some(proposals) = &self.proposals {
+            DbInserter::new(connection).insert_proposals(proposals)?;
         }
         Ok(())
     }
 
-    fn try_insert_challenges(&self, _connection: &DbConnection) -> Result<(), DbBuilderError> {
-        if let Some(_challenges) = &self.challenges {
-            //DbInserter::new(connection).insert_challenges(challenges)?;
+    fn try_insert_challenges(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
+        if let Some(challenges) = &self.challenges {
+            DbInserter::new(connection).insert_challenges(challenges)?;
         }
 
         Ok(())
     }
 
-    fn try_insert_reviews(&self, _connection: &DbConnection) -> Result<(), DbBuilderError> {
-        if let Some(_reviews) = &self.advisor_reviews {
-            //DbInserter::new(connection).insert_advisor_reviews(reviews)?;
+    fn try_insert_reviews(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
+        if let Some(reviews) = &self.advisor_reviews {
+            DbInserter::new(connection).insert_advisor_reviews(reviews)?;
         }
         Ok(())
     }
 
-    fn try_insert_groups(&self, _connection: &DbConnection) -> Result<(), DbBuilderError> {
-        if let Some(_groups) = &self.groups {
-            //DbInserter::new(connection).insert_groups(groups)?;
+    fn try_insert_groups(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
+        if let Some(groups) = &self.groups {
+            DbInserter::new(connection).insert_groups(groups)?;
         }
         Ok(())
     }
@@ -157,7 +169,7 @@ impl DbBuilder {
             (db_url, pool.get().unwrap())
         };
 
-        //vit_servicing_station_lib::db::migrations::initialize_db_with_migration(&connection)?;
+        initialize_db_with_migrations(&db_url)?;
         self.try_insert_tokens(&connection)?;
         self.try_insert_funds(&connection)?;
         self.try_insert_groups(&connection)?;
@@ -175,7 +187,7 @@ impl DbBuilder {
         let pool = vit_servicing_station_lib::db::load_db_connection_pool(db_path).unwrap();
         let connection = pool.get().unwrap();
 
-        //vit_servicing_station_lib::db::migrations::initialize_db_with_migration(&connection)?;
+        initialize_db_with_migrations(db_path)?;
         self.try_insert_tokens(&connection)?;
         self.try_insert_funds(&connection)?;
         self.try_insert_groups(&connection)?;
@@ -198,12 +210,10 @@ pub enum DbBuilderError {
     MissingDatabaseUrlEnvVar,
     #[error("failed to read database url env var")]
     DatabaseUrlEnvVar(#[from] std::env::VarError),
-    //#[error("cannot insert data")]
-    //DbInserterError(#[from] DbInserterError),
+    #[error("cannot insert data")]
+    DbInserterError(#[from] DbInserterError),
     #[error("Cannot open or create database")]
     CannotCreateDatabase(#[from] diesel::ConnectionError),
     #[error("Cannot initialize on temp directory")]
     CannotExtractTempPath,
-    #[error("migration errors")]
-    MigrationsError(#[from] diesel_migrations::RunMigrationsError),
 }

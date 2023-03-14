@@ -10,14 +10,18 @@ pub async fn service_version(context: SharedContext) -> Result<impl Reply, Rejec
 pub mod test {
     use super::*;
 
-    use crate::v0::context::test::new_db_test_shared_context;
-    use crate::v0::endpoints::service_version::schemas::ServiceVersion;
+    use crate::v0::{
+        context::test::new_test_shared_context_from_url,
+        endpoints::service_version::schemas::ServiceVersion,
+    };
+    use vit_servicing_station_tests::common::startup::db::DbBuilder;
     use warp::Filter;
 
     #[tokio::test]
     async fn get_proposal_by_id_handler() {
         // build context
-        let shared_context = new_db_test_shared_context();
+        let db_url = DbBuilder::new().build().unwrap();
+        let shared_context = new_test_shared_context_from_url(&db_url);
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
 

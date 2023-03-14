@@ -15,24 +15,21 @@ pub async fn get_vote_by_caster_and_voteplan_id(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::db::{
-        migrations as db_testing,
-        models::vote::{test as votes_testing, *},
-    };
-    use crate::v0::context::test::new_db_test_shared_context;
+    use crate::db::models::vote::{test as votes_testing, *};
+    use crate::v0::context::test::new_test_shared_context_from_url;
     use crate::v0::endpoints::votes::VoteCasterAndVoteplanId;
+    use vit_servicing_station_tests::common::startup::db::DbBuilder;
     use warp::Filter;
 
     #[tokio::test]
     async fn get_vote_by_voteplan_id_and_caster() {
         // build context
-        let shared_context = new_db_test_shared_context();
+        let db_url = DbBuilder::new().build().unwrap();
+        let shared_context = new_test_shared_context_from_url(&db_url);
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
 
-        // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
         let vote: Vote = votes_testing::get_test_vote();
 
         votes_testing::populate_db_with_vote(&vote, pool);

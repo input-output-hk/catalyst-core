@@ -46,17 +46,16 @@ pub fn new_shared_context(
 
 #[cfg(test)]
 pub mod test {
-    use vit_servicing_station_tests::common::startup::db::DbBuilder;
+    use vit_servicing_station_tests::common::startup::db::{
+        initialize_db_with_migrations, DbBuilder,
+    };
 
     use super::*;
     use crate::db;
 
-    pub fn new_db_test_shared_context() -> SharedContext {
-        let db_url = DbBuilder::new().build().unwrap();
-        new_test_shared_context_from_url(&db_url)
-    }
-
     pub fn new_test_shared_context_from_url(db_url: &str) -> SharedContext {
+        initialize_db_with_migrations(db_url).unwrap();
+
         let pool = db::load_db_connection_pool(db_url).unwrap();
         let block0: Vec<u8> = vec![1, 2, 3, 4, 5];
         Arc::new(RwLock::new(Context::new(

@@ -37,7 +37,7 @@ pub mod test {
 
     use crate::v0::endpoints::proposals::requests::ProposalVoteplanIdAndIndexes;
     use crate::{
-        db::migrations as db_testing, db::models::proposals::FullProposalInfo,
+        db::models::proposals::FullProposalInfo,
         v0::context::test::new_test_shared_context_from_url,
     };
     use pretty_assertions::assert_eq;
@@ -56,10 +56,6 @@ pub mod test {
         let shared_context = new_test_shared_context_from_url(&db_url);
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
-
-        // initialize db
-        let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
 
         let proposal = snapshot.proposals().into_iter().next().unwrap();
 
@@ -99,10 +95,6 @@ pub mod test {
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
 
-        // initialize db
-        let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
-
         let proposal = snapshot.proposals().into_iter().next().unwrap();
 
         // build filter
@@ -138,10 +130,6 @@ pub mod test {
 
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
-
-        // initialize db
-        let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
 
         let proposal = snapshot.proposals().into_iter().next().unwrap();
 

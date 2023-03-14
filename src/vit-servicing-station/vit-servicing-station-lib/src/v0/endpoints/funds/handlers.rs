@@ -23,12 +23,8 @@ pub async fn put_fund(fund: Fund, context: SharedContext) -> Result<impl Reply, 
 pub mod test {
     use super::*;
     use crate::{
-        db::{
-            migrations as db_testing,
-            models::funds::{test as funds_testing, Fund},
-            queries::funds::FundWithNext,
-        },
-        v0::context::test::{new_db_test_shared_context, new_test_shared_context_from_url},
+        db::{models::funds::Fund, queries::funds::FundWithNext},
+        v0::context::test::new_test_shared_context_from_url,
     };
     use vit_servicing_station_tests::common::{
         data::ArbitrarySnapshotGenerator, startup::db::DbBuilder,
@@ -45,10 +41,6 @@ pub mod test {
         let shared_context = new_test_shared_context_from_url(&db_url);
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
-
-        // initialize db
-        let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
 
         let mut funds = snapshot.funds().into_iter();
         let mut fund = funds.next().unwrap();
@@ -98,10 +90,6 @@ pub mod test {
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
 
-        // initialize db
-        let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
-
         // build filter
         let filter = warp::path!(i32)
             .and(warp::get())
@@ -148,9 +136,6 @@ pub mod test {
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
 
-        let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
-
         let filter = warp::any()
             .and(warp::get())
             .and(with_context)
@@ -162,96 +147,5 @@ pub mod test {
             serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
 
         assert_eq!(funds_ids, result_funds);
-    }
-
-    #[tokio::test]
-    #[ignore = "Database writes will not be done through the API"]
-    async fn put_fund_handler() {
-        let shared_context = new_db_test_shared_context();
-        let filter_context = shared_context.clone();
-        let with_context = warp::any().map(move || filter_context.clone());
-
-        let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
-
-        let fund1: Fund = funds_testing::get_test_fund(Some(1));
-        let mut fund2: Fund = funds_testing::get_test_fund(Some(2));
-        let mut fund3: Fund = funds_testing::get_test_fund(Some(3));
-
-        fund2.challenges = vec![];
-        fund2.chain_vote_plans = vec![];
-        fund2.goals = vec![];
-        fund2.groups = Default::default();
-
-        fund3.challenges = vec![];
-        fund3.chain_vote_plans = vec![];
-        fund3.goals = vec![];
-        fund3.groups = Default::default();
-
-        funds_testing::populate_db_with_fund(&fund1, pool);
-        funds_testing::populate_db_with_fund(&fund2, pool);
-
-        let filter = warp::any()
-            .and(warp::put())
-            .and(warp::body::json())
-            .and(with_context.clone())
-            .and_then(put_fund);
-
-        let mut updated_fund = fund2.clone();
-        updated_fund.fund_name = "modified fund name".into();
-
-        let result = warp::test::request()
-            .method("PUT")
-            .body(serde_json::to_string(&updated_fund).unwrap())
-            .reply(&filter)
-            .await;
-
-        assert_eq!(result.status(), warp::http::StatusCode::OK);
-
-        let result_fund = test_get_fund(fund2.id, shared_context.clone()).await;
-        assert_eq!(updated_fund, result_fund);
-
-        let result_fund = test_get_fund(fund1.id, shared_context.clone()).await;
-        assert_eq!(fund1, result_fund);
-
-        assert_eq!(
-            warp::test::request()
-                .method("PUT")
-                .body(serde_json::to_string(&fund3).unwrap())
-                .reply(&filter)
-                .await
-                .status(),
-            warp::http::StatusCode::OK
-        );
-
-        let result_fund = test_get_fund(fund3.id, shared_context.clone()).await;
-        assert_eq!(fund3, result_fund);
-
-        let result_fund = test_get_fund(fund2.id, shared_context.clone()).await;
-        assert_eq!(updated_fund.clone(), result_fund.clone());
-        // just to be extra sure
-        assert_ne!(fund2, updated_fund);
-
-        let result_fund = test_get_fund(fund1.id, shared_context.clone()).await;
-        assert_eq!(fund1, result_fund);
-    }
-
-    async fn test_get_fund(id: i32, context: SharedContext) -> Fund {
-        let with_context = warp::any().map(move || context.clone());
-
-        let get_filter = warp::path!(i32)
-            .and(warp::get())
-            .and(with_context)
-            .and_then(get_fund_by_id);
-
-        let result = warp::test::request()
-            .method("GET")
-            .path(&format!("/{}", id))
-            .reply(&get_filter)
-            .await;
-
-        assert_eq!(result.status(), warp::http::StatusCode::OK);
-
-        serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap()
     }
 }

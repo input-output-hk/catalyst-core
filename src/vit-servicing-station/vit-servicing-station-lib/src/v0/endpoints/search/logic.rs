@@ -26,7 +26,7 @@ pub(super) async fn search_count(
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::db::{migrations::initialize_db_with_migration, models::challenges::Challenge};
+    use crate::db::models::challenges::Challenge;
     use crate::testing::filters::ResponseBytesExt;
     use crate::v0::context::test::new_test_shared_context_from_url;
     use crate::v0::endpoints::search::requests::{Column, Constraint, OrderBy, Table};
@@ -49,10 +49,6 @@ mod test {
         let shared_context = new_test_shared_context_from_url(&db_url);
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
-
-        // initialize db
-        let pool = &shared_context.read().await.db_connection_pool;
-        initialize_db_with_migration(&pool.get().unwrap()).unwrap();
 
         let challenge = snapshot.challenges().remove(0);
 
@@ -132,10 +128,6 @@ mod test {
         let shared_context = new_test_shared_context_from_url(&db_url);
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
-
-        // initialize db
-        let pool = &shared_context.read().await.db_connection_pool;
-        initialize_db_with_migration(&pool.get().unwrap()).unwrap();
 
         let filter_search = warp::path!("search")
             .and(warp::post())
@@ -280,10 +272,6 @@ mod test {
         let shared_context = new_test_shared_context_from_url(&db_url);
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
-
-        // initialize db
-        let pool = &shared_context.read().await.db_connection_pool;
-        initialize_db_with_migration(&pool.get().unwrap()).unwrap();
 
         let filter = warp::path!("search")
             .and(warp::post())

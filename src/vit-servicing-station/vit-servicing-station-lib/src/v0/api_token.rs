@@ -99,45 +99,14 @@ pub async fn api_token_filter(
 
 #[cfg(test)]
 mod test {
-    use crate::db::{
-        migrations as db_testing, models::api_tokens as api_token_model,
-        models::api_tokens::ApiTokenData, schema::api_tokens, DbConnectionPool,
-    };
-    use crate::v0::api_token::{api_token_filter, ApiToken, API_TOKEN_HEADER};
-    use crate::v0::context::test::new_db_test_shared_context;
-    use diesel::{ExpressionMethods, RunQueryDsl};
-    use time::OffsetDateTime;
-
-    pub fn get_testing_token() -> (api_token_model::ApiTokenData, String) {
-        let data = b"ffffffffffffffffffffffffffffffff".to_vec();
-        let token_data = ApiTokenData {
-            token: ApiToken(data.clone()),
-            creation_time: OffsetDateTime::now_utc().unix_timestamp(),
-            expire_time: OffsetDateTime::now_utc().unix_timestamp(),
-        };
-        (
-            token_data,
-            base64::encode_config(data, base64::URL_SAFE_NO_PAD),
-        )
-    }
-
-    pub fn insert_token_to_db(token: ApiTokenData, db: &DbConnectionPool) {
-        let conn = db.get().unwrap();
-        let values = (
-            api_tokens::dsl::token.eq(token.token.0.clone()),
-            api_tokens::dsl::creation_time.eq(token.creation_time),
-            api_tokens::dsl::expire_time.eq(token.expire_time),
-        );
-
-        diesel::insert_into(api_tokens::table)
-            .values(values)
-            .execute(&conn)
-            .unwrap();
-    }
+    use crate::v0::api_token::{api_token_filter, API_TOKEN_HEADER};
+    use crate::v0::context::test::new_test_shared_context_from_url;
+    use vit_servicing_station_tests::common::startup::db::DbBuilder;
 
     #[tokio::test]
     async fn api_token_filter_reject() {
-        let shared_context = new_db_test_shared_context();
+        let db_url = DbBuilder::new().build().unwrap();
+        let shared_context = new_test_shared_context_from_url(&db_url);
         let filter = api_token_filter(shared_context).await;
 
         assert!(warp::test::request()
@@ -145,25 +114,5 @@ mod test {
             .filter(&filter)
             .await
             .is_err());
-    }
-
-    #[tokio::test]
-    #[ignore = "reason"]
-    async fn api_token_filter_accepted() {
-        let shared_context = new_db_test_shared_context();
-
-        // initialize db
-        let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
-        let (token, base64_token) = get_testing_token();
-        insert_token_to_db(token, pool);
-
-        let filter = api_token_filter(shared_context.clone()).await;
-
-        assert!(warp::test::request()
-            .header(API_TOKEN_HEADER, base64_token)
-            .filter(&filter)
-            .await
-            .is_ok());
     }
 }

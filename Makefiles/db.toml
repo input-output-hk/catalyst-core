@@ -57,6 +57,7 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
+env
 psql -e -U postgres -f setup/docs-db.sql
 '''
 

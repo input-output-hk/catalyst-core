@@ -26,7 +26,7 @@ jobs:
           echo "PGHOST=localhost" >> $GITHUB_ENV
 
       - name: Start postgres server
-        run: docker run --name postgres -e POSTGRES_PASSWORD=postgres -d postgres:14
+        run: docker run --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -d postgres:14
 
       - name: Start the Kroki service for building images
         run: docker-compose -f "utilities/kroki-service/docker-compose.yml" up -d --build

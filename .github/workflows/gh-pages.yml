@@ -31,6 +31,9 @@ jobs:
       - name: Start the Kroki service for building images
         run: docker-compose -f "utilities/kroki-service/docker-compose.yml" up -d --build
 
+      - name: test
+        run: docker ps
+
       - name: Build Docs
         uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools:v1.4
         with:

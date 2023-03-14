@@ -313,8 +313,8 @@ dependencies = [
 workspace = false
 category = "docs"
 dependencies = [
-    "build-rust-docs",
-    "build-db-docs"
+    "build-db-docs",
+    "build-rust-docs"
 ] # We build the rust docs first.
 script_runner = "@shell"
 script = '''
@@ -327,8 +327,8 @@ mdbook serve --open
 workspace = false
 category = "docs"
 dependencies = [
-    "build-rust-docs",
-    "build-db-docs"
+    "build-db-docs",
+    "build-rust-docs"
 ] # We build the rust docs first.
 script_runner = "@shell"
 script = '''

@@ -35,12 +35,12 @@ jobs:
       kroki:
         image: yuzutech/kroki
         env:
-          - KROKI_BLOCKDIAG_HOST=blockdiag
-          - KROKI_MERMAID_HOST=mermaid
-          - KROKI_BPMN_HOST=bpmn
-          - KROKI_EXCALIDRAW_HOST=excalidraw
-          - KROKI_SAFE_MODE=unsafe
-          - KROKI_MAX_URI_LENGTH=64000
+          KROKI_BLOCKDIAG_HOST: blockdiag
+          KROKI_MERMAID_HOST: mermaid
+          KROKI_BPMN_HOST: bpmn
+          KROKI_EXCALIDRAW_HOST: excalidraw
+          KROKI_SAFE_MODE: unsafe
+          KROKI_MAX_URI_LENGTH: 64000
         ports:
           - "7123:8000"
       blockdiag:

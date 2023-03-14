@@ -70,6 +70,7 @@ jobs:
           GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
           echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
           echo "PGHOST=localhost" >> $GITHUB_ENV
+          echo "PGPASSWORD=postgres" >> $GITHUB_ENV
 
       - name: test
         run: docker ps

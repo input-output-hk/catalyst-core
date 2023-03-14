@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["DbBuilderError",""]],"fn":[["initialize_db_with_migrations",""]],"struct":[["DbBuilder",""]]};

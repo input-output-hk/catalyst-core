@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["filter",""],["get_delegator_info",""],["get_voters_info",""]],"struct":[["DelegatorInfo",""],["RawSnapshotInput","Raw Snapshot information update with timestamp."],["SnapshotInfoInput","Snapshot information update with timestamp."],["VoterInfo",""],["VotersInfo","Voter information in the current snapshot"]],"type":[["Group",""],["Tag",""]]};

@@ -37,7 +37,7 @@ jobs:
       - name: Build Docs
         uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools:v1.4
         with:
-          network: host
+          driver-opts: network=host
           entrypoint: cargo
           args: make build-docs
 

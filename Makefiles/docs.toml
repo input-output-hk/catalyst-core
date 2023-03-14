@@ -22,7 +22,7 @@ install_crate = { crate_name = "mdbook-admonish", binary = "mdbook-admonish", te
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
-mdbook-admonish install --css-dir book/src/assets/css/
+mdbook-admonish install --css-dir book/assets/css/
 '''
 
 # We can make our own regex preprocessing templates
@@ -45,7 +45,7 @@ install_crate = { crate_name = "mdbook-fs-summary", binary = "mdbook-fs-summary"
 [tasks.install-cargo-spellcheck]
 install_crate = { crate_name = "cargo-spellcheck", binary = "cargo-spellcheck", test_arg = "--help" }
 
-# Make a Page TOC on the RHS 
+# Make a Page TOC on the RHS
 # See: https://crates.io/crates/mdbook-theme
 [tasks.install-mdbook-theme]
 install_crate = { crate_name = "mdbook-theme", binary = "mdbook-theme", test_arg = "--help" }
@@ -54,6 +54,16 @@ install_crate = { crate_name = "mdbook-theme", binary = "mdbook-theme", test_arg
 # See: https://crates.io/crates/mdbook-template
 [tasks.install-mdbook-template]
 install_crate = { crate_name = "mdbook-template", binary = "mdbook-template", test_arg = "--help" }
+
+
+[tasks.install-dbviz]
+description = "Installs the latest dbviz for making db documentation from schema."
+install_crate = { crate_name = "dbviz", test_arg = "--help" }
+install_crate_args = [
+  "--git",
+  "https://github.com/stevenj/dbviz.git",
+]
+args = ["dbviz", "--help"]
 
 
 [tasks.install-docs-prereqs]
@@ -67,7 +77,8 @@ run_task = { name = [
         "install-mdbook-fs-summary",
         "install-mdbook-theme",
         "install-mdbook-template",
-        "install-cargo-spellcheck"
+        "install-cargo-spellcheck",
+        "install-dbviz"
     ], parallel = true }
 dependencies = [
     "install-mdbook"
@@ -102,19 +113,208 @@ rm book.original.toml
 [tasks.build-rust-docs]
 workspace = false
 category = "docs"
-script_runner = "@shell" 
+script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 cargo doc --workspace --target-dir book/tmp/rust --no-deps
 ./utilities/mdbook-rust-doc/mdbook-rust-doc.py --page book/src/06_rust_api/rust_api.md --rustdoc book/tmp/rust/doc --md-relative-path rust
 '''
 
+# Build the Event DB Documentation (Images of Schema)
+[tasks.build-db-docs-overview-diagram]
+workspace = false
+category = "docs"
+dependencies = [
+    "doc-event-db-setup"
+]
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+dbviz -d CatalystEventDocs \
+    --title "Catalyst Event Database Overview" \
+    -e  funds proposals \
+        proposals_voteplans \
+        proposal_simple_challenge \
+        proposal_community_choice_challenge \
+        voteplans \
+        api_tokens \
+        challenges \
+        community_advisors_reviews \
+        goals \
+        groups \
+        full_proposals_info \
+        refinery_schema_history \
+        > ./book/src/08_event-db/db-diagrams/event-db-overview.dot
+'''
+
+[tasks.build-db-docs-vitss-diagram]
+workspace = false
+category = "docs"
+dependencies = [
+    "doc-event-db-setup"
+]
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+dbviz -d CatalystEventDocs \
+    --title "Catalyst Event Database VitSS Compatibility" \
+    --comments \
+    --column-description-wrap 40 \
+    -i  funds proposals \
+        proposals_voteplans \
+        proposal_simple_challenge \
+        proposal_community_choice_challenge \
+        voteplans \
+        api_tokens \
+        challenges \
+        community_advisors_reviews \
+        goals \
+        groups \
+        full_proposals_info \
+        refinery_schema_history \
+        > ./book/src/08_event-db/db-diagrams/event-db-vitss-views.dot
+'''
+
+[tasks.build-db-docs-config-diagram]
+workspace = false
+category = "docs"
+dependencies = [
+    "doc-event-db-setup"
+]
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+dbviz -d CatalystEventDocs \
+    --title "Catalyst Event Database - Configuration" \
+    --comments \
+    --column-description-wrap 60 \
+    -i  refinery_schema_history \
+        config \
+        > ./book/src/08_event-db/db-diagrams/event-db-config.dot
+'''
+
+[tasks.build-db-docs-event-diagram]
+workspace = false
+category = "docs"
+dependencies = [
+    "doc-event-db-setup"
+]
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+dbviz -d CatalystEventDocs \
+    --title "Catalyst Event Database - Event" \
+    --comments \
+    --column-description-wrap 140 \
+    -i  event \
+        > ./book/src/08_event-db/db-diagrams/event-db-event.dot
+'''
+
+[tasks.build-db-docs-challenge-proposal-diagram]
+workspace = false
+category = "docs"
+dependencies = [
+    "doc-event-db-setup"
+]
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+dbviz -d CatalystEventDocs \
+    --title "Catalyst Event Database - Challenges & Proposals" \
+    --comments \
+    --column-description-wrap 40 \
+    -i  challenge_category \
+        currency \
+        vote_options \
+        goal \
+        challenge \
+        proposal \
+        community_advisors_review \
+        > ./book/src/08_event-db/db-diagrams/event-db-challenge-proposal.dot
+'''
+
+[tasks.build-db-docs-vote-plan-diagram]
+workspace = false
+category = "docs"
+dependencies = [
+    "doc-event-db-setup"
+]
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+dbviz -d CatalystEventDocs \
+    --title "Catalyst Event Database - Vote Plans" \
+    --comments \
+    --column-description-wrap 40 \
+    -i  voteplan_category \
+        voting_group \
+        voteplan \
+        proposal_voteplan \
+        > ./book/src/08_event-db/db-diagrams/event-db-vote-plan.dot
+'''
+
+[tasks.build-db-docs-snapshot-diagram]
+workspace = false
+category = "docs"
+dependencies = [
+    "doc-event-db-setup"
+]
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+dbviz -d CatalystEventDocs \
+    --title "Catalyst Event Database - Snapshot" \
+    --comments \
+    --column-description-wrap 40 \
+    -i  snapshot \
+        voter \
+        contribution \
+        vote \
+        voteplan \
+        > ./book/src/08_event-db/db-diagrams/event-db-snapshot-vote.dot
+'''
+
+[tasks.build-db-docs-automation-diagram]
+workspace = false
+category = "docs"
+dependencies = [
+    "doc-event-db-setup"
+]
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+dbviz -d CatalystEventDocs \
+    --title "Catalyst Event Database - Automation" \
+    --comments \
+    --column-description-wrap 40 \
+    -i  voting_node \
+        tally_committee \
+        > ./book/src/08_event-db/db-diagrams/event-db-automation.dot
+'''
+
+[tasks.build-db-docs]
+workspace = false
+category = "docs"
+dependencies = [
+    "doc-event-db-setup",
+    "build-db-docs-overview-diagram",
+    "build-db-docs-vitss-diagram",
+    "build-db-docs-config-diagram",
+    "build-db-docs-event-diagram",
+    "build-db-docs-challenge-proposal-diagram",
+    "build-db-docs-vote-plan-diagram",
+    "build-db-docs-snapshot-diagram",
+    "build-db-docs-automation-diagram",
+]
+
+
 # Build and serve a live view of the POC Documentation
 [tasks.view-docs]
 workspace = false
 category = "docs"
 dependencies = [
-    "build-rust-docs"
+    "build-rust-docs",
+    "build-db-docs"
 ] # We build the rust docs first.
 script_runner = "@shell"
 script = '''
@@ -127,18 +327,13 @@ mdbook serve --open
 workspace = false
 category = "docs"
 dependencies = [
-    "build-rust-docs"
+    "build-rust-docs",
+    "build-db-docs"
 ] # We build the rust docs first.
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 mdbook build
-# It would be much better to embed the rust docs into the mdbook before the mdbook is built
-# But the current summary generator breaks when we do this.  So do it into the html for now
-# until the summary generator can be replaced.
-cp -a book/tmp/rust/doc book/html/06_rust_api/rust
-# This lock file prevents the docs being deployed by github actions.
-rm -f book/html/06_rust_api/rust/.lock
 '''
 
 [tasks.build-docs]

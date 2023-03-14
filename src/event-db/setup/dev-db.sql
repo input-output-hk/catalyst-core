@@ -1,12 +1,3 @@
-# Catalyst Event Database
-
-This crate defines the structure and RUST access methods for the Catalyst Event Database.
-
-## Creating A Local Test Database
-
-Run the following SQL on your local test PostgreSQL server:
-
-```sql
 -- Cleanup if we already ran this before.
 drop database if exists "CatalystEventDev";
 drop user if exists "catalyst-event-dev";
@@ -19,22 +10,3 @@ create database "CatalystEventDev"
     with owner "catalyst-event-dev";
 
 comment on database "CatalystEventDev" is 'Local Test Catalyst Event DB';
-```
-
-This can be done simply with:
-
-```sh
-psql -e -U postgres -f setup/dev-db.sql
-```
-
-Execute Migrations:
-
-```sh
-refinery migrate -c refinery.toml -p ./migrations
-```
-
-or
-
-```sh
-cargo make run-event-db-migration
-```

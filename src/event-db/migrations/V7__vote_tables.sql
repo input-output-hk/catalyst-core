@@ -33,7 +33,9 @@ COMMENT ON TABLE vote IS 'All Votes.';
 COMMENT ON COLUMN vote.fragment_id is 'Unique ID of this Vote';
 COMMENT ON COLUMN vote.voter is 'Reference to the Voter who cast the vote';
 COMMENT ON COLUMN vote.challenge is 'Reference to the Challenge the vote was for.';
-COMMENT ON COLUMN vote.proposal is 'Reference to the Proposal the vote was for.  May be NULL if this vote covers ALL proposals in the challenge.';
+COMMENT ON COLUMN vote.proposal is
+'Reference to the Proposal the vote was for.
+May be NULL if this vote covers ALL proposals in the challenge.';
 COMMENT ON COLUMN vote.voteplan is 'The Voteplan this vote was cast in';
 COMMENT ON COLUMN vote.cast_at is 'When this vote was recorded as properly cast';
 COMMENT ON COLUMN vote.choice is 'If a public vote, the choice of the vote, otherwise NULL.';

@@ -20,3 +20,51 @@ cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
 refinery migrate -c refinery.toml -p ./migrations
 '''
 
+# Setup the local database ready to run the migrations.
+[tasks.local-event-db-init]
+workspace = false
+category = "db"
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
+psql -e -U postgres -f setup/dev-db.sql
+'''
+
+# Setup the local database ready to run the migrations.
+[tasks.local-event-db-setup]
+workspace = false
+category = "db"
+dependencies = [
+    "local-event-db-init",
+    "run-event-db-migration"
+]
+
+
+# Run Diesel Migrations, for documentation purposes.
+[tasks.run-event-doc-db-migration]
+workspace = false
+category = "db"
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
+refinery migrate -c refinery-docs.toml -p ./migrations
+'''
+
+# Setup the local database ready to run the migrations.
+[tasks.doc-event-db-init]
+workspace = false
+category = "db"
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
+psql -e -U postgres -f setup/docs-db.sql
+'''
+
+# Setup the local database ready to run the migrations.
+[tasks.doc-event-db-setup]
+workspace = false
+category = "db"
+dependencies = [
+    "doc-event-db-init",
+    "run-event-doc-db-migration"
+]

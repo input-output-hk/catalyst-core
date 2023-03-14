@@ -1,11 +1,11 @@
-# Election DB Local Development
+# Event DB Local Development
 
-The Election DB is targeted to a Postgresql Database, and for local development,
+The Event DB is targeted to a Postgresql Database, and for local development,
 an instance must be running.
 
 ## Installing Postgresql
 
-Please see your operating systems specific guides for installing and configuring
+Please see your operating systems' specific guides for installing and configuring
 Postgresql.
 
 ## Initialize the Database
@@ -13,7 +13,7 @@ Postgresql.
 After Postgres is installed, as the `postgres` user:
 
 1. Init the Database (if it doesn't exist already):
-    The recommended database initialisation command (on Linux or Mac) is:
+    The recommended database initialization command (on Linux or Mac) is:
 
     ```sh
     [postgres@host]$ initdb --locale=C.UTF-8 --encoding=UTF8 -D /var/lib/postgres/data --data-checksums

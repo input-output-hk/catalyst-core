@@ -59,9 +59,13 @@ CREATE TABLE voteplan
 COMMENT ON TABLE voteplan IS 'All Vote plans.';
 
 COMMENT ON COLUMN voteplan.row_id IS 'Synthetic Unique Key';
-COMMENT ON COLUMN voteplan.id IS 'The ID of the Vote plan in the voting ledger/bulletin board. A Binary value encoded as hex.';
+COMMENT ON COLUMN voteplan.id IS
+'The ID of the Vote plan in the voting ledger/bulletin board.
+A Binary value encoded as hex.';
 COMMENT ON COLUMN voteplan.category IS 'The kind of vote which can be cast on this vote plan.';
-COMMENT ON COLUMN voteplan.encryption_key IS 'The public encryption key used, ONLY if required by the voteplan category.';
+COMMENT ON COLUMN voteplan.encryption_key IS
+'The public encryption key used.
+ONLY if required by the voteplan category.';
 COMMENT ON COLUMN voteplan.group_id IS 'The identifier of voting power token used withing this plan.';
 
 -- Table to link Proposals to Vote plans in a many-many relationship.

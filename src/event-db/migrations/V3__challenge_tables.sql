@@ -111,15 +111,25 @@ CREATE TABLE challenge
 CREATE UNIQUE INDEX challenge_idx ON challenge (id, event);
 CREATE UNIQUE INDEX challenge_id ON challenge (id);
 
-COMMENT ON TABLE challenge IS 'All Challenges for all events. A Challenge is a group category for selection in an event.';
+COMMENT ON TABLE challenge IS
+'All Challenges for all events.
+A Challenge is a group category for selection in an event.';
 COMMENT ON COLUMN challenge.row_id IS 'Synthetic Unique Key';
-COMMENT ON COLUMN challenge.id IS 'Event specific Challenge ID, can be non-unique between events (Eg, Ideascale ID for challenge).';
+COMMENT ON COLUMN challenge.id IS
+'Event specific Challenge ID.
+Can be non-unique between events (Eg, Ideascale ID for challenge).';
 COMMENT ON COLUMN challenge.event IS 'The specific Event ID this Challenge is part of.';
-COMMENT ON COLUMN challenge.category IS 'What category of challenge is this, see the challenge_category table for allowed values.';
+COMMENT ON COLUMN challenge.category IS
+'What category of challenge is this.
+See the challenge_category table for allowed values.';
 COMMENT ON COLUMN challenge.title IS 'The  title of the challenge.';
 COMMENT ON COLUMN challenge.description IS 'Long form description of the challenge.';
 COMMENT ON COLUMN challenge.rewards_currency IS 'The currency rewards values are represented as.';
 COMMENT ON COLUMN challenge.rewards_total IS 'The total reward pool to pay on this challenge to winning proposals.';
 COMMENT ON COLUMN challenge.proposers_rewards IS 'Not sure how this is different from rewards_total???';
 COMMENT ON COLUMN challenge.vote_options IS 'The Vote Options applicable to all proposals in this challenge.';
-COMMENT ON COLUMN challenge.extra IS 'Extra Data  for this challenge represented as JSON.  "url"."challenge" is a URL for more info about the challenge.  "highlights" is ???';
+COMMENT ON COLUMN challenge.extra IS
+'Extra Data  for this challenge represented as JSON.
+"url"."challenge" is a URL for more info about the challenge.
+"highlights" is ???
+';

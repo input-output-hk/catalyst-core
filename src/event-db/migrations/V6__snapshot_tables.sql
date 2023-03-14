@@ -23,21 +23,35 @@ CREATE TABLE snapshot (
     FOREIGN KEY(event) REFERENCES event(row_id)
 );
 
-COMMENT ON TABLE snapshot IS 'Raw snapshot data for an event.  Only the latests snapshot per event is stored.';
+COMMENT ON TABLE snapshot IS
+'Raw snapshot data for an event.
+Only the latests snapshot per event is stored.';
 COMMENT ON COLUMN snapshot.event is 'The event id this snapshot was for.';
-COMMENT ON COLUMN snapshot.as_at is 'The time the snapshot was collected from dbsync (Should be the slot time the dbsync_snapshot_cmd was run against.)';
-COMMENT ON COLUMN snapshot.last_updated is 'The last time the snapshot was run (Should be the real time the snapshot was started.';
-COMMENT ON COLUMN snapshot.final is 'Is the snapshot Final?  No more updates will occur to this record once set.';
+COMMENT ON COLUMN snapshot.as_at is
+'The time the snapshot was collected from dbsync
+(Should be the slot time the dbsync_snapshot_cmd was run against.)';
+COMMENT ON COLUMN snapshot.last_updated is
+'The last time the snapshot was run
+(Should be the real time the snapshot was started.';
+COMMENT ON COLUMN snapshot.final is
+'Is the snapshot Final?
+No more updates will occur to this record once set.';
 
 COMMENT ON COLUMN snapshot.dbsync_snapshot_cmd is     'The name of the command run to collect the snapshot from dbsync.';
 COMMENT ON COLUMN snapshot.dbsync_snapshot_params is  'The parameters passed to the command, each parameter is a key and its value is the value of the parameter.';
-COMMENT ON COLUMN snapshot.dbsync_snapshot_data is 'The raw json result stored as TEXT from the dbsync snapshot. (This is JSON data but we store as raw text to prevent any processing of it).';
+COMMENT ON COLUMN snapshot.dbsync_snapshot_data is
+'The raw json result stored as TEXT from the dbsync snapshot.
+(This is JSON data but we store as raw text to prevent any processing of it).';
 
-COMMENT ON COLUMN snapshot.drep_data is 'The latest drep data obtained from GVC, and used in this snapshot calculation.  Should be in a form directly usable by the `catalyst_snapshot_cmd`';
+COMMENT ON COLUMN snapshot.drep_data is
+'The latest drep data obtained from GVC, and used in this snapshot calculation.
+Should be in a form directly usable by the `catalyst_snapshot_cmd`';
 
 COMMENT ON COLUMN snapshot.catalyst_snapshot_cmd is  'The actual name of the command run to produce the catalyst voting power snapshot.';
 COMMENT ON COLUMN snapshot.dbsync_snapshot_params is 'The parameters passed to the command, each parameter is a key and its value is the value of the parameter.';
-COMMENT ON COLUMN snapshot.catalyst_snapshot_data is 'The raw json result stored as TEXT from the catalyst snapshot calculation. (This is JSON data but we store as raw text to prevent any processing of it).';
+COMMENT ON COLUMN snapshot.catalyst_snapshot_data is
+'The raw yaml result stored as TEXT from the catalyst snapshot calculation.
+(This is YAML data but we store as raw text to prevent any processing of it).';
 
 -- voters
 

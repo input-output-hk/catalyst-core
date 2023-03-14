@@ -3,9 +3,10 @@ import socket
 import uvicorn
 from typing import Final, List, Optional
 
+from voting_node.models import ServiceSettings
+
 from . import tasks, utils
 from .logs import getLogger
-from .config import JormConfig
 
 
 # gets voting node logger
@@ -16,7 +17,7 @@ class VotingNode(uvicorn.Server):
     def __init__(
         self,
         api_config: uvicorn.Config,
-        jorm_config: JormConfig,
+        settings: ServiceSettings,
         database_url: str,
     ):
         # initialize uvicorn
@@ -25,7 +26,7 @@ class VotingNode(uvicorn.Server):
         # running the task schedule
         self.keep_running = True
         # jorm node params
-        self.jorm_config = jorm_config
+        self.settings = settings
         # url for database connection
         self.db_url = database_url
 
@@ -93,11 +94,11 @@ class VotingNode(uvicorn.Server):
         host_name: str = utils.get_hostname().lower()
         match utils.get_leadership_role_n_number_by_hostname(host_name):
             case ("leader", 0):
-                return tasks.Leader0Schedule(self.db_url, self.jorm_config)
+                return tasks.Leader0Schedule(self.db_url, self.settings)
             case ("leader", _):
-                return tasks.LeaderSchedule(self.db_url, self.jorm_config)
+                return tasks.LeaderSchedule(self.db_url, self.settings)
             case ("follower", _):
-                return tasks.FollowerSchedule(self.db_url, self.jorm_config)
+                return tasks.FollowerSchedule(self.db_url, self.settings)
 
     async def start_jormungandr(self):
         try:
@@ -119,10 +120,10 @@ class VotingNode(uvicorn.Server):
             await asyncio.sleep(1)
 
     def jormungandr_exec(self) -> str:
-        return self.jorm_config.jorm_path
+        return self.settings.jorm_path_str
 
     def jcli_exec(self) -> str:
-        return self.jorm_config.jcli_path
+        return self.settings.jcli_path_str
 
     async def jormungandr_subprocess_exec(self):
         try:

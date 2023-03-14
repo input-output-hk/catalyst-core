@@ -3,7 +3,6 @@ from typing import NoReturn, Optional
 
 from . import utils
 from .db import EventDb
-from .config import JormConfig
 from .jcli import JCli
 from .jormungandr import Jormungandr
 from .logs import getLogger
@@ -16,8 +15,8 @@ from .models import (
     NodeConfigYaml,
     HostInfo,
     NodeSecretYaml,
-    NodeSettings,
     NodeTopologyKey,
+    ServiceSettings,
     VotingNode,
 )
 
@@ -39,7 +38,7 @@ class ScheduleRunner(object):
 
         This method never returns."""
         self.reset_data()
-        raise Exception(f"RESET: {msg}")
+        raise Exception(f"|->{msg}")
 
     async def run(self) -> None:
         """Runs through the scheduled tasks."""
@@ -75,19 +74,14 @@ class NodeTaskSchedule(ScheduleRunner):
     sequentially. If the current task raises an exception, running the task list
     again will resume from it."""
 
-    # node settings
-    settings: NodeSettings
+    # runtime settings for the service
+    settings: ServiceSettings
     # connection to db
     db: EventDb
-    # use JCli to make calls
-    jcli_path_str: str
-    # use Jormungandr to run the server
-    jorm = Jormungandr
-    # storage
+    # service storage directory
     storage: Path
-
     # Voting Node data
-    node: VotingNode
+    node: VotingNode = VotingNode()
 
     tasks = [
         "connect_db",
@@ -100,16 +94,10 @@ class NodeTaskSchedule(ScheduleRunner):
         "cleanup",
     ]
 
-    def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
-        self.settings = NodeSettings(
-            jorm_config.rest_port,
-            jorm_config.jrpc_port,
-            jorm_config.p2p_port,
-        )
+    def __init__(self, db_url: str, settings: ServiceSettings) -> None:
+        self.settings = settings
         self.db = EventDb(db_url)
-        self.jcli_path_str = jorm_config.jcli_path
-        self.jorm = Jormungandr(jorm_config.jorm_path)
-        self.storage = Path(jorm_config.storage)
+        self.storage = Path(settings.storage)
         # initialize the dir in case it doesn't exist
         self.storage.mkdir(parents=True, exist_ok=True)
 
@@ -123,12 +111,14 @@ class NodeTaskSchedule(ScheduleRunner):
         await self.db.connect()
 
     def jcli(self) -> JCli:
-        return JCli(self.jcli_path_str)
+        return JCli(self.settings.jcli_path_str)
+
+    def jorm(self) -> Jormungandr:
+        return Jormungandr(self.settings.jorm_path_str)
 
     async def fetch_leaders(self):
         # gets info for other leaders
         try:
-            # todo
             peers = await self.db.fetch_leaders_host_info()
             logger.debug(f"saving node info for {len(peers)} peers")
             logger.debug(f"peer leader node info retrieved from db {peers}")
@@ -151,7 +141,7 @@ class NodeTaskSchedule(ScheduleRunner):
             # generate and insert host information into voting_node table
             logger.warning(f"leader node info was not fetched: {e}")
             hostname = utils.get_hostname()
-            event = self.node.event.row_id
+            event_id = self.node.event.row_id
             logger.debug(f"generating {hostname} node info with jcli")
             # generate the keys
             seckey = await self.jcli().privkey(secret_type="ed25519")
@@ -159,7 +149,7 @@ class NodeTaskSchedule(ScheduleRunner):
             netkey = await self.jcli().privkey(secret_type="ed25519")
             logger.debug("node keys were generated")
 
-            host_info = HostInfo(hostname, event, seckey, pubkey, netkey)
+            host_info = HostInfo(hostname, event_id, seckey, pubkey, netkey)
             # we add the node info row
             await self.db.insert_leader_host_info(host_info)
             # if all is good, we reset the schedule
@@ -261,7 +251,7 @@ class NodeTaskSchedule(ScheduleRunner):
 
 class LeaderSchedule(NodeTaskSchedule):
     # Voting Node data
-    node: LeaderNode
+    node: LeaderNode = LeaderNode()
     # Tasks for `LeaderNode`
     tasks: list[str] = [
         "connect_db",
@@ -279,9 +269,6 @@ class LeaderSchedule(NodeTaskSchedule):
         "tally",
         "cleanup",
     ]
-
-    def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
-        NodeTaskSchedule.__init__(self, db_url, jorm_config)
 
     async def wait_for_block0(self):
         pass
@@ -340,9 +327,6 @@ class Leader0Schedule(LeaderSchedule):
         "tally",
         "cleanup",
     ]
-
-    def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
-        LeaderSchedule.__init__(self, db_url, jorm_config)
 
     async def fetch_proposals(self):
         # This all starts by getting the event row that has the nearest
@@ -433,8 +417,8 @@ class Leader0Schedule(LeaderSchedule):
 
 
 class FollowerSchedule(NodeTaskSchedule):
-    def __init__(self, db_url: str, jorm_config: JormConfig) -> None:
-        NodeTaskSchedule.__init__(self, db_url, jorm_config)
+    def __init__(self, db_url: str, settings: ServiceSettings) -> None:
+        NodeTaskSchedule.__init__(self, db_url, settings)
         self.tasks: list[str] = ["todo"]
 
     async def todo(self):

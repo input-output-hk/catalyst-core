@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional
 
 
+### Base types
 @dataclass
 class YamlType:
     content: Dict
@@ -25,22 +26,30 @@ class YamlFile:
 
 
 @dataclass
+class ServiceSettings:
+    # ports
+    rest_port: int
+    jrpc_port: int
+    p2p_port: int
+    # Jormungandr node storage directory
+    storage: str
+    # use JCli to make calls
+    jcli_path_str: str
+    # use Jormungandr to run the server
+    jorm_path_str: str
+
+
+@dataclass
 class NodeConfig(YamlType):
     """Data for creating 'node_config.yaml'."""
 
 
+### File types
 @dataclass
 class NodeConfigYaml(YamlFile):
     """Represents the contents and path to 'node_secret.yaml'."""
 
     yaml_type: NodeConfig
-
-
-@dataclass
-class NodeSettings:
-    rest_port: int
-    jrpc_port: int
-    p2p_port: int
 
 
 @dataclass
@@ -186,16 +195,27 @@ class Proposal:
 
 @dataclass
 class VotingNode:
+    # Hostname, private/public keypair, and topology key.
     host_info: Optional[HostInfo] = None
-    node_config: Optional[NodeConfigYaml] = None
-    node_secret: Optional[NodeSecretYaml] = None
+    # Jormungandr `node_config.yaml` data
+    config: Optional[NodeConfigYaml] = None
+    # Jormungandr `node_secret.yaml` data
+    secret: Optional[NodeSecretYaml] = None
+    # Jormungandr `topology_key` data
     topology_key: Optional[NodeTopologyKey] = None
+    # Jormungandr peer leaders
     leaders: Optional[List[PeerNode]] = None
+    # Voting Event
     event: Optional[Event] = None
+    # Jormungandr `topology_key` data
     block0: Optional[Block0File] = None
 
     def reset(self):
+        """Resets the current instance by re-initializing the object."""
         self.__init__()
+
+        def get_block0(self) -> Block0File:
+            ...
 
 
 @dataclass

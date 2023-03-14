@@ -72,9 +72,6 @@ jobs:
           echo "PGHOST=postgres" >> $GITHUB_ENV
           echo "PGPASSWORD=postgres" >> $GITHUB_ENV
 
-      - name: test
-        run: docker ps
-
       - name: Build Docs
         uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools:v1.4.3
         with:

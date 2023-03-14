@@ -28,7 +28,9 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
     steps:
       - name: Checkout The Code
         uses: actions/checkout@v3
@@ -39,8 +41,7 @@ jobs:
         run: |
           GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
           echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
-          echo "PGHOST=postgres" >> $GITHUB_ENV
-          echo "postgres" > ~/.pgpass
+          echo "PGHOST=localhost" >> $GITHUB_ENV
 
       - name: Start the Kroki service for building images
         run: docker-compose -f "utilities/kroki-service/docker-compose.yml" up -d --build

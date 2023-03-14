@@ -13,6 +13,52 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
 
+    # Service containers to run
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres:14
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+      kroki:
+        image: yuzutech/kroki
+        env:
+          - KROKI_BLOCKDIAG_HOST=blockdiag
+          - KROKI_MERMAID_HOST=mermaid
+          - KROKI_BPMN_HOST=bpmn
+          - KROKI_EXCALIDRAW_HOST=excalidraw
+          - KROKI_SAFE_MODE=unsafe
+          - KROKI_MAX_URI_LENGTH=64000
+        ports:
+          - "7123:8000"
+      blockdiag:
+        image: yuzutech/kroki-blockdiag
+        ports:
+          - "8001:8001"
+      mermaid:
+        image: yuzutech/kroki-mermaid
+        ports:
+          - "8002:8002"
+      bpmn:
+        image: yuzutech/kroki-bpmn
+        ports:
+          - "8003:8003"
+      excalidraw:
+        image: yuzutech/kroki-excalidraw
+        ports:
+          - "8004:8004"
     steps:
       - name: Checkout The Code
         uses: actions/checkout@v3

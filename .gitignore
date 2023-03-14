@@ -89,6 +89,7 @@ book/src/06_rust_api/rust_api.md
 book/tmp
 book/assets/theme/index.hbs
 book/assets/theme/css/variables.css
+book/src/08_event-db/db-diagrams/*.dot
 
 /vendor
 

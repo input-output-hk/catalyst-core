@@ -19,10 +19,6 @@ script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
 refinery migrate -c refinery.toml -p ./migrations
 '''
-dependencies = [
-    "install-db-prereqs"
-]
-
 
 # Setup the local database ready to run the migrations.
 [tasks.local-event-db-init]

@@ -1,6 +1,6 @@
 [main]
 db_type = "Postgres"
-db_host = "localhost"
+db_host = "postgres"
 db_port = "5432"
 db_user = "catalyst-event-docs"
 db_pass = "CHANGE_ME"

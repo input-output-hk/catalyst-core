@@ -18,7 +18,7 @@ jobs:
       # Label used to access the service container
       postgres:
         # Docker Hub image
-        image: postgres
+        image: postgres:14
         # Provide the password for postgres
         env:
           POSTGRES_PASSWORD: postgres
@@ -39,6 +39,8 @@ jobs:
         run: |
           GIT_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
           echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
+          echo "POSTGRES_HOST: postgres" >> $GITHUB_ENV
+          echo "postgres" > ~/.pgpass
 
       - name: Start the Kroki service for building images
         run: docker-compose -f "utilities/kroki-service/docker-compose.yml" up -d --build

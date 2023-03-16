@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["DEFAULT_DIRECT_VOTER_GROUP",""],["DEFAULT_REPRESENTATIVE_GROUP",""]],"enum":[["Error",""]],"mod":[["all_reps",""]],"struct":[["AllReps",""],["RepsVotersAssigner",""]],"trait":[["VotingGroupAssigner",""]]};

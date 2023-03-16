@@ -21,7 +21,7 @@ class Mapper:
     def map_challenge(
         self,
         a: ideascale_importer.ideascale.client.Campaign,
-        election_id: int
+        event_id: int
     ) -> ideascale_importer.db.models.Challenge:
         """
         Maps a IdeaScale campaign into a challenge.
@@ -31,7 +31,7 @@ class Mapper:
 
         return ideascale_importer.db.models.Challenge(
             id=a.id,
-            election=election_id,
+            event=event_id,
             category=get_challenge_category(a),
             title=a.name,
             description=html_to_md(a.description),

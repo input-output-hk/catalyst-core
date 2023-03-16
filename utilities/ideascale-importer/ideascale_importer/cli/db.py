@@ -21,10 +21,10 @@ def seed_compatible(database_url: str = typer.Option(..., help="Postgres databas
         console = rich.console.Console()
 
         conn = await ideascale_importer.db.connect(database_url)
-        console.log("Connected to database")
+        console.print("Connected to database")
 
         async with conn.transaction():
-            election = models.Election(
+            event = models.Event(
                 name="Fund 10",
                 description="Fund 10 event",
                 registration_snapshot_time=datetime.now(),
@@ -44,35 +44,35 @@ def seed_compatible(database_url: str = typer.Option(..., help="Postgres databas
                 tallying_end=datetime.now(),
                 extra={
                     "url": {
-                        "results": "https://election.com/results/10",
-                        "survey": "https://election.com/survey/10",
+                        "results": "https://event.com/results/10",
+                        "survey": "https://event.com/survey/10",
                     }
                 })
-            election_id = await conn.insert(election, returning="row_id")
-            console.log(f"Inserted election row_id={election_id}")
+            event_id = await ideascale_importer.db.insert(conn, event, returning="row_id")
+            console.print(f"Inserted event row_id={event_id}")
 
-            voting_group = models.VotingGroup(group_id="group-id-1", election_id=election_id, token_id="token-id-1")
-            voting_group_row_id = await conn.insert(voting_group, returning="row_id")
-            console.log(f"Inserted voting_group row_id={voting_group_row_id}")
+            voting_group = models.VotingGroup(group_id="group-id-1", event_id=event_id, token_id="token-id-1")
+            voting_group_row_id = await ideascale_importer.db.insert(conn, voting_group, returning="row_id")
+            console.print(f"Inserted voting_group row_id={voting_group_row_id}")
 
-            voteplan = models.Voteplan(election_id=election_id, id="voteplan-1", category="public",
+            voteplan = models.Voteplan(event_id=event_id, id="voteplan-1", category="public",
                                        encryption_key="encryption-key-1", group_id=voting_group_row_id)
-            voteplan_row_id = await conn.insert(voteplan, returning="row_id")
-            console.log(f"Inserted voteplan row_id={voteplan_row_id}")
+            voteplan_row_id = await ideascale_importer.db.insert(conn, voteplan, returning="row_id")
+            console.print(f"Inserted voteplan row_id={voteplan_row_id}")
 
             for i in range(2):
                 challenge_id = random.randint(1, 1000)
 
                 challenge = models.Challenge(
                     id=challenge_id,
-                    election=election_id,
+                    event=event_id,
                     category="simple",
                     title=f"Challenge {i}",
                     description=f"Random challenge {i}",
                     rewards_currency="ADA",
                     rewards_total=100000,
                     proposers_rewards=10000,
-                    vote_options=await conn.get_vote_options_id("yes,no"),
+                    vote_options=await ideascale_importer.db.get_vote_options_id(conn, "yes,no"),
                     extra={
                         "url": {
                             "challenge": f"https://challenge.com/{i}"
@@ -82,8 +82,8 @@ def seed_compatible(database_url: str = typer.Option(..., help="Postgres databas
                         },
                     })
 
-                challenge_row_id = await conn.insert(challenge, returning="row_id")
-                console.log(f"Inserted challenge row_id={challenge_row_id}")
+                challenge_row_id = await ideascale_importer.db.insert(conn, challenge, returning="row_id")
+                console.print(f"Inserted challenge row_id={challenge_row_id}")
 
                 for j in range(2):
                     proposal_id = random.randint(1, 1000)
@@ -108,16 +108,16 @@ def seed_compatible(database_url: str = typer.Option(..., help="Postgres databas
                         bb_vote_options="yes,no"
                     )
 
-                    proposal_row_id = await conn.insert(proposal, returning="row_id")
-                    console.log(f"Inserted proposal row_id={proposal_row_id}")
+                    proposal_row_id = await ideascale_importer.db.insert(conn, proposal, returning="row_id")
+                    console.print(f"Inserted proposal row_id={proposal_row_id}")
 
                     proposal_voteplan = models.ProposalVoteplan(
                         proposal_id=proposal_row_id, voteplan_id=voteplan_row_id, bb_proposal_index=(i+1)*(j+1))
-                    await conn.insert(proposal_voteplan)
+                    await ideascale_importer.db.insert(conn, proposal_voteplan)
 
             for i in range(1):
-                goal = models.Goal(election_id=election_id, idx=i, name=f"Goal {i}")
-                goal_id = await conn.insert(goal, returning="id")
-                console.log(f"Inserted goal id={goal_id}")
+                goal = models.Goal(event_id=event_id, idx=i, name=f"Goal {i}")
+                goal_id = await ideascale_importer.db.insert(conn, goal, returning="id")
+                console.print(f"Inserted goal id={goal_id}")
 
     asyncio.run(inner(database_url))

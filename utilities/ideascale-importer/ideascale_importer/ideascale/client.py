@@ -1,22 +1,9 @@
-import aiohttp
 import asyncio
-import json
 import marshmallow
 import marshmallow_dataclass
-import rich.progress
 from typing import Any, Iterable, List, Mapping
 
 from ideascale_importer import utils
-
-
-class BadResponse(Exception):
-    def __init__(self):
-        super().__init__("Bad response")
-
-
-class GetFailed(Exception):
-    def __init__(self, status, reason, content):
-        super().__init__(f"{status} {reason}\n{content})")
 
 
 class ExcludeUnknownFields:
@@ -108,41 +95,6 @@ StageSchema = marshmallow_dataclass.class_schema(Stage)
 FunnelSchema = marshmallow_dataclass.class_schema(Funnel)
 
 
-class RequestProgressObserver:
-    """
-    Observer used for displaying IdeaScale client's requests progresses.
-    """
-
-    def __init__(self):
-        self.inflight_requests = {}
-        self.progress = rich.progress.Progress(
-            rich.progress.TextColumn("{task.description}"),
-            rich.progress.DownloadColumn(),
-            rich.progress.TransferSpeedColumn(),
-            rich.progress.SpinnerColumn(),
-        )
-
-    def request_start(self, req_id: int, method: str, url: str):
-        self.inflight_requests[req_id] = [self.progress.add_task(f"({req_id}) {method} {url}", total=None), 0]
-
-    def request_progress(self, req_id: int, total_bytes_received: int):
-        self.inflight_requests[req_id][1] = total_bytes_received
-        self.progress.update(self.inflight_requests[req_id][0], completed=total_bytes_received)
-
-    def request_end(self, req_id):
-        self.progress.update(self.inflight_requests[req_id][0], total=self.inflight_requests[req_id][1])
-
-    def __enter__(self):
-        self.progress.__enter__()
-
-    def __exit__(self, *args):
-        self.progress.__exit__(*args)
-
-        for [task_id, _] in self.inflight_requests.values():
-            self.progress.remove_task(task_id)
-        self.inflight_requests.clear()
-
-
 class Client:
     """
     IdeaScale API client.
@@ -152,8 +104,7 @@ class Client:
 
     def __init__(self, api_token: str):
         self.api_token = api_token
-        self.request_counter = 0
-        self.request_progress_observer = RequestProgressObserver()
+        self.inner = utils.JsonHttpClient(Client.API_URL)
 
     async def campaigns(self, group_id: int) -> List[Campaign]:
         """
@@ -241,36 +192,12 @@ class Client:
         if isinstance(funnel, Funnel):
             return funnel
         else:
-            raise BadResponse()
+            raise utils.BadResponse()
 
     async def _get(self, path: str) -> Mapping[str, Any] | Iterable[Mapping[str, Any]]:
         """
         Executes a GET request on IdeaScale API.
         """
 
-        url = f"{Client.API_URL}{path}"
         headers = {"api_token": self.api_token}
-
-        # Store request id
-        self.request_counter += 1
-        req_id = self.request_counter
-
-        async with aiohttp.ClientSession() as session:
-            self.request_progress_observer.request_start(req_id, "GET", url)
-            async with session.get(url, headers=headers) as r:
-                content = b''
-
-                async for c, _ in r.content.iter_chunks():
-                    content += c
-                    self.request_progress_observer.request_progress(req_id, len(content))
-
-                self.request_progress_observer.request_end(req_id)
-
-                if r.status == 200:
-                    # Doing this so we can describe schemas with types and
-                    # not worry about field names not being in snake case format.
-                    parsed_json = json.loads(content)
-                    utils.snake_case_keys(parsed_json)
-                    return parsed_json
-                else:
-                    raise GetFailed(r.status, r.reason, content)
+        return await self.inner.get(path, headers)

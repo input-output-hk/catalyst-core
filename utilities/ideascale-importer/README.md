@@ -24,17 +24,9 @@ To see the available commands:
 PYTHONPATH=$(pwd) poetry run python ideascale_importer --help
 ```
 
-## Importing IdeaScale Data
+## Documentation
 
-The easiest way is to run:
-
-```sh
-PYTHONPATH=$(pwd) poetry run python ideascale_importer \
-    --api-token IDEASCALE_API_TOKEN \
-    --database-url POSTGRES_URL
-```
-
-And go through the interactive steps.
+For documentation about the available commands see the [docs](docs) folder.
 
 ## Development
 

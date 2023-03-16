@@ -11,13 +11,13 @@ app = typer.Typer(add_completion=False)
 def import_all(
     api_token: str = typer.Option(..., help="IdeaScale API token"),
     database_url: str = typer.Option(..., help="Postgres database URL"),
-    election_id: Optional[int] = typer.Option(
+    event_id: Optional[int] = typer.Option(
         None,
-        help="Database row id of the election which data will be imported",
+        help="Database row id of the event which data will be imported",
     ),
     campaign_group_id: Optional[int] = typer.Option(
         None,
-        help="IdeaScale campaign group id for the election which data will be imported",
+        help="IdeaScale campaign group id for the event which data will be imported",
     ),
     stage_id: Optional[int] = typer.Option(
         None,
@@ -29,11 +29,11 @@ def import_all(
     ),
 ):
     """
-    Import all election data from IdeaScale for a given election
+    Import all event data from IdeaScale for a given event
     """
 
     async def inner(
-        election_id: Optional[int],
+        event_id: Optional[int],
         campaign_group_id: Optional[int],
         stage_id: Optional[int],
         proposals_scores_csv_path: Optional[str]
@@ -42,7 +42,7 @@ def import_all(
             api_token,
             database_url,
             None,
-            election_id,
+            event_id,
             campaign_group_id,
             stage_id,
             proposals_scores_csv_path,
@@ -52,4 +52,4 @@ def import_all(
         await importer.import_all()
         await importer.close()
 
-    asyncio.run(inner(election_id, campaign_group_id, stage_id, proposals_scores_csv))
+    asyncio.run(inner(event_id, campaign_group_id, stage_id, proposals_scores_csv))

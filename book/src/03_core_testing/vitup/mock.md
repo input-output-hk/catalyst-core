@@ -18,7 +18,7 @@ Configuration file example is available under `vit-testing/vitup/example/mock/co
 
 For full api specs please visit:
 
-* [Mock REST API V0](../../api/vit-testing-mock-v0.md)
+* - [Requests collection](../api/vitup/mock/mock_postman_collection.json)
 
 #### List Files
 

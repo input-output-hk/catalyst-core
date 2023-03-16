@@ -16,9 +16,9 @@ Configuration file example is available under `vit-testing/vitup/example/mock/co
 
 ### Admin rest commands
 
-For full api specs please visit:
+For postman collection please visit:
 
-* - [Requests collection](../api/vitup/mock/mock_postman_collection.json)
+[Requests collection](../api/vitup/mock/mock_postman_collection.json)
 
 #### List Files
 

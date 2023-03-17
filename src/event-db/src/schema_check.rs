@@ -10,9 +10,9 @@ use crate::{EventDB, DATABASE_SCHEMA_VERSION};
 #[derive(Debug)]
 struct MismatchedSchema {
     /// The current schema version.
-    was: u32,
+    was: i32,
     /// The schema version we expected.
-    expected: u32,
+    expected: i32,
 }
 
 impl Error for MismatchedSchema {}
@@ -35,19 +35,19 @@ pub trait SchemaVersion {
     /// Check the schema version.
     /// return the current schema version if its current.
     /// Otherwise return an error.
-    async fn schema_version_check(&self) -> Result<u32, Box<dyn Error + Send + Sync + 'static>>;
+    async fn schema_version_check(&self) -> Result<i32, Box<dyn Error + Send + Sync + 'static>>;
 }
 
 #[async_trait]
 impl SchemaVersion for EventDB {
-    async fn schema_version_check(&self) -> Result<u32, Box<dyn Error + Send + Sync + 'static>> {
+    async fn schema_version_check(&self) -> Result<i32, Box<dyn Error + Send + Sync + 'static>> {
         let conn = self.pool.get().await?;
 
         let schema_check = conn
             .query_one("SELECT MAX(version) from refinery_schema_history;", &[])
             .await?;
 
-        let current_ver = schema_check.try_get::<usize, u32>(0)?;
+        let current_ver = schema_check.try_get::<usize, i32>(0)?;
 
         if current_ver == DATABASE_SCHEMA_VERSION {
             Ok(current_ver)

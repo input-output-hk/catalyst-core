@@ -20,7 +20,7 @@ const DATABASE_URL_ENVVAR: &str = "EVENT_DB_URL";
 
 /// Database version this crate matches.
 /// Must equal the last Migrations Version Number.
-pub const DATABASE_SCHEMA_VERSION: u32 = 10;
+pub const DATABASE_SCHEMA_VERSION: i32 = 9;
 
 #[allow(unused)]
 /// Connection to the Election Database
@@ -52,12 +52,6 @@ pub struct EventDB {
 ///
 /// The env var "`DATABASE_URL`" can be set directly as an anv var, or in a
 /// `.env` file.
-///
-/// # Examples
-///
-/// ```
-/// let db = election_db::establish_connection(None)?;
-/// ```
 pub async fn establish_connection(
     url: Option<&str>,
 ) -> Result<EventDB, Box<dyn Error + Send + Sync + 'static>> {

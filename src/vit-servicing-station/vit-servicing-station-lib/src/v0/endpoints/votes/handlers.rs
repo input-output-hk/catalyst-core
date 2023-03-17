@@ -24,7 +24,7 @@ mod test {
     #[tokio::test]
     async fn get_vote_by_voteplan_id_and_caster() {
         // build context
-        let db_url = DbBuilder::new().build().unwrap();
+        let db_url = DbBuilder::new().build_async().await.unwrap();
         let shared_context = new_test_shared_context_from_url(&db_url);
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());

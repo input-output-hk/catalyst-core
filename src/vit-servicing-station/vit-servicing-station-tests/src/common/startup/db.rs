@@ -1,13 +1,11 @@
 use diesel::RunQueryDsl;
 use rand::Rng;
-use std::path::Path;
-use std::path::PathBuf;
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::groups::Group;
 use vit_servicing_station_lib::db::models::{
     api_tokens::ApiTokenData, challenges::Challenge, funds::Fund,
 };
-use vit_servicing_station_lib::db::DbConnection;
+use vit_servicing_station_lib::db::{DbConnection, DbConnectionPool};
 
 use crate::common::data::Snapshot;
 use crate::common::db::{DbInserter, DbInserterError};
@@ -24,6 +22,16 @@ pub fn initialize_db_with_migrations(db_url: &str) -> Result<(), DbBuilderError>
     embedded_migrations::migrations::runner()
         .run(&mut client)
         .unwrap();
+
+    Ok(())
+}
+
+pub async fn initialize_db_with_migrations_async(db_url: &str) -> Result<(), DbBuilderError> {
+    let db_url = db_url.to_string();
+
+    tokio::task::spawn_blocking(move || initialize_db_with_migrations(&db_url))
+        .await
+        .unwrap()?;
 
     Ok(())
 }
@@ -138,6 +146,22 @@ impl DbBuilder {
     }
 
     pub fn build(&self) -> Result<String, DbBuilderError> {
+        let (db_url, pool) = self.create_database()?;
+        initialize_db_with_migrations(&db_url)?;
+        self.insert_all(&pool.get().unwrap())?;
+
+        Ok(db_url)
+    }
+
+    pub async fn build_async(&self) -> Result<String, DbBuilderError> {
+        let (db_url, pool) = self.create_database()?;
+        initialize_db_with_migrations_async(&db_url).await?;
+        self.insert_all(&pool.get().unwrap())?;
+
+        Ok(db_url)
+    }
+
+    fn create_database(&self) -> Result<(String, DbConnectionPool), DbBuilderError> {
         let db_url = match std::env::var("TEST_DATABASE_URL") {
             Ok(u) => u,
             Err(std::env::VarError::NotPresent) => {
@@ -146,55 +170,37 @@ impl DbBuilder {
             Err(e) => return Err(DbBuilderError::DatabaseUrlEnvVar(e)),
         };
 
-        let (db_url, connection) = {
-            let pool = vit_servicing_station_lib::db::load_db_connection_pool(&db_url).unwrap();
-            let connection = pool.get().unwrap();
-
-            // create a new database to use when testing
-            let tmp_db_name = rand::thread_rng()
-                .sample_iter(rand::distributions::Alphanumeric)
-                .filter(char::is_ascii_alphabetic)
-                .take(8)
-                .collect::<String>()
-                .to_lowercase();
-
-            diesel::sql_query(format!("CREATE DATABASE {}", tmp_db_name))
-                .execute(&connection)
-                .unwrap();
-
-            // reconnect to the created database
-            let db_url = format!("{}/{}", db_url, tmp_db_name);
-            let pool = vit_servicing_station_lib::db::load_db_connection_pool(&db_url).unwrap();
-
-            (db_url, pool.get().unwrap())
-        };
-
-        initialize_db_with_migrations(&db_url)?;
-        self.try_insert_tokens(&connection)?;
-        self.try_insert_funds(&connection)?;
-        self.try_insert_groups(&connection)?;
-        self.try_insert_challenges(&connection)?;
-        self.try_insert_proposals(&connection)?;
-        self.try_insert_reviews(&connection)?;
-
-        Ok(db_url)
-    }
-
-    pub fn build_into_path<P: AsRef<Path>>(&self, path: P) -> Result<PathBuf, DbBuilderError> {
-        let path = path.as_ref();
-        let db_path = path.to_str().ok_or(DbBuilderError::CannotExtractTempPath)?;
-
-        let pool = vit_servicing_station_lib::db::load_db_connection_pool(db_path).unwrap();
+        let pool = vit_servicing_station_lib::db::load_db_connection_pool(&db_url).unwrap();
         let connection = pool.get().unwrap();
 
-        initialize_db_with_migrations(db_path)?;
-        self.try_insert_tokens(&connection)?;
-        self.try_insert_funds(&connection)?;
-        self.try_insert_groups(&connection)?;
-        self.try_insert_challenges(&connection)?;
-        self.try_insert_proposals(&connection)?;
-        self.try_insert_reviews(&connection)?;
-        Ok(path.to_path_buf())
+        // create a new database to use when testing
+        let tmp_db_name = rand::thread_rng()
+            .sample_iter(rand::distributions::Alphanumeric)
+            .filter(char::is_ascii_alphabetic)
+            .take(8)
+            .collect::<String>()
+            .to_lowercase();
+
+        diesel::sql_query(format!("CREATE DATABASE {}", tmp_db_name))
+            .execute(&connection)
+            .unwrap();
+
+        // reconnect to the created database
+        let db_url = format!("{}/{}", db_url, tmp_db_name);
+        let pool = vit_servicing_station_lib::db::load_db_connection_pool(&db_url).unwrap();
+
+        Ok((db_url, pool))
+    }
+
+    fn insert_all(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
+        self.try_insert_tokens(connection)?;
+        self.try_insert_funds(connection)?;
+        self.try_insert_groups(connection)?;
+        self.try_insert_challenges(connection)?;
+        self.try_insert_proposals(connection)?;
+        self.try_insert_reviews(connection)?;
+
+        Ok(())
     }
 }
 

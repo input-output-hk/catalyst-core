@@ -37,7 +37,11 @@ pub mod test {
         let mut gen = ArbitrarySnapshotGenerator::default();
         let snapshot = gen.snapshot();
 
-        let db_url = DbBuilder::new().with_snapshot(&snapshot).build().unwrap();
+        let db_url = DbBuilder::new()
+            .with_snapshot(&snapshot)
+            .build_async()
+            .await
+            .unwrap();
         let shared_context = new_test_shared_context_from_url(&db_url);
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
@@ -84,7 +88,11 @@ pub mod test {
         let snapshot = gen.snapshot();
         let funds = snapshot.funds();
 
-        let db_url = DbBuilder::new().with_snapshot(&snapshot).build().unwrap();
+        let db_url = DbBuilder::new()
+            .with_snapshot(&snapshot)
+            .build_async()
+            .await
+            .unwrap();
         let shared_context = new_test_shared_context_from_url(&db_url);
 
         let filter_context = shared_context.clone();
@@ -130,7 +138,11 @@ pub mod test {
             .map(|f| f.id)
             .collect::<Vec<_>>();
 
-        let db_url = DbBuilder::new().with_snapshot(&snapshot).build().unwrap();
+        let db_url = DbBuilder::new()
+            .with_snapshot(&snapshot)
+            .build_async()
+            .await
+            .unwrap();
         let shared_context = new_test_shared_context_from_url(&db_url);
 
         let filter_context = shared_context.clone();

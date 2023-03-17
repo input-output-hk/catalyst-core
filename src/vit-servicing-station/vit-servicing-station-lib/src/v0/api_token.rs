@@ -105,7 +105,7 @@ mod test {
 
     #[tokio::test]
     async fn api_token_filter_reject() {
-        let db_url = DbBuilder::new().build().unwrap();
+        let db_url = DbBuilder::new().build_async().await.unwrap();
         let shared_context = new_test_shared_context_from_url(&db_url);
         let filter = api_token_filter(shared_context).await;
 

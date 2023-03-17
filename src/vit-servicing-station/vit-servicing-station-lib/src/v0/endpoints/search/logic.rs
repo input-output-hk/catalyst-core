@@ -45,7 +45,11 @@ mod test {
         let c = snapshot.challenges_mut();
         c[0].title = "abc1".to_string();
 
-        let db_url = DbBuilder::new().with_snapshot(&snapshot).build().unwrap();
+        let db_url = DbBuilder::new()
+            .with_snapshot(&snapshot)
+            .build_async()
+            .await
+            .unwrap();
         let shared_context = new_test_shared_context_from_url(&db_url);
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
@@ -124,7 +128,11 @@ mod test {
         c[1].title = "abcd1".to_string();
         c[2].title = "abcde1".to_string();
 
-        let db_url = DbBuilder::new().with_snapshot(&snapshot).build().unwrap();
+        let db_url = DbBuilder::new()
+            .with_snapshot(&snapshot)
+            .build_async()
+            .await
+            .unwrap();
         let shared_context = new_test_shared_context_from_url(&db_url);
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
@@ -268,7 +276,11 @@ mod test {
         c[3].title = "abcd1".to_string();
         c[4].title = "abcde1".to_string();
 
-        let db_url = DbBuilder::new().with_snapshot(&snapshot).build().unwrap();
+        let db_url = DbBuilder::new()
+            .with_snapshot(&snapshot)
+            .build_async()
+            .await
+            .unwrap();
         let shared_context = new_test_shared_context_from_url(&db_url);
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());

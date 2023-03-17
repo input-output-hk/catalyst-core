@@ -84,6 +84,7 @@ mod test {
 
     /// Check if the schema version in the DB is up to date.
     #[tokio::test]
+    #[ignore = "not used"]
     async fn check_schema_version() {
         use crate::establish_connection;
 

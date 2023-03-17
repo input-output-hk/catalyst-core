@@ -2,7 +2,8 @@ use crate::task::ExecTask;
 use clap::Parser;
 use thiserror::Error;
 use vit_servicing_station_lib::db::{
-    load_db_connection_pool, /*migrations::initialize_db_with_migration,*/ Error as DbPoolError,
+    load_db_connection_pool,
+    /*migrations::initialize_db_with_migration,*/ Error as DbPoolError,
 };
 
 #[derive(Error, Debug)]

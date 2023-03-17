@@ -31,7 +31,6 @@ pub struct EventDB {
     pool: Pool<PostgresConnectionManager<NoTls>>,
 }
 
-
 /// Establish a connection to the database, and check the schema is up-to-date.
 ///
 /// # Parameters
@@ -62,7 +61,6 @@ pub struct EventDB {
 pub async fn establish_connection(
     url: Option<&str>,
 ) -> Result<EventDB, Box<dyn Error + Send + Sync + 'static>> {
-
     // Support env vars in a `.env` file,  doesn't need to exist.
     dotenv().ok();
 
@@ -76,10 +74,7 @@ pub async fn establish_connection(
 
     let config = tokio_postgres::config::Config::from_str(&database_url)?;
 
-    let pg_mgr = PostgresConnectionManager::new(
-        config,
-        tokio_postgres::NoTls,
-    );
+    let pg_mgr = PostgresConnectionManager::new(config, tokio_postgres::NoTls);
 
     let pool = Pool::builder().build(pg_mgr).await?;
 
@@ -92,7 +87,6 @@ pub async fn establish_connection(
 
 #[cfg(test)]
 mod test {
-
 
     /// Check if the schema version in the DB is up to date.
     #[tokio::test]

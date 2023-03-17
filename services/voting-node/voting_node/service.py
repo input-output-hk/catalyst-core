@@ -52,7 +52,7 @@ class VotingNode(uvicorn.Server):
         )
 
         # wait for the stdout from uvicorn before our logs start to roll
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(1)
         # execute the scheduled tasks for this node, by
         # extracting the leadership role from the hostname
         schedule = self.get_schedule()

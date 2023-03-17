@@ -87,19 +87,6 @@ def start(
 ):
     logs.configLogger(log_level)
 
-    logger = logs.getLogger()
-    logger.debug("Executing: voting-node start")
-    logger.debug(f"host={host}")
-    logger.debug(f"port={port}")
-    logger.debug(f"database-url={database_url}")
-    logger.debug(f"node-storage={node_storage}")
-    logger.debug(f"log-level={log_level}")
-    logger.debug(f"jorm-path={jorm_path}")
-    logger.debug(f"jcli-path={jcli_path}")
-    logger.debug(f"rest-port={jorm_rest_port}")
-    logger.debug(f"jrpc-port={jorm_jrpc_port}")
-    logger.debug(f"p2p-port={jorm_p2p_port}")
-
     api_config = uvicorn.Config(api.app, host=host, port=port, log_level=log_level)
     settings = ServiceSettings(
         jorm_rest_port,

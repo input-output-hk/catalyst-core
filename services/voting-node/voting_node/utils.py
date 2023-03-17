@@ -7,7 +7,7 @@ from typing import Dict, Final, Literal, List, Match, Tuple
 
 from . import jcli
 from .logs import getLogger
-from .models import Event, Genesis, NodeConfig, PeerNode
+from .models import Event, Genesis, NodeConfig, LeaderHostInfo
 from .templates import (
     GENESIS_YAML,
     NODE_CONFIG_LEADER,
@@ -19,8 +19,11 @@ from .templates import (
 logger = getLogger()
 
 
+"""Regex expression to determine a node is a leader"""
+LEADER_REGEX: Final = r"^leader[0-9]+$"
+
 """Regex expression to determine a node's leadership and number"""
-LEADER_REGEX: Final = r"^(leader|follower)([0-9]+)$"
+LEADERSHIP_REGEX: Final = r"^(leader|follower)([0-9]+)$"
 
 
 def get_hostname() -> str:
@@ -59,14 +62,14 @@ async def get_network_secret(secret_file: Path, jcli_path: str) -> str:
 
 
 def match_hostname_leadership_pattern(host_name: str) -> Match[str] | None:
-    return re.match(LEADER_REGEX, host_name)
+    return re.match(LEADERSHIP_REGEX, host_name)
 
 
 def get_leadership_role_n_number_by_hostname(
     host_name: str,
 ) -> Tuple[Literal["leader", "follower"], int]:
     res = match_hostname_leadership_pattern(host_name)
-    exc = Exception(f"hostname {host_name} needs to conform to '{LEADER_REGEX}'")
+    exc = Exception(f"hostname {host_name} must conform to '{LEADERSHIP_REGEX}'")
     if res is None:
         raise exc
     match res.groups():
@@ -205,7 +208,7 @@ def make_node_config(
 
 
 def make_genesis_content(
-    event: Event, peers: List[PeerNode], committee_ids: List[str]
+    event: Event, peers: List[LeaderHostInfo], committee_ids: List[str]
 ) -> Genesis:
     start_time = event.get_start_time()
     genesis = yaml.safe_load(GENESIS_YAML)

@@ -85,7 +85,7 @@ class NodeTopologyKey:
 
 
 @dataclass
-class PeerNode:
+class LeaderHostInfo:
     """Peer information that leaders need for consensus."""
 
     hostname: str
@@ -98,15 +98,10 @@ class Block0:
 
     bin: bytes
     hash: str
-
-
-@dataclass
-class Block0File:
-    block0: Block0
     path: Path
 
     def save(self):
-        self.path.write_bytes(self.block0.bin)
+        self.path.write_bytes(self.bin)
 
 
 @dataclass
@@ -126,17 +121,28 @@ class Event:
     """Represents DB row for the current event."""
 
     row_id: int
-
+    # The name of the event. eg. "Fund9" or "SVE1"
     name: str
+    # A detailed description of the purpose of the event. eg. the events "Goal"
     description: str
 
+    # The Time (UTC) Registrations are taken from Cardano main net.
+    # Registrations after this date are not valid for voting on the event.
+    # NULL = Not yet defined or Not Applicable
     registration_snapshot_time: Optional[datetime]
     voting_power_threshold: Optional[int]
     max_voting_power_pct: Optional[int]
 
+    # The Time (UTC) Registrations are taken from Cardano main net.
+    # Registrations after this date are not valid for voting on the event.
+    # NULL = Not yet defined or Not Applicable
     start_time: Optional[datetime]
     end_time: Optional[datetime]
 
+    # The Time (UTC) Registrations taken from Cardano main net are considered stable.
+    # This is not the Time of the Registration Snapshot,
+    # This is the time after which the registration snapshot will be stable.
+    # NULL = Not yet defined or Not Applicable
     insight_sharing_start: Optional[datetime]
     proposal_submission_start: Optional[datetime]
     refine_proposals_start: Optional[datetime]
@@ -157,16 +163,35 @@ class Event:
     extra: Optional[Mapping[str, Any]]
 
     def get_start_time(self) -> datetime:
+        """Gets the timestamp for the event start time.
+        This method raises exception if the timestamp is None."""
         if self.start_time is None:
             raise Exception("event has no start time")
         return self.start_time
 
-    def get_block0(self) -> Block0:
+    def has_started(self) -> bool:
+        """Returns True when current time is equal or greater
+        to the event start time.
+        This method raises exception if the timestamp is None."""
+        start_time = self.get_start_time()
+        now = datetime.utcnow()
+        return now >= start_time
+
+    def get_snapshot_start(self) -> datetime:
+        """Gets the timestamp for when the event snapshot becomes stable.
+        This method raises exception if the timestamp is None."""
+        if self.snapshot_start is None:
+            raise Exception("event has no snapshot start time")
+        return self.snapshot_start
+
+    def get_block0(self, path: Path) -> Block0:
+        """Gets the block0 binary for the event.
+        This method raises exception if the block0 is None."""
         if self.block0 is None or self.block0_hash is None:
             raise Exception("event has no block0")
         block0: bytes = self.block0
         block0_hash: str = self.block0_hash
-        return Block0(block0, block0_hash)
+        return Block0(block0, block0_hash, path)
 
 
 @dataclass
@@ -194,6 +219,60 @@ class Proposal:
 
 
 @dataclass
+class FundsForToken:
+    address: str
+    value: int
+    token_id: str
+
+
+@dataclass
+class VotingGroup:
+    row_id: str
+    # The ID of this group
+    group_id: str
+    # The event (row_id) this group belongs to
+    event_id: int
+    # The ID of the voting token used by this group
+    token_id: Optional[str]
+
+
+@dataclass
+class Voter:
+    row_id: str
+    # Either the voting key
+    voting_key: str
+    # The ID of the snapshot this record belongs to
+    snapshot_id: str
+    # The voting group this voter belongs to
+    voting_group: str
+    # The voting power associated with this key
+    voting_power: int
+
+
+@dataclass
+class VotePlan:
+    row_id: str
+    # The event (row_id) this plan belongs to
+    event_id: int
+    # The ID of the plan in the voting ledger/bulletin board.
+    # A Binary value encoded as hex
+    id: str
+    # The kind of vote which can be cast on this vote plan
+    category: str
+    # The public encryption key used. ONLY if required by the voteplan category
+    encryption_key: Optional[str]
+    # The voting group row_id this plan belongs to
+    # The identifier of voting power token used withing this plan
+    group_id: Optional[int]
+
+
+@dataclass
+class VotePlanCertificate:
+    vote_plan: VotePlan
+    certificate: str
+
+
+@dataclass
 class VotingNode:
     # Hostname, private/public keypair, and topology key.
     host_info: Optional[HostInfo] = None
@@ -204,18 +283,45 @@ class VotingNode:
     # Jormungandr `topology_key` data
     topology_key: Optional[NodeTopologyKey] = None
     # Jormungandr peer leaders
-    leaders: Optional[List[PeerNode]] = None
+    leaders: Optional[List[LeaderHostInfo]] = None
     # Voting Event
     event: Optional[Event] = None
-    # Jormungandr `topology_key` data
-    block0: Optional[Block0File] = None
+    # Block0 for the event
+    block0: Optional[Block0] = None
 
     def reset(self):
         """Resets the current instance by re-initializing the object."""
         self.__init__()
 
-        def get_block0(self) -> Block0File:
-            ...
+    def get_event(self) -> Event:
+        """Returns the voting event ID, raises exception if it is None."""
+        if self.event is None:
+            raise Exception("no voting event was found")
+        return self.event
+
+    def get_leaders(self) -> List[LeaderHostInfo]:
+        """Returns the list of known leaders,
+        raises exception if it is None or empty."""
+        if self.leaders is None:
+            raise Exception("no leaders were found")
+        return self.leaders
+
+    def get_event_id(self) -> int:
+        """Returns the voting event ID, raises exception if it is None."""
+        event = self.get_event()
+        return event.row_id
+
+    def get_start_time(self) -> datetime:
+        """Gets the timestamp for the event start time.
+        This method raises exception if the event or the timestamp are None."""
+        event = self.get_event()
+        return event.get_start_time()
+
+    def get_snapshot_start(self) -> datetime:
+        """Gets the timestamp for when the event snapshot becomes stable.
+        This method raises exception if the event or the timestamp are None."""
+        event = self.get_event()
+        return event.get_snapshot_start()
 
 
 @dataclass
@@ -226,6 +332,7 @@ class LeaderNode(VotingNode):
 @dataclass
 class Leader0Node(LeaderNode):
     genesis: Optional[Genesis] = None
+    initial_fragments: Optional[List[FundsForToken | VotePlanCertificate]] = None
     proposals: Optional[List[Proposal]] = None
 
 

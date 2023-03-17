@@ -19,6 +19,9 @@ Access to postgres with Event DB.
 
 ```shell
 git clone https://github.com/input-output-hk/catalyst-core.git
+```
+
+```shell
 cd catalyst-core/services/voting-node
 ```
 

@@ -67,6 +67,7 @@ jobs:
       - name: Run unit tests
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost
+          EVENT_DB_URL: postgres://postgres:postgres@localhost
         run: |
           cargo llvm-cov nextest --no-report --manifest-path ./src/catalyst-toolbox/catalyst-toolbox/Cargo.toml --profile ci
           cargo llvm-cov nextest --no-report --manifest-path ./src/catalyst-toolbox/snapshot-lib/Cargo.toml --profile ci
@@ -153,6 +154,7 @@ jobs:
       - name: Run integration tests
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost
+          EVENT_DB_URL: postgres://postgres:postgres@localhost
         run: |
           source <(cargo llvm-cov show-env --export-prefix)
           cargo build -p jcli -p jormungandr -p explorer -p vit-servicing-station-cli -p vit-servicing-station-server

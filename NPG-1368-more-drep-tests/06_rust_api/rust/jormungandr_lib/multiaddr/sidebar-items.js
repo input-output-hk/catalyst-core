@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Error",""]],"fn":[["resolve_dns","Checks if the multiaddr is valid for contacting a p2p peer and resolves DNS components."],["to_tcp_socket_addr","Extracts the TCP socket address if the multiaddr starts with an `/ip4` or `/ip6` component, followed by a `/tcp` component. Otherwise the function returns `None`."]]};

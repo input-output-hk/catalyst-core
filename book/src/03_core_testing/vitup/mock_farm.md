@@ -25,4 +25,4 @@ Configuration file example is available under `vit-testing/vitup/example/mock-fa
 ## Documentation
 
 - [OpenApi](../api/vitup/mock-farm/v0.yaml)
-- [Requests collection](../api/vitup/mock-farm/postman_collection.json)
+- [Requests collection](../api/vitup/mock-farm/mock_farm_postman_collection.json)

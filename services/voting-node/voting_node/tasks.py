@@ -276,7 +276,7 @@ class NodeTaskSchedule(ScheduleRunner):
         node_config_yaml = NodeConfigYaml(
             config, self.storage.joinpath("node_config.yaml")
         )
-        node_config_yaml.save()
+        await node_config_yaml.save()
         logger.debug(f"{node_config_yaml}")
 
     async def cleanup(self):
@@ -430,7 +430,7 @@ class Leader0Schedule(LeaderSchedule):
             # convert to yaml and save
             genesis_path = self.storage.joinpath("genesis.yaml")
             genesis_yaml = GenesisYaml(genesis, genesis_path)
-            genesis_yaml.save()
+            await genesis_yaml.save()
             logger.debug(f"{genesis_yaml}")
             self.genesis_yaml = genesis_yaml
 

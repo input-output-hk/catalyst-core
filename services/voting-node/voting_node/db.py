@@ -3,7 +3,7 @@ import datetime
 from typing import Any, List
 
 from .logs import getLogger
-from .models import Event, HostInfo, LeaderHostInfo, Proposal
+from .models import Event, HostInfo, LeaderHostInfo, Proposal, Snapshot, VotePlan
 from .utils import get_hostname, LEADER_REGEX
 
 # gets voting node logger
@@ -85,7 +85,7 @@ class EventDb(object):
 
                 return list(map(extract_leader_info, leaders))
 
-    async def fetch_proposals(self) -> List[Proposal]:
+    async def fetch_proposals(self, event_id: int) -> List[Proposal]:
         query = "SELECT * FROM proposal ORDER BY id ASC"
         result = await self.conn.fetch(query)
         if result is None:
@@ -99,6 +99,51 @@ class EventDb(object):
             case [*proposals]:
                 logger.debug(f"proposals retrieved from DB: {len(proposals)}")
                 return list(map(lambda r: Proposal(**dict(r)), proposals))
+
+    async def check_if_snapshot_is_final(self, event_id: int) -> bool:
+        query = "SELECT final FROM snapshot WHERE event = $1"
+        result = await self.conn.fetchrow(query, event_id)
+        match result:
+            case None:
+                raise Exception("snapshot DB error")
+            case record:
+                final = record.get("final")
+                logger.debug(f"snapshot finalized? {final}")
+                return final
+
+    async def fetch_snapshot(self, event_id: int) -> Snapshot:
+        # fetch the voting groups
+        # fetch the voters
+        columns = "(row_id, event, as_at, last_updated, dbsync_snapshot_data"
+        columns += ", drep_data, catalyst_snapshot_data, final)"
+        query = f"SELECT {columns} FROM snapshot WHERE event = $1"
+        result = await self.conn.fetchrow(query, event_id)
+        if result is None:
+            raise Exception("snapshot DB error")
+        logger.debug(f"snapshot retrieved from DB: {result}")
+        match result:
+            case None:
+                raise Exception("DB error fetching snapshot")
+            case snpsht:
+                snapshot = Snapshot(*snpsht["row"])
+                logger.debug(f"snapshot retrieved from DB: {snapshot}")
+                return snapshot
+
+    async def fetch_voteplans(self, event_id: int) -> List[VotePlan]:
+        # fetch the voteplans
+        query = "SELECT * FROM voteplan WHERE event_id = $1 ORDER BY id ASC"
+        result = await self.conn.fetch(query, event_id)
+        if result is None:
+            raise Exception("voteplan DB error")
+        logger.debug(f"voteplans retrieved from DB: {len(result)}")
+        match result:
+            case None:
+                raise Exception("DB error fetching voteplans")
+            case []:
+                raise Exception("no voteplans found in DB")
+            case [*voteplans]:
+                logger.debug(f"voteplans retrieved from DB: {len(voteplans)}")
+                return list(map(lambda r: VotePlan(**dict(r)), voteplans))
 
     async def insert_block0_info(
         self, event_row_id: int, block0_bytes: bytes, block0_hash: str

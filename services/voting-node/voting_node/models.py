@@ -1,10 +1,14 @@
 import yaml
 from aiofile import async_open
-
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional
+
+from .logs import getLogger
+
+# gets voting node logger
+logger = getLogger()
 
 
 ### Base types
@@ -46,8 +50,6 @@ class ServiceSettings:
 @dataclass
 class NodeConfig(YamlType):
     """Data for creating 'node_config.yaml'."""
-
-    file: Path
 
 
 ### File types
@@ -191,6 +193,21 @@ class Event:
             raise Exception("event has no snapshot start time")
         return self.snapshot_start
 
+    def get_voting_start(self) -> datetime:
+        """Gets the timestamp for when the event voting starts.
+        This method raises exception if the timestamp is None."""
+        if self.voting_start is None:
+            raise Exception("event has no voting start time")
+        return self.voting_start
+
+    def has_voting_started(self) -> bool:
+        """Returns True when current time is equal or greater
+        to the event start time.
+        This method raises exception if the timestamp is None."""
+        voting_start = self.get_voting_start()
+        now = datetime.utcnow()
+        return now >= voting_start
+
     def get_block0(self, path: Path) -> Block0:
         """Gets the block0 binary for the event.
         This method raises exception if the block0 is None."""
@@ -223,6 +240,18 @@ class Proposal:
     proposer_relevant_experience: str
     bb_proposal_id: Optional[bytes]
     bb_vote_options: Optional[str]
+
+
+@dataclass
+class Snapshot:
+    row_id: int
+    event: int
+    as_at: datetime
+    last_updated: datetime
+    dbsync_snapshot_data: Optional[str]
+    drep_data: Optional[str]
+    catalyst_snapshot_data: Optional[str]
+    final: bool
 
 
 @dataclass
@@ -332,11 +361,29 @@ class VotingNode:
         event = self.get_event()
         return event.get_snapshot_start()
 
+    def get_voting_start(self) -> datetime:
+        """Gets the timestamp for when the event snapshot becomes stable.
+        This method raises exception if the event or the timestamp are None."""
+        event = self.get_event()
+        return event.get_voting_start()
+
     def has_started(self) -> bool:
         """Gets the timestamp for when the event snapshot becomes stable.
         This method raises exception if the event or the timestamp are None."""
         event = self.get_event()
         return event.has_started()
+
+    def has_snapshot_started(self) -> bool:
+        """Returns true when the current time is greater or equal to the
+        event's snapshot_start timestamp."""
+        snapshot_start = self.get_snapshot_start()
+        return datetime.utcnow() > snapshot_start
+
+    def has_voting_started(self) -> bool:
+        """Gets the timestamp for when the event voting starts.
+        This method raises exception if the event or the timestamp are None."""
+        event = self.get_event()
+        return event.has_voting_started()
 
 
 @dataclass

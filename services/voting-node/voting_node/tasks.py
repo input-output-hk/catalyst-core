@@ -36,7 +36,6 @@ LEADER_NODE_SCHEDULE: Final = [
     "set_node_secret",
     "set_node_topology_key",
     "set_node_config",
-    "wait_for_snapshot",
     "get_block0",
     "wait_for_voting",
     "voting",
@@ -54,7 +53,7 @@ LEADER0_NODE_SCHEDULE: Final = [
     "set_node_topology_key",
     "set_node_config",
     "wait_for_snapshot",
-    "fetch_proposals",
+    "collect_snapshot_data",
     "setup_block0",
     "publish_block0",
     "wait_for_voting",
@@ -329,17 +328,6 @@ class LeaderSchedule(NodeTaskSchedule):
     # Tasks for `LeaderNode`
     tasks: list[str] = LEADER_NODE_SCHEDULE
 
-    async def wait_for_snapshot(self):
-        # get the snapshot start timestamp
-        # raises an exception otherwise
-        snapshot_start = self.node.get_snapshot_start()
-        # check if now is after the snapshot start time
-        if datetime.utcnow() >= snapshot_start:
-            logger.debug("snapshot has become stable")
-        else:
-            logger.debug("snapshot is still unstable")
-            self.reset_schedule(f"snapshot will become available on {snapshot_start}")
-
     async def get_block0(self):
         # initial checks for data that's needed
         if self.node.leaders is None:
@@ -360,7 +348,15 @@ class LeaderSchedule(NodeTaskSchedule):
         logger.debug(f"block0 found in voting event: {self.node.block0}")
 
     async def wait_for_voting(self):
-        pass
+        """Waits for the event voting time."""
+        # get the snapshot start timestamp
+        # raises an exception otherwise
+        voting_start = self.node.get_voting_start()
+        # check if now is after the snapshot start time
+        if not self.node.has_voting_started():
+            raise Exception(f"voting will start on {voting_start} UTC")
+
+        logger.debug("voting has started")
 
     async def wait_for_tally(self):
         pass
@@ -378,15 +374,47 @@ class Leader0Schedule(LeaderSchedule):
     # Leader0 Voting Node data
     tasks: list[str] = LEADER0_NODE_SCHEDULE
 
-    async def fetch_proposals(self):
-        # This all starts by getting the event row that has the nearest
-        # `voting_start`. We query the DB to get the row, and store it.
-        if self.node.event is None:
-            self.reset_schedule("no event was found")
-        if not self.node.has_started():
-            self.reset_schedule("event has not started")
+    async def wait_for_snapshot(self):
+        """Waits for the event snapshot_start time."""
+        # get the snapshot start timestamp
+        # raises an exception otherwise
+        snapshot_start = self.node.get_snapshot_start()
+        # check if now is after the snapshot start time
+        if not self.node.has_snapshot_started():
+            raise Exception(f"snapshot will be stable on {snapshot_start} UTC")
+
+        logger.debug("snapshot is stable")
+
+    async def collect_snapshot_data(self):
+        """"""
+        # gets the event, raises exception if none is found.
+        event = self.node.get_event()
+        snapshot_start = self.node.get_snapshot_start()
+        if not self.node.has_snapshot_started():
+            raise Exception(f"snapshot will be stable on {snapshot_start} UTC")
+
+        # check for this field before getting the data
+        is_final = await self.db.check_if_snapshot_is_final(event.row_id)
+        if not is_final:
+            raise Exception("snapshot is not yet final")
+
         try:
-            proposals = await self.db.fetch_proposals()
+            # fetch the stable snapshot data
+            snapshot = await self.db.fetch_snapshot(event.row_id)
+            logger.debug(f"snapshot:\n{snapshot}")
+        except Exception as e:
+            logger.error(f"snapshot:\n{e}")
+
+            # gets event vote plans, raises exception if none is found.
+        try:
+            voteplans = await self.db.fetch_voteplans(event.row_id)
+            logger.debug(f"voteplans:\n{voteplans}")
+        except Exception as e:
+            logger.error(f"voteplans:\n{e}")
+
+        try:
+            # gets event proposals, raises exception if none is found.
+            proposals = await self.db.fetch_proposals(event.row_id)
             logger.debug(f"proposals:\n{proposals}")
             self.proposals = proposals
         except Exception as e:

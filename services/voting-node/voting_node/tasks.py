@@ -378,6 +378,8 @@ class Leader0Schedule(LeaderSchedule):
         # `voting_start`. We query the DB to get the row, and store it.
         if self.node.event is None:
             self.reset_schedule("no event was found")
+        if not self.node.has_started():
+            self.reset_schedule("event has not started")
         try:
             proposals = await self.db.fetch_proposals()
             logger.debug(f"proposals:\n{proposals}")
@@ -393,6 +395,8 @@ class Leader0Schedule(LeaderSchedule):
         # these exceptions are not handled so as to keep
         # data already saved in the schedule.
         event = self.node.get_event()
+        if not self.node.has_started():
+            self.reset_schedule("event has not started")
         leaders = self.node.get_leaders()
 
         try:

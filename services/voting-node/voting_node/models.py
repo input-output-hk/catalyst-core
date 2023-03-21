@@ -328,6 +328,12 @@ class VotingNode:
         event = self.get_event()
         return event.get_snapshot_start()
 
+    def has_started(self) -> bool:
+        """Gets the timestamp for when the event snapshot becomes stable.
+        This method raises exception if the event or the timestamp are None."""
+        event = self.get_event()
+        return event.has_started()
+
 
 @dataclass
 class LeaderNode(VotingNode):

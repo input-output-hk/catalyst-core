@@ -1,4 +1,3 @@
-import asyncio
 import yaml
 from aiofile import async_open
 
@@ -25,9 +24,10 @@ class YamlFile:
     async def save(self):
         """YAML files are written asynchronously due to their possible size."""
         yaml_str: str = self.yaml_type.as_yaml()
-        afp = await async_open(self.path, 'w')
+        afp = await async_open(self.path, "w")
         await afp.write(yaml_str)
         await afp.close()
+
 
 @dataclass
 class ServiceSettings:
@@ -46,6 +46,7 @@ class ServiceSettings:
 @dataclass
 class NodeConfig(YamlType):
     """Data for creating 'node_config.yaml'."""
+
     file: Path
 
 
@@ -53,6 +54,7 @@ class NodeConfig(YamlType):
 @dataclass
 class NodeConfigYaml(YamlFile):
     """Represents the contents and path to 'node_secret.yaml'."""
+
     path: Path
     yaml_type: NodeConfig
 
@@ -279,6 +281,8 @@ class VotePlanCertificate:
 
 @dataclass
 class VotingNode:
+    # Path to the node's storage
+    storage: Path = Path("node_storage")
     # Hostname, private/public keypair, and topology key.
     host_info: Optional[HostInfo] = None
     # Jormungandr `node_config.yaml` data

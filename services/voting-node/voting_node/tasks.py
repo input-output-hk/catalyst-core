@@ -1,6 +1,6 @@
 from datetime import datetime
 from pathlib import Path
-from typing import NoReturn, Optional
+from typing import Final, NoReturn, Optional
 
 from . import utils
 from .db import EventDb
@@ -26,6 +26,54 @@ logger = getLogger()
 RESET_DATA = True
 KEEP_DATA = False
 SCHEDULE_RESET_MSG = "schedule was reset"
+
+LEADER_NODE_SCHEDULE: Final = [
+    "connect_db",
+    "fetch_upcoming_event",
+    "wait_for_start_time",
+    "setup_host_info",
+    "fetch_leaders",
+    "set_node_secret",
+    "set_node_topology_key",
+    "set_node_config",
+    "wait_for_snapshot",
+    "get_block0",
+    "wait_for_voting",
+    "voting",
+    "wait_for_tally",
+    "tally",
+    "cleanup",
+]
+LEADER0_NODE_SCHEDULE: Final = [
+    "connect_db",
+    "fetch_upcoming_event",
+    "wait_for_start_time",
+    "setup_host_info",
+    "fetch_leaders",
+    "set_node_secret",
+    "set_node_topology_key",
+    "set_node_config",
+    "wait_for_snapshot",
+    "fetch_proposals",
+    "setup_block0",
+    "publish_block0",
+    "wait_for_voting",
+    "voting",
+    "wait_for_tally",
+    "tally",
+    "cleanup",
+]
+FOLLOWER_NODE_SCHEDULE: Final = [
+    "connect_db",
+    "fetch_upcoming_event",
+    "wait_for_start_time",
+    "setup_host_info",
+    "fetch_leaders",
+    "set_node_secret",
+    "set_node_topology_key",
+    "set_node_config",
+    "cleanup",
+]
 
 
 class ScheduleRunner(object):
@@ -87,36 +135,27 @@ class ScheduleRunner(object):
 
 class NodeTaskSchedule(ScheduleRunner):
     """A schedule of task names with corresponding async methods that are executed
-    sequentially. If the current task raises an exception, running the task list
+    sequentially.
+
+    If the current task raises an exception, running the task list
     again will resume from it."""
 
     # runtime settings for the service
     settings: ServiceSettings
     # connection to DB
     db: EventDb
-    # service storage directory
-    storage: Path
     # Voting Node data
     node: VotingNode = VotingNode()
-
-    tasks = [
-        "connect_db",
-        "fetch_upcoming_event",
-        "wait_for_event",
-        "setup_host_info",
-        "fetch_leaders",
-        "set_node_secret",
-        "set_node_topology_key",
-        "set_node_config",
-        "cleanup",
-    ]
+    # List of tasks that the schedule should run. The name of each task must
+    # match the name of method to execute.
+    tasks: list[str] = []
 
     def __init__(self, db_url: str, settings: ServiceSettings) -> None:
         self.settings = settings
         self.db = EventDb(db_url)
-        self.storage = Path(settings.storage)
+        self.node.storage = Path(settings.storage)
         # initialize the dir in case it doesn't exist
-        self.storage.mkdir(parents=True, exist_ok=True)
+        self.node.storage.mkdir(parents=True, exist_ok=True)
 
     # resets data for the node task schedule
     def reset_data(self) -> None:
@@ -183,7 +222,7 @@ class NodeTaskSchedule(ScheduleRunner):
         # node secret
         match self.node.host_info:
             case HostInfo(_, seckey, _, _):
-                node_secret_file = self.storage.joinpath("node_secret.yaml")
+                node_secret_file = self.node.storage.joinpath("node_secret.yaml")
                 node_secret = {"bft": {"signing_key": seckey}}
                 # save in schedule
                 self.node_secret = NodeSecretYaml(node_secret, node_secret_file)
@@ -197,7 +236,7 @@ class NodeTaskSchedule(ScheduleRunner):
         # node network topology key
         match self.node.host_info:
             case HostInfo(_, _, _, netkey):
-                topokey_file = self.storage.joinpath("node_topology_key")
+                topokey_file = self.node.storage.joinpath("node_topology_key")
                 # save in schedule
                 self.node.topology_key = NodeTopologyKey(netkey, topokey_file)
                 # write key to file
@@ -215,7 +254,7 @@ class NodeTaskSchedule(ScheduleRunner):
         except Exception as e:
             self.reset_schedule(f"{e}")
 
-    async def wait_for_event(self):
+    async def wait_for_start_time(self):
         # get the event start timestamp
         # raises an exception otherwise
         start_time = self.node.get_start_time()
@@ -268,13 +307,13 @@ class NodeTaskSchedule(ScheduleRunner):
             listen_jrpc,
             listen_p2p,
             trusted_peers,
-            self.storage,
+            self.node.storage,
             self.node.topology_key.path,
         )
 
         # convert to yaml and save
         node_config_yaml = NodeConfigYaml(
-            config, self.storage.joinpath("node_config.yaml")
+            config, self.node.storage.joinpath("node_config.yaml")
         )
         await node_config_yaml.save()
         logger.debug(f"{node_config_yaml}")
@@ -288,23 +327,7 @@ class LeaderSchedule(NodeTaskSchedule):
     # Voting Node data
     node: LeaderNode = LeaderNode()
     # Tasks for `LeaderNode`
-    tasks: list[str] = [
-        "connect_db",
-        "fetch_upcoming_event",
-        "wait_for_event",
-        "setup_host_info",
-        "fetch_leaders",
-        "set_node_secret",
-        "set_node_topology_key",
-        "set_node_config",
-        "wait_for_snapshot",
-        "get_block0",
-        "wait_for_voting",
-        "voting",
-        "wait_for_tally",
-        "tally",
-        "cleanup",
-    ]
+    tasks: list[str] = LEADER_NODE_SCHEDULE
 
     async def wait_for_snapshot(self):
         # get the snapshot start timestamp
@@ -327,7 +350,7 @@ class LeaderSchedule(NodeTaskSchedule):
             self.reset_schedule("event has no start time")
 
         # Path to block0.bin file
-        block0_path = self.storage.joinpath("block0.bin")
+        block0_path = self.node.storage.joinpath("block0.bin")
         # Get the optional fields from the current event
         block0 = self.node.event.get_block0(block0_path)
         # save Block0 to schedule
@@ -353,25 +376,7 @@ class Leader0Schedule(LeaderSchedule):
     # Voting Node data
     node: Leader0Node = Leader0Node()
     # Leader0 Voting Node data
-    tasks: list[str] = [
-        "connect_db",
-        "fetch_upcoming_event",
-        "wait_for_event",
-        "setup_host_info",
-        "fetch_leaders",
-        "set_node_secret",
-        "set_node_topology_key",
-        "set_node_config",
-        "wait_for_snapshot",
-        "fetch_proposals",
-        "setup_block0",
-        "publish_block0",
-        "wait_for_voting",
-        "voting",
-        "wait_for_tally",
-        "tally",
-        "cleanup",
-    ]
+    tasks: list[str] = LEADER0_NODE_SCHEDULE
 
     async def fetch_proposals(self):
         # This all starts by getting the event row that has the nearest
@@ -399,9 +404,12 @@ class Leader0Schedule(LeaderSchedule):
             self.reset_schedule("event has not started")
         leaders = self.node.get_leaders()
 
+        # look for block0 in the event from the DB
+        # if found, decode the genesis.yaml, and
+        # store the files.
         try:
-            # Path to block0.bin file
-            block0_path = self.storage.joinpath("block0.bin")
+            # Path where block0.bin file is kept
+            block0_path = self.node.storage.joinpath("block0.bin")
             # Get the optional fields from the current event
             # raises an exception otherwise
             block0 = event.get_block0(block0_path)
@@ -412,12 +420,12 @@ class Leader0Schedule(LeaderSchedule):
             logger.debug(f"block0 found in voting event: {self.node.block0.hash}")
 
             # decode genesis and store it after getting block0
-            genesis_path = self.storage.joinpath("genesis.yaml")
-            block0_path = self.storage.joinpath("block0.bin")
+            genesis_path = self.node.storage.joinpath("genesis.yaml")
             await self.jcli().decode_block0_bin(block0_path, genesis_path)
             logger.debug(f"decoded and stored file: {genesis_path}")
         except Exception as e:
             logger.debug(f"block0 was not found in event: {e}")
+            logger.debug("attempting to create block0")
             # checks for data that's needed
             if event.start_time is None:
                 self.reset_schedule("event has no start time")
@@ -432,13 +440,13 @@ class Leader0Schedule(LeaderSchedule):
             genesis = utils.make_genesis_content(event, leaders, committee_ids)
             logger.debug("generated genesis content")
             # convert to yaml and save
-            genesis_path = self.storage.joinpath("genesis.yaml")
+            genesis_path = self.node.storage.joinpath("genesis.yaml")
             genesis_yaml = GenesisYaml(genesis, genesis_path)
             await genesis_yaml.save()
             logger.debug(f"{genesis_yaml}")
             self.genesis_yaml = genesis_yaml
 
-            block0_path = self.storage.joinpath("block0.bin")
+            block0_path = self.node.storage.joinpath("block0.bin")
             await self.jcli().create_block0_bin(block0_path, genesis_path)
 
             block0_hash = await self.jcli().get_block0_hash(block0_path)
@@ -458,6 +466,8 @@ class Leader0Schedule(LeaderSchedule):
 
 
 class FollowerSchedule(NodeTaskSchedule):
+    tasks = FOLLOWER_NODE_SCHEDULE
+
     def __init__(self, db_url: str, settings: ServiceSettings) -> None:
         NodeTaskSchedule.__init__(self, db_url, settings)
         self.tasks: list[str] = ["todo"]

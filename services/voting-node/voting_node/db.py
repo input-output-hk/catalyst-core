@@ -80,8 +80,9 @@ class EventDb(object):
             case [*leaders]:
 
                 def extract_leader_info(leader):
-                    logger.debug(f"leader host info: {leader['row']}")
-                    return LeaderHostInfo(*leader["row"])
+                    host_info = LeaderHostInfo(*leader["row"])
+                    logger.debug(f"{host_info}")
+                    return host_info
 
                 return list(map(extract_leader_info, leaders))
 

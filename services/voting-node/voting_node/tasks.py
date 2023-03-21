@@ -220,7 +220,7 @@ class NodeTaskSchedule(ScheduleRunner):
     async def set_node_secret(self):
         # node secret
         match self.node.host_info:
-            case HostInfo(_, seckey, _, _):
+            case HostInfo(seckey=seckey):
                 node_secret_file = self.node.storage.joinpath("node_secret.yaml")
                 node_secret = {"bft": {"signing_key": seckey}}
                 # save in schedule
@@ -234,14 +234,15 @@ class NodeTaskSchedule(ScheduleRunner):
     async def set_node_topology_key(self):
         # node network topology key
         match self.node.host_info:
-            case HostInfo(_, _, _, netkey):
+            case HostInfo(netkey=netkey):
+                # get private key for topology
                 topokey_file = self.node.storage.joinpath("node_topology_key")
                 # save in schedule
                 self.node.topology_key = NodeTopologyKey(netkey, topokey_file)
                 # write key to file
                 self.node.topology_key.save()
             case _:
-                self.reset_schedule("no node host info was found")
+                self.reset_schedule("host info was not found for this node")
 
     async def fetch_upcoming_event(self):
         # This all starts by getting the event row that has the nearest
@@ -280,7 +281,7 @@ class NodeTaskSchedule(ScheduleRunner):
 
         listen_rest = f"{host_ip}:{self.settings.rest_port}"
         listen_jrpc = f"{host_ip}:{self.settings.jrpc_port}"
-        listen_p2p = f"/dns4/{host_ip}/tcp/{p2p_port}"
+        listen_p2p = f"/dns4/{host_name}/tcp/{p2p_port}"
         trusted_peers = []
 
         for peer in self.node.leaders:
@@ -340,11 +341,11 @@ class LeaderSchedule(NodeTaskSchedule):
         # Path to block0.bin file
         block0_path = self.node.storage.joinpath("block0.bin")
         # Get the optional fields from the current event
-        block0 = self.node.event.get_block0(block0_path)
+        block0 = self.node.event.get_block0()
         # save Block0 to schedule
         self.node.block0 = block0
         # write the block bytes to file
-        self.node.block0.save()
+        await self.node.block0.save(block0_path)
         logger.debug(f"block0 found in voting event: {self.node.block0}")
 
     async def wait_for_voting(self):
@@ -403,14 +404,14 @@ class Leader0Schedule(LeaderSchedule):
             snapshot = await self.db.fetch_snapshot(event.row_id)
             logger.debug(f"snapshot:\n{snapshot}")
         except Exception as e:
-            logger.error(f"snapshot:\n{e}")
+            logger.error(f"expected snapshot:\n{e}")
 
             # gets event vote plans, raises exception if none is found.
         try:
             voteplans = await self.db.fetch_voteplans(event.row_id)
             logger.debug(f"voteplans:\n{voteplans}")
         except Exception as e:
-            logger.error(f"voteplans:\n{e}")
+            logger.error(f"expected voteplans:\n{e}")
 
         try:
             # gets event proposals, raises exception if none is found.
@@ -440,16 +441,16 @@ class Leader0Schedule(LeaderSchedule):
             block0_path = self.node.storage.joinpath("block0.bin")
             # Get the optional fields from the current event
             # raises an exception otherwise
-            block0 = event.get_block0(block0_path)
+            block0 = event.get_block0()
             # write the block bytes to file
-            block0.save()
+            await block0.save(block0_path)
             # save Block0 to node
             self.node.block0 = block0
             logger.debug(f"block0 found in voting event: {self.node.block0.hash}")
 
             # decode genesis and store it after getting block0
             genesis_path = self.node.storage.joinpath("genesis.yaml")
-            await self.jcli().decode_block0_bin(block0_path, genesis_path)
+            await self.jcli().genesis_decode(block0_path, genesis_path)
             logger.debug(f"decoded and stored file: {genesis_path}")
         except Exception as e:
             logger.debug(f"block0 was not found in event: {e}")
@@ -475,22 +476,29 @@ class Leader0Schedule(LeaderSchedule):
             self.genesis_yaml = genesis_yaml
 
             block0_path = self.node.storage.joinpath("block0.bin")
-            await self.jcli().create_block0_bin(block0_path, genesis_path)
+            await self.jcli().genesis_encode(block0_path, genesis_path)
 
-            block0_hash = await self.jcli().get_block0_hash(block0_path)
+            block0_hash = await self.jcli().genesis_hash(block0_path)
             block0_bytes = block0_path.read_bytes()
-            block0 = Block0(block0_bytes, block0_hash, block0_path)
+            block0 = Block0(block0_bytes, block0_hash)
             self.node.block0 = block0
             # write the block bytes to file
-            self.node.block0.save()
+            await self.node.block0.save(block0_path)
             logger.debug(f"block0 created and saved: {self.node.block0.hash}")
-            # push block0 to event table
-            await self.db.insert_block0_info(event.row_id, block0_bytes, block0_hash)
-            # if all is good, we reset the schedule
-            self.reset_schedule("inserted block0 info")
 
     async def publish_block0(self):
-        pass
+        event = self.node.get_event()
+        match self.node.block0:
+            case Block0(bin=block0_bytes, hash=block0_hash):
+                # push block0 to event table
+                await self.db.insert_block0_info(
+                    event.row_id, block0_bytes, block0_hash
+                )
+                # if all is good, we reset the schedule
+                logger.debug("inserted block0 info")
+            case None:
+                logger.error("expected block0 info")
+                self.reset_schedule("node has no block0")
 
 
 class FollowerSchedule(NodeTaskSchedule):

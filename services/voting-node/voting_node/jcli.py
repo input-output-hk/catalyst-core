@@ -74,14 +74,8 @@ class JCli(object):
         key = stdout.decode().rstrip()
         return key
 
-    async def create_committee_id(self) -> str:
-        seckey = await self.privkey()
-        pubkey = await self.pubkey(seckey)
-        hex_key = await self.key_to_hex(pubkey)
-        return hex_key
-
-    async def create_block0_bin(self, block0_bin: Path, genesis_yaml: Path):
-        # run jcli to make block0 from genesis.yaml
+    async def genesis_encode(self, block0_bin: Path, genesis_yaml: Path):
+        """Run 'jcli genesis encode' to make block0 from genesis.yaml"""
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,
             "genesis",
@@ -98,8 +92,8 @@ class JCli(object):
         if returncode > 0:
             raise Exception("failed to generate block0")
 
-    async def get_block0_hash(self, block0_bin: Path) -> str:
-        # run jcli to make block0 from genesis.yaml
+    async def genesis_hash(self, block0_bin: Path) -> str:
+        """Run 'jcli genesis hash' to get the hash from block0.bin"""
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,
             "genesis",
@@ -117,8 +111,8 @@ class JCli(object):
         hash = stdout.decode().rstrip()
         return hash
 
-    async def decode_block0_bin(self, block0_bin: Path, genesis_yaml: Path) -> None:
-        """Decodes block0.bin and saves it to genesis.yaml."""
+    async def genesis_decode(self, block0_bin: Path, genesis_yaml: Path) -> None:
+        """Run 'jcli genesis decode' on block0.bin and saves to genesis.yaml."""
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,
             "genesis",

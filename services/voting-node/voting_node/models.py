@@ -107,10 +107,11 @@ class Block0:
 
     bin: bytes
     hash: str
-    path: Path
 
-    def save(self):
-        self.path.write_bytes(self.bin)
+    async def save(self, path: Path):
+        afp = await async_open(path, "wb")
+        await afp.write(self.bin)
+        await afp.close()
 
 
 @dataclass
@@ -208,14 +209,14 @@ class Event:
         now = datetime.utcnow()
         return now >= voting_start
 
-    def get_block0(self, path: Path) -> Block0:
+    def get_block0(self) -> Block0:
         """Gets the block0 binary for the event.
         This method raises exception if the block0 is None."""
         if self.block0 is None or self.block0_hash is None:
             raise Exception("event has no block0")
         block0: bytes = self.block0
         block0_hash: str = self.block0_hash
-        return Block0(block0, block0_hash, path)
+        return Block0(block0, block0_hash)
 
 
 @dataclass
@@ -360,6 +361,11 @@ class VotingNode:
         This method raises exception if the event or the timestamp are None."""
         event = self.get_event()
         return event.get_snapshot_start()
+
+    def get_block0(self) -> Block0:
+        """Returns Block0 for this voting event, raises exception if it is None."""
+        event = self.get_event()
+        return event.get_block0()
 
     def get_voting_start(self) -> datetime:
         """Gets the timestamp for when the event snapshot becomes stable.

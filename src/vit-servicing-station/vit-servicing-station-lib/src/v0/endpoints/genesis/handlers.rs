@@ -58,16 +58,21 @@ fn get_genesis_response(response: Vec<u8>) -> Result<impl Reply, Rejection> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::v0::context::test::new_test_shared_context;
+    use crate::v0::context::test::new_test_shared_context_with_block0;
     use std::path::PathBuf;
     use std::str::FromStr;
+    use vit_servicing_station_tests::common::startup::db::DbBuilder;
     use warp::Filter;
 
     #[tokio::test]
     async fn get_block0_succeed() {
         // build context
         let block0_path = "../resources/tests/block0.bin";
-        let shared_context = new_test_shared_context(vec![PathBuf::from_str(block0_path).unwrap()]);
+        let db_url = DbBuilder::new().build_async().await.unwrap();
+        let shared_context = new_test_shared_context_with_block0(
+            &db_url,
+            vec![PathBuf::from_str(block0_path).unwrap()],
+        );
         let block0 = std::fs::read(block0_path).unwrap();
 
         let with_context = warp::any().map(move || shared_context.clone());

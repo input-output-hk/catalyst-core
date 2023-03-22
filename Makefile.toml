@@ -1,10 +1,11 @@
 # Build scripts for Catalyst-Core
-# This file is built with `cargo make` see: 
+# This file is built with `cargo make` see:
 #  <https://github.com/sagiegurari/cargo-make>
 extend = [
     { path = "Makefiles/prereqs.toml"  },
-    { path = "Makefiles/docker.toml"  },
-    { path = "Makefiles/docs.toml"  }
+    { path = "Makefiles/docs.toml"  },
+    { path = "Makefiles/db.toml"  },
+    { path = "Makefiles/docker.toml"  }
 ]
 
 [config]

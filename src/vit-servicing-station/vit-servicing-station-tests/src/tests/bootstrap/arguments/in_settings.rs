@@ -92,14 +92,11 @@ pub fn db_url_and_block0_replaced() -> Result<(), Box<dyn std::error::Error>> {
     let (_, token) = data::token();
 
     let mut gen = ArbitrarySnapshotGenerator::default();
-    let funds = gen.funds();
-    let proposals = gen.proposals(&funds);
-    let groups = gen.groups(&funds);
+    let snapshot = gen.snapshot();
 
     let db_path = DbBuilder::new()
         .with_token(token)
-        .with_groups(groups)
-        .with_proposals(proposals)
+        .with_snapshot(&snapshot)
         .build()?;
 
     let mut command_builder: BootstrapCommandBuilder = Default::default();

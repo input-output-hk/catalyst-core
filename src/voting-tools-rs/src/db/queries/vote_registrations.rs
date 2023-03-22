@@ -127,6 +127,7 @@ fn convert_row((tx_id, metadata, signature, _slot_no): Row) -> Result<SignedRegi
         registration,
         signature,
         tx_id,
+        slot:0,
     })
 }
 
@@ -136,7 +137,7 @@ mod tests {
 
     use crate::{
         data::{PubKey, Registration},
-        VotingPowerSource,
+        VotingKey,
     };
 
     use super::*;
@@ -209,13 +210,13 @@ mod tests {
     }
 
     #[test]
-    fn can_parse_voting_power_source() {
+    fn can_parse_voting_key() {
         color_eyre::install().unwrap();
         let vps = json!([[
             "0x1b92110d6c2aee00b7b208992efe3a2511f6811577155dd89977e8600fa5c27a",
             1
         ]]);
-        let _: VotingPowerSource = from_value(vps).unwrap();
+        let _: VotingKey = from_value(vps).unwrap();
         let x = "0x0cf8d92c3fb4474942554a3c97f9a0421b69073fed4a600a6a77a1d72a8a";
         hex::decode(x.trim_start_matches("0x")).unwrap();
 

@@ -1,7 +1,7 @@
 use crate::data::PubKey;
 use crate::data::{
     Nonce, Registration, RewardsAddress, Signature, SignedRegistration, SlotNo, StakeKeyHex, TxId,
-    VotingKeyHex, VotingPowerSource, VotingPurpose,
+    VotingKeyHex, VotingKey, VotingPurpose,
 };
 use crate::data_provider::DataProvider;
 use crate::Sig;
@@ -50,11 +50,11 @@ impl DataProvider for MockDbProvider {
                             r.get(&REGISTRATION_METADATA_SIGNATURE_LABEL).unwrap();
                         let signature_metadata_map = signature_metadata.as_map().unwrap();
 
-                        let voting_power_source = {
+                        let voting_key = {
                             let metadata = metadata_map.get(&METADATUM_1).unwrap();
 
                             if let Ok(data) = metadata.as_bytes() {
-                                VotingPowerSource::Direct(PubKey(data).into())
+                                VotingKey::Direct(PubKey(data).into())
                             } else {
                                 let mut delegations = BTreeMap::new();
                                 let delgation_list = metadata.as_list().unwrap();
@@ -69,7 +69,7 @@ impl DataProvider for MockDbProvider {
                                     delegations.insert(VotingKeyHex(delegation), weight.into());
                                 }
 
-                                VotingPowerSource::Delegated(delegations)
+                                VotingKey::Delegated(delegations)
                             }
                         };
 
@@ -96,8 +96,9 @@ impl DataProvider for MockDbProvider {
 
                         SignedRegistration {
                             tx_id: TxId::from(tx_id),
+                            slot: 0,
                             registration: Registration {
-                                voting_power_source,
+                                voting_key,
                                 stake_key,
                                 rewards_address: RewardsAddress(rewards_address.to_bytes().into()),
                                 nonce: Nonce(

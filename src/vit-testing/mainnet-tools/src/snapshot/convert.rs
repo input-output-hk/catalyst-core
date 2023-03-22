@@ -82,7 +82,7 @@ use num_traits::ToPrimitive;
 use snapshot_lib::registration::{Delegations as VotingDelegations, VotingRegistration};
 use vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 use voting_tools_rs::test_api::MockDbProvider;
-use voting_tools_rs::{SnapshotEntry, VotingPowerArgs, VotingPowerSource, VotingPurpose};
+use voting_tools_rs::{SnapshotEntry, VotingPowerArgs, VotingKey, VotingPurpose};
 
 /// Extensions for voting tools `Output` struct
 pub trait OutputExtension {
@@ -106,12 +106,12 @@ impl OutputExtension for SnapshotEntry {
                 })?
                 .into(),
             reward_address: hex::encode(&self.rewards_address.0),
-            delegations: match self.voting_power_source {
-                VotingPowerSource::Direct(legacy) => VotingDelegations::Legacy(
+            delegations: match self.voting_key {
+                VotingKey::Direct(legacy) => VotingDelegations::Legacy(
                     Identifier::from_hex(&legacy.to_hex())
                         .expect("to_hex() always returns valid hex"),
                 ),
-                VotingPowerSource::Delegated(delegated) => {
+                VotingKey::Delegated(delegated) => {
                     let mut new = vec![];
                     for (key, weight) in delegated {
                         new.push((

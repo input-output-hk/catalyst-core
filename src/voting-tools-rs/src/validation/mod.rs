@@ -1,6 +1,6 @@
 use crate::data::{NetworkId, Registration, SignedRegistration, StakeKeyHex, VotingPurpose};
 use crate::error::RegistrationError;
-use crate::{Signature, VotingPowerSource};
+use crate::{Signature, VotingKey};
 use cardano_serialization_lib::chain_crypto::{
     AsymmetricPublicKey, Ed25519, Verification, VerificationAlgorithm,
 };
@@ -42,9 +42,10 @@ impl Validate for SignedRegistration {
             registration,
             signature,
             tx_id: _,
+            slot: _,
         } = self;
 
-        validate_voting_power(&registration.voting_power_source)?;
+        validate_voting_power(&registration.voting_key)?;
         validate_stake_key(&registration.stake_key, ctx)?;
         validate_voting_purpose(registration.voting_purpose, ctx)?;
         validate_signature(registration, signature)?;
@@ -54,9 +55,9 @@ impl Validate for SignedRegistration {
 }
 
 /// Delegated voting power must have at least one delegation
-fn validate_voting_power(source: &VotingPowerSource) -> Result<(), RegistrationError> {
+fn validate_voting_power(source: &VotingKey) -> Result<(), RegistrationError> {
     match source {
-        VotingPowerSource::Delegated(delegations) if delegations.is_empty() => {
+        VotingKey::Delegated(delegations) if delegations.is_empty() => {
             Err(RegistrationError::EmptyDelegations)
         }
         _ => Ok(()),

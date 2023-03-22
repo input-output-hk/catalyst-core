@@ -38,7 +38,7 @@ pub use exports::*;
 mod exports {
     pub use crate::cli::{show_error_warning, Args, DryRunCommand};
     pub use crate::data::{
-        Sig, Signature, SlotNo, SnapshotEntry, VotingPowerSource, VotingPurpose,
+        Sig, Signature, SlotNo, SnapshotEntry, VotingKey, VotingPurpose,
     };
     pub use crate::data_provider::DataProvider;
     pub use crate::db::{Conn, Db, DbConfig};

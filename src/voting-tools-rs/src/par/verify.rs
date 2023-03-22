@@ -2,9 +2,10 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use postgres::Client;
+use postgres::fallible_iterator::FallibleIterator;
 use std::cmp::Reverse;
 
-use crate::data::{NetworkId, Registration, Signature, SignedRegistration, StakeKeyHex, TxId};
+use crate::data::{NetworkId, Registration, Signature, SignedRegistration, StakeKeyHex, TxId, RawRegistration};
 use crate::validation::hash;
 use crate::{InvalidRegistration, RegistrationError, VotingPowerArgs};
 use cardano_serialization_lib::chain_crypto::Ed25519;
@@ -15,10 +16,10 @@ use cryptoxide::{blake2b::Blake2b, digest::Digest};
 
 use nonempty::nonempty;
 
-use serde_json::{self, json};
 
 /// DB columns
 const REG_TX_ID: usize = 2;
+const REG_SLOT_NO: usize = 4;
 const REG_JSON: usize = 6;
 const REG_BIN: usize = 7;
 const SIG_JSON: usize = 9;
@@ -41,8 +42,13 @@ pub type InvalidTxs = Vec<SignedRegistration>;
 ///
 /// Query gathers all possible registration transactions
 /// Each registration is screened and marked: valid or invalid
+///
+/// # Errors
+///
+/// Any errors produced by the DB get returned.
+///
 pub fn filter_registrations(
-    args: VotingPowerArgs,
+    args: &VotingPowerArgs,
     mut client: Client,
 ) -> Result<(Valids, Invalids, InvalidTxs), Box<dyn std::error::Error>> {
     let mut valids: ValidSigs = HashMap::new();
@@ -50,7 +56,7 @@ pub fn filter_registrations(
 
     let cddl = CddlConfig::new()?;
 
-    for row in client.query(
+    let mut results = client.query_raw(
         "
         SELECT meta_table.id as reg_id,
         sig_table.id as sig_id,
@@ -73,33 +79,47 @@ pub fn filter_registrations(
             &i64::try_from(args.min_slot.unwrap().0).unwrap(),
             &i64::try_from(args.max_slot.unwrap().0).unwrap(),
         ],
-    )? {
-        // cip 36: 61284 json
-        let json_reg: serde_json::Value = row.get(REG_JSON);
+    )?;
 
-        // cip 36: 61285 json
-        let json_sig: serde_json::Value = row.get(SIG_JSON);
+    while let Some(row) = results.next()? {
+        // Here we can use a threadpool with a size == number of cores.
+        // We can process each row in parallel using this pool.
 
-        // cip 36: 61284 raw binary
-        let bin_reg: Vec<u8> = row.get(REG_BIN);
-
-        // cip 36: 61285 raw binary
-        let bin_sig: Vec<u8> = row.get(SIG_BIN);
+        // We should also print out a running status of the number of registrations we have processed so far,
+        // otherwise long running queries look locked up.
 
         // registration tx_id
         let tx_id: i64 = row.get(REG_TX_ID);
-        let tx_id: TxId = TxId(tx_id as u64);
+        let slot: i64 = row.get(REG_SLOT_NO);
 
-        validate_registration(
-            &mut invalids,
-            &mut valids,
-            bin_reg,
-            bin_sig,
-            tx_id,
-            json_reg,
-            json_sig,
-            &cddl,
-        );
+        // The raw registration data from the database.
+        let rawreg = RawRegistration {
+            json_reg: row.get(REG_JSON),
+            json_sig: row.get(SIG_JSON),
+            bin_reg: row.get(REG_BIN),
+            bin_sig: row.get(SIG_BIN),
+            tx_id: TxId(tx_id as u64),
+            slot: slot as u64,
+        };
+
+        match rawreg.validate() {
+            Error(err) => {
+                invalids.push(InvalidRegistration {
+                    registration: None,
+                    errors: nonempty![err],
+                });
+            },
+            Ok(reg) => {
+                valids.push(reg);
+            }
+        }
+
+        //validate_registration(
+        //    &mut invalids,
+        //    &mut valids,
+        //    &rawreg,
+        //    &cddl,
+        //);
     }
 
     let (valids, invalid_txs) = latest_registrations(valids);
@@ -109,15 +129,11 @@ pub fn filter_registrations(
 pub fn validate_registration(
     invalids: &mut Invalids,
     valid_sigs: &mut ValidSigs,
-    bin_reg: Vec<u8>,
-    bin_sig: Vec<u8>,
-    tx_id: TxId,
-    json_reg: serde_json::Value,
-    json_sig: serde_json::Value,
+    raw_reg: &RawRegistration,
     cddl_config: &CddlConfig,
 ) {
     // validate cddl: 61824
-    if let Err(err) = validate_reg_cddl(bin_reg.clone(), &cddl_config) {
+    if let Err(err) = validate_reg_cddl(&raw_reg.bin_reg, &cddl_config) {
         invalids.push(InvalidRegistration {
             registration: None,
             errors: nonempty![err],
@@ -126,7 +142,7 @@ pub fn validate_registration(
     }
 
     // validate cddl: 61825
-    if let Err(err) = validate_sig_cddl(bin_sig.clone(), &cddl_config) {
+    if let Err(err) = validate_sig_cddl(&raw_reg.bin_sig, &cddl_config) {
         invalids.push(InvalidRegistration {
             registration: None,
             errors: nonempty![err],
@@ -134,34 +150,23 @@ pub fn validate_registration(
         return;
     }
 
-    let r: Registration = match serde_json::from_value(json_reg) {
-        Ok(r) => r,
-        Err(err) => {
+    let bin_reg = raw_reg.bin_reg.clone();
+
+    // We need to deserialize the Binary CBOR.
+    // We can ONLY use the json for display purposes in the reject messages.
+    let sr = match raw_reg.to_signed() {
+        Err(err)=> {
             invalids.push(InvalidRegistration {
                 registration: None,
-                errors: nonempty![RegistrationError::RegistrationFormat(
-                    json!(err.to_string())
-                )],
+                errors: nonempty![
+                    RegistrationError::CborDeserializationFailed {
+                        err: format!("Failed to deserialize Registration CBOR: {}", err),
+                    }
+                ],
             });
             return;
-        }
-    };
-
-    let s: Signature = match serde_json::from_value(json_sig) {
-        Ok(s) => s,
-        Err(err) => {
-            invalids.push(InvalidRegistration {
-                registration: None,
-                errors: nonempty![RegistrationError::SignatureFormat(json!(err.to_string()))],
-            });
-            return;
-        }
-    };
-
-    let sr = SignedRegistration {
-        registration: r,
-        signature: s,
-        tx_id: tx_id,
+        },
+        Ok(reg) => reg
     };
 
     match validate_signature_bin(&sr.registration.clone(), &sr.signature.clone(), bin_reg) {
@@ -185,6 +190,23 @@ pub fn latest_registrations(
 ) -> (HashMap<StakeKeyHex, SignedRegistration>, InvalidTxs) {
     let mut valids: HashMap<StakeKeyHex, SignedRegistration> = HashMap::new();
     let mut invalids: InvalidTxs = vec![];
+
+    // Create empty hash map {stakekey: reg}
+
+    // iterate the valids.
+    //   if valid.stakekey in hash map
+    //      if valid.newer(current in map)
+    //         invalids.push(current, "Obsolete")
+    //         map[valid.key] = valid
+    //      else
+    //         invalids.push(valid, "Obsolete")
+    //   else
+    //      map[valid.key] = valid
+    //
+
+    // return hashmap values as a vec
+
+
 
     // Find the latest Registration Record for each stake address key
     for (key, mut value) in valid_sigs {
@@ -247,7 +269,7 @@ fn validate_signature_bin(
 }
 
 pub fn validate_reg_cddl(
-    bin_reg: Vec<u8>,
+    bin_reg: &Vec<u8>,
     cddl_config: &CddlConfig,
 ) -> Result<(), RegistrationError> {
     cddl::validate_cbor_from_slice(&cddl_config._61284, &bin_reg, None).map_err(|err| {
@@ -260,7 +282,7 @@ pub fn validate_reg_cddl(
 }
 
 pub fn validate_sig_cddl(
-    bin_sig: Vec<u8>,
+    bin_sig: &Vec<u8>,
     cddl_config: &CddlConfig,
 ) -> Result<(), RegistrationError> {
     cddl::validate_cbor_from_slice(&cddl_config._61285, &bin_sig, None).map_err(|err| {
@@ -272,7 +294,7 @@ pub fn validate_sig_cddl(
     Ok(())
 }
 
-/// Cddl schema:  
+/// Cddl schema:
 /// https://cips.cardano.org/cips/cip36/schema.cddl
 pub struct CddlConfig {
     _61284: String,

@@ -48,7 +48,7 @@ fn fails_if_empty_delegations() {
     let ctx = test_ctx();
 
     let mut reg = cip15::vector();
-    reg.registration.voting_power_source = VotingPowerSource::Delegated(BTreeMap::new());
+    reg.registration.voting_key = VotingKey::Delegated(BTreeMap::new());
 
     let Failure { error, .. } = reg.validate_with(ctx).unwrap_err();
     assert_eq!(error, RegistrationError::EmptyDelegations);

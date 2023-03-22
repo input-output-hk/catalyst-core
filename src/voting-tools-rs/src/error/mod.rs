@@ -64,6 +64,10 @@ pub enum RegistrationError {
 
     #[error("Cddl parsing failed {err}")]
     CddlParsingFailed { err: String },
+
+    #[error("Cbor deserialization failed {err}")]
+    CborDeserializationFailed { err: String },
+
 }
 
 /// A registration that failed validation, along with the error

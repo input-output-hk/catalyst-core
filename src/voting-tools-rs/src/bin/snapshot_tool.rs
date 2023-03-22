@@ -71,7 +71,7 @@ fn main() -> Result<()> {
 
     let client = db_conn(db_config.clone())?;
 
-    let (valids, invalids, invalid_txs) = filter_registrations(args.clone(), client).unwrap();
+    let (valids, invalids, invalid_txs) = filter_registrations(&args, client).unwrap();
 
     println!(
         "vals {:?} invalids {:?} txs {:?}",

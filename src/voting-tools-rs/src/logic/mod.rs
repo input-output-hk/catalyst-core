@@ -109,7 +109,7 @@ fn convert_to_snapshot_entry(
     let SignedRegistration {
         registration:
             Registration {
-                voting_power_source,
+                voting_key,
                 stake_key,
                 rewards_address,
                 voting_purpose,
@@ -126,7 +126,7 @@ fn convert_to_snapshot_entry(
     let voting_power = voting_power.to_u128().unwrap_or(0);
 
     Ok(SnapshotEntry {
-        voting_power_source,
+        voting_key,
         rewards_address,
         stake_key,
         voting_power,

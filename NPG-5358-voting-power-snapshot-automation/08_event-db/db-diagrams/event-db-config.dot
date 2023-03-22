@@ -1,0 +1,175 @@
+digraph erd {
+
+    
+    label = "Catalyst Event Database - Configuration"
+    labelloc = t
+    fontsize = 30
+    fontcolor = blue
+    
+
+    graph [
+        rankdir = "LR"
+    ];
+
+    node [
+        fontsize = "16"
+        shape = "plaintext"
+    ];
+
+    edge [
+    ];
+
+    
+        
+
+    "config" [shape=plain label=<
+        <table border='0' cellborder='1' cellspacing='0' >
+            <tr>
+                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>config</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer+</font></td>
+                <td port="row_id_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Synthetic unique key.<br align='left'/>Always lookup using id.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="id"  align='text'><font>id</font><br align='left'/></td>
+                <td   ><font>varchar</font></td>
+                <td port="id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The name&#x2f;id of the general config value&#x2f;variable</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="id2"  align='text'><font>id2</font><br align='left'/></td>
+                <td   ><font>varchar</font></td>
+                <td port="id2_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>2nd ID of the general config value.<br align='left'/>Must be defined, use &quot;&quot; if not required.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="id3"  align='text'><font>id3</font><br align='left'/></td>
+                <td   ><font>varchar</font></td>
+                <td port="id3_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>3rd ID of the general config value.<br align='left'/>Must be defined, use &quot;&quot; if not required.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="value"  align='text'><font>value</font><br align='left'/></td>
+                <td   ><font><i>jsonb</i></font></td>
+                <td port="value_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The JSON value of the system variable id.id2.id3</i><br align="left"/></font></td>
+            </tr>
+            
+
+            
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>General JSON Configuration and Data Values.<br align='left'/>Defined  Data Formats:<br align='left'/>  API Tokens:<br align='left'/>    `id` = &quot;api_token&quot;<br align='left'/>    `id2` = &lt;API Token, encrypted with a secret, as base-64 encoded string &quot;&quot;&gt;`<br align='left'/>    `id3` = &quot;&quot; (Unused),<br align='left'/>    `value`-&gt;&quot;name&quot; = &quot;&lt;Name of the token owner&gt;&quot;,<br align='left'/>    `value`-&gt;&quot;created&quot; = &lt;Integer Unix Epoch when Token was created&gt;,<br align='left'/>    `value`-&gt;&quot;expires&quot; = &lt;Integer Unix Epoch when Token will expire&gt;,<br align='left'/>    `value`-&gt;&quot;perms&quot; = {Permissions assigned to this api key}</i><br align="left"/></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
+    "refinery_schema_history" [shape=plain label=<
+        <table border='0' cellborder='1' cellspacing='0' >
+            <tr>
+                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>refinery_schema_history</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="version" bgcolor="seagreen1" align='text'><font>version</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer</font></td>
+                <td port="version_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="name"  align='text'><font>name</font><br align='left'/></td>
+                <td   ><font><i>varchar(255)</i></font></td>
+                <td port="name_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="applied_on"  align='text'><font>applied_on</font><br align='left'/></td>
+                <td   ><font><i>varchar(255)</i></font></td>
+                <td port="applied_on_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="checksum"  align='text'><font>checksum</font><br align='left'/></td>
+                <td   ><font><i>varchar(255)</i></font></td>
+                <td port="checksum_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
+            </tr>
+            
+
+            
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>History of Schema Updates to the Database.<br align='left'/>Managed by the `refinery` cli tool.</i><br align="left"/></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+
+    
+
+
+    "LEGEND" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td colspan='2' bgcolor='Pink' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>LEGEND</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18'><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18'><b>Example</b></font></td>
+            </tr>
+
+            <tr>
+                <td align='text' bgcolor="seagreen1" ><font>Primary Key</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer+</font></td>
+            </tr>
+
+
+            <tr>
+                <td align='text'><font>Standard Field</font><br align='left'/></td>
+                <td><font>bytea</font></td>
+            </tr>
+
+            <tr>
+                <td align='text'><font>Nullable Field</font><br align='left'/></td>
+                <td><font><i>text</i></font></td>
+            </tr>
+
+            <tr>
+                <td align='text'><font>Sized Field</font><br align='left'/></td>
+                <td><font>varchar(32)</font></td>
+            </tr>
+
+            <tr>
+                <td align='text'><font>Autoincrement Field</font><br align='left'/></td>
+                <td><font>integer+</font></td>
+            </tr>
+
+        </table>
+    >];
+
+    
+
+
+}

@@ -1,10 +1,13 @@
-import marshmallow_dataclass
+from pydantic.dataclasses import dataclass
+import json
+import pydantic.tools
 from typing import List, Mapping, Union
 
 
 FieldMapping = Union[str, List[str]]
 
 
+@dataclass
 class ProposalsFieldsMappingConfig:
     """
     Represents the available configuration fields used in proposal fields mapping.
@@ -16,6 +19,7 @@ class ProposalsFieldsMappingConfig:
     public_key: FieldMapping
 
 
+@dataclass
 class ProposalsConfig:
     """
     Represents the available configuration fields used in proposal processing.
@@ -25,6 +29,7 @@ class ProposalsConfig:
     extra_field_mappings: Mapping[str, FieldMapping]
 
 
+@dataclass
 class ProposalsScoresCsvConfig:
     """
     Represents the available configuration fields used
@@ -35,6 +40,7 @@ class ProposalsScoresCsvConfig:
     score_field: str
 
 
+@dataclass
 class Config:
     """
     Represents the available configuration fields.
@@ -44,18 +50,11 @@ class Config:
     proposals_scores_csv: ProposalsScoresCsvConfig
 
 
-ProposalsFieldsMappingConfigSchema = marshmallow_dataclass.class_schema(ProposalsFieldsMappingConfig)
-ProposalsConfigSchema = marshmallow_dataclass.class_schema(ProposalsConfig)
-ProposalsScoresCsvConfigSchema = marshmallow_dataclass.class_schema(ProposalsScoresCsvConfig)
-ConfigSchema = marshmallow_dataclass.class_schema(Config)
-
-
 def from_json_file(path: str) -> Config:
     """
     Loads configuration from a JSON file.
     """
 
     with open(path) as f:
-        config = ConfigSchema().loads(f.read())
-        assert isinstance(config, Config)
-        return config
+        return pydantic.tools.parse_obj_as(Config, json.load(f))
+

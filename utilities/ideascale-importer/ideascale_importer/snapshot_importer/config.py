@@ -1,7 +1,10 @@
 from datetime import datetime
-import marshmallow_dataclass
+import json
+from pydantic.dataclasses import dataclass
+import pydantic.tools
 
 
+@dataclass
 class DbSyncDatabaseConfig:
     host: str
     user: str
@@ -9,31 +12,28 @@ class DbSyncDatabaseConfig:
     db: str
 
 
+@dataclass
 class SnapshotToolConfig:
     path: str
     max_time: datetime
 
 
+@dataclass
 class CatalystToolboxConfig:
     path: str
 
 
+@dataclass
 class GvcConfig:
     api_url: str
 
 
+@dataclass
 class Config:
     dbsync_database: DbSyncDatabaseConfig
     snapshot_tool: SnapshotToolConfig
     catalyst_toolbox: CatalystToolboxConfig
     gvc: GvcConfig
-
-
-DbSyncDatabaseConfigSchema = marshmallow_dataclass.class_schema(DbSyncDatabaseConfig)
-SnapshotToolConfigSchema = marshmallow_dataclass.class_schema(SnapshotToolConfig)
-CatalystToolboxConfigSchema = marshmallow_dataclass.class_schema(CatalystToolboxConfig)
-GvcConfigSchema = marshmallow_dataclass.class_schema(GvcConfig)
-ConfigSchema = marshmallow_dataclass.class_schema(Config)
 
 
 def from_json_file(path: str) -> Config:
@@ -42,6 +42,4 @@ def from_json_file(path: str) -> Config:
     """
 
     with open(path) as f:
-        config = ConfigSchema().loads(f.read())
-        assert isinstance(config, Config)
-        return config
+        return pydantic.tools.parse_obj_as(Config, json.load(f))

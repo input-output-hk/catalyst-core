@@ -1,8 +1,9 @@
 from datetime import datetime
 import json
+from pydantic.dataclasses import dataclass
+import pydantic.tools
 import os
 from typing import Dict, List, Optional, Tuple
-import marshmallow_dataclass
 import rich
 
 from . import config
@@ -12,37 +13,33 @@ from ideascale_importer.gvc.client import Client as GvcClient
 from ideascale_importer.utils import run_cmd
 
 
+@dataclass
 class Contribution:
     reward_address: str
     stake_public_key: str
     value: int
 
 
+@dataclass
 class HIR:
     voting_group: str
     voting_key: str
     voting_power: int
 
 
+@dataclass
 class SnapshotProcessedEntry:
     contributions: List[Contribution]
     hir: HIR
 
 
-ContributionSchema = marshmallow_dataclass.class_schema(Contribution)
-HIRSchema = marshmallow_dataclass.class_schema(HIR)
-ProcessedEntrySchema = marshmallow_dataclass.class_schema(SnapshotProcessedEntry)
-
-
+@dataclass
 class Registration:
     delegations: List[Tuple[str, int]] | str
     reward_address: str
     stake_public_key: str
     voting_power: int
     voting_purpose: int
-
-
-RegistrationSchema = marshmallow_dataclass.class_schema(Registration)
 
 
 class OutputDirectoryDoesNotExist(Exception):
@@ -153,18 +150,22 @@ class Importer:
 
     async def _write_db_data(self):
         with open(self.raw_snapshot_tool_file) as f:
-            snapshot_tool_data_json = f.read()
+            snapshot_tool_data_raw_json = f.read()
         with open(self.catalyst_toolbox_out_file) as f:
-            catalyst_toolbox_data_json = f.read()
+            catalyst_toolbox_data_raw_json = f.read()
 
-        catalyst_toolbox_data: Optional[List[SnapshotProcessedEntry]] = ProcessedEntrySchema().loads(
-            catalyst_toolbox_data_json, many=True)
+        catalyst_toolbox_data: Optional[List[SnapshotProcessedEntry]] = [
+            pydantic.tools.parse_obj_as(SnapshotProcessedEntry, e)
+            for e in json.loads(catalyst_toolbox_data_raw_json)
+        ]
 
         if catalyst_toolbox_data is None:
             raise WriteDbDataFailed("Failed to load catalyst-toolbox generated data")
 
-        snapshot_tool_data: Optional[List[Registration]] = RegistrationSchema().loads(
-            snapshot_tool_data_json, many=True) or []
+        snapshot_tool_data: Optional[List[Registration]] = [
+            pydantic.tools.parse_obj_as(Registration, r)
+            for r in json.loads(snapshot_tool_data_raw_json)
+        ]
 
         if snapshot_tool_data is None:
             raise WriteDbDataFailed("Failed to load snapshot_tool generated data")
@@ -204,10 +205,10 @@ class Importer:
             last_updated=datetime.utcnow(),
             final=False,
             dbsync_snapshot_cmd=os.path.basename(self.config.snapshot_tool.path),
-            dbsync_snapshot_data=snapshot_tool_data_json,
+            dbsync_snapshot_data=snapshot_tool_data_raw_json,
             drep_data=json.dumps(self.dreps),
             catalyst_snapshot_cmd=os.path.basename(self.config.catalyst_toolbox.path),
-            catalyst_snapshot_data=catalyst_toolbox_data_json
+            catalyst_snapshot_data=catalyst_toolbox_data_raw_json
         )
 
         voters: Dict[str, models.Voter] = {}

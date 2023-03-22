@@ -1,20 +1,19 @@
+from pydantic.dataclasses import dataclass
+import pydantic.tools
 from typing import List
-import marshmallow_dataclass
 
 from ideascale_importer import utils
 
 
+@dataclass
 class DrepAttributes:
     ...
 
 
+@dataclass
 class Drep:
     id: int
     attributes: DrepAttributes
-
-
-DrepAttributesSchema = marshmallow_dataclass.class_schema(DrepAttributes)
-DrepSchema = marshmallow_dataclass.class_schema(Drep)
 
 
 class Client:
@@ -23,4 +22,4 @@ class Client:
 
     async def dreps(self) -> List[Drep]:
         res = await self.inner.get("/api/dreps")
-        return DrepSchema().load(res, many=True) or []
+        return [pydantic.tools.parse_obj_as(Drep, e) for e in res]

@@ -1,16 +1,17 @@
 import asyncio
-import marshmallow
-import marshmallow_dataclass
+import json
+from pydantic.dataclasses import dataclass
+import pydantic.tools
 from typing import Any, Iterable, List, Mapping
 
 from ideascale_importer import utils
 
 
 class ExcludeUnknownFields:
-    class Meta:
-        unknown = marshmallow.EXCLUDE
+    ...
 
 
+@dataclass
 class Campaign(ExcludeUnknownFields):
     """
     Represents a campaign from IdeaScale.
@@ -25,6 +26,7 @@ class Campaign(ExcludeUnknownFields):
     campaign_url: str
 
 
+@dataclass
 class CampaignGroup(ExcludeUnknownFields):
     """
     Represents a campaign group from IdeaScale.
@@ -36,6 +38,7 @@ class CampaignGroup(ExcludeUnknownFields):
     campaigns: List[Campaign]
 
 
+@dataclass
 class IdeaAuthorInfo(ExcludeUnknownFields):
     """
     Represents an author info from IdeaScale.
@@ -45,6 +48,7 @@ class IdeaAuthorInfo(ExcludeUnknownFields):
     name: str
 
 
+@dataclass
 class Idea(ExcludeUnknownFields):
     """
     Represents an idea from IdeaScale.
@@ -64,6 +68,7 @@ class Idea(ExcludeUnknownFields):
         return list(map(lambda c: c.name, self.contributors))
 
 
+@dataclass
 class Stage(ExcludeUnknownFields):
     """
     Represents a stage from IdeaScale.
@@ -76,6 +81,7 @@ class Stage(ExcludeUnknownFields):
     funnel_name: str
 
 
+@dataclass
 class Funnel(ExcludeUnknownFields):
     """
     Represents a funnel from IdeaScale.
@@ -85,14 +91,6 @@ class Funnel(ExcludeUnknownFields):
     id: int
     name: str
     stages: List[Stage]
-
-
-CampaignSchema = marshmallow_dataclass.class_schema(Campaign)
-CampaignGroupSchema = marshmallow_dataclass.class_schema(CampaignGroup)
-IdeaAuthorInfoSchema = marshmallow_dataclass.class_schema(IdeaAuthorInfo)
-IdeaSchema = marshmallow_dataclass.class_schema(Idea)
-StageSchema = marshmallow_dataclass.class_schema(Stage)
-FunnelSchema = marshmallow_dataclass.class_schema(Funnel)
 
 
 class Client:
@@ -118,7 +116,8 @@ class Client:
             assert isinstance(group, dict)
 
             if "campaigns" in group:
-                campaigns.extend(CampaignSchema().load(group["campaigns"], many=True) or [])
+                group_campaigns = [pydantic.tools.parse_obj_as(Campaign, c) for c in group["campaigns"]]
+                campaigns.extend(group_campaigns)
 
         return campaigns
 
@@ -128,7 +127,7 @@ class Client:
         """
 
         res = await self._get("/v1/campaigns/groups")
-        return CampaignGroupSchema().load(res, many=True) or []
+        return [pydantic.tools.parse_obj_as(CampaignGroup, cg) for cg in res]
 
     async def campaign_ideas(self, campaign_id: int) -> List[Idea]:
         """
@@ -136,7 +135,7 @@ class Client:
         """
 
         res = await self._get(f"/v1/campaigns/{campaign_id}/ideas")
-        return IdeaSchema().load(res, many=True) or []
+        return [pydantic.tools.parse_obj_as(Idea, i) for i in res]
 
     async def stage_ideas(self, stage_id: int, page_size: int = 50, request_workers_count: int = 10) -> List[Idea]:
         """
@@ -160,7 +159,7 @@ class Client:
                 d.page += 1
 
                 res = await self._get(f"/v1/stages/{stage_id}/ideas/{p}/{page_size}")
-                res_ideas = IdeaSchema().load(res, many=True) or []
+                res_ideas = [pydantic.tools.parse_obj_as(Idea, i) for i in res]
 
                 d.ideas.extend(res_ideas)
 
@@ -188,11 +187,8 @@ class Client:
         Gets the funnel with the given id.
         """
 
-        funnel = FunnelSchema().load(await self._get(f"/v1/funnels/{funnel_id}"))
-        if isinstance(funnel, Funnel):
-            return funnel
-        else:
-            raise utils.BadResponse()
+        res = await self._get(f"/v1/funnels/{funnel_id}")
+        return pydantic.tools.parse_obj_as(Funnel, res)
 
     async def _get(self, path: str) -> Mapping[str, Any] | Iterable[Mapping[str, Any]]:
         """

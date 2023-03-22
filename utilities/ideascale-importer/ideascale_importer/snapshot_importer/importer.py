@@ -97,16 +97,28 @@ class Importer:
         if not self.skip_snapshot_tool_execution:
             # Fetch max slot
             self.console.print("Querying max slot parameter")
-            conn = await ideascale_importer.db.connect(f"postgres://{self.config.dbsync_database.user}:{self.config.dbsync_database.password}@{self.config.dbsync_database.host}/{self.config.dbsync_database.db}")
+            conn = await ideascale_importer.db.connect(
+                f"postgres://{self.config.dbsync_database.user}:" +
+                f"{self.config.dbsync_database.password}@{self.config.dbsync_database.host}"
+                f"/{self.config.dbsync_database.db}"
+            )
 
-            row = await conn.fetchrow("SELECT slot_no FROM block WHERE time <= $1 ORDER BY time DESC LIMIT 1", self.config.snapshot_tool.max_time)
+            row = await conn.fetchrow(
+                "SELECT slot_no FROM block WHERE time <= $1 ORDER BY time DESC LIMIT 1",
+                self.config.snapshot_tool.max_time
+            )
+
             if row is None:
                 raise FetchParametersFailed(
-                    f"Failed to get max_slot parameter from db_sync database: no data returned by the query")
+                    "Failed to get max_slot parameter from db_sync database: "
+                    "no data returned by the query"
+                )
 
             self.snapshot_tool_max_slot = row["slot_no"]
             self.console.print(
-                f"Got max_slot = {self.snapshot_tool_max_slot} for max_time = \"{self.config.snapshot_tool.max_time.isoformat()}\"")
+                f"Got max_slot = {self.snapshot_tool_max_slot} for max_time ="
+                "\"{self.config.snapshot_tool.max_time.isoformat()}\""
+            )
 
             await conn.close()
         else:
@@ -115,10 +127,15 @@ class Importer:
         # Fetch min_stake_threshold and voting_power_cap
         conn = await ideascale_importer.db.connect(self.database_url)
 
-        row = await conn.fetchrow("SELECT voting_power_threshold, max_voting_power_pct FROM event WHERE row_id = $1", self.event_id)
+        row = await conn.fetchrow(
+            "SELECT voting_power_threshold, max_voting_power_pct FROM event WHERE row_id = $1",
+            self.event_id
+        )
         if row is None:
             raise FetchParametersFailed(
-                f"Failed to get min_stake_threshold and voting_power_cap parameters from the event database: event_id={self.event_id} not found")
+                "Failed to get min_stake_threshold and voting_power_cap parameters from the event database: " +
+                f"event_id={self.event_id} not found"
+            )
 
         self.catalyst_toolbox_voting_power_cap = row["max_voting_power_pct"]
         self.catalyst_toolbox_min_stake_threshold = row["voting_power_threshold"]
@@ -138,7 +155,16 @@ class Importer:
             self.dreps = []
 
     async def _run_snapshot_tool(self):
-        snapshot_tool_cmd = f"{self.config.snapshot_tool.path} --db-user {self.config.dbsync_database.user} --db-pass {self.config.dbsync_database.password} --db-host {self.config.dbsync_database.host} --db {self.config.dbsync_database.db} --min-slot 0 --max-slot {self.snapshot_tool_max_slot} --out-file {self.raw_snapshot_tool_file}"
+        snapshot_tool_cmd = (
+            f"{self.config.snapshot_tool.path}"
+            f"--db-user {self.config.dbsync_database.user}"
+            f" --db-pass {self.config.dbsync_database.password}"
+            f" --db-host {self.config.dbsync_database.host}"
+            f" --db {self.config.dbsync_database.db}"
+            f" --min-slot 0 - -max-slot {self.snapshot_tool_max_slot}"
+            f" --out-file {self.raw_snapshot_tool_file}"
+        )
+
         await run_cmd(self.console, "snapshot_tool", snapshot_tool_cmd)
 
     async def _run_catalyst_toolbox_snapshot(self):
@@ -146,7 +172,14 @@ class Importer:
         if self.catalyst_toolbox_min_stake_threshold is None or self.catalyst_toolbox_voting_power_cap is None:
             raise RunCatalystToolboxSnapshotFailed("min_stake_threshold and voting_power_cap must be set")
 
-        catalyst_toolbox_cmd = f"{self.config.catalyst_toolbox.path} snapshot -s {self.raw_snapshot_tool_file} -m {self.catalyst_toolbox_min_stake_threshold} -v {self.catalyst_toolbox_voting_power_cap} --output-format json {self.catalyst_toolbox_out_file}"
+        catalyst_toolbox_cmd = (
+            f"{self.config.catalyst_toolbox.path} snapshot"
+            f" -s {self.raw_snapshot_tool_file}"
+            f" -m {self.catalyst_toolbox_min_stake_threshold}"
+            f" -v {self.catalyst_toolbox_voting_power_cap}"
+            f" --output-format json {self.catalyst_toolbox_out_file}"
+        )
+
         await run_cmd(self.console, "catalyst-toolbox", catalyst_toolbox_cmd)
 
     async def _write_db_data(self):

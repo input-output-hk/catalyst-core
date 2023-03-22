@@ -57,4 +57,3 @@ def from_json_file(path: str) -> Config:
 
     with open(path) as f:
         return pydantic.tools.parse_obj_as(Config, json.load(f))
-

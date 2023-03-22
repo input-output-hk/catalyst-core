@@ -22,6 +22,7 @@ mod test {
     use warp::Filter;
 
     #[tokio::test]
+    #[ignore] // This test needs to be in the new service.
     async fn get_vote_by_voteplan_id_and_caster() {
         // build context
         let db_url = DbBuilder::new().build_async().await.unwrap();

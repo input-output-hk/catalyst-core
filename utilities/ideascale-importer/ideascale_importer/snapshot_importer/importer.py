@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 import json
 from pydantic.dataclasses import dataclass
@@ -154,18 +155,18 @@ class Importer:
         with open(self.catalyst_toolbox_out_file) as f:
             catalyst_toolbox_data_raw_json = f.read()
 
-        catalyst_toolbox_data: Optional[List[SnapshotProcessedEntry]] = [
+        catalyst_toolbox_data: Optional[List[SnapshotProcessedEntry]] = []
+        for e in json.loads(catalyst_toolbox_data_raw_json):
             pydantic.tools.parse_obj_as(SnapshotProcessedEntry, e)
-            for e in json.loads(catalyst_toolbox_data_raw_json)
-        ]
+            await asyncio.sleep(0)
 
         if catalyst_toolbox_data is None:
             raise WriteDbDataFailed("Failed to load catalyst-toolbox generated data")
 
-        snapshot_tool_data: Optional[List[Registration]] = [
+        snapshot_tool_data: Optional[List[Registration]] = []
+        for r in json.loads(snapshot_tool_data_raw_json):
             pydantic.tools.parse_obj_as(Registration, r)
-            for r in json.loads(snapshot_tool_data_raw_json)
-        ]
+            await asyncio.sleep(0)
 
         if snapshot_tool_data is None:
             raise WriteDbDataFailed("Failed to load snapshot_tool generated data")
@@ -196,6 +197,8 @@ class Importer:
                     }
             else:
                 raise Exception("Invalid delegations format in registrations")
+
+            await asyncio.sleep(0)
 
         self.console.print(f"total_registered_voting_power = {total_registered_voting_power}")
 
@@ -249,6 +252,8 @@ class Importer:
 
                 contributions.append(contribution)
                 voters[f"{voter.voting_key}{voter.voting_group}"] = voter
+
+            await asyncio.sleep(0)
 
         self.console.print(f"total_contributed_voting_power = {total_contributed_voting_power}")
         self.console.print(f"total_hir_voting_power = {total_hir_voting_power}")

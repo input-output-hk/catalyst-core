@@ -116,7 +116,11 @@ class Client:
             assert isinstance(group, dict)
 
             if "campaigns" in group:
-                group_campaigns = [pydantic.tools.parse_obj_as(Campaign, c) for c in group["campaigns"]]
+                group_campaigns = []
+                for c in group["campaigns"]:
+                    pydantic.tools.parse_obj_as(Campaign, c)
+                    await asyncio.sleep(0)
+
                 campaigns.extend(group_campaigns)
 
         return campaigns
@@ -127,7 +131,13 @@ class Client:
         """
 
         res = await self._get("/v1/campaigns/groups")
-        return [pydantic.tools.parse_obj_as(CampaignGroup, cg) for cg in res]
+
+        campaign_groups: List[CampaignGroup] = []
+        for cg in res:
+            pydantic.tools.parse_obj_as(CampaignGroup, cg)
+            await asyncio.sleep(0)
+
+        return campaign_groups
 
     async def campaign_ideas(self, campaign_id: int) -> List[Idea]:
         """
@@ -135,7 +145,13 @@ class Client:
         """
 
         res = await self._get(f"/v1/campaigns/{campaign_id}/ideas")
-        return [pydantic.tools.parse_obj_as(Idea, i) for i in res]
+
+        ideas = []
+        for i in res:
+            pydantic.tools.parse_obj_as(Idea, i)
+            await asyncio.sleep(0)
+
+        return ideas
 
     async def stage_ideas(self, stage_id: int, page_size: int = 50, request_workers_count: int = 10) -> List[Idea]:
         """
@@ -159,7 +175,10 @@ class Client:
                 d.page += 1
 
                 res = await self._get(f"/v1/stages/{stage_id}/ideas/{p}/{page_size}")
-                res_ideas = [pydantic.tools.parse_obj_as(Idea, i) for i in res]
+
+                res_ideas: List[Idea] = []
+                for i in res:
+                    pydantic.tools.parse_obj_as(Idea, i)
 
                 d.ideas.extend(res_ideas)
 

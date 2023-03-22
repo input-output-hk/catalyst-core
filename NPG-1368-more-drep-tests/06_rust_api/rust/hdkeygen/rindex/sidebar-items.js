@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["decode_derivation_path",""]],"struct":[["HdKey","The key to encrypt and decrypt HD payload"]]};

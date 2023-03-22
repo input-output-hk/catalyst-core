@@ -1,4 +1,9 @@
+use microtype::secrecy::ExposeSecret;
+use voting_tools_rs::par::verify::filter_registrations;
+
 use std::path::Path;
+
+use postgres::{Client, NoTls};
 use std::{fs::File, io::BufWriter};
 
 use clap::Parser;
@@ -6,6 +11,7 @@ use color_eyre::Result;
 use mainnet_lib::InMemoryDbSync;
 use tracing::{debug, info, Level};
 use voting_tools_rs::test_api::MockDbProvider;
+
 use voting_tools_rs::{
     voting_power, Args, Db, DbConfig, DryRunCommand, InvalidRegistration, SnapshotEntry,
     VotingPowerArgs,
@@ -59,11 +65,35 @@ fn main() -> Result<()> {
     args.network_id = network_id;
     args.expected_voting_purpose = expected_voting_purpose;
 
-    let (outputs, invalids) = load(db_config, dry_run, args)?;
+    //
+    // Par experiment
+    //
 
-    info!("calculated {} outputs", outputs.len());
+    let client = db_conn(db_config.clone())?;
+
+    let (valids, invalids, invalid_txs) = filter_registrations(args.clone(), client).unwrap();
+
+    println!(
+        "vals {:?} invalids {:?} txs {:?}",
+        valids.len(),
+        invalids.len(),
+        invalid_txs.len()
+    );
+
+    /*
+    for k in valids.keys() {
+        let s = stake_key_hash(k, args.network_id);
+        println!("{:?} {:?}", s, s.len());
+    }*/
+
+    // calculate voting power with valids
 
     handle_invalids(&out_file, &invalids)?;
+
+    /*
+    let (outputs, invalids) = load(db_config, dry_run, args)?;
+
+    info!("calculated {} outputs", valids.len());
 
     let file = File::options()
         .write(true)
@@ -74,9 +104,26 @@ fn main() -> Result<()> {
 
     // Snapshots are so large that non-pretty output is effectively unusable.
     // So ONLY do pretty formatted output.
-    serde_json::to_writer_pretty(writer, &outputs)?;
+    serde_json::to_writer_pretty(writer, &valids)?;
+
+    */
 
     Ok(())
+}
+
+fn db_conn(db_config: DbConfig) -> Result<Client, postgres::Error> {
+    let password = db_config
+        .password
+        .map(|p| format!(":{}", p.expose_secret()))
+        .unwrap_or_default();
+
+    Client::connect(
+        &format!(
+            "postgres://{0}{1}@{2}/{3}",
+            db_config.user, password, db_config.host, db_config.name,
+        ),
+        NoTls,
+    )
 }
 
 fn load(

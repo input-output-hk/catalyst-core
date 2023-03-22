@@ -29,6 +29,7 @@ mod data_provider;
 mod db;
 mod error;
 mod logic;
+pub mod par;
 mod testing;
 mod validation;
 
@@ -43,5 +44,6 @@ mod exports {
     pub use crate::db::{Conn, Db, DbConfig};
     pub use crate::error::*;
     pub use crate::logic::{voting_power, VotingPowerArgs};
+    pub use crate::par::*;
     pub use crate::testing::*;
 }

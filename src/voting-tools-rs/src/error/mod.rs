@@ -58,6 +58,12 @@ pub enum RegistrationError {
 
     #[error("signature error {err}")]
     SignatureError { err: String },
+
+    #[error("Obsolete registration")]
+    ObsoleteRegistration,
+
+    #[error("Cddl parsing failed {err}")]
+    CddlParsingFailed { err: String },
 }
 
 /// A registration that failed validation, along with the error

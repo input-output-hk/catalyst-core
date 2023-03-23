@@ -1,29 +1,16 @@
-import aiohttp
 import asyncio
-import json
-import marshmallow
-import marshmallow_dataclass
-import rich.progress
+from pydantic.dataclasses import dataclass
+import pydantic.tools
 from typing import Any, Iterable, List, Mapping
 
-import utils
-
-
-class BadResponse(Exception):
-    def __init__(self):
-        super().__init__("Bad response")
-
-
-class GetFailed(Exception):
-    def __init__(self, status, reason, content):
-        super().__init__(f"{status} {reason}\n{content})")
+from ideascale_importer import utils
 
 
 class ExcludeUnknownFields:
-    class Meta:
-        unknown = marshmallow.EXCLUDE
+    ...
 
 
+@dataclass
 class Campaign(ExcludeUnknownFields):
     """
     Represents a campaign from IdeaScale.
@@ -38,6 +25,7 @@ class Campaign(ExcludeUnknownFields):
     campaign_url: str
 
 
+@dataclass
 class CampaignGroup(ExcludeUnknownFields):
     """
     Represents a campaign group from IdeaScale.
@@ -49,6 +37,7 @@ class CampaignGroup(ExcludeUnknownFields):
     campaigns: List[Campaign]
 
 
+@dataclass
 class IdeaAuthorInfo(ExcludeUnknownFields):
     """
     Represents an author info from IdeaScale.
@@ -58,6 +47,7 @@ class IdeaAuthorInfo(ExcludeUnknownFields):
     name: str
 
 
+@dataclass
 class Idea(ExcludeUnknownFields):
     """
     Represents an idea from IdeaScale.
@@ -77,6 +67,7 @@ class Idea(ExcludeUnknownFields):
         return list(map(lambda c: c.name, self.contributors))
 
 
+@dataclass
 class Stage(ExcludeUnknownFields):
     """
     Represents a stage from IdeaScale.
@@ -89,6 +80,7 @@ class Stage(ExcludeUnknownFields):
     funnel_name: str
 
 
+@dataclass
 class Funnel(ExcludeUnknownFields):
     """
     Represents a funnel from IdeaScale.
@@ -100,49 +92,6 @@ class Funnel(ExcludeUnknownFields):
     stages: List[Stage]
 
 
-CampaignSchema = marshmallow_dataclass.class_schema(Campaign)
-CampaignGroupSchema = marshmallow_dataclass.class_schema(CampaignGroup)
-IdeaAuthorInfoSchema = marshmallow_dataclass.class_schema(IdeaAuthorInfo)
-IdeaSchema = marshmallow_dataclass.class_schema(Idea)
-StageSchema = marshmallow_dataclass.class_schema(Stage)
-FunnelSchema = marshmallow_dataclass.class_schema(Funnel)
-
-
-class RequestProgressObserver:
-    """
-    Observer used for displaying IdeaScale client's requests progresses.
-    """
-
-    def __init__(self):
-        self.inflight_requests = {}
-        self.progress = rich.progress.Progress(
-            rich.progress.TextColumn("{task.description}"),
-            rich.progress.DownloadColumn(),
-            rich.progress.TransferSpeedColumn(),
-            rich.progress.SpinnerColumn(),
-        )
-
-    def request_start(self, req_id: int, method: str, url: str):
-        self.inflight_requests[req_id] = [self.progress.add_task(f"({req_id}) {method} {url}", total=None), 0]
-
-    def request_progress(self, req_id: int, total_bytes_received: int):
-        self.inflight_requests[req_id][1] = total_bytes_received
-        self.progress.update(self.inflight_requests[req_id][0], completed=total_bytes_received)
-
-    def request_end(self, req_id):
-        self.progress.update(self.inflight_requests[req_id][0], total=self.inflight_requests[req_id][1])
-
-    def __enter__(self):
-        self.progress.__enter__()
-
-    def __exit__(self, *args):
-        self.progress.__exit__(*args)
-
-        for [task_id, _] in self.inflight_requests.values():
-            self.progress.remove_task(task_id)
-        self.inflight_requests.clear()
-
-
 class Client:
     """
     IdeaScale API client.
@@ -152,8 +101,7 @@ class Client:
 
     def __init__(self, api_token: str):
         self.api_token = api_token
-        self.request_counter = 0
-        self.request_progress_observer = RequestProgressObserver()
+        self.inner = utils.JsonHttpClient(Client.API_URL)
 
     async def campaigns(self, group_id: int) -> List[Campaign]:
         """
@@ -167,7 +115,12 @@ class Client:
             assert isinstance(group, dict)
 
             if "campaigns" in group:
-                campaigns.extend(CampaignSchema().load(group["campaigns"], many=True) or [])
+                group_campaigns = []
+                for c in group["campaigns"]:
+                    pydantic.tools.parse_obj_as(Campaign, c)
+                    await asyncio.sleep(0)
+
+                campaigns.extend(group_campaigns)
 
         return campaigns
 
@@ -177,7 +130,13 @@ class Client:
         """
 
         res = await self._get("/v1/campaigns/groups")
-        return CampaignGroupSchema().load(res, many=True) or []
+
+        campaign_groups: List[CampaignGroup] = []
+        for cg in res:
+            pydantic.tools.parse_obj_as(CampaignGroup, cg)
+            await asyncio.sleep(0)
+
+        return campaign_groups
 
     async def campaign_ideas(self, campaign_id: int) -> List[Idea]:
         """
@@ -185,7 +144,13 @@ class Client:
         """
 
         res = await self._get(f"/v1/campaigns/{campaign_id}/ideas")
-        return IdeaSchema().load(res, many=True) or []
+
+        ideas = []
+        for i in res:
+            pydantic.tools.parse_obj_as(Idea, i)
+            await asyncio.sleep(0)
+
+        return ideas
 
     async def stage_ideas(self, stage_id: int, page_size: int = 50, request_workers_count: int = 10) -> List[Idea]:
         """
@@ -209,7 +174,10 @@ class Client:
                 d.page += 1
 
                 res = await self._get(f"/v1/stages/{stage_id}/ideas/{p}/{page_size}")
-                res_ideas = IdeaSchema().load(res, many=True) or []
+
+                res_ideas: List[Idea] = []
+                for i in res:
+                    pydantic.tools.parse_obj_as(Idea, i)
 
                 d.ideas.extend(res_ideas)
 
@@ -237,40 +205,13 @@ class Client:
         Gets the funnel with the given id.
         """
 
-        funnel = FunnelSchema().load(await self._get(f"/v1/funnels/{funnel_id}"))
-        if isinstance(funnel, Funnel):
-            return funnel
-        else:
-            raise BadResponse()
+        res = await self._get(f"/v1/funnels/{funnel_id}")
+        return pydantic.tools.parse_obj_as(Funnel, res)
 
     async def _get(self, path: str) -> Mapping[str, Any] | Iterable[Mapping[str, Any]]:
         """
         Executes a GET request on IdeaScale API.
         """
 
-        url = f"{Client.API_URL}{path}"
         headers = {"api_token": self.api_token}
-
-        # Store request id
-        self.request_counter += 1
-        req_id = self.request_counter
-
-        async with aiohttp.ClientSession() as session:
-            self.request_progress_observer.request_start(req_id, "GET", url)
-            async with session.get(url, headers=headers) as r:
-                content = b''
-
-                async for c, _ in r.content.iter_chunks():
-                    content += c
-                    self.request_progress_observer.request_progress(req_id, len(content))
-
-                self.request_progress_observer.request_end(req_id)
-
-                if r.status == 200:
-                    # Doing this so we can describe schemas with types and
-                    # not worry about field names not being in snake case format.
-                    parsed_json = json.loads(content)
-                    utils.snake_case_keys(parsed_json)
-                    return parsed_json
-                else:
-                    raise GetFailed(r.status, r.reason, content)
+        return await self.inner.get(path, headers)

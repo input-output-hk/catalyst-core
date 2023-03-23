@@ -15,7 +15,7 @@ class Model:
 
 
 @dataclasses.dataclass
-class Election(Model):
+class Event(Model):
     """
     Represents a database challenge.
     """
@@ -39,19 +39,19 @@ class Election(Model):
     tallying_end: Optional[datetime]
     extra: Optional[Mapping[str, Any]]
 
-    @ staticmethod
+    @staticmethod
     def table() -> str:
-        return "election"
+        return "event"
 
 
-@ dataclasses.dataclass
+@dataclasses.dataclass
 class Challenge(Model):
     """
     Represents a database challenge.
     """
 
     id: int
-    election: int
+    event: int
     category: str
     title: str
     description: str
@@ -61,12 +61,12 @@ class Challenge(Model):
     vote_options: Optional[int]
     extra: Optional[Mapping[str, Any]]
 
-    @ staticmethod
+    @staticmethod
     def table() -> str:
         return "challenge"
 
 
-@ dataclasses.dataclass
+@dataclasses.dataclass
 class Proposal(Model):
     """
     Represents a database proposal.
@@ -93,18 +93,18 @@ class Proposal(Model):
     bb_proposal_id: Optional[bytes]
     bb_vote_options: Optional[str]
 
-    @ staticmethod
+    @staticmethod
     def table() -> str:
         return "proposal"
 
 
-@ dataclasses.dataclass
+@dataclasses.dataclass
 class Goal(Model):
     """
     Represents a database goal.
     """
 
-    election_id: int
+    event_id: int
     idx: int
     name: str
 
@@ -113,14 +113,14 @@ class Goal(Model):
         return "goal"
 
 
-@ dataclasses.dataclass
+@dataclasses.dataclass
 class VotingGroup(Model):
     """
     Represents a database voting_group.
     """
 
     group_id: str
-    election_id: int
+    event_id: int
     token_id: Optional[str]
 
     @ staticmethod
@@ -128,24 +128,24 @@ class VotingGroup(Model):
         return "voting_group"
 
 
-@ dataclasses.dataclass
+@dataclasses.dataclass
 class Voteplan(Model):
     """
     Represents a database voteplan.
     """
 
-    election_id: int
+    event_id: int
     id: str
     category: str
     encryption_key: Optional[str]
     group_id: Optional[int]
 
-    @ staticmethod
+    @staticmethod
     def table() -> str:
         return "voteplan"
 
 
-@ dataclasses.dataclass
+@dataclasses.dataclass
 class ProposalVoteplan(Model):
     """
     Represents a database proposal_voteplan.
@@ -155,6 +155,63 @@ class ProposalVoteplan(Model):
     voteplan_id: Optional[int]
     bb_proposal_index: Optional[int]
 
-    @ staticmethod
+    @staticmethod
     def table() -> str:
         return "proposal_voteplan"
+
+
+@dataclasses.dataclass
+class Voter(Model):
+    """
+    Represents a database voter.
+    """
+
+    voting_key: str
+    snapshot_id: int
+    voting_group: str
+    voting_power: int
+
+    @staticmethod
+    def table() -> str:
+        return "voter"
+
+
+@dataclasses.dataclass
+class Contribution(Model):
+    """
+    Represents a database contribution.
+    """
+
+    stake_public_key: str
+    snapshot_id: int
+    voting_key: Optional[str]
+    voting_weight: Optional[int]
+    voting_key_idx: Optional[int]
+    value: int
+    voting_group: str
+    reward_address: Optional[str]
+
+    @staticmethod
+    def table() -> str:
+        return "contribution"
+
+
+@dataclasses.dataclass
+class Snapshot(Model):
+    """
+    Represents a database snapshot.
+    """
+
+    event: int
+    as_at: datetime
+    last_updated: datetime
+    final: bool
+    dbsync_snapshot_cmd: Optional[str]
+    dbsync_snapshot_data: Optional[str]
+    drep_data: Optional[str]
+    catalyst_snapshot_cmd: Optional[str]
+    catalyst_snapshot_data: Optional[str]
+
+    @staticmethod
+    def table() -> str:
+        return "snapshot"

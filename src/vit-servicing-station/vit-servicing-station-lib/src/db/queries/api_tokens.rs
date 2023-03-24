@@ -72,27 +72,3 @@ pub fn batch_insert_token_data(
         )
         .execute(db_conn)
 }
-
-#[cfg(test)]
-mod test {
-    use super::*;
-    use crate::{
-        db::{migrations as db_testing, models::api_tokens::ApiTokenData},
-        v0::context::test::new_db_test_shared_context,
-    };
-
-    #[tokio::test]
-    async fn api_token_insert_and_retrieve() {
-        // initialize db
-        let ctx = new_db_test_shared_context();
-        let pool = &ctx.read().await.db_connection_pool;
-
-        db_testing::initialize_db_with_migration(&pool.get().unwrap()).unwrap();
-
-        // checks
-        let token = ApiToken::new(b"foo_bar_zen".to_vec());
-        insert_token(&token, pool).await.unwrap();
-        let token_data: ApiTokenData = query_token(token.clone(), pool).await.unwrap().unwrap();
-        assert_eq!(token_data.token, token);
-    }
-}

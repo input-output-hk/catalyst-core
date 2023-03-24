@@ -6,5 +6,6 @@
 [tasks.install-prereqs]
 workspace = false
 dependencies = [
-    { name = "install-docs-prereqs", path = "Makefiles/docs.toml" }
+    { name = "install-docs-prereqs", path = "Makefiles/docs.toml" },
+    { name = "install-db-prereqs", path = "Makefiles/db.toml" }
 ]

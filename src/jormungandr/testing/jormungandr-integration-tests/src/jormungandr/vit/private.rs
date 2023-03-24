@@ -43,6 +43,7 @@ pub fn jcli_e2e_flow_private_vote() {
     let node_temp_dir = TempDir::new().unwrap().into_persistent();
     let yes_choice = Choice::new(1);
     let no_choice = Choice::new(2);
+    let blank_choice = Choice::new(0);
 
     let mut rng = OsRng;
     let mut alice = Wallet::new_account_with_discrimination(&mut rng, Discrimination::Production);
@@ -101,7 +102,7 @@ pub fn jcli_e2e_flow_private_vote() {
 
     let config = Block0ConfigurationBuilder::default()
         .with_utxos(vec![
-            alice.to_initial_fund(INITIAL_FUND_PER_WALLET),
+            alice.to_initial_fund(INITIAL_FUND_PER_WALLET + 1),
             bob.to_initial_fund(INITIAL_FUND_PER_WALLET),
             clarice.to_initial_fund(INITIAL_FUND_PER_WALLET),
         ])
@@ -109,7 +110,7 @@ pub fn jcli_e2e_flow_private_vote() {
             token_id: token_id.clone().into(),
             policy: minting_policy.into(),
             to: vec![
-                alice.to_initial_token(INITIAL_FUND_PER_WALLET),
+                alice.to_initial_token(INITIAL_FUND_PER_WALLET + 1),
                 bob.to_initial_token(INITIAL_FUND_PER_WALLET),
                 clarice.to_initial_token(INITIAL_FUND_PER_WALLET),
             ],
@@ -167,6 +168,14 @@ pub fn jcli_e2e_flow_private_vote() {
         0,
         no_choice,
         3,
+        election_public_key.clone(),
+    );
+
+    let blank_vote_cast = jcli.certificate().new_private_vote_cast(
+        vote_plan_id.clone(),
+        0,
+        blank_choice,
+        3,
         election_public_key,
     );
 
@@ -190,7 +199,7 @@ pub fn jcli_e2e_flow_private_vote() {
         .transaction_builder(settings.genesis_block_hash())
         .new_transaction()
         .add_account(&bob.address().to_string(), &Value::zero().into())
-        .add_certificate(&yes_vote_cast)
+        .add_certificate(&blank_vote_cast)
         .set_expiry_date(BlockDateDto::new(2, 0))
         .finalize()
         .seal_with_witness_data(bob.witness_data())

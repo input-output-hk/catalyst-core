@@ -46,14 +46,11 @@ pub fn new_shared_context(
 
 #[cfg(test)]
 pub mod test {
-    use vit_servicing_station_tests::common::startup::db::DbBuilder;
-
     use super::*;
     use crate::db;
 
-    pub fn new_db_test_shared_context() -> SharedContext {
-        let db_url = DbBuilder::new().build().unwrap();
-        let pool = db::load_db_connection_pool(&db_url).unwrap();
+    pub fn new_test_shared_context_from_url(db_url: &str) -> SharedContext {
+        let pool = db::load_db_connection_pool(db_url).unwrap();
         let block0: Vec<u8> = vec![1, 2, 3, 4, 5];
         Arc::new(RwLock::new(Context::new(
             pool,
@@ -65,8 +62,10 @@ pub mod test {
         )))
     }
 
-    pub fn new_test_shared_context(block0_path: Vec<PathBuf>) -> SharedContext {
-        let db_url = DbBuilder::new().build().unwrap();
+    pub fn new_test_shared_context_with_block0(
+        db_url: &str,
+        block0_path: Vec<PathBuf>,
+    ) -> SharedContext {
         let pool = db::load_db_connection_pool(&db_url).unwrap();
         new_shared_context(pool, block0_path, "2.0")
     }

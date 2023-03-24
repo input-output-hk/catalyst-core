@@ -1,9 +1,25 @@
 version: "3"
 
 services:
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=CHANGE_ME
+      - POSTGRES_USER=catalyst-event-dev
+      - POSTGRES_DB=CatalystEventDev
+    # it is useful to restart when developing, change according to your needs
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - eventdb:/var/lib/postgresql/data
+
   leader0:
     image: voting-node:latest
     hostname: leader0
+    depends_on:
+      postgres:
+        condition: service_started
     ports:
       - "5057:5057"
     environment:
@@ -12,8 +28,6 @@ services:
       - VOTING_LOG_LEVEL=debug
       - VOTING_NODE_STORAGE=/node_storage
       - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
-      - JORM_PATH=/usr/local/bin/jormungandr
-      - JCLI_PATH=/usr/local/bin/jcli
       - JORM_REST_PORT=5067
       - JORM_JRPC_PORT=5068
       - JORM_P2P_PORT=5069
@@ -24,6 +38,9 @@ services:
   leader1:
     image: voting-node:latest
     hostname: leader1
+    depends_on:
+      postgres:
+        condition: service_started
     ports:
       - "6057:5057"
     environment:
@@ -32,8 +49,6 @@ services:
       - VOTING_LOG_LEVEL=info
       - VOTING_NODE_STORAGE=/node_storage
       - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
-      - JORM_PATH=/usr/local/bin/jormungandr
-      - JCLI_PATH=/usr/local/bin/jcli
       - JORM_REST_PORT=5067
       - JORM_JRPC_PORT=5068
       - JORM_P2P_PORT=5069
@@ -44,6 +59,9 @@ services:
   leader2:
     image: voting-node:latest
     hostname: leader2
+    depends_on:
+      postgres:
+        condition: service_started
     ports:
       - "7057:5057"
     environment:
@@ -52,25 +70,12 @@ services:
       - VOTING_LOG_LEVEL=debug
       - VOTING_NODE_STORAGE=/node_storage
       - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
-      - JORM_PATH=/usr/local/bin/jormungandr
-      - JCLI_PATH=/usr/local/bin/jcli
       - JORM_REST_PORT=5067
       - JORM_JRPC_PORT=5068
       - JORM_P2P_PORT=5069
     volumes:
       - leader2_store:/node_storage
     command: voting-node start
-
-  postgres:
-    image: postgres:latest
-    environment:
-      - POSTGRES_PASSWORD=CHANGE_ME
-      - POSTGRES_USER=catalyst-event-dev
-      - POSTGRES_DB=CatalystEventDev
-    ports:
-      - "5432:5432"
-    volumes:
-      - eventdb:/var/lib/postgresql/data
 
   otel-collector:
     image: otel/opentelemetry-collector:latest

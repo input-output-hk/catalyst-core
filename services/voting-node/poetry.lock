@@ -1,4 +1,18 @@
 [[package]]
+name = "aiofile"
+version = "3.8.5"
+description = "Asynchronous file operations."
+category = "main"
+optional = false
+python-versions = ">=3.7, <4"
+
+[package.dependencies]
+caio = ">=0.9.0,<0.10.0"
+
+[package.extras]
+develop = ["aiomisc-pytest", "pytest", "pytest-rst", "pytest-cov", "coveralls"]
+
+[[package]]
 name = "anyio"
 version = "3.6.2"
 description = "High level compatibility layer for multiple asynchronous event loop implementations"
@@ -76,6 +90,17 @@ colorama = ["colorama (>=0.4.3)"]
 d = ["aiohttp (>=3.7.4)"]
 jupyter = ["ipython (>=7.8.0)", "tokenize-rt (>=3.2.0)"]
 uvloop = ["uvloop (>=0.15.2)"]
+
+[[package]]
+name = "caio"
+version = "0.9.12"
+description = "Asynchronous file IO for Linux MacOS or Windows."
+category = "main"
+optional = false
+python-versions = ">=3.7, <4"
+
+[package.extras]
+develop = ["aiomisc-pytest", "pytest", "pytest-cov"]
 
 [[package]]
 name = "certifi"
@@ -450,7 +475,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "pydantic"
-version = "1.10.5"
+version = "1.10.6"
 description = "Data validation and settings management using python type hints"
 category = "main"
 optional = false
@@ -624,15 +649,17 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "773ea594ba7f7bcae7300672935577b25136053439dbad6875a1bbb494385c8f"
+content-hash = "885e80f1b7f2648a3b5d6c7b61db8c306a91b7b35e669c78c5b7d2155b7e7cd8"
 
 [metadata.files]
+aiofile = []
 anyio = []
 asgiref = []
 asyncio = []
 asyncpg = []
 backoff = []
 black = []
+caio = []
 certifi = []
 charset-normalizer = []
 click = []

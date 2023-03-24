@@ -3,8 +3,8 @@ import datetime
 from typing import Any, List
 
 from .logs import getLogger
-from .models import Event, NodeInfo, PeerNode, Proposal
-from .utils import get_hostname
+from .models import Event, HostInfo, LeaderHostInfo, Proposal, Snapshot, VotePlan
+from .utils import get_hostname, LEADER_REGEX
 
 # gets voting node logger
 logger = getLogger()
@@ -34,62 +34,117 @@ class EventDb(object):
         now = datetime.datetime.utcnow()
         result = await self.conn.fetchrow(query, now)
         if result is None:
-            raise Exception("failed to fetch event from db")
+            raise Exception("failed to fetch event from DB")
         return Event(**dict(result))
 
-    async def fetch_leader_node_info(self, event_row_id: int) -> NodeInfo:
+    async def fetch_leader_host_info(self, event_row_id: int) -> HostInfo:
         filter_by = "hostname = $1 AND event = $2"
         query = f"SELECT * FROM voting_node WHERE {filter_by}"
         result = await self.conn.fetchrow(query, get_hostname(), event_row_id)
         if result is None:
-            raise Exception("failed to fetch leader node info from db")
-        node_info = NodeInfo(**dict(result))
-        return node_info
+            raise Exception("failed to fetch leader node info from DB")
+        host_info = HostInfo(**dict(result))
+        return host_info
 
-    async def insert_leader_node_info(self, node_info: NodeInfo):
+    async def insert_leader_host_info(self, host_info: HostInfo):
         # insert the hostname row into the voting_node table
         fields = "hostname, event, seckey, pubkey, netkey"
         values = "$1, $2, $3, $4, $5"
         query = f"INSERT INTO voting_node({fields}) VALUES({values}) RETURNING *"
-        try:
-            result = await self.conn.execute(
-                query,
-                node_info.hostname,
-                node_info.event,
-                node_info.seckey,
-                node_info.pubkey,
-                node_info.netkey,
-            )
-            if result is None:
-                raise Exception("failed to insert leader0 node into from db")
-            logger.debug(f"{node_info.hostname} info added: {result}")
-        except Exception as e:
-            raise Exception(f"leadership went wrong: {e}") from e
+        h = host_info
+        result = await self.conn.execute(
+            query,
+            h.hostname,
+            h.event,
+            h.seckey,
+            h.pubkey,
+            h.netkey,
+        )
+        if result is None:
+            raise Exception(f"failed to insert '{h.hostname}' info to DB")
+        logger.debug(f"{h.hostname} info added: {result}")
 
-    async def fetch_leaders_host_info(self) -> List[PeerNode]:
-        filter_by = "hostname != $1 AND hostname ~ '^leader[0-9]+$'"
+    async def fetch_leaders_host_info(self) -> List[LeaderHostInfo]:
+        """Fetch host information for leader nodes.
+        Returns a list of leader host information.
+        Raises exceptions if the DB fails to return a list of records, or
+        if the list is empty."""
+        filter_by = f"hostname != $1 AND hostname ~ '{LEADER_REGEX}'"
         query = f"SELECT (hostname, pubkey) FROM voting_node WHERE {filter_by}"
         result = await self.conn.fetch(query, get_hostname())
-        if result is None:
-            raise Exception("db peer node error")
-        logger.debug(f"peers node info retrieved from db: {len(result)}")
-        rows = []
-        for r in result:
-            hostname, pubkey = r["row"]
-            rows.append(PeerNode(hostname, pubkey))
-        return rows
+        match result:
+            case None:
+                raise Exception("DB error fetching leaders host info")
+            case []:
+                raise Exception("no leader host info found in DB")
+            case [*leaders]:
 
-    async def fetch_proposals(self) -> List[Proposal]:
-        sort_by = "id ASC"
-        query = f"SELECT * FROM proposal ORDER BY {sort_by}"
+                def extract_leader_info(leader):
+                    host_info = LeaderHostInfo(*leader["row"])
+                    logger.debug(f"{host_info}")
+                    return host_info
+
+                return list(map(extract_leader_info, leaders))
+
+    async def fetch_proposals(self, event_id: int) -> List[Proposal]:
+        query = "SELECT * FROM proposal ORDER BY id ASC"
         result = await self.conn.fetch(query)
         if result is None:
-            raise Exception("proposals db error")
-        logger.debug(f"proposals retrieved from db: {len(result)}")
-        rows = []
-        for r in result:
-            rows.append(Proposal(**dict(r)))
-        return rows
+            raise Exception("proposals DB error")
+        logger.debug(f"proposals retrieved from DB: {len(result)}")
+        match result:
+            case None:
+                raise Exception("DB error fetching proposals")
+            case []:
+                raise Exception("no proposals found in DB")
+            case [*proposals]:
+                logger.debug(f"proposals retrieved from DB: {len(proposals)}")
+                return list(map(lambda r: Proposal(**dict(r)), proposals))
+
+    async def check_if_snapshot_is_final(self, event_id: int) -> bool:
+        query = "SELECT final FROM snapshot WHERE event = $1"
+        result = await self.conn.fetchrow(query, event_id)
+        match result:
+            case None:
+                raise Exception("snapshot DB error")
+            case record:
+                final = record.get("final")
+                logger.debug(f"snapshot finalized? {final}")
+                return final
+
+    async def fetch_snapshot(self, event_id: int) -> Snapshot:
+        # fetch the voting groups
+        # fetch the voters
+        columns = "(row_id, event, as_at, last_updated, dbsync_snapshot_data"
+        columns += ", drep_data, catalyst_snapshot_data, final)"
+        query = f"SELECT {columns} FROM snapshot WHERE event = $1"
+        result = await self.conn.fetchrow(query, event_id)
+        if result is None:
+            raise Exception("snapshot DB error")
+        logger.debug(f"snapshot retrieved from DB: {result}")
+        match result:
+            case None:
+                raise Exception("DB error fetching snapshot")
+            case snpsht:
+                snapshot = Snapshot(*snpsht["row"])
+                logger.debug(f"snapshot retrieved from DB: {snapshot}")
+                return snapshot
+
+    async def fetch_voteplans(self, event_id: int) -> List[VotePlan]:
+        # fetch the voteplans
+        query = "SELECT * FROM voteplan WHERE event_id = $1 ORDER BY id ASC"
+        result = await self.conn.fetch(query, event_id)
+        if result is None:
+            raise Exception("voteplan DB error")
+        logger.debug(f"voteplans retrieved from DB: {len(result)}")
+        match result:
+            case None:
+                raise Exception("DB error fetching voteplans")
+            case []:
+                raise Exception("no voteplans found in DB")
+            case [*voteplans]:
+                logger.debug(f"voteplans retrieved from DB: {len(voteplans)}")
+                return list(map(lambda r: VotePlan(**dict(r)), voteplans))
 
     async def insert_block0_info(
         self, event_row_id: int, block0_bytes: bytes, block0_hash: str
@@ -104,7 +159,7 @@ class EventDb(object):
                 query, block0_bytes, block0_hash, event_row_id
             )
             if result is None:
-                raise Exception("failed to insert block0 info from db")
+                raise Exception("failed to insert block0 info from DB")
             logger.debug(f"block0 info added to event: {result}")
         except Exception as e:
             raise Exception(f"inserting block0 info went wrong: {e}") from e

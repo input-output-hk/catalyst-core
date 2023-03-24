@@ -2,13 +2,12 @@ import re
 import socket
 import yaml
 
-from datetime import datetime
 from pathlib import Path
 from typing import Dict, Final, Literal, List, Match, Tuple
 
 from . import jcli
 from .logs import getLogger
-from .models import Genesis, NodeConfig, PeerNode
+from .models import Event, Genesis, NodeConfig, LeaderHostInfo
 from .templates import (
     GENESIS_YAML,
     NODE_CONFIG_LEADER,
@@ -20,8 +19,11 @@ from .templates import (
 logger = getLogger()
 
 
+"""Regex expression to determine a node is a leader"""
+LEADER_REGEX: Final = r"^leader[0-9]+$"
+
 """Regex expression to determine a node's leadership and number"""
-LEADER_REGEX: Final = r"^(leader|follower)([0-9]+)$"
+LEADERSHIP_REGEX: Final = r"^(leader|follower)([0-9]+)$"
 
 
 def get_hostname() -> str:
@@ -60,14 +62,14 @@ async def get_network_secret(secret_file: Path, jcli_path: str) -> str:
 
 
 def match_hostname_leadership_pattern(host_name: str) -> Match[str] | None:
-    return re.match(LEADER_REGEX, host_name)
+    return re.match(LEADERSHIP_REGEX, host_name)
 
 
 def get_leadership_role_n_number_by_hostname(
     host_name: str,
 ) -> Tuple[Literal["leader", "follower"], int]:
     res = match_hostname_leadership_pattern(host_name)
-    exc = Exception(f"hostname {host_name} needs to conform to '{LEADER_REGEX}'")
+    exc = Exception(f"hostname {host_name} must conform to '{LEADERSHIP_REGEX}'")
     if res is None:
         raise exc
     match res.groups():
@@ -205,21 +207,18 @@ def make_node_config(
             raise Exception("something odd happened creating node_config.yaml")
 
 
-def make_genesis_file(start_date: datetime, peers: List[PeerNode]) -> Genesis:
-    genesis_dict = yaml.safe_load(GENESIS_YAML)
-    consensus_leader_ids = []
-    for peer in peers:
-        consensus_leader_ids.append(peer.consensus_leader_id)
-
+def make_genesis_content(
+    event: Event, peers: List[LeaderHostInfo], committee_ids: List[str]
+) -> Genesis:
+    start_time = event.get_start_time()
+    genesis = yaml.safe_load(GENESIS_YAML)
+    consensus_leader_ids = [peer.consensus_leader_id for peer in peers]
     # modify the template with the proper settings
-    genesis_dict["blockchain_configuration"]["block0_date"] = int(
-        start_date.timestamp()
-    )
-    genesis_dict["blockchain_configuration"][
-        "consensus_leader_ids"
-    ] = consensus_leader_ids
+    genesis["blockchain_configuration"]["block0_date"] = int(start_time.timestamp())
+    genesis["blockchain_configuration"]["consensus_leader_ids"] = consensus_leader_ids
+    genesis["blockchain_configuration"]["committees"] = committee_ids
 
-    return Genesis(genesis_dict)
+    return Genesis(genesis)
 
 
 async def make_block0(
@@ -227,11 +226,11 @@ async def make_block0(
 ) -> Tuple[Path, str]:
     block0_path = storage.joinpath("block0.bin")
     jcli_exec = jcli.JCli(jcli_path)
-    await jcli_exec.create_block0_bin(block0_path, genesis_path)
+    await jcli_exec.genesis_encode(block0_path, genesis_path)
     hash = await make_block0_hash(jcli_path, block0_path)
     return (block0_path, hash)
 
 
 async def make_block0_hash(jcli_path: str, block0_path: Path) -> str:
     jcli_exec = jcli.JCli(jcli_path)
-    return await jcli_exec.get_block0_hash(block0_path)
+    return await jcli_exec.genesis_hash(block0_path)

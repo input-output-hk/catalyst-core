@@ -14,9 +14,9 @@ RUN pip install poetry
 COPY . /voting
 RUN poetry shell; poetry install
 
-# stage 4: start the service
+# final stage
 FROM python
-ENV PATH="/voting/.venv/bin:$PATH"
+ENV PATH="/voting/.venv/bin:/usr/local/bin:$PATH"
 COPY --from=poetry /voting /voting
 COPY --from=jorm /usr/local/bin/jormungandr /usr/local/bin/jormungandr
 COPY --from=jorm /usr/local/bin/jcli /usr/local/bin/jcli

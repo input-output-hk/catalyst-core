@@ -1,7 +1,8 @@
 import click
 import uvicorn
 
-from . import api, config, logs, service
+from . import api, logs, service
+from .models import ServiceSettings
 
 
 @click.group()
@@ -86,30 +87,17 @@ def start(
 ):
     logs.configLogger(log_level)
 
-    logger = logs.getLogger()
-    logger.debug("Executing: voting-node start")
-    logger.debug(f"host={host}")
-    logger.debug(f"port={port}")
-    logger.debug(f"database-url={database_url}")
-    logger.debug(f"node-storage={node_storage}")
-    logger.debug(f"log-level={log_level}")
-    logger.debug(f"jorm-path={jorm_path}")
-    logger.debug(f"jcli-path={jcli_path}")
-    logger.debug(f"rest-port={jorm_rest_port}")
-    logger.debug(f"jrpc-port={jorm_jrpc_port}")
-    logger.debug(f"p2p-port={jorm_p2p_port}")
-
     api_config = uvicorn.Config(api.app, host=host, port=port, log_level=log_level)
-    jorm_config = config.JormConfig(
-        jorm_path,
-        jcli_path,
-        node_storage,
+    settings = ServiceSettings(
         jorm_rest_port,
         jorm_jrpc_port,
         jorm_p2p_port,
+        node_storage,
+        jcli_path,
+        jorm_path,
     )
 
-    voting_node = service.VotingNode(api_config, jorm_config, database_url)
+    voting_node = service.VotingNode(api_config, settings, database_url)
     voting_node.start()
 
 

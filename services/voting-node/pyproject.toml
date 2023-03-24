@@ -29,6 +29,7 @@ opentelemetry-instrumentation-asyncpg = "^0.37b0"
 prometheus-fastapi-instrumentator = "^5.10.0"
 PyYAML = "^6.0"
 uvicorn = {extras = ["standard"], version = "^0.20.0"}
+aiofile = "^3.8.5"
 
 [tool.poetry.scripts]
 voting-node = "voting_node.main:cli"

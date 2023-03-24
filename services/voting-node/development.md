@@ -8,7 +8,8 @@ This service acts as a wrapper around a `jormungandr`, interacting with the Even
 ## Requirements
 
 * git
-* python3, pip
+* python >= 3.10
+* poetry [https://python-poetry.org/docs/#installation](https://python-poetry.org/docs/#installation)
 * jormungandr
 * jcli
 
@@ -18,31 +19,26 @@ Access to postgres with Event DB.
 
 ```shell
 git clone https://github.com/input-output-hk/catalyst-core.git
-cd catalyst-core
 ```
 
-2. Create a python3 virtual environment
 ```shell
-python3 -m venv .env
-. .env/bin/activate
-pip install --upgrade pip
+cd catalyst-core/services/voting-node
+```
+
+2. Initialize and enter virtual environment
+```shell
+poetry shell
 ```
 
 3. Install `voting_node` package
 
-In development mode:
 ```
-pip install --editable ./services/voting-node/
-```
-
-In release mode:
-```
-pip install ./services/voting-node/
+poetry install
 ```
 
 4. Run the voting-node
 
-A quick way to run the latest jormungandr/jcli executables is to set their paths. If the paths are omitted, the default paths are `$HOME/.cargo/bin/jormungandr` and `$HOME/.cargo/bin/jcli`. The default log level is `info` by pythonic default, but for development mode, `debug` should be preferred.
+A quick way to run the latest jormungandr/jcli executables is to set their paths. If the paths are omitted, the default paths are `jormungandr` and `jcli`. The default log level is `info` by pythonic default, but for development mode, `debug` should be preferred.
 
 ```shell
 voting-node start --log-level debug --jormungandr-path target/debug/jormungandr --jcli-path target/debug/jcli
@@ -57,5 +53,5 @@ voting-node start
 which is equivalent to
 
 ```shell
-voting-node start --log-level info --jormungandr-path $HOME/.cargo/bin/jormungandr --jcli-path $HOME/.cargo/bin/jcli
-```
+voting-node start --log-level info --jormungandr-path jormungandr --jcli-path jcli
+    ```

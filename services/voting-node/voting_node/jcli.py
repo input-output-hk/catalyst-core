@@ -8,8 +8,14 @@ class JCli(object):
     def __init__(self, jcli_exec: str):
         self.jcli_exec = jcli_exec
 
-    async def privkey(self, secret_type: str) -> str:
-        """Returns ed25519 secret key."""
+    async def privkey(self, secret_type: str = "ed25519") -> str:
+        """Returns a private (secret) key from the given secret_type.
+
+        Possible values: "ed25519", "ed25519-bip32", "ed25519-extended",
+        "sum-ed25519-12", "ristretto-group2-hash-dh".
+
+        Defaults to "ed25519".
+        """
         # run jcli to generate the secret key
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,
@@ -31,7 +37,7 @@ class JCli(object):
         return key
 
     async def pubkey(self, seckey: str) -> str:
-        """Returns ed25519 public key."""
+        """Returns a public key the given secret key string."""
         # run jcli to generate the secret key
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,
@@ -49,8 +55,27 @@ class JCli(object):
         key = stdout.decode().rstrip()
         return key
 
-    async def create_block0_bin(self, block0_bin: Path, genesis_yaml: Path):
-        # run jcli to make block0 from genesis.yaml
+    async def key_to_hex(self, key: str) -> str:
+        """Returns the hex-encoded bytes of a given key string."""
+        # run jcli to generate the secret key
+        proc = await asyncio.create_subprocess_exec(
+            self.jcli_exec,
+            "key",
+            "to-bytes",
+            stdout=asyncio.subprocess.PIPE,
+            stdin=asyncio.subprocess.PIPE,
+        )
+
+        stdout, _ = await proc.communicate(input=key.encode())
+        # checks that there is stdout
+        if stdout is None:
+            raise Exception("failed to generate secret")
+        # read the output
+        key = stdout.decode().rstrip()
+        return key
+
+    async def genesis_encode(self, block0_bin: Path, genesis_yaml: Path):
+        """Run 'jcli genesis encode' to make block0 from genesis.yaml"""
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,
             "genesis",
@@ -63,12 +88,12 @@ class JCli(object):
         )
 
         returncode = await proc.wait()
-        # checks that there is stdout
+        # checks that the subprocess did not fail
         if returncode > 0:
             raise Exception("failed to generate block0")
 
-    async def get_block0_hash(self, block0_bin: Path) -> str:
-        # run jcli to make block0 from genesis.yaml
+    async def genesis_hash(self, block0_bin: Path) -> str:
+        """Run 'jcli genesis hash' to get the hash from block0.bin"""
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,
             "genesis",
@@ -85,3 +110,21 @@ class JCli(object):
         # read the output
         hash = stdout.decode().rstrip()
         return hash
+
+    async def genesis_decode(self, block0_bin: Path, genesis_yaml: Path) -> None:
+        """Run 'jcli genesis decode' on block0.bin and saves to genesis.yaml."""
+        proc = await asyncio.create_subprocess_exec(
+            self.jcli_exec,
+            "genesis",
+            "decode",
+            "--input",
+            f"{block0_bin}",
+            "--output",
+            f"{genesis_yaml}",
+            stdout=asyncio.subprocess.PIPE,
+        )
+
+        returncode = await proc.wait()
+        # checks that the subprocess did not fail
+        if returncode > 0:
+            raise Exception("failed to decode block0")

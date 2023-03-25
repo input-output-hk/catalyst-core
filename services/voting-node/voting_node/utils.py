@@ -52,7 +52,7 @@ async def get_network_secret(secret_file: Path, jcli_path: str) -> str:
         try:
             # run jcli to generate the secret key
             jcli_exec = jcli.JCli(jcli_path)
-            secret = await jcli_exec.privkey(secret_type="ed25519")
+            secret = await jcli_exec.key_generate(secret_type="ed25519")
             # write the key to the file
             secret_file.open("w").write(secret)
             # save the key and the path to the file
@@ -65,18 +65,18 @@ def match_hostname_leadership_pattern(host_name: str) -> Match[str] | None:
     return re.match(LEADERSHIP_REGEX, host_name)
 
 
-def get_leadership_role_n_number_by_hostname(
+def get_hostname_role_n_digits(
     host_name: str,
-) -> Tuple[Literal["leader", "follower"], int]:
+) -> Tuple[Literal["leader", "follower"], str]:
     res = match_hostname_leadership_pattern(host_name)
     exc = Exception(f"hostname {host_name} must conform to '{LEADERSHIP_REGEX}'")
     if res is None:
         raise exc
     match res.groups():
         case ("leader", n):
-            return ("leader", int(n))
+            return ("leader", n)
         case ("follower", n):
-            return ("follower", int(n))
+            return ("follower", n)
         case _:
             raise exc
 
@@ -166,7 +166,7 @@ def follower_node_config(
 
 
 def make_node_config(
-    leadership: Tuple[Literal["leader", "follower"], int],
+    leadership: Tuple[Literal["leader", "follower"], str],
     listen_rest: str,
     listen_jrpc: str,
     listen_p2p: str,
@@ -176,7 +176,7 @@ def make_node_config(
 ) -> NodeConfig:
     """Configures a node from template, depending on its leadership and number."""
     match leadership:
-        case ("leader", 0):
+        case ("leader", "0"):
             return leader0_node_config(
                 listen_rest,
                 listen_jrpc,

@@ -38,6 +38,7 @@ class EventDb(object):
         return Event(**dict(result))
 
     async def fetch_leader_host_info(self, event_row_id: int) -> HostInfo:
+        """Returns HostInfo for leaders, sorted by hostname."""
         filter_by = "hostname = $1 AND event = $2"
         query = f"SELECT * FROM voting_node WHERE {filter_by}"
         result = await self.conn.fetchrow(query, get_hostname(), event_row_id)
@@ -64,13 +65,14 @@ class EventDb(object):
             raise Exception(f"failed to insert '{h.hostname}' info to DB")
         logger.debug(f"{h.hostname} info added: {result}")
 
-    async def fetch_leaders_host_info(self) -> List[LeaderHostInfo]:
+    async def fetch_sorted_leaders_host_info(self) -> List[LeaderHostInfo]:
         """Fetch host information for leader nodes.
         Returns a list of leader host information.
         Raises exceptions if the DB fails to return a list of records, or
         if the list is empty."""
-        filter_by = f"hostname != $1 AND hostname ~ '{LEADER_REGEX}'"
-        query = f"SELECT (hostname, pubkey) FROM voting_node WHERE {filter_by}"
+        where = f"WHERE hostname != $1 AND hostname ~ '{LEADER_REGEX}'"
+        order_by = "ORDER BY hostname ASC"
+        query = f"SELECT (hostname, pubkey) FROM voting_node {where} {order_by}"
         result = await self.conn.fetch(query, get_hostname())
         match result:
             case None:
@@ -86,8 +88,8 @@ class EventDb(object):
 
                 return list(map(extract_leader_info, leaders))
 
-    async def fetch_proposals(self, event_id: int) -> List[Proposal]:
-        query = "SELECT * FROM proposal ORDER BY id ASC"
+    async def fetch_proposals(self) -> List[Proposal]:
+        query = "SELECT * FROM proposal WHERE event |ORDER BY id ASC"
         result = await self.conn.fetch(query)
         if result is None:
             raise Exception("proposals DB error")

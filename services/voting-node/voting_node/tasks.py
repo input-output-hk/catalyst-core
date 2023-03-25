@@ -1,6 +1,6 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Final, NoReturn, Optional
+from typing import Final, NoReturn, Optional, Tuple
 
 from . import utils
 from .db import EventDb
@@ -194,9 +194,9 @@ class NodeTaskSchedule(ScheduleRunner):
             event_id = event.row_id
             logger.debug(f"generating '{hostname}' host info with jcli")
             # generate the keys
-            seckey = await self.jcli().privkey(secret_type="ed25519")
-            pubkey = await self.jcli().pubkey(seckey)
-            netkey = await self.jcli().privkey(secret_type="ed25519")
+            seckey = await self.jcli().key_generate(secret_type="ed25519")
+            pubkey = await self.jcli().key_to_public(seckey)
+            netkey = await self.jcli().key_generate(secret_type="ed25519")
             host_info = HostInfo(hostname, event_id, seckey, pubkey, netkey)
             logger.debug("host info was generated")
             try:
@@ -212,7 +212,7 @@ class NodeTaskSchedule(ScheduleRunner):
         try:
             # gets info for other leaders
             # raises exception if unable.
-            leaders = await self.db.fetch_leaders_host_info()
+            leaders = await self.db.fetch_sorted_leaders_host_info()
             self.node.leaders = leaders
         except Exception as e:
             self.reset_schedule(f"{e}")
@@ -275,8 +275,8 @@ class NodeTaskSchedule(ScheduleRunner):
         #  modify node config for all nodes
         host_name = utils.get_hostname()
         host_ip = utils.get_hostname_addr()
-        role_n_number = utils.get_leadership_role_n_number_by_hostname(host_name)
-        logger.debug(f"{role_n_number} ip: {host_ip}")
+        role_n_digits = utils.get_hostname_role_n_digits(host_name)
+        logger.debug(f"{role_n_digits} ip: {host_ip}")
         p2p_port = self.settings.p2p_port
 
         listen_rest = f"{host_ip}:{self.settings.rest_port}"
@@ -285,24 +285,28 @@ class NodeTaskSchedule(ScheduleRunner):
         trusted_peers = []
 
         for peer in self.node.leaders:
-            match role_n_number:
-                case ("leader", 0):
+            match role_n_digits:
+                case ("leader", "0"):
+                    # this node does not trust peers
                     pass
-                case ("leader", host_number):
-                    match utils.get_leadership_role_n_number_by_hostname(peer.hostname):
-                        case ("leader", peer_number):
-                            if peer_number < host_number:
-                                peer_addr = f"/dns4/{peer.hostname}/tcp/{p2p_port}"
-                                trusted_peers.append({"address": peer_addr})
+                case ("leader", host_digits):
+                    match utils.get_hostname_role_n_digits(peer.hostname):
+                        # only append if peer digits are smaller than host digits
+                        # This is to say that a example node "leader000" will
+                        # append "leader00", but not "leader0000".
+                        case ("leader", peer_digits) if peer_digits < host_digits:
+                            peer_addr = f"/dns4/{peer.hostname}/tcp/{p2p_port}"
+                            trusted_peers.append({"address": peer_addr})
                         case _:
                             pass
-                case ("follower", host_number):
+                case ("follower", _):
+                    # append all leaders
                     peer_addr = f"/dns4/{peer.hostname}/tcp/{p2p_port}"
                     trusted_peers.append({"address": peer_addr})
 
         # node config from default template
         config = utils.make_node_config(
-            role_n_number,
+            role_n_digits,
             listen_rest,
             listen_jrpc,
             listen_p2p,

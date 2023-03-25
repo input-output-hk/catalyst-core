@@ -12,6 +12,9 @@ from .logs import getLogger
 # gets voting node logger
 logger = getLogger()
 
+# time in seconds to wait before retrying to run a schedule
+SLEEP_TO_SCHEDULE_RETRY: Final = 6
+
 
 class VotingNode(uvicorn.Server):
     def __init__(
@@ -41,9 +44,6 @@ class VotingNode(uvicorn.Server):
     # jormungandr node's REST and GRPC servers.
     async def start_service(self, sockets: Optional[List[socket.socket]] = None):
         """Starts Voting Node Service."""
-        # time in seconds to wait before retrying to run a schedule
-        SLEEP_TO_SCHEDULE_RETRY: Final = 5
-
         # this is the main task, which stops other tasks by calling the
         # 'stop_schedule' method.
         api_task: asyncio.Task[None] = asyncio.create_task(
@@ -92,8 +92,8 @@ class VotingNode(uvicorn.Server):
         # according to its leadership role.
         # raises exception is something goes wrong with the hostname
         host_name: str = utils.get_hostname().lower()
-        match utils.get_leadership_role_n_number_by_hostname(host_name):
-            case ("leader", 0):
+        match utils.get_hostname_role_n_digits(host_name):
+            case ("leader", "0"):
                 return tasks.Leader0Schedule(self.db_url, self.settings)
             case ("leader", _):
                 return tasks.LeaderSchedule(self.db_url, self.settings)

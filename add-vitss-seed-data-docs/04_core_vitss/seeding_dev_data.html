@@ -159,10 +159,17 @@
                         <h1 id="seeding-development-data"><a class="header" href="#seeding-development-data">Seeding Development Data</a></h1>
 <p>This document describes how to seed the development database with data for testing and development purposes.</p>
 <h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
-<p>The following steps assume that the database in which the data is to be seeded already has been migrated to the latest schema version.</p>
+<h2 id="1-database-migrations"><a class="header" href="#1-database-migrations">1. Database Migrations</a></h2>
+<p>The database migrations must be run before seeding the database. In order to run the migrations, you must have the <code>refinery</code> CLI installed. You can install it by running:</p>
+<pre><code class="language-bash">cargo install refinery_cli
+</code></pre>
+<p>You may need to edit <a href="../../../../../src/event-db/refinery.toml">refinery.toml</a> to match your database configuration.
+Then, run the migrations (this assumes you are at the root of the repository):</p>
+<pre><code class="language-bash">cd src/event-db
+refinery migrate
+</code></pre>
 <h2 id="seeding"><a class="header" href="#seeding">Seeding</a></h2>
 <h3 id="1-event-voteplan-and-voting-groups"><a class="header" href="#1-event-voteplan-and-voting-groups">1. Event, Voteplan and Voting Groups</a></h3>
-<p>The following steps describe how to seed the database with an event, voteplan and voting group.</p>
 <pre><code class="language-sql">INSERT INTO event (
     name,
     description,
@@ -234,7 +241,6 @@
 ) RETURNING row_id;
 </code></pre>
 <h3 id="2-challenge"><a class="header" href="#2-challenge">2. Challenge</a></h3>
-<p>The following steps describe how to seed the database with a challenge.</p>
 <pre><code class="language-sql">INSERT INTO challenge (
     id,
     event,
@@ -260,8 +266,7 @@
 ) RETURNING row_id;
 </code></pre>
 <h3 id="3-proposals-and-proposal-voteplan"><a class="header" href="#3-proposals-and-proposal-voteplan">3. Proposals and Proposal Voteplan</a></h3>
-<p>The following steps describe how to seed the database with proposals and proposal voteplans.</p>
-<p>Here <code>CHALLENGE_ID</code> is the <code>id</code> of the challenge that was just inserted.</p>
+<p>Here, <code>CHALLENGE_ID</code> is the <code>id</code> of the challenge that was just inserted.</p>
 <pre><code class="language-sql">INSERT INTO proposal (
     id,
     challenge,

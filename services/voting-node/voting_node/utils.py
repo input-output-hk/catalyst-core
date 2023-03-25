@@ -206,6 +206,47 @@ def make_node_config(
         case _:
             raise Exception("something odd happened creating node_config.yaml")
 
+async def create_address_keyset(jcli: jcli.JCli) -> Tuple[str, str, str]:
+    committee_sk = await jcli.key_generate()
+    committee_pk = await jcli.key_to_public(committee_sk)
+    committee_id = await jcli.key_to_bytes(committee_pk)
+    return committee_sk, committee_pk, committee_id
+
+
+async def create_comm_keyset(jcli: jcli.JCli) -> Tuple[str, str, str]:
+    comm_sk = await jcli.votes_committee_communication_key_generate()
+    comm_pk = await jcli.votes_committee_communication_key_to_public(comm_sk)
+    comm_id = await jcli.key_to_bytes(comm_pk)
+    return comm_sk, comm_pk, comm_id
+
+
+async def create_committee_member_keys(
+    jcli: jcli.JCli, size: int, threshold: int
+) -> Tuple[list, list, list]:
+    match size:
+        case 0:
+            logger.info("no committee members")
+            return [], [], []
+        case n if threshold <= size:
+            logger.info(
+                f"""creating {n} committee member(s), threshold is
+                {threshold}, votes will be private"""
+            )
+            committee_skeys = [
+                await jcli.votes_committee_communication_key_generate()
+                for _ in range(n)
+            ]
+            logger.debug(f"{len(committee_skeys)} member sk: {committee_skeys}")
+            committee_pkeys = [
+                await jcli.votes_committee_communication_key_to_public(key)
+                for key in committee_skeys
+            ]
+            logger.debug(f"{len(committee_pkeys)} member pk: {committee_pkeys}")
+            committee_ids = [await jcli.key_to_bytes(key) for key in committee_pkeys]
+            return committee_skeys, committee_pkeys, committee_ids
+        case _:
+            raise Exception(f"expected threshold {threshold}, to be less than {size}")
+
 
 def make_genesis_content(
     event: Event, peers: List[LeaderHostInfo], committee_ids: List[str]

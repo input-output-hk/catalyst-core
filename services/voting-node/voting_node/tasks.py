@@ -463,14 +463,22 @@ class Leader0Schedule(LeaderSchedule):
             if event.start_time is None:
                 self.reset_schedule("event has no start time")
 
-            committee_ids = [
-                await self.jcli().create_committee_id()
-                for _ in range(event.committee_size)
-            ]
+            # create the commitee for this event
+            logger.info(f"creating committee address keyset")
+            _, _, committee_id = await utils.create_address_keyset(self.jcli())
+            logger.info(f"creating committee communication keyset")
+            comm_keyset = await utils.create_comm_keyset(self.jcli())
+            logger.debug(f"comm keyset: {comm_keyset}")
+
+            # make committee member keys
+            logger.info(f"creating committee member keys")
+            _ = await utils.create_committee_member_keys(
+                self.jcli(), event.committee_size, event.committee_threshold
+            )
 
             # generate genesis file to make block0
             logger.debug("generating genesis content")
-            genesis = utils.make_genesis_content(event, leaders, committee_ids)
+            genesis = utils.make_genesis_content(event, leaders, [committee_id])
             logger.debug("generated genesis content")
             # convert to yaml and save
             genesis_path = self.node.storage.joinpath("genesis.yaml")

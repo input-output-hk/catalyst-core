@@ -74,6 +74,55 @@ class JCli(object):
         key = stdout.decode().rstrip()
         return key
 
+    async def votes_committee_communication_key_generate(self) -> str:
+        """Run 'jcli genesis encode' to make block0 from genesis.yaml"""
+        proc_args = (
+            "votes",
+            "committee",
+            "communication-key",
+            "generate",
+        )
+        proc = await asyncio.create_subprocess_exec(
+            self.jcli_exec,
+            *proc_args,
+            stdout=asyncio.subprocess.PIPE,
+        )
+        # checks that there is stdout
+        stdout, _ = await proc.communicate()
+        if stdout is None:
+            raise Exception("failed to generate committee communication key")
+        # read the output
+        commkey = stdout.decode().rstrip()
+        return commkey
+
+    async def votes_committee_communication_key_to_public(self, input_key: str) -> str:
+        """Run 'jcli vote committee communication-key to-public [INPUT]' to return
+        the public communication key."""
+        proc_args = (
+            "votes",
+            "committee",
+            "communication-key",
+            "generate",
+        )
+        proc = await asyncio.create_subprocess_exec(
+            self.jcli_exec,
+            *proc_args,
+            stdout=asyncio.subprocess.PIPE,
+            stdin=asyncio.subprocess.PIPE,
+        )
+        # checks that there is stdout
+        stdout, _ = await proc.communicate(input=input_key.encode())
+        if stdout is None:
+            raise Exception("failed to generate committee public communication key")
+        # read the output
+        commid = stdout.decode().rstrip()
+        return commid
+
+    async def vote_committee_member_key_generate(
+        self, comm_pub_keys: list[str], threshold: int
+    ) -> str:
+        ...
+
     async def genesis_encode(self, block0_bin: Path, genesis_yaml: Path):
         """Run 'jcli genesis encode' to make block0 from genesis.yaml"""
         proc = await asyncio.create_subprocess_exec(

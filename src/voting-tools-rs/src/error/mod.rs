@@ -68,6 +68,11 @@ pub enum RegistrationError {
     #[error("Cbor deserialization failed {err}")]
     CborDeserializationFailed { err: String },
 
+    #[error("Raw binary conversion of cbor to Registration failure {err}")]
+    RawBinCborRegistrationFailure { err: String },
+
+    #[error("Raw binary conversion of cbor to Signature failure {err}")]
+    RawBinCborSignatureFailure { err: String },
 }
 
 /// A registration that failed validation, along with the error

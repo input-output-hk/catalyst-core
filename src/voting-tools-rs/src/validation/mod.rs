@@ -43,6 +43,7 @@ impl Validate for SignedRegistration {
             signature,
             tx_id: _,
             slot: _,
+            staked_ada: _,
         } = self;
 
         validate_voting_power(&registration.voting_key)?;

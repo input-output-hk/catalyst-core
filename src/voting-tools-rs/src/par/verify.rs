@@ -1,21 +1,14 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use postgres::Client;
 use postgres::fallible_iterator::FallibleIterator;
-use std::cmp::Reverse;
+use postgres::Client;
 
-use crate::data::{NetworkId, Registration, Signature, SignedRegistration, StakeKeyHex, TxId, RawRegistration};
-use crate::validation::hash;
-use crate::{InvalidRegistration, RegistrationError, VotingPowerArgs};
-use cardano_serialization_lib::chain_crypto::Ed25519;
-use cardano_serialization_lib::chain_crypto::{
-    AsymmetricPublicKey, Verification, VerificationAlgorithm,
-};
+use crate::data::{NetworkId, RawRegistration, SignedRegistration, StakeKeyHex, TxId};
+use crate::{InvalidRegistration, RegistrationError, SlotNo};
 use cryptoxide::{blake2b::Blake2b, digest::Digest};
 
 use nonempty::nonempty;
-
 
 /// DB columns
 const REG_TX_ID: usize = 2;
@@ -25,19 +18,11 @@ const REG_BIN: usize = 7;
 const SIG_JSON: usize = 9;
 const SIG_BIN: usize = 10;
 
-/// All registrations found by the query where the Signature check passes.
-/// Signature check done against the raw binary data of the registration
-pub type ValidSigs = HashMap<StakeKeyHex, Vec<SignedRegistration>>;
-
 /// Contains the most recent registration for each public stake address
-/// Obsolete registrations extracted to invalid TX list
-pub type Valids = HashMap<StakeKeyHex, SignedRegistration>;
+pub type Valids = Vec<SignedRegistration>;
 
 /// Registrations which failed cddl and or sig checks
 pub type Invalids = Vec<InvalidRegistration>;
-
-/// Obsolete registrations extracted to invalid TX list
-pub type InvalidTxs = Vec<SignedRegistration>;
 
 ///
 /// Query gathers all possible registration transactions
@@ -48,10 +33,11 @@ pub type InvalidTxs = Vec<SignedRegistration>;
 /// Any errors produced by the DB get returned.
 ///
 pub fn filter_registrations(
-    args: &VotingPowerArgs,
+    min_slot: SlotNo,
+    max_slot: SlotNo,
     mut client: Client,
-) -> Result<(Valids, Invalids, InvalidTxs), Box<dyn std::error::Error>> {
-    let mut valids: ValidSigs = HashMap::new();
+) -> Result<(Valids, Invalids), Box<dyn std::error::Error>> {
+    let mut valids: Valids = vec![];
     let mut invalids: Invalids = vec![];
 
     let cddl = CddlConfig::new()?;
@@ -76,8 +62,8 @@ pub fn filter_registrations(
         ((block.slot_no >= $1) AND (block.slot_no <= $2))) ORDER BY meta_table.tx_id DESC;
     ",
         &[
-            &i64::try_from(args.min_slot.unwrap().0).unwrap(),
-            &i64::try_from(args.max_slot.unwrap().0).unwrap(),
+            &i64::try_from(min_slot.0).unwrap(),
+            &i64::try_from(max_slot.0).unwrap(),
         ],
     )?;
 
@@ -102,128 +88,70 @@ pub fn filter_registrations(
             slot: slot as u64,
         };
 
-        match rawreg.validate() {
-            Error(err) => {
+        // We need to deserialize the Binary CBOR.
+        // We can ONLY use the json for display purposes in the reject messages.
+        let reg = match rawreg.to_signed(&cddl) {
+            Err(err) => {
                 invalids.push(InvalidRegistration {
                     registration: None,
-                    errors: nonempty![err],
+                    errors: nonempty![RegistrationError::CborDeserializationFailed {
+                        err: format!("Failed to deserialize Registration CBOR: {}", err),
+                    }],
                 });
-            },
-            Ok(reg) => {
-                valids.push(reg);
+                continue;
+            }
+            Ok(reg) => reg,
+        };
+
+        match reg.validate_signature_bin(rawreg.bin_reg.clone()) {
+            Ok(_) => valids.push(reg),
+            Err(err) => {
+                invalids.push(InvalidRegistration {
+                    registration: Some(reg),
+                    errors: nonempty![RegistrationError::SignatureError {
+                        err: format!("Signature validation failure: {}", err),
+                    }],
+                });
+                continue;
             }
         }
-
-        //validate_registration(
-        //    &mut invalids,
-        //    &mut valids,
-        //    &rawreg,
-        //    &cddl,
-        //);
     }
 
-    let (valids, invalid_txs) = latest_registrations(valids);
-    Ok((valids, invalids, invalid_txs))
-}
-
-pub fn validate_registration(
-    invalids: &mut Invalids,
-    valid_sigs: &mut ValidSigs,
-    raw_reg: &RawRegistration,
-    cddl_config: &CddlConfig,
-) {
-    // validate cddl: 61824
-    if let Err(err) = validate_reg_cddl(&raw_reg.bin_reg, &cddl_config) {
-        invalids.push(InvalidRegistration {
-            registration: None,
-            errors: nonempty![err],
-        });
-        return;
-    }
-
-    // validate cddl: 61825
-    if let Err(err) = validate_sig_cddl(&raw_reg.bin_sig, &cddl_config) {
-        invalids.push(InvalidRegistration {
-            registration: None,
-            errors: nonempty![err],
-        });
-        return;
-    }
-
-    let bin_reg = raw_reg.bin_reg.clone();
-
-    // We need to deserialize the Binary CBOR.
-    // We can ONLY use the json for display purposes in the reject messages.
-    let sr = match raw_reg.to_signed() {
-        Err(err)=> {
-            invalids.push(InvalidRegistration {
-                registration: None,
-                errors: nonempty![
-                    RegistrationError::CborDeserializationFailed {
-                        err: format!("Failed to deserialize Registration CBOR: {}", err),
-                    }
-                ],
-            });
-            return;
-        },
-        Ok(reg) => reg
-    };
-
-    match validate_signature_bin(&sr.registration.clone(), &sr.signature.clone(), bin_reg) {
-        Ok(_) => valid_sigs
-            .entry(sr.clone().registration.stake_key)
-            .or_insert(Vec::new())
-            .push(sr),
-        Err(err) => {
-            invalids.push(InvalidRegistration {
-                registration: Some(sr),
-                errors: nonempty![err],
-            });
-            return;
-        }
-    }
+    Ok((latest_registrations(&valids, &mut invalids), invalids))
 }
 
 /// Each stake key can have multiple registrations, the latest must be identified and the rest partitioned
-pub fn latest_registrations(
-    valid_sigs: ValidSigs,
-) -> (HashMap<StakeKeyHex, SignedRegistration>, InvalidTxs) {
-    let mut valids: HashMap<StakeKeyHex, SignedRegistration> = HashMap::new();
-    let mut invalids: InvalidTxs = vec![];
-
+pub fn latest_registrations(valids: &Valids, invalids: &mut Invalids) -> Valids {
     // Create empty hash map {stakekey: reg}
-
+    let mut latest: HashMap<StakeKeyHex, SignedRegistration> = HashMap::new();
     // iterate the valids.
-    //   if valid.stakekey in hash map
-    //      if valid.newer(current in map)
-    //         invalids.push(current, "Obsolete")
-    //         map[valid.key] = valid
-    //      else
-    //         invalids.push(valid, "Obsolete")
-    //   else
-    //      map[valid.key] = valid
-    //
-
-    // return hashmap values as a vec
-
-
-
-    // Find the latest Registration Record for each stake address key
-    for (key, mut value) in valid_sigs {
-        value.sort_by_key(|r| Reverse(r.registration.nonce));
-
-        // The latest transaction is defined as the transaction with the largest nonce field
-        let latest_tx = value[0].clone();
-
-        // The "obsolete" transactions should be added to the invalid transactions list.
-        for r in value.drain(1..) {
-            invalids.push(r);
+    for valid in valids {
+        // if valid.stakekey in hash map
+        if let Some((_stake_key, current)) = latest.get_key_value(&valid.registration.stake_key) {
+            // if valid.newer(current in map)
+            if valid.registration.nonce > current.registration.nonce {
+                // invalids.push(current, "Obsolete")
+                invalids.push(InvalidRegistration {
+                    registration: Some(current.clone()),
+                    errors: nonempty![RegistrationError::ObsoleteRegistration {}],
+                });
+                // map[valid.key] = valid
+                latest.insert(valid.registration.stake_key.clone(), valid.clone());
+            } else {
+                // invalids.push(valid, "Obsolete")
+                invalids.push(InvalidRegistration {
+                    registration: Some(valid.clone()),
+                    errors: nonempty![RegistrationError::ObsoleteRegistration {}],
+                });
+            }
+        } else {
+            // map[valid.key] = valid
+            latest.insert(valid.registration.stake_key.clone(), valid.clone());
         }
-
-        valids.insert(key, latest_tx);
     }
 
-    (valids, invalids)
+    // return hashmap values as a vec
+    latest.values().cloned().collect()
 }
 
 /// The registration has a 32 byte "Stake Public Key".  This is the raw ED25519 public key of the stake address.
@@ -243,29 +171,6 @@ pub fn stake_key_hash(key: &StakeKeyHex, network: NetworkId) -> String {
         NetworkId::Testnet => format!("EO{}", digest_hex),
     };
     ctx
-}
-
-/// The signature is generated by:
-///  - CBOR encoding the registration
-///  - blake2b-256 hashing those bytes
-///  - signing the hash with the private key used to generate the stake key
-fn validate_signature_bin(
-    registration: &Registration,
-    Signature { inner: sig }: &Signature,
-    bin_reg: Vec<u8>,
-) -> Result<(), RegistrationError> {
-    let bytes = bin_reg;
-    let hash_bytes = hash::hash(&bytes);
-
-    let pub_key = Ed25519::public_from_binary(registration.stake_key.as_ref())
-        .map_err(|e| RegistrationError::StakePublicKeyError { err: e.to_string() })?;
-    let sig = Ed25519::signature_from_bytes(sig.as_ref())
-        .map_err(|e| RegistrationError::SignatureError { err: e.to_string() })?;
-
-    match Ed25519::verify_bytes(&pub_key, &sig, &hash_bytes) {
-        Verification::Success => Ok(()),
-        Verification::Failed => Err(RegistrationError::MismatchedSignature { hash_bytes }),
-    }
 }
 
 pub fn validate_reg_cddl(

@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use bigdecimal::BigDecimal;

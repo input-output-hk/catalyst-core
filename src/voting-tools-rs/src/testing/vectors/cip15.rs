@@ -37,7 +37,7 @@ pub const STAKE_PRIVATE_KEY: &str =
 pub fn vector() -> SignedRegistration {
     SignedRegistration {
         tx_id: TxId(1), // not provided in the test vector
-        slot:0,
+        slot: 0,
         registration: Registration {
             voting_key: VotingKey::direct_from_hex(VOTING_KEY).unwrap(),
             stake_key: StakeKeyHex(PubKey::from_hex(STAKE_KEY).unwrap()),
@@ -48,6 +48,7 @@ pub fn vector() -> SignedRegistration {
         signature: Signature {
             inner: Sig::from_hex(SIGNATURE).unwrap(),
         },
+        staked_ada: None,
     }
 }
 

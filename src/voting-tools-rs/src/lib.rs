@@ -37,13 +37,11 @@ mod validation;
 pub use exports::*;
 mod exports {
     pub use crate::cli::{show_error_warning, Args, DryRunCommand};
-    pub use crate::data::{
-        Sig, Signature, SlotNo, SnapshotEntry, VotingKey, VotingPurpose,
-    };
+    pub use crate::data::{Sig, Signature, SlotNo, SnapshotEntry, VotingKey, VotingPurpose};
     pub use crate::data_provider::DataProvider;
     pub use crate::db::{Conn, Db, DbConfig};
     pub use crate::error::*;
-    pub use crate::logic::{voting_power, VotingPowerArgs};
+    pub use crate::logic::{voting_power, voting_power_beta, VotingPowerArgs};
     pub use crate::par::*;
     pub use crate::testing::*;
 }

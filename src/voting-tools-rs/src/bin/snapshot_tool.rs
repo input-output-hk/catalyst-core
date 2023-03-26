@@ -1,5 +1,4 @@
 use microtype::secrecy::ExposeSecret;
-use voting_tools_rs::par::verify::filter_registrations;
 
 use std::path::Path;
 
@@ -13,7 +12,7 @@ use tracing::{debug, info, Level};
 use voting_tools_rs::test_api::MockDbProvider;
 
 use voting_tools_rs::{
-    voting_power, Args, Db, DbConfig, DryRunCommand, InvalidRegistration, SnapshotEntry,
+    voting_power_beta, Args, Db, DbConfig, DryRunCommand, InvalidRegistration, SnapshotEntry,
     VotingPowerArgs,
 };
 
@@ -65,35 +64,17 @@ fn main() -> Result<()> {
     args.network_id = network_id;
     args.expected_voting_purpose = expected_voting_purpose;
 
-    //
-    // Par experiment
-    //
-
     let client = db_conn(db_config.clone())?;
 
-    let (valids, invalids, invalid_txs) = filter_registrations(&args, client).unwrap();
-
-    println!(
-        "vals {:?} invalids {:?} txs {:?}",
-        valids.len(),
-        invalids.len(),
-        invalid_txs.len()
-    );
-
-    /*
-    for k in valids.keys() {
-        let s = stake_key_hash(k, args.network_id);
-        println!("{:?} {:?}", s, s.len());
-    }*/
-
-    // calculate voting power with valids
+    let (valids, invalids) = load(db_config, dry_run, args, client)?;
 
     handle_invalids(&out_file, &invalids)?;
 
-    /*
-    let (outputs, invalids) = load(db_config, dry_run, args)?;
-
-    info!("calculated {} outputs", valids.len());
+    info!(
+        "calculated {} outputs\n #invalids {}",
+        valids.len(),
+        invalids.len()
+    );
 
     let file = File::options()
         .write(true)
@@ -105,8 +86,6 @@ fn main() -> Result<()> {
     // Snapshots are so large that non-pretty output is effectively unusable.
     // So ONLY do pretty formatted output.
     serde_json::to_writer_pretty(writer, &valids)?;
-
-    */
 
     Ok(())
 }
@@ -130,11 +109,12 @@ fn load(
     real_db_config: DbConfig,
     dry_run: Option<DryRunCommand>,
     args: VotingPowerArgs,
+    registration_client: Client,
 ) -> Result<(Vec<SnapshotEntry>, Vec<InvalidRegistration>)> {
     if let Some(DryRunCommand::DryRun { mock_json_file }) = dry_run {
         info!("Using dryrun file: {}", mock_json_file.to_string_lossy());
         let db = MockDbProvider::from(InMemoryDbSync::restore(mock_json_file)?);
-        voting_power(db, args)
+        voting_power_beta(db, registration_client, args)
     } else {
         let db_loc = &real_db_config.host;
         let db_user = &real_db_config.name;
@@ -143,7 +123,7 @@ fn load(
             db_user, db_loc
         );
         let db = Db::connect(real_db_config)?;
-        voting_power(db, args)
+        voting_power_beta(db, registration_client, args)
     }
 }
 

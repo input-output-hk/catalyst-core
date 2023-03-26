@@ -67,6 +67,7 @@ pub(crate) fn arbitrary_signed_registration(
         signature,
         tx_id,
         slot: 12345,
+        staked_ada: None,
     }
 }
 

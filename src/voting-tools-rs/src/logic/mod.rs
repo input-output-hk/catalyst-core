@@ -1,7 +1,10 @@
+#![allow(missing_docs)]
+
 use crate::{
-    data::{Registration, SignedRegistration, SlotNo, StakeKeyHex},
+    data::{NetworkId, Registration, SignedRegistration, SlotNo, StakeKeyHex},
     error::InvalidRegistration,
     validation::ValidationCtx,
+    verify::{filter_registrations, stake_key_hash},
     DataProvider, SnapshotEntry,
 };
 use bigdecimal::{BigDecimal, ToPrimitive};
@@ -9,6 +12,7 @@ use color_eyre::eyre::{eyre, Result};
 use dashmap::DashMap;
 use itertools::Itertools;
 use nonempty::nonempty;
+use postgres::Client;
 use validity::{Failure, Valid, Validate};
 
 mod args;
@@ -46,6 +50,84 @@ pub use args::VotingPowerArgs;
 /// # Errors
 ///
 /// Returns an error if either of `lower` or `upper` doesn't fit in an `i64`
+pub fn voting_power_beta(
+    db: impl DataProvider,
+    registration_client: Client,
+    VotingPowerArgs {
+        min_slot,
+        max_slot,
+        network_id,
+        expected_voting_purpose,
+    }: VotingPowerArgs,
+) -> Result<(Vec<SnapshotEntry>, Vec<InvalidRegistration>)> {
+    const ABS_MIN_SLOT: SlotNo = SlotNo(0);
+    const ABS_MAX_SLOT: SlotNo = SlotNo(i64::MAX as u64);
+
+    let min_slot = min_slot.unwrap_or(ABS_MIN_SLOT);
+    let max_slot = max_slot.unwrap_or(ABS_MAX_SLOT);
+
+    let (valids, invalids) = filter_registrations(min_slot, max_slot, registration_client).unwrap();
+
+    let addrs = stake_addrs_beta(&valids);
+
+    let voting_powers = db.stake_values(&addrs);
+
+    let snapshot = valids
+        .into_iter()
+        .map(|reg| convert_to_snapshot_entry_beta(reg, &voting_powers))
+        .collect::<Result<_, _>>()?;
+
+    Ok((snapshot, invalids))
+}
+
+// returns hashes
+fn stake_addrs_hashes(registrations: &[SignedRegistration], network_id: NetworkId) -> Vec<String> {
+    registrations
+        .iter()
+        .map(|reg| stake_key_hash(&reg.registration.stake_key.clone(), network_id))
+        .collect()
+}
+
+fn stake_addrs_beta(registrations: &[SignedRegistration]) -> Vec<StakeKeyHex> {
+    registrations
+        .iter()
+        .map(|reg| reg.registration.stake_key.clone())
+        .collect()
+}
+
+fn convert_to_snapshot_entry_beta(
+    registration: SignedRegistration,
+    voting_powers: &DashMap<StakeKeyHex, BigDecimal>,
+) -> Result<SnapshotEntry> {
+    let SignedRegistration {
+        registration:
+            Registration {
+                voting_key,
+                stake_key,
+                rewards_address,
+                voting_purpose,
+                ..
+            },
+        tx_id,
+        ..
+    } = registration;
+
+    let voting_power = voting_powers
+        .get(&stake_key)
+        .ok_or_else(|| eyre!("no voting power available for stake key: {}", stake_key))?;
+
+    let voting_power = voting_power.to_u128().unwrap_or(0);
+
+    Ok(SnapshotEntry {
+        voting_key,
+        rewards_address,
+        stake_key,
+        voting_power,
+        voting_purpose,
+        tx_id,
+    })
+}
+
 pub fn voting_power(
     db: impl DataProvider,
     VotingPowerArgs {

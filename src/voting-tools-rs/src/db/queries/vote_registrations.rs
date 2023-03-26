@@ -127,7 +127,8 @@ fn convert_row((tx_id, metadata, signature, _slot_no): Row) -> Result<SignedRegi
         registration,
         signature,
         tx_id,
-        slot:0,
+        slot: 0,
+        staked_ada: None,
     })
 }
 

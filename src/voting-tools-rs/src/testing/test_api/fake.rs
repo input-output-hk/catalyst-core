@@ -1,7 +1,7 @@
 use crate::data::PubKey;
 use crate::data::{
     Nonce, Registration, RewardsAddress, Signature, SignedRegistration, SlotNo, StakeKeyHex, TxId,
-    VotingKeyHex, VotingKey, VotingPurpose,
+    VotingKey, VotingKeyHex, VotingPurpose,
 };
 use crate::data_provider::DataProvider;
 use crate::Sig;
@@ -117,6 +117,7 @@ impl DataProvider for MockDbProvider {
                             signature: Signature {
                                 inner: Sig(sig.to_bytes().try_into().unwrap()),
                             },
+                            staked_ada: None,
                         }
                     })
                     .collect()

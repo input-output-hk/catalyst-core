@@ -230,132 +230,51 @@
 <span id="230">230</span>
 <span id="231">231</span>
 <span id="232">232</span>
-<span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
-<span id="237">237</span>
-<span id="238">238</span>
-<span id="239">239</span>
-<span id="240">240</span>
-<span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
-<span id="245">245</span>
-<span id="246">246</span>
-<span id="247">247</span>
-<span id="248">248</span>
-<span id="249">249</span>
-<span id="250">250</span>
-<span id="251">251</span>
-<span id="252">252</span>
-<span id="253">253</span>
-<span id="254">254</span>
-<span id="255">255</span>
-<span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
-<span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
-<span id="262">262</span>
-<span id="263">263</span>
-<span id="264">264</span>
-<span id="265">265</span>
-<span id="266">266</span>
-<span id="267">267</span>
-<span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashMap;
 <span class="kw">use </span>std::path::PathBuf;
 
+<span class="kw">use </span>postgres::fallible_iterator::FallibleIterator;
 <span class="kw">use </span>postgres::Client;
-<span class="kw">use </span>std::cmp::Reverse;
 
-<span class="kw">use </span><span class="kw">crate</span>::data::{NetworkId, Registration, Signature, SignedRegistration, StakeKeyHex, TxId};
-<span class="kw">use </span><span class="kw">crate</span>::validation::hash;
-<span class="kw">use crate</span>::{InvalidRegistration, RegistrationError, VotingPowerArgs};
-<span class="kw">use </span>cardano_serialization_lib::chain_crypto::Ed25519;
-<span class="kw">use </span>cardano_serialization_lib::chain_crypto::{
-    AsymmetricPublicKey, Verification, VerificationAlgorithm,
-};
+<span class="kw">use </span><span class="kw">crate</span>::data::{NetworkId, RawRegistration, SignedRegistration, StakeKeyHex, TxId};
+<span class="kw">use crate</span>::{InvalidRegistration, RegistrationError, SlotNo};
 <span class="kw">use </span>cryptoxide::{blake2b::Blake2b, digest::Digest};
 
 <span class="kw">use </span>nonempty::nonempty;
 
-<span class="kw">use </span>serde_json::{<span class="self">self</span>, json};
-
 <span class="doccomment">/// DB columns
 </span><span class="kw">const </span>REG_TX_ID: usize = <span class="number">2</span>;
+<span class="kw">const </span>REG_SLOT_NO: usize = <span class="number">4</span>;
 <span class="kw">const </span>REG_JSON: usize = <span class="number">6</span>;
 <span class="kw">const </span>REG_BIN: usize = <span class="number">7</span>;
 <span class="kw">const </span>SIG_JSON: usize = <span class="number">9</span>;
 <span class="kw">const </span>SIG_BIN: usize = <span class="number">10</span>;
 
-<span class="doccomment">/// All registrations found by the query where the Signature check passes.
-/// Signature check done against the raw binary data of the registration
-</span><span class="kw">pub type </span>ValidSigs = HashMap&lt;StakeKeyHex, Vec&lt;SignedRegistration&gt;&gt;;
-
 <span class="doccomment">/// Contains the most recent registration for each public stake address
-/// Obsolete registrations extracted to invalid TX list
-</span><span class="kw">pub type </span>Valids = HashMap&lt;StakeKeyHex, SignedRegistration&gt;;
+</span><span class="kw">pub type </span>Valids = Vec&lt;SignedRegistration&gt;;
 
 <span class="doccomment">/// Registrations which failed cddl and or sig checks
 </span><span class="kw">pub type </span>Invalids = Vec&lt;InvalidRegistration&gt;;
 
-<span class="doccomment">/// Obsolete registrations extracted to invalid TX list
-</span><span class="kw">pub type </span>InvalidTxs = Vec&lt;SignedRegistration&gt;;
-
 <span class="doccomment">///
 /// Query gathers all possible registration transactions
 /// Each registration is screened and marked: valid or invalid
+///
+/// # Errors
+///
+/// Any errors produced by the DB get returned.
+///
 </span><span class="kw">pub fn </span>filter_registrations(
-    args: VotingPowerArgs,
+    min_slot: SlotNo,
+    max_slot: SlotNo,
     <span class="kw-2">mut </span>client: Client,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(Valids, Invalids, InvalidTxs), Box&lt;<span class="kw">dyn </span>std::error::Error&gt;&gt; {
-    <span class="kw">let </span><span class="kw-2">mut </span>valids: ValidSigs = HashMap::new();
+) -&gt; <span class="prelude-ty">Result</span>&lt;(Valids, Invalids), Box&lt;<span class="kw">dyn </span>std::error::Error&gt;&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>valids: Valids = <span class="macro">vec!</span>[];
     <span class="kw">let </span><span class="kw-2">mut </span>invalids: Invalids = <span class="macro">vec!</span>[];
 
     <span class="kw">let </span>cddl = CddlConfig::new()<span class="question-mark">?</span>;
 
-    <span class="kw">for </span>row <span class="kw">in </span>client.query(
+    <span class="kw">let </span><span class="kw-2">mut </span>results = client.query_raw(
         <span class="string">&quot;
         SELECT meta_table.id as reg_id,
         sig_table.id as sig_id,
@@ -375,138 +294,96 @@
         ((block.slot_no &gt;= $1) AND (block.slot_no &lt;= $2))) ORDER BY meta_table.tx_id DESC;
     &quot;</span>,
         <span class="kw-2">&amp;</span>[
-            <span class="kw-2">&amp;</span>i64::try_from(args.min_slot.unwrap().<span class="number">0</span>).unwrap(),
-            <span class="kw-2">&amp;</span>i64::try_from(args.max_slot.unwrap().<span class="number">0</span>).unwrap(),
+            <span class="kw-2">&amp;</span>i64::try_from(min_slot.<span class="number">0</span>).unwrap(),
+            <span class="kw-2">&amp;</span>i64::try_from(max_slot.<span class="number">0</span>).unwrap(),
         ],
-    )<span class="question-mark">? </span>{
-        <span class="comment">// cip 36: 61284 json
-        </span><span class="kw">let </span>json_reg: serde_json::Value = row.get(REG_JSON);
+    )<span class="question-mark">?</span>;
 
-        <span class="comment">// cip 36: 61285 json
-        </span><span class="kw">let </span>json_sig: serde_json::Value = row.get(SIG_JSON);
+    <span class="kw">while let </span><span class="prelude-val">Some</span>(row) = results.next()<span class="question-mark">? </span>{
+        <span class="comment">// Here we can use a threadpool with a size == number of cores.
+        // We can process each row in parallel using this pool.
 
-        <span class="comment">// cip 36: 61284 raw binary
-        </span><span class="kw">let </span>bin_reg: Vec&lt;u8&gt; = row.get(REG_BIN);
+        // We should also print out a running status of the number of registrations we have processed so far,
+        // otherwise long running queries look locked up.
 
-        <span class="comment">// cip 36: 61285 raw binary
-        </span><span class="kw">let </span>bin_sig: Vec&lt;u8&gt; = row.get(SIG_BIN);
-
-        <span class="comment">// registration tx_id
+        // registration tx_id
         </span><span class="kw">let </span>tx_id: i64 = row.get(REG_TX_ID);
-        <span class="kw">let </span>tx_id: TxId = TxId(tx_id <span class="kw">as </span>u64);
+        <span class="kw">let </span>slot: i64 = row.get(REG_SLOT_NO);
 
-        validate_registration(
-            <span class="kw-2">&amp;mut </span>invalids,
-            <span class="kw-2">&amp;mut </span>valids,
-            bin_reg,
-            bin_sig,
-            tx_id,
-            json_reg,
-            json_sig,
-            <span class="kw-2">&amp;</span>cddl,
-        );
-    }
+        <span class="comment">// The raw registration data from the database.
+        </span><span class="kw">let </span>rawreg = RawRegistration {
+            json_reg: row.get(REG_JSON),
+            json_sig: row.get(SIG_JSON),
+            bin_reg: row.get(REG_BIN),
+            bin_sig: row.get(SIG_BIN),
+            tx_id: TxId(tx_id <span class="kw">as </span>u64),
+            slot: slot <span class="kw">as </span>u64,
+        };
 
-    <span class="kw">let </span>(valids, invalid_txs) = latest_registrations(valids);
-    <span class="prelude-val">Ok</span>((valids, invalids, invalid_txs))
-}
+        <span class="comment">// We need to deserialize the Binary CBOR.
+        // We can ONLY use the json for display purposes in the reject messages.
+        </span><span class="kw">let </span>reg = <span class="kw">match </span>rawreg.to_signed(<span class="kw-2">&amp;</span>cddl) {
+            <span class="prelude-val">Err</span>(err) =&gt; {
+                invalids.push(InvalidRegistration {
+                    registration: <span class="prelude-val">None</span>,
+                    errors: <span class="macro">nonempty!</span>[RegistrationError::CborDeserializationFailed {
+                        err: <span class="macro">format!</span>(<span class="string">&quot;Failed to deserialize Registration CBOR: {}&quot;</span>, err),
+                    }],
+                });
+                <span class="kw">continue</span>;
+            }
+            <span class="prelude-val">Ok</span>(reg) =&gt; reg,
+        };
 
-<span class="kw">pub fn </span>validate_registration(
-    invalids: <span class="kw-2">&amp;mut </span>Invalids,
-    valid_sigs: <span class="kw-2">&amp;mut </span>ValidSigs,
-    bin_reg: Vec&lt;u8&gt;,
-    bin_sig: Vec&lt;u8&gt;,
-    tx_id: TxId,
-    json_reg: serde_json::Value,
-    json_sig: serde_json::Value,
-    cddl_config: <span class="kw-2">&amp;</span>CddlConfig,
-) {
-    <span class="comment">// validate cddl: 61824
-    </span><span class="kw">if let </span><span class="prelude-val">Err</span>(err) = validate_reg_cddl(bin_reg.clone(), <span class="kw-2">&amp;</span>cddl_config) {
-        invalids.push(InvalidRegistration {
-            registration: <span class="prelude-val">None</span>,
-            errors: <span class="macro">nonempty!</span>[err],
-        });
-        <span class="kw">return</span>;
-    }
-
-    <span class="comment">// validate cddl: 61825
-    </span><span class="kw">if let </span><span class="prelude-val">Err</span>(err) = validate_sig_cddl(bin_sig.clone(), <span class="kw-2">&amp;</span>cddl_config) {
-        invalids.push(InvalidRegistration {
-            registration: <span class="prelude-val">None</span>,
-            errors: <span class="macro">nonempty!</span>[err],
-        });
-        <span class="kw">return</span>;
-    }
-
-    <span class="kw">let </span>r: Registration = <span class="kw">match </span>serde_json::from_value(json_reg) {
-        <span class="prelude-val">Ok</span>(r) =&gt; r,
-        <span class="prelude-val">Err</span>(err) =&gt; {
-            invalids.push(InvalidRegistration {
-                registration: <span class="prelude-val">None</span>,
-                errors: <span class="macro">nonempty!</span>[RegistrationError::RegistrationFormat(
-                    <span class="macro">json!</span>(err.to_string())
-                )],
-            });
-            <span class="kw">return</span>;
-        }
-    };
-
-    <span class="kw">let </span>s: Signature = <span class="kw">match </span>serde_json::from_value(json_sig) {
-        <span class="prelude-val">Ok</span>(s) =&gt; s,
-        <span class="prelude-val">Err</span>(err) =&gt; {
-            invalids.push(InvalidRegistration {
-                registration: <span class="prelude-val">None</span>,
-                errors: <span class="macro">nonempty!</span>[RegistrationError::SignatureFormat(<span class="macro">json!</span>(err.to_string()))],
-            });
-            <span class="kw">return</span>;
-        }
-    };
-
-    <span class="kw">let </span>sr = SignedRegistration {
-        registration: r,
-        signature: s,
-        tx_id: tx_id,
-    };
-
-    <span class="kw">match </span>validate_signature_bin(<span class="kw-2">&amp;</span>sr.registration.clone(), <span class="kw-2">&amp;</span>sr.signature.clone(), bin_reg) {
-        <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; valid_sigs
-            .entry(sr.clone().registration.stake_key)
-            .or_insert(Vec::new())
-            .push(sr),
-        <span class="prelude-val">Err</span>(err) =&gt; {
-            invalids.push(InvalidRegistration {
-                registration: <span class="prelude-val">Some</span>(sr),
-                errors: <span class="macro">nonempty!</span>[err],
-            });
-            <span class="kw">return</span>;
+        <span class="kw">match </span>reg.validate_signature_bin(rawreg.bin_reg.clone()) {
+            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; valids.push(reg),
+            <span class="prelude-val">Err</span>(err) =&gt; {
+                invalids.push(InvalidRegistration {
+                    registration: <span class="prelude-val">Some</span>(reg),
+                    errors: <span class="macro">nonempty!</span>[RegistrationError::SignatureError {
+                        err: <span class="macro">format!</span>(<span class="string">&quot;Signature validation failure: {}&quot;</span>, err),
+                    }],
+                });
+                <span class="kw">continue</span>;
+            }
         }
     }
+
+    <span class="prelude-val">Ok</span>((latest_registrations(<span class="kw-2">&amp;</span>valids, <span class="kw-2">&amp;mut </span>invalids), invalids))
 }
 
 <span class="doccomment">/// Each stake key can have multiple registrations, the latest must be identified and the rest partitioned
-</span><span class="kw">pub fn </span>latest_registrations(
-    valid_sigs: ValidSigs,
-) -&gt; (HashMap&lt;StakeKeyHex, SignedRegistration&gt;, InvalidTxs) {
-    <span class="kw">let </span><span class="kw-2">mut </span>valids: HashMap&lt;StakeKeyHex, SignedRegistration&gt; = HashMap::new();
-    <span class="kw">let </span><span class="kw-2">mut </span>invalids: InvalidTxs = <span class="macro">vec!</span>[];
-
-    <span class="comment">// Find the latest Registration Record for each stake address key
-    </span><span class="kw">for </span>(key, <span class="kw-2">mut </span>value) <span class="kw">in </span>valid_sigs {
-        value.sort_by_key(|r| Reverse(r.registration.nonce));
-
-        <span class="comment">// The latest transaction is defined as the transaction with the largest nonce field
-        </span><span class="kw">let </span>latest_tx = value[<span class="number">0</span>].clone();
-
-        <span class="comment">// The &quot;obsolete&quot; transactions should be added to the invalid transactions list.
-        </span><span class="kw">for </span>r <span class="kw">in </span>value.drain(<span class="number">1</span>..) {
-            invalids.push(r);
+</span><span class="kw">pub fn </span>latest_registrations(valids: <span class="kw-2">&amp;</span>Valids, invalids: <span class="kw-2">&amp;mut </span>Invalids) -&gt; Valids {
+    <span class="comment">// Create empty hash map {stakekey: reg}
+    </span><span class="kw">let </span><span class="kw-2">mut </span>latest: HashMap&lt;StakeKeyHex, SignedRegistration&gt; = HashMap::new();
+    <span class="comment">// iterate the valids.
+    </span><span class="kw">for </span>valid <span class="kw">in </span>valids {
+        <span class="comment">// if valid.stakekey in hash map
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>((_stake_key, current)) = latest.get_key_value(<span class="kw-2">&amp;</span>valid.registration.stake_key) {
+            <span class="comment">// if valid.newer(current in map)
+            </span><span class="kw">if </span>valid.registration.nonce &gt; current.registration.nonce {
+                <span class="comment">// invalids.push(current, &quot;Obsolete&quot;)
+                </span>invalids.push(InvalidRegistration {
+                    registration: <span class="prelude-val">Some</span>(current.clone()),
+                    errors: <span class="macro">nonempty!</span>[RegistrationError::ObsoleteRegistration {}],
+                });
+                <span class="comment">// map[valid.key] = valid
+                </span>latest.insert(valid.registration.stake_key.clone(), valid.clone());
+            } <span class="kw">else </span>{
+                <span class="comment">// invalids.push(valid, &quot;Obsolete&quot;)
+                </span>invalids.push(InvalidRegistration {
+                    registration: <span class="prelude-val">Some</span>(valid.clone()),
+                    errors: <span class="macro">nonempty!</span>[RegistrationError::ObsoleteRegistration {}],
+                });
+            }
+        } <span class="kw">else </span>{
+            <span class="comment">// map[valid.key] = valid
+            </span>latest.insert(valid.registration.stake_key.clone(), valid.clone());
         }
-
-        valids.insert(key, latest_tx);
     }
 
-    (valids, invalids)
+    <span class="comment">// return hashmap values as a vec
+    </span>latest.values().cloned().collect()
 }
 
 <span class="doccomment">/// The registration has a 32 byte &quot;Stake Public Key&quot;.  This is the raw ED25519 public key of the stake address.
@@ -528,31 +405,8 @@
     ctx
 }
 
-<span class="doccomment">/// The signature is generated by:
-///  - CBOR encoding the registration
-///  - blake2b-256 hashing those bytes
-///  - signing the hash with the private key used to generate the stake key
-</span><span class="kw">fn </span>validate_signature_bin(
-    registration: <span class="kw-2">&amp;</span>Registration,
-    Signature { inner: sig }: <span class="kw-2">&amp;</span>Signature,
-    bin_reg: Vec&lt;u8&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(), RegistrationError&gt; {
-    <span class="kw">let </span>bytes = bin_reg;
-    <span class="kw">let </span>hash_bytes = hash::hash(<span class="kw-2">&amp;</span>bytes);
-
-    <span class="kw">let </span>pub_key = Ed25519::public_from_binary(registration.stake_key.as_ref())
-        .map_err(|e| RegistrationError::StakePublicKeyError { err: e.to_string() })<span class="question-mark">?</span>;
-    <span class="kw">let </span>sig = Ed25519::signature_from_bytes(sig.as_ref())
-        .map_err(|e| RegistrationError::SignatureError { err: e.to_string() })<span class="question-mark">?</span>;
-
-    <span class="kw">match </span>Ed25519::verify_bytes(<span class="kw-2">&amp;</span>pub_key, <span class="kw-2">&amp;</span>sig, <span class="kw-2">&amp;</span>hash_bytes) {
-        Verification::Success =&gt; <span class="prelude-val">Ok</span>(()),
-        Verification::Failed =&gt; <span class="prelude-val">Err</span>(RegistrationError::MismatchedSignature { hash_bytes }),
-    }
-}
-
 <span class="kw">pub fn </span>validate_reg_cddl(
-    bin_reg: Vec&lt;u8&gt;,
+    bin_reg: <span class="kw-2">&amp;</span>Vec&lt;u8&gt;,
     cddl_config: <span class="kw-2">&amp;</span>CddlConfig,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), RegistrationError&gt; {
     cddl::validate_cbor_from_slice(<span class="kw-2">&amp;</span>cddl_config._61284, <span class="kw-2">&amp;</span>bin_reg, <span class="prelude-val">None</span>).map_err(|err| {
@@ -565,7 +419,7 @@
 }
 
 <span class="kw">pub fn </span>validate_sig_cddl(
-    bin_sig: Vec&lt;u8&gt;,
+    bin_sig: <span class="kw-2">&amp;</span>Vec&lt;u8&gt;,
     cddl_config: <span class="kw-2">&amp;</span>CddlConfig,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), RegistrationError&gt; {
     cddl::validate_cbor_from_slice(<span class="kw-2">&amp;</span>cddl_config._61285, <span class="kw-2">&amp;</span>bin_sig, <span class="prelude-val">None</span>).map_err(|err| {
@@ -577,7 +431,7 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="doccomment">/// Cddl schema:  
+<span class="doccomment">/// Cddl schema:
 /// https://cips.cardano.org/cips/cip36/schema.cddl
 </span><span class="kw">pub struct </span>CddlConfig {
     _61284: String,

@@ -261,12 +261,340 @@
 <span id="261">261</span>
 <span id="262">262</span>
 <span id="263">263</span>
-</pre><pre class="rust"><code><span class="kw">use </span>std::{collections::BTreeMap, ffi::OsString};
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+</pre><pre class="rust"><code><span class="kw">use </span>std::{collections::BTreeMap, error::Error, ffi::OsString, io::Cursor};
 
+<span class="kw">use </span><span class="kw">crate</span>::validation::hash;
 <span class="kw">use </span>bytekind::{Bytes, HexString};
+<span class="kw">use </span>ciborium::value::Value;
 <span class="kw">use </span>clap::builder::OsStr;
 <span class="kw">use </span>hex::FromHexError;
+
 <span class="kw">use </span>microtype::microtype;
+
 <span class="kw">use </span>serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>arbitrary;
@@ -280,6 +608,31 @@
 <span class="kw">pub use </span>network_id::NetworkId;
 <span class="kw">use </span>test_strategy::Arbitrary;
 
+<span class="comment">// 61284 entries
+</span><span class="kw">const </span>KEY_61284: usize = <span class="number">0</span>;
+<span class="kw">const </span>DELEGATIONS_OR_DIRECT: usize = <span class="number">0</span>;
+<span class="kw">const </span>STAKE_ADDRESS: usize = <span class="number">1</span>;
+<span class="kw">const </span>PAYMENT_ADDRESS: usize = <span class="number">2</span>;
+<span class="kw">const </span>NONCE: usize = <span class="number">3</span>;
+<span class="kw">const </span>VOTE_PURPOSE: usize = <span class="number">4</span>;
+
+<span class="kw">const </span>VOTE_KEY: usize = <span class="number">0</span>;
+<span class="kw">const </span>WEIGHT: usize = <span class="number">1</span>;
+
+<span class="comment">// 61285
+</span><span class="kw">const </span>KEY_61285: usize = <span class="number">0</span>;
+<span class="kw">const </span>WITNESS: usize = <span class="number">0</span>;
+
+<span class="kw">use crate</span>::{
+    verify::{validate_reg_cddl, validate_sig_cddl, CddlConfig},
+    RegistrationError,
+};
+
+<span class="kw">use </span>cardano_serialization_lib::chain_crypto::Ed25519;
+<span class="kw">use </span>cardano_serialization_lib::chain_crypto::{
+    AsymmetricPublicKey, Verification, VerificationAlgorithm,
+};
+
 <span class="doccomment">/// The source of voting power for a given registration
 ///
 /// The voting power can either come from:
@@ -288,7 +641,7 @@
 </span><span class="attribute">#[derive(Serialize, Deserialize)]
 #[serde(untagged)]
 #[derive(Debug, Clone, PartialEq)]
-</span><span class="kw">pub enum </span>VotingPowerSource {
+</span><span class="kw">pub enum </span>VotingKey {
     <span class="doccomment">/// Direct voting
     ///
     /// Voting power is based on the staked ada of the given key
@@ -316,7 +669,7 @@
     vec.serialize(s)
 }
 
-<span class="kw">impl </span>VotingPowerSource {
+<span class="kw">impl </span>VotingKey {
     <span class="doccomment">/// Create a direct voting power source from a hex string representing a voting key
     ///
     /// # Errors
@@ -334,7 +687,7 @@
 </span><span class="attribute">#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 </span><span class="kw">pub struct </span>Registration {
     <span class="attribute">#[serde(rename = <span class="string">&quot;1&quot;</span>)]
-    </span><span class="kw">pub </span>voting_power_source: VotingPowerSource,
+    </span><span class="kw">pub </span>voting_key: VotingKey,
     <span class="attribute">#[serde(rename = <span class="string">&quot;2&quot;</span>)]
     </span><span class="kw">pub </span>stake_key: StakeKeyHex,
     <span class="attribute">#[serde(rename = <span class="string">&quot;3&quot;</span>)]
@@ -345,6 +698,13 @@
     </span><span class="kw">pub </span>nonce: Nonce,
     <span class="attribute">#[serde(rename = <span class="string">&quot;5&quot;</span>)]
     </span><span class="kw">pub </span>voting_purpose: <span class="prelude-ty">Option</span>&lt;VotingPurpose&gt;,
+}
+
+<span class="doccomment">/// Struct for deserializing the binary registration from dbsync
+</span><span class="attribute">#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+</span><span class="kw">pub struct </span>BinRegistration {
+    <span class="attribute">#[serde(rename = <span class="string">&quot;61284&quot;</span>)]
+    </span><span class="kw">pub </span>registration: Registration,
 }
 
 <span class="doccomment">/// A signature for a registration as defined in CIP-15
@@ -359,6 +719,13 @@
     </span><span class="kw">pub </span>inner: Sig,
 }
 
+<span class="doccomment">/// Struct for deserializing the binary registration sig from dbsync
+</span><span class="attribute">#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+</span><span class="kw">pub struct </span>BinSignature {
+    <span class="attribute">#[serde(rename = <span class="string">&quot;61285&quot;</span>)]
+    </span><span class="kw">pub </span>signature: Signature,
+}
+
 <span class="doccomment">/// A Catalyst registration in either CIP-15 or CIP-36 format, along with its signature
 ///
 /// The signature is generated by:
@@ -369,12 +736,293 @@
 </span><span class="attribute">#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 </span><span class="kw">pub struct </span>SignedRegistration {
     <span class="doccomment">/// The registration
+    </span><span class="attribute">#[serde(rename = <span class="string">&quot;61284&quot;</span>)]
     </span><span class="kw">pub </span>registration: Registration,
     <span class="doccomment">/// The signature
+    </span><span class="attribute">#[serde(rename = <span class="string">&quot;61285&quot;</span>)]
     </span><span class="kw">pub </span>signature: Signature,
 
-    <span class="doccomment">/// The id of the transaction that created this registration
+    <span class="doccomment">/// Stake Key Hash
+    </span><span class="comment">//pub stake_key_hash: &lt;blah&gt;,
+
+    </span><span class="doccomment">/// The id of the transaction that created this registration
     </span><span class="kw">pub </span>tx_id: TxId,
+
+    <span class="doccomment">/// The slot the registration was found in.
+    </span><span class="kw">pub </span>slot: u64,
+
+    <span class="doccomment">/// Raw Staked ADA
+    </span><span class="kw">pub </span>staked_ada: <span class="prelude-ty">Option</span>&lt;u128&gt;,
+}
+
+<span class="kw">impl </span>SignedRegistration {
+    <span class="doccomment">/// The signature is generated by:
+    ///  - CBOR encoding the registration
+    ///  - blake2b-256 hashing those bytes
+    ///  - signing the hash with the private key used to generate the stake key
+    </span><span class="kw">pub fn </span>validate_signature_bin(<span class="kw-2">&amp;</span><span class="self">self</span>, bin_reg: Vec&lt;u8&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), RegistrationError&gt; {
+        <span class="kw">let </span>bytes = bin_reg;
+        <span class="kw">let </span>hash_bytes = hash::hash(<span class="kw-2">&amp;</span>bytes);
+
+        <span class="kw">let </span>pub_key = Ed25519::public_from_binary(<span class="self">self</span>.registration.stake_key.as_ref())
+            .map_err(|e| RegistrationError::StakePublicKeyError { err: e.to_string() })<span class="question-mark">?</span>;
+        <span class="kw">let </span>sig = Ed25519::signature_from_bytes(<span class="self">self</span>.signature.inner.as_ref())
+            .map_err(|e| RegistrationError::SignatureError { err: e.to_string() })<span class="question-mark">?</span>;
+
+        <span class="kw">match </span>Ed25519::verify_bytes(<span class="kw-2">&amp;</span>pub_key, <span class="kw-2">&amp;</span>sig, <span class="kw-2">&amp;</span>hash_bytes) {
+            Verification::Success =&gt; <span class="prelude-val">Ok</span>(()),
+            Verification::Failed =&gt; <span class="prelude-val">Err</span>(RegistrationError::MismatchedSignature { hash_bytes }),
+        }
+    }
+}
+
+<span class="doccomment">/// A Raw Registration from the DB.
+///
+</span><span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>RawRegistration {
+    <span class="doccomment">/// cip 15/36: 61284 json from DB.
+    </span><span class="kw">pub </span>json_reg: serde_json::Value,
+
+    <span class="doccomment">/// cip 15/36: 61285 json from DB.
+    </span><span class="kw">pub </span>json_sig: serde_json::Value,
+
+    <span class="doccomment">/// cip 15/36: 61284 raw binary
+    </span><span class="kw">pub </span>bin_reg: Vec&lt;u8&gt;,
+
+    <span class="doccomment">/// cip 15/36: 61285 raw binary
+    </span><span class="kw">pub </span>bin_sig: Vec&lt;u8&gt;,
+
+    <span class="doccomment">/// registration tx_id
+    </span><span class="kw">pub </span>tx_id: TxId,
+
+    <span class="doccomment">/// The slot the registration was found in.
+    </span><span class="kw">pub </span>slot: u64,
+}
+
+<span class="kw">pub struct </span>RegistrationValidationOptions {
+    <span class="kw">pub </span>rewards_address: bool,
+}
+
+<span class="kw">impl </span>RawRegistration {
+    <span class="kw">pub fn </span>to_signed(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        cddl_config: <span class="kw-2">&amp;</span>CddlConfig,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;SignedRegistration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
+        <span class="comment">// validate cddl: 61824
+        </span>validate_reg_cddl(<span class="kw-2">&amp;</span><span class="self">self</span>.bin_reg, <span class="kw-2">&amp;</span>cddl_config)<span class="question-mark">?</span>;
+
+        <span class="comment">// validate cddl: 61825
+        </span>validate_sig_cddl(<span class="kw-2">&amp;</span><span class="self">self</span>.bin_sig, <span class="kw-2">&amp;</span>cddl_config)<span class="question-mark">?</span>;
+
+        <span class="kw">let </span>registration = <span class="self">self</span>.raw_reg_conversion()<span class="question-mark">?</span>;
+
+        <span class="kw">let </span>signature = <span class="self">self</span>.raw_sig_conversion()<span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>(SignedRegistration {
+            registration: registration,
+            signature: signature,
+            tx_id: <span class="self">self</span>.tx_id,
+            slot: <span class="self">self</span>.slot,
+            staked_ada: <span class="prelude-val">None</span>,
+        })
+    }
+
+    <span class="kw">fn </span>raw_reg_conversion(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Registration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
+        <span class="kw">let </span>decoded: ciborium::value::Value =
+            ciborium::de::from_reader(Cursor::new(<span class="kw-2">&amp;</span><span class="self">self</span>.bin_reg))<span class="question-mark">?</span>;
+
+        <span class="comment">// CBOR representation of a map containing a single entry with key 61284
+        </span><span class="kw">let </span>_61284 = <span class="kw">match </span>decoded {
+            Value::Map(m) =&gt; m.iter().map(|entry| entry.<span class="number">1</span>.clone()).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborRegistrationFailure {
+                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP36 {:?}&quot;</span>, decoded),
+                }))
+            }
+        };
+
+        <span class="comment">// 4 entries inside metadata map with one optional entry for the voting purpose
+        </span><span class="kw">let </span>metamap = <span class="kw">match </span><span class="kw-2">&amp;</span>_61284[KEY_61284] {
+            Value::Map(metamap) =&gt; metamap,
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborRegistrationFailure {
+                    err: <span class="macro">format!</span>(<span class="string">&quot;Unable to obtain metadata map&quot;</span>),
+                }))
+            }
+        };
+
+        <span class="kw">let </span>voting_key = <span class="kw">match </span><span class="kw-2">&amp;</span>metamap[DELEGATIONS_OR_DIRECT] {
+            (Value::Integer(_one), Value::Bytes(direct)) =&gt; {
+                VotingKey::Direct(PubKey(direct.to_vec()).into())
+            }
+            (Value::Integer(_one), Value::Array(delegations)) =&gt; {
+                <span class="kw">let </span><span class="kw-2">mut </span>delegations_map: BTreeMap&lt;VotingKeyHex, u64&gt; = BTreeMap::new();
+                <span class="kw">for </span>d <span class="kw">in </span>delegations {
+                    <span class="kw">match </span>d {
+                        Value::Array(delegations) =&gt; {
+                            <span class="kw">let </span>voting_key = <span class="kw">match </span>delegations[VOTE_KEY].as_bytes() {
+                                <span class="prelude-val">Some</span>(key) =&gt; key,
+                                <span class="prelude-val">None </span>=&gt; {
+                                    <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(
+                                        RegistrationError::RawBinCborRegistrationFailure {
+                                            err: <span class="macro">format!</span>(
+                                                <span class="string">&quot;Unable to extract voting key from delegation&quot;
+                                            </span>),
+                                        },
+                                    ))
+                                }
+                            };
+
+                            <span class="kw">let </span>weight = <span class="kw">match </span>delegations[WEIGHT].as_integer() {
+                                <span class="prelude-val">Some</span>(weight) =&gt; <span class="kw">match </span>weight.try_into() {
+                                    <span class="prelude-val">Ok</span>(weight) =&gt; weight,
+                                    <span class="prelude-val">Err</span>(err) =&gt; {
+                                        <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(
+                                            RegistrationError::RawBinCborRegistrationFailure {
+                                                err: <span class="macro">format!</span>(
+                                                    <span class="string">&quot;Unable to extract weight for delegation {}&quot;</span>,
+                                                    err
+                                                ),
+                                            },
+                                        ))
+                                    }
+                                },
+                                <span class="prelude-val">None </span>=&gt; {
+                                    <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(
+                                        RegistrationError::RawBinCborRegistrationFailure {
+                                            err: <span class="macro">format!</span>(
+                                                <span class="string">&quot;Unable to extract voting key from delegation&quot;
+                                            </span>),
+                                        },
+                                    ))
+                                }
+                            };
+
+                            delegations_map
+                                .insert(VotingKeyHex(PubKey(voting_key.to_vec())), weight);
+                        }
+
+                        <span class="kw">_ </span>=&gt; {
+                            <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(
+                                RegistrationError::RawBinCborRegistrationFailure {
+                                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP-36&quot;</span>),
+                                },
+                            ))
+                        }
+                    }
+                }
+
+                VotingKey::Delegated(delegations_map)
+            }
+
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborRegistrationFailure {
+                    err: <span class="macro">format!</span>(<span class="string">&quot;Unable to ascertain direct or delegated voting keys&quot;</span>),
+                }))
+            }
+        };
+
+        <span class="comment">// A stake address for the network that this transaction is submitted to (to point to the Ada that is being delegated);
+        </span><span class="kw">let </span>stake_key = <span class="kw">match </span><span class="kw-2">&amp;</span>metamap[STAKE_ADDRESS] {
+            (Value::Integer(_two), Value::Bytes(stake_addr)) =&gt; {
+                StakeKeyHex(PubKey(stake_addr.to_vec()))
+            }
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborRegistrationFailure {
+                    err: <span class="macro">format!</span>(<span class="string">&quot;Unable to extract stake key&quot;</span>),
+                }))
+            }
+        };
+
+        <span class="comment">// A Shelley payment address (see CIP-0019) discriminated for the same network
+        // this transaction is submitted to, to receive rewards.
+        </span><span class="kw">let </span>rewards_address = <span class="kw">match </span><span class="kw-2">&amp;</span>metamap[PAYMENT_ADDRESS] {
+            (Value::Integer(_three), Value::Bytes(rewards_addr)) =&gt; {
+                RewardsAddress::from_hex(<span class="kw-2">&amp;</span>hex::encode(rewards_addr)).unwrap()
+            }
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborRegistrationFailure {
+                    err: <span class="macro">format!</span>(<span class="string">&quot;Unable to extract rewards addr&quot;</span>),
+                }))
+            }
+        };
+
+        <span class="comment">// A nonce that identifies that most recent delegation
+        </span><span class="kw">let </span>nonce = <span class="kw">match </span>metamap[NONCE] {
+            (Value::Integer(_four), Value::Integer(nonce)) =&gt; Nonce(nonce.try_into().unwrap()),
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborRegistrationFailure {
+                    err: <span class="macro">format!</span>(<span class="string">&quot;Unable to extract Nonce&quot;</span>),
+                }))
+            }
+        };
+
+        <span class="comment">// A non-negative integer that indicates the purpose of the vote.
+        // This is an optional field to allow for compatibility with CIP-15
+        // 4 entries inside metadata map with one optional entry for the voting purpose
+        </span><span class="kw">let </span>voting_purpose = <span class="kw">if </span>metamap.len() == <span class="number">5 </span>{
+            <span class="kw">match </span>metamap[VOTE_PURPOSE] {
+                (Value::Integer(_five), Value::Integer(purpose)) =&gt; {
+                    <span class="prelude-val">Some</span>(VotingPurpose(purpose.try_into().unwrap()))
+                }
+                <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+            }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>};
+
+        <span class="prelude-val">Ok</span>(Registration {
+            voting_key,
+            stake_key,
+            rewards_address,
+            nonce,
+            voting_purpose,
+        })
+    }
+
+    <span class="kw">fn </span>raw_sig_conversion(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Signature, Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
+        <span class="kw">let </span>decoded: ciborium::value::Value =
+            ciborium::de::from_reader(Cursor::new(<span class="kw-2">&amp;</span><span class="self">self</span>.bin_sig))<span class="question-mark">?</span>;
+
+        <span class="kw">let </span>_61285 = <span class="kw">match </span>decoded {
+            Value::Map(m) =&gt; m.iter().map(|entry| entry.<span class="number">1</span>.clone()).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborSignatureFailure {
+                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP36 {:?}&quot;</span>, decoded),
+                }))
+            }
+        };
+
+        <span class="kw">let </span>metamap = <span class="kw">match </span><span class="kw-2">&amp;</span>_61285[KEY_61285] {
+            Value::Map(metamap) =&gt; metamap,
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborSignatureFailure {
+                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP36&quot;</span>),
+                }))
+            }
+        };
+
+        <span class="comment">// ED25119 signature
+        </span><span class="kw">let </span>witness = <span class="kw">match </span><span class="kw-2">&amp;</span>metamap[WITNESS] {
+            (Value::Integer(_one), Value::Bytes(witness)) =&gt; witness.as_slice(),
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborSignatureFailure {
+                    err: <span class="macro">format!</span>(<span class="string">&quot;Unable to extract witness&quot;</span>),
+                }))
+            }
+        };
+
+        <span class="kw">let </span>sig: [u8; <span class="number">64</span>] = <span class="kw">match </span>witness.try_into() {
+            <span class="prelude-val">Ok</span>(bytes) =&gt; bytes,
+            <span class="prelude-val">Err</span>(err) =&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborSignatureFailure {
+                    err: <span class="macro">format!</span>(<span class="string">&quot;ED25119 signature should be 64 bytes {}&quot;</span>, err),
+                }))
+            }
+        };
+
+        <span class="prelude-val">Ok</span>(Signature { inner: Sig(sig) })
+    }
 }
 
 <span class="doccomment">/// Single element in a snapshot
@@ -382,7 +1030,7 @@
 </span><span class="kw">pub struct </span>SnapshotEntry {
     <span class="doccomment">/// Registration content
     </span><span class="attribute">#[serde(rename = <span class="string">&quot;delegations&quot;</span>)]
-    </span><span class="kw">pub </span>voting_power_source: VotingPowerSource,
+    </span><span class="kw">pub </span>voting_key: VotingKey,
 
     <span class="doccomment">/// Mainnet rewards address
     </span><span class="kw">pub </span>rewards_address: RewardsAddress,
@@ -393,7 +1041,7 @@
 
     <span class="doccomment">/// Voting power expressed in ada
     ///
-    /// This is computed from `voting_power_source`
+    /// This is computed from `voting_key`
     </span><span class="kw">pub </span>voting_power: u128,
 
     <span class="doccomment">/// Voting purpose

@@ -151,28 +151,7 @@
 <span id="151">151</span>
 <span id="152">152</span>
 <span id="153">153</span>
-<span id="154">154</span>
-<span id="155">155</span>
-<span id="156">156</span>
-<span id="157">157</span>
-<span id="158">158</span>
-<span id="159">159</span>
-<span id="160">160</span>
-<span id="161">161</span>
-<span id="162">162</span>
-<span id="163">163</span>
-<span id="164">164</span>
-<span id="165">165</span>
-<span id="166">166</span>
-<span id="167">167</span>
-<span id="168">168</span>
-<span id="169">169</span>
-<span id="170">170</span>
-<span id="171">171</span>
-<span id="172">172</span>
-<span id="173">173</span>
 </pre><pre class="rust"><code><span class="kw">use </span>microtype::secrecy::ExposeSecret;
-<span class="kw">use </span>voting_tools_rs::par::verify::filter_registrations;
 
 <span class="kw">use </span>std::path::Path;
 
@@ -186,7 +165,7 @@
 <span class="kw">use </span>voting_tools_rs::test_api::MockDbProvider;
 
 <span class="kw">use </span>voting_tools_rs::{
-    voting_power, Args, Db, DbConfig, DryRunCommand, InvalidRegistration, SnapshotEntry,
+    voting_power_beta, Args, Db, DbConfig, DryRunCommand, InvalidRegistration, SnapshotEntry,
     VotingPowerArgs,
 };
 
@@ -238,50 +217,30 @@
     args.network_id = network_id;
     args.expected_voting_purpose = expected_voting_purpose;
 
-    <span class="comment">//
-    // Par experiment
-    //
+    <span class="kw">let </span>client = db_conn(db_config.clone())<span class="question-mark">?</span>;
 
-    </span><span class="kw">let </span>client = db_conn(db_config.clone())<span class="question-mark">?</span>;
+    <span class="kw">let </span>(valids, invalids) = load(db_config, dry_run, args, client)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>(valids, invalids, invalid_txs) = filter_registrations(args.clone(), client).unwrap();
+    handle_invalids(<span class="kw-2">&amp;</span>out_file, <span class="kw-2">&amp;</span>invalids)<span class="question-mark">?</span>;
 
-    <span class="macro">println!</span>(
-        <span class="string">&quot;vals {:?} invalids {:?} txs {:?}&quot;</span>,
+    <span class="macro">info!</span>(
+        <span class="string">&quot;calculated {} outputs\n #invalids {}&quot;</span>,
         valids.len(),
-        invalids.len(),
-        invalid_txs.len()
+        invalids.len()
     );
 
-    <span class="comment">/*
-    for k in valids.keys() {
-        let s = stake_key_hash(k, args.network_id);
-        println!(&quot;{:?} {:?}&quot;, s, s.len());
-    }*/
+    <span class="kw">let </span>file = File::options()
+        .write(<span class="bool-val">true</span>)
+        .create(<span class="bool-val">true</span>)
+        .truncate(<span class="bool-val">true</span>)
+        .open(out_file)<span class="question-mark">?</span>;
+    <span class="kw">let </span>writer = BufWriter::new(file);
 
-    // calculate voting power with valids
-
-    </span>handle_invalids(<span class="kw-2">&amp;</span>out_file, <span class="kw-2">&amp;</span>invalids)<span class="question-mark">?</span>;
-
-    <span class="comment">/*
-    let (outputs, invalids) = load(db_config, dry_run, args)?;
-
-    info!(&quot;calculated {} outputs&quot;, valids.len());
-
-    let file = File::options()
-        .write(true)
-        .create(true)
-        .truncate(true)
-        .open(out_file)?;
-    let writer = BufWriter::new(file);
-
-    // Snapshots are so large that non-pretty output is effectively unusable.
+    <span class="comment">// Snapshots are so large that non-pretty output is effectively unusable.
     // So ONLY do pretty formatted output.
-    serde_json::to_writer_pretty(writer, &amp;valids)?;
+    </span>serde_json::to_writer_pretty(writer, <span class="kw-2">&amp;</span>valids)<span class="question-mark">?</span>;
 
-    */
-
-    </span><span class="prelude-val">Ok</span>(())
+    <span class="prelude-val">Ok</span>(())
 }
 
 <span class="kw">fn </span>db_conn(db_config: DbConfig) -&gt; <span class="prelude-ty">Result</span>&lt;Client, postgres::Error&gt; {
@@ -303,11 +262,12 @@
     real_db_config: DbConfig,
     dry_run: <span class="prelude-ty">Option</span>&lt;DryRunCommand&gt;,
     args: VotingPowerArgs,
+    registration_client: Client,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(Vec&lt;SnapshotEntry&gt;, Vec&lt;InvalidRegistration&gt;)&gt; {
     <span class="kw">if let </span><span class="prelude-val">Some</span>(DryRunCommand::DryRun { mock_json_file }) = dry_run {
         <span class="macro">info!</span>(<span class="string">&quot;Using dryrun file: {}&quot;</span>, mock_json_file.to_string_lossy());
         <span class="kw">let </span>db = MockDbProvider::from(InMemoryDbSync::restore(mock_json_file)<span class="question-mark">?</span>);
-        voting_power(db, args)
+        voting_power_beta(db, registration_client, args)
     } <span class="kw">else </span>{
         <span class="kw">let </span>db_loc = <span class="kw-2">&amp;</span>real_db_config.host;
         <span class="kw">let </span>db_user = <span class="kw-2">&amp;</span>real_db_config.name;
@@ -316,7 +276,7 @@
             db_user, db_loc
         );
         <span class="kw">let </span>db = Db::connect(real_db_config)<span class="question-mark">?</span>;
-        voting_power(db, args)
+        voting_power_beta(db, registration_client, args)
     }
 }
 

@@ -149,10 +149,12 @@
 <span id="149">149</span>
 <span id="150">150</span>
 <span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data::PubKey;
 <span class="kw">use </span><span class="kw">crate</span>::data::{
     Nonce, Registration, RewardsAddress, Signature, SignedRegistration, SlotNo, StakeKeyHex, TxId,
-    VotingKeyHex, VotingPowerSource, VotingPurpose,
+    VotingKey, VotingKeyHex, VotingPurpose,
 };
 <span class="kw">use </span><span class="kw">crate</span>::data_provider::DataProvider;
 <span class="kw">use </span><span class="kw">crate</span>::Sig;
@@ -201,11 +203,11 @@
                             r.get(<span class="kw-2">&amp;</span>REGISTRATION_METADATA_SIGNATURE_LABEL).unwrap();
                         <span class="kw">let </span>signature_metadata_map = signature_metadata.as_map().unwrap();
 
-                        <span class="kw">let </span>voting_power_source = {
+                        <span class="kw">let </span>voting_key = {
                             <span class="kw">let </span>metadata = metadata_map.get(<span class="kw-2">&amp;</span>METADATUM_1).unwrap();
 
                             <span class="kw">if let </span><span class="prelude-val">Ok</span>(data) = metadata.as_bytes() {
-                                VotingPowerSource::Direct(PubKey(data).into())
+                                VotingKey::Direct(PubKey(data).into())
                             } <span class="kw">else </span>{
                                 <span class="kw">let </span><span class="kw-2">mut </span>delegations = BTreeMap::new();
                                 <span class="kw">let </span>delgation_list = metadata.as_list().unwrap();
@@ -220,7 +222,7 @@
                                     delegations.insert(VotingKeyHex(delegation), weight.into());
                                 }
 
-                                VotingPowerSource::Delegated(delegations)
+                                VotingKey::Delegated(delegations)
                             }
                         };
 
@@ -247,8 +249,9 @@
 
                         SignedRegistration {
                             tx_id: TxId::from(tx_id),
+                            slot: <span class="number">0</span>,
                             registration: Registration {
-                                voting_power_source,
+                                voting_key,
                                 stake_key,
                                 rewards_address: RewardsAddress(rewards_address.to_bytes().into()),
                                 nonce: Nonce(
@@ -267,6 +270,7 @@
                             signature: Signature {
                                 inner: Sig(sig.to_bytes().try_into().unwrap()),
                             },
+                            staked_ada: <span class="prelude-val">None</span>,
                         }
                     })
                     .collect()

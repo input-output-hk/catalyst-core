@@ -74,12 +74,12 @@
 </pre><pre class="rust"><code><span class="kw">use </span>ciborium::{cbor, value::Value};
 <span class="kw">use </span>itertools::Itertools;
 
-<span class="kw">use super</span>::{Nonce, Registration, RewardsAddress, StakeKeyHex, VotingPowerSource, VotingPurpose};
+<span class="kw">use super</span>::{Nonce, Registration, RewardsAddress, StakeKeyHex, VotingKey, VotingPurpose};
 
 <span class="kw">impl </span>Registration {
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>to_cbor(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Value {
         <span class="kw">let </span><span class="self">Self </span>{
-            voting_power_source,
+            voting_key,
             stake_key,
             rewards_address,
             nonce,
@@ -88,7 +88,7 @@
         <span class="kw">match </span>voting_purpose {
             <span class="prelude-val">None </span>=&gt; <span class="macro">cbor!</span>({
                 <span class="number">61284 </span>=&gt; {
-                    <span class="number">1 </span>=&gt; voting_power_source.to_cbor(),
+                    <span class="number">1 </span>=&gt; voting_key.to_cbor(),
                     <span class="number">2 </span>=&gt; stake_key.clone().to_cbor(),
                     <span class="number">3 </span>=&gt; rewards_address.to_cbor(),
                     <span class="number">4 </span>=&gt; nonce.to_cbor(),
@@ -97,7 +97,7 @@
             <span class="prelude-val">Some</span>(voting_purpose) =&gt; <span class="macro">cbor!</span>({
 
                 <span class="number">61284 </span>=&gt; {
-                    <span class="number">1 </span>=&gt; voting_power_source.to_cbor(),
+                    <span class="number">1 </span>=&gt; voting_key.to_cbor(),
                     <span class="number">2 </span>=&gt; stake_key.clone().to_cbor(),
                     <span class="number">3 </span>=&gt; rewards_address.to_cbor(),
                     <span class="number">4 </span>=&gt; nonce.to_cbor(),
@@ -109,7 +109,7 @@
     }
 }
 
-<span class="kw">impl </span>VotingPowerSource {
+<span class="kw">impl </span>VotingKey {
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>to_cbor(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Value {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Direct(key) =&gt; <span class="macro">cbor!</span>(key.<span class="number">0</span>).unwrap(),

@@ -83,7 +83,7 @@
 </pre><pre class="rust"><code><span class="attribute">#![allow(dead_code)]
 
 </span><span class="kw">use </span><span class="kw">crate</span>::data::SnapshotEntry;
-<span class="kw">use </span><span class="kw">crate</span>::VotingPowerSource;
+<span class="kw">use </span><span class="kw">crate</span>::VotingKey;
 <span class="kw">use </span>bigdecimal::ToPrimitive;
 <span class="kw">use </span>cardano_serialization_lib::address::RewardAddress;
 <span class="kw">use </span>cardano_serialization_lib::crypto::PublicKey;
@@ -131,9 +131,9 @@
     /// # Panics
     ///
     /// Panics on assertion failed
-    </span><span class="kw">pub fn </span>voting_power_source(<span class="kw-2">&amp;</span><span class="self">self</span>, voting_power_source: <span class="kw-2">&amp;</span>VotingPowerSource) {
+    </span><span class="kw">pub fn </span>voting_key(<span class="kw-2">&amp;</span><span class="self">self</span>, voting_key: <span class="kw-2">&amp;</span>VotingKey) {
         <span class="macro">assert_eq!</span>(
-            voting_power_source, <span class="kw-2">&amp;</span><span class="self">self</span>.output.voting_power_source,
+            voting_key, <span class="kw-2">&amp;</span><span class="self">self</span>.output.voting_key,
             <span class="string">&quot;delegation target&quot;
         </span>);
     }

@@ -90,11 +90,13 @@
 <span id="90">90</span>
 <span id="91">91</span>
 <span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
 </pre><pre class="rust"><code><span class="kw">use </span>serde_json::{json, Value};
 
 <span class="kw">use crate</span>::{
     data::{Nonce, PubKey, Registration, RewardsAddress, SignedRegistration, StakeKeyHex, TxId},
-    Sig, Signature, VotingPowerSource,
+    Sig, Signature, VotingKey,
 };
 
 <span class="doccomment">/// CIP-15 test vector voting key
@@ -129,8 +131,9 @@
 </span><span class="kw">pub fn </span>vector() -&gt; SignedRegistration {
     SignedRegistration {
         tx_id: TxId(<span class="number">1</span>), <span class="comment">// not provided in the test vector
-        </span>registration: Registration {
-            voting_power_source: VotingPowerSource::direct_from_hex(VOTING_KEY).unwrap(),
+        </span>slot: <span class="number">0</span>,
+        registration: Registration {
+            voting_key: VotingKey::direct_from_hex(VOTING_KEY).unwrap(),
             stake_key: StakeKeyHex(PubKey::from_hex(STAKE_KEY).unwrap()),
             rewards_address: RewardsAddress::from_hex(REWARD_ADDRESS).unwrap(),
             nonce: Nonce(NONCE),
@@ -139,6 +142,7 @@
         signature: Signature {
             inner: Sig::from_hex(SIGNATURE).unwrap(),
         },
+        staked_ada: <span class="prelude-val">None</span>,
     }
 }
 

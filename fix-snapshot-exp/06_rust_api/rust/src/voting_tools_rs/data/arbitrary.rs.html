@@ -77,9 +77,11 @@
 <span id="77">77</span>
 <span id="78">78</span>
 <span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     validation::{cbor::cbor_to_bytes, hash::hash},
-    Sig, Signature, VotingPowerSource, VotingPurpose,
+    Sig, Signature, VotingKey, VotingPurpose,
 };
 
 <span class="kw">use super</span>::{
@@ -123,7 +125,7 @@
     <span class="kw">let </span>stake_key: [u8; <span class="number">32</span>] = public.as_ref().try_into().unwrap();
 
     <span class="kw">let </span>registration = Registration {
-        voting_power_source: VotingPowerSource::Direct(voting_key),
+        voting_key: VotingKey::Direct(voting_key),
         stake_key: StakeKeyHex(PubKey(stake_key.to_vec())),
         rewards_address,
         nonce,
@@ -145,6 +147,8 @@
         registration,
         signature,
         tx_id,
+        slot: <span class="number">12345</span>,
+        staked_ada: <span class="prelude-val">None</span>,
     }
 }
 

@@ -237,6 +237,8 @@
 <span id="237">237</span>
 <span id="238">238</span>
 <span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::io::{BufWriter, Write};
 
@@ -366,6 +368,8 @@
         registration,
         signature,
         tx_id,
+        slot: <span class="number">0</span>,
+        staked_ada: <span class="prelude-val">None</span>,
     })
 }
 
@@ -375,7 +379,7 @@
 
     <span class="kw">use crate</span>::{
         data::{PubKey, Registration},
-        VotingPowerSource,
+        VotingKey,
     };
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
@@ -448,13 +452,13 @@
     }
 
     <span class="attribute">#[test]
-    </span><span class="kw">fn </span>can_parse_voting_power_source() {
+    </span><span class="kw">fn </span>can_parse_voting_key() {
         color_eyre::install().unwrap();
         <span class="kw">let </span>vps = <span class="macro">json!</span>([[
             <span class="string">&quot;0x1b92110d6c2aee00b7b208992efe3a2511f6811577155dd89977e8600fa5c27a&quot;</span>,
             <span class="number">1
         </span>]]);
-        <span class="kw">let _</span>: VotingPowerSource = from_value(vps).unwrap();
+        <span class="kw">let _</span>: VotingKey = from_value(vps).unwrap();
         <span class="kw">let </span>x = <span class="string">&quot;0x0cf8d92c3fb4474942554a3c97f9a0421b69073fed4a600a6a77a1d72a8a&quot;</span>;
         hex::decode(x.trim_start_matches(<span class="string">&quot;0x&quot;</span>)).unwrap();
 

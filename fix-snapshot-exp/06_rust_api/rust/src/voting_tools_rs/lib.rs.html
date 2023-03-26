@@ -45,8 +45,6 @@
 <span id="45">45</span>
 <span id="46">46</span>
 <span id="47">47</span>
-<span id="48">48</span>
-<span id="49">49</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Rust implementation of voting tools
 //!
 //! Original Haskell repository is &lt;https://github.com/input-output-hk/voting-tools&gt;
@@ -86,13 +84,11 @@
 </span><span class="kw">pub use </span>exports::<span class="kw-2">*</span>;
 <span class="kw">mod </span>exports {
     <span class="kw">pub use </span><span class="kw">crate</span>::cli::{show_error_warning, Args, DryRunCommand};
-    <span class="kw">pub use </span><span class="kw">crate</span>::data::{
-        Sig, Signature, SlotNo, SnapshotEntry, VotingPowerSource, VotingPurpose,
-    };
+    <span class="kw">pub use </span><span class="kw">crate</span>::data::{Sig, Signature, SlotNo, SnapshotEntry, VotingKey, VotingPurpose};
     <span class="kw">pub use </span><span class="kw">crate</span>::data_provider::DataProvider;
     <span class="kw">pub use </span><span class="kw">crate</span>::db::{Conn, Db, DbConfig};
     <span class="kw">pub use </span><span class="kw">crate</span>::error::<span class="kw-2">*</span>;
-    <span class="kw">pub use </span><span class="kw">crate</span>::logic::{voting_power, VotingPowerArgs};
+    <span class="kw">pub use </span><span class="kw">crate</span>::logic::{voting_power, voting_power_beta, VotingPowerArgs};
     <span class="kw">pub use </span><span class="kw">crate</span>::par::<span class="kw-2">*</span>;
     <span class="kw">pub use </span><span class="kw">crate</span>::testing::<span class="kw-2">*</span>;
 }

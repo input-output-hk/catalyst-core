@@ -230,7 +230,7 @@
 <span class="kw">use </span>snapshot_lib::registration::{Delegations <span class="kw">as </span>VotingDelegations, VotingRegistration};
 <span class="kw">use </span>vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 <span class="kw">use </span>voting_tools_rs::test_api::MockDbProvider;
-<span class="kw">use </span>voting_tools_rs::{SnapshotEntry, VotingPowerArgs, VotingPowerSource, VotingPurpose};
+<span class="kw">use </span>voting_tools_rs::{SnapshotEntry, VotingPowerArgs, VotingKey, VotingPurpose};
 
 <span class="doccomment">/// Extensions for voting tools `Output` struct
 </span><span class="kw">pub trait </span>OutputExtension {
@@ -254,12 +254,12 @@
                 })<span class="question-mark">?
                 </span>.into(),
             reward_address: hex::encode(<span class="kw-2">&amp;</span><span class="self">self</span>.rewards_address.<span class="number">0</span>),
-            delegations: <span class="kw">match </span><span class="self">self</span>.voting_power_source {
-                VotingPowerSource::Direct(legacy) =&gt; VotingDelegations::Legacy(
+            delegations: <span class="kw">match </span><span class="self">self</span>.voting_key {
+                VotingKey::Direct(legacy) =&gt; VotingDelegations::Legacy(
                     Identifier::from_hex(<span class="kw-2">&amp;</span>legacy.to_hex())
                         .expect(<span class="string">&quot;to_hex() always returns valid hex&quot;</span>),
                 ),
-                VotingPowerSource::Delegated(delegated) =&gt; {
+                VotingKey::Delegated(delegated) =&gt; {
                     <span class="kw">let </span><span class="kw-2">mut </span>new = <span class="macro">vec!</span>[];
                     <span class="kw">for </span>(key, weight) <span class="kw">in </span>delegated {
                         new.push((

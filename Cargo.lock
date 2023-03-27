@@ -5374,15 +5374,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "prefix-hex"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9653998c1c55e1705580cf92d156b57094bbae6c83482d406f2223439cd354a"
-dependencies = [
- "hex",
-]
-
-[[package]]
 name = "pretty"
 version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8309,7 +8300,6 @@ dependencies = [
  "nonempty",
  "once_cell",
  "postgres",
- "prefix-hex",
  "proptest",
  "rand 0.6.5",
  "rand_chacha 0.3.1",

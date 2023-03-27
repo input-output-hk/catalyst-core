@@ -63,13 +63,9 @@ pub async fn filter(
 
     let admin_filter = {
         let base = warp::path!("admin" / ..);
-
-        let snapshot_tx_filter =
-            warp::path!("snapshot" / ..).and(snapshot::update_filter(context.clone()).boxed());
-
         let fund_filter = warp::path!("fund" / ..).and(funds::admin_filter(context.clone()));
 
-        base.and(snapshot_tx_filter.or(fund_filter))
+        base.and(fund_filter)
     };
 
     let api_token_filter = if enable_api_tokens {

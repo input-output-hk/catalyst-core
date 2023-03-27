@@ -1,0 +1,63 @@
+[tasks.build-catalyst-core-base]
+workspace = false
+category = "Voting"
+description = "Builds docker image with Rust tooling and catalyst-core monorepo which can be used for multi-stage dockerfiles to package individual crates."
+script_runner = "@shell"
+script = '''
+docker build --force-rm -t catalyst-core-base:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/catalyst-core-base.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+'''
+[tasks.build-jormungandr]
+workspace = false
+category = "Voting"
+description = "Builds docker image with jormungandr and jcli."
+script_runner = "@shell"
+script = '''
+docker build --force-rm -t jormungandr:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/jormungandr.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+'''
+
+[tasks.build-vit]
+workspace = false
+category = "Voting"
+description = "Builds docker image with vit-servicing-station-server."
+script_runner = "@shell"
+script = '''
+docker build --force-rm -t vit-servicing-station:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/vit-servicing-station.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+'''
+
+[tasks.build-voting-node]
+workspace = false
+category = "Voting"
+description = "Builds docker image with voting-node."
+script_runner = "@shell"
+script = '''
+docker build --force-rm -t voting-node:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/voting-node.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/services/voting-node
+'''
+
+[tasks.build-all]
+workspace = false
+category = "Voting"
+description = "Builds all docker images used in Voting."
+dependencies = [
+    "build-catalyst-core-base",
+    "build-jormungandr",
+    "build-vit",
+    "build-voting-node"
+]
+
+[tasks.voting-deploy-up]
+workspace = false
+category = "Voting"
+description = "Deploys the docker-compose services for voting."
+script_runner = "@shell"
+script = '''
+docker-compose -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/services/voting-node/docker-compose.yml up
+'''
+
+[tasks.voting-deploy-down]
+workspace = false
+category = "Voting"
+description = "Use docker-compose to remove deployment artifacts."
+script_runner = "@shell"
+script = '''
+docker-compose -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/services/voting-node/docker-compose.yml down -v --remove-orphans --rmi local
+'''

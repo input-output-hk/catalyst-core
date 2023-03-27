@@ -22,6 +22,7 @@ members = [
   "src/chain-wallet-libs/bindings/wallet-c",
   "src/chain-wallet-libs/bindings/wallet-core",
   "src/chain-wallet-libs/bindings/wallet-wasm-js",
+  "src/event-db",
   "src/jormungandr/jormungandr-lib",
   "src/jormungandr/jormungandr",
   "src/jormungandr/jcli",
@@ -71,7 +72,7 @@ nonempty = { version = "0.8", features = ["serialize"] }
 # type-system protection against acidentally using unvalidated data
 validity = "0.3.1"
 
-# Observability tools to instrument, generate, collect, and export telemetry data. 
+# Observability tools to instrument, generate, collect, and export telemetry data.
 opentelemetry = { version = "0.18", features = ["rt-tokio"] }
 opentelemetry-otlp = "0.11.0"
 opentelemetry-semantic-conventions = "0.10.0"
@@ -102,6 +103,9 @@ chrono = { version = "0.4", features = ["serde"] }
 # command line argument parsing
 clap = { version = "4", features = ["derive", "env", "string"] }
 clap_complete = "4"  # shell autocomplete for CLIs
+
+# async traits
+async-trait = "0.1.64"
 
 [patch.crates-io]
 cryptoxide = { git = "https://github.com/typed-io/cryptoxide.git" }

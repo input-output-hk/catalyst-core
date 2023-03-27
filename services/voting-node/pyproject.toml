@@ -1,0 +1,39 @@
+[tool.poetry]
+name = "voting-node"
+version = "0.0.1"
+description = ""
+authors = ["Catalyst Core Developers <dev@iohk.io>"]
+license = "MIT or Apache License 2.0"
+readme = "development.md"
+packages = [{include = "voting_node"}]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+# formatting
+black = "^23.1.0"
+# linting
+ruff = "^0.0.254"
+# our dependencies
+click = "^8.1.3"
+asyncio = "^3.4.3"
+asyncpg = "^0.27.0"
+fastapi = "^0.93.0"
+opentelemetry-distro = {extras = ["otlp"], version = "^0.37b0"}
+opentelemetry-instrumentation = "^0.37b0"
+opentelemetry-instrumentation-fastapi = "^0.37b0"
+opentelemetry-instrumentation-asyncpg = "^0.37b0"
+prometheus-fastapi-instrumentator = "^5.10.0"
+PyYAML = "^6.0"
+uvicorn = {extras = ["standard"], version = "^0.20.0"}
+aiofile = "^3.8.5"
+
+[tool.poetry.scripts]
+voting-node = "voting_node.main:cli"
+
+[tool.ruff.per-file-ignores]
+# ignore long lines in templates
+"voting_node/templates.py" = ["E501"]

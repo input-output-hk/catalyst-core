@@ -8,6 +8,7 @@ use assert_cmd::assert::OutputAssertExt;
 use assert_fs::{fixture::PathChild, TempDir};
 
 #[test]
+#[ignore = "Loading data will be done by the importers, not using the CLI"]
 pub fn load_data_test() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
     let db_url = DbBuilder::new().build().unwrap();

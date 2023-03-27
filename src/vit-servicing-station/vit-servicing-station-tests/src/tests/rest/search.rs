@@ -300,6 +300,8 @@ pub fn sort_proposals_result_by_funds_asc() {
 
 #[test]
 pub fn sort_proposals_result_by_title_desc() {
+    use pretty_assertions::assert_eq;
+
     let temp_dir = TempDir::new().unwrap();
     let (server, data) = quick_start(&temp_dir).unwrap();
     let rest_client = server.rest_client_with_token(&data.token_hash());

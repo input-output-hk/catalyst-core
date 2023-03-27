@@ -122,35 +122,27 @@ pub fn filter_registrations(
 
 /// Each stake key can have multiple registrations, the latest must be identified and the rest partitioned
 pub fn latest_registrations(valids: &Valids, invalids: &mut Invalids) -> Valids {
-    // Create empty hash map {stakekey: reg}
     let mut latest: HashMap<StakeKeyHex, SignedRegistration> = HashMap::new();
-    // iterate the valids.
+
     for valid in valids {
-        // if valid.stakekey in hash map
         if let Some((_stake_key, current)) = latest.get_key_value(&valid.registration.stake_key) {
-            // if valid.newer(current in map)
             if valid.registration.nonce > current.registration.nonce {
-                // invalids.push(current, "Obsolete")
                 invalids.push(InvalidRegistration {
                     registration: Some(current.clone()),
                     errors: nonempty![RegistrationError::ObsoleteRegistration {}],
                 });
-                // map[valid.key] = valid
                 latest.insert(valid.registration.stake_key.clone(), valid.clone());
             } else {
-                // invalids.push(valid, "Obsolete")
                 invalids.push(InvalidRegistration {
                     registration: Some(valid.clone()),
                     errors: nonempty![RegistrationError::ObsoleteRegistration {}],
                 });
             }
         } else {
-            // map[valid.key] = valid
             latest.insert(valid.registration.stake_key.clone(), valid.clone());
         }
     }
 
-    // return hashmap values as a vec
     latest.values().cloned().collect()
 }
 

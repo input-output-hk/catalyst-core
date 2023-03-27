@@ -35,12 +35,6 @@ pub struct Delegator {
     r#final: bool,
 }
 
-pub trait SnapshotDb {
-    fn get_snapshot_versions(&self) -> Vec<String>;
-    fn get_voter(&self, event: String, voting_key: String) -> Voter;
-    fn get_delegator(&self, event: String, stake_public_key: String) -> Delegator;
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

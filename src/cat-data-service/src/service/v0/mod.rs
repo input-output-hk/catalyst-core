@@ -1,5 +1,6 @@
 use crate::state::State;
 use axum::Router;
+use event_db::queries::snapshot::SnapshotQueries;
 use std::sync::Arc;
 
 mod chalenges;
@@ -8,7 +9,7 @@ mod proposals;
 mod reviews;
 mod snapshot;
 
-pub fn v0(state: Arc<State>) -> Router {
+pub fn v0<EventDB: SnapshotQueries>(state: Arc<State<EventDB>>) -> Router {
     let snapshot = snapshot::snapshot(state.clone());
     let fund = fund::fund();
     let chalenges = chalenges::chalenges();

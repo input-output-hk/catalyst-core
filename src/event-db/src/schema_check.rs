@@ -15,12 +15,11 @@ pub trait SchemaVersion {
 impl SchemaVersion for EventDB {
     async fn schema_version_check(&self) -> Result<i32, Error> {
         let conn = self.pool.get().await?;
-
         let schema_check = conn
-            .query_one("SELECT MAX(version) from refinery_schema_history;", &[])
+            .query_one("SELECT MAX(version) FROM refinery_schema_history;", &[])
             .await?;
 
-        let current_ver = schema_check.try_get::<usize, i32>(0)?;
+        let current_ver = schema_check.try_get("max")?;
 
         if current_ver == DATABASE_SCHEMA_VERSION {
             Ok(current_ver)

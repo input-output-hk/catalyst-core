@@ -2131,6 +2131,8 @@ dependencies = [
  "bb8",
  "bb8-postgres",
  "dotenvy",
+ "serde",
+ "serde_json",
  "thiserror",
  "tokio",
  "tokio-postgres",

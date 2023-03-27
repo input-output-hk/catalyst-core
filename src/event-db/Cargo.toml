@@ -8,6 +8,9 @@ edition = "2021"
 [dependencies]
 thiserror = { version = "1.0" }
 
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0" }
+
 dotenvy = "0.15"
 
 bb8 = "0.8.0"            # Database Connection Pool Manager

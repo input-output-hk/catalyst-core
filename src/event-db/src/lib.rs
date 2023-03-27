@@ -8,7 +8,9 @@ use std::str::FromStr;
 use tokio_postgres::NoTls;
 
 mod config_table;
+pub mod queries;
 pub mod schema_check;
+pub mod types;
 
 /// Database URL Environment Variable name.
 /// eg: "`postgres://catalyst-dev:CHANGE_ME@localhost/CatalystDev`"
@@ -65,12 +67,10 @@ pub async fn establish_connection(url: Option<&str>) -> Result<EventDB, Error> {
     // Support env vars in a `.env` file,  doesn't need to exist.
     dotenv().ok();
 
-    // If the Database connection URL is not supplied, try and get from the env var.
-    let env_raw = env::var(DATABASE_URL_ENVVAR)?;
-
     let database_url = match url {
         Some(url) => url.to_string(),
-        None => env_raw,
+        // If the Database connection URL is not supplied, try and get from the env var.
+        None => env::var(DATABASE_URL_ENVVAR)?,
     };
 
     let config = tokio_postgres::config::Config::from_str(&database_url)?;

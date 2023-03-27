@@ -221,7 +221,6 @@
 <span id="221">221</span>
 <span id="222">222</span>
 <span id="223">223</span>
-<span id="224">224</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashMap;
 <span class="kw">use </span>std::path::PathBuf;
 
@@ -312,8 +311,7 @@
             slot: slot <span class="kw">as </span>u64,
         };
 
-        <span class="comment">// We need to deserialize the Binary CBOR.
-        // We can ONLY use the json for display purposes in the reject messages.
+        <span class="comment">// deserialize the raw Binary CBOR.
         </span><span class="kw">let </span>reg = <span class="kw">match </span>rawreg.to_signed(<span class="kw-2">&amp;</span>cddl) {
             <span class="prelude-val">Err</span>(err) =&gt; {
                 invalids.push(InvalidRegistration {

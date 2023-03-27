@@ -66,7 +66,7 @@ pub fn voting_power(
     let (valids, invalids) =
         filter_registrations(min_slot, max_slot, registration_client, network_id).unwrap();
 
-    let addrs = stake_addrs_hashes(&valids);
+    let addrs = stake_addrs_hashes(valids.clone());
 
     let voting_powers = db.stake_values(&addrs);
 
@@ -79,11 +79,13 @@ pub fn voting_power(
 }
 
 // returns hashes
-fn stake_addrs_hashes(registrations: &[SignedRegistration]) -> Vec<StakeKeyHash> {
+fn stake_addrs_hashes(registrations: Vec<SignedRegistration>) -> Vec<StakeKeyHash> {
     let mut stake_keys = vec![];
+
     for r in registrations {
-        stake_keys.push(r.stake_key_hash.clone());
+        stake_keys.push(r.stake_key_hash);
     }
+
     stake_keys
 }
 

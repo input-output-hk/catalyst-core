@@ -29,7 +29,10 @@ impl Db {
     pub fn stake_values(&self, stake_addrs: &[StakeKeyHash]) -> DashMap<StakeKeyHash, BigDecimal> {
         let rows = stake_addrs.par_iter().map(|addr| {
             let hex = hex::encode(&addr);
+
+            dbg!("stake key hash for query {:?}", hex.clone());
             let result = self.exec(|conn| query(hex).load(conn))?;
+            dbg!("result {:?}", result.clone());
             Ok::<_, Report>((addr.clone(), result))
         });
 

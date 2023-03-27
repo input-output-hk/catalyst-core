@@ -232,12 +232,10 @@ impl RawRegistration {
 
         let signature = self.raw_sig_conversion()?;
 
-        stake_key_hash(&registration.stake_key, network_id);
-
         Ok(SignedRegistration {
-            registration: registration,
+            registration: registration.clone(),
             signature: signature,
-            stake_key_hash: vec![0; 29],
+            stake_key_hash: stake_key_hash(&registration.stake_key, network_id),
             tx_id: self.tx_id,
             slot: self.slot,
             staked_ada: None,

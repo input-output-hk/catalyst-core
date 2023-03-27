@@ -158,12 +158,12 @@ pub fn stake_key_hash(key: &StakeKeyHex, network: NetworkId) -> StakeKeyHash {
     context.input(&bytes);
     context.result(&mut digest);
 
+    let e0 = hex::decode("e0").unwrap();
     let e1 = hex::decode("e1").unwrap();
-    let e2 = hex::decode("e2").unwrap();
 
     let ctx = match network {
+        NetworkId::Testnet => [e0, digest.to_vec()].concat(),
         NetworkId::Mainnet => [e1, digest.to_vec()].concat(),
-        NetworkId::Testnet => [e2, digest.to_vec()].concat(),
     };
 
     ctx

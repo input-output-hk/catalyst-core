@@ -41,6 +41,7 @@ impl Validate for SignedRegistration {
         let SignedRegistration {
             registration,
             signature,
+            stake_key_hash: _,
             tx_id: _,
             slot: _,
             staked_ada: _,

@@ -12,7 +12,7 @@ use tracing::{debug, info, Level};
 use voting_tools_rs::test_api::MockDbProvider;
 
 use voting_tools_rs::{
-    voting_power_beta, Args, Db, DbConfig, DryRunCommand, InvalidRegistration, SnapshotEntry,
+    voting_power, Args, Db, DbConfig, DryRunCommand, InvalidRegistration, SnapshotEntry,
     VotingPowerArgs,
 };
 
@@ -114,7 +114,7 @@ fn load(
     if let Some(DryRunCommand::DryRun { mock_json_file }) = dry_run {
         info!("Using dryrun file: {}", mock_json_file.to_string_lossy());
         let db = MockDbProvider::from(InMemoryDbSync::restore(mock_json_file)?);
-        voting_power_beta(db, registration_client, args)
+        voting_power(db, registration_client, args)
     } else {
         let db_loc = &real_db_config.host;
         let db_user = &real_db_config.name;
@@ -123,7 +123,7 @@ fn load(
             db_user, db_loc
         );
         let db = Db::connect(real_db_config)?;
-        voting_power_beta(db, registration_client, args)
+        voting_power(db, registration_client, args)
     }
 }
 

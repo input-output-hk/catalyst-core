@@ -1,5 +1,6 @@
 use crate::data::{SignedRegistration, SlotNo, StakeKeyHex};
 use crate::data_provider::DataProvider;
+use crate::verify::StakeKeyHash;
 use crate::Db;
 use bigdecimal::BigDecimal;
 use dashmap::DashMap;
@@ -16,7 +17,7 @@ impl DataProvider for Db {
         self.vote_registrations(lower, upper)
     }
 
-    fn stake_values(&self, stake_addrs: &[StakeKeyHex]) -> DashMap<StakeKeyHex, BigDecimal> {
+    fn stake_values(&self, stake_addrs: &[StakeKeyHash]) -> DashMap<StakeKeyHash, BigDecimal> {
         self.stake_values(stake_addrs)
     }
 }

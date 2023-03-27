@@ -4,6 +4,7 @@ use crate::data::{
     VotingKey, VotingKeyHex, VotingPurpose,
 };
 use crate::data_provider::DataProvider;
+use crate::verify::StakeKeyHash;
 use crate::Sig;
 use bigdecimal::{BigDecimal, FromPrimitive};
 use cardano_serialization_lib::address::Address;
@@ -118,6 +119,7 @@ impl DataProvider for MockDbProvider {
                                 inner: Sig(sig.to_bytes().try_into().unwrap()),
                             },
                             staked_ada: None,
+                            stake_key_hash: vec![0; 29],
                         }
                     })
                     .collect()
@@ -128,7 +130,7 @@ impl DataProvider for MockDbProvider {
             }))
     }
 
-    fn stake_values(&self, stake_addrs: &[StakeKeyHex]) -> DashMap<StakeKeyHex, BigDecimal> {
+    fn stake_values(&self, stake_addrs: &[StakeKeyHash]) -> DashMap<StakeKeyHash, BigDecimal> {
         stake_addrs
             .iter()
             .map(|addr| {

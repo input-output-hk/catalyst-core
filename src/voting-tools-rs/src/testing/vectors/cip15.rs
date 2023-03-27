@@ -49,6 +49,7 @@ pub fn vector() -> SignedRegistration {
             inner: Sig::from_hex(SIGNATURE).unwrap(),
         },
         staked_ada: None,
+        stake_key_hash: vec![0; 29],
     }
 }
 

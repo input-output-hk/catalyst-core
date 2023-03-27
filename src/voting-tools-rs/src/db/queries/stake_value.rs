@@ -10,6 +10,7 @@ use diesel::{BoolExpressionMethods, JoinOnDsl, NullableExpressionMethods, QueryD
 use crate::data::StakeKeyHex;
 use crate::db::inner::DbQuery;
 use crate::db::Db;
+use crate::verify::StakeKeyHash;
 use diesel::sql_types::Text;
 use diesel::ExpressionMethods;
 
@@ -25,9 +26,9 @@ impl Db {
     /// # Errors
     ///
     /// Will return an error not at all.  TODO, don't return Result.
-    pub fn stake_values(&self, stake_addrs: &[StakeKeyHex]) -> DashMap<StakeKeyHex, BigDecimal> {
+    pub fn stake_values(&self, stake_addrs: &[StakeKeyHash]) -> DashMap<StakeKeyHash, BigDecimal> {
         let rows = stake_addrs.par_iter().map(|addr| {
-            let hex = hex::encode(&addr.0);
+            let hex = hex::encode(&addr);
             let result = self.exec(|conn| query(hex).load(conn))?;
             Ok::<_, Report>((addr.clone(), result))
         });

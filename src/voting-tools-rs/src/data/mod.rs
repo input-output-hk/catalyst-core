@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, error::Error, ffi::OsString, io::Cursor};
 
-use crate::validation::hash;
+use crate::{validation::hash, verify::stake_key_hash};
 use bytekind::{Bytes, HexString};
 use ciborium::value::Value;
 use clap::builder::OsStr;
@@ -156,7 +156,7 @@ pub struct SignedRegistration {
     pub signature: Signature,
 
     /// Stake Key Hash
-    // pub stake_key_hash: Option<String>,
+    pub stake_key_hash: Vec<u8>,
 
     /// The id of the transaction that created this registration
     pub tx_id: TxId,
@@ -220,6 +220,7 @@ impl RawRegistration {
     pub fn to_signed(
         &self,
         cddl_config: &CddlConfig,
+        network_id: NetworkId,
     ) -> Result<SignedRegistration, Box<dyn Error>> {
         // validate cddl: 61824
         validate_reg_cddl(&self.bin_reg, &cddl_config)?;
@@ -231,9 +232,12 @@ impl RawRegistration {
 
         let signature = self.raw_sig_conversion()?;
 
+        stake_key_hash(&registration.stake_key, network_id);
+
         Ok(SignedRegistration {
             registration: registration,
             signature: signature,
+            stake_key_hash: vec![0; 29],
             tx_id: self.tx_id,
             slot: self.slot,
             staked_ada: None,

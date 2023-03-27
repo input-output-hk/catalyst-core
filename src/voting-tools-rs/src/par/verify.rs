@@ -24,6 +24,8 @@ pub type Valids = Vec<SignedRegistration>;
 /// Registrations which failed cddl and or sig checks
 pub type Invalids = Vec<InvalidRegistration>;
 
+pub type StakeKeyHash = Vec<u8>;
+
 ///
 /// Query gathers all possible registration transactions
 /// Each registration is screened and marked: valid or invalid
@@ -36,6 +38,7 @@ pub fn filter_registrations(
     min_slot: SlotNo,
     max_slot: SlotNo,
     mut client: Client,
+    network_id: NetworkId,
 ) -> Result<(Valids, Invalids), Box<dyn std::error::Error>> {
     let mut valids: Valids = vec![];
     let mut invalids: Invalids = vec![];
@@ -89,7 +92,7 @@ pub fn filter_registrations(
         };
 
         // deserialize the raw Binary CBOR.
-        let reg = match rawreg.to_signed(&cddl) {
+        let reg = match rawreg.to_signed(&cddl, network_id) {
             Err(err) => {
                 invalids.push(InvalidRegistration {
                     registration: None,
@@ -147,7 +150,7 @@ pub fn latest_registrations(valids: &Valids, invalids: &mut Invalids) -> Valids 
 
 /// The registration has a 32 byte "Stake Public Key".  This is the raw ED25519 public key of the stake address.
 /// To calculate the Voting power, you need the stake key hash. Encoded in Cardano format.
-pub fn stake_key_hash(key: &StakeKeyHex, network: NetworkId) -> String {
+pub fn stake_key_hash(key: &StakeKeyHex, network: NetworkId) -> StakeKeyHash {
     let bytes = &key.0 .0;
 
     let mut digest = [0u8; 28];
@@ -155,12 +158,14 @@ pub fn stake_key_hash(key: &StakeKeyHex, network: NetworkId) -> String {
     context.input(&bytes);
     context.result(&mut digest);
 
-    let digest_hex = hex::encode(digest);
+    let e1 = hex::decode("e1").unwrap();
+    let e2 = hex::decode("e2").unwrap();
 
     let ctx = match network {
-        NetworkId::Mainnet => format!("E1{}", digest_hex),
-        NetworkId::Testnet => format!("EO{}", digest_hex),
+        NetworkId::Mainnet => [e1, digest.to_vec()].concat(),
+        NetworkId::Testnet => [e2, digest.to_vec()].concat(),
     };
+
     ctx
 }
 

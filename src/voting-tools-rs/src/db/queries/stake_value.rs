@@ -30,9 +30,9 @@ impl Db {
         let rows = stake_addrs.par_iter().map(|addr| {
             let hex = hex::encode(&addr);
 
-            dbg!("stake key hash for query {:?}", hex.clone());
+            // dbg!("stake key hash for query {:?}", hex.clone());
             let result = self.exec(|conn| query(hex).load(conn))?;
-            dbg!("result {:?}", result.clone());
+            // dbg!("result {:?}", result.clone());
             Ok::<_, Report>((addr.clone(), result))
         });
 

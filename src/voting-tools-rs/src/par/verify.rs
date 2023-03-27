@@ -74,8 +74,10 @@ pub fn filter_registrations(
         // Here we can use a threadpool with a size == number of cores.
         // We can process each row in parallel using this pool.
 
-        // We should also print out a running status of the number of registrations we have processed so far,
-        // otherwise long running queries look locked up.
+        info!(
+            "registrations processed {:?}",
+            valids.len() + invalids.len()
+        );
 
         // registration tx_id
         let tx_id: i64 = row.get(REG_TX_ID);

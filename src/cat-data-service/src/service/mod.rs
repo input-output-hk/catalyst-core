@@ -1,7 +1,6 @@
+use crate::state::State;
 use axum::Router;
 use std::{net::SocketAddr, sync::Arc};
-
-use crate::db::DB;
 
 mod v0;
 
@@ -12,10 +11,7 @@ pub enum Error {
 }
 
 // #[tracing::instrument]
-pub async fn run_service<State: DB + Send + Sync + 'static>(
-    addr: &SocketAddr,
-    state: Arc<State>,
-) -> Result<(), Error> {
+pub async fn run_service(addr: &SocketAddr, state: Arc<State>) -> Result<(), Error> {
     tracing::info!("Starting service...");
     tracing::info!("Listening on {}", addr);
 

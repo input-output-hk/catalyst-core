@@ -1,8 +1,6 @@
-use std::sync::Arc;
-
+use crate::state::State;
 use axum::Router;
-
-use crate::db::DB;
+use std::sync::Arc;
 
 mod chalenges;
 mod fund;
@@ -10,11 +8,11 @@ mod proposals;
 mod reviews;
 mod snapshot;
 
-pub fn v0<State: DB + Send + Sync + 'static>(state: Arc<State>) -> Router {
+pub fn v0(state: Arc<State>) -> Router {
     let snapshot = snapshot::snapshot(state.clone());
-    let fund = fund::fund(state.clone());
+    let fund = fund::fund();
     let chalenges = chalenges::chalenges();
-    let proposals = proposals::proposals(state);
+    let proposals = proposals::proposals();
     let reviews = reviews::reviews();
 
     Router::new().nest(

@@ -1,8 +1,11 @@
-use crate::db::snapshot::SnapshotDb;
+use crate::{
+    db::snapshot::{Delegator, Voter},
+    state::State,
+};
 use axum::{extract::Path, routing::get, Router};
 use std::sync::Arc;
 
-pub fn snapshot<State: SnapshotDb + Send + Sync + 'static>(state: Arc<State>) -> Router {
+pub fn snapshot(state: Arc<State>) -> Router {
     Router::new()
         .route(
             "/snapshot",
@@ -24,29 +27,33 @@ pub fn snapshot<State: SnapshotDb + Send + Sync + 'static>(state: Arc<State>) ->
         )
 }
 
-async fn versions_exec<State: SnapshotDb>(state: Arc<State>) -> String {
+async fn versions_exec(_state: Arc<State>) -> String {
     tracing::debug!("versions_exec");
 
-    let snapshot_versions = state.get_snapshot_versions();
+    let snapshot_versions: Vec<String> = Default::default();
     serde_json::to_string(&snapshot_versions).unwrap()
 }
 
-async fn voter_exec<State: SnapshotDb>(
+async fn voter_exec(
     Path((event, voting_key)): Path<(String, String)>,
-    state: Arc<State>,
+    _state: Arc<State>,
 ) -> String {
     tracing::debug!("voter_exec, event: {0}, voting_key: {1}", event, voting_key);
 
-    let voter = state.get_voter(event, voting_key);
+    let voter: Voter = Default::default();
     serde_json::to_string(&voter).unwrap()
 }
 
-async fn delegator_exec<State: SnapshotDb>(
+async fn delegator_exec(
     Path((event, stake_public_key)): Path<(String, String)>,
-    state: Arc<State>,
+    _state: Arc<State>,
 ) -> String {
-    tracing::debug!("delegator_exec, event: {0}, stake_public_key: {1}", event, stake_public_key);
+    tracing::debug!(
+        "delegator_exec, event: {0}, stake_public_key: {1}",
+        event,
+        stake_public_key
+    );
 
-    let delegator = state.get_delegator(event, stake_public_key);
+    let delegator: Delegator = Default::default();
     serde_json::to_string(&delegator).unwrap()
 }

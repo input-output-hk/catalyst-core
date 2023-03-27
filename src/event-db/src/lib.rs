@@ -8,7 +8,7 @@ use std::str::FromStr;
 use tokio_postgres::NoTls;
 
 mod config_table;
-mod schema_check;
+pub mod schema_check;
 
 /// Database URL Environment Variable name.
 /// eg: "`postgres://catalyst-dev:CHANGE_ME@localhost/CatalystDev`"

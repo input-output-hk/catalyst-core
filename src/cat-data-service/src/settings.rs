@@ -10,6 +10,10 @@ pub struct Settings {
     #[clap(long, default_value = ADDRESS_DEFAULT)]
     pub address: SocketAddr,
 
+    /// Url to the postgres event db
+    #[clap(long)]
+    pub database_url: String,
+
     /// Logging level
     #[clap(long, default_value = LOG_LEVEL_DEFAULT)]
     pub log_level: LogLevel,

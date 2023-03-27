@@ -585,6 +585,7 @@
 <span id="585">585</span>
 <span id="586">586</span>
 <span id="587">587</span>
+<span id="588">588</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{collections::BTreeMap, error::Error, ffi::OsString, io::Cursor};
 
 <span class="kw">use </span><span class="kw">crate</span>::validation::hash;
@@ -743,7 +744,7 @@
     </span><span class="kw">pub </span>signature: Signature,
 
     <span class="doccomment">/// Stake Key Hash
-    </span><span class="comment">//pub stake_key_hash: &lt;blah&gt;,
+    </span><span class="comment">// pub stake_key_hash: Option&lt;String&gt;,
 
     </span><span class="doccomment">/// The id of the transaction that created this registration
     </span><span class="kw">pub </span>tx_id: TxId,
@@ -925,7 +926,8 @@
         <span class="comment">// A stake address for the network that this transaction is submitted to (to point to the Ada that is being delegated);
         </span><span class="kw">let </span>stake_key = <span class="kw">match </span><span class="kw-2">&amp;</span>metamap[STAKE_ADDRESS] {
             (Value::Integer(_two), Value::Bytes(stake_addr)) =&gt; {
-                StakeKeyHex(PubKey(stake_addr.to_vec()))
+                <span class="comment">// assert!((*two == Value::Integer(2.into()).as_integer().unwrap()));
+                </span>StakeKeyHex(PubKey(stake_addr.to_vec()))
             }
             <span class="kw">_ </span>=&gt; {
                 <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborRegistrationFailure {

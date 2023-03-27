@@ -222,14 +222,6 @@
 <span id="222">222</span>
 <span id="223">223</span>
 <span id="224">224</span>
-<span id="225">225</span>
-<span id="226">226</span>
-<span id="227">227</span>
-<span id="228">228</span>
-<span id="229">229</span>
-<span id="230">230</span>
-<span id="231">231</span>
-<span id="232">232</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashMap;
 <span class="kw">use </span>std::path::PathBuf;
 
@@ -354,36 +346,28 @@
 
 <span class="doccomment">/// Each stake key can have multiple registrations, the latest must be identified and the rest partitioned
 </span><span class="kw">pub fn </span>latest_registrations(valids: <span class="kw-2">&amp;</span>Valids, invalids: <span class="kw-2">&amp;mut </span>Invalids) -&gt; Valids {
-    <span class="comment">// Create empty hash map {stakekey: reg}
-    </span><span class="kw">let </span><span class="kw-2">mut </span>latest: HashMap&lt;StakeKeyHex, SignedRegistration&gt; = HashMap::new();
-    <span class="comment">// iterate the valids.
-    </span><span class="kw">for </span>valid <span class="kw">in </span>valids {
-        <span class="comment">// if valid.stakekey in hash map
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>((_stake_key, current)) = latest.get_key_value(<span class="kw-2">&amp;</span>valid.registration.stake_key) {
-            <span class="comment">// if valid.newer(current in map)
-            </span><span class="kw">if </span>valid.registration.nonce &gt; current.registration.nonce {
-                <span class="comment">// invalids.push(current, &quot;Obsolete&quot;)
-                </span>invalids.push(InvalidRegistration {
+    <span class="kw">let </span><span class="kw-2">mut </span>latest: HashMap&lt;StakeKeyHex, SignedRegistration&gt; = HashMap::new();
+
+    <span class="kw">for </span>valid <span class="kw">in </span>valids {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>((_stake_key, current)) = latest.get_key_value(<span class="kw-2">&amp;</span>valid.registration.stake_key) {
+            <span class="kw">if </span>valid.registration.nonce &gt; current.registration.nonce {
+                invalids.push(InvalidRegistration {
                     registration: <span class="prelude-val">Some</span>(current.clone()),
                     errors: <span class="macro">nonempty!</span>[RegistrationError::ObsoleteRegistration {}],
                 });
-                <span class="comment">// map[valid.key] = valid
-                </span>latest.insert(valid.registration.stake_key.clone(), valid.clone());
+                latest.insert(valid.registration.stake_key.clone(), valid.clone());
             } <span class="kw">else </span>{
-                <span class="comment">// invalids.push(valid, &quot;Obsolete&quot;)
-                </span>invalids.push(InvalidRegistration {
+                invalids.push(InvalidRegistration {
                     registration: <span class="prelude-val">Some</span>(valid.clone()),
                     errors: <span class="macro">nonempty!</span>[RegistrationError::ObsoleteRegistration {}],
                 });
             }
         } <span class="kw">else </span>{
-            <span class="comment">// map[valid.key] = valid
-            </span>latest.insert(valid.registration.stake_key.clone(), valid.clone());
+            latest.insert(valid.registration.stake_key.clone(), valid.clone());
         }
     }
 
-    <span class="comment">// return hashmap values as a vec
-    </span>latest.values().cloned().collect()
+    latest.values().cloned().collect()
 }
 
 <span class="doccomment">/// The registration has a 32 byte &quot;Stake Public Key&quot;.  This is the raw ED25519 public key of the stake address.

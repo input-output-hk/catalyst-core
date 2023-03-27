@@ -88,8 +88,7 @@ pub fn filter_registrations(
             slot: slot as u64,
         };
 
-        // We need to deserialize the Binary CBOR.
-        // We can ONLY use the json for display purposes in the reject messages.
+        // deserialize the raw Binary CBOR.
         let reg = match rawreg.to_signed(&cddl) {
             Err(err) => {
                 invalids.push(InvalidRegistration {

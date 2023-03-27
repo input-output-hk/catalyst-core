@@ -156,7 +156,7 @@ pub struct SignedRegistration {
     pub signature: Signature,
 
     /// Stake Key Hash
-    //pub stake_key_hash: <blah>,
+    // pub stake_key_hash: Option<String>,
 
     /// The id of the transaction that created this registration
     pub tx_id: TxId,
@@ -338,6 +338,7 @@ impl RawRegistration {
         // A stake address for the network that this transaction is submitted to (to point to the Ada that is being delegated);
         let stake_key = match &metamap[STAKE_ADDRESS] {
             (Value::Integer(_two), Value::Bytes(stake_addr)) => {
+                // assert!((*two == Value::Integer(2.into()).as_integer().unwrap()));
                 StakeKeyHex(PubKey(stake_addr.to_vec()))
             }
             _ => {

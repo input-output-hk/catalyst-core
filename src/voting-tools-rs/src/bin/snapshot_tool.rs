@@ -71,7 +71,7 @@ fn main() -> Result<()> {
     handle_invalids(&out_file, &invalids)?;
 
     info!(
-        "calculated {} outputs\n #invalids {}",
+        "calculated {} valids invalids {}",
         valids.len(),
         invalids.len()
     );

@@ -802,6 +802,7 @@ version = "0.1.0"
 dependencies = [
  "axum",
  "clap 4.1.4",
+ "event-db",
  "serde",
  "serde_json",
  "thiserror",
@@ -2130,6 +2131,7 @@ dependencies = [
  "bb8",
  "bb8-postgres",
  "dotenvy",
+ "thiserror",
  "tokio",
  "tokio-postgres",
 ]

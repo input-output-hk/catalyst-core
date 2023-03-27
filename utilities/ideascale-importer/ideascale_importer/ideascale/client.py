@@ -117,7 +117,7 @@ class Client:
             if "campaigns" in group:
                 group_campaigns = []
                 for c in group["campaigns"]:
-                    pydantic.tools.parse_obj_as(Campaign, c)
+                    group_campaigns.append(pydantic.tools.parse_obj_as(Campaign, c))
                     await asyncio.sleep(0)
 
                 campaigns.extend(group_campaigns)
@@ -133,7 +133,7 @@ class Client:
 
         campaign_groups: List[CampaignGroup] = []
         for cg in res:
-            pydantic.tools.parse_obj_as(CampaignGroup, cg)
+            campaign_groups.append(pydantic.tools.parse_obj_as(CampaignGroup, cg))
             await asyncio.sleep(0)
 
         return campaign_groups
@@ -147,7 +147,7 @@ class Client:
 
         ideas = []
         for i in res:
-            pydantic.tools.parse_obj_as(Idea, i)
+            ideas.append(pydantic.tools.parse_obj_as(Idea, i))
             await asyncio.sleep(0)
 
         return ideas
@@ -177,7 +177,7 @@ class Client:
 
                 res_ideas: List[Idea] = []
                 for i in res:
-                    pydantic.tools.parse_obj_as(Idea, i)
+                    res_ideas.append(pydantic.tools.parse_obj_as(Idea, i))
 
                 d.ideas.extend(res_ideas)
 

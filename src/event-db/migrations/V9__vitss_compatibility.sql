@@ -35,7 +35,8 @@ FROM event this_fund
 LEFT JOIN event next_fund ON next_fund.row_id = this_fund.row_id + 1;
 
 COMMENT ON VIEW funds IS
-    'This view maps the original VIT-SS funds table to the new event table.
+    '@omit
+This view maps the original VIT-SS funds table to the new event table.
 Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
 -- VIT-SS Compatibility View - proposals table.
@@ -66,7 +67,8 @@ FROM proposal
 INNER JOIN challenge ON challenge.id = proposal.challenge;
 
 COMMENT ON VIEW proposals IS
-    'This view maps the original VIT-SS proposals table to the new proposal table.
+    '@omit
+This view maps the original VIT-SS proposals table to the new proposal table.
 Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
 -- VIT-SS Compatibility View - proposals_voteplans table.
@@ -80,7 +82,8 @@ FROM proposal_voteplan
     INNER JOIN voteplan ON proposal_voteplan.voteplan_id = voteplan.row_id;
 
 COMMENT ON VIEW proposals_voteplans IS
-    'This view maps the original VIT-SS proposals table to the new proposal table.
+    '@omit
+This view maps the original VIT-SS proposals table to the new proposal table.
 Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
 -- VIT-SS Compatibility View - proposal_simple_challenge table.
@@ -94,7 +97,8 @@ FROM
 WHERE challenge.category = 'simple';
 
 COMMENT ON VIEW proposal_simple_challenge IS
-    'This view maps the original VIT-SS proposal_simple_challenge table to the new proposal table.
+    '@omit
+This view maps the original VIT-SS proposal_simple_challenge table to the new proposal table.
 Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
 -- VIT-SS Compatibility View - proposal_community_choice_challenge.
@@ -113,7 +117,9 @@ WHERE challenge.category = 'community-choice';
 
 COMMENT ON VIEW proposal_community_choice_challenge IS
     'This view maps the original VIT-SS proposal_community_choice_challenge table to the new proposal table.
-Do not use this VIEW for new queries, its ONLY for backward compatibility.';
+Do not use this VIEW for new queries, its ONLY for backward compatibility.
+@name vitss_proposal_community_choice_challenge
+@omit';
 
 -- VIT-SS Compatibility View - voteplans table.
 
@@ -132,7 +138,8 @@ FROM voteplan
     INNER JOIN voting_group ON voteplan.group_id = voting_group.row_id;
 
 COMMENT ON VIEW voteplans IS
-    'This view maps the original VIT-SS voteplans table to the new voteplan table.
+    '@omit
+This view maps the original VIT-SS voteplans table to the new voteplan table.
 Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
 -- VIT-SS Compatibility View - api_tokens table.
@@ -145,7 +152,8 @@ FROM config
     WHERE config.id = 'api_token';
 
 COMMENT ON VIEW api_tokens IS
-    'This view maps the original VIT-SS api_tokens table to the new config table.
+    '@omit
+This view maps the original VIT-SS api_tokens table to the new config table.
 Do not use this VIEW for new queries, its ONLY for backward compatibility.
 This table uses unencrypted values, so is not compatible with api tokens that are
 encrypted.  It should be obsoleted at the earliest opportunity.';
@@ -166,7 +174,8 @@ CREATE VIEW challenges AS SELECT
 FROM challenge;
 
 COMMENT ON VIEW challenges IS
-    'This view maps the original VIT-SS challenges table to the new challenge table.
+    '@omit
+This view maps the original VIT-SS challenges table to the new challenge table.
 Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
 -- VIT-SS Compatibility View - community_advisors_reviews table.
@@ -185,7 +194,8 @@ CREATE VIEW community_advisors_reviews AS SELECT
 FROM community_advisors_review;
 
 COMMENT ON VIEW community_advisors_reviews IS
-    'This view maps the original VIT-SS community_advisors_reviews table to the new community_advisors_review table.
+    '@omit
+This view maps the original VIT-SS community_advisors_reviews table to the new community_advisors_review table.
 Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
 -- VIT-SS Compatibility View - goals.
@@ -197,7 +207,8 @@ CREATE VIEW goals AS SELECT
 FROM goal ORDER BY (event_id, idx);
 
 COMMENT ON VIEW goals IS
-    'This view maps the original VIT-SS goals table to the new goal table.
+    '@omit
+This view maps the original VIT-SS goals table to the new goal table.
 Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
 -- VIT-SS Compatibility View - groups.
@@ -209,7 +220,8 @@ CREATE VIEW groups AS SELECT
 FROM voting_group;
 
 COMMENT ON VIEW groups IS
-    'This view maps the original VIT-SS groups table to the new voting_groups table.
+    '@omit
+This view maps the original VIT-SS groups table to the new voting_groups table.
 Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
 -- VIT-SS Full Proposal View
@@ -251,3 +263,8 @@ LEFT JOIN (
         FROM community_advisors_reviews
         GROUP BY proposal_id
     ) rev ON p.proposal_id = rev.review_proposal_id;
+
+COMMENT ON VIEW full_proposals_info IS
+    '@omit
+This view maps the original VIT-SS full proposals view.
+Do not use this VIEW for new queries, its ONLY for backward compatibility.';

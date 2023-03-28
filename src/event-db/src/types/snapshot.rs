@@ -1,3 +1,4 @@
+use crate::types::utils::serialize_systemtime_as_rfc3339;
 use serde::Serialize;
 use std::time::SystemTime;
 
@@ -13,7 +14,9 @@ pub struct VoterInfo {
 #[derive(Serialize, Clone)]
 pub struct Voter {
     pub voter_info: VoterInfo,
+    #[serde(serialize_with = "serialize_systemtime_as_rfc3339")]
     pub as_at: SystemTime,
+    #[serde(serialize_with = "serialize_systemtime_as_rfc3339")]
     pub last_updated: SystemTime,
     pub r#final: bool,
 }
@@ -31,7 +34,9 @@ pub struct Delegator {
     pub delegations: Vec<Delegation>,
     pub raw_power: i64,
     pub total_power: i64,
+    #[serde(serialize_with = "serialize_systemtime_as_rfc3339")]
     pub as_at: SystemTime,
+    #[serde(serialize_with = "serialize_systemtime_as_rfc3339")]
     pub last_updated: SystemTime,
     pub r#final: bool,
 }
@@ -64,7 +69,7 @@ mod tests {
         let json = serde_json::to_string(&voter).unwrap();
         assert_eq!(
             json,
-            r#"{"voter_info":{"voting_power":100,"voting_group":"rep","delegations_power":100,"delegations_count":1,"voting_power_saturation":0.4},"as_at":{"secs_since_epoch":0,"nanos_since_epoch":0},"last_updated":{"secs_since_epoch":0,"nanos_since_epoch":0},"final":true}"#
+            r#"{"voter_info":{"voting_power":100,"voting_group":"rep","delegations_power":100,"delegations_count":1,"voting_power_saturation":0.4},"as_at":"1970-01-01T00:00:00Z","last_updated":"1970-01-01T00:00:00Z","final":true}"#
         );
     }
 
@@ -86,7 +91,7 @@ mod tests {
         let json = serde_json::to_string(&delegator).unwrap();
         assert_eq!(
             json,
-            r#"{"delegations":[{"voting_key":"voter","group":"rep","weight":5,"value":100}],"raw_power":100,"total_power":1000,"as_at":{"secs_since_epoch":0,"nanos_since_epoch":0},"last_updated":{"secs_since_epoch":0,"nanos_since_epoch":0},"final":true}"#
+            r#"{"delegations":[{"voting_key":"voter","group":"rep","weight":5,"value":100}],"raw_power":100,"total_power":1000,"as_at":"1970-01-01T00:00:00Z","last_updated":"1970-01-01T00:00:00Z","final":true}"#
         );
     }
 }

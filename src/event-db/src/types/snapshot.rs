@@ -22,17 +22,17 @@ pub struct Voter {
 pub struct Delegation {
     pub voting_key: String,
     pub group: String,
-    pub weight: u64,
-    pub value: u64,
+    pub weight: i32,
+    pub value: i64,
 }
 
-#[derive(Serialize, Clone, Default)]
+#[derive(Serialize, Clone)]
 pub struct Delegator {
     pub delegations: Vec<Delegation>,
-    pub raw_power: u64,
-    pub total_power: u64,
-    pub as_at: String,
-    pub last_updated: String,
+    pub raw_power: i64,
+    pub total_power: i64,
+    pub as_at: SystemTime,
+    pub last_updated: SystemTime,
     pub r#final: bool,
 }
 
@@ -79,14 +79,14 @@ mod tests {
             }],
             raw_power: 100,
             total_power: 1000,
-            as_at: "today".to_string(),
-            last_updated: "today".to_string(),
+            as_at: SystemTime::UNIX_EPOCH,
+            last_updated: SystemTime::UNIX_EPOCH,
             r#final: true,
         };
         let json = serde_json::to_string(&delegator).unwrap();
         assert_eq!(
             json,
-            r#"{"delegations":[{"voting_key":"voter","group":"rep","weight":5,"value":100}],"raw_power":100,"total_power":1000,"as_at":"today","last_updated":"today","final":true}"#
+            r#"{"delegations":[{"voting_key":"voter","group":"rep","weight":5,"value":100}],"raw_power":100,"total_power":1000,"as_at":{"secs_since_epoch":0,"nanos_since_epoch":0},"last_updated":{"secs_since_epoch":0,"nanos_since_epoch":0},"final":true}"#
         );
     }
 }

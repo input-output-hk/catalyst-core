@@ -1,5 +1,5 @@
 use crate::{
-    types::snapshot::{Delegator, Voter, VoterInfo},
+    types::snapshot::{Delegation, Delegator, Voter, VoterInfo},
     Error, EventDB,
 };
 use async_trait::async_trait;
@@ -77,11 +77,46 @@ impl SnapshotQueries for EventDB {
     async fn get_delegator(
         &self,
         _event: String,
-        _stake_public_key: String,
+        stake_public_key: String,
     ) -> Result<Delegator, Error> {
         let conn = self.pool.get().await?;
-        let _row = conn.query_one("SELECT ", &[]).await?;
+        let delegator = conn.query_one("SELECT contribution.voting_key, contribution.voting_group, snapshot.as_at, snapshot.last_updated, snapshot.final
+        FROM contribution
+        INNER JOIN snapshot ON contribution.snapshot_id = snapshot.row_id
+        WHERE contribution.stake_public_key = $1
+        LIMIT 1;", &[&stake_public_key]).await.unwrap();
 
-        Ok(Default::default())
+        let delegation_rows = conn.query("SELECT contribution.voting_key, contribution.voting_group, contribution.voting_weight, contribution.value,  snapshot.as_at, snapshot.last_updated, snapshot.final
+        FROM contribution
+        INNER JOIN snapshot ON contribution.snapshot_id = snapshot.row_id
+        WHERE contribution.stake_public_key = $1;", &[&stake_public_key]).await.unwrap();
+
+        let mut delegations = Vec::new();
+        for row in delegation_rows {
+            delegations.push(Delegation {
+                voting_key: row.try_get("voting_key")?,
+                group: row.try_get("voting_group")?,
+                weight: row.try_get("voting_weight")?,
+                value: row.try_get("value")?,
+            })
+        }
+
+        let total_power: i64 = conn
+            .query_one(
+                "SELECT SUM(voter.voting_power)::BIGINT as total_voting_power
+                FROM voter;",
+                &[],
+            )
+            .await?
+            .try_get("total_voting_power")?;
+
+        Ok(Delegator {
+            raw_power: delegations.iter().map(|delegation| delegation.value).sum(),
+            as_at: delegator.try_get("as_at")?,
+            last_updated: delegator.try_get("last_updated")?,
+            r#final: delegator.try_get("final")?,
+            delegations,
+            total_power,
+        })
     }
 }

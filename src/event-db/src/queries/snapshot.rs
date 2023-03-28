@@ -21,9 +21,8 @@ impl SnapshotQueries for EventDB {
         let conn = self.pool.get().await?;
         let rows = conn
             .query(
-                "
-        SELECT event 
-        FROM snapshot;",
+                "SELECT event
+                FROM snapshot;",
                 &[],
             )
             .await?;
@@ -37,22 +36,41 @@ impl SnapshotQueries for EventDB {
 
     async fn get_voter(&self, _event: String, voting_key: String) -> Result<Voter, Error> {
         let conn = self.pool.get().await?;
-        let row = conn.query_one("
-         SELECT voter.voting_key, voter.voting_group, voter.voting_power, snapshot.as_at, snapshot.last_updated, snapshot.final
-         FROM voter 
-         INNER JOIN snapshot ON voter.snapshot_id = snapshot.row_id 
-         WHERE voter.voting_key = $1;
-        ", &[&voting_key]).await?;
+        let voter = conn.query_one("SELECT voter.voting_key, voter.voting_group, voter.voting_power, snapshot.as_at, snapshot.last_updated, snapshot.final, SUM(contribution.value)::BIGINT as delegations_power, COUNT(contribution.value) AS delegations_count
+        FROM voter
+        INNER JOIN snapshot ON voter.snapshot_id = snapshot.row_id
+        INNER JOIN contribution ON contribution.snapshot_id = snapshot.row_id
+        WHERE voter.voting_key = $1 AND contribution.voting_key = $1
+        GROUP BY voter.voting_key, voter.voting_group, voter.voting_power, snapshot.as_at, snapshot.last_updated, snapshot.final;", &[&voting_key]).await?;
+
+        let voting_group = voter.try_get("voting_group")?;
+        let voting_power = voter.try_get("voting_power")?;
+
+        let total_voting_power_per_group: i64 = conn
+            .query_one(
+                "SELECT SUM(voter.voting_power)::BIGINT as total_voting_power
+                FROM voter
+                WHERE voter.voting_group = $1;",
+                &[&voting_group],
+            )
+            .await?
+            .try_get("total_voting_power")?;
 
         Ok(Voter {
             voter_info: VoterInfo {
-                voting_power: row.try_get("voting_power")?,
-                voting_group: row.try_get("voting_group")?,
-                ..Default::default()
+                delegations_power: voter.try_get("delegations_power")?,
+                delegations_count: voter.try_get("delegations_count")?,
+                voting_power_saturation: if total_voting_power_per_group as f64 != 0_f64 {
+                    voting_power as f64 / total_voting_power_per_group as f64
+                } else {
+                    0_f64
+                },
+                voting_power,
+                voting_group,
             },
-            as_at: row.try_get("as_at")?,
-            last_updated: row.try_get("last_updated")?,
-            r#final: row.try_get("final")?,
+            as_at: voter.try_get("as_at")?,
+            last_updated: voter.try_get("last_updated")?,
+            r#final: voter.try_get("final")?,
         })
     }
 

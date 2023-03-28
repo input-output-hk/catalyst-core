@@ -5,8 +5,8 @@ use std::time::SystemTime;
 pub struct VoterInfo {
     pub voting_power: i64,
     pub voting_group: String,
-    pub delegations_power: u64,
-    pub delegations_count: u64,
+    pub delegations_power: i64,
+    pub delegations_count: i64,
     pub voting_power_saturation: f64,
 }
 

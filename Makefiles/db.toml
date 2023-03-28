@@ -30,12 +30,24 @@ cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
 psql -e -U postgres -f setup/dev-db.sql
 '''
 
+# Setup the local database graphql configuration.
+[tasks.local-event-db-graphql-init]
+workspace = false
+category = "db"
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
+psql -e -U postgres -f setup/graphql-setup.sql
+'''
+
+
 # Setup the local database ready to run the migrations.
 [tasks.local-event-db-setup]
 workspace = false
 category = "db"
 dependencies = [
     "local-event-db-init",
+    "local-event-db-graphql-init",
     "run-event-db-migration"
 ]
 

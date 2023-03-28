@@ -1,2 +1,0 @@
-Intentionally Empty.
-Diagrams are inserted here automatically when the documentation is built.

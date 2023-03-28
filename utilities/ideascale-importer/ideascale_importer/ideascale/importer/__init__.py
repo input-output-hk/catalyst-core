@@ -165,13 +165,13 @@ class Importer:
         proposal_count = 0
 
         async with self.conn.transaction():
-            await ideascale_importer.db.insert_many(self.conn, challenges)
+            await ideascale_importer.db.upsert_many(self.conn, challenges, conflict_cols=["id"])
 
             proposals = [
                 mapper.map_proposal(a, self.proposals_impact_scores)
                 for a in ideas
             ]
             proposal_count = len(proposals)
-            await ideascale_importer.db.insert_many(self.conn, proposals)
+            await ideascale_importer.db.upsert_many(self.conn, proposals, conflict_cols=["id"])
 
         console.print(f"Imported {challenge_count} challenges and {proposal_count} proposals")

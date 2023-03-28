@@ -7,7 +7,6 @@ use color_eyre::Report;
 use dashmap::DashMap;
 use diesel::{BoolExpressionMethods, JoinOnDsl, NullableExpressionMethods, QueryDsl, RunQueryDsl};
 
-use crate::data::StakeKeyHex;
 use crate::db::inner::DbQuery;
 use crate::db::Db;
 use crate::verify::StakeKeyHash;
@@ -63,6 +62,7 @@ impl Db {
                 }
                 let (addr, values) = row;
                 let sum: BigDecimal = values.iter().sum();
+
                 *result.entry(addr).or_insert_with(|| BigDecimal::from(0)) += sum;
             }
             Err(row) => {

@@ -1,5 +1,5 @@
 use crate::state::State;
-use axum::Router;
+use axum::{http::StatusCode, Router};
 use event_db::queries::snapshot::SnapshotQueries;
 use std::{net::SocketAddr, sync::Arc};
 
@@ -9,6 +9,8 @@ mod v0;
 pub enum Error {
     #[error("Cannot run service, error: {0}")]
     CannotRunService(String),
+    #[error(transparent)]
+    EventDbError(#[from] event_db::Error),
 }
 
 // #[tracing::instrument]
@@ -28,4 +30,11 @@ pub async fn run_service<EventDB: SnapshotQueries>(
         .await
         .map_err(|e| Error::CannotRunService(e.to_string()))?;
     Ok(())
+}
+
+async fn handle_result(res: Result<String, Error>) -> (StatusCode, String) {
+    match res {
+        Ok(res) => (StatusCode::OK, res),
+        Err(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
+    }
 }

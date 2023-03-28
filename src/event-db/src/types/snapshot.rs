@@ -1,38 +1,39 @@
 use serde::Serialize;
+use std::time::SystemTime;
 
 #[derive(Serialize, Clone, Default)]
 pub struct VoterInfo {
-    voting_power: u64,
-    voting_group: String,
-    delegations_power: u64,
-    delegations_count: u64,
-    voting_power_saturation: f64,
+    pub voting_power: i64,
+    pub voting_group: String,
+    pub delegations_power: u64,
+    pub delegations_count: u64,
+    pub voting_power_saturation: f64,
 }
 
-#[derive(Serialize, Clone, Default)]
+#[derive(Serialize, Clone)]
 pub struct Voter {
-    voter_info: VoterInfo,
-    as_at: String,
-    last_updated: String,
-    r#final: bool,
+    pub voter_info: VoterInfo,
+    pub as_at: SystemTime,
+    pub last_updated: SystemTime,
+    pub r#final: bool,
 }
 
 #[derive(Serialize, Clone, Default)]
 pub struct Delegation {
-    voting_key: String,
-    group: String,
-    weight: u64,
-    value: u64,
+    pub voting_key: String,
+    pub group: String,
+    pub weight: u64,
+    pub value: u64,
 }
 
 #[derive(Serialize, Clone, Default)]
 pub struct Delegator {
-    delegations: Vec<Delegation>,
-    raw_power: u64,
-    total_power: u64,
-    as_at: String,
-    last_updated: String,
-    r#final: bool,
+    pub delegations: Vec<Delegation>,
+    pub raw_power: u64,
+    pub total_power: u64,
+    pub as_at: String,
+    pub last_updated: String,
+    pub r#final: bool,
 }
 
 #[cfg(test)]
@@ -56,14 +57,14 @@ mod tests {
                 delegations_count: 1,
                 voting_power_saturation: 0.4,
             },
-            as_at: "today".to_string(),
-            last_updated: "today".to_string(),
+            as_at: SystemTime::UNIX_EPOCH,
+            last_updated: SystemTime::UNIX_EPOCH,
             r#final: true,
         };
         let json = serde_json::to_string(&voter).unwrap();
         assert_eq!(
             json,
-            r#"{"voter_info":{"voting_power":100,"voting_group":"rep","delegations_power":100,"delegations_count":1,"voting_power_saturation":0.4},"as_at":"today","last_updated":"today","final":true}"#
+            r#"{"voter_info":{"voting_power":100,"voting_group":"rep","delegations_power":100,"delegations_count":1,"voting_power_saturation":0.4},"as_at":{"secs_since_epoch":0,"nanos_since_epoch":0},"last_updated":{"secs_since_epoch":0,"nanos_since_epoch":0},"final":true}"#
         );
     }
 

@@ -1,6 +1,60 @@
 use crate::types::utils::serialize_systemtime_as_rfc3339;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SnapshotVersion {
+    Latest,
+    Number(u64),
+    Name(String),
+}
+
+impl Serialize for SnapshotVersion {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match self {
+            Self::Latest => "latest".serialize(serializer),
+            Self::Number(number) => number.serialize(serializer),
+            Self::Name(name) => name.serialize(serializer),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for SnapshotVersion {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct SnapshotVersionVisitor;
+        impl<'de> serde::de::Visitor<'de> for SnapshotVersionVisitor {
+            type Value = SnapshotVersion;
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str(
+                    r#"Expect one of the following options: "latest", 25, "Fund 10" etc."#,
+                )
+            }
+            fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(Self::Value::Number(v))
+            }
+            fn visit_borrowed_str<E>(self, v: &'de str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                if v == "latest" {
+                    Ok(Self::Value::Latest)
+                } else {
+                    Ok(Self::Value::Name(v.to_string()))
+                }
+            }
+        }
+        deserializer.deserialize_any(SnapshotVersionVisitor)
+    }
+}
 
 #[derive(Serialize, Clone, Default)]
 pub struct VoterInfo {
@@ -46,10 +100,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn snapshot_versions_json_test() {
-        let snapshot_versions = vec!["latest".to_string(), "fund 10".to_string()];
+    fn snapshot_version_json_test() {
+        let snapshot_versions = vec![
+            SnapshotVersion::Latest,
+            SnapshotVersion::Number(10),
+            SnapshotVersion::Name("Fund 10".to_string()),
+        ];
         let json = serde_json::to_string(&snapshot_versions).unwrap();
-        assert_eq!(json, r#"["latest","fund 10"]"#);
+        assert_eq!(json, r#"["latest",10,"Fund 10"]"#);
+
+        let decoded: Vec<SnapshotVersion> = serde_json::from_str(&json).unwrap();
+        assert_eq!(decoded, snapshot_versions);
     }
 
     #[test]

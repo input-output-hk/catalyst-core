@@ -26,11 +26,12 @@ impl SnapshotQueries for EventDB {
                 &[],
             )
             .await?;
-        let mut snapshot_versions = vec![SnapshotVersion::Latest];
+        let mut snapshot_versions = Vec::with_capacity(rows.len() + 1);
         for row in rows {
             let version = SnapshotVersion::Number(row.try_get("event")?);
             snapshot_versions.push(version);
         }
+        snapshot_versions.push(SnapshotVersion::Latest);
         Ok(snapshot_versions)
     }
 
@@ -56,15 +57,16 @@ impl SnapshotQueries for EventDB {
             .await?
             .try_get("total_voting_power")?;
 
+        let voting_power_saturation = if total_voting_power_per_group as f64 != 0_f64 {
+            voting_power as f64 / total_voting_power_per_group as f64
+        } else {
+            0_f64
+        };
         Ok(Voter {
             voter_info: VoterInfo {
                 delegations_power: voter.try_get("delegations_power")?,
                 delegations_count: voter.try_get("delegations_count")?,
-                voting_power_saturation: if total_voting_power_per_group as f64 != 0_f64 {
-                    voting_power as f64 / total_voting_power_per_group as f64
-                } else {
-                    0_f64
-                },
+                voting_power_saturation,
                 voting_power,
                 voting_group,
             },

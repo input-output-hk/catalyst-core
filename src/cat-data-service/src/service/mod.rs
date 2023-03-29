@@ -1,6 +1,5 @@
 use crate::state::State;
 use axum::{http::StatusCode, Router};
-use event_db::queries::snapshot::SnapshotQueries;
 use std::{net::SocketAddr, sync::Arc};
 
 mod v0;
@@ -14,10 +13,7 @@ pub enum Error {
 }
 
 // #[tracing::instrument]
-pub async fn run_service<EventDB: SnapshotQueries>(
-    addr: &SocketAddr,
-    state: Arc<State<EventDB>>,
-) -> Result<(), Error> {
+pub async fn run_service(addr: &SocketAddr, state: Arc<State>) -> Result<(), Error> {
     tracing::info!("Starting service...");
     tracing::info!("Listening on {}", addr);
 

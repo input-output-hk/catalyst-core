@@ -5,6 +5,7 @@ use crate::{
     error::InvalidRegistration,
     verify::{filter_registrations, StakeKeyHash},
     DataProvider, SnapshotEntry,
+    db::queries::staked_utxo_ada::staked_utxo_ada,
 };
 use bigdecimal::{BigDecimal, ToPrimitive};
 use color_eyre::eyre::{eyre, Result};
@@ -49,7 +50,7 @@ pub use args::VotingPowerArgs;
 /// Returns an error if either of `lower` or `upper` doesn't fit in an `i64`
 pub fn voting_power(
     db: impl DataProvider,
-    registration_client: Client,
+    mut registration_client: Client,
     VotingPowerArgs {
         min_slot,
         max_slot,
@@ -62,6 +63,8 @@ pub fn voting_power(
 
     let min_slot = min_slot.unwrap_or(ABS_MIN_SLOT);
     let max_slot = max_slot.unwrap_or(ABS_MAX_SLOT);
+
+    staked_utxo_ada(i64::try_from(max_slot.0).unwrap(), &mut registration_client).unwrap();
 
     let (valids, invalids) =
         filter_registrations(min_slot, max_slot, registration_client, network_id).unwrap();

@@ -7,6 +7,7 @@ use dashmap::DashMap;
 
 mod stake_value;
 mod vote_registrations;
+pub(crate) mod staked_utxo_ada;
 
 impl DataProvider for Db {
     fn vote_registrations(

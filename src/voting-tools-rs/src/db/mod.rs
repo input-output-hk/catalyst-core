@@ -1,6 +1,6 @@
 use crate::data::{DbHost, DbName, DbPass, DbUser};
 
-mod queries;
+pub mod queries;
 pub mod types;
 
 // We need to allow this because custom type imports aren't always used in all tables

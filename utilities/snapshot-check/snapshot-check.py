@@ -11,11 +11,12 @@ We do not use any non-standard packages, so this script should "just work" if Py
 from __future__ import annotations
 
 import argparse
+from ctypes import Union
 import sys
 import json
 
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 
 
 def is_dir(dirpath: str | Path):
@@ -34,6 +35,17 @@ def is_file(filename: str):
         raise argparse.ArgumentTypeError(f"{filename} is not a file.")
     return real_filename
 
+def cmp_delegations(first: str | List[List[Any]], second: str | List[List[Any]]) -> bool:
+    """Check delegations"""
+    if isinstance(first,str) and isinstance(second,str):
+        return first == second
+
+    if isinstance(first,list) and isinstance(second,list):
+        first.sort()
+        second.sort()
+        return first == second
+
+    return False
 
 def analyze_snapshot(args: argparse.Namespace):
     """Convert a snapshot into a format supported by SVE1."""
@@ -129,7 +141,7 @@ def analyze_snapshot(args: argparse.Namespace):
                     mismatched_voting_power.append(stake_pub_key)
                     snapshot_equal = 0
 
-                if str(comp["delegations"]) != str(snapshot_index[stake_pub_key]["delegations"]):
+                if not cmp_delegations(comp["delegations"], snapshot_index[stake_pub_key]["delegations"]):
                     mismatched_delegation.append(stake_pub_key)
                     snapshot_equal = 0
 
@@ -188,7 +200,7 @@ def analyze_snapshot(args: argparse.Namespace):
             print(f"        {reg} - snapshot = {snapshot_index[reg]['delegations']}, compare = {compare[reg]['delegations']}")
 
         print(f"  Mismatched Rewards Address: {len(mismatched_reward)}")
-        for reg in mismatched_delegation:
+        for reg in mismatched_reward:
             print(f"        {reg} - snapshot = {snapshot_index[reg]['rewards_address']}, compare = {compare[reg]['rewards_address']}")
 
 

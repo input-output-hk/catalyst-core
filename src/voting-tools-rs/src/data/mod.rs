@@ -1,6 +1,9 @@
 use std::{collections::BTreeMap, error::Error, ffi::OsString, io::Cursor};
 
-use crate::{validation::hash, verify::stake_key_hash};
+use crate::{
+    validation::hash,
+    verify::{stake_key_hash, StakeKeyHash},
+};
 use bytekind::{Bytes, HexString};
 use ciborium::value::Value;
 use clap::builder::OsStr;
@@ -19,6 +22,7 @@ mod crypto2;
 pub mod hex_bytes;
 mod network_id;
 pub use network_id::NetworkId;
+
 use test_strategy::Arbitrary;
 
 // 61284 entries
@@ -156,7 +160,8 @@ pub struct SignedRegistration {
     pub signature: Signature,
 
     /// Stake Key Hash
-    pub stake_key_hash: Vec<u8>,
+    #[serde(serialize_with = "ox_hex")]
+    pub stake_key_hash: StakeKeyHash,
 
     /// The id of the transaction that created this registration
     pub tx_id: TxId,
@@ -166,6 +171,14 @@ pub struct SignedRegistration {
 
     /// Raw Staked ADA
     pub staked_ada: Option<u128>,
+}
+
+fn ox_hex<T, S>(v: &T, serializer: S) -> Result<S::Ok, S::Error>
+where
+    T: AsRef<[u8]>,
+    S: Serializer,
+{
+    serializer.serialize_str(&format!("0x{}", hex::encode(v.as_ref())))
 }
 
 impl SignedRegistration {
@@ -210,10 +223,6 @@ pub struct RawRegistration {
 
     /// The slot the registration was found in.
     pub slot: u64,
-}
-
-pub struct RegistrationValidationOptions {
-    pub rewards_address: bool,
 }
 
 impl RawRegistration {
@@ -449,6 +458,7 @@ pub struct SnapshotEntry {
     pub voting_key: VotingKey,
 
     /// Mainnet rewards address
+    #[serde(serialize_with = "ox_hex_")]
     pub rewards_address: RewardsAddress,
 
     /// Stake public key
@@ -469,6 +479,14 @@ pub struct SnapshotEntry {
     pub tx_id: TxId,
 }
 
+fn ox_hex_<T, S>(v: &T, serializer: S) -> Result<S::Ok, S::Error>
+where
+    T: AsRef<[u8]>,
+    S: Serializer,
+{
+    serializer.serialize_str(&format!("0x{}", hex::encode(v.as_ref())))
+}
+
 // Create newtype wrappers for better type safety
 microtype! {
     #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
@@ -476,7 +494,6 @@ microtype! {
         VotingKeyHex,
         StakeKeyHex,
     }
-
 
     #[derive(Debug, PartialEq, Clone)]
     #[string]
@@ -567,6 +584,12 @@ impl RewardsAddress {
     pub fn from_hex(s: &str) -> Result<Self, FromHexError> {
         let bytes = hex::decode(s)?;
         Ok(Self(bytes.into()))
+    }
+}
+
+impl AsRef<[u8]> for RewardsAddress {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_ref()
     }
 }
 

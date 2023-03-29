@@ -1,4 +1,4 @@
-use crate::data::{SignedRegistration, SlotNo, StakeKeyHex};
+use crate::data::{SignedRegistration, SlotNo};
 use crate::data_provider::DataProvider;
 use crate::verify::StakeKeyHash;
 use crate::Db;

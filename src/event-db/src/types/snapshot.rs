@@ -5,7 +5,7 @@ use std::time::SystemTime;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SnapshotVersion {
     Latest,
-    Number(u64),
+    Number(i32),
     Name(String),
 }
 
@@ -16,7 +16,7 @@ impl Serialize for SnapshotVersion {
     {
         match self {
             Self::Latest => "latest".serialize(serializer),
-            Self::Number(number) => number.serialize(serializer),
+            Self::Number(number) => number.to_string().serialize(serializer),
             Self::Name(name) => name.serialize(serializer),
         }
     }
@@ -32,14 +32,8 @@ impl<'de> Deserialize<'de> for SnapshotVersion {
             type Value = SnapshotVersion;
             fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
                 formatter.write_str(
-                    r#"Expect one of the following options: "latest", 25, "Fund 10" etc."#,
+                    r#"Expect one of the following options: "latest", "25", "Fund 10" etc."#,
                 )
-            }
-            fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                Ok(Self::Value::Number(v))
             }
             fn visit_borrowed_str<E>(self, v: &'de str) -> Result<Self::Value, E>
             where
@@ -48,7 +42,10 @@ impl<'de> Deserialize<'de> for SnapshotVersion {
                 if v == "latest" {
                     Ok(Self::Value::Latest)
                 } else {
-                    Ok(Self::Value::Name(v.to_string()))
+                    match v.parse::<i32>() {
+                        Ok(number) => Ok(Self::Value::Number(number)),
+                        _ => Ok(Self::Value::Name(v.to_string())),
+                    }
                 }
             }
         }
@@ -107,7 +104,7 @@ mod tests {
             SnapshotVersion::Name("Fund 10".to_string()),
         ];
         let json = serde_json::to_string(&snapshot_versions).unwrap();
-        assert_eq!(json, r#"["latest",10,"Fund 10"]"#);
+        assert_eq!(json, r#"["latest","10","Fund 10"]"#);
 
         let decoded: Vec<SnapshotVersion> = serde_json::from_str(&json).unwrap();
         assert_eq!(decoded, snapshot_versions);

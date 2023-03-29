@@ -1,12 +1,12 @@
 use crate::{
-    types::snapshot::{Delegation, Delegator, Voter, VoterInfo},
+    types::snapshot::{Delegation, Delegator, SnapshotVersion, Voter, VoterInfo},
     Error, EventDB,
 };
 use async_trait::async_trait;
 
 #[async_trait]
 pub trait SnapshotQueries: Sync + Send + 'static {
-    async fn get_snapshot_versions(&self) -> Result<Vec<i32>, Error>;
+    async fn get_snapshot_versions(&self) -> Result<Vec<SnapshotVersion>, Error>;
     async fn get_voter(&self, event: String, voting_key: String) -> Result<Voter, Error>;
     async fn get_delegator(
         &self,
@@ -17,7 +17,7 @@ pub trait SnapshotQueries: Sync + Send + 'static {
 
 #[async_trait]
 impl SnapshotQueries for EventDB {
-    async fn get_snapshot_versions(&self) -> Result<Vec<i32>, Error> {
+    async fn get_snapshot_versions(&self) -> Result<Vec<SnapshotVersion>, Error> {
         let conn = self.pool.get().await?;
         let rows = conn
             .query(
@@ -26,9 +26,9 @@ impl SnapshotQueries for EventDB {
                 &[],
             )
             .await?;
-        let mut snapshot_versions = Vec::new();
+        let mut snapshot_versions = vec![SnapshotVersion::Latest];
         for row in rows {
-            let version = row.try_get("event")?;
+            let version = SnapshotVersion::Number(row.try_get("event")?);
             snapshot_versions.push(version);
         }
         Ok(snapshot_versions)

@@ -10,11 +10,11 @@ pub fn proposals() -> Router {
         .route("/proposals", post(proposals_exec))
         .route(
             "/proposals/:voter_group_id",
-            get(move |path| proposals_by_voter_group_id_exec(path)),
+            get(proposals_by_voter_group_id_exec),
         )
         .route(
             "/proposal/:id/:voter_group_id",
-            get(move |path| proposal_by_and_by_voter_group_id_exec(path)),
+            get(proposal_by_and_by_voter_group_id_exec),
         )
 }
 

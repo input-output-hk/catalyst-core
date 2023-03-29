@@ -6,7 +6,7 @@ pub fn serialize_systemtime_as_rfc3339<S: Serializer>(
     time: &SystemTime,
     serializer: S,
 ) -> Result<S::Ok, S::Error> {
-    let datetime: OffsetDateTime = time.clone().into();
+    let datetime: OffsetDateTime = (*time).into();
     serializer.serialize_str(
         &datetime
             .format(&Rfc3339)

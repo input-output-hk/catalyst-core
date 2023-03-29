@@ -10,7 +10,7 @@ mod reviews;
 mod snapshot;
 
 pub fn v0<EventDB: SnapshotQueries>(state: Arc<State<EventDB>>) -> Router {
-    let snapshot = snapshot::snapshot(state.clone());
+    let snapshot = snapshot::snapshot(state);
     let fund = fund::fund();
     let chalenges = chalenges::chalenges();
     let proposals = proposals::proposals();

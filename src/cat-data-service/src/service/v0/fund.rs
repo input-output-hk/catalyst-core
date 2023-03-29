@@ -3,9 +3,9 @@ use axum::{extract::Path, routing::get, Router};
 
 pub fn fund() -> Router {
     Router::new()
-        .route("/funds", get(move || funds_exec()))
-        .route("/fund", get(move || fund_exec()))
-        .route("/fund/:id", get(move |path| fund_by_id_exec(path)))
+        .route("/funds", get(funds_exec))
+        .route("/fund", get(fund_exec))
+        .route("/fund/:id", get(fund_by_id_exec))
 }
 
 async fn fund_exec() -> String {

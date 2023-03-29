@@ -6,11 +6,11 @@ use tracing::subscriber::SetGlobalDefaultError;
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
-    ServiceError(#[from] service::Error),
+    Service(#[from] service::Error),
     #[error(transparent)]
-    LoggerError(#[from] SetGlobalDefaultError),
+    Logger(#[from] SetGlobalDefaultError),
     #[error(transparent)]
-    EventDbError(#[from] event_db::Error),
+    EventDb(#[from] event_db::Error),
 }
 
 #[derive(Parser)]

@@ -21,9 +21,7 @@ pub const NETWORK: &str = "network";
 #[derive(Serialize, Deserialize)]
 pub struct FolderDump {
     content: HashMap<String, Vec<String>>,
-    #[serde()]
     root: PathBuf,
-    #[serde()]
     blockchain_items: Vec<String>,
 }
 

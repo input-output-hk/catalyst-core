@@ -3,34 +3,30 @@ IdeaScale Importer
 
 ## Getting Started
 
-First install [pyenv](https://github.com/pyenv/pyenv#installation) AND [pyenv virtualenv](https://github.com/pyenv/pyenv-virtualenv).
+We recommend installing [pyenv](https://github.com/pyenv/pyenv#installation) to manage Python versions.
 
-Then create a virtual environment and install dependencies:
+Install Python 3.11:
 
 ```sh
-pyenv install 3.11.1
-pyenv virtualenv 3.11.1 ideascale-importer-venv-3.11.1
-pyenv  activate ideascale-importer-venv-3.11.1
-pip install -r requirements.txt
+pyenv install 3.11
+```
+
+Install [Poetry](https://python-poetry.org/docs/#installation). Then install dependencies:
+
+```sh
+poetry env use python
+poetry install
 ```
 
 To see the available commands:
 
 ```sh
-python src/main.py --help
+PYTHONPATH=$(pwd) poetry run python ideascale_importer --help
 ```
 
-## Importing IdeaScale Data
+## Documentation
 
-The easiest way is to run:
-
-```sh
-python src/main.py \
-    --api-token IDEASCALE_API_TOKEN \
-    --database-url POSTGRES_URL
-```
-
-And go through the interactive steps.
+For documentation about the available commands see the [docs](docs) folder.
 
 ## Development
 
@@ -38,11 +34,11 @@ And go through the interactive steps.
 
 ```sh
 # If you haven't already:
-python -m flake8 src
+poetry run python -m flake8 ideascale_importer
 ```
 
 ### Type checking
 
 ```sh
-python -m mypy src --check-untyped-defs
+poetry run python -m mypy ideascale_importer --check-untyped-defs
 ```

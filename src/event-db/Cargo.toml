@@ -15,10 +15,11 @@ dotenvy = "0.15"
 
 bb8 = "0.8.0"            # Database Connection Pool Manager
 bb8-postgres = "0.8.1"   # BB8 Postgres Connection Support.
-tokio-postgres = "0.7.7" # Tokio postgres query handler.
+# Tokio postgres query handler.
+tokio-postgres = { version = "0.7.7", features = ["with-chrono-0_4"]}
 
 async-trait = { workspace = true }
 
 tokio = { version = "1", features = ["full"] }
 
-time = { version = "0.3", features = ["parsing", "formatting"] }
+chrono = { workspace = true }

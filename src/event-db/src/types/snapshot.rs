@@ -1,6 +1,6 @@
-use crate::types::utils::serialize_systemtime_as_rfc3339;
+use crate::types::utils::serialize_datetime_as_rfc3339;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::time::SystemTime;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SnapshotVersion {
@@ -65,10 +65,10 @@ pub struct VoterInfo {
 #[derive(Serialize, Clone)]
 pub struct Voter {
     pub voter_info: VoterInfo,
-    #[serde(serialize_with = "serialize_systemtime_as_rfc3339")]
-    pub as_at: SystemTime,
-    #[serde(serialize_with = "serialize_systemtime_as_rfc3339")]
-    pub last_updated: SystemTime,
+    #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
+    pub as_at: DateTime<Utc>,
+    #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
+    pub last_updated: DateTime<Utc>,
     pub r#final: bool,
 }
 
@@ -85,18 +85,18 @@ pub struct Delegator {
     pub delegations: Vec<Delegation>,
     pub raw_power: i64,
     pub total_power: i64,
-    #[serde(serialize_with = "serialize_systemtime_as_rfc3339")]
-    pub as_at: SystemTime,
-    #[serde(serialize_with = "serialize_systemtime_as_rfc3339")]
-    pub last_updated: SystemTime,
+    #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
+    pub as_at: DateTime<Utc>,
+    #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
+    pub last_updated: DateTime<Utc>,
     pub r#final: bool,
 }
 
 #[cfg(test)]
 mod tests {
-    use serde_json::json;
-
     use super::*;
+    use chrono::NaiveDateTime;
+    use serde_json::json;
 
     #[test]
     fn snapshot_version_json_test() {
@@ -122,8 +122,8 @@ mod tests {
                 delegations_count: 1,
                 voting_power_saturation: 0.4,
             },
-            as_at: SystemTime::UNIX_EPOCH,
-            last_updated: SystemTime::UNIX_EPOCH,
+            as_at: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
+            last_updated: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
             r#final: true,
         };
         let json = serde_json::to_value(&voter).unwrap();
@@ -138,8 +138,8 @@ mod tests {
                             "delegations_count": 1,
                             "voting_power_saturation": 0.4
                         },
-                    "as_at": "1970-01-01T00:00:00Z",
-                    "last_updated": "1970-01-01T00:00:00Z",
+                    "as_at": "1970-01-01T00:00:00+00:00",
+                    "last_updated": "1970-01-01T00:00:00+00:00",
                     "final": true
                 }
             )
@@ -157,8 +157,8 @@ mod tests {
             }],
             raw_power: 100,
             total_power: 1000,
-            as_at: SystemTime::UNIX_EPOCH,
-            last_updated: SystemTime::UNIX_EPOCH,
+            as_at: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
+            last_updated: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
             r#final: true,
         };
         let json = serde_json::to_value(&delegator).unwrap();
@@ -169,8 +169,8 @@ mod tests {
                     "delegations": [{"voting_key": "voter","group": "rep","weight": 5,"value": 100}],
                     "raw_power": 100,
                     "total_power": 1000,
-                    "as_at": "1970-01-01T00:00:00Z",
-                    "last_updated": "1970-01-01T00:00:00Z",
+                    "as_at": "1970-01-01T00:00:00+00:00",
+                    "last_updated": "1970-01-01T00:00:00+00:00",
                     "final": true
                 }
             )

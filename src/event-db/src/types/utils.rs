@@ -1,15 +1,9 @@
-use serde::{ser::Error, Serializer};
-use std::time::SystemTime;
-use time::{format_description::well_known::Rfc3339, OffsetDateTime};
+use chrono::{DateTime, Utc};
+use serde::Serializer;
 
-pub fn serialize_systemtime_as_rfc3339<S: Serializer>(
-    time: &SystemTime,
+pub fn serialize_datetime_as_rfc3339<S: Serializer>(
+    time: &DateTime<Utc>,
     serializer: S,
 ) -> Result<S::Ok, S::Error> {
-    let datetime: OffsetDateTime = (*time).into();
-    serializer.serialize_str(
-        &datetime
-            .format(&Rfc3339)
-            .map_err(|e| S::Error::custom(format!("Could not serialize date: {}", e)))?,
-    )
+    serializer.serialize_str(&time.to_rfc3339())
 }

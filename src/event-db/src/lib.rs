@@ -1,5 +1,5 @@
 //! Catalyst Election Database crate
-use bb8::{Pool, RunError};
+use bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
 use dotenvy::dotenv;
 use schema_check::SchemaVersion;
@@ -25,10 +25,8 @@ pub const DATABASE_SCHEMA_VERSION: i32 = 9;
 pub enum Error {
     #[error(" Schema in database does not match schema supported by the Crate. The current schema version: {was}, the schema version we expected: {expected}")]
     MismatchedSchema { was: i32, expected: i32 },
-    #[error(transparent)]
-    TokioPostgresError(#[from] tokio_postgres::Error),
-    #[error(transparent)]
-    TokioPostgresRunError(#[from] RunError<tokio_postgres::Error>),
+    #[error("error: {0}")]
+    Unknown(String),
     #[error(transparent)]
     VarError(#[from] VarError),
 }
@@ -73,11 +71,15 @@ pub async fn establish_connection(url: Option<&str>) -> Result<EventDB, Error> {
         None => env::var(DATABASE_URL_ENVVAR)?,
     };
 
-    let config = tokio_postgres::config::Config::from_str(&database_url)?;
+    let config = tokio_postgres::config::Config::from_str(&database_url)
+        .map_err(|err| Error::Unknown(err.to_string()))?;
 
     let pg_mgr = PostgresConnectionManager::new(config, tokio_postgres::NoTls);
 
-    let pool = Pool::builder().build(pg_mgr).await?;
+    let pool = Pool::builder()
+        .build(pg_mgr)
+        .await
+        .map_err(|err| Error::Unknown(err.to_string()))?;
 
     let db = EventDB { pool };
 

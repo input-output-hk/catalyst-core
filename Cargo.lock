@@ -2130,11 +2130,11 @@ dependencies = [
  "async-trait",
  "bb8",
  "bb8-postgres",
+ "chrono",
  "dotenvy",
  "serde",
  "serde_json",
  "thiserror",
- "time 0.3.17",
  "tokio",
  "tokio-postgres",
 ]
@@ -5143,6 +5143,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73d946ec7d256b04dfadc4e6a3292324e6f417124750fc5c0950f981b703a0f1"
 dependencies = [
  "bytes",
+ "chrono",
  "fallible-iterator",
  "postgres-protocol",
 ]

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["Error","Qr handling Errors"]],"fn":[["read_qrs","Reads qr codes from paths"]],"struct":[["PinReadModeSettings","Read mode for Pin. It can try to read it from file name or just set arbitrary"]],"trait":[["SecretFromQrCode","Trait for converting qr code into secret key"]],"type":[["Secret","Alias for secret key"]]};

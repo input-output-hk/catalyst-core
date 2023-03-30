@@ -28,14 +28,17 @@ COMMENT ON COLUMN voting_node.netkey IS
 Used as the node p2p topology key.';
 
 
--- Voting Nodes Table - Defines nodes in the network
--- This table is looked up by hostname
+-- Tally Committee Table - Stores data about the tally committee per voting event
+-- This table is looked up by event
 CREATE TABLE tally_committee (
     row_id SERIAL PRIMARY KEY,
 
     event INTEGER NOT NULL UNIQUE,
 
-    -- Other data goes here.
+    pubkey TEXT NOT NULL,
+    seckey TEXT NOT NULL,
+    comm_pk TEXT NOT NULL,
+    comm_sk TEXT NOT NULL,
 
     FOREIGN KEY(event) REFERENCES event(row_id)
 );
@@ -43,3 +46,31 @@ CREATE TABLE tally_committee (
 COMMENT ON TABLE tally_committee IS 'Table for storing data about the tally committee per voting event.';
 COMMENT ON COLUMN tally_committee.row_id IS 'Unique ID for this committee member for this event.';
 COMMENT ON COLUMN tally_committee.event  IS 'The event this committee member is for.';
+COMMENT ON COLUMN tally_committee.pubkey  IS 'Public key for the committee wallet.';
+COMMENT ON COLUMN tally_committee.seckey  IS '';
+COMMENT ON COLUMN tally_committee.comm_pk  IS '';
+COMMENT ON COLUMN tally_committee.comm_sk  IS '';
+
+
+-- Committee Member Table - Stores data about the tally committee members
+-- This table is looked up by committee
+CREATE TABLE committee_member (
+    row_id SERIAL PRIMARY KEY,
+
+    committee INTEGER NOT NULL,
+
+    pubkey TEXT NOT NULL,
+    seckey TEXT NOT NULL,
+    member_pk TEXT NOT NULL,
+    member_sk TEXT NOT NULL,
+
+    FOREIGN KEY(committee) REFERENCES tally_committee(row_id)
+);
+
+COMMENT ON TABLE committee_member IS 'Table for storing data about the tally committee members.';
+COMMENT ON COLUMN committee_member.row_id IS 'Unique ID for this committee member for this event.';
+COMMENT ON COLUMN committee_member.committee IS 'The committe this member belongs to.';
+COMMENT ON COLUMN committee_member.pubkey  IS 'Public key for the member wallet.';
+COMMENT ON COLUMN committee_member.seckey  IS 'Secret key for the member wallet.';
+COMMENT ON COLUMN committee_member.member_pk  IS 'Committee member public key';
+COMMENT ON COLUMN committee_member.member_sk  IS 'Committee member secret key';

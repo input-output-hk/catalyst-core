@@ -1,24 +1,25 @@
-use crate::db::proposal::ProposalDb;
+use crate::{
+    db::proposal::Proposal,
+    service::{handle_result, Error},
+};
 use axum::{
     extract::Path,
     routing::{get, post},
     Router,
 };
-use std::sync::Arc;
 
-pub fn proposals<State: ProposalDb + Send + Sync + 'static>(state: Arc<State>) -> Router {
+pub fn proposals() -> Router {
     Router::new()
         .route("/proposals", post(proposals_exec))
         .route(
             "/proposals/:voter_group_id",
-            get({
-                let state = state.clone();
-                move |path| proposals_by_voter_group_id_exec(path, state)
-            }),
+            get(|path| async { handle_result(proposals_by_voter_group_id_exec(path).await).await }),
         )
         .route(
             "/proposal/:id/:voter_group_id",
-            get(move |path| proposal_by_and_by_voter_group_id_exec(path, state)),
+            get(|path| async {
+                handle_result(proposal_by_and_by_voter_group_id_exec(path).await).await
+            }),
         )
 }
 
@@ -28,22 +29,27 @@ async fn proposals_exec(body: String) -> String {
     format!("body: {0}", body)
 }
 
-async fn proposals_by_voter_group_id_exec<State: ProposalDb>(
+async fn proposals_by_voter_group_id_exec(
     Path(voter_group_id): Path<String>,
-    state: Arc<State>,
-) -> String {
-    tracing::debug!("proposals_by_voter_group_id_exec, voter group id: {0}", voter_group_id);
+) -> Result<Vec<Proposal>, Error> {
+    tracing::debug!(
+        "proposals_by_voter_group_id_exec, voter group id: {0}",
+        voter_group_id
+    );
 
-    let proposals = state.get_proposals_by_voter_group_id(voter_group_id);
-    serde_json::to_string(&proposals).unwrap()
+    let proposals: Vec<Proposal> = Default::default();
+    Ok(proposals)
 }
 
-async fn proposal_by_and_by_voter_group_id_exec<State: ProposalDb>(
+async fn proposal_by_and_by_voter_group_id_exec(
     Path((id, voter_group_id)): Path<(i32, String)>,
-    state: Arc<State>,
-) -> String {
-    tracing::debug!("proposal_by_and_by_voter_group_id_exec, id: {0}, voter group id: {1}", id, voter_group_id);
+) -> Result<Proposal, Error> {
+    tracing::debug!(
+        "proposal_by_and_by_voter_group_id_exec, id: {0}, voter group id: {1}",
+        id,
+        voter_group_id
+    );
 
-    let proposal = state.get_proposal_by_and_by_voter_group_id(id, voter_group_id);
-    serde_json::to_string(&proposal).unwrap()
+    let proposal: Proposal = Default::default();
+    Ok(proposal)
 }

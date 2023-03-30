@@ -1,7 +1,11 @@
-use axum::Router;
+use crate::state::State;
+use axum::{
+    http::StatusCode,
+    response::{IntoResponse, Response},
+    Json, Router,
+};
+use serde::Serialize;
 use std::{net::SocketAddr, sync::Arc};
-
-use crate::db::DB;
 
 mod v0;
 
@@ -9,13 +13,12 @@ mod v0;
 pub enum Error {
     #[error("Cannot run service, error: {0}")]
     CannotRunService(String),
+    #[error(transparent)]
+    EventDbError(#[from] event_db::Error),
 }
 
 // #[tracing::instrument]
-pub async fn run_service<State: DB + Send + Sync + 'static>(
-    addr: &SocketAddr,
-    state: Arc<State>,
-) -> Result<(), Error> {
+pub async fn run_service(addr: &SocketAddr, state: Arc<State>) -> Result<(), Error> {
     tracing::info!("Starting service...");
     tracing::info!("Listening on {}", addr);
 
@@ -28,4 +31,11 @@ pub async fn run_service<State: DB + Send + Sync + 'static>(
         .await
         .map_err(|e| Error::CannotRunService(e.to_string()))?;
     Ok(())
+}
+
+async fn handle_result<T: Serialize>(res: Result<T, Error>) -> Response {
+    match res {
+        Ok(res) => (StatusCode::OK, Json(res)).into_response(),
+        Err(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response(),
+    }
 }

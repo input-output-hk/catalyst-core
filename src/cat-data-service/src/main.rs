@@ -1,10 +1,11 @@
 use clap::Parser;
 
-pub mod cli;
-pub mod db;
-pub mod logger;
-pub mod service;
-pub mod settings;
+mod cli;
+mod db;
+mod logger;
+mod service;
+mod settings;
+mod state;
 
 #[tokio::main]
 async fn main() -> Result<(), cli::Error> {

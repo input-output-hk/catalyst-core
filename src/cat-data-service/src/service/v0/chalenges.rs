@@ -25,7 +25,11 @@ async fn chalenge_by_id_exec(Path(id): Path<String>) -> String {
 async fn chalenge_by_id_and_voter_group_id_exec(
     Path((id, voter_group_id)): Path<(String, String)>,
 ) -> String {
-    tracing::debug!("chalenge_by_id_and_voter_group_id_exec, id: {0}, voter group id: {1}", id, voter_group_id);
+    tracing::debug!(
+        "chalenge_by_id_and_voter_group_id_exec, id: {0}, voter group id: {1}",
+        id,
+        voter_group_id
+    );
 
     format!("chalenge id: {0}, voter group id: {1}", id, voter_group_id)
 }

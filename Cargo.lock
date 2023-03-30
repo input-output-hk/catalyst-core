@@ -802,6 +802,7 @@ version = "0.1.0"
 dependencies = [
  "axum",
  "clap 4.1.4",
+ "event-db",
  "serde",
  "serde_json",
  "thiserror",
@@ -2129,7 +2130,11 @@ dependencies = [
  "async-trait",
  "bb8",
  "bb8-postgres",
+ "chrono",
  "dotenvy",
+ "serde",
+ "serde_json",
+ "thiserror",
  "tokio",
  "tokio-postgres",
 ]
@@ -5138,6 +5143,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73d946ec7d256b04dfadc4e6a3292324e6f417124750fc5c0950f981b703a0f1"
 dependencies = [
  "bytes",
+ "chrono",
  "fallible-iterator",
  "postgres-protocol",
 ]

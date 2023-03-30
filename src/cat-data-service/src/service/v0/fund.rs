@@ -1,43 +1,42 @@
-use crate::db::fund::FundDb;
+use crate::{
+    db::fund::Fund,
+    service::{handle_result, Error},
+};
 use axum::{extract::Path, routing::get, Router};
-use std::sync::Arc;
 
-pub fn fund<State: FundDb + Send + Sync + 'static>(state: Arc<State>) -> Router {
+pub fn fund() -> Router {
     Router::new()
         .route(
             "/funds",
-            get({
-                let state = state.clone();
-                move || funds_exec(state)
-            }),
+            get(|| async { handle_result(funds_exec().await).await }),
         )
         .route(
             "/fund",
-            get({
-                let state = state.clone();
-                move || fund_exec(state)
-            }),
+            get(|| async { handle_result(fund_exec().await).await }),
         )
-        .route("/fund/:id", get(move |path| fund_by_id_exec(path, state)))
+        .route(
+            "/fund/:id",
+            get(|path| async { handle_result(fund_by_id_exec(path).await).await }),
+        )
 }
 
-async fn fund_exec<State: FundDb>(state: Arc<State>) -> String {
+async fn fund_exec() -> Result<Fund, Error> {
     tracing::debug!("fund_exec");
 
-    let current_fund = state.get_current_fund();
-    serde_json::to_string(&current_fund).unwrap()
+    let current_fund = Fund::default();
+    Ok(current_fund)
 }
 
-async fn fund_by_id_exec<State: FundDb>(Path(id): Path<i32>, state: Arc<State>) -> String {
+async fn fund_by_id_exec(Path(id): Path<i32>) -> Result<Fund, Error> {
     tracing::debug!("fund_by_id_exec, id: {0}", id);
 
-    let fund = state.get_fund_by_id(id);
-    serde_json::to_string(&fund).unwrap()
+    let fund = Fund::default();
+    Ok(fund)
 }
 
-async fn funds_exec<State: FundDb>(state: Arc<State>) -> String {
+async fn funds_exec() -> Result<Vec<i32>, Error> {
     tracing::debug!("funds_exec");
 
-    let fund_ids = state.get_fund_ids();
-    serde_json::to_string(&fund_ids).unwrap()
+    let fund_ids: Vec<i32> = Default::default();
+    Ok(fund_ids)
 }

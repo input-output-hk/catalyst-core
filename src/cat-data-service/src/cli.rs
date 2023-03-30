@@ -1,15 +1,13 @@
-use std::sync::Arc;
-
-use crate::{db::MockedDB, logger, service, settings::Settings};
+use crate::{logger, service, settings::Settings, state::State};
 use clap::Parser;
-use tracing::subscriber::SetGlobalDefaultError;
+use std::sync::Arc;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
-    ServiceError(#[from] service::Error),
+    Service(#[from] service::Error),
     #[error(transparent)]
-    LoggerError(#[from] SetGlobalDefaultError),
+    EventDb(#[from] event_db::Error),
 }
 
 #[derive(Parser)]
@@ -22,10 +20,9 @@ impl Cli {
     pub async fn exec(self) -> Result<(), Error> {
         match self {
             Self::Run(settings) => {
-                logger::init(settings.log_level)?;
+                logger::init(settings.log_level).unwrap();
 
-                let state = Arc::new(MockedDB);
-
+                let state = Arc::new(State::new(settings.database_url).await?);
                 service::run_service(&settings.address, state).await?;
                 Ok(())
             }

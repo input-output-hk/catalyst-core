@@ -1,18 +1,16 @@
 //! Catalyst Election Database crate
-
-mod config_table;
-mod schema_check;
-
 use bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
+use dotenvy::dotenv;
 use schema_check::SchemaVersion;
+use std::env::{self, VarError};
+use std::str::FromStr;
 use tokio_postgres::NoTls;
 
-use dotenvy::dotenv;
-
-use std::env;
-use std::error::Error;
-use std::str::FromStr;
+mod config_table;
+pub mod queries;
+pub mod schema_check;
+pub mod types;
 
 /// Database URL Environment Variable name.
 /// eg: "`postgres://catalyst-dev:CHANGE_ME@localhost/CatalystDev`"
@@ -21,6 +19,17 @@ const DATABASE_URL_ENVVAR: &str = "EVENT_DB_URL";
 /// Database version this crate matches.
 /// Must equal the last Migrations Version Number.
 pub const DATABASE_SCHEMA_VERSION: i32 = 9;
+
+/// Event database errors
+#[derive(thiserror::Error, Debug)]
+pub enum Error {
+    #[error(" Schema in database does not match schema supported by the Crate. The current schema version: {was}, the schema version we expected: {expected}")]
+    MismatchedSchema { was: i32, expected: i32 },
+    #[error("error: {0}")]
+    Unknown(String),
+    #[error(transparent)]
+    VarError(#[from] VarError),
+}
 
 #[allow(unused)]
 /// Connection to the Election Database
@@ -52,25 +61,25 @@ pub struct EventDB {
 ///
 /// The env var "`DATABASE_URL`" can be set directly as an anv var, or in a
 /// `.env` file.
-pub async fn establish_connection(
-    url: Option<&str>,
-) -> Result<EventDB, Box<dyn Error + Send + Sync + 'static>> {
+pub async fn establish_connection(url: Option<&str>) -> Result<EventDB, Error> {
     // Support env vars in a `.env` file,  doesn't need to exist.
     dotenv().ok();
 
-    // If the Database connection URL is not supplied, try and get from the env var.
-    let env_raw = env::var(DATABASE_URL_ENVVAR);
-
     let database_url = match url {
         Some(url) => url.to_string(),
-        None => env_raw?,
+        // If the Database connection URL is not supplied, try and get from the env var.
+        None => env::var(DATABASE_URL_ENVVAR)?,
     };
 
-    let config = tokio_postgres::config::Config::from_str(&database_url)?;
+    let config = tokio_postgres::config::Config::from_str(&database_url)
+        .map_err(|err| Error::Unknown(err.to_string()))?;
 
     let pg_mgr = PostgresConnectionManager::new(config, tokio_postgres::NoTls);
 
-    let pool = Pool::builder().build(pg_mgr).await?;
+    let pool = Pool::builder()
+        .build(pg_mgr)
+        .await
+        .map_err(|err| Error::Unknown(err.to_string()))?;
 
     let db = EventDB { pool };
 

@@ -103,7 +103,7 @@ impl SnapshotQueries for EventDB {
                 .map_err(|err| Error::Unknown(err.to_string()))?
                 .and_local_timezone(Utc)
                 .unwrap(),
-            r#final: voter
+            is_final: voter
                 .try_get("final")
                 .map_err(|err| Error::Unknown(err.to_string()))?,
         })
@@ -171,7 +171,7 @@ impl SnapshotQueries for EventDB {
                 .map_err(|err| Error::Unknown(err.to_string()))?
                 .and_local_timezone(Utc)
                 .unwrap(),
-            r#final: delegator
+            is_final: delegator
                 .try_get("final")
                 .map_err(|err| Error::Unknown(err.to_string()))?,
             delegations,

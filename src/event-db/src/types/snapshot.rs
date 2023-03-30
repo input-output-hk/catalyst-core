@@ -69,7 +69,8 @@ pub struct Voter {
     pub as_at: DateTime<Utc>,
     #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
     pub last_updated: DateTime<Utc>,
-    pub r#final: bool,
+    #[serde(rename = "final")]
+    pub is_final: bool,
 }
 
 #[derive(Serialize, Clone, Default)]
@@ -89,7 +90,8 @@ pub struct Delegator {
     pub as_at: DateTime<Utc>,
     #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
     pub last_updated: DateTime<Utc>,
-    pub r#final: bool,
+    #[serde(rename = "final")]
+    pub is_final: bool,
 }
 
 #[cfg(test)]
@@ -124,7 +126,7 @@ mod tests {
             },
             as_at: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
             last_updated: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            r#final: true,
+            is_final: true,
         };
         let json = serde_json::to_value(&voter).unwrap();
         assert_eq!(
@@ -159,7 +161,7 @@ mod tests {
             total_power: 1000,
             as_at: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
             last_updated: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            r#final: true,
+            is_final: true,
         };
         let json = serde_json::to_value(&delegator).unwrap();
         assert_eq!(

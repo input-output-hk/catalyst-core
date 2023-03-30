@@ -1,15 +1,11 @@
-import asyncio
 import asyncpg
 import csv
-import rich.panel
-import rich.prompt
-import rich.table
-import rich.console
-from typing import Dict, List, Optional
+from loguru import logger
+from typing import Dict, Optional
 
 
 from . import config, db_mapper
-from ideascale_importer.ideascale.client import CampaignGroup, Client, Funnel
+from ideascale_importer.ideascale.client import CampaignGroup, Client
 import ideascale_importer.db
 
 
@@ -27,9 +23,9 @@ class Importer:
         api_token: str,
         database_url: str,
         config_path: Optional[str],
-        event_id: Optional[int],
-        campaign_group_id: Optional[int],
-        stage_id: Optional[int],
+        event_id: int,
+        campaign_group_id: int,
+        stage_id: int,
         proposals_scores_csv_path: Optional[str],
     ):
         self.api_token = api_token
@@ -40,12 +36,16 @@ class Importer:
         self.conn: asyncpg.Connection | None = None
 
         try:
-            self.config = config.from_json_file(config_path or "ideascale-importer-config.json")
+            config_file_path = config_path or "ideascale-importer-config.json"
+            logger.debug("Reading configuration file", path=config_file_path)
+            self.config = config.from_json_file(config_file_path)
         except Exception as e:
             raise ReadConfigException(repr(e)) from e
 
         self.proposals_impact_scores: Dict[int, int] = {}
         if proposals_scores_csv_path is not None:
+            logger.debug("Reading proposals impact scores from file", path=proposals_scores_csv_path)
+
             try:
                 with open(proposals_scores_csv_path) as f:
                     r = csv.DictReader(f)
@@ -62,6 +62,7 @@ class Importer:
 
     async def connect(self):
         if self.conn is None:
+            logger.info("Connecting to the database")
             self.conn = await ideascale_importer.db.connect(self.database_url)
 
     async def close(self):
@@ -72,95 +73,34 @@ class Importer:
         if self.conn is None:
             raise Exception("Not connected to the database")
 
-        console = rich.console.Console()
-
-        if self.event_id is None:
-            select_event_id = rich.prompt.Prompt.ask("Enter the event database id")
-            event_id = int(select_event_id, base=10)
-        else:
-            event_id = self.event_id
-
-        if not await ideascale_importer.db.event_exists(self.conn, event_id):
-            console.print("\n[red]No event exists with the given id[/red]")
+        if not await ideascale_importer.db.event_exists(self.conn, self.event_id):
+            logger.error("No event exists with the given id")
             return
 
         client = Client(self.api_token)
 
-        groups = []
-        with client.inner.request_progress_observer:
-            groups = [g for g in await client.campaign_groups() if g.name.lower().startswith("fund")]
+        groups = [g for g in await client.campaign_groups() if g.name.lower().startswith("fund")]
 
         if len(groups) == 0:
-            console.print("No funds found")
+            logger.warning("No funds found")
             return
-
-        if self.campaign_group_id is None:
-            console.print()
-            funds_table = rich.table.Table("Id", "Name", title="Available Funds")
-
-            for g in groups:
-                funds_table.add_row(str(g.id), g.name)
-            console.print(funds_table)
-
-            selected_campaign_group_id = rich.prompt.Prompt.ask(
-                "Select a fund id",
-                choices=list(map(lambda g: str(g.id), groups)),
-                show_choices=False)
-            campaign_group_id = int(selected_campaign_group_id, base=10)
-            console.print()
-        else:
-            campaign_group_id = self.campaign_group_id
 
         group: Optional[CampaignGroup] = None
         for g in groups:
-            if g.id == campaign_group_id:
+            if g.id == self.campaign_group_id:
                 group = g
                 break
 
         if group is None:
-            console.print("\n[red]Campaign group id does not correspond to any fund campaign group id[/red]")
+            logger.error("Campaign group id does not correspond to any fund campaign group id")
             return
 
-        if self.stage_id is None:
-            funnel_ids = set()
-            for c in group.campaigns:
-                if c.funnel_id is not None:
-                    funnel_ids.add(c.funnel_id)
-
-            funnels: List[Funnel] = []
-            with client.inner.request_progress_observer:
-                funnels = await asyncio.gather(*[client.funnel(id) for id in funnel_ids])
-
-            stages = [stage for funnel in funnels for stage in funnel.stages]
-
-            if len(stages) == 0:
-                console.print("No stages found")
-                return
-
-            stages_table = rich.table.Table("Id", "Label", "Funnel Name", title="Available Stages")
-
-            stages.sort(key=lambda s: f"{s.funnel_name}{s.id}")
-            for stage in stages:
-                stages_table.add_row(str(stage.id), stage.label, stage.funnel_name)
-            console.print(stages_table)
-
-            selected_stage_id = rich.prompt.Prompt.ask(
-                "Select a stage id",
-                choices=list(map(lambda s: str(s.id), stages)),
-                show_choices=False)
-            stage_id = int(selected_stage_id, base=10)
-            console.print()
-        else:
-            stage_id = self.stage_id
-
-        ideas = []
-        with client.inner.request_progress_observer:
-            ideas = await client.stage_ideas(stage_id)
+        ideas = await client.stage_ideas(self.stage_id)
 
         vote_options_id = await ideascale_importer.db.get_vote_options_id(self.conn, "yes,no")
         mapper = db_mapper.Mapper(vote_options_id, self.config)
 
-        challenges = [mapper.map_challenge(a, event_id) for a in group.campaigns]
+        challenges = [mapper.map_challenge(a, self.event_id) for a in group.campaigns]
         challenge_count = len(challenges)
         proposal_count = 0
 
@@ -174,4 +114,6 @@ class Importer:
             proposal_count = len(proposals)
             await ideascale_importer.db.upsert_many(self.conn, proposals, conflict_cols=["id"])
 
-        console.print(f"Imported {challenge_count} challenges and {proposal_count} proposals")
+        logger.info(
+            "Imported challenges and proposals",
+            challenge_count=challenge_count, proposal_count=proposal_count)

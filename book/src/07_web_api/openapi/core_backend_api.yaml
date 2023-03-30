@@ -82,8 +82,8 @@ paths:
     parameters:
       - $ref: '#/components/parameters/event_id'
     get:
-      operationId: getReferendumById
-      summary: Get referendum to be decided for a Voting Event.
+      operationId: getReferendums
+      summary: Get referendums to be decided for a Voting Event.
       tags:
         - referendum
       description: |-
@@ -100,7 +100,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ChallengeWithProposals'
+                $ref: '#/components/schemas/Referendum'
         '404':
           description: The requested challenge was not found
       parameters:
@@ -168,7 +168,7 @@ paths:
       operationId: getProposalReviews
       summary: Get reviews related to a proposal
       tags:
-        - reviews
+        - proposal
       description: |
         Retrieves advisor reviews information for the provided proposal id.
       responses:
@@ -202,7 +202,7 @@ paths:
                 oneOf:
                   - type: array
                     items:
-                      $ref: '#/components/schemas/Challenge'
+                      $ref: '#/components/schemas/Referendum'
                   - type: array
                     items:
                       $ref: '#/components/schemas/ProposalWithChallengeInfo'
@@ -225,7 +225,7 @@ paths:
       operationId: getVoterInfo
       summary: Get voter's info by voting key
       tags:
-        - snapshot
+        - registration
       description: |
         Get voter's registration and voting power by their voting key.\
         If the `eid` query parameter is omitted, then the latest voting power is retrieved.
@@ -254,7 +254,7 @@ paths:
       operationId: getDelegatorInfo
       summary: Get voters info by stake public key
       tags:
-        - snapshot
+        - registration
       description: |
         Get voters delegation info by stake public key.\
         If the `eid` query parameter is missing, then the "Latest" registration for the Stake Public Key is returned.
@@ -275,6 +275,8 @@ paths:
     post:
       summary: Check Ballot Validity
       operationId: post-api-v1-ballot-check
+      tags:
+        - ballot
       responses:
         '200':
           description: OK
@@ -295,7 +297,8 @@ paths:
       - $ref: '#/components/parameters/event_id'
     get:
       summary: Your GET endpoint
-      tags: []
+      tags: 
+        - ballot
       responses: {}
       operationId: get-api-v1-ballot-cast-id
       description: Cast a Ballot on the requested Voting Event.
@@ -531,6 +534,7 @@ components:
       x-stoplight:
         id: 2vnfvuyiiku1s
       type: object
+      description: Detaild information for an individual voting event.
       properties:
         voting_power:
           $ref: '#/components/schemas/VotingPowerSettings'
@@ -551,17 +555,75 @@ components:
           description: The valid voter groups for this voting event.
           items:
             $ref: '#/components/schemas/VoterGroup'
-        referendum:
-          type: array
-          description: A list of all referendum ids to be decided in this Voting Event.
-          items:
-            $ref: '#/components/schemas/ReferendumId'
-      description: Detaild information for an individual voting event.
     Event:
       allOf:
         - $ref: '#/components/schemas/EventSummary'
         - $ref: '#/components/schemas/EventDetails'
       description: Complete Details about an individual Voting Event
+    ReferendumTypes:
+      type: string
+      enum:
+        - catalyst-simple
+        - catalyst-native
+        - catalyst-community-choice
+        - sve-decision
+      description: Referendum Type defines the rules of the referendum.
+    ReferendumType:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ReferendumTypes'
+        description:
+          type: string
+          description: An explanaiton of the rules of this Referendum Type.
+      x-stoplight:
+        id: 71d539b7754fe
+    RewardCurrency:
+      type: string
+      enum:
+        - USD_ADA
+        - ADA
+        - CLAP
+        - COTI
+      description: Currency of the Reward.
+      x-stoplight:
+        id: fbbb21af7575f
+    RewardDefintion:
+      type: object
+      properties:
+        currency:
+          $ref: '#/components/schemas/RewardCurrency'
+        value:
+          type: integer
+          format: int64
+          description: The total value of the reward
+      x-stoplight:
+        id: 801e3929998ec
+    Referendum:
+      type: object
+      description: Individual Referendum
+      x-stoplight:
+        id: 4aa544e4e7861
+      properties:
+        id:
+          $ref: '#/components/schemas/ReferendumId'
+          description: The ID of this referendum for the Voting Event
+        type:
+          $ref: '#/components/schemas/ReferendumType'
+          description: The "Type" of Referendum
+        title:
+          type: string
+          description: The title for this Referendum.
+        description:
+          type: string
+          description: Long form explanation of this particular referendum.
+        reward:
+          $ref: '#/components/schemas/ReferendumType'
+          description: The "Type" of Referendum
+        challenge_url:
+          type: string
+        highlights:
+          $ref: '#/components/schemas/ChallengeHighlights'
     Testtesttesttesttesttesttesttest:
       allOf:
         - $ref: '#/components/schemas/EventSummary'
@@ -798,36 +860,6 @@ components:
         fund_id: 20
         challenge_id: 1
         challenge_type: community-choice
-    Challenge:
-      properties:
-        id:
-          type: integer
-          format: int32
-        challenge_type:
-          $ref: '#/components/schemas/ChallengeType'
-        title:
-          type: string
-        description:
-          type: string
-        rewards_total:
-          type: integer
-          format: int64
-        fund_id:
-          type: integer
-          format: int32
-        challenge_url:
-          type: string
-        highlights:
-          $ref: '#/components/schemas/ChallengeHighlights'
-    ChallengeWithProposals:
-      allOf:
-        - $ref: '#/components/schemas/Challenge'
-        - type: object
-          properties:
-            proposals:
-              type: array
-              items:
-                $ref: '#/components/schemas/Proposal'
     AdvisorReview:
       properties:
         id:
@@ -1268,6 +1300,7 @@ components:
         default: 2147483647
         example: 100
       description: Limit the results to this value
+      style: form
     offset:
       name: ofs
       in: query
@@ -1278,27 +1311,32 @@ components:
         default: 0
         minimum: 0
       description: Offset the results starting at this record. 0 being the first.
+      style: form
     voter_groups_filter:
       name: grp
       in: query
       required: false
       schema:
         type: array
-        enum:
-          - direct
-          - rep
-        example: direct
+        items:
+          type: string
+          enum:
+            - direct
+            - rep
+          example: direct
         uniqueItems: true
         minItems: 1
       description: Filter Results to only these voter groups.
+      explode: true
+      style: form
     totals:
       name: tot
       in: query
       required: false
       schema:
         type: boolean
-        default: 'false'
-        example: 'true'
+        default: false
+        example: true
       description: 'Don''t return results, just the total number of results that could have been returned.'
     voting_key:
       name: vkey
@@ -1324,3 +1362,4 @@ components:
         example: 11
         minimum: 0
       description: The Event ID to return results for.
+      style: form

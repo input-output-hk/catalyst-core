@@ -3,6 +3,7 @@ use crate::{
     state::State,
 };
 use axum::{extract::Path, routing::get, Router};
+use event_db::types::snapshot::{Delegator, SnapshotVersion, Voter};
 use std::sync::Arc;
 
 pub fn snapshot(state: Arc<State>) -> Router {
@@ -27,27 +28,27 @@ pub fn snapshot(state: Arc<State>) -> Router {
         )
 }
 
-async fn versions_exec(state: Arc<State>) -> Result<String, Error> {
+async fn versions_exec(state: Arc<State>) -> Result<Vec<SnapshotVersion>, Error> {
     tracing::debug!("versions_exec");
 
     let snapshot_versions = state.event_db.get_snapshot_versions().await?;
-    Ok(serde_json::to_string(&snapshot_versions).unwrap())
+    Ok(snapshot_versions)
 }
 
 async fn voter_exec(
     Path((event, voting_key)): Path<(String, String)>,
     state: Arc<State>,
-) -> Result<String, Error> {
+) -> Result<Voter, Error> {
     tracing::debug!("voter_exec, event: {0}, voting_key: {1}", event, voting_key);
 
     let voter = state.event_db.get_voter(event, voting_key).await?;
-    Ok(serde_json::to_string(&voter).unwrap())
+    Ok(voter)
 }
 
 async fn delegator_exec(
     Path((event, stake_public_key)): Path<(String, String)>,
     state: Arc<State>,
-) -> Result<String, Error> {
+) -> Result<Delegator, Error> {
     tracing::debug!(
         "delegator_exec, event: {0}, stake_public_key: {1}",
         event,
@@ -58,5 +59,5 @@ async fn delegator_exec(
         .event_db
         .get_delegator(event, stake_public_key)
         .await?;
-    Ok(serde_json::to_string(&delegator).unwrap())
+    Ok(delegator)
 }

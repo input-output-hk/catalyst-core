@@ -1,4 +1,7 @@
-use crate::db::proposal::Proposal;
+use crate::{
+    db::proposal::Proposal,
+    service::{handle_result, Error},
+};
 use axum::{
     extract::Path,
     routing::{get, post},
@@ -10,11 +13,13 @@ pub fn proposals() -> Router {
         .route("/proposals", post(proposals_exec))
         .route(
             "/proposals/:voter_group_id",
-            get(proposals_by_voter_group_id_exec),
+            get(|path| async { handle_result(proposals_by_voter_group_id_exec(path).await).await }),
         )
         .route(
             "/proposal/:id/:voter_group_id",
-            get(proposal_by_and_by_voter_group_id_exec),
+            get(|path| async {
+                handle_result(proposal_by_and_by_voter_group_id_exec(path).await).await
+            }),
         )
 }
 
@@ -24,19 +29,21 @@ async fn proposals_exec(body: String) -> String {
     format!("body: {0}", body)
 }
 
-async fn proposals_by_voter_group_id_exec(Path(voter_group_id): Path<String>) -> String {
+async fn proposals_by_voter_group_id_exec(
+    Path(voter_group_id): Path<String>,
+) -> Result<Vec<Proposal>, Error> {
     tracing::debug!(
         "proposals_by_voter_group_id_exec, voter group id: {0}",
         voter_group_id
     );
 
     let proposals: Vec<Proposal> = Default::default();
-    serde_json::to_string(&proposals).unwrap()
+    Ok(proposals)
 }
 
 async fn proposal_by_and_by_voter_group_id_exec(
     Path((id, voter_group_id)): Path<(i32, String)>,
-) -> String {
+) -> Result<Proposal, Error> {
     tracing::debug!(
         "proposal_by_and_by_voter_group_id_exec, id: {0}, voter group id: {1}",
         id,
@@ -44,5 +51,5 @@ async fn proposal_by_and_by_voter_group_id_exec(
     );
 
     let proposal: Proposal = Default::default();
-    serde_json::to_string(&proposal).unwrap()
+    Ok(proposal)
 }

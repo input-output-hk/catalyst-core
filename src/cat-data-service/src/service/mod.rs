@@ -1,5 +1,10 @@
 use crate::state::State;
-use axum::{http::StatusCode, Router};
+use axum::{
+    http::StatusCode,
+    response::{IntoResponse, Response},
+    Json, Router,
+};
+use serde::Serialize;
 use std::{net::SocketAddr, sync::Arc};
 
 mod v0;
@@ -28,9 +33,9 @@ pub async fn run_service(addr: &SocketAddr, state: Arc<State>) -> Result<(), Err
     Ok(())
 }
 
-async fn handle_result(res: Result<String, Error>) -> (StatusCode, String) {
+async fn handle_result<T: Serialize>(res: Result<T, Error>) -> Response {
     match res {
-        Ok(res) => (StatusCode::OK, res),
-        Err(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
+        Ok(res) => (StatusCode::OK, Json(res)).into_response(),
+        Err(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response(),
     }
 }

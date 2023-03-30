@@ -7,12 +7,10 @@ use std::{fs::File, io::BufWriter};
 
 use clap::Parser;
 use color_eyre::Result;
-use mainnet_lib::InMemoryDbSync;
 use tracing::{debug, info, Level};
-use voting_tools_rs::test_api::MockDbProvider;
 
 use voting_tools_rs::{
-    voting_power, Args, Db, DbConfig, DryRunCommand, InvalidRegistration, SnapshotEntry,
+    voting_power, Args, DbConfig, DryRunCommand, InvalidRegistration, SnapshotEntry,
     VotingPowerArgs,
 };
 
@@ -64,9 +62,10 @@ fn main() -> Result<()> {
     args.network_id = network_id;
     args.expected_voting_purpose = expected_voting_purpose;
 
-    let client = db_conn(db_config.clone())?;
+    let db_client_registrations = db_conn(db_config.clone())?;
+    let db_client_stakes = db_conn(db_config.clone())?;
 
-    let (valids, invalids) = load(db_config, dry_run, args, client)?;
+    let (valids, invalids) = load(dry_run, args, db_client_stakes, db_client_registrations)?;
 
     handle_invalids(&out_file, &invalids)?;
 
@@ -106,24 +105,16 @@ fn db_conn(db_config: DbConfig) -> Result<Client, postgres::Error> {
 }
 
 fn load(
-    real_db_config: DbConfig,
     dry_run: Option<DryRunCommand>,
     args: VotingPowerArgs,
-    registration_client: Client,
+    db_client_stakes: Client,
+    db_client_registrations: Client,
 ) -> Result<(Vec<SnapshotEntry>, Vec<InvalidRegistration>)> {
     if let Some(DryRunCommand::DryRun { mock_json_file }) = dry_run {
         info!("Using dryrun file: {}", mock_json_file.to_string_lossy());
-        let db = MockDbProvider::from(InMemoryDbSync::restore(mock_json_file)?);
-        voting_power(db, registration_client, args)
+        voting_power(db_client_stakes, db_client_registrations, args)
     } else {
-        let db_loc = &real_db_config.host;
-        let db_user = &real_db_config.name;
-        info!(
-            "Connecting to Postgresql at {}:xxxxxxxx@{}.",
-            db_user, db_loc
-        );
-        let db = Db::connect(real_db_config)?;
-        voting_power(db, registration_client, args)
+        voting_power(db_client_stakes, db_client_registrations, args)
     }
 }
 

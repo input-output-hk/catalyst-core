@@ -1,13 +1,15 @@
 #![allow(missing_docs)]
 
+use std::thread;
+
 use crate::{
     data::{Registration, SignedRegistration, SlotNo},
+    db::queries::staked_utxo_ada::staked_utxo_ada,
     error::InvalidRegistration,
     verify::{filter_registrations, StakeKeyHash},
-    DataProvider, SnapshotEntry,
-    db::queries::staked_utxo_ada::staked_utxo_ada,
+    SnapshotEntry,
 };
-use bigdecimal::{BigDecimal, ToPrimitive};
+
 use color_eyre::eyre::{eyre, Result};
 use dashmap::DashMap;
 
@@ -49,8 +51,8 @@ pub use args::VotingPowerArgs;
 ///
 /// Returns an error if either of `lower` or `upper` doesn't fit in an `i64`
 pub fn voting_power(
-    db: impl DataProvider,
-    mut registration_client: Client,
+    mut db_client_stakes: Client,
+    db_client_registrations: Client,
     VotingPowerArgs {
         min_slot,
         max_slot,
@@ -64,37 +66,32 @@ pub fn voting_power(
     let min_slot = min_slot.unwrap_or(ABS_MIN_SLOT);
     let max_slot = max_slot.unwrap_or(ABS_MAX_SLOT);
 
-    staked_utxo_ada(i64::try_from(max_slot.0).unwrap(), &mut registration_client).unwrap();
+    info!("starting stakes job");
+    let stakes = thread::spawn(move || {
+        staked_utxo_ada(i64::try_from(max_slot.0).unwrap(), &mut db_client_stakes).unwrap()
+    });
 
-    let (valids, invalids) =
-        filter_registrations(min_slot, max_slot, registration_client, network_id).unwrap();
+    info!("starting registrations job");
+    let registrations = thread::spawn(move || {
+        filter_registrations(min_slot, max_slot, db_client_registrations, network_id).unwrap()
+    });
 
-    let addrs = stake_addrs_hashes(valids.clone());
-
-    let voting_powers = db.stake_values(&addrs);
+    let (valids, invalids) = registrations.join().unwrap();
+    info!("finished processing registrations");
+    let staked_ada_records = stakes.join().unwrap();
+    info!("finished processing stakes");
 
     let snapshot = valids
         .into_iter()
-        .map(|reg| convert_to_snapshot_entry(reg, &voting_powers))
+        .map(|reg| convert_to_snapshot_entry(reg, &staked_ada_records))
         .collect::<Result<_, _>>()?;
 
     Ok((snapshot, invalids))
 }
 
-// returns hashes
-fn stake_addrs_hashes(registrations: Vec<SignedRegistration>) -> Vec<StakeKeyHash> {
-    let mut stake_keys = vec![];
-
-    for r in registrations {
-        stake_keys.push(r.stake_key_hash);
-    }
-
-    stake_keys
-}
-
 fn convert_to_snapshot_entry(
     registration: SignedRegistration,
-    voting_powers: &DashMap<StakeKeyHash, BigDecimal>,
+    stakes: &DashMap<StakeKeyHash, u128>,
 ) -> Result<SnapshotEntry> {
     let SignedRegistration {
         registration:
@@ -110,11 +107,16 @@ fn convert_to_snapshot_entry(
         ..
     } = registration;
 
-    let voting_power = voting_powers
-        .get(&stake_key_hash)
-        .ok_or_else(|| eyre!("no voting power available for stake key: {}", stake_key))?;
-
-    let voting_power = voting_power.to_u128().unwrap_or(0);
+    let voting_power = match stakes.get(&stake_key_hash) {
+        Some(voting_power) => *voting_power,
+        None => {
+            info!(
+                "registration not found, this is weird {:?}",
+                hex::encode(stake_key_hash.clone())
+            );
+            0
+        }
+    };
 
     Ok(SnapshotEntry {
         voting_key,

@@ -24,6 +24,7 @@ pub type Valids = Vec<SignedRegistration>;
 /// Registrations which failed cddl and or sig checks
 pub type Invalids = Vec<InvalidRegistration>;
 
+/// Network_id + Blake2b-224( Stake Public Key )
 pub type StakeKeyHash = Vec<u8>;
 
 ///

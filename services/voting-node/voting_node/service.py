@@ -38,7 +38,11 @@ class VotingNode(uvicorn.Server):
         """This method starts the voting node service in an asynchronous runtime. It
         accepts the optional arguments of `sockets` used by the uvicorn server used
         to run the FastAPI service."""
-        asyncio.run(self.start_service(sockets=sockets))
+        try:
+            asyncio.run(self.start_service(sockets=sockets))
+        except Exception as e:
+            logger.error(f"Schedule error: {e}")
+            print("Schedule failed. Exiting.")
 
     # Starts Voting Node Service, including this fastAPI server as well as the
     # jormungandr node's REST and GRPC servers.
@@ -56,17 +60,19 @@ class VotingNode(uvicorn.Server):
         # execute the scheduled tasks for this node, by
         # extracting the leadership role from the hostname
         schedule = self.get_schedule()
-        # checks if `stop_schedule` has been called
-        while self.is_running_schedule():
-            try:
-                if schedule is None:
-                    raise Exception("no proper schedule found for this node")
-                await schedule.run()
-                break
-            except Exception as e:
-                logger.warning(f"schedule fail: {e}")
-            # waits before retrying
-            await asyncio.sleep(SLEEP_TO_SCHEDULE_RETRY)
+        match schedule:
+            case None:
+                raise Exception("no proper schedule found for this node")
+            case _:
+                # checks if `stop_schedule` has been called
+                while self.is_running_schedule():
+                    try:
+                        await schedule.run()
+                        break
+                    except Exception as e:
+                        logger.warning(f"schedule retry: {e}")
+                    # waits before retrying
+                    await asyncio.sleep(SLEEP_TO_SCHEDULE_RETRY)
 
         # await the api task until last
         await api_task

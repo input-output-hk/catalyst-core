@@ -89,7 +89,7 @@ class EventDb(object):
                 return list(map(extract_leader_info, leaders))
 
     async def fetch_proposals(self) -> List[Proposal]:
-        query = "SELECT * FROM proposal WHERE event |ORDER BY id ASC"
+        query = "SELECT * FROM proposal ORDER BY id ASC"
         result = await self.conn.fetch(query)
         if result is None:
             raise Exception("proposals DB error")

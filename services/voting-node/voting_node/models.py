@@ -130,10 +130,11 @@ class GenesisYaml(YamlFile):
 class Event:
     """Represents DB row for the current event."""
 
+    # The primary key in the DB.
     row_id: int
-    # The name of the event. eg. "Fund9" or "SVE1"
+    # The name of the event. eg. "Fund9" or "SVE1".
     name: str
-    # A detailed description of the purpose of the event. eg. the events "Goal"
+    # A detailed description of the purpose of the event. eg. the events "Goal".
     description: str
 
     # The Time (UTC) Registrations are taken from Cardano main net.

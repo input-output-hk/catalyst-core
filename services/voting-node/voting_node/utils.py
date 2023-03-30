@@ -61,13 +61,14 @@ async def get_network_secret(secret_file: Path, jcli_path: str) -> str:
             raise e
 
 
-def match_hostname_leadership_pattern(host_name: str) -> Match[str] | None:
-    return re.match(LEADERSHIP_REGEX, host_name)
-
-
 def get_hostname_role_n_digits(
     host_name: str,
 ) -> Tuple[Literal["leader", "follower"], str]:
+    """."""
+
+    def match_hostname_leadership_pattern(host_name: str) -> Match[str] | None:
+        return re.match(LEADERSHIP_REGEX, host_name)
+
     res = match_hostname_leadership_pattern(host_name)
     exc = Exception(f"hostname {host_name} must conform to '{LEADERSHIP_REGEX}'")
     if res is None:
@@ -205,6 +206,7 @@ def make_node_config(
             )
         case _:
             raise Exception("something odd happened creating node_config.yaml")
+
 
 async def create_address_keyset(jcli: jcli.JCli) -> Tuple[str, str, str]:
     committee_sk = await jcli.key_generate()

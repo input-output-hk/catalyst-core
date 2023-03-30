@@ -85,6 +85,7 @@ def start(
     jorm_jrpc_port,
     jorm_p2p_port,
 ):
+    """Starts the voting node."""
     logs.configLogger(log_level)
 
     api_config = uvicorn.Config(api.app, host=host, port=port, log_level=log_level)

@@ -161,15 +161,15 @@ class NodeTaskSchedule(ScheduleRunner):
         ScheduleRunner.reset_data(self)
         self.node.reset()
 
-    async def connect_db(self):
-        # connect to the DB
-        await self.db.connect()
-
     def jcli(self) -> JCli:
         return JCli(self.settings.jcli_path_str)
 
     def jorm(self) -> Jormungandr:
         return Jormungandr(self.settings.jorm_path_str)
+
+    async def connect_db(self):
+        # connect to the DB
+        await self.db.connect()
 
     async def setup_host_info(self):
         try:
@@ -419,7 +419,7 @@ class Leader0Schedule(LeaderSchedule):
 
         try:
             # gets event proposals, raises exception if none is found.
-            proposals = await self.db.fetch_proposals(event.row_id)
+            proposals = await self.db.fetch_proposals()
             logger.debug(f"proposals:\n{proposals}")
             self.proposals = proposals
         except Exception as e:

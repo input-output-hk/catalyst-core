@@ -107,6 +107,7 @@ fn convert_to_snapshot_entry(
         ..
     } = registration;
 
+    // look up stake key hash of valid registration in stakes map to get staked ada associated with the key
     let voting_power = match stakes.get(&stake_key_hash) {
         Some(voting_power) => *voting_power,
         None => {

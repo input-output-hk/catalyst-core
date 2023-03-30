@@ -30,6 +30,7 @@ pub fn staked_utxo_ada(
     WHERE block.slot_no <= {} );",
         max_slot
     );
+
     client.execute(&tx_out, &[])?;
 
     info!("executing tx in statement");

@@ -90,13 +90,19 @@ pub async fn establish_connection(url: Option<&str>) -> Result<EventDB, Error> {
 
 #[cfg(test)]
 mod test {
+    use super::*;
+
+    pub async fn test_event_db() -> EventDB {
+        establish_connection(Some(
+            "postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev",
+        ))
+        .await
+        .unwrap()
+    }
 
     /// Check if the schema version in the DB is up to date.
     #[tokio::test]
-    #[ignore = "not used"]
     async fn check_schema_version() {
-        use crate::establish_connection;
-
-        establish_connection(None).await.expect("pass");
+        test_event_db().await;
     }
 }

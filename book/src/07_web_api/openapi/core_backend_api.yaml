@@ -24,10 +24,10 @@ info:
 tags:
   - name: event
     description: Information on voting events.
-  - name: referendum
-    description: Information about votes in which all the people in a defined group decide on an important question.
+  - name: objective
+    description: Information about the objectives in which all the people in a defined group decide on an important question.
   - name: proposal
-    description: Information on the proposals to be considered in context with their referendum.
+    description: Information on the proposals to be considered in context with their objective.
   - name: registration
     description: 'Information relating to Voter Registration, Delegations and Calculated Voting Power.'
   - name: ballot
@@ -78,29 +78,30 @@ paths:
           $ref: '#/components/responses/404-Event'
         '500':
           $ref: '#/components/responses/500'
-  '/api/v1/event/{id}/referendums':
+  '/api/v1/event/{id}/objectives':
     parameters:
       - $ref: '#/components/parameters/event_id'
     get:
-      operationId: getReferendums
-      summary: Get referendums to be decided for a Voting Event.
+      operationId: getObjectives
+      summary: Get objectives to be decided for a Voting Event.
       tags:
-        - referendum
+        - objective
       description: |-
-        Get all current referendums to be decided for the voting event.
-        A Referendum here is defined as:\
+        Get all current objectives to be decided for the voting event.
+        An Objective here is defined as:\
         *"A vote in which all the people in a group decide on an important issue."*\
-        Examples of referendum are:
-        * Catalsyt Funding Decisions
+        Examples of objectives are:
+        * Catalsyt Funding Challenges
         * General Voting Events
         * Any other Decision to be determined by the Communities Collective will.
+        * Non binding community collective opinion measurement.
       responses:
         '200':
           description: Valid response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Referendum'
+                $ref: '#/components/schemas/Objective'
         '404':
           description: The requested challenge was not found
       parameters:
@@ -202,7 +203,7 @@ paths:
                 oneOf:
                   - type: array
                     items:
-                      $ref: '#/components/schemas/Referendum'
+                      $ref: '#/components/schemas/Objective'
                   - type: array
                     items:
                       $ref: '#/components/schemas/ProposalWithChallengeInfo'
@@ -286,7 +287,7 @@ paths:
         The actual format of the report is TBD on implementation.
         It is to handle both Private and Public Ballots.
 
-        If Event ID is provided, the ballot should also be checked against current knowledge of the Events Referendums and Proposals to check the contents of the ballot are correct.  Otherwise, they are not considered and ONLY the raw format is checked.
+        If Event ID is provided, the ballot should also be checked against current knowledge of the Events Objectives and Proposals to check the contents of the ballot are correct.  Otherwise, they are not considered and ONLY the raw format is checked.
 
         It must also check the Ballot is signed properly with the voters private voting key.
 
@@ -297,7 +298,7 @@ paths:
       - $ref: '#/components/parameters/event_id'
     get:
       summary: Your GET endpoint
-      tags: 
+      tags:
         - ballot
       responses: {}
       operationId: get-api-v1-ballot-cast-id
@@ -520,12 +521,12 @@ components:
         - tallying_end
       x-stoplight:
         id: 0415c628024e0
-    ReferendumId:
-      title: EventId
+    ObjectiveId:
+      title: ObjectiveId
       x-stoplight:
-        id: 485ff755fcfbc
+        id: 2ed7437cf8e24
       type: integer
-      description: The Numeric ID of a Referendum to be decided in a Voting Event
+      description: The Numeric ID of an Objecgtive to be decided in a Voting Event
       example: 11
       format: int32
       minimum: 0
@@ -560,22 +561,24 @@ components:
         - $ref: '#/components/schemas/EventSummary'
         - $ref: '#/components/schemas/EventDetails'
       description: Complete Details about an individual Voting Event
-    ReferendumTypes:
+    ObjectiveTypes:
       type: string
       enum:
         - catalyst-simple
         - catalyst-native
         - catalyst-community-choice
         - sve-decision
-      description: Referendum Type defines the rules of the referendum.
-    ReferendumType:
+      description: Objective Type defines the rules of the objective.
+      x-stoplight:
+        id: fbb7ff0256d29
+    ObjectiveType:
       type: object
       properties:
         id:
-          $ref: '#/components/schemas/ReferendumTypes'
+          $ref: '#/components/schemas/ObjectiveTypes'
         description:
           type: string
-          description: An explanaiton of the rules of this Referendum Type.
+          description: An explanaiton of the rules of this Objective Type.
       x-stoplight:
         id: 71d539b7754fe
     RewardCurrency:
@@ -599,27 +602,27 @@ components:
           description: The total value of the reward
       x-stoplight:
         id: 801e3929998ec
-    Referendum:
+    Objective:
       type: object
-      description: Individual Referendum
+      description: Individual Objective
       x-stoplight:
-        id: 4aa544e4e7861
+        id: c840d5d5cba30
       properties:
         id:
-          $ref: '#/components/schemas/ReferendumId'
-          description: The ID of this referendum for the Voting Event
+          $ref: '#/components/schemas/ObjectiveId'
+          description: The ID of this objective for the Voting Event
         type:
-          $ref: '#/components/schemas/ReferendumType'
-          description: The "Type" of Referendum
+          $ref: '#/components/schemas/ObjectiveType'
+          description: The "Type" of Objective
         title:
           type: string
-          description: The title for this Referendum.
+          description: The title for this Objective.
         description:
           type: string
-          description: Long form explanation of this particular referendum.
+          description: Long form explanation of this particular objective.
         reward:
-          $ref: '#/components/schemas/ReferendumType'
-          description: The "Type" of Referendum
+          $ref: '#/components/schemas/ObjectiveType'
+          description: The "Type" of Objective
         challenge_url:
           type: string
         highlights:
@@ -1281,14 +1284,14 @@ components:
         type: integer
         format: int32
         minimum: 0
-      description: 'The ID number of the Referendum in a Voting Event. As reported by `/api/v1/event/{id}/referendums`.'
+      description: 'The ID number of the Objective in a Voting Event. As reported by `/api/v1/event/{id}/objectives`.'
     prop_id:
       name: prop_id
       in: path
       required: true
       schema:
         type: string
-      description: The ID Number of the Proposal within a Referendum of a Voting Event
+      description: The ID Number of the Proposal within a Objective of a Voting Event
     limit:
       name: lim
       in: query

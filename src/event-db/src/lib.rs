@@ -2,12 +2,13 @@
 use bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
 use dotenvy::dotenv;
+use error::Error;
 use schema_check::SchemaVersion;
-use std::env::{self, VarError};
 use std::str::FromStr;
 use tokio_postgres::NoTls;
 
 mod config_table;
+pub mod error;
 pub mod queries;
 pub mod schema_check;
 pub mod types;
@@ -19,17 +20,6 @@ const DATABASE_URL_ENVVAR: &str = "EVENT_DB_URL";
 /// Database version this crate matches.
 /// Must equal the last Migrations Version Number.
 pub const DATABASE_SCHEMA_VERSION: i32 = 9;
-
-/// Event database errors
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error(" Schema in database does not match schema supported by the Crate. The current schema version: {was}, the schema version we expected: {expected}")]
-    MismatchedSchema { was: i32, expected: i32 },
-    #[error("error: {0}")]
-    Unknown(String),
-    #[error(transparent)]
-    VarError(#[from] VarError),
-}
 
 #[allow(unused)]
 /// Connection to the Election Database
@@ -68,18 +58,14 @@ pub async fn establish_connection(url: Option<&str>) -> Result<EventDB, Error> {
     let database_url = match url {
         Some(url) => url.to_string(),
         // If the Database connection URL is not supplied, try and get from the env var.
-        None => env::var(DATABASE_URL_ENVVAR)?,
+        None => std::env::var(DATABASE_URL_ENVVAR)?,
     };
 
-    let config = tokio_postgres::config::Config::from_str(&database_url)
-        .map_err(|err| Error::Unknown(err.to_string()))?;
+    let config = tokio_postgres::config::Config::from_str(&database_url)?;
 
     let pg_mgr = PostgresConnectionManager::new(config, tokio_postgres::NoTls);
 
-    let pool = Pool::builder()
-        .build(pg_mgr)
-        .await
-        .map_err(|err| Error::Unknown(err.to_string()))?;
+    let pool = Pool::builder().build(pg_mgr).await?;
 
     let db = EventDB { pool };
 

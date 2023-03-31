@@ -85,23 +85,13 @@ impl EventDB {
 #[async_trait]
 impl SnapshotQueries for EventDB {
     async fn get_snapshot_versions(&self) -> Result<Vec<SnapshotVersion>, Error> {
-        let conn = self
-            .pool
-            .get()
-            .await
-            .map_err(|err| Error::Unknown(err.to_string()))?;
+        let conn = self.pool.get().await?;
 
-        let rows = conn
-            .query(Self::SNAPSHOT_EVENTS_QUERY, &[])
-            .await
-            .map_err(|err| Error::Unknown(err.to_string()))?;
+        let rows = conn.query(Self::SNAPSHOT_EVENTS_QUERY, &[]).await?;
 
         let mut snapshot_versions = Vec::with_capacity(rows.len() + 1);
         for row in rows {
-            let version = SnapshotVersion(
-                row.try_get("event")
-                    .map_err(|err| Error::Unknown(err.to_string()))?,
-            );
+            let version = SnapshotVersion(row.try_get("event")?);
             snapshot_versions.push(version);
         }
         Ok(snapshot_versions)
@@ -112,46 +102,30 @@ impl SnapshotQueries for EventDB {
         version: &Option<SnapshotVersion>,
         voting_key: String,
     ) -> Result<Voter, Error> {
-        let conn = self
-            .pool
-            .get()
-            .await
-            .map_err(|err| Error::Unknown(err.to_string()))?;
+        let conn = self.pool.get().await?;
 
         let voter = if let Some(version) = version {
             conn.query_one(Self::VOTER_BY_EVENT_QUERY, &[&voting_key, &version.0])
-                .await
-                .map_err(|err| Error::Unknown(err.to_string()))?
+                .await?
         } else {
             conn.query_one(Self::VOTER_BY_LAST_EVENT_QUERY, &[&voting_key])
-                .await
-                .map_err(|err| Error::Unknown(err.to_string()))
-                .unwrap()
+                .await?
         };
 
-        let voting_group = voter
-            .try_get("voting_group")
-            .map_err(|err| Error::Unknown(err.to_string()))?;
-        let voting_power = voter
-            .try_get("voting_power")
-            .map_err(|err| Error::Unknown(err.to_string()))?;
+        let voting_group = voter.try_get("voting_group")?;
+        let voting_power = voter.try_get("voting_power")?;
 
         let total_voting_power_per_group: i64 = if let Some(version) = version {
             conn.query_one(
                 Self::TOTAL_BY_EVENT_VOTING_QUERY,
                 &[&voting_group, &version.0],
             )
-            .await
-            .map_err(|err| Error::Unknown(err.to_string()))?
-            .try_get("total_voting_power")
-            .map_err(|err| Error::Unknown(err.to_string()))?
+            .await?
+            .try_get("total_voting_power")?
         } else {
             conn.query_one(Self::TOTAL_BY_LAST_EVENT_VOTING_QUERY, &[&voting_group])
-                .await
-                .map_err(|err| Error::Unknown(err.to_string()))
-                .unwrap()
-                .try_get("total_voting_power")
-                .map_err(|err| Error::Unknown(err.to_string()))?
+                .await?
+                .try_get("total_voting_power")?
         };
 
         let voting_power_saturation = if total_voting_power_per_group as f64 != 0_f64 {
@@ -161,29 +135,21 @@ impl SnapshotQueries for EventDB {
         };
         Ok(Voter {
             voter_info: VoterInfo {
-                delegations_power: voter
-                    .try_get("delegations_power")
-                    .map_err(|err| Error::Unknown(err.to_string()))?,
-                delegations_count: voter
-                    .try_get("delegations_count")
-                    .map_err(|err| Error::Unknown(err.to_string()))?,
+                delegations_power: voter.try_get("delegations_power")?,
+                delegations_count: voter.try_get("delegations_count")?,
                 voting_power_saturation,
                 voting_power,
                 voting_group,
             },
             as_at: voter
-                .try_get::<&'static str, NaiveDateTime>("as_at")
-                .map_err(|err| Error::Unknown(err.to_string()))?
+                .try_get::<&'static str, NaiveDateTime>("as_at")?
                 .and_local_timezone(Utc)
                 .unwrap(),
             last_updated: voter
-                .try_get::<&'static str, NaiveDateTime>("last_updated")
-                .map_err(|err| Error::Unknown(err.to_string()))?
+                .try_get::<&'static str, NaiveDateTime>("last_updated")?
                 .and_local_timezone(Utc)
                 .unwrap(),
-            is_final: voter
-                .try_get("final")
-                .map_err(|err| Error::Unknown(err.to_string()))?,
+            is_final: voter.try_get("final")?,
         })
     }
 
@@ -192,22 +158,16 @@ impl SnapshotQueries for EventDB {
         version: &Option<SnapshotVersion>,
         stake_public_key: String,
     ) -> Result<Delegator, Error> {
-        let conn = self
-            .pool
-            .get()
-            .await
-            .map_err(|err| Error::Unknown(err.to_string()))?;
+        let conn = self.pool.get().await?;
         let delegator = if let Some(version) = version {
             conn.query_one(
                 Self::DELEGATOR_BY_EVENT_QUERY,
                 &[&stake_public_key, &version.0],
             )
-            .await
-            .map_err(|err| Error::Unknown(err.to_string()))?
+            .await?
         } else {
             conn.query_one(Self::DELEGATOR_BY_LAST_EVENT_QUERY, &[&stake_public_key])
-                .await
-                .map_err(|err| Error::Unknown(err.to_string()))?
+                .await?
         };
 
         let delegation_rows = if let Some(version) = version {
@@ -215,61 +175,43 @@ impl SnapshotQueries for EventDB {
                 Self::DELEGATIONS_BY_EVENT_QUERY,
                 &[&stake_public_key, &version.0],
             )
-            .await
-            .map_err(|err| Error::Unknown(err.to_string()))?
+            .await?
         } else {
             conn.query(Self::DELEGATIONS_BY_LAST_EVENT_QUERY, &[&stake_public_key])
-                .await
-                .map_err(|err| Error::Unknown(err.to_string()))?
+                .await?
         };
 
         let mut delegations = Vec::new();
         for row in delegation_rows {
             delegations.push(Delegation {
-                voting_key: row
-                    .try_get("voting_key")
-                    .map_err(|err| Error::Unknown(err.to_string()))?,
-                group: row
-                    .try_get("voting_group")
-                    .map_err(|err| Error::Unknown(err.to_string()))?,
-                weight: row
-                    .try_get("voting_weight")
-                    .map_err(|err| Error::Unknown(err.to_string()))?,
-                value: row
-                    .try_get("value")
-                    .map_err(|err| Error::Unknown(err.to_string()))?,
+                voting_key: row.try_get("voting_key")?,
+                group: row.try_get("voting_group")?,
+                weight: row.try_get("voting_weight")?,
+                value: row.try_get("value")?,
             })
         }
 
         let total_power: i64 = if let Some(version) = version {
             conn.query_one(Self::TOTAL_POWER_BY_EVENT_QUERY, &[&version.0])
-                .await
-                .map_err(|err| Error::Unknown(err.to_string()))?
-                .try_get("total_voting_power")
-                .map_err(|err| Error::Unknown(err.to_string()))?
+                .await?
+                .try_get("total_voting_power")?
         } else {
             conn.query_one(Self::TOTAL_POWER_BY_LAST_EVENT_QUERY, &[])
-                .await
-                .map_err(|err| Error::Unknown(err.to_string()))?
-                .try_get("total_voting_power")
-                .map_err(|err| Error::Unknown(err.to_string()))?
+                .await?
+                .try_get("total_voting_power")?
         };
 
         Ok(Delegator {
             raw_power: delegations.iter().map(|delegation| delegation.value).sum(),
             as_at: delegator
-                .try_get::<&'static str, NaiveDateTime>("as_at")
-                .map_err(|err| Error::Unknown(err.to_string()))?
+                .try_get::<&'static str, NaiveDateTime>("as_at")?
                 .and_local_timezone(Utc)
                 .unwrap(),
             last_updated: delegator
-                .try_get::<&'static str, NaiveDateTime>("last_updated")
-                .map_err(|err| Error::Unknown(err.to_string()))?
+                .try_get::<&'static str, NaiveDateTime>("last_updated")?
                 .and_local_timezone(Utc)
                 .unwrap(),
-            is_final: delegator
-                .try_get("final")
-                .map_err(|err| Error::Unknown(err.to_string()))?,
+            is_final: delegator.try_get("final")?,
             delegations,
             total_power,
         })

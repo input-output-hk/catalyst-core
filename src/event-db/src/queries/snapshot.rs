@@ -89,7 +89,7 @@ impl SnapshotQueries for EventDB {
 
         let rows = conn.query(Self::SNAPSHOT_EVENTS_QUERY, &[]).await?;
 
-        let mut snapshot_versions = Vec::with_capacity(rows.len() + 1);
+        let mut snapshot_versions = Vec::with_capacity(rows.len());
         for row in rows {
             let version = SnapshotVersion(row.try_get("event")?);
             snapshot_versions.push(version);
@@ -104,29 +104,33 @@ impl SnapshotQueries for EventDB {
     ) -> Result<Voter, Error> {
         let conn = self.pool.get().await?;
 
-        let voter = if let Some(version) = version {
-            conn.query_one(Self::VOTER_BY_EVENT_QUERY, &[&voting_key, &version.0])
+        let rows = if let Some(version) = version {
+            conn.query(Self::VOTER_BY_EVENT_QUERY, &[&voting_key, &version.0])
                 .await?
         } else {
-            conn.query_one(Self::VOTER_BY_LAST_EVENT_QUERY, &[&voting_key])
+            conn.query(Self::VOTER_BY_LAST_EVENT_QUERY, &[&voting_key])
                 .await?
         };
+        let voter = rows.get(0).ok_or(Error::NotFound)?;
 
         let voting_group = voter.try_get("voting_group")?;
         let voting_power = voter.try_get("voting_power")?;
 
-        let total_voting_power_per_group: i64 = if let Some(version) = version {
-            conn.query_one(
+        let rows = if let Some(version) = version {
+            conn.query(
                 Self::TOTAL_BY_EVENT_VOTING_QUERY,
                 &[&voting_group, &version.0],
             )
             .await?
-            .try_get("total_voting_power")?
         } else {
-            conn.query_one(Self::TOTAL_BY_LAST_EVENT_VOTING_QUERY, &[&voting_group])
+            conn.query(Self::TOTAL_BY_LAST_EVENT_VOTING_QUERY, &[&voting_group])
                 .await?
-                .try_get("total_voting_power")?
         };
+
+        let total_voting_power_per_group: i64 = rows
+            .get(0)
+            .ok_or(Error::NotFound)?
+            .try_get("total_voting_power")?;
 
         let voting_power_saturation = if total_voting_power_per_group as f64 != 0_f64 {
             voting_power as f64 / total_voting_power_per_group as f64
@@ -159,16 +163,17 @@ impl SnapshotQueries for EventDB {
         stake_public_key: String,
     ) -> Result<Delegator, Error> {
         let conn = self.pool.get().await?;
-        let delegator = if let Some(version) = version {
-            conn.query_one(
+        let rows = if let Some(version) = version {
+            conn.query(
                 Self::DELEGATOR_BY_EVENT_QUERY,
                 &[&stake_public_key, &version.0],
             )
             .await?
         } else {
-            conn.query_one(Self::DELEGATOR_BY_LAST_EVENT_QUERY, &[&stake_public_key])
+            conn.query(Self::DELEGATOR_BY_LAST_EVENT_QUERY, &[&stake_public_key])
                 .await?
         };
+        let delegator = rows.get(0).ok_or(Error::NotFound)?;
 
         let delegation_rows = if let Some(version) = version {
             conn.query(
@@ -191,15 +196,17 @@ impl SnapshotQueries for EventDB {
             })
         }
 
-        let total_power: i64 = if let Some(version) = version {
-            conn.query_one(Self::TOTAL_POWER_BY_EVENT_QUERY, &[&version.0])
+        let rows = if let Some(version) = version {
+            conn.query(Self::TOTAL_POWER_BY_EVENT_QUERY, &[&version.0])
                 .await?
-                .try_get("total_voting_power")?
         } else {
-            conn.query_one(Self::TOTAL_POWER_BY_LAST_EVENT_QUERY, &[])
+            conn.query(Self::TOTAL_POWER_BY_LAST_EVENT_QUERY, &[])
                 .await?
-                .try_get("total_voting_power")?
         };
+        let total_power: i64 = rows
+            .get(0)
+            .ok_or(Error::NotFound)?
+            .try_get("total_voting_power")?;
 
         Ok(Delegator {
             raw_power: delegations.iter().map(|delegation| delegation.value).sum(),
@@ -309,6 +316,11 @@ mod tests {
                 is_final: true,
             }
         );
+
+        assert_eq!(
+            event_db.get_voter(&None, "voting_key".to_string()).await,
+            Err(Error::NotFound)
+        );
     }
 
     #[tokio::test]
@@ -397,6 +409,13 @@ mod tests {
                 ),
                 is_final: true
             }
+        );
+
+        assert_eq!(
+            event_db
+                .get_delegator(&None, "stake_public_key".to_string())
+                .await,
+            Err(Error::NotFound)
         );
     }
 }

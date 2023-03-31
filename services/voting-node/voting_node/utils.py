@@ -154,9 +154,7 @@ def follower_node_config(
     # get the path to the log directory, create it if necessary
     persistent_log = storage.joinpath("persistent_log")
     persistent_log.mkdir(parents=True, exist_ok=True)
-    node_config_dict["mempool"]["persistent_log"][
-        "dir"
-    ] = f"{persistent_log.absolute()}"
+    node_config_dict["mempool"]["persistent_log"]["dir"] = f"{persistent_log.absolute()}"
     # follower and leader nodes use these settings
     node_config_dict["bootstrap_from_trusted_peers"] = True
     node_config_dict["skip_bootstrap"] = False
@@ -222,9 +220,7 @@ async def create_comm_keyset(jcli: jcli.JCli) -> Tuple[str, str, str]:
     return comm_sk, comm_pk, comm_id
 
 
-async def create_committee_member_keys(
-    jcli: jcli.JCli, size: int, threshold: int
-) -> Tuple[list, list, list]:
+async def create_committee_member_keys(jcli: jcli.JCli, size: int, threshold: int) -> Tuple[list, list, list]:
     match size:
         case 0:
             logger.info("no committee members")
@@ -234,15 +230,9 @@ async def create_committee_member_keys(
                 f"""creating {n} committee member(s), threshold is
                 {threshold}, votes will be private"""
             )
-            committee_skeys = [
-                await jcli.votes_committee_communication_key_generate()
-                for _ in range(n)
-            ]
+            committee_skeys = [await jcli.votes_committee_communication_key_generate() for _ in range(n)]
             logger.debug(f"{len(committee_skeys)} member sk: {committee_skeys}")
-            committee_pkeys = [
-                await jcli.votes_committee_communication_key_to_public(key)
-                for key in committee_skeys
-            ]
+            committee_pkeys = [await jcli.votes_committee_communication_key_to_public(key) for key in committee_skeys]
             logger.debug(f"{len(committee_pkeys)} member pk: {committee_pkeys}")
             committee_ids = [await jcli.key_to_bytes(key) for key in committee_pkeys]
             return committee_skeys, committee_pkeys, committee_ids
@@ -250,9 +240,7 @@ async def create_committee_member_keys(
             raise Exception(f"expected threshold {threshold}, to be less than {size}")
 
 
-def make_genesis_content(
-    event: Event, peers: List[LeaderHostInfo], committee_ids: List[str]
-) -> Genesis:
+def make_genesis_content(event: Event, peers: List[LeaderHostInfo], committee_ids: List[str]) -> Genesis:
     start_time = event.get_start_time()
     genesis = yaml.safe_load(GENESIS_YAML)
     consensus_leader_ids = [peer.consensus_leader_id for peer in peers]
@@ -264,9 +252,7 @@ def make_genesis_content(
     return Genesis(genesis)
 
 
-async def make_block0(
-    jcli_path: str, storage: Path, genesis_path: Path
-) -> Tuple[Path, str]:
+async def make_block0(jcli_path: str, storage: Path, genesis_path: Path) -> Tuple[Path, str]:
     block0_path = storage.joinpath("block0.bin")
     jcli_exec = jcli.JCli(jcli_path)
     await jcli_exec.genesis_encode(block0_path, genesis_path)

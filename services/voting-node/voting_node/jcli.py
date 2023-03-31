@@ -118,9 +118,7 @@ class JCli(object):
         commid = stdout.decode().rstrip()
         return commid
 
-    async def vote_committee_member_key_generate(
-        self, comm_pub_keys: list[str], threshold: int
-    ) -> str:
+    async def vote_committee_member_key_generate(self, comm_pub_keys: list[str], threshold: int) -> str:
         ...
 
     async def genesis_encode(self, block0_bin: Path, genesis_yaml: Path):

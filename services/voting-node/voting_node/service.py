@@ -146,9 +146,7 @@ class VotingNode(uvicorn.Server):
                 logger.warning(f"[stderr]\n{stderr.decode()}")
 
             if proc.returncode != 0:
-                raise Exception(
-                    f"jormungandr exited with non-zero status: {proc.returncode}"
-                )
+                raise Exception(f"jormungandr exited with non-zero status: {proc.returncode}")
         except Exception as e:
             logger.warning(f"jorm node error: {e}")
             raise e

@@ -1,6 +1,6 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Final, NoReturn, Optional, Tuple
+from typing import Final, NoReturn, Optional
 
 from . import utils
 from .db import EventDb
@@ -83,9 +83,7 @@ class ScheduleRunner(object):
         """Resets data kept by the schedule runner."""
         self.current_task = None
 
-    def reset_schedule(
-        self, msg: str = SCHEDULE_RESET_MSG, reset_data: bool = RESET_DATA
-    ) -> NoReturn:
+    def reset_schedule(self, msg: str = SCHEDULE_RESET_MSG, reset_data: bool = RESET_DATA) -> NoReturn:
         """Reset the schedule by setting the current task to None, and raising
         an exception that can be handled by the calling service.
 
@@ -316,9 +314,7 @@ class NodeTaskSchedule(ScheduleRunner):
         )
 
         # convert to yaml and save
-        node_config_yaml = NodeConfigYaml(
-            config, self.node.storage.joinpath("node_config.yaml")
-        )
+        node_config_yaml = NodeConfigYaml(config, self.node.storage.joinpath("node_config.yaml"))
         await node_config_yaml.save()
         logger.debug(f"{node_config_yaml}")
 
@@ -464,17 +460,15 @@ class Leader0Schedule(LeaderSchedule):
                 self.reset_schedule("event has no start time")
 
             # create the commitee for this event
-            logger.info(f"creating committee address keyset")
+            logger.info("creating committee address keyset")
             _, _, committee_id = await utils.create_address_keyset(self.jcli())
-            logger.info(f"creating committee communication keyset")
+            logger.info("creating committee communication keyset")
             comm_keyset = await utils.create_comm_keyset(self.jcli())
             logger.debug(f"comm keyset: {comm_keyset}")
 
             # make committee member keys
-            logger.info(f"creating committee member keys")
-            _ = await utils.create_committee_member_keys(
-                self.jcli(), event.committee_size, event.committee_threshold
-            )
+            logger.info("creating committee member keys")
+            _ = await utils.create_committee_member_keys(self.jcli(), event.committee_size, event.committee_threshold)
 
             # generate genesis file to make block0
             logger.debug("generating genesis content")
@@ -503,9 +497,7 @@ class Leader0Schedule(LeaderSchedule):
         match self.node.block0:
             case Block0(bin=block0_bytes, hash=block0_hash):
                 # push block0 to event table
-                await self.db.insert_block0_info(
-                    event.row_id, block0_bytes, block0_hash
-                )
+                await self.db.insert_block0_info(event.row_id, block0_bytes, block0_hash)
                 # if all is good, we reset the schedule
                 logger.debug("inserted block0 info")
             case None:

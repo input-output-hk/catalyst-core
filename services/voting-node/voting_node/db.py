@@ -148,18 +148,14 @@ class EventDb(object):
                 logger.debug(f"voteplans retrieved from DB: {len(voteplans)}")
                 return list(map(lambda r: VotePlan(**dict(r)), voteplans))
 
-    async def insert_block0_info(
-        self, event_row_id: int, block0_bytes: bytes, block0_hash: str
-    ):
+    async def insert_block0_info(self, event_row_id: int, block0_bytes: bytes, block0_hash: str):
         # insert the hostname row into the voting_node table
         columns = "block0 = $1, block0_hash = $2"
         condition = "row_id = $3"
         returning = "name"
         query = f"UPDATE event SET {columns} WHERE {condition} RETURNING {returning}"
         try:
-            result = await self.conn.execute(
-                query, block0_bytes, block0_hash, event_row_id
-            )
+            result = await self.conn.execute(query, block0_bytes, block0_hash, event_row_id)
             if result is None:
                 raise Exception("failed to insert block0 info from DB")
             logger.debug(f"block0 info added to event: {result}")

@@ -73,6 +73,9 @@ pub enum RegistrationError {
 
     #[error("Raw binary conversion of cbor to Signature failure {err}")]
     RawBinCborSignatureFailure { err: String },
+
+    #[error("Invalid network {err}")]
+    InvalidNetwork { err: String },
 }
 
 /// A registration that failed validation, along with the error

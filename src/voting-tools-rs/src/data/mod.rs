@@ -25,6 +25,10 @@ pub use network_id::NetworkId;
 
 use test_strategy::Arbitrary;
 
+// Networks
+const TESTNET: &str = "e0";
+const MAINNET: &str = "e1";
+
 // 61284 entries
 const KEY_61284: usize = 0;
 const DELEGATIONS_OR_DIRECT: usize = 0;
@@ -371,6 +375,13 @@ impl RawRegistration {
                 }))
             }
         };
+
+        let network_id = format!("{:x}", &rewards_address.0[0]);
+        if network_id != MAINNET && network_id != TESTNET {
+            return Err(Box::new(RegistrationError::InvalidNetwork {
+                err: format!("Invalid network {}", network_id),
+            }));
+        }
 
         // A nonce that identifies that most recent delegation
         let nonce = match metamap[NONCE] {

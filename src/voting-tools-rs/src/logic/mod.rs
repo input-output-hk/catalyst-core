@@ -112,7 +112,7 @@ fn convert_to_snapshot_entry(
         Some(voting_power) => *voting_power,
         None => {
             info!(
-                "Registration has not staked ada {:?}",
+                "Registration has no staked ada {:?}",
                 hex::encode(stake_key_hash.clone())
             );
             0

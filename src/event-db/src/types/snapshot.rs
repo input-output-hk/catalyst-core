@@ -25,7 +25,7 @@ pub struct Voter {
     pub is_final: bool,
 }
 
-#[derive(Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, PartialEq)]
 pub struct Delegation {
     pub voting_key: String,
     pub group: String,
@@ -33,7 +33,7 @@ pub struct Delegation {
     pub value: i64,
 }
 
-#[derive(Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, PartialEq)]
 pub struct Delegator {
     pub delegations: Vec<Delegation>,
     pub raw_power: i64,

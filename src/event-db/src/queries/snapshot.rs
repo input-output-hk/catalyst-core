@@ -10,24 +10,26 @@ pub trait SnapshotQueries: Sync + Send + 'static {
     async fn get_snapshot_versions(&self) -> Result<Vec<SnapshotVersion>, Error>;
     async fn get_voter(
         &self,
-        version: Option<SnapshotVersion>,
+        version: &Option<SnapshotVersion>,
         voting_key: String,
     ) -> Result<Voter, Error>;
     async fn get_delegator(
         &self,
-        version: Option<SnapshotVersion>,
+        version: &Option<SnapshotVersion>,
         stake_public_key: String,
     ) -> Result<Delegator, Error>;
 }
 
 impl EventDB {
     const SNAPSHOT_EVENTS_QUERY: &'static str = "SELECT event FROM snapshot;";
+
     const VOTER_BY_EVENT_QUERY: &'static str = "SELECT voter.voting_key, voter.voting_group, voter.voting_power, snapshot.as_at, snapshot.last_updated, snapshot.final, SUM(contribution.value)::BIGINT as delegations_power, COUNT(contribution.value) AS delegations_count
                                             FROM voter
                                             INNER JOIN snapshot ON voter.snapshot_id = snapshot.row_id
                                             INNER JOIN contribution ON contribution.snapshot_id = snapshot.row_id
                                             WHERE voter.voting_key = $1 AND contribution.voting_key = $1 AND snapshot.event = $2
                                             GROUP BY voter.voting_key, voter.voting_group, voter.voting_power, snapshot.as_at, snapshot.last_updated, snapshot.final;";
+
     const VOTER_BY_LAST_EVENT_QUERY: &'static str = "SELECT voter.voting_key, voter.voting_group, voter.voting_power, snapshot.as_at, snapshot.last_updated, snapshot.final, SUM(contribution.value)::BIGINT as delegations_power, COUNT(contribution.value) AS delegations_count
                                                 FROM voter
                                                 INNER JOIN snapshot ON voter.snapshot_id = snapshot.row_id
@@ -46,6 +48,38 @@ impl EventDB {
         FROM voter
         INNER JOIN snapshot ON voter.snapshot_id = snapshot.row_id AND snapshot.last_updated = (SELECT MAX(snapshot.last_updated) as last_updated from snapshot)
         WHERE voter.voting_group = $1;";
+
+    const DELEGATOR_BY_EVENT_QUERY: &'static str = "SELECT contribution.voting_key, contribution.voting_group, snapshot.as_at, snapshot.last_updated, snapshot.final
+                                                FROM contribution
+                                                INNER JOIN snapshot ON contribution.snapshot_id = snapshot.row_id
+                                                WHERE contribution.stake_public_key = $1 AND snapshot.event = $2
+                                                LIMIT 1;";
+
+    const DELEGATOR_BY_LAST_EVENT_QUERY: &'static str = "SELECT contribution.voting_key, contribution.voting_group, snapshot.as_at, snapshot.last_updated, snapshot.final
+                                                FROM contribution
+                                                INNER JOIN snapshot ON contribution.snapshot_id = snapshot.row_id
+                                                WHERE contribution.stake_public_key = $1 AND snapshot.last_updated = (SELECT MAX(snapshot.last_updated) as last_updated from snapshot)
+                                                LIMIT 1;";
+
+    const DELEGATIONS_BY_EVENT_QUERY: &'static str = "SELECT contribution.voting_key, contribution.voting_group, contribution.voting_weight, contribution.value,  snapshot.as_at, snapshot.last_updated, snapshot.final
+                                                FROM contribution
+                                                INNER JOIN snapshot ON contribution.snapshot_id = snapshot.row_id
+                                                WHERE contribution.stake_public_key = $1 AND snapshot.event = $2;";
+
+    const DELEGATIONS_BY_LAST_EVENT_QUERY: &'static str = "SELECT contribution.voting_key, contribution.voting_group, contribution.voting_weight, contribution.value,  snapshot.as_at, snapshot.last_updated, snapshot.final
+                                                FROM contribution
+                                                INNER JOIN snapshot ON contribution.snapshot_id = snapshot.row_id
+                                                WHERE contribution.stake_public_key = $1 AND snapshot.last_updated = (SELECT MAX(snapshot.last_updated) as last_updated from snapshot);";
+
+    const TOTAL_POWER_BY_EVENT_QUERY: &'static str = "SELECT SUM(voter.voting_power)::BIGINT as total_voting_power
+                                                FROM voter
+                                                INNER JOIN snapshot ON voter.snapshot_id = snapshot.row_id
+                                                WHERE snapshot.event = $1;";
+
+    const TOTAL_POWER_BY_LAST_EVENT_QUERY: &'static str = "SELECT SUM(voter.voting_power)::BIGINT as total_voting_power
+                                                FROM voter
+                                                INNER JOIN snapshot ON voter.snapshot_id = snapshot.row_id
+                                                WHERE snapshot.last_updated = (SELECT MAX(snapshot.last_updated) as last_updated from snapshot);";
 }
 
 #[async_trait]
@@ -75,7 +109,7 @@ impl SnapshotQueries for EventDB {
 
     async fn get_voter(
         &self,
-        version: Option<SnapshotVersion>,
+        version: &Option<SnapshotVersion>,
         voting_key: String,
     ) -> Result<Voter, Error> {
         let conn = self
@@ -84,7 +118,7 @@ impl SnapshotQueries for EventDB {
             .await
             .map_err(|err| Error::Unknown(err.to_string()))?;
 
-        let voter = if let Some(version) = &version {
+        let voter = if let Some(version) = version {
             conn.query_one(Self::VOTER_BY_EVENT_QUERY, &[&voting_key, &version.0])
                 .await
                 .map_err(|err| Error::Unknown(err.to_string()))?
@@ -102,7 +136,7 @@ impl SnapshotQueries for EventDB {
             .try_get("voting_power")
             .map_err(|err| Error::Unknown(err.to_string()))?;
 
-        let total_voting_power_per_group: i64 = if let Some(version) = &version {
+        let total_voting_power_per_group: i64 = if let Some(version) = version {
             conn.query_one(
                 Self::TOTAL_BY_EVENT_VOTING_QUERY,
                 &[&voting_group, &version.0],
@@ -155,7 +189,7 @@ impl SnapshotQueries for EventDB {
 
     async fn get_delegator(
         &self,
-        _version: Option<SnapshotVersion>,
+        version: &Option<SnapshotVersion>,
         stake_public_key: String,
     ) -> Result<Delegator, Error> {
         let conn = self
@@ -163,16 +197,31 @@ impl SnapshotQueries for EventDB {
             .get()
             .await
             .map_err(|err| Error::Unknown(err.to_string()))?;
-        let delegator = conn.query_one("SELECT contribution.voting_key, contribution.voting_group, snapshot.as_at, snapshot.last_updated, snapshot.final
-        FROM contribution
-        INNER JOIN snapshot ON contribution.snapshot_id = snapshot.row_id
-        WHERE contribution.stake_public_key = $1
-        LIMIT 1;", &[&stake_public_key]).await.map_err(|err| Error::Unknown(err.to_string()))?;
+        let delegator = if let Some(version) = version {
+            conn.query_one(
+                Self::DELEGATOR_BY_EVENT_QUERY,
+                &[&stake_public_key, &version.0],
+            )
+            .await
+            .map_err(|err| Error::Unknown(err.to_string()))?
+        } else {
+            conn.query_one(Self::DELEGATOR_BY_LAST_EVENT_QUERY, &[&stake_public_key])
+                .await
+                .map_err(|err| Error::Unknown(err.to_string()))?
+        };
 
-        let delegation_rows = conn.query("SELECT contribution.voting_key, contribution.voting_group, contribution.voting_weight, contribution.value,  snapshot.as_at, snapshot.last_updated, snapshot.final
-        FROM contribution
-        INNER JOIN snapshot ON contribution.snapshot_id = snapshot.row_id
-        WHERE contribution.stake_public_key = $1;", &[&stake_public_key]).await.map_err(|err| Error::Unknown(err.to_string()))?;
+        let delegation_rows = if let Some(version) = version {
+            conn.query(
+                Self::DELEGATIONS_BY_EVENT_QUERY,
+                &[&stake_public_key, &version.0],
+            )
+            .await
+            .map_err(|err| Error::Unknown(err.to_string()))?
+        } else {
+            conn.query(Self::DELEGATIONS_BY_LAST_EVENT_QUERY, &[&stake_public_key])
+                .await
+                .map_err(|err| Error::Unknown(err.to_string()))?
+        };
 
         let mut delegations = Vec::new();
         for row in delegation_rows {
@@ -192,16 +241,19 @@ impl SnapshotQueries for EventDB {
             })
         }
 
-        let total_power: i64 = conn
-            .query_one(
-                "SELECT SUM(voter.voting_power)::BIGINT as total_voting_power
-                FROM voter;",
-                &[],
-            )
-            .await
-            .map_err(|err| Error::Unknown(err.to_string()))?
-            .try_get("total_voting_power")
-            .map_err(|err| Error::Unknown(err.to_string()))?;
+        let total_power: i64 = if let Some(version) = version {
+            conn.query_one(Self::TOTAL_POWER_BY_EVENT_QUERY, &[&version.0])
+                .await
+                .map_err(|err| Error::Unknown(err.to_string()))?
+                .try_get("total_voting_power")
+                .map_err(|err| Error::Unknown(err.to_string()))?
+        } else {
+            conn.query_one(Self::TOTAL_POWER_BY_LAST_EVENT_QUERY, &[])
+                .await
+                .map_err(|err| Error::Unknown(err.to_string()))?
+                .try_get("total_voting_power")
+                .map_err(|err| Error::Unknown(err.to_string()))?
+        };
 
         Ok(Delegator {
             raw_power: delegations.iter().map(|delegation| delegation.value).sum(),
@@ -251,7 +303,7 @@ mod tests {
         let event_db = test_event_db().await;
 
         let voter = event_db
-            .get_voter(Some(SnapshotVersion(1)), "voting_key_1".to_string())
+            .get_voter(&Some(SnapshotVersion(1)), "voting_key_1".to_string())
             .await
             .unwrap();
 
@@ -284,7 +336,7 @@ mod tests {
         );
 
         let voter = event_db
-            .get_voter(None, "voting_key_1".to_string())
+            .get_voter(&None, "voting_key_1".to_string())
             .await
             .unwrap();
 
@@ -313,6 +365,95 @@ mod tests {
                     Utc
                 ),
                 is_final: true,
+            }
+        );
+    }
+
+    #[tokio::test]
+    async fn get_delegator_test() {
+        let event_db = test_event_db().await;
+
+        let delegator = event_db
+            .get_delegator(&Some(SnapshotVersion(1)), "stake_public_key_1".to_string())
+            .await
+            .unwrap();
+
+        assert_eq!(
+            delegator,
+            Delegator {
+                delegations: vec![
+                    Delegation {
+                        voting_key: "voting_key_1".to_string(),
+                        group: "rep".to_string(),
+                        weight: 1,
+                        value: 140
+                    },
+                    Delegation {
+                        voting_key: "voting_key_2".to_string(),
+                        group: "rep".to_string(),
+                        weight: 1,
+                        value: 100
+                    }
+                ],
+                raw_power: 240,
+                total_power: 1000,
+                as_at: DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                ),
+                last_updated: DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                ),
+                is_final: true
+            }
+        );
+
+        let delegator = event_db
+            .get_delegator(&None, "stake_public_key_1".to_string())
+            .await
+            .unwrap();
+
+        assert_eq!(
+            delegator,
+            Delegator {
+                delegations: vec![
+                    Delegation {
+                        voting_key: "voting_key_1".to_string(),
+                        group: "rep".to_string(),
+                        weight: 1,
+                        value: 140
+                    },
+                    Delegation {
+                        voting_key: "voting_key_2".to_string(),
+                        group: "rep".to_string(),
+                        weight: 1,
+                        value: 100
+                    }
+                ],
+                raw_power: 240,
+                total_power: 1000,
+                as_at: DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                ),
+                last_updated: DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                ),
+                is_final: true
             }
         );
     }

@@ -26,6 +26,7 @@ pub use network_id::NetworkId;
 use test_strategy::Arbitrary;
 
 // Networks
+const NETWORK_ID: usize = 0;
 const TESTNET: &str = "e0";
 const MAINNET: &str = "e1";
 
@@ -376,7 +377,8 @@ impl RawRegistration {
             }
         };
 
-        let network_id = format!("{:x}", &rewards_address.0[0]);
+        // first nibble in hex represents network id
+        let network_id = format!("{:x}", &rewards_address.0[NETWORK_ID]);
         if network_id != MAINNET && network_id != TESTNET {
             return Err(Box::new(RegistrationError::InvalidNetwork {
                 err: format!("Invalid network {}", network_id),

@@ -112,7 +112,7 @@ fn convert_to_snapshot_entry(
         Some(voting_power) => *voting_power,
         None => {
             info!(
-                "registration not found, this is weird {:?}",
+                "Registration has not staked ada {:?}",
                 hex::encode(stake_key_hash.clone())
             );
             0

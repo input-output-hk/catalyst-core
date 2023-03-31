@@ -75,7 +75,7 @@ pub fn staked_utxo_ada(
 
         let staked_ada = rust_decimal::prelude::ToPrimitive::to_u128(&staked_ada).unwrap();
 
-        let _ = *result.entry(stake_hash).or_insert_with(|| staked_ada);
+        let _ = *result.entry(stake_hash.clone()).or_insert_with(|| 0) += staked_ada;
 
         if processing_record % 1000 == 0 {
             info!("{:?} records processed", processing_record)

@@ -1,18 +1,19 @@
 import re
 import socket
-import yaml
-
 from pathlib import Path
-from typing import Dict, Final, Literal, List, Match, Tuple
+from re import Match
+from typing import Final, Literal
+
+import yaml
 
 from . import jcli
 from .logs import getLogger
-from .models import Event, Genesis, NodeConfig, LeaderHostInfo
+from .models import Event, Genesis, LeaderHostInfo, NodeConfig
 from .templates import (
     GENESIS_YAML,
+    NODE_CONFIG_FOLLOWER,
     NODE_CONFIG_LEADER,
     NODE_CONFIG_LEADER0,
-    NODE_CONFIG_FOLLOWER,
 )
 
 # gets voting node logger
@@ -40,7 +41,8 @@ def get_hostname_addr(hostname: str | None = None) -> str:
 
 async def get_network_secret(secret_file: Path, jcli_path: str) -> str:
     """Looks for the secret_file and returns the secret. If ther file
-    doesn't exist, a new secret is generated and written to the file."""
+    doesn't exist, a new secret is generated and written to the file.
+    """
     # check for the file
     if secret_file.exists():
         # open and read it
@@ -63,7 +65,7 @@ async def get_network_secret(secret_file: Path, jcli_path: str) -> str:
 
 def get_hostname_role_n_digits(
     host_name: str,
-) -> Tuple[Literal["leader", "follower"], str]:
+) -> tuple[Literal["leader", "follower"], str]:
     """."""
 
     def match_hostname_leadership_pattern(host_name: str) -> Match[str] | None:
@@ -111,7 +113,7 @@ def leader_node_config(
     listen_rest: str,
     listen_jrpc: str,
     listen_p2p: str,
-    trusted_peers: List[Dict],
+    trusted_peers: list[dict],
     storage: Path,
     topology_key: Path,
 ) -> NodeConfig:
@@ -137,7 +139,7 @@ def follower_node_config(
     listen_rest: str,
     listen_jrpc: str,
     listen_p2p: str,
-    trusted_peers: List[Dict],
+    trusted_peers: list[dict],
     storage: Path,
     topology_key: Path,
 ) -> NodeConfig:
@@ -165,11 +167,11 @@ def follower_node_config(
 
 
 def make_node_config(
-    leadership: Tuple[Literal["leader", "follower"], str],
+    leadership: tuple[Literal["leader", "follower"], str],
     listen_rest: str,
     listen_jrpc: str,
     listen_p2p: str,
-    trusted_peers: List[Dict],
+    trusted_peers: list[dict],
     storage: Path,
     topology_key: Path,
 ) -> NodeConfig:
@@ -206,21 +208,21 @@ def make_node_config(
             raise Exception("something odd happened creating node_config.yaml")
 
 
-async def create_address_keyset(jcli: jcli.JCli) -> Tuple[str, str, str]:
+async def create_address_keyset(jcli: jcli.JCli) -> tuple[str, str, str]:
     committee_sk = await jcli.key_generate()
     committee_pk = await jcli.key_to_public(committee_sk)
     committee_id = await jcli.key_to_bytes(committee_pk)
     return committee_sk, committee_pk, committee_id
 
 
-async def create_comm_keyset(jcli: jcli.JCli) -> Tuple[str, str, str]:
+async def create_comm_keyset(jcli: jcli.JCli) -> tuple[str, str, str]:
     comm_sk = await jcli.votes_committee_communication_key_generate()
     comm_pk = await jcli.votes_committee_communication_key_to_public(comm_sk)
     comm_id = await jcli.key_to_bytes(comm_pk)
     return comm_sk, comm_pk, comm_id
 
 
-async def create_committee_member_keys(jcli: jcli.JCli, size: int, threshold: int) -> Tuple[list, list, list]:
+async def create_committee_member_keys(jcli: jcli.JCli, size: int, threshold: int) -> tuple[list, list, list]:
     match size:
         case 0:
             logger.info("no committee members")
@@ -228,7 +230,7 @@ async def create_committee_member_keys(jcli: jcli.JCli, size: int, threshold: in
         case n if threshold <= size:
             logger.info(
                 f"""creating {n} committee member(s), threshold is
-                {threshold}, votes will be private"""
+                {threshold}, votes will be private""",
             )
             committee_skeys = [await jcli.votes_committee_communication_key_generate() for _ in range(n)]
             logger.debug(f"{len(committee_skeys)} member sk: {committee_skeys}")
@@ -240,7 +242,7 @@ async def create_committee_member_keys(jcli: jcli.JCli, size: int, threshold: in
             raise Exception(f"expected threshold {threshold}, to be less than {size}")
 
 
-def make_genesis_content(event: Event, peers: List[LeaderHostInfo], committee_ids: List[str]) -> Genesis:
+def make_genesis_content(event: Event, peers: list[LeaderHostInfo], committee_ids: list[str]) -> Genesis:
     start_time = event.get_start_time()
     genesis = yaml.safe_load(GENESIS_YAML)
     consensus_leader_ids = [peer.consensus_leader_id for peer in peers]
@@ -252,7 +254,7 @@ def make_genesis_content(event: Event, peers: List[LeaderHostInfo], committee_id
     return Genesis(genesis)
 
 
-async def make_block0(jcli_path: str, storage: Path, genesis_path: Path) -> Tuple[Path, str]:
+async def make_block0(jcli_path: str, storage: Path, genesis_path: Path) -> tuple[Path, str]:
     block0_path = storage.joinpath("block0.bin")
     jcli_exec = jcli.JCli(jcli_path)
     await jcli_exec.genesis_encode(block0_path, genesis_path)

@@ -1,6 +1,9 @@
-from datetime import datetime
-from pathlib import Path
-from typing import Final, NoReturn, Optional
+"""Tasks are run by the schedule runner.
+
+Scheduled tasks are defined for Leader and Follower Nodes, with Leader0 being a special case,
+as it is the only one responsible for initializing block0 for a voting event.
+"""
+from typing import Final, NoReturn
 
 from . import utils
 from .db import EventDb
@@ -10,14 +13,17 @@ from .logs import getLogger
 from .models import (
     Block0,
     GenesisYaml,
-    Leader0Node,
-    LeaderNode,
-    NodeConfigYaml,
     HostInfo,
+    NodeConfigYaml,
     NodeSecretYaml,
     NodeTopologyKey,
     ServiceSettings,
-    VotingNode,
+)
+from .node import (
+    BaseNode,
+    FollowerNode,
+    Leader0Node,
+    LeaderNode,
 )
 
 # gets voting node logger
@@ -75,8 +81,10 @@ FOLLOWER_NODE_SCHEDULE: Final = [
 ]
 
 
-class ScheduleRunner(object):
-    current_task: Optional[str] = None
+class ScheduleRunner:
+    """Base class to run a sequential task list."""
+
+    current_task: str | None = None
     tasks: list[str] = []
 
     def reset_data(self) -> None:
@@ -87,7 +95,8 @@ class ScheduleRunner(object):
         """Reset the schedule by setting the current task to None, and raising
         an exception that can be handled by the calling service.
 
-        This method never returns."""
+        This method never returns.
+        """
         if reset_data:
             self.reset_data()
         raise Exception(f"|->{msg}")
@@ -103,7 +112,8 @@ class ScheduleRunner(object):
 
         This method is meant to be called from a conditional loop, so that the schedule
         will persist in finishing all the tasks from its list. But it can be called
-        manually as well."""
+        manually as well.
+        """
         # checks if it should resume from a current task or go through all
         if self.current_task is None:
             tasks = self.tasks[:]
@@ -131,28 +141,26 @@ class ScheduleRunner(object):
 
 
 class NodeTaskSchedule(ScheduleRunner):
-    """A schedule of task names with corresponding async methods that are executed
-    sequentially.
+    """A schedule of task names with corresponding async methods that are executed sequentially.
 
-    If the current task raises an exception, running the task list
-    again will resume from it."""
+    If the current task raises an exception, running the task list again will resume from it.
+    """
 
     # runtime settings for the service
     settings: ServiceSettings
     # connection to DB
     db: EventDb
     # Voting Node data
-    node: VotingNode = VotingNode()
+    node: BaseNode = BaseNode()
     # List of tasks that the schedule should run. The name of each task must
     # match the name of method to execute.
     tasks: list[str] = []
 
-    def __init__(self, db_url: str, settings: ServiceSettings) -> None:
+    def __init__(self, settings: ServiceSettings) -> None:
+        """Sets the schedule settings, bootstraps storage, and initializes the node."""
         self.settings = settings
-        self.db = EventDb(db_url)
-        self.node.storage = Path(settings.storage)
-        # initialize the dir in case it doesn't exist
-        self.node.storage.mkdir(parents=True, exist_ok=True)
+        self.db = EventDb(settings.db_url)
+        self.node.set_file_storage(settings.storage)
 
     # resets data for the node task schedule
     def reset_data(self) -> None:
@@ -160,14 +168,36 @@ class NodeTaskSchedule(ScheduleRunner):
         self.node.reset()
 
     def jcli(self) -> JCli:
+        """Returns the wrapper to the 'jcli' shell command."""
         return JCli(self.settings.jcli_path_str)
 
     def jorm(self) -> Jormungandr:
+        """Returns the wrapper to the 'jormungandr' shell command."""
         return Jormungandr(self.settings.jorm_path_str)
 
     async def connect_db(self):
-        # connect to the DB
+        """Async connection to the DB."""
         await self.db.connect()
+
+    async def fetch_upcoming_event(self):
+        """Fetch the upcoming event from the DB."""
+        # This all starts by getting the event row that has the nearest
+        # `voting_start`. We query the DB to get the row, and store it.
+        try:
+            event = await self.db.fetch_upcoming_event()
+            logger.debug("current event retrieved from DB")
+            self.node.event = event
+        except Exception as e:
+            self.reset_schedule(f"{e}")
+
+    async def wait_for_start_time(self):
+        # check if the event has started, otherwise, resets the schedule
+        # raises exception if the event has no start time defined
+        if self.node.has_started():
+            logger.debug("event has started")
+        else:
+            logger.debug("event has not started")
+            self.reset_schedule(f"event will start on {self.node.get_start_time()}")
 
     async def setup_host_info(self):
         try:
@@ -207,6 +237,7 @@ class NodeTaskSchedule(ScheduleRunner):
                 self.reset_schedule(f"{e}")
 
     async def fetch_leaders(self):
+        """Fetch from the DB host info for other leaders."""
         try:
             # gets info for other leaders
             # raises exception if unable.
@@ -216,11 +247,12 @@ class NodeTaskSchedule(ScheduleRunner):
             self.reset_schedule(f"{e}")
 
     async def set_node_secret(self):
-        # node secret
+        """Sets the seckey from the host info and saves it to the node storage node_secret.yaml."""
+        # get the node secret from HostInfo, if it's not found, reset
         match self.node.host_info:
-            case HostInfo(seckey=seckey):
+            case HostInfo(seckey=sk):
                 node_secret_file = self.node.storage.joinpath("node_secret.yaml")
-                node_secret = {"bft": {"signing_key": seckey}}
+                node_secret = {"bft": {"signing_key": sk}}
                 # save in schedule
                 self.node_secret = NodeSecretYaml(node_secret, node_secret_file)
                 # write key to file
@@ -241,27 +273,6 @@ class NodeTaskSchedule(ScheduleRunner):
                 self.node.topology_key.save()
             case _:
                 self.reset_schedule("host info was not found for this node")
-
-    async def fetch_upcoming_event(self):
-        # This all starts by getting the event row that has the nearest
-        # `voting_start`. We query the DB to get the row, and store it.
-        try:
-            event = await self.db.fetch_upcoming_event()
-            logger.debug("current event retrieved from DB")
-            self.node.event = event
-        except Exception as e:
-            self.reset_schedule(f"{e}")
-
-    async def wait_for_start_time(self):
-        # get the event start timestamp
-        # raises an exception otherwise
-        start_time = self.node.get_start_time()
-        # check if now is after the event start time
-        if datetime.utcnow() >= start_time:
-            logger.debug("event has started")
-        else:
-            logger.debug("event has not started")
-            self.reset_schedule(f"event will start on {start_time}")
 
     async def set_node_config(self):
         # check that we have the info we need, otherwise, we reset
@@ -324,9 +335,11 @@ class NodeTaskSchedule(ScheduleRunner):
 
 
 class LeaderSchedule(NodeTaskSchedule):
-    # Voting Node data
+    """The schedule of tasks for all leader nodes, except for leader0."""
+
+    # Leader Node
     node: LeaderNode = LeaderNode()
-    # Tasks for `LeaderNode`
+    # Leader Node tasks
     tasks: list[str] = LEADER_NODE_SCHEDULE
 
     async def get_block0(self):
@@ -370,9 +383,11 @@ class LeaderSchedule(NodeTaskSchedule):
 
 
 class Leader0Schedule(LeaderSchedule):
-    # Voting Node data
+    """The schedule of tasks for leader0 node."""
+
+    # Leader0 Node
     node: Leader0Node = Leader0Node()
-    # Leader0 Voting Node data
+    # Leader0 Node tasks
     tasks: list[str] = LEADER0_NODE_SCHEDULE
 
     async def wait_for_snapshot(self):
@@ -506,11 +521,12 @@ class Leader0Schedule(LeaderSchedule):
 
 
 class FollowerSchedule(NodeTaskSchedule):
-    tasks = FOLLOWER_NODE_SCHEDULE
+    """The schedule of tasks for follower nodes."""
 
-    def __init__(self, db_url: str, settings: ServiceSettings) -> None:
-        NodeTaskSchedule.__init__(self, db_url, settings)
-        self.tasks: list[str] = ["todo"]
+    # Follower Node
+    node: FollowerNode = FollowerNode()
+    # Follower Node tasks
+    tasks: list[str] = FOLLOWER_NODE_SCHEDULE
 
     async def todo(self):
         pass

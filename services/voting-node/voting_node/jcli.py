@@ -2,10 +2,10 @@ import asyncio
 from pathlib import Path
 
 
-class JCli(object):
+class JCli:
     """Wrapper type for the jcli command-line."""
 
-    def __init__(self, jcli_exec: str):
+    def __init__(self, jcli_exec: str) -> None:
         self.jcli_exec = jcli_exec
 
     async def key_generate(self, secret_type: str = "ed25519") -> str:
@@ -75,7 +75,7 @@ class JCli(object):
         return key
 
     async def votes_committee_communication_key_generate(self) -> str:
-        """Run 'jcli genesis encode' to make block0 from genesis.yaml"""
+        """Run 'jcli genesis encode' to make block0 from genesis.yaml."""
         proc_args = (
             "votes",
             "committee",
@@ -97,7 +97,8 @@ class JCli(object):
 
     async def votes_committee_communication_key_to_public(self, input_key: str) -> str:
         """Run 'jcli vote committee communication-key to-public [INPUT]' to return
-        the public communication key."""
+        the public communication key.
+        """
         proc_args = (
             "votes",
             "committee",
@@ -122,7 +123,7 @@ class JCli(object):
         ...
 
     async def genesis_encode(self, block0_bin: Path, genesis_yaml: Path):
-        """Run 'jcli genesis encode' to make block0 from genesis.yaml"""
+        """Run 'jcli genesis encode' to make block0 from genesis.yaml."""
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,
             "genesis",
@@ -140,7 +141,7 @@ class JCli(object):
             raise Exception("failed to generate block0")
 
     async def genesis_hash(self, block0_bin: Path) -> str:
-        """Run 'jcli genesis hash' to get the hash from block0.bin"""
+        """Run 'jcli genesis hash' to get the hash from block0.bin."""
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,
             "genesis",

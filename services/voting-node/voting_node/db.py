@@ -1,16 +1,17 @@
-import asyncpg
 import datetime
-from typing import Any, List
+from typing import Any
+
+import asyncpg
 
 from .logs import getLogger
 from .models import Event, HostInfo, LeaderHostInfo, Proposal, Snapshot, VotePlan
-from .utils import get_hostname, LEADER_REGEX
+from .utils import LEADER_REGEX, get_hostname
 
 # gets voting node logger
 logger = getLogger()
 
 
-class EventDb(object):
+class EventDb:
     conn: Any = None
     db_url: str
 
@@ -65,11 +66,12 @@ class EventDb(object):
             raise Exception(f"failed to insert '{h.hostname}' info to DB")
         logger.debug(f"{h.hostname} info added: {result}")
 
-    async def fetch_sorted_leaders_host_info(self) -> List[LeaderHostInfo]:
+    async def fetch_sorted_leaders_host_info(self) -> list[LeaderHostInfo]:
         """Fetch host information for leader nodes.
         Returns a list of leader host information.
         Raises exceptions if the DB fails to return a list of records, or
-        if the list is empty."""
+        if the list is empty.
+        """
         where = f"WHERE hostname != $1 AND hostname ~ '{LEADER_REGEX}'"
         order_by = "ORDER BY hostname ASC"
         query = f"SELECT (hostname, pubkey) FROM voting_node {where} {order_by}"
@@ -88,7 +90,7 @@ class EventDb(object):
 
                 return list(map(extract_leader_info, leaders))
 
-    async def fetch_proposals(self) -> List[Proposal]:
+    async def fetch_proposals(self) -> list[Proposal]:
         query = "SELECT * FROM proposal ORDER BY id ASC"
         result = await self.conn.fetch(query)
         if result is None:
@@ -101,7 +103,7 @@ class EventDb(object):
                 raise Exception("no proposals found in DB")
             case [*proposals]:
                 logger.debug(f"proposals retrieved from DB: {len(proposals)}")
-                return list(map(lambda r: Proposal(**dict(r)), proposals))
+                return [Proposal(**dict(r)) for r in proposals]
 
     async def check_if_snapshot_is_final(self, event_id: int) -> bool:
         query = "SELECT final FROM snapshot WHERE event = $1"
@@ -132,7 +134,7 @@ class EventDb(object):
                 logger.debug(f"snapshot retrieved from DB: {snapshot}")
                 return snapshot
 
-    async def fetch_voteplans(self, event_id: int) -> List[VotePlan]:
+    async def fetch_voteplans(self, event_id: int) -> list[VotePlan]:
         # fetch the voteplans
         query = "SELECT * FROM voteplan WHERE event_id = $1 ORDER BY id ASC"
         result = await self.conn.fetch(query, event_id)
@@ -146,7 +148,7 @@ class EventDb(object):
                 raise Exception("no voteplans found in DB")
             case [*voteplans]:
                 logger.debug(f"voteplans retrieved from DB: {len(voteplans)}")
-                return list(map(lambda r: VotePlan(**dict(r)), voteplans))
+                return [VotePlan(**dict(r)) for r in voteplans]
 
     async def insert_block0_info(self, event_row_id: int, block0_bytes: bytes, block0_hash: str):
         # insert the hostname row into the voting_node table

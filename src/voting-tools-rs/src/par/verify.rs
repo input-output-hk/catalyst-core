@@ -27,6 +27,9 @@ pub type Invalids = Vec<InvalidRegistration>;
 /// Network_id + Blake2b-224( Stake Public Key )
 pub type StakeKeyHash = Vec<u8>;
 
+/// Registrations with no staked ada. No UTXO's.
+pub type StakeKeyHashNoStake = String;
+
 ///
 /// Query gathers all possible registration transactions
 /// Each registration is screened and marked: valid or invalid
@@ -74,7 +77,7 @@ pub fn filter_registrations(
     while let Some(row) = results.next()? {
         // Here we can use a threadpool with a size == number of cores.
         // We can process each row in parallel using this pool.
-        if valids.len() % 100 == 0 {
+        if valids.len() % 1000 == 0 {
             info!(
                 "registrations processed {:?}",
                 valids.len() + invalids.len()
@@ -154,6 +157,7 @@ pub fn latest_registrations(valids: &Valids, invalids: &mut Invalids) -> Valids 
 
 /// The registration has a 32 byte "Stake Public Key".  This is the raw ED25519 public key of the stake address.
 /// To calculate the Voting power, you need the stake key hash. Encoded in Cardano format.
+/// Network_id + Blake2b-224( Stake Public Key )
 pub fn stake_key_hash(key: &StakeKeyHex, network: NetworkId) -> StakeKeyHash {
     let bytes = &key.0 .0;
 

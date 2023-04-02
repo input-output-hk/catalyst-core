@@ -10,8 +10,8 @@ use color_eyre::Result;
 use tracing::{debug, info, Level};
 
 use voting_tools_rs::{
-    voting_power, Args, DbConfig, DryRunCommand, InvalidRegistration, SnapshotEntry,
-    VotingPowerArgs,
+    verify::StakeKeyHashNoStake, voting_power, Args, DbConfig, DryRunCommand, InvalidRegistration,
+    SnapshotEntry, VotingPowerArgs,
 };
 
 fn main() -> Result<()> {
@@ -65,9 +65,12 @@ fn main() -> Result<()> {
     let db_client_registrations = db_conn(db_config.clone())?;
     let db_client_stakes = db_conn(db_config.clone())?;
 
-    let (valids, invalids) = load(dry_run, args, db_client_stakes, db_client_registrations)?;
+    let (valids, invalids, no_stake) =
+        load(dry_run, args, db_client_stakes, db_client_registrations)?;
 
     handle_invalids(&out_file, &invalids)?;
+
+    handle_no_stake(&out_file, &no_stake)?;
 
     info!(
         "calculated {} valids invalids {}",
@@ -109,7 +112,11 @@ fn load(
     args: VotingPowerArgs,
     db_client_stakes: Client,
     db_client_registrations: Client,
-) -> Result<(Vec<SnapshotEntry>, Vec<InvalidRegistration>)> {
+) -> Result<(
+    Vec<SnapshotEntry>,
+    Vec<InvalidRegistration>,
+    Vec<StakeKeyHashNoStake>,
+)> {
     if let Some(DryRunCommand::DryRun { mock_json_file }) = dry_run {
         info!("Using dryrun file: {}", mock_json_file.to_string_lossy());
         voting_power(db_client_stakes, db_client_registrations, args)
@@ -118,6 +125,7 @@ fn load(
     }
 }
 
+/// Handle invalid registrations
 fn handle_invalids(path: &Path, invalids: &[InvalidRegistration]) -> Result<()> {
     info!("handling invalids");
     if invalids.is_empty() {
@@ -139,6 +147,32 @@ fn handle_invalids(path: &Path, invalids: &[InvalidRegistration]) -> Result<()> 
     let writer = BufWriter::new(file);
 
     serde_json::to_writer_pretty(writer, invalids)?;
+
+    Ok(())
+}
+
+/// Handle Registrations with no staked ada. No UTXO's.
+fn handle_no_stake(path: &Path, no_stake: &Vec<StakeKeyHashNoStake>) -> Result<()> {
+    info!("handling no stake registrations");
+    if no_stake.is_empty() {
+        return Ok(());
+    }
+
+    let path = path.with_extension("no_stake.json");
+
+    tracing::warn!(
+        "found no stake records: writing to {}",
+        path.to_string_lossy()
+    );
+
+    let file = File::options()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .open(path)?;
+    let writer = BufWriter::new(file);
+
+    serde_json::to_writer_pretty(writer, no_stake)?;
 
     Ok(())
 }

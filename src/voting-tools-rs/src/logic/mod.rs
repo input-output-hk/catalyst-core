@@ -6,11 +6,11 @@ use crate::{
     data::{Registration, SignedRegistration, SlotNo},
     db::queries::staked_utxo_ada::staked_utxo_ada,
     error::InvalidRegistration,
-    verify::{filter_registrations, StakeKeyHash},
+    verify::{filter_registrations, StakeKeyHash, StakeKeyHashNoStake},
     SnapshotEntry,
 };
 
-use color_eyre::eyre::{eyre, Result};
+use color_eyre::eyre::Result;
 use dashmap::DashMap;
 
 use postgres::Client;
@@ -57,9 +57,13 @@ pub fn voting_power(
         min_slot,
         max_slot,
         network_id,
-        expected_voting_purpose,
+        expected_voting_purpose: _,
     }: VotingPowerArgs,
-) -> Result<(Vec<SnapshotEntry>, Vec<InvalidRegistration>)> {
+) -> Result<(
+    Vec<SnapshotEntry>,
+    Vec<InvalidRegistration>,
+    Vec<StakeKeyHashNoStake>,
+)> {
     const ABS_MIN_SLOT: SlotNo = SlotNo(0);
     const ABS_MAX_SLOT: SlotNo = SlotNo(i64::MAX as u64);
 
@@ -81,17 +85,21 @@ pub fn voting_power(
     let staked_ada_records = stakes.join().unwrap();
     info!("finished processing stakes");
 
+    // registrations with no UTXO's.
+    let mut no_staked_ada = Vec::new();
+
     let snapshot = valids
         .into_iter()
-        .map(|reg| convert_to_snapshot_entry(reg, &staked_ada_records))
+        .map(|reg| convert_to_snapshot_entry(reg, &staked_ada_records, &mut no_staked_ada))
         .collect::<Result<_, _>>()?;
 
-    Ok((snapshot, invalids))
+    Ok((snapshot, invalids, no_staked_ada))
 }
 
 fn convert_to_snapshot_entry(
     registration: SignedRegistration,
     stakes: &DashMap<StakeKeyHash, u128>,
+    no_staked_ada: &mut Vec<StakeKeyHashNoStake>,
 ) -> Result<SnapshotEntry> {
     let SignedRegistration {
         registration:
@@ -111,10 +119,8 @@ fn convert_to_snapshot_entry(
     let voting_power = match stakes.get(&stake_key_hash) {
         Some(voting_power) => *voting_power,
         None => {
-            info!(
-                "Registration has no staked ada {:?}",
-                hex::encode(stake_key_hash.clone())
-            );
+            // No UTXO's.
+            no_staked_ada.push(hex::encode(&stake_key_hash));
             0
         }
     };

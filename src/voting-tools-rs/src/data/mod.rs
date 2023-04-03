@@ -431,14 +431,13 @@ fn inspect_rewards_addr(
         }
     };
 
-    // first nibble represents network id
     let net_id = format!("{:x}", &rewards_address.0[NETWORK_ID]);
-    if net_id != network_id.network_prefix() {
-        return Err(Err(Box::new(RegistrationError::InvalidNetwork {
+    if net_id != network_id.rewards_address_prefix() {
+        return Err(Err(Box::new(RegistrationError::InvalidAddressPrefix {
             err: format!(
-                "Invalid network id: prefix is: {:?}\n it should be {:?}",
+                "Invalid rewards address: address prefix is: {:?}\n it should be {:?}",
                 net_id,
-                network_id.network_prefix(),
+                network_id.rewards_address_prefix(),
             ),
         })));
     }

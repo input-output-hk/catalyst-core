@@ -12,8 +12,7 @@ pub enum NetworkId {
 }
 
 impl NetworkId {
-    /// first nibble in hex represents network id
-    pub fn network_prefix(&self) -> String {
+    pub fn rewards_address_prefix(&self) -> String {
         match self {
             Self::Testnet => "e0".to_owned(),
             Self::Mainnet => "e1".to_owned(),

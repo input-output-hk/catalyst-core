@@ -208,6 +208,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SearchQuery'
+        description: Parameters to the search.
       responses:
         '200':
           description: Success
@@ -216,7 +217,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  type: 
+                  type:
                     $ref: '#/components/schemas/SearchTable'
                   total:
                     type: integer
@@ -1041,6 +1042,9 @@ components:
       x-stoplight:
         id: yj4axohjjidlc
     SearchQuery:
+      title: Search Query
+      description: Parameters for the search
+      type: object
       properties:
         table:
           $ref: '#/components/schemas/SearchTable'
@@ -1055,7 +1059,7 @@ components:
       required:
         - table
       x-stoplight:
-        id: 71ygwitz1u1yo
+        id: 758e9a95f95fb
     VotesByVoteCasterAndVoteplanId:
       properties:
         vote_plan_id:
@@ -1370,3 +1374,4 @@ components:
         minimum: 0
       description: The Event ID to return results for.
       style: form
+  requestBodies: {}

@@ -1,3 +1,4 @@
+"""Main entrypoint for executing the voting node service from the shell command-line."""
 from typing import Final
 
 import click

@@ -1,3 +1,4 @@
+"""Logs for the voting node."""
 import logging
 
 

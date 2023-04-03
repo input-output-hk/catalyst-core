@@ -102,7 +102,7 @@ class ScheduleRunner:
         raise Exception(f"|->{msg}")
 
     async def run(self) -> None:
-        """Runs through the scheduled tasks.
+        """Run through the scheduled tasks.
 
         Each task is executed and checked for exceptions. It is left to the task
         itself to check for exceptions or let them propagate, or to use the
@@ -184,7 +184,7 @@ class NodeTaskSchedule(ScheduleRunner):
         # This all starts by getting the event row that has the nearest
         # `voting_start`. We query the DB to get the row, and store it.
         try:
-            event = await self.db.fetch_upcoming_event()
+            event = await self.db.fetch_current_event()
             logger.debug("current event retrieved from DB")
             self.node.event = event
         except Exception as e:
@@ -254,10 +254,10 @@ class NodeTaskSchedule(ScheduleRunner):
                 node_secret_file = self.node.storage.joinpath("node_secret.yaml")
                 node_secret = {"bft": {"signing_key": sk}}
                 # save in schedule
-                self.node_secret = NodeSecretYaml(node_secret, node_secret_file)
+                self.node.secret = NodeSecretYaml(node_secret, node_secret_file)
                 # write key to file
-                self.node_secret.save()
-                logger.debug(f"{self.node_secret.path} saved")
+                self.node.secret.save()
+                logger.debug(f"{self.node.secret.path} saved")
             case _:
                 self.reset_schedule("no node host info was found")
 
@@ -328,6 +328,7 @@ class NodeTaskSchedule(ScheduleRunner):
         node_config_yaml = NodeConfigYaml(config, self.node.storage.joinpath("node_config.yaml"))
         await node_config_yaml.save()
         logger.debug(f"{node_config_yaml}")
+        self.node.config = node_config_yaml
 
     async def cleanup(self):
         # close the DB connection
@@ -359,11 +360,12 @@ class LeaderSchedule(NodeTaskSchedule):
         self.node.block0 = block0
         # write the block bytes to file
         await self.node.block0.save(block0_path)
+        self.node.block0_path = block0_path
         logger.debug(f"block0 found in voting event: {self.node.block0}")
 
     async def wait_for_voting(self):
         """Waits for the event voting time."""
-        # get the snapshot start timestamp
+        # get the voting start timestamp
         # raises an exception otherwise
         voting_start = self.node.get_voting_start()
         # check if now is after the snapshot start time
@@ -372,14 +374,30 @@ class LeaderSchedule(NodeTaskSchedule):
 
         logger.debug("voting has started")
 
-    async def wait_for_tally(self):
-        pass
-
     async def voting(self):
-        pass
+        """Execute jormungandr node for voting."""
+        logger.debug(f"NODE: {self.node.secret}")
+        if self.node.secret is None:
+            self.reset_schedule("node has no node_secret.yaml")
+        if self.node.config is None:
+            self.reset_schedule("node has no node_config.yaml")
+        if self.node.block0_path is None:
+            self.reset_schedule("event has no block0.bin")
+        await self.jorm().start_leader(self.node.secret.path, self.node.config.path, self.node.block0_path)
+
+    async def wait_for_tally(self):
+        """Wait for vote tally to begin."""
+        # get the voting end timestamp
+        # raises an exception otherwise
+        voting_end = self.node.get_voting_end()
+        # check if now is after the snapshot start time
+        if not self.node.has_voting_ended():
+            raise Exception(f"voting will start on {voting_end} UTC")
+
+        logger.debug("voting has ended, tallying has begun")
 
     async def tally(self):
-        pass
+        """Execute the vote tally."""
 
 
 class Leader0Schedule(LeaderSchedule):
@@ -461,6 +479,7 @@ class Leader0Schedule(LeaderSchedule):
             await block0.save(block0_path)
             # save Block0 to node
             self.node.block0 = block0
+            self.node.block0_path = block0_path
             logger.debug(f"block0 found in voting event: {self.node.block0.hash}")
 
             # decode genesis and store it after getting block0
@@ -505,6 +524,7 @@ class Leader0Schedule(LeaderSchedule):
             self.node.block0 = block0
             # write the block bytes to file
             await self.node.block0.save(block0_path)
+            self.node.block0_path = block0_path
             logger.debug(f"block0 created and saved: {self.node.block0.hash}")
 
     async def publish_block0(self):

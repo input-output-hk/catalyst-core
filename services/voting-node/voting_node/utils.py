@@ -1,3 +1,4 @@
+"""Utitilies for managing voting node data."""
 import re
 import socket
 from pathlib import Path
@@ -243,7 +244,7 @@ async def create_committee_member_keys(jcli: jcli.JCli, size: int, threshold: in
 
 
 def make_genesis_content(event: Event, peers: list[LeaderHostInfo], committee_ids: list[str]) -> Genesis:
-    start_time = event.get_start_time()
+    start_time = event.get_voting_start()
     genesis = yaml.safe_load(GENESIS_YAML)
     consensus_leader_ids = [peer.consensus_leader_id for peer in peers]
     # modify the template with the proper settings

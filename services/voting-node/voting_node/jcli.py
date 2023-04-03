@@ -1,3 +1,4 @@
+"""Wrapper for the jcli command-line executable."""
 import asyncio
 from pathlib import Path
 
@@ -6,6 +7,7 @@ class JCli:
     """Wrapper type for the jcli command-line."""
 
     def __init__(self, jcli_exec: str) -> None:
+        """Initialize by setting the path string to the jcli executable."""
         self.jcli_exec = jcli_exec
 
     async def key_generate(self, secret_type: str = "ed25519") -> str:
@@ -96,9 +98,7 @@ class JCli:
         return commkey
 
     async def votes_committee_communication_key_to_public(self, input_key: str) -> str:
-        """Run 'jcli vote committee communication-key to-public [INPUT]' to return
-        the public communication key.
-        """
+        """Run 'jcli vote committee communication-key to-public [INPUT]' to return the public communication key."""
         proc_args = (
             "votes",
             "committee",
@@ -120,6 +120,7 @@ class JCli:
         return commid
 
     async def vote_committee_member_key_generate(self, comm_pub_keys: list[str], threshold: int) -> str:
+        """Run 'jcli vote committee member-key to-public [INPUT]' to return the public communication key."""
         ...
 
     async def genesis_encode(self, block0_bin: Path, genesis_yaml: Path):

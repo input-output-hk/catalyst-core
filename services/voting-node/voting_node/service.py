@@ -19,14 +19,14 @@ SLEEP_TO_SCHEDULE_RETRY: Final = 6
 
 
 class VotingService(uvicorn.Server):
-    """Provides a voting node as a service."""
+    """Voting node as a service."""
 
     def __init__(
         self,
         api_config: uvicorn.Config,
         settings: ServiceSettings,
     ) -> None:
-        """Creates a voting service instance by initializing the FastAPI server, and
+        """Create a voting service instance by initializing the FastAPI server, and
         storing the node settings.
         """
         # initialize uvicorn
@@ -39,7 +39,7 @@ class VotingService(uvicorn.Server):
 
     # Use this to run your voting node
     def start(self, sockets: list[socket.socket] | None = None):
-        """This method starts the voting node service in an asynchronous runtime. It
+        """Start the voting node service in an asynchronous runtime. It
         accepts the optional arguments of `sockets` used by the uvicorn server used
         to run the FastAPI service.
         """
@@ -52,7 +52,7 @@ class VotingService(uvicorn.Server):
     # Starts Voting Node Service, including this fastAPI server as well as the
     # jormungandr node's REST and GRPC servers.
     async def start_service(self, sockets: list[socket.socket] | None = None):
-        """Starts Voting Node Service."""
+        """Start Voting Node Service."""
         # this is the main task, which stops other tasks by calling the
         # 'stop_schedule' method.
         api_task: asyncio.Task[None] = asyncio.create_task(
@@ -85,7 +85,7 @@ class VotingService(uvicorn.Server):
         print("Bye bye!")
 
     async def start_api(self, sockets: list[socket.socket] | None = None):
-        """Starts API server for the Voting Node."""
+        """Start API server for the Voting Node."""
         logger.info("starting api")
         # runs 'serve' method from uvicorn.Server
         await self.serve(sockets=sockets)
@@ -93,12 +93,15 @@ class VotingService(uvicorn.Server):
         self.stop_schedule()
 
     def is_running_schedule(self) -> bool:
+        """Return True if the schedule is running."""
         return self.keep_running
 
     def stop_schedule(self):
+        """Stop the schedule from running."""
         self.keep_running = False
 
     def get_schedule(self):
+        """Get schedule according to the node hostname."""
         # checks the hostname and returns the schedule
         # according to its leadership role.
         # raises exception is something goes wrong with the hostname

@@ -1,3 +1,4 @@
+"""Mostly data models with convenience methods."""
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime
@@ -220,14 +221,31 @@ class Event:
             raise Exception("event has no voting start time")
         return self.voting_start
 
+    def get_voting_end(self) -> datetime:
+        """Gets the timestamp for when the event voting ends.
+        This method raises exception if the timestamp is None.
+        """
+        if self.voting_end is None:
+            raise Exception("event has no voting end time")
+        return self.voting_end
+
     def has_voting_started(self) -> bool:
         """Returns True when current time is equal or greater
-        to the event start time.
+        to the voting start time.
         This method raises exception if the timestamp is None.
         """
         voting_start = self.get_voting_start()
         now = datetime.utcnow()
         return now >= voting_start
+
+    def has_voting_ended(self) -> bool:
+        """Returns True when current time is equal or greater
+        to the voting end time.
+        This method raises exception if the timestamp is None.
+        """
+        voting_end = self.get_voting_end()
+        now = datetime.utcnow()
+        return now >= voting_end
 
     def get_block0(self) -> Block0:
         """Gets the block0 binary for the event.

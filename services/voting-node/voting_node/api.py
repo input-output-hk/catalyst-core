@@ -1,3 +1,4 @@
+"""FastAPI server for the voting node."""
 import prometheus_fastapi_instrumentator
 from fastapi import FastAPI
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -8,7 +9,7 @@ app = FastAPI()
 @app.get("/")
 def heartbeat():
     """Returns 200 if the service is running."""
-    return None
+    return
 
 
 FastAPIInstrumentor.instrument_app(app)

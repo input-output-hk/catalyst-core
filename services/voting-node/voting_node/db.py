@@ -1,3 +1,4 @@
+"""Provides an instance connected to the EventDB, as well as queries used by the running node schedule."""
 import datetime
 from typing import Any
 
@@ -12,30 +13,45 @@ logger = getLogger()
 
 
 class EventDb:
+    """Convenient abstraction to call the EventDB within the voting node service."""
+
     conn: Any = None
     db_url: str
 
     def __init__(self, db_url: str) -> None:
+        """Sets the EventDB url."""
         self.db_url = db_url
 
     async def connect(self):
+        """Creates a connection to the DB."""
         conn = await asyncpg.connect(self.db_url)
         if conn is None:
             raise Exception("failed to connect to the database")
         self.conn = conn
 
     async def close(self):
+        """Closes a connection to the DB."""
         if self.conn is not None:
             await self.conn.close()
 
-    async def fetch_upcoming_event(self) -> Event:
-        filter_by = "voting_start > $1"
+    async def fetch_current_event(self) -> Event:
+        """Looks in EventDB for the event that will start voting."""
+        # first, check if there is an event that has not finished
+        now = datetime.datetime.utcnow()
+        filter_by = "(voting_end > $1 or voting_end = $2) and voting_start < $1"
         sort_by = "voting_start ASC"
         query = f"SELECT * FROM event WHERE {filter_by} ORDER BY {sort_by} LIMIT 1"
-        now = datetime.datetime.utcnow()
+        result = await self.conn.fetchrow(query, now, None)
+        if result is not None:
+            logger.debug(f"fetched ongoing event: {result}")
+            return Event(**dict(result))
+
+        filter_by = "voting_start > $1"
+        query = f"SELECT * FROM event WHERE {filter_by} ORDER BY {sort_by} LIMIT 1"
         result = await self.conn.fetchrow(query, now)
         if result is None:
             raise Exception("failed to fetch event from DB")
+        logger.debug(f"fetched upcoming event: {result}")
         return Event(**dict(result))
 
     async def fetch_leader_host_info(self, event_row_id: int) -> HostInfo:
@@ -72,16 +88,17 @@ class EventDb:
         Raises exceptions if the DB fails to return a list of records, or
         if the list is empty.
         """
-        where = f"WHERE hostname != $1 AND hostname ~ '{LEADER_REGEX}'"
+        where = f"WHERE hostname ~ '{LEADER_REGEX}'"
         order_by = "ORDER BY hostname ASC"
         query = f"SELECT (hostname, pubkey) FROM voting_node {where} {order_by}"
-        result = await self.conn.fetch(query, get_hostname())
+        result = await self.conn.fetch(query)
         match result:
             case None:
                 raise Exception("DB error fetching leaders host info")
             case []:
                 raise Exception("no leader host info found in DB")
             case [*leaders]:
+                logger.debug(f"found leaders: {leaders}")
 
                 def extract_leader_info(leader):
                     host_info = LeaderHostInfo(*leader["row"])

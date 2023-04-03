@@ -102,6 +102,8 @@ pub fn filter_registrations(
         let reg = match rawreg.to_signed(&cddl, network_id) {
             Err(err) => {
                 invalids.push(InvalidRegistration {
+                    _61284: Some(hex::encode(rawreg.bin_reg)),
+                    _61285: Some(hex::encode(rawreg.bin_sig)),
                     registration: None,
                     errors: nonempty![RegistrationError::CborDeserializationFailed {
                         err: format!("Failed to deserialize Registration CBOR: {}", err),
@@ -116,6 +118,8 @@ pub fn filter_registrations(
             Ok(_) => valids.push(reg),
             Err(err) => {
                 invalids.push(InvalidRegistration {
+                    _61284: Some(hex::encode(rawreg.bin_reg)),
+                    _61285: Some(hex::encode(rawreg.bin_sig)),
                     registration: Some(reg),
                     errors: nonempty![RegistrationError::SignatureError {
                         err: format!("Signature validation failure: {}", err),
@@ -137,12 +141,16 @@ pub fn latest_registrations(valids: &Valids, invalids: &mut Invalids) -> Valids 
         if let Some((_stake_key, current)) = latest.get_key_value(&valid.registration.stake_key) {
             if valid.registration.nonce > current.registration.nonce {
                 invalids.push(InvalidRegistration {
+                    _61284: None,
+                    _61285: None,
                     registration: Some(current.clone()),
                     errors: nonempty![RegistrationError::ObsoleteRegistration {}],
                 });
                 latest.insert(valid.registration.stake_key.clone(), valid.clone());
             } else {
                 invalids.push(InvalidRegistration {
+                    _61284: None,
+                    _61285: None,
                     registration: Some(valid.clone()),
                     errors: nonempty![RegistrationError::ObsoleteRegistration {}],
                 });

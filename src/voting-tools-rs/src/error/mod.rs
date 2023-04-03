@@ -87,6 +87,8 @@ pub enum RegistrationError {
 /// [`SignedRegistration`] struct
 #[derive(Debug, Serialize)]
 pub struct InvalidRegistration {
+    pub _61284: Option<String>,
+    pub _61285: Option<String>,
     pub registration: Option<SignedRegistration>,
     pub errors: NonEmpty<RegistrationError>,
 }

@@ -11,6 +11,16 @@ pub enum NetworkId {
     Testnet,
 }
 
+impl NetworkId {
+    /// first nibble in hex represents network id
+    pub fn network_prefix(&self) -> String {
+        match self {
+            Self::Testnet => "e0".to_owned(),
+            Self::Mainnet => "e1".to_owned(),
+        }
+    }
+}
+
 impl Display for NetworkId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {

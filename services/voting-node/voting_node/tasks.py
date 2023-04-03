@@ -497,12 +497,19 @@ class Leader0Schedule(LeaderSchedule):
             logger.info("creating committee address keyset")
             _, _, committee_id = await utils.create_address_keyset(self.jcli())
             logger.info("creating committee communication keyset")
-            comm_keyset = await utils.create_comm_keyset(self.jcli())
-            logger.debug(f"comm keyset: {comm_keyset}")
+            comm_sk, comm_pk, comm_id = await utils.create_comm_keyset(self.jcli())
+            _, comm1_pk, _ = await utils.create_comm_keyset(self.jcli())
+            _, comm2_pk, _ = await utils.create_comm_keyset(self.jcli())
+            comm_keysets = []
+            for idx in range(event.committee_threshold):
+                comm_keyset = await utils.create_comm_keyset(self.jcli())
+                comm_keysets.append(comm_keyset)
+            logger.debug(f"comm keysets: {comm_keysets}")
+            comm_pks = [kset[2] for kset in comm_keysets]
 
             # make committee member keys
             logger.info("creating committee member keys")
-            _ = await utils.create_committee_member_keys(self.jcli(), event.committee_size, event.committee_threshold)
+            _ = await utils.create_committee_member_keys(self.jcli(), comm_pks, "CRS", event.committee_size, event.committee_threshold)
 
             # generate genesis file to make block0
             logger.debug("generating genesis content")

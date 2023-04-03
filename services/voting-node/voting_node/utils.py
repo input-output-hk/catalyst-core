@@ -223,22 +223,19 @@ async def create_comm_keyset(jcli: jcli.JCli) -> tuple[str, str, str]:
     return comm_sk, comm_pk, comm_id
 
 
-async def create_committee_member_keys(jcli: jcli.JCli, size: int, threshold: int) -> tuple[list, list, list]:
+async def create_committee_member_keys(jcli: jcli.JCli, comm_pks: list[str], crs: str, size: int, threshold: int) -> list[tuple[str, str, str]]:
     match size:
         case 0:
             logger.info("no committee members")
-            return [], [], []
+            return []
         case n if threshold <= size:
             logger.info(
                 f"""creating {n} committee member(s), threshold is
                 {threshold}, votes will be private""",
             )
-            committee_skeys = [await jcli.votes_committee_communication_key_generate() for _ in range(n)]
-            logger.debug(f"{len(committee_skeys)} member sk: {committee_skeys}")
-            committee_pkeys = [await jcli.votes_committee_communication_key_to_public(key) for key in committee_skeys]
-            logger.debug(f"{len(committee_pkeys)} member pk: {committee_pkeys}")
-            committee_ids = [await jcli.key_to_bytes(key) for key in committee_pkeys]
-            return committee_skeys, committee_pkeys, committee_ids
+            member_skeys = [await jcli.votes_committee_member_key_generate(comm_pks, crs, i, threshold) for i in range(n)]
+            logger.debug(f"{len(member_skeys)} member sk: {member_skeys}")
+            return []
         case _:
             raise Exception(f"expected threshold {threshold}, to be less than {size}")
 

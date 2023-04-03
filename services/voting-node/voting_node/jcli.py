@@ -103,7 +103,7 @@ class JCli:
             "votes",
             "committee",
             "communication-key",
-            "generate",
+            "to-public",
         )
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,
@@ -119,9 +119,34 @@ class JCli:
         commid = stdout.decode().rstrip()
         return commid
 
-    async def vote_committee_member_key_generate(self, comm_pub_keys: list[str], threshold: int) -> str:
+    async def votes_committee_member_key_generate(self, comm_pks: list[str], crs: str, index: int, threshold: int) -> str:
         """Run 'jcli vote committee member-key to-public [INPUT]' to return the public communication key."""
-        ...
+        proc_args = (
+            "votes",
+            "committee",
+            "member-key",
+            "generate",
+            "--threshold",
+            f"{threshold}",
+            "--crs",
+            crs,
+            "--index",
+            f"{index}",
+            "--keys",
+            " ".join(comm_pks),
+        )
+        proc = await asyncio.create_subprocess_exec(
+            self.jcli_exec,
+            *proc_args,
+            stdout=asyncio.subprocess.PIPE,
+        )
+        # checks that there is stdout
+        stdout, _ = await proc.communicate()
+        if stdout is None:
+            raise Exception("failed to generate committee member key")
+        # read the output
+        memberkey = stdout.decode().rstrip()
+        return memberkey
 
     async def genesis_encode(self, block0_bin: Path, genesis_yaml: Path):
         """Run 'jcli genesis encode' to make block0 from genesis.yaml."""

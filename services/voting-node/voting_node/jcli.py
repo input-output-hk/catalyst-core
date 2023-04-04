@@ -145,8 +145,30 @@ class JCli:
         if stdout is None:
             raise Exception("failed to generate committee member key")
         # read the output
-        memberkey = stdout.decode().rstrip()
-        return memberkey
+        membersk = stdout.decode().rstrip()
+        return membersk
+
+    async def votes_committee_member_key_to_public(self, member_sk: str) -> str:
+        """Run 'jcli vote committee member-key to-public [INPUT]' to return the public communication key."""
+        proc_args = (
+            "votes",
+            "committee",
+            "member-key",
+            "to-public",
+        )
+        proc = await asyncio.create_subprocess_exec(
+            self.jcli_exec,
+            *proc_args,
+            stdout=asyncio.subprocess.PIPE,
+            stdin=asyncio.subprocess.PIPE,
+        )
+        # checks that there is stdout
+        stdout, _ = await proc.communicate(input=member_sk.encode())
+        if stdout is None:
+            raise Exception("failed to generate committee member public key")
+        # read the output
+        memberpk = stdout.decode().rstrip()
+        return memberpk
 
     async def genesis_encode(self, block0_bin: Path, genesis_yaml: Path):
         """Run 'jcli genesis encode' to make block0 from genesis.yaml."""

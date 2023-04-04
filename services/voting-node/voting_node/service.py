@@ -1,4 +1,6 @@
-"""
+"""The voting node service.
+
+VotingService.start() initiates the API and starts executing the schedule for the node.
 """
 import asyncio
 import socket
@@ -21,14 +23,8 @@ SLEEP_TO_SCHEDULE_RETRY: Final = 6
 class VotingService(uvicorn.Server):
     """Voting node as a service."""
 
-    def __init__(
-        self,
-        api_config: uvicorn.Config,
-        settings: ServiceSettings,
-    ) -> None:
-        """Create a voting service instance by initializing the FastAPI server, and
-        storing the node settings.
-        """
+    def __init__(self, api_config: uvicorn.Config, settings: ServiceSettings) -> None:
+        """Create a voting service instance by initializing the FastAPI server, and storing the node settings."""
         # initialize uvicorn
         uvicorn.Server.__init__(self, api_config)
         # flag that tells the voting node to whether to continue
@@ -39,9 +35,9 @@ class VotingService(uvicorn.Server):
 
     # Use this to run your voting node
     def start(self, sockets: list[socket.socket] | None = None):
-        """Start the voting node service in an asynchronous runtime. It
-        accepts the optional arguments of `sockets` used by the uvicorn server used
-        to run the FastAPI service.
+        """Start the voting node service in an asynchronous runtime.
+
+        It accepts the optional arguments of `sockets` used by the uvicorn server used to run the FastAPI service.
         """
         try:
             asyncio.run(self.start_service(sockets=sockets))
@@ -75,7 +71,7 @@ class VotingService(uvicorn.Server):
                         await schedule.run()
                         break
                     except Exception as e:
-                        logger.warning(f"schedule retry: {e}")
+                        logger.error(f"schedule retry: {e}")
                     # waits before retrying
                     await asyncio.sleep(SLEEP_TO_SCHEDULE_RETRY)
 

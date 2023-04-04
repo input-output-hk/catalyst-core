@@ -88,13 +88,13 @@ class ScheduleRunner:
     tasks: list[str] = []
 
     def reset_data(self) -> None:
-        """Resets data kept by the schedule runner."""
+        """Reset data kept by the schedule runner."""
         self.current_task = None
 
     def reset_schedule(self, msg: str = SCHEDULE_RESET_MSG, reset_data: bool = RESET_DATA) -> NoReturn:
-        """Reset the schedule by setting the current task to None, and raising
-        an exception that can be handled by the calling service.
+        """Reset the schedule by setting the current task to None.
 
+        Raise an exception that can be handled by the calling service.
         This method never returns.
         """
         if reset_data:
@@ -131,7 +131,7 @@ class ScheduleRunner:
         logger.info("SCHEDULE END")
 
     async def run_task(self, task_name):
-        """Runs the async method with the given task_name."""
+        """Run the async method with the given task_name."""
         logger.info(f"{task_name}")
         logger.debug(f"|'{task_name}' start")
         self.current_task = task_name
@@ -157,22 +157,22 @@ class NodeTaskSchedule(ScheduleRunner):
     tasks: list[str] = []
 
     def __init__(self, settings: ServiceSettings) -> None:
-        """Sets the schedule settings, bootstraps storage, and initializes the node."""
+        """Set the schedule settings, bootstraps storage, and initializes the node."""
         self.settings = settings
         self.db = EventDb(settings.db_url)
         self.node.set_file_storage(settings.storage)
 
-    # resets data for the node task schedule
     def reset_data(self) -> None:
+        """Reset data for the node task schedule."""
         ScheduleRunner.reset_data(self)
         self.node.reset()
 
     def jcli(self) -> JCli:
-        """Returns the wrapper to the 'jcli' shell command."""
+        """Return the wrapper to the 'jcli' shell command."""
         return JCli(self.settings.jcli_path_str)
 
     def jorm(self) -> Jormungandr:
-        """Returns the wrapper to the 'jormungandr' shell command."""
+        """Return the wrapper to the 'jormungandr' shell command."""
         return Jormungandr(self.settings.jorm_path_str)
 
     async def connect_db(self):
@@ -191,6 +191,7 @@ class NodeTaskSchedule(ScheduleRunner):
             self.reset_schedule(f"{e}")
 
     async def wait_for_start_time(self):
+        """Wait for the event start time."""
         # check if the event has started, otherwise, resets the schedule
         # raises exception if the event has no start time defined
         if self.node.has_started():
@@ -200,6 +201,21 @@ class NodeTaskSchedule(ScheduleRunner):
             self.reset_schedule(f"event will start on {self.node.get_start_time()}")
 
     async def setup_host_info(self):
+        """Fetch or create node host information.
+
+        1. Fetch host info from the EventDB.
+            If found, save to the schedule node, else, generate and write to DB.
+            Call reset_schedule.
+        2. Fetch host info from node storage.
+            If found:
+                Compare with host info fetched from step 1.
+                If ServiceSettings has the reloadable flag set to True:
+                    Overwrite host info in storage with host info from DB.
+                else:
+                    Log a warning about the difference.
+            else:
+                Store host info from step 1.
+        """
         try:
             # gets the event, raises exception if none is found.
             event = self.node.get_event()
@@ -247,7 +263,7 @@ class NodeTaskSchedule(ScheduleRunner):
             self.reset_schedule(f"{e}")
 
     async def set_node_secret(self):
-        """Sets the seckey from the host info and saves it to the node storage node_secret.yaml."""
+        """Set the seckey from the host info and saves it to the node storage node_secret.yaml."""
         # get the node secret from HostInfo, if it's not found, reset
         match self.node.host_info:
             case HostInfo(seckey=sk):
@@ -262,7 +278,7 @@ class NodeTaskSchedule(ScheduleRunner):
                 self.reset_schedule("no node host info was found")
 
     async def set_node_topology_key(self):
-        # node network topology key
+        """Set the node network topology key."""
         match self.node.host_info:
             case HostInfo(netkey=netkey):
                 # get private key for topology
@@ -275,6 +291,7 @@ class NodeTaskSchedule(ScheduleRunner):
                 self.reset_schedule("host info was not found for this node")
 
     async def set_node_config(self):
+        """Set the node configuration."""
         # check that we have the info we need, otherwise, we reset
         if self.node.topology_key is None:
             self.reset_schedule("no node topology key was found")
@@ -331,6 +348,11 @@ class NodeTaskSchedule(ScheduleRunner):
         self.node.config = node_config_yaml
 
     async def cleanup(self):
+        """Execute cleanup chores to stop the voting node service.
+
+        * Close the DB connection.
+        * ...
+        """
         # close the DB connection
         await self.db.close()
 
@@ -344,6 +366,10 @@ class LeaderSchedule(NodeTaskSchedule):
     tasks: list[str] = LEADER_NODE_SCHEDULE
 
     async def get_block0(self):
+        """Get block0 information from the node event.
+
+        Raises exception if the node has no leaders, or no event, or no event start time defined.
+        """
         # initial checks for data that's needed
         if self.node.leaders is None:
             self.reset_schedule("peer leader info was not found")
@@ -364,7 +390,7 @@ class LeaderSchedule(NodeTaskSchedule):
         logger.debug(f"block0 found in voting event: {self.node.block0}")
 
     async def wait_for_voting(self):
-        """Waits for the event voting time."""
+        """Wait for the event voting time."""
         # get the voting start timestamp
         # raises an exception otherwise
         voting_start = self.node.get_voting_start()
@@ -409,7 +435,7 @@ class Leader0Schedule(LeaderSchedule):
     tasks: list[str] = LEADER0_NODE_SCHEDULE
 
     async def wait_for_snapshot(self):
-        """Waits for the event snapshot_start time."""
+        """Wait for the event snapshot_start time."""
         # get the snapshot start timestamp
         # raises an exception otherwise
         snapshot_start = self.node.get_snapshot_start()
@@ -420,7 +446,7 @@ class Leader0Schedule(LeaderSchedule):
         logger.debug("snapshot is stable")
 
     async def collect_snapshot_data(self):
-        """"""
+        """Collect the snapshot data from EventDB."""
         # gets the event, raises exception if none is found.
         event = self.node.get_event()
         snapshot_start = self.node.get_snapshot_start()
@@ -455,8 +481,10 @@ class Leader0Schedule(LeaderSchedule):
             raise Exception(f"failed to fetch proposals from DB: {e}") from e
 
     async def setup_block0(self):
-        """Checks DB event for block0 information, creates and adds it to the DB
-        when the needed information is found. Resets the schedule otherwise.
+        """Check DB event for block0 information.
+
+        Create and add it to the DB when the needed information is found.
+        Reset the schedule otherwise.
         """
         # get or raise exception for data that's needed
         # these exceptions are not handled so as to keep
@@ -495,21 +523,27 @@ class Leader0Schedule(LeaderSchedule):
 
             # create the commitee for this event
             logger.info("creating committee address keyset")
-            _, _, committee_id = await utils.create_address_keyset(self.jcli())
+            _, _, committee_id = await utils.create_wallet_keyset(self.jcli())
             logger.info("creating committee communication keyset")
-            comm_sk, comm_pk, comm_id = await utils.create_comm_keyset(self.jcli())
-            _, comm1_pk, _ = await utils.create_comm_keyset(self.jcli())
-            _, comm2_pk, _ = await utils.create_comm_keyset(self.jcli())
+            comm_sk, comm_pk = await utils.create_communication_keys(self.jcli())
+            _, comm1_pk = await utils.create_communication_keys(self.jcli())
+            _, comm2_pk = await utils.create_communication_keys(self.jcli())
             comm_keysets = []
-            for idx in range(event.committee_threshold):
-                comm_keyset = await utils.create_comm_keyset(self.jcli())
+            for _idx in range(event.committee_threshold):
+                comm_keyset = await utils.create_communication_keys(self.jcli())
                 comm_keysets.append(comm_keyset)
             logger.debug(f"comm keysets: {comm_keysets}")
             comm_pks = [kset[2] for kset in comm_keysets]
 
             # make committee member keys
             logger.info("creating committee member keys")
-            _ = await utils.create_committee_member_keys(self.jcli(), comm_pks, "CRS", event.committee_size, event.committee_threshold)
+            _ = await utils.create_committee_member_keys(
+                self.jcli(),
+                comm_pks,
+                "CRS",
+                event.committee_size,
+                event.committee_threshold,
+            )
 
             # generate genesis file to make block0
             logger.debug("generating genesis content")
@@ -535,6 +569,7 @@ class Leader0Schedule(LeaderSchedule):
             logger.debug(f"block0 created and saved: {self.node.block0.hash}")
 
     async def publish_block0(self):
+        """Publish block0 to the current event in EventDB."""
         event = self.node.get_event()
         match self.node.block0:
             case Block0(bin=block0_bytes, hash=block0_hash):
@@ -554,6 +589,3 @@ class FollowerSchedule(NodeTaskSchedule):
     node: FollowerNode = FollowerNode()
     # Follower Node tasks
     tasks: list[str] = FOLLOWER_NODE_SCHEDULE
-
-    async def todo(self):
-        pass

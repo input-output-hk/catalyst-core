@@ -8,7 +8,7 @@ app = FastAPI()
 
 @app.get("/")
 def heartbeat():
-    """Returns 200 if the service is running."""
+    """Return 200 if the service is running."""
     return
 
 

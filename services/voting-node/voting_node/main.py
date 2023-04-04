@@ -22,7 +22,7 @@ JORM_PORT_P2P: Final = "JORM_PORT_P2P"
 
 @click.group()
 def cli():
-    """Main CLI entry point."""
+    """Invoke the 'voting-node' command from the command-line."""
 
 
 @click.command()
@@ -127,7 +127,10 @@ def start(
     jorm_port_jrpc,
     jorm_port_p2p,
 ):
-    """Starts the voting node."""
+    """Invoke the 'voting-node start' sub-command.
+
+    Start the Voting Service process.
+    """
     logs.configLogger(log_level)
     click.echo(f"reloadable={reloadable}")
 

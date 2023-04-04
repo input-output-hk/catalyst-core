@@ -7,7 +7,8 @@ from typing import Final, Literal
 
 import yaml
 
-from . import jcli
+from .committee import Committee, CommitteeMember, CommunicationKeys, MemberKeys, WalletKeys
+from .jcli import JCli
 from .logs import getLogger
 from .models import Event, Genesis, LeaderHostInfo, NodeConfig
 from .templates import (
@@ -54,7 +55,7 @@ async def get_network_secret(secret_file: Path, jcli_path: str) -> str:
     else:
         try:
             # run jcli to generate the secret key
-            jcli_exec = jcli.JCli(jcli_path)
+            jcli_exec = JCli(jcli_path)
             secret = await jcli_exec.key_generate(secret_type="ed25519")
             # write the key to the file
             secret_file.open("w").write(secret)
@@ -209,38 +210,68 @@ def make_node_config(
             raise Exception("something odd happened creating node_config.yaml")
 
 
-async def create_address_keyset(jcli: jcli.JCli) -> tuple[str, str, str]:
-    committee_sk = await jcli.key_generate()
-    committee_pk = await jcli.key_to_public(committee_sk)
-    committee_id = await jcli.key_to_bytes(committee_pk)
-    return committee_sk, committee_pk, committee_id
+async def create_wallet_keyset(jcli: JCli) -> WalletKeys:
+    """Generate Ed25519 keys used for wallet addresses."""
+    wsk = await jcli.key_generate()
+    wpk = await jcli.key_to_public(wsk)
+    wid = await jcli.key_to_bytes(wpk)
+    return WalletKeys(seckey=wsk, pubkey=wpk, hex_encoded=wid)
 
 
-async def create_comm_keyset(jcli: jcli.JCli) -> tuple[str, str, str]:
+async def create_communication_keys(jcli: JCli) -> CommunicationKeys:
+    """Create the communication keys for a committee member.
+
+    The public communication keys are used to create the member keys.
+    """
     comm_sk = await jcli.votes_committee_communication_key_generate()
     comm_pk = await jcli.votes_committee_communication_key_to_public(comm_sk)
-    comm_id = await jcli.key_to_bytes(comm_pk)
-    return comm_sk, comm_pk, comm_id
+    return CommunicationKeys(seckey=comm_sk, pubkey=comm_pk)
 
 
-async def create_committee_member_keys(jcli: jcli.JCli, comm_pks: list[str], crs: str, size: int, threshold: int) -> list[tuple[str, str, str]]:
-    match size:
-        case 0:
-            logger.info("no committee members")
-            return []
-        case n if threshold <= size:
-            logger.info(
-                f"""creating {n} committee member(s), threshold is
-                {threshold}, votes will be private""",
-            )
-            member_skeys = [await jcli.votes_committee_member_key_generate(comm_pks, crs, i, threshold) for i in range(n)]
-            logger.debug(f"{len(member_skeys)} member sk: {member_skeys}")
-            return []
-        case _:
-            raise Exception(f"expected threshold {threshold}, to be less than {size}")
+async def create_committee_member_keys(
+    jcli: JCli,
+    threshold: int,
+    crs: str,
+    index: int,
+    keys: list[str],
+) -> MemberKeys:
+    """Return a tuple with the committee member key pair.
+
+    `threshold` is the least number of members needed to perform a tally.
+    `index` is the zero-based index of the member, ranging from `0 <= index < committee_size`.
+    `crs` is the Common Reference String shared by all member keys.
+    `keys` are the public communication keys of every committee member.
+    """
+    logger.info(f"creating committee member_{index} keys, threshold is {threshold}")
+    member_pk = await jcli.votes_committee_member_key_generate(keys, crs, index, threshold)
+    logger.debug(f"member_{index}_sk created")
+    member_sk = await jcli.votes_committee_member_key_to_public(member_pk)
+    logger.debug(f"member_{index}_pk created: {member_pk}")
+    return MemberKeys(seckey=member_sk, pubkey=member_sk)
+
+
+async def create_committee_member(jcli: JCli, index: int, threshold: int, crs: str) -> CommitteeMember:
+    """Return a CommitteeMember with communication and member keys.
+
+    `size` is equal to the number of committee members. If set to 0, voting and tallying will be public.
+    `threshold` is the minimum number of committee members needed to carry out the tally.
+    """
+    ...
+
+
+async def create_committee(jcli: JCli, committee_id: str, size: int, threshold: int, crs: str) -> Committee:
+    """Return a Committee.
+
+    `committee_id` is the hex-encoded public key of the Committee wallet.
+    `size` is equal to the number of committee members. If set to 0, voting and tallying will be public.
+    `threshold` is the minimum number of committee members needed to carry out the tally.
+    `crs` is the common reference string shared by all member keys.
+    """
+    ...
 
 
 def make_genesis_content(event: Event, peers: list[LeaderHostInfo], committee_ids: list[str]) -> Genesis:
+    """Generate a genesis file."""
     start_time = event.get_voting_start()
     genesis = yaml.safe_load(GENESIS_YAML)
     consensus_leader_ids = [peer.consensus_leader_id for peer in peers]
@@ -253,13 +284,15 @@ def make_genesis_content(event: Event, peers: list[LeaderHostInfo], committee_id
 
 
 async def make_block0(jcli_path: str, storage: Path, genesis_path: Path) -> tuple[Path, str]:
+    """Make the binary content of block0 from the given genesis.yaml path."""
     block0_path = storage.joinpath("block0.bin")
-    jcli_exec = jcli.JCli(jcli_path)
+    jcli_exec = JCli(jcli_path)
     await jcli_exec.genesis_encode(block0_path, genesis_path)
     hash = await make_block0_hash(jcli_path, block0_path)
     return (block0_path, hash)
 
 
 async def make_block0_hash(jcli_path: str, block0_path: Path) -> str:
-    jcli_exec = jcli.JCli(jcli_path)
+    """Return the hash of the block0 binary from the given block0.bin path."""
+    jcli_exec = JCli(jcli_path)
     return await jcli_exec.genesis_hash(block0_path)

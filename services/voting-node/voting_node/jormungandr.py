@@ -1,9 +1,6 @@
 """Wrapper for the jormungandr command-line executable."""
 import asyncio
-from operator import ge
 from pathlib import Path
-
-from voting_node.models import Block0
 
 from .logs import getLogger
 
@@ -33,7 +30,6 @@ class Jormungandr:
             if proc.stdout is not None:
                 line = await proc.stdout.readline()
                 logger.debug(f"[jorm stdout] {line}")
-
 
             if proc.returncode != 0:
                 raise Exception(f"jormungandr exited with non-zero status: {proc.returncode}")

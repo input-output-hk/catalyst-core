@@ -73,6 +73,11 @@ class NodeConfigYaml(YamlFile):
 
 @dataclass
 class HostInfo:
+    """Node host information for a given event.
+
+    Holds the hostname, the node's keypair, and topology key.
+    """
+
     hostname: str
     event: int
     seckey: str

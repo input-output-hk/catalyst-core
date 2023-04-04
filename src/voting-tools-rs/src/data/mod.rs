@@ -2,7 +2,7 @@ use std::{collections::BTreeMap, error::Error, ffi::OsString, io::Cursor};
 
 use crate::{
     validation::hash,
-    verify::{stake_key_hash, StakeKeyHash},
+    verify::{is_valid_rewards_address, stake_key_hash, StakeKeyHash},
 };
 use bytekind::{Bytes, HexString};
 use ciborium::value::Value;
@@ -432,7 +432,7 @@ fn inspect_rewards_addr(
     };
 
     let prefix = format!("{:x}", &rewards_address.0[NETWORK_ID]);
-    if !network_id.is_valid_rewards_address(prefix.clone()) {
+    if !is_valid_rewards_address(prefix.clone(), network_id) {
         return Err(Err(Box::new(RegistrationError::InvalidAddressPrefix {
             err: format!(
                 "Invalid rewards address: address prefix is: {:?}\n the first hex char should be in the range\n

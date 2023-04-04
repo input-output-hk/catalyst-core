@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::path::PathBuf;
 
 use postgres::fallible_iterator::FallibleIterator;
 use postgres::Client;
@@ -47,7 +46,7 @@ pub fn filter_registrations(
     let mut valids: Valids = vec![];
     let mut invalids: Invalids = vec![];
 
-    let cddl = CddlConfig::new()?;
+    let cddl = CddlConfig::new();
 
     let mut results = client.query_raw(
         "
@@ -255,26 +254,13 @@ pub struct CddlConfig {
 }
 
 impl CddlConfig {
-    pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
-        let cddl_61284: String = String::from_utf8(cddl_file("61284.cddl".to_string())?)?;
+    pub fn new() -> Self {
+        let cddl_61284: String = include_str!("61284.cddl").to_string();
+        let cddl_61285: String = include_str!("61285.cddl").to_string();
 
-        let cddl_61285: String = String::from_utf8(cddl_file("61285.cddl".to_string())?)?;
-
-        Ok(CddlConfig {
+        CddlConfig {
             _61284: cddl_61284,
             _61285: cddl_61285,
-        })
+        }
     }
-}
-
-fn cddl_file(file: String) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-    let dir = std::env::current_dir()?;
-    let path = format!(
-        "{}/src/voting-tools-rs/src/par/{}",
-        dir.as_path().display().to_string(),
-        file
-    );
-
-    let raw = std::fs::read(PathBuf::from(path))?;
-    Ok(raw)
 }

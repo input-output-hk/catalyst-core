@@ -1073,6 +1073,8 @@ components:
       x-stoplight:
         id: ufax8ri60bljs
     VoteInfo:
+      title: Vote Info
+      type: object
       properties:
         fragment_id:
           type: string
@@ -1103,7 +1105,7 @@ components:
           format: hash
           description: raw bytes of transaction
       x-stoplight:
-        id: 4j0mbaifceat2
+        id: 3ec9198e6f38c
     VoterGroupId:
       title: VoterGroupId
       x-stoplight:
@@ -1134,11 +1136,11 @@ components:
     VotersInfo:
       type: object
       description: The voting power for the requested voting key.
+      x-stoplight:
+        id: gce0oy7wdls7g
       properties:
         voter_info:
-          type: array
-          items:
-            $ref: '#/components/schemas/VoterInfo'
+          $ref: '#/components/schemas/VoterInfo'
         last_updated:
           type: string
           format: date-time
@@ -1153,9 +1155,8 @@ components:
       required:
         - voter_info
         - last_updated
-      x-stoplight:
-        id: gce0oy7wdls7g
     VoterInfo:
+      title: Voter Info
       type: object
       description: voter's info
       example:
@@ -1192,7 +1193,7 @@ components:
         - delegations_count
         - voting_power_saturation
       x-stoplight:
-        id: xqfzipvfkm1o4
+        id: d1981dae2031b
     DelegationInfo:
       type: object
       description: voters delegation info

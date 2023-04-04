@@ -74,21 +74,20 @@ pub async fn establish_connection(url: Option<&str>) -> Result<EventDB, Error> {
     Ok(db)
 }
 
+/// Need to setup and run a test event db instance
+/// To do it you can use `cargo make local-event-db-setup`
+/// Also need establish `EVENT_DB_URL` env variable with the following value
+/// ```
+/// EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev"
+/// ```
+/// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod test {
     use super::*;
 
-    pub async fn test_event_db() -> EventDB {
-        establish_connection(Some(
-            "postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev",
-        ))
-        .await
-        .unwrap()
-    }
-
     /// Check if the schema version in the DB is up to date.
     #[tokio::test]
     async fn check_schema_version() {
-        test_event_db().await;
+        establish_connection(None).await.unwrap();
     }
 }

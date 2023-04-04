@@ -211,16 +211,20 @@ impl SnapshotQueries for EventDB {
 
 /// Need to setup and run a test event db instance
 /// To do it you can use `cargo make local-event-db-setup`
+/// Also need establish `EVENT_DB_URL` env variable with the following value
+/// ```
+/// EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev"
+/// ```
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test::test_event_db;
+    use crate::establish_connection;
     use chrono::{DateTime, NaiveDate, NaiveTime};
 
     #[tokio::test]
     async fn get_voter_test() {
-        let event_db = test_event_db().await;
+        let event_db = establish_connection(None).await.unwrap();
 
         let voter = event_db
             .get_voter(&Some(EventId(1)), "voting_key_1".to_string())
@@ -296,7 +300,7 @@ mod tests {
 
     #[tokio::test]
     async fn get_delegator_test() {
-        let event_db = test_event_db().await;
+        let event_db = establish_connection(None).await.unwrap();
 
         let delegator = event_db
             .get_delegator(&Some(EventId(1)), "stake_public_key_1".to_string())

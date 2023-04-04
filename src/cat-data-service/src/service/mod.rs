@@ -17,14 +17,17 @@ pub enum Error {
     EventDbError(#[from] event_db::error::Error),
 }
 
-// #[tracing::instrument]
+pub fn app(state: Arc<State>) -> Router {
+    // build our application with a route
+    let v1 = v1::v1(state);
+    Router::new().nest("/api", v1)
+}
+
 pub async fn run_service(addr: &SocketAddr, state: Arc<State>) -> Result<(), Error> {
     tracing::info!("Starting service...");
     tracing::info!("Listening on {}", addr);
 
-    // build our application with a route
-    let v1 = v1::v1(state);
-    let app = Router::new().nest("/api", v1);
+    let app = app(state);
 
     axum::Server::bind(addr)
         .serve(app.into_make_service())

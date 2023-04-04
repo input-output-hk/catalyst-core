@@ -94,3 +94,255 @@ async fn delegations_by_event_exec(
         .await?;
     Ok(delegator)
 }
+
+/// Need to setup and run a test event db instance
+/// To do it you can use `cargo make local-event-db-setup`
+/// Also need establish `EVENT_DB_URL` env variable with the following value
+/// ```
+/// EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev"
+/// ```
+/// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::service::app;
+    use axum::{
+        body::{Body, HttpBody},
+        http::{Request, StatusCode},
+    };
+    use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
+    use event_db::types::snapshot::{Delegation, VoterInfo};
+    use tower::ServiceExt;
+
+    #[tokio::test]
+    async fn voter_by_latest_event_test() {
+        let state = Arc::new(State::new(None).await.unwrap());
+        let app = app(state);
+
+        let request = Request::builder()
+            .uri(format!("/api/v1/registration/voter/{0}", "voting_key_1"))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&Voter {
+                voter_info: VoterInfo {
+                    voting_power: 250,
+                    voting_group: "rep".to_string(),
+                    delegations_power: 250,
+                    delegations_count: 2,
+                    voting_power_saturation: 0.625,
+                },
+                as_at: DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                ),
+                last_updated: DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                ),
+                is_final: true,
+            })
+            .unwrap()
+        );
+
+        let request = Request::builder()
+            .uri(format!("/api/v1/registration/voter/{0}", "voting_key"))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn voter_by_event_test() {
+        let state = Arc::new(State::new(None).await.unwrap());
+        let app = app(state);
+
+        let request = Request::builder()
+            .uri(format!(
+                "/api/v1/registration/voter/{0}/{1}",
+                "voting_key_1", 1
+            ))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&Voter {
+                voter_info: VoterInfo {
+                    voting_power: 250,
+                    voting_group: "rep".to_string(),
+                    delegations_power: 250,
+                    delegations_count: 2,
+                    voting_power_saturation: 0.625,
+                },
+                as_at: DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                ),
+                last_updated: DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                ),
+                is_final: true,
+            })
+            .unwrap()
+        );
+
+        let request = Request::builder()
+            .uri(format!(
+                "/api/v1/registration/voter/{0}/{1}",
+                "voting_key", 1
+            ))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn delegations_by_latest_event_test() {
+        let state = Arc::new(State::new(None).await.unwrap());
+        let app = app(state);
+
+        let request = Request::builder()
+            .uri(format!(
+                "/api/v1/registration/delegations/{0}",
+                "stake_public_key_1"
+            ))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&Delegator {
+                delegations: vec![
+                    Delegation {
+                        voting_key: "voting_key_1".to_string(),
+                        group: "rep".to_string(),
+                        weight: 1,
+                        value: 140
+                    },
+                    Delegation {
+                        voting_key: "voting_key_2".to_string(),
+                        group: "rep".to_string(),
+                        weight: 1,
+                        value: 100
+                    }
+                ],
+                raw_power: 240,
+                total_power: 1000,
+                as_at: DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                ),
+                last_updated: DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                ),
+                is_final: true
+            })
+            .unwrap()
+        );
+
+        let request = Request::builder()
+            .uri(format!(
+                "/api/v1/registration/delegations/{0}",
+                "stake_public_key"
+            ))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn delegations_by_event_test() {
+        let state = Arc::new(State::new(None).await.unwrap());
+        let app = app(state);
+
+        let request = Request::builder()
+            .uri(format!(
+                "/api/v1/registration/delegations/{0}/{1}",
+                "stake_public_key_1", 1
+            ))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&Delegator {
+                delegations: vec![
+                    Delegation {
+                        voting_key: "voting_key_1".to_string(),
+                        group: "rep".to_string(),
+                        weight: 1,
+                        value: 140
+                    },
+                    Delegation {
+                        voting_key: "voting_key_2".to_string(),
+                        group: "rep".to_string(),
+                        weight: 1,
+                        value: 100
+                    }
+                ],
+                raw_power: 240,
+                total_power: 1000,
+                as_at: DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                ),
+                last_updated: DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                ),
+                is_final: true
+            })
+            .unwrap()
+        );
+
+        let request = Request::builder()
+            .uri(format!(
+                "/api/v1/registration/delegations/{0}/{1}",
+                "stake_public_key", 1
+            ))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+}

@@ -20,14 +20,15 @@ sql_function! (fn decode(string: Text, format: Text) -> Bytea);
 impl Db {
     /// Query the stake values
     ///
-    /// This query is detailed in <../design/stake_value_processing.md>
+    /// This query is detailed in <../`design/stake_value_processing.md`>
     ///
     /// # Errors
     ///
     /// Will return an error not at all.  TODO, don't return Result.
+    #[must_use]
     pub fn stake_values(&self, stake_addrs: &[StakeKeyHash]) -> DashMap<StakeKeyHash, BigDecimal> {
         let rows = stake_addrs.par_iter().map(|addr| {
-            let hex = hex::encode(&addr);
+            let hex = hex::encode(addr);
 
             // dbg!("stake key hash for query {:?}", hex.clone());
             let result = self.exec(|conn| query(hex).load(conn))?;
@@ -96,9 +97,7 @@ fn query(stake_addr: String) -> impl DbQuery<'static, BigDecimal> {
         .inner_join(inner_join)
         .filter(tx_in::tx_in_id.is_null());
 
-    let result = table
+    table
         .select(tx_out::value)
-        .filter(stake_address::hash_raw.eq(decode(stake_addr, "hex")));
-
-    result
+        .filter(stake_address::hash_raw.eq(decode(stake_addr, "hex")))
 }

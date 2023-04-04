@@ -23,7 +23,7 @@ pub type Valids = Vec<SignedRegistration>;
 /// Registrations which failed cddl and or sig checks
 pub type Invalids = Vec<InvalidRegistration>;
 
-/// Network_id + Blake2b-224( Stake Public Key )
+/// `Network_id` + Blake2b-224( Stake Public Key )
 pub type StakeKeyHash = Vec<u8>;
 
 /// Registrations with no staked ada. No UTXO's.
@@ -101,8 +101,8 @@ pub fn filter_registrations(
         let reg = match rawreg.to_signed(&cddl, network_id) {
             Err(err) => {
                 invalids.push(InvalidRegistration {
-                    _61284: Some(hex::encode(rawreg.bin_reg)),
-                    _61285: Some(hex::encode(rawreg.bin_sig)),
+                    spec_61284: Some(hex::encode(rawreg.bin_reg)),
+                    spec_61285: Some(hex::encode(rawreg.bin_sig)),
                     registration: None,
                     errors: nonempty![RegistrationError::CborDeserializationFailed {
                         err: format!("Failed to deserialize Registration CBOR: {}", err),
@@ -117,8 +117,8 @@ pub fn filter_registrations(
             Ok(_) => valids.push(reg),
             Err(err) => {
                 invalids.push(InvalidRegistration {
-                    _61284: Some(hex::encode(rawreg.bin_reg)),
-                    _61285: Some(hex::encode(rawreg.bin_sig)),
+                    spec_61284: Some(hex::encode(rawreg.bin_reg)),
+                    spec_61285: Some(hex::encode(rawreg.bin_sig)),
                     registration: Some(reg),
                     errors: nonempty![RegistrationError::SignatureError {
                         err: format!("Signature validation failure: {}", err),
@@ -140,16 +140,16 @@ pub fn latest_registrations(valids: &Valids, invalids: &mut Invalids) -> Valids 
         if let Some((_stake_key, current)) = latest.get_key_value(&valid.registration.stake_key) {
             if valid.registration.nonce > current.registration.nonce {
                 invalids.push(InvalidRegistration {
-                    _61284: None,
-                    _61285: None,
+                    spec_61284: None,
+                    spec_61285: None,
                     registration: Some(current.clone()),
                     errors: nonempty![RegistrationError::ObsoleteRegistration {}],
                 });
                 latest.insert(valid.registration.stake_key.clone(), valid.clone());
             } else {
                 invalids.push(InvalidRegistration {
-                    _61284: None,
-                    _61285: None,
+                    spec_61284: None,
+                    spec_61285: None,
                     registration: Some(valid.clone()),
                     errors: nonempty![RegistrationError::ObsoleteRegistration {}],
                 });
@@ -164,26 +164,29 @@ pub fn latest_registrations(valids: &Valids, invalids: &mut Invalids) -> Valids 
 
 /// The registration has a 32 byte "Stake Public Key".  This is the raw ED25519 public key of the stake address.
 /// To calculate the Voting power, you need the stake key hash. Encoded in Cardano format.
-/// Network_id + Blake2b-224( Stake Public Key )
+/// `Network_id` + Blake2b-224( Stake Public Key )
+#[must_use]
 pub fn stake_key_hash(key: &StakeKeyHex, network: NetworkId) -> StakeKeyHash {
     let bytes = &key.0 .0;
 
     let mut digest = [0u8; 28];
     let mut context = Blake2b::new(28);
-    context.input(&bytes);
+    context.input(bytes);
     context.result(&mut digest);
 
     let e0 = hex::decode("e0").unwrap();
     let e1 = hex::decode("e1").unwrap();
 
-    let ctx = match network {
+    match network {
         NetworkId::Testnet => [e0, digest.to_vec()].concat(),
         NetworkId::Mainnet => [e1, digest.to_vec()].concat(),
-    };
-
-    ctx
+    }
 }
 
+///
+/// Verifies if rewards address is correct
+///
+#[must_use]
 pub fn is_valid_rewards_address(rewards_address_prefix: &u8, network: NetworkId) -> bool {
     let prefix_hex = format!("{:x}", rewards_address_prefix);
 
@@ -220,11 +223,16 @@ pub fn is_valid_rewards_address(rewards_address_prefix: &u8, network: NetworkId)
     true
 }
 
+/// Validate raw registration binary against 61284 CDDL spec
+///
+/// # Errors
+///
+/// Failure will occur if parsed keys do not match CDDL spec
 pub fn validate_reg_cddl(
-    bin_reg: &Vec<u8>,
+    bin_reg: &[u8],
     cddl_config: &CddlConfig,
 ) -> Result<(), RegistrationError> {
-    cddl::validate_cbor_from_slice(&cddl_config._61284, &bin_reg, None).map_err(|err| {
+    cddl::validate_cbor_from_slice(&cddl_config.spec_61284, bin_reg, None).map_err(|err| {
         RegistrationError::CddlParsingFailed {
             err: format!("reg bytes does not match 61284 spec: {}", err),
         }
@@ -233,11 +241,16 @@ pub fn validate_reg_cddl(
     Ok(())
 }
 
+/// Validate raw signature binary against 61285 CDDL spec
+///
+/// # Errors
+///
+/// Failure will occur if parsed keys do not match CDDL spec
 pub fn validate_sig_cddl(
-    bin_sig: &Vec<u8>,
+    bin_sig: &[u8],
     cddl_config: &CddlConfig,
 ) -> Result<(), RegistrationError> {
-    cddl::validate_cbor_from_slice(&cddl_config._61285, &bin_sig, None).map_err(|err| {
+    cddl::validate_cbor_from_slice(&cddl_config.spec_61285, bin_sig, None).map_err(|err| {
         RegistrationError::CddlParsingFailed {
             err: format!("sig bytes does not match 61285 spec: {}", err),
         }
@@ -247,20 +260,27 @@ pub fn validate_sig_cddl(
 }
 
 /// Cddl schema:
-/// https://cips.cardano.org/cips/cip36/schema.cddl
+/// <https://cips.cardano.org/cips/cip36/schema.cddl>
 pub struct CddlConfig {
-    _61284: String,
-    _61285: String,
+    spec_61284: String,
+    spec_61285: String,
 }
 
 impl CddlConfig {
+    #[must_use]
     pub fn new() -> Self {
         let cddl_61284: String = include_str!("61284.cddl").to_string();
         let cddl_61285: String = include_str!("61285.cddl").to_string();
 
         CddlConfig {
-            _61284: cddl_61284,
-            _61285: cddl_61285,
+            spec_61284: cddl_61284,
+            spec_61285: cddl_61285,
         }
+    }
+}
+
+impl Default for CddlConfig {
+    fn default() -> Self {
+        Self::new()
     }
 }

@@ -29,9 +29,9 @@ mod data_provider;
 mod db;
 mod error;
 mod logic;
-pub mod par;
 mod testing;
 mod validation;
+pub mod verification;
 
 // this export style forces us to be explicit about what is in the public API
 pub use exports::*;
@@ -42,6 +42,6 @@ mod exports {
     pub use crate::db::{Conn, Db, DbConfig};
     pub use crate::error::*;
     pub use crate::logic::{voting_power, VotingPowerArgs};
-    pub use crate::par::*;
     pub use crate::testing::*;
+    pub use crate::verification::*;
 }

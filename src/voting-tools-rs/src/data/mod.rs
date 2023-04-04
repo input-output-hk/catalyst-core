@@ -229,10 +229,10 @@ impl RawRegistration {
         network_id: NetworkId,
     ) -> Result<SignedRegistration, Box<dyn Error>> {
         // validate cddl: 61824
-        validate_reg_cddl(&self.bin_reg, &cddl_config)?;
+        validate_reg_cddl(&self.bin_reg, cddl_config)?;
 
         // validate cddl: 61825
-        validate_sig_cddl(&self.bin_sig, &cddl_config)?;
+        validate_sig_cddl(&self.bin_sig, cddl_config)?;
 
         let registration = self.raw_reg_conversion(network_id)?;
 
@@ -240,7 +240,7 @@ impl RawRegistration {
 
         Ok(SignedRegistration {
             registration: registration.clone(),
-            signature: signature,
+            signature,
             stake_key_hash: stake_key_hash(&registration.stake_key, network_id),
             tx_id: self.tx_id,
             slot: self.slot,
@@ -253,13 +253,13 @@ impl RawRegistration {
             ciborium::de::from_reader(Cursor::new(&self.bin_reg))?;
 
         // CBOR representation of a map containing a single entry with key 61284
-        let _61284 = match inspect_cip36_reg(&decoded) {
+        let spec_61284 = match inspect_cip36_reg(&decoded) {
             Ok(value) => value,
             Err(value) => return value,
         };
 
         // 4 entries inside metadata map with one optional entry for the voting purpose
-        let metamap = match inspect_metamap_reg(&_61284) {
+        let metamap = match inspect_metamap_reg(&spec_61284) {
             Ok(value) => value,
             Err(value) => return value,
         };
@@ -308,12 +308,12 @@ impl RawRegistration {
         let decoded: ciborium::value::Value =
             ciborium::de::from_reader(Cursor::new(&self.bin_sig))?;
 
-        let _61285 = match inspect_cip36_sig(decoded) {
+        let spec_61285 = match inspect_cip36_sig(decoded) {
             Ok(value) => value,
             Err(value) => return value,
         };
 
-        let metamap = match inspect_metamap_sig(&_61285) {
+        let metamap = match inspect_metamap_sig(&spec_61285) {
             Ok(value) => value,
             Err(value) => return value,
         };
@@ -329,14 +329,14 @@ impl RawRegistration {
 }
 
 fn inspect_witness(
-    metamap: &Vec<(Value, Value)>,
+    metamap: &[(Value, Value)],
 ) -> Result<[u8; 64], Result<Signature, Box<dyn Error>>> {
     let witness = match &metamap[WITNESS] {
         (Value::Integer(_one), Value::Bytes(witness)) => witness.as_slice(),
         _ => {
             return Err(Err(Box::new(
                 RegistrationError::RawBinCborSignatureFailure {
-                    err: format!("Unable to extract witness"),
+                    err: "Unable to extract witness".to_string(),
                 },
             )))
         }
@@ -355,14 +355,14 @@ fn inspect_witness(
 }
 
 fn inspect_metamap_sig(
-    _61285: &Vec<Value>,
+    spec_61285: &[Value],
 ) -> Result<&Vec<(Value, Value)>, Result<Signature, Box<dyn Error>>> {
-    let metamap = match &_61285[KEY_61285] {
+    let metamap = match &spec_61285[KEY_61285] {
         Value::Map(metamap) => metamap,
         _ => {
             return Err(Err(Box::new(
                 RegistrationError::RawBinCborSignatureFailure {
-                    err: format!("Not congruent with CIP36"),
+                    err: "Not congruent with CIP36".to_string(),
                 },
             )))
         }
@@ -371,7 +371,7 @@ fn inspect_metamap_sig(
 }
 
 fn inspect_cip36_sig(decoded: Value) -> Result<Vec<Value>, Result<Signature, Box<dyn Error>>> {
-    let _61285 = match decoded {
+    let spec_61285 = match decoded {
         Value::Map(m) => m.iter().map(|entry| entry.1.clone()).collect::<Vec<_>>(),
         _ => {
             return Err(Err(Box::new(
@@ -381,11 +381,11 @@ fn inspect_cip36_sig(decoded: Value) -> Result<Vec<Value>, Result<Signature, Box
             )))
         }
     };
-    Ok(_61285)
+    Ok(spec_61285)
 }
 
 fn inspect_voting_purpose(metamap: &Vec<(Value, Value)>) -> Option<VotingPurpose> {
-    let voting_purpose = if metamap.len() == 5 {
+    if metamap.len() == 5 {
         match metamap[VOTE_PURPOSE] {
             (Value::Integer(_five), Value::Integer(purpose)) => {
                 Some(VotingPurpose(purpose.try_into().unwrap()))
@@ -394,19 +394,18 @@ fn inspect_voting_purpose(metamap: &Vec<(Value, Value)>) -> Option<VotingPurpose
         }
     } else {
         None
-    };
-    voting_purpose
+    }
 }
 
 fn inspect_nonce(
-    metamap: &Vec<(Value, Value)>,
+    metamap: &[(Value, Value)],
 ) -> Result<Nonce, Result<Registration, Box<dyn Error>>> {
     let nonce = match metamap[NONCE] {
         (Value::Integer(_four), Value::Integer(nonce)) => Nonce(nonce.try_into().unwrap()),
         _ => {
             return Err(Err(Box::new(
                 RegistrationError::RawBinCborRegistrationFailure {
-                    err: format!("Unable to extract Nonce"),
+                    err: "Unable to extract Nonce".to_string(),
                 },
             )))
         }
@@ -415,7 +414,7 @@ fn inspect_nonce(
 }
 
 fn inspect_rewards_addr(
-    metamap: &Vec<(Value, Value)>,
+    metamap: &[(Value, Value)],
     network_id: NetworkId,
 ) -> Result<RewardsAddress, Result<Registration, Box<dyn Error>>> {
     let rewards_address = match &metamap[PAYMENT_ADDRESS] {
@@ -425,7 +424,7 @@ fn inspect_rewards_addr(
         _ => {
             return Err(Err(Box::new(
                 RegistrationError::RawBinCborRegistrationFailure {
-                    err: format!("Unable to extract rewards addr"),
+                    err: "Unable to extract rewards addr".to_string(),
                 },
             )))
         }
@@ -445,17 +444,17 @@ fn inspect_rewards_addr(
 }
 
 fn inspect_stake_key(
-    metamap: &Vec<(Value, Value)>,
+    metamap: &[(Value, Value)],
 ) -> Result<StakeKeyHex, Result<Registration, Box<dyn Error>>> {
     let stake_key = match &metamap[STAKE_ADDRESS] {
         (Value::Integer(_two), Value::Bytes(stake_addr)) => {
             // assert!((*two == Value::Integer(2.into()).as_integer().unwrap()));
-            StakeKeyHex(PubKey(stake_addr.to_vec()))
+            StakeKeyHex(PubKey(stake_addr.clone()))
         }
         _ => {
             return Err(Err(Box::new(
                 RegistrationError::RawBinCborRegistrationFailure {
-                    err: format!("Unable to extract stake key"),
+                    err: "Unable to extract stake key".to_string(),
                 },
             )))
         }
@@ -464,11 +463,11 @@ fn inspect_stake_key(
 }
 
 fn inspect_voting_key(
-    metamap: &Vec<(Value, Value)>,
+    metamap: &[(Value, Value)],
 ) -> Result<VotingKey, Result<Registration, Box<dyn Error>>> {
     let voting_key = match &metamap[DELEGATIONS_OR_DIRECT] {
         (Value::Integer(_one), Value::Bytes(direct)) => {
-            VotingKey::Direct(PubKey(direct.to_vec()).into())
+            VotingKey::Direct(PubKey(direct.clone()).into())
         }
         (Value::Integer(_one), Value::Array(delegations)) => {
             let mut delegations_map: BTreeMap<VotingKeyHex, u64> = BTreeMap::new();
@@ -480,9 +479,8 @@ fn inspect_voting_key(
                             None => {
                                 return Err(Err(Box::new(
                                     RegistrationError::RawBinCborRegistrationFailure {
-                                        err: format!(
-                                            "Unable to extract voting key from delegation"
-                                        ),
+                                        err: "Unable to extract voting key from delegation"
+                                            .to_string(),
                                     },
                                 )))
                             }
@@ -505,21 +503,20 @@ fn inspect_voting_key(
                             None => {
                                 return Err(Err(Box::new(
                                     RegistrationError::RawBinCborRegistrationFailure {
-                                        err: format!(
-                                            "Unable to extract voting key from delegation"
-                                        ),
+                                        err: "Unable to extract voting key from delegation"
+                                            .to_string(),
                                     },
                                 )))
                             }
                         };
 
-                        delegations_map.insert(VotingKeyHex(PubKey(voting_key.to_vec())), weight);
+                        delegations_map.insert(VotingKeyHex(PubKey(voting_key.clone())), weight);
                     }
 
                     _ => {
                         return Err(Err(Box::new(
                             RegistrationError::RawBinCborRegistrationFailure {
-                                err: format!("Not congruent with CIP-36"),
+                                err: "Not congruent with CIP-36".to_string(),
                             },
                         )))
                     }
@@ -532,7 +529,7 @@ fn inspect_voting_key(
         _ => {
             return Err(Err(Box::new(
                 RegistrationError::RawBinCborRegistrationFailure {
-                    err: format!("Unable to ascertain direct or delegated voting keys"),
+                    err: "Unable to ascertain direct or delegated voting keys".to_string(),
                 },
             )))
         }
@@ -541,14 +538,14 @@ fn inspect_voting_key(
 }
 
 fn inspect_metamap_reg(
-    _61284: &Vec<Value>,
+    spec_61284: &[Value],
 ) -> Result<&Vec<(Value, Value)>, Result<Registration, Box<dyn Error>>> {
-    let metamap = match &_61284[KEY_61284] {
+    let metamap = match &spec_61284[KEY_61284] {
         Value::Map(metamap) => metamap,
         _ => {
             return Err(Err(Box::new(
                 RegistrationError::RawBinCborRegistrationFailure {
-                    err: format!("Unable to obtain metadata map"),
+                    err: "Unable to obtain metadata map".to_string(),
                 },
             )))
         }
@@ -557,7 +554,7 @@ fn inspect_metamap_reg(
 }
 
 fn inspect_cip36_reg(decoded: &Value) -> Result<Vec<Value>, Result<Registration, Box<dyn Error>>> {
-    let _61284 = match decoded {
+    let spec_61284 = match decoded {
         Value::Map(m) => m.iter().map(|entry| entry.1.clone()).collect::<Vec<_>>(),
         _ => {
             return Err(Err(Box::new(
@@ -567,7 +564,7 @@ fn inspect_cip36_reg(decoded: &Value) -> Result<Vec<Value>, Result<Registration,
             )))
         }
     };
-    Ok(_61284)
+    Ok(spec_61284)
 }
 
 /// Single element in a snapshot

@@ -586,9 +586,154 @@
 <span id="586">586</span>
 <span id="587">587</span>
 <span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
+<span id="608">608</span>
+<span id="609">609</span>
+<span id="610">610</span>
+<span id="611">611</span>
+<span id="612">612</span>
+<span id="613">613</span>
+<span id="614">614</span>
+<span id="615">615</span>
+<span id="616">616</span>
+<span id="617">617</span>
+<span id="618">618</span>
+<span id="619">619</span>
+<span id="620">620</span>
+<span id="621">621</span>
+<span id="622">622</span>
+<span id="623">623</span>
+<span id="624">624</span>
+<span id="625">625</span>
+<span id="626">626</span>
+<span id="627">627</span>
+<span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
+<span id="632">632</span>
+<span id="633">633</span>
+<span id="634">634</span>
+<span id="635">635</span>
+<span id="636">636</span>
+<span id="637">637</span>
+<span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
+<span id="644">644</span>
+<span id="645">645</span>
+<span id="646">646</span>
+<span id="647">647</span>
+<span id="648">648</span>
+<span id="649">649</span>
+<span id="650">650</span>
+<span id="651">651</span>
+<span id="652">652</span>
+<span id="653">653</span>
+<span id="654">654</span>
+<span id="655">655</span>
+<span id="656">656</span>
+<span id="657">657</span>
+<span id="658">658</span>
+<span id="659">659</span>
+<span id="660">660</span>
+<span id="661">661</span>
+<span id="662">662</span>
+<span id="663">663</span>
+<span id="664">664</span>
+<span id="665">665</span>
+<span id="666">666</span>
+<span id="667">667</span>
+<span id="668">668</span>
+<span id="669">669</span>
+<span id="670">670</span>
+<span id="671">671</span>
+<span id="672">672</span>
+<span id="673">673</span>
+<span id="674">674</span>
+<span id="675">675</span>
+<span id="676">676</span>
+<span id="677">677</span>
+<span id="678">678</span>
+<span id="679">679</span>
+<span id="680">680</span>
+<span id="681">681</span>
+<span id="682">682</span>
+<span id="683">683</span>
+<span id="684">684</span>
+<span id="685">685</span>
+<span id="686">686</span>
+<span id="687">687</span>
+<span id="688">688</span>
+<span id="689">689</span>
+<span id="690">690</span>
+<span id="691">691</span>
+<span id="692">692</span>
+<span id="693">693</span>
+<span id="694">694</span>
+<span id="695">695</span>
+<span id="696">696</span>
+<span id="697">697</span>
+<span id="698">698</span>
+<span id="699">699</span>
+<span id="700">700</span>
+<span id="701">701</span>
+<span id="702">702</span>
+<span id="703">703</span>
+<span id="704">704</span>
+<span id="705">705</span>
+<span id="706">706</span>
+<span id="707">707</span>
+<span id="708">708</span>
+<span id="709">709</span>
+<span id="710">710</span>
+<span id="711">711</span>
+<span id="712">712</span>
+<span id="713">713</span>
+<span id="714">714</span>
+<span id="715">715</span>
+<span id="716">716</span>
+<span id="717">717</span>
+<span id="718">718</span>
+<span id="719">719</span>
+<span id="720">720</span>
+<span id="721">721</span>
+<span id="722">722</span>
+<span id="723">723</span>
+<span id="724">724</span>
+<span id="725">725</span>
+<span id="726">726</span>
+<span id="727">727</span>
+<span id="728">728</span>
+<span id="729">729</span>
+<span id="730">730</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{collections::BTreeMap, error::Error, ffi::OsString, io::Cursor};
 
-<span class="kw">use </span><span class="kw">crate</span>::validation::hash;
+<span class="kw">use crate</span>::{
+    validation::hash,
+    verify::{is_valid_rewards_address, stake_key_hash, StakeKeyHash},
+};
 <span class="kw">use </span>bytekind::{Bytes, HexString};
 <span class="kw">use </span>ciborium::value::Value;
 <span class="kw">use </span>clap::builder::OsStr;
@@ -607,7 +752,11 @@
 </span><span class="kw">pub mod </span>hex_bytes;
 <span class="kw">mod </span>network_id;
 <span class="kw">pub use </span>network_id::NetworkId;
+
 <span class="kw">use </span>test_strategy::Arbitrary;
+
+<span class="comment">// Networks
+</span><span class="kw">const </span>NETWORK_ID: usize = <span class="number">0</span>;
 
 <span class="comment">// 61284 entries
 </span><span class="kw">const </span>KEY_61284: usize = <span class="number">0</span>;
@@ -691,7 +840,7 @@
     </span><span class="kw">pub </span>voting_key: VotingKey,
     <span class="attribute">#[serde(rename = <span class="string">&quot;2&quot;</span>)]
     </span><span class="kw">pub </span>stake_key: StakeKeyHex,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;3&quot;</span>)]
+    <span class="attribute">#[serde(rename = <span class="string">&quot;3&quot;</span>, serialize_with = <span class="string">&quot;ox_hex_&quot;</span>)]
     </span><span class="kw">pub </span>rewards_address: RewardsAddress,
     <span class="comment">// note, this must be monotonically increasing. Typically, the current slot
     // number is used
@@ -699,13 +848,6 @@
     </span><span class="kw">pub </span>nonce: Nonce,
     <span class="attribute">#[serde(rename = <span class="string">&quot;5&quot;</span>)]
     </span><span class="kw">pub </span>voting_purpose: <span class="prelude-ty">Option</span>&lt;VotingPurpose&gt;,
-}
-
-<span class="doccomment">/// Struct for deserializing the binary registration from dbsync
-</span><span class="attribute">#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-</span><span class="kw">pub struct </span>BinRegistration {
-    <span class="attribute">#[serde(rename = <span class="string">&quot;61284&quot;</span>)]
-    </span><span class="kw">pub </span>registration: Registration,
 }
 
 <span class="doccomment">/// A signature for a registration as defined in CIP-15
@@ -716,15 +858,16 @@
     <span class="doccomment">/// The actual signature
     ///
     /// CIP-15 specifies this must be a field, so an extra layer of nesting is required
-    </span><span class="attribute">#[serde(rename = <span class="string">&quot;1&quot;</span>)]
+    </span><span class="attribute">#[serde(rename = <span class="string">&quot;1&quot;</span>, serialize_with = <span class="string">&quot;ox_hex_sig&quot;</span>)]
     </span><span class="kw">pub </span>inner: Sig,
 }
 
-<span class="doccomment">/// Struct for deserializing the binary registration sig from dbsync
-</span><span class="attribute">#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-</span><span class="kw">pub struct </span>BinSignature {
-    <span class="attribute">#[serde(rename = <span class="string">&quot;61285&quot;</span>)]
-    </span><span class="kw">pub </span>signature: Signature,
+<span class="kw">fn </span>ox_hex_sig&lt;T, S&gt;(v: <span class="kw-2">&amp;</span>T, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
+<span class="kw">where
+    </span>T: AsRef&lt;[u8]&gt;,
+    S: Serializer,
+{
+    serializer.serialize_str(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;0x{}&quot;</span>, hex::encode(v.as_ref())))
 }
 
 <span class="doccomment">/// A Catalyst registration in either CIP-15 or CIP-36 format, along with its signature
@@ -744,9 +887,10 @@
     </span><span class="kw">pub </span>signature: Signature,
 
     <span class="doccomment">/// Stake Key Hash
-    </span><span class="comment">// pub stake_key_hash: Option&lt;String&gt;,
+    </span><span class="attribute">#[serde(serialize_with = <span class="string">&quot;ox_hex&quot;</span>)]
+    </span><span class="kw">pub </span>stake_key_hash: StakeKeyHash,
 
-    </span><span class="doccomment">/// The id of the transaction that created this registration
+    <span class="doccomment">/// The id of the transaction that created this registration
     </span><span class="kw">pub </span>tx_id: TxId,
 
     <span class="doccomment">/// The slot the registration was found in.
@@ -754,6 +898,14 @@
 
     <span class="doccomment">/// Raw Staked ADA
     </span><span class="kw">pub </span>staked_ada: <span class="prelude-ty">Option</span>&lt;u128&gt;,
+}
+
+<span class="kw">fn </span>ox_hex&lt;T, S&gt;(v: <span class="kw-2">&amp;</span>T, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
+<span class="kw">where
+    </span>T: AsRef&lt;[u8]&gt;,
+    S: Serializer,
+{
+    serializer.serialize_str(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;0x{}&quot;</span>, hex::encode(v.as_ref())))
 }
 
 <span class="kw">impl </span>SignedRegistration {
@@ -800,178 +952,78 @@
     </span><span class="kw">pub </span>slot: u64,
 }
 
-<span class="kw">pub struct </span>RegistrationValidationOptions {
-    <span class="kw">pub </span>rewards_address: bool,
-}
-
 <span class="kw">impl </span>RawRegistration {
     <span class="kw">pub fn </span>to_signed(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         cddl_config: <span class="kw-2">&amp;</span>CddlConfig,
+        network_id: NetworkId,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;SignedRegistration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
         <span class="comment">// validate cddl: 61824
-        </span>validate_reg_cddl(<span class="kw-2">&amp;</span><span class="self">self</span>.bin_reg, <span class="kw-2">&amp;</span>cddl_config)<span class="question-mark">?</span>;
+        </span>validate_reg_cddl(<span class="kw-2">&amp;</span><span class="self">self</span>.bin_reg, cddl_config)<span class="question-mark">?</span>;
 
         <span class="comment">// validate cddl: 61825
-        </span>validate_sig_cddl(<span class="kw-2">&amp;</span><span class="self">self</span>.bin_sig, <span class="kw-2">&amp;</span>cddl_config)<span class="question-mark">?</span>;
+        </span>validate_sig_cddl(<span class="kw-2">&amp;</span><span class="self">self</span>.bin_sig, cddl_config)<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>registration = <span class="self">self</span>.raw_reg_conversion()<span class="question-mark">?</span>;
+        <span class="kw">let </span>registration = <span class="self">self</span>.raw_reg_conversion(network_id)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>signature = <span class="self">self</span>.raw_sig_conversion()<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(SignedRegistration {
-            registration: registration,
-            signature: signature,
+            registration: registration.clone(),
+            signature,
+            stake_key_hash: stake_key_hash(<span class="kw-2">&amp;</span>registration.stake_key, network_id),
             tx_id: <span class="self">self</span>.tx_id,
             slot: <span class="self">self</span>.slot,
             staked_ada: <span class="prelude-val">None</span>,
         })
     }
 
-    <span class="kw">fn </span>raw_reg_conversion(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Registration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
+    <span class="kw">fn </span>raw_reg_conversion(<span class="kw-2">&amp;</span><span class="self">self</span>, network_id: NetworkId) -&gt; <span class="prelude-ty">Result</span>&lt;Registration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
         <span class="kw">let </span>decoded: ciborium::value::Value =
             ciborium::de::from_reader(Cursor::new(<span class="kw-2">&amp;</span><span class="self">self</span>.bin_reg))<span class="question-mark">?</span>;
 
         <span class="comment">// CBOR representation of a map containing a single entry with key 61284
-        </span><span class="kw">let </span>_61284 = <span class="kw">match </span>decoded {
-            Value::Map(m) =&gt; m.iter().map(|entry| entry.<span class="number">1</span>.clone()).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
-            <span class="kw">_ </span>=&gt; {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborRegistrationFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP36 {:?}&quot;</span>, decoded),
-                }))
-            }
+        </span><span class="kw">let </span>spec_61284 = <span class="kw">match </span>inspect_cip36_reg(<span class="kw-2">&amp;</span>decoded) {
+            <span class="prelude-val">Ok</span>(value) =&gt; value,
+            <span class="prelude-val">Err</span>(value) =&gt; <span class="kw">return </span>value,
         };
 
         <span class="comment">// 4 entries inside metadata map with one optional entry for the voting purpose
-        </span><span class="kw">let </span>metamap = <span class="kw">match </span><span class="kw-2">&amp;</span>_61284[KEY_61284] {
-            Value::Map(metamap) =&gt; metamap,
-            <span class="kw">_ </span>=&gt; {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborRegistrationFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;Unable to obtain metadata map&quot;</span>),
-                }))
-            }
+        </span><span class="kw">let </span>metamap = <span class="kw">match </span>inspect_metamap_reg(<span class="kw-2">&amp;</span>spec_61284) {
+            <span class="prelude-val">Ok</span>(value) =&gt; value,
+            <span class="prelude-val">Err</span>(value) =&gt; <span class="kw">return </span>value,
         };
 
-        <span class="kw">let </span>voting_key = <span class="kw">match </span><span class="kw-2">&amp;</span>metamap[DELEGATIONS_OR_DIRECT] {
-            (Value::Integer(_one), Value::Bytes(direct)) =&gt; {
-                VotingKey::Direct(PubKey(direct.to_vec()).into())
-            }
-            (Value::Integer(_one), Value::Array(delegations)) =&gt; {
-                <span class="kw">let </span><span class="kw-2">mut </span>delegations_map: BTreeMap&lt;VotingKeyHex, u64&gt; = BTreeMap::new();
-                <span class="kw">for </span>d <span class="kw">in </span>delegations {
-                    <span class="kw">match </span>d {
-                        Value::Array(delegations) =&gt; {
-                            <span class="kw">let </span>voting_key = <span class="kw">match </span>delegations[VOTE_KEY].as_bytes() {
-                                <span class="prelude-val">Some</span>(key) =&gt; key,
-                                <span class="prelude-val">None </span>=&gt; {
-                                    <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(
-                                        RegistrationError::RawBinCborRegistrationFailure {
-                                            err: <span class="macro">format!</span>(
-                                                <span class="string">&quot;Unable to extract voting key from delegation&quot;
-                                            </span>),
-                                        },
-                                    ))
-                                }
-                            };
-
-                            <span class="kw">let </span>weight = <span class="kw">match </span>delegations[WEIGHT].as_integer() {
-                                <span class="prelude-val">Some</span>(weight) =&gt; <span class="kw">match </span>weight.try_into() {
-                                    <span class="prelude-val">Ok</span>(weight) =&gt; weight,
-                                    <span class="prelude-val">Err</span>(err) =&gt; {
-                                        <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(
-                                            RegistrationError::RawBinCborRegistrationFailure {
-                                                err: <span class="macro">format!</span>(
-                                                    <span class="string">&quot;Unable to extract weight for delegation {}&quot;</span>,
-                                                    err
-                                                ),
-                                            },
-                                        ))
-                                    }
-                                },
-                                <span class="prelude-val">None </span>=&gt; {
-                                    <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(
-                                        RegistrationError::RawBinCborRegistrationFailure {
-                                            err: <span class="macro">format!</span>(
-                                                <span class="string">&quot;Unable to extract voting key from delegation&quot;
-                                            </span>),
-                                        },
-                                    ))
-                                }
-                            };
-
-                            delegations_map
-                                .insert(VotingKeyHex(PubKey(voting_key.to_vec())), weight);
-                        }
-
-                        <span class="kw">_ </span>=&gt; {
-                            <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(
-                                RegistrationError::RawBinCborRegistrationFailure {
-                                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP-36&quot;</span>),
-                                },
-                            ))
-                        }
-                    }
-                }
-
-                VotingKey::Delegated(delegations_map)
-            }
-
-            <span class="kw">_ </span>=&gt; {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborRegistrationFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;Unable to ascertain direct or delegated voting keys&quot;</span>),
-                }))
-            }
+        <span class="comment">// voting key: simply an ED25519 public key. This is the spending credential in the sidechain that will receive voting power
+        // from this delegation. For direct voting it&#39;s necessary to have the corresponding private key to cast votes in the sidechain
+        </span><span class="kw">let </span>voting_key = <span class="kw">match </span>inspect_voting_key(metamap) {
+            <span class="prelude-val">Ok</span>(value) =&gt; value,
+            <span class="prelude-val">Err</span>(value) =&gt; <span class="kw">return </span>value,
         };
 
         <span class="comment">// A stake address for the network that this transaction is submitted to (to point to the Ada that is being delegated);
-        </span><span class="kw">let </span>stake_key = <span class="kw">match </span><span class="kw-2">&amp;</span>metamap[STAKE_ADDRESS] {
-            (Value::Integer(_two), Value::Bytes(stake_addr)) =&gt; {
-                <span class="comment">// assert!((*two == Value::Integer(2.into()).as_integer().unwrap()));
-                </span>StakeKeyHex(PubKey(stake_addr.to_vec()))
-            }
-            <span class="kw">_ </span>=&gt; {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborRegistrationFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;Unable to extract stake key&quot;</span>),
-                }))
-            }
+        </span><span class="kw">let </span>stake_key = <span class="kw">match </span>inspect_stake_key(metamap) {
+            <span class="prelude-val">Ok</span>(value) =&gt; value,
+            <span class="prelude-val">Err</span>(value) =&gt; <span class="kw">return </span>value,
         };
 
         <span class="comment">// A Shelley payment address (see CIP-0019) discriminated for the same network
         // this transaction is submitted to, to receive rewards.
-        </span><span class="kw">let </span>rewards_address = <span class="kw">match </span><span class="kw-2">&amp;</span>metamap[PAYMENT_ADDRESS] {
-            (Value::Integer(_three), Value::Bytes(rewards_addr)) =&gt; {
-                RewardsAddress::from_hex(<span class="kw-2">&amp;</span>hex::encode(rewards_addr)).unwrap()
-            }
-            <span class="kw">_ </span>=&gt; {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborRegistrationFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;Unable to extract rewards addr&quot;</span>),
-                }))
-            }
+        </span><span class="kw">let </span>rewards_address = <span class="kw">match </span>inspect_rewards_addr(metamap, network_id) {
+            <span class="prelude-val">Ok</span>(value) =&gt; value,
+            <span class="prelude-val">Err</span>(value) =&gt; <span class="kw">return </span>value,
         };
 
         <span class="comment">// A nonce that identifies that most recent delegation
-        </span><span class="kw">let </span>nonce = <span class="kw">match </span>metamap[NONCE] {
-            (Value::Integer(_four), Value::Integer(nonce)) =&gt; Nonce(nonce.try_into().unwrap()),
-            <span class="kw">_ </span>=&gt; {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborRegistrationFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;Unable to extract Nonce&quot;</span>),
-                }))
-            }
+        </span><span class="kw">let </span>nonce = <span class="kw">match </span>inspect_nonce(metamap) {
+            <span class="prelude-val">Ok</span>(value) =&gt; value,
+            <span class="prelude-val">Err</span>(value) =&gt; <span class="kw">return </span>value,
         };
 
         <span class="comment">// A non-negative integer that indicates the purpose of the vote.
         // This is an optional field to allow for compatibility with CIP-15
         // 4 entries inside metadata map with one optional entry for the voting purpose
-        </span><span class="kw">let </span>voting_purpose = <span class="kw">if </span>metamap.len() == <span class="number">5 </span>{
-            <span class="kw">match </span>metamap[VOTE_PURPOSE] {
-                (Value::Integer(_five), Value::Integer(purpose)) =&gt; {
-                    <span class="prelude-val">Some</span>(VotingPurpose(purpose.try_into().unwrap()))
-                }
-                <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
-            }
-        } <span class="kw">else </span>{
-            <span class="prelude-val">None
-        </span>};
+        </span><span class="kw">let </span>voting_purpose = inspect_voting_purpose(metamap);
 
         <span class="prelude-val">Ok</span>(Registration {
             voting_key,
@@ -986,45 +1038,263 @@
         <span class="kw">let </span>decoded: ciborium::value::Value =
             ciborium::de::from_reader(Cursor::new(<span class="kw-2">&amp;</span><span class="self">self</span>.bin_sig))<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>_61285 = <span class="kw">match </span>decoded {
-            Value::Map(m) =&gt; m.iter().map(|entry| entry.<span class="number">1</span>.clone()).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
-            <span class="kw">_ </span>=&gt; {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborSignatureFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP36 {:?}&quot;</span>, decoded),
-                }))
-            }
+        <span class="kw">let </span>spec_61285 = <span class="kw">match </span>inspect_cip36_sig(decoded) {
+            <span class="prelude-val">Ok</span>(value) =&gt; value,
+            <span class="prelude-val">Err</span>(value) =&gt; <span class="kw">return </span>value,
         };
 
-        <span class="kw">let </span>metamap = <span class="kw">match </span><span class="kw-2">&amp;</span>_61285[KEY_61285] {
-            Value::Map(metamap) =&gt; metamap,
-            <span class="kw">_ </span>=&gt; {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborSignatureFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP36&quot;</span>),
-                }))
-            }
+        <span class="kw">let </span>metamap = <span class="kw">match </span>inspect_metamap_sig(<span class="kw-2">&amp;</span>spec_61285) {
+            <span class="prelude-val">Ok</span>(value) =&gt; value,
+            <span class="prelude-val">Err</span>(value) =&gt; <span class="kw">return </span>value,
         };
 
         <span class="comment">// ED25119 signature
-        </span><span class="kw">let </span>witness = <span class="kw">match </span><span class="kw-2">&amp;</span>metamap[WITNESS] {
-            (Value::Integer(_one), Value::Bytes(witness)) =&gt; witness.as_slice(),
-            <span class="kw">_ </span>=&gt; {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborSignatureFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;Unable to extract witness&quot;</span>),
-                }))
-            }
-        };
-
-        <span class="kw">let </span>sig: [u8; <span class="number">64</span>] = <span class="kw">match </span>witness.try_into() {
-            <span class="prelude-val">Ok</span>(bytes) =&gt; bytes,
-            <span class="prelude-val">Err</span>(err) =&gt; {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(Box::new(RegistrationError::RawBinCborSignatureFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;ED25119 signature should be 64 bytes {}&quot;</span>, err),
-                }))
-            }
+        </span><span class="kw">let </span>sig = <span class="kw">match </span>inspect_witness(metamap) {
+            <span class="prelude-val">Ok</span>(value) =&gt; value,
+            <span class="prelude-val">Err</span>(value) =&gt; <span class="kw">return </span>value,
         };
 
         <span class="prelude-val">Ok</span>(Signature { inner: Sig(sig) })
     }
+}
+
+<span class="kw">fn </span>inspect_witness(
+    metamap: <span class="kw-2">&amp;</span>[(Value, Value)],
+) -&gt; <span class="prelude-ty">Result</span>&lt;[u8; <span class="number">64</span>], <span class="prelude-ty">Result</span>&lt;Signature, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;&gt; {
+    <span class="kw">let </span>witness = <span class="kw">match </span><span class="kw-2">&amp;</span>metamap[WITNESS] {
+        (Value::Integer(_one), Value::Bytes(witness)) =&gt; witness.as_slice(),
+        <span class="kw">_ </span>=&gt; {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
+                RegistrationError::RawBinCborSignatureFailure {
+                    err: <span class="string">&quot;Unable to extract witness&quot;</span>.to_string(),
+                },
+            )))
+        }
+    };
+    <span class="kw">let </span>sig: [u8; <span class="number">64</span>] = <span class="kw">match </span>witness.try_into() {
+        <span class="prelude-val">Ok</span>(bytes) =&gt; bytes,
+        <span class="prelude-val">Err</span>(err) =&gt; {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
+                RegistrationError::RawBinCborSignatureFailure {
+                    err: <span class="macro">format!</span>(<span class="string">&quot;ED25119 signature should be 64 bytes {}&quot;</span>, err),
+                },
+            )))
+        }
+    };
+    <span class="prelude-val">Ok</span>(sig)
+}
+
+<span class="kw">fn </span>inspect_metamap_sig(
+    spec_61285: <span class="kw-2">&amp;</span>[Value],
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span>Vec&lt;(Value, Value)&gt;, <span class="prelude-ty">Result</span>&lt;Signature, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;&gt; {
+    <span class="kw">let </span>metamap = <span class="kw">match </span><span class="kw-2">&amp;</span>spec_61285[KEY_61285] {
+        Value::Map(metamap) =&gt; metamap,
+        <span class="kw">_ </span>=&gt; {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
+                RegistrationError::RawBinCborSignatureFailure {
+                    err: <span class="string">&quot;Not congruent with CIP36&quot;</span>.to_string(),
+                },
+            )))
+        }
+    };
+    <span class="prelude-val">Ok</span>(metamap)
+}
+
+<span class="kw">fn </span>inspect_cip36_sig(decoded: Value) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Value&gt;, <span class="prelude-ty">Result</span>&lt;Signature, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;&gt; {
+    <span class="kw">let </span>spec_61285 = <span class="kw">match </span>decoded {
+        Value::Map(m) =&gt; m.iter().map(|entry| entry.<span class="number">1</span>.clone()).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
+        <span class="kw">_ </span>=&gt; {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
+                RegistrationError::RawBinCborSignatureFailure {
+                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP36 {:?}&quot;</span>, decoded),
+                },
+            )))
+        }
+    };
+    <span class="prelude-val">Ok</span>(spec_61285)
+}
+
+<span class="kw">fn </span>inspect_voting_purpose(metamap: <span class="kw-2">&amp;</span>Vec&lt;(Value, Value)&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;VotingPurpose&gt; {
+    <span class="kw">if </span>metamap.len() == <span class="number">5 </span>{
+        <span class="kw">match </span>metamap[VOTE_PURPOSE] {
+            (Value::Integer(_five), Value::Integer(purpose)) =&gt; {
+                <span class="prelude-val">Some</span>(VotingPurpose(purpose.try_into().unwrap()))
+            }
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+        }
+    } <span class="kw">else </span>{
+        <span class="prelude-val">None
+    </span>}
+}
+
+<span class="kw">fn </span>inspect_nonce(
+    metamap: <span class="kw-2">&amp;</span>[(Value, Value)],
+) -&gt; <span class="prelude-ty">Result</span>&lt;Nonce, <span class="prelude-ty">Result</span>&lt;Registration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;&gt; {
+    <span class="kw">let </span>nonce = <span class="kw">match </span>metamap[NONCE] {
+        (Value::Integer(_four), Value::Integer(nonce)) =&gt; Nonce(nonce.try_into().unwrap()),
+        <span class="kw">_ </span>=&gt; {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
+                RegistrationError::RawBinCborRegistrationFailure {
+                    err: <span class="string">&quot;Unable to extract Nonce&quot;</span>.to_string(),
+                },
+            )))
+        }
+    };
+    <span class="prelude-val">Ok</span>(nonce)
+}
+
+<span class="kw">fn </span>inspect_rewards_addr(
+    metamap: <span class="kw-2">&amp;</span>[(Value, Value)],
+    network_id: NetworkId,
+) -&gt; <span class="prelude-ty">Result</span>&lt;RewardsAddress, <span class="prelude-ty">Result</span>&lt;Registration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;&gt; {
+    <span class="kw">let </span>rewards_address = <span class="kw">match </span><span class="kw-2">&amp;</span>metamap[PAYMENT_ADDRESS] {
+        (Value::Integer(_three), Value::Bytes(rewards_addr)) =&gt; {
+            RewardsAddress::from_hex(<span class="kw-2">&amp;</span>hex::encode(rewards_addr)).unwrap()
+        }
+        <span class="kw">_ </span>=&gt; {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
+                RegistrationError::RawBinCborRegistrationFailure {
+                    err: <span class="string">&quot;Unable to extract rewards addr&quot;</span>.to_string(),
+                },
+            )))
+        }
+    };
+
+    <span class="kw">if </span>!is_valid_rewards_address(<span class="kw-2">&amp;</span>rewards_address.<span class="number">0</span>[NETWORK_ID], network_id) {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(RegistrationError::InvalidAddressPrefix {
+            err: <span class="macro">format!</span>(
+                <span class="string">&quot;Invalid rewards address: address prefix is: {:?}\n the first hex char should be in the range\n
+                0x0? - 0x7? or 0xE? , 0xF?\n
+                followed by 0 or 1 which defines the network id&quot;</span>,
+                <span class="macro">format!</span>(<span class="string">&quot;{:x}&quot;</span>, <span class="kw-2">&amp;</span>rewards_address.<span class="number">0</span>[NETWORK_ID]),
+            ),
+        })));
+    }
+    <span class="prelude-val">Ok</span>(rewards_address)
+}
+
+<span class="kw">fn </span>inspect_stake_key(
+    metamap: <span class="kw-2">&amp;</span>[(Value, Value)],
+) -&gt; <span class="prelude-ty">Result</span>&lt;StakeKeyHex, <span class="prelude-ty">Result</span>&lt;Registration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;&gt; {
+    <span class="kw">let </span>stake_key = <span class="kw">match </span><span class="kw-2">&amp;</span>metamap[STAKE_ADDRESS] {
+        (Value::Integer(_two), Value::Bytes(stake_addr)) =&gt; {
+            <span class="comment">// assert!((*two == Value::Integer(2.into()).as_integer().unwrap()));
+            </span>StakeKeyHex(PubKey(stake_addr.clone()))
+        }
+        <span class="kw">_ </span>=&gt; {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
+                RegistrationError::RawBinCborRegistrationFailure {
+                    err: <span class="string">&quot;Unable to extract stake key&quot;</span>.to_string(),
+                },
+            )))
+        }
+    };
+    <span class="prelude-val">Ok</span>(stake_key)
+}
+
+<span class="kw">fn </span>inspect_voting_key(
+    metamap: <span class="kw-2">&amp;</span>[(Value, Value)],
+) -&gt; <span class="prelude-ty">Result</span>&lt;VotingKey, <span class="prelude-ty">Result</span>&lt;Registration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;&gt; {
+    <span class="kw">let </span>voting_key = <span class="kw">match </span><span class="kw-2">&amp;</span>metamap[DELEGATIONS_OR_DIRECT] {
+        (Value::Integer(_one), Value::Bytes(direct)) =&gt; {
+            VotingKey::Direct(PubKey(direct.clone()).into())
+        }
+        (Value::Integer(_one), Value::Array(delegations)) =&gt; {
+            <span class="kw">let </span><span class="kw-2">mut </span>delegations_map: BTreeMap&lt;VotingKeyHex, u64&gt; = BTreeMap::new();
+            <span class="kw">for </span>d <span class="kw">in </span>delegations {
+                <span class="kw">match </span>d {
+                    Value::Array(delegations) =&gt; {
+                        <span class="kw">let </span>voting_key = <span class="kw">match </span>delegations[VOTE_KEY].as_bytes() {
+                            <span class="prelude-val">Some</span>(key) =&gt; key,
+                            <span class="prelude-val">None </span>=&gt; {
+                                <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
+                                    RegistrationError::RawBinCborRegistrationFailure {
+                                        err: <span class="string">&quot;Unable to extract voting key from delegation&quot;
+                                            </span>.to_string(),
+                                    },
+                                )))
+                            }
+                        };
+
+                        <span class="kw">let </span>weight = <span class="kw">match </span>delegations[WEIGHT].as_integer() {
+                            <span class="prelude-val">Some</span>(weight) =&gt; <span class="kw">match </span>weight.try_into() {
+                                <span class="prelude-val">Ok</span>(weight) =&gt; weight,
+                                <span class="prelude-val">Err</span>(err) =&gt; {
+                                    <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
+                                        RegistrationError::RawBinCborRegistrationFailure {
+                                            err: <span class="macro">format!</span>(
+                                                <span class="string">&quot;Unable to extract weight for delegation {}&quot;</span>,
+                                                err
+                                            ),
+                                        },
+                                    )))
+                                }
+                            },
+                            <span class="prelude-val">None </span>=&gt; {
+                                <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
+                                    RegistrationError::RawBinCborRegistrationFailure {
+                                        err: <span class="string">&quot;Unable to extract voting key from delegation&quot;
+                                            </span>.to_string(),
+                                    },
+                                )))
+                            }
+                        };
+
+                        delegations_map.insert(VotingKeyHex(PubKey(voting_key.clone())), weight);
+                    }
+
+                    <span class="kw">_ </span>=&gt; {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
+                            RegistrationError::RawBinCborRegistrationFailure {
+                                err: <span class="string">&quot;Not congruent with CIP-36&quot;</span>.to_string(),
+                            },
+                        )))
+                    }
+                }
+            }
+
+            VotingKey::Delegated(delegations_map)
+        }
+
+        <span class="kw">_ </span>=&gt; {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
+                RegistrationError::RawBinCborRegistrationFailure {
+                    err: <span class="string">&quot;Unable to ascertain direct or delegated voting keys&quot;</span>.to_string(),
+                },
+            )))
+        }
+    };
+    <span class="prelude-val">Ok</span>(voting_key)
+}
+
+<span class="kw">fn </span>inspect_metamap_reg(
+    spec_61284: <span class="kw-2">&amp;</span>[Value],
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span>Vec&lt;(Value, Value)&gt;, <span class="prelude-ty">Result</span>&lt;Registration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;&gt; {
+    <span class="kw">let </span>metamap = <span class="kw">match </span><span class="kw-2">&amp;</span>spec_61284[KEY_61284] {
+        Value::Map(metamap) =&gt; metamap,
+        <span class="kw">_ </span>=&gt; {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
+                RegistrationError::RawBinCborRegistrationFailure {
+                    err: <span class="string">&quot;Unable to obtain metadata map&quot;</span>.to_string(),
+                },
+            )))
+        }
+    };
+    <span class="prelude-val">Ok</span>(metamap)
+}
+
+<span class="kw">fn </span>inspect_cip36_reg(decoded: <span class="kw-2">&amp;</span>Value) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Value&gt;, <span class="prelude-ty">Result</span>&lt;Registration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;&gt; {
+    <span class="kw">let </span>spec_61284 = <span class="kw">match </span>decoded {
+        Value::Map(m) =&gt; m.iter().map(|entry| entry.<span class="number">1</span>.clone()).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
+        <span class="kw">_ </span>=&gt; {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
+                RegistrationError::RawBinCborRegistrationFailure {
+                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP36 {:?}&quot;</span>, decoded),
+                },
+            )))
+        }
+    };
+    <span class="prelude-val">Ok</span>(spec_61284)
 }
 
 <span class="doccomment">/// Single element in a snapshot
@@ -1035,6 +1305,7 @@
     </span><span class="kw">pub </span>voting_key: VotingKey,
 
     <span class="doccomment">/// Mainnet rewards address
+    </span><span class="attribute">#[serde(serialize_with = <span class="string">&quot;ox_hex_&quot;</span>)]
     </span><span class="kw">pub </span>rewards_address: RewardsAddress,
 
     <span class="doccomment">/// Stake public key
@@ -1055,6 +1326,14 @@
     </span><span class="kw">pub </span>tx_id: TxId,
 }
 
+<span class="kw">fn </span>ox_hex_&lt;T, S&gt;(v: <span class="kw-2">&amp;</span>T, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
+<span class="kw">where
+    </span>T: AsRef&lt;[u8]&gt;,
+    S: Serializer,
+{
+    serializer.serialize_str(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;0x{}&quot;</span>, hex::encode(v.as_ref())))
+}
+
 <span class="comment">// Create newtype wrappers for better type safety
 </span><span class="macro">microtype! </span>{
     <span class="attribute">#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
@@ -1062,7 +1341,6 @@
         VotingKeyHex,
         StakeKeyHex,
     }
-
 
     <span class="attribute">#[derive(Debug, PartialEq, Clone)]
     #[string]
@@ -1153,6 +1431,12 @@
     </span><span class="kw">pub fn </span>from_hex(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, FromHexError&gt; {
         <span class="kw">let </span>bytes = hex::decode(s)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="self">Self</span>(bytes.into()))
+    }
+}
+
+<span class="kw">impl </span>AsRef&lt;[u8]&gt; <span class="kw">for </span>RewardsAddress {
+    <span class="kw">fn </span>as_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[u8] {
+        <span class="self">self</span>.<span class="number">0</span>.as_ref()
     }
 }
 

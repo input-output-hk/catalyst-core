@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/voting-tools-rs/src/par/verify.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>verify.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../voting_tools_rs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../voting_tools_rs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../voting_tools_rs/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/voting-tools-rs/src/verification/verify.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>verify.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../voting_tools_rs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../voting_tools_rs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../voting_tools_rs/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -221,8 +221,70 @@
 <span id="221">221</span>
 <span id="222">222</span>
 <span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashMap;
-<span class="kw">use </span>std::path::PathBuf;
 
 <span class="kw">use </span>postgres::fallible_iterator::FallibleIterator;
 <span class="kw">use </span>postgres::Client;
@@ -247,6 +309,12 @@
 <span class="doccomment">/// Registrations which failed cddl and or sig checks
 </span><span class="kw">pub type </span>Invalids = Vec&lt;InvalidRegistration&gt;;
 
+<span class="doccomment">/// `Network_id` + Blake2b-224( Stake Public Key )
+</span><span class="kw">pub type </span>StakeKeyHash = Vec&lt;u8&gt;;
+
+<span class="doccomment">/// Registrations with no staked ada. No UTXO&#39;s.
+</span><span class="kw">pub type </span>StakeKeyHashNoStake = String;
+
 <span class="doccomment">///
 /// Query gathers all possible registration transactions
 /// Each registration is screened and marked: valid or invalid
@@ -259,11 +327,12 @@
     min_slot: SlotNo,
     max_slot: SlotNo,
     <span class="kw-2">mut </span>client: Client,
+    network_id: NetworkId,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(Valids, Invalids), Box&lt;<span class="kw">dyn </span>std::error::Error&gt;&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>valids: Valids = <span class="macro">vec!</span>[];
     <span class="kw">let </span><span class="kw-2">mut </span>invalids: Invalids = <span class="macro">vec!</span>[];
 
-    <span class="kw">let </span>cddl = CddlConfig::new()<span class="question-mark">?</span>;
+    <span class="kw">let </span>cddl = CddlConfig::new();
 
     <span class="kw">let </span><span class="kw-2">mut </span>results = client.query_raw(
         <span class="string">&quot;
@@ -293,11 +362,14 @@
     <span class="kw">while let </span><span class="prelude-val">Some</span>(row) = results.next()<span class="question-mark">? </span>{
         <span class="comment">// Here we can use a threadpool with a size == number of cores.
         // We can process each row in parallel using this pool.
+        </span><span class="kw">if </span>valids.len() % <span class="number">1000 </span>== <span class="number">0 </span>{
+            <span class="macro">info!</span>(
+                <span class="string">&quot;registrations processed {:?}&quot;</span>,
+                valids.len() + invalids.len()
+            );
+        }
 
-        // We should also print out a running status of the number of registrations we have processed so far,
-        // otherwise long running queries look locked up.
-
-        // registration tx_id
+        <span class="comment">// registration tx_id
         </span><span class="kw">let </span>tx_id: i64 = row.get(REG_TX_ID);
         <span class="kw">let </span>slot: i64 = row.get(REG_SLOT_NO);
 
@@ -312,9 +384,11 @@
         };
 
         <span class="comment">// deserialize the raw Binary CBOR.
-        </span><span class="kw">let </span>reg = <span class="kw">match </span>rawreg.to_signed(<span class="kw-2">&amp;</span>cddl) {
+        </span><span class="kw">let </span>reg = <span class="kw">match </span>rawreg.to_signed(<span class="kw-2">&amp;</span>cddl, network_id) {
             <span class="prelude-val">Err</span>(err) =&gt; {
                 invalids.push(InvalidRegistration {
+                    spec_61284: <span class="prelude-val">Some</span>(hex::encode(rawreg.bin_reg)),
+                    spec_61285: <span class="prelude-val">Some</span>(hex::encode(rawreg.bin_sig)),
                     registration: <span class="prelude-val">None</span>,
                     errors: <span class="macro">nonempty!</span>[RegistrationError::CborDeserializationFailed {
                         err: <span class="macro">format!</span>(<span class="string">&quot;Failed to deserialize Registration CBOR: {}&quot;</span>, err),
@@ -329,6 +403,8 @@
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; valids.push(reg),
             <span class="prelude-val">Err</span>(err) =&gt; {
                 invalids.push(InvalidRegistration {
+                    spec_61284: <span class="prelude-val">Some</span>(hex::encode(rawreg.bin_reg)),
+                    spec_61285: <span class="prelude-val">Some</span>(hex::encode(rawreg.bin_sig)),
                     registration: <span class="prelude-val">Some</span>(reg),
                     errors: <span class="macro">nonempty!</span>[RegistrationError::SignatureError {
                         err: <span class="macro">format!</span>(<span class="string">&quot;Signature validation failure: {}&quot;</span>, err),
@@ -350,12 +426,16 @@
         <span class="kw">if let </span><span class="prelude-val">Some</span>((_stake_key, current)) = latest.get_key_value(<span class="kw-2">&amp;</span>valid.registration.stake_key) {
             <span class="kw">if </span>valid.registration.nonce &gt; current.registration.nonce {
                 invalids.push(InvalidRegistration {
+                    spec_61284: <span class="prelude-val">None</span>,
+                    spec_61285: <span class="prelude-val">None</span>,
                     registration: <span class="prelude-val">Some</span>(current.clone()),
                     errors: <span class="macro">nonempty!</span>[RegistrationError::ObsoleteRegistration {}],
                 });
                 latest.insert(valid.registration.stake_key.clone(), valid.clone());
             } <span class="kw">else </span>{
                 invalids.push(InvalidRegistration {
+                    spec_61284: <span class="prelude-val">None</span>,
+                    spec_61285: <span class="prelude-val">None</span>,
                     registration: <span class="prelude-val">Some</span>(valid.clone()),
                     errors: <span class="macro">nonempty!</span>[RegistrationError::ObsoleteRegistration {}],
                 });
@@ -370,28 +450,75 @@
 
 <span class="doccomment">/// The registration has a 32 byte &quot;Stake Public Key&quot;.  This is the raw ED25519 public key of the stake address.
 /// To calculate the Voting power, you need the stake key hash. Encoded in Cardano format.
-</span><span class="kw">pub fn </span>stake_key_hash(key: <span class="kw-2">&amp;</span>StakeKeyHex, network: NetworkId) -&gt; String {
+/// `Network_id` + Blake2b-224( Stake Public Key )
+</span><span class="attribute">#[must_use]
+</span><span class="kw">pub fn </span>stake_key_hash(key: <span class="kw-2">&amp;</span>StakeKeyHex, network: NetworkId) -&gt; StakeKeyHash {
     <span class="kw">let </span>bytes = <span class="kw-2">&amp;</span>key.<span class="number">0 </span>.<span class="number">0</span>;
 
     <span class="kw">let </span><span class="kw-2">mut </span>digest = [<span class="number">0u8</span>; <span class="number">28</span>];
     <span class="kw">let </span><span class="kw-2">mut </span>context = Blake2b::new(<span class="number">28</span>);
-    context.input(<span class="kw-2">&amp;</span>bytes);
+    context.input(bytes);
     context.result(<span class="kw-2">&amp;mut </span>digest);
 
-    <span class="kw">let </span>digest_hex = hex::encode(digest);
+    <span class="kw">let </span>e0 = hex::decode(<span class="string">&quot;e0&quot;</span>).unwrap();
+    <span class="kw">let </span>e1 = hex::decode(<span class="string">&quot;e1&quot;</span>).unwrap();
 
-    <span class="kw">let </span>ctx = <span class="kw">match </span>network {
-        NetworkId::Mainnet =&gt; <span class="macro">format!</span>(<span class="string">&quot;E1{}&quot;</span>, digest_hex),
-        NetworkId::Testnet =&gt; <span class="macro">format!</span>(<span class="string">&quot;EO{}&quot;</span>, digest_hex),
-    };
-    ctx
+    <span class="kw">match </span>network {
+        NetworkId::Testnet =&gt; [e0, digest.to_vec()].concat(),
+        NetworkId::Mainnet =&gt; [e1, digest.to_vec()].concat(),
+    }
 }
 
-<span class="kw">pub fn </span>validate_reg_cddl(
-    bin_reg: <span class="kw-2">&amp;</span>Vec&lt;u8&gt;,
+<span class="doccomment">///
+/// Verifies if rewards address is correct
+///
+</span><span class="attribute">#[must_use]
+</span><span class="kw">pub fn </span>is_valid_rewards_address(rewards_address_prefix: <span class="kw-2">&amp;</span>u8, network: NetworkId) -&gt; bool {
+    <span class="kw">let </span>prefix_hex = <span class="macro">format!</span>(<span class="string">&quot;{:x}&quot;</span>, rewards_address_prefix);
+
+    <span class="kw">if </span>prefix_hex.len() != <span class="number">2 </span>{
+        <span class="kw">return </span><span class="bool-val">false</span>;
+    }
+    <span class="comment">// First nibble represents rewards address
+    </span><span class="kw">let </span>rewards_address = prefix_hex.chars().nth(<span class="number">0</span>).unwrap();
+    <span class="comment">// second nibble represents network id
+    </span><span class="kw">let </span>network_id = prefix_hex.chars().nth(<span class="number">1</span>).unwrap();
+
+    <span class="comment">// Valid addrs: 0x0?, 0x1?, 0x2?, 0x3?, 0x4?, 0x5?, 0x6?, 0x7?, 0xE?, 0xF?.
+    </span><span class="kw">let </span>valid_addrs = <span class="number">0</span>..<span class="number">7</span>;
+    <span class="kw">let </span>addr = rewards_address.to_digit(<span class="number">16</span>).unwrap();
+    <span class="kw">if </span>!valid_addrs.contains(<span class="kw-2">&amp;</span>addr) &amp;&amp; addr != <span class="number">14 </span>&amp;&amp; addr != <span class="number">15 </span>{
+        <span class="macro">error!</span>(<span class="string">&quot;invalid rewards addr prefix {:?} {:?}&quot;</span>, prefix_hex, addr);
+        <span class="kw">return </span><span class="bool-val">false</span>;
+    }
+
+    <span class="kw">let </span>net_id = network_id.to_digit(<span class="number">10</span>).unwrap();
+
+    <span class="kw">match </span>network {
+        NetworkId::Mainnet =&gt; {
+            <span class="kw">if </span>net_id != <span class="number">1 </span>{
+                <span class="kw">return </span><span class="bool-val">false</span>;
+            }
+        }
+        NetworkId::Testnet =&gt; {
+            <span class="kw">if </span>net_id != <span class="number">0 </span>{
+                <span class="kw">return </span><span class="bool-val">false</span>;
+            }
+        }
+    }
+    <span class="bool-val">true
+</span>}
+
+<span class="doccomment">/// Validate raw registration binary against 61284 CDDL spec
+///
+/// # Errors
+///
+/// Failure will occur if parsed keys do not match CDDL spec
+</span><span class="kw">pub fn </span>validate_reg_cddl(
+    bin_reg: <span class="kw-2">&amp;</span>[u8],
     cddl_config: <span class="kw-2">&amp;</span>CddlConfig,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), RegistrationError&gt; {
-    cddl::validate_cbor_from_slice(<span class="kw-2">&amp;</span>cddl_config._61284, <span class="kw-2">&amp;</span>bin_reg, <span class="prelude-val">None</span>).map_err(|err| {
+    cddl::validate_cbor_from_slice(<span class="kw-2">&amp;</span>cddl_config.spec_61284, bin_reg, <span class="prelude-val">None</span>).map_err(|err| {
         RegistrationError::CddlParsingFailed {
             err: <span class="macro">format!</span>(<span class="string">&quot;reg bytes does not match 61284 spec: {}&quot;</span>, err),
         }
@@ -400,11 +527,16 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub fn </span>validate_sig_cddl(
-    bin_sig: <span class="kw-2">&amp;</span>Vec&lt;u8&gt;,
+<span class="doccomment">/// Validate raw signature binary against 61285 CDDL spec
+///
+/// # Errors
+///
+/// Failure will occur if parsed keys do not match CDDL spec
+</span><span class="kw">pub fn </span>validate_sig_cddl(
+    bin_sig: <span class="kw-2">&amp;</span>[u8],
     cddl_config: <span class="kw-2">&amp;</span>CddlConfig,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), RegistrationError&gt; {
-    cddl::validate_cbor_from_slice(<span class="kw-2">&amp;</span>cddl_config._61285, <span class="kw-2">&amp;</span>bin_sig, <span class="prelude-val">None</span>).map_err(|err| {
+    cddl::validate_cbor_from_slice(<span class="kw-2">&amp;</span>cddl_config.spec_61285, bin_sig, <span class="prelude-val">None</span>).map_err(|err| {
         RegistrationError::CddlParsingFailed {
             err: <span class="macro">format!</span>(<span class="string">&quot;sig bytes does not match 61285 spec: {}&quot;</span>, err),
         }
@@ -414,35 +546,29 @@
 }
 
 <span class="doccomment">/// Cddl schema:
-/// https://cips.cardano.org/cips/cip36/schema.cddl
+/// &lt;https://cips.cardano.org/cips/cip36/schema.cddl&gt;
 </span><span class="kw">pub struct </span>CddlConfig {
-    _61284: String,
-    _61285: String,
+    spec_61284: String,
+    spec_61285: String,
 }
 
 <span class="kw">impl </span>CddlConfig {
-    <span class="kw">pub fn </span>new() -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Box&lt;<span class="kw">dyn </span>std::error::Error&gt;&gt; {
-        <span class="kw">let </span>cddl_61284: String = String::from_utf8(cddl_file(<span class="string">&quot;61284.cddl&quot;</span>.to_string())<span class="question-mark">?</span>)<span class="question-mark">?</span>;
+    <span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>cddl_61284: String = <span class="macro">include_str!</span>(<span class="string">&quot;61284.cddl&quot;</span>).to_string();
+        <span class="kw">let </span>cddl_61285: String = <span class="macro">include_str!</span>(<span class="string">&quot;61285.cddl&quot;</span>).to_string();
 
-        <span class="kw">let </span>cddl_61285: String = String::from_utf8(cddl_file(<span class="string">&quot;61285.cddl&quot;</span>.to_string())<span class="question-mark">?</span>)<span class="question-mark">?</span>;
-
-        <span class="prelude-val">Ok</span>(CddlConfig {
-            _61284: cddl_61284,
-            _61285: cddl_61285,
-        })
+        CddlConfig {
+            spec_61284: cddl_61284,
+            spec_61285: cddl_61285,
+        }
     }
 }
 
-<span class="kw">fn </span>cddl_file(file: String) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;u8&gt;, Box&lt;<span class="kw">dyn </span>std::error::Error&gt;&gt; {
-    <span class="kw">let </span>dir = std::env::current_dir()<span class="question-mark">?</span>;
-    <span class="kw">let </span>path = <span class="macro">format!</span>(
-        <span class="string">&quot;{}/src/voting-tools-rs/src/par/{}&quot;</span>,
-        dir.as_path().display().to_string(),
-        file
-    );
-
-    <span class="kw">let </span>raw = std::fs::read(PathBuf::from(path))<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(raw)
+<span class="kw">impl </span>Default <span class="kw">for </span>CddlConfig {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
+    }
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="voting_tools_rs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

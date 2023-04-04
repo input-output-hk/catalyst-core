@@ -41,7 +41,13 @@
 <span id="41">41</span>
 <span id="42">42</span>
 <span id="43">43</span>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data::{SignedRegistration, SlotNo, StakeKeyHex};
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+</pre><pre class="rust"><code><span class="kw">use crate</span>::{
+    data::{SignedRegistration, SlotNo},
+    verify::StakeKeyHash,
+};
 <span class="kw">use </span>bigdecimal::BigDecimal;
 <span class="kw">use </span>color_eyre::eyre::Result;
 <span class="kw">use </span>dashmap::DashMap;
@@ -67,7 +73,7 @@
     ///
     /// This function returns an error if a database error occurs. The exact details of any error will
     /// depend on the database implementation
-    </span><span class="kw">fn </span>stake_values(<span class="kw-2">&amp;</span><span class="self">self</span>, stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHex]) -&gt; DashMap&lt;StakeKeyHex, BigDecimal&gt;;
+    </span><span class="kw">fn </span>stake_values(<span class="kw-2">&amp;</span><span class="self">self</span>, stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHash]) -&gt; DashMap&lt;StakeKeyHash, BigDecimal&gt;;
 }
 
 <span class="comment">// Since we only need &amp;self for all methods, we can implement DataProvider for any shared reference
@@ -80,7 +86,7 @@
         T::vote_registrations(<span class="self">self</span>, lower, upper)
     }
 
-    <span class="kw">fn </span>stake_values(<span class="kw-2">&amp;</span><span class="self">self</span>, stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHex]) -&gt; DashMap&lt;StakeKeyHex, BigDecimal&gt; {
+    <span class="kw">fn </span>stake_values(<span class="kw-2">&amp;</span><span class="self">self</span>, stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHash]) -&gt; DashMap&lt;StakeKeyHash, BigDecimal&gt; {
         T::stake_values(<span class="self">self</span>, stake_addrs)
     }
 }

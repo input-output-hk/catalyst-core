@@ -146,6 +146,7 @@
 <span id="146">146</span>
 <span id="147">147</span>
 <span id="148">148</span>
+<span id="149">149</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::{SystemTime, UNIX_EPOCH};
 <span class="kw">use </span>vit_servicing_station_tests::common::raw_snapshot::RawSnapshot <span class="kw">as </span>RawSnapshotRequest;
 
@@ -165,7 +166,7 @@
 <span class="kw">impl </span>MainnetWalletStateExtension <span class="kw">for </span>Vec&lt;MainnetWalletState&gt; {
     <span class="kw">fn </span>try_into_raw_snapshot_request(
         <span class="self">self</span>,
-        parameters: SnapshotParameters,
+        _parameters: SnapshotParameters,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;RawSnapshotRequest, Error&gt; {
         <span class="kw">let </span>(db_sync, <span class="kw">_</span>, <span class="kw">_</span>) = <span class="self">self
             </span>.into_iter()
@@ -174,10 +175,11 @@
                 MainnetNetworkBuilder::with,
             )
             .build();
-        <span class="kw">let </span>db = MockDbProvider::from(db_sync);
-        <span class="kw">let </span>(outputs, _errs) =
-            voting_tools_rs::voting_power(<span class="kw-2">&amp;</span>db, VotingPowerArgs::default()).unwrap();
-        outputs.try_into_raw_snapshot_request(parameters)
+        <span class="kw">let </span>_db = MockDbProvider::from(db_sync);
+        <span class="comment">//let (outputs, _errs) =
+        //    voting_tools_rs::voting_power(&amp;db, VotingPowerArgs::default()).unwrap();
+        //outputs.try_into_raw_snapshot_request(parameters)
+        </span><span class="prelude-val">Ok</span>(RawSnapshotRequest::default())
     }
 }
 
@@ -230,7 +232,7 @@
 <span class="kw">use </span>snapshot_lib::registration::{Delegations <span class="kw">as </span>VotingDelegations, VotingRegistration};
 <span class="kw">use </span>vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 <span class="kw">use </span>voting_tools_rs::test_api::MockDbProvider;
-<span class="kw">use </span>voting_tools_rs::{SnapshotEntry, VotingPowerArgs, VotingKey, VotingPurpose};
+<span class="kw">use </span>voting_tools_rs::{SnapshotEntry, VotingKey, VotingPurpose};
 
 <span class="doccomment">/// Extensions for voting tools `Output` struct
 </span><span class="kw">pub trait </span>OutputExtension {

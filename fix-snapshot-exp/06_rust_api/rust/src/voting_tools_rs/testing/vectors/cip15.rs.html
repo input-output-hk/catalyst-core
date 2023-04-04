@@ -92,6 +92,7 @@
 <span id="92">92</span>
 <span id="93">93</span>
 <span id="94">94</span>
+<span id="95">95</span>
 </pre><pre class="rust"><code><span class="kw">use </span>serde_json::{json, Value};
 
 <span class="kw">use crate</span>::{
@@ -143,6 +144,7 @@
             inner: Sig::from_hex(SIGNATURE).unwrap(),
         },
         staked_ada: <span class="prelude-val">None</span>,
+        stake_key_hash: <span class="macro">vec!</span>[<span class="number">0</span>; <span class="number">29</span>],
     }
 }
 

@@ -79,6 +79,7 @@
 <span id="79">79</span>
 <span id="80">80</span>
 <span id="81">81</span>
+<span id="82">82</span>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     validation::{cbor::cbor_to_bytes, hash::hash},
     Sig, Signature, VotingKey, VotingPurpose,
@@ -146,6 +147,7 @@
     SignedRegistration {
         registration,
         signature,
+        stake_key_hash: <span class="macro">vec!</span>[<span class="number">0</span>; <span class="number">29</span>],
         tx_id,
         slot: <span class="number">12345</span>,
         staked_ada: <span class="prelude-val">None</span>,

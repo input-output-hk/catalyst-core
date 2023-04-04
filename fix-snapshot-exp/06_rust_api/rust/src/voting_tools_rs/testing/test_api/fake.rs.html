@@ -151,12 +151,15 @@
 <span id="151">151</span>
 <span id="152">152</span>
 <span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data::PubKey;
 <span class="kw">use </span><span class="kw">crate</span>::data::{
     Nonce, Registration, RewardsAddress, Signature, SignedRegistration, SlotNo, StakeKeyHex, TxId,
     VotingKey, VotingKeyHex, VotingPurpose,
 };
 <span class="kw">use </span><span class="kw">crate</span>::data_provider::DataProvider;
+<span class="kw">use </span><span class="kw">crate</span>::verify::StakeKeyHash;
 <span class="kw">use </span><span class="kw">crate</span>::Sig;
 <span class="kw">use </span>bigdecimal::{BigDecimal, FromPrimitive};
 <span class="kw">use </span>cardano_serialization_lib::address::Address;
@@ -271,6 +274,7 @@
                                 inner: Sig(sig.to_bytes().try_into().unwrap()),
                             },
                             staked_ada: <span class="prelude-val">None</span>,
+                            stake_key_hash: <span class="macro">vec!</span>[<span class="number">0</span>; <span class="number">29</span>],
                         }
                     })
                     .collect()
@@ -281,7 +285,7 @@
             }))
     }
 
-    <span class="kw">fn </span>stake_values(<span class="kw-2">&amp;</span><span class="self">self</span>, stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHex]) -&gt; DashMap&lt;StakeKeyHex, BigDecimal&gt; {
+    <span class="kw">fn </span>stake_values(<span class="kw-2">&amp;</span><span class="self">self</span>, stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHash]) -&gt; DashMap&lt;StakeKeyHash, BigDecimal&gt; {
         stake_addrs
             .iter()
             .map(|addr| {

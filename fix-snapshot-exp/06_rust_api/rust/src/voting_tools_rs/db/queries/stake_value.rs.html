@@ -98,6 +98,9 @@
 <span id="98">98</span>
 <span id="99">99</span>
 <span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
 </pre><pre class="rust"><code><span class="attribute">#![allow(missing_docs)]
 
 </span><span class="kw">use </span>std::sync::atomic::{AtomicU64, Ordering};
@@ -107,9 +110,9 @@
 <span class="kw">use </span>dashmap::DashMap;
 <span class="kw">use </span>diesel::{BoolExpressionMethods, JoinOnDsl, NullableExpressionMethods, QueryDsl, RunQueryDsl};
 
-<span class="kw">use </span><span class="kw">crate</span>::data::StakeKeyHex;
 <span class="kw">use </span><span class="kw">crate</span>::db::inner::DbQuery;
 <span class="kw">use </span><span class="kw">crate</span>::db::Db;
+<span class="kw">use </span><span class="kw">crate</span>::verify::StakeKeyHash;
 <span class="kw">use </span>diesel::sql_types::Text;
 <span class="kw">use </span>diesel::ExpressionMethods;
 
@@ -120,16 +123,20 @@
 <span class="kw">impl </span>Db {
     <span class="doccomment">/// Query the stake values
     ///
-    /// This query is detailed in &lt;../design/stake_value_processing.md&gt;
+    /// This query is detailed in &lt;../`design/stake_value_processing.md`&gt;
     ///
     /// # Errors
     ///
     /// Will return an error not at all.  TODO, don&#39;t return Result.
-    </span><span class="kw">pub fn </span>stake_values(<span class="kw-2">&amp;</span><span class="self">self</span>, stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHex]) -&gt; DashMap&lt;StakeKeyHex, BigDecimal&gt; {
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>stake_values(<span class="kw-2">&amp;</span><span class="self">self</span>, stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHash]) -&gt; DashMap&lt;StakeKeyHash, BigDecimal&gt; {
         <span class="kw">let </span>rows = stake_addrs.par_iter().map(|addr| {
-            <span class="kw">let </span>hex = hex::encode(<span class="kw-2">&amp;</span>addr.<span class="number">0</span>);
-            <span class="kw">let </span>result = <span class="self">self</span>.exec(|conn| query(hex).load(conn))<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, Report&gt;((addr.clone(), result))
+            <span class="kw">let </span>hex = hex::encode(addr);
+
+            <span class="comment">// dbg!(&quot;stake key hash for query {:?}&quot;, hex.clone());
+            </span><span class="kw">let </span>result = <span class="self">self</span>.exec(|conn| query(hex).load(conn))<span class="question-mark">?</span>;
+            <span class="comment">// dbg!(&quot;result {:?}&quot;, result.clone());
+            </span><span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, Report&gt;((addr.clone(), result))
         });
 
         <span class="kw">let </span>max_rows = rows.len();
@@ -159,6 +166,7 @@
                 }
                 <span class="kw">let </span>(addr, values) = row;
                 <span class="kw">let </span>sum: BigDecimal = values.iter().sum();
+
                 <span class="kw-2">*</span>result.entry(addr).or_insert_with(|| BigDecimal::from(<span class="number">0</span>)) += sum;
             }
             <span class="prelude-val">Err</span>(row) =&gt; {
@@ -192,11 +200,9 @@
         .inner_join(inner_join)
         .filter(tx_in::tx_in_id.is_null());
 
-    <span class="kw">let </span>result = table
+    table
         .select(tx_out::value)
-        .filter(stake_address::hash_raw.eq(decode(stake_addr, <span class="string">&quot;hex&quot;</span>)));
-
-    result
+        .filter(stake_address::hash_raw.eq(decode(stake_addr, <span class="string">&quot;hex&quot;</span>)))
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="voting_tools_rs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

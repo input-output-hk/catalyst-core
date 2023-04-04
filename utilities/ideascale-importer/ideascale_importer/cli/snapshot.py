@@ -2,6 +2,7 @@ import asyncio
 import typer
 
 from ideascale_importer.snapshot_importer.importer import Importer
+from ideascale_importer.utils import configure_logger
 
 app = typer.Typer(add_completion=False)
 
@@ -25,11 +26,21 @@ def import_snapshot(
             "Should be a file containing the list of dreps as returned by the GVC API."
             "If this is set, calling GVC dreps API will be skipped and the contents of this file will be used"
         )
-    )
+    ),
+    log_level: str = typer.Option(
+        "info",
+        help="Log level",
+    ),
+    log_format: str = typer.Option(
+        "text",
+        help="Log format",
+    ),
 ):
     """
     Import snapshot data into the database
     """
+
+    configure_logger(log_level, log_format)
 
     async def inner():
         importer = Importer(config_path=config_path,

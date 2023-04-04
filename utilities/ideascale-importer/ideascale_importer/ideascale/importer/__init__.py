@@ -27,6 +27,7 @@ class Importer:
         campaign_group_id: int,
         stage_id: int,
         proposals_scores_csv_path: Optional[str],
+        ideascale_api_url: str,
     ):
         self.api_token = api_token
         self.database_url = database_url
@@ -34,6 +35,7 @@ class Importer:
         self.campaign_group_id = campaign_group_id
         self.stage_id = stage_id
         self.conn: asyncpg.Connection | None = None
+        self.ideascale_api_url = ideascale_api_url
 
         try:
             config_file_path = config_path or "ideascale-importer-config.json"
@@ -77,7 +79,7 @@ class Importer:
             logger.error("No event exists with the given id")
             return
 
-        client = Client(self.api_token)
+        client = Client(self.api_token, self.ideascale_api_url)
 
         groups = [g for g in await client.campaign_groups() if g.name.lower().startswith("fund")]
 

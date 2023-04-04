@@ -54,11 +54,7 @@ mod tests {
 
     #[test]
     fn snapshot_version_json_test() {
-        let snapshot_versions = vec![
-            EventId(10),
-            EventId(11),
-            EventId(12),
-        ];
+        let snapshot_versions = vec![EventId(10), EventId(11), EventId(12)];
         let json = serde_json::to_value(&snapshot_versions).unwrap();
         assert_eq!(json, json!([10, 11, 12]));
 

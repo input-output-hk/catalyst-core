@@ -431,13 +431,14 @@ fn inspect_rewards_addr(
         }
     };
 
-    let net_id = format!("{:x}", &rewards_address.0[NETWORK_ID]);
-    if net_id != network_id.rewards_address_prefix() {
+    let prefix = format!("{:x}", &rewards_address.0[NETWORK_ID]);
+    if !network_id.is_valid_rewards_address(prefix.clone()) {
         return Err(Err(Box::new(RegistrationError::InvalidAddressPrefix {
             err: format!(
-                "Invalid rewards address: address prefix is: {:?}\n it should be {:?}",
-                net_id,
-                network_id.rewards_address_prefix(),
+                "Invalid rewards address: address prefix is: {:?}\n the first hex char should be in the range\n
+                0x0? - 0x7? or 0xE? , 0xF?\n
+                followed by 0 or 1 which defines the network id",
+                prefix,
             ),
         })));
     }

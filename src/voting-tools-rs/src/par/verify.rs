@@ -185,8 +185,8 @@ pub fn stake_key_hash(key: &StakeKeyHex, network: NetworkId) -> StakeKeyHash {
     ctx
 }
 
-pub fn is_valid_rewards_address(rewards_address: &u8, network: NetworkId) -> bool {
-    let prefix_hex = format!("{:x}", rewards_address);
+pub fn is_valid_rewards_address(rewards_address_prefix: &u8, network: NetworkId) -> bool {
+    let prefix_hex = format!("{:x}", rewards_address_prefix);
 
     if prefix_hex.len() != 2 {
         return false;

@@ -1,16 +1,16 @@
 import asyncio
 from datetime import datetime
 import json
+from loguru import logger
 from pydantic.dataclasses import dataclass
 import pydantic.tools
 import os
 from typing import Dict, List, Optional, Tuple
-import rich
 
 from . import config
 import ideascale_importer.db
 from ideascale_importer.db import models
-from ideascale_importer.gvc.client import Client as GvcClient
+from ideascale_importer.gvc.client import Client as GvcClient, Drep
 from ideascale_importer.utils import run_cmd
 
 
@@ -74,8 +74,7 @@ class Importer:
         self.config = config.from_json_file(config_path)
         self.database_url = database_url
         self.event_id = event_id
-        self.console = rich.console.Console()
-        self.dreps = []
+        self.dreps: List[Drep] = []
         self.snapshot_tool_max_slot: Optional[int] = None
         self.catalyst_toolbox_min_stake_threshold: Optional[int] = None
         self.catalyst_toolbox_voting_power_cap: Optional[float] = None
@@ -96,7 +95,7 @@ class Importer:
     async def _fetch_parameters(self):
         if not self.skip_snapshot_tool_execution:
             # Fetch max slot
-            self.console.print("Querying max slot parameter")
+            logger.info("Querying max slot parameter")
             conn = await ideascale_importer.db.connect(
                 f"postgres://{self.config.dbsync_database.user}:" +
                 f"{self.config.dbsync_database.password}@{self.config.dbsync_database.host}"
@@ -115,14 +114,15 @@ class Importer:
                 )
 
             self.snapshot_tool_max_slot = row["slot_no"]
-            self.console.print(
-                f"Got max_slot = {self.snapshot_tool_max_slot} for max_time ="
-                "\"{self.config.snapshot_tool.max_time.isoformat()}\""
+            logger.info(
+                "Got max_slot for max_time",
+                snapshot_tool_max_slot=self.snapshot_tool_max_slot,
+                max_time=self.config.snapshot_tool.max_time.isoformat()
             )
 
             await conn.close()
         else:
-            self.console.print("Skipping querying max slot parameter")
+            logger.info("Skipping querying max slot parameter")
 
         # Fetch min_stake_threshold and voting_power_cap
         conn = await ideascale_importer.db.connect(self.database_url)
@@ -143,15 +143,14 @@ class Importer:
         await conn.close()
 
     async def _fetch_gvc_dreps_list(self):
-        self.console.print("Fetching drep list from GVC")
+        logger.info("Fetching drep list from GVC")
 
         gvc_client = GvcClient(self.config.gvc.api_url)
 
         try:
-            with gvc_client.inner.request_progress_observer:
-                self.dreps = await gvc_client.dreps()
+            self.dreps = await gvc_client.dreps()
         except Exception:
-            self.console.print("[red]Failed to get dreps, using drep cache")
+            logger.error("Failed to get dreps, using drep cache")
             self.dreps = []
 
     async def _run_snapshot_tool(self):
@@ -165,12 +164,13 @@ class Importer:
             f" --out-file {self.raw_snapshot_tool_file}"
         )
 
-        await run_cmd(self.console, "snapshot_tool", snapshot_tool_cmd)
+        await run_cmd("snapshot_tool", snapshot_tool_cmd)
 
     async def _run_catalyst_toolbox_snapshot(self):
         # Could happen when the event in the database does not have these set
         if self.catalyst_toolbox_min_stake_threshold is None or self.catalyst_toolbox_voting_power_cap is None:
-            raise RunCatalystToolboxSnapshotFailed("min_stake_threshold and voting_power_cap must be set")
+            raise RunCatalystToolboxSnapshotFailed("min_stake_threshold and voting_power_cap must be set "
+                                                   "either as CLI arguments or in the database")
 
         catalyst_toolbox_cmd = (
             f"{self.config.catalyst_toolbox.path} snapshot"
@@ -180,7 +180,7 @@ class Importer:
             f" --output-format json {self.catalyst_toolbox_out_file}"
         )
 
-        await run_cmd(self.console, "catalyst-toolbox", catalyst_toolbox_cmd)
+        await run_cmd("catalyst-toolbox", catalyst_toolbox_cmd)
 
     async def _write_db_data(self):
         with open(self.raw_snapshot_tool_file) as f:
@@ -190,7 +190,7 @@ class Importer:
 
         catalyst_toolbox_data: Optional[List[SnapshotProcessedEntry]] = []
         for e in json.loads(catalyst_toolbox_data_raw_json):
-            pydantic.tools.parse_obj_as(SnapshotProcessedEntry, e)
+            catalyst_toolbox_data.append(pydantic.tools.parse_obj_as(SnapshotProcessedEntry, e))
             await asyncio.sleep(0)
 
         if catalyst_toolbox_data is None:
@@ -198,7 +198,7 @@ class Importer:
 
         snapshot_tool_data: Optional[List[Registration]] = []
         for r in json.loads(snapshot_tool_data_raw_json):
-            pydantic.tools.parse_obj_as(Registration, r)
+            snapshot_tool_data.append(pydantic.tools.parse_obj_as(Registration, r))
             await asyncio.sleep(0)
 
         if snapshot_tool_data is None:
@@ -232,8 +232,6 @@ class Importer:
                 raise Exception("Invalid delegations format in registrations")
 
             await asyncio.sleep(0)
-
-        self.console.print(f"total_registered_voting_power = {total_registered_voting_power}")
 
         snapshot = models.Snapshot(
             event=self.event_id,
@@ -288,8 +286,11 @@ class Importer:
 
             await asyncio.sleep(0)
 
-        self.console.print(f"total_contributed_voting_power = {total_contributed_voting_power}")
-        self.console.print(f"total_hir_voting_power = {total_hir_voting_power}")
+        logger.info(
+            "Done processing contributions and voters",
+            total_registered_voting_power=total_registered_voting_power,
+            total_contributed_voting_power=total_contributed_voting_power,
+            total_hir_voting_power=total_hir_voting_power)
 
         conn = await ideascale_importer.db.connect(self.database_url)
 
@@ -307,18 +308,24 @@ class Importer:
             await ideascale_importer.db.insert_many(conn, contributions)
             await ideascale_importer.db.insert_many(conn, list(voters.values()))
 
+        logger.info(
+            "Finished writing snapshot data to database",
+            contributions_count=len(contributions),
+            voters_count=len(voters.values()),
+        )
+
     async def import_all(self):
         await self._fetch_parameters()
 
         if self.dreps_file is None:
             await self._fetch_gvc_dreps_list()
         else:
-            self.console.print("Skipping dreps GVC API call. Reading dreps file")
+            logger.info("Skipping dreps GVC API call. Reading dreps file")
             with open(self.dreps_file) as f:
                 self.dreps = json.load(f)
 
         if self.skip_snapshot_tool_execution:
-            self.console.print("Skipping snapshot_tool execution. Using raw snapshot file")
+            logger.info("Skipping snapshot_tool execution. Using raw snapshot file")
         else:
             await self._run_snapshot_tool()
 

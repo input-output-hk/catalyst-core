@@ -1,5 +1,5 @@
 use crate::{
-    types::snapshot::{Delegation, Delegator, SnapshotVersion, Voter, VoterInfo},
+    types::snapshot::{Delegation, Delegator, EventId, Voter, VoterInfo},
     Error, EventDB,
 };
 use async_trait::async_trait;
@@ -7,22 +7,19 @@ use chrono::{NaiveDateTime, Utc};
 
 #[async_trait]
 pub trait SnapshotQueries: Sync + Send + 'static {
-    async fn get_snapshot_versions(&self) -> Result<Vec<SnapshotVersion>, Error>;
     async fn get_voter(
         &self,
-        version: &Option<SnapshotVersion>,
+        version: &Option<EventId>,
         voting_key: String,
     ) -> Result<Voter, Error>;
     async fn get_delegator(
         &self,
-        version: &Option<SnapshotVersion>,
+        version: &Option<EventId>,
         stake_public_key: String,
     ) -> Result<Delegator, Error>;
 }
 
 impl EventDB {
-    const SNAPSHOT_EVENTS_QUERY: &'static str = "SELECT event FROM snapshot;";
-
     const VOTER_BY_EVENT_QUERY: &'static str = "SELECT voter.voting_key, voter.voting_group, voter.voting_power, snapshot.as_at, snapshot.last_updated, snapshot.final, SUM(contribution.value)::BIGINT as delegations_power, COUNT(contribution.value) AS delegations_count
                                             FROM voter
                                             INNER JOIN snapshot ON voter.snapshot_id = snapshot.row_id
@@ -84,22 +81,9 @@ impl EventDB {
 
 #[async_trait]
 impl SnapshotQueries for EventDB {
-    async fn get_snapshot_versions(&self) -> Result<Vec<SnapshotVersion>, Error> {
-        let conn = self.pool.get().await?;
-
-        let rows = conn.query(Self::SNAPSHOT_EVENTS_QUERY, &[]).await?;
-
-        let mut snapshot_versions = Vec::with_capacity(rows.len());
-        for row in rows {
-            let version = SnapshotVersion(row.try_get("event")?);
-            snapshot_versions.push(version);
-        }
-        Ok(snapshot_versions)
-    }
-
     async fn get_voter(
         &self,
-        version: &Option<SnapshotVersion>,
+        version: &Option<EventId>,
         voting_key: String,
     ) -> Result<Voter, Error> {
         let conn = self.pool.get().await?;
@@ -159,7 +143,7 @@ impl SnapshotQueries for EventDB {
 
     async fn get_delegator(
         &self,
-        version: &Option<SnapshotVersion>,
+        version: &Option<EventId>,
         stake_public_key: String,
     ) -> Result<Delegator, Error> {
         let conn = self.pool.get().await?;
@@ -230,29 +214,16 @@ impl SnapshotQueries for EventDB {
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
-    use chrono::{DateTime, NaiveDate, NaiveTime};
-
     use super::*;
     use crate::test::test_event_db;
-
-    #[tokio::test]
-    async fn get_snapshot_versions_test() {
-        let event_db = test_event_db().await;
-
-        let snapshot_versions = event_db.get_snapshot_versions().await.unwrap();
-
-        assert_eq!(
-            snapshot_versions,
-            vec![SnapshotVersion(1), SnapshotVersion(2), SnapshotVersion(3),]
-        )
-    }
+    use chrono::{DateTime, NaiveDate, NaiveTime};
 
     #[tokio::test]
     async fn get_voter_test() {
         let event_db = test_event_db().await;
 
         let voter = event_db
-            .get_voter(&Some(SnapshotVersion(1)), "voting_key_1".to_string())
+            .get_voter(&Some(EventId(1)), "voting_key_1".to_string())
             .await
             .unwrap();
 
@@ -328,7 +299,7 @@ mod tests {
         let event_db = test_event_db().await;
 
         let delegator = event_db
-            .get_delegator(&Some(SnapshotVersion(1)), "stake_public_key_1".to_string())
+            .get_delegator(&Some(EventId(1)), "stake_public_key_1".to_string())
             .await
             .unwrap();
 

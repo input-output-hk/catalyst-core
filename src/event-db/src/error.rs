@@ -3,7 +3,7 @@ use std::env::VarError;
 use bb8::RunError;
 
 /// Event database errors
-#[derive(thiserror::Error, Debug, PartialEq)]
+#[derive(thiserror::Error, Debug, PartialEq, Eq)]
 pub enum Error {
     #[error(" Schema in database does not match schema supported by the Crate. The current schema version: {was}, the schema version we expected: {expected}")]
     MismatchedSchema { was: i32, expected: i32 },

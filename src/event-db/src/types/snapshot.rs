@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct SnapshotVersion(pub i32);
+pub struct EventId(pub i32);
 
 #[derive(Debug, Serialize, Clone, PartialEq)]
 pub struct VoterInfo {
@@ -25,7 +25,7 @@ pub struct Voter {
     pub is_final: bool,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Delegation {
     pub voting_key: String,
     pub group: String,
@@ -33,7 +33,7 @@ pub struct Delegation {
     pub value: i64,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Delegator {
     pub delegations: Vec<Delegation>,
     pub raw_power: i64,
@@ -55,14 +55,14 @@ mod tests {
     #[test]
     fn snapshot_version_json_test() {
         let snapshot_versions = vec![
-            SnapshotVersion(10),
-            SnapshotVersion(11),
-            SnapshotVersion(12),
+            EventId(10),
+            EventId(11),
+            EventId(12),
         ];
         let json = serde_json::to_value(&snapshot_versions).unwrap();
         assert_eq!(json, json!([10, 11, 12]));
 
-        let decoded: Vec<SnapshotVersion> = serde_json::from_value(json).unwrap();
+        let decoded: Vec<EventId> = serde_json::from_value(json).unwrap();
         assert_eq!(decoded, snapshot_versions);
     }
 

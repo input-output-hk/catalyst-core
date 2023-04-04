@@ -5,19 +5,19 @@ use std::sync::Arc;
 mod chalenges;
 mod fund;
 mod proposals;
+mod registration;
 mod reviews;
-mod snapshot;
 
-pub fn v0(state: Arc<State>) -> Router {
-    let snapshot = snapshot::snapshot(state);
+pub fn v1(state: Arc<State>) -> Router {
+    let registration = registration::registration(state);
     let fund = fund::fund();
     let chalenges = chalenges::chalenges();
     let proposals = proposals::proposals();
     let reviews = reviews::reviews();
 
     Router::new().nest(
-        "/v0",
-        snapshot
+        "/v1",
+        registration
             .merge(fund)
             .merge(chalenges)
             .merge(proposals)

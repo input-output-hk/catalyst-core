@@ -1,16 +1,18 @@
 openapi: 3.1.0
+x-stoplight:
+  id: vtlm0zmf003iu
 info:
   title: Catalyst 1.0
   description: |-
     Revised API expressing all capabilities of the Catalyst 1.0 Backend.
 
     TODO:
-    Implement Permissionless Auth.
-    Implement Replacement Functionality for GVC.
-    Implement drep registration on main-chain, distinct from voter registration.
-    Implement Voting API abstracting the Jormungandr API from public exposure.
-    Implement Audit API's (Retrieve voting blockchain records,  registration/voting power audit and private tally audit.
-    Implement API's needed to support posting Ideas/Proposals etc. 
+    * Implement Permissionless Auth.
+    * Implement Replacement Functionality for GVC.
+    * Implement drep registration on main-chain, distinct from voter registration.
+    * Implement Voting API abstracting the Jormungandr API from public exposure.
+    * Implement Audit API's (Retrieve voting blockchain records,  registration/voting power audit and private tally audit.
+    * Implement API's needed to support posting Ideas/Proposals etc.
   version: 1.0.0
   contact:
     name: Steven Johnson
@@ -35,7 +37,19 @@ tags:
   - name: search
     description: Search operations.
 servers:
-  - url: 'http://localhost'
+  - url: 'http://localhost:{port}'
+    description: Local Testing Only
+    variables:
+      port:
+        default: '8123'
+  - url: 'https://dev.xxxxxxxxxxxxxx.io'
+    description: Unstable Development Test Environment
+  - url: 'https://qa.xxxxxxxxxxxxxx.io'
+    description: QA Testing Environment
+  - url: 'https://preprod.xxxxxxxxxxxxxx.io'
+    description: Preprod Stable Contiunous Testing Environment
+  - url: 'https://prod.xxxxxxxxxxxxxx.io'
+    description: Production Environment
 paths:
   /api/v1/events:
     get:
@@ -101,52 +115,52 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Objective'
+                allOf:
+                  - $ref: '#/components/schemas/ObjectiveSummary'
+                    x-stoplight:
+                      id: bsz8o5nnhtu9e
+                  - $ref: '#/components/schemas/ObjectiveDetails'
+                    x-stoplight:
+                      id: mdciat4uo1xu8
         '404':
           description: The requested challenge was not found
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/voter_groups_filter'
-  '/api/v1/event/{id}/{ref_id}/proposals':
+  '/api/v1/event/{id}/{obj_id}/proposals':
     parameters:
-      - schema:
-          type: string
-        name: id
-        in: path
-        required: true
-      - schema:
-          type: string
-        name: ref_id
-        in: path
-        required: true
+      - $ref: '#/components/parameters/event_id'
+      - $ref: '#/components/parameters/obj_id'
     get:
       operationId: getAllProposals
-      summary: Get all available proposals
+      summary: Get summary all available proposals
       tags:
         - proposal
       description: |
-        Lists all available proposals.
+        Summarized Lists all available proposals.
       responses:
         '200':
           description: Valid response
           content:
             application/json:
               schema:
+                type: array
+                description: Summarized Proposal List for the Objective
                 items:
-                  $ref: '#/components/schemas/ProposalWithChallengeInfo'
+                  $ref: '#/components/schemas/ProposalSummary'
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/voter_groups_filter'
-  '/api/v1/event/{id}/{ref_id}/{prop_id}/proposal':
+  '/api/v1/event/{id}/{obj_id}/{prop_id}/proposal':
     parameters:
       - $ref: '#/components/parameters/event_id'
-      - $ref: '#/components/parameters/ref_id'
+      - $ref: '#/components/parameters/obj_id'
       - $ref: '#/components/parameters/prop_id'
     get:
       operationId: getProposal
-      summary: Get proposal by id filtered by group
+      summary: Get Individual Proposal data
       tags:
         - proposal
       description: |
@@ -157,13 +171,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProposalWithChallengeInfo'
+                $ref: '#/components/schemas/Proposal'
         '404':
           description: The requested proposal was not found
-  '/api/v1/event/{id}/{ref_id}/{prop_id}/reviews':
+  '/api/v1/event/{id}/{obj_id}/{prop_id}/reviews':
     parameters:
       - $ref: '#/components/parameters/event_id'
-      - $ref: '#/components/parameters/ref_id'
+      - $ref: '#/components/parameters/obj_id'
       - $ref: '#/components/parameters/prop_id'
     get:
       operationId: getProposalReviews
@@ -194,19 +208,32 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SearchQuery'
+        description: Parameters to the search.
       responses:
         '200':
           description: Success
           content:
             application/json:
               schema:
-                oneOf:
-                  - type: array
-                    items:
-                      $ref: '#/components/schemas/Objective'
-                  - type: array
-                    items:
-                      $ref: '#/components/schemas/ProposalWithChallengeInfo'
+                type: object
+                properties:
+                  type:
+                    $ref: '#/components/schemas/SearchTable'
+                  total:
+                    type: integer
+                    format: int32
+                    description: Total results possible from query.
+                  results:
+                    oneOf:
+                      - type: array
+                        items:
+                          $ref: '#/components/schemas/EventSummary'
+                      - type: array
+                        items:
+                          $ref: '#/components/schemas/ObjectiveSummary'
+                      - type: array
+                        items:
+                          $ref: '#/components/schemas/Proposal'
         '400':
           description: Invalid combination of table/column (e.g. using funds column on challenges table)
       parameters:
@@ -245,12 +272,7 @@ paths:
         - $ref: '#/components/parameters/event_id_filter'
   '/api/v1/registration/delegations/{sp_key}':
     parameters:
-      - name: sp_key
-        in: path
-        required: true
-        schema:
-          type: string
-        description: Stake Public key
+      - $ref: '#/components/parameters/stake_public_key'
     get:
       operationId: getDelegatorInfo
       summary: Get voters info by stake public key
@@ -300,15 +322,15 @@ paths:
       summary: Your GET endpoint
       tags:
         - ballot
-      responses: {}
+      responses:
+        '200':
+          description: OK
       operationId: get-api-v1-ballot-cast-id
       description: Cast a Ballot on the requested Voting Event.
   '/api/v1/ballot/proof/{vkey}/{id}':
     post:
-      summary: Get voted by chain id
+      summary: Get Ballot Proof
       operationId: getBallotProofs
-      tags:
-        - proposal
       description: Get list of details and ballot proofs for every currently cast ballot on a particular voting event for a particular voting key.
       requestBody:
         description: List of votes by voteplan id and caster (wallet)
@@ -326,6 +348,8 @@ paths:
                 $ref: '#/components/schemas/VoteInfo'
       x-internal: true
       deprecated: true
+      tags:
+        - ballot
     parameters:
       - $ref: '#/components/parameters/voting_key'
       - $ref: '#/components/parameters/event_id'
@@ -334,7 +358,7 @@ components:
     DateTime:
       title: DateTime
       x-stoplight:
-        id: 1cv6vd9hy6tvf
+        id: gyp8fm05q2wcm
       type: string
       format: date-time
       example: '2023-08-24T14:15:22Z'
@@ -343,7 +367,7 @@ components:
     EventId:
       title: EventId
       x-stoplight:
-        id: ie9emcrlma8q3
+        id: mql4l8ntzqfjc
       type: integer
       description: The Numeric ID of a Voting Event
       example: 11
@@ -352,7 +376,7 @@ components:
     EventName:
       title: EventName
       x-stoplight:
-        id: yl97qrcyqz6k8
+        id: 0bexxtej703en
       type: string
       description: The Name of a Voting Event
       x-examples:
@@ -364,7 +388,7 @@ components:
     EventSummary:
       title: EventSummary
       x-stoplight:
-        id: yo11qlak5nty6
+        id: 1ueealg841s72
       type: object
       x-examples: {}
       properties:
@@ -423,6 +447,8 @@ components:
             * `threshold_staked_ADA`
       required:
         - alg
+      x-stoplight:
+        id: q0j4rnd7me3d5
     EventGoal:
       title: Event Goal
       type: object
@@ -440,6 +466,8 @@ components:
       required:
         - idx
         - name
+      x-stoplight:
+        id: 1cowh1sigko19
     EventGoals:
       title: Event Goals
       type: array
@@ -448,6 +476,8 @@ components:
       minItems: 1
       items:
         $ref: '#/components/schemas/EventGoal'
+      x-stoplight:
+        id: rmjom0j9d81e6
     EventRegistration:
       title: Event Registration
       type: object
@@ -463,7 +493,7 @@ components:
         deadline:
           $ref: '#/components/schemas/DateTime'
           description: |-
-            The deadline for Registration/Voting Power to be fixed.  
+            The deadline for Registration/Voting Power to be fixed.
             Changes to Registrations or Voting power after this time are not considered.
         taken:
           $ref: '#/components/schemas/DateTime'
@@ -479,6 +509,8 @@ components:
         - purpose: 2
           deadline: '2023-08-24T14:15:22Z'
           taken: '2023-08-24T14:15:22Z'
+      x-stoplight:
+        id: 7l9i6nj2pd1hg
     EventSchedule:
       title: EventSchedule
       type: object
@@ -520,11 +552,11 @@ components:
         - tallying
         - tallying_end
       x-stoplight:
-        id: 0415c628024e0
+        id: c1q1b5jtfd4ue
     ObjectiveId:
       title: ObjectiveId
       x-stoplight:
-        id: 2ed7437cf8e24
+        id: x36yug5b7c3r8
       type: integer
       description: The Numeric ID of an Objecgtive to be decided in a Voting Event
       example: 11
@@ -533,7 +565,7 @@ components:
     EventDetails:
       title: EventDetails
       x-stoplight:
-        id: 2vnfvuyiiku1s
+        id: lnivx8gtyvbcn
       type: object
       description: Detaild information for an individual voting event.
       properties:
@@ -561,6 +593,8 @@ components:
         - $ref: '#/components/schemas/EventSummary'
         - $ref: '#/components/schemas/EventDetails'
       description: Complete Details about an individual Voting Event
+      x-stoplight:
+        id: 4cx75nmf74wdd
     ObjectiveTypes:
       type: string
       enum:
@@ -570,7 +604,7 @@ components:
         - sve-decision
       description: Objective Type defines the rules of the objective.
       x-stoplight:
-        id: fbb7ff0256d29
+        id: 098z8z1pwtkj2
     ObjectiveType:
       type: object
       properties:
@@ -580,7 +614,7 @@ components:
           type: string
           description: An explanaiton of the rules of this Objective Type.
       x-stoplight:
-        id: 71d539b7754fe
+        id: x7nhy2qu3xwrv
     RewardCurrency:
       type: string
       enum:
@@ -590,9 +624,11 @@ components:
         - COTI
       description: Currency of the Reward.
       x-stoplight:
-        id: fbbb21af7575f
+        id: 9ng0ptdxjm60i
     RewardDefintion:
       type: object
+      x-stoplight:
+        id: uncc6j7uf38ge
       properties:
         currency:
           $ref: '#/components/schemas/RewardCurrency'
@@ -600,13 +636,94 @@ components:
           type: integer
           format: int64
           description: The total value of the reward
+      required:
+        - currency
+        - value
+    ObjectiveChoices:
+      type: array
+      description: |-
+        Ordered list of choices available for all proposals in this Objective.
+        The offset into the array is the index of the choice.
+        For example, the first element is Choice 0, second is Choice 1 and so on.
       x-stoplight:
-        id: 801e3929998ec
-    Objective:
+        id: ym16khzb1abc4
+      examples:
+        - - Abstain
+          - 'No'
+          - 'Yes'
+      minItems: 1
+      maxItems: 16
+      uniqueItems: true
+      items:
+        type: string
+        minLength: 1
+    BallotType:
+      type: string
+      description: |-
+        The kind of ballot to be cast on this Objective.
+        * `public` - All Ballots are public when cast.
+        * `private` - All Ballots are private.
+        * `cast-private` - All Ballots are cast privately but become public after the tally.
+      x-stoplight:
+        id: 1sv4pgkgu83u6
+      enum:
+        - public
+        - private
+        - temp-private
+      examples:
+        - private
+        - public
+        - cast-private
+      minItems: 1
+      maxItems: 16
+      uniqueItems: true
+      items:
+        type: string
+        minLength: 1
+    GroupBallotType:
+      title: Group Ballot Type
+      type: array
+      minItems: 1
+      uniqueItems: true
+      description: |-
+        List of Voter Groups and the kind of ballot they must cast.
+        Each voter group that can vote on the objective:
+        * MUST be listed.
+        * MUST be listed only once.
+      items:
+        type: object
+        properties:
+          group:
+            $ref: '#/components/schemas/VoterGroupId'
+            description: The name of the group (Must be unique in the array).
+          ballot:
+            $ref: '#/components/schemas/BallotType'
+            description: The type of ballot this group must cast.
+      x-stoplight:
+        id: qaz93o6qdkr5c
+    ObjectiveSupplementalData:
+      title: Objective Supplemental Data
+      x-stoplight:
+        id: hrsvblk9q7ju1
       type: object
-      description: Individual Objective
+      description: |-
+        Extra Data which can be used to enrich the information shared about the Objective.
+        All Information here is optional.
+        If there is no supplemental information for the Objective this field is omitted.
+      properties:
+        sponser:
+          type: string
+          description: Who is sponsoring this Objective.
+        video:
+          type: string
+          format: uri
+          description: Link to a video about this Objective
+    ObjectiveSummary:
+      title: Objective Summary
       x-stoplight:
-        id: c840d5d5cba30
+        id: rjgmuk6r5pdf5
+      description: Summary off an Individual Objective
+      type: object
       properties:
         id:
           $ref: '#/components/schemas/ObjectiveId'
@@ -617,316 +734,332 @@ components:
         title:
           type: string
           description: The title for this Objective.
+      required:
+        - id
+        - type
+        - title
+    ObjectiveProposalType:
+      title: Objective Proposal Type
+      description: The type of proposal that can be made on this Objective.
+      type: string
+      enum:
+        - simple
+        - native
+        - community-choice
+      x-stoplight:
+        id: 424bd4d9fd817
+    ObjectiveDetails:
+      title: Objective Details
+      x-stoplight:
+        id: 015aa65365c13
+      description: Individual Objective Details
+      type: object
+      properties:
         description:
           type: string
-          description: Long form explanation of this particular objective.
+          description: |-
+            Long form explanation of this particular objective.\
+            *May contain HTML Markup.*\
+            *May contain Links to external content or assets.*
+        type:
+          $ref: '#/components/schemas/ObjectiveProposalType'
         reward:
-          $ref: '#/components/schemas/ObjectiveType'
-          description: The "Type" of Objective
-        challenge_url:
+          $ref: '#/components/schemas/RewardDefintion'
+          description: |-
+            The Total Reward being offered for this Objective.
+            Distribuition of the Reward is determined under the rules of this Objective.
+            If this field is not present there is no reward being offered for the Objective.
+        choices:
+          $ref: '#/components/schemas/ObjectiveChoices'
+          description: Ballot Choices present for all proposals in this Objective.
+        ballot:
+          $ref: '#/components/schemas/GroupBallotType'
+          description: The types of Ballot each group may cast.
+        url:
           type: string
-        highlights:
-          $ref: '#/components/schemas/ChallengeHighlights'
-    Testtesttesttesttesttesttesttest:
-      allOf:
-        - $ref: '#/components/schemas/EventSummary'
-        - type: object
-          properties:
-            extra_name:
-              type: string
-      x-stoplight:
-        id: d18fbb6e49bcf
+          description: External URL that better describes the Objective.
+          format: uri
+        supplemental:
+          $ref: '#/components/schemas/ObjectiveSupplementalData'
     VotePlan:
+      title: Vote Plan
+      type: object
+      description: The voteplan to use for this group.
       properties:
-        id:
-          type: integer
-          format: int32
-          description: API identifier of the vote plan.
+        group:
+          $ref: '#/components/schemas/VoterGroupId'
+          description: The name of the group (Must be unique in the array).
         chain_voteplan_id:
           type: string
           format: hash
           description: Blockchain ID of the vote plan transaction.
-        chain_vote_start_time:
-          type: string
-          format: date-time
-          description: Date and time for the start of voting on this vote plan.
-        chain_vote_end_time:
-          type: string
-          format: date-time
-          description: Date and time for the end of voting on this vote plan.
-        chain_committee_end_time:
-          type: string
-          format: date-time
-          description: Date and time for the end of tallying on this vote plan.
-        chain_voteplan_payload:
-          type: string
-          description: |
-            Whether the voting is done using the public or the privacy-preserving protocol.
-        fund_id:
-          type: integer
-          format: int32
-          description: The fund ID this vote plan belongs to.
-        voting_token:
-          type: string
-          pattern: '[0-9a-f]{56}(\.[0-9a-f]{1,64})?'
-          description: |
-            The identifier of voting power token used withing this plan.
-    Proposal:
-      properties:
-        internal_id:
-          type: integer
-          format: int32
-          description: The API identifier for this proposal.
-        proposal_id:
-          type: string
-          description: Unique identifier for this proposal.
-        proposal_category:
-          type: object
-          properties:
-            category_id:
-              type: string
-            category_name:
-              type: string
-            category_description:
-              type: string
-        proposal_title:
-          type: string
-          description: Short title of the proposal.
-        proposal_summary:
-          type: string
-          description: Brief description of the proposal.
-        proposal_public_key:
-          type: string
-          format: binary
-        proposal_funds:
-          type: integer
-          format: int64
-          description: The amount of funds requested by this proposal.
-        proposal_url:
-          type: string
-          description: URL to a web page with details on this proposal.
-        proposal_files:
-          type: string
-        proposal_extra_fields:
-          type: object
-          description: Map of proposal's extra fields.
-        proposer:
-          type: object
-          properties:
-            proposer_name:
-              type: string
-              description: Name of the author of the proposal.
-            proposer_email:
-              type: string
-              description: Email address of the author of the proposal.
-            proposer_url:
-              type: string
-              description: URL to a web resource with details about the author of the proposal.
-        chain_proposal_id:
-          type: string
-          description: Identifier of the proposal on the blockchain.
-        chain_vote_options:
-          description: Map of named vote options to choice indices.
-          type: object
-        chain_vote_start_time:
-          type: string
-          format: date-time
-          description: Date and time for the start of voting on this proposal's vote plan.
-        chain_vote_end_time:
-          type: string
-          format: date-time
-          description: Date and time for the start of voting on this proposal's vote plan.
-        chain_committee_end_time:
-          type: string
-          format: date-time
-          description: Date and time for the end of tallying on this proposal's vote plan.
-        chain_voteplan_payload:
-          type: string
-          description: |
-            Whether the voting is done using the public or the privacy-preserving protocol.
-        chain_voteplan_id:
-          type: string
-          description: Identifier of the vote plan a proposal belongs to.
-        chain_proposal_index:
-          type: integer
-          format: int64
-          description: Index of a proposal in the vote plan.
-    ChallengeType:
-      type: string
-      enum:
-        - simple
-        - community-choice
-    ProposalWithChallengeInfo:
-      discriminator:
-        propertyName: challenge_type
-        mapping:
-          simple: '#/components/schemas/SimpleProposal'
-          community-choice: '#/components/schemas/CommunityChoiceProposal'
-      allOf:
-        - $ref: '#/components/schemas/Proposal'
-        - type: object
-          properties:
-            fund_id:
-              type: integer
-              format: int32
-            challenge_id:
-              type: integer
-              format: int32
-            reviews_count:
-              type: integer
-              format: int32
-              description: Total amount of individual reviews per assessor
-            challenge_type:
-              $ref: '#/components/schemas/ChallengeType'
-    SimpleProposal:
-      allOf:
-        - $ref: '#/components/schemas/ProposalWithChallengeInfo'
-        - type: object
-          properties:
-            proposal_solution:
-              type: string
-      example:
-        internal_id: 22
-        proposal_id: 4af0e6b3452cd4ee822b2ec1859fd57b5512f85c14875f408081aa9b796dfc6e
-        proposal_title: Authentication for DeepFake Defense
-        proposal_summary: Deepfake videos are dangerous.
-        proposal_solution: We will create a cryptographic proof on Cardano that verifies videos are real by connecting their blockchain ID.
-        proposal_public_key: Fvd8zI3DH85qnaChQE6Aymt1diMJP32LB0AdpheZh/Q=
-        proposal_funds: 12000
-        proposal_url: 'http://ideascale.com/t/UM5UZBd2t'
-        proposal_files_url: ''
-        proposal_impact_score: 0
-        proposer:
-          proposer_name: Community Member
-          proposer_email: example@vit.iohk.io
-          proposer_url: ''
-          proposer_relevant_experience: 'Cryptography student, website development, blockchain technologist.'
-        chain_proposal_id: 4af0e6b3452cd4ee822b2ec1859fd57b5512f85c14875f408081aa9b796dfc6e
-        chain_vote_options:
-          blank: 0
-          'yes': 1
-          'no': 2
-        chain_vote_start_time: '2021-02-10T14:40:27+00:00'
-        chain_vote_end_time: '2021-02-11T10:10:27+00:00'
-        chain_committee_end_time: '2021-02-11T11:40:27+00:00'
-        chain_voteplan_payload: public
-        chain_vote_encryption_key: ''
-        fund_id: 20
-        challenge_id: 2
-        challenge_type: simple
-    CommunityChoiceProposal:
-      allOf:
-        - $ref: '#/components/schemas/ProposalWithChallengeInfo'
-        - type: object
-          properties:
-            proposal_brief:
-              type: string
-            proposal_importance:
-              type: string
-            proposal_goal:
-              type: string
-            proposal_metrics:
-              type: string
-      example:
-        internal_id: 31
-        proposal_id: 494d8d685e3b195eb5610494f1721db7747df0517cb1b6a705bb3cebfef3c998
-        proposal_title: A for ADA Cryptoalphabet 4 children
-        proposal_summary: |-
-          How to increase general awareness about Cardano and cryptocurrencies?
-          How to make fun community-building incentives?
-        proposal_brief: A for ADA
-        proposal_importance: We need to get them while they're young.
-        proposal_goal: Nebulous.
-        proposal_metrics: \- Number of people engaged into the creation of Cryptoalphabet
-        proposal_public_key: zqUCWwguCt6+NHYjkpvasvccuA7l2SuabE+1C0bzf3Y=
-        proposal_funds: 4800
-        proposal_url: 'http://ideascale.com/t/UM5UZBd1p'
-        proposal_files_url: ''
-        proposal_impact_score: 133
-        proposer:
-          proposer_name: Community Member
-          proposer_email: example@vit.iohk.io
-          proposer_url: ''
-          proposer_relevant_experience: ''
-        chain_proposal_id: 494d8d685e3b195eb5610494f1721db7747df0517cb1b6a705bb3cebfef3c998
-        chain_proposal_index: 9
-        chain_vote_options:
-          'no': 2
-          'yes': 1
-          blank: 0
-        chain_voteplan_id: b1eeb620baf1445672f6c9422481aff0f6babaf775760d187a7703027e098166
-        chain_vote_start_time: '2021-02-10T14:40:27+00:00'
-        chain_vote_end_time: '2021-02-11T10:10:27+00:00'
-        chain_committee_end_time: '2021-02-11T11:40:27+00:00'
-        chain_voteplan_payload: public
-        chain_vote_encryption_key: ''
-        fund_id: 20
-        challenge_id: 1
-        challenge_type: community-choice
-    AdvisorReview:
+      x-stoplight:
+        id: owvld2uvjjnty
+    GroupVotePlans:
+      title: Group Vote Plans
+      type: array
+      description: |-
+        List of groups and the voteplans they use when voting on this proposal.
+        Each valid group for this Objective:
+          * Must be listed.
+          * Must not be repeated.
+      items:
+        $ref: '#/components/schemas/VotePlan'
+    ProposalSummary:
+      title: Proposal Summary
+      type: object
+      description: Summary of a Proposal for an Objective
       properties:
         id:
           type: integer
-          format: i32
-        proposal_id:
+          format: int32
+          description: The ID of this proposal.
+        title:
+          type: string
+          description: Short title of the proposal.
+        summary:
+          type: string
+          description: Brief description of the proposal.
+      required:
+        - id
+        - title
+      x-stoplight:
+        id: 149678fbb6bb5
+    ProposalBallotDetails:
+      title: Proposal Ballot Details
+      description: |-
+        Details necessary to complete a ballot for this proposal.
+        If not present, they are not yet defined.
+        If not defined, then it is not possible to cast a ballot on this proposal yet.
+      type: object
+      properties:
+        id:
+          type: string
+          description: 'The ID of the proposal, needed to create a ballot for it.'
+        index:
           type: integer
-          format: i32
+          format: int64
+          description: 'The Index of the proposal, needed to create a ballot for it.'
+        voteplan:
+          $ref: '#/components/schemas/GroupVotePlans'
+      required:
+        - id
+        - index
+      x-stoplight:
+        id: ae52aa5a4c3f3
+    ProposerDetails:
+      title: Proposer Details
+      description: Details about a proposer for a particular proposal.
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the author/s of the proposal.
+        email:
+          type: string
+          description: |-
+            Email contact address of the author/s of the proposal.
+            If not present, there is no known contact email for the authors.
+        url:
+          type: string
+          description: URL to a web resource with details about the author/s of the proposal.
+        payment_key:
+          type: string
+          format: binary
+          description: |-
+            The Payment Address the Funds requested will be paid to.
+            Will not be included if the proposal does not request funds.
+      x-stoplight:
+        id: 8b38832507fad
+    ProposalSupplementalDetails:
+      title: Objective Supplemental Data
+      description: Additional Information related to the proposal.
+      x-stoplight:
+        id: 142983a15f26d
+      type: object
+      properties:
+        solution:
+          type: string
+          description: 'For `simple` challenges, the free-form description of the proposed solution.'
+        brief:
+          type: string
+          description: 'For `community-choice` challenges, the free-form brief explanation of the propsal.'
+        importance:
+          type: string
+          description: 'For `community-choice` challenges, the free-form explanation of the propsals importance, in the view of the proposers.'
+        metrics:
+          type: string
+          description: 'For `community-choise` challenges, the free-form explanation of the metrics of success.  As proposed by the proposers.'
+    ProposalDetails:
+      title: Proposal Details
+      type: object
+      description: Details of a particular Proposal
+      properties:
+        funds:
+          type: integer
+          format: int64
+          description: |-
+            The amount of funds requested by this proposal.  
+            In the denomination of the Objectives Reward.
+            If not present, then this proposal is not requesting any funds.
+        url:
+          type: string
+          format: uri
+          description: URL to a web page with details on this proposal.
+        files:
+          type: string
+          format: uri
+          description: |-
+            Link to extra files associated with this proposal.
+            Only included if there are linked files.
+        proposer:
+          description: List of all proposers making this proposal.
+          type: array
+          items:
+            $ref: '#/components/schemas/ProposerDetails'
+        ballot:
+          $ref: '#/components/schemas/ProposalBallotDetails'
+        supplimental:
+          $ref: '#/components/schemas/ProposalSupplementalDetails'
+      x-stoplight:
+        id: 55fa0ff965f91
+    Proposal:
+      allOf:
+        - $ref: '#/components/schemas/ProposalSummary'
+        - $ref: '#/components/schemas/ProposalDetails'
+      x-stoplight:
+        id: c0c1d419da6b7
+    Rating:
+      title: Rating
+      description: Individual Rating
+      type: object
+      properties:
+        score:
+          type: integer
+          description: |-
+            Score given to this rating.
+            Higher scores are better than lower scores.
+            Zero is always the lowest score.
+        max:
+          type: integer
+          description: Maximum score that can be awarded.
+        note:
+          type: string
+          description: |-
+            Reason why this rating was given.
+            If NO reason was given, this field is omitted.
+      required:
+        - score
+        - max
+      x-stoplight:
+        id: 6181ea68acf86
+    Ranking:
+      title: Ranking
+      description: Measure of quality of this review according to veteran community advisors
+      type: string
+      enum:
+        - Excellent
+        - Good
+        - FilteredOut
+        - NA
+      x-stoplight:
+        id: ad106692ad0e2
+    AdvisorReview:
+      title: Advisor Review
+      description: Review of a Proposal by a Community Advisor
+      type: object
+      properties:
         assessor:
           type: string
-        impact_alignment_rating_given:
+          description: |-
+            Anonymized Assessor identity.
+            All reviews by the same Assessor will have the same identity string.
+        impact:
           $ref: '#/components/schemas/Rating'
-        impact_alignment_note:
-          type: string
-        feasibility_rating_given:
+          description: The Impact Rating given to this proposal.
+        feasibility:
           $ref: '#/components/schemas/Rating'
-        feasibility_note:
-          type: string
-        auditability_rating_given:
+          description: The Feasibility Rating given to this proposal.
+        auditability:
           $ref: '#/components/schemas/Rating'
-        auditability_note:
-          type: string
+          description: The Auditability Rating given to this proposal.
         ranking:
           description: Measure of quality of this review according to veteran community advisors
-          type: string
-          enum:
-            - Excellent
-            - Good
-            - FilteredOut
-            - NA
-    Rating:
-      type: integer
-      format: i32
-      minimum: 0
-      maximum: 500
-      description: 'Rating in range [0, 500] (0 stars to 5 stars)'
+          $ref: '#/components/schemas/Ranking'
+      x-stoplight:
+        id: a68033b848a97
     AdvisorReviews:
+      title: List of Advisor Reviews
       type: array
       items:
         $ref: '#/components/schemas/AdvisorReview'
-      example:
-        - id: 1
-          proposal_id: 1234
-          rating_given: 0
-          assessor: za_assessor_432
-          note: foo bar
-          tag: Alignment
-    ChallengeHighlights:
+      x-stoplight:
+        id: cbf7e223d4153
+    SearchTable:
+      title: Search Table
+      type: string
+      enum:
+        - events
+        - objectives
+        - proposals
+      x-stoplight:
+        id: 15d495dd79e24
+    SearchColumn:
+      type: string
+      enum:
+        - title
+        - type
+        - desc
+        - author
+        - funds
+      x-stoplight:
+        id: 0rd8jpsoczvvt
+    SearchConstraint:
+      title: Search Constraint
+      type: object
       properties:
-        sponsor:
+        column:
+          $ref: '#/components/schemas/SearchColumn'
+        search:
           type: string
-    ProposalsByVoteplanIdAndIndexQuery:
-      type: array
-      items:
-        $ref: '#/components/schemas/ProposalVoteplanIdAndIndex'
-    ProposalVoteplanIdAndIndex:
+          description: Text which must be present in the given column (case insensitive)
+      required:
+        - column
+        - search
+      x-stoplight:
+        id: 99d40855c2f60
+    SearchOrderBy:
+      title: Search Order
+      type: object
       properties:
-        voteplan_id:
-          type: string
-        indexes:
+        column:
+          $ref: '#/components/schemas/SearchColumn'
+        descending:
+          type: boolean
+          default: false
+      required:
+        - column
+      x-stoplight:
+        id: yj4axohjjidlc
+    SearchQuery:
+      title: Search Query
+      description: Parameters for the search
+      type: object
+      properties:
+        table:
+          $ref: '#/components/schemas/SearchTable'
+        filter:
           type: array
           items:
-            type: integer
-            format: i64
+            $ref: '#/components/schemas/SearchConstraint'
+        order-by:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchOrderBy'
+      required:
+        - table
+      x-stoplight:
+        id: 758e9a95f95fb
     VotesByVoteCasterAndVoteplanId:
       properties:
         vote_plan_id:
@@ -937,6 +1070,8 @@ components:
           type: string
           format: hash
           description: public key of caster wallet
+      x-stoplight:
+        id: ufax8ri60bljs
     VoteInfo:
       properties:
         fragment_id:
@@ -967,145 +1102,12 @@ components:
           type: string
           format: hash
           description: raw bytes of transaction
-    SearchQuery:
-      properties:
-        table:
-          $ref: '#/components/schemas/SearchConstraint'
-        filter:
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchConstraint'
-        order-by:
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchOrderBy'
-        limit:
-          type: integer
-          format: i32
-          description: Sets the limit clause of the search query.
-        offset:
-          type: integer
-          format: i32
-          description: Sets the offset clause of the search query.
-      required:
-        - table
-    SearchCountQuery:
-      properties:
-        table:
-          $ref: '#/components/schemas/SearchConstraint'
-        filter:
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchConstraint'
-        order-by:
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchOrderBy'
-      required:
-        - table
-    SearchConstraint:
-      properties:
-        column:
-          $ref: '#/components/schemas/SearchColumn'
-        search:
-          type: string
-          description: Text which must be present in the given column (case insensitive)
-      required:
-        - column
-        - search
-    SearchOrderBy:
-      properties:
-        column:
-          $ref: '#/components/schemas/SearchColumn'
-        descending:
-          type: boolean
-          default: false
-      required:
-        - column
-    SearchTable:
-      type: string
-      enum:
-        - challenges
-        - proposals
-    SearchColumn:
-      type: string
-      enum:
-        - title
-        - type
-        - desc
-        - author
-        - funds
-    NextFundInfo:
-      properties:
-        next:
-          description: |-
-            Note, ANY date-time formatted field in this API may report:
-            "1970-01-01T00:00:00Z" 
-            Which is The unix Epoch.         This date is to be interpreted that the date-time for the event the  field represents is not yet known.
-            The UI may either not display anything for this field, or TBD or an  equivalent message.
-          properties:
-            id:
-              type: integer
-              format: int32
-              description: Identifier of the fund campaign.
-            fund_name:
-              type: string
-              description: Human-readable name of the fund campaign.
-            insight_sharing_start:
-              type: string
-              format: date-time
-            proposal_submission_start:
-              type: string
-              format: date-time
-            refine_proposals_start:
-              type: string
-              format: date-time
-            finalize_proposals_start:
-              type: string
-              format: date-time
-            proposal_assessment_start:
-              type: string
-              format: date-time
-            assessment_qa_start:
-              type: string
-              format: date-time
-            snapshot_start:
-              type: string
-              format: date-time
-            voting_start:
-              type: string
-              format: date-time
-            voting_end:
-              type: string
-              format: date-time
-            tallying_end:
-              type: string
-              format: date-time
-    Goal:
-      properties:
-        id:
-          type: integer
-          format: int32
-        goal_name:
-          type: string
-        fund_id:
-          type: integer
-          format: int32
-    SnapshotInfoUpdate:
-      properties:
-        snapshot:
-          type: array
-          description: list of SnapshotInfo entries in json format
-          items:
-            description: SnapshotInfo entry in json format
-        update_timestamp:
-          type: string
-          format: date-time
-          description: Date and time for the latest update to this snapshot information.
+      x-stoplight:
+        id: 4j0mbaifceat2
     VoterGroupId:
       title: VoterGroupId
       x-stoplight:
-        id: zm2mm5do7yqyr
+        id: 538gfz6zp2u5h
       type: string
       default: direct
       example: rep
@@ -1125,8 +1127,10 @@ components:
           type: string
           pattern: '[0-9a-f]{56}(\.[0-9a-f]{1,64})?'
           description: |
-            The identifier of voting power token used withing this group. All vote plans within a
-            group are guaranteed to use the same token.
+            The identifier of voting power token used withing this group.
+            All vote plans within a group are guaranteed to use the same token.
+      x-stoplight:
+        id: ckmvgc5nnbhsv
     VotersInfo:
       type: object
       description: The voting power for the requested voting key.
@@ -1149,6 +1153,8 @@ components:
       required:
         - voter_info
         - last_updated
+      x-stoplight:
+        id: gce0oy7wdls7g
     VoterInfo:
       type: object
       description: voter's info
@@ -1185,6 +1191,8 @@ components:
         - delegations_power
         - delegations_count
         - voting_power_saturation
+      x-stoplight:
+        id: xqfzipvfkm1o4
     DelegationInfo:
       type: object
       description: voters delegation info
@@ -1214,11 +1222,11 @@ components:
         - weight
         - value
       x-stoplight:
-        id: 68d7e039c9974
+        id: 8muubqcedp93n
     DelegatorInfo:
       title: DelegatorInfo
       x-stoplight:
-        id: tyhr3mvj1qnxi
+        id: gs0t1s4y1d5ay
       type: object
       properties:
         delegations:
@@ -1276,8 +1284,8 @@ components:
         format: int32
         minimum: 0
       description: The ID Number of the Voting Event. As reported by `/api/v1/events`.
-    ref_id:
-      name: ref_id
+    obj_id:
+      name: obj_id
       in: path
       required: true
       schema:
@@ -1366,3 +1374,4 @@ components:
         minimum: 0
       description: The Event ID to return results for.
       style: form
+  requestBodies: {}

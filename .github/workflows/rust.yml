@@ -213,6 +213,9 @@ jobs:
         run:
           cargo build -p vit-servicing-station-cli -p vit-servicing-station-server -p jcli -p jormungandr -p explorer
 
+      - name: Setup Event DB
+        run: cargo make local-event-db-setup
+
       - name: Build and archive tests
         if: steps.archive-cache.outputs.cache-hit != 'true'
         run: cargo nextest archive --archive-file nextest-archive.tar.zst

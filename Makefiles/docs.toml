@@ -172,7 +172,6 @@ dbviz -d CatalystEventDocs \
         goals \
         groups \
         full_proposals_info \
-        refinery_schema_history \
         > ./book/src/08_event-db/db-diagrams/event-db-vitss-views.dot
 '''
 
@@ -210,10 +209,11 @@ dbviz -d CatalystEventDocs \
     --comments \
     --column-description-wrap 140 \
     -i  event \
-        > ./book/src/08_event-db/db-diagrams/event-db-event.dot
+        goal \
+    > ./book/src/08_event-db/db-diagrams/event-db-event.dot
 '''
 
-[tasks.build-db-docs-challenge-proposal-diagram]
+[tasks.build-db-docs-objective-proposal-diagram]
 workspace = false
 category = "docs"
 dependencies = [
@@ -224,17 +224,20 @@ script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 dbviz -d CatalystEventDocs \
     -h postgres \
-    --title "Catalyst Event Database - Challenges & Proposals" \
+    --title "Catalyst Event Database - Objectives & Proposals" \
     --comments \
     --column-description-wrap 40 \
     -i  challenge_category \
+        objective_category \
         currency \
         vote_options \
-        goal \
-        challenge \
+        objective \
         proposal \
-        community_advisors_review \
-        > ./book/src/08_event-db/db-diagrams/event-db-challenge-proposal.dot
+        proposal_review \
+        objective_review_metric \
+        review_rating \
+        review_metric \
+        > ./book/src/08_event-db/db-diagrams/event-db-objective-proposal.dot
 '''
 
 [tasks.build-db-docs-vote-plan-diagram]
@@ -275,7 +278,7 @@ dbviz -d CatalystEventDocs \
     -i  snapshot \
         voter \
         contribution \
-        vote \
+        ballot \
         voteplan \
         > ./book/src/08_event-db/db-diagrams/event-db-snapshot-vote.dot
 '''
@@ -308,7 +311,7 @@ dependencies = [
     "build-db-docs-vitss-diagram",
     "build-db-docs-config-diagram",
     "build-db-docs-event-diagram",
-    "build-db-docs-challenge-proposal-diagram",
+    "build-db-docs-objective-proposal-diagram",
     "build-db-docs-vote-plan-diagram",
     "build-db-docs-snapshot-diagram",
     "build-db-docs-automation-diagram",

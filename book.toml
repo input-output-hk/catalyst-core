@@ -26,7 +26,7 @@ before = [ # Make sure regex pre-processing happens before any other pre-process
 [preprocessor.template]
 
 [preprocessor.kroki-preprocessor]
-endpoint = "http://kroki:7123"
+endpoint = "http://kroki:8000"
 
 [preprocessor.admonish]
 command = "mdbook-admonish"

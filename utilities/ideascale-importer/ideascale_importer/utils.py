@@ -70,7 +70,7 @@ async def run_cmd(name: str, cmd: str):
         if p.returncode is not None and p.returncode != 0:
             raise RunCmdFailed(cmd_name=name, exit_code=p.returncode, stdout=stdout, stderr=stderr)
         else:
-            logger.info("Successfully ran command", output=stdout.decode())
+            logger.info("Successfully ran command")
 
 
 @dataclass

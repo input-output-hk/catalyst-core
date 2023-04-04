@@ -13,6 +13,10 @@ def import_snapshot(
     event_id: int = typer.Option(..., help="Database event id to link all snapshot data to"),
     database_url: str = typer.Option(..., help="URL of the Postgres database in which to import the data to"),
     output_dir: str = typer.Option(..., help="Output directory for generated files"),
+    network_id: str = typer.Option(
+        ...,
+        help="Network id to pass as parameter to snapshot_tool",
+    ),
     raw_snapshot_file: str = typer.Option(
         None,
         help=(
@@ -47,6 +51,7 @@ def import_snapshot(
                             database_url=database_url,
                             event_id=event_id,
                             output_dir=output_dir,
+                            network_id=network_id,
                             raw_snapshot_file=raw_snapshot_file,
                             dreps_file=dreps_file)
         await importer.import_all()

@@ -59,6 +59,7 @@ async def upsert_many(
     conn: asyncpg.Connection,
     models: List[M],
     conflict_cols: List[str],
+    exclude_update_cols: List[str] = [],
     returning: Optional[str] = None
 ) -> List[Any]:
     if len(models) == 0:
@@ -81,7 +82,7 @@ async def upsert_many(
     flat_vals = [v for vs in vals for v in vs]
 
     conflict_cols_str = ",".join(conflict_cols)
-    do_update_set_str = ",".join([f"{col} = EXCLUDED.{col}" for col in cols])
+    do_update_set_str = ",".join([f"{col} = EXCLUDED.{col}" for col in cols if col not in exclude_update_cols])
 
     stmt_template = f"""
         INSERT INTO {models[0].table()} ({cols_str}) VALUES {val_nums_str}
@@ -102,8 +103,9 @@ async def upsert_many(
 async def upsert(conn: asyncpg.Connection,
                  model: Model,
                  conflict_cols: List[str],
+                 exclude_update_cols: List[str] = [],
                  returning: Optional[str] = None):
-    ret = await upsert_many(conn, [model], conflict_cols, returning)
+    ret = await upsert_many(conn, [model], conflict_cols, exclude_update_cols, returning)
     if len(ret) > 0:
         return ret[0]
     return None

@@ -184,8 +184,9 @@ pub fn stake_key_hash(key: &StakeKeyHex, network: NetworkId) -> StakeKeyHash {
 }
 
 ///
-/// Verifies if rewards address is correct
-///
+/// Accepts first header prefix byte of rewards address.
+/// Validates first nibble is within the address range: 0x0? - 0x7? + 0xE? , 0xF?
+/// Validates second nibble matches network id: 0/1
 #[must_use]
 pub fn is_valid_rewards_address(rewards_address_prefix: &u8, network: NetworkId) -> bool {
     let prefix_hex = format!("{:x}", rewards_address_prefix);

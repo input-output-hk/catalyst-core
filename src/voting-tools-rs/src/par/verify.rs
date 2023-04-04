@@ -193,7 +193,7 @@ pub fn is_valid_rewards_address(rewards_address_prefix: &u8, network: NetworkId)
     }
     // First nibble represents rewards address
     let rewards_address = prefix_hex.chars().nth(0).unwrap();
-    // second nibble represent network id
+    // second nibble represents network id
     let network_id = prefix_hex.chars().nth(1).unwrap();
 
     // Valid addrs: 0x0?, 0x1?, 0x2?, 0x3?, 0x4?, 0x5?, 0x6?, 0x7?, 0xE?, 0xF?.

@@ -169,7 +169,7 @@ CREATE TABLE objective_review_metric (
   UNIQUE(objective, metric, review_group),
 
   FOREIGN KEY (objective) REFERENCES objective(row_id) ON DELETE CASCADE,
-  FOREIGN KEY (metric) REFERENCES review_metric(row_id) ON DELETE CASCADE
+  FOREIGN KEY (metric) REFERENCES objective_review_metric(row_id) ON DELETE CASCADE
 );
 
 

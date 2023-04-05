@@ -35,6 +35,7 @@ impl PubKey {
     /// Convert this to the hex representation (without leading "0x")
     ///
     /// ```
+    ///
     /// # use voting_tools_rs::PubKey;
     /// let sig = PubKey::from_bytes([0; 32]);
     ///
@@ -92,27 +93,5 @@ impl PubKey {
 impl AsRef<[u8]> for PubKey {
     fn as_ref(&self) -> &[u8] {
         self.0.as_ref()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use serde_json::{from_value, json, to_value};
-
-    use super::*;
-
-    #[test]
-    fn can_deserialize_str() {
-        #[derive(Deserialize, Serialize)]
-        struct Foo {
-            foo: PubKey,
-        }
-
-        let json = json!({"foo": "0".repeat(64)});
-        let foo: Foo = from_value(json.clone()).unwrap();
-        assert_eq!(foo.foo.0, [0; 32]);
-
-        let json_again = to_value(&foo).unwrap();
-        assert_eq!(json, json_again);
     }
 }

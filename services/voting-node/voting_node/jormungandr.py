@@ -12,9 +12,11 @@ class Jormungandr:
     """Wrapper type for the jormungandr command-line."""
 
     def __init__(self, jorm_exec: str) -> None:
+        """Initialize by setting the path string to the jormungandr executable."""
         self.jorm_exec = jorm_exec
 
     async def start_leader(self, secret: Path, config: Path, genesis_block: Path):
+        """Start a leader node."""
         try:
             proc = await asyncio.create_subprocess_exec(
                 self.jorm_exec,  # "--help",

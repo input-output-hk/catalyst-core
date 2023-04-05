@@ -5,12 +5,14 @@ as it is the only one responsible for initializing block0 for a voting event.
 """
 from typing import Final, NoReturn
 
+
 from . import utils
 from .db import EventDb
 from .jcli import JCli
 from .jormungandr import Jormungandr
 from .logs import getLogger
 from .models import (
+    BftSigningKey,
     Block0,
     GenesisYaml,
     HostInfo,
@@ -18,6 +20,7 @@ from .models import (
     NodeSecretYaml,
     NodeTopologyKey,
     ServiceSettings,
+    YamlType,
 )
 from .node import (
     BaseNode,
@@ -267,13 +270,23 @@ class NodeTaskSchedule(ScheduleRunner):
         # get the node secret from HostInfo, if it's not found, reset
         match self.node.host_info:
             case HostInfo(seckey=sk):
+                # the path to the node secret in storage
                 node_secret_file = self.node.storage.joinpath("node_secret.yaml")
-                node_secret = {"bft": {"signing_key": sk}}
-                # save in schedule
-                self.node.secret = NodeSecretYaml(node_secret, node_secret_file)
-                # write key to file
-                self.node.secret.save()
-                logger.debug(f"{self.node.secret.path} saved")
+                if node_secret_file.exists():
+                    # read the node secret file
+                    node_secret_yaml = await NodeSecretYaml.read_file(node_secret_file)
+                    # save in node
+                    self.node.secret = node_secret_yaml
+                    logger.debug(f"{node_secret_file} found and loaded")
+                else:
+                    logger.debug(f"{node_secret_file} does not exist")
+                    # create and save the node_secret.yaml file from the host info
+                    node_secret = BftSigningKey(sk)
+                    # save in node
+                    self.node.secret = NodeSecretYaml(node_secret, node_secret_file)
+                    # write key to file
+                    await self.node.secret.save()
+                    logger.debug(f"{self.node.secret.path} saved")
             case _:
                 self.reset_schedule("no node host info was found")
 
@@ -284,9 +297,9 @@ class NodeTaskSchedule(ScheduleRunner):
                 # get private key for topology
                 topokey_file = self.node.storage.joinpath("node_topology_key")
                 # save in schedule
-                self.node.topology_key = NodeTopologyKey(netkey, topokey_file)
+                self.node.topology_key = NodeTopologyKey(yaml_type=YamlType(content=netkey), path=topokey_file)
                 # write key to file
-                self.node.topology_key.save()
+                await self.node.topology_key.save()
             case _:
                 self.reset_schedule("host info was not found for this node")
 

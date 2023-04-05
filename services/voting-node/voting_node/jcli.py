@@ -11,7 +11,7 @@ class JCli:
         self.jcli_exec = jcli_exec
 
     async def key_generate(self, secret_type: str = "ed25519") -> str:
-        """Returns a private (secret) key from the given secret_type.
+        """Return a private (secret) key from the given secret_type.
 
         Possible values: "ed25519", "ed25519-bip32", "ed25519-extended",
         "sum-ed25519-12", "ristretto-group2-hash-dh".
@@ -39,7 +39,7 @@ class JCli:
         return key
 
     async def key_to_public(self, seckey: str) -> str:
-        """Returns a public key the given secret key string."""
+        """Return a public key the given secret key string."""
         # run jcli to generate the secret key
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,
@@ -58,7 +58,7 @@ class JCli:
         return key
 
     async def key_to_bytes(self, key: str) -> str:
-        """Returns the hex-encoded bytes of a given key string."""
+        """Return the hex-encoded bytes of a given key string."""
         # run jcli to generate the secret key
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,

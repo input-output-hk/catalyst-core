@@ -3,7 +3,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 
 import yaml
 from aiofile import async_open
@@ -17,19 +17,31 @@ logger = getLogger()
 ### Base types
 @dataclass
 class YamlType:
-    content: dict
+    """A convenience type for YAML objects."""
+
+    content: dict | str
 
     def as_yaml(self) -> str:
-        return yaml.safe_dump(self.content)
+        """Return the content as YAML."""
+        match self.content:
+            case str(_):
+                return self.content
+            case dict(_):
+                return yaml.safe_dump(self.content)
 
 
 @dataclass
 class YamlFile:
+    """A convenience type for YAML objects that are saved as files."""
+
     yaml_type: YamlType
     path: Path
 
     async def save(self):
-        """YAML files are written asynchronously due to their possible size."""
+        """Save YAML content to the file path.
+
+        YAML files are written asynchronously due to their possible size.
+        """
         yaml_str: str = self.yaml_type.as_yaml()
         afp = await async_open(self.path, "w")
         await afp.write(yaml_str)
@@ -67,7 +79,6 @@ class NodeConfig(YamlType):
 class NodeConfigYaml(YamlFile):
     """Represents the contents and path to 'node_secret.yaml'."""
 
-    path: Path
     yaml_type: NodeConfig
 
 
@@ -86,26 +97,43 @@ class HostInfo:
 
 
 @dataclass
-class NodeSecretYaml:
-    """Represents the contents and path to 'node_secret.yaml'."""
+class BftSigningKey(YamlType):
+    """BFT Signing Key is the node secret key."""
 
-    content: dict
-    path: Path
+    content: str
 
-    def save(self):
-        yaml_str: str = yaml.safe_dump(self.content)
-        self.path.open("w").write(yaml_str)
+    def to_node_secret_dict(self) -> dict:
+        """Return the signing key as the node secret dictionary."""
+        return {"bft": {"signing_key": self.content}}
+
+    def as_yaml(self) -> str:
+        """Return the content as YAML."""
+        return yaml.safe_dump(self.to_node_secret_dict())
 
 
 @dataclass
-class NodeTopologyKey:
-    """Represents the contents and path to 'node_topology_key' file."""
+class NodeSecretYaml(YamlFile):
+    """Represents the contents and path to 'node_secret.yaml'."""
 
-    key: str
-    path: Path
+    yaml_type: BftSigningKey
 
-    def save(self):
-        self.path.open("w").write(self.key)
+    @classmethod
+    async def read_file(cls, file: Path) -> Self:
+        """Read and return the BFT signing key from the file path."""
+        afp = await async_open(file, "r")
+        yaml_str = await afp.read()
+        await afp.close()
+        yaml_dict = yaml.safe_load(yaml_str)
+        match yaml_dict:
+            case { "bft": {"signing_key": seckey}}:
+                return cls(yaml_type=BftSigningKey(content=seckey), path=file)
+            case _:
+                raise Exception(f"invalid node secret in {file}")
+
+
+@dataclass
+class NodeTopologyKey(YamlFile):
+    """Represents the contents and path to node_topology_key file."""
 
 
 @dataclass
@@ -117,11 +145,6 @@ class LeaderHostInfo:
 
 
 @dataclass
-class Committee:
-    ...
-
-
-@dataclass
 class Block0:
     """Represents the path to 'block0.bin' and its hash."""
 
@@ -129,6 +152,7 @@ class Block0:
     hash: str
 
     async def save(self, path: Path):
+        """Save the block0 binary file to the specified path."""
         afp = await async_open(path, "wb")
         await afp.write(self.bin)
         await afp.close()
@@ -194,7 +218,8 @@ class Event:
     extra: Mapping[str, Any] | None
 
     def get_start_time(self) -> datetime:
-        """Gets the timestamp for the event start time.
+        """Get the timestamp for the event start time.
+
         This method raises exception if the timestamp is None.
         """
         if self.start_time is None:
@@ -202,8 +227,8 @@ class Event:
         return self.start_time
 
     def has_started(self) -> bool:
-        """Returns True when current time is equal or greater
-        to the event start time.
+        """Return True when current time is equal or greater to the event start time.
+
         This method raises exception if the timestamp is None.
         """
         start_time = self.get_start_time()
@@ -211,7 +236,8 @@ class Event:
         return now >= start_time
 
     def get_snapshot_start(self) -> datetime:
-        """Gets the timestamp for when the event snapshot becomes stable.
+        """Get the timestamp for when the event snapshot becomes stable.
+
         This method raises exception if the timestamp is None.
         """
         if self.snapshot_start is None:
@@ -219,7 +245,8 @@ class Event:
         return self.snapshot_start
 
     def get_voting_start(self) -> datetime:
-        """Gets the timestamp for when the event voting starts.
+        """Get the timestamp for when the event voting starts.
+
         This method raises exception if the timestamp is None.
         """
         if self.voting_start is None:
@@ -227,7 +254,8 @@ class Event:
         return self.voting_start
 
     def get_voting_end(self) -> datetime:
-        """Gets the timestamp for when the event voting ends.
+        """Get the timestamp for when the event voting ends.
+
         This method raises exception if the timestamp is None.
         """
         if self.voting_end is None:
@@ -235,8 +263,8 @@ class Event:
         return self.voting_end
 
     def has_voting_started(self) -> bool:
-        """Returns True when current time is equal or greater
-        to the voting start time.
+        """Return True when current time is equal or greater to the voting start time.
+
         This method raises exception if the timestamp is None.
         """
         voting_start = self.get_voting_start()
@@ -244,8 +272,8 @@ class Event:
         return now >= voting_start
 
     def has_voting_ended(self) -> bool:
-        """Returns True when current time is equal or greater
-        to the voting end time.
+        """Return True when current time is equal or greater to the voting end time.
+
         This method raises exception if the timestamp is None.
         """
         voting_end = self.get_voting_end()
@@ -253,7 +281,8 @@ class Event:
         return now >= voting_end
 
     def get_block0(self) -> Block0:
-        """Gets the block0 binary for the event.
+        """Get the block0 binary for the event.
+
         This method raises exception if the block0 is None.
         """
         if self.block0 is None or self.block0_hash is None:
@@ -289,6 +318,8 @@ class Proposal:
 
 @dataclass
 class Snapshot:
+    """The snapshot row for the current event."""
+
     row_id: int
     event: int
     as_at: datetime
@@ -301,6 +332,8 @@ class Snapshot:
 
 @dataclass
 class FundsForToken:
+    """Token distribution for initial fragments."""
+
     address: str
     value: int
     token_id: str
@@ -308,6 +341,8 @@ class FundsForToken:
 
 @dataclass
 class VotingGroup:
+    """A voting group for this event."""
+
     row_id: str
     # The ID of this group
     group_id: str
@@ -319,6 +354,8 @@ class VotingGroup:
 
 @dataclass
 class Voter:
+    """A registered voter for this event."""
+
     row_id: str
     # Either the voting key
     voting_key: str
@@ -332,6 +369,8 @@ class Voter:
 
 @dataclass
 class VotePlan:
+    """A vote plan for this event."""
+
     row_id: str
     # The event (row_id) this plan belongs to
     event_id: int
@@ -349,5 +388,7 @@ class VotePlan:
 
 @dataclass
 class VotePlanCertificate:
+    """A vote plan certificate for this event."""
+
     vote_plan: VotePlan
     certificate: str

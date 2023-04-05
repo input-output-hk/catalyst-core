@@ -30,20 +30,21 @@ LEADERSHIP_REGEX: Final = r"^(leader|follower)([0-9]+)$"
 
 
 def get_hostname() -> str:
-    """Gets the voting node hostname."""
+    """Get the voting node hostname."""
     return socket.gethostname()
 
 
 def get_hostname_addr(hostname: str | None = None) -> str:
-    """Gets the voting node hostname."""
+    """Get the voting node hostname."""
     if hostname is None:
         hostname = get_hostname()
     return socket.gethostbyname(hostname)
 
 
 async def get_network_secret(secret_file: Path, jcli_path: str) -> str:
-    """Looks for the secret_file and returns the secret. If ther file
-    doesn't exist, a new secret is generated and written to the file.
+    """Look for the secret_file and returns the secret.
+
+    If the file doesn't exist, a new secret is generated and written to the file.
     """
     # check for the file
     if secret_file.exists():
@@ -94,7 +95,7 @@ def leader0_node_config(
     storage: Path,
     topology_key: Path,
 ) -> NodeConfig:
-    """Configures a leader0 node from template."""
+    """Configure a leader0 node from template."""
     node_config_dict = yaml.safe_load(NODE_CONFIG_LEADER0)
     node_config_dict["storage"] = f"{storage.absolute()}"
     node_config_dict["rest"]["listen"] = listen_rest
@@ -119,7 +120,7 @@ def leader_node_config(
     storage: Path,
     topology_key: Path,
 ) -> NodeConfig:
-    """Configures a leader node from template."""
+    """Configure a leader node from template."""
     node_config_dict = yaml.safe_load(NODE_CONFIG_LEADER)
 
     node_config_dict["storage"] = f"{storage.absolute()}"
@@ -145,7 +146,7 @@ def follower_node_config(
     storage: Path,
     topology_key: Path,
 ) -> NodeConfig:
-    """Configures a follower node from template."""
+    """Configure a follower node from template."""
     node_config_dict = yaml.safe_load(NODE_CONFIG_FOLLOWER)
 
     node_config_dict["storage"] = f"{storage.absolute()}"
@@ -177,7 +178,7 @@ def make_node_config(
     storage: Path,
     topology_key: Path,
 ) -> NodeConfig:
-    """Configures a node from template, depending on its leadership and number."""
+    """Configure a node from template, depending on its leadership and number."""
     match leadership:
         case ("leader", "0"):
             return leader0_node_config(

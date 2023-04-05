@@ -19,23 +19,23 @@ class EventDb:
     db_url: str
 
     def __init__(self, db_url: str) -> None:
-        """Sets the EventDB url."""
+        """Set the EventDB url."""
         self.db_url = db_url
 
     async def connect(self):
-        """Creates a connection to the DB."""
+        """Create a connection to the DB."""
         conn = await asyncpg.connect(self.db_url)
         if conn is None:
             raise Exception("failed to connect to the database")
         self.conn = conn
 
     async def close(self):
-        """Closes a connection to the DB."""
+        """Close a connection to the DB."""
         if self.conn is not None:
             await self.conn.close()
 
     async def fetch_current_event(self) -> Event:
-        """Looks in EventDB for the event that will start voting."""
+        """Look in EventDB for the event that will start voting."""
         # first, check if there is an event that has not finished
         now = datetime.datetime.utcnow()
         filter_by = "(voting_end > $1 or voting_end = $2) and voting_start < $1"
@@ -55,7 +55,7 @@ class EventDb:
         return Event(**dict(result))
 
     async def fetch_leader_host_info(self, event_row_id: int) -> HostInfo:
-        """Returns HostInfo for leaders, sorted by hostname."""
+        """Return HostInfo for leaders, sorted by hostname."""
         filter_by = "hostname = $1 AND event = $2"
         query = f"SELECT * FROM voting_node WHERE {filter_by}"
         result = await self.conn.fetchrow(query, get_hostname(), event_row_id)
@@ -65,7 +65,7 @@ class EventDb:
         return host_info
 
     async def insert_leader_host_info(self, host_info: HostInfo):
-        # insert the hostname row into the voting_node table
+        """Insert the hostname row into the voting_node table."""
         fields = "hostname, event, seckey, pubkey, netkey"
         values = "$1, $2, $3, $4, $5"
         query = f"INSERT INTO voting_node({fields}) VALUES({values}) RETURNING *"
@@ -83,10 +83,10 @@ class EventDb:
         logger.debug(f"{h.hostname} info added: {result}")
 
     async def fetch_sorted_leaders_host_info(self) -> list[LeaderHostInfo]:
-        """Fetch host information for leader nodes.
-        Returns a list of leader host information.
-        Raises exceptions if the DB fails to return a list of records, or
-        if the list is empty.
+        """Return a list of leader host information.
+
+        Fetch host information for leader nodes.
+        Raises exceptions if the DB fails to return a list of records, or if the list is empty.
         """
         where = f"WHERE hostname ~ '{LEADER_REGEX}'"
         order_by = "ORDER BY hostname ASC"
@@ -108,6 +108,7 @@ class EventDb:
                 return list(map(extract_leader_info, leaders))
 
     async def fetch_proposals(self) -> list[Proposal]:
+        """Return a list of proposals ."""
         query = "SELECT * FROM proposal ORDER BY id ASC"
         result = await self.conn.fetch(query)
         if result is None:
@@ -123,6 +124,7 @@ class EventDb:
                 return [Proposal(**dict(r)) for r in proposals]
 
     async def check_if_snapshot_is_final(self, event_id: int) -> bool:
+        """Query if the snapshot is finalized."""
         query = "SELECT final FROM snapshot WHERE event = $1"
         result = await self.conn.fetchrow(query, event_id)
         match result:
@@ -134,7 +136,7 @@ class EventDb:
                 return final
 
     async def fetch_snapshot(self, event_id: int) -> Snapshot:
-        # fetch the voting groups
+        """Fetch the snapshot row for the event_id."""
         # fetch the voters
         columns = "(row_id, event, as_at, last_updated, dbsync_snapshot_data"
         columns += ", drep_data, catalyst_snapshot_data, final)"
@@ -152,7 +154,7 @@ class EventDb:
                 return snapshot
 
     async def fetch_voteplans(self, event_id: int) -> list[VotePlan]:
-        # fetch the voteplans
+        """Fetch the voteplans for the event_id."""
         query = "SELECT * FROM voteplan WHERE event_id = $1 ORDER BY id ASC"
         result = await self.conn.fetch(query, event_id)
         if result is None:
@@ -168,7 +170,7 @@ class EventDb:
                 return [VotePlan(**dict(r)) for r in voteplans]
 
     async def insert_block0_info(self, event_row_id: int, block0_bytes: bytes, block0_hash: str):
-        # insert the hostname row into the voting_node table
+        """Update the event with the given block0 bytes and hash."""
         columns = "block0 = $1, block0_hash = $2"
         condition = "row_id = $3"
         returning = "name"

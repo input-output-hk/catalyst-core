@@ -183,8 +183,9 @@ pub fn stake_key_hash(key: &StakeKeyHex, network: NetworkId) -> StakeKeyHash {
     }
 }
 
-///
-/// Accepts first header prefix byte of rewards address.
+/// Reward addresses start with a single header byte identifying their type and the network,
+/// followed by 28 bytes of payload identifying either a stake key hash or a script hash.
+/// Function accepts this first header prefix byte.
 /// Validates first nibble is within the address range: 0x0? - 0x7? + 0xE? , 0xF?
 /// Validates second nibble matches network id: 0/1
 #[must_use]
@@ -194,14 +195,14 @@ pub fn is_valid_rewards_address(rewards_address_prefix: &u8, network: NetworkId)
     if prefix_hex.len() != 2 {
         return false;
     }
-    // First nibble represents rewards address
-    let rewards_address = prefix_hex.chars().nth(0).unwrap();
-    // second nibble represents network id
+    // First nibble identifies type
+    let address_type = prefix_hex.chars().nth(0).unwrap();
+    // second nibble identifies network id
     let network_id = prefix_hex.chars().nth(1).unwrap();
 
     // Valid addrs: 0x0?, 0x1?, 0x2?, 0x3?, 0x4?, 0x5?, 0x6?, 0x7?, 0xE?, 0xF?.
     let valid_addrs = 0..7;
-    let addr = rewards_address.to_digit(16).unwrap();
+    let addr = address_type.to_digit(16).unwrap();
     if !valid_addrs.contains(&addr) && addr != 14 && addr != 15 {
         error!("invalid rewards addr prefix {:?} {:?}", prefix_hex, addr);
         return false;

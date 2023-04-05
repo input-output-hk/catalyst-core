@@ -142,6 +142,9 @@ dependencies = [
 ] # We test the rust doc tests first.
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+# Remove when no longer needed
+rustup component add rustfmt --toolchain nightly-x86_64-unknown-linux-gnu
+# Remove above when no longer needed. Hack to get docs to build.
 RUSTDOCFLAGS="$RUSTDOCFLAGS --enable-index-page -Zunstable-options" cargo +nightly doc \
   --workspace \
   --no-deps \

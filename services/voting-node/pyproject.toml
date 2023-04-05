@@ -40,7 +40,8 @@ line-length = 132
 target-version = ['py311']
 
 [tool.ruff]
-extend-select = ["D1"]
+# include pydoc lints
+extend-select = ["D"]
 line-length = 132
 
 [tool.ruff.per-file-ignores]

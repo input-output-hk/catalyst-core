@@ -728,6 +728,13 @@
 <span id="728">728</span>
 <span id="729">729</span>
 <span id="730">730</span>
+<span id="731">731</span>
+<span id="732">732</span>
+<span id="733">733</span>
+<span id="734">734</span>
+<span id="735">735</span>
+<span id="736">736</span>
+<span id="737">737</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{collections::BTreeMap, error::Error, ffi::OsString, io::Cursor};
 
 <span class="kw">use crate</span>::{
@@ -958,10 +965,10 @@
         cddl_config: <span class="kw-2">&amp;</span>CddlConfig,
         network_id: NetworkId,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;SignedRegistration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
-        <span class="comment">// validate cddl: 61824
+        <span class="comment">// validate cddl: 61284
         </span>validate_reg_cddl(<span class="kw-2">&amp;</span><span class="self">self</span>.bin_reg, cddl_config)<span class="question-mark">?</span>;
 
-        <span class="comment">// validate cddl: 61825
+        <span class="comment">// validate cddl: 61285
         </span>validate_sig_cddl(<span class="kw-2">&amp;</span><span class="self">self</span>.bin_sig, cddl_config)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>registration = <span class="self">self</span>.raw_reg_conversion(network_id)<span class="question-mark">?</span>;
@@ -982,7 +989,7 @@
         <span class="kw">let </span>decoded: ciborium::value::Value =
             ciborium::de::from_reader(Cursor::new(<span class="kw-2">&amp;</span><span class="self">self</span>.bin_reg))<span class="question-mark">?</span>;
 
-        <span class="comment">// CBOR representation of a map containing a single entry with key 61284
+        <span class="comment">// CBOR representation of a map containing a single entry with key 61284. See CIP-36 for context.
         </span><span class="kw">let </span>spec_61284 = <span class="kw">match </span>inspect_cip36_reg(<span class="kw-2">&amp;</span>decoded) {
             <span class="prelude-val">Ok</span>(value) =&gt; value,
             <span class="prelude-val">Err</span>(value) =&gt; <span class="kw">return </span>value,
@@ -1058,7 +1065,14 @@
     }
 }
 
-<span class="kw">fn </span>inspect_witness(
+<span class="doccomment">///
+/// To produce the witness field in the case of a staking public key,
+/// the CBOR representation of a map containing a single entry with key 61284
+/// and the registration metadata map is signed with the staking key as follows:
+/// first, the blake2b-256 hash of the data is obtained. This hash is then signed using the Ed25519 signature algorithm.
+/// The witness metadata entry is added to the transaction under key 61285.
+/// This function extracts and verifies the witness signature provided in the registration.
+</span><span class="kw">fn </span>inspect_witness(
     metamap: <span class="kw-2">&amp;</span>[(Value, Value)],
 ) -&gt; <span class="prelude-ty">Result</span>&lt;[u8; <span class="number">64</span>], <span class="prelude-ty">Result</span>&lt;Signature, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;&gt; {
     <span class="kw">let </span>witness = <span class="kw">match </span><span class="kw-2">&amp;</span>metamap[WITNESS] {
@@ -1092,7 +1106,7 @@
         <span class="kw">_ </span>=&gt; {
             <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
                 RegistrationError::RawBinCborSignatureFailure {
-                    err: <span class="string">&quot;Not congruent with CIP36&quot;</span>.to_string(),
+                    err: <span class="string">&quot;Not congruent with CIP-36&quot;</span>.to_string(),
                 },
             )))
         }
@@ -1106,7 +1120,7 @@
         <span class="kw">_ </span>=&gt; {
             <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
                 RegistrationError::RawBinCborSignatureFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP36 {:?}&quot;</span>, decoded),
+                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP-36 {:?}&quot;</span>, decoded),
                 },
             )))
         }
@@ -1289,7 +1303,7 @@
         <span class="kw">_ </span>=&gt; {
             <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
                 RegistrationError::RawBinCborRegistrationFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP36 {:?}&quot;</span>, decoded),
+                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP-36 {:?}&quot;</span>, decoded),
                 },
             )))
         }

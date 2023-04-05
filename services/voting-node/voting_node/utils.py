@@ -7,10 +7,10 @@ from typing import Final, Literal
 
 import yaml
 
-from .committee import Committee, CommitteeMember, CommunicationKeys, MemberKeys, WalletKeys
+from .committee import CommitteeMember, CommunicationKeys, MemberKeys, WalletKeys
 from .jcli import JCli
 from .logs import getLogger
-from .models import Event, Genesis, LeaderHostInfo, NodeConfig
+from .models import Committee, Event, Genesis, LeaderHostInfo, NodeConfig
 from .templates import (
     GENESIS_YAML,
     NODE_CONFIG_FOLLOWER,
@@ -279,7 +279,7 @@ async def create_committee(jcli: JCli, committee_id: str, size: int, threshold: 
         CommitteeMember(index=idx, communication_keys=communication_keys[idx], member_keys=member_keys[idx]) for idx in range(size)
     ]
     election_key = await jcli.votes_election_key(member_pks)
-    return Committee(size=size, threshold=threshold, committee_id=committee_id, members=members, election_key=election_key)
+    return Committee(size=size, threshold=threshold, crs=crs, committee_id=committee_id, members=members, election_key=election_key)
 
 
 def make_genesis_content(event: Event, peers: list[LeaderHostInfo], committee_ids: list[str]) -> Genesis:

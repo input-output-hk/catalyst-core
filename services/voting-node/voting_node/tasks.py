@@ -3,8 +3,9 @@
 Scheduled tasks are defined for Leader and Follower Nodes, with Leader0 being a special case,
 as it is the only one responsible for initializing block0 for a voting event.
 """
+import os
+import secrets
 from typing import Final, NoReturn
-
 
 from . import utils
 from .db import EventDb
@@ -63,6 +64,7 @@ LEADER0_NODE_SCHEDULE: Final = [
     "set_node_config",
     "wait_for_snapshot",
     "collect_snapshot_data",
+    "setup_tally_committee",
     "setup_block0",
     "publish_block0",
     "wait_for_voting",
@@ -493,6 +495,35 @@ class Leader0Schedule(LeaderSchedule):
         except Exception as e:
             raise Exception(f"failed to fetch proposals from DB: {e}") from e
 
+    async def setup_tally_committee(self):
+        """Fetch or create tally committee data.
+
+        1. Fetch the committee from the node secret storage
+        2. If no committee is found, create it.
+            When creating the committee member keys, a Common Reference String, or CRS, is used.
+            The CRS is expected to be in the COMMITTEE_CRS environment variable, if it is not set,
+            then a random 32-byte hex token is generated and used.
+        """
+        event = self.node.get_event()
+        # TODO: fetch tally committee data from secret storage
+        # create the commitee for this event
+        logger.info("creating committee wallet info")
+        committee_wallet = await utils.create_wallet_keyset(self.jcli())
+        logger.info("creating committee")
+        # TODO: get CRS from envvar
+        crs = os.environ.get("COMMITTEE_CRS")
+        if crs is None:
+            crs = secrets.token_hex(32)
+        committee = await utils.create_committee(
+            self.jcli(),
+            committee_wallet.hex_encoded,
+            event.committee_size,
+            event.committee_threshold,
+            crs,
+        )
+        logger.debug(f"created committee data: {committee.as_yaml()}")
+        self.node.committee = committee
+
     async def setup_block0(self):
         """Check DB event for block0 information.
 
@@ -534,18 +565,9 @@ class Leader0Schedule(LeaderSchedule):
             if event.start_time is None:
                 self.reset_schedule("event has no start time")
 
-            # create the commitee for this event
-            logger.info("creating committee wallet info")
-            committee_wallet = await utils.create_wallet_keyset(self.jcli())
-            logger.info("creating committee")
-            crs = "DUMMYCRS"
-            committee = await utils.create_committee(
-                self.jcli(), committee_wallet.hex_encoded, event.committee_size, event.committee_threshold, crs
-            )
-            logger.debug(f"created committee data: {committee}")
-
             # generate genesis file to make block0
             logger.debug("generating genesis content")
+            committee = self.node.get_committee()
             genesis = utils.make_genesis_content(event, leaders, [committee.committee_id])
             logger.debug("generated genesis content")
             # convert to yaml and save

@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from .logs import getLogger
 from .models import (
     Block0,
+    Committee,
     Event,
     FundsForToken,
     Genesis,
@@ -34,8 +35,6 @@ class BaseNode(BaseModel):
     # Path to the node's storage
     # Path to the node's storage
     storage: Path = Path("node_storage")
-    # Path to the node's storage
-    secret_storage: Path = Path("node_secret")
     # Hostname, private/public keypair, and topology key.
     host_info: HostInfo | None = None
     # Jormungandr `node_config.yaml` data
@@ -157,9 +156,20 @@ class LeaderNode(BaseNode):
 class Leader0Node(LeaderNode):
     """A leader0 node."""
 
+    # Path to the node's storage
+    secret_storage: Path = Path("node_secret")
     genesis: Genesis | None = None
+    committee: Committee | None = None
     initial_fragments: list[FundsForToken | VotePlanCertificate] | None = None
     proposals: list[Proposal] | None = None
+
+    def get_committee(self) -> Committee:
+        """Return the Committee data, raises exception if it is None."""
+        match self.committee:
+            case Committee(_):
+                return self.committee
+            case _:
+                raise Exception("node has no committee")
 
 
 class FollowerNode(BaseNode):

@@ -13,10 +13,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-# formatting
-black = "^23.1.0"
-# linting
-ruff = "^0.0.254"
 # our dependencies
 click = "^8.1.3"
 asyncio = "^3.4.3"
@@ -31,6 +27,12 @@ PyYAML = "^6.0"
 uvicorn = {extras = ["standard"], version = "^0.20.0"}
 aiofile = "^3.8.5"
 pydantic = "^1.10.7"
+
+[tool.poetry.group.dev.dependencies]
+# formatting
+black = "^23.1.0"
+# linting
+ruff = "^0.0.254"
 
 [tool.poetry.scripts]
 voting-node = "voting_node.main:cli"

@@ -125,7 +125,7 @@ class NodeSecretYaml(YamlFile):
         await afp.close()
         yaml_dict = yaml.safe_load(yaml_str)
         match yaml_dict:
-            case { "bft": {"signing_key": seckey}}:
+            case {"bft": {"signing_key": seckey}}:
                 return cls(yaml_type=BftSigningKey(content=seckey), path=file)
             case _:
                 raise Exception(f"invalid node secret in {file}")

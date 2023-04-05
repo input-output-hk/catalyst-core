@@ -251,15 +251,6 @@ async def create_committee_member_keys(
     return MemberKeys(seckey=member_sk, pubkey=member_sk)
 
 
-async def create_committee_member(jcli: JCli, index: int, threshold: int, crs: str) -> CommitteeMember:
-    """Return a CommitteeMember with communication and member keys.
-
-    `size` is equal to the number of committee members. If set to 0, voting and tallying will be public.
-    `threshold` is the minimum number of committee members needed to carry out the tally.
-    """
-    ...
-
-
 async def create_committee(jcli: JCli, committee_id: str, size: int, threshold: int, crs: str) -> Committee:
     """Return a Committee.
 
@@ -268,7 +259,27 @@ async def create_committee(jcli: JCli, committee_id: str, size: int, threshold: 
     `threshold` is the minimum number of committee members needed to carry out the tally.
     `crs` is the common reference string shared by all member keys.
     """
-    ...
+    communication_keys = [await create_communication_keys(jcli) for _ in range(size)]
+
+    def comm_pk(kp: CommunicationKeys) -> str:
+        match kp:
+            case CommunicationKeys(pubkey=pk):
+                return pk
+
+    comm_pks = [comm_pk(comm_keys) for comm_keys in communication_keys]
+    member_keys = [await create_committee_member_keys(jcli, threshold, crs, idx, comm_pks) for idx in range(size)]
+
+    def member_pk(kp: MemberKeys) -> str:
+        match kp:
+            case MemberKeys(pubkey=pk):
+                return pk
+
+    member_pks = [member_pk(mks) for mks in member_keys]
+    members = [
+        CommitteeMember(index=idx, communication_keys=communication_keys[idx], member_keys=member_keys[idx]) for idx in range(size)
+    ]
+    election_key = await jcli.votes_election_key(member_pks)
+    return Committee(size=size, threshold=threshold, committee_id=committee_id, members=members, election_key=election_key)
 
 
 def make_genesis_content(event: Event, peers: list[LeaderHostInfo], committee_ids: list[str]) -> Genesis:

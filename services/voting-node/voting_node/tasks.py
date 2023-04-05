@@ -535,32 +535,18 @@ class Leader0Schedule(LeaderSchedule):
                 self.reset_schedule("event has no start time")
 
             # create the commitee for this event
-            logger.info("creating committee address keyset")
-            _, _, committee_id = await utils.create_wallet_keyset(self.jcli())
-            logger.info("creating committee communication keyset")
-            comm_sk, comm_pk = await utils.create_communication_keys(self.jcli())
-            _, comm1_pk = await utils.create_communication_keys(self.jcli())
-            _, comm2_pk = await utils.create_communication_keys(self.jcli())
-            comm_keysets = []
-            for _idx in range(event.committee_threshold):
-                comm_keyset = await utils.create_communication_keys(self.jcli())
-                comm_keysets.append(comm_keyset)
-            logger.debug(f"comm keysets: {comm_keysets}")
-            comm_pks = [kset[2] for kset in comm_keysets]
-
-            # make committee member keys
-            logger.info("creating committee member keys")
-            _ = await utils.create_committee_member_keys(
-                self.jcli(),
-                comm_pks,
-                "CRS",
-                event.committee_size,
-                event.committee_threshold,
+            logger.info("creating committee wallet info")
+            committee_wallet = await utils.create_wallet_keyset(self.jcli())
+            logger.info("creating committee")
+            crs = "DUMMYCRS"
+            committee = await utils.create_committee(
+                self.jcli(), committee_wallet.hex_encoded, event.committee_size, event.committee_threshold, crs
             )
+            logger.debug(f"created committee data: {committee}")
 
             # generate genesis file to make block0
             logger.debug("generating genesis content")
-            genesis = utils.make_genesis_content(event, leaders, [committee_id])
+            genesis = utils.make_genesis_content(event, leaders, [committee.committee_id])
             logger.debug("generated genesis content")
             # convert to yaml and save
             genesis_path = self.node.storage.joinpath("genesis.yaml")

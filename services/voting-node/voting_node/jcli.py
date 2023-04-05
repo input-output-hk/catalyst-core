@@ -2,6 +2,8 @@
 import asyncio
 from pathlib import Path
 
+from .committee import ElectionKey
+
 
 class JCli:
     """Wrapper type for the jcli command-line."""
@@ -121,6 +123,10 @@ class JCli:
 
     async def votes_committee_member_key_generate(self, comm_pks: list[str], crs: str, index: int, threshold: int) -> str:
         """Run 'jcli vote committee member-key to-public [INPUT]' to return the public communication key."""
+        keys_args = ()
+        for comm_pk in comm_pks:
+            keys_args = (*keys_args, "--keys", comm_pk)
+
         proc_args = (
             "votes",
             "committee",
@@ -132,8 +138,7 @@ class JCli:
             crs,
             "--index",
             f"{index}",
-            "--keys",
-            " ".join(comm_pks),
+            *keys_args,
         )
         proc = await asyncio.create_subprocess_exec(
             self.jcli_exec,
@@ -169,6 +174,25 @@ class JCli:
         # read the output
         memberpk = stdout.decode().rstrip()
         return memberpk
+
+    async def votes_election_key(self, member_pks: list[str]) -> ElectionKey:
+        """Run 'jcli vote election-key --keys [PUBLIC_MEMBER_KEYS]' to return the election key."""
+        keys_args = ()
+        for member_pk in member_pks:
+            keys_args = (*keys_args, "--keys", member_pk)
+        proc_args = ("votes", "election-key", *keys_args)
+        proc = await asyncio.create_subprocess_exec(
+            self.jcli_exec,
+            *proc_args,
+            stdout=asyncio.subprocess.PIPE,
+        )
+        # checks that there is stdout
+        stdout, _ = await proc.communicate()
+        if stdout is None:
+            raise Exception("failed to generate committee member public key")
+        # read the output
+        memberpk = stdout.decode().rstrip()
+        return ElectionKey(pubkey=memberpk)
 
     async def genesis_encode(self, block0_bin: Path, genesis_yaml: Path):
         """Run 'jcli genesis encode' to make block0 from genesis.yaml."""

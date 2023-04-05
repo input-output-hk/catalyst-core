@@ -118,7 +118,6 @@ mod test {
     }
 
     /* TODO: Find out why this fails, if we don't obsolete vitSS soon enough. */
-    #[ignore]
     #[tokio::test]
     async fn multiple_item_search() {
         // build context

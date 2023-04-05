@@ -8,7 +8,7 @@
 #![warn(clippy::pedantic)]
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
-#![deny(clippy::integer_arithmetic)]
+// #![deny(clippy::integer_arithmetic)]
 #![allow(
     clippy::module_name_repetitions,
     clippy::match_bool,

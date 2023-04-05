@@ -1,4 +1,3 @@
-#[allow(clippy::all)]
 use rust_decimal::Decimal;
 
 use dashmap::DashMap;

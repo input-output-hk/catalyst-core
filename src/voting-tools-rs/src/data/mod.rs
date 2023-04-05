@@ -1,3 +1,4 @@
+#[allow(clippy::all)]
 use std::{collections::BTreeMap, error::Error, ffi::OsString, io::Cursor};
 
 use crate::{

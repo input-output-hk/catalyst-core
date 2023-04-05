@@ -63,7 +63,7 @@ fn main() -> Result<()> {
     args.expected_voting_purpose = expected_voting_purpose;
 
     let db_client_registrations = db_conn(db_config.clone())?;
-    let db_client_stakes = db_conn(db_config.clone())?;
+    let db_client_stakes = db_conn(db_config)?;
 
     let (valids, invalids, no_stake) =
         load(dry_run, args, db_client_stakes, db_client_registrations)?;

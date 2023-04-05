@@ -133,7 +133,6 @@ mod tests {
             "234",
             "-o",
             "some/path",
-            "-p",
             "--expected-voting-purpose",
             "0",
             "--network-id",

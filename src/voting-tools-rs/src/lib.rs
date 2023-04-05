@@ -14,7 +14,11 @@
     clippy::match_bool,
     clippy::bool_assert_comparison,
     clippy::derive_partial_eq_without_eq,
-    clippy::missing_panics_doc
+    clippy::missing_panics_doc,
+    clippy::match_on_vec_items,
+    clippy::unnecessary_wraps,
+    clippy::cast_sign_loss,
+    clippy::iter_nth_zero
 )]
 #![cfg_attr(test, allow(clippy::let_underscore_drop))] // useful in tests, often a bug otherwise
 

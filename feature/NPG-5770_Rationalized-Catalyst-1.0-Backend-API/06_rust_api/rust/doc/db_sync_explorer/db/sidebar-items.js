@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["config","connector","model","provider","query","schema","types"]};

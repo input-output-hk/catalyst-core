@@ -2,6 +2,7 @@ import asyncio
 from typing import Optional
 import typer
 
+from ideascale_importer.ideascale.client import Client
 from ideascale_importer.ideascale.importer import Importer
 from ideascale_importer.utils import configure_logger
 
@@ -36,6 +37,10 @@ def import_all(
         "text",
         help="Log format",
     ),
+    ideascale_api_url: str = typer.Option(
+        Client.DEFAULT_API_URL,
+        help="IdeaScale API URL",
+    ),
 ):
     """
     Import all event data from IdeaScale for a given event
@@ -47,7 +52,8 @@ def import_all(
         event_id: int,
         campaign_group_id: int,
         stage_id: int,
-        proposals_scores_csv_path: Optional[str]
+        proposals_scores_csv_path: Optional[str],
+        ideascale_api_url: str,
     ):
         importer = Importer(
             api_token,
@@ -57,10 +63,11 @@ def import_all(
             campaign_group_id,
             stage_id,
             proposals_scores_csv_path,
+            ideascale_api_url,
         )
 
         await importer.connect()
         await importer.import_all()
         await importer.close()
 
-    asyncio.run(inner(event_id, campaign_group_id, stage_id, proposals_scores_csv))
+    asyncio.run(inner(event_id, campaign_group_id, stage_id, proposals_scores_csv, ideascale_api_url))

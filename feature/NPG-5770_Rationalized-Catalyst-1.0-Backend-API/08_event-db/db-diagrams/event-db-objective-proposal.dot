@@ -273,7 +273,7 @@ digraph erd {
             <tr>
                 <td port="objective"  align='text'><font>objective</font><br align='left'/></td>
                 <td   ><font>integer</font></td>
-                <td port="objective_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The Challenge this objective falls<br align='left'/>under.</i><br align="left"/></font></td>
+                <td port="objective_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The Objective this proposal falls under.</i><br align="left"/></font></td>
             </tr>
             
             <tr>

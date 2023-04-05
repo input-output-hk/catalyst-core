@@ -6,8 +6,8 @@ use bigdecimal::BigDecimal;
 use dashmap::DashMap;
 
 mod stake_value;
-mod vote_registrations;
 pub(crate) mod staked_utxo_ada;
+mod vote_registrations;
 
 impl DataProvider for Db {
     fn vote_registrations(

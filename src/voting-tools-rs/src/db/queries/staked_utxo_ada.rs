@@ -49,13 +49,11 @@ pub fn staked_utxo_ada(
 
     info!("executing utxo snap statement");
 
-    let utxo_snap = 
-        "CREATE OR REPLACE TEMPORARY VIEW utxo_snapshot AS (SELECT tx_out_snapshot.* FROM tx_out_snapshot
+    let utxo_snap = "CREATE OR REPLACE TEMPORARY VIEW utxo_snapshot AS (SELECT tx_out_snapshot.* FROM tx_out_snapshot
         LEFT OUTER JOIN tx_in_snapshot ON
         tx_out_snapshot.tx_id = tx_in_snapshot.tx_out_id AND
         tx_out_snapshot.index = tx_in_snapshot.tx_out_index
         WHERE tx_in_snapshot.tx_in_id IS NULL);".to_string();
-    
 
     client.execute(&utxo_snap, &[])?;
 
@@ -76,7 +74,7 @@ pub fn staked_utxo_ada(
 
         let staked_ada = rust_decimal::prelude::ToPrimitive::to_u128(&staked_ada).unwrap();
 
-         *result.entry(stake_hash.clone()).or_insert_with(|| 0) += staked_ada;
+        *result.entry(stake_hash.clone()).or_insert_with(|| 0) += staked_ada;
 
         if processing_record % 1000 == 0 {
             info!("{:?} records processed", processing_record);

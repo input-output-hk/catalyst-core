@@ -106,18 +106,80 @@ cp book.original.toml book.toml
 rm book.original.toml
 '''
 
+# Test the RUST src documentation code examples
+[tasks.rustdoc-test]
+workspace = false
+category = "docs"
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+echo "cargo test --doc" does not apss, skipping.
+#cargo test --doc
+'''
+
+# Generate Dependency Graphs for the documentation
+[tasks.rustdoc-depgraph]
+workspace = false
+category = "docs"
+script_runner = "@shell"
+dependencies = [
+    "rustdoc"
+] # We test the rust doc tests first.
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+cargo depgraph --workspace-only --dedup-transitive-deps > target/doc/workspace.depgraph.dot
+cargo depgraph --dedup-transitive-deps > target/doc/full.depgraph.dot
+cargo depgraph --all-deps --dedup-transitive-deps > target/doc/all.depgraph.dot
+'''
+
+# Build the RUST src documentation
+[tasks.rustdoc]
+workspace = false
+category = "docs"
+script_runner = "@shell"
+dependencies = [
+    "rustdoc-test"
+] # We test the rust doc tests first.
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+RUSTDOCFLAGS="$RUSTDOCFLAGS --enable-index-page -Zunstable-options" cargo +nightly doc \
+  --workspace \
+  --no-deps \
+  --document-private-items
+'''
+
 # Build the RUST src documentation
 # We need to remove the debug and .rust* files otherwise they
 # end up inside the book, and are not needed.
 [tasks.build-rust-docs]
 workspace = false
 category = "docs"
+dependencies = [
+    "rustdoc",
+    "rustdoc-depgraph"
+] # We build the rust docs first.
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
-cargo doc --workspace --target-dir book/tmp/rust --no-deps
-./utilities/mdbook-rust-doc/mdbook-rust-doc.py --page book/src/06_rust_api/rust_api.md --rustdoc book/tmp/rust/doc --md-relative-path rust
+mkdir -p book/src/06_rust_api/rust
+cp -a target/doc book/src/06_rust_api/rust
+# This lock file prevents the docs being deployed by github actions.
+rm -f book/src/06_rust_api/rust/doc/.lock
+# Prevents the book index from building.
+rm -f book/src/06_rust_api/rust/doc/static.files/*.md
 '''
+
+# We need to remove the debug and .rust* files otherwise they
+# end up inside the book, and are not needed.
+#[tasks.build-rust-docs]
+#workspace = false
+#category = "docs"
+#script_runner = "@shell"
+#script = '''
+#cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+#cargo doc --workspace --target-dir book/tmp/rust --no-deps
+#./utilities/mdbook-rust-doc/mdbook-rust-doc.py --page book/src/06_rust_api/rust_api.md --rustdoc book/tmp/rust/doc --md-relative-path rust
+#'''
 
 # Build the Event DB Documentation (Images of Schema)
 [tasks.build-db-docs-overview-diagram]

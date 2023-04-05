@@ -90,7 +90,7 @@ $RECYCLE.BIN/
 # Other
 book/html
 book/tmp
-book/src/06_rust_api/rust_api.md
+book/src/06_rust_api/rust
 book/src/08_event-db/db-diagrams/*.dot
 .stoplight
 

@@ -208,7 +208,7 @@ pub fn is_valid_rewards_address(rewards_address_prefix: &u8, network: NetworkId)
         return false;
     }
 
-    let net_id = network_id.to_digit(10).unwrap();
+    let net_id = network_id.to_digit(16).unwrap();
 
     match network {
         NetworkId::Mainnet => {

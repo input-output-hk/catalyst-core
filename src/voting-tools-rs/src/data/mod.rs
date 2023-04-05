@@ -228,10 +228,10 @@ impl RawRegistration {
         cddl_config: &CddlConfig,
         network_id: NetworkId,
     ) -> Result<SignedRegistration, Box<dyn Error>> {
-        // validate cddl: 61824
+        // validate cddl: 61284
         validate_reg_cddl(&self.bin_reg, cddl_config)?;
 
-        // validate cddl: 61825
+        // validate cddl: 61285
         validate_sig_cddl(&self.bin_sig, cddl_config)?;
 
         let registration = self.raw_reg_conversion(network_id)?;
@@ -252,7 +252,7 @@ impl RawRegistration {
         let decoded: ciborium::value::Value =
             ciborium::de::from_reader(Cursor::new(&self.bin_reg))?;
 
-        // CBOR representation of a map containing a single entry with key 61284
+        // CBOR representation of a map containing a single entry with key 61284. See CIP-36 for context.
         let spec_61284 = match inspect_cip36_reg(&decoded) {
             Ok(value) => value,
             Err(value) => return value,
@@ -328,6 +328,13 @@ impl RawRegistration {
     }
 }
 
+///
+/// To produce the witness field in the case of a staking public key,
+/// the CBOR representation of a map containing a single entry with key 61284
+/// and the registration metadata map is signed with the staking key as follows:
+/// first, the blake2b-256 hash of the data is obtained. This hash is then signed using the Ed25519 signature algorithm.
+/// The witness metadata entry is added to the transaction under key 61285.
+/// This function extracts and verifies the witness signature provided in the registration.
 fn inspect_witness(
     metamap: &[(Value, Value)],
 ) -> Result<[u8; 64], Result<Signature, Box<dyn Error>>> {
@@ -362,7 +369,7 @@ fn inspect_metamap_sig(
         _ => {
             return Err(Err(Box::new(
                 RegistrationError::RawBinCborSignatureFailure {
-                    err: "Not congruent with CIP36".to_string(),
+                    err: "Not congruent with CIP-36".to_string(),
                 },
             )))
         }
@@ -376,7 +383,7 @@ fn inspect_cip36_sig(decoded: Value) -> Result<Vec<Value>, Result<Signature, Box
         _ => {
             return Err(Err(Box::new(
                 RegistrationError::RawBinCborSignatureFailure {
-                    err: format!("Not congruent with CIP36 {:?}", decoded),
+                    err: format!("Not congruent with CIP-36 {:?}", decoded),
                 },
             )))
         }
@@ -559,7 +566,7 @@ fn inspect_cip36_reg(decoded: &Value) -> Result<Vec<Value>, Result<Registration,
         _ => {
             return Err(Err(Box::new(
                 RegistrationError::RawBinCborRegistrationFailure {
-                    err: format!("Not congruent with CIP36 {:?}", decoded),
+                    err: format!("Not congruent with CIP-36 {:?}", decoded),
                 },
             )))
         }

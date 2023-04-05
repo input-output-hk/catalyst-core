@@ -65,7 +65,8 @@ CREATE TABLE committee_member (
 
 COMMENT ON TABLE committee_member IS 'Table for storing data about the tally committee members.';
 COMMENT ON COLUMN committee_member.row_id IS 'Unique ID for this committee member for this event.';
-COMMENT ON COLUMN committee_member.committee IS 'The committe this member belongs to.';
+COMMENT ON COLUMN committee_member.member_index IS 'the zero-based index of the member, ranging from 0 <= index < committee_size.';
+COMMENT ON COLUMN committee_member.committee IS 'The committee this member belongs to.';
 COMMENT ON COLUMN committee_member.comm_pk  IS 'Committee member communication public key.';
 COMMENT ON COLUMN committee_member.comm_sk  IS 'Encrypted committee member communication secret key.';
 COMMENT ON COLUMN committee_member.member_pk  IS 'Committee member public key';

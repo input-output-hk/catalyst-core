@@ -50,10 +50,7 @@ impl<'a> SnapshotOutputAssert<'a> {
     ///
     /// Panics on assertion failed
     pub fn voting_key(&self, voting_key: &VotingKey) {
-        assert_eq!(
-            voting_key, &self.output.voting_key,
-            "delegation target"
-        );
+        assert_eq!(voting_key, &self.output.voting_key, "delegation target");
     }
 
     /// Asserts reward address field from [`SnapshotEntry`]

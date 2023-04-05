@@ -162,7 +162,7 @@ class NodeTaskSchedule(ScheduleRunner):
     tasks: list[str] = []
 
     def __init__(self, settings: ServiceSettings) -> None:
-        """Set the schedule settings, bootstraps storage, and initializes the node."""
+        """Set the schedule settings, bootstraps node storage, and initializes the node."""
         self.settings = settings
         self.db = EventDb(settings.db_url)
         self.node.set_file_storage(settings.storage)
@@ -449,6 +449,11 @@ class Leader0Schedule(LeaderSchedule):
     # Leader0 Node tasks
     tasks: list[str] = LEADER0_NODE_SCHEDULE
 
+    def __init__(self, settings: ServiceSettings) -> None:
+        super().__init__(settings)
+        # TODO: make this configurable to file or cloud storage
+        self.node.set_secret_file_storage("node_secret")
+
     async def wait_for_snapshot(self):
         """Wait for the event snapshot_start time."""
         # get the snapshot start timestamp
@@ -506,23 +511,31 @@ class Leader0Schedule(LeaderSchedule):
         """
         event = self.node.get_event()
         # TODO: fetch tally committee data from secret storage
-        # create the commitee for this event
-        logger.info("creating committee wallet info")
-        committee_wallet = await utils.create_wallet_keyset(self.jcli())
-        logger.info("creating committee")
-        # TODO: get CRS from envvar
-        crs = os.environ.get("COMMITTEE_CRS")
-        if crs is None:
-            crs = secrets.token_hex(32)
-        committee = await utils.create_committee(
-            self.jcli(),
-            committee_wallet.hex_encoded,
-            event.committee_size,
-            event.committee_threshold,
-            crs,
-        )
-        logger.debug(f"created committee data: {committee.as_yaml()}")
-        self.node.committee = committee
+        try:
+            committee = await self.node.secret_storage.get_committee()
+            logger.debug(f"fetched committee from storage: {committee.as_yaml()}")
+            self.node.committee = committee
+        except Exception as e:
+            logger.warning(f"failed to fetch committee from storage: {e}")
+            # create the commitee for this event
+            logger.debug("creating committee wallet info")
+            committee_wallet = await utils.create_wallet_keyset(self.jcli())
+            logger.debug("creating committee")
+            # get CRS from the environment, or create a 32-byte hex token
+            crs = os.environ.get("COMMITTEE_CRS")
+            if crs is None:
+                crs = secrets.token_hex(32)
+            committee = await utils.create_committee(
+                self.jcli(),
+                committee_wallet.hex_encoded,
+                event.committee_size,
+                event.committee_threshold,
+                crs,
+            )
+            logger.debug(f"created committee: {committee.as_yaml()}")
+            self.node.committee = committee
+            await self.node.secret_storage.save_committee(committee)
+            logger.debug("saved committee to storage")
 
     async def setup_block0(self):
         """Check DB event for block0 information.

@@ -1,11 +1,16 @@
 """Utitilies for managing voting node data."""
+import base64
 import re
+import secrets
 import socket
 from pathlib import Path
 from re import Match
 from typing import Final, Literal
 
 import yaml
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 from .committee import CommitteeMember, CommunicationKeys, MemberKeys, WalletKeys
 from .jcli import JCli
@@ -27,6 +32,9 @@ LEADER_REGEX: Final = r"^leader[0-9]+$"
 
 """Regex expression to determine a node's leadership and number"""
 LEADERSHIP_REGEX: Final = r"^(leader|follower)([0-9]+)$"
+
+"""Hash iterations performed when encrypting secrets."""
+HASH_ITERATIONS: Final = 480000
 
 
 def get_hostname() -> str:
@@ -284,11 +292,11 @@ async def create_committee(jcli: JCli, committee_id: str, size: int, threshold: 
 
 def make_genesis_content(event: Event, peers: list[LeaderHostInfo], committee_ids: list[str]) -> Genesis:
     """Generate a genesis file."""
-    start_time = event.get_voting_start()
+    voting_start = event.get_voting_start()
     genesis = yaml.safe_load(GENESIS_YAML)
     consensus_leader_ids = [peer.consensus_leader_id for peer in peers]
     # modify the template with the proper settings
-    genesis["blockchain_configuration"]["block0_date"] = int(start_time.timestamp())
+    genesis["blockchain_configuration"]["block0_date"] = int(voting_start.timestamp())
     genesis["blockchain_configuration"]["consensus_leader_ids"] = consensus_leader_ids
     genesis["blockchain_configuration"]["committees"] = committee_ids
 
@@ -308,3 +316,36 @@ async def make_block0_hash(jcli_path: str, block0_path: Path) -> str:
     """Return the hash of the block0 binary from the given block0.bin path."""
     jcli_exec = JCli(jcli_path)
     return await jcli_exec.genesis_hash(block0_path)
+
+
+def encrypt_key(secret: str, password: str) -> str:
+    """Encrypt secret with with Fernet."""
+    salt = secrets.token_bytes(16)
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=HASH_ITERATIONS,
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
+    f = Fernet(key)
+    encrypted = f.encrypt(secret.encode())
+    b64 = base64.urlsafe_b64encode(salt + encrypted)
+    return b64.decode()
+
+
+def decrypt_key(encrypted: str, password: str) -> str:
+    """Decrypt secret with with Fernet."""
+    b64 = base64.urlsafe_b64decode(encrypted)
+    salt = b64[:16]
+    encrypted_secret = b64[16:]
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=HASH_ITERATIONS,
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
+    f = Fernet(key)
+    secret = f.decrypt(encrypted_secret)
+    return secret.decode()

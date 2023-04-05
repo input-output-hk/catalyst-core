@@ -152,6 +152,7 @@ class Committee(BaseModel):
     `size` the number of committee members.
     `threshold` the minimum number of members needed to tally.
     `committe_id` the hex-encoded public key of the Committee address.
+    `crs` the encrypted Common Reference String shared in the creation of every set of committee member keys.
     `members` list of containing the communication and member secrets of each member of the commitee.
     `election_key` secret key used to sign every vote in the event.
     """
@@ -178,7 +179,9 @@ class Committee(BaseModel):
             members_list = yaml_dict["members"]
 
             def committee_member(member: dict) -> CommitteeMember:
+                comm_keys = [print(keys) for keys in member["communication_keys"]]
                 comm_keys = [CommunicationKeys(**keys) for keys in member["communication_keys"]]
+                logger.debug(f"comm_keys: {comm_keys}")
                 member["communication_keys"] = comm_keys
                 member_keys = [MemberKeys(**keys) for keys in member["member_keys"]]
                 member["member_keys"] = member_keys
@@ -187,14 +190,8 @@ class Committee(BaseModel):
             yaml_dict["members"] = [committee_member(member) for member in members_list]
             committee = cls(**yaml_dict)
             return committee
-        except Exception:
-            raise Exception(f"invalid committee in {file}")
-
-
-class CommitteeYaml(YamlFile):
-    """The tallying committee yaml file."""
-
-    yaml_type: Committee
+        except Exception as e:
+            raise Exception(f"invalid committee in {file}: {e}")
 
 
 @dataclass

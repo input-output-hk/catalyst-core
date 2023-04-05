@@ -420,6 +420,9 @@
 <a href="#420" id="420">420</a>
 <a href="#421" id="421">421</a>
 <a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
+<a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::BTreeMap;
 
 <span class="kw">use </span>diesel::RunQueryDsl;
@@ -521,11 +524,13 @@
                     proposer_relevant_experience,
                     bb_proposal_id,
                     bb_vote_options,
-                    challenge,
+                    objective,
                     extra
                 ) VALUES (
                     $1, $2, $3, $4, $5, $6, $7, $8, $9,
-                    $10, $11, $12, $13, $14, $15, $16, $17, $18
+                    $10, $11, $12, $13, $14, $15, $16,
+                    (SELECT row_id FROM objective WHERE id = $17),
+                    $18
                 )
                 &quot;#</span>,
             )
@@ -748,7 +753,7 @@
         <span class="kw">for </span>challenge <span class="kw">in </span>challenges {
             diesel::sql_query(
                 <span class="string">r#&quot;
-                INSERT INTO challenge (
+                INSERT INTO objective (
                     row_id,
                     id,
                     category,
@@ -775,7 +780,7 @@
             .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(challenge.fund_id)
             .bind::&lt;diesel::sql_types::Jsonb, <span class="kw">_</span>&gt;(<span class="macro">serde_json::json!</span>({
                 <span class="string">&quot;url&quot;</span>: {
-                    <span class="string">&quot;challenge&quot;</span>: challenge.challenge_url,
+                    <span class="string">&quot;objective&quot;</span>: challenge.challenge_url,
                 },
                 <span class="string">&quot;highlights&quot;</span>: serde_json::to_string(<span class="kw-2">&amp;</span>challenge.highlights).ok(),
             }))
@@ -790,7 +795,7 @@
         <span class="kw">for </span>review <span class="kw">in </span>reviews {
             diesel::sql_query(
                 <span class="string">r#&quot;
-                INSERT INTO community_advisors_review (
+                INSERT INTO proposal_review (
                     proposal_id,
                     assessor,
                     impact_alignment_rating_given,
@@ -801,7 +806,8 @@
                     auditability_note,
                     ranking
                 ) VALUES (
-                    $1, $2, $3,
+                    (SELECT row_id FROM proposal where id = $1),
+                    $2, $3,
                     $4, $5, $6,
                     $7, $8, $9
                 )

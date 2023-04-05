@@ -17,7 +17,7 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -e postgres -f setup/dev-db.sql
+psql -e postgres -f setup/dev-db.sql ${@}
 '''
 
 # Run Diesel Migrations, constructing the full up-to-date DB in a local database.
@@ -36,10 +36,10 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/event_table.sql
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/snapshot_table.sql
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/voter_table.sql
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/contribution_table.sql
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/event_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/snapshot_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/voter_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/contribution_table.sql ${@}
 '''
 
 # Setup the local database ready to run the migrations.

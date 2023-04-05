@@ -88,7 +88,7 @@ impl ServerBootstrapper {
         }
 
         if let Some(log_level) = &settings.log.log_level {
-            command_builder.log_level(&serde_json::to_string(&log_level).unwrap());
+            command_builder.log_level(log_level.to_string().as_str());
         }
 
         let mut command = command_builder.build();

@@ -51,6 +51,7 @@ pub fn generate_token_for_given_size_and_n() {
 }
 
 #[test]
+#[ignore = "Loading data will be done by the importers, not using the CLI"]
 pub fn add_generated_token_to_db() -> Result<(), Box<dyn Error>> {
     let temp_dir = TempDir::new().unwrap();
     let (server, _snapshot) = quick_start(&temp_dir).unwrap();

@@ -5,13 +5,13 @@ use crate::common::{
 use crate::tests::rest::challenges::data::ArbitrarySnapshotGenerator;
 
 use assert_fs::TempDir;
+use pretty_assertions::assert_eq;
 
 #[test]
 pub fn challenges_are_sorted_by_insertion_order() {
     let temp_dir = TempDir::new().unwrap();
 
-    let mut snapshot = ArbitrarySnapshotGenerator::default().snapshot();
-    snapshot.challenges_mut().sort_by_key(|c| c.title.clone());
+    let snapshot = ArbitrarySnapshotGenerator::default().snapshot();
 
     let expected_challenges = snapshot.challenges();
 

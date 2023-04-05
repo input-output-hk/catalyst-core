@@ -1,6 +1,6 @@
 use crate::common::{
     clients::RawRestClient,
-    data,
+    data::{self, ArbitrarySnapshotGenerator},
     startup::{db::DbBuilder, server::ServerBootstrapper},
 };
 use assert_fs::TempDir;
@@ -13,7 +13,17 @@ use vit_servicing_station_lib::db::models::community_advisors_reviews::{
 pub fn get_advisor_reviews() -> Result<(), Box<dyn std::error::Error>> {
     use pretty_assertions::assert_eq;
     let temp_dir = TempDir::new().unwrap().into_persistent();
-    let proposal_id = 1234;
+
+    let snapshot = ArbitrarySnapshotGenerator::default().snapshot();
+
+    let proposal_id = snapshot
+        .proposals()
+        .into_iter()
+        .next()
+        .unwrap()
+        .proposal
+        .internal_id;
+
     let expected_review = AdvisorReview {
         id: 1,
         proposal_id,
@@ -30,6 +40,7 @@ pub fn get_advisor_reviews() -> Result<(), Box<dyn std::error::Error>> {
 
     let db_path = DbBuilder::new()
         .with_token(token)
+        .with_snapshot(&snapshot)
         .with_advisor_reviews(vec![expected_review.clone()])
         .build()?;
 

@@ -1,0 +1,17 @@
+[package]
+name = "event-db"
+version = "0.2.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dotenvy = "0.15"
+
+bb8 = "0.8.0"            # Database Connection Pool Manager
+bb8-postgres = "0.8.1"   # BB8 Postgres Connection Support.
+tokio-postgres = "0.7.7" # Tokio postgres query handler.
+
+async-trait = { workspace = true }
+
+tokio = { version = "1", features = ["full"] }

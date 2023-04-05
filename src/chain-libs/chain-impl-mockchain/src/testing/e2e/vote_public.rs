@@ -433,7 +433,7 @@ pub fn vote_on_different_proposal() {
         .build()
         .unwrap();
 
-    let mut alice = controller.wallet(ALICE).unwrap();
+    let alice = controller.wallet(ALICE).unwrap();
 
     let vote_plan = controller.vote_plan(VOTE_PLAN).unwrap();
     let first_proposal = vote_plan.proposal(0);
@@ -448,8 +448,6 @@ pub fn vote_on_different_proposal() {
             &mut ledger,
         )
         .unwrap();
-
-    alice.confirm_transaction();
 
     assert!(controller
         .cast_vote_public(
@@ -578,7 +576,7 @@ pub fn voting_consistency() {
         .build()
         .unwrap();
 
-    let mut alice = controller.wallet(ALICE).unwrap();
+    let alice = controller.wallet(ALICE).unwrap();
     let vote_plan = controller.vote_plan(VOTE_PLAN).unwrap();
 
     controller
@@ -590,7 +588,6 @@ pub fn voting_consistency() {
             &mut ledger,
         )
         .unwrap();
-    alice.confirm_transaction();
     controller
         .cast_vote_public(
             &alice,
@@ -600,7 +597,6 @@ pub fn voting_consistency() {
             &mut ledger,
         )
         .unwrap();
-    alice.confirm_transaction();
     controller
         .cast_vote_public(
             &alice,
@@ -610,7 +606,6 @@ pub fn voting_consistency() {
             &mut ledger,
         )
         .unwrap();
-    alice.confirm_transaction();
     ledger.fast_forward_to(BlockDate {
         epoch: 1,
         slot_id: 1,

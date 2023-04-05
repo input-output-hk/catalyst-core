@@ -27,11 +27,6 @@ pub async fn get_delegator_info(
     ))
 }
 
-#[tracing::instrument(skip(context))]
-pub async fn get_tags(context: SharedContext) -> Result<impl Reply, Rejection> {
-    Ok(HandlerResult(super::get_tags(context).await))
-}
-
 /// Snapshot information update with timestamp.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct SnapshotInfoInput {
@@ -54,37 +49,4 @@ pub struct RawSnapshotInput {
     pub voting_power_cap: Fraction,
     pub direct_voters_group: Option<String>,
     pub representatives_group: Option<String>,
-}
-
-#[tracing::instrument(skip(context))]
-pub async fn put_raw_snapshot(
-    tag: String,
-    input: RawSnapshotInput,
-    context: SharedContext,
-) -> Result<impl Reply, Rejection> {
-    Ok(HandlerResult(
-        super::update_from_raw_snapshot(
-            tag,
-            input.snapshot,
-            input.update_timestamp,
-            input.min_stake_threshold,
-            input.voting_power_cap,
-            input.direct_voters_group,
-            input.representatives_group,
-            context,
-        )
-        .await,
-    ))
-}
-
-#[tracing::instrument(skip(context))]
-pub async fn put_snapshot_info(
-    tag: String,
-    input: SnapshotInfoInput,
-    context: SharedContext,
-) -> Result<impl Reply, Rejection> {
-    Ok(HandlerResult(
-        super::update_from_snapshot_info(tag, input.snapshot, input.update_timestamp, context)
-            .await,
-    ))
 }

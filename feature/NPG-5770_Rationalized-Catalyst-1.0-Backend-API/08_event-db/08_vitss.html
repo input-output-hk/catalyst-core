@@ -1197,7 +1197,7 @@ CREATE VIEW proposals AS SELECT
 
     proposal.bb_proposal_id AS chain_proposal_id,
     proposal.bb_vote_options AS chain_vote_options,
-    proposal.objective  AS challenge_id,
+    objective.id  AS challenge_id,
 
     proposal.extra #&gt;&gt; '{}' AS extra
 FROM proposal
@@ -1374,7 +1374,7 @@ SELECT
 FROM proposals p
 INNER JOIN proposals_voteplans pvp ON p.id::VARCHAR = pvp.proposal_id
 INNER JOIN voteplans vp ON pvp.chain_voteplan_id = vp.chain_voteplan_id
-INNER JOIN challenges ch ON ch.internal_id = p.challenge_id
+INNER JOIN challenges ch ON ch.id = p.challenge_id
 INNER JOIN groups gr ON vp.token_identifier = gr.token_identifier
 LEFT JOIN proposal_simple_challenge psc
     ON p.proposal_id = psc.proposal_id

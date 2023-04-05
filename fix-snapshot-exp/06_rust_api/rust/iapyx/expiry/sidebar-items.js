@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["default_block_date_generator","Creates `BlockDateGenerator` object based on settings"],["from_block_or_shift","Creates `BlockDateGenerator` object based on setup"]]};

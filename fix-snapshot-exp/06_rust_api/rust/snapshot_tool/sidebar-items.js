@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["db_conn",""],["handle_invalids","Handle invalid registrations"],["handle_no_stake","Handle Registrations with no staked ada. No UTXO’s."],["load",""],["main",""]]};

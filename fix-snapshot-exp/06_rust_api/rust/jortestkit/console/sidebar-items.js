@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["InteractiveCommandError",""]],"mod":[["progress_bar",""],["style","centralized styles for the different items to display."]],"struct":[["ConsoleWriter",""],["UserInteraction",""]],"trait":[["InteractiveCommandExec",""]]};

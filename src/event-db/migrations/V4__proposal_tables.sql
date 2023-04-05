@@ -36,7 +36,7 @@ CREATE UNIQUE INDEX proposal_index ON proposal(row_id, objective);
 COMMENT ON TABLE proposal IS 'All Proposals for the current fund.';
 COMMENT ON COLUMN proposal.row_id IS 'Synthetic Unique Key';
 COMMENT ON COLUMN proposal.id IS 'Actual Proposal Unique ID';
-COMMENT ON COLUMN proposal.objective IS 'The Challenge this objective falls under.';
+COMMENT ON COLUMN proposal.objective IS 'The Objective this proposal falls under.';
 COMMENT ON COLUMN proposal.title IS 'Brief title of the proposal.';
 COMMENT ON COLUMN proposal.summary IS 'A Summary of the proposal to be implemented.';
 COMMENT ON COLUMN proposal.public_key IS 'Proposals Reward Address (CIP-19 Payment Key)';

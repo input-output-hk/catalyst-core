@@ -10,7 +10,7 @@ services:
       - KROKI_SAFE_MODE=unsafe
       - KROKI_MAX_URI_LENGTH=64000
     ports:
-      - "7123:8000"
+      - "8000:8000"
   blockdiag:
     image: yuzutech/kroki-blockdiag
     ports:

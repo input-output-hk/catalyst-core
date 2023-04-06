@@ -25,6 +25,7 @@
   apiDescriptionUrl="[[#api]]"
   router="memory"
   layout="sidebar"
+  hideInternal="true"
 />
 </div>
 

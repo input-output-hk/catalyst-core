@@ -50,7 +50,7 @@ pub struct StakePoolRegistration {
     /// public key of the owner(s)
     ///
     /// Owner can change any of the stake pool parameters as long as there
-    /// is <THRESHOLD> number of owners to sign the stake pool parameters update.
+    /// is `<THRESHOLD>` number of owners to sign the stake pool parameters update.
     ///
     /// Owner will receive a share of the fixed and ratio tax too. unless a reward
     /// account is specified for the stake pool.

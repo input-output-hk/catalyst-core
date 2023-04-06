@@ -198,7 +198,7 @@ pub fn is_valid_rewards_address(rewards_address_prefix: &u8, network: NetworkId)
     match network {
         NetworkId::Mainnet => (),
         NetworkId::Testnet => {
-            if prefix_hex == "0".to_string() || prefix_hex == "1".to_string() {
+            if prefix_hex == *"0" || prefix_hex == *"1" {
                 return true;
             }
         }

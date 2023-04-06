@@ -1,18 +1,18 @@
 -- Catalyst Event Database
 
--- challenge types table - Defines all currently known challenges types.
-CREATE TABLE challenge_category
+-- objective types table - Defines all currently known objectives types.
+CREATE TABLE objective_category
 (
     name TEXT PRIMARY KEY,
     description TEXT
 );
 
-COMMENT ON TABLE challenge_category IS 'Defines all known and valid challenge categories.';
-COMMENT ON COLUMN challenge_category.name IS 'The name of this challenge category.';
-COMMENT ON COLUMN challenge_category.description IS 'A Description of this kind of challenge category.';
+COMMENT ON TABLE objective_category IS 'Defines all known and valid objective categories.';
+COMMENT ON COLUMN objective_category.name IS 'The name of this objective category.';
+COMMENT ON COLUMN objective_category.description IS 'A Description of this kind of objective category.';
 
--- Define known challenge categories
-INSERT INTO challenge_category (name,  description)
+-- Define known objective categories
+INSERT INTO objective_category (name,  description)
 VALUES
     ('simple','A Simple choice'),
     ('native','??'),
@@ -43,16 +43,16 @@ CREATE TABLE vote_options
 (
     id SERIAL PRIMARY KEY,
     idea_scale TEXT UNIQUE,
-    challenge TEXT UNIQUE
+    objective TEXT UNIQUE
 );
 
 COMMENT ON TABLE vote_options IS 'Defines all known vote plan option types.';
 COMMENT ON COLUMN vote_options.id IS 'Unique ID for each possible option set.';
 COMMENT ON COLUMN vote_options.idea_scale IS 'How this vote option is represented in idea scale.';
-COMMENT ON COLUMN vote_options.challenge IS 'How the vote options is represented in the challenge.';
+COMMENT ON COLUMN vote_options.objective IS 'How the vote options is represented in the objective.';
 
 -- Define known vote_options
-INSERT INTO vote_options (idea_scale,  challenge)
+INSERT INTO vote_options (idea_scale,  objective)
 VALUES
     ('blank,yes,no','yes,no');
 
@@ -81,10 +81,10 @@ COMMENT ON COLUMN goal.event_id IS 'The ID of the event this goal belongs to.';
 COMMENT ON INDEX goal_index IS 'An index to enforce uniqueness of the relative `idx` field per event.';
 
 
--- challenge table - Defines all challenges for all known funds.
+-- objective table - Defines all objectives for all known funds.
 
 
-CREATE TABLE challenge
+CREATE TABLE objective
 (
     row_id SERIAL PRIMARY KEY,
 
@@ -103,33 +103,33 @@ CREATE TABLE challenge
     extra JSONB,
 
     FOREIGN KEY(event) REFERENCES event(row_id),
-    FOREIGN KEY(category) REFERENCES challenge_category(name),
+    FOREIGN KEY(category) REFERENCES objective_category(name),
     FOREIGN KEY(rewards_currency) REFERENCES currency(name),
     FOREIGN KEY(vote_options) REFERENCES vote_options(id)
 );
 
-CREATE UNIQUE INDEX challenge_idx ON challenge (id, event);
-CREATE UNIQUE INDEX challenge_id ON challenge (id);
+CREATE UNIQUE INDEX objective_idx ON objective (id, event);
+CREATE UNIQUE INDEX objective_id ON objective (id);
 
-COMMENT ON TABLE challenge IS
-'All Challenges for all events.
-A Challenge is a group category for selection in an event.';
-COMMENT ON COLUMN challenge.row_id IS 'Synthetic Unique Key';
-COMMENT ON COLUMN challenge.id IS
-'Event specific Challenge ID.
-Can be non-unique between events (Eg, Ideascale ID for challenge).';
-COMMENT ON COLUMN challenge.event IS 'The specific Event ID this Challenge is part of.';
-COMMENT ON COLUMN challenge.category IS
-'What category of challenge is this.
-See the challenge_category table for allowed values.';
-COMMENT ON COLUMN challenge.title IS 'The  title of the challenge.';
-COMMENT ON COLUMN challenge.description IS 'Long form description of the challenge.';
-COMMENT ON COLUMN challenge.rewards_currency IS 'The currency rewards values are represented as.';
-COMMENT ON COLUMN challenge.rewards_total IS 'The total reward pool to pay on this challenge to winning proposals.';
-COMMENT ON COLUMN challenge.proposers_rewards IS 'Not sure how this is different from rewards_total???';
-COMMENT ON COLUMN challenge.vote_options IS 'The Vote Options applicable to all proposals in this challenge.';
-COMMENT ON COLUMN challenge.extra IS
-'Extra Data  for this challenge represented as JSON.
-"url"."challenge" is a URL for more info about the challenge.
+COMMENT ON TABLE objective IS
+'All objectives for all events.
+A objective is a group category for selection in an event.';
+COMMENT ON COLUMN objective.row_id IS 'Synthetic Unique Key';
+COMMENT ON COLUMN objective.id IS
+'Event specific objective ID.
+Can be non-unique between events (Eg, Ideascale ID for objective).';
+COMMENT ON COLUMN objective.event IS 'The specific Event ID this objective is part of.';
+COMMENT ON COLUMN objective.category IS
+'What category of objective is this.
+See the objective_category table for allowed values.';
+COMMENT ON COLUMN objective.title IS 'The  title of the objective.';
+COMMENT ON COLUMN objective.description IS 'Long form description of the objective.';
+COMMENT ON COLUMN objective.rewards_currency IS 'The currency rewards values are represented as.';
+COMMENT ON COLUMN objective.rewards_total IS 'The total reward pool to pay on this objective to winning proposals.';
+COMMENT ON COLUMN objective.proposers_rewards IS 'Not sure how this is different from rewards_total???';
+COMMENT ON COLUMN objective.vote_options IS 'The Vote Options applicable to all proposals in this objective.';
+COMMENT ON COLUMN objective.extra IS
+'Extra Data  for this objective represented as JSON.
+"url"."objective" is a URL for more info about the objective.
 "highlights" is ???
 ';

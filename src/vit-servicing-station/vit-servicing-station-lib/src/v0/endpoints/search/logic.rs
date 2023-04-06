@@ -117,6 +117,7 @@ mod test {
         assert_eq!(count, 1);
     }
 
+    /* TODO: Find out why this fails, if we don't obsolete vitSS soon enough. */
     #[tokio::test]
     async fn multiple_item_search() {
         // build context

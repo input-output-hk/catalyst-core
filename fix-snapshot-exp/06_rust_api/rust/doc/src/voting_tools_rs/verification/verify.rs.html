@@ -789,7 +789,7 @@
     </span><span class="kw">match </span>network {
         NetworkId::Mainnet =&gt; (),
         NetworkId::Testnet =&gt; {
-            <span class="kw">if </span>prefix_hex == <span class="string">&quot;0&quot;</span>.to_string() || prefix_hex == <span class="string">&quot;1&quot;</span>.to_string() {
+            <span class="kw">if </span>prefix_hex == <span class="kw-2">*</span><span class="string">&quot;0&quot; </span>|| prefix_hex == <span class="kw-2">*</span><span class="string">&quot;1&quot; </span>{
                 <span class="kw">return </span><span class="bool-val">true</span>;
             }
         }

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["try_ids_from_iter"],"mod":["fragment","id"],"struct":["Fragment","FragmentId"],"type":["FragmentIds"]};

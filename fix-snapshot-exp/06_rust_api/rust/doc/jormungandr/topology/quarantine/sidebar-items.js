@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_MAX_NUM_QUARANTINE_RECORDS","DEFAULT_MAX_QUARANTINE_DURATION","DEFAULT_QUARANTINE_DURATION","FIELDS"],"enum":["ReportNodeStatus","__Field"],"static":["CALLSITE","META"],"struct":["QuarantineConfig","ReportRecord","ReportRecords","__FieldVisitor","__Visitor"]};

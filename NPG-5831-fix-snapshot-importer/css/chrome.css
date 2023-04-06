@@ -2,12 +2,6 @@
 
 @import 'variables.css';
 
-::-webkit-scrollbar {
-    background: var(--bg);
-}
-::-webkit-scrollbar-thumb {
-    background: var(--scrollbar);
-}
 html {
     scrollbar-color: var(--scrollbar) var(--bg);
 }
@@ -16,6 +10,19 @@ html {
 a:visited,
 a > .hljs {
     color: var(--links);
+}
+
+/*
+    body-container is necessary because mobile browsers don't seem to like
+    overflow-x on the body tag when there is a <meta name="viewport"> tag.
+*/
+#body-container {
+    /*
+        This is used when the sidebar pushes the body content off the side of
+        the screen on small screens. Without it, dragging on mobile Safari
+        will want to reposition the viewport in a weird way.
+    */
+    overflow-x: clip;
 }
 
 /* Menu Bar */
@@ -135,8 +142,8 @@ a > .hljs {
     top: 0;
     bottom: 0;
     margin: 0;
-    max-width: auto;
-    min-width: auto;
+    max-width: 150px;
+    min-width: 90px;
 
     display: flex;
     justify-content: center;
@@ -355,7 +362,7 @@ ul#searchresults span.teaser em {
     top: 0;
     bottom: 0;
     width: var(--sidebar-width);
-    font-size: 1em;
+    font-size: 0.875em;
     box-sizing: border-box;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
@@ -418,7 +425,7 @@ ul#searchresults span.teaser em {
 .chapter {
     list-style: none outside none;
     padding-left: 0;
-    line-height: 2em;
+    line-height: 2.2em;
 }
 
 .chapter ol {
@@ -488,7 +495,7 @@ ul#searchresults span.teaser em {
 .section {
     list-style: none outside none;
     padding-left: 20px;
-    line-height: 1.5em;
+    line-height: 1.9em;
 }
 
 /* Theme Menu Popup */

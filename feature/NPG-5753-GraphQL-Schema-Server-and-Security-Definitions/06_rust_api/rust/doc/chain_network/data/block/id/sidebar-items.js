@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["BLOCK_ID_LEN"],"fn":["try_ids_from_iter","try_ids_from_iter_desugared"],"struct":["BlockId"],"type":["BlockIds"]};

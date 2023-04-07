@@ -1,7 +1,7 @@
 use clap::Parser;
 
 mod cli;
-mod db;
+// mod db;
 mod logger;
 mod service;
 mod settings;

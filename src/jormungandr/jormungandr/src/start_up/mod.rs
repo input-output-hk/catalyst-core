@@ -31,7 +31,7 @@ pub fn prepare_storage(setting: &Settings) -> Result<Storage, Error> {
 
 /// Try to fetch the block0_id from the HTTP base URL (services) in the array
 ///
-/// The HTTP url is expecting to be of the form: URL/<hash-id>.block0
+/// The HTTP url is expecting to be of the form: `URL/<hash-id>.block0`
 async fn fetch_block0_http(base_services: &[String], block0_id: &HeaderId) -> Option<Block> {
     use chain_core::property::Deserialize as _;
 

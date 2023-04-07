@@ -99,11 +99,13 @@ impl<'a> DbInserter<'a> {
                     proposer_relevant_experience,
                     bb_proposal_id,
                     bb_vote_options,
-                    challenge,
+                    objective,
                     extra
                 ) VALUES (
                     $1, $2, $3, $4, $5, $6, $7, $8, $9,
-                    $10, $11, $12, $13, $14, $15, $16, $17, $18
+                    $10, $11, $12, $13, $14, $15, $16,
+                    (SELECT row_id FROM objective WHERE id = $17),
+                    $18
                 )
                 "#,
             )
@@ -326,7 +328,7 @@ impl<'a> DbInserter<'a> {
         for challenge in challenges {
             diesel::sql_query(
                 r#"
-                INSERT INTO challenge (
+                INSERT INTO objective (
                     row_id,
                     id,
                     category,
@@ -353,7 +355,7 @@ impl<'a> DbInserter<'a> {
             .bind::<diesel::sql_types::Integer, _>(challenge.fund_id)
             .bind::<diesel::sql_types::Jsonb, _>(serde_json::json!({
                 "url": {
-                    "challenge": challenge.challenge_url,
+                    "objective": challenge.challenge_url,
                 },
                 "highlights": serde_json::to_string(&challenge.highlights).ok(),
             }))
@@ -368,7 +370,7 @@ impl<'a> DbInserter<'a> {
         for review in reviews {
             diesel::sql_query(
                 r#"
-                INSERT INTO community_advisors_review (
+                INSERT INTO proposal_review (
                     proposal_id,
                     assessor,
                     impact_alignment_rating_given,
@@ -379,7 +381,8 @@ impl<'a> DbInserter<'a> {
                     auditability_note,
                     ranking
                 ) VALUES (
-                    $1, $2, $3,
+                    (SELECT row_id FROM proposal where id = $1),
+                    $2, $3,
                     $4, $5, $6,
                     $7, $8, $9
                 )

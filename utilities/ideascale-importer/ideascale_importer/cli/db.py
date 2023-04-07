@@ -1,27 +1,37 @@
 import asyncio
 from datetime import datetime
+from loguru import logger
 import random
-import rich
 import typer
 
 import ideascale_importer.db
 from ideascale_importer.db import models
+from ideascale_importer.utils import configure_logger
 
 
 app = typer.Typer(add_completion=False)
 
 
 @app.command()
-def seed_compatible(database_url: str = typer.Option(..., help="Postgres database URL")):
+def seed_compatible(
+    database_url: str = typer.Option(..., help="Postgres database URL"),
+    log_level: str = typer.Option(
+        "info",
+        help="Log level",
+    ),
+    log_format: str = typer.Option(
+        "text",
+        help="Log format",
+    ),
+):
     """
     Generate seed data that is compatible with the old vit-servicing-station schema
     """
 
-    async def inner(database_url: str):
-        console = rich.console.Console()
+    configure_logger(log_level, log_format)
 
+    async def inner(database_url: str):
         conn = await ideascale_importer.db.connect(database_url)
-        console.print("Connected to database")
 
         async with conn.transaction():
             event = models.Event(
@@ -49,16 +59,16 @@ def seed_compatible(database_url: str = typer.Option(..., help="Postgres databas
                     }
                 })
             event_id = await ideascale_importer.db.insert(conn, event, returning="row_id")
-            console.print(f"Inserted event row_id={event_id}")
+            logger.info("Inserted event row_id={event_id}", event_id=event_id)
 
             voting_group = models.VotingGroup(group_id="group-id-1", event_id=event_id, token_id="token-id-1")
             voting_group_row_id = await ideascale_importer.db.insert(conn, voting_group, returning="row_id")
-            console.print(f"Inserted voting_group row_id={voting_group_row_id}")
+            logger.info("Inserted voting_group row_id={voting_group_row_id}", voting_group_row_id=voting_group_row_id)
 
             voteplan = models.Voteplan(event_id=event_id, id="voteplan-1", category="public",
                                        encryption_key="encryption-key-1", group_id=voting_group_row_id)
             voteplan_row_id = await ideascale_importer.db.insert(conn, voteplan, returning="row_id")
-            console.print(f"Inserted voteplan row_id={voteplan_row_id}")
+            logger.info("Inserted voteplan row_id={voteplan_row_id}", voteplan_row_id=voteplan_row_id)
 
             for i in range(2):
                 challenge_id = random.randint(1, 1000)
@@ -83,7 +93,7 @@ def seed_compatible(database_url: str = typer.Option(..., help="Postgres databas
                     })
 
                 challenge_row_id = await ideascale_importer.db.insert(conn, challenge, returning="row_id")
-                console.print(f"Inserted challenge row_id={challenge_row_id}")
+                logger.info("Inserted challenge row_id={challenge_row_id}", challenge_row_id=challenge_row_id)
 
                 for j in range(2):
                     proposal_id = random.randint(1, 1000)
@@ -109,7 +119,7 @@ def seed_compatible(database_url: str = typer.Option(..., help="Postgres databas
                     )
 
                     proposal_row_id = await ideascale_importer.db.insert(conn, proposal, returning="row_id")
-                    console.print(f"Inserted proposal row_id={proposal_row_id}")
+                    logger.info("Inserted proposal row_id={proposal_row_id}", proposal_row_id=proposal_row_id)
 
                     proposal_voteplan = models.ProposalVoteplan(
                         proposal_id=proposal_row_id, voteplan_id=voteplan_row_id, bb_proposal_index=(i+1)*(j+1))
@@ -118,6 +128,6 @@ def seed_compatible(database_url: str = typer.Option(..., help="Postgres databas
             for i in range(1):
                 goal = models.Goal(event_id=event_id, idx=i, name=f"Goal {i}")
                 goal_id = await ideascale_importer.db.insert(conn, goal, returning="id")
-                console.print(f"Inserted goal id={goal_id}")
+                logger.info("Inserted goal id={goal_id}", goal_id=goal_id)
 
     asyncio.run(inner(database_url))

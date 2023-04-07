@@ -34,7 +34,8 @@ CREATE TABLE event
     committee_size INTEGER NOT NULL,
     committee_threshold INTEGER NOT NULL,
 
-    extra JSONB
+    extra JSONB,
+    cast_to JSONB
 );
 
 CREATE UNIQUE INDEX event_name_idx ON event(name);
@@ -115,3 +116,30 @@ NULL = Not yet defined.
 "url"."results" = a results URL,
 "url"."survey" = a survey URL,
 others can be defined as required.';
+
+COMMENT ON COLUMN event.cast_to IS
+'Json Map defining parameters which control where the vote is to be cast.
+Multiple destinations can be defined simultaneously.
+In this case the vote gets cast to all defined destinations.
+`NULL` = Default Jormungandr Blockchain.
+```jsonc
+"jorm" : { // Voting on Jormungandr Blockchain
+    chain_id: <int>, // Jormungandr chain id. Defaults to 0.
+    // Other parameters TBD.
+},
+"caradno" : { // Voting on Cardano Directly
+    chain_id: <int>, // 0 = pre-prod, 1 = mainnet.
+    // Other parameters TBD.
+},
+"postgres" : { // Store votes in Web 2 postgres backed DB only.
+    url: "<postgres URL. Defaults to system default>"
+    // Other parameters TBD.
+    // Note: Votes that arrive in the Cat1 system are always stored in the DB.
+    // This Option only allows the vote storage DB to be tuned.
+},
+"cat2" : { // Store votes to the Catalyst 2.0 P2P Network.
+    gateway: "<URL of the gateway to use"
+    // Other parameters TBD.
+}
+```
+';

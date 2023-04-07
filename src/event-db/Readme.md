@@ -4,6 +4,10 @@ This crate defines the structure and RUST access methods for the Catalyst Event 
 
 ## Creating A Local Test Database
 
+### Dependencies
+ - `cargo-make`, install `cargo install cargo-make`
+ - `refinery`, install `cargo install refinery_cli`
+
 Run the following SQL on your local test PostgreSQL server:
 
 ```sql
@@ -20,21 +24,14 @@ create database "CatalystEventDev"
 
 comment on database "CatalystEventDev" is 'Local Test Catalyst Event DB';
 ```
-
-This can be done simply with:
-
+Or
 ```sh
-psql -e -U postgres -f setup/dev-db.sql
+cargo make local-event-db-init
 ```
 
 Execute Migrations:
-
-```sh
-refinery migrate -c refinery.toml -p ./migrations
-```
-
-or
-
 ```sh
 cargo make run-event-db-migration
 ```
+
+

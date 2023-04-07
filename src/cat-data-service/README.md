@@ -3,21 +3,7 @@
 Catalyst event data service
 
 ## Run
-Run with the default address argument
+Run
 ```
-cat-data-service run
+cat-data-service run --address "127.0.0.1:3031" --database-url=postgres://catalyst-event-dev@localhost/CatalystEventDev --log-level=debug
 ```
-Run specifying address argument
-```
-cat-data-service run --address "127.0.0.1:3031
-```
-
-## Endpoints
-`/api/v0/snapshot/voter/`
-```
-curl --request GET 127.0.0.1:3030/api/v0/snapshot/voter/latest/voter1
-```
-`/api/v0/snapshot/delegator/`
-```
-curl --request GET 127.0.0.1:3030/api/v0/snapshot/delegator/latest/delegator1```
-

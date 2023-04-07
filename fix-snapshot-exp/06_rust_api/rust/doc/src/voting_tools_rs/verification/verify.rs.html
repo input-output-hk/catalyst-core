@@ -589,8 +589,10 @@
 <a href="#589" id="589">589</a>
 <a href="#590" id="590">590</a>
 <a href="#591" id="591">591</a>
+<a href="#592" id="592">592</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashMap;
 
+<span class="kw">use </span>dashmap::DashMap;
 <span class="kw">use </span>postgres::fallible_iterator::FallibleIterator;
 <span class="kw">use </span>postgres::Client;
 
@@ -617,8 +619,8 @@
 <span class="doccomment">/// `Network_id` + Blake2b-224( Stake Public Key )
 </span><span class="kw">pub type </span>StakeKeyHash = Vec&lt;u8&gt;;
 
-<span class="doccomment">/// Registrations with no staked ada. No UTXO&#39;s.
-</span><span class="kw">pub type </span>StakeKeyHashNoStake = String;
+<span class="doccomment">/// Unregistered voters stake
+</span><span class="kw">pub type </span>Unregistered = DashMap&lt;Vec&lt;u8&gt;, u128&gt;;
 
 <span class="doccomment">///
 /// Query gathers all possible registration transactions

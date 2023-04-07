@@ -130,9 +130,6 @@
 <a href="#130" id="130">130</a>
 <a href="#131" id="131">131</a>
 <a href="#132" id="132">132</a>
-<a href="#133" id="133">133</a>
-<a href="#134" id="134">134</a>
-<a href="#135" id="135">135</a>
 </pre><pre class="rust"><code><span class="attr">#![allow(missing_docs)]
 
 </span><span class="kw">use </span>std::thread;
@@ -141,10 +138,11 @@
     data::{Registration, SignedRegistration, SlotNo},
     db::queries::staked_utxo_ada::staked_utxo_ada,
     error::InvalidRegistration,
-    verify::{filter_registrations, StakeKeyHash, StakeKeyHashNoStake},
+    verify::{filter_registrations, StakeKeyHash},
     SnapshotEntry,
 };
 
+<span class="kw">use </span><span class="kw">crate</span>::verify::Unregistered;
 <span class="kw">use </span>color_eyre::eyre::Result;
 <span class="kw">use </span>dashmap::DashMap;
 
@@ -194,11 +192,7 @@
         network_id,
         expected_voting_purpose: <span class="kw">_</span>,
     }: VotingPowerArgs,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(
-    Vec&lt;SnapshotEntry&gt;,
-    Vec&lt;InvalidRegistration&gt;,
-    Vec&lt;StakeKeyHashNoStake&gt;,
-)&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;(Vec&lt;SnapshotEntry&gt;, Vec&lt;InvalidRegistration&gt;, Unregistered)&gt; {
     <span class="kw">const </span>ABS_MIN_SLOT: SlotNo = SlotNo(<span class="number">0</span>);
     <span class="kw">const </span>ABS_MAX_SLOT: SlotNo = SlotNo(i64::MAX <span class="kw">as </span>u64);
 
@@ -217,24 +211,22 @@
 
     <span class="kw">let </span>(valids, invalids) = registrations.join().unwrap();
     <span class="macro">info!</span>(<span class="string">&quot;finished processing registrations&quot;</span>);
-    <span class="kw">let </span>staked_ada_records = stakes.join().unwrap();
-    <span class="macro">info!</span>(<span class="string">&quot;finished processing stakes&quot;</span>);
 
-    <span class="comment">// registrations with no UTXO&#39;s.
-    </span><span class="kw">let </span><span class="kw-2">mut </span>no_staked_ada = Vec::new();
+    <span class="comment">// UTXOs for all possible Stake Addresses
+    </span><span class="kw">let </span>staked_ada_records = stakes.join().unwrap();
+    <span class="macro">info!</span>(<span class="string">&quot;finished processing stakes&quot;</span>);
 
     <span class="kw">let </span>snapshot = valids
         .into_iter()
-        .map(|reg| convert_to_snapshot_entry(reg, <span class="kw-2">&amp;</span>staked_ada_records, <span class="kw-2">&amp;mut </span>no_staked_ada))
+        .map(|reg| convert_to_snapshot_entry(reg, <span class="kw-2">&amp;</span>staked_ada_records))
         .collect::&lt;<span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
 
-    <span class="prelude-val">Ok</span>((snapshot, invalids, no_staked_ada))
+    <span class="prelude-val">Ok</span>((snapshot, invalids, staked_ada_records))
 }
 
 <span class="kw">fn </span>convert_to_snapshot_entry(
     registration: SignedRegistration,
     stakes: <span class="kw-2">&amp;</span>DashMap&lt;StakeKeyHash, u128&gt;,
-    no_staked_ada: <span class="kw-2">&amp;mut </span>Vec&lt;StakeKeyHashNoStake&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;SnapshotEntry&gt; {
     <span class="kw">let </span>SignedRegistration {
         registration:
@@ -250,14 +242,16 @@
         ..
     } = registration;
 
-    <span class="comment">// look up stake key hash of valid registration in stakes map to get staked ada associated with the key
+    <span class="comment">// look up stake key hash of valid registration in stakes map to obtain staked ada associated with the key
     </span><span class="kw">let </span>voting_power = <span class="kw">if let </span><span class="prelude-val">Some</span>(voting_power) = stakes.get(<span class="kw-2">&amp;</span>stake_key_hash) {
         <span class="kw-2">*</span>voting_power
     } <span class="kw">else </span>{
-        <span class="comment">// No UTXO&#39;s.
-        </span>no_staked_ada.push(hex::encode(<span class="kw-2">&amp;</span>stake_key_hash));
-        <span class="number">0
+        <span class="comment">// Registrations with no staked ada. No UTXO&#39;s.
+        </span><span class="number">0
     </span>};
+
+    <span class="comment">// remove registered, what is left (difference) are stake addresses that are not registered
+    </span>stakes.remove(<span class="kw-2">&amp;</span>stake_key_hash);
 
     <span class="prelude-val">Ok</span>(SnapshotEntry {
         voting_key,

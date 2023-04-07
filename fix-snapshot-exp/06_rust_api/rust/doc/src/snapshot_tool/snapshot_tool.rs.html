@@ -174,11 +174,9 @@
 <a href="#174" id="174">174</a>
 <a href="#175" id="175">175</a>
 <a href="#176" id="176">176</a>
-<a href="#177" id="177">177</a>
-<a href="#178" id="178">178</a>
 </pre><pre class="rust"><code><span class="kw">use </span>microtype::secrecy::ExposeSecret;
 
-<span class="kw">use </span>std::path::Path;
+<span class="kw">use </span>std::{collections::HashMap, path::Path};
 
 <span class="kw">use </span>postgres::{Client, NoTls};
 <span class="kw">use </span>std::{fs::File, io::BufWriter};
@@ -188,7 +186,7 @@
 <span class="kw">use </span>tracing::{debug, info, Level};
 
 <span class="kw">use </span>voting_tools_rs::{
-    verify::StakeKeyHashNoStake, voting_power, Args, DbConfig, DryRunCommand, InvalidRegistration,
+    verify::Unregistered, voting_power, Args, DbConfig, DryRunCommand, InvalidRegistration,
     SnapshotEntry, VotingPowerArgs,
 };
 
@@ -243,12 +241,12 @@
     <span class="kw">let </span>db_client_registrations = db_conn(db_config.clone())<span class="question-mark">?</span>;
     <span class="kw">let </span>db_client_stakes = db_conn(db_config)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>(valids, invalids, no_stake) =
+    <span class="kw">let </span>(valids, invalids, unregistered) =
         load(dry_run, args, db_client_stakes, db_client_registrations)<span class="question-mark">?</span>;
 
     handle_invalids(<span class="kw-2">&amp;</span>out_file, <span class="kw-2">&amp;</span>invalids)<span class="question-mark">?</span>;
 
-    handle_no_stake(<span class="kw-2">&amp;</span>out_file, <span class="kw-2">&amp;</span>no_stake)<span class="question-mark">?</span>;
+    handle_unregistered(<span class="kw-2">&amp;</span>out_file, unregistered)<span class="question-mark">?</span>;
 
     <span class="macro">info!</span>(
         <span class="string">&quot;calculated {} valids invalids {}&quot;</span>,
@@ -290,11 +288,7 @@
     args: VotingPowerArgs,
     db_client_stakes: Client,
     db_client_registrations: Client,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(
-    Vec&lt;SnapshotEntry&gt;,
-    Vec&lt;InvalidRegistration&gt;,
-    Vec&lt;StakeKeyHashNoStake&gt;,
-)&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;(Vec&lt;SnapshotEntry&gt;, Vec&lt;InvalidRegistration&gt;, Unregistered)&gt; {
     <span class="kw">if let </span><span class="prelude-val">Some</span>(DryRunCommand::DryRun { mock_json_file }) = dry_run {
         <span class="macro">info!</span>(<span class="string">&quot;Using dryrun file: {}&quot;</span>, mock_json_file.to_string_lossy());
         voting_power(db_client_stakes, db_client_registrations, args)
@@ -329,17 +323,19 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="doccomment">/// Handle Registrations with no staked ada. No UTXO&#39;s.
-</span><span class="kw">fn </span>handle_no_stake(path: <span class="kw-2">&amp;</span>Path, no_stake: <span class="kw-2">&amp;</span>Vec&lt;StakeKeyHashNoStake&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="macro">info!</span>(<span class="string">&quot;handling no stake registrations&quot;</span>);
-    <span class="kw">if </span>no_stake.is_empty() {
-        <span class="kw">return </span><span class="prelude-val">Ok</span>(());
-    }
+<span class="doccomment">/// Handle stake addresses that are not registered
+</span><span class="kw">fn </span>handle_unregistered(path: <span class="kw-2">&amp;</span>Path, unregistered: Unregistered) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="macro">info!</span>(<span class="string">&quot;handling unregistered&quot;</span>);
 
-    <span class="kw">let </span>path = path.with_extension(<span class="string">&quot;no_stake.json&quot;</span>);
+    <span class="kw">let </span>unregistered = unregistered
+        .into_iter()
+        .map(|(key, value)| (hex::encode(key), value))
+        .collect::&lt;HashMap&lt;String, u128&gt;&gt;();
+
+    <span class="kw">let </span>path = path.with_extension(<span class="string">&quot;unregistered.json&quot;</span>);
 
     <span class="macro">tracing::warn!</span>(
-        <span class="string">&quot;found no stake records: writing to {}&quot;</span>,
+        <span class="string">&quot;found unregistered stake addresses: writing to {}&quot;</span>,
         path.to_string_lossy()
     );
 
@@ -350,7 +346,7 @@
         .open(path)<span class="question-mark">?</span>;
     <span class="kw">let </span>writer = BufWriter::new(file);
 
-    serde_json::to_writer_pretty(writer, no_stake)<span class="question-mark">?</span>;
+    serde_json::to_writer_pretty(writer, <span class="kw-2">&amp;</span>unregistered)<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(())
 }

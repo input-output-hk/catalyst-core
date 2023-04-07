@@ -34,7 +34,6 @@ pub fn event(state: Arc<State>) -> Router {
         .route(
             "/events/:offset/:limit",
             get({
-                let state = state.clone();
                 move |path| async {
                     handle_result(events_with_offset_and_limit_exec(path, state).await).await
                 }

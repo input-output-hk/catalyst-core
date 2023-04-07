@@ -10,6 +10,7 @@ use crate::{
     SnapshotEntry,
 };
 
+use crate::verify::Unregistered;
 use color_eyre::eyre::Result;
 use dashmap::DashMap;
 
@@ -59,11 +60,7 @@ pub fn voting_power(
         network_id,
         expected_voting_purpose: _,
     }: VotingPowerArgs,
-) -> Result<(
-    Vec<SnapshotEntry>,
-    Vec<InvalidRegistration>,
-    DashMap<Vec<u8>, u128>,
-)> {
+) -> Result<(Vec<SnapshotEntry>, Vec<InvalidRegistration>, Unregistered)> {
     const ABS_MIN_SLOT: SlotNo = SlotNo(0);
     const ABS_MAX_SLOT: SlotNo = SlotNo(i64::MAX as u64);
 

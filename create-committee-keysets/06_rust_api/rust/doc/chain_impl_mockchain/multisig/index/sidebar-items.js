@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["LEVEL_MAXLIMIT","TREEINDEX_TAG_DEPTH1","TREEINDEX_TAG_DEPTH2"],"enum":["TreeIndex"],"struct":["Index"]};

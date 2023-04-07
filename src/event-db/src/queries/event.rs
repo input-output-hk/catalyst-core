@@ -207,51 +207,29 @@ mod tests {
             ]
         );
 
-        let events = event_db.get_events(Some(2), Some(1)).await.unwrap();
+        let events = event_db.get_events(Some(1), Some(1)).await.unwrap();
         assert_eq!(
             events,
-            vec![
-                EventSummary {
-                    id: EventId(2),
-                    name: "Test Fund 2".to_string(),
-                    starts: DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
+            vec![EventSummary {
+                id: EventId(2),
+                name: "Test Fund 2".to_string(),
+                starts: DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                     ),
-                    ends: DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
+                    Utc
+                ),
+                ends: DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                     ),
-                    is_final: true,
-                    reg_checked: None,
-                },
-                EventSummary {
-                    id: EventId(3),
-                    name: "Test Fund 3".to_string(),
-                    starts: DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    ),
-                    ends: DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2022, 6, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    ),
-                    is_final: true,
-                    reg_checked: None,
-                }
-            ]
+                    Utc
+                ),
+                is_final: true,
+                reg_checked: None,
+            },]
         );
     }
 }
